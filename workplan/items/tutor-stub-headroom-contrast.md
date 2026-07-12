@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-headroom-contrast
 title: "Tutor-stub outcome-headroom contrast — first confound-free policy comparison"
-status: review
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-10
-updated: 2026-07-10
+updated: 2026-07-11
 verification: "One headroom QA matrix run (sentinel profiles x bland/negative/dynamic/field/dynamical_system, n=3, binding safety-turns 40) completes under a single committed SHA; qa-matrix.md ranks policies by the outcome-only score; the adaptive-vs-bland verdict (separation or null) is recorded with the artifact root."
 claim_status: exploratory
 links:
@@ -115,3 +115,14 @@ section).
 Coordinate with the in-flight contract-v2 sentinel matrix
 (`profile-policy-sentinel-v2-n3-live`) — the designs overlap; merge into one
 run rather than paying twice.
+
+## Closeout — 2026-07-11
+
+Closed as exploratory evidence, not a confirmatory policy result. The useful
+bounded finding is profile-dependent register harm and rank crossing; adaptive
+selection did not establish a robust advantage over bland. The source run
+predates the immutable evidence kernel, its requested/observed model mismatch
+was repaired only afterward, guard exposure was not sealed under the new
+contract, and the fixed-horizon interaction was post-hoc. Preserve the
+artifacts and reuse the headroom design, but do not promote its numerical
+ranking into the Phase 4 claim path.

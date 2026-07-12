@@ -1,0 +1,65 @@
+{
+  "schema": "machinespirits.adaptive-state-observability-semantic-regression.v1",
+  "source": {
+    "run_id": "adaptive-state-v2-observability-preflight-5fda0824-v21",
+    "cases_file_sha256": "5c30eba3207b4df14f5ba76696bafb381a016d355dbc711c028f22fe2e07f28d",
+    "report_content_sha256": "f83173712350f67723694ed1cd10ed16295e5985862e23eca411f9f1ebf51b5f"
+  },
+  "cases": [
+    {
+      "id": "preflight__marrick__none__codex_terra",
+      "source_intended_family": "none",
+      "source_analyzer_family": "derive",
+      "semantic_expected_family": "derive",
+      "learner_text": "The coins are definitely struck counterfeits, and their shared alloy points to the old weir-forge crucible while their notched R points to a particular worn graving tool. But the public record so far does not name the person who alone worked either the crucible or that tool, so I cannot yet say whose hand struck them.",
+      "learner_text_sha256": "d3de50bd30773a8bf3ef283621029917f827184f767bb402f20e83d93e6633b4",
+      "expected_evidence_span": "their shared alloy points to the old weir-forge crucible while their notched R points to a particular worn graving tool",
+      "source_analyzer_input_sha256": "8d65251e4aaba84fe54cc9b2828caead0e9fe774f6db60c6c1340898953e8216",
+      "rationale_code": "positive_intermediate_despite_final_uncertainty"
+    },
+    {
+      "id": "preflight__marrick__none__claude_sonnet",
+      "source_intended_family": "none",
+      "source_analyzer_family": "derive",
+      "semantic_expected_family": "derive",
+      "learner_text": "Here is where the record stands at present. The shillings passed at Marrick fair were struck from a debased alloy — silver cut with too much copper and betrayed by a lead-sweat — so they were freshly coined, not clipped from true coin. That particular dross matches the leavings of a single crucible on the entire coast: the weir-forge crucible above the mill-leat, now cold. Every one of the suspect shillings shares the same broken R in the legend, a square notch left by a worn burin with a sprung heel, which means a single die struck them all. The guild's die-sinker confirms that notch is the signature of that specific worn tool, and rules out Verrell's bench, whose broad graver cuts clean. So the evidence points to one crucible as the source of the blanks and one distinctive burin as the tool that cut the die — but the record has not yet named whose hands worked that crucible or held that burin. That is the gap still to be closed.",
+      "learner_text_sha256": "7e96b507cfc1c5848bf31ab7ca057222baf81d10fc07d25f87bf730c3f2dbee2",
+      "expected_evidence_span": "the evidence points to one crucible as the source of the blanks and one distinctive burin as the tool that cut the die",
+      "source_analyzer_input_sha256": "abc51a05e882d8d09cde510e7f539dfc2f618451afb2e86ae983c7d8b171199b",
+      "rationale_code": "positive_intermediate_despite_final_uncertainty"
+    },
+    {
+      "id": "preflight__ravensmark__none__codex_terra",
+      "source_intended_family": "none",
+      "source_analyzer_family": "derive",
+      "semantic_expected_family": "none",
+      "learner_text": "The public record does not yet identify any seal, its holder, or the hand that pressed it, so I cannot determine whose hand signed the pass.",
+      "learner_text_sha256": "fa84427f7f7d4efb9dcaf29e07fda36fc57b0cc634c7d35e1dce01c7e8164f05",
+      "expected_evidence_span": "so I cannot determine whose hand signed the pass",
+      "source_analyzer_input_sha256": "8e791a3969e1e13ac823b1fa929777df78febefd964c710ae6e7fe533c748b49",
+      "rationale_code": "pure_epistemic_insufficiency"
+    },
+    {
+      "id": "preflight__hethel__adopt__codex_terra",
+      "source_intended_family": "adopt",
+      "source_analyzer_family": "derive",
+      "semantic_expected_family": "derive",
+      "learner_text": "I now accept that the arch was sound but its centering was pulled away before the green lime had cured, causing the span to fall.",
+      "learner_text_sha256": "68ae35d96c7fadc0c88ec5353f893cc160a866e54a52ca61cc23aff764a7b275",
+      "expected_evidence_span": "its centering was pulled away before the green lime had cured, causing the span to fall",
+      "source_analyzer_input_sha256": "0b16a77b515698a3b33efe0c5f5550f61f5881debdb0047605182296c6e1f428",
+      "rationale_code": "mixed_adoption_and_positive_conclusion"
+    },
+    {
+      "id": "preflight__hethel__adopt__claude_sonnet",
+      "source_intended_family": "adopt",
+      "source_analyzer_family": "derive",
+      "semantic_expected_family": "derive",
+      "learner_text": "Examining the crown bed itself settles the question of cause: the mortar there was still green to the knife — it had never fully set. This means the arch was loaded before the lime had cured, and the only way a sound, properly built arch fails under those conditions is if its centering was pulled away while the bed was still soft. The structure did not come down through any fault in the building; it came down because someone drew the falsework from under it too early. The record now holds that this was a good arch felled by a premature hand — not a builder's error, but a deliberate or reckless act of removal.",
+      "learner_text_sha256": "2e2c8eaa8e1e6f64cd7dd61fa4e6ce0addcbc841d874adabe083cfa21d156c9d",
+      "expected_evidence_span": "The structure did not come down through any fault in the building; it came down because someone drew the falsework from under it too early.",
+      "source_analyzer_input_sha256": "3daa520b5738e21d1384dd6a76d008d2cc1ad269d507997e30d0fcebd50feb00",
+      "rationale_code": "mixed_adoption_and_positive_conclusion"
+    }
+  ]
+}

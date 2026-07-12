@@ -1,7 +1,7 @@
 # Adaptive Tutor Implementation Plan
 
 - **Date:** 2026-07-11
-- **Status:** implementation-ready, gate-driven plan
+- **Status:** implementation in review; downstream claim runs remain gate-blocked
 - **Starting point:** `preconscious@8f6f6baa` plus an unrelated in-progress DAG-dropout reporting repair
 - **Source audit:** [Adaptive Tutor — State of the Evidence](2026-07-11-adaptive-tutor-state-of-evidence.html)
 - **Claim boundary:** this plan can produce validated simulated adaptive control and a route to human evidence. It does not pre-authorize a human-learning, deployment, or “field theory validated” claim.
@@ -262,7 +262,14 @@ Phase 0 passes only when one archived mock QA run can be reconstructed in a fres
 
 **Kill rule:** no claim-bearing Phase 6 or tutor-stub matrix runs if any part of the plan can still be overwritten or any stochastic policy draw is unreplayable.
 
-## 6. Phase 1 — Close the frozen legacy Phase 6 question
+## 6. Phase 1 — Split and close the Phase 6 questions
+
+> **2026-07-11 protocol correction:** Sections 6.1–6.5 below preserve the
+> original implementation intent, but the instruction to run that four-arm
+> protocol unchanged is superseded. The audit proved that the named
+> `hidden+proofDebt` control requires acts mode while the field-planner and
+> report-only arms reject acts mode. The executable replacement is §6.6 and
+> [the canonical Phase 6 plan](PHASE_6_EVIDENCE_GATE_PLAN.md).
 
 - **Priority:** P1
 - **Engineering scale:** small after Phase 0
@@ -314,7 +321,33 @@ Produce a sealed four-arm artifact and a verdict of exactly one of:
 
 Then freeze the legacy planner result. Later action-schema work starts from a new version and must not rewrite the Phase 6 verdict.
 
+### 6.6 Executable replacement: Phase 6A and Phase 6B
+
+The correction happened before any claim-bearing four-arm real dataset existed.
+
+**Phase 6A** is a non-acts controller-feasibility gate. It freezes Marrick,
+Hethel, and Marrick-resistant; the non-acts hidden-pacing base; four arm deltas;
+the full staged decay object; numerical benefit, placebo, safety,
+instrumentation, and negative-transfer thresholds; and a deterministic verdict
+precedence. Seeds 1–5 can yield only `provisional_promote`. Seeds 6–10 run only
+after that result, and local promotion requires both blocks and pooled k=10 to
+pass.
+
+**Phase 6B** is the eventual true comparison with production
+`hidden+proofDebt`. It remains blocked until an acts-compatible planner consumes
+only a validated public or tutor-reconstructed learner-state view and a leak
+audit proves that the true board, proof distance, frontier, and decay ledger do
+not cross the acts-mode redaction boundary. Phase 6A cannot substitute for
+Phase 6B.
+
 ## 7. Phase 2 — Learner-state validity benchmark
+
+> **2026-07-11 benchmark correction:** Sections 7.1–7.7 describe the first
+> benchmark design. Its 12-row result says only that those proxy candidates did
+> not earn promotion. It did not contain a true no-state baseline or the exact
+> live last-four DAG/field/risk trajectory, and its generator/model/source axes
+> were confounded. The replacement critical path is §7.8 and
+> `config/adaptive-state-benchmark-v2.yaml`.
 
 - **Priority:** P1
 - **Engineering scale:** large
@@ -406,9 +439,343 @@ tests/adaptiveStateValidity.test.js
 
 **Pass:** at least one representation is calibrated and improves held-out prediction over the lean baseline across more than one world and model/learner family, without relying on a self-scoring channel.
 
-**Demote fields:** full fields fail to improve held-out log loss/Brier over the lean state or lose under state-scramble controls. Retain them for visualization only.
+**Demote fields:** full fields fail to improve held-out log loss/Brier over the
+lean state or fail the matched one-turn-stale inferential control. Retain them
+for visualization only. Cross-dialogue scramble is a descriptive wiring check,
+not a promotion/demotion gate, because donor-linked rows are not independent.
 
 **Stop:** no representation clears the lean baseline or the authentic slice reverses the synthetic ordering. Do not proceed to policy learning; improve measurement/data instead.
+
+### 7.8 Benchmark v2.1 critical path
+
+The corrected question is whether a **canonical policy-invariant public
+learner-state sensor** predicts next-turn events on three fixed authored worlds
+beyond progressively simpler rungs. The sensor intentionally disables compact
+memory summaries, register selection, and other policy-dependent context. It
+shares the runtime's pure DAG/field/trajectory postprocessor, but it is not
+claimed to equal the current interactive tutor's default combined prompt. A
+separate integration-parity bridge is required before deployment claims.
+
+The nested ladder is:
+
+1. `no_state`: frozen task metadata, turn, and common action only;
+2. `lean_dag`: current world-general public DAG state, without local fact IDs or
+   learner text;
+3. `dag_trajectory`: lean DAG plus exact public DAG/risk trajectory;
+4. `field_trajectory`: DAG trajectory plus exact classifier field and full
+   last-four trajectory;
+5. one-turn stale controls for inferential gating, plus cross-dialogue scramble
+   controls for descriptive wiring sensitivity only;
+6. oracle latent transition distribution, upper-bound only.
+
+Two additional state-blind references are fitted without external dispatches:
+a symmetric Dirichlet/Laplace class prior with `alpha=1`, fitted separately on
+each training fold over the frozen target labels, and an exact `1/K` uniform
+predictor. The common-feature `no_state` head remains a diagnostic baseline;
+no baseline is selected after inspecting held-out labels.
+
+Only two harness-owned co-primary targets bind the gate:
+
+- `next_dag_event_family`: retract, derive, adopt, or none;
+- `next_proof_trajectory`: advance, regress, or stall.
+
+The data design is a bounded 3 × 2 × 2 crossing:
+
+- Marrick, Hethel, and Ravensmark proof geometries;
+- generalized durable-state and DAG-dropout/readoption transition kernels;
+- `codex.gpt-5.6-terra` and `claude-code.sonnet` language realizers.
+
+One seed-balanced six-action schedule is common to every representation. There
+is no tutor-policy, profile, judge, or target sweep.
+
+Execution is serial across dialogues and turns, with no retries or semantic
+rerolls. Paired realizers are adjacent and their first/second order is
+deterministically counterbalanced across latent pairs, limiting temporal or
+provider-drift confounding without adding another factor. One public-analyzer
+call follows every realized turn. Any dialogue
+failure stops the whole stage; a failed dialogue is never dropped, replaced, or
+rerun. Model provenance is stated honestly: `explicit_cli_argument_accepted`
+means that the explicit CLI model argument was accepted, not that the backend
+identity was independently attested.
+
+The staged envelope is:
+
+- S0: 24 free contract dialogues, 144 transitions;
+- S1: 24 technical-pilot dialogues, 144 transitions, and
+  `24 × (7 learner-realizer + 7 public-analyzer) = 336` scored CLI dispatches,
+  plus three excluded technical canaries: two provider-realizer canaries and
+  one analyzer-schema canary;
+- S2: one preregistered bounded confirmation at 8/cell: 96 dialogues and 1,344
+  scored CLI dispatches, plus the same three excluded technical canaries. The
+  size is not selected from S1 effects and carries no 80%-power claim. If the
+  interval/useful-effect gates remain imprecise, report that the sensor was not
+  validated under this bounded design; do not describe that as a null effect.
+
+Across S1 and S2, the paid ceiling is therefore 120 dialogues and 1,680 scored
+CLI dispatches, plus six excluded technical-canary dispatches. Backend request
+counts inside the Codex and Claude CLIs are not observed. The
+nested representations are computed offline from the public analyses and add
+no further CLI process dispatches. S1 is excluded from confirmation and cannot produce or stand
+in for the untouched S2 sensor verdict.
+
+The paid S1 seal binds exact S1-relevant runner, analyzer, policy, profile,
+prompt, world, configuration, and CLI executable/version fingerprints, plus a
+historical clean-Git attestation. Later unrelated S2 implementation commits do
+not invalidate that seal and do not force another 339-dispatch pilot. Any drift
+in an S1-relevant hash or CLI fingerprint does invalidate it; S2 separately
+binds its own clean Git state.
+
+Analysis uses separate world-, generator-, and realizer-transfer lanes, one
+small L2 multinomial head, latent-pair clustered conditional prediction-loss
+bootstrap, log loss, Brier, and ECE. The intervals condition on the fitted OOF
+heads; they do not include model-refit uncertainty. The three fixed worlds do
+not license population-level world-generalization claims.
+The oracle must first beat all three state-blind references (`no_state`,
+training-fold class prior, and uniform) on both losses for both targets. Then
+choose the simplest rung with statistically supported superiority over all
+three references across both targets and no transfer failure. The preregistered
+minimum useful effect applies to candidate-over-`no_state`; superiority over
+class-prior and uniform does not silently inherit that larger threshold.
+Same-recipient stale controls remain inferential gates. Richer-rung promotion
+requires incremental superiority on both co-primary targets. Scramble controls
+must react to state identity in every generator/realizer but remain
+gate-ineligible because cyclic donors create cross-cluster dependence. Valid
+outcomes are no sensor, lean DAG only, DAG trajectory, or full field
+trajectory—not only a global winner/null.
+
+### 7.9 Execution record — 2026-07-12
+
+The v2.1 sequence has produced two valid zero-call contract passes under two
+versioned contracts, one completed full-S1 technical stop, two earlier
+fail-closed technical stops, and four completed bounded-preflight stops. None
+is a learner-state validity or efficacy result.
+
+1. **Fresh S0 passed at `5a3e5aae`.** The sealed zero-model-call run
+   `adaptive-state-v2-s0-clean-5a3e5aae-v21` contains 24 dialogues and 144
+   scored transitions and returned `pass / advance_to_s1_technical_pilot`.
+   Its dataset SHA-256 is
+   `5364a5210675b1f0770dc7db39f130fb783e052c37c45f9c603cc3372a953720`,
+   report SHA-256 is
+   `10fd8330849e4998dbe267c432a8376a7158a337e6c27dc53beb8f9c943b817b`,
+   split content SHA-256 is
+   `8d7eab2de1c7a37e5bad1bdbbb325fc8002f6cee3964f7c2c715034ad9e4142f`,
+   design SHA-256 is
+   `02cd3acf58f4fac7e06c13fe5082bc4ad0442868d51a3a80783b8221c015a87f`,
+   canonical-config SHA-256 is
+   `e085f5f88539c8e124f05c7ffc9d3290f74e04972ad0bcbfffcec47c3fff015e`,
+   and config-file SHA-256 is
+   `bc49c1b02cfb8e8f75b452915200d674bea904b2991ca07d349aff7f5683d08f`.
+   This is an instrument/plumbing pass only.
+2. **The first S1 schema canary stopped at 1/339.** The sealed run
+   `adaptive-state-v2-s1-technical-5a3e5aae-v21` reached and dispatched one
+   Codex realizer canary, which failed because the provider rejected
+   `uniqueItems` in the structured-output schema. It completed no call and no
+   dialogue and produced no scientific result.
+3. **The first full S1 completed at `b69775b6` and stopped.** The sealed run
+   `adaptive-state-v2-s1-technical-b69775b6-v21` completed all 339/339 CLI
+   dispatches (336 scored plus three excluded canaries), but exact public
+   analyzer event-family recovery was `0.395833`: durable-state `0.333333`,
+   DAG-dropout `0.458333`, Claude `0.361111`, and Codex `0.430556`. Its sole
+   stop reason was `public_analyzer_event_family_recovery_below_floor`; the
+   frozen decision was `stop_and_repair_s1`. No S2, efficacy, or learner-state
+   validity claim follows from this stopped technical pilot.
+4. **The measurement repair is committed.** Commit `6d40a1ba` added the
+   benchmark-only explicit primary transition family, exact evidence span,
+   prior redacted public learner record, and stronger realizer fidelity
+   instructions without changing shared accepted-event semantics. Commit
+   `bb65da27` made recovery recompute family equality, bound row ↔ dialogue
+   observation ↔ parsed analyzer output, reconstructed prior public state from
+   hashed deterministic updates, revalidated saved spans, and fail-closed the
+   replacement lineage against the stopped S1.
+5. **The repaired S1 also stopped technically.** The sealed superseding run
+   `adaptive-state-v2-s1-repair-bb65da27-v21` reached and dispatched 73/339
+   calls, completed 72, failed one, and completed four dialogues. The turn-7
+   analyzer for Marrick/DAG-dropout/Claude returned an `evidence_span` that was
+   not an exact substring of the learner turn. The strict parser stopped the
+   transaction as designed. This incomplete run has no technical-report
+   verdict and no scientific result; its completed rows must not be reused.
+6. **The balanced observability preflight completed and stopped at
+   `5fda0824`.** Commit `5fda0824` implemented a mandatory, immutable preflight
+   parent for any later full S1. The sealed paid run
+   `adaptive-state-v2-observability-preflight-5fda0824-v21` completed all 24
+   isolated cases and 48/48 serial CLI dispatches with zero technical failures,
+   retries, rerolls, repairs, fallbacks, exclusions, partial reuse, or
+   learner-text event-ID leaks. Exact learner-text evidence spans passed 24/24.
+   Intended-family recovery nevertheless passed only 19/24, so the frozen
+   report returned `stop / stop_and_repair_observability_preflight` and
+   `s1_retry_eligible: false`. By family, derive and retract passed 6/6 each,
+   adopt passed 4/6, and none passed 3/6; Claude passed 10/12 and Codex 9/12.
+   All five mismatches were classified as `derive`: both Marrick `none` turns,
+   Codex Ravensmark `none`, and both Hethel `adopt` turns. Report SHA-256 is
+   `f83173712350f67723694ed1cd10ed16295e5985862e23eca411f9f1ebf51b5f`.
+7. **The zero-call repair improved a fresh preflight to 22/24 but did not clear
+   the gate.** Commit `8d6d2b22` froze the five prior mismatches as semantic
+   regression evidence, settled every `none` fixture by pre-voicing already
+   supported facts, made the Hethel `adopt` surface premise-only through a
+   hash-guarded public projection shared by preflight and S1, and distinguished
+   pure epistemic insufficiency from an object-level derivation. The sealed paid
+   run `adaptive-state-v2-observability-preflight-8d6d2b22-v21` again completed
+   all 24 cases and 48/48 serial CLI dispatches with zero technical failures,
+   retries, rerolls, repairs, fallbacks, exclusions, partial reuse, or event-ID
+   leaks. Exact-family recovery rose to 22/24 (`0.916667`): `none`, `adopt`, and
+   `retract` passed 6/6; `derive` passed 4/6; each realizer passed 11/12; Hethel
+   passed 8/8 and Marrick/Ravensmark 7/8. The two remaining failures are both
+   on the public `derive` boundary. Codex rendered Marrick's event only as “a
+   further intermediate inference,” without voicing any conclusion, so the
+   conservative analyzer correctly returned `none`. Claude's Ravensmark turn
+   voiced the supported intermediate proposition that the dusk-seal was the
+   operative seal, then added a conditional signer relation whose holder
+   premise was still absent; the analyzer treated the whole turn as
+   provisional and returned `none`. This exposes a clause-wise derive-recovery
+   ambiguity rather than evidence for or against the learner-state sensor. The
+   frozen decision remains `stop_and_repair_observability_preflight`,
+   `s1_retry_eligible: false`; report SHA-256 is
+   `b89390acca11a6d7a73977c1dc71406529d3ee7c7f6a83e5630a2bbebfd69b05`.
+8. **The derive repair improved a third fresh preflight to 23/24, but the gate
+   still did not clear.** Commit `c0ccd5c9` froze both second-preflight failures,
+   required a derive realizer to voice one concrete supported object-level
+   conclusion, and made analyzer recovery clause-wise so a supported
+   intermediate conclusion could survive beside a later unsupported clause.
+   The focused repair tests passed 55/55, the adaptive-state suite passed
+   115/115, the full repository suite passed 5,228 tests with one expected
+   skip, and the sealed S0 and stopped-S1 ancestors revalidated before launch.
+   The sealed paid run
+   `adaptive-state-v2-observability-preflight-c0ccd5c9-v21` completed all 24
+   cases and 48/48 unique serial CLI dispatches with zero technical failures,
+   retries, semantic rerolls, repairs, fallbacks, exclusions, partial reuse,
+   invalid stream lines, prohibited tool events, or event-ID leaks. Exact-family
+   recovery rose to 23/24 (`0.958333`): `none`, `adopt`, and `retract` passed
+   6/6; `derive` passed 5/6; Codex passed 12/12 and Claude 11/12; Marrick and
+   Hethel passed 8/8 and Ravensmark 7/8. The sole mismatch was
+   `preflight__ravensmark__derive__claude_sonnet`. Claude voiced that the
+   raven's-notch dusk-seal was the operative impression and then inferred that
+   its holder pressed the pass. The analyzer returned `none`, treating the
+   operative-seal proposition as hidden even though public rule `R1_scope`
+   derives `materialSealAtIssue(gatePass,duskSeal)` directly from the staged
+   `sealMarkOf(gatePass,duskSeal)` fact. Because this Ravensmark/Claude boundary
+   failed again after the explicit clause-wise repair, semantic separability is
+   now the next zero-call hypothesis to audit, not a demonstrated causal
+   diagnosis; the run does not distinguish it from residual analyzer/model
+   unreliability and is not evidence for or against the learner-state sensor.
+   The frozen decision remains
+   `stop_and_repair_observability_preflight`, `s1_retry_eligible: false`; report
+   SHA-256 is
+   `f00768748f653f1033b62525ae3f5d036784febc82655ade57bd735f6d701dbe`.
+9. **The construct repair passed S0, but a fourth preflight still stopped at
+   23/24.** The zero-call audit froze the exact third-run failure and found that
+   Ravensmark's unary `R1_scope` conclusion was too close to its public premise
+   to identify analyzer reliability cleanly. Commit `2dd039c5` therefore kept
+   `R1_scope` in logical closure as validated structural support while making
+   the next observable derive target `pressedSealFor(gatePass,elian)`, which
+   requires two public premises and introduces a new person/action relation.
+   Because that changed the shared preflight/S1 kernel and canonical config,
+   the old S0 became correctly stale. Fresh zero-call run
+   `adaptive-state-v2-s0-structural-support-2dd039c5-v21` passed with 24
+   dialogues, 144 transitions, and no model calls. Dataset SHA-256 is
+   `c9d67065e6cc012b9748b7d4dc23dc66f7a7a197ee9087b529e8ed1419a58470`,
+   report SHA-256 is
+   `09ed0b4cb5e111d97a212d2d3805732e6642766608153944a8aa313956bde6c2`,
+   seal-plan SHA-256 is
+   `9b3b81c16d846cec11aba1a7522997886647a081c2d7a56031aafa3b11bb3b33`,
+   and seal-inventory SHA-256 is
+   `632878298017f152ccf9f0c90a945ffeda34c34a6b94aabaa2c3ec66525d43a6`.
+   Commit `985bd542` then bound the original S0/stopped-S1 diagnostic lineage
+   independently from the replacement S0/current-contract lineage; it reused
+   no paid row or call. The sealed paid run
+   `adaptive-state-v2-observability-preflight-985bd542-v21` completed 24/24
+   cases and 48/48 unique serial CLI dispatches with no technical failure.
+   Exact-family recovery remained 23/24 (`0.958333`): `none`, `adopt`, and
+   `retract` passed 6/6; `derive` passed 5/6; Claude passed 12/12, Codex 11/12;
+   Marrick and Hethel passed 8/8 and Ravensmark 7/8. The sole mismatch moved to
+   `preflight__ravensmark__derive__codex_terra`. Codex wrote “The dusk-seal on
+   the pass was held by Elian,” merely restating the released holder premise;
+   the analyzer correctly returned `none` even though the realizer sidecar had
+   claimed `derive:inference_03`. Claude received the same construct and
+   correctly voiced that Elian pressed the operative seal, which the analyzer
+   recovered as `derive`. Thus the construct repair worked, while the exact
+   gate exposed a remaining single-draw realizer-fidelity failure. The run
+   sealed `stop_and_repair_observability_preflight` with
+   `s1_retry_eligible: false`; report SHA-256 is
+   `5b887f222419ce7944d477b3cb875ad1bebaa7080136e99dc889ba6d0398203c`.
+10. **The prospectively frozen repeated-draw gate completed and stopped.**
+   Commit `4133d7ff` implemented Option 2 before any v2.2 model call: three
+   complete fresh draws of the unchanged 24-cell matrix, 72 cases and 144
+   serial CLI dispatches, with every draw retained and no retries, semantic
+   rerolls, repairs, fallbacks, exclusions, or reused rows. The sealed paid run
+   `adaptive-state-v2-observability-reliability-4133d7ff-v22` completed all
+   72/72 cases and 144/144 dispatches without technical failure. Aggregate
+   exact-family recovery was 70/72 (`0.972222`), meeting the overall threshold,
+   and each draw block passed 23/24, 23/24, and 24/24. The gate nevertheless
+   stopped because both misses repeated in the same
+   `ravensmark × derive × codex_terra` base cell: 1/3 there, derive 16/18,
+   Codex 34/36, and Ravensmark 22/24. Claude, Marrick, Hethel, and every
+   non-derive family passed perfectly. In draws 1 and 2 Codex repeated “The
+   dusk-seal on the pass was held by Elian,” while claiming
+   `derive:inference_03`; the analyzer correctly returned `none`. Draw 3 was a
+   nominal family match, but “The older dusk-seal on the pass was Elian’s seal”
+   still did not state the intended `pressedSealFor(gatePass,elian)` action
+   relation; the analyzer treated that possession paraphrase as `derive`.
+   Therefore the repeated-draw design did its job: it distinguished a repeated
+   condition-specific realizer failure from an isolated wording miss and also
+   exposed one family-level analyzer false positive. The sealed decision is
+   `stop_observability_channel_no_s1`, `s1_retry_eligible: false`; report
+   SHA-256 is
+   `987497dab7df085829c530432fe1ca3b38e8cfbf8d80ee91192272ba52a29f8f`.
+11. **S2 was not run and remains fail-closed.** No passing observability gate or S1 seal
+   exists, so the fixed eight-per-cell confirmation and every downstream
+   policy, efficacy, Phase 6B, shadow-pilot, and human-learning claim remain
+   blocked.
+
+The repeated-draw experiment has answered the protocol-governance question.
+The earlier Codex/Ravensmark miss was not merely one unlucky draw: the same cell
+failed substantively three times, while the analyzer credited one of those
+three as the right family. The combined free-form realizer/analyzer channel is
+therefore not sufficiently identified for S1 under v2.2.
+
+The next permitted work is **zero-call instrument redesign**, not another
+prompt patch, repeat of v2.2, or 339-call S1. Preserve all 72 draws and the
+sealed stop. Separate the harness transition from free-form prose realization:
+either use a deterministic, fact-preserving renderer for the claim-bearing
+sensor benchmark and keep LLM naturalness as a descriptive side lane, or add a
+programmatic semantic-fidelity check against the exact public event before the
+family analyzer can count a match. Any successor must be a new versioned
+protocol, justified independently of these outcomes, and must freeze its gates
+before new calls. The existing v2.1 and v2.2 results remain immutable. Until a
+successor instrument passes, S1, S2, policy optimization, Phase 6B, shadow
+pilot, efficacy, and human-learning claims remain blocked.
+
+That permitted redesign is now implemented as the prospectively versioned
+v2.3 exact-channel successor. The kernel projects each already-realized current
+public event as an operation plus an exact fact atom; deterministic renderers
+must include that atom, preserve the harness sidecar, omit event ids from prose,
+and pass a local semantic-fidelity assertion. Stage 0 now builds learner-state
+observations through a deterministic public-event observer instead of the
+kernel's hidden-state turn record, and persists fidelity evidence on every
+realized turn. Codex/Claude paraphrase and public-text analysis are a separate,
+gate-ineligible descriptive-transfer lane. The frozen contract is
+`config/adaptive-state-instrument-v2.3.yaml`; rationale and Phase 6 dependency
+repair are in
+`PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md`.
+
+The clean-SHA zero-call v2.3 S0 has now passed and sealed at `346e472a` across
+24 dialogues, 144 scored transitions, and 168 realized turns with every
+semantic-fidelity check passing. Exact replay, leakage/controls, target
+nondegeneracy, fixed-head convergence, and both oracle sensitivity checks also
+passed. Dataset SHA-256 is `e781beb4f51f876020d4e41dbd00606d8fffbfeb13db9daeb99224d71da78e61`;
+report SHA-256 is `e939ff171a0d2b2e85217a13cc6c7671de912b2d49134f126b37d80e1236023f`.
+The inherited v2.1 decision label `advance_to_s1_technical_pilot` is governed by
+v2.3 as authorization only for the zero-call, non-confirmatory canonical sensor
+pilot—not the old paid language-model S1.
+
+This S0 pass does not reopen policy optimization or S2 by itself. The prior
+`winner: null` and `do_not_optimize_policy` decisions remain operative. Phase 6B now explicitly
+requires a sealed canonical S2 pass, a non-null winner, and a separately opened
+optimization gate; live shadow work additionally requires an observation-
+parity bridge.
+
+Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
+`1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
+all Phase 6 claims are unchanged.
 
 ## 8. Phase 3 — Orthogonal pedagogical action contract
 
@@ -778,7 +1145,9 @@ If this gate fails, retain the system as an evidence-aware tutor/co-pilot or res
 
 ## 13. Workplan translation
 
-This plan does not alter `workplan/` yet. When implementation is authorized, create or update these cards, then render and validate the board.
+Implementation has now translated these dependencies and stop rules into
+`workplan/`. The board is rendered and validated from the item files; this
+section records what was created or reconciled.
 
 ### 13.1 New cards
 
@@ -793,24 +1162,27 @@ This plan does not alter `workplan/` yet. When implementation is authorized, cre
 
 ### 13.2 Existing cards
 
-- `field-planner-phase6-gate`: depend on the provenance card; reconcile world-019; keep frozen verdict rules.
-- `tutor-stub-transition-reward-model`: depend on the multi-world replication; strengthen verification with propensities, overlap/ESS, grouped cross-fitting, and guarded learned-vs-yoked comparison.
-- `a1-human-learner-validation`: remain blocked and P0; do not dilute governance or its existing human-learning design.
-- `tutor-stub-headroom-contrast`: close as exploratory evidence with the overwritten-plan, guard, and provenance limitations recorded.
-- `abm-learner-population`: close the failed yield-manipulation line; do not make it a simulator-validity prerequisite.
-- `longitudinal-drift-adaptation`: close as bounded negative/instrument audit; reuse plumbing, not the claim.
-- `tutor-stub-human-discourse-layer`: finish the targeted Marrick smoke and close as infrastructure, not efficacy evidence.
+- `field-planner-phase6-gate`: is now the triaged Phase 6A non-acts
+  feasibility experiment with a frozen executable verdict contract;
+  `field-planner-acts-safe-promotion-gate` preserves the blocked Phase 6B
+  production hidden+proofDebt question.
+- `tutor-stub-transition-reward-model`: now depends on multi-world replication, is blocked upstream, and requires logged propensities, overlap/ESS, grouped cross-fitting, and guarded learned-vs-yoked comparison.
+- `a1-human-learner-validation`: remains blocked and P0; its governance and human-learning design were not diluted.
+- `tutor-stub-headroom-contrast`: closed as exploratory evidence with model, guard, provenance, and post-hoc fixed-horizon limits recorded.
+- `abm-learner-population`: closed at the failed yield-manipulation stop; it is not a simulator-validity prerequisite.
+- `longitudinal-drift-adaptation`: closed as a bounded negative/instrument audit; its plumbing, not its claim, is reusable.
+- `tutor-stub-human-discourse-layer`: targeted Marrick/fake-CLI and regression checks pass; closed as methods infrastructure, not efficacy evidence.
 - archived task-loop/handoff cards remain archived; link and reuse their code rather than reopening their claims.
 
 ### 13.3 Milestone
 
-Proposed milestone:
+Implemented milestone:
 
 ```yaml
 id: adaptive-tutor-evidence-v1
 title: Adaptive tutor evidence v1
 target: 2026-09-30
-status: planned
+status: active
 description: Immutable evidence, validated learner state, orthogonal actions, Phase 6 verdict, multi-world replication, and a first identified transition controller.
 ```
 
@@ -860,29 +1232,129 @@ After Phase 0, safe parallelism is:
 
 | Lane | Work | Merge constraint |
 |---|---|---|
-| A | frozen legacy Phase 6 run | no field-planner schema changes until verdict sealed |
-| B | state benchmark and lean baseline | may change analyzers/adapters, not legacy planner |
+| A | Phase 6A protocol and runner; Phase 6B acts-safe adapter design | 6A uses non-acts hidden pacing; 6B remains blocked on reconstructed state |
+| B | exact-state benchmark v2 and crossed latent generators | no paid pilot until S0 oracle/control/leakage gates pass |
 | C | action-schema adapter and deterministic fixtures | build offline; no claim run before sensor gate |
 | D | A1 governance/content | independent human/legal track |
 
 Transition modelling waits for B+C+multi-world data. Memory/outer-loop waits for transition/policy identification. Human adaptive evaluation waits for governance plus the controller gates.
 
-## 16. First implementation slice
+## 16. First implementation slice — execution record
 
-When the user authorizes implementation:
+Implementation was authorized on 2026-07-11. The slice resolved as follows:
 
-1. let the current unrelated DAG-dropout reporting work finish; do not combine it with this programme;
-2. create an isolated worktree/branch for `adaptive-eval-immutable-provenance` from the then-current `origin/preconscious`;
-3. create the new workplan card and milestone, update dependencies, render and validate;
-4. write tests for immutable plan, append-only events, and exclusive seal before the service;
-5. implement the shared run-artifact service and migrate tutor-stub QA;
-6. migrate Phase 6 without changing its arm semantics;
-7. seed tutor-stub policy/register draws and add replay tests;
-8. persist original/repaired/fallback responses and guard exposure;
-9. fix dispersion/adequacy reporting and raw primary endpoint prominence;
-10. package one mock run, perform clean-room replay, and stop if any artifact drifts;
-11. freeze the legacy Phase 6 SHA and execute its staged gate;
-12. start the state-validity and Plan 2 adapter lanes only after the evidence kernel passes.
+1. Kept the unrelated dirty checkout isolated from this programme.
+2. Created `codex/adaptive-tutor-implementation` in a sibling worktree from the then-current `preconscious@8f6f6baa`.
+3. Created the milestone/cards, updated dependencies and stop states, then rendered and validated the board.
+4. Added fail-closed tests for immutable plans, append-only events, exclusive seals, nested lineage, corruption, and replay.
+5. Implemented the shared run-artifact service and migrated tutor-stub QA.
+6. Migrated Phase 6 plumbing, found that the original hidden+proofDebt
+   treatment was incompatible with every field arm, then prospectively split
+   Phase 6A from the blocked Phase 6B production comparison.
+7. Seeded tutor-stub policy/register draws and added exact replay contracts.
+8. Persisted original, repaired, fallback, delivered, and final-audit guard records.
+9. Corrected dispersion/adequacy, failed-row accounting, fixed-horizon endpoints, and guard coverage.
+10. Packaged the fake-CLI mock QA run and checksum-verified clean-room restore plus read-only report regeneration.
+11. Did **not** execute a staged real Phase 6 gate. Phase 6A v2.1's sealed
+    canary-lineage engineering landed at `1e106783`, but it still awaits an
+    attended clean-SHA paid run; Phase 6B remains blocked.
+12. Implemented the learner-state and Plan 2 action-adapter lanes. The v1 formal
+    proxy returned `not_passed / do_not_optimize_policy`, so Phase 4 and every
+    learned or human-adaptive downstream lane remain blocked pending v2.
+13. Extracted the canonical policy-invariant DAG, classifier-field, DAG/risk,
+    and last-four trajectory projection into one pure service shared by runtime
+    and benchmark. This no-memory/no-register sensor is not claimed equivalent
+    to the enriched live default.
+14. Corrected missing observations that previously became false zero-valued
+    slopes, and added frozen parity/behavior tests.
+15. Froze benchmark v2's 3-world × 2-kernel × 2-realizer critical path, nested
+    representations, matched controls, strict oracle/proof-transition
+    provenance, two frozen harness target vocabularies, and fixed eight-per-cell
+    confirmation size with no power claim.
+16. Added an immutable zero-call planning transaction, generalized cross-world
+    kernels, sequential public realizer/analyzer execution, and a deterministic
+    five-verdict sensor evaluator over world/generator/realizer lanes. Fresh S0
+    passed; the subsequent S1 executions are recorded in §7.9 and did not
+    authorize confirmation.
+17. Froze and implemented Phase 6A's complete non-acts flags, decay process,
+    numerical thresholds, instrumentation/manipulation gates, k=5 parent
+    requirement for k=10, and deterministic report/seal verdict.
+18. Preserved the full `b69775b6` S1 stop, added the benchmark-only measurement
+    repair at `6d40a1ba`, and added audit/replacement-lineage hardening at
+    `bb65da27`. The superseding run then stopped technically after 73/339
+    dispatches, so no partial row was promoted and S2 remained locked.
+19. Replaced another full-run retry with a required 24-turn claim-ineligible
+    preflight balanced over three worlds, four event families, and two
+    realizers; implemented it at `5fda0824`; and completed its fresh 48-call
+    transaction. It stopped at 19/24 exact-family recovery, so another 339-call
+    S1 remains forbidden.
+20. Localized the preflight stop to two genuine Marrick `none` realizer
+    overshoots, one Ravensmark insufficiency/`none` analyzer ambiguity, and two
+    non-atomic Hethel `adopt` stimuli. The next repair preserves those failures
+    as regression evidence and reruns the entire 24-cell matrix from a fresh
+    label rather than relabeling, rerolling, or partially reusing them.
+21. Implemented that zero-call repair at `8d6d2b22` without changing any
+    S0-bound world or transition kernel. The shared public projection is bound
+    into both preflight and S1 source hashes; 114/114 adaptive-state tests and
+    the full 5,265-test repository suite completed with zero failures (one
+    expected skip), and the sealed S0/stopped-S1 ancestors revalidated before
+    launch.
+22. Completed the second fresh 48-dispatch preflight at
+    `adaptive-state-v2-observability-preflight-8d6d2b22-v21`. It improved exact
+    recovery from 19/24 to 22/24 and closed every prior `none`/`adopt` mismatch,
+    but two `derive` cases still failed, so the run sealed stopped and S1
+    remained unauthorized. The remaining repair is deliberately smaller:
+    substantive derive realization plus clause-wise conservative recovery.
+23. Implemented that derive-observability repair at `c0ccd5c9`, freezing both
+    failures hermetically and changing only the shared realizer/analyzer
+    contracts already bound into preflight and S1 hashes. Focused tests passed
+    55/55, adaptive-state tests passed 115/115, the full suite passed 5,228
+    tests with one expected skip, and both sealed ancestors revalidated.
+24. Completed the third fresh 48-dispatch preflight at
+    `adaptive-state-v2-observability-preflight-c0ccd5c9-v21`. It improved exact
+    recovery to 23/24 with zero technical failure and closed the Marrick
+    realization failure. Ravensmark/Claude again treated a scope-level
+    `materialSealAtIssue` derivation as indistinguishable from its released
+    `sealMarkOf` premise, so the run sealed stopped and S1 remained
+    unauthorized. Further ad hoc prompt tuning is stopped; the next gate is a
+    zero-call target/fixture/ontology separability audit shared with full S1.
+25. Completed that audit and implemented its construct repair at `2dd039c5`.
+    `R1_scope` remains available to symbolic closure but can no longer emit a
+    learner event; the shared preflight/S1 target is now the two-premise,
+    relational `pressedSealFor` conclusion. A fresh current-contract S0 passed
+    and sealed with 24 dialogues, 144 transitions, and zero model calls.
+26. Added dual-S0 fail-closed lineage at `985bd542`: the old S0 remains the
+    immutable diagnostic parent of the stopped S1, while the replacement S0
+    parents the new preflight and any later current-contract work. No stopped
+    row or call is transported across lineages. Focused tests passed 52/52,
+    adaptive-state tests passed 130/130, and the full suite passed 5,224 tests
+    with one expected skip.
+27. Completed the fourth fresh 48-dispatch preflight at
+    `adaptive-state-v2-observability-preflight-985bd542-v21`. It remained
+    23/24: Claude correctly realized and the analyzer recovered the new
+    Ravensmark derive target, but Codex only restated the released holder
+    premise while claiming a derive sidecar. The analyzer correctly returned
+    `none`; the run sealed stopped and S1 remains unauthorized. This narrows the
+    problem from construct ambiguity to realizer fidelity. Further paid tuning
+    is paused pending a zero-call, prospective gate-design review.
+28. Froze Option 2 prospectively at `4133d7ff`: three fresh draws per existing
+    base cell, 72 cases, 144 serial dispatches, aggregate and stratum gates,
+    every draw retained, and no reinterpretation or reuse of v2.1 rows. The
+    implementation passed 125 adaptive-state tests, 5,289 full-suite tests with
+    one expected skip, tracked-source lint, workplan validation, a clean-lineage
+    dry run, and a hermetic proof that only a sealed paid pass can authorize S1.
+29. Completed and sealed
+    `adaptive-state-v2-observability-reliability-4133d7ff-v22`. Aggregate
+    recovery met 70/72, but both misses repeated in the same
+    Ravensmark/derive/Codex cell, so its 1/3 base-cell result and the associated
+    world/family/model floors failed. The run correctly stopped and S1 remained
+    unauthorized.
+30. Audited the three repeated Codex outputs. Draws 1 and 2 merely repeated the
+    holder premise and were correctly scored `none`; draw 3 also failed to
+    state the intended pressed-seal action but was nominally scored `derive`.
+    This exposes both systematic realizer noncompliance and an analyzer false
+    positive. The next gate is zero-call instrument redesign, not another paid
+    rerun.
 
 ## 17. Things deliberately not scheduled
 
@@ -911,3 +1383,69 @@ The programme succeeds in stages:
 7. **Proper adaptive tutor:** authentic learners show better unassisted learning, retention, or transfer than under a guarded nonadaptive tutor.
 
 Stopping at any earlier stage is still a valid result. It defines what the machine can do without inflating the claim.
+
+## 19. Implementation checkpoint — 2026-07-11
+
+- **Phase 0 engineering is implemented:** immutable plan/events/seal transactions,
+  deterministic sampling, strict requested/resolved/observed role provenance,
+  guard accounting, fixed-horizon raw endpoints, package/restore, and
+  byte-preserving derived reports have fake-model and mock coverage. Repository
+  manifest `phase0-mock-qa-evidence-v1-61ceb224bb43` points to a bounded
+  fake-CLI QA archive after checksum verification. Its fresh-directory restore
+  independently verifies the QA parent and semantic learner-profile child,
+  including exact job/draw replay, complete artifact inventories, and
+  tutor/learner/analyzer model-role plumbing observations emitted through the
+  fixed shim. No remote model ran. This fixture tests methods only; its manifest
+  explicitly excludes model-quality, state-validity, policy-effect, learning,
+  and provider-attestation claims.
+- **Phase 6 is split before real calls:** Phase 6A now freezes an executable
+  non-acts hidden-pacing feasibility test, its complete decay process, and
+  numerical verdict contract; v2.1 canary-lineage hardening is committed at
+  `1e106783`, with no new paid Phase 6 rows. Phase 6B retains the original production
+  question and remains blocked on an acts-safe reconstructed-state adapter; the
+  true learner board cannot be passed around that redaction boundary. No paid
+  rows or verdict were produced.
+- **The v1 sensor proxy is not passed; v2.1 still has no scientific sensor
+  verdict:** the 12-row fixture remains a useful negative
+  instrument audit, but it lacked strong state-blind baselines, canonical
+  trajectory projection, independent crossed
+  generator/model axes, and nondegenerate world-general targets. Runtime and
+  benchmark now share one pure DAG/field/trajectory projection with parity
+  tests. Benchmark v2 freezes the 3-world × 2-kernel × 2-realizer critical path,
+  nested sensor ladder, two primary targets, staged call ceiling, and stop
+  rules. Fresh S0 passed. The completed `b69775b6` S1 stopped on analyzer
+  recovery, and the repaired superseding S1 stopped technically after 73/339
+  dispatches because an evidence span was not an exact learner-turn substring.
+  The first balanced 24-turn claim-ineligible preflight completed all 48 serial
+  calls without a technical or span failure but stopped semantically at 19/24
+  exact-family recovery. A zero-call ontology/fixture repair then closed every
+  prior `none` and `adopt` mismatch; the second fresh 48-dispatch preflight
+  improved to 22/24 but still stopped on two `derive` boundary failures. A
+  clause-wise derive repair then closed Marrick and the third fresh preflight
+  improved to 23/24. A zero-call construct audit replaced Ravensmark's ambiguous
+  unary scope event with a distinct two-premise action relation, and a fresh S0
+  passed. The fourth fresh preflight remained 23/24, but the failure moved:
+  Claude correctly realized the new conclusion while Codex merely restated a
+  released premise and the analyzer correctly returned `none`. A prospectively
+  frozen three-draw v2.2 gate then completed 72 cases and 144 calls at 70/72,
+  but both misses repeated in that same Ravensmark/derive/Codex cell; its third
+  nominal match still omitted the intended action relation and exposed an
+  analyzer false positive. S2 was not run. The next gate is zero-call
+  instrument redesign, not another prompt tweak or paid run, so no new sensor
+  verdict exists.
+- **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
+  through a default-off tutor-stub adapter with separate move, support, task,
+  difficulty, and register axes; complete candidate/propensity provenance;
+  next-observation outcome closure; and a bounded diagnose → support → uptake →
+  fade → independent-work → transfer/recover lifecycle.
+- **Phase 4 is explicitly blocked:** no multi-world paid policy comparison may
+  launch until a new preregistered sensor dataset clears the upstream validity
+  gate. Transition learning, memory/curriculum control, and human adaptation
+  remain behind their original dependencies.
+
+This checkpoint is an engineering result, not an efficacy result. It records a
+failed **v1 proxy benchmark**, not a failure of the canonical policy-invariant
+sensor or a validation of the enriched live default, and keeps
+the larger policy-optimization programme gate-blocked. A future Phase 4 runner
+must require a sealed passing v2 sensor report before that governance block can
+become an executable runtime gate.

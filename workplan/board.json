@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-12T12:35:19.521Z",
+  "generated": "2026-07-12T15:00:50.210Z",
   "counts": {
-    "total": 109,
+    "total": 116,
     "byStatus": {
-      "done": 87,
-      "blocked": 1,
+      "done": 93,
+      "blocked": 5,
       "dropped": 2,
-      "review": 5,
       "triaged": 6,
+      "review": 2,
       "active": 4,
       "archived": 4
     },
     "byType": {
-      "research": 41,
-      "experiment": 37,
-      "infra": 13,
+      "research": 43,
+      "experiment": 40,
+      "infra": 15,
       "maintenance": 6,
       "content": 2,
       "paper": 4,
@@ -24,16 +24,19 @@
   "items": [
     {
       "id": "field-planner-phase6-gate",
-      "title": "Phase 6 field-planner evidence gate — four-arm real-mode run",
+      "title": "Phase 6A non-acts field-planner feasibility gate",
       "status": "triaged",
       "type": "experiment",
       "priority": "P1",
-      "owner": "claude",
+      "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-10",
-      "updated": "2026-07-10",
-      "verification": "A real-mode gate run (baseline, field_report_only, field_planner_advisory, field_planner_enforce; k>=5 seeds; frozen manifest with git SHA written before model calls) exists under exports/dramatic-derivation/phase6-gate; the decision rules of PHASE_6_EVIDENCE_GATE_PLAN.md are applied as written and the verdict (promote / negative control / ceiling) is recorded.",
+      "updated": "2026-07-12",
+      "verification": "The v2.1 gate requires a sealed passing Marrick x four-arm seed-0 canary as the same-SHA/model/runtime/CLI parent of seeds 1-5, then requires a sealed canary-bound provisional parent for seeds 6-10. It forbids real --force, validates immutable rows, matrix/numeric schema/output leaks and provenance, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same winner across both blocks plus pooled k=10.",
       "claim_status": "planned",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
       "links": {
         "notes": [
           "PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md",
@@ -47,35 +50,40 @@
         "phase6-gate",
         "adaptation",
         "pre-registration"
-      ]
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "tutor-stub-transition-reward-model",
-      "title": "Learn tutor-stub transition and reward models from turn frames",
+      "id": "adaptive-curriculum-memory-controller",
+      "title": "Evidence-anchored memory and curriculum adaptation controller",
       "status": "triaged",
       "type": "research",
-      "priority": "P1",
+      "priority": "P2",
       "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-09",
-      "updated": "2026-07-09",
-      "verification": "A stable dataset export from tutor_stub_turn_frames exists; baseline transition/reward models are evaluated on held-out worlds and learner profiles; results are documented with exploratory claim boundaries.",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds.",
       "claim_status": "planned",
+      "depends_on": [
+        "tutor-stub-multiworld-policy-replication",
+        "tutor-stub-transition-reward-model"
+      ],
       "links": {
         "notes": [
-          "notes/2026-07-09-continuous-register-ml-dag-bridge.md"
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
         ],
         "items": [
-          "continuous-register-policy"
+          "layered-task-session-adaptation"
         ]
       },
       "tags": [
-        "tutor-stub",
-        "continuous-registers",
-        "transition-model",
-        "neuro-symbolic",
-        "paper-update"
-      ]
+        "adaptive-tutor",
+        "memory",
+        "curriculum",
+        "transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "audience-register-pragmatics-runtime",
@@ -228,33 +236,49 @@
       "branch": "worktree-blueprint-composition"
     },
     {
-      "id": "tutor-stub-human-discourse-layer",
-      "title": "Human discourse layer for tutor-stub proof DAGs",
+      "id": "tutor-stub-learner-state-validity",
+      "title": "Validate adaptive-tutor learner-state predictions",
       "status": "active",
-      "type": "infra",
+      "type": "research",
       "priority": "P1",
       "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-09",
-      "updated": "2026-07-09",
-      "verification": "Tutor-stub supports a labelled human-scaffold DAG mode with trace/report fields for scaffold state, proof debt, side arcs, and warrant/premise stocktake; Marrick dry-run and targeted tests show strict DAG audit remains intact.",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-12",
+      "verification": "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size.",
       "claim_status": "planned",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
       "links": {
         "notes": [
-          "docs/tutor-stub-human-discourse-layer.md"
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
+          "PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md",
+          "PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md"
         ],
-        "items": [
-          "continuous-register-policy",
-          "tutor-stub-transition-reward-model"
+        "runs": [
+          "adaptive-state-v2-s0-clean-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-b69775b6-v21",
+          "adaptive-state-v2-s1-repair-bb65da27-v21",
+          "adaptive-state-v2-observability-preflight-5fda0824-v21",
+          "adaptive-state-v2-observability-preflight-8d6d2b22-v21",
+          "adaptive-state-v2-observability-preflight-c0ccd5c9-v21",
+          "adaptive-state-v2-s0-structural-support-2dd039c5-v21",
+          "adaptive-state-v2-observability-preflight-985bd542-v21",
+          "adaptive-state-v2-observability-reliability-4133d7ff-v22",
+          "adaptive-state-v2-s0-exact-channel-346e472a-v23",
+          "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23"
         ]
       },
       "tags": [
-        "tutor-stub",
-        "proof-dag",
-        "human-scaffold",
-        "proof-debt",
-        "side-arcs"
-      ]
+        "adaptive-tutor",
+        "learner-state",
+        "calibration",
+        "held-out-evaluation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/adaptive-tutor-implementation"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -330,30 +354,140 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "abm-learner-population",
-      "title": "ABM learner population (curated persona panel, manipulation check)",
-      "status": "review",
+      "id": "field-planner-acts-safe-promotion-gate",
+      "title": "Phase 6B acts-safe field-planner production comparison",
+      "status": "blocked",
       "type": "experiment",
       "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-07",
-      "verification": "Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.",
-      "claim_status": "exploratory",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "An acts-compatible adapter constructs planner inputs only from a validated public or tutor-reconstructed learner-state view; leak tests prove that the harness board, frontier, proof distance, decay ledger, and future state never cross the acts redaction boundary; a new frozen protocol then compares matched planner arms with the exact production hidden+proofDebt stack and seals a deterministic verdict.",
+      "claim_status": "planned",
+      "blocked_by": "The current field planner reads the true learner board but acts mode redacts that state; the v2 learner-state sensor and an acts-safe reconstructed-state adapter do not yet have a passing gate.",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance",
+        "tutor-stub-learner-state-validity"
+      ],
       "links": {
         "notes": [
-          "notes/2026-07-06-abm-learner-population-prereg.md"
+          "PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md",
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "field-planner-phase6-gate"
         ]
       },
       "tags": [
-        "learner-side",
-        "belief-desire-dag",
-        "persona-population",
-        "manipulation-check",
-        "evaluation"
+        "dramatic-derivation",
+        "field-planner",
+        "acts",
+        "proof-debt",
+        "reconstructed-state"
       ],
-      "branch": "worktree-longitudinal-abm"
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-multiworld-policy-replication",
+      "title": "Confirm adaptive policy effects across worlds and learner families",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-12",
+      "verification": "A preregistered staged comparison runs on at least three proof geometries and two independent latent learner-generator families with strong fixed, action-frequency-yoked, guard-frequency-yoked, adaptive-move/fixed-register, and state-scramble arms; raw fixed-horizon, safety, independence, and guard-exposure endpoints plus uncertainty intervals determine pass, heterogeneity-only, close-register, or stop.",
+      "claim_status": "planned",
+      "blocked_by": "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected canonical policy-invariant v2 crossed benchmark has not yet produced a verdict.",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance",
+        "tutor-stub-learner-state-validity",
+        "tutor-stub-typed-pedagogical-actions"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "tutor-stub",
+        "multi-world",
+        "confirmatory",
+        "controls"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-transition-reward-model",
+      "title": "Learn tutor-stub transition and reward models from turn frames",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-09",
+      "updated": "2026-07-11",
+      "verification": "A sealed stable export from tutor_stub_turn_frames records typed actions, realized outcomes, guard exposure, and logging propensities; overlap and effective sample size are reported before estimation; ridge/logistic/GBM baselines use dialogue-grouped cross-fitting with held-out worlds and learner sources; a guarded learned ranker is compared out of sample with strong fixed, action-frequency-yoked, and guard-frequency-yoked controls on raw outcomes and cannot pass with a safety loss.",
+      "claim_status": "planned",
+      "blocked_by": "No claim-grade multi-world transition dataset exists: the learner-state sensor is not passed and tutor-stub-multiworld-policy-replication remains blocked.",
+      "depends_on": [
+        "tutor-stub-multiworld-policy-replication"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-07-09-continuous-register-ml-dag-bridge.md"
+        ],
+        "items": [
+          "continuous-register-policy"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "continuous-registers",
+        "transition-model",
+        "neuro-symbolic",
+        "paper-update"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "adaptive-tutor-copilot-shadow-pilot",
+      "title": "Adaptive tutor co-pilot shadow and guarded human pilot",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "human",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "After governance approval, a co-pilot shadow study records recommendation, evidence, confidence, alternative, and human accept/modify/reject decisions; only a subsequent guarded comparison with unassisted, retention, transfer, agency, safety, and subgroup outcomes can support a human adaptive-tutoring claim.",
+      "blocked_by": "A1 governance/content approval plus completion of the simulated multi-world and memory gates",
+      "claim_status": "future",
+      "depends_on": [
+        "field-planner-phase6-gate",
+        "tutor-stub-multiworld-policy-replication",
+        "adaptive-curriculum-memory-controller"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "a1-human-learner-validation",
+          "layered-human-handoff-probe"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "human-learner",
+        "copilot",
+        "governance",
+        "transfer"
+      ],
+      "milestone": "human-pilot-prep"
     },
     {
       "id": "agon-adversarial-game-ledger",
@@ -377,61 +511,6 @@
         "game",
         "ledger",
         "adversarial-learner"
-      ]
-    },
-    {
-      "id": "longitudinal-drift-adaptation",
-      "title": "Longitudinal drift adaptation (cross-session memory as new signal)",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-07",
-      "verification": "Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "notes/2026-07-06-longitudinal-drift-adaptation-prereg.md"
-        ]
-      },
-      "tags": [
-        "tutor-side",
-        "writing-pad",
-        "cross-session",
-        "longitudinal",
-        "evaluation"
-      ],
-      "branch": "worktree-longitudinal-abm"
-    },
-    {
-      "id": "tutor-stub-headroom-contrast",
-      "title": "Tutor-stub outcome-headroom contrast — first confound-free policy comparison",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-10",
-      "updated": "2026-07-10",
-      "verification": "One headroom QA matrix run (sentinel profiles x bland/negative/dynamic/field/dynamical_system, n=3, binding safety-turns 40) completes under a single committed SHA; qa-matrix.md ranks policies by the outcome-only score; the adaptive-vs-bland verdict (separation or null) is recorded with the artifact root.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-10-preconscious-adaptation-review.md",
-          "docs/tutor-stub-learner-profile-robustness.md"
-        ],
-        "items": [
-          "continuous-register-policy",
-          "tutor-stub-transition-reward-model"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "register-policies",
-        "outcome-headroom",
-        "adaptation"
       ]
     },
     {
@@ -461,6 +540,38 @@
         "refactor",
         "tests"
       ]
+    },
+    {
+      "id": "adaptive-eval-immutable-provenance",
+      "title": "Immutable evidence kernel for adaptive-tutor experiments",
+      "status": "done",
+      "type": "infra",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "branch": "codex/adaptive-tutor-implementation",
+      "verification": "Repository manifest phase0-mock-qa-evidence-v1-61ceb224bb43 checksum-binds a fake-CLI QA parent and semantic child; clean-room restore verifies 11/12 hash-chained events, 14/8 artifacts, two jobs, one seeded draw, and tutor/learner/analyzer role plumbing, then regenerates reports without source mutation. Mock Phase 6, corruption, resume, packaging, focused, lint, workplan, provenance, and hermetic checks pass.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
+          "PLAN_4_0/2026-07-11-adaptive-tutor-state-of-evidence.html",
+          "config/adaptive-tutor-evidence/phase0-mock-qa-evidence-v1-61ceb224bb43.manifest.json"
+        ],
+        "items": [
+          "field-planner-phase6-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "provenance",
+        "reproducibility",
+        "tutor-stub",
+        "phase6-gate"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -596,6 +707,32 @@
         "tutor-training",
         "a22"
       ]
+    },
+    {
+      "id": "abm-learner-population",
+      "title": "ABM learner population (curated persona panel, manipulation check)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-11",
+      "verification": "Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-07-06-abm-learner-population-prereg.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "persona-population",
+        "manipulation-check",
+        "evaluation"
+      ],
+      "branch": "worktree-longitudinal-abm"
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
@@ -901,6 +1038,32 @@
       ]
     },
     {
+      "id": "longitudinal-drift-adaptation",
+      "title": "Longitudinal drift adaptation (cross-session memory as new signal)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-11",
+      "verification": "Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-07-06-longitudinal-drift-adaptation-prereg.md"
+        ]
+      },
+      "tags": [
+        "tutor-side",
+        "writing-pad",
+        "cross-session",
+        "longitudinal",
+        "evaluation"
+      ],
+      "branch": "worktree-longitudinal-abm"
+    },
+    {
       "id": "plan-mode-stocktake",
       "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
       "status": "done",
@@ -1169,6 +1332,94 @@
         "strategy-refusal",
         "smoke"
       ]
+    },
+    {
+      "id": "tutor-stub-headroom-contrast",
+      "title": "Tutor-stub outcome-headroom contrast — first confound-free policy comparison",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-10",
+      "updated": "2026-07-11",
+      "verification": "One headroom QA matrix run (sentinel profiles x bland/negative/dynamic/field/dynamical_system, n=3, binding safety-turns 40) completes under a single committed SHA; qa-matrix.md ranks policies by the outcome-only score; the adaptive-vs-bland verdict (separation or null) is recorded with the artifact root.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-10-preconscious-adaptation-review.md",
+          "docs/tutor-stub-learner-profile-robustness.md"
+        ],
+        "items": [
+          "continuous-register-policy",
+          "tutor-stub-transition-reward-model"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "register-policies",
+        "outcome-headroom",
+        "adaptation"
+      ]
+    },
+    {
+      "id": "tutor-stub-human-discourse-layer",
+      "title": "Human discourse layer for tutor-stub proof DAGs",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-09",
+      "updated": "2026-07-11",
+      "verification": "Tutor-stub supports a labelled human-scaffold DAG mode with trace/report fields for scaffold state, proof debt, side arcs, and warrant/premise stocktake; Marrick dry-run and targeted tests show strict DAG audit remains intact.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "docs/tutor-stub-human-discourse-layer.md"
+        ],
+        "items": [
+          "continuous-register-policy",
+          "tutor-stub-transition-reward-model"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "proof-dag",
+        "human-scaffold",
+        "proof-debt",
+        "side-arcs"
+      ]
+    },
+    {
+      "id": "tutor-stub-typed-pedagogical-actions",
+      "title": "Adapt Plan 2 typed pedagogical actions into tutor-stub",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "Tutor-stub consumes the existing Plan 2 action registry through an additive adapter that independently records move, support, task/KC, difficulty, register, expected evidence, and fade condition; realization and guard audits pass deterministic controls without creating a second action registry.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
+          "PLAN_2_0/GENUINE-ADAPTATION-IMPLEMENTATION-PLAN.md"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "tutor-stub",
+        "typed-actions",
+        "scaffolding"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/adaptive-tutor-implementation"
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",

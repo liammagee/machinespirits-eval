@@ -125,6 +125,10 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
                     tutorText: 'Case closed.',
                   },
                   stateBeforeAction: {
+                    observation: {
+                      schema: 'machinespirits.tutor-stub.state-observation.v1',
+                      provenance: { policy_invariant: true },
+                    },
                     learnerText: 'The assay now licenses Edony.',
                     learnerState: { requestType: 'evidence_to_claim' },
                     dag: { bottleneck: 'assertion_gap', bestPathCoverage: 0.75, missingPremiseCount: 1 },
@@ -231,7 +235,7 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
         `SELECT engagement_stance, selected_register, action_family, audience_register,
                 lexical_accessibility, scene_immersion, response_configuration_json,
                 response_configuration_audit_json, configuration_realization_rate,
-                configuration_transcript_visible, register_vector_json, state_vector_json, dag_json,
+                configuration_transcript_visible, register_vector_json, state_observation_json, state_vector_json, dag_json,
                 human_discourse_json, scaffold_state_json, side_arc_json,
                 proof_debt_json, warrant_premise_audit_json,
                 learner_text, tutor_text, delta_mastery, delta_risk, delta_coverage
@@ -249,6 +253,7 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     assert.equal(turnFrame.configuration_realization_rate, 0.8);
     assert.equal(turnFrame.configuration_transcript_visible, 1);
     assert.deepEqual(JSON.parse(turnFrame.register_vector_json), { precise: 0.72, warm: 0.28 });
+    assert.equal(JSON.parse(turnFrame.state_observation_json).provenance.policy_invariant, true);
     assert.deepEqual(JSON.parse(turnFrame.state_vector_json), { evidence_gap: 0.25, warrant_gap: 0.4 });
     assert.equal(JSON.parse(turnFrame.dag_json).bottleneck, 'assertion_gap');
     assert.equal(JSON.parse(turnFrame.human_discourse_json).mode, 'defeasible_human_scaffold');

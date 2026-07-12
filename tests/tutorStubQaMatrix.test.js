@@ -11,8 +11,36 @@ import {
   learnerProfilePrompt,
   learnerProfileSuiteIds,
 } from '../scripts/tutor-stub-learner-profile-contracts.js';
+import { verifyExperimentRun } from '../services/experimentRunArtifacts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function writeFakeCodex(binDir) {
+  const executable = path.join(binDir, 'codex');
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('-o');
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  const response = input.includes('You are an automated learner')
+    ? 'I would test the newest public mark before deciding.'
+    : input.includes('compact up-front reviewer')
+      ? '{}'
+      : 'Which public mark would you test next, and what would it show?';
+  if (outputPath) fs.writeFileSync(outputPath, response);
+  process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+});
+`,
+    'utf8',
+  );
+  fs.chmodSync(executable, 0o755);
+}
 
 function writeSummary(filePath, { learnerProfile, bland, field }) {
   const byPolicy = {
@@ -30,6 +58,23 @@ function writeSummary(filePath, { learnerProfile, bland, field }) {
       registerEntropy: 0,
       leakCount: 0,
       errorCount: 0,
+      primaryHorizon: 16,
+      fixedHorizonRows: 1,
+      fixedHorizonObserved: 1,
+      fixedHorizonOutcomeMissing: 0,
+      fixedHorizonComplete: 1,
+      fixedHorizonIncomplete: 0,
+      groundedByHorizon: bland.grounded,
+      groundedByHorizonRate: bland.grounded,
+      meanCoverageAtHorizon: bland.coverage,
+      coverageAtHorizonLowerBound: bland.coverage,
+      coverageAtHorizonUpperBound: bland.coverage,
+      horizonSafetyPassed: bland.safetyIncomplete ? 0 : 1,
+      horizonSafetyIncomplete: bland.safetyIncomplete ? 1 : 0,
+      horizonSafetyPassRate: bland.safetyIncomplete ? 0 : 1,
+      horizonSafetyIncompleteRate: bland.safetyIncomplete ? 1 : 0,
+      horizonModelRepairTurns: 0,
+      horizonDeterministicFallbackTurns: 0,
     },
     field: {
       rows: 1,
@@ -45,6 +90,23 @@ function writeSummary(filePath, { learnerProfile, bland, field }) {
       registerEntropy: 1,
       leakCount: 0,
       errorCount: 0,
+      primaryHorizon: 16,
+      fixedHorizonRows: 1,
+      fixedHorizonObserved: 1,
+      fixedHorizonOutcomeMissing: 0,
+      fixedHorizonComplete: 1,
+      fixedHorizonIncomplete: 0,
+      groundedByHorizon: field.grounded,
+      groundedByHorizonRate: field.grounded,
+      meanCoverageAtHorizon: field.coverage,
+      coverageAtHorizonLowerBound: field.coverage,
+      coverageAtHorizonUpperBound: field.coverage,
+      horizonSafetyPassed: field.safetyIncomplete ? 0 : 1,
+      horizonSafetyIncomplete: field.safetyIncomplete ? 1 : 0,
+      horizonSafetyPassRate: field.safetyIncomplete ? 0 : 1,
+      horizonSafetyIncompleteRate: field.safetyIncomplete ? 1 : 0,
+      horizonModelRepairTurns: 0,
+      horizonDeterministicFallbackTurns: 0,
     },
   };
   fs.writeFileSync(
@@ -75,6 +137,24 @@ function writeSummary(filePath, { learnerProfile, bland, field }) {
           registerEntropy: 1.5,
           leakCount: 0,
           errorCount: 0,
+          primaryHorizon: 16,
+          fixedHorizonRows: 2,
+          fixedHorizonObserved: 2,
+          fixedHorizonOutcomeMissing: 0,
+          fixedHorizonComplete: 2,
+          fixedHorizonIncomplete: 0,
+          groundedByHorizon: bland.grounded + field.grounded,
+          groundedByHorizonRate: (bland.grounded + field.grounded) / 2,
+          meanCoverageAtHorizon: (bland.coverage + field.coverage) / 2,
+          coverageAtHorizonLowerBound: (bland.coverage + field.coverage) / 2,
+          coverageAtHorizonUpperBound: (bland.coverage + field.coverage) / 2,
+          horizonSafetyPassed: Number(!bland.safetyIncomplete) + Number(!field.safetyIncomplete),
+          horizonSafetyIncomplete: Number(Boolean(bland.safetyIncomplete)) + Number(Boolean(field.safetyIncomplete)),
+          horizonSafetyPassRate: (Number(!bland.safetyIncomplete) + Number(!field.safetyIncomplete)) / 2,
+          horizonSafetyIncompleteRate:
+            (Number(Boolean(bland.safetyIncomplete)) + Number(Boolean(field.safetyIncomplete))) / 2,
+          horizonModelRepairTurns: 0,
+          horizonDeterministicFallbackTurns: 0,
           byPolicy,
         },
       },
@@ -123,10 +203,126 @@ test('cross-run analyzer emits policy x learner QA robustness', () => {
     assert.equal(field.observedLearners, 2);
     assert.ok(field.meanDeltaVsBaseline > 0);
     assert.ok(field.worstScore > 0);
+    assert.equal(field.dispersion.label, 'low_cross_profile_dispersion');
+    assert.equal(field.adequacy.passed, true);
+    assert.equal(field.nonInferiority.passed, true);
+    assert.equal(field.minimumEffect.passed, true);
+    assert.equal(field.minimumEffect.endpoint, 'all_planned_row_fixed_horizon_coverage_delta');
+    assert.equal(field.robust, true);
+    assert.equal(field.qaInterpretation, 'robust');
     const skepticalCell = report.qaMatrix.cells.find(
       (cell) => cell.learnerProfile === 'skeptical' && cell.policy === 'field',
     );
     assert.ok(skepticalCell.deltaVsBaseline > 0);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('the frozen minimum-effect threshold changes the QA robustness verdict', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-minimum-effect-'));
+  try {
+    const diligentPath = path.join(tmp, 'auto-eval-diligent.json');
+    const skepticalPath = path.join(tmp, 'auto-eval-skeptical.json');
+    writeSummary(diligentPath, {
+      learnerProfile: 'diligent',
+      bland: { grounded: 1, turns: 24, coverage: 0.45, missing: 4 },
+      field: { grounded: 1, turns: 12, coverage: 0.9, missing: 1 },
+    });
+    writeSummary(skepticalPath, {
+      learnerProfile: 'skeptical',
+      bland: { grounded: 0, turns: 48, coverage: 0.35, missing: 5 },
+      field: { grounded: 1, turns: 18, coverage: 0.78, missing: 2 },
+    });
+    const analyze = (minimumEffect) =>
+      JSON.parse(
+        execFileSync(
+          process.execPath,
+          [
+            'scripts/analyze-tutor-stub-auto-evals.js',
+            diligentPath,
+            skepticalPath,
+            '--json',
+            '--qa',
+            '--baseline-policy',
+            'bland',
+            '--qa-minimum-effect',
+            String(minimumEffect),
+          ],
+          { cwd: ROOT, encoding: 'utf8' },
+        ),
+      );
+
+    const permissive = analyze(0.4).qaMatrix.policyRobustness.find((row) => row.policy === 'field');
+    const strict = analyze(0.45).qaMatrix.policyRobustness.find((row) => row.policy === 'field');
+    assert.equal(permissive.minimumEffect.observedMeanDelta, 0.44);
+    assert.equal(permissive.minimumEffect.passed, true);
+    assert.equal(permissive.robust, true);
+    assert.equal(strict.minimumEffect.observedMeanDelta, 0.44);
+    assert.equal(strict.minimumEffect.passed, false);
+    assert.equal(strict.robust, false);
+    assert.equal(strict.qaInterpretation, 'minimum_effect_not_met');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('QA reports incomplete fixed-horizon guard evidence distinctly from a safety pass', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-safety-incomplete-'));
+  try {
+    const summaryPath = path.join(tmp, 'auto-eval-safety.json');
+    writeSummary(summaryPath, {
+      learnerProfile: 'diligent',
+      bland: { grounded: 1, turns: 20, coverage: 0.5, missing: 3 },
+      field: { grounded: 1, turns: 16, coverage: 0.8, missing: 1, safetyIncomplete: true },
+    });
+    const report = JSON.parse(
+      execFileSync(
+        process.execPath,
+        ['scripts/analyze-tutor-stub-auto-evals.js', summaryPath, '--json', '--qa', '--baseline-policy', 'bland'],
+        { cwd: ROOT, encoding: 'utf8' },
+      ),
+    );
+    const field = report.qaMatrix.policyRobustness.find((row) => row.policy === 'field');
+    assert.equal(field.worstHorizonSafetyPassRate, 0);
+    assert.equal(field.worstHorizonSafetyIncompleteRate, 1);
+    assert.equal(field.adequacy.passed, false);
+    assert.equal(field.robust, false);
+    assert.equal(field.qaInterpretation, 'safety_incomplete');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('low outcome spread is not mislabeled robust when adequacy fails', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-dispersion-only-'));
+  try {
+    const first = path.join(tmp, 'auto-eval-first.json');
+    const second = path.join(tmp, 'auto-eval-second.json');
+    for (const [filePath, learnerProfile] of [
+      [first, 'diligent'],
+      [second, 'skeptical'],
+    ]) {
+      writeSummary(filePath, {
+        learnerProfile,
+        bland: { grounded: 0, turns: 60, coverage: 0.3, missing: 5 },
+        field: { grounded: 0, turns: 60, coverage: 0.3, missing: 5 },
+      });
+    }
+    const report = JSON.parse(
+      execFileSync(
+        process.execPath,
+        ['scripts/analyze-tutor-stub-auto-evals.js', first, second, '--json', '--qa', '--baseline-policy', 'bland'],
+        { cwd: ROOT, encoding: 'utf8' },
+      ),
+    );
+    const field = report.qaMatrix.policyRobustness.find((row) => row.policy === 'field');
+    assert.equal(field.dispersion.label, 'low_cross_profile_dispersion');
+    assert.equal(field.adequacy.passed, false);
+    assert.equal(field.nonInferiority.passed, true);
+    assert.equal(field.robust, false);
+    assert.equal(field.qaInterpretation, 'low_cross_profile_dispersion');
+    assert.doesNotMatch(JSON.stringify(report), /robust across observed learners/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -161,6 +357,78 @@ test('report-only QA rebuild preserves the original run plan', () => {
     assert.equal(fs.readFileSync(planPath, 'utf8'), originalPlan);
     assert.ok(fs.existsSync(path.join(tmp, 'qa-matrix.md')));
     assert.ok(fs.existsSync(path.join(tmp, 'qa-matrix.json')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('report-only QA rebuild applies the minimum effect frozen in qa-plan.json', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-frozen-effect-'));
+  try {
+    fs.writeFileSync(
+      path.join(tmp, 'qa-plan.json'),
+      `${JSON.stringify({ schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1', minimumEffect: 0.5 }, null, 2)}\n`,
+    );
+    writeSummary(path.join(tmp, 'auto-eval-existing.json'), {
+      learnerProfile: 'diligent',
+      bland: { grounded: 1, turns: 24, coverage: 0.4, missing: 3 },
+      field: { grounded: 1, turns: 18, coverage: 0.8, missing: 1 },
+    });
+
+    execFileSync(
+      process.execPath,
+      ['scripts/run-tutor-stub-qa-matrix.js', '--from-dir', tmp, '--minimum-effect', '0.1'],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    const report = JSON.parse(fs.readFileSync(path.join(tmp, 'qa-matrix.json'), 'utf8'));
+    const field = report.qaMatrix.policyRobustness.find((row) => row.policy === 'field');
+    assert.equal(report.qaMatrix.thresholds.minimumEffect, 0.5);
+    assert.equal(field.minimumEffect.observedMeanDelta, 0.4);
+    assert.equal(field.minimumEffect.passed, false);
+    assert.equal(field.robust, false);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('QA collection fails closed when any trace declares an unknown model-call role', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-unknown-model-role-'));
+  try {
+    fs.writeFileSync(
+      path.join(tmp, 'unknown-model.jsonl'),
+      `${JSON.stringify({
+        type: 'model_call',
+        role: 'future_reward_model',
+        provider: 'codex',
+        model: 'gpt-5.6-terra',
+      })}\n`,
+    );
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            'scripts/run-tutor-stub-qa-matrix.js',
+            '--trace-dir',
+            tmp,
+            '--profiles',
+            'diligent',
+            '--policies',
+            'bland',
+            '--runs',
+            '1',
+            '--dry-run',
+            '--no-html-report',
+            '--no-ledger',
+          ],
+          { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' },
+        ),
+      (error) => {
+        assert.equal(error.status, 1);
+        assert.match(error.stderr, /Unknown tutor-stub model_call role.*future_reward_model/u);
+        return true;
+      },
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -210,6 +478,180 @@ test('live QA launch refuses to overwrite an existing frozen plan', () => {
     assert.equal(fs.readFileSync(planPath, 'utf8'), originalPlan);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('QA dry-run writes a sealed full-grid plan with deterministic dialogue job order', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-transaction-'));
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--trace-dir',
+        tmp,
+        '--profiles',
+        'diligent',
+        '--policies',
+        'bland,field',
+        '--runs',
+        '2',
+        '--run-seed',
+        '1901',
+        '--dry-run',
+        '--no-html-report',
+        '--no-ledger',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+
+    const plan = JSON.parse(fs.readFileSync(path.join(tmp, 'run-plan.json'), 'utf8'));
+    assert.equal(plan.schema, 'machinespirits.experiment-run-plan.v1');
+    assert.equal(plan.randomization.masterSeed, 1901);
+    assert.deepEqual(plan.metadata.randomDrawContract.requiredJobIds, []);
+    assert.deepEqual(plan.randomization.jobOrder, [
+      'diligent-bland-r1',
+      'diligent-bland-r2',
+      'diligent-field-r1',
+      'diligent-field-r2',
+    ]);
+    assert.equal(plan.requiredObservedModelRoles.length, 0);
+    assert.ok(fs.existsSync(path.join(tmp, 'qa-plan.json')));
+    assert.ok(fs.existsSync(path.join(tmp, 'run-events.jsonl')));
+    assert.ok(fs.existsSync(path.join(tmp, 'run-seal.json')));
+
+    const verification = verifyExperimentRun(tmp);
+    assert.equal(verification.ok, true, verification.errors.join('\n'));
+    assert.ok(verification.inventory.some((entry) => entry.path === 'qa-matrix.json'));
+    assert.ok(verification.inventory.some((entry) => entry.path === 'qa-plan.json'));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('live-like QA matrix seals matching tutor, analyzer, and learner observations in parent and child runs', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-live-provenance-'));
+  const qaDir = path.join(root, 'qa');
+  const binDir = path.join(root, 'bin');
+  fs.mkdirSync(binDir, { recursive: true });
+  writeFakeCodex(binDir);
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--trace-dir',
+        qaDir,
+        '--profiles',
+        'diligent',
+        '--policies',
+        'bland,field',
+        '--runs',
+        '1',
+        '--turns',
+        '1',
+        '--model',
+        'codex.gpt-5.6-terra',
+        '--analysis-model',
+        'codex.gpt-5.6-terra',
+        '--auto-learner-model',
+        'codex.gpt-5.6-terra',
+        '--parallelism',
+        '1',
+        '--no-html-report',
+        '--no-ledger',
+        '--no-memory-summary',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        timeout: 30_000,
+        maxBuffer: 8 * 1024 * 1024,
+        env: {
+          ...process.env,
+          PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        },
+      },
+    );
+
+    const parent = verifyExperimentRun(qaDir);
+    assert.equal(parent.ok, true, parent.errors.join('\n'));
+    const childDir = path.join(qaDir, 'diligent');
+    const child = verifyExperimentRun(childDir);
+    assert.equal(child.ok, true, child.errors.join('\n'));
+    assert.deepEqual(parent.plan.metadata.randomDrawContract.requiredJobIds, ['diligent-field-r1']);
+    assert.deepEqual(child.plan.metadata.randomDrawContract.requiredJobIds, ['field-r1']);
+    assert.ok(parent.replay.decisions.length >= 1);
+    assert.ok(child.replay.decisions.length >= 1);
+    assert.ok(parent.inventory.some((entry) => entry.path === 'diligent/run-seal.json'));
+    assert.equal(child.plan.lineage.parentRunId, parent.plan.runId);
+    for (const verification of [parent, child]) {
+      assert.deepEqual(verification.plan.requiredObservedModelRoles, ['analyzer', 'learner', 'tutor']);
+      const observations = fs
+        .readFileSync(path.join(verification === parent ? qaDir : childDir, 'run-events.jsonl'), 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line))
+        .filter((event) => event.type === 'model_observed');
+      assert.deepEqual(observations.map((event) => event.role).sort(), ['analyzer', 'learner', 'tutor']);
+      assert.ok(verification.replay.decisions.every((decision) => decision.matches));
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('report regeneration from a sealed QA run byte-preserves every source artifact', () => {
+  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-read-only-'));
+  const sourceDir = path.join(container, 'sealed-source');
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--trace-dir',
+        sourceDir,
+        '--profiles',
+        'diligent',
+        '--policies',
+        'bland',
+        '--runs',
+        '1',
+        '--run-seed',
+        '1902',
+        '--dry-run',
+        '--no-html-report',
+        '--no-ledger',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    const before = verifyExperimentRun(sourceDir);
+    assert.equal(before.ok, true, before.errors.join('\n'));
+    const bytesByPath = new Map(
+      before.inventory.map((entry) => [entry.path, fs.readFileSync(path.join(sourceDir, entry.path))]),
+    );
+
+    const output = execFileSync(
+      process.execPath,
+      ['scripts/run-tutor-stub-qa-matrix.js', '--from-dir', sourceDir, '--dry-run'],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    assert.match(output, /sealed source verified; derived reports will be written/u);
+
+    const after = verifyExperimentRun(sourceDir);
+    assert.equal(after.ok, true, after.errors.join('\n'));
+    for (const [relative, bytes] of bytesByPath) {
+      assert.deepEqual(fs.readFileSync(path.join(sourceDir, relative)), bytes, `${relative} changed`);
+    }
+    const derived = fs
+      .readdirSync(container, { withFileTypes: true })
+      .find((entry) => entry.isDirectory() && entry.name.startsWith('sealed-source-derived-'));
+    assert.ok(derived, 'report regeneration should use a sibling derived directory');
+    assert.ok(fs.existsSync(path.join(container, derived.name, 'qa-matrix.md')));
+    assert.ok(fs.existsSync(path.join(container, derived.name, 'qa-matrix.json')));
+  } finally {
+    fs.rmSync(container, { recursive: true, force: true });
   }
 });
 
@@ -361,9 +803,45 @@ test('auto-eval forwards its declared default models to every child dialogue', (
     assert.equal(commandValue('--classifier-model'), 'codex.gpt-5.5');
     assert.equal(commandValue('--learner-record-model'), 'codex.gpt-5.5');
     assert.equal(commandValue('--auto-learner-model'), 'codex.gpt-5.5');
+    assert.equal(commandValue('--run-seed'), '1');
+    assert.equal(commandValue('--eval-repeat'), '1');
+    assert.equal(commandValue('--eval-job-id'), 'dynamic-r1');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('tutor-stub dry-run exposes the full deterministic policy identity', () => {
+  const preview = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--dry-run',
+        '--run-seed',
+        '77',
+        '--eval-repeat',
+        '3',
+        '--eval-job-id',
+        'false-memory-field-r3',
+        '--auto-learner-profile',
+        'false_memory',
+        '--register-policy',
+        'field',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  assert.deepEqual(preview.experiment, {
+    schema: 'machinespirits.tutor-stub.experiment-identity.v1',
+    runSeed: 77,
+    profile: 'false_memory',
+    policy: 'field',
+    repeat: 3,
+    jobId: 'false-memory-field-r3',
+    dagFactDropoutSeed: 1,
+    independentSeeds: true,
+  });
 });
 
 test('qa matrix runner prints a reproducible focused-suite plan', () => {

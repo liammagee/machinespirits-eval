@@ -38,10 +38,7 @@ export function resolveCliEffort(provider, explicitEffort = null) {
   if (explicit) return explicit;
   if (normalizedProvider === 'codex') {
     return normalizeCliEffort(
-      process.env.CLI_PROVIDER_CODEX_EFFORT ||
-        process.env.CLI_PROVIDER_EFFORT ||
-        process.env.CODEX_REASONING_EFFORT ||
-        'xhigh',
+      process.env.CLI_PROVIDER_CODEX_EFFORT || process.env.CLI_PROVIDER_EFFORT || process.env.CODEX_REASONING_EFFORT || 'xhigh',
     );
   }
   if (normalizedProvider === 'claude-code') {
@@ -141,24 +138,110 @@ function abortError(role) {
   return error;
 }
 
-async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort }) {
+function normalizedOutputSchema(outputSchema) {
+  if (outputSchema === null || outputSchema === undefined) return null;
+  if (!outputSchema || typeof outputSchema !== 'object' || Array.isArray(outputSchema)) {
+    throw new Error('CLI output schema must be a JSON object');
+  }
+  try {
+    return JSON.parse(JSON.stringify(outputSchema));
+  } catch (error) {
+    throw new Error(`CLI output schema must be JSON serializable: ${error.message}`);
+  }
+}
+
+function cliModelAttestationBasis(model) {
+  return model
+    ? 'explicit_cli_model_argument_accepted_bridge_echo'
+    : 'cli_default_not_independently_attested';
+}
+
+const ALLOWED_STRUCTURED_CODEX_EVENT_TYPES = new Set([
+  'thread.started',
+  'turn.started',
+  'item.started',
+  'item.updated',
+  'item.completed',
+  'turn.completed',
+]);
+const ALLOWED_STRUCTURED_CODEX_ITEM_TYPES = new Set(['agent_message', 'reasoning']);
+
+function auditCodexStructuredEvents(events = [], { strict = false, invalidLines = 0 } = {}) {
+  const eventTypeCounts = {};
+  const itemTypeCounts = {};
+  const prohibited = [];
+  for (const [index, event] of events.entries()) {
+    const eventType = String(event?.type || 'unknown');
+    const itemType = String(event?.item?.type || '');
+    eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
+    if (itemType) itemTypeCounts[itemType] = (itemTypeCounts[itemType] || 0) + 1;
+    if (
+      strict &&
+      (!ALLOWED_STRUCTURED_CODEX_EVENT_TYPES.has(eventType) ||
+        (itemType && !ALLOWED_STRUCTURED_CODEX_ITEM_TYPES.has(itemType)))
+    ) {
+      prohibited.push({ index, event_type: eventType, item_type: itemType || null });
+    }
+  }
+  if (strict && Number(invalidLines) > 0) {
+    prohibited.push({ index: null, event_type: 'invalid_jsonl', item_type: null, count: Number(invalidLines) });
+  }
+  return {
+    event_type_counts: eventTypeCounts,
+    item_type_counts: itemTypeCounts,
+    prohibited_event_count: prohibited.length,
+    prohibited_events: prohibited,
+    invalid_jsonl_line_count: Number(invalidLines),
+    policy: strict ? 'strict_no_tools_allowlist' : 'observational_only',
+  };
+}
+
+async function callClaudeCli({
+  systemPrompt,
+  userPrompt,
+  model,
+  role,
+  messageHistory,
+  timeoutMs,
+  effort,
+  outputSchema,
+  signal,
+  spawnImpl = spawn,
+}) {
+  if (signal?.aborted) throw abortError(role);
   const userText = buildCliUserText(userPrompt, messageHistory);
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CLAUDE_TIMEOUT_MS;
   const effectiveEffort = resolveCliEffort('claude-code', effort);
+  const schema = normalizedOutputSchema(outputSchema);
 
   return await new Promise((resolve, reject) => {
     const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
     if (model) args.push('--model', model);
     if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
+    if (schema) {
+      // Keep structured benchmark calls free of ambient project instructions,
+      // tools, and persisted sessions. Existing callers retain their exact CLI
+      // behavior because these flags are opt-in with outputSchema.
+      args.push('--no-session-persistence', '--safe-mode', '--tools', '', '--json-schema', JSON.stringify(schema));
+    }
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
     delete env.CLAUDECODE;
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    const child = spawnImpl('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
     let out = '';
     let err = '';
+    const onAbort = () => {
+      try {
+        child.kill('SIGKILL');
+      } catch (_) {
+        /* already gone */
+      }
+      reject(abortError(role));
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
     const cliTimeout = setTimeout(() => {
       try {
         child.kill('SIGKILL');
@@ -175,10 +258,12 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
     });
     child.on('error', (e) => {
       clearTimeout(cliTimeout);
+      signal?.removeEventListener('abort', onAbort);
       reject(e);
     });
     child.on('close', (code) => {
       clearTimeout(cliTimeout);
+      signal?.removeEventListener('abort', onAbort);
       if (code !== 0) {
         reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
       } else {
@@ -191,6 +276,17 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
           inputTokens: 0,
           outputTokens: 0,
           cost: 0,
+          structuredOutput: Boolean(schema),
+          structuredEventAudit: {
+            event_type_counts: {},
+            item_type_counts: {},
+            prohibited_event_count: 0,
+            prohibited_events: [],
+            enforcement: schema ? 'claude_tools_disabled' : 'not_applicable',
+          },
+          prohibitedToolEventCount: 0,
+          modelAttestationBasis: cliModelAttestationBasis(model),
+          modelIndependentlyAttested: false,
         });
       }
     });
@@ -209,6 +305,8 @@ async function callCodexCli({
   effort,
   onEvent,
   signal,
+  outputSchema,
+  spawnImpl = spawn,
 }) {
   if (signal?.aborted) throw abortError(role);
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-codex-'));
@@ -216,6 +314,9 @@ async function callCodexCli({
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CODEX_TIMEOUT_MS;
   const effectiveEffort = resolveCliEffort('codex', effort);
+  const schema = normalizedOutputSchema(outputSchema);
+  const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
+  if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
   const prompt = [
     'System prompt for this role:',
     systemPrompt,
@@ -231,6 +332,7 @@ async function callCodexCli({
         '--skip-git-repo-check',
         '--ephemeral',
         '--ignore-user-config',
+        '--ignore-rules',
         '-s',
         'read-only',
         '-C',
@@ -243,9 +345,10 @@ async function callCodexCli({
         args.push('-c', `model_reasoning_effort="${effectiveEffort}"`);
       }
       if (model && model !== 'auto') args.push('-m', model);
+      if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
-      const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
+      const child = spawnImpl('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
       let err = '';
       let stdout = '';
       const jsonl = createCodexJsonlEventParser(onEvent);
@@ -283,6 +386,10 @@ async function callCodexCli({
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
         const parsedStream = jsonl.end();
+        const eventAudit = auditCodexStructuredEvents(parsedStream.events, {
+          strict: Boolean(schema),
+          invalidLines: parsedStream.invalidLines.length,
+        });
         if (code !== 0) {
           reject(new Error(err.trim() || stdout.trim() || `codex CLI exited with code ${code} (role=${role})`));
           return;
@@ -306,11 +413,33 @@ async function callCodexCli({
           outputTokens: 0,
           cost: 0,
           streamedEvents: parsedStream.events.length,
+          streamEventTypeCounts: Object.fromEntries(
+            [...new Set(parsedStream.events.map((event) => String(event?.type || 'unknown')))]
+              .sort()
+              .map((type) => [type, parsedStream.events.filter((event) => String(event?.type || 'unknown') === type).length]),
+          ),
+          streamItemTypeCounts: Object.fromEntries(
+            [...new Set(parsedStream.events.map((event) => String(event?.item?.type || 'none')))]
+              .sort()
+              .map((type) => [
+                type,
+                parsedStream.events.filter((event) => String(event?.item?.type || 'none') === type).length,
+              ]),
+          ),
           invalidStreamLines: parsedStream.invalidLines.length,
           outputSource: fileText ? 'output_file' : 'jsonl_event_fallback',
+          structuredOutput: Boolean(schema),
+          structuredEventAudit: eventAudit,
+          prohibitedToolEventCount: eventAudit.prohibited_event_count,
+          modelAttestationBasis: cliModelAttestationBasis(model),
+          modelIndependentlyAttested: false,
         });
       });
-      child.stdin.write(prompt);
+      child.stdin.write(
+        schema
+          ? `${prompt}\n\nThis is a no-tools structured-output call. Do not run commands, inspect files, browse, call tools, or take any action beyond returning the requested JSON object.`
+          : prompt,
+      );
       child.stdin.end();
     });
   } finally {
@@ -423,6 +552,9 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       messageHistory: opts?.messageHistory,
       timeoutMs: opts?.timeoutMs,
       effort: opts?.effort,
+      outputSchema: opts?.outputSchema,
+      signal: opts?.signal,
+      spawnImpl: opts?.spawnImpl,
     });
   }
   if (agentConfig?.provider === 'codex') {
@@ -436,6 +568,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       effort: opts?.effort,
       onEvent: opts?.onEvent,
       signal: opts?.signal,
+      outputSchema: opts?.outputSchema,
+      spawnImpl: opts?.spawnImpl,
     });
   }
   if (!opts?.fallbackCallAI) {

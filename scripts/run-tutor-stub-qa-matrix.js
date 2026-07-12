@@ -13,6 +13,20 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { normalizeTutorStubRegisterOverlayThreshold } from '../services/tutorStubRegisterPolicyComposition.js';
+import { resolveModel } from '../services/evalConfigLoader.js';
+import {
+  appendRunEvent,
+  assertExperimentRun,
+  buildExperimentRunPlan,
+  captureGitFingerprint,
+  createRunPlan,
+  createRunSeal,
+  EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+  hashCanonicalJson,
+  hashFile,
+} from '../services/experimentRunArtifacts.js';
+import { recordTutorStubModelObservation } from '../services/tutorStubEvalIntegrity.js';
+import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
 import {
   learnerProfileSuite,
   learnerProfileSuiteIds,
@@ -27,7 +41,8 @@ import {
   tutorStubPolicySuitePolicies,
 } from './tutor-stub-policy-suites.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const QA_SCRIPT = fileURLToPath(import.meta.url);
+const ROOT = path.resolve(path.dirname(QA_SCRIPT), '..');
 
 const { values: args } = parseArgs({
   options: {
@@ -36,6 +51,7 @@ const { values: args } = parseArgs({
     profiles: { type: 'string', default: '' },
     policies: { type: 'string', default: '' },
     runs: { type: 'string', default: '1' },
+    'run-seed': { type: 'string', default: '20260711' },
     turns: { type: 'string', default: 'until-grounded' },
     'safety-turns': { type: 'string', default: '120' },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'codex.gpt-5.5' },
@@ -61,6 +77,14 @@ const { values: args } = parseArgs({
     'max-tokens': { type: 'string', default: process.env.TUTOR_STUB_EVAL_MAX_TOKENS || '4096' },
     'history-turns': { type: 'string', default: process.env.TUTOR_STUB_EVAL_HISTORY_TURNS || '4' },
     'baseline-policy': { type: 'string', default: 'bland' },
+    'primary-horizon': { type: 'string', default: '16' },
+    'minimum-effect': { type: 'string', default: '0.05' },
+    'qa-max-outcome-spread': { type: 'string', default: '0.12' },
+    'qa-min-worst-outcome': { type: 'string', default: '0.75' },
+    'qa-min-worst-closure': { type: 'string', default: '0.75' },
+    'qa-min-worst-coverage': { type: 'string', default: '0.65' },
+    'qa-max-mean-failure-rate': { type: 'string', default: '0.10' },
+    'qa-noninferiority-margin': { type: 'string', default: '0.02' },
     'first-message': { type: 'string', default: '' },
     'from-dir': { type: 'string', default: '' },
     'interleave-policies': { type: 'boolean', default: false },
@@ -105,6 +129,7 @@ Options:
                          overrides --profile-suite
   --policies <csv>       explicit policies; overrides --suite
   --runs <n>             repetitions per policy and learner profile (default: 1)
+  --run-seed <n>         master seed for exact job/draw replay (default: 20260711)
   --turns <n|until-grounded>
   --safety-turns <n>     runaway guard for until-grounded (default: 120)
   --parallelism <n>      child dialogues per learner-profile auto-eval (default: 6)
@@ -115,6 +140,8 @@ Options:
   --baseline-policy <p>  same-learner comparison baseline (default: bland)
   --register-overlay-threshold <n>
                          strong-change threshold for composed +state/+field policies (default: 0.7)
+  --primary-horizon <n>  preregistered learner-turn horizon (default: 16)
+  --minimum-effect <n>   preregistered minimum outcome effect (default: 0.05)
   --dry-run              pass --dry-run to auto-eval children
   --print-plan           print the reproducible plan and exit
   --json                 JSON output for --print-plan
@@ -134,6 +161,23 @@ function positiveInt(value, name) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed < 1) throw new Error(`${name} must be a positive integer`);
   return parsed;
+}
+
+function unitInterval(value, name) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) throw new Error(`${name} must be between 0 and 1`);
+  return parsed;
+}
+
+function configuredQaThresholds() {
+  return {
+    maxOutcomeSpread: unitInterval(args['qa-max-outcome-spread'], '--qa-max-outcome-spread'),
+    minWorstOutcome: unitInterval(args['qa-min-worst-outcome'], '--qa-min-worst-outcome'),
+    minWorstClosure: unitInterval(args['qa-min-worst-closure'], '--qa-min-worst-closure'),
+    minWorstCoverage: unitInterval(args['qa-min-worst-coverage'], '--qa-min-worst-coverage'),
+    maxMeanFailureRate: unitInterval(args['qa-max-mean-failure-rate'], '--qa-max-mean-failure-rate'),
+    nonInferiorityMargin: unitInterval(args['qa-noninferiority-margin'], '--qa-noninferiority-margin'),
+  };
 }
 
 function normalizeProfileName(value) {
@@ -210,11 +254,13 @@ function pushOptionalFlag(command, flag, value) {
   if (value !== undefined && value !== null && String(value) !== '') command.push(flag, String(value));
 }
 
-function autoEvalArgsForProfile({ profile, traceDir, policies }) {
+function autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId }) {
   const command = [
     'scripts/run-tutor-stub-auto-eval.js',
     '--runs',
     String(positiveInt(args.runs, '--runs')),
+    '--run-seed',
+    String(runSeed()),
     '--policies',
     policies.join(','),
     '--parallelism',
@@ -225,6 +271,8 @@ function autoEvalArgsForProfile({ profile, traceDir, policies }) {
     args.turns,
     '--safety-turns',
     String(positiveInt(args['safety-turns'], '--safety-turns')),
+    '--primary-horizon',
+    String(positiveInt(args['primary-horizon'], '--primary-horizon')),
     '--model',
     args.model,
     '--analysis-model',
@@ -233,6 +281,8 @@ function autoEvalArgsForProfile({ profile, traceDir, policies }) {
     args['auto-learner-model'],
     '--auto-learner-profile-id',
     profile,
+    '--parent-run-id',
+    parentRunId,
     '--world',
     args.world,
     '--trace-dir',
@@ -309,13 +359,14 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
   const policySuite = args.policies ? null : tutorStubPolicySuite(args.suite || 'core');
   const profileSuite = args.profiles ? null : learnerProfileSuite(args['profile-suite'] || 'core');
   const runs = positiveInt(args.runs, '--runs');
+  const parentRunId = path.basename(path.resolve(rootDir));
   const jobs = profiles.map((profile, index) => {
     const traceDir = path.join(rootDir, safeSlug(profile));
     return {
       ordinal: index + 1,
       profile,
       traceDir: path.relative(ROOT, traceDir),
-      command: ['node', ...autoEvalArgsForProfile({ profile, traceDir, policies })],
+      command: ['node', ...autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId })],
     };
   });
   return {
@@ -335,7 +386,11 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     profiles,
     policies,
     baselinePolicy: normalizePolicyName(args['baseline-policy']) || 'bland',
+    primaryHorizon: positiveInt(args['primary-horizon'], '--primary-horizon'),
+    minimumEffect: unitInterval(args['minimum-effect'], '--minimum-effect'),
+    qaThresholds: configuredQaThresholds(),
     runs,
+    runSeed: runSeed(),
     turns: args.turns,
     safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
     interleavePolicies: Boolean(args['interleave-policies']),
@@ -359,6 +414,270 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
   };
 }
 
+function runSeed() {
+  const value = Number(args['run-seed']);
+  if (!Number.isSafeInteger(value)) throw new Error('--run-seed must be a safe integer');
+  return value;
+}
+
+function qaDesign(plan) {
+  return {
+    schema: plan.schema,
+    suite: plan.suite,
+    policySuite: plan.policySuite,
+    profileSuite: plan.profileSuite,
+    dryRun: plan.dryRun,
+    profiles: plan.profiles,
+    policies: plan.policies,
+    baselinePolicy: plan.baselinePolicy,
+    primaryHorizon: plan.primaryHorizon,
+    minimumEffect: plan.minimumEffect,
+    qaThresholds: plan.qaThresholds,
+    runs: plan.runs,
+    runSeed: plan.runSeed,
+    turns: plan.turns,
+    safetyTurns: plan.safetyTurns,
+    interleavePolicies: plan.interleavePolicies,
+    pressureTurns: plan.pressureTurns,
+    parallelism: plan.parallelism,
+    model: plan.model,
+    analysisModel: plan.analysisModel,
+    autoLearnerModel: plan.autoLearnerModel,
+    world: plan.world,
+    warnings: plan.warnings,
+  };
+}
+
+function worldSourcePath(world) {
+  const raw = String(world || '').trim();
+  const candidates = [
+    path.isAbsolute(raw) ? raw : path.resolve(ROOT, raw),
+    path.join(ROOT, 'config', 'drama-derivation', `${raw.replaceAll('_', '-')}.yaml`),
+    path.join(ROOT, 'config', 'drama-derivation', `${raw}.yaml`),
+  ];
+  const found = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!found) throw new Error(`Cannot resolve world source for evidence hashing: ${world}`);
+  return found;
+}
+
+function hashFileSet(files) {
+  return hashCanonicalJson(
+    [...new Set(files)]
+      .sort()
+      .map((file) => ({ path: path.relative(ROOT, file).split(path.sep).join('/'), sha256: hashFile(file) })),
+  );
+}
+
+function evidenceModel(reference) {
+  const resolved = resolveModel(reference);
+  return {
+    requested: reference,
+    resolved: `${resolved.provider}/${resolved.model}`,
+    observed: null,
+  };
+}
+
+function dialogueJobs(plan) {
+  const pairs = [];
+  if (plan.interleavePolicies) {
+    for (let repeat = 1; repeat <= plan.runs; repeat += 1) {
+      for (const policy of plan.policies) pairs.push({ policy, repeat });
+    }
+  } else {
+    for (const policy of plan.policies) {
+      for (let repeat = 1; repeat <= plan.runs; repeat += 1) pairs.push({ policy, repeat });
+    }
+  }
+  return plan.profiles.flatMap((profile, profileIndex) =>
+    pairs.map(({ policy, repeat }, dialogueIndex) => ({
+      id: `${safeSlug(profile)}-${safeSlug(policy)}-r${repeat}`,
+      profile,
+      policy,
+      repeat,
+      profileOrdinal: profileIndex + 1,
+      dialogueOrdinal: dialogueIndex + 1,
+      artifactRoot: `{run_dir}/${safeSlug(profile)}`,
+    })),
+  );
+}
+
+function buildQaEvidencePlan(plan) {
+  const design = qaDesign(plan);
+  const git = captureGitFingerprint({ repoRoot: ROOT });
+  delete git.repoRoot;
+  const tutorStub = path.join(ROOT, 'scripts', 'tutor-stub.js');
+  const policySuites = path.join(ROOT, 'scripts', 'tutor-stub-policy-suites.js');
+  const profileContracts = path.join(ROOT, 'scripts', 'tutor-stub-learner-profile-contracts.js');
+  const analyzer = path.join(ROOT, 'scripts', 'analyze-tutor-stub-auto-evals.js');
+  const plannedJobs = dialogueJobs(plan);
+  const requiredRandomDrawJobIds = plan.dryRun
+    ? []
+    : plannedJobs.filter((job) => tutorStubPolicyRequiresDeterministicDraw(job.policy)).map((job) => job.id);
+  return buildExperimentRunPlan({
+    runId: path.basename(resolvePath(plan.rootDir)),
+    createdAt: plan.generatedAt,
+    runner: 'scripts/run-tutor-stub-qa-matrix.js',
+    provenance: { git },
+    models: {
+      tutor: evidenceModel(plan.model),
+      analyzer: evidenceModel(plan.analysisModel),
+      learner: evidenceModel(plan.autoLearnerModel),
+    },
+    requiredObservedModelRoles: plan.dryRun ? [] : ['tutor', 'analyzer', 'learner'],
+    hashes: {
+      runner: hashFile(QA_SCRIPT),
+      analyzer: hashFile(analyzer),
+      policy: hashFileSet([tutorStub, policySuites]),
+      profile: hashFile(profileContracts),
+      prompt: hashFile(tutorStub),
+      world: hashFile(worldSourcePath(plan.world)),
+      config: hashCanonicalJson(design),
+    },
+    masterSeed: runSeed(),
+    jobs: plannedJobs,
+    lineage: { parentRunId: null, resumeOf: null, supersedes: [] },
+    intent: {
+      qaMatrix: design,
+      compatibilityPlan: 'qa-plan.json',
+      claimBoundary: 'Dry runs validate orchestration only; simulated learner outcomes do not estimate human learning.',
+    },
+    metadata: {
+      qaDesignHash: hashCanonicalJson(design),
+      randomDrawContract: {
+        schema: EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+        requiredJobIds: requiredRandomDrawJobIds,
+        minimumPerJob: 1,
+      },
+    },
+  });
+}
+
+function childJobKey(job) {
+  return [job?.profile, job?.policy, job?.repeat].map((value) => String(value ?? '')).join('\u0000');
+}
+
+function collectChildPolicyDraws(rootDir, evidencePlan) {
+  const root = path.resolve(rootDir);
+  const parentJobs = new Map(evidencePlan.jobs.map((job) => [childJobKey(job), job]));
+  const parentOrder = new Map(evidencePlan.randomization.jobOrder.map((jobId, index) => [jobId, index]));
+  const rows = [];
+  const seen = new Set();
+  const stack = [root];
+  while (stack.length) {
+    const directory = stack.pop();
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(entryPath);
+        continue;
+      }
+      if (entry.name !== 'run-events.jsonl' || directory === root) continue;
+      const childPlanPath = path.join(directory, 'run-plan.json');
+      const childSealPath = path.join(directory, 'run-seal.json');
+      if (!fs.existsSync(childPlanPath) || !fs.existsSync(childSealPath)) continue;
+      const childVerification = assertExperimentRun(directory);
+      const childJobs = new Map(childVerification.plan.jobs.map((job) => [job.id, job]));
+      const lines = fs.readFileSync(entryPath, 'utf8').split('\n');
+      for (let index = 0; index < lines.length; index += 1) {
+        if (!lines[index].trim()) continue;
+        let event;
+        try {
+          event = JSON.parse(lines[index]);
+        } catch (error) {
+          throw new Error(`Invalid child run event at ${entryPath}:${index + 1}: ${error.message}`);
+        }
+        if (event.type !== 'random_draw') continue;
+        const sourceJobId = String(event.jobId || '').trim();
+        const sourceJob = childJobs.get(sourceJobId);
+        const parentJob = sourceJob ? parentJobs.get(childJobKey(sourceJob)) : null;
+        if (!sourceJob || !parentJob) {
+          throw new Error(
+            `Cannot map child policy draw ${JSON.stringify(sourceJobId || null)} from ${entryPath} to frozen QA job`,
+          );
+        }
+        const digest = hashCanonicalJson({ parentJobId: parentJob.id, decision: event.decision });
+        if (seen.has(digest)) continue;
+        seen.add(digest);
+        rows.push({
+          jobId: parentJob.id,
+          sourceJobId,
+          sourceRunId: childVerification.plan.runId,
+          sourceEventSha256: event.eventSha256,
+          decision: event.decision,
+          digest,
+        });
+      }
+    }
+  }
+  return rows.sort(
+    (left, right) =>
+      parentOrder.get(left.jobId) - parentOrder.get(right.jobId) ||
+      Number(left.decision?.material?.learnerTurn || 0) - Number(right.decision?.material?.learnerTurn || 0) ||
+      String(left.decision?.material?.decisionKind || '').localeCompare(
+        String(right.decision?.material?.decisionKind || ''),
+      ) ||
+      left.digest.localeCompare(right.digest),
+  );
+}
+
+function appendChildPolicyDrawEvents(rootDir, evidencePlan) {
+  for (const row of collectChildPolicyDraws(rootDir, evidencePlan)) {
+    appendRunEvent(rootDir, {
+      type: 'random_draw',
+      jobId: row.jobId,
+      sourceJobId: row.sourceJobId,
+      sourceRunId: row.sourceRunId,
+      sourceEventSha256: row.sourceEventSha256,
+      decision: row.decision,
+    });
+  }
+}
+
+function collectObservedModels(rootDir) {
+  const observations = new Map();
+  const stack = [rootDir];
+  while (stack.length) {
+    const directory = stack.pop();
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(entryPath);
+      } else if (entry.isFile() && entry.name.endsWith('.jsonl') && entry.name !== 'run-events.jsonl') {
+        const lines = fs.readFileSync(entryPath, 'utf8').split('\n');
+        for (let index = 0; index < lines.length; index += 1) {
+          if (!lines[index].trim()) continue;
+          let event;
+          try {
+            event = JSON.parse(lines[index]);
+          } catch (error) {
+            throw new Error(`Invalid JSONL evidence at ${entryPath}:${index + 1}: ${error.message}`);
+          }
+          recordTutorStubModelObservation(observations, event, {
+            source: `${entryPath}:${index + 1}`,
+          });
+        }
+      }
+    }
+  }
+  return observations;
+}
+
+function appendObservedModelEvents(rootDir, evidencePlan) {
+  for (const [role, models] of [...collectObservedModels(rootDir).entries()].sort(([left], [right]) =>
+    left.localeCompare(right),
+  )) {
+    for (const observed of [...models].sort()) {
+      appendRunEvent(rootDir, {
+        type: 'model_observed',
+        role,
+        requested: evidencePlan.models?.[role]?.requested || null,
+        resolved: evidencePlan.models?.[role]?.resolved || null,
+        observed,
+      });
+    }
+  }
+}
+
 function renderPlanMarkdown(plan) {
   const lines = [
     '# Tutor Stub QA Matrix Plan',
@@ -373,6 +692,9 @@ function renderPlanMarkdown(plan) {
     `Policies: ${plan.policies.join(', ')}`,
     `Runs: ${plan.runs}`,
     `Expected dialogue rows: ${plan.expectedDialogueRows}`,
+    `Primary horizon: learner turn ${plan.primaryHorizon}`,
+    `Minimum effect: ${plan.minimumEffect}`,
+    `QA gates: ${JSON.stringify(plan.qaThresholds)}`,
     `Dry run: ${plan.dryRun ? 'yes' : 'no'}`,
     '',
   ];
@@ -419,8 +741,9 @@ function runCommand(command, { label }) {
   return result.status || 0;
 }
 
-function runAnalyzer({ rootDir, summaryFiles, json }) {
-  const outPath = path.join(rootDir, json ? 'qa-matrix.json' : 'qa-matrix.md');
+function runAnalyzer({ outputDir, summaryFiles, json, minimumEffect = args['minimum-effect'] }) {
+  fs.mkdirSync(outputDir, { recursive: true });
+  const outPath = path.join(outputDir, json ? 'qa-matrix.json' : 'qa-matrix.md');
   const command = [
     'node',
     'scripts/analyze-tutor-stub-auto-evals.js',
@@ -428,9 +751,20 @@ function runAnalyzer({ rootDir, summaryFiles, json }) {
     '--qa',
     '--baseline-policy',
     normalizePolicyName(args['baseline-policy']) || 'bland',
+    '--qa-minimum-effect',
+    String(minimumEffect),
     '--out',
     outPath,
   ];
+  const thresholdFlags = {
+    '--qa-max-outcome-spread': args['qa-max-outcome-spread'],
+    '--qa-min-worst-outcome': args['qa-min-worst-outcome'],
+    '--qa-min-worst-closure': args['qa-min-worst-closure'],
+    '--qa-min-worst-coverage': args['qa-min-worst-coverage'],
+    '--qa-max-mean-failure-rate': args['qa-max-mean-failure-rate'],
+    '--qa-noninferiority-margin': args['qa-noninferiority-margin'],
+  };
+  for (const [flag, value] of Object.entries(thresholdFlags)) command.push(flag, String(value));
   if (json) command.push('--json');
   if (args['dry-run']) command.push('--include-dry-run');
   const status = runCommand(command, { label: `build ${path.basename(outPath)}` });
@@ -466,20 +800,54 @@ function main() {
 
   fs.mkdirSync(rootDir, { recursive: true });
   const planPath = path.join(rootDir, 'qa-plan.json');
+  let evidencePlan = null;
+  let reportRoot = rootDir;
+  let analyzerMinimumEffect = plan.minimumEffect;
+  const profileStatuses = [];
   if (args['from-dir']) {
+    const sealPath = path.join(rootDir, 'run-seal.json');
+    if (fs.existsSync(sealPath)) {
+      assertExperimentRun(rootDir);
+      reportRoot = path.join(path.dirname(rootDir), `${path.basename(rootDir)}-derived-${safeTimestampForFile()}`);
+      console.log(`[qa-matrix] sealed source verified; derived reports will be written under ${reportRoot}`);
+    }
     console.log(
       fs.existsSync(planPath)
         ? `[qa-matrix] report-only mode; preserved ${planPath}`
         : `[qa-matrix] report-only mode; no qa-plan.json written under ${rootDir}`,
     );
+    if (fs.existsSync(planPath)) {
+      const frozenPlan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+      analyzerMinimumEffect = unitInterval(
+        frozenPlan.minimumEffect ?? plan.minimumEffect,
+        'frozen qa-plan minimumEffect',
+      );
+    }
   } else {
+    if (fs.existsSync(planPath)) {
+      throw new Error(
+        `Refusing to overwrite frozen QA plan at ${planPath}; use a new --trace-dir for a live run or --from-dir to rebuild reports`,
+      );
+    }
     for (const warning of plan.warnings) {
       console.warn(`[qa-matrix] warning: ${warning}`);
     }
+    evidencePlan = buildQaEvidencePlan(plan);
+    createRunPlan(rootDir, evidencePlan);
     writeFrozenPlan(planPath, plan);
+    appendRunEvent(rootDir, {
+      type: 'run_planned',
+      dryRun: plan.dryRun,
+      profiles: plan.profiles,
+      policies: plan.policies,
+    });
+    appendRunEvent(rootDir, { type: 'run_started', dryRun: plan.dryRun });
     console.log(`[qa-matrix] wrote ${planPath}`);
     for (const job of plan.jobs) {
+      appendRunEvent(rootDir, { type: 'profile_started', profile: job.profile, ordinal: job.ordinal });
       const status = runCommand(job.command, { label: `profile ${job.profile} (${job.ordinal}/${plan.jobs.length})` });
+      profileStatuses.push({ profile: job.profile, status });
+      appendRunEvent(rootDir, { type: 'profile_completed', profile: job.profile, exitCode: status });
       if (status !== 0 && !args['keep-going']) {
         throw new Error(`Profile ${job.profile} failed with status ${status}`);
       }
@@ -492,10 +860,53 @@ function main() {
   }
 
   if (!args['no-analyze']) {
-    const markdownPath = runAnalyzer({ rootDir, summaryFiles, json: false });
-    const jsonPath = runAnalyzer({ rootDir, summaryFiles, json: true });
+    if (evidencePlan) appendRunEvent(rootDir, { type: 'analysis_started', summaries: summaryFiles.length });
+    const markdownPath = runAnalyzer({
+      outputDir: reportRoot,
+      summaryFiles,
+      json: false,
+      minimumEffect: analyzerMinimumEffect,
+    });
+    const jsonPath = runAnalyzer({
+      outputDir: reportRoot,
+      summaryFiles,
+      json: true,
+      minimumEffect: analyzerMinimumEffect,
+    });
+    if (evidencePlan) {
+      appendRunEvent(rootDir, {
+        type: 'analysis_completed',
+        reports: [path.relative(rootDir, markdownPath), path.relative(rootDir, jsonPath)],
+      });
+    }
     console.log(`[qa-matrix] report ${markdownPath}`);
     console.log(`[qa-matrix] report ${jsonPath}`);
+  }
+  if (evidencePlan) {
+    appendChildPolicyDrawEvents(rootDir, evidencePlan);
+    appendObservedModelEvents(rootDir, evidencePlan);
+    const status = profileStatuses.every((row) => row.status === 0)
+      ? plan.dryRun
+        ? 'dry_run'
+        : 'complete'
+      : 'incomplete';
+    appendRunEvent(rootDir, {
+      type: 'run_completed',
+      status,
+      profileStatuses,
+      summaryCount: summaryFiles.length,
+    });
+    createRunSeal(rootDir, {
+      status,
+      metadata: {
+        profiles: plan.profiles.length,
+        policies: plan.policies.length,
+        expectedDialogueRows: plan.expectedDialogueRows,
+        summaryCount: summaryFiles.length,
+      },
+    });
+    assertExperimentRun(rootDir);
+    console.log(`[qa-matrix] sealed and verified ${rootDir}`);
   }
 }
 

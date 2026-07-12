@@ -17,6 +17,26 @@ import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { resolveModel } from '../services/evalConfigLoader.js';
+import {
+  appendRunEvent,
+  assertExperimentRun,
+  buildExperimentRunPlan,
+  captureGitFingerprint,
+  createRunPlan,
+  createRunSeal,
+  EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+  extractTutorStubPolicyDrawDecisions,
+  hashCanonicalJson,
+  hashFile,
+} from '../services/experimentRunArtifacts.js';
+import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
+import {
+  recordTutorStubModelObservation,
+  summarizeTutorStubFixedHorizon,
+  summarizeTutorStubFixedHorizonRows,
+  tutorStubMissingFixedHorizonOutcome,
+} from '../services/tutorStubEvalIntegrity.js';
 import {
   DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
   normalizeTutorStubEngagementStanceTemperature,
@@ -31,7 +51,6 @@ import {
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
   summarizeTutorStubDagFactDropoutTrace,
-  tutorStubDagFactDropoutTurnFromTraceRecord,
 } from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
 import {
@@ -44,7 +63,8 @@ import {
   normalizeLearnerProfileId,
 } from './tutor-stub-learner-profile-contracts.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const AUTO_EVAL_SCRIPT = fileURLToPath(import.meta.url);
+const ROOT = path.resolve(path.dirname(AUTO_EVAL_SCRIPT), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.5';
 const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
@@ -77,10 +97,13 @@ const DAG_FACT_DROPOUT_SEED_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
   argvHasOption('--dag-fact-dropout-seed'),
 );
+const RUN_SEED_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_RUN_SEED || argvHasOption('--run-seed'));
+let activeReadOnlySourceDir = null;
 
 const { values: args } = parseArgs({
   options: {
     runs: { type: 'string', default: '1' },
+    'run-seed': { type: 'string', default: process.env.TUTOR_STUB_EVAL_RUN_SEED || '1' },
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || DEFAULT_CODEX_MODEL_REF },
@@ -103,6 +126,7 @@ const { values: args } = parseArgs({
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_PROFILE_ID || 'diligent',
     },
+    'parent-run-id': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PARENT_RUN_ID || '' },
     'report-from': { type: 'string', default: '' },
     'resume-from': { type: 'string', default: '' },
     'resume-statuses': { type: 'string', default: 'failed' },
@@ -152,6 +176,7 @@ const { values: args } = parseArgs({
     'progress-interval': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PROGRESS_INTERVAL || '30' },
     'until-grounded': { type: 'boolean', default: false },
     'safety-turns': { type: 'string', default: process.env.TUTOR_STUB_EVAL_SAFETY_TURNS || '80' },
+    'primary-horizon': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PRIMARY_HORIZON || '16' },
     'no-dag': { type: 'boolean', default: false },
     'no-stop-on-grounded': { type: 'boolean', default: false },
     'no-progress': { type: 'boolean', default: false },
@@ -173,6 +198,7 @@ function printHelp() {
 
 Options:
   --runs <n>                 repetitions per policy (default: 1)
+  --run-seed <n>             non-negative master seed for policy draws (default: 1)
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
@@ -183,13 +209,15 @@ Options:
   --auto-learner-profile-id <id>
                               built-in profile when no custom text is supplied
                               (default: diligent; use --list-learner-profiles)
-  --report-from <json>       build HTML from an existing auto-eval JSON summary
-  --resume-from <json>       rerun rows from an existing auto-eval JSON summary
+  --parent-run-id <id>        semantic parent evidence run (set by QA orchestration)
+  --report-from <json>       verify when sealed and write a derived sibling report; source stays read-only
+  --resume-from <json>       rerun rows in a new sealed sibling transaction; source stays read-only
   --resume-statuses <csv>    statuses to rerun with --resume-from (default: failed)
   --index                    build/update the local report index and exit
   --index-root <path>        report index root (default: .tutor-stub-auto-eval)
   --world <id|path|none>     default: world_005_marrick
-  --trace-dir <path>         default: .tutor-stub-auto-eval
+  --trace-dir <path>         new run directory/root (non-empty roots get a unique child run)
+                              default: .tutor-stub-auto-eval/run-<timestamp>
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
   --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.85)
@@ -206,6 +234,7 @@ Options:
   --progress-interval <sec>  active turn progress cadence (default: 30)
   --until-grounded           legacy alias for --turns until-grounded
   --safety-turns <n>         runaway guard for --until-grounded (default: 80)
+  --primary-horizon <n>      frozen raw-outcome horizon (default: 16)
   --no-dag                   omit tutor proof-DAG context
   --no-stop-on-grounded      run until --turns even after grounded closure
   --no-progress              suppress the terminal progress bar
@@ -308,6 +337,69 @@ function safeSlug(value) {
     .replace(/[^a-z0-9._-]+/giu, '-')
     .replace(/^-+|-+$/gu, '')
     .slice(0, 80);
+}
+
+function uniqueSiblingDirectory(sourceDir, kind) {
+  const parent = path.dirname(path.resolve(sourceDir));
+  const base = `${path.basename(path.resolve(sourceDir))}-${kind}-${safeTimestampForFile()}`;
+  let candidate = path.join(parent, base);
+  let suffix = 1;
+  while (fs.existsSync(candidate)) {
+    candidate = path.join(parent, `${base}-${suffix}`);
+    suffix += 1;
+  }
+  return candidate;
+}
+
+function freshTraceDir() {
+  const requested = resolvePath(args['trace-dir']);
+  const sharedDefault = resolvePath('.tutor-stub-auto-eval');
+  const needsChildRun =
+    path.resolve(requested) === path.resolve(sharedDefault) ||
+    (fs.existsSync(requested) && fs.readdirSync(requested).length > 0);
+  return needsChildRun ? path.join(requested, `run-${safeTimestampForFile()}`) : requested;
+}
+
+function posixRelative(filePath) {
+  return path.relative(ROOT, filePath).split(path.sep).join('/');
+}
+
+function hashFileSet(files) {
+  return hashCanonicalJson(
+    [...new Set(files)].sort().map((file) => ({ path: posixRelative(file), sha256: hashFile(file) })),
+  );
+}
+
+function worldSourcePath(world) {
+  const raw = String(world || '').trim();
+  if (!raw || raw === 'none') return null;
+  const candidates = [
+    path.isAbsolute(raw) ? raw : path.resolve(ROOT, raw),
+    path.join(ROOT, 'config', 'drama-derivation', `${raw.replaceAll('_', '-')}.yaml`),
+    path.join(ROOT, 'config', 'drama-derivation', `${raw}.yaml`),
+  ];
+  const found = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!found) throw new Error(`Cannot resolve world source for evidence hashing: ${world}`);
+  return found;
+}
+
+function evidenceModel(reference) {
+  const resolved = resolveModel(reference);
+  return {
+    requested: reference,
+    resolved: `${resolved.provider}/${resolved.model}`,
+    observed: null,
+  };
+}
+
+function readOptionalJson(filePath) {
+  return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null;
+}
+
+function pathIsWithin(filePath, parentDir) {
+  if (!filePath || !parentDir) return false;
+  const relative = path.relative(path.resolve(parentDir), path.resolve(filePath));
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
 }
 
 function displayCommand(parts) {
@@ -527,7 +619,6 @@ function lightweightFieldTurn(turn, previous = null) {
   const assessment = model.assessment || {};
   const register = turn?.registerSelection || {};
   const priorEfficacy = turn?.previousRegisterEfficacy || null;
-  const learnerAdvance = turn?.learnerAdvance || turn?.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null;
   const leakOk = !turn?.tutorLeakAudit || turn.tutorLeakAudit.ok === true;
   const conceptual = fieldScore(scores.conceptual_engagement);
   const readiness = fieldScore(scores.epistemic_readiness);
@@ -576,7 +667,6 @@ function lightweightFieldTurn(turn, previous = null) {
     register: register.selected_register || null,
     bottleneck: assessment.bottleneck || 'unknown',
     learnerMove: turnAnalysis.discourse_move || 'unknown',
-    learnerAdvance,
     speed: previous
       ? roundField(
           Math.sqrt(
@@ -908,6 +998,39 @@ function frameEvents({ turn, fieldRow, trajectory, selection }) {
 }
 
 function compactFrameState({ turn, fieldRow, selection }) {
+  const stateObservation = turn?.stateObservation || null;
+  if (stateObservation) {
+    return {
+      observation: stateObservation,
+      classifier: {
+        requestType: stateObservation.classifier?.request_type || 'unknown',
+        discourseMove: stateObservation.classifier?.discourse_move || 'unknown',
+        evidenceUse: stateObservation.classifier?.evidence_use || 'unknown',
+        epistemicStance: stateObservation.classifier?.epistemic_stance || 'unknown',
+        agency: stateObservation.classifier?.agency || 'unknown',
+        affect: stateObservation.classifier?.affect || 'unknown',
+        scores: {
+          conceptual: stateObservation.classifier?.conceptual_score ?? null,
+          epistemicReadiness: stateObservation.classifier?.epistemic_readiness_score ?? null,
+          learnerSurface: mean([
+            stateObservation.classifier?.conceptual_score,
+            stateObservation.classifier?.epistemic_readiness_score,
+          ]),
+        },
+      },
+      dag: {
+        bottleneck: stateObservation.dag?.bottleneck || 'unknown',
+        bestPathCoverage: stateObservation.dag?.best_path_coverage ?? null,
+        missingPremiseCount: stateObservation.dag?.missing_premise_count ?? null,
+        groundedCount: stateObservation.dag?.grounded_count ?? null,
+        voicedDerivedCount: stateObservation.dag?.voiced_derived_count ?? null,
+        unsupportedAssertionCount: stateObservation.dag?.unsupported_assertion_count ?? null,
+        finalSecretEntailed: stateObservation.dag?.final_secret_entailed === true,
+        assertedSecret: stateObservation.dag?.asserted_secret === true,
+        assertedMirror: stateObservation.dag?.asserted_mirror === true,
+      },
+    };
+  }
   const model = turn?.tutorLearnerDagModel || {};
   const metrics = model.metrics || {};
   const assessment = model.assessment || {};
@@ -944,7 +1067,6 @@ function compactFrameState({ turn, fieldRow, selection }) {
       finalSecretEntailed: assessment.finalSecretEntailed === true,
       assertedSecret: assessment.assertedSecret === true,
       assertedMirror: assessment.assertedMirror === true,
-      learnerAdvance: turn?.learnerAdvance || turn?.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null,
     },
   };
 }
@@ -979,7 +1101,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     selectedRegister: selection.selected_register || selection.engagement_stance || null,
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
-    dagFactDropout: tutorStubDagFactDropoutTurnFromTraceRecord(turn),
+    dagFactDropout: turn?.dagFactDropout || null,
     register: {
       policy: selection.policy || null,
       engagementStance: selection.engagement_stance || selection.selected_register || null,
@@ -1246,6 +1368,7 @@ function buildTurnTrainingExamples({ animatedViz = null, transcript = null } = {
         tutorText: turn.tutor || frame.snippets?.tutor || '',
       },
       stateBeforeAction: {
+        observation: frame.state?.observation || null,
         learnerText: turn.learner || frame.snippets?.learner || '',
         learnerState: turn.learnerState || frame.state?.classifier || {},
         dag: frame.state?.dag || turn.dag || {},
@@ -1559,7 +1682,11 @@ function summarizeResultProgress(result) {
   };
 }
 
-function summarizeTrace(tracePath, traceDir) {
+function summarizeTrace(
+  tracePath,
+  traceDir,
+  { primaryHorizon = positiveInt(args['primary-horizon'], '--primary-horizon') } = {},
+) {
   const events = readTraceEvents(tracePath);
   const turns = events.filter((event) => event.type === 'turn_complete');
   const turnRecords = turns.map((event) => event.turnRecord).filter(Boolean);
@@ -1578,11 +1705,6 @@ function summarizeTrace(tracePath, traceDir) {
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
-  const learnerAdvances = turnRecords
-    .map(
-      (turn) => turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || turn.tutorLearnerDagModel?.learnerAdvance,
-    )
-    .filter(Boolean);
   const registers = turns
     .map(
       (event) =>
@@ -1600,6 +1722,25 @@ function summarizeTrace(tracePath, traceDir) {
     if (Array.isArray(leaks)) return sum + leaks.length;
     return sum + (event.turnRecord?.tutorLeakAudit?.ok === false ? 1 : 0);
   }, 0);
+  const guardRows = turnRecords.map((turn) => turn.tutorGuardAccounting).filter(Boolean);
+  const guardAccounting = {
+    schema: 'machinespirits.tutor-stub.guard-accounting-summary.v1',
+    turns: turnRecords.length,
+    accountedTurns: guardRows.length,
+    guardTriggeredTurns: guardRows.filter(
+      (row) =>
+        (row.originalCandidate?.guardedSpans || []).length > 0 ||
+        (row.attempts || []).some((attempt) => attempt.auditOk === false),
+    ).length,
+    guardedSpanCount: guardRows.reduce((sum, row) => sum + Number(row.originalCandidate?.guardedSpans?.length || 0), 0),
+    modelRepairTurns: guardRows.filter((row) =>
+      (row.repairsApplied || []).some((repair) => repair.kind === 'model_rewrite'),
+    ).length,
+    repairActionCount: guardRows.reduce((sum, row) => sum + Number(row.repairsApplied?.length || 0), 0),
+    deterministicFallbackTurns: guardRows.filter((row) => row.finalDelivery?.deterministicFallback === true).length,
+    finalDeliveryAuditFailures: guardRows.filter((row) => row.finalDelivery?.auditOk === false).length,
+  };
+  const fixedHorizon = summarizeTutorStubFixedHorizon(turnRecords, { primaryHorizon });
   const groundedClosure = Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
     (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
@@ -1626,17 +1767,12 @@ function summarizeTrace(tracePath, traceDir) {
     audienceRegisterCounts: countBy(audienceRegisters),
     lexicalAccessibilityCounts: countBy(lexicalAccessibility),
     sceneImmersionCounts: countBy(sceneImmersion),
-    learnerAdvance: {
-      observedTurns: learnerAdvances.length,
-      acceleratedTurns: learnerAdvances.filter((advance) => advance.accelerated).length,
-      multiPremiseTurns: learnerAdvances.filter((advance) => advance.multiPremise).length,
-      multiStepTurns: learnerAdvances.filter((advance) => advance.multiStep).length,
-      maxSupportedMoves: Math.max(0, ...learnerAdvances.map((advance) => Number(advance.supportedMoveCount || 0))),
-    },
     responseConfigurationVisibility,
     dagFactDropout,
     efficacyCounts: countBy(efficacies),
     leakCount,
+    guardAccounting,
+    fixedHorizon,
     repairedCount: turns.filter((event) => event.turnRecord?.tutorResponseRepaired).length,
     fallbackCount: turns.filter((event) => event.turnRecord?.tutorDeterministicFallback).length,
     errorCount: modelErrors.length,
@@ -1672,8 +1808,26 @@ function resolveTracePath(tracePath, traceDir) {
   return path.join(ROOT, tracePath);
 }
 
-function resultRows(results) {
-  return results.flatMap((result) => {
+function resultRows(results, { plannedJobs = [], primaryHorizon } = {}) {
+  const horizon = positiveInt(primaryHorizon || args['primary-horizon'], '--primary-horizon');
+  const sourceResults = Array.isArray(results) ? [...results] : [];
+  const completedKeys = new Set(sourceResults.map((result) => result.key).filter(Boolean));
+  for (const job of plannedJobs || []) {
+    const key = job.key || job.id;
+    if (!key || completedKeys.has(key) || !job.policy) continue;
+    sourceResults.push({
+      key,
+      policy: job.policy,
+      runIndex: Number(job.runIndex || job.repeat || 0) || null,
+      status: 'missing',
+      exitCode: null,
+      signal: null,
+      traces: [],
+      traceSummaries: [],
+      log: job.logPath ? path.relative(ROOT, job.logPath) : null,
+    });
+  }
+  return sourceResults.flatMap((result) => {
     const summaries = Array.isArray(result.traceSummaries) ? result.traceSummaries : [];
     if (!summaries.length) {
       return [
@@ -1695,6 +1849,7 @@ function resultRows(results) {
           registerEntropy: 0,
           efficacyCounts: {},
           leakCount: 0,
+          fixedHorizon: tutorStubMissingFixedHorizonOutcome(horizon),
           repairedCount: 0,
           fallbackCount: 0,
           errorCount: 0,
@@ -1720,8 +1875,9 @@ function resultRows(results) {
 }
 
 function summarizeRows(rows) {
-  const completed = rows.filter((row) => row.status !== 'dry_run');
-  const scored = completed.filter((row) => row.status !== 'failed');
+  const liveRows = rows.filter((row) => row.status !== 'dry_run');
+  const completed = liveRows.filter((row) => row.status === 'ok' || row.status === 'failed');
+  const scored = liveRows.filter((row) => row.status === 'ok');
   const scoredRegisters = scored.flatMap((row) =>
     Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
       Array.from({ length: count }, () => register),
@@ -1734,7 +1890,7 @@ function summarizeRows(rows) {
   }
   const summarizeBucket = (bucketRows) => {
     const liveRows = bucketRows.filter((row) => row.status !== 'dry_run');
-    const okRows = liveRows.filter((row) => row.status !== 'failed');
+    const okRows = liveRows.filter((row) => row.status === 'ok');
     const registers = okRows.flatMap((row) =>
       Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
         Array.from({ length: count }, () => register),
@@ -1744,6 +1900,7 @@ function summarizeRows(rows) {
       rows: bucketRows.length,
       ok: okRows.length,
       failed: liveRows.filter((row) => row.status === 'failed').length,
+      missing: liveRows.filter((row) => row.status === 'missing').length,
       dryRun: bucketRows.filter((row) => row.status === 'dry_run').length,
       grounded: okRows.filter((row) => row.groundedClosure).length,
       groundedRate: okRows.length
@@ -1766,10 +1923,20 @@ function summarizeRows(rows) {
           .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
           .filter((value) => value !== null && value !== undefined),
       ),
-      acceleratedTurns: okRows.reduce((sum, row) => sum + Number(row.learnerAdvance?.acceleratedTurns || 0), 0),
-      multiPremiseTurns: okRows.reduce((sum, row) => sum + Number(row.learnerAdvance?.multiPremiseTurns || 0), 0),
       leakCount: okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
+      guardTriggeredTurns: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0), 0),
+      modelRepairTurns: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0),
+      deterministicFallbackTurns: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
+        0,
+      ),
+      guardedSpanCount: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.guardedSpanCount || 0), 0),
+      finalDeliveryAuditFailures: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.finalDeliveryAuditFailures || 0),
+        0,
+      ),
       errorCount: okRows.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
+      ...summarizeTutorStubFixedHorizonRows(liveRows),
     };
   };
   return {
@@ -1777,6 +1944,7 @@ function summarizeRows(rows) {
     completed: completed.length,
     ok: scored.length,
     failed: completed.filter((row) => row.status === 'failed').length,
+    missing: liveRows.filter((row) => row.status === 'missing').length,
     dryRun: rows.filter((row) => row.status === 'dry_run').length,
     grounded: scored.filter((row) => row.groundedClosure).length,
     groundedRate: scored.length
@@ -1797,10 +1965,20 @@ function summarizeRows(rows) {
         .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
         .filter((value) => value !== null && value !== undefined),
     ),
-    acceleratedTurns: scored.reduce((sum, row) => sum + Number(row.learnerAdvance?.acceleratedTurns || 0), 0),
-    multiPremiseTurns: scored.reduce((sum, row) => sum + Number(row.learnerAdvance?.multiPremiseTurns || 0), 0),
     leakCount: scored.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
+    guardTriggeredTurns: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0), 0),
+    modelRepairTurns: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0),
+    deterministicFallbackTurns: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
+      0,
+    ),
+    guardedSpanCount: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.guardedSpanCount || 0), 0),
+    finalDeliveryAuditFailures: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.finalDeliveryAuditFailures || 0),
+      0,
+    ),
     errorCount: scored.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
+    ...summarizeTutorStubFixedHorizonRows(liveRows),
     byPolicy: Object.fromEntries(
       Object.entries(byPolicy).map(([policy, bucketRows]) => [policy, summarizeBucket(bucketRows)]),
     ),
@@ -4253,6 +4431,11 @@ function reportInfoTerm(key, label) {
   return infoTerm(label, REPORT_TERM_TOOLTIPS[key] || label);
 }
 
+function formatDagFactDropoutSummary(value) {
+  if (!value || value.configuredRate === null || value.configuredRate === undefined) return 'not recorded';
+  return `${Math.round(Number(value.configuredRate || 0) * 100)}% · ${Number(value.eligibleOpportunities || 0)} eligible · ${Number(value.dropped || 0)} dropped / ${Number(value.repaired || 0)} re-adopted · ${Number(value.activeAtEnd || 0)} active at end`;
+}
+
 function categoricalEntropy(values = []) {
   const present = values.map((value) => String(value || '').trim()).filter(Boolean);
   return entropy(present);
@@ -4293,7 +4476,7 @@ function adaptationStateKey(example = {}) {
 
 function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
   const liveRows = policyRows.filter((row) => row.status !== 'dry_run');
-  const okRows = liveRows.filter((row) => row.status !== 'failed');
+  const okRows = liveRows.filter((row) => row.status === 'ok');
   const examples = okRows.flatMap((row) => row.trainingExamples?.examples || []);
   const transitions = examples.filter((example) => Number.isFinite(Number(example.rewardProxy?.score)));
   const rewards = transitions.map((example) => Number(example.rewardProxy.score));
@@ -4313,6 +4496,16 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
   const masteryGain = mean(okRows.map((row) => row.field?.delta?.learnerMastery));
   const riskReduction = mean(okRows.map((row) => -Number(row.field?.delta?.learnerRisk)));
   const leakCount = okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0);
+  const guardTurns = okRows.reduce((sum, row) => sum + Number(row.turnCount || 0), 0);
+  const guardTriggeredTurns = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0),
+    0,
+  );
+  const modelRepairTurns = okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0);
+  const deterministicFallbackTurns = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
+    0,
+  );
   const positiveTransitions = rewards.filter((score) => score > 0.005).length;
   const negativeTransitions = rewards.filter((score) => score < -0.005).length;
   return {
@@ -4320,6 +4513,7 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
     rows: policyRows.length,
     ok: okRows.length,
     failed: liveRows.filter((row) => row.status === 'failed').length,
+    missing: liveRows.filter((row) => row.status === 'missing').length,
     outcome: {
       closureRate: closureRate === null ? null : roundField(closureRate),
       meanCoverage,
@@ -4327,6 +4521,12 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       masteryGain,
       riskReduction,
       leakCount,
+      guardTriggeredTurns,
+      modelRepairTurns,
+      deterministicFallbackTurns,
+      guardExposureRate: guardTurns ? roundField(guardTriggeredTurns / guardTurns) : null,
+      repairRate: guardTurns ? roundField(modelRepairTurns / guardTurns) : null,
+      deterministicFallbackRate: guardTurns ? roundField(deterministicFallbackTurns / guardTurns) : null,
       turnEfficiency: Number.isFinite(Number(meanTurns))
         ? roundField(clampField01(1 - Number(meanTurns) / safetyTurns))
         : null,
@@ -4351,7 +4551,7 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
     },
     validity: {
       technical:
-        liveRows.length && liveRows.every((row) => row.status !== 'failed')
+        liveRows.length && liveRows.every((row) => row.status === 'ok')
           ? 'pass'
           : liveRows.length
             ? 'attention'
@@ -6098,11 +6298,6 @@ function renderFieldTrajectories(rows) {
   </div>`;
 }
 
-function formatDagFactDropoutSummary(value) {
-  if (!value || value.configuredRate === null || value.configuredRate === undefined) return 'not recorded';
-  return `${Math.round(Number(value.configuredRate || 0) * 100)}% · ${Number(value.eligibleOpportunities || 0)} eligible · ${Number(value.dropped || 0)} dropped / ${Number(value.repaired || 0)} re-adopted · ${Number(value.activeAtEnd || 0)} active at end`;
-}
-
 function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   const reportDir = htmlPath
     ? path.dirname(resolvePath(htmlPath))
@@ -6124,6 +6319,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <td>${bucket.ok}</td>
         <td>${bucket.grounded}/${bucket.ok}</td>
         <td>${Math.round(bucket.groundedRate * 100)}%</td>
+        <td>${bucket.groundedByHorizon}/${bucket.fixedHorizonRows}</td>
+        <td>${bucket.meanCoverageAtHorizon} [${bucket.coverageAtHorizonLowerBound}, ${bucket.coverageAtHorizonUpperBound}]</td>
+        <td>${bucket.horizonSafetyPassed}/${bucket.fixedHorizonRows}</td>
+        <td>${bucket.horizonSafetyIncomplete}</td>
+        <td>${bucket.fixedHorizonComplete}/${bucket.fixedHorizonRows}</td>
         <td>${bucket.meanTurns}</td>
         <td>${bucket.meanCoverage} ${pctBar(bucket.meanCoverage)}</td>
         <td>${bucket.meanMissing}</td>
@@ -6171,9 +6371,10 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
             : `${Math.round(Number(row.responseConfigurationVisibility.pairwise_visible_difference_rate) * 100)}%`
         }</td>
         <td>${escapeHtml(row.leakCount)}</td>
+        <td>${escapeHtml(row.fixedHorizon?.safetyStatus || 'safety_incomplete')}</td>
         <td>${transcriptId ? `<a href="#transcripts" data-transcript-jump="${escapeHtml(transcriptId)}">transcript</a>` : ''}</td>
-        <td>${row.trace ? `<a href="${escapeHtml(path.relative(summary.config.traceDir || '.', path.join(ROOT, row.trace)))}">trace</a>` : ''}</td>
-        <td>${row.log ? `<a href="${escapeHtml(path.relative(summary.config.traceDir || '.', path.join(ROOT, row.log)))}">log</a>` : ''}</td>
+        <td>${row.trace ? `<a href="${escapeHtml(hrefRelative(reportDir, path.join(ROOT, row.trace)))}">trace</a>` : ''}</td>
+        <td>${row.log ? `<a href="${escapeHtml(hrefRelative(reportDir, path.join(ROOT, row.log)))}">log</a>` : ''}</td>
       </tr>`;
     })
     .join('\n');
@@ -6206,7 +6407,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
           ${renderReportScopeNotice(reportScope)}
           <div class="summary-panel">
             <div class="metrics">
-              ${htmlMetricInfo('Trials', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
+              ${htmlMetricInfo('Trials', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.missing} missing · ${summary.aggregates.dryRun} dry-run`)}
+              ${htmlMetricInfo('Horizon Grounded', 'Grounded by the frozen primary horizon over every planned non-dry row.', `${summary.aggregates.groundedByHorizon}/${summary.aggregates.fixedHorizonRows}`, `turn ${summary.aggregates.primaryHorizon}`)}
+              ${htmlMetricInfo('Horizon Coverage', 'Worst-case all-planned-row fixed-horizon coverage. Failed or missing rows contribute zero; brackets show lower and upper missingness bounds.', summary.aggregates.meanCoverageAtHorizon, `bounds ${summary.aggregates.coverageAtHorizonLowerBound}–${summary.aggregates.coverageAtHorizonUpperBound}`)}
+              ${htmlMetricInfo('Horizon Safety', 'A pass requires complete guard evidence for every observed horizon turn. Safety failures and incomplete evidence are distinct.', `${summary.aggregates.horizonSafetyPassed}/${summary.aggregates.fixedHorizonRows}`, `${summary.aggregates.horizonSafetyFailed} failed · ${summary.aggregates.horizonSafetyIncomplete} safety_incomplete`)}
+              ${htmlMetricInfo('Horizon Complete', 'Rows that reached the frozen primary horizon or grounded early, over every planned non-dry row.', `${summary.aggregates.fixedHorizonComplete}/${summary.aggregates.fixedHorizonRows}`, `${summary.aggregates.fixedHorizonOutcomeMissing} missing outcomes`)}
               ${htmlMetricInfo('Grounded', REPORT_TERM_TOOLTIPS.grounded, `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
               ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
               ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
@@ -6235,6 +6440,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('ok', 'OK')}</th>
         <th>${reportInfoTerm('grounded', 'Grounded')}</th>
         <th>Rate</th>
+        <th>Horizon Grounded</th>
+        <th>Horizon Coverage [bounds]</th>
+        <th>Horizon Safety</th>
+        <th>Safety Incomplete</th>
+        <th>Horizon Complete</th>
         <th>${reportInfoTerm('meanTurns', 'Mean Turns')}</th>
         <th>${reportInfoTerm('meanCoverage', 'Mean Coverage')}</th>
         <th>${reportInfoTerm('meanMissing', 'Mean Missing')}</th>
@@ -6245,7 +6455,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>Configuration Realization</th>
         <th>Visible Difference</th>
       </tr></thead>
-      <tbody>${policyRows || '<tr><td colspan="13">No policy rows.</td></tr>'}</tbody>
+      <tbody>${policyRows || '<tr><td colspan="18">No policy rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
@@ -6292,11 +6502,12 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>Configuration Realization</th>
         <th>Visible Difference</th>
         <th>${reportInfoTerm('leaks', 'Leaks')}</th>
+        <th>Horizon Safety</th>
         <th>Transcript</th>
         <th>Trace</th>
         <th>Log</th>
       </tr></thead>
-      <tbody>${runRows || '<tr><td colspan="19">No run rows.</td></tr>'}</tbody>
+      <tbody>${runRows || '<tr><td colspan="20">No run rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
@@ -6308,14 +6519,14 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
 `;
 }
 
-function writeHtmlReport({ summary, rows, htmlPath }) {
+function writeHtmlReport({ summary, rows, htmlPath, updateIndex = true }) {
   const fieldSvgPaths = writeFieldSvgArtifacts({ rows, htmlPath });
   fs.writeFileSync(htmlPath, renderHtmlReport(summary, rows, { htmlPath }));
   console.log(`[auto-eval] wrote ${htmlPath}`);
   if (fieldSvgPaths.length) {
     console.log(`[auto-eval] wrote ${fieldSvgPaths.length} field SVGs to ${fieldSvgDirForReport(htmlPath)}`);
   }
-  writeReportIndex();
+  if (updateIndex) writeReportIndex();
 }
 
 function relativeReportPath(filePath) {
@@ -6331,6 +6542,7 @@ function compactPolicyLedger(aggregates = {}) {
         rows: row.rows || 0,
         ok: row.ok || 0,
         failed: row.failed || 0,
+        missing: row.missing || 0,
         grounded: row.grounded || 0,
         groundedRate: row.groundedRate || 0,
         meanTurns: row.meanTurns ?? null,
@@ -6340,6 +6552,24 @@ function compactPolicyLedger(aggregates = {}) {
         registerEntropy: row.registerEntropy ?? null,
         leakCount: row.leakCount || 0,
         errorCount: row.errorCount || 0,
+        primaryHorizon: row.primaryHorizon ?? null,
+        fixedHorizonRows: row.fixedHorizonRows || 0,
+        fixedHorizonObserved: row.fixedHorizonObserved || 0,
+        fixedHorizonOutcomeMissing: row.fixedHorizonOutcomeMissing || 0,
+        fixedHorizonComplete: row.fixedHorizonComplete || 0,
+        fixedHorizonIncomplete: row.fixedHorizonIncomplete || 0,
+        groundedByHorizon: row.groundedByHorizon || 0,
+        groundedByHorizonRate: row.groundedByHorizonRate || 0,
+        meanCoverageAtHorizon: row.meanCoverageAtHorizon ?? null,
+        meanObservedCoverageAtHorizon: row.meanObservedCoverageAtHorizon ?? null,
+        coverageAtHorizonLowerBound: row.coverageAtHorizonLowerBound ?? null,
+        coverageAtHorizonUpperBound: row.coverageAtHorizonUpperBound ?? null,
+        horizonSafetyPassed: row.horizonSafetyPassed || 0,
+        horizonSafetyFailed: row.horizonSafetyFailed || 0,
+        horizonSafetyIncomplete: row.horizonSafetyIncomplete || 0,
+        horizonSafetyPassRate: row.horizonSafetyPassRate || 0,
+        horizonSafetyFailureRate: row.horizonSafetyFailureRate || 0,
+        horizonSafetyIncompleteRate: row.horizonSafetyIncompleteRate || 0,
       },
     ]),
   );
@@ -6363,6 +6593,7 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       policies: config.policies || [],
       turns: config.turns ?? null,
       safetyTurns: config.safetyTurns ?? null,
+      primaryHorizon: config.primaryHorizon ?? null,
       parallelism: config.parallelism ?? null,
       model: config.model || null,
       analysisModel: config.analysisModel || null,
@@ -6372,7 +6603,6 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       maxTokens: config.maxTokens ?? null,
       historyTurns: config.historyTurns ?? null,
       memorySummary: config.memorySummary || null,
-      registerOverlayThreshold: config.registerOverlayThreshold ?? null,
       resumedFrom: config.resumedFrom || null,
       resumeStatuses: config.resumeStatuses || null,
       dryRun: Boolean(config.dryRun),
@@ -6382,6 +6612,7 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       completed: aggregates.completed || 0,
       ok: aggregates.ok || 0,
       failed: aggregates.failed || 0,
+      missing: aggregates.missing || 0,
       dryRun: aggregates.dryRun || 0,
       grounded: aggregates.grounded || 0,
       groundedRate: aggregates.groundedRate || 0,
@@ -6392,6 +6623,24 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       registerEntropy: aggregates.registerEntropy ?? null,
       leakCount: aggregates.leakCount || 0,
       errorCount: aggregates.errorCount || 0,
+      primaryHorizon: aggregates.primaryHorizon ?? null,
+      fixedHorizonRows: aggregates.fixedHorizonRows || 0,
+      fixedHorizonObserved: aggregates.fixedHorizonObserved || 0,
+      fixedHorizonOutcomeMissing: aggregates.fixedHorizonOutcomeMissing || 0,
+      fixedHorizonComplete: aggregates.fixedHorizonComplete || 0,
+      fixedHorizonIncomplete: aggregates.fixedHorizonIncomplete || 0,
+      groundedByHorizon: aggregates.groundedByHorizon || 0,
+      groundedByHorizonRate: aggregates.groundedByHorizonRate || 0,
+      meanCoverageAtHorizon: aggregates.meanCoverageAtHorizon ?? null,
+      meanObservedCoverageAtHorizon: aggregates.meanObservedCoverageAtHorizon ?? null,
+      coverageAtHorizonLowerBound: aggregates.coverageAtHorizonLowerBound ?? null,
+      coverageAtHorizonUpperBound: aggregates.coverageAtHorizonUpperBound ?? null,
+      horizonSafetyPassed: aggregates.horizonSafetyPassed || 0,
+      horizonSafetyFailed: aggregates.horizonSafetyFailed || 0,
+      horizonSafetyIncomplete: aggregates.horizonSafetyIncomplete || 0,
+      horizonSafetyPassRate: aggregates.horizonSafetyPassRate || 0,
+      horizonSafetyFailureRate: aggregates.horizonSafetyFailureRate || 0,
+      horizonSafetyIncompleteRate: aggregates.horizonSafetyIncompleteRate || 0,
     },
     byPolicy: compactPolicyLedger(aggregates),
   };
@@ -6744,7 +6993,7 @@ function readIndexSummary(jsonPath, rootDir) {
     const htmlPath = reportHtmlPathForSummary(summary, jsonPath);
     const svgFiles = reportFieldSvgFiles(htmlPath);
     const detailRows = indexDetailRows(summary);
-    const okDetailRows = detailRows.filter((row) => row.status !== 'dry_run' && row.status !== 'failed');
+    const okDetailRows = detailRows.filter((row) => row.status === 'ok');
     const efficacyCounts = mergeCounts(okDetailRows.map((row) => row.efficacyCounts));
     const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
     const relJson = hrefRelative(rootDir, jsonPath);
@@ -6763,7 +7012,11 @@ function readIndexSummary(jsonPath, rootDir) {
     const completedMs =
       Date.parse(completedAt) || Date.parse(summary.startedAt || '') || fs.statSync(jsonPath).mtimeMs || 0;
     const status =
-      config.dryRun || aggregates.dryRun === aggregates.rows ? 'dry_run' : aggregates.failed ? 'failed' : 'ok';
+      config.dryRun || aggregates.dryRun === aggregates.rows
+        ? 'dry_run'
+        : aggregates.failed || aggregates.missing
+          ? 'failed'
+          : 'ok';
     const runKind = indexRunKind({ reportName, summary, config, aggregates, status });
     const htmlExists = fs.existsSync(htmlPath);
     return {
@@ -7745,7 +7998,7 @@ function expandIndexDetailRows(reportRows) {
 
 function summarizeIndexDetailRows(rows) {
   const liveRows = rows.filter((row) => row.status !== 'dry_run');
-  const okRows = liveRows.filter((row) => row.status !== 'failed');
+  const okRows = liveRows.filter((row) => row.status === 'ok');
   const totalTurns = okRows.reduce((sum, row) => sum + Number(row.turnCount || 0), 0);
   const efficacyCounts = mergeCounts(okRows.map((row) => row.efficacyCounts));
   const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
@@ -7758,6 +8011,7 @@ function summarizeIndexDetailRows(rows) {
     rows: liveRows.length,
     ok: okRows.length,
     failed: liveRows.filter((row) => row.status === 'failed').length,
+    missing: liveRows.filter((row) => row.status === 'missing').length,
     grounded: okRows.filter((row) => row.groundedClosure).length,
     closureRate: okRows.length
       ? Number((okRows.filter((row) => row.groundedClosure).length / okRows.length).toFixed(3))
@@ -9698,6 +9952,10 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
 }
 
 function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell = true, updateAssets = true } = {}) {
+  if (activeReadOnlySourceDir && pathIsWithin(rootDir, activeReadOnlySourceDir)) {
+    if (!quiet) console.log(`[auto-eval] preserved read-only source index root ${rootDir}`);
+    return path.join(rootDir, 'index.html');
+  }
   fs.mkdirSync(rootDir, { recursive: true });
   const rows = listAutoEvalSummaryFiles(rootDir)
     .map((jsonPath) => readIndexSummary(jsonPath, rootDir))
@@ -9739,6 +9997,10 @@ function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell
 function writeEvalLedger({ summary, summaryPath, htmlPath }) {
   if (args['no-ledger']) return;
   const ledgerPath = resolvePath(args.ledger);
+  if (activeReadOnlySourceDir && pathIsWithin(ledgerPath, activeReadOnlySourceDir)) {
+    console.log(`[auto-eval] preserved read-only source ledger root ${activeReadOnlySourceDir}`);
+    return;
+  }
   fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
   const entry = ledgerEntryForSummary({ summary, summaryPath, htmlPath });
   const entries = readLedgerEntries(ledgerPath).filter((row) => row.report?.json !== entry.report?.json);
@@ -9752,13 +10014,21 @@ function writeEvalLedger({ summary, summaryPath, htmlPath }) {
 
 function writeReportFromSummary(summaryPath) {
   const resolvedSummaryPath = resolvePath(summaryPath);
+  const sourceDir = path.dirname(resolvedSummaryPath);
+  const sourceSealPath = path.join(sourceDir, 'run-seal.json');
+  const sourceVerification = fs.existsSync(sourceSealPath) ? assertExperimentRun(sourceDir) : null;
+  const sourceSummarySha256 = hashFile(resolvedSummaryPath);
   const summary = JSON.parse(fs.readFileSync(resolvedSummaryPath, 'utf8'));
   const traceDir = resolveTracePath(summary.config?.traceDir || path.dirname(resolvedSummaryPath), ROOT);
   for (const result of summary.results || []) {
     const refreshed = (result.traces || [])
       .map((tracePath) => resolveTracePath(tracePath, traceDir))
       .filter((tracePath) => tracePath && fs.existsSync(tracePath))
-      .map((tracePath) => summarizeTrace(tracePath, traceDir));
+      .map((tracePath) =>
+        summarizeTrace(tracePath, traceDir, {
+          primaryHorizon: positiveInt(summary.config?.primaryHorizon || 16, 'summary.config.primaryHorizon'),
+        }),
+      );
     if (refreshed.length) {
       result.traceSummaries = refreshed;
     } else if (!Array.isArray(result.traceSummaries)) {
@@ -9768,13 +10038,37 @@ function writeReportFromSummary(summaryPath) {
   const rows = resultRows(summary.results || []);
   summary.aggregates = summarizeRows(rows);
   summary.rows = rows;
+  summary.adaptationEvidence = adaptationEvidenceForRows(rows, summary);
+  summary.evidence = {
+    runPlan: path.join(traceDir, 'run-plan.json'),
+    runEvents: path.join(traceDir, 'run-events.jsonl'),
+    runSeal: path.join(traceDir, 'run-seal.json'),
+  };
+  const derivedDir = uniqueSiblingDirectory(sourceDir, 'derived');
+  fs.mkdirSync(derivedDir, { recursive: false });
+  const derivedSummaryPath = path.join(derivedDir, `${path.basename(resolvedSummaryPath, '.json')}-derived.json`);
+  const derivedHtmlPath = derivedSummaryPath.replace(/\.json$/u, '.html');
+  summary.derivedFrom = {
+    sourceSummary: posixRelative(resolvedSummaryPath),
+    sourceSummarySha256,
+    sourceRunId: sourceVerification?.plan?.runId || null,
+    sourcePlanSha256: sourceVerification?.seal?.planSha256 || null,
+    sourceSealSha256: sourceVerification ? hashFile(sourceSealPath) : null,
+    sourceVerified: Boolean(sourceVerification),
+    derivedAt: new Date().toISOString(),
+  };
   summary.report = {
     ...(summary.report || {}),
-    html: resolvedSummaryPath.replace(/\.json$/u, '.html'),
+    json: derivedSummaryPath,
+    html: derivedHtmlPath,
   };
-  writeJsonAtomic(resolvedSummaryPath, summary);
-  writeHtmlReport({ summary, rows, htmlPath: summary.report.html });
-  writeEvalLedger({ summary, summaryPath: resolvedSummaryPath, htmlPath: summary.report.html });
+  writeJsonAtomic(derivedSummaryPath, summary);
+  writeHtmlReport({ summary, rows, htmlPath: derivedHtmlPath, updateIndex: false });
+  writeEvalLedger({ summary, summaryPath: derivedSummaryPath, htmlPath: derivedHtmlPath });
+  console.log(`[auto-eval] ${sourceVerification ? 'verified sealed source; ' : ''}preserved ${resolvedSummaryPath}`);
+  console.log(`[auto-eval] derived summary ${derivedSummaryPath}`);
+  console.log(`[auto-eval] derived report ${derivedHtmlPath}`);
+  return { sourcePath: resolvedSummaryPath, derivedDir, summaryPath: derivedSummaryPath, htmlPath: derivedHtmlPath };
 }
 
 function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
@@ -9820,6 +10114,12 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     String(normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })),
     '--dag-fact-dropout-seed',
     String(normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], { label: '--dag-fact-dropout-seed' })),
+    '--run-seed',
+    String(normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' })),
+    '--eval-repeat',
+    String(runIndex),
+    '--eval-job-id',
+    `${safeSlug(policy)}-r${runIndex}`,
     '--trace-dir',
     traceDir,
     '--no-stream',
@@ -9875,10 +10175,17 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
 
 function buildResumePlan(summaryPath) {
   const resolvedSummaryPath = resolvePath(summaryPath);
+  const sourceDir = path.dirname(resolvedSummaryPath);
+  const sourceSealPath = path.join(sourceDir, 'run-seal.json');
+  const sourceVerification = fs.existsSync(sourceSealPath) ? assertExperimentRun(sourceDir) : null;
   const source = JSON.parse(fs.readFileSync(resolvedSummaryPath, 'utf8'));
-  const traceDir = resolveTracePath(source.config?.traceDir || path.dirname(resolvedSummaryPath), ROOT);
+  const traceDir = uniqueSiblingDirectory(sourceDir, 'resume');
   const retryStatuses = new Set(csv(args['resume-statuses']));
-  const resumeStamp = safeTimestampForFile();
+  const parallelism = positiveInt(args.parallelism, '--parallelism');
+  const runSeed = normalizeTutorStubDagFactDropoutSeed(
+    RUN_SEED_OVERRIDE ? args['run-seed'] : (source.config?.runSeed ?? args['run-seed']),
+    { label: '--run-seed' },
+  );
   const retainedResults = [];
   const jobs = [];
 
@@ -9964,15 +10271,16 @@ function buildResumePlan(summaryPath) {
           })
         : '',
     );
+    adjustedChildArgs = withFlagValue(adjustedChildArgs, '--run-seed', runSeed);
     adjustedChildArgs = withBooleanFlag(adjustedChildArgs, '--no-memory-summary', args['no-memory-summary']);
-    assertSupportedChildArgs(adjustedChildArgs);
-    const childTraceDir = flagValue(adjustedChildArgs, '--trace-dir');
-    if (!childTraceDir) {
-      throw new Error(`Cannot resume ${result.policy || 'unknown'} run ${result.runIndex || '?'}: missing --trace-dir`);
-    }
     const policy = result.policy || 'unknown';
     const runIndex = Number(result.runIndex || jobs.length + 1);
     const key = `${safeSlug(policy)}-r${runIndex}`;
+    const childTraceDir = parallelism > 1 ? path.join(traceDir, 'traces', key) : traceDir;
+    adjustedChildArgs = withFlagValue(adjustedChildArgs, '--trace-dir', childTraceDir);
+    adjustedChildArgs = withFlagValue(adjustedChildArgs, '--eval-repeat', runIndex);
+    adjustedChildArgs = withFlagValue(adjustedChildArgs, '--eval-job-id', key);
+    assertSupportedChildArgs(adjustedChildArgs);
     jobs.push({
       ordinal: jobs.length + 1,
       policy,
@@ -9980,7 +10288,7 @@ function buildResumePlan(summaryPath) {
       runs: source.config?.runs || result.runIndex || 1,
       key,
       traceDir: childTraceDir,
-      logPath: path.join(traceDir, 'logs', `${key}-resume-${resumeStamp}.log`),
+      logPath: path.join(traceDir, 'logs', `${key}.log`),
       childArgs: adjustedChildArgs,
       resumedFrom: {
         summary: path.relative(ROOT, resolvedSummaryPath),
@@ -9991,15 +10299,41 @@ function buildResumePlan(summaryPath) {
     });
   }
 
+  const sourcePlanPath = path.join(sourceDir, 'run-plan.json');
+  const sourceEventsPath = path.join(sourceDir, 'run-events.jsonl');
+  const sourcePlan = readOptionalJson(sourcePlanPath);
+  const sourceSeal = readOptionalJson(sourceSealPath);
+  const lineageArtifacts = {
+    sourceSummary: posixRelative(resolvedSummaryPath),
+    sourceSummarySha256: hashFile(resolvedSummaryPath),
+    sourcePlanSha256: fs.existsSync(sourcePlanPath) ? hashFile(sourcePlanPath) : null,
+    sourceEventsSha256: fs.existsSync(sourceEventsPath) ? hashFile(sourceEventsPath) : null,
+    sourceSealSha256: fs.existsSync(sourceSealPath) ? hashFile(sourceSealPath) : null,
+    sourceInventorySha256: sourceSeal?.inventorySha256 || null,
+    sourceVerified: Boolean(sourceVerification),
+  };
+
   return {
     source,
     sourcePath: resolvedSummaryPath,
+    sourceDir,
+    sourceRunId: sourcePlan?.runId || path.basename(sourceDir),
+    lineageArtifacts,
     traceDir,
     retainedResults,
     jobs,
     config: {
       ...(source.config || {}),
       traceDir,
+      runSeed,
+      dryRun: Boolean(args['dry-run']),
+      model: MODEL_OVERRIDE ? args.model : source.config?.model || args.model,
+      analysisModel: ANALYSIS_MODEL_OVERRIDE
+        ? args['analysis-model']
+        : source.config?.analysisModel || args['analysis-model'],
+      autoLearnerModel: AUTO_LEARNER_MODEL_OVERRIDE
+        ? args['auto-learner-model']
+        : source.config?.autoLearnerModel || args['auto-learner-model'],
       maxTokens: args['max-tokens']
         ? positiveInt(args['max-tokens'], '--max-tokens')
         : source.config?.maxTokens || source.config?.max_tokens || null,
@@ -10039,6 +10373,269 @@ function buildResumePlan(summaryPath) {
   };
 }
 
+function logicalArtifactPath(filePath, runDir) {
+  const absolute = path.resolve(filePath);
+  const relative = path.relative(path.resolve(runDir), absolute);
+  if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+    return path.posix.join('{run_dir}', relative.split(path.sep).join('/'));
+  }
+  return posixRelative(absolute);
+}
+
+function logicalChildArgs(childArgs, runDir) {
+  const logical = [...childArgs];
+  for (const flag of ['--trace-dir']) {
+    const index = logical.indexOf(flag);
+    if (index !== -1 && logical[index + 1]) logical[index + 1] = logicalArtifactPath(logical[index + 1], runDir);
+  }
+  return logical;
+}
+
+function evidenceDesign(config, jobs, resumePlan = null) {
+  return {
+    config: {
+      ...config,
+      traceDir: '{run_dir}',
+    },
+    jobOrder: jobs.map((job) => job.key),
+    commands: jobs.map((job) => ({ id: job.key, arguments: logicalChildArgs(job.childArgs, config.traceDir) })),
+    resume: resumePlan
+      ? {
+          sourceRunId: resumePlan.sourceRunId,
+          statuses: csv(args['resume-statuses']),
+          retainedRows: resumePlan.retainedResults.length,
+          retriedRows: jobs.length,
+          artifacts: resumePlan.lineageArtifacts,
+        }
+      : null,
+  };
+}
+
+function buildAutoEvalEvidencePlan({ traceDir, startedAt, jobs, config, resumePlan = null }) {
+  const design = evidenceDesign(config, jobs, resumePlan);
+  const git = captureGitFingerprint({ repoRoot: ROOT });
+  delete git.repoRoot;
+  const tutorStub = path.join(ROOT, 'scripts', 'tutor-stub.js');
+  const profileContracts = path.join(ROOT, 'scripts', 'tutor-stub-learner-profile-contracts.js');
+  const policySources = [
+    tutorStub,
+    path.join(ROOT, 'services', 'tutorStubPolicySampler.js'),
+    path.join(ROOT, 'services', 'tutorStubContinuousRegister.js'),
+    path.join(ROOT, 'services', 'engagementRegisterRegistry.js'),
+    path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js'),
+  ];
+  const worldPath = worldSourcePath(config.world);
+  const plannedJobs = jobs.length
+    ? jobs.map((job) => ({
+        id: job.key,
+        profile: config.autoLearnerProfileId,
+        policy: job.policy,
+        repeat: job.runIndex,
+        ordinal: job.ordinal,
+        world: config.world,
+        artifactRoot: logicalArtifactPath(job.traceDir, traceDir),
+        log: logicalArtifactPath(job.logPath, traceDir),
+        arguments: logicalChildArgs(job.childArgs, traceDir),
+      }))
+    : [{ id: 'resume-noop', ordinal: 1, operation: 'preserve_completed_source_rows' }];
+  const modelRefs = {
+    tutor: config.model || args.model,
+    analyzer: config.analysisModel || args['analysis-model'],
+    learner: config.autoLearnerModel || args['auto-learner-model'],
+  };
+  const requiredRandomDrawJobIds = config.dryRun
+    ? []
+    : plannedJobs.filter((job) => tutorStubPolicyRequiresDeterministicDraw(job.policy)).map((job) => job.id);
+  return buildExperimentRunPlan({
+    runId: path.basename(path.resolve(traceDir)),
+    createdAt: startedAt,
+    runner: 'scripts/run-tutor-stub-auto-eval.js',
+    provenance: { git },
+    models: {
+      tutor: evidenceModel(modelRefs.tutor),
+      analyzer: evidenceModel(modelRefs.analyzer),
+      learner: evidenceModel(modelRefs.learner),
+    },
+    requiredObservedModelRoles: config.dryRun || !jobs.length ? [] : ['tutor', 'analyzer', 'learner'],
+    hashes: {
+      runner: hashFile(AUTO_EVAL_SCRIPT),
+      analyzer: hashFile(AUTO_EVAL_SCRIPT),
+      policy: hashFileSet(policySources),
+      profile: hashFile(profileContracts),
+      prompt: hashFile(tutorStub),
+      world: worldPath ? hashFile(worldPath) : hashCanonicalJson({ world: config.world || 'none' }),
+      config: hashCanonicalJson(design),
+    },
+    masterSeed: config.runSeed,
+    jobs: plannedJobs,
+    lineage: resumePlan
+      ? { parentRunId: resumePlan.sourceRunId, resumeOf: resumePlan.sourceRunId, supersedes: [] }
+      : { parentRunId: config.parentRunId || null, resumeOf: null, supersedes: [] },
+    intent: {
+      design,
+      sourceLineage: resumePlan?.lineageArtifacts || null,
+      claimBoundary: 'Dry runs validate orchestration only; simulated learner outcomes do not estimate human learning.',
+    },
+    metadata: {
+      designSha256: hashCanonicalJson(design),
+      sourceSummarySha256: resumePlan?.lineageArtifacts?.sourceSummarySha256 || null,
+      sourcePlanSha256: resumePlan?.lineageArtifacts?.sourcePlanSha256 || null,
+      sourceSealSha256: resumePlan?.lineageArtifacts?.sourceSealSha256 || null,
+      randomDrawContract: {
+        schema: EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+        requiredJobIds: requiredRandomDrawJobIds,
+        minimumPerJob: 1,
+      },
+    },
+  });
+}
+
+function collectPolicyDrawsFromResults(results, traceDir, evidencePlan) {
+  const order = new Map(evidencePlan.randomization.jobOrder.map((jobId, index) => [jobId, index]));
+  const traces = [...new Set((results || []).flatMap((result) => result.traces || []))];
+  const rows = [];
+  const seen = new Set();
+  for (const trace of traces) {
+    const tracePath = resolveTracePath(trace, traceDir);
+    if (!tracePath || !fs.existsSync(tracePath)) continue;
+    const lines = fs.readFileSync(tracePath, 'utf8').split('\n');
+    for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].trim()) continue;
+      let event;
+      try {
+        event = JSON.parse(lines[index]);
+      } catch (error) {
+        throw new Error(`Invalid JSONL evidence at ${tracePath}:${index + 1}: ${error.message}`);
+      }
+      for (const decision of extractTutorStubPolicyDrawDecisions(event)) {
+        const jobId = String(decision?.material?.jobId || '').trim();
+        if (!jobId || !order.has(jobId)) {
+          throw new Error(
+            `Policy draw at ${tracePath}:${index + 1} names unknown evidence-plan job ${JSON.stringify(jobId || null)}`,
+          );
+        }
+        const digest = hashCanonicalJson(decision);
+        if (seen.has(digest)) continue;
+        seen.add(digest);
+        rows.push({
+          jobId,
+          decision,
+          sourceTrace: logicalArtifactPath(tracePath, traceDir),
+          sourceRecord: index + 1,
+          digest,
+        });
+      }
+    }
+  }
+  return rows.sort(
+    (left, right) =>
+      order.get(left.jobId) - order.get(right.jobId) ||
+      Number(left.decision.material?.learnerTurn || 0) - Number(right.decision.material?.learnerTurn || 0) ||
+      String(left.decision.material?.decisionKind || '').localeCompare(
+        String(right.decision.material?.decisionKind || ''),
+      ) ||
+      left.digest.localeCompare(right.digest),
+  );
+}
+
+function appendPolicyDrawEvents(traceDir, results, evidencePlan) {
+  for (const row of collectPolicyDrawsFromResults(results, traceDir, evidencePlan)) {
+    appendRunEvent(traceDir, {
+      type: 'random_draw',
+      jobId: row.jobId,
+      sourceJobId: row.jobId,
+      sourceTrace: row.sourceTrace,
+      sourceRecord: row.sourceRecord,
+      decision: row.decision,
+    });
+  }
+}
+
+function collectObservedModelsFromResults(results, traceDir) {
+  const observations = new Map();
+  const traces = [...new Set((results || []).flatMap((result) => result.traces || []))];
+  for (const trace of traces) {
+    const tracePath = resolveTracePath(trace, traceDir);
+    if (!tracePath || !fs.existsSync(tracePath)) continue;
+    const lines = fs.readFileSync(tracePath, 'utf8').split('\n');
+    for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].trim()) continue;
+      let event;
+      try {
+        event = JSON.parse(lines[index]);
+      } catch (error) {
+        throw new Error(`Invalid JSONL evidence at ${tracePath}:${index + 1}: ${error.message}`);
+      }
+      recordTutorStubModelObservation(observations, event, {
+        source: `${tracePath}:${index + 1}`,
+      });
+    }
+  }
+  return observations;
+}
+
+function appendObservedModelEvents(traceDir, results, evidencePlan) {
+  const observations = collectObservedModelsFromResults(results, traceDir);
+  for (const [role, models] of [...observations.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+    for (const observed of [...models].sort()) {
+      appendRunEvent(traceDir, {
+        type: 'model_observed',
+        role,
+        requested: evidencePlan.models?.[role]?.requested || null,
+        resolved: evidencePlan.models?.[role]?.resolved || null,
+        observed,
+      });
+    }
+  }
+}
+
+function startEvidenceTransaction({ traceDir, startedAt, jobs, config, resumePlan = null }) {
+  fs.mkdirSync(traceDir, { recursive: true });
+  const evidencePlan = buildAutoEvalEvidencePlan({ traceDir, startedAt, jobs, config, resumePlan });
+  createRunPlan(traceDir, evidencePlan);
+  appendRunEvent(traceDir, {
+    type: 'run_planned',
+    dryRun: config.dryRun,
+    jobs: jobs.length,
+    policies: [...new Set(jobs.map((job) => job.policy))],
+    resumeOf: resumePlan?.sourceRunId || null,
+  });
+  appendRunEvent(traceDir, { type: 'run_started', dryRun: config.dryRun });
+  return evidencePlan;
+}
+
+function sealEvidenceTransaction({
+  traceDir,
+  evidencePlan,
+  results,
+  observedResults = results,
+  status,
+  summaryPath,
+  resumePlan = null,
+}) {
+  appendPolicyDrawEvents(traceDir, observedResults, evidencePlan);
+  appendObservedModelEvents(traceDir, observedResults, evidencePlan);
+  appendRunEvent(traceDir, {
+    type: 'run_completed',
+    status,
+    resultCount: results.length,
+    summary: logicalArtifactPath(summaryPath, traceDir),
+  });
+  createRunSeal(traceDir, {
+    status,
+    metadata: {
+      results: results.length,
+      ok: results.filter((result) => result.status === 'ok').length,
+      failed: results.filter((result) => result.status === 'failed').length,
+      dryRun: results.filter((result) => result.status === 'dry_run').length,
+      resumeOf: resumePlan?.sourceRunId || null,
+    },
+  });
+  const verification = assertExperimentRun(traceDir);
+  console.log(`[auto-eval] sealed and verified ${traceDir}`);
+  return verification;
+}
+
 function autoEvalConfigForState({ traceDir, configOverride = null }) {
   return (
     configOverride || {
@@ -10046,12 +10643,14 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       turns: turnsArg(),
       untilGrounded: Boolean(args['until-grounded']),
       safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
+      primaryHorizon: positiveInt(args['primary-horizon'], '--primary-horizon'),
       parallelism: positiveInt(args.parallelism, '--parallelism'),
       policies: policyCsv(args.policies),
       model: args.model,
       analysisModel: args['analysis-model'],
       autoLearnerModel: args['auto-learner-model'],
       autoLearnerProfileId: autoLearnerProfileLabel(),
+      parentRunId: String(args['parent-run-id'] || '').trim() || null,
       autoLearnerProfileContract:
         autoLearnerProfileLabel() === 'custom' ? null : learnerProfileContractSummary(resolvedAutoLearnerProfileId()),
       interleavePolicies: Boolean(args['interleave-policies']),
@@ -10073,6 +10672,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       dagFactDropoutSeed: normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
         label: '--dag-fact-dropout-seed',
       }),
+      runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',
         backgroundFactsImmune: true,
@@ -10179,7 +10779,7 @@ function writeRunStateSnapshot(context) {
   return statePath;
 }
 
-function runChildJob(job) {
+function runChildJob(job, { primaryHorizon = positiveInt(args['primary-horizon'], '--primary-horizon') } = {}) {
   return new Promise((resolve) => {
     fs.mkdirSync(job.traceDir, { recursive: true });
     fs.mkdirSync(path.dirname(job.logPath), { recursive: true });
@@ -10204,7 +10804,11 @@ function runChildJob(job) {
     child.on('close', (status, signal) => {
       const after = listTraceFiles(job.traceDir);
       const newTraces = after.filter((file) => !before.has(file));
-      const traceSummaries = newTraces.map((tracePath) => summarizeTrace(tracePath, job.traceDir));
+      const traceSummaries = newTraces.map((tracePath) =>
+        summarizeTrace(tracePath, job.traceDir, {
+          primaryHorizon,
+        }),
+      );
       const result = {
         key: job.key,
         policy: job.policy,
@@ -10223,7 +10827,15 @@ function runChildJob(job) {
   });
 }
 
-async function runJobs({ jobs, parallelism, traceDir, startedAt, configOverride = null, resume = null }) {
+async function runJobs({
+  jobs,
+  parallelism,
+  traceDir,
+  startedAt,
+  configOverride = null,
+  resume = null,
+  evidenceDir = null,
+}) {
   const results = [];
   const activeJobs = new Map();
   let cursor = 0;
@@ -10255,6 +10867,15 @@ async function runJobs({ jobs, parallelism, traceDir, startedAt, configOverride 
       const job = jobs[cursor];
       cursor += 1;
       activeJobs.set(job.key, job);
+      if (evidenceDir) {
+        appendRunEvent(evidenceDir, {
+          type: 'job_started',
+          jobId: job.key,
+          ordinal: job.ordinal,
+          policy: job.policy,
+          repeat: job.runIndex,
+        });
+      }
       writeRunStateSnapshot(stateContext());
       console.log(`\n[auto-eval] policy=${job.policy} run=${job.runIndex}/${job.runs}`);
       printProgress({
@@ -10274,10 +10895,22 @@ async function runJobs({ jobs, parallelism, traceDir, startedAt, configOverride 
             log: path.relative(ROOT, job.logPath),
             command: ['node', ...job.childArgs],
           }
-        : await runChildJob(job);
+        : await runChildJob(job, {
+            primaryHorizon: positiveInt(configOverride?.primaryHorizon || args['primary-horizon'], 'primary horizon'),
+          });
       activeJobs.delete(job.key);
       results.push(result);
       completed += 1;
+      if (evidenceDir) {
+        appendRunEvent(evidenceDir, {
+          type: 'job_completed',
+          jobId: job.key,
+          ordinal: job.ordinal,
+          status: result.status,
+          exitCode: result.exitCode ?? null,
+          traceCount: result.traces?.length || 0,
+        });
+      }
       writeRunStateSnapshot(stateContext());
       const primary = result.traceSummaries?.at(-1);
       const outcome = primary
@@ -10328,22 +10961,56 @@ async function main() {
   }
   if (args['resume-from']) {
     const plan = buildResumePlan(args['resume-from']);
+    activeReadOnlySourceDir = plan.sourceDir;
     const parallelism = positiveInt(args.parallelism, '--parallelism');
+    const startedAt = new Date().toISOString();
+    const evidencePlan = startEvidenceTransaction({
+      traceDir: plan.traceDir,
+      startedAt,
+      jobs: plan.jobs,
+      config: plan.config,
+      resumePlan: plan,
+    });
     if (!plan.jobs.length) {
       console.log(
         `[auto-eval] no rows with status ${args['resume-statuses']} found in ${path.relative(ROOT, plan.sourcePath)}`,
       );
-      writeSummary({
+      appendRunEvent(plan.traceDir, {
+        type: 'job_started',
+        jobId: 'resume-noop',
+        ordinal: 1,
+      });
+      appendRunEvent(plan.traceDir, {
+        type: 'job_completed',
+        jobId: 'resume-noop',
+        ordinal: 1,
+        status: 'complete',
+      });
+      const report = writeSummary({
         traceDir: plan.traceDir,
-        startedAt: new Date().toISOString(),
+        startedAt,
         results: plan.retainedResults,
+        plannedJobs: [],
         failed: false,
         configOverride: plan.config,
         resume: { sourcePath: plan.sourcePath, retried: 0, statuses: csv(args['resume-statuses']) },
       });
+      appendRunEvent(plan.traceDir, {
+        type: 'report_written',
+        summary: logicalArtifactPath(report.summaryPath, plan.traceDir),
+        html: report.htmlPath ? logicalArtifactPath(report.htmlPath, plan.traceDir) : null,
+      });
+      sealEvidenceTransaction({
+        traceDir: plan.traceDir,
+        evidencePlan,
+        results: plan.retainedResults,
+        observedResults: [],
+        status: args['dry-run'] ? 'dry_run' : 'complete',
+        summaryPath: report.summaryPath,
+        resumePlan: plan,
+      });
       return;
     }
-    const startedAt = new Date().toISOString();
     printProgress({
       completed: 0,
       total: plan.jobs.length,
@@ -10361,11 +11028,14 @@ async function main() {
       startedAt,
       configOverride: plan.config,
       resume: resumeState,
+      evidenceDir: plan.traceDir,
     });
-    writeSummary({
+    const combinedResults = [...plan.retainedResults, ...retriedResults];
+    const report = writeSummary({
       traceDir: plan.traceDir,
       startedAt,
-      results: [...plan.retainedResults, ...retriedResults],
+      results: combinedResults,
+      plannedJobs: plan.jobs,
       failed: aborted,
       configOverride: plan.config,
       resume: {
@@ -10373,6 +11043,20 @@ async function main() {
         retried: retriedResults.length,
         statuses: csv(args['resume-statuses']),
       },
+    });
+    appendRunEvent(plan.traceDir, {
+      type: 'report_written',
+      summary: logicalArtifactPath(report.summaryPath, plan.traceDir),
+      html: report.htmlPath ? logicalArtifactPath(report.htmlPath, plan.traceDir) : null,
+    });
+    sealEvidenceTransaction({
+      traceDir: plan.traceDir,
+      evidencePlan,
+      results: combinedResults,
+      observedResults: retriedResults,
+      status: aborted ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
+      summaryPath: report.summaryPath,
+      resumePlan: plan,
     });
     if (aborted) process.exit(1);
     return;
@@ -10390,9 +11074,7 @@ async function main() {
   }
   const policies = policyCsv(args.policies);
   if (!policies.length) throw new Error('--policies must include at least one policy');
-  const traceDir = resolvePath(args['trace-dir']);
-  fs.mkdirSync(traceDir, { recursive: true });
-
+  const traceDir = freshTraceDir();
   const startedAt = new Date().toISOString();
   const jobs = buildJobs({
     policies,
@@ -10401,20 +11083,49 @@ async function main() {
     parallelism,
     interleavePolicies: Boolean(args['interleave-policies']),
   });
+  const config = autoEvalConfigForState({ traceDir });
+  const evidencePlan = startEvidenceTransaction({ traceDir, startedAt, jobs, config });
   printProgress({ completed: 0, total: jobs.length, label: `starting; parallelism ${parallelism}` });
-  const { results, aborted } = await runJobs({ jobs, parallelism, traceDir, startedAt });
-  writeSummary({ traceDir, startedAt, results, failed: aborted });
+  const { results, aborted } = await runJobs({
+    jobs,
+    parallelism,
+    traceDir,
+    startedAt,
+    evidenceDir: traceDir,
+  });
+  const report = writeSummary({ traceDir, startedAt, results, plannedJobs: jobs, failed: aborted });
+  appendRunEvent(traceDir, {
+    type: 'report_written',
+    summary: logicalArtifactPath(report.summaryPath, traceDir),
+    html: report.htmlPath ? logicalArtifactPath(report.htmlPath, traceDir) : null,
+  });
+  sealEvidenceTransaction({
+    traceDir,
+    evidencePlan,
+    results,
+    status: aborted ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
+    summaryPath: report.summaryPath,
+  });
   if (aborted) process.exit(1);
 }
 
-function writeSummary({ traceDir, startedAt, results, failed, configOverride = null, resume = null }) {
+function writeSummary({
+  traceDir,
+  startedAt,
+  results,
+  plannedJobs = [],
+  failed,
+  configOverride = null,
+  resume = null,
+}) {
   fs.mkdirSync(traceDir, { recursive: true });
+  const summaryConfig = autoEvalConfigForState({ traceDir, configOverride });
   const summary = {
     schema: 'machinespirits.tutor-stub.auto-eval.v1',
     startedAt,
     completedAt: new Date().toISOString(),
     failed,
-    config: autoEvalConfigForState({ traceDir, configOverride }),
+    config: summaryConfig,
     results,
   };
   if (resume) {
@@ -10423,10 +11134,18 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
       sourcePath: resume.sourcePath ? path.relative(ROOT, resume.sourcePath) : null,
     };
   }
-  const rows = resultRows(results);
+  const rows = resultRows(results, {
+    plannedJobs,
+    primaryHorizon: summaryConfig.primaryHorizon,
+  });
   summary.aggregates = summarizeRows(rows);
   summary.rows = rows;
   summary.adaptationEvidence = adaptationEvidenceForRows(rows, summary);
+  summary.evidence = {
+    runPlan: path.join(traceDir, 'run-plan.json'),
+    runEvents: path.join(traceDir, 'run-events.jsonl'),
+    runSeal: path.join(traceDir, 'run-seal.json'),
+  };
   const timestamp = safeTimestampForFile();
   const summaryPath = path.join(traceDir, `auto-eval-${timestamp}.json`);
   const htmlPath = path.join(traceDir, `auto-eval-${timestamp}.html`);
@@ -10443,6 +11162,7 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
   if (args['no-html-report']) {
     writeReportIndex();
   }
+  return { summary, rows, summaryPath, htmlPath: args['no-html-report'] ? null : htmlPath };
 }
 
 try {

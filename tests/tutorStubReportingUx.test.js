@@ -458,12 +458,26 @@ test('report regeneration persists DAG dropout metrics from JSONL-safe nested tu
     )}\n`,
   );
 
+  const sourceBefore = fs.readFileSync(summaryPath, 'utf8');
   execFileSync(process.execPath, ['scripts/run-tutor-stub-auto-eval.js', '--report-from', summaryPath, '--no-ledger'], {
     cwd: ROOT,
     encoding: 'utf8',
   });
 
-  const repaired = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+  assert.equal(fs.readFileSync(summaryPath, 'utf8'), sourceBefore);
+  const derivedDir = fs
+    .readdirSync(path.dirname(root), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith(`${path.basename(root)}-derived-`))
+    .map((entry) => path.join(path.dirname(root), entry.name))
+    .at(0);
+  assert.ok(derivedDir);
+  const derivedSummaryPath = fs
+    .readdirSync(derivedDir)
+    .filter((entry) => entry.endsWith('-derived.json'))
+    .map((entry) => path.join(derivedDir, entry))
+    .at(0);
+  assert.ok(derivedSummaryPath);
+  const repaired = JSON.parse(fs.readFileSync(derivedSummaryPath, 'utf8'));
   assert.deepEqual(repaired.rows[0].dagFactDropout, {
     configuredRate: 0.15,
     seed: 17,
@@ -473,7 +487,7 @@ test('report regeneration persists DAG dropout metrics from JSONL-safe nested tu
     activeAtEnd: 1,
   });
   assert.deepEqual(repaired.results[0].traceSummaries[0].dagFactDropout, repaired.rows[0].dagFactDropout);
-  const htmlPath = summaryPath.replace(/\.json$/u, '.html');
+  const htmlPath = derivedSummaryPath.replace(/\.json$/u, '.html');
   assert.ok(fs.existsSync(htmlPath));
   const html = fs.readFileSync(htmlPath, 'utf8');
   assert.match(html, /DAG Dropout/u);

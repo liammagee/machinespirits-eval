@@ -181,6 +181,7 @@ function fallbackTrainingExamples(row = {}) {
         tutorText: turn.tutor || frame.snippets?.tutor || '',
       },
       stateBeforeAction: {
+        observation: frame.state?.observation || null,
         learnerText: turn.learner || frame.snippets?.learner || '',
         learnerState: turn.learnerState || frame.state?.classifier || {},
         dag: frame.state?.dag || turn.dag || {},
@@ -423,8 +424,9 @@ function migrate(db) {
 	      register_policy TEXT,
 	      register_vector_json TEXT,
 	      register_distribution_json TEXT,
-	      register_entropy_bits REAL,
-	      state_vector_json TEXT,
+		      register_entropy_bits REAL,
+		      state_observation_json TEXT,
+		      state_vector_json TEXT,
 	      derivative_vector_json TEXT,
 	      dag_json TEXT,
 	      learner_state_json TEXT,
@@ -525,8 +527,9 @@ function migrate(db) {
 	        frames.response_configuration_json,
 	        frames.response_configuration_audit_json,
 	        frames.register_policy,
-	        frames.register_entropy_bits,
-	        frames.delta_mastery,
+		        frames.register_entropy_bits,
+		        frames.state_observation_json,
+		        frames.delta_mastery,
 	        frames.delta_risk,
 	        frames.delta_coverage,
 	        frames.delta_alignment,
@@ -583,6 +586,7 @@ function migrate(db) {
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'response_configuration_audit_json', 'TEXT');
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'configuration_realization_rate', 'REAL');
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'configuration_transcript_visible', 'INTEGER');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'state_observation_json', 'TEXT');
 }
 
 function ingestSummary(db, summaryPath) {
@@ -752,8 +756,8 @@ function ingestSummary(db, summaryPath) {
         action_family, audience_register, lexical_accessibility, scene_immersion,
         response_configuration_json, response_configuration_audit_json,
         configuration_realization_rate, configuration_transcript_visible,
-        register_policy, register_vector_json, register_distribution_json,
-        register_entropy_bits, state_vector_json, derivative_vector_json,
+	        register_policy, register_vector_json, register_distribution_json,
+	        register_entropy_bits, state_observation_json, state_vector_json, derivative_vector_json,
         dag_json, learner_state_json, field_json, trajectory_json,
         human_discourse_json, scaffold_state_json, side_arc_json, proof_debt_json,
         warrant_premise_audit_json, learner_text, tutor_text, response_json,
@@ -765,8 +769,8 @@ function ingestSummary(db, summaryPath) {
         @action_family, @audience_register, @lexical_accessibility, @scene_immersion,
         @response_configuration_json, @response_configuration_audit_json,
         @configuration_realization_rate, @configuration_transcript_visible,
-        @register_policy, @register_vector_json, @register_distribution_json,
-        @register_entropy_bits, @state_vector_json, @derivative_vector_json,
+	        @register_policy, @register_vector_json, @register_distribution_json,
+	        @register_entropy_bits, @state_observation_json, @state_vector_json, @derivative_vector_json,
         @dag_json, @learner_state_json, @field_json, @trajectory_json,
         @human_discourse_json, @scaffold_state_json, @side_arc_json, @proof_debt_json,
         @warrant_premise_audit_json, @learner_text, @tutor_text, @response_json,
@@ -855,6 +859,7 @@ function ingestSummary(db, summaryPath) {
           register_vector_json: safeJson(action.registerVector || null),
           register_distribution_json: safeJson(action.registerDistribution || []),
           register_entropy_bits: numberOrNull(action.registerVectorEntropyBits),
+          state_observation_json: safeJson(before.observation || null),
           state_vector_json: safeJson(before.stateVector || {}),
           derivative_vector_json: safeJson(before.derivativeVector || {}),
           dag_json: safeJson(before.dag || {}),

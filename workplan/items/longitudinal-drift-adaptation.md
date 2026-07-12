@@ -1,13 +1,13 @@
 ---
 id: longitudinal-drift-adaptation
 title: Longitudinal drift adaptation (cross-session memory as new signal)
-status: review
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-06
-updated: 2026-07-07
+updated: 2026-07-11
 verification: Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.
 claim_status: exploratory
 links:
@@ -365,3 +365,10 @@ outcomes are fresh-prereg territory. Artifacts:
 exports/longitudinal-drift-stage-a5.{json,md}; runs
 eval-2026-07-07-{7dbccd2f,33d38153} (excluded precondition failures),
 eval-2026-07-07-{74fc5845,a858c7b4,72f7d609} (arm 3).
+
+2026-07-11 Codex closeout: Closed as a bounded negative/instrument audit. The
+arc repaired valuable Writing Pad and negotiation-threading plumbing, but its
+memory-use outcome remains null or non-evaluable under echo/floor-confounded
+instruments. Reuse the typed persistence, delivery witnesses, and checker
+lessons; do not carry the longitudinal adaptation claim forward without a new
+echo-clean preregistration and independent outcome.

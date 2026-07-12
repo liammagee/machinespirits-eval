@@ -1,13 +1,13 @@
 ---
 id: abm-learner-population
 title: ABM learner population (curated persona panel, manipulation check)
-status: review
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-06
-updated: 2026-07-07
+updated: 2026-07-11
 verification: Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.
 claim_status: exploratory
 links:
@@ -207,3 +207,10 @@ tried so far. Stack-specific finding, not a general sycophancy claim
 routes to stop-and-record; a fourth stimulus redesign is explicitly NOT
 authorized without a fresh user go. Tutor-allocation contrast remains
 not authorized. STOP — Line B closed pending a fresh go.
+
+2026-07-11 Codex closeout: Closed the failed yield-manipulation line at its
+predeclared stop. Three solicitation designs plus the time-pressure probe did
+not open the compliant-yield channel on this stack; resistance markers remain
+descriptive, not simulator-validity evidence. Reuse the panel plumbing only.
+Do not make this persona mechanism a prerequisite for adaptive-tutor validity,
+and do not launch a tutor-allocation contrast without a new preregistration.
