@@ -20,6 +20,7 @@ import { parseArgs } from 'node:util';
 import { loadPersona } from '../services/abmLearnerPopulation.js';
 import { buildInteriorCharacterSheet } from '../services/learnerInteriorGate.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+import { parseTutorStubRegisterPolicyStack } from '../services/tutorStubRegisterPolicyComposition.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -105,6 +106,7 @@ Options:
                           automated learner model (default: codex.gpt-5.5)
   --world <id|path|none>  tutor-stub detective world (default: world_005_marrick)
   --register-policy <${REGISTER_POLICIES.join('|')}>
+                          append +state and/or +field for strong-change overlays
   --register-palette <all|safe|negative|non-simulated|csv>
   --cli-effort <level>    low, medium, high, xhigh, max, or config
   --until-grounded        legacy alias for --turns until-grounded
@@ -121,9 +123,9 @@ function positiveInt(value, name) {
 }
 
 export function normalizeRegisterPolicy(value) {
-  const policy = String(value || 'dynamic').trim().toLowerCase().replace(/-/gu, '_');
-  if (REGISTER_POLICIES.includes(policy)) return policy;
-  throw new Error(`--register-policy must be one of: ${REGISTER_POLICIES.join(', ')}`);
+  const stack = parseTutorStubRegisterPolicyStack(value || 'dynamic');
+  if (REGISTER_POLICIES.includes(stack.primary)) return stack.id;
+  throw new Error(`--register-policy must use a primary from: ${REGISTER_POLICIES.join(', ')}`);
 }
 
 export function autoTurnsArg(args) {

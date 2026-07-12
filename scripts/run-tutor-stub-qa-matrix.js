@@ -12,6 +12,7 @@ import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { normalizeTutorStubRegisterOverlayThreshold } from '../services/tutorStubRegisterPolicyComposition.js';
 import {
   learnerProfileSuite,
   learnerProfileSuiteIds,
@@ -49,6 +50,13 @@ const { values: args } = parseArgs({
     parallelism: { type: 'string', default: process.env.TUTOR_STUB_EVAL_PARALLELISM || '6' },
     'progress-interval': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PROGRESS_INTERVAL || '30' },
     'register-palette': { type: 'string', default: 'all' },
+    'register-overlay-threshold': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_REGISTER_OVERLAY_THRESHOLD ||
+        process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD ||
+        '0.7',
+    },
     'cli-effort': { type: 'string', default: process.env.TUTOR_STUB_EVAL_CLI_EFFORT || 'low' },
     'max-tokens': { type: 'string', default: process.env.TUTOR_STUB_EVAL_MAX_TOKENS || '4096' },
     'history-turns': { type: 'string', default: process.env.TUTOR_STUB_EVAL_HISTORY_TURNS || '4' },
@@ -105,6 +113,8 @@ Options:
   --from-dir <path>      build only consolidated QA reports from existing summaries;
                          preserve any existing qa-plan.json
   --baseline-policy <p>  same-learner comparison baseline (default: bland)
+  --register-overlay-threshold <n>
+                         strong-change threshold for composed +state/+field policies (default: 0.7)
   --dry-run              pass --dry-run to auto-eval children
   --print-plan           print the reproducible plan and exit
   --json                 JSON output for --print-plan
@@ -235,6 +245,13 @@ function autoEvalArgsForProfile({ profile, traceDir, policies }) {
   pushOptionalFlag(command, '--max-tokens', args['max-tokens']);
   pushOptionalFlag(command, '--history-turns', args['history-turns']);
   pushOptionalFlag(command, '--pressure-turns', args['pressure-turns']);
+  pushOptionalFlag(
+    command,
+    '--register-overlay-threshold',
+    normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+      label: '--register-overlay-threshold',
+    }),
+  );
   if (args['interleave-policies']) command.push('--interleave-policies');
   pushOptionalFlag(command, '--first-message', args['first-message']);
   if (args['dry-run']) command.push('--dry-run');
@@ -323,6 +340,9 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
     interleavePolicies: Boolean(args['interleave-policies']),
     pressureTurns: args['pressure-turns'] || null,
+    registerOverlayThreshold: normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+      label: '--register-overlay-threshold',
+    }),
     parallelism: positiveInt(args.parallelism, '--parallelism'),
     model: args.model,
     analysisModel: args['analysis-model'],

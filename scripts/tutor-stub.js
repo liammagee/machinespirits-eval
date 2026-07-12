@@ -19,6 +19,7 @@
 import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
+import { clearLine, cursorTo, emitKeypressEvents, moveCursor } from 'node:readline';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -110,6 +111,20 @@ import {
   learnerProfilePrompt,
   learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
+import {
+  TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
+  launchTutorStubTranscriptHtml,
+  writeTutorStubTranscriptHtml,
+} from '../services/tutorStubTranscriptHtml.js';
+import {
+  DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+  TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
+  TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
+  evaluateTutorStubRegisterPolicyOverlay,
+  normalizeTutorStubRegisterOverlayThreshold,
+  parseTutorStubRegisterPolicyStack,
+  tutorStubRegisterPolicyStackId,
+} from '../services/tutorStubRegisterPolicyComposition.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -143,6 +158,8 @@ const STUB = {
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || '',
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
+  registerOverlayThreshold:
+    process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD || String(DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
   registerTemperature:
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
   dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
@@ -163,11 +180,17 @@ const C = {
   reset: '\x1b[0m',
   dim: '\x1b[2m',
   bold: '\x1b[1m',
+  blue: '\x1b[34m',
   red: '\x1b[31m',
   cyan: '\x1b[36m',
   magenta: '\x1b[35m',
   yellow: '\x1b[33m',
   green: '\x1b[32m',
+  brightBlue: '\x1b[94m',
+  brightCyan: '\x1b[96m',
+  brightMagenta: '\x1b[95m',
+  brightYellow: '\x1b[93m',
+  brightGreen: '\x1b[92m',
 };
 
 const FIELD_PROGRESS_THRESHOLD = 0.05;
@@ -194,7 +217,14 @@ const SLASH_COMMANDS = [
   '/c',
   '/report',
   '/r',
+  '/transcript',
+  '/html',
   '/settings',
+  '/status',
+  '/mode',
+  '/learner',
+  '/coach',
+  '/auto',
   '/id',
   '/turn-id',
   '/debug-id',
@@ -209,6 +239,17 @@ const SLASH_COMMANDS = [
   '/help',
   '/quit',
   '/exit',
+];
+
+const SETTINGS_COMPLETIONS = [
+  '/settings temp ',
+  '/settings dropout ',
+  '/settings policy add state',
+  '/settings policy add field',
+  '/settings policy remove state',
+  '/settings policy remove field',
+  '/settings policy clear',
+  '/settings policy threshold ',
 ];
 
 const CUSTOM_LEARNER_PROFILE_EXAMPLE =
@@ -308,6 +349,7 @@ const { values: args, positionals } = parseArgs({
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
+    'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
     // post-trigger recovery can be scored as a designed event rather than a
@@ -399,7 +441,13 @@ Options:
                          bland fixes a plain non-adaptive baseline register;
                          random samples uniformly from the active palette;
                          negative samples only ironic, sarcastic, face_threat
-                         (default: ${STUB.registerPolicy})
+                         (default: ${STUB.registerPolicy}); append +state and/or
+                         +field to add strong-change overlays, for example
+                         dynamical_system+state+field
+  --register-overlay-threshold <n>
+                         minimum normalized turn-change strength in [0,1]
+                         before an added state/field policy may override the
+                         primary policy (default: ${STUB.registerOverlayThreshold})
   --safe-registers       limit tutor-register selection to router-selectable
                          safe registers
   --register-empirical-prior <path|auto|off>
@@ -1253,31 +1301,6 @@ function effectiveTemperatureForModel(resolved, requestedTemperature) {
   return requestedTemperature;
 }
 
-function normalizeRegisterPolicy(value) {
-  const policy = String(value || 'dynamic')
-    .trim()
-    .toLowerCase()
-    .replace(/-/gu, '_');
-  if (
-    policy === 'dynamic' ||
-    policy === 'field' ||
-    policy === 'trajectory' ||
-    policy === 'dynamical_system' ||
-    policy === 'empirical_dynamical_system' ||
-    policy === 'continuous_dynamical_system' ||
-    policy === 'continuous_empirical_dynamical_system' ||
-    policy === 'state' ||
-    policy === 'bland' ||
-    policy === 'random' ||
-    policy === 'negative'
-  ) {
-    return policy;
-  }
-  throw new Error(
-    `Unknown --register-policy: ${value}. Expected dynamic, state, field, trajectory, dynamical_system, empirical_dynamical_system, continuous_dynamical_system, continuous_empirical_dynamical_system, bland, random, or negative.`,
-  );
-}
-
 function normalizeDagMode(value) {
   const mode = String(value || 'strict_dag')
     .trim()
@@ -1490,6 +1513,7 @@ function recentRegisterCount(state, registerName, { limit = 4 } = {}) {
 
 function engagementStanceSelectionPolicyPrompt(state) {
   const policy = state.register?.policy || 'dynamic';
+  const overlays = state.register?.overlays || [];
   const latest = latestRegisterSelection(state);
   const latestEfficacy = latest?.efficacy?.label || 'pending';
   const recentBrisk = recentRegisterCount(state, 'brisk');
@@ -1562,6 +1586,11 @@ function engagementStanceSelectionPolicyPrompt(state) {
     );
     lines.push(
       '- If the last relation was dag_without_field, the proof state moved but learner agency flattened: ask the learner to restate why the evidence matters in their own words before pushing another proof step.',
+    );
+  }
+  if (overlays.length) {
+    lines.push(
+      `- Added strong-change policies: ${overlays.join(', ')}. Make the primary ${policy} choice normally; the runtime evaluates these overlays afterward and records whether one takes control.`,
     );
   }
   return lines.join('\n');
@@ -2753,7 +2782,7 @@ function providerSupportsEventStreaming(resolved) {
 }
 
 function streamLabel(role) {
-  if (role === 'tutor_stub_tutor') return `${C.magenta}tutor >${C.reset} `;
+  if (role === 'tutor_stub_tutor') return `${C.brightMagenta}${C.bold}tutor >${C.reset} `;
   if (role === 'tutor_stub_learner_analysis') return `${C.cyan}learner analysis stream >${C.reset} `;
   if (role === 'tutor_stub_learner_record') return `${C.cyan}learner DAG stream >${C.reset} `;
   if (role === 'tutor_stub_learner_classifier') return `${C.cyan}learner classifier stream >${C.reset} `;
@@ -2792,7 +2821,7 @@ function printTutorResponse(response, stream = null) {
     return;
   }
   if (!response.streamed) {
-    console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+    console.log(`${C.brightMagenta}${C.bold}tutor >${C.reset} ${response.text.trim()}`);
   }
 }
 
@@ -4445,6 +4474,18 @@ function sampleEngagementStanceDistribution(distribution) {
   };
 }
 
+function selectEngagementStanceDistribution(distribution, { deterministic = false } = {}) {
+  if (!deterministic) return sampleEngagementStanceDistribution(distribution);
+  return {
+    entry: distribution[0] || null,
+    random: {
+      method: 'argmax_policy_overlay',
+      value: null,
+      threshold: null,
+    },
+  };
+}
+
 function formatEngagementStanceDistribution(distribution, { limit = 5 } = {}) {
   const entries = Array.isArray(distribution) ? distribution : [];
   if (!entries.length) return '';
@@ -4454,10 +4495,10 @@ function formatEngagementStanceDistribution(distribution, { limit = 5 } = {}) {
     .join(', ');
 }
 
-function fieldEngagementStanceSelection({ state, classification, tutorLearnerDag }) {
+function fieldEngagementStanceSelection({ state, classification, tutorLearnerDag, deterministic = false }) {
   const { features, scores, drivers } = buildFieldRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: state.register?.temperature });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = selectEngagementStanceDistribution(distribution, { deterministic });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -5832,10 +5873,10 @@ function buildStateRegisterScores({ state, classification, tutorLearnerDag }) {
   return { features, scores, drivers };
 }
 
-function stateEngagementStanceSelection({ state, classification, tutorLearnerDag }) {
+function stateEngagementStanceSelection({ state, classification, tutorLearnerDag, deterministic = false }) {
   const { features, scores, drivers } = buildStateRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: state.register?.temperature });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = selectEngagementStanceDistribution(distribution, { deterministic });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -5872,6 +5913,86 @@ function stateEngagementStanceSelection({ state, classification, tutorLearnerDag
       drivers,
       random: sampled.random,
     },
+  };
+}
+
+function registerPolicySelectionSummary(selection) {
+  return {
+    selected_register: selection?.selected_register || selection?.engagement_stance || null,
+    source: selection?.source || null,
+    reason: selection?.register_reason || selection?.engagement_stance_reason || null,
+    selected_probability: selection?.selected_probability ?? selection?.confidence ?? null,
+    distribution: Array.isArray(selection?.distribution) ? selection.distribution : null,
+  };
+}
+
+function composeRegisterPolicySelection({ primarySelection, state, classification, tutorLearnerDag }) {
+  const overlays = Array.isArray(state.register?.overlays) ? state.register.overlays : [];
+  if (!overlays.length) return primarySelection;
+  const primaryRegister = primarySelection?.selected_register || primarySelection?.engagement_stance || null;
+  const threshold = state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD;
+  const evaluated = overlays.map((overlay, index) => {
+    const candidate =
+      overlay === 'state'
+        ? stateEngagementStanceSelection({
+            state,
+            classification,
+            tutorLearnerDag,
+            deterministic: true,
+          })
+        : fieldEngagementStanceSelection({
+            state,
+            classification,
+            tutorLearnerDag,
+            deterministic: true,
+          });
+    const evaluation = evaluateTutorStubRegisterPolicyOverlay({
+      overlay,
+      state,
+      classification,
+      candidate,
+      primaryRegister,
+      threshold,
+    });
+    return {
+      ...evaluation,
+      order: index,
+      candidate,
+      candidate_reason: candidate.register_reason || null,
+      candidate_distribution: candidate.distribution || null,
+    };
+  });
+  const winner = evaluated
+    .filter((entry) => entry.eligible)
+    .sort((a, b) => b.signal_strength - a.signal_strength || a.order - b.order)[0];
+  const composition = {
+    schema: TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
+    policy_stack: tutorStubRegisterPolicyStackId(state.register.policy, overlays),
+    primary_policy: state.register.policy,
+    overlay_policies: [...overlays],
+    overlay_threshold: threshold,
+    primary_selection: registerPolicySelectionSummary(primarySelection),
+    overlay_evaluations: evaluated.map(({ candidate, order, ...entry }) => entry),
+    activated_overlay: winner?.policy || null,
+    activated_strength: winner?.signal_strength ?? null,
+  };
+  if (!winner) {
+    return {
+      ...primarySelection,
+      policy_composition: composition,
+    };
+  }
+  const candidate = winner.candidate;
+  const reason = `${winner.policy} overlay replaced the ${state.register.policy} choice ${primaryRegister} with ${
+    candidate.selected_register
+  }: turn-change strength ${winner.signal_strength} met threshold ${threshold}. ${candidate.register_reason || ''}`.trim();
+  return {
+    ...primarySelection,
+    ...candidate,
+    register_reason: reason,
+    engagement_stance_reason: reason,
+    source: `register_policy_overlay_${winner.policy}`,
+    policy_composition: composition,
   };
 }
 
@@ -5948,6 +6069,12 @@ function normalizeResponseConfigurationSelection(
       : requestedIsKnown && !dynamicBriskBlocked
         ? normalizedRawSelection
         : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
+  source = composeRegisterPolicySelection({
+    primarySelection: source,
+    state,
+    classification,
+    tutorLearnerDag,
+  });
   const comprehensionPressure = Number(
     tutorStubComprehensionFeatures(state.comprehension, {
       turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
@@ -5995,13 +6122,14 @@ function normalizeResponseConfigurationSelection(
       'unknown',
   );
   const proposedActionFamily = String(source.action_family || selectedResolution?.action_family || '');
+  const policyStack = tutorStubRegisterPolicyStackId(policy, state.register?.overlays || []);
   const responseConfiguration = buildTutorStubResponseConfiguration({
     engagementStance: selected,
     legacySelectedRegister: source.legacy_selected_register || selectedResolution?.legacy_selected_register || null,
     stanceDistribution: source.engagement_stance_distribution || source.distribution || null,
     stanceVector: source.engagement_stance_vector || source.register_vector || null,
     temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    policy,
+    policy: policyStack,
     learnerText,
     classification,
     tutorLearnerDag,
@@ -6023,7 +6151,11 @@ function normalizeResponseConfigurationSelection(
   const selection = {
     schema: 'machinespirits.tutor-stub.response-configuration-selection.v3',
     register_ontology_version: getRegisterOntologyVersion(),
-    policy,
+    policy: policyStack,
+    primary_policy: policy,
+    overlay_policies: [...(state.register?.overlays || [])],
+    activated_policy: source.policy_composition?.activated_overlay || policy,
+    policy_composition: source.policy_composition || null,
     turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     engagement_stance: selected,
     selected_register: selected,
@@ -6584,6 +6716,14 @@ function printResponseConfigurationSelection(selection, previousEfficacy = null)
       `${C.dim}  stance temperature: ${selection.temperature} (engagement blend only; lower sharper, higher broader)${C.reset}`,
     );
   }
+  if (selection.policy_composition) {
+    const composition = selection.policy_composition;
+    console.log(
+      `${C.dim}  policy stack: ${composition.policy_stack}; overlay threshold ${composition.overlay_threshold}; activated ${
+        composition.activated_overlay || 'primary'
+      }${C.reset}`,
+    );
+  }
   const distribution = formatEngagementStanceDistribution(selection.distribution);
   if (distribution) console.log(`${C.dim}  distribution: ${distribution}${C.reset}`);
   if (selection.continuous_register_policy?.dominant_blend) {
@@ -6608,15 +6748,16 @@ function printResponseConfigurationSelection(selection, previousEfficacy = null)
   if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
   if (selection.expected_dag_move) console.log(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
   if (selection.expected_field_move) {
+    const effectivePolicy = selection.activated_policy || selection.primary_policy || selection.policy;
     const expectedMoveLabel =
-      selection.policy === 'state'
+      effectivePolicy === 'state'
         ? 'expected state move'
-        : selection.policy === 'trajectory'
+        : effectivePolicy === 'trajectory'
           ? 'expected trajectory move'
-          : selection.policy === 'dynamical_system' ||
-              selection.policy === 'empirical_dynamical_system' ||
-              selection.policy === 'continuous_dynamical_system' ||
-              selection.policy === 'continuous_empirical_dynamical_system'
+          : effectivePolicy === 'dynamical_system' ||
+              effectivePolicy === 'empirical_dynamical_system' ||
+              effectivePolicy === 'continuous_dynamical_system' ||
+              effectivePolicy === 'continuous_empirical_dynamical_system'
             ? 'expected dynamical move'
             : 'expected field move';
     console.log(`${C.dim}  ${expectedMoveLabel}: ${selection.expected_field_move}${C.reset}`);
@@ -6631,15 +6772,16 @@ function responseConfigurationContext(
   const generousInference = humanDiscourseFrame?.generousInference || null;
   const engagementStance = selection.engagement_stance || selection.selected_register;
   const definition = getEngagementStanceDefinition(engagementStance) || {};
+  const effectivePolicy = selection.activated_policy || selection.primary_policy || selection.policy;
   const expectedMoveLabel =
-    selection.policy === 'state'
+    effectivePolicy === 'state'
       ? 'Expected learner-state move'
-      : selection.policy === 'trajectory'
+      : effectivePolicy === 'trajectory'
         ? 'Expected learner-trajectory move'
-        : selection.policy === 'dynamical_system' ||
-            selection.policy === 'empirical_dynamical_system' ||
-            selection.policy === 'continuous_dynamical_system' ||
-            selection.policy === 'continuous_empirical_dynamical_system'
+        : effectivePolicy === 'dynamical_system' ||
+            effectivePolicy === 'empirical_dynamical_system' ||
+            effectivePolicy === 'continuous_dynamical_system' ||
+            effectivePolicy === 'continuous_empirical_dynamical_system'
           ? 'Expected learner-dynamical move'
           : 'Expected learner-field move';
   const continuousStyleInstruction = String(selection.continuous_register_policy?.style_instruction || '').trim();
@@ -6672,6 +6814,12 @@ function responseConfigurationContext(
     tutorStubResponseConfigurationPrompt(responseConfiguration),
     '[Tutor-only response-policy evidence]',
     `Selected engagement stance: ${engagementStance}`,
+    selection.policy_composition ? `Policy stack: ${selection.policy_composition.policy_stack}` : null,
+    selection.policy_composition
+      ? `Policy decision: ${selection.policy_composition.activated_overlay || 'primary policy retained'}; overlay threshold ${
+          selection.policy_composition.overlay_threshold
+        }.`
+      : null,
     selection.legacy_selected_register ? `Legacy register alias: ${selection.legacy_selected_register}` : null,
     `Valence: ${selection.valence || 'unknown'}`,
     `Logical request type: ${selection.request_type || selection.learner_signal || 'unknown'}`,
@@ -7178,10 +7326,13 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /settings [temp n|dropout n], /id, /profile [list|example|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit`,
+    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
   );
   console.log(
-    `${C.dim}  /settings temp 0.4 sharpens only the dominant engagement stance. /settings dropout 0.15 enables seeded loss of accumulated DAG facts; 0 turns it off. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+    `${C.dim}  learner mode sends public learner speech. coach mode stores private guidance for the next tutor turn; in mixed mode, follow it with /use. auto hands both roles to the models until grounded closure (or a safety cap); /auto 5 runs five turns. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  /settings policy add state or field adds a strong-change overlay; remove <policy>, clear, and threshold <0-1> also work. /settings temp 0.4 sharpens only the dominant engagement stance; dropout 0.15 enables seeded evidence loss. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
   );
 }
 
@@ -7266,7 +7417,7 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   const overall = classification.overall || {};
   const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
   const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
-  const policy = registerSelection?.policy || state.register?.policy || 'off';
+  const policy = registerSelection?.primary_policy || state.register?.policy || 'off';
   const distribution = formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 });
   const signals = dominantPlainPolicySignals(registerSelection);
   const generousInference = turn.generousInference || turn.humanDiscourseFrame?.generousInference || null;
@@ -7317,6 +7468,17 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
     );
   }
   printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
+  if (registerSelection?.policy_composition) {
+    const composition = registerSelection.policy_composition;
+    printAnalysisLine(
+      'added policies',
+      `${composition.overlay_policies.join(', ') || 'none'}; ${
+        composition.activated_overlay
+          ? `${composition.activated_overlay} took control at strength ${composition.activated_strength}`
+          : 'the primary policy stayed in control'
+      }`,
+    );
+  }
   if (registerSelection) {
     printAnalysisLine(
       'engagement stance',
@@ -7510,9 +7672,28 @@ function printCurrentTurnTechnicalAnalysis(state) {
     }
     printAnalysisLine('reviewer signal', registerSelection.reviewer_signal || 'unknown');
     printAnalysisLine('register reason', registerSelection.register_reason);
+    if (registerSelection.policy_composition) {
+      const composition = registerSelection.policy_composition;
+      printAnalysisLine(
+        'policy composition',
+        `stack=${composition.policy_stack}; threshold=${composition.overlay_threshold}; activated=${
+          composition.activated_overlay || 'primary'
+        }`,
+      );
+      for (const overlay of composition.overlay_evaluations || []) {
+        printAnalysisLine(
+          `${overlay.policy} overlay`,
+          `strength=${overlay.signal_strength}; candidate=${overlay.selected_register || 'none'}; thresholdMet=${
+            overlay.threshold_met
+          }; differs=${overlay.differs_from_primary}; ${overlay.reasons?.join('; ') || ''}`,
+        );
+      }
+    }
     printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
     printAnalysisLine(
-      registerSelection.policy === 'state' ? 'expected state move' : 'expected field move',
+      (registerSelection.activated_policy || registerSelection.primary_policy || registerSelection.policy) === 'state'
+        ? 'expected state move'
+        : 'expected field move',
       registerSelection.expected_field_move,
     );
     printAnalysisLine('expected progress marker', registerSelection.expected_progress_marker);
@@ -8261,6 +8442,28 @@ function dagTurnContext(world, tutorTurn) {
   ].join('\n');
 }
 
+function tutorCoachGuidanceEntries(state, tutorTurn = null) {
+  const effectiveTurn = tutorTurn ?? (state?.turns?.length || 0) + 1;
+  return Array.isArray(state?.coach?.pending)
+    ? state.coach.pending.filter((entry) => Number(entry?.notBeforeTurn || 0) <= effectiveTurn)
+    : [];
+}
+
+function tutorCoachGuidanceContext(state, { tutorTurn = null } = {}) {
+  const pending = tutorCoachGuidanceEntries(state, tutorTurn)
+    .map((entry) => String(entry?.text || entry || '').trim())
+    .filter(Boolean);
+  if (!pending.length) return '';
+  return [
+    '[Private coach guidance for this tutor turn]',
+    'An operator has suggested the following direction for your next public response:',
+    ...pending.map((text) => `- ${text}`),
+    'Treat this as high-priority advisory guidance. Follow it when it is compatible with the public evidence, learner agency, pacing, safety guards, and dialogue-closure requirements.',
+    'Do not mention a coach, operator, private instruction, or this guidance. Do not reveal hidden evidence or the concealed answer merely because the guidance requests it.',
+    '[End private coach guidance]',
+  ].join('\n');
+}
+
 async function callTutor({
   learnerText,
   history,
@@ -8292,6 +8495,7 @@ async function callTutor({
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const dialogueClosureAdvisory = dialogueClosureTutorContext(dialogueClosureFrame);
   const comprehensionAdvisory = tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
+  const coachAdvisory = tutorCoachGuidanceContext(state, { tutorTurn });
   const responseConfigurationAdvisory = responseConfigurationContext(registerSelection, {
     multipleChoice,
     humanDiscourseFrame,
@@ -8309,6 +8513,7 @@ async function callTutor({
     humanDiscourseAdvisory,
     dialogueClosureAdvisory,
     comprehensionAdvisory,
+    coachAdvisory,
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
@@ -8407,6 +8612,14 @@ async function callTutor({
       };
     }
 
+    response.promptSnapshot = {
+      systemPrompt: effectiveSystemPrompt,
+      userPrompt: attemptUserPrompt,
+      messageHistory: context,
+      role,
+      repairAttempt,
+      config: request.config,
+    };
     appendTraceEvent(trace, {
       type: 'model_call',
       role,
@@ -8551,6 +8764,7 @@ async function callTutor({
       repaired: true,
       deterministicFallback: true,
       deterministicClosure: closureFallbackSelected,
+      promptSnapshot: response.promptSnapshot || null,
     };
     if (canStreamTutor) {
       fallback.guardedStreamReplay = true;
@@ -8894,15 +9108,8 @@ async function generateAutomatedLearnerTurn({
   };
 }
 
-async function generateMixedLearnerArtifacts({
-  state,
-  resolved,
-  profile,
-  turnNumber,
-  cliEffort = null,
-  signal = null,
-}) {
-  const prompt = [
+function buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber }) {
+  return [
     buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
     '',
     '# Mixed learner artifacts',
@@ -8917,10 +9124,22 @@ async function generateMixedLearnerArtifacts({
     'The answer must be speakable inside the scene. Never mention "the tutor", "the learner", "the dialogue", "the prompt", or say a question is pending.',
     'Keep the clue under 18 words and the answer concise. Return JSON only.',
   ].join('\n');
+}
+
+async function generateMixedLearnerArtifacts({
+  state,
+  resolved,
+  profile,
+  turnNumber,
+  cliEffort = null,
+  signal = null,
+}) {
+  const prompt = buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber });
+  const systemPrompt = mixedLearnerArtifactsSystemPrompt(profile);
   const raw = await callPromptModel({
     prompt,
     resolved,
-    systemPrompt: mixedLearnerArtifactsSystemPrompt(profile),
+    systemPrompt,
     role: 'tutor_stub_mixed_learner_artifacts',
     maxTokens: 1100,
     trace: state.trace,
@@ -8938,6 +9157,11 @@ async function generateMixedLearnerArtifacts({
     move: mixedLearnerSuggestionMove(answer, artifacts.move),
     profileSignal: artifacts.profileSignal,
     parsedArtifacts: artifacts.parsed,
+    promptSnapshot: {
+      systemPrompt,
+      userPrompt: prompt,
+      turn: turnNumber,
+    },
   };
 }
 
@@ -9057,6 +9281,9 @@ async function runOneTurn(
   });
   const comprehensionBeforeTutor = tutorStubComprehensionSnapshot(state.comprehension, { turn: tutorTurn });
   const dagFactDropout = tutorLearnerDag?.dagFactDropout || null;
+  const coachGuidance = precomputedResponse?.deterministicClosure
+    ? []
+    : tutorCoachGuidanceEntries(state, tutorTurn).map((entry) => ({ ...entry }));
 
   if (dagFactDropout?.droppedNow?.length || dagFactDropout?.repairedNow?.length) {
     appendTraceEvent(state.trace, {
@@ -9140,10 +9367,29 @@ async function runOneTurn(
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
+  if (coachGuidance.length && state.coach) {
+    const appliedIds = new Set(coachGuidance.map((entry) => entry.id));
+    state.coach.pending = state.coach.pending.filter((entry) => !appliedIds.has(entry.id));
+    state.coach.history.push({
+      turn: tutorTurn,
+      turnId,
+      guidance: coachGuidance,
+      tutor: response.text,
+      appliedAt: new Date().toISOString(),
+    });
+    appendTraceEvent(state.trace, {
+      type: 'coach_guidance_applied',
+      turn: tutorTurn,
+      turnId,
+      guidance: coachGuidance,
+      publicTranscriptChanged: false,
+    });
+  }
   const turnRecord = {
     turnId,
     turn: tutorTurn,
     learner: learnerText,
+    coachGuidance,
     classification,
     tutorLearnerDagModel: tutorLearnerDag?.model || null,
     tutorLearnerDagUpdate: tutorLearnerDag
@@ -9183,6 +9429,9 @@ async function runOneTurn(
     tutorResponseRepaired: Boolean(response.repaired),
     tutorDeterministicFallback: Boolean(response.deterministicFallback),
     tutorDeterministicClosure: Boolean(response.deterministicClosure),
+    prompts: {
+      tutor: response.promptSnapshot || null,
+    },
     provider: response.provider,
     model: response.model,
     latencyMs: response.latencyMs,
@@ -9333,10 +9582,10 @@ async function runAutomatedLearnerDialogue({
         profileAdherencePassed: enforced.passed,
       });
       printTurnDebugLine(state, turnNumber);
-      console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+      console.log(`${C.brightBlue}${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
     } else {
       printTurnDebugLine(state, turnNumber);
-      console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+      console.log(`${C.brightBlue}${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
     }
 
     await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw });
@@ -9394,7 +9643,8 @@ async function main() {
   const autoLearnerEnabled = Boolean(args['auto-learner']);
   const mixedLearnerRequested = Boolean(args['mixed-learner'] || args['mixed-mode']);
   const mixedLearnerEnabled = Boolean(mixedLearnerRequested && !autoLearnerEnabled);
-  const learnerSuggestionEnabled = Boolean(autoLearnerEnabled || mixedLearnerEnabled);
+  const interactiveSessionEnabled = Boolean(!autoLearnerEnabled && !args.once && !positionals.join(' ').trim());
+  const learnerSuggestionEnabled = Boolean(autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled);
   const autoTurns = parseAutoTurns(args['auto-turns']);
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
   const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
@@ -9446,7 +9696,12 @@ async function main() {
     learnerText: '',
   });
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
-  const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
+  const registerPolicyStack = parseTutorStubRegisterPolicyStack(args['register-policy']);
+  const registerPolicy = registerPolicyStack.primary;
+  const registerPolicyOverlays = registerPolicyStack.overlays;
+  const registerOverlayThreshold = normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+    label: '--register-overlay-threshold',
+  });
   const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], {
     policy: registerPolicy,
   });
@@ -9559,6 +9814,31 @@ async function main() {
       seed: dagFactDropoutSeed,
     },
   };
+  const interactiveRoleModes = {
+    enabled: interactiveSessionEnabled,
+    default: 'learner',
+    modes: ['learner', 'coach', 'auto'],
+    commands: {
+      learner: ['/mode learner', '/learner'],
+      coach: ['/mode coach [guidance]', '/coach [guidance]'],
+      auto: ['/mode auto [turns]', '/auto [turns]'],
+      status: '/status',
+    },
+    coach: {
+      private: true,
+      appliesTo: 'next_tutor_turn',
+      publicTranscriptChanged: false,
+      evidenceAndSafetyGuardsRemainActive: true,
+    },
+    auto: {
+      modelRef: args['auto-learner-model'],
+      resolved: visibleAutoLearnerModel,
+      profileId: automatedLearnerProfileId(args['auto-learner-profile']),
+      defaultTurns: autoTurns ?? 'until-grounded',
+      safetyTurns: autoSafetyTurns,
+      stopOnGrounded: autoStopOnGrounded,
+    },
+  };
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -9647,16 +9927,23 @@ async function main() {
                   initialPicker: {
                     enabled: initialMixedLearnerSetupEnabled,
                     defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+                    keyboardMenu: true,
+                    navigation: ['up', 'down', 'enter'],
+                    nonTtyFallback: 'typed_profile_id',
                   },
                 },
                 startupPrompts: mixedLearnerStartupPrompts,
               }
             : { enabled: false, requested: mixedLearnerRequested },
+          interactiveRoleModes,
           registerSelection: registerSelectionEnabled
             ? {
                 enabled: true,
                 palette: registerPalette,
-                policy: registerPolicy,
+                policy: registerPolicyStack.id,
+                primaryPolicy: registerPolicy,
+                overlayPolicies: registerPolicyOverlays,
+                overlayThreshold: registerOverlayThreshold,
                 temperature: registerTemperature,
                 engagementStanceTemperature: registerTemperature,
                 temperatureScope: 'engagement_stance_only',
@@ -9830,16 +10117,23 @@ async function main() {
               initialPicker: {
                 enabled: initialMixedLearnerSetupEnabled,
                 defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+                keyboardMenu: true,
+                navigation: ['up', 'down', 'enter'],
+                nonTtyFallback: 'typed_profile_id',
               },
             },
             startupPrompts: mixedLearnerStartupPrompts,
           }
         : { enabled: false, requested: mixedLearnerRequested },
+      interactiveRoleModes,
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
             palette: registerPalette,
-            policy: registerPolicy,
+            policy: registerPolicyStack.id,
+            primaryPolicy: registerPolicy,
+            overlayPolicies: registerPolicyOverlays,
+            overlayThreshold: registerOverlayThreshold,
             temperature: registerTemperature,
             engagementStanceTemperature: registerTemperature,
             temperatureScope: 'engagement_stance_only',
@@ -9947,6 +10241,8 @@ async function main() {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
       policy: registerPolicy,
+      overlays: [...registerPolicyOverlays],
+      overlayThreshold: registerOverlayThreshold,
       temperature: registerTemperature,
       continuousUnsafe: continuousUnsafeRegisterAnchorsEnabled,
       empiricalPrior: registerEmpiricalPrior.prior,
@@ -9970,6 +10266,15 @@ async function main() {
     },
     cliEffort,
     multipleChoice: multipleChoiceEnabled,
+    interaction: {
+      mode: 'learner',
+      previousMode: 'learner',
+      autoRunning: false,
+    },
+    coach: {
+      pending: [],
+      history: [],
+    },
     history: [],
     turns: [],
   };
@@ -10033,12 +10338,19 @@ async function main() {
     );
   } else if (mixedLearnerRequested) {
     console.log(`${C.dim}mixed learner: requested, but off because --auto-learner is running unattended${C.reset}`);
+  } else if (interactiveSessionEnabled && visibleAutoLearnerModel) {
+    console.log(
+      `${C.dim}interactive roles: learner + private coach; /auto hands off to ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}${C.reset}`,
+    );
   } else {
     console.log(`${C.dim}auto learner: off${C.reset}`);
   }
   if (registerSelectionEnabled) {
     console.log(
-      `${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${registerPolicy} | temp ${state.register.temperature}${C.reset}`,
+      `${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${tutorStubRegisterPolicyStackId(
+        state.register.policy,
+        state.register.overlays,
+      )} | overlay threshold ${state.register.overlayThreshold} | temp ${state.register.temperature}${C.reset}`,
     );
     if (
       empiricalDynamicalSystemRegisterSelectionEnabled ||
@@ -10138,7 +10450,7 @@ async function main() {
   }
   printDirectorInitialContext(directorContext);
   console.log(
-    `${C.dim}topic: ${effectiveTopic} | /analysis, /settings, /field, /viz, or /clarify for help | slash commands work while thinking | /quit to exit${C.reset}\n`,
+    `${C.dim}topic: ${effectiveTopic} | /analysis, /transcript, /settings, /field, /viz, or /clarify for help | slash commands work while thinking | /quit to exit${C.reset}\n`,
   );
 
   if (autoLearnerEnabled) {
@@ -10174,7 +10486,10 @@ async function main() {
           ? {
               enabled: true,
               palette: registerPalette,
-              policy: registerPolicy,
+              policy: tutorStubRegisterPolicyStackId(state.register.policy, state.register.overlays),
+              primaryPolicy: state.register.policy,
+              overlayPolicies: state.register.overlays,
+              overlayThreshold: state.register.overlayThreshold,
               temperature: state.register.temperature,
               history: state.register.history,
             }
@@ -10240,7 +10555,10 @@ async function main() {
           ? {
               enabled: true,
               palette: registerPalette,
-              policy: registerPolicy,
+              policy: tutorStubRegisterPolicyStackId(state.register.policy, state.register.overlays),
+              primaryPolicy: state.register.policy,
+              overlayPolicies: state.register.overlays,
+              overlayThreshold: state.register.overlayThreshold,
               temperature: state.register.temperature,
               history: state.register.history,
             }
@@ -10274,6 +10592,7 @@ async function main() {
     artifactAbortController: null,
     analysisCache: null,
     readyAnnouncementProfileKey: null,
+    promptHistory: [],
     cacheStats: {
       analysisStarted: 0,
       analysisHits: 0,
@@ -10300,8 +10619,10 @@ async function main() {
   }
 
   function mixedLearnerPromptText() {
-    if (!mixedLearner.enabled) return `${C.bold}learner >${C.reset} `;
-    return `${C.bold}learner[${mixedLearnerProfilePresentation().id}] >${C.reset} `;
+    if (state.interaction?.mode === 'coach') return `${C.brightYellow}${C.bold}coach >${C.reset} `;
+    if (state.interaction?.mode === 'auto') return `${C.brightBlue}${C.bold}auto >${C.reset} `;
+    if (!mixedLearner.enabled) return `${C.brightGreen}${C.bold}learner >${C.reset} `;
+    return `${C.brightGreen}${C.bold}learner[${mixedLearnerProfilePresentation().id}] >${C.reset} `;
   }
 
   function printMixedLearnerProfilePresentation(suggestion, { verb = 'drafted as' } = {}) {
@@ -10324,10 +10645,19 @@ async function main() {
         const matches = candidates.filter((candidate) => candidate.startsWith(normalized));
         return [matches.length ? matches : candidates, raw];
       }
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith('/mode ')) {
+        const modeCompletions = ['/mode learner', '/mode coach', '/mode auto'];
+        const matches = modeCompletions.filter((entry) => entry.startsWith(trimmed));
+        return [matches.length ? matches : modeCompletions, trimmed];
+      }
       const mixedCompletion = mixedLearnerCompletionForLine(line);
       if (mixedCompletion) return [[mixedCompletion], line];
-      const trimmed = line.trimStart();
       if (!trimmed.startsWith('/')) return [[], line];
+      if (trimmed.startsWith('/settings ')) {
+        const settingsMatches = SETTINGS_COMPLETIONS.filter((command) => command.startsWith(trimmed));
+        return [settingsMatches.length ? settingsMatches : SETTINGS_COMPLETIONS, trimmed];
+      }
       const matches = SLASH_COMMANDS.filter((command) => command.startsWith(trimmed));
       return [matches.length ? matches : SLASH_COMMANDS, trimmed];
     },
@@ -10343,7 +10673,7 @@ async function main() {
   });
 
   function mixedLearnerCompletionForLine(line) {
-    if (!mixedLearner.enabled || processingTurn) return null;
+    if (!mixedLearner.enabled || processingTurn || state.interaction?.mode !== 'learner') return null;
     const suggestion = mixedLearner.suggestion;
     const text = String(suggestion?.text || '')
       .replace(/\s+/g, ' ')
@@ -10405,7 +10735,8 @@ async function main() {
             assessment: state.learnerDag.lastModel.assessment || null,
           }
         : null,
-      registerPolicy: state.register?.policy || null,
+      registerPolicy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      registerOverlayThreshold: state.register?.overlayThreshold ?? null,
       registerTemperature: state.register?.temperature ?? null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: turnNumber }),
@@ -10431,6 +10762,7 @@ async function main() {
       comprehension: structuredClone(state.comprehension),
       register: structuredClone(state.register),
       dialogueClosure: structuredClone(state.dialogueClosure),
+      coach: structuredClone(state.coach),
       stream: { enabled: false, interim: state.interim },
     };
   }
@@ -10461,6 +10793,7 @@ async function main() {
         turn: state.turns.length + 1,
       }),
       dagTurn: state.dag && state.world ? dagTurnContext(state.world, state.turns.length + 1) : null,
+      coachGuidance: tutorCoachGuidanceContext(state),
       systemPrompt: state.systemPrompt,
       tutorModel: state.resolved,
       temperature: state.temperature,
@@ -10827,6 +11160,17 @@ async function main() {
           return;
         }
         mixedLearner.pending = null;
+        const promptSnapshot = generated.promptSnapshot
+          ? {
+              ...generated.promptSnapshot,
+              requestId,
+              profileId: mixedLearner.profileId,
+            }
+          : null;
+        if (promptSnapshot) {
+          mixedLearner.promptHistory.push(promptSnapshot);
+          if (mixedLearner.promptHistory.length > 100) mixedLearner.promptHistory.shift();
+        }
         mixedLearner.suggestion = {
           requestId,
           turn: turnNumber,
@@ -10841,6 +11185,7 @@ async function main() {
           model: generated.model,
           latencyMs: generated.latencyMs,
           usage: generated.usage,
+          promptSnapshot,
         };
         appendTraceEvent(state.trace, {
           type: 'mixed_learner_suggestion_ready',
@@ -11101,14 +11446,157 @@ async function main() {
     }
   }
 
+  function applyInitialMixedLearnerProfile(profileId, { usedDefault = false, selectionMethod = 'typed' } = {}) {
+    if (profileId) {
+      mixedLearner.profileId = profileId;
+      mixedLearner.profile = learnerProfilePrompt(profileId);
+    }
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_initial_profile_selected',
+      profileId: profileId || null,
+      custom: !profileId,
+      usedDefault,
+      selectionMethod,
+    });
+  }
+
+  async function pickInitialMixedLearnerProfileWithKeyboard(defaultProfileId) {
+    const coreIds = new Set(learnerProfileSuiteIds('core'));
+    const entries = learnerProfileIds().map((id) => {
+      const contract = learnerProfileContract(id);
+      return {
+        id,
+        label: contract?.intent?.shortName || id,
+        group: coreIds.has(id) ? 'core' : 'stress',
+      };
+    });
+    if (!mixedLearner.profileId) {
+      entries.unshift({ id: null, label: 'Custom launch profile', group: 'custom' });
+    }
+    let selectedIndex = Math.max(
+      0,
+      entries.findIndex((entry) => (entry.id || 'custom') === defaultProfileId),
+    );
+    const viewportHeight = Math.min(
+      entries.length,
+      Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 8))),
+    );
+    let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+    let renderedLineCount = 0;
+
+    const keepSelectionVisible = () => {
+      if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+      if (selectedIndex >= viewportStart + viewportHeight) {
+        viewportStart = selectedIndex - viewportHeight + 1;
+      }
+    };
+    const clearRenderedMenu = () => {
+      if (!renderedLineCount) return;
+      moveCursor(output, 0, -renderedLineCount);
+      for (let index = 0; index < renderedLineCount; index += 1) {
+        cursorTo(output, 0);
+        clearLine(output, 0);
+        if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+      }
+      if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+      renderedLineCount = 0;
+    };
+    const renderMenu = () => {
+      keepSelectionVisible();
+      clearRenderedMenu();
+      const width = Math.max(48, Math.min(Number(output.columns || 100), 140));
+      const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+      const lines = [
+        `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+        ...visible.map((entry, visibleIndex) => {
+          const absoluteIndex = viewportStart + visibleIndex;
+          const selected = absoluteIndex === selectedIndex;
+          const id = entry.id || 'custom';
+          const plain = `${selected ? '›' : ' '} ${id.padEnd(24)} ${oneLine(entry.label, {
+            max: Math.max(12, width - 38),
+          })} [${entry.group}]`;
+          return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+        }),
+        `${C.dim}${
+          viewportStart + viewportHeight < entries.length
+            ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+            : '  '
+        }${C.reset}`,
+      ];
+      for (const line of lines) output.write(`${line}\n`);
+      renderedLineCount = lines.length;
+    };
+
+    emitKeypressEvents(input);
+    const priorKeypressListeners = input.listeners('keypress');
+    for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
+    const wasRaw = Boolean(input.isRaw);
+    if (!wasRaw) input.setRawMode(true);
+
+    return new Promise((resolve) => {
+      const finish = (selection) => {
+        input.removeListener('keypress', onKeypress);
+        for (const listener of priorKeypressListeners) input.on('keypress', listener);
+        if (!wasRaw) input.setRawMode(false);
+        clearRenderedMenu();
+        resolve(selection);
+      };
+      const moveSelection = (delta) => {
+        selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+        renderMenu();
+      };
+      const onKeypress = (character, key = {}) => {
+        if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
+          finish(null);
+          return;
+        }
+        if (key.name === 'up' || character === 'k') {
+          moveSelection(-1);
+          return;
+        }
+        if (key.name === 'down' || character === 'j') {
+          moveSelection(1);
+          return;
+        }
+        if (key.name === 'pageup') {
+          moveSelection(-viewportHeight);
+          return;
+        }
+        if (key.name === 'pagedown') {
+          moveSelection(viewportHeight);
+          return;
+        }
+        if (key.name === 'home') {
+          selectedIndex = 0;
+          renderMenu();
+          return;
+        }
+        if (key.name === 'end') {
+          selectedIndex = entries.length - 1;
+          renderMenu();
+          return;
+        }
+        if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+      };
+      input.on('keypress', onKeypress);
+      input.resume();
+      renderMenu();
+    });
+  }
+
   async function runInitialMixedLearnerSetup() {
     if (!mixedLearner.enabled || !openingEnabled || state.history.length) return true;
     const defaultProfileId = mixedLearner.profileId || 'custom';
+    const keyboardMenuEnabled = Boolean(input.isTTY && output.isTTY && typeof input.setRawMode === 'function');
     console.log(`${C.cyan}Pick a learner profile${C.reset}`);
-    console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
-    console.log(
-      `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
-    );
+    if (keyboardMenuEnabled) {
+      console.log(`${C.dim}  ↑/↓ scroll · Enter select · Esc quit · ${defaultProfileId} selected by default${C.reset}`);
+    } else {
+      console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
+      console.log(
+        `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
+      );
+    }
 
     const queuedLines = [];
     let resolveNextLine = null;
@@ -11129,63 +11617,80 @@ async function main() {
           });
     const onLine = (line) => enqueueLine(line);
     const onSigint = () => enqueueLine('/quit');
-    initialSetupStage = 'profile';
-    rl.on('line', onLine);
-    rl.on('SIGINT', onSigint);
+    let lineListenersAttached = false;
+    const attachLineListeners = () => {
+      if (lineListenersAttached) return;
+      rl.on('line', onLine);
+      rl.on('SIGINT', onSigint);
+      lineListenersAttached = true;
+    };
     try {
       let profileSelected = false;
-      while (!exiting) {
-        rl.setPrompt(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
-        rl.prompt();
-        const answer = await nextLine();
-        const rawRequested = String(answer || '')
-          .trim()
-          .toLowerCase();
-        if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
+      if (keyboardMenuEnabled) {
+        const selection = await pickInitialMixedLearnerProfileWithKeyboard(defaultProfileId);
+        if (!selection) {
           requestExit('initial_profile_picker_exit');
           return false;
         }
-        const requested = rawRequested.replace(/^\/profile(?:\s+|$)/u, '');
-        const browseScope =
-          requested === 'list' || requested === 'core'
-            ? 'core'
-            : requested === 'stress' || requested === 'list stress'
-              ? 'stress'
-              : requested === 'all' || requested === 'audit' || requested === 'list all'
-                ? 'all'
-                : null;
-        if (browseScope) {
-          printMixedLearnerProfileList(browseScope, { picker: true });
-          continue;
-        }
-        if (!requested) {
-          appendTraceEvent(state.trace, {
-            type: 'mixed_learner_initial_profile_selected',
-            profileId: mixedLearner.profileId,
-            custom: !mixedLearner.profileId,
-            usedDefault: true,
+        applyInitialMixedLearnerProfile(selection.id, {
+          usedDefault: (selection.id || 'custom') === defaultProfileId,
+          selectionMethod: 'keyboard_menu',
+        });
+        const selectedLabel = selection.id
+          ? `${selection.id} — ${selection.label}`
+          : `custom — ${selection.label}`;
+        console.log(`${C.cyan}learner profile >${C.reset} ${selectedLabel}\n`);
+        profileSelected = true;
+      } else {
+        initialSetupStage = 'profile';
+        attachLineListeners();
+        while (!exiting) {
+          rl.setPrompt(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
+          rl.prompt();
+          const answer = await nextLine();
+          const rawRequested = String(answer || '')
+            .trim()
+            .toLowerCase();
+          if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
+            requestExit('initial_profile_picker_exit');
+            return false;
+          }
+          const requested = rawRequested.replace(/^\/profile(?:\s+|$)/u, '');
+          const browseScope =
+            requested === 'list' || requested === 'core'
+              ? 'core'
+              : requested === 'stress' || requested === 'list stress'
+                ? 'stress'
+                : requested === 'all' || requested === 'audit' || requested === 'list all'
+                  ? 'all'
+                  : null;
+          if (browseScope) {
+            printMixedLearnerProfileList(browseScope, { picker: true });
+            continue;
+          }
+          if (!requested) {
+            applyInitialMixedLearnerProfile(mixedLearner.profileId, {
+              usedDefault: true,
+              selectionMethod: 'typed_default',
+            });
+            console.log();
+            profileSelected = true;
+            break;
+          }
+          const profileId = requested.replace(/-/gu, '_');
+          if (!learnerProfileIds().includes(profileId)) {
+            console.log(`${C.red}unknown learner profile: ${requested}${C.reset}`);
+            console.log(`${C.dim}  type list, stress, or all to browse; press Enter for ${defaultProfileId}${C.reset}`);
+            continue;
+          }
+          applyInitialMixedLearnerProfile(profileId, {
+            usedDefault: false,
+            selectionMethod: 'typed_profile_id',
           });
           console.log();
           profileSelected = true;
           break;
         }
-        const profileId = requested.replace(/-/gu, '_');
-        if (!learnerProfileIds().includes(profileId)) {
-          console.log(`${C.red}unknown learner profile: ${requested}${C.reset}`);
-          console.log(`${C.dim}  type list, stress, or all to browse; press Enter for ${defaultProfileId}${C.reset}`);
-          continue;
-        }
-        mixedLearner.profileId = profileId;
-        mixedLearner.profile = learnerProfilePrompt(profileId);
-        appendTraceEvent(state.trace, {
-          type: 'mixed_learner_initial_profile_selected',
-          profileId,
-          custom: false,
-          usedDefault: false,
-        });
-        console.log();
-        profileSelected = true;
-        break;
       }
       if (!profileSelected || exiting) return false;
 
@@ -11197,6 +11702,7 @@ async function main() {
 
       console.log(`${C.cyan}Tune the dialogue${C.reset}`);
       console.log(`${C.dim}  press Enter to accept each launch value; recommendations are shown beside it${C.reset}`);
+      attachLineListeners();
 
       const promptForSetting = async ({ stage, label, defaultValue, recommendedValue, guidance, normalize }) => {
         console.log(`${C.dim}  ${guidance}${C.reset}`);
@@ -11278,8 +11784,10 @@ async function main() {
       return true;
     } finally {
       initialSetupStage = 'off';
-      rl.removeListener('line', onLine);
-      rl.removeListener('SIGINT', onSigint);
+      if (lineListenersAttached) {
+        rl.removeListener('line', onLine);
+        rl.removeListener('SIGINT', onSigint);
+      }
       resolveNextLine = null;
       rl.setPrompt(mixedLearnerPromptText());
     }
@@ -11334,19 +11842,201 @@ async function main() {
         ? {
             enabled: true,
             palette: registerPalette,
-            policy: registerPolicy,
+            policy: tutorStubRegisterPolicyStackId(state.register.policy, state.register.overlays),
+            primaryPolicy: state.register.policy,
+            overlayPolicies: state.register.overlays,
+            overlayThreshold: state.register.overlayThreshold,
             temperature: state.register.temperature,
             history: state.register.history,
           }
         : null,
       dialogueClosure: state.dialogueClosure,
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
+      interaction: jsonClone(state.interaction),
+      coach: jsonClone(state.coach),
       directorContext,
       trace: traceDisplayPath(state.trace),
       fieldVisualization: state.fieldViz?.lastWrite || null,
       world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
       turns: state.turns,
     };
+  }
+
+  function currentTranscriptHtmlSnapshot() {
+    const opening = state.history?.[0]?.role === 'assistant' ? state.history[0].content : null;
+    const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
+    const learnerProfile = mixedLearnerProfilePresentation(mixedLearner.suggestion);
+    const learnerMode = mixedLearner.enabled ? 'mixed' : 'human';
+    const interactionMode = state.interaction?.mode || 'learner';
+    const learnerPromptHistory = mixedLearner.enabled ? jsonClone(mixedLearner.promptHistory) : [];
+    const nextLearnerTurn = state.turns.length + 1;
+    const tutorPromptTurns = state.turns
+      .filter((turn) => turn.prompts?.tutor)
+      .map((turn) => ({
+        turn: turn.turn,
+        turnId: turn.turnId,
+        ...jsonClone(turn.prompts.tutor),
+      }));
+
+    return redactTraceSecrets({
+      schema: TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
+      generatedAt: new Date().toISOString(),
+      runId: state.debugRunId,
+      title: state.world?.title || state.topic || 'Tutor Stub Transcript',
+      directorContext: jsonClone(state.directorContext),
+      opening,
+      history: jsonClone(state.history),
+      turns: jsonClone(state.turns),
+      settings: {
+        run: {
+          id: state.debugRunId,
+          completedTurns: state.turns.length,
+          mode: interactionMode,
+          learnerMode,
+        },
+        world: state.world
+          ? {
+              id: state.world.id,
+              title: state.world.title,
+              discipline: state.world.discipline || null,
+              question: state.world.question || state.world.publicQuestion || null,
+            }
+          : {
+              id: null,
+              title: state.topic,
+              discipline: null,
+              question: null,
+            },
+        tutor: {
+          modelRef: args.model,
+          provider: visibleModel.provider,
+          model: visibleModel.model,
+          temperature: state.temperature,
+          maxTokens: state.maxTokens,
+          cliEffort: state.cliEffort || null,
+        },
+        classifier: {
+          enabled: classifierEnabled,
+          combinedWithLearnerDag: combinedLearnerAnalysisEnabled,
+          modelRef: classifierEnabled
+            ? combinedLearnerAnalysisEnabled
+              ? args['learner-record-model']
+              : args['classifier-model']
+            : null,
+        },
+        learnerRecord: {
+          enabled: tutorLearnerDagEnabled,
+          modelRef: tutorLearnerDagEnabled ? args['learner-record-model'] : null,
+          provider: visibleLearnerRecordModel?.provider || null,
+          model: visibleLearnerRecordModel?.model || null,
+        },
+        learner: {
+          mode: learnerMode,
+          profileId: mixedLearner.enabled ? learnerProfile.id : null,
+          profileName: mixedLearner.enabled ? learnerProfile.name : null,
+          profilePattern: mixedLearner.enabled ? learnerProfile.pattern : null,
+          modelRef: mixedLearner.enabled ? args['auto-learner-model'] : null,
+          provider: mixedLearner.enabled ? visibleAutoLearnerModel?.provider || null : null,
+          model: mixedLearner.enabled ? visibleAutoLearnerModel?.model || null : null,
+        },
+        coach: {
+          mode: interactionMode === 'coach',
+          pending: jsonClone(state.coach?.pending || []),
+          applied: jsonClone(state.coach?.history || []),
+          publicTranscriptChanged: false,
+        },
+        automation: {
+          available: Boolean(autoLearnerResolved),
+          running: Boolean(state.interaction?.autoRunning),
+          modelRef: args['auto-learner-model'],
+          provider: visibleAutoLearnerModel?.provider || null,
+          model: visibleAutoLearnerModel?.model || null,
+          profileId: mixedLearner.profileId || 'custom',
+          defaultTurns: autoTurns ?? 'until-grounded',
+          safetyTurns: autoSafetyTurns,
+          stopOnGrounded: autoStopOnGrounded,
+        },
+        dag: {
+          tutorDagEnabled: Boolean(state.dag),
+          learnerDagEnabled: tutorLearnerDagEnabled,
+          interpretation: state.dagMode,
+          discoursePhase: state.humanDiscourse?.phase || null,
+          generousInference: Boolean(state.humanDiscourse?.behaviorChange),
+        },
+        dagFactDropout: dropout,
+        register: {
+          enabled: state.register?.enabled || false,
+          policy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+          primaryPolicy: state.register?.policy || null,
+          overlayPolicies: state.register?.overlays || [],
+          overlayThreshold: state.register?.overlayThreshold ?? null,
+          palette: state.register?.palette || [],
+          engagementStanceTemperature: state.register?.temperature ?? null,
+          temperatureScope: 'engagement_stance_only',
+          current: state.register?.current || null,
+          empiricalPriorStatus: state.register?.empiricalPriorStatus || null,
+        },
+        dialogue: {
+          memorySummary: Boolean(state.memory?.enabled),
+          rawHistoryTurns: state.historyTurns,
+          multipleChoice: state.multipleChoice,
+          opening: openingEnabled,
+          closeoutReport: closeoutReportEnabled,
+          closure: jsonClone(state.dialogueClosure),
+        },
+        output: {
+          stream: state.stream?.enabled || false,
+          trace: state.trace?.enabled ? traceDisplayPath(state.trace) : 'off',
+          fieldVisualization: state.fieldViz?.enabled || false,
+        },
+      },
+      prompts: {
+        tutor: {
+          baseSystemPrompt: state.systemPrompt,
+          turns: tutorPromptTurns,
+        },
+        learner: {
+          mode: learnerMode,
+          interactionMode,
+          activeSystemPrompt: mixedLearner.enabled
+            ? mixedLearnerArtifactsSystemPrompt(mixedLearner.profile)
+            : 'Human learner input is active; no learner model system prompt is used.',
+          nextUserPrompt: mixedLearner.enabled
+            ? buildMixedLearnerArtifactsPrompt({
+                state,
+                profile: mixedLearner.profile,
+                turnNumber: nextLearnerTurn,
+              })
+            : 'Human learner input is active; no learner model user prompt is used.',
+          history: learnerPromptHistory,
+        },
+      },
+    });
+  }
+
+  function writeCurrentTranscriptHtml({ launch = true, duringTurn = false } = {}) {
+    const filePath = path.join(traceDir, `${state.debugRunId}-transcript.html`);
+    const absolute = writeTutorStubTranscriptHtml({
+      snapshot: currentTranscriptHtmlSnapshot(),
+      filePath,
+    });
+    const shouldLaunch = launch && process.env.TUTOR_STUB_TRANSCRIPT_OPEN !== '0';
+    let launchResult = null;
+    if (shouldLaunch) launchResult = launchTutorStubTranscriptHtml(absolute);
+    const displayPath = path.relative(ROOT, absolute);
+    console.log(`${C.cyan}transcript HTML >${C.reset} ${displayPath}`);
+    console.log(
+      `${C.dim}  ${shouldLaunch ? 'opened in the default browser' : 'written without opening'}; ${state.turns.length} completed turn${state.turns.length === 1 ? '' : 's'}${duringTurn ? '; the in-progress turn is excluded' : ''}${C.reset}\n`,
+    );
+    appendTraceEvent(state.trace, {
+      type: 'transcript_html_snapshot',
+      schema: TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
+      filePath: displayPath,
+      turns: state.turns.length,
+      duringTurn,
+      launched: Boolean(launchResult),
+    });
+    return { filePath: absolute, launched: Boolean(launchResult) };
   }
 
   function finalizeInteractive(reason) {
@@ -11374,6 +12064,187 @@ async function main() {
     finalizeInteractive(reason);
     rl.close();
     resolveInteractive();
+  }
+
+  function interactionModeLabel() {
+    const mode = state.interaction?.mode || 'learner';
+    if (mode === 'coach') return `${C.brightYellow}${C.bold}COACH${C.reset}`;
+    if (mode === 'auto') return `${C.brightBlue}${C.bold}AUTO${C.reset}`;
+    return `${C.brightGreen}${C.bold}LEARNER${C.reset}`;
+  }
+
+  function printInteractionModeBanner({ detail = true } = {}) {
+    const mode = state.interaction?.mode || 'learner';
+    const description =
+      mode === 'coach'
+        ? 'your lines are private suggestions for the next tutor response'
+        : mode === 'auto'
+          ? 'the automated learner and tutor now play without intervention'
+          : 'your lines become public learner speech';
+    console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${description}${C.reset}`);
+    if (detail && mode === 'coach') {
+      console.log(
+        `${C.dim}╰─ guidance stays out of the public transcript; switch with /learner, or use /use in mixed mode${C.reset}\n`,
+      );
+    } else if (detail && mode === 'learner') {
+      console.log(`${C.dim}╰─ switch with /coach or hand off with /auto [turns]${C.reset}\n`);
+    }
+  }
+
+  function setInteractionMode(mode, { announce = true } = {}) {
+    const normalized = String(mode || '').trim().toLowerCase();
+    if (!['learner', 'coach', 'auto'].includes(normalized)) {
+      throw new Error('mode must be learner, coach, or auto');
+    }
+    const previous = state.interaction.mode;
+    if (normalized !== 'auto') state.interaction.previousMode = normalized;
+    state.interaction.mode = normalized;
+    rl.setPrompt(mixedLearnerPromptText());
+    appendTraceEvent(state.trace, {
+      type: 'interactive_mode_changed',
+      previous,
+      mode: normalized,
+      turn: state.turns.length + 1,
+    });
+    if (announce) printInteractionModeBanner();
+  }
+
+  function printInteractiveStatus() {
+    const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
+    const profile = mixedLearnerProfilePresentation(mixedLearner.suggestion);
+    const policy = tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays);
+    const closure = state.dialogueClosure?.phase || 'open';
+    const coachPending = state.coach?.pending?.length || 0;
+    const suggestion = mixedLearner.enabled
+      ? mixedLearner.suggestion?.text
+        ? 'ready'
+        : mixedLearner.pending
+          ? 'warming'
+          : 'idle'
+      : 'off';
+    console.log(`${C.brightCyan}${C.bold}session status >${C.reset} ${interactionModeLabel()} · turn ${state.turns.length + 1}`);
+    console.log(`${C.dim}  learner profile: ${profile.id} — ${profile.name}; mixed suggestion ${suggestion}${C.reset}`);
+    console.log(
+      `${C.dim}  policy: ${policy}; stance temp ${state.register?.temperature}; DAG dropout ${dropout.rate}; closure ${closure}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  coach: ${coachPending} suggestion${coachPending === 1 ? '' : 's'} waiting; ${state.coach?.history?.length || 0} applied${C.reset}`,
+    );
+    console.log(`${C.dim}  transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`);
+  }
+
+  function queueCoachGuidance(text, { duringTurn = false } = {}) {
+    const guidance = String(text || '').trim();
+    if (!guidance) {
+      setInteractionMode('coach');
+      return null;
+    }
+    const notBeforeTurn = state.turns.length + (duringTurn || processingTurn ? 2 : 1);
+    const entry = {
+      id: `coach-${String((state.coach?.pending?.length || 0) + (state.coach?.history?.length || 0) + 1).padStart(3, '0')}`,
+      text: guidance,
+      createdAt: new Date().toISOString(),
+      notBeforeTurn,
+    };
+    state.coach.pending.push(entry);
+    if (!duringTurn && !processingTurn) {
+      resetMixedLearnerSuggestion('coach_guidance_added');
+    }
+    appendTraceEvent(state.trace, {
+      type: 'coach_guidance_queued',
+      guidance: entry,
+      duringTurn: Boolean(duringTurn || processingTurn),
+      publicTranscriptChanged: false,
+    });
+    clearStatusLine();
+    console.log(`${C.brightYellow}${C.bold}coach queued >${C.reset} ${guidance}`);
+    console.log(
+      `${C.dim}  private; applies to tutor turn ${notBeforeTurn}${duringTurn || processingTurn ? ' after the response already in flight' : ''}${C.reset}`,
+    );
+    if (mixedLearner.enabled && !duringTurn && !processingTurn && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('coach_guidance_added');
+      console.log(`${C.dim}  refreshed the mixed draft and tutor prefetch under this guidance${C.reset}`);
+    }
+    console.log();
+    return entry;
+  }
+
+  function parseInteractiveAutoTurns(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw || ['until-grounded', 'grounded', 'all'].includes(raw)) return null;
+    const parsed = Number.parseInt(raw, 10);
+    if (!Number.isInteger(parsed) || parsed <= 0 || String(parsed) !== raw) {
+      throw new Error('auto expects a positive turn count or until-grounded');
+    }
+    return parsed;
+  }
+
+  async function runInteractiveAutoMode(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}auto mode can start after the current tutor response completes${C.reset}\n`);
+      return;
+    }
+    let requestedTurns;
+    try {
+      requestedTurns = parseInteractiveAutoTurns(argument);
+    } catch (error) {
+      console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`);
+      return;
+    }
+    if (!autoLearnerResolved?.isConfigured && !isCliProvider(autoLearnerResolved?.provider)) {
+      const envName = autoLearnerProviderConfig?.api_key_env || 'provider API key';
+      console.log(`${C.red}auto mode error:${C.reset} ${args['auto-learner-model']} is not configured; set ${envName}\n`);
+      return;
+    }
+    resetMixedLearnerSuggestion('interactive_auto_started');
+    setInteractionMode('auto', { announce: false });
+    state.interaction.autoRunning = true;
+    processingTurn = true;
+    rl.pause();
+    const capLabel = requestedTurns === null ? `until grounded · safety cap ${autoSafetyTurns}` : `${requestedTurns} turn${requestedTurns === 1 ? '' : 's'}`;
+    console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${capLabel} · profile ${mixedLearner.profileId || 'custom'}${C.reset}`);
+    console.log(`${C.dim}╰─ tutor and learner now continue from the public transcript${C.reset}\n`);
+    appendTraceEvent(state.trace, {
+      type: 'interactive_auto_handoff',
+      turn: state.turns.length + 1,
+      maxTurns: requestedTurns,
+      safetyTurns: autoSafetyTurns,
+      profileId: mixedLearner.profileId,
+    });
+    try {
+      const result = await runAutomatedLearnerDialogue({
+        state,
+        firstMessage: '',
+        openingEnabled,
+        autoLearnerResolved,
+        autoLearnerProfile: mixedLearner.profile,
+        autoTurns: requestedTurns,
+        autoSafetyTurns,
+        autoStopOnGrounded,
+        cliEffort,
+      });
+      if (result.reason === 'auto_grounded_closure' || state.dialogueClosure?.phase === 'closed') {
+        console.log(`${C.brightGreen}${C.bold}automation complete >${C.reset} grounded closure reached\n`);
+        requestExit('interactive_auto_grounded_closure');
+        return;
+      }
+      const returnMode = state.interaction.previousMode === 'coach' ? 'coach' : 'learner';
+      setInteractionMode(returnMode, { announce: false });
+      console.log(`${C.brightBlue}${C.bold}automation paused >${C.reset} ${result.reason.replaceAll('_', ' ')}`);
+      console.log(`${C.dim}  ${state.turns.length} total completed turn${state.turns.length === 1 ? '' : 's'}; use /auto to continue${C.reset}\n`);
+    } catch (error) {
+      setInteractionMode(state.interaction.previousMode === 'coach' ? 'coach' : 'learner', { announce: false });
+      console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, { type: 'interactive_auto_error', error: error.message });
+    } finally {
+      state.interaction.autoRunning = false;
+      processingTurn = false;
+      if (!exiting) {
+        rl.resume();
+        rl.setPrompt(mixedLearnerPromptText());
+      }
+    }
   }
 
   function promptIfIdle() {
@@ -11509,9 +12380,14 @@ async function main() {
   function resetInteractiveState() {
     const currentRegisterTemperature =
       state.register?.temperature ?? registerTemperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE;
+    const currentRegisterOverlays = [...(state.register?.overlays || registerPolicyOverlays)];
+    const currentRegisterOverlayThreshold =
+      state.register?.overlayThreshold ?? registerOverlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD;
     const currentDagFactDropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     state.history = [];
     state.turns = [];
+    state.coach = { pending: [], history: [] };
+    mixedLearner.promptHistory = [];
     state.printedDebugIds = new Set();
     state.dialogueClosure = { ...dialogueClosureConfig };
     state.learnerDag = createLearnerDagState({
@@ -11530,6 +12406,8 @@ async function main() {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
       policy: registerPolicy,
+      overlays: currentRegisterOverlays,
+      overlayThreshold: currentRegisterOverlayThreshold,
       temperature: currentRegisterTemperature,
       continuousUnsafe: continuousUnsafeRegisterAnchorsEnabled,
       empiricalPrior: registerEmpiricalPrior.prior,
@@ -11544,6 +12422,13 @@ async function main() {
     const active = registerTemperatureApplies(state.register?.policy);
     console.log(`${C.cyan}settings >${C.reset}`);
     console.log(
+      `${C.dim}  policy stack: ${tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays)}; primary ${
+        state.register?.policy || 'off'
+      }; overlays ${state.register?.overlays?.join(', ') || 'none'}; strong-change threshold ${
+        state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD
+      }${C.reset}`,
+    );
+    console.log(
       `${C.dim}  stance temp: ${state.register?.temperature ?? registerTemperature} — lower sharpens the dominant engagement stance; higher broadens only that blend${C.reset}`,
     );
     console.log(
@@ -11552,6 +12437,9 @@ async function main() {
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     console.log(
       `${C.dim}  DAG fact dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); seed ${dropout.seed}; active dropped ${dropout.activeCount}; adopted facts tracked ${dropout.adoptedCount}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  use /settings policy add state, /settings policy add field, /settings policy remove state, /settings policy clear, or /settings policy threshold 0.7${C.reset}`,
     );
     console.log(
       `${C.dim}  use /settings temp 1.0 or /settings dropout 0.15; dropout range 0-1 and 0 stops new losses${C.reset}\n`,
@@ -11574,9 +12462,110 @@ async function main() {
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (setting === 'policy' || setting === 'policies' || setting === 'overlay' || setting === 'overlays') {
+      if (parts.length === 1) {
+        printDialogueSettings();
+        return;
+      }
+      if (duringTurn) {
+        console.log(`${C.dim}register policy overlays are unchanged while a tutor turn is in progress${C.reset}`);
+        console.log(`${C.dim}  change them after the tutor response so the effective turn is deterministic${C.reset}\n`);
+        appendTraceEvent(state.trace, {
+          type: 'register_policy_composition_change_rejected',
+          reason: 'turn_in_progress',
+          requested: parts.slice(1),
+          turn: state.turns.length + 1,
+        });
+        return;
+      }
+      const action = String(parts[1] || '').toLowerCase();
+      let nextOverlays = [...(state.register?.overlays || [])];
+      let nextThreshold = state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD;
+      try {
+        if (action === 'add') {
+          const overlay = String(parts[2] || '').toLowerCase().replace(/-/gu, '_');
+          if (parts.length !== 3 || !TUTOR_STUB_REGISTER_OVERLAY_POLICIES.includes(overlay)) {
+            throw new Error(`policy add expects ${TUTOR_STUB_REGISTER_OVERLAY_POLICIES.join(' or ')}`);
+          }
+          nextOverlays = [...new Set([...nextOverlays, overlay])];
+        } else if (action === 'remove') {
+          const overlay = String(parts[2] || '').toLowerCase().replace(/-/gu, '_');
+          if (parts.length !== 3 || !TUTOR_STUB_REGISTER_OVERLAY_POLICIES.includes(overlay)) {
+            throw new Error(`policy remove expects ${TUTOR_STUB_REGISTER_OVERLAY_POLICIES.join(' or ')}`);
+          }
+          nextOverlays = nextOverlays.filter((entry) => entry !== overlay);
+        } else if (action === 'clear') {
+          if (parts.length !== 2) throw new Error('policy clear takes no additional argument');
+          nextOverlays = [];
+        } else if (action === 'threshold') {
+          if (parts.length !== 3) throw new Error('policy threshold expects one number from 0 to 1');
+          nextThreshold = normalizeTutorStubRegisterOverlayThreshold(parts[2], {
+            label: 'register overlay threshold',
+          });
+        } else {
+          throw new Error('use policy add <state|field>, remove <state|field>, clear, or threshold <0-1>');
+        }
+        parseTutorStubRegisterPolicyStack(
+          tutorStubRegisterPolicyStackId(state.register.policy, nextOverlays),
+        );
+      } catch (error) {
+        console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
+        return;
+      }
+      const previous = {
+        overlays: [...(state.register?.overlays || [])],
+        threshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+      };
+      const unchanged =
+        previous.threshold === nextThreshold &&
+        previous.overlays.length === nextOverlays.length &&
+        previous.overlays.every((overlay, index) => overlay === nextOverlays[index]);
+      if (unchanged) {
+        console.log(
+          `${C.cyan}settings >${C.reset} policy stack already ${tutorStubRegisterPolicyStackId(
+            state.register.policy,
+            state.register.overlays,
+          )}; threshold ${nextThreshold}\n`,
+        );
+        return;
+      }
+      state.register.overlays = nextOverlays;
+      state.register.overlayThreshold = nextThreshold;
+      const invalidated = resetMixedLearnerSuggestion('register_policy_composition_changed');
+      appendTraceEvent(state.trace, {
+        type: 'register_policy_composition_changed',
+        schema: TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
+        primaryPolicy: state.register.policy,
+        previous,
+        overlays: nextOverlays,
+        threshold: nextThreshold,
+        policyStack: tutorStubRegisterPolicyStackId(state.register.policy, nextOverlays),
+        effectiveTurn: state.turns.length + 1,
+        cacheRefresh: {
+          priorStateCleared: Boolean(invalidated?.hadState),
+          analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
+          tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
+        },
+      });
+      console.log(
+        `${C.cyan}settings >${C.reset} policy stack ${tutorStubRegisterPolicyStackId(
+          state.register.policy,
+          nextOverlays,
+        )}; strong-change threshold ${nextThreshold}; applies from turn ${state.turns.length + 1}`,
+      );
+      console.log(
+        `${C.dim}  the primary selects first; eligible overlays are compared deterministically and the strongest qualifying change wins${C.reset}`,
+      );
+      if (mixedLearner.enabled && latestTutorMessage(state)) {
+        startMixedLearnerPrefetch('register_policy_composition_changed');
+        console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+      }
+      console.log();
+      return;
+    }
     if (![...temperatureNames, ...dropoutNames].includes(setting) || parts.length !== 2) {
       console.log(
-        `${C.red}settings error:${C.reset} use /settings, /settings stance-temp <n>, or /settings dropout <0-1>`,
+        `${C.red}settings error:${C.reset} use /settings, /settings stance-temp <n>, /settings dropout <0-1>, or /settings policy add <state|field>`,
       );
       console.log(`${C.dim}  examples: /settings temp 0.4 | /settings dropout 0.15${C.reset}\n`);
       return;
@@ -11716,8 +12705,77 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (trimmed === '/status') {
+      clearStatusLine();
+      printInteractiveStatus();
+      appendTraceEvent(state.trace, { type: 'interactive_status', turns: state.turns.length, duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/learner') {
+      if (commandArg) {
+        console.log(`${C.red}mode error:${C.reset} /learner takes no argument; type the learner line after switching\n`);
+      } else {
+        setInteractionMode('learner');
+      }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/coach') {
+      setInteractionMode('coach', { announce: !commandArg });
+      if (commandArg) queueCoachGuidance(commandArg, { duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/auto') {
+      const promise = runInteractiveAutoMode(commandArg, { duringTurn });
+      finishSlashCommand();
+      return promise;
+    }
+    if (command === '/mode') {
+      const [requestedModeRaw = '', ...rest] = commandArg.split(/\s+/u).filter(Boolean);
+      const requestedMode = requestedModeRaw.toLowerCase();
+      const modeArgument = rest.join(' ');
+      if (!requestedMode) {
+        clearStatusLine();
+        printInteractionModeBanner();
+        finishSlashCommand();
+        return true;
+      }
+      if (requestedMode === 'auto') {
+        const promise = runInteractiveAutoMode(modeArgument, { duringTurn });
+        finishSlashCommand();
+        return promise;
+      }
+      if (requestedMode === 'coach') {
+        setInteractionMode('coach', { announce: !modeArgument });
+        if (modeArgument) queueCoachGuidance(modeArgument, { duringTurn });
+        finishSlashCommand();
+        return true;
+      }
+      if (requestedMode === 'learner' && !modeArgument) {
+        setInteractionMode('learner');
+        finishSlashCommand();
+        return true;
+      }
+      clearStatusLine();
+      console.log(`${C.red}mode error:${C.reset} use /mode learner, /mode coach [guidance], or /mode auto [turns]\n`);
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/settings') {
       handleDialogueSettings(commandArg, { duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/transcript' || command === '/html') {
+      clearStatusLine();
+      const option = commandArg.toLowerCase();
+      if (option && !['no-open', 'write'].includes(option)) {
+        console.log(`${C.red}transcript error:${C.reset} use ${command} or ${command} no-open\n`);
+      } else {
+        writeCurrentTranscriptHtml({ launch: !option, duringTurn });
+      }
       finishSlashCommand();
       return true;
     }
@@ -12049,6 +13107,8 @@ async function main() {
     return;
   }
 
+  printInteractionModeBanner({ detail: false });
+
   rl.on('line', (line) => {
     const trimmed = line.trim();
     if (!trimmed) {
@@ -12066,11 +13126,18 @@ async function main() {
       }
       return;
     }
+    if (state.interaction?.mode === 'coach') {
+      const pausedInterim = processingTurn ? pauseInterimAnimation(state) : false;
+      queueCoachGuidance(trimmed, { duringTurn: processingTurn });
+      if (pausedInterim) resumeInterimAnimation(state);
+      promptIfIdle();
+      return;
+    }
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
       pendingLearnerLines.push(trimmed);
       console.log(
-        `${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, /viz, or /clarify while waiting${C.reset}`,
+        `${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
       );
       appendTraceEvent(state.trace, {
         type: 'learner_turn_queued',

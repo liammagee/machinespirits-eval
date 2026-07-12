@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import * as pty from 'node-pty';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -113,6 +114,9 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
     initialPicker: {
       enabled: true,
       defaultProfileId: 'diligent',
+      keyboardMenu: true,
+      navigation: ['up', 'down', 'enter'],
+      nonTtyFallback: 'typed_profile_id',
     },
   });
   assert.match(config.mixedLearner.accept, /Tab/u);
@@ -249,6 +253,68 @@ process.stdin.on('end', () => {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test(
+  'fresh TTY profile picker scrolls with arrow keys and selects with Enter',
+  { skip: process.platform === 'win32', timeout: 10_000 },
+  async () => {
+    let terminalOutput = '';
+    let navigated = false;
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 100,
+        rows: 16,
+        name: 'xterm-color',
+        env: { ...process.env, TERM: 'xterm-color' },
+      },
+    );
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`TTY profile picker timed out\n${plainTerminalText(terminalOutput)}`));
+      }, 8_000);
+      terminal.onData((chunk) => {
+        terminalOutput += chunk;
+        const plain = plainTerminalText(terminalOutput);
+        if (!navigated && plain.includes('↑/↓ scroll') && plain.includes('diligent')) {
+          navigated = true;
+          terminal.write(`${'\x1b[B'.repeat(9)}\r`);
+        } else if (!requestedExit && plain.includes('DAG fact dropout [0; recommended] >')) {
+          requestedExit = true;
+          terminal.write('quit\r');
+        }
+      });
+      terminal.onExit(({ exitCode, signal }) => {
+        clearTimeout(timer);
+        if (exitCode === 0) resolve();
+        else reject(new Error(`TTY profile picker exited ${exitCode} (${signal})\n${terminalOutput}`));
+      });
+    });
+
+    const plain = plainTerminalText(terminalOutput);
+    assert.match(plain, /↑\/↓ scroll · Enter select/u);
+    assert.match(plain, /↑ 2 more/u);
+    assert.match(plain, /learner profile > contradiction_keeper — Contradiction keeper/u);
+    assert.match(plain, /DAG fact dropout \[0; recommended\] >/u);
+    assert.doesNotMatch(plain, /mixed learner answer \+ clue ready/u);
+  },
+);
 
 test('tutor-stub dry run exposes configurable register temperature', () => {
   const config = tutorStubDryRun([
@@ -486,6 +552,8 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/clarify \[phrase\]/u);
   assert.match(result.stdout, /\/explain \[phrase\]/u);
   assert.match(result.stdout, /\/analysis \[technical\]/u);
+  assert.match(result.stdout, /\/transcript \[no-open\]/u);
+  assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, and settings views/u);
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
   assert.match(result.stdout, /paste the debug id into Codex/u);

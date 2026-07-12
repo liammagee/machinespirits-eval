@@ -25,6 +25,15 @@ Key choices and defaults:
 - QA policy suites: `core` is the routine baseline + discrete adaptive comparison (`bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`); `controls` is `negative,bland,random`; `pressure` is the cheap `field,negative` screen for pressure-sensitive learner profiles; `sentinel` is the representative five-policy ladder (`bland,field,trajectory,dynamical_system,negative`) for the 60-dialogue sentinel-profile `n=3` comparison; `frontier` adds the richer/continuous state policies against `bland`; `audit` is the expensive all-policy sweep. `focused` aliases `core`; `full`/`all` alias `audit`.
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
+- Composed register policies: append `+state`, `+field`, or both to an adaptive
+  primary, for example `--register-policy dynamical_system+state+field`. The
+  primary selects first. Each overlay then makes a deterministic counter-choice
+  and receives a normalized turn-change score; only an overlay at or above
+  `--register-overlay-threshold` (default `0.7`) that recommends a different
+  stance may take control. If several qualify, the strongest wins, with stack
+  order breaking ties. `bland`, `random`, and `negative` reject overlays so
+  control arms remain uncontaminated. Auto-eval accepts composed policy ids in
+  `--policies`, such as `--policies bland,dynamical_system+state+field`.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Engagement-stance temperature: default `0.85`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
@@ -79,6 +88,25 @@ npm run tutor:stub -- \
 
 Useful variants:
 
+- Interactive sessions have three live roles. `/mode learner` (or `/learner`)
+  makes typed lines public learner speech. `/mode coach` (or `/coach`) makes
+  typed lines private, high-priority suggestions for the next tutor response;
+  `/coach <text>` switches and queues in one command. Coach guidance is never
+  added to public history, is constrained by evidence/leak/closure guards, is
+  stored on the tutor turn for audit, and invalidates stale mixed tutor
+  prefetches. In mixed mode, queue guidance and use `/use` to send the drafted
+  learner turn; in human mode, switch back with `/learner` and type the public
+  learner response.
+- `/mode auto` (or `/auto`) hands the current public transcript to the existing
+  automated learner loop and plays both roles until grounded closure or the
+  configured safety cap. `/auto 5` runs exactly five more learner-tutor turns
+  and then returns to the prior learner/coach role. It uses the active learner
+  profile and `--auto-learner-model`; it does not restart the scene or repeat an
+  existing opening.
+- `/status` prints the current role, turn, learner profile, mixed-cache state,
+  register policy/temperature, DAG dropout, closure phase, and pending/applied
+  coach guidance. Role prompts and tutor/system output use distinct terminal
+  colors; `/help` is the compact command index.
 - Add `--resume-last` to continue the latest dialogue in the trace dir.
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
 - Add `--model`, `--classifier-model`, `--learner-record-model`, or
@@ -97,10 +125,12 @@ Useful variants:
   how the visible draft expresses the active learner profile. The full ready
   notice and compact profile card appear once per active profile. A fresh mixed
   session first asks `Pick a learner profile [diligent] >`; Enter accepts the
-  default, while a built-in profile id selects another contract before any
-  learner artifact is generated. At this picker, `list`, `stress`, and `all`
-  browse profile groups rather than selecting a profile; after browsing, enter
-  one of the displayed profile ids. Tab completes picker commands and ids.
+  default. In a TTY, all built-in profiles appear in a scrolling menu: Up/Down
+  moves the highlight and Enter selects it. The initial highlight is the launch
+  profile (`diligent` by default), and the viewport scrolls across both core and
+  stress profiles. Pipes and other non-TTY callers retain the typed-ID fallback;
+  there, `list`, `stress`, and `all` browse profile groups and Tab completes
+  picker commands and ids.
   Before any clue or answer generation, the same fresh-session prelude asks for
   engagement-stance temperature when the active policy uses it (`0.85` is the
   recommended default) and accumulated DAG-fact dropout when the learner DAG is
@@ -187,11 +217,26 @@ Useful variants:
   realization count. Use `/analysis technical` or `/a technical` for the
   classifier labels, learner/tutor DAGs, field metrics, stance vectors,
   per-axis realization audit, scaffold audit, leak guard, and trace path.
+- `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
+  snapshot and opens it in the default browser. It includes raw, script,
+  swimlane, analysis, prompt, and settings views; all completed public turns;
+  the selected world, model, learner-profile, DAG, register, temperature,
+  dropout, memory, stream, and closure options; the full tutor and mixed-learner
+  prompts retained so far; and the learner/DAG analysis plus rationale used for
+  each register selection. Use `/transcript no-open` to write without launching
+  a browser. During a model call, the snapshot deliberately stops at the last
+  completed turn.
 - `/settings` shows the active policy and engagement-stance temperature.
   `/settings stance-temp 0.4` sharpens subsequent locally selected stance
   distributions; `/settings stance-temp 1.4` broadens them. No other response
   axis is temperature-scaled. Changes are rejected while a tutor turn is in
   progress so each turn has one deterministic setting.
+- `/settings policy add state` and `/settings policy add field` add live
+  strong-change overlays without replacing the primary policy. Use `/settings
+  policy remove <state|field>`, `/settings policy clear`, or `/settings policy
+  threshold <0..1>` to adjust them. Changes invalidate mixed learner analysis
+  and tutor-prefetch caches, apply from the next turn, survive `/clear`, and are
+  recorded in traces, `/analysis technical`, and transcript HTML.
 - `/settings dropout 0.15` gives each eligible accumulated public premise a
   seeded 15% per-turn chance of leaving the active learner DAG; `/settings
   dropout 0` disables new losses. Dropout is harness-owned, not a role-play
@@ -201,8 +246,8 @@ Useful variants:
   focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
   Clue progress. `view n/N` is a carousel position, not a score; restrained
   color distinguishes phase, view number, and panel category.
-- Use slash commands during a run: `/analysis`, `/settings [temp n|dropout n]`, `/field`, `/viz`, `/clarify [phrase]`,
-  `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
+- Use slash commands during a run: `/analysis`, `/settings [temp n|dropout n]`, `/field`, `/viz`, `/transcript`,
+  `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 

@@ -22,6 +22,10 @@ import {
   normalizeTutorStubEngagementStanceTemperature,
 } from '../services/tutorStubRegisterTemperature.js';
 import {
+  DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+  normalizeTutorStubRegisterOverlayThreshold,
+} from '../services/tutorStubRegisterPolicyComposition.js';
+import {
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
   normalizeTutorStubDagFactDropoutRate,
@@ -57,6 +61,11 @@ const ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
   process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
   process.argv.slice(2).some((arg) => arg === '--register-temperature' || arg.startsWith('--register-temperature=')),
+);
+const REGISTER_OVERLAY_THRESHOLD_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_REGISTER_OVERLAY_THRESHOLD ||
+  process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD ||
+  argvHasOption('--register-overlay-threshold'),
 );
 const DAG_FACT_DROPOUT_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT ||
@@ -109,6 +118,13 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
         process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
         String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
+    },
+    'register-overlay-threshold': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_REGISTER_OVERLAY_THRESHOLD ||
+        process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD ||
+        String(DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
     },
     'dag-fact-dropout': {
       type: 'string',
@@ -177,6 +193,8 @@ Options:
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
   --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.85)
+  --register-overlay-threshold <n>
+                              minimum strong-change score for +state/+field overlays (default: 0.7)
   --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
   --dag-fact-dropout-seed <n> deterministic non-negative dropout seed (default: 1)
   --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
@@ -6335,6 +6353,7 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       maxTokens: config.maxTokens ?? null,
       historyTurns: config.historyTurns ?? null,
       memorySummary: config.memorySummary || null,
+      registerOverlayThreshold: config.registerOverlayThreshold ?? null,
       resumedFrom: config.resumedFrom || null,
       resumeStatuses: config.resumeStatuses || null,
       dryRun: Boolean(config.dryRun),
@@ -9769,6 +9788,12 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     String(
       normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' }),
     ),
+    '--register-overlay-threshold',
+    String(
+      normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+        label: '--register-overlay-threshold',
+      }),
+    ),
     '--dag-fact-dropout',
     String(normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })),
     '--dag-fact-dropout-seed',
@@ -9894,6 +9919,15 @@ function buildResumePlan(summaryPath) {
     );
     adjustedChildArgs = withFlagValue(
       adjustedChildArgs,
+      '--register-overlay-threshold',
+      REGISTER_OVERLAY_THRESHOLD_OVERRIDE
+        ? normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+            label: '--register-overlay-threshold',
+          })
+        : '',
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
       '--dag-fact-dropout',
       DAG_FACT_DROPOUT_OVERRIDE
         ? normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })
@@ -9963,6 +9997,11 @@ function buildResumePlan(summaryPath) {
           source.config?.registerTemperature ??
           DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
       temperatureScope: 'engagement_stance_only',
+      registerOverlayThreshold: REGISTER_OVERLAY_THRESHOLD_OVERRIDE
+        ? normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+            label: '--register-overlay-threshold',
+          })
+        : (source.config?.registerOverlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
       dagFactDropout: DAG_FACT_DROPOUT_OVERRIDE
         ? normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })
         : (source.config?.dagFactDropout ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
@@ -10003,6 +10042,9 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         label: '--register-temperature',
       }),
       temperatureScope: 'engagement_stance_only',
+      registerOverlayThreshold: normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
+        label: '--register-overlay-threshold',
+      }),
       dagFactDropout: normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
         label: '--dag-fact-dropout',
       }),
