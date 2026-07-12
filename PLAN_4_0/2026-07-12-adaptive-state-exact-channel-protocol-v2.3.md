@@ -2,7 +2,7 @@
 
 **Date frozen:** 2026-07-12
 
-**Status:** implemented without model calls; successor Stage 0 pending a clean-SHA seal
+**Status:** implemented; clean-SHA successor Stage 0 passed and sealed without model calls
 
 **Parent outcome:** v2.2 stopped at 70/72, with a repeated Ravensmark × derive × Codex failure
 
@@ -165,3 +165,35 @@ The successor is intentionally narrower than the abandoned language-model
 crossing. That is a feature: it makes the causal question identifiable and
 moves language robustness into its own test instead of letting it contaminate
 the learner-state verdict.
+
+## Execution outcome
+
+Commit `346e472a` implemented and validated the v2.3 channel before the
+successor run. Clean run
+`adaptive-state-v2-s0-exact-channel-346e472a-v23` then completed and sealed:
+
+- 24/24 dialogues and 144/144 scored transitions;
+- 168/168 realized learner turns passed all five semantic-fidelity checks;
+- zero model calls;
+- exact deterministic replay;
+- zero leakage, donor, stale-control, or paired-target-drift failures;
+- both primary-target oracle checks beat no-state, training-fold class-prior,
+  and uniform baselines on log loss and Brier score;
+- no target degeneracy and all fixed-head folds converged.
+
+Dataset SHA-256 is
+`e781beb4f51f876020d4e41dbd00606d8fffbfeb13db9daeb99224d71da78e61`;
+report SHA-256 is
+`e939ff171a0d2b2e85217a13cc6c7671de912b2d49134f126b37d80e1236023f`.
+The seal verifies 10 artifacts, two chained events, and no warnings.
+
+The inherited v2.1 report vocabulary says
+`advance_to_s1_technical_pilot`. Under the prospectively frozen v2.3 contract,
+that legacy string authorizes only `s1_canonical_sensor_pilot`, which is
+zero-call and non-confirmatory. It does not reopen the old paid 339-call S1 or
+the language-model observation channel.
+
+The S0 pass proves that the successor instrument is exact, public-only,
+replayable, structurally complete, and sensitive enough to analyze. It is not
+a learner-state validity result. `winner: null` and `do_not_optimize_policy`
+remain operative until a bounded canonical confirmation says otherwise.

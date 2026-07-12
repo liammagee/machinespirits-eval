@@ -757,10 +757,18 @@ gate-ineligible descriptive-transfer lane. The frozen contract is
 repair are in
 `PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md`.
 
-This implementation does not reopen S1 or S2 by itself. The next permitted
-execution is a zero-call clean-SHA v2.3 S0 seal across the existing 24 dialogues
-and 144 scored transitions. Until that passes, the prior `winner: null` and
-`do_not_optimize_policy` decisions remain operative. Phase 6B now explicitly
+The clean-SHA zero-call v2.3 S0 has now passed and sealed at `346e472a` across
+24 dialogues, 144 scored transitions, and 168 realized turns with every
+semantic-fidelity check passing. Exact replay, leakage/controls, target
+nondegeneracy, fixed-head convergence, and both oracle sensitivity checks also
+passed. Dataset SHA-256 is `e781beb4f51f876020d4e41dbd00606d8fffbfeb13db9daeb99224d71da78e61`;
+report SHA-256 is `e939ff171a0d2b2e85217a13cc6c7671de912b2d49134f126b37d80e1236023f`.
+The inherited v2.1 decision label `advance_to_s1_technical_pilot` is governed by
+v2.3 as authorization only for the zero-call, non-confirmatory canonical sensor
+pilot—not the old paid language-model S1.
+
+This S0 pass does not reopen policy optimization or S2 by itself. The prior
+`winner: null` and `do_not_optimize_policy` decisions remain operative. Phase 6B now explicitly
 requires a sealed canonical S2 pass, a non-null winner, and a separately opened
 optimization gate; live shadow work additionally requires an observation-
 parity bridge.

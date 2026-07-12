@@ -28,6 +28,7 @@ links:
     - adaptive-state-v2-s0-structural-support-2dd039c5-v21
     - adaptive-state-v2-observability-preflight-985bd542-v21
     - adaptive-state-v2-observability-reliability-4133d7ff-v22
+    - adaptive-state-v2-s0-exact-channel-346e472a-v23
 tags:
   - adaptive-tutor
   - learner-state
@@ -331,3 +332,19 @@ protocol also makes Phase 6B depend explicitly on a sealed canonical S2 pass
 and a non-null winner. No model calls were made; a clean-SHA v2.3 S0 seal is the
 next permitted execution. S1/S2 validity, policy optimization, Phase 6B,
 shadow-pilot, efficacy, and human-learning claims remain blocked.
+
+2026-07-12 Codex v2.3 S0 outcome: The implementation was committed and pushed
+at clean SHA `346e472a`, then zero-call run
+`adaptive-state-v2-s0-exact-channel-346e472a-v23` passed and sealed 24/24
+dialogues, 144/144 scored transitions, and 168/168 semantically faithful
+realized turns. Deterministic replay, leakage, crossed cells, donors, stale
+controls, paired targets, nondegeneracy, convergence, and both oracle
+sensitivity checks passed; the run used zero model calls. Dataset SHA-256 is
+`e781beb4f51f876020d4e41dbd00606d8fffbfeb13db9daeb99224d71da78e61` and
+report SHA-256 is
+`e939ff171a0d2b2e85217a13cc6c7671de912b2d49134f126b37d80e1236023f`.
+The inherited v2.1 report string `advance_to_s1_technical_pilot` is narrowed by
+the frozen v2.3 contract to the zero-call canonical sensor pilot only; it does
+not authorize the old paid S1. No sensor winner exists yet, so policy
+optimization, Phase 6B, shadow-pilot, efficacy, and human-learning claims
+remain blocked.
