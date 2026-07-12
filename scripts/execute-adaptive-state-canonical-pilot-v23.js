@@ -135,7 +135,6 @@ function executionRunPlan({ label, runSeed, parent, baseConfigPath, pilotConfigP
         requested: 'deterministic-fixed-multinomial-head-v2.1',
         resolved: 'deterministic-fixed-multinomial-head-v2.1',
         observed: null,
-        allowedObservedModels: [],
       },
     },
     requiredObservedModelRoles: [],
@@ -189,13 +188,6 @@ async function main(argv = process.argv.slice(2)) {
   const pilotConfig = yaml.parse(fs.readFileSync(pilotConfigPath, 'utf8'));
   const contract = validateAdaptiveStateCanonicalPilotContract(pilotConfig);
   const parent = validateExactChannelParent({ parentRunDir, baseConfig, baseConfigPath });
-  if (has(argv, 'dry-run')) {
-    process.stdout.write(`dry-run pass: ${parent.run_id} -> ${label}; zero model calls; no artifacts written\n`);
-    process.stdout.write(`decision contract ${hashCanonicalJson(contract)}\n`);
-    return;
-  }
-
-  const runDir = path.join(outRoot, label);
   const runPlan = executionRunPlan({
     label,
     runSeed,
@@ -204,6 +196,14 @@ async function main(argv = process.argv.slice(2)) {
     pilotConfigPath,
     pilotConfig,
   });
+  if (has(argv, 'dry-run')) {
+    process.stdout.write(`dry-run pass: ${parent.run_id} -> ${label}; zero model calls; no artifacts written\n`);
+    process.stdout.write(`decision contract ${hashCanonicalJson(contract)}\n`);
+    process.stdout.write(`run plan ${hashCanonicalJson(runPlan)}\n`);
+    return;
+  }
+
+  const runDir = path.join(outRoot, label);
   createRunPlan(runDir, runPlan);
   writeExclusive(
     path.join(runDir, 'pilot-contract.json'),
