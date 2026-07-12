@@ -15,6 +15,7 @@ depends_on:
   - tutor-stub-typed-pedagogical-actions
 links:
   notes:
+    - REGISTER-CONFIRMATORY-PREREGISTRATION.md
     - PRECONSCIOUS-FINAL-STRETCH-PLAN.md
     - PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md
     - PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md
@@ -55,3 +56,17 @@ provenance gate (done 2026-07-13 — seeded draws, stamped run headers, archived
 evidence), a frozen dated pre-registration doc carrying the verification block
 above verbatim, and an explicit go (attended, ~120 dialogues, checkpointed).
 Cost ~2 attended quota days.
+
+2026-07-13 Claude: Pre-registration DRAFTED at
+REGISTER-CONFIRMATORY-PREREGISTRATION.md (status DRAFT; freezes at launch go).
+Model decision per user direction: codex first — family block A =
+codex.gpt-5.5 at all four seams (tutor, auto-learner, classifier,
+learner-record), family block B = claude-code Sonnet 5 at all four seams in a
+later window. Not gpt-5.6-terra: terra was only ever reached via the
+since-fixed flag-forwarding bug; the in-run discrimination gate supplies the
+profile validation gpt-5.5 never had, and run_start provenance (Step 0.2) now
+verifies identity mechanically. Per-block monoculture is deliberate (matches
+the exploratory instrument being confirmed; the cross-family block is the
+check). No judge seam exists — outcomes are harness-computed. Launch = flip
+the prereg Status to FROZEN, commit, run block A (60 dialogues, ~1 attended
+day), block B in a later window.
