@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-07T08:43:56.972Z",
+  "generated": "2026-07-12T08:55:20.444Z",
   "counts": {
-    "total": 100,
+    "total": 101,
     "byStatus": {
-      "done": 85,
+      "done": 86,
       "blocked": 1,
       "dropped": 2,
       "review": 3,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 40,
-      "experiment": 33,
+      "experiment": 34,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -369,6 +369,40 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "a22-green-room-coached-tutor-training",
+      "title": "A22. Green Room — coached tutor training, rehearsal, and the prompt book",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-11",
+      "updated": "2026-07-12",
+      "verification": "Gates 0-3 of GREEN-ROOM-PLAN.md executed in order with results recorded (or the arc stopped at a failed gate with the null written up as the closing paragraph), and the resulting section landed in paper-full-2.0.md.",
+      "claim_status": "scope-bound",
+      "branch": "claude/tutor-coaching-memory-system-vvvrl8",
+      "links": {
+        "paper": "§6.16",
+        "notes": [
+          "GREEN-ROOM-PLAN.md",
+          "notes/2026-07-12-greenroom-gate1-diagnosis.md"
+        ],
+        "items": [
+          "a1-human-learner-validation",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
+          "a18-38-teacher-as-learner-ml-fine-tuning-ladder"
+        ]
+      },
+      "tags": [
+        "green-room",
+        "coach",
+        "memory",
+        "tutor-training",
+        "a22"
+      ]
     },
     {
       "id": "admin-chat-drama-launcher-simplification",

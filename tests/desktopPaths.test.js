@@ -21,6 +21,7 @@ function withCleanEnv(fn) {
     'AUTH_DB_PATH',
     'EVAL_WRITING_PAD_DIR',
     'TUTOR_CORE_LOG_DIR',
+    'GREENROOM_DIR',
   ];
   for (const k of keys) {
     saved[k] = process.env[k];
@@ -37,12 +38,21 @@ test('resolvePaths relocates every writable store under userData', () => {
   withCleanEnv(() => {
     const app = fakeApp();
     const p = resolvePaths(app, '/repo/root');
-    for (const v of [p.dbPath, p.logsDir, p.exportsDir, p.authDbPath, p.writingPadDir, p.tutorCoreLogDir]) {
+    for (const v of [
+      p.dbPath,
+      p.logsDir,
+      p.exportsDir,
+      p.authDbPath,
+      p.writingPadDir,
+      p.tutorCoreLogDir,
+      p.greenroomDir,
+    ]) {
       assert.ok(v.startsWith(p.userData), `${v} should be under userData`);
     }
     assert.equal(p.appRoot, '/repo/root');
     // the directories were actually created
     assert.ok(fs.existsSync(p.logsDir) && fs.existsSync(p.exportsDir) && fs.existsSync(p.writingPadDir));
+    assert.ok(fs.existsSync(p.greenroomDir));
     assert.ok(fs.existsSync(path.dirname(p.dbPath)) && fs.existsSync(path.dirname(p.authDbPath)));
   });
 });
@@ -58,6 +68,7 @@ test('serverEnv sets all relocation env vars + MS_APP_ROOT', () => {
       'AUTH_DB_PATH',
       'EVAL_WRITING_PAD_DIR',
       'TUTOR_CORE_LOG_DIR',
+      'GREENROOM_DIR',
       'MS_APP_ROOT',
     ]) {
       assert.ok(env[k], `serverEnv must set ${k}`);

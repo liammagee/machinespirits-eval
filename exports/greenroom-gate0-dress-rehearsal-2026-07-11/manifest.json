@@ -1,0 +1,30 @@
+{
+  "gate": "greenroom-gate0",
+  "gitSha": "0cf0204c4625edb2898d3db43e00ecd82383554f",
+  "args": {
+    "transcripts": [
+      "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/dress-transcripts"
+    ],
+    "sessions": 2,
+    "coach": "claude-code.opus",
+    "actor": "claude-code.sonnet",
+    "out": "exports/greenroom-gate0-dress-rehearsal-2026-07-11",
+    "seed": 1,
+    "maxTranscriptChars": 16000,
+    "dryRun": false
+  },
+  "coach": "claude-code.opus",
+  "actor": "claude-code.sonnet",
+  "seed": 1,
+  "selected": [
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/dress-transcripts/P01-transcript-A.md",
+      "sha256": "24f06a42367ae1c687d63ea0cf2b041be5c46241eaadb02c0960df6e81b3d56a"
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/dress-transcripts/P02-transcript-A.md",
+      "sha256": "e013443a30d59a2dd15ef56c9b3f7e26c1adb2dc4a2c17c3ab7a8e6f4a52ccf6"
+    }
+  ],
+  "startedAt": "2026-07-12T01:06:24.926Z"
+}
