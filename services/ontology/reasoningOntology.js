@@ -395,7 +395,14 @@ export async function validateTurnPlan(turnPlan = [], dramaTargets = [], options
     }
   });
 
-  return { ok: conflicts.length === 0 && errors.length === 0, turns: entries.length, errors, conflicts, serves, warnings };
+  return {
+    ok: conflicts.length === 0 && errors.length === 0,
+    turns: entries.length,
+    errors,
+    conflicts,
+    serves,
+    warnings,
+  };
 }
 
 export async function buildOntologyGuidance({ observations = [], role = 'tutor_ego' } = {}) {

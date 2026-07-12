@@ -57,7 +57,7 @@ test('concurrent terminal keeps a multi-line command palette above preserved inp
 
   assert.match(
     written(),
-    /background result\nmodel working\nslash commands · 2 matches\n  \/status  \/settings\nlearner > \/sta/u,
+    /background result\nmodel working\nslash commands · 2 matches\n {2}\/status {2}\/settings\nlearner > \/sta/u,
   );
   assert.deepEqual(terminal.snapshot(), {
     enabled: true,

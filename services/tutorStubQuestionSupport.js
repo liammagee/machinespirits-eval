@@ -34,9 +34,7 @@ function recentlyUsedAdaptiveChoice(recentTurns = []) {
 }
 
 function missingRows(assessment = null, bucket) {
-  return (Array.isArray(assessment?.missingPremises) ? assessment.missingPremises : []).filter((row) =>
-    bucket(row),
-  );
+  return (Array.isArray(assessment?.missingPremises) ? assessment.missingPremises : []).filter((row) => bucket(row));
 }
 
 /**
@@ -60,14 +58,15 @@ export function buildTutorStubQuestionSupport({
       (row?.bucket === 'unreleased' || row?.bucket === 'unscheduled') &&
       (row?.releaseTurn === null || !Number.isFinite(Number(tutorTurn)) || Number(row.releaseTurn) > Number(tutorTurn)),
   );
-  const futureBucketCount = Number(assessment?.missingPremiseBuckets?.unreleased || 0) +
+  const futureBucketCount =
+    Number(assessment?.missingPremiseBuckets?.unreleased || 0) +
     Number(assessment?.missingPremiseBuckets?.unscheduled || 0);
   const nextRelease = scaffoldState?.releaseState?.nextRelease || null;
   const hasFutureGap = Boolean(
     futureMissing.length ||
-      (futureBucketCount > 0 &&
-        nextRelease &&
-        (!Number.isFinite(Number(tutorTurn)) || Number(nextRelease.turn) > Number(tutorTurn))),
+    (futureBucketCount > 0 &&
+      nextRelease &&
+      (!Number.isFinite(Number(tutorTurn)) || Number(nextRelease.turn) > Number(tutorTurn))),
   );
   const currentStruggle = isStruggle(classification, learnerText);
   const struggleCount = recentStruggleCount(recentTurns) + (currentStruggle ? 1 : 0);
@@ -86,7 +85,8 @@ export function buildTutorStubQuestionSupport({
       guardRequired: false,
       struggleCount,
       adaptiveChoiceCoolingDown,
-      reason: 'the next needed evidence is due now and must enter the public discourse before the learner is questioned about it',
+      reason:
+        'the next needed evidence is due now and must enter the public discourse before the learner is questioned about it',
       tutorInstruction:
         modality === 'stage_then_bounded_choice'
           ? 'State the due evidence in ordinary scene language first, then offer 2-3 short interpretations grounded in that stated evidence; invite the learner to choose or answer freely.'
@@ -107,7 +107,8 @@ export function buildTutorStubQuestionSupport({
       guardRequired: true,
       struggleCount,
       adaptiveChoiceCoolingDown,
-      reason: 'a remaining best-path fact has not entered the public scene, so open recall would ask the learner to invent evidence',
+      reason:
+        'a remaining best-path fact has not entered the public scene, so open recall would ask the learner to invent evidence',
       tutorInstruction:
         modality === 'bounded_directional_choice'
           ? 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Name only the missing evidence category (for example custody rather than expertise), then offer 2-3 public-safe categories or interpretations. Do not include the actual unstaged record or answer.'
@@ -128,7 +129,8 @@ export function buildTutorStubQuestionSupport({
       guardRequired: false,
       struggleCount,
       adaptiveChoiceCoolingDown,
-      reason: 'the needed material is public, but the learner has signalled that an unsupported open question is not enough',
+      reason:
+        'the needed material is public, but the learner has signalled that an unsupported open question is not enough',
       tutorInstruction:
         modality === 'bounded_public_choice'
           ? 'Restate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely.'
@@ -176,7 +178,8 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
     if (!hasChoice) {
       issues.push({
         type: 'missing_bounded_choice',
-        reason: 'repeated uncertainty called for a small public-safe choice, but the draft left the learner with another unsupported open prompt',
+        reason:
+          'repeated uncertainty called for a small public-safe choice, but the draft left the learner with another unsupported open prompt',
       });
     }
   }

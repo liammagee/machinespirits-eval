@@ -2,7 +2,9 @@ const COMPREHENSION_SCHEMA = 'machinespirits.tutor-stub.comprehension-side-state
 const HISTORY_LIMIT = 24;
 
 function oneLine(value) {
-  return String(value || '').replace(/\s+/gu, ' ').trim();
+  return String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
 }
 
 function normalizeTerm(value) {
@@ -69,7 +71,8 @@ export function detectTutorStubComprehensionRequest({
 } = {}) {
   const requestType = classificationRequestType(classification);
   const terms = explicitTerm ? [normalizeTerm(explicitTerm)].filter(Boolean) : extractedTerms(text);
-  const lexicalSignal = terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by|explain|define)\b/iu.test(text);
+  const lexicalSignal =
+    terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by|explain|define)\b/iu.test(text);
   const classifiedSignal = ['plain_language_request', 'plain_simplification_followup'].includes(requestType);
   const detected = source === 'slash_explain' || lexicalSignal || classifiedSignal;
   return {
@@ -170,11 +173,7 @@ export function tutorStubComprehensionFeatures(state, { turn = null } = {}) {
     .map((entry) => entry.term);
   const age = state?.lastRequest ? Math.max(0, currentTurn - Number(state.lastRequest.turn || 0)) : null;
   const recentRequest = age !== null && age <= 1;
-  const pressure = unresolvedTerms.length
-    ? Math.min(1, 0.75 + unresolvedTerms.length * 0.1)
-    : recentRequest
-      ? 0.55
-      : 0;
+  const pressure = unresolvedTerms.length ? Math.min(1, 0.75 + unresolvedTerms.length * 0.1) : recentRequest ? 0.55 : 0;
   return {
     pressure: Number(pressure.toFixed(3)),
     languageOpacity: Number(pressure.toFixed(3)),

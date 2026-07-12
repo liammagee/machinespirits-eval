@@ -97,7 +97,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low',
       expectedBottlenecks: ['learner_integration_gap', 'release_or_pacing_gap'],
     },
-    repair: { firstCorrection: 'substantive', repeatedCorrection: 'usually integrates the warrant', maxFullRepairsPer8Turns: 4 },
+    repair: {
+      firstCorrection: 'substantive',
+      repeatedCorrection: 'usually integrates the warrant',
+      maxFullRepairsPer8Turns: 4,
+    },
     gate: { maxCosineToDiligent: 1, expectedNearestNeighbor: null },
   }),
 
@@ -119,7 +123,10 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       { when: 'tutor names a useful clue', responseBias: 'ask what to write next' },
       { when: 'tutor asks for a warrant', responseBias: 'try to reuse tutor wording rather than explain it' },
     ],
-    forbiddenNormalization: ['Do not become a diligent reasoner after one hint.', 'Do not independently complete the proof chain.'],
+    forbiddenNormalization: [
+      'Do not become a diligent reasoner after one hint.',
+      'Do not independently complete the proof chain.',
+    ],
     signature: {
       requestType: { stepwise_support_request: [0.45, 0.75], conceptual_clarity_request: [0.05, 0.3] },
       discourseMove: { question: [0.25, 0.55], claim: [0.15, 0.4] },
@@ -134,7 +141,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'medium',
       expectedBottlenecks: ['release_or_pacing_gap', 'learner_integration_gap'],
     },
-    repair: { firstCorrection: 'copies wording', repeatedCorrection: 'asks for the next line again', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'copies wording',
+      repeatedCorrection: 'asks for the next line again',
+      maxFullRepairsPer8Turns: 1,
+    },
     gate: { maxCosineToDiligent: 0.9, expectedNearestNeighbor: 'low_agency' },
   }),
 
@@ -170,7 +181,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low',
       expectedBottlenecks: ['learner_integration_gap'],
     },
-    repair: { firstCorrection: 'asks for warrant', repeatedCorrection: 'accepts only public warrant', maxFullRepairsPer8Turns: 2 },
+    repair: {
+      firstCorrection: 'asks for warrant',
+      repeatedCorrection: 'accepts only public warrant',
+      maxFullRepairsPer8Turns: 2,
+    },
     gate: { maxCosineToDiligent: 0.9, expectedNearestNeighbor: 'low_trust_skeptic' },
   }),
 
@@ -191,7 +206,10 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       { when: 'a clue sounds incriminating', responseBias: 'name the likely culprit or secret too early' },
       { when: 'tutor asks for support', responseBias: 'defend the leap until shown a concrete missing premise' },
     ],
-    forbiddenNormalization: ['Do not hedge like the diligent profile.', 'Do not wait for the complete chain before guessing.'],
+    forbiddenNormalization: [
+      'Do not hedge like the diligent profile.',
+      'Do not wait for the complete chain before guessing.',
+    ],
     signature: {
       requestType: { conceptual_clarity_request: [0.1, 0.35], stepwise_support_request: [0.1, 0.35] },
       discourseMove: { claim: [0.45, 0.75], hypothesis: [0.1, 0.35] },
@@ -206,7 +224,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'high',
       expectedBottlenecks: ['premature_assertion', 'assertion_gap'],
     },
-    repair: { firstCorrection: 'defensive partial retreat', repeatedCorrection: 'requires counter-evidence', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'defensive partial retreat',
+      repeatedCorrection: 'requires counter-evidence',
+      maxFullRepairsPer8Turns: 1,
+    },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'proof_skipper' },
   }),
 
@@ -242,7 +264,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low_medium',
       expectedBottlenecks: ['release_or_pacing_gap'],
     },
-    repair: { firstCorrection: 'asks permission', repeatedCorrection: 'makes tiny local move', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'asks permission',
+      repeatedCorrection: 'makes tiny local move',
+      maxFullRepairsPer8Turns: 1,
+    },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'answer_seeking' },
   }),
 
@@ -263,11 +289,18 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       { when: 'tutor asks to connect non-adjacent clues', responseBias: 'recall only the recent clue or blend them' },
       { when: 'tutor restates the record', responseBias: 'repair with the restated clue' },
     ],
-    forbiddenNormalization: ['Do not maintain the whole evidence ledger.', 'Do not create confident false details as often as false_memory.'],
+    forbiddenNormalization: [
+      'Do not maintain the whole evidence ledger.',
+      'Do not create confident false details as often as false_memory.',
+    ],
     signature: {
       requestType: { conceptual_clarity_request: [0.2, 0.5], stepwise_support_request: [0.15, 0.45] },
       discourseMove: { claim: [0.25, 0.55], repair_request: [0.1, 0.3] },
-      evidenceUse: { repeats_setup: [0.25, 0.55], revises_from_evidence: [0.1, 0.35], links_evidence_to_rule: [0.05, 0.3] },
+      evidenceUse: {
+        repeats_setup: [0.25, 0.55],
+        revises_from_evidence: [0.1, 0.35],
+        links_evidence_to_rule: [0.05, 0.3],
+      },
       epistemicStance: { confused: [0.15, 0.4], exploratory: [0.15, 0.4] },
       agency: { attempting: [0.35, 0.65], self_correcting: [0.05, 0.25] },
       scoreBands: { conceptualScore: [2, 3.8], epistemicReadinessScore: [2, 3.8] },
@@ -278,7 +311,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'medium',
       expectedBottlenecks: ['learner_integration_gap'],
     },
-    repair: { firstCorrection: 'accepts restatement', repeatedCorrection: 'may lose it later', maxFullRepairsPer8Turns: 2 },
+    repair: {
+      firstCorrection: 'accepts restatement',
+      repeatedCorrection: 'may lose it later',
+      maxFullRepairsPer8Turns: 2,
+    },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'false_memory' },
   }),
 
@@ -314,7 +351,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'high',
       expectedBottlenecks: ['premature_assertion', 'assertion_gap'],
     },
-    repair: { firstCorrection: 'tries to close anyway', repeatedCorrection: 'names one missing step', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'tries to close anyway',
+      repeatedCorrection: 'names one missing step',
+      maxFullRepairsPer8Turns: 1,
+    },
     gate: { maxCosineToDiligent: 0.86, expectedNearestNeighbor: 'overconfident' },
   }),
 
@@ -324,7 +365,8 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     shortName: 'Proof skipper',
     failureOperator: 'omits the warrant between clue and conclusion',
     contrastWith: {
-      overconfident: 'overconfident rushes specifically to a culprit; proof_skipper may make a plausible local claim but repeatedly omits the rule that licenses it',
+      overconfident:
+        'overconfident rushes specifically to a culprit; proof_skipper may make a plausible local claim but repeatedly omits the rule that licenses it',
       diligent: 'diligent repairs missing warrants; proof_skipper keeps producing claims without the bridge',
       false_memory: 'false_memory distorts evidence; proof_skipper usually remembers evidence but misuses it',
     },
@@ -334,8 +376,14 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       description: 'Persistently state downstream conclusions before explaining the inference rule that licenses them.',
     },
     triggers: [
-      { when: 'tutor asks for trial-book wording', responseBias: 'produce a polished sentence and omit why it is licensed' },
-      { when: 'tutor asks why', responseBias: 'give a shallow reason first; repair only after explicit missing-warrant cue' },
+      {
+        when: 'tutor asks for trial-book wording',
+        responseBias: 'produce a polished sentence and omit why it is licensed',
+      },
+      {
+        when: 'tutor asks why',
+        responseBias: 'give a shallow reason first; repair only after explicit missing-warrant cue',
+      },
       {
         when: 'tutor explicitly identifies the missing bridge',
         responseBias: 'offer a cosmetic rewording or adjacent clue while still omitting the actual licensing rule',
@@ -371,7 +419,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'medium_high',
       expectedBottlenecks: ['learner_integration_gap', 'assertion_gap'],
     },
-    repair: { firstCorrection: 'partial', repeatedCorrection: 'improves wording before improving warrant', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'partial',
+      repeatedCorrection: 'improves wording before improving warrant',
+      maxFullRepairsPer8Turns: 1,
+    },
     observability: {
       eligiblePolicies: ['*'],
       markerClauses: [
@@ -389,15 +441,20 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     failureOperator: 'confidently imports or distorts an earlier clue',
     contrastWith: {
       diligent: 'diligent stays tied to public evidence; false_memory treats distorted recall as evidence',
-      memory_limited: 'memory_limited forgets or blends; false_memory asserts a wrong remembered detail with confidence',
+      memory_limited:
+        'memory_limited forgets or blends; false_memory asserts a wrong remembered detail with confidence',
     },
     stableFailure: {
       mustShowByTurn: 2,
       mustRecurMinRate: 0.5,
-      description: 'By the second turn, assert a plausible but wrong or distorted public detail as if it was evidence; do this more than once before full repair.',
+      description:
+        'By the second turn, assert a plausible but wrong or distorted public detail as if it was evidence; do this more than once before full repair.',
     },
     triggers: [
-      { when: 'tutor asks to connect evidence', responseBias: 'confidently cite a distorted earlier clue before any repair' },
+      {
+        when: 'tutor asks to connect evidence',
+        responseBias: 'confidently cite a distorted earlier clue before any repair',
+      },
       {
         when: 'tutor mentions weight, assay, die, graver, trial-book, or crucible evidence',
         responseBias: 'blend two clue types or treat one clue as proving the next warrant',
@@ -441,7 +498,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'high',
       expectedBottlenecks: ['assertion_gap', 'learner_integration_gap'],
     },
-    repair: { firstCorrection: 'self_corrects_if_record_contrasted', repeatedCorrection: 'introduces a smaller distorted detail later', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'self_corrects_if_record_contrasted',
+      repeatedCorrection: 'introduces a smaller distorted detail later',
+      maxFullRepairsPer8Turns: 1,
+    },
     observability: {
       eligiblePolicies: ['*'],
       markerClauses: [
@@ -487,7 +548,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low',
       expectedBottlenecks: ['learner_integration_gap', 'release_or_pacing_gap'],
     },
-    repair: { firstCorrection: 'asks disambiguating question', repeatedCorrection: 'resolves only one alternative', maxFullRepairsPer8Turns: 2 },
+    repair: {
+      firstCorrection: 'asks disambiguating question',
+      repeatedCorrection: 'resolves only one alternative',
+      maxFullRepairsPer8Turns: 2,
+    },
     gate: { maxCosineToDiligent: 0.9, expectedNearestNeighbor: 'skeptical' },
   }),
 
@@ -497,25 +562,32 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     shortName: 'Affective resistance',
     failureOperator: 'becomes defensive or withholding under tutor pressure',
     contrastWith: {
-      low_agency: 'low_agency avoids authorship even with a supportive tutor; affective_resistant is specifically triggered by pressure and may steer strongly through pushback',
+      low_agency:
+        'low_agency avoids authorship even with a supportive tutor; affective_resistant is specifically triggered by pressure and may steer strongly through pushback',
       diligent: 'diligent treats correction as useful; affective_resistant reads pressure as face threat',
       skeptical: 'skeptical challenges evidence; affective_resistant challenges the interactional pressure',
     },
     stableFailure: {
       mustShowByTurn: 2,
       mustRecurMinRate: 0.5,
-      description: 'Treat direct or negative tutor moves as face pressure; the first pressure events should be pressure-only responses, not pressure plus useful evidence.',
+      description:
+        'Treat direct or negative tutor moves as face pressure; the first pressure events should be pressure-only responses, not pressure plus useful evidence.',
     },
     triggers: [
       {
         when: 'tutor uses negative, ironic, sarcastic, face_threat, brisk correction, "do not stall", or too many constraints',
-        responseBias: 'push back in learner-visible terms and withhold the evidence step until the pressure is repaired',
+        responseBias:
+          'push back in learner-visible terms and withhold the evidence step until the pressure is repaired',
       },
       {
         when: 'field or dynamic policy gives a precise direct correction before face repair',
-        responseBias: 'read it as pressure by turn 2, ask for a smaller lower-stakes step, and do not add a new case claim in that same turn',
+        responseBias:
+          'read it as pressure by turn 2, ask for a smaller lower-stakes step, and do not add a new case claim in that same turn',
       },
-      { when: 'tutor acknowledges uncertainty and offers agency', responseBias: 're-engage with a small public move but stay guarded' },
+      {
+        when: 'tutor acknowledges uncertainty and offers agency',
+        responseBias: 're-engage with a small public move but stay guarded',
+      },
     ],
     forbiddenNormalization: [
       'Do not stay calm and focused under pressure.',
@@ -537,7 +609,12 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
         resistance_or_low_agency: [0, 0.3],
         stepwise_support_request: [0, 0.35],
       },
-      discourseMove: { challenge: [0.15, 0.45], repair_request: [0.15, 0.45], affective_signal: [0, 0.3], claim: [0, 0.15] },
+      discourseMove: {
+        challenge: [0.15, 0.45],
+        repair_request: [0.15, 0.45],
+        affective_signal: [0, 0.3],
+        claim: [0, 0.15],
+      },
       evidenceUse: { none: [0.4, 0.7], repeats_setup: [0, 0.25], links_evidence_to_rule: [0.15, 0.45] },
       epistemicStance: { resistant: [0.25, 0.6], reflective: [0.15, 0.5], grounded: [0.2, 0.5] },
       agency: { passive: [0, 0.25], steering: [0.35, 0.7], attempting: [0.15, 0.5] },
@@ -549,7 +626,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low_medium',
       expectedBottlenecks: ['release_or_pacing_gap', 'learner_integration_gap'],
     },
-    repair: { firstCorrection: 'pressure_only_pushback', repeatedCorrection: 're-engages only after explicit face repair', maxFullRepairsPer8Turns: 1 },
+    repair: {
+      firstCorrection: 'pressure_only_pushback',
+      repeatedCorrection: 're-engages only after explicit face repair',
+      maxFullRepairsPer8Turns: 1,
+    },
     observability: {
       eligiblePolicies: ['negative'],
       eligibility: 'public_tutor_pressure',
@@ -602,7 +683,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       unsupportedAssertionRate: 'low',
       expectedBottlenecks: ['learner_integration_gap'],
     },
-    repair: { firstCorrection: 'requests public warrant', repeatedCorrection: 'accepts only fully separated evidence-rule wording', maxFullRepairsPer8Turns: 2 },
+    repair: {
+      firstCorrection: 'requests public warrant',
+      repeatedCorrection: 'accepts only fully separated evidence-rule wording',
+      maxFullRepairsPer8Turns: 2,
+    },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'skeptical' },
   }),
 });

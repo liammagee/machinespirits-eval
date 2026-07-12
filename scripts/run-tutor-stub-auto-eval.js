@@ -1579,7 +1579,9 @@ function summarizeTrace(tracePath, traceDir) {
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
   const learnerAdvances = turnRecords
-    .map((turn) => turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || turn.tutorLearnerDagModel?.learnerAdvance)
+    .map(
+      (turn) => turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || turn.tutorLearnerDagModel?.learnerAdvance,
+    )
     .filter(Boolean);
   const registers = turns
     .map(
@@ -7360,9 +7362,9 @@ function readTutorStubExperimentPlan(planPath) {
 }
 
 function latestIndexArtifact(items, timeSelector) {
-  return items
-    .slice()
-    .sort((left, right) => Number(timeSelector(right) || 0) - Number(timeSelector(left) || 0))[0] || null;
+  return (
+    items.slice().sort((left, right) => Number(timeSelector(right) || 0) - Number(timeSelector(left) || 0))[0] || null
+  );
 }
 
 function indexExperimentModels(rows, activeRuns, rootDir) {
@@ -7426,7 +7428,10 @@ function indexExperimentModels(rows, activeRuns, rootDir) {
       const trialsCompleted = arms.reduce((sum, arm) => sum + Number(arm.completedTrials || 0), 0);
       const trialsExpected = arms.reduce((sum, arm) => sum + Number(arm.expectedTrials || 0), 0);
       const failed = arms.reduce((sum, arm) => sum + Number(arm.failed || 0), 0);
-      const completedMs = Math.max(...arms.map((arm) => Date.parse(arm.completedAt || '') || 0), fs.statSync(planPath).mtimeMs);
+      const completedMs = Math.max(
+        ...arms.map((arm) => Date.parse(arm.completedAt || '') || 0),
+        fs.statSync(planPath).mtimeMs,
+      );
       const headline =
         status === 'completed'
           ? 'Data collection is complete; the declared paired analysis is ready to run.'

@@ -440,9 +440,7 @@ function main() {
         : '');
     const passed = selectedRegister === expectedRegister;
     if (!passed) {
-      errors.push(
-        `${testCase.scenarioId} ${testCase.turn}: expected ${expectedRegister}, got ${selectedRegister}`,
-      );
+      errors.push(`${testCase.scenarioId} ${testCase.turn}: expected ${expectedRegister}, got ${selectedRegister}`);
     }
     if (testCase.expectedResistanceSignal && routed.resistance_signal !== testCase.expectedResistanceSignal) {
       errors.push(

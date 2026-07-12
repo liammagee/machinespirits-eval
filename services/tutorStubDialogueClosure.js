@@ -1,12 +1,17 @@
 const CLOSURE_SCHEMA = 'machinespirits.tutor-stub.dialogue-closure.v1';
 
-const EXPLICIT_CLOSURE_PATTERN = /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:case|book|inquiry)|inquiry (?:is )?(?:complete|closed|settled)|this (?:case|inquiry) is (?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry)|the verdict stands)\b/iu;
+const EXPLICIT_CLOSURE_PATTERN =
+  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:case|book|inquiry)|inquiry (?:is )?(?:complete|closed|settled)|this (?:case|inquiry) is (?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry)|the verdict stands)\b/iu;
 const ANSWER_VERDICT_PATTERN = /\b(?:culprit|guilty|struck|coined|responsible|final conclusion)\b/iu;
 const AFFIRMATIVE_VERDICT_PATTERN = /\b(?:the )?verdict(?:\s+now)?\s+(?:is|stands|has been)|\bverdict\s*:/iu;
-const NEGATED_VERDICT_PATTERN = /\b(?:no verdict|verdict (?:is|stands|has been) (?:not|un)|cannot|can't|not yet|before (?:a|the) verdict)\b/iu;
-const NEGATED_CLOSURE_PATTERN = /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b/iu;
-const CHECKIN_PATTERN = /\b(?:anything|any (?:step|link|part|question)|one (?:step|link|part|question)|want (?:me|us) to|need (?:me|us) to|revisit|unclear|before we close)\b/iu;
-const CLOSURE_ACKNOWLEDGEMENT_PATTERN = /^(?:no(?:pe)?(?: thanks)?|nothing|all good|i(?:'m| am) good|that(?:'s| is) all|done|finished|thanks|thank you|okay|ok|fine)[.!\s]*$/iu;
+const NEGATED_VERDICT_PATTERN =
+  /\b(?:no verdict|verdict (?:is|stands|has been) (?:not|un)|cannot|can't|not yet|before (?:a|the) verdict)\b/iu;
+const NEGATED_CLOSURE_PATTERN =
+  /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b/iu;
+const CHECKIN_PATTERN =
+  /\b(?:anything|any (?:step|link|part|question)|one (?:step|link|part|question)|want (?:me|us) to|need (?:me|us) to|revisit|unclear|before we close)\b/iu;
+const CLOSURE_ACKNOWLEDGEMENT_PATTERN =
+  /^(?:no(?:pe)?(?: thanks)?|nothing|all good|i(?:'m| am) good|that(?:'s| is) all|done|finished|thanks|thank you|okay|ok|fine)[.!\s]*$/iu;
 
 function answerMentioned(text, answerTerm) {
   const answer = String(answerTerm || '').trim();
@@ -37,7 +42,7 @@ export function tutorStubLearnerDagGrounded(model) {
   const assessment = model?.assessment || model || {};
   return Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
-      (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
   );
 }
 
@@ -104,8 +109,8 @@ export function detectTutorStubVerdictDeclaration(text, { answerTerm = '' } = {}
   const explicitClosure = EXPLICIT_CLOSURE_PATTERN.test(source) && !NEGATED_CLOSURE_PATTERN.test(source);
   const finalVerdict = Boolean(
     !NEGATED_VERDICT_PATTERN.test(source) &&
-      (AFFIRMATIVE_VERDICT_PATTERN.test(source) ||
-        (answerMentioned(source, answerTerm) && ANSWER_VERDICT_PATTERN.test(source))),
+    (AFFIRMATIVE_VERDICT_PATTERN.test(source) ||
+      (answerMentioned(source, answerTerm) && ANSWER_VERDICT_PATTERN.test(source))),
   );
   return { declared: explicitClosure || finalVerdict, explicitClosure, finalVerdict };
 }
@@ -129,9 +134,7 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
   }
 
   const questions = questionRows(text);
-  const invitesCheckIn = Boolean(
-    frame.allowCheckIn && questions.length === 1 && CHECKIN_PATTERN.test(questions[0]),
-  );
+  const invitesCheckIn = Boolean(frame.allowCheckIn && questions.length === 1 && CHECKIN_PATTERN.test(questions[0]));
   const issues = [];
   if (!verdict.explicitClosure) {
     issues.push({

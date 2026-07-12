@@ -45,7 +45,10 @@ export function cleanTutorStubClarificationSpeech(text, latestTutorMessage = '')
     .split(/(?<=[.!?])\s+/u);
   const pendingPattern = /\b(?:the tutor(?:'s|’s) question|your question|that question)\b.*\bpending\b/iu;
   const hadPendingMeta = sentences.some((sentence) => pendingPattern.test(sentence));
-  const kept = sentences.filter((sentence) => !pendingPattern.test(sentence)).join(' ').trim();
+  const kept = sentences
+    .filter((sentence) => !pendingPattern.test(sentence))
+    .join(' ')
+    .trim();
   const latestQuestion = hadPendingMeta ? latestQuestionFromText(latestTutorMessage) : '';
   const restoredQuestion = latestQuestion && !kept.includes(latestQuestion) ? `${kept} ${latestQuestion}`.trim() : kept;
   return cleanTutorStubStageSpeech(restoredQuestion, { voice: 'guide' });

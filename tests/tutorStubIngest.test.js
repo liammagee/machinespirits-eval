@@ -202,7 +202,9 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
 
   const db = new Database(dbPath, { readonly: true });
   try {
-    const run = db.prepare('SELECT id, auto_learner_profile_id, ok_rows, grounded_rows FROM tutor_stub_eval_runs').get();
+    const run = db
+      .prepare('SELECT id, auto_learner_profile_id, ok_rows, grounded_rows FROM tutor_stub_eval_runs')
+      .get();
     assert.equal(run.id, 'auto-eval-2026-07-08T00-00-00-000Z');
     assert.equal(run.auto_learner_profile_id, 'skeptical');
     assert.equal(run.ok_rows, 1);

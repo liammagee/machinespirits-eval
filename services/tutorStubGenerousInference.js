@@ -1,9 +1,12 @@
-const ELLIPTICAL_SAME_PATTERN = /^(?:(?:yes[,;:]?\s*)?(?:(?:it|that|this|they|he|she|the (?:one|person|hand))\s+)?(?:will|would|must|should|could|has to|have to|is|are|was|were)?\s*(?:be\s+)?)?(?:the\s+)?same(?:\s+(?:one|person|hand|place|source))?[.!]*$/iu;
+const ELLIPTICAL_SAME_PATTERN =
+  /^(?:(?:yes[,;:]?\s*)?(?:(?:it|that|this|they|he|she|the (?:one|person|hand))\s+)?(?:will|would|must|should|could|has to|have to|is|are|was|were)?\s*(?:be\s+)?)?(?:the\s+)?same(?:\s+(?:one|person|hand|place|source))?[.!]*$/iu;
 const BINARY_REPLY_PATTERN = /^(?:yes|right|exactly|correct|no|not so)[.!]*$/iu;
 const UNCERTAINTY_OR_QUESTION_PATTERN = /\?|\b(?:maybe|perhaps|possibly|i guess|not sure|uncertain)\b/iu;
 const CONTRADICTION_PATTERN = /\b(?:but|however|instead|different|not the same|someone else)\b/iu;
-const CASE_CLOSING_PATTERN = /\b(?:culprit|guilty|verdict|final answer|who (?:struck|made|coined)|write (?:their|the) name|name the (?:person|suspect|culprit))\b/iu;
-const SINGLE_REFERENT_PATTERN = /\b(?:one hand alone|one person alone|the same hand|a single hand|a single person|only (?:one|that person|that hand|the person|the hand)|the one hand)\b/iu;
+const CASE_CLOSING_PATTERN =
+  /\b(?:culprit|guilty|verdict|final answer|who (?:struck|made|coined)|write (?:their|the) name|name the (?:person|suspect|culprit))\b/iu;
+const SINGLE_REFERENT_PATTERN =
+  /\b(?:one hand alone|one person alone|the same hand|a single hand|a single person|only (?:one|that person|that hand|the person|the hand)|the one hand)\b/iu;
 const OPEN_LOCAL_QUESTION_PATTERN = /^(?:what|which|who)\b/iu;
 const OPEN_LOCAL_SCOPE_PATTERN = /\b(?:rule out|compare|feature|mark|difference|change|show|follow)\b/iu;
 
@@ -64,12 +67,14 @@ function isBinaryQuestion(question) {
 }
 
 function normalizedQuestionTokens(text) {
-  return String(text || '')
-    .toLowerCase()
-    .replace(/[’']/gu, '')
-    .match(/[a-z][a-z-]*/gu)
-    ?.map((token) => token.replace(/(?:ies)$/u, 'y').replace(/(?:s)$/u, ''))
-    .filter((token) => token.length >= 3 && !QUESTION_STOPWORDS.has(token)) || [];
+  return (
+    String(text || '')
+      .toLowerCase()
+      .replace(/[’']/gu, '')
+      .match(/[a-z][a-z-]*/gu)
+      ?.map((token) => token.replace(/(?:ies)$/u, 'y').replace(/(?:s)$/u, ''))
+      .filter((token) => token.length >= 3 && !QUESTION_STOPWORDS.has(token)) || []
+  );
 }
 
 function overlapCoefficient(left, right) {
@@ -145,7 +150,11 @@ export function resolveTutorStubGenerousInference({
     return { ...base, reason: 'no_single_public_referent_to_resolve_same' };
   }
 
-  const kind = sameReply ? 'contextual_same_referent' : binaryReply ? 'contextual_binary_answer' : 'contextual_open_answer';
+  const kind = sameReply
+    ? 'contextual_same_referent'
+    : binaryReply
+      ? 'contextual_binary_answer'
+      : 'contextual_open_answer';
   return {
     ...base,
     applied: true,
@@ -156,7 +165,8 @@ export function resolveTutorStubGenerousInference({
       : binaryReply
         ? 'The learner directly answers the preceding yes-or-no question.'
         : 'The learner gives a short answer whose referent and scope are supplied by the immediately preceding public question.',
-    reason: 'The immediately preceding public question supplies one unambiguous local referent and the reply resolves against it.',
+    reason:
+      'The immediately preceding public question supplies one unambiguous local referent and the reply resolves against it.',
     tutorInstruction:
       'Treat the immediately preceding local question as answered. Do not ask the learner to restate, rename, or re-prove that step; carry the obvious public bridge internally and advance.',
   };
@@ -175,15 +185,17 @@ export function auditTutorStubGenerousInferenceResponse({ text, resolution } = {
       responseQuestion,
     );
   const repeated = sourceTokens.length >= 2 && responseTokens.length >= 2 && similarity >= 0.72;
-  const issues = repeated && repeatedAcknowledgementDemand
-    ? [
-        {
-          type: 'redundant_local_requestion',
-          reason: 'the tutor asks the already-resolved local question again after a high-confidence contextual answer',
-          sourceQuestion,
-          responseQuestion,
-        },
-      ]
-    : [];
+  const issues =
+    repeated && repeatedAcknowledgementDemand
+      ? [
+          {
+            type: 'redundant_local_requestion',
+            reason:
+              'the tutor asks the already-resolved local question again after a high-confidence contextual answer',
+            sourceQuestion,
+            responseQuestion,
+          },
+        ]
+      : [];
   return { ok: issues.length === 0, issues, similarity };
 }

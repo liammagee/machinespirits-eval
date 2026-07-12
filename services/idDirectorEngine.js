@@ -105,20 +105,24 @@ function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
   const selectedResolution = resolveEngagementRegister(
     engagementState.selected_register || engagementState.selected_mode,
   );
-  const selectedRegister = selectedResolution?.register || engagementState.selected_register || engagementState.selected_mode;
+  const selectedRegister =
+    selectedResolution?.register || engagementState.selected_register || engagementState.selected_mode;
   if (selectedRegister !== 'charismatic') return engagementState;
   const armResolution = resolveEngagementRegister(assignedRegisterArm);
   const assignedRegister = armResolution?.register || assignedRegisterArm;
   const definition = getEngagementRegisterDefinition(assignedRegister);
   if (!definition) return engagementState;
   const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
-  const assignedReason = `${baseReason} Experiment arm assigns ${assignedRegister} under the same resistant precondition.`.trim();
+  const assignedReason =
+    `${baseReason} Experiment arm assigns ${assignedRegister} under the same resistant precondition.`.trim();
   return {
     ...engagementState,
     router_selected_register: selectedRegister,
     router_selected_mode: engagementState.selected_mode || selectedRegister,
     legacy_router_selected_register:
-      engagementState.legacy_selected_register || selectedResolution?.legacy_selected_register || 'charismatic_challenge',
+      engagementState.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      'charismatic_challenge',
     selected_register: assignedRegister,
     selected_mode: assignedRegister,
     legacy_selected_register:

@@ -1,5 +1,4 @@
-export const TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA =
-  'machinespirits.tutor-stub.register-policy-composition.v1';
+export const TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.register-policy-composition.v1';
 
 export const TUTOR_STUB_REGISTER_PRIMARY_POLICIES = Object.freeze([
   'dynamic',
@@ -151,13 +150,14 @@ function fieldChangeSignal(candidate) {
   const relation = features.field?.relation || 'unknown';
   const delta = Number(features.field?.delta);
   const absoluteDelta = Number.isFinite(delta) ? Math.abs(delta) : 0;
-  const relationFloor = {
-    field_without_dag: 0.8,
-    dag_without_field: 0.75,
-    both_progress: 0.7,
-    neither_progress: 0.55,
-    initial: 0,
-  }[relation] ?? 0;
+  const relationFloor =
+    {
+      field_without_dag: 0.8,
+      dag_without_field: 0.75,
+      both_progress: 0.7,
+      neither_progress: 0.55,
+      initial: 0,
+    }[relation] ?? 0;
   let strength = Math.max(relationFloor, Math.min(1, absoluteDelta / 0.25));
   if (Number.isFinite(delta) && delta <= -0.1) strength = Math.max(strength, 0.85);
   if (features.advance?.accelerated) strength = Math.max(strength, 0.9);

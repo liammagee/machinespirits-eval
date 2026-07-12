@@ -24,7 +24,9 @@ describe('mixed learner artifacts', () => {
   });
 
   it('parses a fenced clue-answer pair', () => {
-    const result = parseMixedLearnerArtifacts(`\n\`\`\`json\n{"clue":"Separate what the mark proves from who made it.","answer":"The mark proves the coin is false, not who struck it."}\n\`\`\`\n`);
+    const result = parseMixedLearnerArtifacts(
+      `\n\`\`\`json\n{"clue":"Separate what the mark proves from who made it.","answer":"The mark proves the coin is false, not who struck it."}\n\`\`\`\n`,
+    );
     assert.equal(result.parsed, true);
     assert.equal(result.clue, 'Separate what the mark proves from who made it.');
     assert.equal(result.answer, 'The mark proves the coin is false, not who struck it.');
@@ -36,10 +38,7 @@ describe('mixed learner artifacts', () => {
       '{"move":"ask_question","clue":"Ask which evidence could connect metal to a workshop.","answer":"What evidence would connect this alloy to one workshop?","profile_signal":"The response seeks a warrant before accepting the proposed connection."}',
     );
     assert.equal(result.move, 'ask_question');
-    assert.equal(
-      result.profileSignal,
-      'The response seeks a warrant before accepting the proposed connection.',
-    );
+    assert.equal(result.profileSignal, 'The response seeks a warrant before accepting the proposed connection.');
     assert.equal(mixedLearnerSuggestionMove('Could I test the residue first?'), 'ask_question');
     assert.equal(mixedLearnerSuggestionMove('I would test the residue.', 'ask_question'), 'ask_question');
   });
@@ -53,7 +52,10 @@ describe('mixed learner artifacts', () => {
       'The draft asks for permission instead of choosing an evidence test.',
     );
     assert.equal(
-      profileSignalSafelyDescribesAnswer('Could you choose which mark I should test?', 'Could you choose which mark I should test?'),
+      profileSignalSafelyDescribesAnswer(
+        'Could you choose which mark I should test?',
+        'Could you choose which mark I should test?',
+      ),
       null,
     );
   });

@@ -1,8 +1,7 @@
 import { factKey } from './dramaticDerivation/chainer.js';
 
 export const TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA = 'machinespirits.tutor-stub.dag-fact-dropout.v1';
-export const TUTOR_STUB_DAG_FACT_DROPOUT_TURN_SCHEMA =
-  'machinespirits.tutor-stub.dag-fact-dropout-turn.v1';
+export const TUTOR_STUB_DAG_FACT_DROPOUT_TURN_SCHEMA = 'machinespirits.tutor-stub.dag-fact-dropout-turn.v1';
 export const DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE = 0;
 export const DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED = 1;
 export const DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_GRACE_TURNS = 2;
@@ -36,22 +35,16 @@ function normalizedStateSnapshot(snapshot = null) {
   const source = snapshot && typeof snapshot === 'object' ? snapshot : {};
   return {
     schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-    rate: normalizeTutorStubDagFactDropoutRate(
-      source.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
-    ),
-    seed: normalizeTutorStubDagFactDropoutSeed(
-      source.seed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
-    ),
-    graceTurns: nonNegativeInteger(
-      source.graceTurns ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_GRACE_TURNS,
-      { label: 'DAG fact dropout grace turns' },
-    ),
+    rate: normalizeTutorStubDagFactDropoutRate(source.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
+    seed: normalizeTutorStubDagFactDropoutSeed(source.seed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
+    graceTurns: nonNegativeInteger(source.graceTurns ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_GRACE_TURNS, {
+      label: 'DAG fact dropout grace turns',
+    }),
     maxConcurrent: Math.max(
       1,
-      nonNegativeInteger(
-        source.maxConcurrent ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_MAX_CONCURRENT,
-        { label: 'DAG fact dropout maximum concurrent facts' },
-      ),
+      nonNegativeInteger(source.maxConcurrent ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_MAX_CONCURRENT, {
+        label: 'DAG fact dropout maximum concurrent facts',
+      }),
     ),
     adoptions: clone(source.adoptions || {}),
     activeDropped: clone(source.activeDropped || {}),
@@ -89,22 +82,19 @@ export function tutorStubDagFactDropoutSnapshot(state) {
 function isDagFactDropoutTurn(value) {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      !Array.isArray(value) &&
-      (value.schema === TUTOR_STUB_DAG_FACT_DROPOUT_TURN_SCHEMA ||
-        Object.hasOwn(value, 'configuredRate') ||
-        Object.hasOwn(value, 'droppedNow') ||
-        Object.hasOwn(value, 'repairedNow')),
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (value.schema === TUTOR_STUB_DAG_FACT_DROPOUT_TURN_SCHEMA ||
+      Object.hasOwn(value, 'configuredRate') ||
+      Object.hasOwn(value, 'droppedNow') ||
+      Object.hasOwn(value, 'repairedNow')),
   );
 }
 
 // JSONL serialization replaces repeated object references with "[circular]".
 // The nested learner-DAG update is the canonical persisted copy in that case.
 export function tutorStubDagFactDropoutTurnFromTraceRecord(turnRecord) {
-  const candidates = [
-    turnRecord?.dagFactDropout,
-    turnRecord?.tutorLearnerDagUpdate?.dagFactDropout,
-  ];
+  const candidates = [turnRecord?.dagFactDropout, turnRecord?.tutorLearnerDagUpdate?.dagFactDropout];
   return candidates.find(isDagFactDropoutTurn) || null;
 }
 

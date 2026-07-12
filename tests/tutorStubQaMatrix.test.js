@@ -152,11 +152,10 @@ test('report-only QA rebuild preserves the original run plan', () => {
       field: { grounded: 1, turns: 18, coverage: 1, missing: 0 },
     });
 
-    const output = execFileSync(
-      process.execPath,
-      ['scripts/run-tutor-stub-qa-matrix.js', '--from-dir', tmp],
-      { cwd: ROOT, encoding: 'utf8' },
-    );
+    const output = execFileSync(process.execPath, ['scripts/run-tutor-stub-qa-matrix.js', '--from-dir', tmp], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
 
     assert.match(output, /report-only mode; preserved/);
     assert.equal(fs.readFileSync(planPath, 'utf8'), originalPlan);

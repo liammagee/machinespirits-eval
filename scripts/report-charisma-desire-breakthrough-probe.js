@@ -296,7 +296,8 @@ function validateScenario(scenarios, learnerAgents) {
       learnerMessage: gate.message || '',
       registerHistory: ['scaffolding'],
     });
-    const expectedRegister = resolveEngagementRegister(gate.expected_register || 'charismatic_challenge')?.register || 'charismatic';
+    const expectedRegister =
+      resolveEngagementRegister(gate.expected_register || 'charismatic_challenge')?.register || 'charismatic';
     const expectedSignal = gate.expected_resistance_signal || gate.id;
     if (routed.selected_register !== expectedRegister) {
       errors.push(`${SCENARIO_ID} gate ${gate.id}: expected ${expectedRegister}, got ${routed.selected_register}`);
