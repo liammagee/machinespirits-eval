@@ -1,0 +1,82 @@
+# Gate 0 — notes session 1
+Transcript: `/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/dress-transcripts/P01-transcript-A.md`
+Coach: claude-code.opus · Actor: claude-code.sonnet
+
+## COACH
+
+Notes — opening the session
+
+Thanks for this. Before I say anything, three things I actually saw on stage, then one question I genuinely can't answer without you.
+
+**1. You found a spine and you played it every beat: "what does this fix / what does it still leave open."** It's there in Turn 4 — *"what does that fix for us, and what does it still leave open?"* — and again, almost verbatim, in Turn 14 — *"What does the repeated crowsfoot print prove by itself, and what does it still not prove until someone identifies the mark?"* — and again in Turn 17 — *"what does that identify now, and what does it still not identify?"* That two-column move is the engine of the whole scene, and the learner learned to run it themselves. That's real. I want to flag it partly so you know it landed and partly because a move that strong repeated eight times starts to feel like a hand you're playing rather than a question you're asking.
+
+**2. The brake pedal stays down even after the car has stopped.** You decelerate constantly — Turn 5 *"two small steps, not a whole verdict at once,"* Turn 12 *"keep this to one small job,"* Turn 16 *"keep it that small,"* Turn 19 *"write only the source of the falsework, and stop before the hand."* But by mid-scene the learner is braking harder than you are. Turn 6, unprompted: *"I feel the pull in that file: it wants me to write his name and close the book."* Turn 9: *"answering for it, paying for it, still isn't the same as whose hand drew the falsework out."* By Turn 19 they're apologizing for a speed they're no longer going — *"I was jumping past the first step to get to the yard."*
+
+**3. You gave away the last line, and I think you meant to.** Turn 20 you don't close it — you ask *"What does that add to the chain, before you write any final finding?"* and let the learner say *"Oswin felled it."* The recognition lands in their mouth, not yours. Structurally that's the right owner for it.
+
+Here's my one question: at the point where the learner started policing their own overreach — around Turn 6, *"it wants me to write his name and close the book"* — what were you reading in them that told you to keep applying the brake rather than hand them more rope? I want to understand the read before I say anything about the choice.
+
+## ACTOR
+
+Honestly? I don't think I was reading the learner at Turn 6 so much as reading my own template. I'd built the two-column move as the spine before the scene started, and once it was working I kept running it on schedule rather than checking whether the schedule still matched what was in front of me. The learner's "it wants me to write his name and close the book" is a really good tell — that's a person catching their own bias in real time — and the honest craft answer is I didn't trust it enough to loosen the rein. I treated it as evidence the brake was working, not as evidence the brake was no longer needed. Those are different things and I conflated them.
+
+There's a piece of this I'll defend, though: the pacing isn't pure tic, because the actual gaps kept being real ones — control isn't cause, a yard isn't a hand, right up through Turn 18. The evidence structure itself is stepwise, so a stepwise tutor isn't wrong. But that's a coincidence of the material bailing me out, not a sign I was recalibrating to the learner. If the file order had let the learner leap two gaps at once and land right, I'd have braked anyway, and that would've been me undercutting a correct answer to protect my own rhythm. I didn't test that in performance — I never once let them run past a "leave open" and see what happened. That's the gap in what I actually did, not what the text would have allowed.
+
+## COACH
+
+You've drawn the line I most want to stand on: *"I treated it as evidence the brake was working, not as evidence the brake was no longer needed"* — and then, honestly, *"I never once let them run past a 'leave open' and see what happened."* So the diagnosis is settled. What isn't settled yet is the trigger, and without it the note stays a virtue ("recalibrate to the learner") instead of something you can execute under pressure.
+
+So here's the probe, and I want you to answer it by pointing at a line: **what would the learner have had to say for you to call the brake "no longer needed" in the moment — and where in the transcript did that thing first appear?**
+
+I'll show you why I think the test was already sitting there and you walked past it. Turn 6: *"it wants me to write his name and close the book"* — that's the learner naming the exact overreach your brake exists to prevent. Turn 9: *"answering for it, paying for it, still isn't the same as whose hand drew the falsework out"* — that's the learner *generating a "leave open" you hadn't handed them yet.* By Turn 9 they're not just holding your gaps, they're producing them. That, to me, is the observable: the moment the learner volunteers the distinction before you've drawn it, the brake has transferred, and the next beat should be rope — hand them two gaps and let them pick — not a fourth *"keep it that small."*
+
+So: is Turn 9 the line? Or do you read the transfer landing earlier or later than I do? Because whichever line you point to is the note — *"when the learner volunteers the 'leave open' before you've offered it, stop decelerating and let them run past one"* — and I'd rather you set the trigger than take mine.
+
+## ACTOR
+
+Turn 9, yes — and I think the distinction matters: Turn 6 is the learner catching a *temptation* in themselves, which is still them needing the brake to name what to resist. Turn 9 is different in kind — they produce the actual analytic move, "X isn't the same as Y," without me modeling it first. That's the tutor's own tool showing up in someone else's hands. If I'd been reading for that instead of running my template, Turn 10 should've handed them two open gaps and gone quiet. Instead I gave Turn 12's "one small job" — a rope-move dressed as caution. That's the trigger, and I own that I didn't clock it live.
+
+## COACH
+
+Session close.
+
+You did the hard part yourself — you set the trigger (Turn 9, not Turn 6) and named the exact miss (Turn 10 should have been two gaps and silence; you gave Turn 12's "one small job" instead). That means these notes aren't mine imposed on you; they're the ones you can already execute, because you drew the line. Three, banked.
+
+**Note 1 — the transfer tell.** The observable is precise now: the learner producing your own tool in their hands. When that happens, the next turn is rope, not brake. This is the one that would have changed the scene.
+
+**Note 2 — the conflation, as an action.** "Brake working" and "brake no longer needed" look identical from the tutor's chair; the only way to tell them apart is to withhold the brake once and watch. You never ran that test in performance. The note makes the test mandatory rather than optional.
+
+**Note 3 — protect what you already did right.** The close was correctly owned — you let the recognition land in the learner's mouth. That's a strength worth banking so a future you doesn't "helpfully" reclaim the last line.
+
+The memory patch folds the first two into one durable pattern, since they're the same muscle: reading the learner instead of running the template.
+
+```json
+{
+  "notes": [
+    {
+      "note": "When the learner produces your own analytic move unprompted — an 'X isn't the same as Y' distinction, or a 'leave-open' you have not handed them — the very next tutor turn offers at least two open gaps and then goes quiet; it does NOT issue another deceleration cue.",
+      "evidence_quote": "answering for it, paying for it, still isn't the same as whose hand drew the falsework out",
+      "check": "In a future transcript, find the first learner turn that states a distinction the tutor has not modeled first; confirm the immediately following tutor turn presents \u22652 open options/gaps and contains no 'keep it small / one step / one job'-type brake."
+    },
+    {
+      "note": "Do not repeat a scaffolding brake more than twice without once withholding it to test whether it is still needed; never issue a deceleration cue when the learner could leap two gaps and land correctly, i.e. never brake a correct answer to protect your own pacing.",
+      "evidence_quote": "keep it that small",
+      "check": "In a future multi-turn transcript where a 'keep it small'-type cue appears \u22653 times, verify at least one point after the learner has independently held a gap where the tutor withholds the brake and lets the learner run past a 'leave open' before the next scaffolding cue."
+    },
+    {
+      "note": "The terminal recognition — the scene's final identifying claim — is elicited from the learner, not stated by the tutor; the closing tutor turn asks rather than concludes.",
+      "evidence_quote": "What does that add to the chain, before you write any final finding?",
+      "check": "In a future transcript, confirm the last substantive identifying statement of the dialogue is uttered in a learner turn, and that the final tutor turn is interrogative rather than a delivered verdict."
+    }
+  ],
+  "memory_patch": {
+    "section": "Recurring patterns",
+    "op": "add",
+    "text": "Scaffolding transfer \u2014 when to stop decelerating. A repeated 'keep it small / one step / one job' brake is a scaffold, not your rhythm. The tell that it has transferred to the learner is the learner producing YOUR analytic move unprompted \u2014 an 'X isn't the same as Y' distinction, or volunteering a 'leave-open' you haven't handed them. Read that as 'brake no longer needed,' not 'brake working' \u2014 they are different states that look identical from the tutor's chair. On that tell, the next beat hands two open gaps and goes quiet. Never run a deceleration cue on schedule, and never brake a correct answer to protect your pacing: if the material would let the learner leap two gaps and land right, let them, and test this by withholding the brake at least once per scene rather than assuming it's still load-bearing. Keep the terminal recognition in the learner's mouth \u2014 close on a question, not a verdict.",
+  },
+  "confidence": 0.82
+}
+```
+
+
+**ERROR:** structured tail did not parse

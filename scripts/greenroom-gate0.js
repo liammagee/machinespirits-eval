@@ -235,11 +235,20 @@ End your reply with a fenced json block exactly in this shape:
 }
 \`\`\``;
 
+function parseLenientJson(candidate) {
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    // Models routinely emit trailing commas; strip them and retry.
+    return JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1'));
+  }
+}
+
 export function parseStructuredTail(text) {
   const fences = [...String(text).matchAll(/```json\s*([\s\S]*?)```/g)];
   for (let i = fences.length - 1; i >= 0; i--) {
     try {
-      return JSON.parse(fences[i][1]);
+      return parseLenientJson(fences[i][1]);
     } catch {
       /* try earlier fence */
     }

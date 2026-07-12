@@ -93,6 +93,17 @@ test('parseStructuredTail reads the last fenced json block', () => {
   assert.equal(parsed.confidence, 0.8);
 });
 
+test('parseStructuredTail tolerates trailing commas (observed in the 2026-07-11 dress rehearsal)', () => {
+  const reply = [
+    '```json',
+    '{"notes": [{"note": "n1"},], "memory_patch": {"section": "s", "op": "add", "text": "t",}, "confidence": 0.82}',
+    '```',
+  ].join('\n');
+  const parsed = parseStructuredTail(reply);
+  assert.equal(parsed.notes[0].note, 'n1');
+  assert.equal(parsed.memory_patch.text, 't');
+});
+
 test('parseStructuredTail falls back to a bare notes object and returns null when absent', () => {
   const bare = 'closing words {"notes": [{"note": "n2"}]} trailing';
   assert.equal(parseStructuredTail(bare).notes[0].note, 'n2');

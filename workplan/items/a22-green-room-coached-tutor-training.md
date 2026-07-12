@@ -76,3 +76,10 @@ on owner's machine.
 2026-07-11 claude: Gate-0 runner shipped (scripts/greenroom-gate0.js +
 tests/greenroomGate0.test.js, 11 tests green, dry-run smoke verified);
 runbook at plan §7.1.
+2026-07-11 claude: DRESS REHEARSAL run in-session (claude-code.opus coach /
+claude-code.sonnet actor — NOT the ratified sol/luna gate; this container
+lacks the codex CLI) on 2 committed cast-layer transcripts from the
+preconscious branch: 2/2 sessions completed, 6/6 bankable notes with
+verbatim quotes + third-party checks, confidence 0.82 both. One parser
+lesson banked: lenient trailing-comma JSON handling (test added). Evidence
+committed at exports/greenroom-gate0-dress-rehearsal-2026-07-11/.
