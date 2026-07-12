@@ -3,13 +3,21 @@ import path from 'node:path';
 import yaml from 'yaml';
 
 import { hashCanonicalJson, hashFile } from '../experimentRunArtifacts.js';
+import { loadWorld } from '../dramaticDerivation/world.js';
 import { buildTutorStubStateObservation } from './tutorStubStateAdapter.js';
 import {
   buildAdaptiveStateRepresentationsV2,
   buildAdaptiveStateTargetsV2,
   validateAdaptiveStateCriticalPathPlan,
 } from './stateBenchmarkV2.js';
-import { realizeAdaptiveStateStage0LearnerTurn } from './stateBenchmarkDeterministicRealizer.js';
+import {
+  assertAdaptiveStateSemanticFidelity,
+  realizeAdaptiveStateStage0LearnerTurn,
+} from './stateBenchmarkDeterministicRealizer.js';
+import {
+  createAdaptiveStateExactObserver,
+  observeAdaptiveStateExactPublicEvent,
+} from './stateBenchmarkExactObserver.js';
 import {
   adaptiveStateKernelTaskMetadata,
   adaptiveStateLearnerKernel,
@@ -24,6 +32,14 @@ export const ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA =
   'machinespirits.adaptive-state-benchmark-row.v2';
 export const ADAPTIVE_STATE_STAGE0_DIALOGUE_V2_SCHEMA =
   'machinespirits.adaptive-state-stage0-dialogue.v2';
+export const ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES = Object.freeze([
+  'services/adaptiveTutor/stateBenchmarkStage0Analysis.js',
+  'services/adaptiveTutor/tutorStubStateAdapter.js',
+  'services/adaptiveTutor/stateBenchmarkExactObserver.js',
+  'services/tutorStubPublicLearnerAnalysis.js',
+  'services/tutorStubDagFactDropout.js',
+  'services/tutorStubFieldTrajectory.js',
+]);
 
 function clone(value) {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -51,7 +67,8 @@ function benchmarkStratum(job, turn) {
 
 function observationProvenance(job, turn) {
   return {
-    source: 'adaptive_state_stage0_kernel_projection',
+    source: 'adaptive_state_stage0_exact_public_event_projection',
+    kernel_derived_classifier: false,
     source_dialogue_id: job.id,
     latent_pair_id: job.latent_pair_id,
     realizer_id: job.language_realizer.id,
@@ -79,54 +96,56 @@ function inputForRealizer(envelope, transcript, action) {
   };
 }
 
-function initialEvent(adapter) {
-  return adapter.noneEvent({ semanticRole: 'initial_public_learner_state' });
-}
-
-function publicObservationSummary(observation, realizedEventIds) {
+function publicObservationSummary(observation, realizedEventIds, semanticFidelity) {
   return {
     turn: observation.turn,
     learner_text: observation.learner_text,
     realized_public_event_ids: [...realizedEventIds],
+    semantic_fidelity: clone(semanticFidelity),
     dag: clone(observation.dag),
     classifier: clone(observation.classifier),
     human_discourse: clone(observation.human_discourse),
     axes: clone(observation.axes),
     runtime_field_trajectory: clone(observation.runtime_field_trajectory),
+    provenance: clone(observation.provenance),
   };
 }
 
-function runDialogue(job, adapter) {
+function runDialogue(job, adapter, world) {
   const kernel = adaptiveStateLearnerKernel(job.latent_generator.id);
   let session = createAdaptiveStateKernelSession({ adapter, kernel, seed: job.seed });
-  const state0 = session.state;
-  const bootstrapEvent = initialEvent(adapter);
-  const bootstrapRecord = kernel.turnRecord({
-    adapter,
-    turn: 0,
+  const exactObserver = createAdaptiveStateExactObserver(world);
+  const initialEnvelope = kernel.initialPublicEnvelope({ adapter, state: session.state, turn: 1 });
+  const bootstrapRecord = observeAdaptiveStateExactPublicEvent({
+    observer: exactObserver,
+    envelope: initialEnvelope,
     learnerText: '',
-    state: state0,
-    event: bootstrapEvent,
-  });
+    turn: 0,
+  }).turn_record;
   const bootstrapObservation = buildTutorStubStateObservation({
     turnRecord: bootstrapRecord,
     provenance: observationProvenance(job, 0),
   });
 
   const transcript = [];
-  const initialEnvelope = kernel.initialPublicEnvelope({ adapter, state: state0, turn: 1 });
   const initialRealized = realizeAdaptiveStateStage0LearnerTurn({
     realizerId: job.language_realizer.id,
     ...inputForRealizer(initialEnvelope, transcript, null),
   });
+  const semanticFidelity = [
+    null,
+    assertAdaptiveStateSemanticFidelity({
+      currentPublicActEnvelope: inputForRealizer(initialEnvelope, transcript, null).currentPublicActEnvelope,
+      output: initialRealized,
+    }),
+  ];
   transcript.push({ turn: 1, role: 'learner', text: initialRealized.learner_text });
-  const firstRecord = kernel.turnRecord({
-    adapter,
-    turn: 1,
+  const firstRecord = observeAdaptiveStateExactPublicEvent({
+    observer: exactObserver,
+    envelope: initialEnvelope,
     learnerText: initialRealized.learner_text,
-    state: state0,
-    event: bootstrapEvent,
-  });
+    turn: 1,
+  }).turn_record;
   const turnRecords = [bootstrapRecord, firstRecord];
   const observations = [bootstrapObservation];
   observations.push(
@@ -148,18 +167,24 @@ function runDialogue(job, adapter) {
       realizerId: job.language_realizer.id,
       ...inputForRealizer(transition.public_envelope, transcript, action),
     });
+    semanticFidelity.push(assertAdaptiveStateSemanticFidelity({
+      currentPublicActEnvelope: {
+        ...clone(transition.public_envelope.current_public_act_envelope),
+        turn: Number(transition.public_envelope.turn),
+      },
+      output: realized,
+    }));
     const expectedIds = transition.public_envelope.required_realizer_output.realized_public_event_ids;
     if (JSON.stringify(realized.realized_public_event_ids) !== JSON.stringify(expectedIds)) {
       throw new Error(`stateBenchmarkStage0: realizer changed the semantic event in ${job.id} turn ${predictionTurn + 1}`);
     }
     transcript.push({ turn: predictionTurn + 1, role: 'learner', text: realized.learner_text });
-    const record = kernel.turnRecord({
-      adapter,
+    const record = observeAdaptiveStateExactPublicEvent({
+      observer: exactObserver,
+      envelope: transition.public_envelope,
       turn: predictionTurn + 1,
       learnerText: realized.learner_text,
-      state: transition.next_state,
-      event: transition.event,
-    });
+    }).turn_record;
     const priorRecords = [...turnRecords];
     const previousObservation = observations.at(-1);
     turnRecords.push(record);
@@ -198,7 +223,7 @@ function runDialogue(job, adapter) {
       deterministic_realizer_calls: job.learner_turns,
       model_calls: 0,
       observations: observations.map((observation, index) =>
-        publicObservationSummary(observation, realizedEventIds[index] || []),
+        publicObservationSummary(observation, realizedEventIds[index] || [], semanticFidelity[index]),
       ),
       target_sequence: transitions.map((transition) => clone(transition.targets)),
       transition_audit: transitions.map((transition) => ({
@@ -377,10 +402,15 @@ export function buildAdaptiveStateStage0Dataset({ plan, config, repoRoot = path.
   const adapters = new Map(
     loadAdaptiveStateWorldAdapters(config.critical_path.worlds, { repoRoot }).map((adapter) => [adapter.id, adapter]),
   );
+  const worlds = new Map(
+    config.critical_path.worlds.map((row) => [row.id, loadWorld(path.resolve(repoRoot, row.source))]),
+  );
   const internalDialogues = plan.jobs.map((job) => {
     const adapter = adapters.get(job.world.id);
     if (!adapter) throw new Error(`stateBenchmarkStage0: missing world adapter ${job.world.id}`);
-    return runDialogue(job, adapter);
+    const world = worlds.get(job.world.id);
+    if (!world) throw new Error(`stateBenchmarkStage0: missing world ${job.world.id}`);
+    return runDialogue(job, adapter, world);
   });
   const rows = internalDialogues.flatMap((dialogue) => {
     const donor = donorFor(internalDialogues, dialogue);

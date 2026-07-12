@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T06:44:47.073Z",
+  "generated": "2026-07-12T07:00:34.373Z",
   "counts": {
     "total": 112,
     "byStatus": {
@@ -225,7 +225,8 @@
       "links": {
         "notes": [
           "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
-          "PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md"
+          "PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md",
+          "PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md"
         ],
         "runs": [
           "adaptive-state-v2-s0-clean-5a3e5aae-v21",

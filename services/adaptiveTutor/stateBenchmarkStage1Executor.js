@@ -26,6 +26,7 @@ import {
   stepAdaptiveStateKernelSession,
 } from './learnerKernels/index.js';
 import {
+  ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES,
   loadAdaptiveStateStage0Dataset,
   validateAdaptiveStateStage0DatasetContentSha256,
 } from './stateBenchmarkStage0Executor.js';
@@ -161,14 +162,11 @@ function stagedEvidenceForAnalyzer(world, envelope, firstSeenByPremise, turn) {
 function currentStage0Hashes(config, repoRoot) {
   const script = 'scripts/execute-adaptive-state-benchmark-v2-s0.js';
   const executor = 'services/adaptiveTutor/stateBenchmarkStage0Executor.js';
-  const analyzer = 'services/adaptiveTutor/stateBenchmarkStage0Analysis.js';
   const realizer = 'services/adaptiveTutor/stateBenchmarkDeterministicRealizer.js';
   const benchmark = 'services/adaptiveTutor/stateBenchmarkV2.js';
-  const stateAdapter = 'services/adaptiveTutor/tutorStubStateAdapter.js';
-  const fieldTrajectory = 'services/tutorStubFieldTrajectory.js';
   return {
     runner: aggregateFileHash([script, executor, benchmark], repoRoot),
-    analyzer: aggregateFileHash([analyzer, stateAdapter, fieldTrajectory], repoRoot),
+    analyzer: aggregateFileHash(ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES, repoRoot),
     policy: aggregateFileHash(
       config.critical_path.latent_generators.flatMap(
         (row) => adaptiveStateLearnerKernel(row.id).metadata.source_files,

@@ -744,6 +744,27 @@ before new calls. The existing v2.1 and v2.2 results remain immutable. Until a
 successor instrument passes, S1, S2, policy optimization, Phase 6B, shadow
 pilot, efficacy, and human-learning claims remain blocked.
 
+That permitted redesign is now implemented as the prospectively versioned
+v2.3 exact-channel successor. The kernel projects each already-realized current
+public event as an operation plus an exact fact atom; deterministic renderers
+must include that atom, preserve the harness sidecar, omit event ids from prose,
+and pass a local semantic-fidelity assertion. Stage 0 now builds learner-state
+observations through a deterministic public-event observer instead of the
+kernel's hidden-state turn record, and persists fidelity evidence on every
+realized turn. Codex/Claude paraphrase and public-text analysis are a separate,
+gate-ineligible descriptive-transfer lane. The frozen contract is
+`config/adaptive-state-instrument-v2.3.yaml`; rationale and Phase 6 dependency
+repair are in
+`PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md`.
+
+This implementation does not reopen S1 or S2 by itself. The next permitted
+execution is a zero-call clean-SHA v2.3 S0 seal across the existing 24 dialogues
+and 144 scored transitions. Until that passes, the prior `winner: null` and
+`do_not_optimize_policy` decisions remain operative. Phase 6B now explicitly
+requires a sealed canonical S2 pass, a non-null winner, and a separately opened
+optimization gate; live shadow work additionally requires an observation-
+parity bridge.
+
 Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
 `1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
 all Phase 6 claims are unchanged.

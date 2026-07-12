@@ -34,6 +34,30 @@ test('zero-call Stage-0 executor seals the 24-dialogue/144-transition analyzer i
     assert.equal(dataset.model_call_count, 0);
     assert.equal(dataset.deterministic_realizer_call_count, 168);
     assert.ok(
+      dataset.dialogues.every((dialogue) =>
+        dialogue.observations
+          .filter((observation) => observation.turn > 0)
+          .every((observation) => observation.semantic_fidelity?.status === 'pass'),
+      ),
+    );
+    assert.ok(
+      dataset.rows.every(
+        (row) => row.representations.no_state.common.turn >= 1 && row.provenance.model_calls === 0,
+      ),
+    );
+    assert.ok(
+      dataset.dialogues.every((dialogue) =>
+        dialogue.observations
+          .filter((observation) => observation.turn > 0)
+          .every(
+            (observation) =>
+              observation.semantic_fidelity?.status === 'pass' &&
+              observation.provenance?.source === 'adaptive_state_stage0_exact_public_event_projection' &&
+              observation.provenance?.kernel_derived_classifier === false,
+          ),
+      ),
+    );
+    assert.ok(
       dataset.rows.every(
         (row) => Number(row.controls.scramble_donor_seed) !== Number(row.groups.seed),
       ),

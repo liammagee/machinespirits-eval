@@ -10,6 +10,8 @@ import { cloneKernelValue } from './contract.js';
 
 export const ADAPTIVE_STATE_WORLD_ADAPTER_SCHEMA = 'machinespirits.adaptive-state-world-proof-adapter.v2';
 export const ADAPTIVE_STATE_PUBLIC_ACT_ENVELOPE_SCHEMA = 'machinespirits.adaptive-state-public-act-envelope.v2';
+export const ADAPTIVE_STATE_PUBLIC_SEMANTIC_EVENT_SCHEMA =
+  'machinespirits.adaptive-state-public-semantic-event.v2.3';
 export const ADAPTIVE_STATE_PROOF_TRANSITION_V2_SCHEMA = 'machinespirits.adaptive-state-proof-transition.v2';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -421,11 +423,27 @@ export function createWorldNormalizedProofAdapter({
     const releasedSurfaces = proof.releasedPremiseIds.map((premiseId) =>
       String(world.premiseById.get(premiseId).surface || '').trim(),
     );
+    const releasedEvidence = proof.releasedPremiseIds.map((premiseId) => ({
+      surface: String(world.premiseById.get(premiseId).surface || '').trim(),
+      fact: cloneKernelValue(world.premiseById.get(premiseId).fact),
+    }));
+    const publicFact = event._internal_fact
+      ? cloneKernelValue(event._internal_fact)
+      : event._internal_premise_id
+        ? cloneKernelValue(world.premiseById.get(event._internal_premise_id)?.fact || null)
+        : null;
     const publicEvent = event.event_id
       ? {
           event_id: event.event_id,
           kind: event.kind,
           semantic_role: event.semantic_role,
+          semantic_payload: {
+            schema: ADAPTIVE_STATE_PUBLIC_SEMANTIC_EVENT_SCHEMA,
+            operation: event.kind,
+            fact: publicFact,
+            canonical_atom: publicFact ? JSON.stringify(publicFact) : null,
+            object_level_claim: publicFact !== null,
+          },
           ...(event.public_surface ? { evidence_surface: event.public_surface } : {}),
         }
       : null;
@@ -446,6 +464,7 @@ export function createWorldNormalizedProofAdapter({
         question: world.question,
         rule_glosses: world.rules.map((rule) => String(rule.gloss || '').trim()).filter(Boolean),
         released_evidence_surfaces: releasedSurfaces,
+        released_evidence: releasedEvidence,
       },
       required_realizer_output: {
         learner_text: 'non-empty string',

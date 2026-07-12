@@ -23,6 +23,7 @@ import {
   validateAdaptiveStateCriticalPathPlan,
 } from '../services/adaptiveTutor/stateBenchmarkV2.js';
 import {
+  ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES,
   buildAdaptiveStateStage0Dataset,
   validateAdaptiveStateStage0DatasetContentSha256,
 } from '../services/adaptiveTutor/stateBenchmarkStage0Executor.js';
@@ -38,12 +39,9 @@ const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'adaptive-state-benchmark-v2.yaml');
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'adaptive-state-benchmark-v2');
-const ANALYZER = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage0Analysis.js');
 const EXECUTOR = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage0Executor.js');
 const REALIZER = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkDeterministicRealizer.js');
 const BENCHMARK = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkV2.js');
-const STATE_ADAPTER = path.join(ROOT, 'services', 'adaptiveTutor', 'tutorStubStateAdapter.js');
-const FIELD_TRAJECTORY = path.join(ROOT, 'services', 'tutorStubFieldTrajectory.js');
 
 function arg(argv, name, fallback = null) {
   const index = argv.indexOf(`--${name}`);
@@ -116,11 +114,7 @@ function executionRunPlan({ plan, config, configPath, runSeed }) {
         path.relative(ROOT, EXECUTOR),
         path.relative(ROOT, BENCHMARK),
       ]),
-      analyzer: aggregateFileHash([
-        path.relative(ROOT, ANALYZER),
-        path.relative(ROOT, STATE_ADAPTER),
-        path.relative(ROOT, FIELD_TRAJECTORY),
-      ]),
+      analyzer: aggregateFileHash(ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES),
       policy: aggregateFileHash(
         config.critical_path.latent_generators.flatMap(
           (row) => adaptiveStateLearnerKernel(row.id).metadata.source_files,
@@ -143,6 +137,7 @@ function executionRunPlan({ plan, config, configPath, runSeed }) {
     metadata: {
       benchmarkSchema: config.schema,
       benchmarkVersion: config.version,
+      observationChannelVersion: '2.3',
       stage: 's0_contract',
       paid: false,
       expectedModelCalls: 0,
@@ -153,7 +148,7 @@ function executionRunPlan({ plan, config, configPath, runSeed }) {
 
 export function renderAdaptiveStateStage0Report(report) {
   const lines = [
-    '# Adaptive learner-state benchmark v2.1 — Stage 0',
+    '# Adaptive learner-state benchmark v2.1 / exact observation channel v2.3 — Stage 0',
     '',
     `Status: **${report.status}**`,
     `Decision: \`${report.decision}\``,

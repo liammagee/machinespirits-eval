@@ -1,0 +1,167 @@
+# Adaptive-state exact-channel protocol v2.3
+
+**Date frozen:** 2026-07-12
+
+**Status:** implemented without model calls; successor Stage 0 pending a clean-SHA seal
+
+**Parent outcome:** v2.2 stopped at 70/72, with a repeated Ravensmark × derive × Codex failure
+
+**Claim status:** engineering and instrument design only
+
+## Decision
+
+Split the benchmark into two non-interchangeable lanes.
+
+1. The **claim-bearing exact lane** receives a harness-owned, current public
+   semantic event. It renders the exact fact deterministically and verifies the
+   exact atom programmatically. It uses no language-model realizer and no
+   language-model analyzer.
+2. The **descriptive language-transfer lane** may later ask Codex and Claude to
+   paraphrase the same event and may measure analyzer recovery and naturalness.
+   It cannot change rows, labels, exclusions, sensor selection, or the validity
+   verdict.
+
+This is the smallest design that answers the scientific question without
+requiring every possible world, learner, model, or phrasing. The claim-bearing
+critical path remains three proof geometries, two genuinely different latent
+transition kernels, two exact surface templates, six fixed tutor actions, and
+the existing representation ladder and controls.
+
+## What changed in the instrument
+
+The v2.2 failure exposed a missing contract. The kernel event contained the
+exact fact `pressedSealFor(gatePass, elian)`, but its public envelope said only
+that a further intermediate inference was supported. The language model was
+therefore asked to reconstruct a fact that had been withheld from it. An event
+ID in the sidecar could still claim `derive`, even when the learner text merely
+repeated `heldBy(duskSeal, elian)`. A family-level analyzer could then over-credit
+an incomplete paraphrase.
+
+In v2.3, every object-level `adopt`, `derive`, or premise-`retract` event carries:
+
+```json
+{
+  "schema": "machinespirits.adaptive-state-public-semantic-event.v2.3",
+  "operation": "derive",
+  "fact": ["pressedSealFor", "gatePass", "elian"],
+  "canonical_atom": "[\"pressedSealFor\",\"gatePass\",\"elian\"]",
+  "object_level_claim": true
+}
+```
+
+The payload describes only the already-realized current public event. It does
+not include a future state, next target, oracle distribution, answer key, or
+private reasoning. A claim-bearing rendering must contain the byte-exact
+`FACT ["pressedSealFor","gatePass","elian"]` marker, preserve the exact
+harness event-ID sidecar, and keep the event ID out of the learner text.
+
+This deliberately separates two questions:
+
+- **Does the stored DAG/trajectory/field state predict the next harness event
+  when the current public event is observed exactly?** This is the sensor test.
+- **Can a particular language model express and recover that event in ordinary
+  prose?** This is a language-transfer test, reported separately.
+
+## Frozen critical path
+
+```text
+latent transition sampled
+  -> current public semantic event projected exactly
+  -> deterministic fact-preserving learner turn
+  -> exact semantic-fidelity assertion
+  -> deterministic public-state update
+  -> no-state / DAG / trajectory / field prediction heads
+  -> harness-owned next-event and proof-trajectory labels
+```
+
+The exact lane stops if any of these occur:
+
+- a scored transition lacks its exact current fact when an object-level claim
+  exists;
+- the rendered fact differs from the public semantic payload;
+- the event operation and semantic payload differ;
+- the sidecar event IDs differ from the harness IDs;
+- learner text contains an event ID;
+- a future target, future state, oracle, or answer key enters the public input;
+- a crossed cell is missing, replay differs, or the existing oracle/control
+  sensitivity checks fail.
+
+## Stages and permitted execution
+
+### S0 exact-channel contract — zero calls
+
+Run the existing 24-dialogue, 144-scored-transition matrix with both exact
+surface templates. Every realized learner turn persists a semantic-fidelity
+record. Passing S0 proves only that the instrument is internally exact,
+replayable, leak-free, and sensitive enough to proceed.
+
+### S1 canonical sensor pilot — zero calls
+
+Analyze the representation ladder on exact public observations. This is
+non-confirmatory. Its job is to determine whether there is enough predictive
+signal and control sensitivity to justify the bounded confirmation. It cannot
+select or optimize a tutor policy.
+
+### S1 language transfer — optional paid, descriptive only
+
+If separately authorized and prospectively frozen, Codex and Claude may
+paraphrase exact public events. Report exact-fact fidelity, event-family
+recovery, analyzer false positives, and naturalness. These rows cannot rescue
+or invalidate the canonical sensor lane and cannot authorize S2.
+
+### S2 canonical confirmation — zero calls
+
+Use the existing frozen eight-seed maximum, paired clustering, world-transfer
+primary lane, state-blind baselines, matched stale controls, oracle checks, and
+simple-to-rich promotion hierarchy. Its strongest possible conclusion is:
+
+> the selected learner-state representation predicts harness-owned next events
+> across these three authored worlds and two latent kernels, conditional on an
+> exact current-public-event channel.
+
+It is not a population-world, natural-language, human-learning, efficacy, or
+deployment claim.
+
+## Phase 6 repair
+
+Phase 6 is now explicitly downstream of the learner-state gate instead of
+being merely adjacent to it.
+
+- **Phase 6A engineering canaries** may continue to test runner integrity,
+  release safety, proof reliability, and lineage. They remain non-efficacy
+  engineering evidence.
+- **Phase 6B policy comparison** remains blocked until S2 passes, names a
+  non-null representation winner, and opens `optimize_policy` explicitly.
+- A Phase 6B pass still does not authorize a shadow pilot. The shadow pilot
+  additionally needs a live-observation parity bridge showing that deployed
+  public-language analysis agrees with the exact channel at an independently
+  frozen threshold.
+- A human learner pilot additionally requires IRB approval, real consent, and
+  validated item content.
+
+Thus an exact-channel sensor result cannot be silently promoted into a claim
+that the live tutor understands ordinary learner language.
+
+## What remains blocked
+
+Do not rerun v2.2, tune its prompt against Ravensmark, or reinterpret any v2.1
+or v2.2 row. Do not run the old 339-call S1. Until a clean-SHA v2.3 S0 seals and
+the canonical pilot and confirmation pass, the verdict remains `winner: null`
+and `do_not_optimize_policy`. Phase 6B, a shadow pilot, efficacy claims, human-
+learning claims, and deployment claims remain blocked.
+
+## Implementation surface
+
+- contract: `config/adaptive-state-instrument-v2.3.yaml`
+- current public event projection:
+  `services/adaptiveTutor/learnerKernels/worldAdapter.js`
+- exact rendering and semantic-fidelity assertion:
+  `services/adaptiveTutor/stateBenchmarkDeterministicRealizer.js`
+- persisted zero-call fidelity evidence:
+  `services/adaptiveTutor/stateBenchmarkStage0Executor.js`
+- regression coverage: `tests/adaptiveStateFactPreservingChannel.test.js`
+
+The successor is intentionally narrower than the abandoned language-model
+crossing. That is a feature: it makes the causal question identifiable and
+moves language robustness into its own test instead of letting it contaminate
+the learner-state verdict.

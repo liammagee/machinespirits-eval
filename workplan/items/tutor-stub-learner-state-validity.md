@@ -16,6 +16,7 @@ links:
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
     - PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md
+    - PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md
   runs:
     - adaptive-state-v2-s0-clean-5a3e5aae-v21
     - adaptive-state-v2-s1-technical-5a3e5aae-v21
@@ -316,3 +317,17 @@ deterministically or checked programmatically before a family match can count;
 keep LLM naturalness as a separate descriptive lane. Any successor must be a
 new prospectively frozen version. Full S1, S2, policy optimization, Phase 6B,
 shadow pilot, efficacy, and human-learning claims remain blocked.
+
+2026-07-12 Codex v2.3 zero-call instrument redesign: Implemented a separate
+claim-bearing exact public-event channel. Current adopt/derive/premise-retract
+events now expose their exact public fact atom; both deterministic surface
+templates must include that atom and pass a programmatic semantic-fidelity
+assertion before entering the Stage-0 dataset. The exact Ravensmark fact
+`pressedSealFor(gatePass, elian)` is covered by a regression that rejects all
+three stopped v2.2 paraphrase patterns. Free-form Codex/Claude realization and
+public-turn analysis are now a descriptive transfer lane only and cannot
+rewrite, rescue, exclude, or promote claim-bearing rows. The successor
+protocol also makes Phase 6B depend explicitly on a sealed canonical S2 pass
+and a non-null winner. No model calls were made; a clean-SHA v2.3 S0 seal is the
+next permitted execution. S1/S2 validity, policy optimization, Phase 6B,
+shadow-pilot, efficacy, and human-learning claims remain blocked.

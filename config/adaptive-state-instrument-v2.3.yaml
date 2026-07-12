@@ -1,0 +1,103 @@
+schema: machinespirits.adaptive-state-instrument-config.v2.3
+version: "2.3"
+status: prospectively_frozen_zero_call_successor
+parent_protocols:
+  - config/adaptive-state-benchmark-v2.yaml
+  - config/adaptive-state-observability-reliability-v2.2.yaml
+claim_boundary: >-
+  The claim-bearing lane tests learner-state prediction conditional on an exact,
+  harness-owned public event channel. It does not establish free-form language
+  understanding, tutor-policy value, tutoring efficacy, human learning,
+  psychological validity, live-deployment parity, or deployment readiness.
+
+problem_addressed:
+  stopped_run: adaptive-state-v2-observability-reliability-4133d7ff-v22
+  failure_cell: ravensmark_x_derive_x_codex_terra
+  diagnosis: >-
+    The kernel owned pressedSealFor(gatePass, elian), but the public envelope
+    exposed only a generic intermediate-inference gloss. The realizer repeated
+    or paraphrased a holder premise, and the family analyzer could over-credit
+    a semantically incomplete utterance.
+
+lanes:
+  claim_bearing:
+    id: exact_public_event_channel
+    model_calls: 0
+    public_event_schema: machinespirits.adaptive-state-public-semantic-event.v2.3
+    renderers: [canonical_template, surface_paraphrase]
+    semantic_unit: exact_fact_atom
+    required_checks:
+      - current_event_operation_matches_harness_event
+      - current_fact_atom_matches_harness_public_projection
+      - exact_fact_atom_present_in_rendered_turn
+      - realized_event_ids_match_harness_sidecar
+      - event_id_absent_from_learner_text
+      - no_future_state_or_target_in_public_input
+    observation_update: deterministic_from_exact_current_public_event
+    label_owner: frozen_transition_harness
+    can_authorize_sensor_analysis: true
+  descriptive_transfer:
+    id: free_form_language_transfer
+    model_calls: optional_and_separately_authorized
+    language_realizers: [codex_terra, claude_sonnet]
+    public_turn_analyzer: tutor_stub_public_learner_analysis_strict
+    gate_eligible: false
+    may_rewrite_claim_bearing_rows: false
+    may_rescue_claim_bearing_failures: false
+    reports:
+      - exact_fact_fidelity
+      - event_family_recovery
+      - naturalness
+      - analyzer_false_positive_rate
+
+stage_contract:
+  s0_exact_channel:
+    paid: false
+    matrix: existing_three_world_two_generator_two_renderer_two_seed_matrix
+    pass_if:
+      - all_144_scored_transitions_pass_semantic_fidelity
+      - all_24_dialogues_complete
+      - zero_model_calls
+      - existing_leakage_and_oracle_checks_pass
+  s1_canonical_sensor_pilot:
+    paid: false
+    prerequisite: sealed_s0_exact_channel_pass
+    confirmation_eligible: false
+    purpose: >-
+      Estimate the representation ladder on exact public observations and decide
+      whether a bounded confirmation is scientifically worth running.
+  s1_language_transfer:
+    paid: true
+    prerequisite: separately_frozen_descriptive_protocol
+    gate_eligible: false
+    automatically_launched: false
+  s2_canonical_confirmation:
+    paid: false
+    prerequisite: sealed_s1_canonical_sensor_pilot_pass
+    design: existing_eight_seed_bounded_confirmation
+    verdict_scope: sensor_validity_conditional_on_exact_public_event_channel
+
+phase_6_protocol:
+  phase_6a_engineering_canaries:
+    status: unchanged
+    may_continue_without_sensor_claim: true
+  phase_6b_policy_comparison:
+    status: blocked
+    requires:
+      - sealed_s2_canonical_confirmation_pass
+      - winner_not_null
+      - policy_optimization_gate_explicitly_opened
+  shadow_pilot:
+    status: blocked
+    requires:
+      - phase_6b_pass
+      - live_observation_parity_bridge
+  human_learner_pilot:
+    status: blocked
+    additional_requirements: [irb_approval, real_consent, validated_items]
+
+immutability:
+  reinterpret_v2_1_or_v2_2: false
+  rerun_v2_2: false
+  tune_prompts_against_failed_cell: false
+  preserve_all_prior_rows: true
