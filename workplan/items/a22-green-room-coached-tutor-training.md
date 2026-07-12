@@ -46,10 +46,11 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: remaining P0 pins (token budget ratification, Ns + gate
-thresholds, Gate-0 note-quality checklist), push/share the preconscious
-worktree branch, then Gate 0 coach-quality screen (~5 notes sessions,
-owner-reviewed).
+Next action: ratify the remaining P0 numbers (token budget 1,800 default,
+Ns + gate thresholds, Gate-0 note-quality checklist — proposal drafted in
+plan §7/§0.1), then a go for Gate 0 (paid, attended: ~5 notes sessions with
+codex.sol against existing stub transcripts, owner-reviewed). Gate 1-2
+outcome contrasts run in the stub's headroom arena per plan §0.2.
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
 2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
@@ -60,3 +61,10 @@ coach-informed but tutor-driven (registry-variance-failure trigger, ⚑ to
 reconcile against the worktree at P1); single anchor, no in-loop-superego arm
 (standing note: the coach may be an alternative superego architecture);
 Gate 0 owner-reviewed; cells 201-208 reserved for the later fold-in.
+2026-07-11 claude: preconscious branch confirmed pushed; both ⚑ flags
+resolved against it (registry-variance = register-policy layer over
+engagementRegisterRegistry.js; MEMORY.md injection mirrors the
+--field-report-context pattern as --prompt-book-context). Four
+substrate-inherited constraints recorded as plan §0.2 (headroom arena for
+outcome gates, no model monoculture, outcome-only scoring, no
+machine-local provenance).
