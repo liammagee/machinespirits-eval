@@ -46,11 +46,11 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: ratify the remaining P0 numbers (token budget 1,800 default,
-Ns + gate thresholds, Gate-0 note-quality checklist — proposal drafted in
-plan §7/§0.1), then a go for Gate 0 (paid, attended: ~5 notes sessions with
-codex.sol against existing stub transcripts, owner-reviewed). Gate 1-2
-outcome contrasts run in the stub's headroom arena per plan §0.2.
+Next action: OWNER runs Gate 0 locally per plan §7.1 —
+`node scripts/greenroom-gate0.js --transcripts <stub records> --sessions 5`
+on the PR branch, then scores gate0-review-checklist.md (pass = 4/5 sessions
+yield a qualifying note). Gate 1-2 outcome contrasts run in the stub's
+headroom arena per plan §0.2.
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
 2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
@@ -68,3 +68,11 @@ engagementRegisterRegistry.js; MEMORY.md injection mirrors the
 substrate-inherited constraints recorded as plan §0.2 (headroom arena for
 outcome gates, no model monoculture, outcome-only scoring, no
 machine-local provenance).
+2026-07-11 human: P0 numbers RATIFIED (book 1,800 tokens; Gate 0 = 4/5
+owner-judged; Gate 1 = >=60% note-compliance improvement vs never-issued
+placebo; Gate 2 = k>=5/arm, coached-luna > untrained-luna on outcome-only
+channels AND >=20% luna->sol gap closure on held-out worlds). Gate 0 to run
+on owner's machine.
+2026-07-11 claude: Gate-0 runner shipped (scripts/greenroom-gate0.js +
+tests/greenroomGate0.test.js, 11 tests green, dry-run smoke verified);
+runbook at plan §7.1.

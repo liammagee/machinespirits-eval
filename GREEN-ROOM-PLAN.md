@@ -136,7 +136,7 @@ DB index (same `evaluations.db`, `pilotStore.js` pattern — own `CREATE TABLE I
 
 **Desktop discipline:** `GREENROOM_DIR` joins the relocation list in `desktop/paths.js` *and* the hard-coded key arrays in `tests/desktopPaths.test.js` (both, or the packaged app crashes at boot / the guard misses it).
 
-**Memory budget:** injected MEMORY.md ≤ ~1,800 tokens (pinned at P0). Over budget → the coach performs a **distillation pass** (rewrites the book, ledger records the eviction). The ledger is unbounded; the book is not. This is the anti-accumulation guard the rich-memory arc lacked.
+**Memory budget:** injected MEMORY.md ≤ 1,800 tokens (ratified 2026-07-11). Over budget → the coach performs a **distillation pass** (rewrites the book, ledger records the eviction). The ledger is unbounded; the book is not. This is the anti-accumulation guard the rich-memory arc lacked.
 
 ### 5.2 Injection + provenance
 
@@ -233,16 +233,36 @@ Coach-informed is the default (the idea explicitly wants evaluation in the loop)
 
 ## 7. Kill criteria & gates (pre-registered, no tune-and-retry branch)
 
-- **Gate 0 — coach quality screen (near-free, before any substrate beyond a script).** Run 5 notes sessions against *existing archived transcripts*. Human review against a fixed checklist: notes are specific, evidence-quoted, behaviourally checkable, non-generic. **Fail → stop or redesign once; a coach that emits pablum kills the arc at ~$5.**
-- **Gate 1 — uptake (C2), small-N.** One profile, ~6 coached sessions, uptake measured over the next performances. **Note-uptake indistinguishable from baseline compliance drift → stop; write the null (coaching does not move behaviour) as the closing paragraph.**
-- **Gate 2 — transfer (C3).** Weak-actor arm. **Coached book ≤ weak baseline → the capability-asymmetry lever is dead; C4 is cancelled** (it cannot succeed if even the widest gap won't close) and the arc lands as C1+C2 (+ the null).
-- **Gate 3 — headline (C4).** One pre-registered run at pinned N; scale only what Gate 2 justified. Whatever it returns lands.
+Numbers ratified by owner 2026-07-11:
+
+- **Gate 0 — coach quality screen (near-free, before any substrate beyond a script).** Runner: `scripts/greenroom-gate0.js` (standalone, file-outputs only, frozen manifest with git SHA, `--dry-run` plumbing mode). 5 notes sessions (`codex.sol` coach ⇄ `codex.luna` actor) against *existing stub transcripts*; **owner-scored** against the checklist the runner emits. **Pass = ≥4/5 sessions produce at least one note that (a) quotes transcript evidence, (b) is a checkable behavioural predicate, (c) is non-generic.** Fail → stop or redesign once; a coach that emits pablum kills the arc at ~$5. Runbook: §7.1.
+- **Gate 1 — uptake (C2), small-N, headroom arena (§0.2.1).** One profile, ~6 coached sessions; per-note compliance measured over the next performances against each note's pre-note baseline. **Pass = ≥60% of bankable notes show a compliance improvement**, with a **never-issued-notes placebo** (compliance scored against notes the coach never gave) as the base-rate check. Uptake indistinguishable from the placebo drift → stop; write the null (coaching does not move behaviour) as the closing paragraph.
+- **Gate 2 — transfer (C3), headroom arena, k≥5 runs/arm** (Phase-6 gate convention). **Pass = coached-`luna` beats untrained-`luna` on outcome-only channels (grounding rate / turns-to-ground) AND closes ≥20% of the `luna`→`sol` gap on the held-out worlds (edmund, ravensmark).** Coached book ≤ `luna` baseline → the capability-asymmetry lever is dead; C4 is cancelled (it cannot succeed if even the widest gap won't close) and the arc lands as C1+C2 (+ the null).
+- **Gate 3 — headline (C4).** One pre-registered run, Ns and margins pinned *after* Gate 2 sizes the effect (that pre-registration is the one P0 item deliberately left open until then). Whatever it returns lands.
+
+### 7.1 Gate 0 runbook (local)
+
+```bash
+# from any existing clone of the repo:
+git fetch origin claude/tutor-coaching-memory-system-vvvrl8
+git checkout claude/tutor-coaching-memory-system-vvvrl8   # or: gh pr checkout 121
+npm install                                               # needs the repo deps once
+
+# point at the stub's transcript/trace records (adjust to where yours live):
+node scripts/greenroom-gate0.js \
+  --transcripts ../machinespirits-eval-preconscious/.tutor-stub-auto-eval \
+  --sessions 5 --seed 1
+# outputs → exports/greenroom-gate0-<stamp>/: manifest.json (frozen, git SHA),
+# session-N.{md,json}, gate0-review-checklist.md  ← score this, fill the verdict.
+```
+
+Prerequisites: `codex` CLI authenticated with access to `sol` and `luna` (the first real session doubles as the bridge-name check); transcripts can be any mix of `.json`/`.jsonl`/`.md`/`.txt` — the runner extracts speaker/text generically and truncates long records head+tail. `--dry-run` first if you want to eyeball the prompts for free. The house worktree pattern works too: `git worktree add ../machinespirits-eval-greenroom claude/tutor-coaching-memory-system-vvvrl8`.
 
 Budget shape (call-count, not dollars): Gate 0 ≈ 5 sessions; Gate 1 ≈ 6 sessions + ~10 scored dialogues; Gate 2 ≈ 2 training arcs + 4 cells × pilot-N; Gate 3 is the only full-width spend. Rehearsal learner-side runs mock/cheap throughout.
 
 ## 8. Phasing
 
-- **P0 — pre-registration.** **Substantially done 2026-07-11 (§0.1):** substrate, anchor world + hold-outs, coach/actor models, trigger, informed-default, owner-reviewed Gate 0. Remaining before Gate 1: memory token budget ratified (default 1,800), Ns + gate thresholds proposed-and-ratified, note-quality checklist for Gate 0, ⚑ reconciliations (§12.5). Amend this doc in place. *Zero code.*
+- **P0 — pre-registration. DONE 2026-07-11** (§0.1 decisions; §0.2 substrate constraints; §7 numbers ratified; ⚑ flags resolved). The single deliberately-open item is Gate 3's own pre-registration, pinned after Gate 2 sizes the effect. Next: **Gate 0, run locally by the owner** (§7.1).
 - **P1 — substrate.** `services/greenroom/` store + profile ops + injection + provenance columns + freeze assertion; `GREENROOM_DIR` desktop relocation (+ both tests); hermetic tests (versioning, hash stability, budget enforcement, freeze refusal, fork). Smoke: hand-written MEMORY.md injected, hash lands on the row, drift validator fires when the book changes.
 - **P2 — coach.** `coachEngine` + `eval-cli coach` + Gate 0 on archived transcripts. Then Gate 1 (first trained profile, uptake measurement extending `analyze-insight-action-gap.js`).
 - **P3 — rehearsal.** `rehearsalRunner` + diary + batch coaching + `GREENROOM_LLM` mock switch (hermetic loop test with mock learner). Cheap comparison: rehearsed-only book vs coached book on train scenarios.
