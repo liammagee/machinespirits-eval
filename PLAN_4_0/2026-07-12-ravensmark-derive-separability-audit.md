@@ -123,3 +123,31 @@ This audit repairs the observability test construct. It provides no evidence
 that the DAG/field/trajectory sensor predicts learner state, no evidence that a
 policy adapts successfully, and no efficacy, human-learning, deployment, or
 Phase 6 result.
+
+## Execution outcome
+
+Exit-gate steps 1–7 were completed; step 8 stopped at its exact 24/24
+requirement. Commit `2dd039c5` implemented the shared structural-support
+contract and commit `985bd542` added the required dual-S0 lineage validation.
+Fresh zero-call S0
+`adaptive-state-v2-s0-structural-support-2dd039c5-v21` passed and sealed with 24
+dialogues, 144 transitions, and no model calls.
+
+The fresh paid run
+`adaptive-state-v2-observability-preflight-985bd542-v21` then completed all 24
+cases and 48 unique serial CLI dispatches. The exact gate stopped at 23/24.
+Crucially, the original construct hypothesis was resolved:
+
+- Claude voiced the new conclusion that Elian pressed the operative seal, and
+  the analyzer recovered `derive`;
+- Codex wrote only “The dusk-seal on the pass was held by Elian,” restating the
+  released registry premise while its sidecar claimed `derive:inference_03`;
+- the analyzer correctly returned `none` for that Codex text.
+
+The failure therefore moved from an ambiguous unary scope transition to a
+realizer-fidelity violation on a separable target. The audit repair is retained,
+but it did not clear the 24/24 v2.1 gate. No further paid preflight or full S1 is
+authorized. The next permitted work is a zero-call prospective review of
+whether the experiment should retain exact single-draw realization or adopt a
+new, preregistered repeated-draw reliability gate. The stopped v2.1 result may
+not be relabeled or rescued by changing the threshold after observation.

@@ -545,9 +545,10 @@ trajectory—not only a global winner/null.
 
 ### 7.9 Execution record — 2026-07-12
 
-The v2.1 sequence has produced one valid contract pass, one completed full-S1
-technical stop, two earlier fail-closed technical stops, and three completed
-bounded-preflight stops. None is a learner-state validity or efficacy result.
+The v2.1 sequence has produced two valid zero-call contract passes under two
+versioned contracts, one completed full-S1 technical stop, two earlier
+fail-closed technical stops, and four completed bounded-preflight stops. None
+is a learner-state validity or efficacy result.
 
 1. **Fresh S0 passed at `5a3e5aae`.** The sealed zero-model-call run
    `adaptive-state-v2-s0-clean-5a3e5aae-v21` contains 24 dialogues and 144
@@ -660,30 +661,66 @@ bounded-preflight stops. None is a learner-state validity or efficacy result.
    `stop_and_repair_observability_preflight`, `s1_retry_eligible: false`; report
    SHA-256 is
    `f00768748f653f1033b62525ae3f5d036784febc82655ade57bd735f6d701dbe`.
-9. **S2 was not run and remains fail-closed.** No passing preflight or S1 seal
+9. **The construct repair passed S0, but a fourth preflight still stopped at
+   23/24.** The zero-call audit froze the exact third-run failure and found that
+   Ravensmark's unary `R1_scope` conclusion was too close to its public premise
+   to identify analyzer reliability cleanly. Commit `2dd039c5` therefore kept
+   `R1_scope` in logical closure as validated structural support while making
+   the next observable derive target `pressedSealFor(gatePass,elian)`, which
+   requires two public premises and introduces a new person/action relation.
+   Because that changed the shared preflight/S1 kernel and canonical config,
+   the old S0 became correctly stale. Fresh zero-call run
+   `adaptive-state-v2-s0-structural-support-2dd039c5-v21` passed with 24
+   dialogues, 144 transitions, and no model calls. Dataset SHA-256 is
+   `c9d67065e6cc012b9748b7d4dc23dc66f7a7a197ee9087b529e8ed1419a58470`,
+   report SHA-256 is
+   `09ed0b4cb5e111d97a212d2d3805732e6642766608153944a8aa313956bde6c2`,
+   seal-plan SHA-256 is
+   `9b3b81c16d846cec11aba1a7522997886647a081c2d7a56031aafa3b11bb3b33`,
+   and seal-inventory SHA-256 is
+   `632878298017f152ccf9f0c90a945ffeda34c34a6b94aabaa2c3ec66525d43a6`.
+   Commit `985bd542` then bound the original S0/stopped-S1 diagnostic lineage
+   independently from the replacement S0/current-contract lineage; it reused
+   no paid row or call. The sealed paid run
+   `adaptive-state-v2-observability-preflight-985bd542-v21` completed 24/24
+   cases and 48/48 unique serial CLI dispatches with no technical failure.
+   Exact-family recovery remained 23/24 (`0.958333`): `none`, `adopt`, and
+   `retract` passed 6/6; `derive` passed 5/6; Claude passed 12/12, Codex 11/12;
+   Marrick and Hethel passed 8/8 and Ravensmark 7/8. The sole mismatch moved to
+   `preflight__ravensmark__derive__codex_terra`. Codex wrote “The dusk-seal on
+   the pass was held by Elian,” merely restating the released holder premise;
+   the analyzer correctly returned `none` even though the realizer sidecar had
+   claimed `derive:inference_03`. Claude received the same construct and
+   correctly voiced that Elian pressed the operative seal, which the analyzer
+   recovered as `derive`. Thus the construct repair worked, while the exact
+   gate exposed a remaining single-draw realizer-fidelity failure. The run
+   sealed `stop_and_repair_observability_preflight` with
+   `s1_retry_eligible: false`; report SHA-256 is
+   `5b887f222419ce7944d477b3cb875ad1bebaa7080136e99dc889ba6d0398203c`.
+10. **S2 was not run and remains fail-closed.** No passing preflight or S1 seal
    exists, so the fixed eight-per-cell confirmation and every downstream
    policy, efficacy, Phase 6B, shadow-pilot, and human-learning claim remain
    blocked.
 
-The third preflight did not clear the gate. The next permitted step is a
-**zero-call semantic-separability audit of the shared preflight/S1 target,
-fixture, ontology, and public-language contract**—not another prompt patch, not
-another paid preflight, and not another 339-call S1. Preserve the exact failed
-Ravensmark output and analyzer record. Test whether the intended one-step
-`materialSealAtIssue` transition is actually distinguishable in ordinary
-public language from the released `sealMarkOf` premise, and require any repair
-to govern full S1 as well as the diagnostic preflight. Candidate repairs may
-pre-voice a purely scope/typing conclusion and stage a genuinely new later
-derivation, or may remove/reclassify such scope transitions from the measured
-event-family target; neither option may be selected merely because it makes the
-preflight pass. Any world, kernel, target, or canonical-config change must be
-versioned and must trigger a fresh S0 if its sealed contract changes. The audit
-must not reveal harness targets, accept unsupported conclusions, weaken the
-24/24 threshold, reroll a failed cell, or reuse prior calls. Only after strict
-zero-call regression and contract tests pass—and any required S0 rerun passes—
-may a fresh-label 24-case preflight run under the same serial, zero-repair
-contract. All three stopped labels and their rows remain immutable and
-non-reusable. No full S1 may launch until a fresh preflight reaches 24/24.
+The fourth preflight did not clear the gate. The construct ambiguity diagnosed
+after the third run is now resolved: the replacement target was genuinely
+distinct, Claude realized it, and the analyzer recovered it. The remaining miss
+is a realizer-contract failure, not evidence that the analyzer cannot observe
+the transition and not evidence for or against the learner-state sensor.
+
+The next permitted work is therefore a **zero-call protocol-governance review**,
+not another prompt patch, paid preflight, or 339-call S1. Preserve the fourth
+failed learner turn, sidecar, analyzer record, and seal. Decide prospectively
+whether exact 24/24 single-draw realization is truly the desired technical gate
+or whether a new versioned protocol should measure fixed repeated-draw
+realization reliability while keeping every failed draw and forbidding semantic
+rerolls. That decision must be made from the construct and deployment tolerance,
+not selected to convert 23/24 into a pass. The existing v2.1 decision remains
+immutable: no retrospective relabel, threshold change, row reuse, or full-S1
+authorization. Until a separately preregistered protocol is justified and
+passes from a clean pushed SHA, the scientifically correct action is to stop
+spending and leave S1, S2, policy optimization, Phase 6B, shadow pilot,
+efficacy, and human-learning claims blocked.
 
 Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
 `1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
@@ -1230,6 +1267,25 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
     `sealMarkOf` premise, so the run sealed stopped and S1 remained
     unauthorized. Further ad hoc prompt tuning is stopped; the next gate is a
     zero-call target/fixture/ontology separability audit shared with full S1.
+25. Completed that audit and implemented its construct repair at `2dd039c5`.
+    `R1_scope` remains available to symbolic closure but can no longer emit a
+    learner event; the shared preflight/S1 target is now the two-premise,
+    relational `pressedSealFor` conclusion. A fresh current-contract S0 passed
+    and sealed with 24 dialogues, 144 transitions, and zero model calls.
+26. Added dual-S0 fail-closed lineage at `985bd542`: the old S0 remains the
+    immutable diagnostic parent of the stopped S1, while the replacement S0
+    parents the new preflight and any later current-contract work. No stopped
+    row or call is transported across lineages. Focused tests passed 52/52,
+    adaptive-state tests passed 130/130, and the full suite passed 5,224 tests
+    with one expected skip.
+27. Completed the fourth fresh 48-dispatch preflight at
+    `adaptive-state-v2-observability-preflight-985bd542-v21`. It remained
+    23/24: Claude correctly realized and the analyzer recovered the new
+    Ravensmark derive target, but Codex only restated the released holder
+    premise while claiming a derive sidecar. The analyzer correctly returned
+    `none`; the run sealed stopped and S1 remains unauthorized. This narrows the
+    problem from construct ambiguity to realizer fidelity. Further paid tuning
+    is paused pending a zero-call, prospective gate-design review.
 
 ## 17. Things deliberately not scheduled
 
@@ -1297,11 +1353,13 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   prior `none` and `adopt` mismatch; the second fresh 48-dispatch preflight
   improved to 22/24 but still stopped on two `derive` boundary failures. A
   clause-wise derive repair then closed Marrick and the third fresh preflight
-  improved to 23/24, but Ravensmark/Claude again failed on a scope/typing
-  transition whose ordinary-language conclusion may not be cleanly separable
-  from its premise. S2 was not run. The next gate is a zero-call target/fixture/
-  ontology separability audit, not another prompt tweak or paid run, so no new
-  sensor verdict exists.
+  improved to 23/24. A zero-call construct audit replaced Ravensmark's ambiguous
+  unary scope event with a distinct two-premise action relation, and a fresh S0
+  passed. The fourth fresh preflight remained 23/24, but the failure moved:
+  Claude correctly realized the new conclusion while Codex merely restated a
+  released premise and the analyzer correctly returned `none`. S2 was not run.
+  The next gate is a zero-call prospective protocol-governance review, not
+  another prompt tweak or paid run, so no new sensor verdict exists.
 - **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
   through a default-off tutor-stub adapter with separate move, support, task,
   difficulty, and register axes; complete candidate/propensity provenance;

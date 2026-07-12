@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T05:16:23.499Z",
+  "generated": "2026-07-12T05:53:29.780Z",
   "counts": {
     "total": 112,
     "byStatus": {
@@ -233,7 +233,9 @@
           "adaptive-state-v2-s1-repair-bb65da27-v21",
           "adaptive-state-v2-observability-preflight-5fda0824-v21",
           "adaptive-state-v2-observability-preflight-8d6d2b22-v21",
-          "adaptive-state-v2-observability-preflight-c0ccd5c9-v21"
+          "adaptive-state-v2-observability-preflight-c0ccd5c9-v21",
+          "adaptive-state-v2-s0-structural-support-2dd039c5-v21",
+          "adaptive-state-v2-observability-preflight-985bd542-v21"
         ]
       },
       "tags": [

@@ -23,6 +23,8 @@ links:
     - adaptive-state-v2-observability-preflight-5fda0824-v21
     - adaptive-state-v2-observability-preflight-8d6d2b22-v21
     - adaptive-state-v2-observability-preflight-c0ccd5c9-v21
+    - adaptive-state-v2-s0-structural-support-2dd039c5-v21
+    - adaptive-state-v2-observability-preflight-985bd542-v21
 tags:
   - adaptive-tutor
   - learner-state
@@ -233,3 +235,41 @@ harness target at runtime, and trigger a fresh S0 if it changes the sealed
 world/kernel/target/config contract. The 24/24 gate, no-reuse rule, and all S1,
 S2, policy-optimization, Phase 6B, shadow-pilot, efficacy, and human-learning
 blocks remain unchanged.
+
+2026-07-12 Codex separability audit and replacement S0: The exact third-run
+failure was frozen and audited without model calls. Ravensmark rule `R1_scope`
+was found unsuitable as a separately observable learner event because its unary
+scope conclusion can be ordinary-language-equivalent to its released premise.
+Commit `2dd039c5` retains it as validated structural proof support while moving
+the shared preflight/S1 derive target to the distinct two-premise relation
+`pressedSealFor(gatePass,elian)`. Because this changed the kernel/config
+contract, fresh S0 `adaptive-state-v2-s0-structural-support-2dd039c5-v21`
+passed and sealed with 24 dialogues, 144 transitions, and zero model calls.
+Commit `985bd542` separately binds the original S0 to its stopped S1 and the
+replacement S0 to current work, without reusing any paid row or call. Focused
+verification passed 52/52, adaptive-state verification passed 130/130, and the
+full suite passed 5,224 tests with one expected skip.
+
+2026-07-12 Codex fourth observability-preflight result: The sealed paid run
+`adaptive-state-v2-observability-preflight-985bd542-v21` completed 24/24 cases
+and 48/48 unique serial CLI dispatches at clean pushed SHA `985bd542`, with no
+technical failure. Exact-family recovery remained 23/24 (`0.958333`): `none`,
+`adopt`, and `retract` passed 6/6; `derive` passed 5/6; Claude passed 12/12 and
+Codex 11/12; Marrick and Hethel passed 8/8 and Ravensmark 7/8. Claude correctly
+voiced and the analyzer recovered the new Ravensmark derive target. Codex
+instead wrote “The dusk-seal on the pass was held by Elian,” merely restating
+the released holder premise while its sidecar claimed `derive:inference_03`;
+the analyzer correctly returned `none`. The run sealed
+`stop_and_repair_observability_preflight`, `s1_retry_eligible: false`. Report
+SHA-256 is
+`5b887f222419ce7944d477b3cb875ad1bebaa7080136e99dc889ba6d0398203c`.
+
+2026-07-12 Codex next gate after the fourth stop: The construct ambiguity is
+resolved, but the v2.1 exact single-draw gate exposed a realizer-fidelity miss.
+Do not prompt-tune, rerun, or launch full S1. Preserve the failed learner text,
+sidecar, analyzer output, and seal, and conduct a zero-call prospective
+protocol-governance review: either retain exact 24/24 single-draw realization
+or preregister a new repeated-draw reliability design that keeps every failed
+draw and forbids semantic rerolls. Do not choose a gate to rescue this stopped
+result. S1, S2, policy optimization, Phase 6B, shadow pilot, efficacy, and
+human-learning claims remain blocked.
