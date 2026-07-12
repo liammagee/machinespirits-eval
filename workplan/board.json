@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-12T11:46:11.012Z",
+  "generated": "2026-07-12T12:35:19.521Z",
   "counts": {
-    "total": 108,
+    "total": 109,
     "byStatus": {
       "done": 87,
       "blocked": 1,
       "dropped": 2,
-      "review": 4,
+      "review": 5,
       "triaged": 6,
       "active": 4,
       "archived": 4
@@ -14,7 +14,7 @@
     "byType": {
       "research": 41,
       "experiment": 37,
-      "infra": 12,
+      "infra": 13,
       "maintenance": 6,
       "content": 2,
       "paper": 4,
@@ -432,6 +432,34 @@
         "register-policies",
         "outcome-headroom",
         "adaptation"
+      ]
+    },
+    {
+      "id": "tutor-stub-register-policy-extraction",
+      "title": "Extract tutor-stub register-policy pipeline into a testable service",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-12",
+      "verification": "node --test tests/tutorStubRegisterPolicy.test.js green; npm run test:hermetic green; tutor-stub --help and a fake-codex interactive turn unchanged; extractor asserts every moved declaration is byte-identical.",
+      "branch": "claude/heuristic-panini-f2d1b9",
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-human-discourse-layer",
+          "continuous-register-policy"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "register-policy",
+        "refactor",
+        "tests"
       ]
     },
     {
