@@ -15,6 +15,7 @@ depends_on:
 links:
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
+    - PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md
   runs:
     - adaptive-state-v2-s0-clean-5a3e5aae-v21
     - adaptive-state-v2-s1-technical-5a3e5aae-v21
@@ -273,3 +274,19 @@ or preregister a new repeated-draw reliability design that keeps every failed
 draw and forbids semantic rerolls. Do not choose a gate to rescue this stopped
 result. S1, S2, policy optimization, Phase 6B, shadow pilot, efficacy, and
 human-learning claims remain blocked.
+
+2026-07-12 Codex v2.2 prospective reliability protocol: Option 2 is frozen
+before any v2.2 model call. The new gate repeats each of the unchanged 24
+world × event-family × realizer cells exactly three times, for 72 fresh cases
+and 144 serial CLI dispatches. It reuses no prior row and retains every draw.
+Pass requires at least 70/72 overall, 23/24 in every draw block and world,
+2/3 in every base cell, 17/18 in every event family, and 35/36 for each
+realizer, plus complete exact-span/leakage/one-dispatch integrity and zero
+retry, reroll, repair, fallback, exclusion, or partial reuse. A technical
+failure stops the immutable label; semantic mismatches remain in the fixed
+denominator. The existing v2.1 23/24 result remains stopped and cannot be
+reinterpreted. The implementation binds the new run to the replacement S0,
+the sealed fourth v2.1 stop, current S1-relevant hashes, CLI fingerprints,
+clean Git, and an immutable seal. A passing paid gate may authorize only a
+separately invoked full S1; it cannot launch S1 itself and is not a sensor or
+efficacy result.

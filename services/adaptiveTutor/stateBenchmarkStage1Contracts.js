@@ -37,6 +37,9 @@ export function adaptiveStateStage1StaticExecutionContract({
           'services/adaptiveTutor/stateObservabilityPreflight.js',
           'services/adaptiveTutor/stateObservabilityPreflightLineage.js',
           'services/adaptiveTutor/stateObservabilityPreflightContracts.js',
+          'services/adaptiveTutor/stateObservabilityReliabilityV22.js',
+          'services/adaptiveTutor/stateObservabilityReliabilityV22Lineage.js',
+          'services/adaptiveTutor/stateObservabilityReliabilityV22Contracts.js',
           'services/adaptiveTutor/stateBenchmarkStage1Executor.js',
           'services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js',
           'services/adaptiveTutor/stateBenchmarkCliRealizer.js',
@@ -67,6 +70,9 @@ export function adaptiveStateStage1StaticExecutionContract({
       profile: hashCanonicalJson({
         complexity_cap: config.complexity_cap,
         providers_yaml_sha256: hashFile(path.resolve(repoRoot, 'config/providers.yaml')),
+        observability_reliability_v22_config_sha256: hashFile(
+          path.resolve(repoRoot, 'config/adaptive-state-observability-reliability-v2.2.yaml'),
+        ),
         eval_config_loader_sha256: hashFile(path.resolve(repoRoot, 'services/evalConfigLoader.js')),
       }),
       prompt: hashCanonicalJson({

@@ -1,0 +1,55 @@
+schema: machinespirits.adaptive-state-observability-reliability-config.v2.2
+version: "2.2"
+status: prospectively_frozen_before_paid_execution
+claim_boundary: >-
+  This protocol estimates the reliability of the combined learner-realizer and
+  public-turn-analyzer observation channel. It is claim-ineligible and does not
+  test learner-state sensor validity, policy value, tutoring efficacy, human
+  learning, or deployment readiness.
+
+design:
+  base_matrix:
+    worlds: 3
+    event_families: [none, adopt, derive, retract]
+    language_realizers: 2
+    cells: 24
+  independent_draws_per_cell: 3
+  draw_blocks: [draw_01, draw_02, draw_03]
+  total_cases: 72
+  realizer_cli_dispatches: 72
+  analyzer_cli_dispatches: 72
+  total_cli_dispatches: 144
+  execution_order: serial_complete_balanced_draw_blocks
+  backend_request_count: unknown
+
+execution_contract:
+  retries: 0
+  semantic_rerolls: 0
+  repairs: 0
+  fallbacks: 0
+  exclusions: 0
+  partial_reuse: false
+  prior_preflight_rows_reused: false
+  stop_on_technical_failure: true
+  continue_after_semantic_mismatch: true
+  retain_every_draw: true
+
+pass_contract:
+  required_complete_cases: 72
+  required_cli_dispatches: 144
+  minimum_exact_family_matches: 70
+  minimum_matches_per_draw_block: 23
+  minimum_matches_per_base_cell: 2
+  minimum_matches_per_world: 23
+  minimum_matches_per_event_family: 17
+  minimum_matches_per_language_realizer: 35
+  exact_nonempty_learner_text_evidence_span: true
+  exact_event_id_in_learner_text_forbidden: true
+  analyzer_structural_target_leak_forbidden: true
+  exact_one_dispatch_per_role_per_case: true
+
+decision_contract:
+  pass: authorize_separately_confirmed_full_s1_retry
+  stop: stop_observability_channel_no_s1
+  existing_v2_1_results_reinterpreted: false
+  automatically_launch_s1: false

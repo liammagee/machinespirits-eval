@@ -39,7 +39,7 @@ import {
   adaptiveStateStage1StaticExecutionContract,
   cliFingerprint,
 } from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
-import { validateAdaptiveStateObservabilityPreflightParent } from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
+import { validateAdaptiveStateObservabilityReliabilityV22Parent } from '../services/adaptiveTutor/stateObservabilityReliabilityV22Lineage.js';
 
 export {
   adaptiveStateStage1StaticExecutionContract,
@@ -49,6 +49,11 @@ export {
 const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'adaptive-state-benchmark-v2.yaml');
+const DEFAULT_RELIABILITY_CONFIG = path.join(
+  ROOT,
+  'config',
+  'adaptive-state-observability-reliability-v2.2.yaml',
+);
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'adaptive-state-benchmark-v2');
 
 function arg(argv, name, fallback = null) {
@@ -72,7 +77,7 @@ process dispatches: 336 matrix dispatches plus three excluded canaries.
 
 Required:
   --s0-parent <dir>             Fresh sealed passing benchmark-v2.1 S0 run
-  --preflight-parent <dir>      Sealed passing 24-case observability preflight
+  --preflight-parent <dir>      Sealed passing v2.2 repeated-draw reliability gate
   --confirm-paid-s1-v2.1        Explicit paid-execution acknowledgement
 
 Options:
@@ -80,6 +85,7 @@ Options:
   --label <id>                  Default: adaptive-state-v2-s1-technical-pilot
   --run-seed <n>                Artifact job-order seed. Default: 20260712
   --config <path>               Default: config/adaptive-state-benchmark-v2.yaml
+  --reliability-config <path>   Default: config/adaptive-state-observability-reliability-v2.2.yaml
   --out <dir>                   Default: exports/adaptive-state-benchmark-v2
   --help                        Show this help
 `;
@@ -294,25 +300,31 @@ async function main(argv = process.argv.slice(2)) {
   const parentArg = arg(argv, 's0-parent');
   const preflightArg = arg(argv, 'preflight-parent');
   if (!parentArg) throw new Error('--s0-parent is required');
-  if (!preflightArg) throw new Error('--preflight-parent is required; full S1 cannot bypass the sealed 24-case observability gate');
+  if (!preflightArg) throw new Error('--preflight-parent is required; full S1 cannot bypass the sealed v2.2 observability reliability gate');
   const parentRunDir = resolveFromRoot(parentArg);
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
+  const reliabilityConfigPath = resolveFromRoot(
+    arg(argv, 'reliability-config', DEFAULT_RELIABILITY_CONFIG),
+  );
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
   const supersededArg = arg(argv, 'supersedes-stopped-s1');
   const label = arg(argv, 'label', 'adaptive-state-v2-s1-technical-pilot');
   const runSeed = Number(arg(argv, 'run-seed', '20260712'));
   if (!Number.isSafeInteger(runSeed)) throw new Error('--run-seed must be a safe integer');
   const config = yaml.parse(fs.readFileSync(configPath, 'utf8'));
+  const reliabilityConfig = yaml.parse(fs.readFileSync(reliabilityConfigPath, 'utf8'));
   const cleanGit = captureGitFingerprint({ repoRoot: ROOT });
   if (cleanGit.dirty || cleanGit.untracked.length) {
     throw new Error('Paid S1 requires a clean committed Git worktree with no untracked critical files');
   }
   const parent = validateAdaptiveStateStage1Parent({ parentRunDir, config, configPath, repoRoot: ROOT });
-  const preflight = validateAdaptiveStateObservabilityPreflightParent({
-    preflightRunDir: resolveFromRoot(preflightArg),
+  const preflight = validateAdaptiveStateObservabilityReliabilityV22Parent({
+    reliabilityRunDir: resolveFromRoot(preflightArg),
     s0Parent: parent,
-    config,
-    configPath,
+    benchmarkConfig: config,
+    benchmarkConfigPath: configPath,
+    reliabilityConfig,
+    reliabilityConfigPath,
     repoRoot: ROOT,
   });
   const plan = buildAdaptiveStateCriticalPathPlan(config, { stage: 's1_technical_pilot', label });
