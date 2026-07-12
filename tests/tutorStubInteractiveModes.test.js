@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -28,9 +28,11 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
-  const response = input.includes('Write learner turn')
-    ? 'I would compare the metal residues first.'
-    : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
+  const response = input.includes('# Explanatory debug task')
+    ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
+    : input.includes('Write learner turn')
+      ? 'I would compare the metal residues first.'
+      : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
 });
@@ -89,6 +91,102 @@ function runInteractive({ tmp, args, initialInput, stopWhen, timeoutMs = 10_000 
     child.stdin.write(initialInput);
   });
 }
+
+test('/quit writes a learner-centred HTML summary after a completed turn', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learning-summary-exit-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: 'The assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+    });
+
+    assert.match(result.plain, /learning summary >/u);
+    const summaryFiles = fs.readdirSync(tmp).filter((name) => name.endsWith('-learning-summary.html'));
+    assert.equal(summaryFiles.length, 1);
+    const html = fs.readFileSync(path.join(tmp, summaryFiles[0]), 'utf8');
+    assert.match(html, /Tutor stub · what we learned/u);
+    assert.match(html, /The Light Shillings/u);
+    assert.match(html, /Whose hand struck the false shillings/u);
+    assert.match(html, /You chose to end the session here/u);
+    assert.match(html, /The assay still confuses me/u);
+    assert.match(html, /Take the crucible as a fingerprint/u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'learning_summary_html' &&
+          event.reason === 'exit' &&
+          event.turns === 1 &&
+          event.natural === false &&
+          event.launched === false,
+      ),
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('a non-interactive single run also writes its learning summary', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learning-summary-once-'));
+  try {
+    installFakeCodex(tmp);
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--once',
+        'I would compare the metal residues first.',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        },
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(plainTerminalText(result.stdout), /learning summary >/u);
+    const summaryFiles = fs.readdirSync(tmp).filter((name) => name.endsWith('-learning-summary.html'));
+    assert.equal(summaryFiles.length, 1);
+    const html = fs.readFileSync(path.join(tmp, summaryFiles[0]), 'utf8');
+    assert.match(html, /I would compare the metal residues first/u);
+    assert.match(html, /reason once/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
 
 test('coach mode keeps guidance private and incorporates it into the next tutor prompt', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-coach-mode-'));
@@ -163,7 +261,7 @@ test('auto mode plays both roles from the current transcript and returns after a
   }
 });
 
-test('explanatory debug mode prints analysis, exact field calculations, and the register consequence', async () => {
+test('technical explanatory debug mode prints exact field calculations and the register consequence', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explanatory-debug-'));
   try {
     const result = await runInteractive({
@@ -181,11 +279,11 @@ test('explanatory debug mode prints analysis, exact field calculations, and the 
         '--world',
         'world_005_marrick',
       ],
-      initialInput: '/debug on\nThe assay still confuses me.\n',
+      initialInput: '/debug on technical\nThe assay still confuses me.\n',
       stopWhen: (plain) => plain.includes('debug explain > turn 1'),
     });
 
-    assert.match(result.plain, /debug explain > on/u);
+    assert.match(result.plain, /debug > on · technical/u);
     assert.match(result.plain, /A · learner analysis/u);
     assert.match(result.plain, /B · calculations and field update/u);
     assert.match(result.plain, /mastery calculation: 0\.34×/u);
@@ -196,7 +294,7 @@ test('explanatory debug mode prints analysis, exact field calculations, and the 
     assert.match(result.plain, /C · resulting register decision/u);
     assert.match(result.plain, /register change: initial choice →/u);
     assert.match(result.plain, /policy path: stack=random; activated=random/u);
-    assert.match(result.plain, /explanatory debug: on/u);
+    assert.match(result.plain, /explanatory debug: on \(technical\)/u);
 
     const traces = fs
       .readdirSync(tmp)
@@ -204,8 +302,69 @@ test('explanatory debug mode prints analysis, exact field calculations, and the 
       .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
       .filter(Boolean)
       .map((line) => JSON.parse(line));
-    assert.ok(traces.some((event) => event.type === 'explanatory_debug_mode_changed' && event.enabled));
-    assert.ok(traces.some((event) => event.type === 'explanatory_debug_output' && event.turn === 1));
+    assert.ok(
+      traces.some(
+        (event) => event.type === 'explanatory_debug_mode_changed' && event.enabled && event.format === 'technical',
+      ),
+    );
+    assert.ok(
+      traces.some(
+        (event) => event.type === 'explanatory_debug_output' && event.turn === 1 && event.format === 'technical',
+      ),
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('explanatory debug defaults to concise LLM-written prose', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explanatory-debug-prose-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--register-policy',
+        'random',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/debug on\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('debug > turn 1 · prose'),
+    });
+
+    assert.match(result.plain, /debug > on · prose/u);
+    assert.match(result.plain, /debug > turn 1 · prose/u);
+    assert.match(result.plain, /The learner is asking for orientation/u);
+    assert.match(result.plain, /You held a warm, re-anchoring stance/u);
+    assert.doesNotMatch(result.plain, /A · learner analysis/u);
+    assert.doesNotMatch(result.plain, /mastery calculation/u);
+    assert.match(result.plain, /technical evidence: \/debug technical/u);
+    assert.match(result.plain, /explanatory debug: on \(prose\)/u);
+    assert.match(fs.readFileSync(result.logPath, 'utf8'), /# Explanatory debug task/u);
+
+    const traces = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    assert.ok(traces.some((event) => event.type === 'model_call' && event.role === 'tutor_stub_explanatory_debug'));
+    assert.ok(
+      traces.some(
+        (event) =>
+          event.type === 'explanatory_debug_output' &&
+          event.turn === 1 &&
+          event.format === 'prose' &&
+          event.generated === true,
+      ),
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

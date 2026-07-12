@@ -118,6 +118,10 @@ import {
   writeTutorStubTranscriptHtml,
 } from '../services/tutorStubTranscriptHtml.js';
 import {
+  TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
+  writeTutorStubLearningSummaryHtml,
+} from '../services/tutorStubLearningSummaryHtml.js';
+import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
   TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
@@ -583,6 +587,9 @@ Environment:
   TUTOR_STUB_OPENING=0   disable default tutor opening prompt
   TUTOR_STUB_CLOSEOUT_REPORT=0
                          disable default closeout report
+  TUTOR_STUB_SUMMARY_OPEN=0
+                         still write the automatic learning summary on
+                         conclusion, but do not launch it
   TUTOR_STUB_CLI_EFFORT  optional default CLI effort override
   TUTOR_STUB_REGISTER_POLICY
                          optional default register policy: dynamic, state,
@@ -1089,6 +1096,144 @@ function resolveWorldRef(ref) {
     throw new Error(`Ambiguous --world "${ref}". Matches: ${matches.map((m) => m.world.id).join(', ')}`);
   }
   throw new Error(`Unknown --world "${ref}". Use --list-worlds to see available IDs.`);
+}
+
+async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
+  const defaultBundle = resolveWorldRef(defaultWorldRef);
+  const entries = loadWorldSummaries().map(({ filePath, world }) => ({
+    id: world.id,
+    title: world.title,
+    discipline: world.discipline || 'Authored reasoning drama',
+    question: world.question,
+    description: world.setting || world.learnerVoice || world.question,
+    filePath,
+    world,
+  }));
+  if (defaultBundle && !entries.some((entry) => entry.id === defaultBundle.world.id)) {
+    entries.unshift({
+      id: defaultBundle.world.id,
+      title: defaultBundle.world.title,
+      discipline: defaultBundle.world.discipline || 'Custom reasoning drama',
+      question: defaultBundle.world.question,
+      description: defaultBundle.world.setting || defaultBundle.world.learnerVoice || defaultBundle.world.question,
+      filePath: defaultBundle.filePath,
+      world: defaultBundle.world,
+    });
+  }
+  if (!entries.length) return null;
+
+  let selectedIndex = Math.max(
+    0,
+    entries.findIndex((entry) => entry.id === defaultBundle?.world?.id),
+  );
+  const viewportHeight = Math.min(
+    entries.length,
+    Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 9))),
+  );
+  let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+  let renderedLineCount = 0;
+
+  const keepSelectionVisible = () => {
+    if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+    if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
+  };
+  const clearRenderedMenu = () => {
+    if (!renderedLineCount) return;
+    moveCursor(output, 0, -renderedLineCount);
+    for (let index = 0; index < renderedLineCount; index += 1) {
+      cursorTo(output, 0);
+      clearLine(output, 0);
+      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+    }
+    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+    renderedLineCount = 0;
+  };
+  const renderMenu = () => {
+    keepSelectionVisible();
+    clearRenderedMenu();
+    const width = Math.max(58, Math.min(Number(output.columns || 100), 150));
+    const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+    const selectedEntry = entries[selectedIndex];
+    const lines = [
+      `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+      ...visible.map((entry, visibleIndex) => {
+        const absoluteIndex = viewportStart + visibleIndex;
+        const selected = absoluteIndex === selectedIndex;
+        const plain = `${selected ? '›' : ' '} ${entry.id.padEnd(29)} ${oneLine(entry.title, {
+          max: Math.max(18, width - 35),
+        })}`;
+        return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+      }),
+      `${C.dim}${
+        viewportStart + viewportHeight < entries.length
+          ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+          : '  '
+      }${C.reset}`,
+      `${C.brightYellow}${C.bold}  question >${C.reset} ${oneLine(selectedEntry.question, {
+        max: Math.max(36, width - 13),
+      })}`,
+      `${C.dim}  setting > ${oneLine(selectedEntry.description, { max: Math.max(36, width - 12) })}${C.reset}`,
+      `${C.dim}  discipline > ${oneLine(selectedEntry.discipline, { max: Math.max(30, width - 15) })}${C.reset}`,
+    ];
+    for (const line of lines) output.write(`${line}\n`);
+    renderedLineCount = lines.length;
+  };
+
+  emitKeypressEvents(input);
+  const priorKeypressListeners = input.listeners('keypress');
+  for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
+  const wasRaw = Boolean(input.isRaw);
+  if (!wasRaw) input.setRawMode(true);
+
+  return new Promise((resolve) => {
+    const finish = (selection) => {
+      input.removeListener('keypress', onKeypress);
+      for (const listener of priorKeypressListeners) input.on('keypress', listener);
+      if (!wasRaw) input.setRawMode(false);
+      clearRenderedMenu();
+      resolve(selection);
+    };
+    const moveSelection = (delta) => {
+      selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+      renderMenu();
+    };
+    const onKeypress = (character, key = {}) => {
+      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
+        finish(null);
+        return;
+      }
+      if (key.name === 'up' || character === 'k') {
+        moveSelection(-1);
+        return;
+      }
+      if (key.name === 'down' || character === 'j') {
+        moveSelection(1);
+        return;
+      }
+      if (key.name === 'pageup') {
+        moveSelection(-viewportHeight);
+        return;
+      }
+      if (key.name === 'pagedown') {
+        moveSelection(viewportHeight);
+        return;
+      }
+      if (key.name === 'home') {
+        selectedIndex = 0;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'end') {
+        selectedIndex = entries.length - 1;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+    };
+    input.on('keypress', onKeypress);
+    input.resume();
+    renderMenu();
+  });
 }
 
 function worldPublicPrompt(world) {
@@ -7328,13 +7473,16 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /debug on|off|show, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
+    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /debug on [prose|technical]|off|show [prose|technical]|technical, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
   );
   console.log(
     `${C.dim}  learner mode sends public learner speech. coach mode stores private guidance for the next tutor turn; in mixed mode, follow it with /use. auto hands both roles to the models until grounded closure (or a safety cap); /auto 5 runs five turns. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
   );
   console.log(
-    `${C.dim}  /debug on explains each turn as analysis → field calculations → register consequence. /settings policy add state or field adds a strong-change overlay; remove <policy>, clear, and threshold <0-1> also work. /settings temp 0.4 sharpens only the dominant engagement stance; dropout 0.15 enables seeded evidence loss. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+    `${C.dim}  /debug on adds a short LLM-written prose explanation after each turn; /debug technical shows the equations and vectors once, while /debug on technical keeps them on. /settings policy add state or field adds a strong-change overlay; remove <policy>, clear, and threshold <0-1> also work. /settings temp 0.4 sharpens only the dominant engagement stance; dropout 0.15 enables seeded evidence loss. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+  );
+  console.log(
+    `${C.dim}  When the inquiry closes naturally or you leave with /quit, the completed conversation produces a learner-centred HTML summary and opens it in an interactive terminal.${C.reset}\n`,
   );
 }
 
@@ -7569,7 +7717,7 @@ function registerPolicyCalculation(selection) {
   };
 }
 
-function printExplanatoryDebugTurn(state, { force = false } = {}) {
+function printExplanatoryDebugTechnical(state, { force = false } = {}) {
   if (!force && !state.explanatoryDebug?.enabled) return false;
   const turn = state.turns.at(-1) || null;
   if (!turn) {
@@ -7724,9 +7872,10 @@ function printExplanatoryDebugTurn(state, { force = false } = {}) {
       }; scene=${selection.scene_immersion || 'unknown'}`,
     );
   }
-  console.log(`${C.dim}  /debug off stops these automatic explanations · /analysis technical shows the full trace${C.reset}\n`);
+  console.log(`${C.dim}  /debug off stops automatic explanations · /debug on returns to concise prose${C.reset}\n`);
   appendTraceEvent(state.trace, {
     type: 'explanatory_debug_output',
+    format: 'technical',
     turn: turn.turn,
     turnId: turn.turnId || null,
     field: fieldRow,
@@ -7737,6 +7886,199 @@ function printExplanatoryDebugTurn(state, { force = false } = {}) {
       policy: selection?.policy || state.register?.policy || 'off',
       activatedPolicy,
     },
+  });
+  return true;
+}
+
+function explanatoryDebugModel(state) {
+  if (state.learnerDag?.enabled && state.learnerDag.resolved) return state.learnerDag.resolved;
+  if (state.classifier?.enabled && state.classifier.resolved) return state.classifier.resolved;
+  return state.resolved;
+}
+
+function explanatoryDebugFrame(state, turn) {
+  const previousTurn = state.turns.at(-2) || null;
+  const classification = turn.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const overall = classification.overall || {};
+  const learnerDag = turn.tutorLearnerDagModel || {};
+  const assessment = learnerDag.assessment || {};
+  const metrics = learnerDag.metrics || {};
+  const selection = normalizeStoredRegisterSelection(turn.registerSelection || null);
+  const previousSelection = normalizeStoredRegisterSelection(previousTurn?.registerSelection || null);
+  const policyCalculation = registerPolicyCalculation(selection);
+  const field = buildLightweightDialogueField(state.turns);
+  const fieldRow = field.rows.at(-1) || null;
+  const previousFieldRow = field.rows.at(-2) || null;
+  const currentRegister = selection?.engagement_stance || selection?.selected_register || 'off';
+  const previousRegister = previousSelection?.engagement_stance || previousSelection?.selected_register || 'none';
+  return {
+    turn: turn.turn,
+    public_exchange: {
+      learner: turn.learner,
+      tutor: turn.tutor,
+    },
+    learner_reading: {
+      summary: turnAnalysis.summary || overall.summary || 'No classifier summary was stored.',
+      request: turnAnalysis.request_type || 'unknown',
+      discourse_move: turnAnalysis.discourse_move || 'unknown',
+      evidence_use: turnAnalysis.evidence_use || 'unknown',
+      epistemic_stance: turnAnalysis.epistemic_stance || 'unknown',
+      pedagogical_need: turnAnalysis.pedagogical_need || overall.next_best_tutor_move || 'unknown',
+      proof_coverage: assessment.bestPathCoverage ?? null,
+      grounded_facts: metrics.groundedCount ?? null,
+      missing_premises: metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? null,
+      bottleneck: assessment.bottleneck || null,
+    },
+    policy_input_for_this_tutor_turn: {
+      field: policyCalculation.features?.field || null,
+      proof: policyCalculation.features?.dag || null,
+      drivers: policyCalculation.drivers || [],
+    },
+    post_response_field_for_next_turn: fieldRow
+      ? {
+          understanding: fieldRow.learnerMastery,
+          pressure: fieldRow.learnerRisk,
+          tutor_fit: fieldRow.tutorAlignment,
+          momentum: fieldRow.jointMomentum,
+          changes_from_previous: previousFieldRow
+            ? {
+                understanding: fieldDelta(fieldRow.learnerMastery, previousFieldRow.learnerMastery),
+                pressure: fieldDelta(fieldRow.learnerRisk, previousFieldRow.learnerRisk),
+                tutor_fit: fieldDelta(fieldRow.tutorAlignment, previousFieldRow.tutorAlignment),
+                momentum: fieldDelta(fieldRow.jointMomentum, previousFieldRow.jointMomentum),
+              }
+            : null,
+        }
+      : null,
+    response_choice: {
+      previous_stance: previousRegister,
+      selected_stance: currentRegister,
+      changed: previousRegister !== 'none' && previousRegister !== currentRegister,
+      policy: selection?.policy || state.register?.policy || 'off',
+      activated_policy: selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off',
+      blend: selection?.distribution || null,
+      reason: selection?.register_reason || policyCalculation.drivers.slice(0, 4).join('; '),
+      action: selection?.action_family || null,
+      audience: selection?.audience_register || null,
+      language: selection?.lexical_accessibility || null,
+      scene: selection?.scene_immersion || null,
+    },
+  };
+}
+
+function explanatoryDebugPrompt(frame) {
+  return [
+    '# Explanatory debug task',
+    '',
+    'Write the private, plain-language explanation of this completed tutoring turn.',
+    '',
+    'Output rules:',
+    '- Write one compact paragraph of 45-80 words and no more than three sentences.',
+    '- Use prose only: no heading, bullets, equations, JSON, variable names, or raw diagnostic labels.',
+    '- First say what the learner appears to understand or need.',
+    '- Then explain the meaningful movement in the interaction, using at most two numbers only if they clarify it.',
+    '- Finally say whether the tutor stance changed or held, and why that choice suited this turn.',
+    '- Distinguish evidence used to choose this response from the post-response field carried into the next turn.',
+    '- Do not claim that a post-response measurement caused the response already given.',
+    '- Refer to the participants as the learner and you, not as the tutor in the third person.',
+    '',
+    'Structured evidence:',
+    JSON.stringify(frame, null, 2),
+  ].join('\n');
+}
+
+function cleanExplanatoryDebugProse(value) {
+  const text = String(value || '')
+    .replace(/```(?:text|markdown)?/giu, '')
+    .replace(/^\s*(?:debug(?: explanation)?|explanation)\s*:\s*/iu, '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (!text) return '';
+  const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [text];
+  return oneLine(sentences.slice(0, 3).join(' ').trim(), { max: 650 });
+}
+
+function fallbackExplanatoryDebugProse(frame) {
+  const reading = oneLine(frame.learner_reading.summary, { max: 180 });
+  const next = frame.post_response_field_for_next_turn;
+  const fieldSentence = next
+    ? `After this exchange, the running picture puts understanding at ${next.understanding} and pressure at ${next.pressure}, which will inform the next turn.`
+    : 'The exchange did not produce a new interaction-field reading.';
+  const choice = frame.response_choice;
+  const stanceSentence =
+    choice.previous_stance === 'none'
+      ? `You began with ${choice.selected_stance} because ${oneLine(choice.reason || 'it best fit the learner signal', { max: 150 })}.`
+      : `You ${choice.changed ? `moved from ${choice.previous_stance} to` : 'held'} ${choice.selected_stance} because ${oneLine(
+          choice.reason || 'it still best fit the learner signal',
+          { max: 150 },
+        )}.`;
+  return oneLine(`${reading} ${fieldSentence} ${stanceSentence}`, { max: 650 });
+}
+
+async function printExplanatoryDebugTurn(state, { force = false, format = null } = {}) {
+  if (!force && !state.explanatoryDebug?.enabled) return false;
+  const selectedFormat = format || state.explanatoryDebug?.format || 'prose';
+  if (selectedFormat === 'technical') return printExplanatoryDebugTechnical(state, { force: true });
+
+  const turn = state.turns.at(-1) || null;
+  if (!turn) {
+    console.log(`${C.brightBlue}${C.bold}debug >${C.reset} no completed turns yet\n`);
+    return false;
+  }
+
+  const frame = explanatoryDebugFrame(state, turn);
+  const resolved = explanatoryDebugModel(state);
+  let response = null;
+  let prose = '';
+  let generated = true;
+  const existingInterim = Boolean(getInterimState(state)?.active);
+  if (!existingInterim) startInterimAnimation(state, 'explaining turn', { tutorTurn: turn.turn });
+  try {
+    response = await callPromptModel({
+      prompt: explanatoryDebugPrompt(frame),
+      resolved,
+      systemPrompt:
+        'You explain a tutoring harness to its operator. Be exact, terse, and readable. This is private meta-commentary, not dialogue in the scene.',
+      role: 'tutor_stub_explanatory_debug',
+      maxTokens: 220,
+      trace: state.trace,
+      stream: { enabled: false, interim: state.interim },
+      cliEffort: state.cliEffort,
+      turn: turn.turn,
+    });
+    prose = cleanExplanatoryDebugProse(response.text);
+    if (!prose) throw new Error('empty explanatory debug response');
+  } catch (error) {
+    generated = false;
+    prose = fallbackExplanatoryDebugProse(frame);
+    appendTraceEvent(state.trace, {
+      type: 'explanatory_debug_fallback',
+      turn: turn.turn,
+      turnId: turn.turnId || null,
+      error: error.message,
+    });
+  } finally {
+    if (!existingInterim) stopInterimAnimation(state);
+  }
+
+  console.log(
+    `${C.brightBlue}${C.bold}debug >${C.reset} turn ${turn.turn} · prose${generated ? '' : ' fallback'}`,
+  );
+  console.log(`${C.dim}${prose}${C.reset}`);
+  console.log(`${C.dim}  technical evidence: /debug technical · stop: /debug off${C.reset}\n`);
+  appendTraceEvent(state.trace, {
+    type: 'explanatory_debug_output',
+    format: 'prose',
+    generated,
+    turn: turn.turn,
+    turnId: turn.turnId || null,
+    text: prose,
+    provider: response?.provider || resolved?.provider || null,
+    model: response?.model || resolved?.model || null,
+    latencyMs: response?.latencyMs || null,
+    usage: response?.usage || null,
+    frame,
   });
   return true;
 }
@@ -8494,6 +8836,165 @@ function compactCounts(items, { limit = 5 } = {}) {
     .join(', ');
 }
 
+function uniqueSummaryText(items = []) {
+  const seen = new Set();
+  const out = [];
+  for (const item of items) {
+    const text = oneLine(typeof item === 'string' ? item : item?.surface || item?.text || '', { max: 360 });
+    const key = text.toLowerCase();
+    if (!text || seen.has(key)) continue;
+    seen.add(key);
+    out.push(text);
+  }
+  return out;
+}
+
+function learnerRecordSummaryRows(model, key) {
+  return uniqueSummaryText(Array.isArray(model?.learnerRecord?.[key]) ? model.learnerRecord[key] : []);
+}
+
+function learningSummaryEndReason(reason, natural) {
+  if (natural) return 'The inquiry reached its natural conclusion on the public evidence.';
+  const labels = {
+    exit: 'You chose to end the session here.',
+    sigint: 'You interrupted and ended the session here.',
+    exit_requested_during_turn: 'You ended the session while the next tutor response was still being prepared.',
+    initial_profile_picker_exit: 'The session ended during setup.',
+    initial_settings_exit: 'The session ended during setup.',
+  };
+  return labels[reason] || `The session ended at ${String(reason || 'the current stopping point').replaceAll('_', ' ')}.`;
+}
+
+function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
+  const turns = state.turns || [];
+  const last = turns.at(-1) || {};
+  const finalModel = last.tutorLearnerDagModel || {};
+  const assessment = finalModel.assessment || {};
+  const metrics = finalModel.metrics || {};
+  const finalOverall = last.classification?.overall || {};
+  const comprehension = tutorStubComprehensionSnapshot(state.comprehension, { turn: turns.length + 1 });
+  const evidenceHeld = learnerRecordSummaryRows(finalModel, 'grounded');
+  let reasoningVoiced = learnerRecordSummaryRows(finalModel, 'voicedDerived');
+  if (!reasoningVoiced.length) {
+    reasoningVoiced = uniqueSummaryText(
+      turns
+        .filter((turn) => {
+          const analysis = turn.classification?.turn || {};
+          return analysis.evidence_use && analysis.evidence_use !== 'none' && analysis.epistemic_stance === 'grounded';
+        })
+        .map((turn) => turn.learner),
+    );
+  }
+
+  const journey = [];
+  let previousEvidence = new Set();
+  let previousReasoning = new Set();
+  for (const turn of turns) {
+    const model = turn.tutorLearnerDagModel || {};
+    const evidence = learnerRecordSummaryRows(model, 'grounded');
+    const reasoning = learnerRecordSummaryRows(model, 'voicedDerived');
+    const evidenceKeys = new Set(evidence.map((item) => item.toLowerCase()));
+    const reasoningKeys = new Set(reasoning.map((item) => item.toLowerCase()));
+    journey.push({
+      turn: turn.turn,
+      turnId: turn.turnId || null,
+      learner: turn.learner || '',
+      tutor: turn.tutor || '',
+      reading: turn.classification?.turn?.summary || turn.classification?.overall?.current_state || null,
+      coverage: model.assessment?.bestPathCoverage ?? null,
+      newEvidence: evidence.filter((item) => !previousEvidence.has(item.toLowerCase())),
+      newReasoning: reasoning.filter((item) => !previousReasoning.has(item.toLowerCase())),
+    });
+    previousEvidence = evidenceKeys;
+    previousReasoning = reasoningKeys;
+  }
+
+  const missingPremiseCount = Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0);
+  const closure = last.dialogueClosure?.lifecycle || state.dialogueClosure || null;
+  const natural = Boolean(
+    closure?.phase === 'closed' ||
+      assessment.assertedSecret === true ||
+      ['dialogue_grounded_closure', 'interactive_auto_grounded_closure'].includes(reason),
+  );
+  const openQuestions = [];
+  if (comprehension.features.unresolvedTerms.length) {
+    openQuestions.push(`Clarify the remaining terms: ${comprehension.features.unresolvedTerms.join(', ')}.`);
+  }
+  if (assessment.finalSecretEntailed && !assessment.assertedSecret) {
+    openQuestions.push('The public evidence supports a verdict, but it has not yet been stated in the learner’s own words.');
+  } else if (missingPremiseCount > 0) {
+    openQuestions.push(
+      `${missingPremiseCount} part${missingPremiseCount === 1 ? '' : 's'} of the best-supported reasoning path remained unestablished when the session ended.`,
+    );
+  } else if (!natural) {
+    openQuestions.push('The inquiry ended before a natural close, so the current conclusion remains provisional.');
+  }
+  if (last.humanDiscourseFrame?.proofDebt?.counts?.open) {
+    openQuestions.push('At least one compressed reasoning step still needs an explicit public warrant.');
+  }
+
+  let nextStep = 'Try the same reasoning pattern on a fresh case and explain which evidence licenses each step.';
+  if (!natural) {
+    if (comprehension.features.unresolvedTerms.length) {
+      nextStep = `Resolve ${comprehension.features.unresolvedTerms[0]} first, then return to the evidence it affects.`;
+    } else if (assessment.finalSecretEntailed && !assessment.assertedSecret) {
+      nextStep = 'State the verdict in your own words and name the public evidence that licenses it.';
+    } else if (missingPremiseCount > 0) {
+      nextStep = 'Identify the remaining public evidence and connect it explicitly to the strongest current inference.';
+    } else if (finalOverall.next_best_tutor_move) {
+      nextStep = oneLine(finalOverall.next_best_tutor_move, { max: 300 });
+    }
+  }
+
+  return {
+    schema: TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
+    generatedAt: new Date().toISOString(),
+    runId: state.debugRunId || null,
+    reason,
+    turnCount: turns.length,
+    topic: state.topic || null,
+    world: state.world
+      ? {
+          id: state.world.id,
+          title: state.world.title,
+          question: state.world.question,
+          discipline: state.world.discipline || null,
+        }
+      : null,
+    trace: traceDisplayPath(state.trace),
+    completion: {
+      natural,
+      plainReason: learningSummaryEndReason(reason, natural),
+      closurePhase: closure?.phase || null,
+    },
+    finalStatus: turns.length ? dialogueCaseStatus(last) : 'No completed tutor turns.',
+    arc: {
+      summary: finalOverall.summary || last.classification?.turn?.summary || null,
+      trajectory: finalOverall.trajectory || null,
+      recurringPattern: finalOverall.recurring_pattern || null,
+      currentState: finalOverall.current_state || null,
+    },
+    progress: {
+      bestPathCoverage: assessment.bestPathCoverage ?? null,
+      missingPremiseCount,
+      finalSecretEntailed: assessment.finalSecretEntailed === true,
+      assertedSecret: assessment.assertedSecret === true,
+      plainStatus: turns.length ? dialogueCaseStatus(last) : 'No learning evidence was recorded.',
+    },
+    evidenceHeld,
+    reasoningVoiced,
+    comprehension: {
+      explainedTerms: comprehension.features.explainedTerms,
+      unresolvedTerms: comprehension.features.unresolvedTerms,
+    },
+    openQuestions,
+    nextStep,
+    journey,
+    boundary:
+      'This report uses only public dialogue, public learner-record evidence, and learner-visible clarification state. It does not reveal unreleased premises, hidden proof paths, or a concealed answer that the learner had not earned.',
+  };
+}
+
 function dialogueCaseStatus(turn) {
   const assessment = turn?.tutorLearnerDagModel?.assessment || {};
   const closure = turn?.dialogueClosure?.lifecycle || null;
@@ -8593,6 +9094,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
       leakOk: last.tutorLeakAudit?.ok ?? null,
       closure: last.dialogueClosure || null,
     },
+    learning: buildDialogueLearningSummary(state, { reason }),
   };
 
   console.log(`${C.cyan}closeout >${C.reset} ${reason}; ${state.turns.length} completed turn(s)`);
@@ -9709,7 +10211,7 @@ async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null 
   printTutorDagSnapshot(response.dagSnapshot);
   printTutorResponse(response, state.stream);
   console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
-  printExplanatoryDebugTurn(state);
+  await printExplanatoryDebugTurn(state);
   writeFieldVisualization(state, { reason: 'turn_complete' });
   return response;
 }
@@ -9882,6 +10384,43 @@ async function main() {
       '--auto-turns until-grounded requires grounded-closure stopping; remove --no-auto-stop-on-grounded',
     );
   }
+  const launchWorldBundle = resolveWorldRef(args.world);
+  const initialScenarioPickerEnabled = Boolean(
+    interactiveSessionEnabled &&
+      STUB.opening &&
+      !args['no-opening'] &&
+      !args['resume-last'] &&
+      launchWorldBundle,
+  );
+  const initialScenarioKeyboardMenuActive = Boolean(
+    initialScenarioPickerEnabled &&
+      !args['dry-run'] &&
+      input.isTTY &&
+      output.isTTY &&
+      typeof input.setRawMode === 'function',
+  );
+  let initialScenarioSelection = null;
+  if (initialScenarioKeyboardMenuActive) {
+    const defaultScenarioId = launchWorldBundle.world.id;
+    console.log(`${C.cyan}Pick a scenario${C.reset}`);
+    console.log(
+      `${C.dim}  ↑/↓ scroll · Enter select · highlighted scenario described below · Esc quit · ${defaultScenarioId} selected by default${C.reset}`,
+    );
+    const selection = await pickInitialScenarioWithKeyboard(args.world);
+    if (!selection) {
+      console.log(`${C.dim}scenario picker cancelled${C.reset}`);
+      return;
+    }
+    args.world = selection.filePath;
+    initialScenarioSelection = {
+      scenarioId: selection.id,
+      title: selection.title,
+      defaultScenarioId,
+      usedDefault: selection.id === defaultScenarioId,
+      selectionMethod: 'keyboard_menu',
+    };
+    console.log(`${C.cyan}scenario >${C.reset} ${selection.id} — ${selection.title}\n`);
+  }
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
@@ -10020,6 +10559,17 @@ async function main() {
   const initialMixedLearnerSetupEnabled = Boolean(
     mixedLearnerEnabled && openingEnabled && !firstMessage && !resumeCandidate,
   );
+  const initialScenarioPickerConfig = {
+    enabled: initialScenarioPickerEnabled,
+    defaultScenarioId: launchWorldBundle?.world?.id || null,
+    selectedScenarioId: worldBundle?.world?.id || null,
+    keyboardMenu: true,
+    activeInThisTerminal: initialScenarioKeyboardMenuActive,
+    navigation: ['up', 'down', 'pageup', 'pagedown', 'home', 'end', 'enter'],
+    descriptionFields: ['question', 'setting', 'discipline'],
+    nonTtyFallback: '--world',
+    selection: initialScenarioSelection,
+  };
   const mixedLearnerStartupPrompts = {
     enabled: initialMixedLearnerSetupEnabled,
     order: [
@@ -10070,9 +10620,23 @@ async function main() {
   };
   const explanatoryDebugConfig = {
     enabledByDefault: false,
-    command: '/debug on|off|show',
-    sections: ['learner_analysis', 'field_calculations', 'register_consequence'],
+    defaultFormat: 'prose',
+    command: '/debug on [prose|technical]|off|show [prose|technical]|technical',
+    prose: {
+      generatedBy: 'llm',
+      targetWords: '45-80',
+      maxSentences: 3,
+    },
+    technicalSections: ['learner_analysis', 'field_calculations', 'register_consequence'],
     automaticAfterCompletedTurn: true,
+  };
+  const learningSummaryReportConfig = {
+    enabled: Boolean(autoLearnerEnabled || firstMessage || interactiveSessionEnabled),
+    automaticOnConversationEnd: true,
+    requiresCompletedTurn: true,
+    format: 'html',
+    publicEvidenceOnly: true,
+    launchInInteractiveTty: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
   };
 
   if (args['show-prompt']) {
@@ -10096,6 +10660,7 @@ async function main() {
                 dag: args.dag,
               }
             : null,
+          scenarioPicker: initialScenarioPickerConfig,
           humanDiscourse: humanDiscourseConfig,
           humanDiscoursePreviewFrame,
           comprehensionSideState: {
@@ -10172,6 +10737,7 @@ async function main() {
             : { enabled: false, requested: mixedLearnerRequested },
           interactiveRoleModes,
           explanatoryDebug: explanatoryDebugConfig,
+          learningSummaryReport: learningSummaryReportConfig,
           registerSelection: registerSelectionEnabled
             ? {
                 enabled: true,
@@ -10298,6 +10864,7 @@ async function main() {
       modelRef: args.model,
       resolved: visibleModel,
       humanDiscourse: humanDiscourseConfig,
+      scenarioPicker: initialScenarioPickerConfig,
       comprehensionSideState: {
         enabled: true,
         schema: 'machinespirits.tutor-stub.comprehension-side-state.v1',
@@ -10363,6 +10930,7 @@ async function main() {
         : { enabled: false, requested: mixedLearnerRequested },
       interactiveRoleModes,
       explanatoryDebug: explanatoryDebugConfig,
+      learningSummaryReport: learningSummaryReportConfig,
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
@@ -10440,6 +11008,12 @@ async function main() {
       firstMessage: firstMessage || null,
     },
   });
+  if (initialScenarioSelection) {
+    appendTraceEvent(trace, {
+      type: 'initial_scenario_selected',
+      ...initialScenarioSelection,
+    });
+  }
   const interim = createInterimState({ enabled: interimAnimationEnabled });
 
   const state = {
@@ -10510,6 +11084,7 @@ async function main() {
     },
     explanatoryDebug: {
       enabled: false,
+      format: 'prose',
     },
     coach: {
       pending: [],
@@ -10650,6 +11225,13 @@ async function main() {
   );
   console.log(`${C.dim}opening prompt: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
   console.log(`${C.dim}closeout report: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
+  if (learningSummaryReportConfig.enabled) {
+    console.log(
+      `${C.dim}learning summary: automatic HTML on conclusion${
+        process.env.TUTOR_STUB_SUMMARY_OPEN === '0' ? '; browser launch off' : '; opens in an interactive terminal'
+      }${C.reset}`,
+    );
+  }
   console.log(
     `${C.dim}dialogue closure: ${dialogueClosureConfig.enabled ? `on; ${dialogueClosureConfig.allowCheckIn ? 'one optional final check-in' : 'terminal close without check-in'}` : 'off'}${C.reset}`,
   );
@@ -10747,6 +11329,12 @@ async function main() {
       const report = printDialogueCloseout(state, { reason: result.reason, trace: state.trace });
       appendTraceEvent(state.trace, { type: 'closeout_report', reason: result.reason, report });
     }
+    try {
+      writeFinalLearningSummary(result.reason);
+    } catch (error) {
+      console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, { type: 'learning_summary_error', reason: result.reason, error: error.message });
+    }
     return;
   }
 
@@ -10783,7 +11371,7 @@ async function main() {
     printTutorDagSnapshot(response.dagSnapshot);
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
-    printExplanatoryDebugTurn(state);
+    await printExplanatoryDebugTurn(state);
     writeFieldVisualization(state, { reason: 'once' });
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
     if (args.save) {
@@ -10816,6 +11404,12 @@ async function main() {
     if (closeoutReportEnabled) {
       const report = printDialogueCloseout(state, { reason: 'once', trace: state.trace });
       appendTraceEvent(state.trace, { type: 'closeout_report', reason: 'once', report });
+    }
+    try {
+      writeFinalLearningSummary('once');
+    } catch (error) {
+      console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, { type: 'learning_summary_error', reason: 'once', error: error.message });
     }
     return;
   }
@@ -10893,7 +11487,16 @@ async function main() {
         return [matches.length ? matches : modeCompletions, trimmed];
       }
       if (trimmed.startsWith('/debug ')) {
-        const debugCompletions = ['/debug on', '/debug off', '/debug show'];
+        const debugCompletions = [
+          '/debug on',
+          '/debug on prose',
+          '/debug on technical',
+          '/debug off',
+          '/debug show',
+          '/debug show prose',
+          '/debug show technical',
+          '/debug technical',
+        ];
         const matches = debugCompletions.filter((entry) => entry.startsWith(trimmed));
         return [matches.length ? matches : debugCompletions, trimmed];
       }
@@ -12258,7 +12861,13 @@ async function main() {
           stream: state.stream?.enabled || false,
           trace: state.trace?.enabled ? traceDisplayPath(state.trace) : 'off',
           fieldVisualization: state.fieldViz?.enabled || false,
-          explanatoryDebug: state.explanatoryDebug?.enabled || false,
+          explanatoryDebug: jsonClone(state.explanatoryDebug),
+          learningSummary: {
+            automaticOnConclusion: true,
+            requiresCompletedTurn: true,
+            publicEvidenceOnly: true,
+            launchInInteractiveTty: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
+          },
         },
       },
       prompts: {
@@ -12310,6 +12919,37 @@ async function main() {
     return { filePath: absolute, launched: Boolean(launchResult) };
   }
 
+  function writeFinalLearningSummary(reason) {
+    if (!state.turns.length) return null;
+    const summary = buildDialogueLearningSummary(state, { reason });
+    summary.session = {
+      learnerProfile: args['auto-learner-profile'] || null,
+      registerPolicy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      engagementStanceTemperature: state.register?.temperature ?? null,
+      dagMode: state.dagMode,
+    };
+    const filePath = path.join(traceDir, `${state.debugRunId}-learning-summary.html`);
+    const absolute = writeTutorStubLearningSummaryHtml({ summary, filePath });
+    const shouldLaunch = Boolean(output.isTTY && process.env.TUTOR_STUB_SUMMARY_OPEN !== '0');
+    let launchResult = null;
+    if (shouldLaunch) launchResult = launchTutorStubTranscriptHtml(absolute);
+    const displayPath = path.relative(ROOT, absolute);
+    console.log(`${C.brightGreen}${C.bold}learning summary >${C.reset} ${displayPath}`);
+    console.log(
+      `${C.dim}  ${shouldLaunch ? 'opened in the default browser' : 'written; browser launch is available in an interactive terminal'} · ${summary.turnCount} completed turn${summary.turnCount === 1 ? '' : 's'}${C.reset}\n`,
+    );
+    appendTraceEvent(state.trace, {
+      type: 'learning_summary_html',
+      schema: TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
+      reason,
+      filePath: displayPath,
+      turns: summary.turnCount,
+      natural: summary.completion.natural,
+      launched: Boolean(launchResult),
+    });
+    return { filePath: absolute, launched: Boolean(launchResult), summary };
+  }
+
   function finalizeInteractive(reason) {
     if (finalized) return;
     finalized = true;
@@ -12325,6 +12965,12 @@ async function main() {
     }
     if (args.save) {
       saveTranscript(args.save, transcriptPayload());
+    }
+    try {
+      writeFinalLearningSummary(reason);
+    } catch (error) {
+      console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, { type: 'learning_summary_error', reason, error: error.message });
     }
   }
 
@@ -12402,7 +13048,7 @@ async function main() {
       `${C.dim}  coach: ${coachPending} suggestion${coachPending === 1 ? '' : 's'} waiting; ${state.coach?.history?.length || 0} applied${C.reset}`,
     );
     console.log(
-      `${C.dim}  explanatory debug: ${state.explanatoryDebug?.enabled ? 'on' : 'off'} · transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`,
+      `${C.dim}  explanatory debug: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format || 'prose'})` : `off (next: ${state.explanatoryDebug?.format || 'prose'})`} · learning summary: automatic on close · transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`,
     );
   }
 
@@ -12987,38 +13633,72 @@ async function main() {
     }
     if (command === '/debug') {
       clearStatusLine();
-      const action = commandArg.toLowerCase();
+      const parts = commandArg.toLowerCase().split(/\s+/u).filter(Boolean);
+      const action = parts[0] || '';
+      const requestedFormat = parts[1] || null;
+      const validFormat = (value) => value === 'prose' || value === 'technical';
       if (!action) {
         console.log(
-          `${C.brightBlue}${C.bold}debug explain >${C.reset} ${
-            state.explanatoryDebug?.enabled ? 'on' : 'off'
+          `${C.brightBlue}${C.bold}debug >${C.reset} ${state.explanatoryDebug?.enabled ? 'on' : 'off'} · ${
+            state.explanatoryDebug?.format || 'prose'
           }`,
         );
         console.log(
-          `${C.dim}  /debug on prints analysis → calculations → register consequence after every turn; /debug show explains the latest completed turn once${C.reset}\n`,
+          `${C.dim}  /debug on adds concise LLM prose after every turn; /debug technical shows the full calculations once; /debug on technical keeps technical output on${C.reset}\n`,
         );
-      } else if (action === 'on' || action === 'off') {
-        const enabled = action === 'on';
-        state.explanatoryDebug.enabled = enabled;
+        finishSlashCommand();
+        return true;
+      }
+      if (action === 'on' && parts.length <= 2 && (!requestedFormat || validFormat(requestedFormat))) {
+        const format = requestedFormat || 'prose';
+        state.explanatoryDebug.enabled = true;
+        state.explanatoryDebug.format = format;
         appendTraceEvent(state.trace, {
           type: 'explanatory_debug_mode_changed',
-          enabled,
+          enabled: true,
+          format,
           duringTurn,
           effectiveTurn: state.turns.length + 1,
         });
-        console.log(`${C.brightBlue}${C.bold}debug explain >${C.reset} ${enabled ? 'on' : 'off'}`);
+        console.log(`${C.brightBlue}${C.bold}debug >${C.reset} on · ${format}`);
         console.log(
-          `${C.dim}  ${
-            enabled
-              ? `the ${duringTurn ? 'current' : 'next'} completed turn will show learner analysis, exact field updates, and the resulting register decision`
-              : 'automatic turn explanations stopped; /debug show remains available'
+          `${C.dim}  the ${duringTurn ? 'current' : 'next'} completed turn will show ${
+            format === 'prose'
+              ? 'a short model-written explanation'
+              : 'the learner analysis, exact field updates, and register decision'
           }${C.reset}\n`,
         );
-      } else if (action === 'show' || action === 'once') {
-        printExplanatoryDebugTurn(state, { force: true });
-      } else {
-        console.log(`${C.red}debug error:${C.reset} use /debug, /debug on, /debug off, or /debug show\n`);
+        finishSlashCommand();
+        return true;
       }
+      if (action === 'off' && parts.length === 1) {
+        state.explanatoryDebug.enabled = false;
+        appendTraceEvent(state.trace, {
+          type: 'explanatory_debug_mode_changed',
+          enabled: false,
+          format: state.explanatoryDebug.format || 'prose',
+          duringTurn,
+          effectiveTurn: state.turns.length + 1,
+        });
+        console.log(`${C.brightBlue}${C.bold}debug >${C.reset} off`);
+        console.log(`${C.dim}  automatic explanations stopped; /debug show remains available${C.reset}\n`);
+        finishSlashCommand();
+        return true;
+      }
+      const oneOffFormat =
+        action === 'technical' && parts.length === 1
+          ? 'technical'
+          : action === 'prose' && parts.length === 1
+            ? 'prose'
+            : (action === 'show' || action === 'once') && parts.length <= 2 && (!requestedFormat || validFormat(requestedFormat))
+              ? requestedFormat || 'prose'
+              : null;
+      if (oneOffFormat) {
+        return printExplanatoryDebugTurn(state, { force: true, format: oneOffFormat }).finally(finishSlashCommand);
+      }
+      console.log(
+        `${C.red}debug error:${C.reset} use /debug on [prose|technical], /debug off, /debug show [prose|technical], or /debug technical\n`,
+      );
       finishSlashCommand();
       return true;
     }
@@ -13317,7 +13997,7 @@ async function main() {
         printTutorDagSnapshot(response.dagSnapshot);
         printTutorResponse(response, state.stream);
         console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
-        printExplanatoryDebugTurn(state);
+        await printExplanatoryDebugTurn(state);
         writeFieldVisualization(state, { reason: 'dialogue_closure_acknowledgement' });
         completedTurn = true;
         return;
@@ -13380,7 +14060,7 @@ async function main() {
       printTutorDagSnapshot(response.dagSnapshot);
       printTutorResponse(response, state.stream);
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
-      printExplanatoryDebugTurn(state);
+      await printExplanatoryDebugTurn(state);
       if (state.dialogueClosure?.phase === 'awaiting_checkin') {
         console.log(
           `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,

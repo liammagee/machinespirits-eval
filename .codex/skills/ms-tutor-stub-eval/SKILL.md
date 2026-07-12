@@ -123,18 +123,25 @@ Useful variants:
   useful than guessing.
 - Mixed artifacts also carry a separate `profile_signal`: a short account of
   how the visible draft expresses the active learner profile. The full ready
-  notice and compact profile card appear once per active profile. A fresh mixed
-  session first asks `Pick a learner profile [diligent] >`; Enter accepts the
-  default. In a TTY, all built-in profiles appear in a scrolling menu: Up/Down
-  moves the highlight and Enter selects it. Beneath the menu, `does >` describes
-  the highlighted learner's recurring public behavior and `edge >` explains
-  how it differs from its declared nearest-neighbour profile. Stress entries
-  are labeled `stress probe` to make clear that they sharpen a core boundary
-  rather than claiming to be an unrelated taxonomy. The initial highlight is
-  the launch profile (`diligent` by default), and the viewport scrolls across
-  both core and stress profiles. Pipes and other non-TTY callers retain the typed-ID fallback;
-  there, `list`, `stress`, and `all` browse profile groups and Tab completes
-  picker commands and ids.
+  notice and compact profile card appear once per active profile. A fresh
+  interactive TTY session first shows a scrolling scenario picker. `--world`
+  supplies the initial highlight (`world_005_marrick` by default); Up/Down,
+  Page Up/Down, Home/End, and Enter navigate and select. The highlighted
+  scenario shows its public question, opening setting, and discipline. The
+  chosen world is applied before the system prompt, DAG, director context, and
+  opening are built. Resumed, non-interactive, and non-TTY runs retain their
+  launch `--world` without another prompt. A fresh mixed session then asks
+  `Pick a learner profile [diligent] >`; Enter accepts the default. In a TTY,
+  all built-in profiles appear in a scrolling menu: Up/Down moves the highlight
+  and Enter selects it. Beneath the menu, `does >` describes the highlighted
+  learner's recurring public behavior and `edge >` explains how it differs from
+  its declared nearest-neighbour profile. Stress entries are labeled `stress
+  probe` to make clear that they sharpen a core boundary rather than claiming
+  to be an unrelated taxonomy. The initial highlight is the launch profile
+  (`diligent` by default), and the viewport scrolls across both core and stress
+  profiles. Pipes and other non-TTY callers retain the typed-ID profile
+  fallback; there, `list`, `stress`, and `all` browse profile groups and Tab
+  completes picker commands and ids.
   Before any clue or answer generation, the same fresh-session prelude asks for
   engagement-stance temperature when the active policy uses it (`0.85` is the
   recommended default) and accumulated DAG-fact dropout when the learner DAG is
@@ -221,16 +228,16 @@ Useful variants:
   realization count. Use `/analysis technical` or `/a technical` for the
   classifier labels, learner/tutor DAGs, field metrics, stance vectors,
   per-axis realization audit, scaffold audit, leak guard, and trace path.
-- `/debug on` enables a compact explanatory trace after every completed tutor
-  turn. It has three stable sections: `A` summarizes the learner analysis and
-  learner-DAG state; `B` shows the policy-input field/proof values plus the
-  exact lightweight-field formulas and resulting mastery, risk, alignment, and
-  momentum update; `C` shows whether the engagement stance changed, which
-  primary/overlay policy activated, the stance distribution, decision basis,
-  and independent response configuration. Use `/debug off` to stop automatic
-  output or `/debug show` to explain only the latest completed turn. The mode
-  survives `/clear`, appears in `/status` and transcript settings, and writes
-  an `explanatory_debug_output` trace event without changing the policy.
+- `/debug on` adds a short, LLM-written prose explanation after every completed
+  tutor turn. In no more than three sentences it says what the learner appears
+  to understand or need, how the interaction moved, and whether the engagement
+  stance changed or held. Use `/debug show` for one prose explanation of the
+  latest turn. The former exact diagnostic output remains available as
+  `/debug technical` for a one-off view or `/debug on technical` for persistent
+  output; `/debug on prose` returns to the default. Use `/debug off` to stop
+  automatic output. The mode survives `/clear`, appears with its format in
+  `/status` and transcript settings, and writes an `explanatory_debug_output`
+  trace event without changing the policy.
 - `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
   snapshot and opens it in the default browser. It includes raw, script,
   swimlane, analysis, prompt, and settings views; all completed public turns;
@@ -240,6 +247,15 @@ Useful variants:
   each register selection. Use `/transcript no-open` to write without launching
   a browser. During a model call, the snapshot deliberately stops at the last
   completed turn.
+- Every tutor-stub conversation with at least one completed tutor turn also
+  writes `<run-id>-learning-summary.html` when it concludes, whether through
+  natural grounded closure, `/quit`, SIGINT, or the automated learner reaching
+  closure. In a real interactive terminal the report opens automatically;
+  `TUTOR_STUB_SUMMARY_OPEN=0` suppresses browser launch but still writes it.
+  The learner-centred report uses only public dialogue, public learner-record
+  evidence, and learner-visible clarification state, so an early exit does not
+  disclose unreleased premises or the concealed answer. Finalization is
+  idempotent and excludes any tutor turn still in progress.
 - `/settings` shows the active policy and engagement-stance temperature.
   `/settings stance-temp 0.4` sharpens subsequent locally selected stance
   distributions; `/settings stance-temp 1.4` broadens them. No other response

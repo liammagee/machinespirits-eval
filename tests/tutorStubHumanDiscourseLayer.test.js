@@ -124,6 +124,17 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile', 'dag_fact_dropout']);
   assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.85);
   assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.recommended, 0);
+  assert.deepEqual(config.scenarioPicker, {
+    enabled: true,
+    defaultScenarioId: 'world_005_marrick',
+    selectedScenarioId: 'world_005_marrick',
+    keyboardMenu: true,
+    activeInThisTerminal: false,
+    navigation: ['up', 'down', 'pageup', 'pagedown', 'home', 'end', 'enter'],
+    descriptionFields: ['question', 'setting', 'discipline'],
+    nonTtyFallback: '--world',
+    selection: null,
+  });
 });
 
 test('fresh mixed session prints the ready profile card before the first tutor message', async () => {
@@ -255,11 +266,12 @@ process.stdin.on('end', () => {
 });
 
 test(
-  'fresh TTY profile picker scrolls with arrow keys and selects with Enter',
+  'fresh TTY scenario and profile pickers scroll with arrow keys and select with Enter',
   { skip: process.platform === 'win32', timeout: 10_000 },
   async () => {
     let terminalOutput = '';
-    let navigated = false;
+    let scenarioNavigated = false;
+    let profileNavigated = false;
     let requestedExit = false;
     const terminal = pty.spawn(
       process.execPath,
@@ -292,8 +304,11 @@ test(
       terminal.onData((chunk) => {
         terminalOutput += chunk;
         const plain = plainTerminalText(terminalOutput);
-        if (!navigated && plain.includes('↑/↓ scroll') && plain.includes('diligent')) {
-          navigated = true;
+        if (!scenarioNavigated && plain.includes('Pick a scenario') && plain.includes('question >')) {
+          scenarioNavigated = true;
+          terminal.write('\x1b[B\r');
+        } else if (!profileNavigated && plain.includes('Pick a learner profile') && plain.includes('diligent')) {
+          profileNavigated = true;
           terminal.write(`${'\x1b[B'.repeat(9)}\r`);
         } else if (!requestedExit && plain.includes('DAG fact dropout [0; recommended] >')) {
           requestedExit = true;
@@ -309,6 +324,11 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /↑\/↓ scroll · Enter select/u);
+    assert.match(plain, /highlighted scenario described below/u);
+    assert.match(plain, /question > Whose hand struck the false shillings/u);
+    assert.match(plain, /question > Whose hand felled the Hethel bridge span/u);
+    assert.match(plain, /scenario > world_006_hethel — The Fallen Span/u);
+    assert.match(plain, /world: world_006_hethel — The Fallen Span/u);
     assert.match(plain, /highlighted learner described below/u);
     assert.match(plain, /does > Make occasional partial claims, then repair/u);
     assert.match(plain, /does > Name competing interpretations and refuse closure/u);
@@ -655,6 +675,16 @@ test('resumed closing dialogue accepts one acknowledgement and terminates', () =
       .join('\n');
     assert.match(traces, /"type":"dialogue_closure_transition"/u);
     assert.match(traces, /"to":"closed"/u);
+    assert.match(traces, /"type":"learning_summary_html"/u);
+    assert.match(traces, /"reason":"dialogue_grounded_closure"/u);
+    assert.match(traces, /"natural":true/u);
+    const summaryFiles = fs.readdirSync(tmp).filter((name) => name.endsWith('-learning-summary.html'));
+    assert.equal(summaryFiles.length, 1);
+    const summaryHtml = fs.readFileSync(path.join(tmp, summaryFiles[0]), 'utf8');
+    assert.match(summaryHtml, /Natural close/u);
+    assert.match(summaryHtml, /The inquiry reached its natural conclusion/u);
+    assert.match(summaryHtml, /no thanks/u);
+    assert.match(summaryHtml, /verdict stands on the public evidence/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
