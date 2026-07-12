@@ -102,6 +102,27 @@ non-confirmatory. Its job is to determine whether there is enough predictive
 signal and control sensitivity to justify the bounded confirmation. It cannot
 select or optimize a tutor policy.
 
+Before inspecting the S0 prediction results, the pilot was frozen as a
+directional screen with the inherited fixed multinomial head and all three
+existing held-out lanes: world, latent-generator, and exact-renderer transfer.
+For both co-primary targets, each candidate must beat no-state by at least
+`0.05` log-loss and `0.02` Brier with paired-cluster bootstrap
+`P(improve) >= 0.80`, and must have a positive point delta against class-prior
+and uniform. It must improve point estimates in at least two held-out worlds,
+one held-out generator, and one held-out renderer, with no generator or
+renderer level worse than the frozen `0.02` log-loss / `0.01` Brier margins.
+Oracle ECE must be at most `0.10`; candidate ECE must be at most `0.25`.
+Promotion from lean DAG to DAG trajectory and then field trajectory additionally
+requires the same minimum deltas and probability floor over the preceding rung,
+plus a positive point delta over its matched stale control. Bootstrap resamples
+the frozen `latent_pair_id` clusters 5,000 times at seed `20260712` without
+refitting.
+
+A pass may emit only `authorize_v2_3_canonical_s2_implementation` and nominate
+the richest passing representation as a confirmation candidate. It cannot name
+a validated winner, open policy optimization, or launch S2. A failure emits
+`do_not_run_canonical_s2`.
+
 ### S1 language transfer — optional paid, descriptive only
 
 If separately authorized and prospectively frozen, Codex and Claude may
@@ -197,3 +218,11 @@ The S0 pass proves that the successor instrument is exact, public-only,
 replayable, structurally complete, and sensitive enough to analyze. It is not
 a learner-state validity result. `winner: null` and `do_not_optimize_policy`
 remain operative until a bounded canonical confirmation says otherwise.
+
+## Canonical pilot implementation checkpoint
+
+The zero-call pilot runner, frozen gate, sealed-artifact report, and synthetic
+pass/stop tests were implemented without fitting the heads to the S0 data.
+The implementation must be committed and pushed from a clean tree before the
+single canonical pilot execution. This checkpoint therefore records no pilot
+result and makes no representation claim.

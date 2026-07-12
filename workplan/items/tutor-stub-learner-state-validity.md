@@ -348,3 +348,14 @@ the frozen v2.3 contract to the zero-call canonical sensor pilot only; it does
 not authorize the old paid S1. No sensor winner exists yet, so policy
 optimization, Phase 6B, shadow-pilot, efficacy, and human-learning claims
 remain blocked.
+
+2026-07-12 Codex v2.3 canonical-pilot freeze: Before analyzing the sealed S0
+rows, froze and implemented a zero-call directional screen using the inherited
+fixed head, paired latent-cluster bootstrap, all three held-out lanes, three
+state-blind baselines, matched stale controls, calibration floors, and the
+lean-DAG -> DAG-trajectory -> field-trajectory hierarchy. Synthetic tests prove
+both pass and fail-closed paths. Even a pass can only nominate the richest
+passing S2 confirmation candidate and authorize S2 implementation; it cannot
+name a validated winner, launch S2, or open policy optimization. The canonical
+pilot data remain uninspected until this implementation is committed and pushed
+from a clean tree.
