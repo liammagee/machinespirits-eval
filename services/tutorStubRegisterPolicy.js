@@ -10,9 +10,11 @@
  * - keep LLM calls, CLI parsing, and rendering in scripts/tutor-stub.js;
  * - never import from scripts/ (one-way dependency, mirrored from the
  *   tutor-core seam rule);
- * - sampleEngagementStanceDistribution intentionally keeps Math.random() —
- *   deterministic seeding is owned by P0.2 in
- *   PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md.
+ * - sampleEngagementStanceDistribution is legacy: no run path draws through
+ *   it any more. Every tutor-stub draw is seeded via
+ *   services/tutorStubPolicySampler.js (P0.2, implemented as Step 0.1 of
+ *   PRECONSCIOUS-FINAL-STRETCH-PLAN.md). The export survives for direct
+ *   callers and its unit test only.
  */
 
 import { getRegisterOntologyVersion, resolveEngagementStance } from './engagementRegisterRegistry.js';

@@ -1,0 +1,1124 @@
+{
+  "schema": "machinespirits.tutor-stub.trajectory-analysis.v1",
+  "generatedAt": "2026-07-10T13:31:18.165Z",
+  "sources": [
+    ".tutor-stub-auto-eval/headroom-contrast-n3-live/affective_resistant/auto-eval-2026-07-10T10-58-52-389Z.json",
+    ".tutor-stub-auto-eval/headroom-contrast-n3-live/diligent/auto-eval-2026-07-10T06-39-57-020Z.json",
+    ".tutor-stub-auto-eval/headroom-contrast-n3-live/false_memory/auto-eval-2026-07-10T09-45-42-759Z.json",
+    ".tutor-stub-auto-eval/headroom-contrast-n3-live/proof_skipper/auto-eval-2026-07-10T08-03-30-356Z.json"
+  ],
+  "rowCount": 60,
+  "horizons": [
+    8,
+    12,
+    16
+  ],
+  "aucHorizon": 16,
+  "cells": [
+    {
+      "profile": "affective_resistant",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 31,
+      "auc": {
+        "coverage": 0.111,
+        "coverageSd": 0.104,
+        "mastery": 0.554,
+        "safety": 0.648
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.568,
+          "risk": 0.352,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.593,
+          "risk": 0.331,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.222,
+          "coverageSd": 0.255,
+          "mastery": 0.618,
+          "risk": 0.313,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 27.5,
+      "auc": {
+        "coverage": 0.222,
+        "coverageSd": 0.037,
+        "mastery": 0.57,
+        "safety": 0.677
+      },
+      "at": {
+        "8": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.534,
+          "risk": 0.388,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.701,
+          "risk": 0.238,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.556,
+          "coverageSd": 0.096,
+          "mastery": 0.724,
+          "risk": 0.2,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 28.667,
+      "auc": {
+        "coverage": 0.208,
+        "coverageSd": 0.059,
+        "mastery": 0.57,
+        "safety": 0.668
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.57,
+          "risk": 0.331,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.673,
+          "risk": 0.258,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.714,
+          "risk": 0.221,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 30,
+      "auc": {
+        "coverage": 0.207,
+        "coverageSd": 0.013,
+        "mastery": 0.585,
+        "safety": 0.675
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.549,
+          "risk": 0.35,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.493,
+          "risk": 0.323,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.444,
+          "coverageSd": 0.193,
+          "mastery": 0.655,
+          "risk": 0.237,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.172,
+        "coverageSd": 0.039,
+        "mastery": 0.488,
+        "safety": 0.652
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.548,
+          "risk": 0.331,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.589,
+          "risk": 0.294,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.544,
+          "risk": 0.294,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 25.667,
+      "auc": {
+        "coverage": 0.278,
+        "coverageSd": 0.011,
+        "mastery": 0.666,
+        "safety": 0.734
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.662,
+          "risk": 0.298,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.727,
+          "risk": 0.223,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.667,
+          "coverageSd": 0,
+          "mastery": 0.797,
+          "risk": 0.146,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 27.333,
+      "auc": {
+        "coverage": 0.256,
+        "coverageSd": 0.024,
+        "mastery": 0.633,
+        "safety": 0.701
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.593,
+          "risk": 0.333,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.5,
+          "coverageSd": 0,
+          "mastery": 0.699,
+          "risk": 0.219,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.556,
+          "coverageSd": 0.096,
+          "mastery": 0.739,
+          "risk": 0.2,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 31.333,
+      "auc": {
+        "coverage": 0.205,
+        "coverageSd": 0.023,
+        "mastery": 0.596,
+        "safety": 0.679
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.58,
+          "risk": 0.35,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0,
+          "mastery": 0.64,
+          "risk": 0.275,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.5,
+          "coverageSd": 0,
+          "mastery": 0.726,
+          "risk": 0.219,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 25.667,
+      "auc": {
+        "coverage": 0.231,
+        "coverageSd": 0.042,
+        "mastery": 0.605,
+        "safety": 0.69
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.589,
+          "risk": 0.333,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.697,
+          "risk": 0.238,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.5,
+          "coverageSd": 0,
+          "mastery": 0.718,
+          "risk": 0.219,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 24.333,
+      "auc": {
+        "coverage": 0.254,
+        "coverageSd": 0.061,
+        "mastery": 0.645,
+        "safety": 0.713
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.619,
+          "risk": 0.317,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.726,
+          "risk": 0.221,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.611,
+          "coverageSd": 0.096,
+          "mastery": 0.821,
+          "risk": 0.148,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 31,
+      "auc": {
+        "coverage": 0.113,
+        "coverageSd": 0.101,
+        "mastery": 0.435,
+        "safety": 0.432
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.439,
+          "risk": 0.502,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.424,
+          "risk": 0.581,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.278,
+          "coverageSd": 0.255,
+          "mastery": 0.38,
+          "risk": 0.477,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 29,
+      "auc": {
+        "coverage": 0.206,
+        "coverageSd": 0.006,
+        "mastery": 0.457,
+        "safety": 0.487
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.54,
+          "risk": 0.448,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0,
+          "mastery": 0.539,
+          "risk": 0.325,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.569,
+          "risk": 0.406,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 33.333,
+      "auc": {
+        "coverage": 0.176,
+        "coverageSd": 0.039,
+        "mastery": 0.48,
+        "safety": 0.504
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.456,
+          "risk": 0.4,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.557,
+          "risk": 0.394,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.524,
+          "risk": 0.49,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 32.333,
+      "auc": {
+        "coverage": 0.248,
+        "coverageSd": 0.071,
+        "mastery": 0.508,
+        "safety": 0.539
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.466,
+          "risk": 0.417,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.545,
+          "risk": 0.471,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.556,
+          "coverageSd": 0.193,
+          "mastery": 0.649,
+          "risk": 0.25,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 28.333,
+      "auc": {
+        "coverage": 0.193,
+        "coverageSd": 0.053,
+        "mastery": 0.457,
+        "safety": 0.421
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.46,
+          "risk": 0.483,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.49,
+          "risk": 0.608,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.679,
+          "risk": 0.354,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 24.5,
+      "auc": {
+        "coverage": 0.189,
+        "coverageSd": 0.067,
+        "mastery": 0.51,
+        "safety": 0.543
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.439,
+          "risk": 0.5,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.659,
+          "risk": 0.275,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.445,
+          "coverageSd": 0.255,
+          "mastery": 0.621,
+          "risk": 0.354,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 28,
+      "auc": {
+        "coverage": 0.224,
+        "coverageSd": 0.064,
+        "mastery": 0.542,
+        "safety": 0.574
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.574,
+          "risk": 0.331,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.657,
+          "risk": 0.256,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.64,
+          "risk": 0.356,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 31,
+      "auc": {
+        "coverage": 0.124,
+        "coverageSd": 0.107,
+        "mastery": 0.486,
+        "safety": 0.58
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.192,
+          "mastery": 0.532,
+          "risk": 0.45,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.222,
+          "coverageSd": 0.192,
+          "mastery": 0.528,
+          "risk": 0.329,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.278,
+          "coverageSd": 0.255,
+          "mastery": 0.514,
+          "risk": 0.511,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 28,
+      "auc": {
+        "coverage": 0.23,
+        "coverageSd": 0.027,
+        "mastery": 0.563,
+        "safety": 0.615
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.496,
+          "risk": 0.464,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.653,
+          "risk": 0.256,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.617,
+          "risk": 0.438,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 30.333,
+      "auc": {
+        "coverage": 0.248,
+        "coverageSd": 0.051,
+        "mastery": 0.549,
+        "safety": 0.61
+      },
+      "at": {
+        "8": {
+          "coverage": 0.222,
+          "coverageSd": 0.096,
+          "mastery": 0.604,
+          "risk": 0.329,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.66,
+          "risk": 0.238,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.444,
+          "coverageSd": 0.096,
+          "mastery": 0.642,
+          "risk": 0.338,
+          "groundedByRate": 0
+        }
+      }
+    }
+  ],
+  "interaction": {
+    "baseline": "bland",
+    "horizons": {
+      "8": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0,
+              "deltaVsBaseline": -0.056
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "dynamic",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "negative",
+              "coverage": 0.222,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "field",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            }
+          ]
+        }
+      ],
+      "12": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "dynamic",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.277
+            },
+            {
+              "policy": "field",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.222
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.166
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "dynamic",
+              "coverage": 0.5,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "field",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.333,
+              "deltaVsBaseline": -0.056
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.277
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.166
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.166
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "negative",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "field",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.222,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        }
+      ],
+      "16": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "dynamic",
+              "coverage": 0.556,
+              "deltaVsBaseline": 0.334
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.222
+            },
+            {
+              "policy": "field",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.222
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.222,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.667,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.611,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.556,
+              "deltaVsBaseline": -0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.5,
+              "deltaVsBaseline": -0.167
+            },
+            {
+              "policy": "field",
+              "coverage": 0.5,
+              "deltaVsBaseline": -0.167
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.556,
+              "deltaVsBaseline": 0.278
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.444,
+              "deltaVsBaseline": 0.166
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.445,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "field",
+              "coverage": 0.444,
+              "deltaVsBaseline": -0.001
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.444,
+              "deltaVsBaseline": -0.001
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.389,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.278,
+              "deltaVsBaseline": -0.167
+            }
+          ]
+        }
+      ]
+    },
+    "rankCrossings": [
+      {
+        "horizon": 8,
+        "detail": "affective_resistant:dynamical_system, diligent:bland, false_memory:dynamic, proof_skipper:negative"
+      },
+      {
+        "horizon": 12,
+        "detail": "affective_resistant:dynamic, diligent:dynamic, false_memory:field, proof_skipper:negative"
+      },
+      {
+        "horizon": 16,
+        "detail": "affective_resistant:dynamic, diligent:bland, false_memory:field, proof_skipper:bland"
+      }
+    ]
+  }
+}

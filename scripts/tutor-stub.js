@@ -161,7 +161,6 @@ import {
   registerAffinityContributions,
   registerEfficacyFromDagProgress,
   roundField,
-  sampleEngagementStanceDistribution as sampleLegacyEngagementStanceDistribution,
   scoreValue,
   topNumericEntries,
 } from '../services/tutorStubRegisterPolicy.js';
@@ -175,6 +174,7 @@ import {
   tutorStubRegisterPolicyStackId,
 } from '../services/tutorStubRegisterPolicyComposition.js';
 import { sampleTutorStubPolicyDistribution } from '../services/tutorStubPolicySampler.js';
+import { captureGitProvenanceSummary, hashCanonicalJson } from '../services/experimentRunArtifacts.js';
 import { buildTutorStubStateObservation } from '../services/adaptiveTutor/tutorStubStateAdapter.js';
 import {
   ADAPTATION_ACTIONS,
@@ -2987,6 +2987,26 @@ function resumeInterimAnimation(holder) {
   return true;
 }
 
+function captureTraceProvenance(metadata) {
+  // Step 0.2 of PRECONSCIOUS-FINAL-STRETCH-PLAN.md: every run header carries
+  // the commit and a hash of the resolved configuration, so model/config
+  // drift is detectable from the trace alone (the terra flag-forwarding
+  // incident was only caught by cross-checking run_start metadata by hand).
+  // Failure-tolerant: an unreadable git state must never block the CLI.
+  const provenance = { schema: 'machinespirits.tutor-stub.run-provenance.v1', configSha256: null, git: null };
+  try {
+    provenance.configSha256 = hashCanonicalJson(metadata ?? null);
+  } catch (error) {
+    provenance.configHashError = String(error?.message || error);
+  }
+  try {
+    provenance.git = captureGitProvenanceSummary({ repoRoot: ROOT });
+  } catch (error) {
+    provenance.gitError = String(error?.message || error);
+  }
+  return provenance;
+}
+
 function createTraceState({ enabled, traceDir, metadata }) {
   if (!enabled) return { enabled: false };
   const dir = resolveWorkspacePath(traceDir);
@@ -3002,7 +3022,7 @@ function createTraceState({ enabled, traceDir, metadata }) {
   };
   appendTraceEvent(trace, {
     type: 'run_start',
-    metadata,
+    metadata: { ...(metadata || {}), provenance: captureTraceProvenance(metadata) },
   });
   return trace;
 }
@@ -4355,9 +4375,24 @@ function expectedFieldMoveForRegister(selected, features) {
   return 'Sharpen the learner field toward one accountable public statement.';
 }
 
+function fallbackPolicySamplingContext(decisionKind) {
+  // Every run path supplies state; this fixed context exists so that even a
+  // state-less draw stays seeded and replayable (it is deterministic and
+  // constant by construction — there is no turn identity without state).
+  return {
+    runSeed: 1,
+    profile: 'interactive',
+    policy: 'unknown',
+    repeat: 1,
+    learnerTurn: 1,
+    decisionKind,
+    jobId: null,
+  };
+}
+
 function sampleEngagementStanceDistribution(distribution, { state = null, decisionKind = 'engagement_stance' } = {}) {
-  if (!state) return sampleLegacyEngagementStanceDistribution(distribution);
-  const sampled = sampleTutorStubPolicyDistribution(distribution, policySamplingContext(state, decisionKind));
+  const context = state ? policySamplingContext(state, decisionKind) : fallbackPolicySamplingContext(decisionKind);
+  const sampled = sampleTutorStubPolicyDistribution(distribution, context);
   return { entry: sampled.entry, random: sampled.audit };
 }
 

@@ -853,6 +853,17 @@ function git(repoRoot, args, { allowFailure = false } = {}) {
   }
 }
 
+export function captureGitProvenanceSummary({ repoRoot = process.cwd() } = {}) {
+  // Light per-run header stamp (sha/branch/dirty only). Sealed experiment
+  // runs must keep using captureGitFingerprint, which additionally hashes
+  // the working-tree status, patch, and untracked files.
+  const root = path.resolve(git(repoRoot, ['rev-parse', '--show-toplevel']));
+  const sha = requireNonEmptyString(git(root, ['rev-parse', 'HEAD']), 'Git SHA');
+  const branch = git(root, ['symbolic-ref', '--quiet', '--short', 'HEAD'], { allowFailure: true }) || '(detached)';
+  const status = git(root, ['status', '--porcelain=v1']);
+  return { sha, branch, dirty: Boolean(status) };
+}
+
 export function captureGitFingerprint({ repoRoot = process.cwd() } = {}) {
   const root = path.resolve(git(repoRoot, ['rev-parse', '--show-toplevel']));
   const sha = requireNonEmptyString(git(root, ['rev-parse', 'HEAD']), 'Git SHA');

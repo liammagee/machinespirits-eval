@@ -1,0 +1,1288 @@
+{
+  "schema": "machinespirits.tutor-stub.trajectory-analysis.v1",
+  "generatedAt": "2026-07-10T22:19:34.711Z",
+  "sources": [
+    ".tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/affective_resistant/auto-eval-2026-07-10T21-21-26-849Z.json",
+    ".tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/diligent/auto-eval-2026-07-10T15-06-54-564Z.json",
+    ".tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/false_memory/auto-eval-2026-07-10T21-49-56-749Z.json",
+    ".tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/proof_skipper/auto-eval-2026-07-10T22-17-26-289Z.json"
+  ],
+  "rowCount": 60,
+  "horizons": [
+    8,
+    12,
+    16
+  ],
+  "aucHorizon": 16,
+  "pressure": {
+    "turn": 6,
+    "window": 4
+  },
+  "cells": [
+    {
+      "profile": "affective_resistant",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.031,
+        "coverageSd": 0.054,
+        "mastery": 0.344,
+        "safety": 0.403
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": -0.04,
+        "riskPostDelta": 0.017
+      },
+      "at": {
+        "8": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.285,
+          "risk": 0.638,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.33,
+          "risk": 0.721,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0.289,
+          "mastery": 0.33,
+          "risk": 0.598,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.087,
+        "coverageSd": 0.076,
+        "mastery": 0.422,
+        "safety": 0.411
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": -0.103,
+        "riskPostDelta": 0.283
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.441,
+          "risk": 0.617,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.469,
+          "risk": 0.55,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.547,
+          "risk": 0.331,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.044,
+        "coverageSd": 0.077,
+        "mastery": 0.373,
+        "safety": 0.393
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0.056,
+        "coveragePostDeltaSd": 0.096,
+        "masteryPostDelta": 0.118,
+        "riskPostDelta": -0.152
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.368,
+          "risk": 0.519,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.426,
+          "risk": 0.652,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.111,
+          "coverageSd": 0.192,
+          "mastery": 0.384,
+          "risk": 0.65,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.126,
+        "coverageSd": 0.096,
+        "mastery": 0.488,
+        "safety": 0.559
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0.055,
+        "coveragePostDeltaSd": 0.096,
+        "masteryPostDelta": -0.014,
+        "riskPostDelta": 0.098
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.527,
+          "risk": 0.433,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.513,
+          "risk": 0.448,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.587,
+          "risk": 0.358,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "affective_resistant",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.087,
+        "coverageSd": 0.07,
+        "mastery": 0.387,
+        "safety": 0.4
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": 0.063,
+        "riskPostDelta": 0.067
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.389,
+          "risk": 0.666,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.389,
+          "risk": 0.666,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.513,
+          "risk": 0.448,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 27,
+      "auc": {
+        "coverage": 0.211,
+        "coverageSd": 0.048,
+        "mastery": 0.61,
+        "safety": 0.695
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0.222,
+        "coveragePostDeltaSd": 0.192,
+        "masteryPostDelta": 0.083,
+        "riskPostDelta": -0.075
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.586,
+          "risk": 0.336,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.389,
+          "coverageSd": 0.096,
+          "mastery": 0.715,
+          "risk": 0.223,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.556,
+          "coverageSd": 0.096,
+          "mastery": 0.716,
+          "risk": 0.2,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 0.333,
+      "meanGroundedTurn": 37,
+      "auc": {
+        "coverage": 0.057,
+        "coverageSd": 0.061,
+        "mastery": 0.554,
+        "safety": 0.637
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": 0,
+        "riskPostDelta": 0
+      },
+      "at": {
+        "8": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.49,
+          "risk": 0.405,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.633,
+          "risk": 0.315,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.645,
+          "risk": 0.281,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 27.5,
+      "auc": {
+        "coverage": 0.145,
+        "coverageSd": 0.12,
+        "mastery": 0.58,
+        "safety": 0.665
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0.111,
+        "coveragePostDeltaSd": 0.096,
+        "masteryPostDelta": 0.041,
+        "riskPostDelta": -0.037
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.536,
+          "risk": 0.367,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.222,
+          "coverageSd": 0.192,
+          "mastery": 0.617,
+          "risk": 0.313,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.659,
+          "risk": 0.275,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 27,
+      "auc": {
+        "coverage": 0.065,
+        "coverageSd": 0.107,
+        "mastery": 0.543,
+        "safety": 0.636
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": -0.005,
+        "riskPostDelta": -0.017
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.466,
+          "risk": 0.386,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.111,
+          "coverageSd": 0.192,
+          "mastery": 0.549,
+          "risk": 0.35,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.627,
+          "risk": 0.298,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "diligent",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 28.5,
+      "auc": {
+        "coverage": 0.117,
+        "coverageSd": 0.017,
+        "mastery": 0.547,
+        "safety": 0.637
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": 0.032,
+        "riskPostDelta": 0.017
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.576,
+          "risk": 0.35,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.222,
+          "coverageSd": 0.096,
+          "mastery": 0.635,
+          "risk": 0.296,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.536,
+          "risk": 0.327,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 27,
+      "auc": {
+        "coverage": 0.13,
+        "coverageSd": 0.014,
+        "mastery": 0.454,
+        "safety": 0.482
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.167,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": -0.112,
+        "riskPostDelta": 0.133
+      },
+      "at": {
+        "8": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.534,
+          "risk": 0.431,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0,
+          "mastery": 0.441,
+          "risk": 0.481,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.222,
+          "coverageSd": 0.096,
+          "mastery": 0.537,
+          "risk": 0.412,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0.035,
+        "coverageSd": 0.061,
+        "mastery": 0.38,
+        "safety": 0.381
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0.056,
+        "coveragePostDeltaSd": 0.096,
+        "masteryPostDelta": -0.151,
+        "riskPostDelta": 0.248
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.471,
+          "risk": 0.402,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.374,
+          "risk": 0.619,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.391,
+          "risk": 0.602,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 31.5,
+      "auc": {
+        "coverage": 0.128,
+        "coverageSd": 0.058,
+        "mastery": 0.457,
+        "safety": 0.473
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0.167,
+        "coveragePostDeltaSd": 0.167,
+        "masteryPostDelta": -0.031,
+        "riskPostDelta": 0.16
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.498,
+          "risk": 0.486,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.558,
+          "risk": 0.41,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.616,
+          "risk": 0.377,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 28.5,
+      "auc": {
+        "coverage": 0.152,
+        "coverageSd": 0.03,
+        "mastery": 0.421,
+        "safety": 0.426
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0.167,
+        "coveragePostDeltaSd": 0.167,
+        "masteryPostDelta": -0.029,
+        "riskPostDelta": 0.093
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.509,
+          "risk": 0.45,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.532,
+          "risk": 0.41,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.501,
+          "risk": 0.525,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "false_memory",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 0.333,
+      "meanGroundedTurn": 32,
+      "auc": {
+        "coverage": 0.124,
+        "coverageSd": 0.094,
+        "mastery": 0.423,
+        "safety": 0.456
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0.111,
+        "coveragePostDeltaSd": 0.192,
+        "masteryPostDelta": 0.162,
+        "riskPostDelta": -0.171
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.374,
+          "risk": 0.619,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.455,
+          "risk": 0.565,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.389,
+          "coverageSd": 0.255,
+          "mastery": 0.631,
+          "risk": 0.256,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "bland",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 31.333,
+      "auc": {
+        "coverage": 0.085,
+        "coverageSd": 0.074,
+        "mastery": 0.402,
+        "safety": 0.365
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": 0.083,
+        "riskPostDelta": -0.217
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.504,
+          "risk": 0.467,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.447,
+          "risk": 0.583,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.332,
+          "risk": 0.733,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "dynamic",
+      "n": 3,
+      "groundedRate": 0,
+      "meanGroundedTurn": null,
+      "auc": {
+        "coverage": 0,
+        "coverageSd": 0,
+        "mastery": 0.404,
+        "safety": 0.38
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": -0.005,
+        "riskPostDelta": -0.017
+      },
+      "at": {
+        "8": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.494,
+          "risk": 0.488,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.317,
+          "risk": 0.738,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0,
+          "coverageSd": 0,
+          "mastery": 0.419,
+          "risk": 0.621,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "dynamical_system",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 28.5,
+      "auc": {
+        "coverage": 0.083,
+        "coverageSd": 0.072,
+        "mastery": 0.397,
+        "safety": 0.379
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0,
+        "coveragePostDeltaSd": 0,
+        "masteryPostDelta": 0.155,
+        "riskPostDelta": -0.167
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.431,
+          "risk": 0.586,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.415,
+          "risk": 0.665,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.167,
+          "coverageSd": 0.167,
+          "mastery": 0.415,
+          "risk": 0.581,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "field",
+      "n": 3,
+      "groundedRate": 0.667,
+      "meanGroundedTurn": 32.5,
+      "auc": {
+        "coverage": 0.163,
+        "coverageSd": 0.142,
+        "mastery": 0.46,
+        "safety": 0.454
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.056,
+        "coveragePostDelta": 0.166,
+        "coveragePostDeltaSd": 0.167,
+        "masteryPostDelta": 0.026,
+        "riskPostDelta": -0.04
+      },
+      "at": {
+        "8": {
+          "coverage": 0.056,
+          "coverageSd": 0.096,
+          "mastery": 0.414,
+          "risk": 0.602,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.333,
+          "coverageSd": 0.289,
+          "mastery": 0.625,
+          "risk": 0.475,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.445,
+          "coverageSd": 0.385,
+          "mastery": 0.502,
+          "risk": 0.587,
+          "groundedByRate": 0
+        }
+      }
+    },
+    {
+      "profile": "proof_skipper",
+      "policy": "negative",
+      "n": 3,
+      "groundedRate": 1,
+      "meanGroundedTurn": 28.333,
+      "auc": {
+        "coverage": 0.174,
+        "coverageSd": 0.042,
+        "mastery": 0.445,
+        "safety": 0.408
+      },
+      "recovery": {
+        "probeFiredRate": 1,
+        "coveragePreDelta": 0.111,
+        "coveragePostDelta": 0.166,
+        "coveragePostDeltaSd": 0.167,
+        "masteryPostDelta": 0.118,
+        "riskPostDelta": -0.19
+      },
+      "at": {
+        "8": {
+          "coverage": 0.111,
+          "coverageSd": 0.096,
+          "mastery": 0.403,
+          "risk": 0.683,
+          "groundedByRate": 0
+        },
+        "12": {
+          "coverage": 0.278,
+          "coverageSd": 0.096,
+          "mastery": 0.487,
+          "risk": 0.527,
+          "groundedByRate": 0
+        },
+        "16": {
+          "coverage": 0.333,
+          "coverageSd": 0.167,
+          "mastery": 0.486,
+          "risk": 0.525,
+          "groundedByRate": 0
+        }
+      }
+    }
+  ],
+  "interaction": {
+    "baseline": "bland",
+    "horizons": {
+      "8": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "dynamic",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.055
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "field",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0,
+              "deltaVsBaseline": -0.056
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.111
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.055
+            },
+            {
+              "policy": "field",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.055
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        }
+      ],
+      "12": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.167
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.056,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0,
+              "deltaVsBaseline": 0
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.222,
+              "deltaVsBaseline": -0.167
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.222,
+              "deltaVsBaseline": -0.167
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.167,
+              "deltaVsBaseline": -0.222
+            },
+            {
+              "policy": "field",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.278
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "field",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.222
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.167
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        }
+      ],
+      "16": [
+        {
+          "profile": "affective_resistant",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.166
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.111,
+              "deltaVsBaseline": -0.056
+            }
+          ]
+        },
+        {
+          "profile": "diligent",
+          "ranking": [
+            {
+              "policy": "bland",
+              "coverage": 0.556,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.333,
+              "deltaVsBaseline": -0.223
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.278,
+              "deltaVsBaseline": -0.278
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.167,
+              "deltaVsBaseline": -0.389
+            },
+            {
+              "policy": "field",
+              "coverage": 0.167,
+              "deltaVsBaseline": -0.389
+            }
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "ranking": [
+            {
+              "policy": "negative",
+              "coverage": 0.389,
+              "deltaVsBaseline": 0.167
+            },
+            {
+              "policy": "field",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.111
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.278,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.222,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0.056,
+              "deltaVsBaseline": -0.166
+            }
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "ranking": [
+            {
+              "policy": "field",
+              "coverage": 0.445,
+              "deltaVsBaseline": 0.334
+            },
+            {
+              "policy": "negative",
+              "coverage": 0.333,
+              "deltaVsBaseline": 0.222
+            },
+            {
+              "policy": "dynamical_system",
+              "coverage": 0.167,
+              "deltaVsBaseline": 0.056
+            },
+            {
+              "policy": "bland",
+              "coverage": 0.111,
+              "deltaVsBaseline": 0
+            },
+            {
+              "policy": "dynamic",
+              "coverage": 0,
+              "deltaVsBaseline": -0.111
+            }
+          ]
+        }
+      ]
+    },
+    "rankCrossings": [
+      {
+        "horizon": 8,
+        "detail": "affective_resistant:dynamic, diligent:dynamical_system, false_memory:bland, proof_skipper:bland"
+      },
+      {
+        "horizon": 12,
+        "detail": "affective_resistant:field, diligent:bland, false_memory:dynamical_system, proof_skipper:field"
+      },
+      {
+        "horizon": 16,
+        "detail": "affective_resistant:field, diligent:bland, false_memory:negative, proof_skipper:field"
+      }
+    ]
+  }
+}

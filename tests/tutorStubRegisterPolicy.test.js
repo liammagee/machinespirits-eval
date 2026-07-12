@@ -10,9 +10,10 @@
 //     sarcastic/face_threat logits; a riskRising trajectory must not raise
 //     face_threat under the trajectory policy;
 //  3. sampling — distribution normalization and the recorded random envelope
-//     shape only. sampleEngagementStanceDistribution keeps Math.random()
-//     semantics on purpose: deterministic seeding is owned by P0.2 in
-//     PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md.
+//     shape only. sampleEngagementStanceDistribution is legacy (no run path
+//     draws through it): every tutor-stub draw is seeded via
+//     services/tutorStubPolicySampler.js (P0.2, implemented as Step 0.1 of
+//     PRECONSCIOUS-FINAL-STRETCH-PLAN.md).
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

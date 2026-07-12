@@ -1,0 +1,56 @@
+{
+  "schema": "machinespirits.tutor-stub-evidence-manifest.v1",
+  "runDir": ".tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live",
+  "createdAt": "2026-07-12T21:21:56.443587+00:00",
+  "claimStatus": "exploratory",
+  "sourceCommit": "d265edad",
+  "archive": {
+    "location": "~/.machinespirits-data/runs/tutor-stub/headroom-sonnet5-pressure-n3-live-20260711.tar.gz",
+    "sha256": "402f1e25936f5a318e3752b3e83d78a88160827c8b49f7c3fa3668cce6837b30",
+    "bytes": 128804337,
+    "note": "full run directory (per-dialogue traces + reports); tar.gz of the gitignored .tutor-stub-auto-eval run dir; not a sealed experiment-run archive"
+  },
+  "distilledFiles": [
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/profile-discrimination.json",
+      "sha256": "78baacdf0b8b1b3081ca16969c073614a2e20a5a4e20750136ed9d7030064c81",
+      "bytes": 80284
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/profile-discrimination.md",
+      "sha256": "31ae6a77d5a24725e4ba5aacd6ce4a7aa21a5519398aec5244655781cf1fbc8e",
+      "bytes": 3148
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/qa-matrix.json",
+      "sha256": "c87644e715dc0a33519b06ffa2e51e47c686a2b7777169a6239b467fb838cd47",
+      "bytes": 23348
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/qa-matrix.md",
+      "sha256": "45827486698aad515d30f870c4e37f7399665a55a1f8b99ed246122000f82002",
+      "bytes": 5544
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/qa-plan.json",
+      "sha256": "426abea436028ff492306ac975fd11918c384afd52398d40f64d5f137c84a0b1",
+      "bytes": 7476
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/trajectory-analysis.json",
+      "sha256": "783e901fc4ecc7fd10c64ad8bb928b1615071277cf980fb3413a6b4f78af1825",
+      "bytes": 31277
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-sonnet5-pressure-n3-live/trajectory-analysis.md",
+      "sha256": "df478148afa1d61db9cdb75d4fe4c1dc849001a17648324202517225a41f04d4",
+      "bytes": 10606
+    }
+  ],
+  "exclusions": [
+    "auto-eval output directory, not a sealed experiment run: no run-plan/run-events/run-seal chain exists",
+    "n=3 per cell exploratory evidence; no claim-bearing status",
+    "simulated learner outcomes do not estimate human learning effects"
+  ],
+  "notes": "2026-07-11 Sonnet-5 confirmatory matrix (claude-code.sonnet-5 at all four seams), interleaved policies, turn-6 face_threat probe, 60/60 rows after session-limit resume. Cross-model result: interaction structure replicates; winning stress arm model-dependent; dynamic does not transfer."
+}
