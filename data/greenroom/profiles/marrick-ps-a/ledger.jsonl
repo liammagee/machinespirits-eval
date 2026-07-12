@@ -1,1 +1,5 @@
 {"ts":"2026-07-12T02:01:24.795Z","type":"create","version":0,"after_hash":"9f1931d54b58911b4c0c0b72cbf7128af8d570ed69b53c1fb3b1efefd2172123","source":null}
+{"ts":"2026-07-12T03:06:03.785Z","type":"note","version":0,"source":{"transcript":"P1.md"},"session_file":"001-notes.json"}
+{"ts":"2026-07-12T03:06:03.792Z","type":"patch:add","source":{"session_file":"001-notes.json","transcript":"P1.md"},"version":1,"before_hash":"9f1931d54b58911b4c0c0b72cbf7128af8d570ed69b53c1fb3b1efefd2172123","after_hash":"e4f72be6227134a6f0cf870cb3c55c818dbb48e1c02f81526380cc0c06729311","tokens":220}
+{"ts":"2026-07-12T03:09:33.752Z","type":"note","version":1,"source":{"transcript":"P2.md"},"session_file":"002-notes.json"}
+{"ts":"2026-07-12T03:09:33.760Z","type":"patch:add","source":{"session_file":"002-notes.json","transcript":"P2.md"},"version":2,"before_hash":"e4f72be6227134a6f0cf870cb3c55c818dbb48e1c02f81526380cc0c06729311","after_hash":"e59309a07a9f07d4d47fc85ba63fc52afde6e17fef4a50c58c36b3a8778beda5","tokens":339}
