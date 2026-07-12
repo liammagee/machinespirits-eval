@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 5–12 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-12 window=(2026-07-05,2026-07-12] arxiv=2607.04613,2607.04617,2607.08147 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">5–12 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A full week's window this time. Targeted searches across all five topics turned up three
+  qualifying papers, all in prompt engineering / agent architecture — no qualifying ontology,
+  dramaturgy/role-play, or rhetoric paper surfaced despite multiple search passes on each (a
+  couple of near-misses — a persona-individuation paper and a rhetorical-structure dataset paper
+  — both carried arXiv IDs that resolve to before the window and were excluded rather than
+  stretched in). Reported honestly per the README rather than padded or backdated. Flags:
+  <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    MRMS: A Multi-Resolution Memory Substrate for Long-Lived AI Agents
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jizhizi Li, Amy Shi-Nash (NxtLab Innovations) ·
+    arXiv 2607.04617 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.04617">https://arxiv.org/abs/2607.04617</a>
+  </div>
+  <p>
+    Argues that continuity for long-lived agents can't come from just extending the prompt
+    window: an agent must preserve prior experience, retrieve it selectively, distinguish
+    personal context from external evidence, and revise memory as the situation changes.
+    Proposes a memory substrate organized along a representational axis (structured records /
+    vector representations / graph relations) and a temporal axis (short/medium/long-term), with
+    structured records governing eligibility, vectors supporting recall, and graph relations
+    adjudicating support, contradiction, and supersession before gated context projection.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A natural continuation of last week's DRIFTLENS entry (2607.02374, memory-injected reasoning
+    drift) for cell 21's dynamic prompt rewriting (Writing Pad) and cells 48-49's prompt erosion
+    mechanism — both accumulate context into the tutor's prompt turn over turn today with no
+    explicit contradiction/supersession layer. MRMS's "structured records govern eligibility"
+    design is a concrete pattern for <code>services/evalSignature.js</code>'s
+    <code>prompt_content_hash</code> drift detection: instead of only flagging that content
+    changed, a structured-record layer could distinguish a benign Writing Pad update from one
+    that contradicts an earlier commitment the tutor made — closer to what "prompt erosion" is
+    actually trying to measure.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Governed Individuation: Cryptographically Decoupling an Agent's Learning from Its Authority
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xue Qin, Simin Luan, Cong Yang, Zhijun Li (Harbin Institute of Technology / Soochow
+    University) ·
+    arXiv 2607.04613 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.04613">https://arxiv.org/abs/2607.04613</a>
+  </div>
+  <p>
+    Asks whether an agent that keeps adapting in the field is still confined to what its operator
+    authorized. Binds the agent at boot to a cryptographically frozen identity digest and routes
+    every action through a gate defined over the <em>semantic effect</em> of the action rather
+    than its declared name/intent — so confinement is an invariant of the execution architecture,
+    not a probabilistic training outcome. No amount of self-modification widens authority without
+    an operator-signed identity change. (A companion paper the same day, arXiv 2607.05463
+    "Governable Individuals," applies the same idea to embodied agents.)
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly parallels the design problem behind <code>services/adaptiveTutor/</code>'s
+    programmatic constraints and counterfactual replay (cells 110-125): both are attempts to stop
+    an LLM-driven policy from quietly expanding what it does turn over turn. This paper's
+    gate-on-semantic-effect-not-declared-intent framing is a sharper version of what
+    <code>policyActions.js</code>'s state-policy constraints are already reaching for, and is
+    worth reading against the P2.2 state-schema ablations (cells 115-123) as a check on whether
+    those constraints are enforced on the *effect* of a tutor/learner turn or just its surface
+    label.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Prismata: Confining Cross-Site Prompt Injection in Web Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Corban Villa, Alp Eren Ozdarendeli, Sijun Tan, Raluca Ada Popa (UC Berkeley) ·
+    arXiv 2607.08147 · July 9, 2026 ·
+    <a href="https://arxiv.org/abs/2607.08147">https://arxiv.org/abs/2607.08147</a>
+  </div>
+  <p>
+    Web agents interpret natural language as instructions, so third-party or user-generated page
+    content can hijack them via prompt injection — the same trusted/untrusted mixing problem that
+    made Cross-Site Scripting dangerous. Prismata enforces contextual least privilege, deriving a
+    task-specific security policy that constrains both what the agent sees and what it can do,
+    even though that policy has to be derived from page structure entangled with the attacker's
+    own content.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A trust-boundary framing worth holding against how learner-authored content flows into the
+    tutor's own prompt — the dialectical_suspicious superego (cells 22-33, 93-100) and the
+    Writing Pad (cell 21) both fold prior turns, including learner text, back into what the ego
+    reads next. Prismata's "constrain by what the agent is allowed to see, not just what it's
+    told to do" principle is a candidate lens for <code>npm run audit:message-chain</code> and
+    <code>npm run provenance:validate</code>: today they check integrity of the chain, not
+    whether a given turn's content should have had standing to influence a later turn at all.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>&ldquo;High Accuracy Means It&rsquo;s a Good Classifier&rdquo; — Until the Evidence Source Field Asks Why</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-12 ·
+  Research-roundup routine (targeted WebSearch passes per topic; arxiv.org and export.arxiv.org
+  direct fetch are blocked by this environment's network policy, so submission dates were
+  cross-checked via secondary sources) ·
+  Window: (2026-07-05, 2026-07-12] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
