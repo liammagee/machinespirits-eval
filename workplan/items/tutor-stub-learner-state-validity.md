@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-07-12
+updated: 2026-07-13
 verification: "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size."
 claim_status: planned
 depends_on:
@@ -17,6 +17,8 @@ links:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
     - PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md
     - PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md
+    - PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md
+    - PRECONSCIOUS-FINAL-STRETCH-PLAN.md
   runs:
     - adaptive-state-v2-s0-clean-5a3e5aae-v21
     - adaptive-state-v2-s1-technical-5a3e5aae-v21
@@ -376,3 +378,24 @@ positive but cannot rescue world/generator failure. The sealed decision is
 `do_not_run_canonical_s2`, with no confirmation candidate, no validated winner,
 and policy optimization blocked. Report content SHA-256 is
 `a9f01ae60173e4e9eaa20141e8e83c8b8400c137acbe9f9ffe7c3f8a60d4673a`.
+
+2026-07-13 Claude: Final-stretch sanction (PRECONSCIOUS-FINAL-STRETCH-PLAN.md
+Step 1). This card absorbs the two zero-call successors, both behind a fresh
+prospective v2.4 contract frozen before any analysis: (1a) the P0
+error/decomposition audit the v2.3 stop itself named — target predictability
+from the fixed action schedule alone, feature dimensionality/regularization at
+144 transitions, world-specific encoding (why only Hethel improved), per-kernel
+failure modes — emitting a classification of the sensor null as
+representation_carries_nothing / data_starved / world_confounded; (1b) the
+active-sensing value-of-information study — the benchmark holds tutor actions
+fixed by design, so choosing moves for what they reveal is untested; the
+kernels' captured oracle distributions make per-action posterior-entropy
+reduction over latent state exactly computable with zero calls — emitting
+close_sensor_program_on_substrate / graduate_active_sensing_to_paid /
+inconclusive_data_starved. Neither study may rescue, reinterpret, or
+re-analyze any stopped row for promotion. Evidence durability: the sealed S0
+exact-channel and S1 canonical-pilot runs are now packaged
+(config/adaptive-tutor-evidence/adaptive-state-v2-s0-exact-channel-346e472a-v23-06f76257057c.manifest.json,
+…-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.manifest.json) with archives in
+artifacts/adaptive-tutor-runs/ and copies in
+~/.machinespirits-data/runs/adaptive-tutor/.

@@ -7,7 +7,7 @@ priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-10
-updated: 2026-07-12
+updated: 2026-07-13
 verification: "The v2.1 gate requires a sealed passing Marrick x four-arm seed-0 canary as the same-SHA/model/runtime/CLI parent of seeds 1-5, then requires a sealed canary-bound provisional parent for seeds 6-10. It forbids real --force, validates immutable rows, matrix/numeric schema/output leaks and provenance, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same winner across both blocks plus pooled k=10."
 claim_status: planned
 depends_on:
@@ -17,6 +17,7 @@ links:
     - PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md
     - PLAN_4_0/FIELD_THEORY_IMPLEMENTATION_PLAN.md
     - PLAN_4_0/2026-07-10-preconscious-adaptation-review.md
+    - PRECONSCIOUS-FINAL-STRETCH-PLAN.md
 tags:
   - dramatic-derivation
   - field-planner
@@ -85,3 +86,19 @@ K5 refuses Git, invariant-source, role-model, effort/timeout, concurrency, or
 CLI-fingerprint drift before any row starts; a k10 parent must prove that it was
 itself canary-bound. The older Terra 60/60 artifact remains exploratory and
 cannot authorize this protocol. No paid Phase 6A v2.1 row has run.
+
+2026-07-13 Claude: Final-stretch Step 3 framing added
+(PRECONSCIOUS-FINAL-STRETCH-PLAN.md; frozen protocol unchanged). With the
+sensor null (`do_not_run_canonical_s2`), this gate is correctly read as an
+ACTUATOR test under privileged sensing: the non-acts planner reads true
+learner-store state, so it measures whether deterministic move-planning helps
+even when sensing is free. Two sequencing amendments, none to the protocol:
+(1) run only after the Step 2 register confirmatory
+(tutor-stub-multiworld-policy-replication) completes — if budget forces a
+choice, Step 2 and the side-coaching gate outrank this; (2) stop-and-decide
+after the sealed k5 block — if no planner arm clears the material-improvement
+bar against both baseline and report-only at k5, stop permanently: the planner
+retires, Phase 6B is declared moot (an actuator that cannot help with
+privileged state cannot help with reconstructed state), and the field
+machinery survives as reporting instrumentation only. If k5 clears, complete
+k10 exactly as frozen.
