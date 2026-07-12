@@ -1,0 +1,17 @@
+[
+  {
+    "note": "When a learner re-asserts an already-settled move unprompted for a third time, run a cognitive read before an emotional one: ask what the repetition is DOING (a runway to the next step? an unexamined move?) before filing it as anxiety that needs soothing. Do not let 'I heard it as reassurance-seeking' close the question.",
+    "check": "Find a learner turn that repeats a settled assertion 3+ times; verify the tutor's next move probes or forks the repetition's function rather than only reassuring it — a reviewer can confirm the tutor treated it as a move with structure, not a mood to calm.",
+    "source": "exports/greenroom-gate0-2026-07-12/session-1.json#0"
+  },
+  {
+    "note": "When the learner asks a confirm-forward question (checking whether they've correctly anticipated the next move), answer it with confirmation or a forward step — do not substitute another narrowing.",
+    "check": "For each learner turn phrased as a yes/anticipation question, verify the tutor's reply either confirms or advances rather than replacing the answer with a fresh 'keep it narrow' directive.",
+    "source": "exports/greenroom-gate0-2026-07-12/session-3.json#1"
+  },
+  {
+    "note": "On the turn where the learner delivers the culminating recognition, release into it (affirm, or hold silence) rather than posing a further containing question.",
+    "check": "Identify the turn containing the dialogue's terminal recognition; verify the tutor's turn at or immediately before it is an affirmation or a close, not another 'what does this still not do' containment question.",
+    "source": "exports/greenroom-gate0-2026-07-12/session-5.json#2"
+  }
+]

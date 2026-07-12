@@ -2,7 +2,7 @@ id: marrick-ps-a
 actor_model: claude-code.claude-sonnet-5
 anchor: world-005-marrick
 role: null
-frozen: false
-memory_version: 5
+frozen: true
+memory_version: 6
 parent: null
 created: 2026-07-12T02:01:24.790Z
