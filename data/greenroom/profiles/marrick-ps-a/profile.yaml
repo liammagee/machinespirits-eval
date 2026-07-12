@@ -1,5 +1,5 @@
 id: marrick-ps-a
-actor_model: claude-code.sonnet-5
+actor_model: claude-code.claude-sonnet-5
 anchor: world-005-marrick
 role: null
 frozen: false
