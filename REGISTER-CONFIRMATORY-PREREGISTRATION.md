@@ -1,6 +1,6 @@
 # Register Confirmatory — Pre-Registration (final-stretch Step 2)
 
-Status: **DRAFT, 2026-07-13 — not frozen.** Freezing happens at launch go: this file's Status line flips to FROZEN with the launch date and commit SHA, after which nothing below may change. Workplan card: `workplan/items/tutor-stub-multiworld-policy-replication.md`. Plan: `PRECONSCIOUS-FINAL-STRETCH-PLAN.md` Step 2. No dialogue for this experiment may run before the freeze commit exists.
+Status: **FROZEN 2026-07-13 at launch go (block A).** Nothing below this line may change; results are appended under "Results" only. Workplan card: `workplan/items/tutor-stub-multiworld-policy-replication.md`. Plan: `PRECONSCIOUS-FINAL-STRETCH-PLAN.md` Step 2. The freeze commit is the launch SHA; block A runs only from it, and the run header's stamped provenance must match.
 
 ## Question
 
@@ -31,7 +31,7 @@ Rationale, binding at freeze (amended 2026-07-13 after review — block A moved 
 - **Rejected alternative, recorded:** `codex.gpt-5.5` (the standing default stack) was the draft's original block A. Rejected for confirmation because no profile gate has ever passed there and a null would be stack-ambiguous. It remains the natural *generalization* block: an optional Step 2b (own go, after a confirmed effect), not part of this design.
 - **Per-block monoculture is deliberate:** all four seams run the same family within a block, matching the exploratory runs this design confirms (changing seam assignments would change the instrument mid-confirmation). The known caveat — the record extractor scoring its own family's dialogues — is carried unchanged and is exactly what the second family block checks.
 - **There is no judge seam:** outcomes are computed by the harness from grounding, closure, coverage, and leak discipline; no rubric LLM is involved.
-- **Rotation note:** terra is a preview-generation model and may leave the CLI sooner than 5.5; stamped run headers, the sealed artifacts, and the archive manifests carry reproducibility if it does.
+- **Version note (user directive, 2026-07-13):** gpt-5.6-terra is an incremental update over gpt-5.5, not a preview build. The general rule applied here (and in taking Sonnet 5 over 4.6 for block B): run capability studies on the latest available versions, so claims exercise current near-frontier capability rather than describing it in the rear-view mirror. Stamped run headers and the archive manifests carry reproducibility across any later CLI rotation.
 
 ## Endpoints and decision rules (binding at freeze)
 
@@ -44,7 +44,24 @@ Rationale, binding at freeze (amended 2026-07-13 after review — block A moved 
 
 ## Execution shape
 
-- Family block A: 60 dialogues, attended, sequential, checkpointed (exit-and-rerun across quota windows; the QA matrix resumes by cell). Block B identically in a later window. If quota forces triage, block A completes first in full — a half-run block is instrument-invalid.
+- Family block A: 60 dialogues, attended, checkpointed (exit-and-rerun across quota windows; the QA matrix resumes by cell). Block B identically in a later window. If quota forces triage, block A completes first in full — a half-run block is instrument-invalid.
+- **Block A launch command (pinned at freeze; run seed 20260713):**
+
+```bash
+node scripts/run-tutor-stub-qa-matrix.js \
+  --policies bland,field,negative \
+  --profiles diligent,affective_resistant,false_memory,proof_skipper \
+  --runs 5 --turns until-grounded --safety-turns 40 \
+  --interleave-policies --pressure-turns 6 \
+  --model codex.gpt-5.6-terra \
+  --analysis-model codex.gpt-5.6-terra \
+  --auto-learner-model codex.gpt-5.6-terra \
+  --world world_005_marrick --run-seed 20260713 \
+  --trace-dir .tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13 \
+  --keep-going
+```
+
+  All other knobs at matrix defaults, matching the exploratory instrument (parallelism 6, cli-effort low, max-tokens 4096, history-turns 4, primary horizon 16, minimum effect 0.05).
 - Launch from a clean committed SHA. Artifacts land in a fresh `.tutor-stub-auto-eval/register-confirmatory-<family>-n5-live-<date>/`; at completion each block is tar.gz-archived to `~/.machinespirits-data/runs/tutor-stub/` with a tracked manifest in `config/adaptive-tutor-evidence/` and distilled summaries in `exports/` (the Step 0.3 pattern).
 - Estimated cost: ~1 attended quota day per family block.
 

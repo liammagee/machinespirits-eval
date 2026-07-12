@@ -82,3 +82,13 @@ identity verified from run_start provenance. gpt-5.5 is recorded in the
 prereg as the rejected alternative, available as an optional post-confirmation
 generalization block (Step 2b, own go). Prereg draft amended in place
 (still DRAFT; freezes at launch go).
+
+2026-07-13 Claude: LAUNCH GO received; version note corrected per user
+(terra = incremental update over 5.5, not preview; general rule = run
+capability studies on latest versions to avoid rear-view-mirror claims).
+Prereg FROZEN with the pinned block-A command (run seed 20260713, terra at
+all four seams, trace dir register-confirmatory-terra-n5-live-2026-07-13).
+Block A launching from the freeze commit; progress polled ~every 25 min
+with per-model call counts, payload-based token estimates, and ETA
+(subscription CLIs expose no token meters — call counts + wall clock are
+the quota-actionable metrics).
