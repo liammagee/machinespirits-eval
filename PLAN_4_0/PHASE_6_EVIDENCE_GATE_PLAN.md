@@ -2,16 +2,19 @@
 
 ## Status
 
-The original Phase 6 protocol is superseded before a claim-bearing run. No
-four-arm real dataset exists, so this correction is prospective rather than a
-post-outcome change.
+The original Phase 6 protocol is superseded before a claim-bearing run. An old
+60-row Terra collection exists only under the pre-contract artifact reader; it
+lacks the current protocol identity, decision, immutable plan/event/seal chain,
+and placebo-beating result, so it is not a v2/v2.1 claim dataset or parent. This
+correction remains prospective for the operative protocol.
 
 The operative frozen artifact is
-`config/drama-derivation/phase6-field-planner-gate-v2.json`. Version 2 closes
-the pre-run audit findings on exact flags, real-row immutability, continuation
-lineage, output leak detection, row/matrix validity, advisory manipulation, and
-report-only comparator safety. A v1 artifact cannot authorize a v2
-continuation.
+`config/drama-derivation/phase6-field-planner-gate-v2.1.json`. Version 2.1
+retains v2's exact flags, real-row immutability, continuation lineage, output
+leak detection, row/matrix validity, advisory manipulation, and report-only
+comparator safety, and closes the last operator-only gap by making a sealed
+passing route canary the mandatory parent of seeds 1–5. A v1 or v2 artifact
+cannot authorize a v2.1 claim block or continuation.
 
 The reason is architectural. The named `hidden+proofDebt` production control
 requires this chain:
@@ -145,9 +148,17 @@ verdict is `null_invalid_instrumentation`, not `ceiling`.
 
 1. Plan and deterministic mock smoke: no claim.
 2. Model-route canary: exactly Marrick × all four arms × seed label 0, launched
-   with `--technical-canary`. It is real but receives the deterministic verdict
-   `technical_canary_only` and is excluded from both evidence blocks.
-3. Provisional block: seeds 1–5 for every world × arm cell.
+   with `--technical-canary`. It is real but receives either
+   `technical_canary_only` with `passed: true` or `technical_canary_failed`; it
+   is excluded from both evidence blocks. Passing requires exact four-cell
+   completion, semantic and trace/audit coverage, zero hard safety/leak failures,
+   and complete sealed model provenance. It does not require grounding, decay
+   activation, the advisory efficacy threshold, or a realized enforcement
+   change.
+3. Provisional block: seeds 1–5 for every world × arm cell, with
+   `--prior-canary` pointing to the sealed passing canary report. The k5 plan
+   checksum-binds that parent and refuses Git, invariant-source, model,
+   effort/timeout, concurrency, or CLI-fingerprint drift before any row starts.
 4. Replication execution: run only seeds 6–10, with `--prior-provisional`
    pointing to the sealed real seeds 1–5 `provisional_promote` report. The
    runner imports a minimal checksummed snapshot of the parent rows and the
@@ -174,16 +185,17 @@ The bounded launch sequence from a clean committed SHA is:
 ```bash
 # Excluded route check: four paid rows, no efficacy claim.
 node scripts/run-derivation-phase6-gate.js \
-  --real --confirm-paid-phase6a-v2 --technical-canary --label phase6a-v2-route-canary
+  --real --confirm-paid-phase6a-v2.1 --technical-canary --label phase6a-v2.1-route-canary
 
 # Claim block 1: 3 worlds x 4 arms x 5 seeds = 60 rows.
 node scripts/run-derivation-phase6-gate.js \
-  --real --confirm-paid-phase6a-v2 --label phase6a-v2-k5
+  --real --confirm-paid-phase6a-v2.1 --label phase6a-v2.1-k5 \
+  --prior-canary exports/dramatic-derivation/phase6-gate/phase6a-v2.1-route-canary/phase6-gate-report.json
 
 # Only after a sealed provisional_promote: 60 new rows for seeds 6-10.
 node scripts/run-derivation-phase6-gate.js \
-  --real --confirm-paid-phase6a-v2 --label phase6a-v2-k10-continuation \
-  --prior-provisional exports/dramatic-derivation/phase6-gate/phase6a-v2-k5/phase6-gate-report.json
+  --real --confirm-paid-phase6a-v2.1 --label phase6a-v2.1-k10-continuation \
+  --prior-provisional exports/dramatic-derivation/phase6-gate/phase6a-v2.1-k5/phase6-gate-report.json
 ```
 
 Use the normal provider/model environment variables for the intended frozen
@@ -306,24 +318,28 @@ The gate is invalid unless:
 
 Apply this order mechanically:
 
-1. `incomplete` — expected rows or artifacts are missing. This is an analytical
+1. `technical_canary_failed` — the excluded canary is incomplete, unsafe, or
+   missing required technical coverage; seeds 1–5 remain locked.
+2. `technical_canary_only` — the excluded canary passed and may be the sealed
+   parent of one compatible seeds 1–5 transaction. It is not outcome evidence.
+3. `incomplete` — expected rows or artifacts are missing. This is an analytical
    verdict, not blanket authorization to resume a paid label: only a verified
    committed prefix plus a wholly never-started tail is resumable. Any attempted
    incomplete row makes the same label forbidden. Duplicate/substituted matrix
    cells or malformed required numeric fields also resolve here rather than
    being coerced to zero.
-2. `null_invalid_instrumentation` — configuration, manipulation, trace, or
+4. `null_invalid_instrumentation` — configuration, manipulation, trace, or
    provenance checks fail.
-3. `promote_local` — seeds 1–5, seeds 6–10, and pooled k=10 all pass benefit,
+5. `promote_local` — seeds 1–5, seeds 6–10, and pooled k=10 all pass benefit,
    placebo, safety, and negative-transfer rules.
-4. `provisional_promote` — seeds 1–5 pass the same rules.
-5. `negative_control` — a planner materially improves outcomes but fails
+6. `provisional_promote` — seeds 1–5 pass the same rules.
+7. `negative_control` — a planner materially improves outcomes but fails
    safety.
-6. `instrumentation_effect` — report-only materially improves baseline and a
+8. `instrumentation_effect` — report-only materially improves baseline and a
    planner matches or fails to beat report-only.
-7. `ceiling` — baseline grounds every row in every world and no safe planner
+9. `ceiling` — baseline grounds every row in every world and no safe planner
    reduces fixed-turn cost by at least two turns.
-8. `null` — valid experiment; no earlier result applies.
+10. `null` — valid experiment; no earlier result applies.
 
 If advisory and enforce both qualify, choose deterministically by:
 
@@ -338,6 +354,14 @@ The run plan must hash the frozen contract, evaluator source, runner, planner,
 worlds, scripts, prompts, and model requests. Its design hash includes the full
 on/off flag matrix, complete decay object, thresholds, world list, seed blocks,
 evaluator version, and verdict precedence.
+
+For seeds 1–5, the plan must set the sealed passing canary as
+`lineage.parentRunId` and bind its report, seal, plan, inventory, row snapshot,
+and runtime provenance. Canary and k5 must share the exact clean Git SHA,
+runner/analyzer/policy/prompt/config hashes, director/tutor/learner models,
+effort and timeout policies, serial concurrency, and CLI executable
+realpaths/versions. World/profile/script aggregate hashes differ by design
+because the canary is the Marrick-only subset.
 
 For seeds 6–10, the plan must also set the sealed seeds 1–5 run as
 `lineage.parentRunId` and bind the parent report, seal, row snapshot, decision

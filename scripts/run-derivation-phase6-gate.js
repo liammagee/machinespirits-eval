@@ -34,7 +34,7 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 const LOOP_SCRIPT = path.join(ROOT, 'scripts', 'run-derivation-loop.js');
 const PHASE6_VERDICT_EVALUATOR = path.join(ROOT, 'services', 'dramaticDerivation', 'phase6Verdict.js');
 const PHASE6_DECISION_RULES = path.join(ROOT, 'PLAN_4_0', 'PHASE_6_EVIDENCE_GATE_PLAN.md');
-const PHASE6_CONTRACT_PATH = path.join(ROOT, 'config', 'drama-derivation', 'phase6-field-planner-gate-v2.json');
+const PHASE6_CONTRACT_PATH = path.join(ROOT, 'config', 'drama-derivation', 'phase6-field-planner-gate-v2.1.json');
 const PHASE6_CONTRACT = JSON.parse(fs.readFileSync(PHASE6_CONTRACT_PATH, 'utf8'));
 
 const WORLD_REGISTRY = Object.freeze({
@@ -190,11 +190,16 @@ function phase6EvidenceRow(row = {}) {
 function priorProvisionalMetadata(prior = null) {
   if (!prior) return null;
   const { rows, ...metadata } = prior;
+  if (!Array.isArray(rows)) return structuredClone(metadata);
   return {
     ...structuredClone(metadata),
     rowCount: rows.length,
     rowsSha256: hashCanonicalJson(rows),
   };
+}
+
+function priorCanaryMetadata(prior = null) {
+  return priorProvisionalMetadata(prior);
 }
 
 function phase6ParentPlanProvenanceBlockers(plan = {}) {
@@ -231,6 +236,138 @@ function phase6ParentPlanProvenanceBlockers(plan = {}) {
   return blockers;
 }
 
+function phase6CanarySnapshotBlockers(prior = null) {
+  const blockers = [];
+  const expectedRows =
+    PHASE6_CONTRACT.technicalCanary.worlds.length *
+    PHASE6_CONTRACT.technicalCanary.arms.length *
+    PHASE6_CONTRACT.technicalCanary.seeds.length;
+  const rowCount = Array.isArray(prior?.rows) ? prior.rows.length : prior?.rowCount;
+  const rowsSha256 = Array.isArray(prior?.rows) ? hashCanonicalJson(prior.rows) : prior?.rowsSha256;
+  if (
+    !prior ||
+    prior.verdict !== 'technical_canary_only' ||
+    prior.passed !== true ||
+    !Array.isArray(prior.seeds) ||
+    hashCanonicalJson(prior.seeds) !== hashCanonicalJson(PHASE6_CONTRACT.technicalCanary.seeds) ||
+    prior.verdictEvaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion ||
+    prior.decisionContractSha256 !== hashFile(PHASE6_CONTRACT_PATH) ||
+    prior.verdictEvaluatorSha256 !== hashFile(PHASE6_VERDICT_EVALUATOR)
+  ) {
+    blockers.push('technical-canary verdict, seed, contract, or evaluator provenance is incompatible');
+  }
+  for (const field of ['reportSha256', 'sealSha256', 'planSha256', 'inventorySha256']) {
+    if (!/^[0-9a-f]{64}$/u.test(String(prior?.[field] || ''))) blockers.push(`technical-canary ${field} is missing`);
+  }
+  if (!String(prior?.parentRunId || '').trim()) blockers.push('technical-canary parent run id is missing');
+  if (rowCount !== expectedRows || !/^[0-9a-f]{64}$/u.test(String(rowsSha256 || ''))) {
+    blockers.push(`technical-canary row snapshot must bind exactly ${expectedRows} rows`);
+  }
+  if (prior?.git?.dirty !== false || !String(prior?.git?.sha || '').trim()) {
+    blockers.push('technical-canary Git provenance must name a clean committed SHA');
+  }
+  if (
+    !prior?.requiredHashKinds ||
+    hashCanonicalJson(prior.requiredHashKinds) !== hashCanonicalJson([...PHASE6_REQUIRED_HASH_KINDS].sort())
+  ) {
+    blockers.push('technical-canary required source hash kinds are incompatible');
+  }
+  if (PHASE6_REQUIRED_HASH_KINDS.some((kind) => !/^[0-9a-f]{64}$/u.test(String(prior?.hashes?.[kind] || '')))) {
+    blockers.push('technical-canary source hash set is incomplete');
+  }
+  if (hashCanonicalJson(Object.keys(prior?.models || {}).sort()) !== hashCanonicalJson(['director', 'learner', 'tutor'])) {
+    blockers.push('technical-canary frozen model roles are incomplete');
+  }
+  if (
+    !prior?.phase6ModelRuntime ||
+    prior.phase6ModelRuntimeSha256 !== hashCanonicalJson(prior.phase6ModelRuntime)
+  ) {
+    blockers.push('technical-canary role runtime hash is inconsistent');
+  }
+  if (
+    !prior?.phase6CliFingerprints ||
+    prior.phase6CliFingerprintsSha256 !== hashCanonicalJson(prior.phase6CliFingerprints)
+  ) {
+    blockers.push('technical-canary CLI fingerprint hash is inconsistent');
+  }
+  if (Number(prior?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY) {
+    blockers.push('technical-canary execution was not serial');
+  }
+  return blockers;
+}
+
+export function loadPriorCanaryReport(requestedPath) {
+  if (!requestedPath) return null;
+  const reportPath = resolveFromRoot(requestedPath);
+  if (path.basename(reportPath) !== 'phase6-gate-report.json') {
+    throw new Error('--prior-canary must name a phase6-gate-report.json artifact');
+  }
+  const report = readJson(reportPath);
+  const gateDir = path.dirname(reportPath);
+  const verification = assertExperimentRun(gateDir);
+  const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
+  const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
+  const reevaluated = evaluatePhase6Verdict(report, PHASE6_CONTRACT);
+  const parentProvenanceBlockers = phase6ParentPlanProvenanceBlockers(verification.plan);
+  const expectedRows =
+    PHASE6_CONTRACT.technicalCanary.worlds.length *
+    PHASE6_CONTRACT.technicalCanary.arms.length *
+    PHASE6_CONTRACT.technicalCanary.seeds.length;
+  if (
+    verification.seal?.status !== 'complete' ||
+    report.mode !== 'real' ||
+    report.evidenceKind !== 'technical_canary' ||
+    report.protocolId !== PHASE6_CONTRACT.protocolId ||
+    report.verdictEvaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion ||
+    report.decision?.evaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion ||
+    report.decision?.verdict !== 'technical_canary_only' ||
+    report.decision?.passed !== true ||
+    report.rowCount !== expectedRows ||
+    report.okRows !== expectedRows ||
+    verification.plan?.runId !== report.label ||
+    verification.plan?.lineage?.parentRunId !== null ||
+    hashCanonicalJson(verification.plan?.requiredObservedModelRoles) !==
+      hashCanonicalJson(['director', 'learner', 'tutor']) ||
+    verification.plan?.metadata?.phase6DecisionContractSha256 !== contractSha256 ||
+    verification.plan?.metadata?.phase6VerdictEvaluatorSha256 !== evaluatorSha256 ||
+    hashCanonicalJson(verification.plan?.intent?.phase6Gate?.decisionContract) !== hashCanonicalJson(PHASE6_CONTRACT) ||
+    reevaluated.verdict !== 'technical_canary_only' ||
+    reevaluated.passed !== true ||
+    parentProvenanceBlockers.length
+  ) {
+    throw new Error(
+      'Phase 6A seeds 1-5 require a sealed, passing, hash-compatible v2.1 technical-canary report reproduced by the current evaluator',
+    );
+  }
+  const rows = report.rows.map(phase6EvidenceRow);
+  return {
+    parentRunId: verification.plan.runId,
+    label: report.label,
+    verdict: report.decision.verdict,
+    passed: true,
+    claimStatus: 'excluded',
+    seeds: [...PHASE6_CONTRACT.technicalCanary.seeds],
+    verdictEvaluatorVersion: report.verdictEvaluatorVersion,
+    decisionContractSha256: contractSha256,
+    verdictEvaluatorSha256: evaluatorSha256,
+    report: rel(reportPath),
+    reportSha256: hashFile(reportPath),
+    sealSha256: hashFile(path.join(gateDir, 'run-seal.json')),
+    planSha256: verification.seal.planSha256,
+    inventorySha256: verification.seal.inventorySha256,
+    git: structuredClone(verification.plan.provenance.git),
+    requiredHashKinds: structuredClone(verification.plan.requiredHashKinds),
+    hashes: structuredClone(verification.plan.hashes),
+    models: structuredClone(verification.plan.models),
+    phase6ModelRuntime: structuredClone(verification.plan.metadata.phase6ModelRuntime),
+    phase6ModelRuntimeSha256: verification.plan.metadata.phase6ModelRuntimeSha256,
+    phase6CliFingerprints: structuredClone(verification.plan.metadata.phase6CliFingerprints),
+    phase6CliFingerprintsSha256: verification.plan.metadata.phase6CliFingerprintsSha256,
+    executionConcurrency: verification.plan.metadata.executionConcurrency,
+    rows,
+  };
+}
+
 export function loadPriorProvisionalReport(requestedPath) {
   if (!requestedPath) return null;
   const reportPath = resolveFromRoot(requestedPath);
@@ -245,6 +382,8 @@ export function loadPriorProvisionalReport(requestedPath) {
   const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
   const reevaluated = evaluatePhase6Verdict(report, PHASE6_CONTRACT);
   const parentProvenanceBlockers = phase6ParentPlanProvenanceBlockers(verification.plan);
+  const canaryParent = verification.plan?.metadata?.phase6CanaryParentProvenance || null;
+  const canaryParentBlockers = phase6CanarySnapshotBlockers(canaryParent);
   if (
     verification.seal?.status !== 'complete' ||
     report.mode !== 'real' ||
@@ -259,9 +398,13 @@ export function loadPriorProvisionalReport(requestedPath) {
     verification.plan?.metadata?.phase6DecisionContractSha256 !== contractSha256 ||
     verification.plan?.metadata?.phase6VerdictEvaluatorSha256 !== evaluatorSha256 ||
     hashCanonicalJson(verification.plan?.intent?.phase6Gate?.decisionContract) !== hashCanonicalJson(PHASE6_CONTRACT) ||
+    verification.plan?.lineage?.parentRunId !== canaryParent?.parentRunId ||
+    !report.priorCanary ||
+    hashCanonicalJson(report.priorCanary) !== hashCanonicalJson(canaryParent) ||
     reevaluated.verdict !== 'provisional_promote' ||
     reevaluated.winner !== report.decision.winner ||
-    parentProvenanceBlockers.length
+    parentProvenanceBlockers.length ||
+    canaryParentBlockers.length
   ) {
     throw new Error(
       'Phase 6A seeds 6-10 require a sealed, hash-compatible real k=5 provisional_promote report reproduced by the current evaluator',
@@ -291,6 +434,7 @@ export function loadPriorProvisionalReport(requestedPath) {
     phase6CliFingerprints: structuredClone(verification.plan.metadata.phase6CliFingerprints),
     phase6CliFingerprintsSha256: verification.plan.metadata.phase6CliFingerprintsSha256,
     executionConcurrency: verification.plan.metadata.executionConcurrency,
+    priorCanary: structuredClone(canaryParent),
     rows: evidenceRows.map(phase6EvidenceRow),
   };
 }
@@ -327,7 +471,7 @@ export function assertPhase6ForcePolicy({ mode, force = false } = {}) {
 
 export function assertPhase6PaidConfirmation({ mode, confirmed = false } = {}) {
   if (mode === 'real' && !confirmed) {
-    throw new Error('Paid Phase 6A is locked; pass --confirm-paid-phase6a-v2 after reviewing the frozen protocol');
+    throw new Error('Paid Phase 6A is locked; pass --confirm-paid-phase6a-v2.1 after reviewing the frozen protocol');
   }
 }
 
@@ -417,7 +561,9 @@ export function phase6RealGateProtocolBlockers(manifest = {}) {
         blockers.push(`technical canary ${field} differ from the frozen excluded canary contract`);
       }
     }
-    if (manifest.priorProvisional) blockers.push('technical canary must not declare a provisional parent');
+    if (manifest.priorCanary || manifest.priorProvisional) {
+      blockers.push('technical canary must not declare an evidence parent');
+    }
   } else {
     if (manifest.evidenceKind !== 'claim') blockers.push('Phase 6A claim runs require evidenceKind=claim');
     if (hashCanonicalJson(manifest.worlds) !== hashCanonicalJson(PHASE6_CONTRACT.worlds)) {
@@ -435,6 +581,12 @@ export function phase6RealGateProtocolBlockers(manifest = {}) {
     }
     if (isFirstBlock && manifest.priorProvisional) {
       blockers.push('Phase 6A seeds 1-5 must not declare a provisional parent');
+    }
+    if (isFirstBlock && phase6CanarySnapshotBlockers(manifest.priorCanary).length) {
+      blockers.push('Phase 6A seeds 1-5 require a sealed, passing, compatible v2.1 technical-canary parent');
+    }
+    if (isSecondBlock && manifest.priorCanary) {
+      blockers.push('Phase 6A seeds 6-10 inherit canary lineage through the sealed seeds 1-5 parent');
     }
     if (
       isSecondBlock &&
@@ -463,6 +615,7 @@ export function phase6RealGateProtocolBlockers(manifest = {}) {
         manifest.priorProvisional?.phase6CliFingerprintsSha256 !==
           hashCanonicalJson(manifest.priorProvisional?.phase6CliFingerprints) ||
         Number(manifest.priorProvisional?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY ||
+        phase6CanarySnapshotBlockers(manifest.priorProvisional?.priorCanary).length ||
         !Array.isArray(manifest.priorProvisional?.rows) ||
         manifest.priorProvisional.rows.length !==
           PHASE6_CONTRACT.worlds.length * PHASE6_CONTRACT.arms.length * firstSeeds.length)
@@ -520,6 +673,7 @@ function gateDesign(manifest) {
     evidenceKind: manifest.evidenceKind,
     verdictEvaluatorVersion: manifest.verdictEvaluatorVersion,
     decisionContract: manifest.decisionContract,
+    priorCanary: priorCanaryMetadata(manifest.priorCanary),
     priorProvisional: priorProvisionalMetadata(manifest.priorProvisional),
     label: manifest.label,
     profile: manifest.profile,
@@ -702,6 +856,7 @@ export function buildEvidencePlan(
   assertPhase6ConcurrencyPolicy({ mode: manifest.mode, concurrency });
   const modelRuntime = phase6ModelRuntime(manifest.mode);
   const cliFingerprints = phase6CliFingerprints(modelRuntime);
+  const canaryLineage = manifest.priorCanary || manifest.priorProvisional?.priorCanary || null;
   const jobs = manifest.rows.map((row) => ({
     id: row.id,
     worldKey: row.worldKey,
@@ -743,7 +898,11 @@ export function buildEvidencePlan(
     },
     masterSeed,
     jobs,
-    lineage: { parentRunId: manifest.priorProvisional?.parentRunId || null, resumeOf: null, supersedes: [] },
+    lineage: {
+      parentRunId: manifest.priorProvisional?.parentRunId || manifest.priorCanary?.parentRunId || null,
+      resumeOf: null,
+      supersedes: [],
+    },
     intent: {
       phase6Gate: { ...design, modelRuntime, concurrency },
       decisionRules: path.relative(ROOT, PHASE6_DECISION_RULES),
@@ -759,9 +918,64 @@ export function buildEvidencePlan(
       phase6CliFingerprints: cliFingerprints,
       phase6CliFingerprintsSha256: hashCanonicalJson(cliFingerprints),
       executionConcurrency: concurrency,
+      phase6CanaryParentProvenance: priorCanaryMetadata(canaryLineage),
       phase6ContinuationParentProvenance: priorProvisionalMetadata(manifest.priorProvisional),
     },
   });
+}
+
+export function phase6CanaryCompatibilityBlockers({ manifest, plan } = {}) {
+  const parent = manifest?.priorCanary;
+  if (!parent) return [];
+  const blockers = [];
+  if (
+    parent.git?.dirty !== false ||
+    plan?.provenance?.git?.dirty !== false ||
+    parent.git?.sha !== plan?.provenance?.git?.sha
+  ) {
+    blockers.push('technical canary and seeds 1-5 must use the exact same clean Git SHA');
+  }
+  const invariantHashKinds = ['runner', 'analyzer', 'policy', 'prompt', 'config'];
+  if (invariantHashKinds.some((kind) => parent.hashes?.[kind] !== plan?.hashes?.[kind])) {
+    blockers.push('technical canary and seeds 1-5 invariant source hashes must match exactly');
+  }
+  if (hashCanonicalJson(parent.models || null) !== hashCanonicalJson(plan?.models || null)) {
+    blockers.push('technical canary and seeds 1-5 frozen role model references must match exactly');
+  }
+  if (
+    parent.phase6ModelRuntimeSha256 !== plan?.metadata?.phase6ModelRuntimeSha256 ||
+    hashCanonicalJson(parent.phase6ModelRuntime || null) !== hashCanonicalJson(plan?.metadata?.phase6ModelRuntime || null)
+  ) {
+    blockers.push('technical canary and seeds 1-5 effort/timeout/runtime policies must match exactly');
+  }
+  if (
+    parent.phase6CliFingerprintsSha256 !== plan?.metadata?.phase6CliFingerprintsSha256 ||
+    hashCanonicalJson(parent.phase6CliFingerprints || null) !==
+      hashCanonicalJson(plan?.metadata?.phase6CliFingerprints || null)
+  ) {
+    blockers.push('technical canary and seeds 1-5 CLI executable realpaths/versions must match exactly');
+  }
+  if (
+    Number(parent.executionConcurrency) !== PHASE6_REAL_CONCURRENCY ||
+    Number(plan?.metadata?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY
+  ) {
+    blockers.push('technical canary and seeds 1-5 paid execution must both be serial');
+  }
+  if (
+    plan?.lineage?.parentRunId !== parent.parentRunId ||
+    hashCanonicalJson(plan?.metadata?.phase6CanaryParentProvenance) !==
+      hashCanonicalJson(priorCanaryMetadata(parent))
+  ) {
+    blockers.push('seeds 1-5 run plan must checksum-bind the sealed technical-canary parent');
+  }
+  return blockers;
+}
+
+export function assertPhase6CanaryCompatibility({ manifest, plan } = {}) {
+  const blockers = phase6CanaryCompatibilityBlockers({ manifest, plan });
+  if (blockers.length) {
+    throw new Error(`Refusing Phase 6A seeds 1-5 execution:\n- ${blockers.join('\n- ')}`);
+  }
 }
 
 export function phase6ContinuationCompatibilityBlockers({ manifest, plan } = {}) {
@@ -864,6 +1078,7 @@ export function prepareEvidenceTransaction(
     if (hashCanonicalJson(frozenPlan) !== hashCanonicalJson(expectedPlan)) {
       throw new Error('Refusing to resume Phase 6 because the complete frozen run plan no longer matches');
     }
+    assertPhase6CanaryCompatibility({ manifest, plan: frozenPlan });
     assertPhase6ContinuationCompatibility({ manifest, plan: frozenPlan });
     const events = readRunEvents(manifest.gateDir);
     assertPhase6EventChain(events);
@@ -882,6 +1097,7 @@ export function prepareEvidenceTransaction(
     return frozenPlan;
   }
   const plan = buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint, concurrency });
+  assertPhase6CanaryCompatibility({ manifest, plan });
   assertPhase6ContinuationCompatibility({ manifest, plan });
   createRunPlan(manifest.gateDir, plan);
   writeCompatibilityManifest(manifest);
@@ -904,13 +1120,14 @@ Options:
   --arms <csv>              Override arms. Keys: ${Object.keys(ARM_REGISTRY).join(', ')}
   --seeds <csv>             Seed labels. Default: 1 in mock, frozen 1-5 in real
   --technical-canary        Real Marrick x four-arm x seed-0 route check; excluded from evidence
-  --prior-provisional <file>  Required for real seeds 6-10; sealed k=5 phase6-gate-report.json
+  --prior-canary <file>      Required for real seeds 1-5; sealed passing technical-canary report
+  --prior-provisional <file> Required for real seeds 6-10; sealed k=5 phase6-gate-report.json
   --run-seed <n>            Master seed for deterministic replay. Default: 20260711
   --decay-rate <n>          Mock override. Real Phase 6A is frozen at ${PHASE6_CONTRACT.decay.rate}
   --mutate-share <n>        Mock override. Real Phase 6A is frozen at ${PHASE6_CONTRACT.decay.mutateShare}
   --mode mock|real          Backend mode. Default: mock
   --real                    Alias for --mode real
-  --confirm-paid-phase6a-v2 Required acknowledgement for every real Phase 6A transaction
+  --confirm-paid-phase6a-v2.1 Required acknowledgement for every real Phase 6A transaction
   --concurrency <n>         Default: 4 in mock, 1 in real
   --force                   Mock only; re-run rows even if artifacts already exist
   --dry-run                 Write manifest/report preview, run nothing
@@ -1048,6 +1265,7 @@ export function buildGatePlan(options = {}) {
     evidenceKind: technicalCanary ? 'technical_canary' : 'claim',
     verdictEvaluatorVersion: PHASE6_CONTRACT.verdictEvaluatorVersion,
     decisionContract: structuredClone(PHASE6_CONTRACT),
+    priorCanary: !technicalCanary && options.priorCanary ? structuredClone(options.priorCanary) : null,
     priorProvisional: !technicalCanary && options.priorProvisional ? structuredClone(options.priorProvisional) : null,
     label: gateLabel,
     profile,
@@ -1765,6 +1983,7 @@ export function analyzeGateArtifacts(manifest, exitCodes = {}) {
     protocolId: manifest.protocolId,
     evidenceKind: manifest.evidenceKind,
     verdictEvaluatorVersion: manifest.verdictEvaluatorVersion,
+    priorCanary: priorCanaryMetadata(manifest.priorCanary || manifest.priorProvisional?.priorCanary || null),
     priorProvisional: priorProvisionalMetadata(manifest.priorProvisional),
     label: manifest.label,
     generatedAt: new Date().toISOString(),
@@ -2161,7 +2380,7 @@ async function main(argv = process.argv.slice(2)) {
   }
   const mode = has(argv, 'real') ? 'real' : arg(argv, 'mode', 'mock');
   if (!['mock', 'real'].includes(mode)) throw new Error(`--mode must be mock or real (got ${mode})`);
-  assertPhase6PaidConfirmation({ mode, confirmed: has(argv, 'confirm-paid-phase6a-v2') });
+  assertPhase6PaidConfirmation({ mode, confirmed: has(argv, 'confirm-paid-phase6a-v2.1') });
   const forceRequested = has(argv, 'force');
   assertPhase6ForcePolicy({ mode, force: forceRequested });
   const technicalCanary = has(argv, 'technical-canary');
@@ -2169,13 +2388,15 @@ async function main(argv = process.argv.slice(2)) {
   const worlds = splitCsv(arg(argv, 'worlds', ''));
   const arms = splitCsv(arg(argv, 'arms', ''));
   const explicitSeeds = arg(argv, 'seeds', null);
+  const priorCanaryPath = arg(argv, 'prior-canary', null);
   const priorPath = arg(argv, 'prior-provisional', null);
-  if (technicalCanary && (worlds.length || arms.length || explicitSeeds || priorPath)) {
-    throw new Error('--technical-canary owns worlds, arms, seed 0, and has no provisional parent');
+  if (technicalCanary && (worlds.length || arms.length || explicitSeeds || priorCanaryPath || priorPath)) {
+    throw new Error('--technical-canary owns worlds, arms, seed 0, and has no evidence parent');
   }
   const runSeed = Number(arg(argv, 'run-seed', '20260711'));
   if (!Number.isSafeInteger(runSeed)) throw new Error('--run-seed must be a safe integer');
   const dryRunRequested = has(argv, 'dry-run');
+  const priorCanary = loadPriorCanaryReport(priorCanaryPath);
   const priorProvisional = loadPriorProvisionalReport(priorPath);
   const defaultRealSeeds = priorProvisional
     ? PHASE6_CONTRACT.seedBlocks[1].join(',')
@@ -2191,6 +2412,7 @@ async function main(argv = process.argv.slice(2)) {
     mutateShare: Number(arg(argv, 'mutate-share', String(PHASE6_CONTRACT.decay.mutateShare))),
     mode,
     technicalCanary,
+    priorCanary,
     priorProvisional,
   });
   assertPhase6RealGateProtocolReady(manifest);

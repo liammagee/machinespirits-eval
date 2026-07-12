@@ -1,5 +1,5 @@
-export const PHASE6_VERDICT_SCHEMA = 'machinespirits.derivation.phase6a-verdict.v2';
-export const PHASE6_VERDICT_EVALUATOR_VERSION = 'phase6a-verdict-v2';
+export const PHASE6_VERDICT_SCHEMA = 'machinespirits.derivation.phase6a-verdict.v2.1';
+export const PHASE6_VERDICT_EVALUATOR_VERSION = 'phase6a-verdict-v2.1';
 
 const PLANNER_ARMS = ['field_planner_advisory', 'field_planner_enforce'];
 const SHA256_PATTERN = /^[0-9a-f]{64}$/u;
@@ -177,6 +177,76 @@ function validateEvidenceMatrix(report, rows, contract) {
   if (reportedOk !== rows.length)
     errors.push(`reported complete evidence rows ${reportedOk} does not equal ${rows.length}`);
   return { errors: [...new Set(errors)], seeds };
+}
+
+function technicalCanaryAudit(report, contract) {
+  const rows = Array.isArray(report.rows) ? report.rows : [];
+  const expected = new Set();
+  for (const world of contract.technicalCanary?.worlds || []) {
+    for (const seed of contract.technicalCanary?.seeds || []) {
+      for (const arm of contract.technicalCanary?.arms || []) expected.add(`${world}\t${arm}\t${seed}`);
+    }
+  }
+  const errors = [];
+  const seen = new Set();
+  rows.forEach((row, index) => {
+    const key = `${row?.worldKey}\t${row?.armKey}\t${String(row?.seed ?? '')}`;
+    if (!expected.has(key)) errors.push(`rows[${index}] is outside the technical-canary matrix: ${key}`);
+    if (seen.has(key)) errors.push(`duplicate technical-canary cell: ${key}`);
+    seen.add(key);
+    errors.push(...validateNumericRow(row, index));
+    if (row?.safety?.hardFailures !== 0) errors.push(`rows[${index}].safety.hardFailures must be zero`);
+    if (row?.transcriptLeakAudit?.hitCount !== 0) {
+      errors.push(`rows[${index}].transcriptLeakAudit.hitCount must be zero`);
+    }
+    if (row?.fieldPlanner?.nonLeakAuditFailures !== 0 || row?.fieldReportContext?.nonLeakAuditFailures !== 0) {
+      errors.push(`rows[${index}] contains a field non-leak audit failure`);
+    }
+  });
+  for (const key of expected) {
+    if (!seen.has(key)) errors.push(`missing technical-canary cell: ${key}`);
+  }
+  if (rows.length !== expected.size) errors.push(`technical canary requires exactly ${expected.size} rows`);
+  if (report.rowCount !== rows.length || report.okRows !== rows.length) {
+    errors.push('technical-canary report counts must show every planned row complete');
+  }
+
+  const byArm = groupBy(rows, (row) => row.armKey);
+  const baseline = byArm.get('baseline') || [];
+  const reportOnly = byArm.get('field_report_only') || [];
+  const baselineTraceClean =
+    baseline.length === 1 &&
+    baseline.every((row) => row?.fieldPlanner?.count === 0 && row?.fieldReportContext?.count === 0);
+  const reportOnlyCoverage =
+    reportOnly.length === 1 &&
+    reportOnly.every((row) => row?.fieldPlanner?.count === 0 && row?.fieldReportContext?.count === row?.turnsPlayed);
+  if (!baselineTraceClean) errors.push('technical-canary baseline trace must contain no field/report instrumentation');
+  if (!reportOnlyCoverage) errors.push('technical-canary report-only trace must cover every tutor turn');
+
+  const planners = {};
+  for (const arm of PLANNER_ARMS) {
+    const armRows = byArm.get(arm) || [];
+    const row = armRows[0];
+    const pass =
+      armRows.length === 1 &&
+      row?.fieldPlanner?.count === row?.turnsPlayed &&
+      row?.fieldPlanner?.candidateCountMismatches === 0 &&
+      row?.fieldPlanner?.missingOutcomes === 0 &&
+      row?.fieldPlanner?.missingSelectedScores === 0 &&
+      row?.conductPolicy?.loggedTurns === row?.turnsPlayed &&
+      row?.conductPolicy?.complianceChecked === row?.turnsPlayed;
+    planners[arm] = { pass, rowCount: armRows.length };
+    if (!pass) errors.push(`technical-canary ${arm} trace/audit coverage is incomplete`);
+  }
+  return {
+    pass: errors.length === 0,
+    errors: [...new Set(errors)],
+    expectedRows: expected.size,
+    observedRows: rows.length,
+    baselineTraceClean,
+    reportOnlyCoverage,
+    planners,
+  };
 }
 
 function fixedTurnCost(row) {
@@ -422,8 +492,18 @@ export function evaluatePhase6Verdict(report = {}, contract = {}) {
     return result('mock_plumbing_only', 'Mock and dry runs do not license a Phase 6A outcome verdict.', {});
   }
   if (report.evidenceKind === 'technical_canary') {
+    const audit = technicalCanaryAudit(report, contract);
+    if (!audit.pass) {
+      return result('technical_canary_failed', 'The excluded route canary did not pass its technical contract.', {
+        claimStatus: 'excluded',
+        passed: false,
+        audit,
+      });
+    }
     return result('technical_canary_only', 'The bounded real route canary is excluded from both evidence blocks.', {
       claimStatus: 'excluded',
+      passed: true,
+      audit,
     });
   }
 

@@ -7,6 +7,7 @@ import test from 'node:test';
 
 import {
   analyzeGateArtifacts,
+  assertPhase6CanaryCompatibility,
   assertPhase6ContinuationCompatibility,
   assertPhase6ConcurrencyPolicy,
   assertPhase6ForcePolicy,
@@ -22,7 +23,9 @@ import {
   inspectPhase6ResumeMatrix,
   inspectPhase6RowResumeState,
   installPhase6SignalHandlers,
+  loadPriorCanaryReport,
   loadPriorProvisionalReport,
+  phase6CanaryCompatibilityBlockers,
   phase6ModelRuntime,
   phase6ContinuationCompatibilityBlockers,
   phase6RunCloseoutDisposition,
@@ -43,7 +46,7 @@ import {
 } from '../services/experimentRunArtifacts.js';
 import { evaluatePhase6Verdict } from '../services/dramaticDerivation/phase6Verdict.js';
 
-const CONTRACT_PATH = 'config/drama-derivation/phase6-field-planner-gate-v2.json';
+const CONTRACT_PATH = 'config/drama-derivation/phase6-field-planner-gate-v2.1.json';
 const EVALUATOR_PATH = 'services/dramaticDerivation/phase6Verdict.js';
 const contract = JSON.parse(fs.readFileSync(CONTRACT_PATH, 'utf8'));
 
@@ -118,24 +121,107 @@ function rowResumeFixture({ withArtifacts = true, lifecycle = 'ordered' } = {}) 
   return { root, manifest, plan, row };
 }
 
+function fixedGitFingerprint() {
+  return {
+    sha: 'f'.repeat(40),
+    branch: 'test',
+    dirty: false,
+    fingerprintSha256: 'e'.repeat(64),
+  };
+}
+
+function validCanaryRows() {
+  return contract.technicalCanary.arms.map((armKey) => {
+    const planner = armKey.startsWith('field_planner');
+    const reportOnly = armKey === 'field_report_only';
+    return {
+      id: `marrick-${armKey}-s0`,
+      worldKey: 'marrick',
+      armKey,
+      seed: '0',
+      ok: true,
+      grounded: false,
+      turnsPlayed: 12,
+      turnCap: 24,
+      decay: { events: 0, degradedTurnIntegral: 0 },
+      fieldPlanner: {
+        count: planner ? 12 : 0,
+        candidateCountMismatches: 0,
+        missingOutcomes: 0,
+        missingSelectedScores: 0,
+        nonLeakAuditFailures: 0,
+      },
+      fieldReportContext: { count: reportOnly ? 12 : 0, nonLeakAuditFailures: 0 },
+      conductPolicy: {
+        loggedTurns: planner ? 12 : 0,
+        complianceChecked: planner ? 12 : 0,
+        complianceFailed: planner ? 3 : 0,
+        enforcementChanged: 0,
+      },
+      transcriptLeakAudit: { checked: true, hitCount: 0 },
+      safety: {
+        hardFailures: 0,
+        overreaches: 0,
+        earlyLateReleases: 0,
+        reachableReleases: 5,
+        invalidReleaseClaims: 0,
+        transcriptLeakHits: 0,
+      },
+    };
+  });
+}
+
+function compatibleCanary(rows = validCanaryRows()) {
+  const manifest = buildGatePlan({ label: 'parent-canary', out: os.tmpdir(), mode: 'real', technicalCanary: true });
+  const plan = buildEvidencePlan(manifest, {
+    masterSeed: 1701,
+    dryRun: false,
+    concurrency: 1,
+    gitFingerprint: fixedGitFingerprint(),
+  });
+  return {
+    parentRunId: 'parent-canary',
+    label: 'parent-canary',
+    verdict: 'technical_canary_only',
+    passed: true,
+    claimStatus: 'excluded',
+    seeds: [...contract.technicalCanary.seeds],
+    verdictEvaluatorVersion: contract.verdictEvaluatorVersion,
+    decisionContractSha256: hashFile(CONTRACT_PATH),
+    verdictEvaluatorSha256: hashFile(EVALUATOR_PATH),
+    report: 'exports/example/canary/phase6-gate-report.json',
+    reportSha256: '1'.repeat(64),
+    sealSha256: '2'.repeat(64),
+    planSha256: '3'.repeat(64),
+    inventorySha256: '4'.repeat(64),
+    git: structuredClone(plan.provenance.git),
+    requiredHashKinds: structuredClone(plan.requiredHashKinds),
+    hashes: structuredClone(plan.hashes),
+    models: structuredClone(plan.models),
+    phase6ModelRuntime: structuredClone(plan.metadata.phase6ModelRuntime),
+    phase6ModelRuntimeSha256: plan.metadata.phase6ModelRuntimeSha256,
+    phase6CliFingerprints: structuredClone(plan.metadata.phase6CliFingerprints),
+    phase6CliFingerprintsSha256: plan.metadata.phase6CliFingerprintsSha256,
+    executionConcurrency: plan.metadata.executionConcurrency,
+    rows,
+  };
+}
+
 function compatiblePrior(rows = Array.from({ length: 60 }, () => ({}))) {
+  const canary = compatibleCanary();
   const parentManifest = buildGatePlan({
     label: 'parent-k5',
     out: os.tmpdir(),
     profile: 'smoke',
     seeds: [...contract.seedBlocks[0]],
     mode: 'real',
+    priorCanary: canary,
   });
   const parentPlan = buildEvidencePlan(parentManifest, {
     masterSeed: 1701,
     dryRun: false,
     concurrency: 1,
-    gitFingerprint: {
-      sha: 'f'.repeat(40),
-      branch: 'test',
-      dirty: false,
-      fingerprintSha256: 'e'.repeat(64),
-    },
+    gitFingerprint: fixedGitFingerprint(),
   });
   return {
     parentRunId: 'parent-k5',
@@ -160,6 +246,7 @@ function compatiblePrior(rows = Array.from({ length: 60 }, () => ({}))) {
     phase6CliFingerprints: structuredClone(parentPlan.metadata.phase6CliFingerprints),
     phase6CliFingerprintsSha256: parentPlan.metadata.phase6CliFingerprintsSha256,
     executionConcurrency: parentPlan.metadata.executionConcurrency,
+    priorCanary: structuredClone(parentPlan.metadata.phase6CanaryParentProvenance),
     rows,
   };
 }
@@ -218,10 +305,69 @@ function validK5EvidenceRows() {
   return rows;
 }
 
+function writeSealedCanary(
+  root,
+  {
+    mutateReport = (report) => report,
+    mutatePlan = (plan) => plan,
+    seal = true,
+    sealStatus = 'complete',
+  } = {},
+) {
+  const manifest = buildGatePlan({
+    label: path.basename(root),
+    out: path.dirname(root),
+    mode: 'real',
+    technicalCanary: true,
+  });
+  let plan = buildEvidencePlan(manifest, {
+    masterSeed: 1701,
+    dryRun: false,
+    concurrency: 1,
+    gitFingerprint: fixedGitFingerprint(),
+  });
+  plan = mutatePlan(structuredClone(plan)) || plan;
+  let report = {
+    schema: 'machinespirits.derivation.phase6-gate.report.v1',
+    protocolId: contract.protocolId,
+    evidenceKind: 'technical_canary',
+    verdictEvaluatorVersion: contract.verdictEvaluatorVersion,
+    priorCanary: null,
+    priorProvisional: null,
+    label: manifest.label,
+    mode: 'real',
+    rowCount: 4,
+    okRows: 4,
+    rows: validCanaryRows(),
+  };
+  report.decision = evaluatePhase6Verdict(report, contract);
+  report = mutateReport(structuredClone(report)) || report;
+  createRunPlan(root, plan);
+  writeJson(path.join(root, 'phase6-gate-report.json'), report);
+  for (const role of plan.requiredObservedModelRoles) {
+    appendRunEvent(root, {
+      type: 'model_observed',
+      role,
+      requested: plan.models[role].requested,
+      resolved: plan.models[role].resolved,
+      observed: plan.models[role].resolved,
+    });
+  }
+  appendRunEvent(root, { type: 'run_completed', status: sealStatus });
+  if (seal) createRunSeal(root, { status: sealStatus });
+  return path.join(root, 'phase6-gate-report.json');
+}
+
 function writeSealedK5Parent(
   root,
-  { contractSha256 = hashFile(CONTRACT_PATH), mutatePlan = (plan) => plan } = {},
+  {
+    contractSha256 = hashFile(CONTRACT_PATH),
+    mutatePlan = (plan) => plan,
+    priorCanary = null,
+  } = {},
 ) {
+  const canary =
+    priorCanary || loadPriorCanaryReport(writeSealedCanary(path.join(path.dirname(root), `${path.basename(root)}-canary`)));
   const rows = validK5EvidenceRows();
   const report = {
     schema: 'machinespirits.derivation.phase6-gate.report.v1',
@@ -230,6 +376,7 @@ function writeSealedK5Parent(
     verdictEvaluatorVersion: contract.verdictEvaluatorVersion,
     label: path.basename(root),
     mode: 'real',
+    priorCanary: null,
     rowCount: rows.length,
     okRows: rows.length,
     rows,
@@ -244,18 +391,16 @@ function writeSealedK5Parent(
     profile: 'smoke',
     seeds: [...contract.seedBlocks[0]],
     mode: 'real',
+    priorCanary: canary,
   });
   let plan = buildEvidencePlan(manifest, {
     masterSeed: 1701,
     dryRun: false,
     concurrency: 1,
-    gitFingerprint: {
-      sha: 'f'.repeat(40),
-      branch: 'test',
-      dirty: false,
-      fingerprintSha256: 'e'.repeat(64),
-    },
+    gitFingerprint: fixedGitFingerprint(),
   });
+  report.priorCanary = structuredClone(plan.metadata.phase6CanaryParentProvenance);
+  report.decision = evaluatePhase6Verdict(report, contract);
   plan.metadata.phase6DecisionContractSha256 = contractSha256;
   plan = mutatePlan(structuredClone(plan)) || plan;
   createRunPlan(root, plan);
@@ -377,6 +522,25 @@ test('Phase 6 real mode requires a clean tree at the exact frozen SHA while mock
 
 test('Phase 6A real mode accepts only the frozen non-acts hidden-pacing contract', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-protocol-block-'));
+  const ungatedFirstBlock = buildGatePlan({
+    label: 'ungated-first-block',
+    out: root,
+    profile: 'smoke',
+    seeds: [...contract.seedBlocks[0]],
+    mode: 'real',
+  });
+  assert.ok(
+    phase6RealGateProtocolBlockers(ungatedFirstBlock).some((reason) =>
+      reason.includes('passing, compatible v2.1 technical-canary parent'),
+    ),
+  );
+  const malformedFirstBlock = structuredClone(ungatedFirstBlock);
+  malformedFirstBlock.priorCanary = {};
+  assert.ok(
+    phase6RealGateProtocolBlockers(malformedFirstBlock).some((reason) =>
+      reason.includes('passing, compatible v2.1 technical-canary parent'),
+    ),
+  );
   const realPlan = buildGatePlan({
     label: 'ready-real',
     out: root,
@@ -384,9 +548,19 @@ test('Phase 6A real mode accepts only the frozen non-acts hidden-pacing contract
     seeds: ['1', '2', '3', '4', '5'],
     decayRate: 0.08,
     mode: 'real',
+    priorCanary: compatibleCanary(),
   });
   assert.deepEqual(phase6RealGateProtocolBlockers(realPlan), []);
   assert.doesNotThrow(() => assertPhase6RealGateProtocolReady(realPlan));
+  const firstBlockEvidencePlan = buildEvidencePlan(realPlan, {
+    masterSeed: 1701,
+    dryRun: true,
+    concurrency: 1,
+    gitFingerprint: fixedGitFingerprint(),
+  });
+  assert.equal(firstBlockEvidencePlan.lineage.parentRunId, 'parent-canary');
+  assert.deepEqual(phase6CanaryCompatibilityBlockers({ manifest: realPlan, plan: firstBlockEvidencePlan }), []);
+  assert.doesNotThrow(() => assertPhase6CanaryCompatibility({ manifest: realPlan, plan: firstBlockEvidencePlan }));
   assert.equal(realPlan.rows.find((row) => row.armKey === 'baseline').armLabel, 'baseline_hidden_pacing_v1');
   assert.equal(realPlan.baseFlags.acts, false);
   assert.equal(realPlan.baseFlags['proof-debt-guard'], false);
@@ -497,7 +671,7 @@ test('real Phase 6A requires explicit paid acknowledgement and serial concurrenc
   assert.doesNotThrow(() => assertPhase6PaidConfirmation({ mode: 'real', confirmed: true }));
   assert.throws(
     () => assertPhase6PaidConfirmation({ mode: 'real', confirmed: false }),
-    /--confirm-paid-phase6a-v2/u,
+    /--confirm-paid-phase6a-v2\.1/u,
   );
   assert.doesNotThrow(() => assertPhase6ConcurrencyPolicy({ mode: 'real', concurrency: 1 }));
   assert.throws(() => assertPhase6ConcurrencyPolicy({ mode: 'real', concurrency: 2 }), /--concurrency 1/u);
@@ -508,7 +682,23 @@ test('real Phase 6A requires explicit paid acknowledgement and serial concurrenc
         encoding: 'utf8',
         stdio: 'pipe',
       }),
-    /--confirm-paid-phase6a-v2/u,
+    /--confirm-paid-phase6a-v2\.1/u,
+  );
+  assert.throws(
+    () =>
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/run-derivation-phase6-gate.js',
+          '--real',
+          '--dry-run',
+          '--confirm-paid-phase6a-v2.1',
+          '--label',
+          'missing-canary-parent',
+        ],
+        { cwd: path.resolve('.'), encoding: 'utf8', stdio: 'pipe' },
+      ),
+    /passing, compatible v2\.1 technical-canary parent/u,
   );
 });
 
@@ -884,7 +1074,100 @@ test('Phase 6 transaction resume rejects complete-plan or compatibility-manifest
   }
 });
 
-test('Phase 6 continuation loads only a sealed parent with current contract and evaluator hashes', () => {
+test('Phase 6A v2.1 loads only a sealed passing canary with complete role provenance', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-sealed-canary-'));
+  try {
+    const compatiblePath = writeSealedCanary(path.join(root, 'compatible-canary'));
+    const prior = loadPriorCanaryReport(compatiblePath);
+    assert.equal(prior.parentRunId, 'compatible-canary');
+    assert.equal(prior.verdict, 'technical_canary_only');
+    assert.equal(prior.passed, true);
+    assert.equal(prior.rows.length, 4);
+    assert.deepEqual(Object.keys(prior.models).sort(), ['director', 'learner', 'tutor']);
+
+    const failedPath = writeSealedCanary(path.join(root, 'failed-canary'), {
+      mutateReport: (report) => {
+        report.rows[0].safety.hardFailures = 1;
+        report.decision = evaluatePhase6Verdict(report, contract);
+        return report;
+      },
+    });
+    assert.throws(() => loadPriorCanaryReport(failedPath), /sealed, passing, hash-compatible v2\.1/u);
+
+    const unsealedPath = writeSealedCanary(path.join(root, 'unsealed-canary'), { seal: false });
+    assert.throws(() => loadPriorCanaryReport(unsealedPath), /Experiment run verification failed/u);
+
+    const missingRolePath = writeSealedCanary(path.join(root, 'missing-role-canary'), {
+      mutatePlan: (plan) => {
+        plan.requiredObservedModelRoles = [];
+        return plan;
+      },
+    });
+    assert.throws(() => loadPriorCanaryReport(missingRolePath), /sealed, passing, hash-compatible v2\.1/u);
+
+    const legacyRoot = path.join(root, 'legacy-unsealed');
+    writeJson(path.join(legacyRoot, 'phase6-gate-report.json'), {
+      mode: 'real',
+      rowCount: 60,
+      okRows: 60,
+    });
+    assert.throws(
+      () => loadPriorCanaryReport(path.join(legacyRoot, 'phase6-gate-report.json')),
+      /Experiment run verification failed/u,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6A v2.1 canary lineage rejects Git, invariant source, model, runtime, CLI, and concurrency drift', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-canary-continuity-'));
+  try {
+    const prior = loadPriorCanaryReport(writeSealedCanary(path.join(root, 'parent-canary')));
+    const manifest = buildGatePlan({
+      label: 'k5',
+      out: root,
+      profile: 'smoke',
+      seeds: [...contract.seedBlocks[0]],
+      mode: 'real',
+      priorCanary: prior,
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      concurrency: 1,
+      gitFingerprint: structuredClone(prior.git),
+    });
+    assert.deepEqual(phase6CanaryCompatibilityBlockers({ manifest, plan }), []);
+
+    const mutations = [
+      ['Git SHA', (copy) => (copy.priorCanary.git.sha = '0'.repeat(40)), /same clean Git SHA/u],
+      ['source hash', (copy) => (copy.priorCanary.hashes.runner = '0'.repeat(64)), /source hashes/u],
+      ['model', (copy) => (copy.priorCanary.models.tutor.resolved = 'openrouter/drifted'), /model references/u],
+      ['runtime', (copy) => (copy.priorCanary.phase6ModelRuntime.tutor.timeout_ms = 1), /runtime policies/u],
+      [
+        'CLI',
+        (copy) => {
+          copy.priorCanary.phase6CliFingerprints = {
+            codex: { command: 'codex', executable_realpath: '/tmp/drifted', version: 'drifted' },
+          };
+          copy.priorCanary.phase6CliFingerprintsSha256 = hashCanonicalJson(copy.priorCanary.phase6CliFingerprints);
+        },
+        /CLI executable realpaths\/versions/u,
+      ],
+      ['concurrency', (copy) => (copy.priorCanary.executionConcurrency = 2), /both be serial/u],
+    ];
+    for (const [label, mutate, pattern] of mutations) {
+      const changed = structuredClone(manifest);
+      mutate(changed);
+      assert.throws(() => assertPhase6CanaryCompatibility({ manifest: changed, plan }), pattern, label);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 continuation loads only a canary-bound sealed parent with current contract and evaluator hashes', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-sealed-parent-'));
   try {
     const compatiblePath = writeSealedK5Parent(path.join(root, 'compatible-parent'));
@@ -914,6 +1197,15 @@ test('Phase 6 continuation loads only a sealed parent with current contract and 
       contractSha256: '0'.repeat(64),
     });
     assert.throws(() => loadPriorProvisionalReport(stalePath), /hash-compatible/u);
+
+    const unboundPath = writeSealedK5Parent(path.join(root, 'unbound-parent'), {
+      mutatePlan: (plan) => {
+        plan.lineage.parentRunId = null;
+        plan.metadata.phase6CanaryParentProvenance = null;
+        return plan;
+      },
+    });
+    assert.throws(() => loadPriorProvisionalReport(unboundPath), /hash-compatible/u);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -991,6 +1283,7 @@ test('Phase 6 real execution fails fast, leaves the tail untouched, and seals th
       profile: 'smoke',
       seeds: [...contract.seedBlocks[0]],
       mode: 'real',
+      priorCanary: compatibleCanary(),
     });
     const plan = buildEvidencePlan(manifest, {
       masterSeed: 1701,
@@ -1043,6 +1336,7 @@ test('Phase 6 interruption path seals the active label and never starts the tail
       profile: 'smoke',
       seeds: [...contract.seedBlocks[0]],
       mode: 'real',
+      priorCanary: compatibleCanary(),
     });
     const plan = buildEvidencePlan(manifest, {
       masterSeed: 1701,

@@ -5,7 +5,7 @@ import test from 'node:test';
 import { hashFile } from '../services/experimentRunArtifacts.js';
 import { evaluatePhase6Verdict } from '../services/dramaticDerivation/phase6Verdict.js';
 
-const contractPath = 'config/drama-derivation/phase6-field-planner-gate-v2.json';
+const contractPath = 'config/drama-derivation/phase6-field-planner-gate-v2.1.json';
 const evaluatorPath = 'services/dramaticDerivation/phase6Verdict.js';
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
 
@@ -98,6 +98,100 @@ function buildReport(settings = {}, seeds = contract.seedBlocks[0]) {
   if (seeds.length === contract.seedBlocks.flat().length) report.priorProvisional = replicationParent();
   return report;
 }
+
+function buildCanaryReport() {
+  const rows = contract.technicalCanary.arms.map((armKey) => {
+    const planner = armKey.startsWith('field_planner');
+    const reportOnly = armKey === 'field_report_only';
+    return {
+      id: `marrick-${armKey}-s0`,
+      worldKey: 'marrick',
+      armKey,
+      seed: '0',
+      ok: true,
+      grounded: false,
+      turnsPlayed: 12,
+      turnCap: 24,
+      decay: { events: 0, degradedTurnIntegral: 0 },
+      fieldPlanner: {
+        count: planner ? 12 : 0,
+        candidateCountMismatches: 0,
+        missingOutcomes: 0,
+        missingSelectedScores: 0,
+        nonLeakAuditFailures: 0,
+      },
+      fieldReportContext: { count: reportOnly ? 12 : 0, nonLeakAuditFailures: 0 },
+      conductPolicy: {
+        loggedTurns: planner ? 12 : 0,
+        complianceChecked: planner ? 12 : 0,
+        complianceFailed: planner ? 3 : 0,
+        enforcementChanged: 0,
+      },
+      transcriptLeakAudit: { checked: true, hitCount: 0 },
+      safety: {
+        hardFailures: 0,
+        overreaches: 0,
+        earlyLateReleases: 0,
+        reachableReleases: 5,
+        invalidReleaseClaims: 0,
+        transcriptLeakHits: 0,
+      },
+    };
+  });
+  return {
+    mode: 'real',
+    evidenceKind: 'technical_canary',
+    rowCount: rows.length,
+    okRows: rows.length,
+    rows,
+  };
+}
+
+test('Phase 6A v2.1 canary passes technical coverage without selecting on grounding or policy outcomes', () => {
+  const decision = evaluatePhase6Verdict(buildCanaryReport(), contract);
+  assert.equal(decision.verdict, 'technical_canary_only');
+  assert.equal(decision.passed, true);
+  assert.equal(decision.claimStatus, 'excluded');
+  assert.equal(decision.audit.planners.field_planner_advisory.pass, true);
+  assert.equal(decision.audit.planners.field_planner_enforce.pass, true);
+});
+
+test('Phase 6A v2.1 canary fails closed on missing cells or trace coverage', () => {
+  const missing = buildCanaryReport();
+  missing.rows.pop();
+  missing.rowCount -= 1;
+  missing.okRows -= 1;
+  const missingDecision = evaluatePhase6Verdict(missing, contract);
+  assert.equal(missingDecision.verdict, 'technical_canary_failed');
+  assert.equal(missingDecision.passed, false);
+  assert.ok(missingDecision.audit.errors.some((error) => error.includes('missing technical-canary cell')));
+
+  const trace = buildCanaryReport();
+  trace.rows.find((row) => row.armKey === 'field_report_only').fieldReportContext.count = 0;
+  const traceDecision = evaluatePhase6Verdict(trace, contract);
+  assert.equal(traceDecision.verdict, 'technical_canary_failed');
+  assert.ok(traceDecision.audit.errors.some((error) => error.includes('report-only trace')));
+});
+
+test('Phase 6A v2.1 canary returns a failed verdict instead of throwing on malformed trace objects', () => {
+  const report = buildCanaryReport();
+  delete report.rows.find((row) => row.armKey === 'baseline').fieldPlanner;
+  const decision = evaluatePhase6Verdict(report, contract);
+  assert.equal(decision.verdict, 'technical_canary_failed');
+  assert.equal(decision.passed, false);
+  assert.ok(decision.audit.errors.some((error) => error.includes('fieldPlanner.count')));
+});
+
+test('Phase 6A v2.1 canary fails closed on hard safety or learner-facing leak evidence', () => {
+  const unsafe = buildCanaryReport();
+  unsafe.rows[0].safety.hardFailures = 1;
+  assert.equal(evaluatePhase6Verdict(unsafe, contract).verdict, 'technical_canary_failed');
+
+  const leaked = buildCanaryReport();
+  leaked.rows[0].transcriptLeakAudit.hitCount = 1;
+  leaked.rows[0].safety.transcriptLeakHits = 1;
+  assert.equal(evaluatePhase6Verdict(leaked, contract).verdict, 'technical_canary_failed');
+});
 
 test('Phase 6A returns provisional_promote for a safe planner lift over baseline and placebo', () => {
   const report = buildReport({ field_planner_advisory: { groundedPerBlock: 5 } });
@@ -238,7 +332,8 @@ test('Phase 6A rejects null turn counts instead of coercing them to zero', () =>
 });
 
 test('Phase 6A labels the bounded real canary as excluded technical evidence', () => {
-  const decision = evaluatePhase6Verdict({ mode: 'real', evidenceKind: 'technical_canary' }, contract);
+  const decision = evaluatePhase6Verdict(buildCanaryReport(), contract);
   assert.equal(decision.verdict, 'technical_canary_only');
   assert.equal(decision.claimStatus, 'excluded');
+  assert.equal(decision.passed, true);
 });
