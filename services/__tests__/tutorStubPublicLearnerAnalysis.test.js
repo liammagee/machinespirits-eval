@@ -348,6 +348,9 @@ describe('strict public learner analysis', () => {
     });
     assert.match(prompt, /Prior redacted public learner state/u);
     assert.match(prompt, /Reusing an already-held premise is none/u);
+    assert.match(prompt, /pure epistemic-status statement.*not a derived world fact/iu);
+    assert.match(prompt, /evidence is insufficient.*answer remains unknown.*cannot yet determine.*is none/iu);
+    assert.match(prompt, /unless it also voices a substantive new object-level world conclusion or direct answer/iu);
     assert.match(prompt, /previously voiced hypothesis/u);
     assert.match(prompt, /retract, then derive, then adopt, then none/u);
 

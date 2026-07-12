@@ -29,6 +29,7 @@ export function adaptiveStateObservabilityPreflightStaticExecutionContract({
         'services/adaptiveTutor/stateBenchmarkStage1Executor.js',
         'services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js',
         'services/adaptiveTutor/stateBenchmarkCliRealizer.js',
+        'services/adaptiveTutor/stateBenchmarkPublicSurface.js',
         'services/adaptiveTutor/stateBenchmarkStage1Contracts.js',
         'services/cliProviderBridge.js',
         'services/evalConfigLoader.js',
@@ -39,6 +40,7 @@ export function adaptiveStateObservabilityPreflightStaticExecutionContract({
       [
         'services/tutorStubPublicLearnerAnalysis.js',
         'services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js',
+        'services/adaptiveTutor/stateBenchmarkPublicSurface.js',
       ],
       repoRoot,
     ),

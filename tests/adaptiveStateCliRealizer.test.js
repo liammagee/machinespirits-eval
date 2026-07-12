@@ -4,9 +4,11 @@ import test from 'node:test';
 import {
   ADAPTIVE_STATE_CLI_REALIZER_CALL_SCHEMA,
   ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA,
+  adaptiveStateTransitionAtomicSurface,
   buildAdaptiveStateCliRealizerInput,
   buildAdaptiveStateCliRealizerSystemPrompt,
   callAdaptiveStateCliRealizer,
+  isolateAdaptiveStateCliRealizerInput,
   parseAdaptiveStateCliRealizerOutput,
   validateAdaptiveStateCliRealizerInput,
 } from '../services/adaptiveTutor/stateBenchmarkCliRealizer.js';
@@ -17,8 +19,40 @@ test('realizer prompt requires semantic fidelity for all four transition familie
   assert.match(prompt, /retract.*withdraw/iu);
   assert.match(prompt, /derive.*new supported conclusion or answer/iu);
   assert.match(prompt, /For none, introduce no new adoption, retraction, conclusion, or answer/iu);
+  assert.match(prompt, /For adopt,.*do not apply a rule, combine it with prior evidence, or state what follows/iu);
+  assert.match(prompt, /For none,.*do not combine prior clues or summarize their consequences/iu);
   assert.match(prompt, /Do not add a second event family/iu);
   assert.match(prompt, /Do not write literal public event ids or event-family labels/iu);
+});
+
+test('transition isolation replaces the bundled Hethel consequence on every realizer-facing surface', () => {
+  const question = 'Whose hand felled the Hethel bridge span that carried the drovers down?';
+  const source =
+    'Break out the crown bed and the mortar tells on itself: still green to the knife, never set — an arch that took its load before the lime had cured. This span did not fail of bad building; it fell because its centering was struck from under it while the bed was soft. A sound arch, brought down by an early hand.';
+  const atomic = adaptiveStateTransitionAtomicSurface({ question, surface: source });
+  assert.notEqual(atomic, source);
+  assert.match(atomic, /crown-bed mortar.*material trace/iu);
+  assert.doesNotMatch(atomic, /fell because|causing the span to fall|sound arch|brought down/iu);
+  const input = buildAdaptiveStateCliRealizerInput({
+    currentPublicActEnvelope: {
+      event_family: 'adopt',
+      event_ids: ['adopt:evidence_02'],
+      events: [{ event_id: 'adopt:evidence_02', kind: 'adopt', evidence_surface: source }],
+      semantic_role: 'public_evidence_uptake',
+      state_cues: {},
+    },
+    priorPublicTranscript: [],
+    currentAction: { action_type: 'request_evidence' },
+    publicWorldVocabulary: { question, released_evidence_surfaces: [source] },
+  });
+  const isolated = isolateAdaptiveStateCliRealizerInput(input);
+  assert.equal(isolated.currentPublicActEnvelope.events[0].evidence_surface, atomic);
+  assert.deepEqual(isolated.publicWorldVocabulary.released_evidence_surfaces, [atomic]);
+  assert.equal(input.currentPublicActEnvelope.events[0].evidence_surface, source);
+  assert.equal(
+    adaptiveStateTransitionAtomicSurface({ question: 'A different world?', surface: source }),
+    source,
+  );
 });
 
 function publicInput() {

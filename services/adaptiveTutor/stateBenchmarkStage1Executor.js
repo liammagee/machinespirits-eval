@@ -30,6 +30,10 @@ import {
   validateAdaptiveStateStage0DatasetContentSha256,
 } from './stateBenchmarkStage0Executor.js';
 import { validateAdaptiveStateStage0ReportContentSha256 } from './stateBenchmarkStage0Analysis.js';
+import {
+  adaptiveStateTransitionAtomicSurface,
+  isolateAdaptiveStatePublicRealizerInput,
+} from './stateBenchmarkPublicSurface.js';
 
 export const ADAPTIVE_STATE_STAGE1_DATASET_V21_SCHEMA =
   'machinespirits.adaptive-state-stage1-dataset.v2.1';
@@ -125,7 +129,10 @@ function stagedEvidenceForAnalyzer(world, envelope, firstSeenByPremise, turn) {
         turn: firstSeenByPremise.get(premise.id),
         via: 'kernel_public_projection',
         fact: clone(premise.fact),
-        surface: String(premise.surface || '').trim(),
+        surface: adaptiveStateTransitionAtomicSurface({
+          question: world.question,
+          surface: premise.surface,
+        }),
       };
     });
   if (rows.length !== releasedSurfaces.size) {
@@ -259,7 +266,7 @@ export function validateAdaptiveStateStage1Parent({
 }
 
 function realizerInput(envelope, transcript, action, tutorText) {
-  return {
+  return isolateAdaptiveStatePublicRealizerInput({
     currentPublicActEnvelope: {
       ...clone(envelope.current_public_act_envelope),
       turn: Number(envelope.turn),
@@ -270,7 +277,7 @@ function realizerInput(envelope, transcript, action, tutorText) {
       tutor_text: String(tutorText || '').trim(),
     },
     publicWorldVocabulary: clone(envelope.public_world_vocabulary || {}),
-  };
+  });
 }
 
 function publicTutorTurn(action, turn, question) {

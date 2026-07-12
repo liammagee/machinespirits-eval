@@ -40,6 +40,7 @@ export function adaptiveStateStage1StaticExecutionContract({
           'services/adaptiveTutor/stateBenchmarkStage1Executor.js',
           'services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js',
           'services/adaptiveTutor/stateBenchmarkCliRealizer.js',
+          'services/adaptiveTutor/stateBenchmarkPublicSurface.js',
           'services/cliProviderBridge.js',
           'services/evalConfigLoader.js',
           'services/adaptiveTutor/stateBenchmarkV2.js',
@@ -50,6 +51,7 @@ export function adaptiveStateStage1StaticExecutionContract({
         [
           'services/adaptiveTutor/stateBenchmarkStage1Analysis.js',
           'services/adaptiveTutor/stateBenchmarkStage0Analysis.js',
+          'services/adaptiveTutor/stateBenchmarkPublicSurface.js',
           'services/tutorStubPublicLearnerAnalysis.js',
           'services/adaptiveTutor/tutorStubStateAdapter.js',
           'services/tutorStubFieldTrajectory.js',

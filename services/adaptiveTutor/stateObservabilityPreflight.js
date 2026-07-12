@@ -6,6 +6,10 @@ import {
   adaptiveStateAnalyzerCallMetadata,
   validateAdaptiveStateCallMetadata,
 } from './stateBenchmarkStage1Executor.js';
+import {
+  adaptiveStateTransitionAtomicSurface,
+  isolateAdaptiveStatePublicRealizerInput,
+} from './stateBenchmarkPublicSurface.js';
 import { loadAdaptiveStateWorldAdapters } from './learnerKernels/index.js';
 
 export const ADAPTIVE_STATE_OBSERVABILITY_PREFLIGHT_PLAN_SCHEMA =
@@ -257,8 +261,28 @@ function advanceToDerivableProof(adapter, proof) {
   return current;
 }
 
+function advanceToSettledProof(adapter, proof) {
+  let current = clone(proof);
+  const priorDerivedFacts = [];
+  for (let index = 0; index < 32; index += 1) {
+    const fact = adapter.nextDerivableFact(current);
+    if (!fact) return { proof: current, priorDerivedFacts };
+    priorDerivedFacts.push(clone(fact));
+    current = adapter.applyEvent(current, adapter.deriveEvent(fact));
+  }
+  throw new Error(`stateObservabilityPreflight: world ${adapter.id} none fixture did not settle`);
+}
+
+function publicPriorConclusion(fact) {
+  return `I have already recorded the supported conclusion ${String(fact[0])}(${fact
+    .slice(1)
+    .map((value) => String(value))
+    .join(', ')}).`;
+}
+
 function fixtureFor(job, adapter, world) {
   let beforeProof = adapter.initialHiddenProofState();
+  let priorDerivedFacts = [];
   let event;
   if (job.event_family === 'adopt') {
     const premiseId = adapter.nextChallengePremiseId(beforeProof);
@@ -275,6 +299,12 @@ function fixtureFor(job, adapter, world) {
     }
     event = adapter.retractPremiseEvent(beforeProof.heldPremiseIds[0]);
   } else {
+    const settled = advanceToSettledProof(adapter, beforeProof);
+    beforeProof = settled.proof;
+    priorDerivedFacts = settled.priorDerivedFacts;
+    if (adapter.nextDerivableFact(beforeProof)) {
+      throw new Error(`stateObservabilityPreflight: world ${adapter.id} none fixture has an unvoiced derivation`);
+    }
     event = adapter.noneEvent({ semanticRole: 'no_public_dag_move' });
   }
   const afterProof = adapter.applyEvent(beforeProof, event);
@@ -295,25 +325,37 @@ function fixtureFor(job, adapter, world) {
       turn: 1,
       via: 'preflight_public_fixture',
       fact: clone(premise.fact),
-      surface: String(premise.surface || '').trim(),
+      surface: adaptiveStateTransitionAtomicSurface({
+        question: world.question,
+        surface: premise.surface,
+      }),
     };
   });
   const priorSurfaces = beforeProof.releasedPremiseIds
-    .map((premiseId) => String(world.premiseById.get(premiseId)?.surface || '').trim())
+    .map((premiseId) =>
+      adaptiveStateTransitionAtomicSurface({
+        question: world.question,
+        surface: world.premiseById.get(premiseId)?.surface,
+      }),
+    )
     .filter(Boolean);
-  const priorLearnerText = priorSurfaces.length
-    ? `My existing public record contains: ${priorSurfaces.join(' | ')}`
+  const priorRecordParts = [
+    ...(priorSurfaces.length ? [`My existing public record contains: ${priorSurfaces.join(' | ')}`] : []),
+    ...priorDerivedFacts.map(publicPriorConclusion),
+  ];
+  const priorLearnerText = priorRecordParts.length
+    ? priorRecordParts.join(' ')
     : 'I have not yet added a public proof move.';
   const priorPublicLearnerState = {
     adopted_premise_ids: [...beforeProof.heldPremiseIds].sort(),
-    voiced_derived_facts: [],
+    voiced_derived_facts: clone(priorDerivedFacts),
     prior_hypotheses: [],
     asserted_answers: [],
   };
   return {
     target_family: job.event_family,
     expected_event_ids: [...envelope.required_realizer_output.realized_public_event_ids],
-    realizer_input: {
+    realizer_input: isolateAdaptiveStatePublicRealizerInput({
       currentPublicActEnvelope: { ...clone(envelope.current_public_act_envelope), turn },
       priorPublicTranscript: [
         { turn: 1, role: 'learner', text: priorLearnerText },
@@ -321,7 +363,7 @@ function fixtureFor(job, adapter, world) {
       ],
       currentAction: { action_type: 'request_evidence', tutor_text: tutorText },
       publicWorldVocabulary: clone(envelope.public_world_vocabulary),
-    },
+    }),
     analyzer_context: {
       turn,
       topic: world.question,

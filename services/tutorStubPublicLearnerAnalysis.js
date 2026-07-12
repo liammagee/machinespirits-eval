@@ -1068,7 +1068,8 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '# Learner-record extraction rules',
     '',
     '- adopt/retract: only staged premise ids the learner explicitly accepts/uses or rejects/withdraws.',
-    '- derive: only learner-voiced conclusions supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
+    '- derive: only learner-voiced object-level conclusions or answers about the world, supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
+    '- A pure epistemic-status statement that the public record is insufficient, something remains unknown, or an answer cannot yet be determined is not a derived world fact and must not enter learner_record.derive. If the same turn also voices a substantive new object-level world conclusion, keep that conclusion in derive.',
     '- Resolve pronouns and elliptical answers against the immediately preceding tutor question. If a short reply unambiguously answers that local question, the resolved content counts as learner-voiced; do not demand repeated nouns or names.',
     '- hypothesis: one learner conjecture or uncertainty, else null. assert_answer: direct answer candidate, else null.',
     '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
@@ -1098,13 +1099,13 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       ? '- retract: the learner explicitly withdraws either a previously adopted premise or a previously voiced hypothesis.'
       : null,
     includeBenchmarkTransitionEvent
-      ? '- derive: the learner voices a new supported conclusion or direct answer not already present in the prior public learner state.'
+      ? '- derive: the learner voices a new supported object-level world conclusion or direct answer not already present in the prior public learner state.'
       : null,
     includeBenchmarkTransitionEvent
       ? '- adopt: the learner newly accepts or uses a staged premise that is not already adopted.'
       : null,
     includeBenchmarkTransitionEvent
-      ? '- none: no new retract, derive, or adopt transition. Reusing an already-held premise is none.'
+      ? '- none: no new retract, derive, or adopt transition. Reusing an already-held premise is none. A turn that only says the evidence is insufficient, the answer remains unknown, or the learner cannot yet determine it is none, unless it also voices a substantive new object-level world conclusion or direct answer.'
       : null,
     includeBenchmarkTransitionEvent
       ? '- If more than one new transition appears, choose the primary family in this order: retract, then derive, then adopt, then none. Keep all supported learner_record updates separately.'

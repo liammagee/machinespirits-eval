@@ -20,6 +20,7 @@ import {
   buildAdaptiveStateRepresentationsV2,
 } from './stateBenchmarkV2.js';
 import { buildAdaptiveStateCliRealizerSystemPrompt } from './stateBenchmarkCliRealizer.js';
+import { adaptiveStateTransitionAtomicSurface } from './stateBenchmarkPublicSurface.js';
 
 export const ADAPTIVE_STATE_STAGE1_REPORT_V21_SCHEMA =
   'machinespirits.adaptive-state-stage1-technical-report.v2.1';
@@ -287,7 +288,11 @@ function worldPremiseSurfaces(config, repoRoot) {
         row.id,
         (world.premises || []).map((premise) => ({
           premise: premise.id,
-          surface: String(premise.surface || '').trim(),
+          authored_surface: String(premise.surface || '').trim(),
+          surface: adaptiveStateTransitionAtomicSurface({
+            question: world.question,
+            surface: premise.surface,
+          }),
           fact: clone(premise.fact),
         })),
       ];
@@ -376,7 +381,13 @@ function auditPublicAnalyzerCall(call, premisesByWorld) {
     }
   }
   const prompt = String(call.analyzer_artifacts?.prompt || '');
-  if (premises.some((row) => !stagedIds.has(row.premise) && row.surface && prompt.includes(row.surface))) {
+  if (
+    premises.some(
+      (row) =>
+        !stagedIds.has(row.premise) &&
+        [row.surface, row.authored_surface].filter(Boolean).some((surface) => prompt.includes(surface)),
+    )
+  ) {
     failures.push('unreleased_premise_in_analyzer_prompt');
   }
   return failures;

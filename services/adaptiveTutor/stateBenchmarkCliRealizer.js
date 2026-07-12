@@ -1,6 +1,9 @@
 import { callAIWithCliBridge, normalizeCliEffort } from '../cliProviderBridge.js';
 import { resolveModel } from '../evalConfigLoader.js';
 import { canonicalJson, hashCanonicalJson, sha256 } from '../experimentRunArtifacts.js';
+import { isolateAdaptiveStatePublicRealizerInput } from './stateBenchmarkPublicSurface.js';
+
+export { adaptiveStateTransitionAtomicSurface } from './stateBenchmarkPublicSurface.js';
 
 export const ADAPTIVE_STATE_CLI_REALIZER_CALL_SCHEMA =
   'machinespirits.adaptive-state-cli-realizer-call.v2';
@@ -116,6 +119,13 @@ export function buildAdaptiveStateCliRealizerInput({
   return input;
 }
 
+export function isolateAdaptiveStateCliRealizerInput(input) {
+  validateAdaptiveStateCliRealizerInput(input);
+  const isolated = isolateAdaptiveStatePublicRealizerInput(input);
+  validateAdaptiveStateCliRealizerInput(isolated);
+  return isolated;
+}
+
 export function validateAdaptiveStateCliRealizerInput(input, { forbiddenValues = [] } = {}) {
   requirePlainObject(input, 'input');
   const keys = Object.keys(input).sort();
@@ -192,8 +202,10 @@ export function buildAdaptiveStateCliRealizerSystemPrompt() {
     'Realize exactly one learner turn from the supplied public transition envelope.',
     'Use only the supplied public information. Do not invent, preview, or infer a later transition.',
     'The learner_text must make exactly the current envelope event semantically explicit in ordinary language, not merely copy its id into the sidecar.',
-    'For adopt, newly accept or use the named current evidence; for retract, explicitly withdraw the named prior premise or hypothesis; for derive, state one new supported conclusion or answer.',
-    'For none, introduce no new adoption, retraction, conclusion, or answer; you may ask a question, report uncertainty, or refer to already-held evidence without presenting it as newly accepted.',
+    'Keep learner_text to one short sentence whenever the current event can be expressed faithfully that way.',
+    'For adopt, newly accept or use only the named current evidence as a premise; do not apply a rule, combine it with prior evidence, or state what follows from it.',
+    'For retract, explicitly withdraw the named prior premise or hypothesis; for derive, state one new supported conclusion or answer.',
+    'For none, introduce no new adoption, retraction, conclusion, or answer; you may ask a question, report uncertainty, or refer to already-held evidence, but do not combine prior clues or summarize their consequences as a new relationship.',
     'Do not add a second event family to learner_text.',
     'Do not write literal public event ids or event-family labels such as adopt, retract, derive, or none in learner_text.',
     'Copy the current public event ids exactly into realized_public_event_ids.',

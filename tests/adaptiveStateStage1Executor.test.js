@@ -569,6 +569,18 @@ test('S1 evaluator rejects mutated reconstructible call artifacts', () => {
   assert.ok(audit.failures.includes('analyzer_artifact_hash'));
 });
 
+test('S1 audit rejects a staged premise surface that differs from the shared public projection', () => {
+  const mutated = structuredClone(completeDataset);
+  const call = mutated.calls.find(
+    (row) => row.role === 'public_turn_analyzer' && row.public_model_input.publicStagedEvidence.length > 0,
+  );
+  const staged = call.public_model_input.publicStagedEvidence[0];
+  staged.surface = `${staged.surface} mutated`;
+  call.public_model_input.publicReleaseLedger = structuredClone(call.public_model_input.publicStagedEvidence);
+  const audit = auditAdaptiveStateStage1Dataset(mutated, plan, config, { repoRoot: ROOT });
+  assert.ok(audit.failures.includes('unknown_or_mutated_staged_premise'));
+});
+
 test('S1 audit binds each explicit family across row, dialogue observation, and parsed analyzer output', () => {
   const badRow = structuredClone(completeDataset);
   badRow.rows[0].descriptive_analyzer_alignment.analyzer_next_event_family =

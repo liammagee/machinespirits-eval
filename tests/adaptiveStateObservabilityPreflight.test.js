@@ -33,9 +33,16 @@ import {
 } from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
 import { validateAdaptiveStateObservabilityPreflightParent } from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
 import { adaptiveStateObservabilityPreflightStaticExecutionContract } from '../services/adaptiveTutor/stateObservabilityPreflightContracts.js';
+import { loadAdaptiveStateWorldAdapters } from '../services/adaptiveTutor/learnerKernels/index.js';
 
 const ROOT = path.resolve('.');
 const CONFIG = yaml.parse(fs.readFileSync(path.join(ROOT, 'config/adaptive-state-benchmark-v2.yaml'), 'utf8'));
+const SEMANTIC_REGRESSIONS = JSON.parse(
+  fs.readFileSync(
+    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-5fda0824-v21.json'),
+    'utf8',
+  ),
+);
 
 function label(modelRef) {
   return modelRef === 'codex.gpt-5.6-terra'
@@ -43,10 +50,11 @@ function label(modelRef) {
     : 'claude-code/claude-sonnet-4-6';
 }
 
-function fakeRealizer({ leakEventId = false, failAt = null } = {}) {
+function fakeRealizer({ leakEventId = false, failAt = null, capture = null } = {}) {
   let count = 0;
   return async ({ modelRef, input, expectedEventIds, effort, timeoutMs }) => {
     count += 1;
+    if (capture) capture.push(structuredClone(input));
     if (count === failAt) {
       const error = new Error('fixture realizer failure');
       error.callMetadata = {
@@ -238,10 +246,11 @@ test('paid preflight is explicitly locked and full S1 cannot bypass its parent',
 test('preflight executes 24 isolated public cases and passes only at 24/24', async () => {
   const plan = buildAdaptiveStateObservabilityPreflightPlan(CONFIG, { label: 'fixture-pass' });
   const captured = [];
+  const realizedInputs = [];
   const result = await executeAdaptiveStateObservabilityPreflight({
     plan,
     config: CONFIG,
-    realizeTurn: fakeRealizer(),
+    realizeTurn: fakeRealizer({ capture: realizedInputs }),
     analyzePublicText: fakeAnalyzer({ capture: captured }),
     repoRoot: ROOT,
   });
@@ -253,11 +262,48 @@ test('preflight executes 24 isolated public cases and passes only at 24/24', asy
   assert.equal(result.all_cases_passed, true);
   assert.ok(result.calls.every((call) => call.claim_eligible === false));
   assert.equal(captured.length, 24);
+  assert.equal(realizedInputs.length, 24);
   for (const input of captured) {
     assert.equal(Object.hasOwn(input, 'currentPublicActEnvelope'), false);
     assert.equal(Object.hasOwn(input, 'event_family'), false);
     assert.equal(Object.hasOwn(input, 'event_ids'), false);
     assert.doesNotMatch(JSON.stringify(input), /adopt:evidence_|derive:inference_|retract:evidence_/u);
+  }
+  const adapters = new Map(
+    loadAdaptiveStateWorldAdapters(CONFIG.critical_path.worlds, { repoRoot: ROOT }).map((adapter) => [
+      adapter.id,
+      adapter,
+    ]),
+  );
+  for (const [index, job] of plan.jobs.entries()) {
+    const analyzerInput = captured[index];
+    const realizerInput = realizedInputs[index];
+    if (job.event_family === 'none') {
+      const prior = analyzerInput.priorPublicLearnerState;
+      const proof = {
+        heldPremiseIds: [...prior.adopted_premise_ids],
+        releasedPremiseIds: [...prior.adopted_premise_ids],
+        voicedDerivedFactKeys: prior.voiced_derived_facts.map((fact) => JSON.stringify(fact)),
+        harmfulProofDebt: 0,
+      };
+      assert.equal(adapters.get(job.world.id).nextDerivableFact(proof), null, job.id);
+      if (job.world.id === 'marrick') {
+        assert.deepEqual(prior.voiced_derived_facts, [
+          ['blankFrom', 'falseShilling', 'weirCrucible'],
+          ['dieCutWith', 'falseShilling', 'wornBurin'],
+        ]);
+        assert.match(realizerInput.priorPublicTranscript[0].text, /already recorded the supported conclusion/iu);
+      }
+    }
+    if (job.world.id === 'hethel' && job.event_family === 'adopt') {
+      const atomic = realizerInput.currentPublicActEnvelope.events[0].evidence_surface;
+      assert.match(atomic, /crown-bed mortar.*material trace/iu);
+      assert.doesNotMatch(atomic, /fell because|causing the span to fall|sound arch|brought down/iu);
+      assert.ok(realizerInput.publicWorldVocabulary.released_evidence_surfaces.includes(atomic));
+      const staged = analyzerInput.publicStagedEvidence.find((row) => row.premise === 'p_surface');
+      assert.equal(staged?.surface, atomic);
+      assert.equal(analyzerInput.priorPublicLearnerState.adopted_premise_ids.includes('p_surface'), false);
+    }
   }
   const report = buildAdaptiveStateObservabilityPreflightReport({ plan, result, config: CONFIG });
   assert.equal(validateAdaptiveStateObservabilityPreflightReport(report), true);
@@ -265,6 +311,44 @@ test('preflight executes 24 isolated public cases and passes only at 24/24', asy
   assert.equal(report.decision, 'injected_preflight_pass_non_authorizing');
   assert.equal(report.s1_retry_eligible, false);
   assert.equal(report.s2_validity_verdict, null);
+});
+
+test('the five stopped-run outputs remain frozen semantic evidence rather than a runtime lookup', () => {
+  assert.equal(
+    SEMANTIC_REGRESSIONS.schema,
+    'machinespirits.adaptive-state-observability-semantic-regression.v1',
+  );
+  assert.equal(
+    SEMANTIC_REGRESSIONS.source.cases_file_sha256,
+    '5c30eba3207b4df14f5ba76696bafb381a016d355dbc711c028f22fe2e07f28d',
+  );
+  assert.equal(
+    hashCanonicalJson(SEMANTIC_REGRESSIONS),
+    'b9d8cc3765952e1174026685dd31169e9320009bb400777ca0880a4c58f17e4b',
+  );
+  assert.equal(SEMANTIC_REGRESSIONS.cases.length, 5);
+  assert.deepEqual(
+    SEMANTIC_REGRESSIONS.cases.map((row) => row.semantic_expected_family),
+    ['derive', 'derive', 'none', 'derive', 'derive'],
+  );
+  for (const row of SEMANTIC_REGRESSIONS.cases) {
+    assert.equal(sha256(row.learner_text), row.learner_text_sha256);
+    assert.ok(row.learner_text.includes(row.expected_evidence_span));
+    assert.match(row.source_analyzer_input_sha256, /^[0-9a-f]{64}$/u);
+  }
+  const runtimeFiles = [
+    ...fs
+      .readdirSync(path.join(ROOT, 'services/adaptiveTutor'))
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => `services/adaptiveTutor/${file}`),
+    'services/tutorStubPublicLearnerAnalysis.js',
+    'scripts/execute-adaptive-state-observability-preflight-v2.js',
+    'scripts/execute-adaptive-state-benchmark-v2-s1.js',
+  ];
+  for (const file of runtimeFiles) {
+    const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    assert.doesNotMatch(source, /adaptive-state-observability-5fda0824|preflight__marrick__none/u);
+  }
 });
 
 test('a complete but wrong-family matrix stops instead of authorizing S1', async () => {
