@@ -18,15 +18,8 @@
  *   node scripts/analyze-rubric-consistency.js --verbose        (show scatter data)
  */
 
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-const DB_PATH = path.join(ROOT_DIR, 'data', 'evaluations.db');
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 // ── CLI args ──
 const args = process.argv.slice(2);
@@ -150,7 +143,11 @@ function formatP(p) {
 
 // ── Database ──
 
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 const epoch = parseEpochArg(process.argv);
 const epochFilter = getEpochFilter(epoch);

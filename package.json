@@ -249,7 +249,7 @@
     "probe:plan3-sfs": "node scripts/run-plan3-sfs-audit.js",
     "probe:plan3-dag-sfs": "node scripts/run-plan3-dag-sfs-audit.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
-    "test:hermetic": "EVAL_DB_PATH=$(mktemp -d)/test.db EVAL_LOGS_DIR=$(mktemp -d) node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
+    "test:hermetic": "EVAL_DB_PATH=$(mktemp -d)/test.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_WRITING_PAD_DIR=$(mktemp -d) node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

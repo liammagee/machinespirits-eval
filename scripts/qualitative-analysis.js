@@ -14,10 +14,10 @@
  *   exports/qualitative-analysis.md    — paper-ready summary
  */
 
-import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 // ── Stopwords ────────────────────────────────────────────────────────────
 
@@ -465,13 +465,11 @@ async function main() {
   console.log('='.repeat(70));
   console.log('');
 
-  const dbPath = path.join(process.cwd(), 'data', 'evaluations.db');
-  if (!fs.existsSync(dbPath)) {
-    console.error('Database not found:', dbPath);
-    process.exit(1);
+  const { db, dbPath, reason } = openEvaluationDbReadonly();
+  if (!db) {
+    console.log(describeMissingEvaluationDb(dbPath, reason));
+    process.exit(0);
   }
-
-  const db = new Database(dbPath);
 
   const epoch = parseEpochArg(process.argv);
   const epochFilter = getEpochFilter(epoch);
