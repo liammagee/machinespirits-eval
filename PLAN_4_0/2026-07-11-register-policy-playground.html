@@ -1,0 +1,928 @@
+<!doctype html>
+<!--
+  Filter & Switch: an abstract register-policy playground, 2026-07-11.
+  A deliberately context-free simulation of the assessment -> strategy-shift loop:
+  a noisy scalar signal, a choice of filter (raw / windowed slope / EWMA), and a
+  softmax switching policy with adjustable temperature and hysteresis.
+  Built to make the tutor-stub register policies legible; the correspondence
+  table at the bottom anchors every knob back to scripts/tutor-stub.js.
+  The HTML is the source. Shared design: notes/poetics/assets/techne.css + .js.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Filter &amp; Switch — an abstract register-policy playground · PLAN 4.0</title>
+<meta name="description" content="A context-free simulation of assessment filtering and strategy switching: noise, windows, moving averages, temperature, and hysteresis." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&amp;family=Source+Serif+4:opsz,wght@8..60,200..900&amp;family=JetBrains+Mono:wght@300..700&amp;display=swap" />
+<link rel="stylesheet" href="../notes/poetics/assets/techne.css" />
+<style>
+  .hero__h1 { max-width: 16ch; }
+  .hero__lede { max-width: 940px; }
+
+  .sim { border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 90%, var(--paper-2)); border-radius: 2px; padding: 18px; margin: 1.2rem 0; }
+  .sim__row { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+  @media (max-width: 900px) { .sim__row { grid-template-columns: 1fr; } }
+
+  .panel { border: 1px solid var(--rule-soft); background: var(--paper-3); border-radius: 2px; padding: 10px 12px 12px; }
+  .panel h3 { margin: 0 0 6px; font-family: "JetBrains Mono", monospace; font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .panel canvas { display: block; width: 100%; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 0 0 14px; align-items: flex-end; }
+  .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+  .ctl--wide { min-width: 180px; }
+  .ctl label { font-family: "JetBrains Mono", monospace; font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .ctl output { font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--ink-2); }
+  .ctl input[type="range"] { width: 100%; accent-color: var(--moss); }
+  .ctl select, .ctl input[type="number"] {
+    font-family: "JetBrains Mono", monospace; font-size: .78rem; color: var(--ink);
+    background: var(--paper-4); border: 1px solid var(--rule); border-radius: 2px; padding: 4px 6px;
+  }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    font-family: "JetBrains Mono", monospace; font-size: .72rem; letter-spacing: .06em; cursor: pointer;
+    color: var(--ink); background: var(--paper-4); border: 1px solid var(--rule); border-radius: 2px; padding: 6px 12px;
+  }
+  .btn:hover { background: var(--paper-2); }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; font-family: "JetBrains Mono", monospace; font-size: .68rem; color: var(--ink-3); }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 14px; height: 3px; display: inline-block; border-radius: 1px; }
+  .legend .dotswatch { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+  .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; }
+  @media (max-width: 760px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .metric { border: 1px solid var(--rule-soft); background: var(--paper-3); padding: 10px 12px; border-radius: 2px; }
+  .metric__value { display: block; font-family: "Fraunces", serif; font-size: clamp(1.5rem, 2.6vw, 2.2rem); line-height: 1; color: var(--ink); }
+  .metric__value small { font-size: .55em; color: var(--ink-3); }
+  .metric__label { display: block; margin-top: .4rem; font-family: "JetBrains Mono", monospace; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+
+  .xp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 1.2rem 0; }
+  @media (max-width: 820px) { .xp-grid { grid-template-columns: 1fr; } }
+  .xp { border: 1px solid var(--rule); border-top: 4px solid var(--ochre); background: color-mix(in srgb, var(--paper) 92%, var(--paper-2)); padding: 14px 16px; border-radius: 2px; }
+  .xp h3 { margin: .2rem 0 .5rem; font-family: "Fraunces", serif; font-size: 1.15rem; }
+  .xp p { margin: .35rem 0; font-size: var(--s-1); }
+  .xp .try { font-family: "JetBrains Mono", monospace; font-size: .7rem; color: var(--ink-3); }
+
+  table.map { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: var(--s-1); }
+  table.map th, table.map td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  table.map th { font-family: "JetBrains Mono", monospace; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  table.map code { font-size: .82em; }
+  .scrollx { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#model">Model</a>
+      <a href="#playground">Playground</a>
+      <a href="#experiments">Experiments</a>
+      <a href="#correspondence">Correspondence</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> PLAN 4.0 · instrument · 2026-07-11</div>
+    <h1 class="hero__h1">Filter &amp; switch: when should one reading change the <span class="em">strategy</span>?</h1>
+    <p class="hero__subtitle">A context-free simulation of the assessment → strategy loop: a noisy scalar signal, a filter that estimates level and trend, and a switching policy with temperature and hysteresis.</p>
+    <div class="hero__lede"><div>
+      <p>Nothing here knows about tutoring. There is a hidden quantity <em>x(t)</em> you would like to track, a per-turn <strong>observation</strong> of it corrupted by noise, a <strong>filter</strong> that turns the observation stream into an estimate of <em>where the signal is</em> (level) and <em>where it is going</em> (trend), and a <strong>policy</strong> that maps that estimate to one of four abstract strategies. Every question about register-shifting — should a derivative smooth over several responses before the strategy moves? what does temperature do? why does the system chatter? — becomes visible as geometry: a point moving through a colored plane.</p>
+    </div></div>
+  </section>
+
+  <section class="section" id="model">
+    <h2>The model in one pass</h2>
+    <p><strong>Signal.</strong> A hidden latent <em>x(t)</em> ∈ [0,1] evolves over 48 turns (choose its shape with the presets). Each turn emits one observation <em>s(t)</em> = <em>x(t)</em> + noise. One preset injects a single <em>misread</em> — an observation far from the latent — the abstract version of a terse reply scored as disengagement.</p>
+    <p><strong>Filter.</strong> Three estimators of (level <em>L</em>, trend <em>T</em>): <em>raw</em> uses the last observation and the last one-step difference; <em>windowed</em> uses a k-point mean and the least-squares slope over the same window (a weighted moving average of the per-step changes); <em>EWMA</em> uses exponentially weighted averages of level and change with memory α.</p>
+    <p><strong>Policy.</strong> Fixed linear map from (L, T) to four strategy logits — <span style="white-space:nowrap;">Steady · Advance · Repair · Disrupt</span> — then softmax at temperature τ, then either argmax or a seeded sample. A <em>hysteresis</em> term adds h to the incumbent strategy's logit: positive h makes the current strategy sticky; negative h penalizes repeating it (the anti-repetition regime).</p>
+    <p>The phase plane below colors each point of (level, trend) space by the policy's choice <em>given the current incumbent</em>, so hysteresis is visible as the incumbent's region growing (h &gt; 0) or shrinking (h &lt; 0) in place.</p>
+  </section>
+
+  <section class="section" id="playground">
+    <h2>Playground</h2>
+
+    <div class="sim">
+      <div class="presets" id="presets" role="group" aria-label="Scenario presets"></div>
+
+      <div class="controls">
+        <div class="ctl ctl--wide">
+          <label for="filterSel">Filter</label>
+          <select id="filterSel">
+            <option value="raw">raw — last observation + one-step difference</option>
+            <option value="window" selected>windowed — k-mean + least-squares slope</option>
+            <option value="ewma">EWMA — exponential moving average</option>
+          </select>
+        </div>
+        <div class="ctl" id="ctlWindow">
+          <label for="winRange">window k <output id="winOut">7</output></label>
+          <input type="range" id="winRange" min="2" max="9" step="1" value="7" />
+        </div>
+        <div class="ctl" id="ctlAlpha" hidden>
+          <label for="alphaRange">memory α <output id="alphaOut">0.35</output></label>
+          <input type="range" id="alphaRange" min="0.05" max="0.95" step="0.05" value="0.35" />
+        </div>
+        <div class="ctl">
+          <label for="noiseRange">noise σ <output id="noiseOut">0.08</output></label>
+          <input type="range" id="noiseRange" min="0" max="0.25" step="0.01" value="0.08" />
+        </div>
+        <div class="ctl">
+          <label for="tempRange">temperature τ <output id="tempOut">0.30</output></label>
+          <input type="range" id="tempRange" min="0.05" max="1.5" step="0.05" value="0.3" />
+        </div>
+        <div class="ctl">
+          <label for="hystRange">hysteresis h <output id="hystOut">0.00</output></label>
+          <input type="range" id="hystRange" min="-1" max="1" step="0.05" value="0" />
+        </div>
+        <div class="ctl">
+          <label for="modeSel">choice</label>
+          <select id="modeSel">
+            <option value="argmax" selected>argmax (deterministic)</option>
+            <option value="sample">sample (seeded)</option>
+          </select>
+        </div>
+        <div class="ctl">
+          <label for="seedNum">seed</label>
+          <input type="number" id="seedNum" value="11" min="0" max="99999" step="1" />
+        </div>
+        <div class="ctl">
+          <label>&nbsp;</label>
+          <div class="btnrow">
+            <button class="btn" id="playBtn" aria-pressed="true">Pause</button>
+            <button class="btn" id="stepBtn">Step</button>
+            <button class="btn" id="resetBtn">Restart</button>
+            <button class="btn" id="ghostBtn" aria-pressed="true">Raw ghost: on</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sim__row">
+        <div class="panel">
+          <h3>Signal, estimate &amp; chosen strategy over turns</h3>
+          <canvas id="timeline" height="300"></canvas>
+          <div class="legend">
+            <span class="key"><span class="swatch" style="background:var(--ink-4)"></span> hidden latent x(t)</span>
+            <span class="key"><span class="dotswatch" style="background:var(--ink-3)"></span> observations s(t)</span>
+            <span class="key"><span class="swatch" style="background:var(--moss)"></span> filtered level L(t)</span>
+            <span class="key">bands: chosen strategy (top: filtered · bottom: raw ghost)</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Phase plane — level × trend, colored by policy choice</h3>
+          <canvas id="phase" height="300"></canvas>
+          <div class="legend" id="phaseLegend"></div>
+        </div>
+      </div>
+
+      <div class="sim__row" style="margin-top:16px;">
+        <div class="panel">
+          <h3>Strategy probabilities at the playhead (softmax at τ)</h3>
+          <canvas id="dist" height="120"></canvas>
+        </div>
+        <div class="panel">
+          <h3>Run metrics — filtered vs raw ghost</h3>
+          <div class="metric-grid" style="margin-top:4px;">
+            <div class="metric"><span class="metric__value" id="mSwitch">–</span><span class="metric__label">switches</span></div>
+            <div class="metric"><span class="metric__value" id="mFalse">–</span><span class="metric__label">false switches</span></div>
+            <div class="metric"><span class="metric__value" id="mLag">–</span><span class="metric__label">detection lag</span></div>
+            <div class="metric"><span class="metric__value" id="mDwell">–</span><span class="metric__label">median dwell</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="experiments">
+    <h2>Five experiments worth running</h2>
+    <div class="xp-grid">
+      <article class="xp">
+        <h3>1 · The misread</h3>
+        <p>Preset <em>Misread spike</em> plants one wildly wrong observation in an otherwise steady signal — the abstract "yeah" scored as disengagement.</p>
+        <p class="try">Try: filter = raw → the policy whiplashes through Repair and Advance off one bad reading. Windowed k=5 still flinches into Repair for a turn (a least-squares slope weights its endpoints heavily); the default k=7 shrinks that to a single brief flinch, and k=7 with hysteresis h≈+0.3 removes it entirely. Averaging shrinks the damage; averaging <em>plus stickiness</em> erases it.</p>
+      </article>
+      <article class="xp">
+        <h3>2 · Smoothing buys calm, costs lag</h3>
+        <p>Preset <em>Step drop</em>: the latent genuinely falls at turn 20. The filter that ignored the misread now delays the legitimate strategy change.</p>
+        <p class="try">Try: sweep window k from 2 → 9 and watch false switches collapse; then raise noise σ and watch the detection-lag cost appear at the large windows. There is no filter that is both instant and immune; there is only a chosen point on this tradeoff.</p>
+      </article>
+      <article class="xp">
+        <h3>3 · Chatter and hysteresis</h3>
+        <p>Preset <em>Oscillation</em> swings the signal fast enough that the estimate keeps crossing policy boundaries; the strategy toggles every few turns.</p>
+        <p class="try">Try: windowed k=5, h = 0, and note the switch count. h = +0.5 grows the incumbent's region in place and trims the one-turn toggles. Now set h = −0.45 — the current runtime's anti-repetition regime — and switching gets strictly worse: the incumbent's own region shrinks under the point standing in it.</p>
+      </article>
+      <article class="xp">
+        <h3>4 · Temperature is boundary blur</h3>
+        <p>With sampling on, τ sets how far from the boundary the policy still gambles.</p>
+        <p class="try">Try: preset Plateau, choice = sample, τ = 0.1 vs τ = 0.9. At high τ the plane's colors smear together and strategies switch with no signal cause at all — exploration indistinguishable from noise unless you log the draw.</p>
+      </article>
+      <article class="xp">
+        <h3>5 · Slope vs velocity</h3>
+        <p>Preset <em>Ramp &amp; surge</em>: quiet, then a genuine climb of +0.07 per turn — the same size as one noise step. A one-step difference cannot tell the surge from noise; a windowed slope integrates until the trend is undeniable.</p>
+        <p class="try">Try: raw vs windowed at σ = 0.08–0.12. The raw trajectory whips vertically in the phase plane, clipping the Advance region by luck; the windowed one drifts coherently into it and stays.</p>
+      </article>
+      <article class="xp">
+        <h3>6 · What this playground omits</h3>
+        <p>One channel only. The runtime tracks three (learner-field, DAG coverage, risk) and its most interesting flags — <code>coerciveProgress</code>, <code>fieldOnlyDrift</code> — are <em>divergences between channels</em>, a 2-signal generalization of this plane. It also omits the efficacy feedback loop that re-weights strategies by observed outcome.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="correspondence">
+    <h2>Correspondence to the runtime</h2>
+    <p>The playground is deliberately context-free; this table is the only place it touches the codebase. Line references at <code>preconscious@f27ec28d</code>.</p>
+    <div class="scrollx">
+    <table class="map">
+      <thead><tr><th>Playground</th><th>Runtime</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>observation s(t)</td><td><code>learnerSurfaceFieldPoint()</code> · <code>scripts/tutor-stub.js:3753</code></td><td>classifier labels → hand-set ranks (<code>LEARNER_FIELD_RANKS:217</code>) + normalized 1–5 scores, averaged into one scalar per turn. All label noise lands here.</td></tr>
+        <tr><td>filter = raw</td><td><code>state</code> policy · <code>stateEngagementStanceSelection:5835</code></td><td>current classification + DAG assessment only; no memory.</td></tr>
+        <tr><td>one-step difference</td><td><code>field</code> policy · <code>fieldProgressFromClassification:3782</code></td><td>Δ vs previous turn against <code>FIELD_PROGRESS_THRESHOLD = 0.05</code>.</td></tr>
+        <tr><td>windowed slope</td><td><code>trajectory</code> policy · <code>buildTrajectoryWindow:4613</code>, <code>linearTrajectorySlope:4575</code></td><td>OLS slope over ≤5 points = weighted moving average of per-step changes. But flags OR the smoothed slope with the unsmoothed velocity (e.g. <code>fieldRegression:4631</code>), so single-turn reactivity survives.</td></tr>
+        <tr><td>EWMA</td><td><em>not implemented</em></td><td>the cheapest missing variant: smooths the <em>level</em>, not just the trend, with one parameter and no window edge effects.</td></tr>
+        <tr><td>policy logit map</td><td><code>DYNAMICAL_SYSTEM_REGISTER_AFFINITY:4862</code> over the 16-axis state vector (<code>buildDynamicalSystemState:4978</code>)</td><td>the playground's 4-strategy map over (L, T) is the same construction in 2D.</td></tr>
+        <tr><td>temperature τ</td><td><code>normalizeEngagementStanceDistribution:4396</code>, <code>logitsToRegisterScores:5323</code></td><td>same role: flattens the choice distribution.</td></tr>
+        <tr><td>seeded sampling</td><td><code>sampleEngagementStanceDistribution:4420</code> uses <code>Math.random()</code></td><td>unseeded in the runtime — the exact P0.2 target in the implementation plan.</td></tr>
+        <tr><td>hysteresis h &lt; 0</td><td>repetition penalties · <code>buildDynamicalSystemRegisterScores:5362</code> (−0.45 / −0.25 logit)</td><td>the runtime ships with <em>negative</em> hysteresis: switching is subsidized, dwelling is taxed.</td></tr>
+        <tr><td>hysteresis h &gt; 0</td><td><em>not implemented</em></td><td>no dwell bonus or switch cost exists in any current policy.</td></tr>
+        <tr><td>false switches / lag</td><td><em>not measured</em></td><td>candidate process metrics for the Phase 3 decision record (switch rate is currently only visible in transcripts).</td></tr>
+        <tr><td>outcome feedback</td><td><code>registerEfficacyFromDagProgress:3823</code>, <code>empiricalRegisterCorrections:5143</code></td><td>omitted here: the runtime also re-weights strategies by observed next-turn progress.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <footer class="colophon"><p><span class="label">Colophon</span> &nbsp; Abstract instrument for reasoning about register-policy dynamics; not evidence, not a source of paper claims. Simulation is fully client-side and seeded (mulberry32, matching repo convention). Design: <code>notes/poetics/assets/techne.css</code>. Behaviour: <code>notes/poetics/assets/techne.js</code>.</p></footer>
+</main>
+
+<script src="../notes/poetics/assets/techne.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  // ---------- deterministic RNG (repo convention: mulberry32) ----------
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function gaussPair(rng) {
+    const u1 = Math.max(rng(), 1e-9);
+    const u2 = rng();
+    const r = Math.sqrt(-2 * Math.log(u1));
+    return [r * Math.cos(2 * Math.PI * u2), r * Math.sin(2 * Math.PI * u2)];
+  }
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  // ---------- scenarios ----------
+  const N = 48;
+  const SCENARIOS = {
+    misread: {
+      label: 'Misread spike',
+      latent: (t) => 0.62,
+      outliers: { 18: 0.30 },
+      changePoints: [],
+    },
+    step: {
+      label: 'Step drop',
+      latent: (t) => (t < 20 ? 0.72 : 0.34),
+      outliers: {},
+      changePoints: [20],
+    },
+    ramp: {
+      label: 'Ramp & surge',
+      latent: (t) => (t < 14 ? 0.25 : t < 21 ? 0.25 + (t - 14) * 0.07 : 0.74),
+      outliers: {},
+      changePoints: [14],
+    },
+    plateau: {
+      label: 'Plateau',
+      latent: (t) => 0.55,
+      outliers: {},
+      changePoints: [],
+    },
+    osc: {
+      label: 'Oscillation',
+      latent: (t) => 0.52 + 0.2 * Math.sin((2 * Math.PI * t) / 7),
+      outliers: {},
+      changePoints: [],
+    },
+  };
+
+  // ---------- strategies & policy ----------
+  const STRATEGIES = [
+    { key: 'steady', label: 'Steady' },
+    { key: 'advance', label: 'Advance' },
+    { key: 'repair', label: 'Repair' },
+    { key: 'disrupt', label: 'Disrupt' },
+  ];
+  const T_MAX = 0.14;  // trend scale: |T| at which trend features saturate
+  const WARMUP = 2;    // turns before the filter has enough points to act on
+
+  // Quadratic trend features: noise-scale slopes (~0.01-0.03 at k=7, sigma=0.08)
+  // contribute almost nothing; genuine sustained trends (~0.07+) dominate.
+  function policyLogits(L, T) {
+    const tp = clamp(T / T_MAX, 0, 1);
+    const tn = clamp(-T / T_MAX, 0, 1);
+    const Tp = tp * tp;
+    const Tn = tn * tn;
+    const F = Math.max(0, 1 - tp - tn); // flatness
+    const G = 1 - L;                     // gap
+    return [
+      2.2 * L + 0.8 * F - 3.2 * Tn - 0.25,                     // steady: high & flat
+      1.2 * L + 5.6 * Tp - 0.4 * F - 0.4,                      // advance: clear rise
+      2.0 * G + 5.5 * Tn * (0.3 + 0.7 * G) - 0.6 * Tp - 0.2,   // repair: falling, worse when already low
+      2.5 * G + 1.8 * F * G - 3.0 * Tn - 1.5 * Tp - 0.6,       // disrupt: low & stuck
+    ];
+  }
+  function softmax(logits, tau) {
+    const m = Math.max(...logits);
+    const exps = logits.map((l) => Math.exp((l - m) / tau));
+    const total = exps.reduce((a, b) => a + b, 0);
+    return exps.map((e) => e / total);
+  }
+  function choose(logits, { tau, hyst, incumbent, mode, u }) {
+    const adjusted = logits.slice();
+    if (incumbent >= 0) adjusted[incumbent] += hyst;
+    const probs = softmax(adjusted, tau);
+    let pick = 0;
+    if (mode === 'sample') {
+      let acc = 0;
+      pick = probs.length - 1;
+      for (let i = 0; i < probs.length; i += 1) {
+        acc += probs[i];
+        if (u <= acc) { pick = i; break; }
+      }
+    } else {
+      for (let i = 1; i < probs.length; i += 1) if (probs[i] > probs[pick]) pick = i;
+    }
+    return { pick, probs };
+  }
+
+  // ---------- filters ----------
+  function runFilter(obs, cfg) {
+    const L = new Array(obs.length).fill(0);
+    const T = new Array(obs.length).fill(0);
+    if (cfg.kind === 'raw') {
+      for (let t = 0; t < obs.length; t += 1) {
+        L[t] = obs[t];
+        T[t] = t === 0 ? 0 : obs[t] - obs[t - 1];
+      }
+    } else if (cfg.kind === 'window') {
+      for (let t = 0; t < obs.length; t += 1) {
+        const from = Math.max(0, t - cfg.k + 1);
+        const seg = obs.slice(from, t + 1);
+        L[t] = seg.reduce((a, b) => a + b, 0) / seg.length;
+        if (seg.length < 2) { T[t] = 0; continue; }
+        const mx = (seg.length - 1) / 2;
+        const my = L[t];
+        let num = 0; let den = 0;
+        for (let i = 0; i < seg.length; i += 1) { num += (i - mx) * (seg[i] - my); den += (i - mx) ** 2; }
+        T[t] = den ? num / den : 0;
+      }
+    } else { // ewma
+      let lvl = obs[0];
+      let trend = 0;
+      for (let t = 0; t < obs.length; t += 1) {
+        if (t === 0) { L[0] = obs[0]; T[0] = 0; continue; }
+        const diff = obs[t] - obs[t - 1];
+        lvl = (1 - cfg.alpha) * lvl + cfg.alpha * obs[t];
+        trend = (1 - cfg.alpha) * trend + cfg.alpha * diff;
+        L[t] = lvl; T[t] = trend;
+      }
+    }
+    return { L, T };
+  }
+
+  // ---------- simulation ----------
+  const state = {
+    scenario: 'misread',
+    filter: { kind: 'window', k: 7, alpha: 0.35 },
+    noise: 0.08,
+    tau: 0.3,
+    hyst: 0,
+    mode: 'argmax',
+    seed: 11,
+    ghost: true,
+    playing: true,
+    playhead: 0,
+    run: null,
+  };
+
+  // A filter only gets a vote once it has enough history to estimate with:
+  // raw needs one difference, a k-window needs k points, an EWMA needs ~1.5/alpha.
+  function filterWarmup(cfg) {
+    if (cfg.kind === 'window') return Math.max(WARMUP, cfg.k - 1);
+    if (cfg.kind === 'ewma') return Math.max(WARMUP, Math.min(8, Math.ceil(1.5 / cfg.alpha)));
+    return WARMUP;
+  }
+
+  function simulateChoices(est, draws, cfg, warmup) {
+    const picks = new Array(N).fill(-1);
+    const probs = new Array(N);
+    let incumbent = -1;
+    for (let t = 0; t < N; t += 1) {
+      const logits = policyLogits(est.L[t], est.T[t]);
+      if (t < warmup) { probs[t] = softmax(logits, cfg.tau); continue; } // abstain while the filter warms up
+      const r = choose(logits, { tau: cfg.tau, hyst: cfg.hyst, incumbent, mode: cfg.mode, u: draws[t] });
+      picks[t] = r.pick;
+      probs[t] = r.probs;
+      incumbent = r.pick;
+    }
+    return { picks, probs };
+  }
+
+  function runMetrics(picks, scenario) {
+    const start = picks.findIndex((p) => p >= 0);
+    if (start < 0) return { switches: 0, falseSwitches: 0, lag: null, medianDwell: N };
+    let switches = 0;
+    const dwells = [];
+    let dwell = 0;
+    for (let t = start + 1; t < N; t += 1) {
+      if (picks[t] !== picks[t - 1]) { switches += 1; if (dwell) dwells.push(dwell); dwell = 1; }
+      else dwell += 1;
+    }
+    if (dwell) dwells.push(dwell);
+    const cps = scenario.changePoints;
+    const grace = 8;
+    let falseSwitches = 0;
+    for (let t = start + 1; t < N; t += 1) {
+      if (picks[t] === picks[t - 1]) continue;
+      const legitimate = cps.some((cp) => t >= cp && t <= cp + grace);
+      if (!legitimate) falseSwitches += 1;
+    }
+    let lag = null;
+    if (cps.length) {
+      const cp = cps[0];
+      const before = picks[Math.max(0, cp - 1)];
+      for (let t = cp; t < N; t += 1) {
+        if (picks[t] !== before) { lag = t - cp; break; }
+      }
+    }
+    dwells.sort((a, b) => a - b);
+    const median = dwells.length ? dwells[Math.floor(dwells.length / 2)] : N;
+    return { switches, falseSwitches, lag, medianDwell: median };
+  }
+
+  function recompute() {
+    const scenario = SCENARIOS[state.scenario];
+    const rngNoise = mulberry32(state.seed * 7919 + 17);
+    const rngDraw = mulberry32(state.seed * 104729 + 5);
+    const latent = [];
+    const obs = [];
+    for (let t = 0; t < N; t += 1) {
+      latent.push(scenario.latent(t));
+      const [g] = gaussPair(rngNoise);
+      let o = clamp01(latent[t] + g * state.noise);
+      if (Object.prototype.hasOwnProperty.call(scenario.outliers, t)) o = scenario.outliers[t];
+      obs.push(o);
+    }
+    const draws = Array.from({ length: N }, () => rngDraw()); // shared by main + ghost for fair comparison
+    const cfg = { tau: state.tau, hyst: state.hyst, mode: state.mode };
+    const est = runFilter(obs, state.filter);
+    const main = simulateChoices(est, draws, cfg, filterWarmup(state.filter));
+    const estRaw = runFilter(obs, { kind: 'raw' });
+    const ghost = simulateChoices(estRaw, draws, cfg, WARMUP);
+    state.run = {
+      scenario, latent, obs, est, estRaw,
+      main, ghost,
+      metrics: runMetrics(main.picks, scenario),
+      ghostMetrics: runMetrics(ghost.picks, scenario),
+    };
+    state.playhead = Math.min(state.playhead, N - 1);
+    regionCache.dirty = true;
+    updateMetricsDom();
+    needsDraw = true;
+  }
+
+  // ---------- palette ----------
+  const palette = { strategies: [], ink: '#000', ink3: '#777', ink4: '#999', paper: '#fff', rule: '#ccc', moss: '#567', brick: '#a53', ochre: '#c83' };
+  function resolvePalette() {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name, fb) => (cs.getPropertyValue(name) || '').trim() || fb;
+    palette.ink = v('--ink', '#14100C');
+    palette.ink3 = v('--ink-3', '#5C5040');
+    palette.ink4 = v('--ink-4', '#8C7E6A');
+    palette.paper = v('--paper', '#F4EEDD');
+    palette.rule = v('--rule', 'rgba(28,22,16,0.18)');
+    palette.moss = v('--moss', '#56683A');
+    palette.brick = v('--brick', '#A53E2E');
+    palette.ochre = v('--ochre', '#C08A3E');
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches ||
+      document.documentElement.dataset.theme === 'dark';
+    const blue = dark ? '#7FA7C4' : '#315C72';
+    palette.strategies = [blue, palette.moss, palette.brick, palette.ochre];
+    regionCache.dirty = true;
+    renderPhaseLegend();
+  }
+  function parseColor(str) {
+    const el = document.createElement('canvas').getContext('2d');
+    el.fillStyle = str;
+    const norm = el.fillStyle; // normalized to #rrggbb or rgba()
+    if (norm.startsWith('#')) {
+      return [parseInt(norm.slice(1, 3), 16), parseInt(norm.slice(3, 5), 16), parseInt(norm.slice(5, 7), 16)];
+    }
+    const m = norm.match(/rgba?\(([^)]+)\)/);
+    if (!m) return [128, 128, 128];
+    const parts = m[1].split(',').map((x) => parseFloat(x));
+    return [parts[0], parts[1], parts[2]];
+  }
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const timelineCanvas = $('timeline');
+  const phaseCanvas = $('phase');
+  const distCanvas = $('dist');
+
+  const canvasMeta = new WeakMap();
+  function setupCanvas(canvas, cssHeight) {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.clientWidth || (canvas.parentElement ? canvas.parentElement.clientWidth - 24 : 320);
+    const meta = canvasMeta.get(canvas);
+    if (!meta || meta.cssW !== cssW || meta.dpr !== dpr || meta.cssH !== cssHeight) {
+      canvas.width = Math.max(50, Math.round(cssW * dpr));
+      canvas.height = Math.round(cssHeight * dpr);
+      canvas.style.height = cssHeight + 'px';
+      canvasMeta.set(canvas, { cssW, cssH: cssHeight, dpr });
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssHeight);
+    return ctx;
+  }
+
+  function renderPhaseLegend() {
+    const el = $('phaseLegend');
+    if (!el) return;
+    el.innerHTML = STRATEGIES.map((s, i) =>
+      `<span class="key"><span class="dotswatch" style="background:${palette.strategies[i] || '#888'}"></span> ${s.label}</span>`
+    ).join('') + '<span class="key">x: level L · y: trend T</span>';
+  }
+
+  // ---------- region map (incumbent-aware) ----------
+  const regionCache = { canvas: document.createElement('canvas'), dirty: true, incumbent: -1 };
+  function rebuildRegionMap(incumbent) {
+    const W = 160; const H = 110;
+    regionCache.canvas.width = W; regionCache.canvas.height = H;
+    const ctx = regionCache.canvas.getContext('2d');
+    const img = ctx.createImageData(W, H);
+    const cols = palette.strategies.map(parseColor);
+    for (let py = 0; py < H; py += 1) {
+      const T = (1 - (py / (H - 1)) * 2) * T_MAX * 1.35; // y: +T top, -T bottom
+      for (let px = 0; px < W; px += 1) {
+        const L = px / (W - 1);
+        const logits = policyLogits(L, T);
+        if (incumbent >= 0) logits[incumbent] += state.hyst;
+        const probs = softmax(logits, state.tau);
+        let r = 0; let g = 0; let b = 0;
+        for (let i = 0; i < probs.length; i += 1) {
+          r += probs[i] * cols[i][0]; g += probs[i] * cols[i][1]; b += probs[i] * cols[i][2];
+        }
+        const idx = (py * W + px) * 4;
+        img.data[idx] = r; img.data[idx + 1] = g; img.data[idx + 2] = b; img.data[idx + 3] = 105;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    regionCache.dirty = false;
+    regionCache.incumbent = incumbent;
+  }
+
+  // ---------- drawing ----------
+  function drawTimeline() {
+    const ctx = setupCanvas(timelineCanvas, 300);
+    const W = timelineCanvas.clientWidth || timelineCanvas.width;
+    const H = 300;
+    const padL = 30; const padR = 10; const padT = 10;
+    const bandH = 14; const bandGap = 4;
+    const plotB = H - 2 * bandH - bandGap - 26;
+    const run = state.run;
+    const x = (t) => padL + (t / (N - 1)) * (W - padL - padR);
+    const y = (v) => padT + (1 - v) * (plotB - padT);
+    ctx.clearRect(0, 0, W, H);
+
+    // axis frame
+    ctx.strokeStyle = palette.rule; ctx.lineWidth = 1;
+    ctx.strokeRect(padL, padT, W - padL - padR, plotB - padT);
+    ctx.fillStyle = palette.ink3;
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.fillText('1', padL - 14, y(1) + 4);
+    ctx.fillText('0', padL - 14, y(0) + 4);
+
+    // change points
+    for (const cp of run.scenario.changePoints) {
+      ctx.strokeStyle = palette.ink4; ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.moveTo(x(cp), padT); ctx.lineTo(x(cp), plotB); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const upto = Math.floor(state.playhead);
+
+    // latent (full, dashed)
+    ctx.strokeStyle = palette.ink4; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    for (let t = 0; t < N; t += 1) { const px = x(t); const py = y(run.latent[t]); if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // observations up to playhead
+    ctx.fillStyle = palette.ink3;
+    for (let t = 0; t <= upto; t += 1) {
+      ctx.beginPath(); ctx.arc(x(t), y(run.obs[t]), 2.4, 0, 2 * Math.PI); ctx.fill();
+    }
+    // outlier ring
+    for (const key of Object.keys(run.scenario.outliers)) {
+      const t = Number(key);
+      if (t <= upto) {
+        ctx.strokeStyle = palette.brick; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.arc(x(t), y(run.obs[t]), 5.5, 0, 2 * Math.PI); ctx.stroke();
+      }
+    }
+
+    // filtered level up to playhead (interpolated to playhead phase)
+    ctx.strokeStyle = palette.moss; ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let t = 0; t <= upto; t += 1) { const px = x(t); const py = y(run.est.L[t]); if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.stroke();
+
+    // ghost raw level
+    if (state.ghost) {
+      ctx.strokeStyle = palette.ink4; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let t = 0; t <= upto; t += 1) { const px = x(t); const py = y(run.estRaw.L[t]); if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+
+    // strategy bands
+    const bandY1 = plotB + 12;
+    const bandY2 = bandY1 + bandH + bandGap;
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.fillStyle = palette.ink3;
+    ctx.fillText('filtered', 2, bandY1 + bandH - 4);
+    if (state.ghost) ctx.fillText('raw', 2, bandY2 + bandH - 4);
+    for (let t = 0; t <= upto; t += 1) {
+      const px0 = t === 0 ? x(0) : (x(t - 1) + x(t)) / 2;
+      const px1 = t === N - 1 ? x(N - 1) : (x(t) + x(t + 1)) / 2;
+      ctx.fillStyle = run.main.picks[t] < 0 ? palette.rule : palette.strategies[run.main.picks[t]];
+      ctx.fillRect(px0, bandY1, px1 - px0 + 0.5, bandH);
+      if (state.ghost) {
+        ctx.fillStyle = run.ghost.picks[t] < 0 ? palette.rule : palette.strategies[run.ghost.picks[t]];
+        ctx.globalAlpha = 0.55;
+        ctx.fillRect(px0, bandY2, px1 - px0 + 0.5, bandH);
+        ctx.globalAlpha = 1;
+      }
+    }
+    // switch ticks on filtered band
+    for (let t = 1; t <= upto; t += 1) {
+      if (run.main.picks[t - 1] < 0) continue;
+      if (run.main.picks[t] !== run.main.picks[t - 1]) {
+        ctx.strokeStyle = palette.ink;
+        ctx.beginPath(); ctx.moveTo((x(t - 1) + x(t)) / 2, bandY1 - 3); ctx.lineTo((x(t - 1) + x(t)) / 2, bandY1 + bandH + 3); ctx.stroke();
+      }
+    }
+
+    // playhead
+    const ph = x(state.playhead);
+    ctx.strokeStyle = palette.ink; ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(ph, padT); ctx.lineTo(ph, bandY2 + bandH); ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = palette.ink3;
+    ctx.fillText('turn ' + Math.floor(state.playhead), W - 60, plotB + 8);
+  }
+
+  function drawPhase() {
+    const ctx = setupCanvas(phaseCanvas, 300);
+    const W = phaseCanvas.clientWidth || phaseCanvas.width;
+    const H = 300;
+    const padL = 30; const padR = 10; const padT = 10; const padB = 24;
+    const run = state.run;
+    const upto = Math.floor(state.playhead);
+    const incumbent = upto > 0 ? run.main.picks[upto - 1] : -1;
+    if (regionCache.dirty || regionCache.incumbent !== incumbent) rebuildRegionMap(incumbent);
+
+    const px = (L) => padL + L * (W - padL - padR);
+    const py = (T) => {
+      const range = T_MAX * 1.35;
+      return padT + (1 - (T + range) / (2 * range)) * (H - padT - padB);
+    };
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(regionCache.canvas, padL, padT, W - padL - padR, H - padT - padB);
+    ctx.strokeStyle = palette.rule;
+    ctx.strokeRect(padL, padT, W - padL - padR, H - padT - padB);
+
+    // axes labels + zero-trend line
+    ctx.fillStyle = palette.ink3; ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.fillText('level L →', W - 78, H - 8);
+    ctx.save(); ctx.translate(10, 84); ctx.rotate(-Math.PI / 2); ctx.fillText('trend T →', 0, 0); ctx.restore();
+    ctx.strokeStyle = palette.rule; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(padL, py(0)); ctx.lineTo(W - padR, py(0)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // trail
+    for (let t = 1; t <= upto; t += 1) {
+      const a = clamp(0.08 + (t / Math.max(1, upto)) * 0.8, 0, 0.9);
+      ctx.strokeStyle = palette.ink; ctx.globalAlpha = a * 0.55; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(px(run.est.L[t - 1]), py(clamp(run.est.T[t - 1], -T_MAX * 1.35, T_MAX * 1.35)));
+      ctx.lineTo(px(run.est.L[t]), py(clamp(run.est.T[t], -T_MAX * 1.35, T_MAX * 1.35)));
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // ghost trail
+    if (state.ghost) {
+      ctx.strokeStyle = palette.ink4; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let t = 0; t <= upto; t += 1) {
+        const gx = px(run.estRaw.L[t]); const gy = py(clamp(run.estRaw.T[t], -T_MAX * 1.35, T_MAX * 1.35));
+        if (t === 0) ctx.moveTo(gx, gy); else ctx.lineTo(gx, gy);
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+
+    // current point (interpolate between turns for smooth motion)
+    const f = state.playhead - upto;
+    const t1 = Math.min(N - 1, upto + 1);
+    const Lc = run.est.L[upto] * (1 - f) + run.est.L[t1] * f;
+    const Tc = run.est.T[upto] * (1 - f) + run.est.T[t1] * f;
+    const cx = px(Lc); const cy = py(clamp(Tc, -T_MAX * 1.35, T_MAX * 1.35));
+    const pick = run.main.picks[upto];
+    ctx.fillStyle = pick < 0 ? palette.ink4 : palette.strategies[pick];
+    ctx.strokeStyle = palette.ink;
+    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  }
+
+  function drawDist() {
+    const ctx = setupCanvas(distCanvas, 120);
+    const W = distCanvas.clientWidth || distCanvas.width;
+    const H = 120;
+    const run = state.run;
+    const upto = Math.floor(state.playhead);
+    const probs = run.main.probs[upto] || [0.25, 0.25, 0.25, 0.25];
+    const pick = run.main.picks[upto];
+    ctx.clearRect(0, 0, W, H);
+    const bw = (W - 40) / STRATEGIES.length;
+    ctx.font = '10px "JetBrains Mono", monospace';
+    for (let i = 0; i < STRATEGIES.length; i += 1) {
+      const bx = 20 + i * bw;
+      const bh = probs[i] * (H - 38);
+      ctx.fillStyle = palette.strategies[i];
+      ctx.globalAlpha = i === pick ? 1 : 0.45;
+      ctx.fillRect(bx + 8, H - 24 - bh, bw - 16, bh);
+      ctx.globalAlpha = 1;
+      if (i === pick) {
+        ctx.strokeStyle = palette.ink;
+        ctx.strokeRect(bx + 8, H - 24 - bh, bw - 16, bh);
+      }
+      ctx.fillStyle = palette.ink3;
+      ctx.fillText(STRATEGIES[i].label, bx + 8, H - 10);
+      ctx.fillText((probs[i] * 100).toFixed(0) + '%', bx + 8, H - 28 - bh < 12 ? H - 28 - bh + 14 : H - 28 - bh);
+    }
+  }
+
+  function updateMetricsDom() {
+    const m = state.run.metrics;
+    const g = state.run.ghostMetrics;
+    const pair = (a, b) => `${a}<small> / ${b} raw</small>`;
+    $('mSwitch').innerHTML = pair(m.switches, g.switches);
+    $('mFalse').innerHTML = pair(m.falseSwitches, g.falseSwitches);
+    $('mLag').innerHTML = state.run.scenario.changePoints.length
+      ? pair(m.lag === null ? '∅' : m.lag + 't', g.lag === null ? '∅' : g.lag + 't')
+      : '<small>n/a</small>';
+    $('mDwell').innerHTML = pair(m.medianDwell + 't', g.medianDwell + 't');
+  }
+
+  // ---------- animation loop ----------
+  let lastTs = null;
+  let needsDraw = true;
+  const TURNS_PER_SEC = 2.4;
+  function setPlaying(on) {
+    state.playing = on;
+    const btn = $('playBtn');
+    btn.textContent = on ? 'Pause' : 'Play';
+    btn.setAttribute('aria-pressed', String(on));
+    needsDraw = true;
+  }
+  // Some embedded viewers and backgrounded tabs suppress requestAnimationFrame
+  // entirely; fall back to a setTimeout driver if the first rAF never fires.
+  let rafAlive = false;
+  let timeoutDriver = false;
+  function scheduleFrame() {
+    if (timeoutDriver) { setTimeout(() => frame(performance.now()), 40); return; }
+    requestAnimationFrame(frame);
+  }
+  setTimeout(() => {
+    if (!rafAlive) { timeoutDriver = true; frame(performance.now()); }
+  }, 900);
+  function frame(ts) {
+    rafAlive = true;
+    if (lastTs === null) lastTs = ts;
+    const dt = Math.min(0.1, (ts - lastTs) / 1000);
+    lastTs = ts;
+    if (state.playing) {
+      state.playhead += dt * TURNS_PER_SEC;
+      if (state.playhead >= N - 1) { state.playhead = N - 1; setPlaying(false); }
+      needsDraw = true;
+    }
+    if (needsDraw) {
+      drawTimeline();
+      drawPhase();
+      drawDist();
+      needsDraw = state.playing;
+    }
+    scheduleFrame();
+  }
+
+  // ---------- controls ----------
+  function bind() {
+    const presetsEl = $('presets');
+    Object.entries(SCENARIOS).forEach(([key, sc]) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = sc.label;
+      btn.setAttribute('aria-pressed', String(key === state.scenario));
+      btn.addEventListener('click', () => {
+        state.scenario = key;
+        presetsEl.querySelectorAll('.btn').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        state.playhead = 0;
+        recompute();
+      });
+      presetsEl.appendChild(btn);
+    });
+
+    const filterSel = $('filterSel');
+    filterSel.addEventListener('change', () => {
+      state.filter.kind = filterSel.value;
+      $('ctlWindow').hidden = filterSel.value !== 'window';
+      $('ctlAlpha').hidden = filterSel.value !== 'ewma';
+      recompute();
+    });
+    const winRange = $('winRange');
+    winRange.addEventListener('input', () => { state.filter.k = Number(winRange.value); $('winOut').textContent = winRange.value; recompute(); });
+    const alphaRange = $('alphaRange');
+    alphaRange.addEventListener('input', () => { state.filter.alpha = Number(alphaRange.value); $('alphaOut').textContent = Number(alphaRange.value).toFixed(2); recompute(); });
+    const noiseRange = $('noiseRange');
+    noiseRange.addEventListener('input', () => { state.noise = Number(noiseRange.value); $('noiseOut').textContent = Number(noiseRange.value).toFixed(2); recompute(); });
+    const tempRange = $('tempRange');
+    tempRange.addEventListener('input', () => { state.tau = Number(tempRange.value); $('tempOut').textContent = Number(tempRange.value).toFixed(2); recompute(); });
+    const hystRange = $('hystRange');
+    hystRange.addEventListener('input', () => { state.hyst = Number(hystRange.value); $('hystOut').textContent = Number(hystRange.value).toFixed(2); recompute(); });
+    const modeSel = $('modeSel');
+    modeSel.addEventListener('change', () => { state.mode = modeSel.value; recompute(); });
+    const seedNum = $('seedNum');
+    seedNum.addEventListener('change', () => { state.seed = Number(seedNum.value) || 0; recompute(); });
+
+    $('playBtn').addEventListener('click', () => {
+      if (state.playhead >= N - 1 && !state.playing) state.playhead = 0;
+      setPlaying(!state.playing);
+    });
+    $('stepBtn').addEventListener('click', () => {
+      setPlaying(false);
+      state.playhead = Math.min(N - 1, Math.floor(state.playhead) + 1);
+      needsDraw = true;
+    });
+    $('resetBtn').addEventListener('click', () => { state.playhead = 0; needsDraw = true; });
+    const ghostBtn = $('ghostBtn');
+    ghostBtn.addEventListener('click', () => {
+      state.ghost = !state.ghost;
+      ghostBtn.textContent = 'Raw ghost: ' + (state.ghost ? 'on' : 'off');
+      ghostBtn.setAttribute('aria-pressed', String(state.ghost));
+      needsDraw = true;
+    });
+
+    // scrub by clicking timeline
+    timelineCanvas.addEventListener('pointerdown', (ev) => {
+      const rect = timelineCanvas.getBoundingClientRect();
+      const frac = clamp((ev.clientX - rect.left - 30) / (rect.width - 40), 0, 1);
+      state.playhead = frac * (N - 1);
+      needsDraw = true;
+    });
+
+    // theme changes
+    const onTheme = () => { resolvePalette(); needsDraw = true; };
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', onTheme);
+    new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+    window.addEventListener('resize', () => { needsDraw = true; });
+  }
+
+  resolvePalette();
+  bind();
+  recompute();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
