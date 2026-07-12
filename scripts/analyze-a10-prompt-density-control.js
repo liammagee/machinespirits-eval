@@ -12,11 +12,13 @@
 // Usage:
 //   node scripts/analyze-a10-prompt-density-control.js
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/evaluations.db');
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 // Match A10 v2 explicitly (not v1, which was invalidated by bug_007).
 // Pattern matches descriptions starting with "A10 v2" or "A10 v2." etc.

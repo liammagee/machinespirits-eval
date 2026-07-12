@@ -10,11 +10,13 @@
 //
 // Pre-registration: see notes/design-a10-prompt-density-v22-control.md §6a (orientation-family framing).
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/evaluations.db');
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 const A10B_RUN_PATTERN = 'A10b%';
 
