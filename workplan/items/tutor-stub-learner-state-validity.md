@@ -22,6 +22,7 @@ links:
     - adaptive-state-v2-s1-repair-bb65da27-v21
     - adaptive-state-v2-observability-preflight-5fda0824-v21
     - adaptive-state-v2-observability-preflight-8d6d2b22-v21
+    - adaptive-state-v2-observability-preflight-c0ccd5c9-v21
 tags:
   - adaptive-tutor
   - learner-state
@@ -197,3 +198,38 @@ analysis clause-wise without exposing harness targets or accepting unsupported
 claims. Only after that zero-call repair passes may another complete fresh-label
 24-cell preflight run. The full S1, S2, policy optimization, Phase 6B,
 shadow-pilot, efficacy, and human-learning claims remain blocked.
+
+2026-07-12 Codex third preflight repair: Commit `c0ccd5c9` froze the two
+second-preflight derive failures in a self-contained, hash-verified fixture,
+required realizers to voice one concrete supported object-level conclusion,
+and made analyzer recovery clause-wise so a supported intermediate derivation
+survives beside a later unsupported clause. These shared realizer/analyzer
+sources were already bound into both preflight and S1 static contracts. Focused
+verification passed 55/55, adaptive-state verification passed 115/115, and the
+full repository suite passed 5,228 tests with one expected skip. The sealed S0
+and stopped-S1 ancestors revalidated before launch.
+
+2026-07-12 Codex third observability-preflight result: The sealed paid run
+`adaptive-state-v2-observability-preflight-c0ccd5c9-v21` completed 24/24 cases
+and 48/48 unique serial CLI dispatches at clean pushed SHA `c0ccd5c9`, with
+zero technical failures, retries, semantic rerolls, repairs, fallbacks,
+exclusions, partial reuse, invalid stream lines, prohibited tool events, or
+learner-text event-ID leaks. Exact-family recovery improved to 23/24
+(`0.958333`): `none`, `adopt`, and `retract` passed 6/6; `derive` passed 5/6;
+Codex passed 12/12 and Claude 11/12; Marrick and Hethel passed 8/8 and
+Ravensmark 7/8. The sole mismatch was
+`preflight__ravensmark__derive__claude_sonnet`, observed as `none`. The run
+validly sealed `stop_and_repair_observability_preflight` with
+`s1_retry_eligible: false`. Report SHA-256 is
+`f00768748f653f1033b62525ae3f5d036784febc82655ade57bd735f6d701dbe`.
+
+2026-07-12 Codex next gate after 23/24: Stop further ad hoc prompt tuning and
+do not launch another paid preflight or full S1. Preserve the exact
+Ravensmark/Claude output and analyzer record, then audit without model calls
+whether the scope-level `materialSealAtIssue` target is semantically separable
+in public language from its released `sealMarkOf` premise. Any target, fixture,
+ontology, or public-language repair must apply to full S1, remain blind to the
+harness target at runtime, and trigger a fresh S0 if it changes the sealed
+world/kernel/target/config contract. The 24/24 gate, no-reuse rule, and all S1,
+S2, policy-optimization, Phase 6B, shadow-pilot, efficacy, and human-learning
+blocks remain unchanged.
