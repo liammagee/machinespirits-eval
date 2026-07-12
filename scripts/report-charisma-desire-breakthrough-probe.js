@@ -4,16 +4,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import Database from 'better-sqlite3';
 import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const LEARNER_AGENTS_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
 const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
@@ -313,8 +312,10 @@ function validateScenario(scenarios, learnerAgents) {
 }
 
 function loadRows(runIds = []) {
-  if (!fs.existsSync(DB_PATH)) return [];
-  const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
+  // Tolerates a missing DB, a zero-byte DB (sqlite MCP servers create one in
+  // fresh worktrees), and an EVAL_DB_PATH override the same way: no rows.
+  const { db } = openEvaluationDbReadonly(ROOT);
+  if (!db) return [];
   const clauses = ['scenario_id = ?', 'success = 1'];
   const params = [SCENARIO_ID];
   if (runIds.length) {

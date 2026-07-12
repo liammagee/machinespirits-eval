@@ -13,16 +13,9 @@
  */
 
 import 'dotenv/config';
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 // ANSI colors
 const c = {
@@ -356,15 +349,11 @@ Examples:
 
 // Main analysis function
 async function analyzeResults(options) {
-  const dbPath = path.join(DATA_DIR, 'evaluations.db');
-
-  if (!fs.existsSync(dbPath)) {
-    console.error(`${c.red}Error: Database not found at ${dbPath}${c.reset}`);
-    console.log('Run some evaluations first with: node scripts/eval-tutor.js run');
-    process.exit(1);
+  const { db, dbPath, reason } = openEvaluationDbReadonly();
+  if (!db) {
+    console.log(describeMissingEvaluationDb(dbPath, reason));
+    process.exit(0);
   }
-
-  const db = new Database(dbPath, { readonly: true });
 
   // Epoch filtering
   const epoch = parseEpochArg(process.argv);

@@ -193,9 +193,11 @@ Cells with `factors.id_director: true` use `services/idDirectorEngine.js`. Per t
 ### Hermetic Testing & Sandboxed Runs
 
 `EVAL_DB_PATH` and `EVAL_LOGS_DIR` override the default DB / logs locations (`services/evaluationStore.js`, `services/adaptiveTutor/persistence.js`). Used by:
-- `npm run test:hermetic` — runs the full test suite against `mktemp -d` paths so the production DB and logs are never touched
+- `npm run test:hermetic` — runs the full test suite against `mktemp -d` paths (also sets `EVAL_WRITING_PAD_DIR`) so the production DB, logs, and writing pads are never touched
 - Adaptive smoke scripts (combined with `ADAPTIVE_TUTOR_LLM=mock` for fully self-contained, no-cost runs)
 - Any test that needs full DB+logs isolation
+
+**Read-path discipline**: analysis/report scripts must not hardcode `data/evaluations.db` — open the DB via `openEvaluationDbReadonly()` (`services/evaluationDbReadonly.js`; `EVAL_DB_PATH`-aware, readonly, never creates the file) and treat a missing or schemaless DB as "no data" (message + exit 0), not a crash. A zero-byte `data/evaluations.db` can legitimately turn up in a fresh worktree (a sqlite MCP server pointed at that path creates one on connect), and a hardcoded path makes "hermetic" tests silently read the production DB.
 
 ### Placebo Control Design
 
