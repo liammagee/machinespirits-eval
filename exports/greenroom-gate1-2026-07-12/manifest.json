@@ -1,0 +1,41 @@
+{
+  "gate": "greenroom-gate1",
+  "phase": "A-pre",
+  "spec": "GREEN-ROOM-PLAN.md §7.2",
+  "mainSha": "2a903a46de23dfae187f9a666212327accf20ed4",
+  "worktreeBase": "518807e",
+  "patchSha256": "2b64d6cd0ba640f8b31df0d652742f00151b8f95cb6caba5923af4e73c3adfd4",
+  "profile": "marrick-ps-a",
+  "world": "world-005-marrick",
+  "learnerProfile": "proof_skipper",
+  "models": {
+    "tutor": "claude-code.sonnet-5",
+    "learner": "claude-code.sonnet",
+    "classifier": "claude-code.sonnet",
+    "extractor": "claude-code.sonnet",
+    "coach": "claude-code.claude-opus-4-8",
+    "judge": "claude-code.haiku"
+  },
+  "flags": "--dag --tutor-learner-dag --register-policy field --auto-turns until-grounded --auto-safety-turns 40",
+  "structure": "P1,P2 no book; S1,S2; P3@v2..P6@v5 with dense sessions; freeze v6; P7,P8 post",
+  "startedAt": "2026-07-12T02:05:41.391Z",
+  "discardedAttempts": [
+    {
+      "trace": "2026-07-12T02-05-51-088Z.jsonl",
+      "label": "P1-attempt1",
+      "reason": "tutor call exceeded 180s claude CLI timeout",
+      "turns": 1
+    },
+    {
+      "trace": "2026-07-12T02-05-54-394Z.jsonl",
+      "label": "P2-attempt1",
+      "reason": "stopped for effort/timeout standardization",
+      "turns": 3
+    }
+  ],
+  "executionConditions": {
+    "sequential": true,
+    "CLI_PROVIDER_CLAUDE_TIMEOUT_MS": 480000,
+    "cliEffort": "medium"
+  }
+}
