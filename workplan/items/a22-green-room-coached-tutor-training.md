@@ -1,20 +1,23 @@
 ---
 id: a22-green-room-coached-tutor-training
 title: A22. Green Room — coached tutor training, rehearsal, and the prompt book
-status: review
+status: done
 type: experiment
 priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-11
-updated: 2026-07-11
+updated: 2026-07-12
 verification: Gates 0-3 of GREEN-ROOM-PLAN.md executed in order with results
   recorded (or the arc stopped at a failed gate with the null written up as the
   closing paragraph), and the resulting section landed in paper-full-2.0.md.
-claim_status: planned
+claim_status: scope-bound
 branch: claude/tutor-coaching-memory-system-vvvrl8
 links:
-  notes: GREEN-ROOM-PLAN.md
+  paper: §6.16
+  notes:
+    - GREEN-ROOM-PLAN.md
+    - notes/2026-07-12-greenroom-gate1-diagnosis.md
   items:
     - a1-human-learner-validation
     - d3-insight-action-gap-heavy-bridge-followups
@@ -105,3 +108,8 @@ placebo 0/2; arc stops per pre-registration, Gates 2-3 cancelled. Standing:
 Gate-0 pass, the curated-book C1 artifact (v6, net compression across 3
 edits), P4's uncorroborated early closure, and the substrate. Report at
 exports/greenroom-gate1-2026-07-12/gate1-report.{md,json}.
+2026-07-12 claude: LANDED — paper §6.16 (v3.0.212) with the Gate-0 pass,
+Gate-1 null, curation/biography positives, and the §6.15-boundary reading;
+diagnosis note saved. Card closes done/scope-bound per its verification
+clause. Successor levers (compile-to-policy, rehearsal, side-coaching cell
+206) are future pre-registrations, not this item.
