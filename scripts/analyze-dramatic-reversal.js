@@ -48,8 +48,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Database from 'better-sqlite3';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -94,7 +94,7 @@ function hasFlag(name) {
   return cli.flags.has(name);
 }
 
-const dbPath = getOption('db', process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db'));
+const dbOverride = getOption('db');
 const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
 const jsonOutPath = getOption('json');
 const dryRunMode = hasFlag('dry-run');
@@ -532,7 +532,11 @@ if (runIds.length === 0) {
   process.exit(0);
 }
 
-const db = new Database(dbPath, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly(ROOT_DIR, { explicitPath: dbOverride });
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 const placeholders = runIds.map(() => '?').join(', ');
 const fetched = db
   .prepare(

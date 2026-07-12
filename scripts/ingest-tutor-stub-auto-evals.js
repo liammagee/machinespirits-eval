@@ -14,9 +14,10 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_DB = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
+const DEFAULT_DB = resolveEvaluationDbPath(ROOT);
 const DEFAULT_DIR = '.tutor-stub-auto-eval';
 
 const { values: args, positionals } = parseArgs({

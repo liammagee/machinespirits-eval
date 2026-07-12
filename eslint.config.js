@@ -54,6 +54,7 @@ export default [
       'public/chat/vendor/',
       '.test-tmp/',
       '.codex-tmp/',
+      '.tutor-stub-auto-eval/',
       '.venv/',
       '**/*.workflow.js',
     ],

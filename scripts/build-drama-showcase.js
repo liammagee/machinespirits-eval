@@ -36,7 +36,7 @@
  *   npm run drama:showcase -- [options]
  *
  * Options:
- *   --db <path>           DB path (default: data/evaluations.db, symlinks followed)
+ *   --db <path>           DB path (default: EVAL_DB_PATH-aware resolution, symlinks followed)
  *   --from-dir <dir>      extra root to scan for drama files (repeatable;
  *                         default: exports/)
  *   --limit <n>           max entries in the pool (default: 16)
@@ -52,6 +52,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+// Path resolution only — DB access stays on the sqlite3 CLI (Electron-ABI worktrees).
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -61,7 +63,7 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 // ---------------------------------------------------------------------------
 function parseArgs(argv) {
   const out = {
-    db: 'data/evaluations.db',
+    db: null, // resolved via resolveEvaluationDbPath (EVAL_DB_PATH-aware)
     fromDirs: [],
     limit: 16,
     excerptTurns: 3,
@@ -373,7 +375,7 @@ function main() {
 
   // DB index (optional — degrades to disk-only when DB/CLI absent)
   let dbIndex = null;
-  const dbPath = resolveDbPath(opts.db);
+  const dbPath = resolveDbPath(resolveEvaluationDbPath(ROOT, opts.db));
   if (haveSqlite3() && fs.existsSync(dbPath)) {
     try {
       dbIndex = loadDbIndex(dbPath);

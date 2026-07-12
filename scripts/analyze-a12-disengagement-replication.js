@@ -8,11 +8,13 @@
 //   node scripts/analyze-a12-disengagement-replication.js
 //   (reads A12 run IDs from evaluation_runs by description LIKE 'A12%')
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/evaluations.db');
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 // 8 tutor dimension keys in v2.2 rubric (from config/rubrics/v2.2/tutor.yaml).
 const DIM_KEYS = [

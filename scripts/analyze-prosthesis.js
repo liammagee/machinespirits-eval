@@ -1,6 +1,11 @@
 #!/usr/bin/env node
-import Database from 'better-sqlite3';
-const db = new Database('data/evaluations.db');
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
+
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 const RUN_ID = 'eval-2026-02-17-25aaae85';
 

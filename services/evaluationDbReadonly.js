@@ -22,12 +22,17 @@ export const EVAL_REPO_ROOT = path.resolve(__dirname, '..');
  * Open the evaluation DB readonly, or explain why it cannot be analyzed.
  *
  * @param {string} rootDir repo root used to resolve relative paths
- * @param {{ requiredTable?: string|null }} [options] table that must exist
- *   for the DB to count as analyzable (null skips the schema check)
+ * @param {{ requiredTable?: string|null, explicitPath?: string|null }} [options]
+ *   requiredTable: table that must exist for the DB to count as analyzable
+ *   (null skips the schema check); explicitPath: a caller-supplied path (e.g.
+ *   a --db flag) that wins over EVAL_DB_PATH and the default resolution
  * @returns {{ db: import('better-sqlite3').Database|null, dbPath: string, reason: string|null }}
  */
-export function openEvaluationDbReadonly(rootDir = EVAL_REPO_ROOT, { requiredTable = 'evaluation_results' } = {}) {
-  const dbPath = resolveEvaluationDbPath(rootDir);
+export function openEvaluationDbReadonly(
+  rootDir = EVAL_REPO_ROOT,
+  { requiredTable = 'evaluation_results', explicitPath = null } = {},
+) {
+  const dbPath = resolveEvaluationDbPath(rootDir, explicitPath);
   if (!fs.existsSync(dbPath)) return { db: null, dbPath, reason: 'database not found' };
 
   let db = null;

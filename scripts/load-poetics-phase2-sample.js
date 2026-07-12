@@ -43,15 +43,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import Database from 'better-sqlite3';
 import yaml from 'yaml';
+import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const WORKTREE_ROOT = path.resolve(__dirname, '..');
 
 // Inputs: real eval data (main repo). Resolve from cwd; allow env override.
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(process.cwd(), 'data', 'evaluations.db');
 const LOGS_DIR = process.env.EVAL_LOGS_DIR
   ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues')
   : path.join(process.cwd(), 'logs', 'tutor-dialogues');
@@ -216,12 +215,11 @@ function renderTranscript(turns) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!fs.existsSync(DB_PATH))
-    throw new Error(`DB not found: ${DB_PATH}\n  → run from the main repo, or set EVAL_DB_PATH`);
+  const { db, dbPath: DB_PATH, reason } = openEvaluationDbReadonly(process.cwd());
+  if (!db) throw new Error(`DB not available: ${DB_PATH} (${reason})\n  → run from the main repo, or set EVAL_DB_PATH`);
   if (!fs.existsSync(LOGS_DIR))
     throw new Error(`dialogue logs not found: ${LOGS_DIR}\n  → run from the main repo, or set EVAL_LOGS_DIR`);
 
-  const db = new Database(DB_PATH, { readonly: true });
   const rng = mulberry32(args.seed);
 
   const drawn = [];

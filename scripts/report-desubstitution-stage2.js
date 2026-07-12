@@ -27,7 +27,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import Database from 'better-sqlite3';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const RUN_ID = process.argv.includes('--run-id')
@@ -37,7 +37,6 @@ const OUT_BASE = process.argv.includes('--out-base')
   ? process.argv[process.argv.indexOf('--out-base') + 1]
   : 'desubstitution-stage2-matrix';
 const CONFIRMATORY = process.argv.includes('--confirmatory');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data/evaluations.db');
 const LOG_DIRS = [
   process.env.EVAL_LOGS_DIR ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues') : null,
   path.join(os.homedir(), '.machinespirits-data/logs/tutor-dialogues'),
@@ -101,7 +100,11 @@ function scoreRow(log) {
   return out;
 }
 
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly(ROOT);
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 const rows = db
   .prepare(
     `SELECT dialogue_id, profile_name, scenario_id FROM evaluation_results
