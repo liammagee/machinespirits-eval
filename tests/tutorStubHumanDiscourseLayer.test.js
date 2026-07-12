@@ -29,8 +29,11 @@ function tutorStubDryRun(extraArgs = []) {
 }
 
 function plainTerminalText(value) {
+  // Build the ESC char dynamically so the ANSI-strip regex carries no
+  // control-character escape in a literal (no-control-regex).
+  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
   return String(value || '')
-    .replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '')
+    .replace(ansi, '')
     .replace(/\r/gu, '');
 }
 
@@ -129,16 +132,12 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   });
   assert.match(config.mixedLearner.accept, /Tab/u);
   assert.equal(config.mixedLearner.inspect, '/suggest');
-  assert.deepEqual(config.mixedLearner.startupPrompts.order, [
-    'learner_profile',
-    'tutor_model',
-    'dag_fact_dropout',
-  ]);
-  assert.equal(config.mixedLearner.startupPrompts.tutorModel.default, 'codex.gpt-5.6-terra');
-  assert.equal(config.mixedLearner.startupPrompts.tutorModel.recommended, 'codex.gpt-5.6-terra');
-  assert.ok(
-    config.mixedLearner.startupPrompts.tutorModel.choices.some((entry) => entry.ref === 'codex.gpt-5.6-luna'),
-  );
+  // Model selection was removed from first-run setup (2026-07-12); it stays
+  // changeable at runtime via /settings model.
+  assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile', 'dag_fact_dropout']);
+  assert.equal(config.mixedLearner.startupPrompts.tutorModel.enabled, false);
+  assert.equal(config.mixedLearner.startupPrompts.tutorModel.firstRunSelection, false);
+  assert.equal(config.mixedLearner.startupPrompts.tutorModel.liveCommand, '/settings model <provider.alias>');
   assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.85);
   assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.recommended, 0);
   assert.deepEqual(config.scenarioPicker, {
@@ -216,7 +215,6 @@ process.stdin.on('end', () => {
     await new Promise((resolve, reject) => {
       let browsedStressProfiles = false;
       let acceptedDefault = false;
-      let acceptedModel = false;
       let acceptedTemperature = false;
       let acceptedDropout = false;
       let requestedExit = false;
@@ -234,9 +232,6 @@ process.stdin.on('end', () => {
           child.stdin.write('stress\n');
         } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (6)')) {
           acceptedDefault = true;
-          child.stdin.write('\n');
-        } else if (!acceptedModel && plain.includes('tutor model [codex.gpt-5.6-terra; recommended] >')) {
-          acceptedModel = true;
           child.stdin.write('\n');
         } else if (!acceptedTemperature && plain.includes('stance temperature [0.85; recommended] >')) {
           acceptedTemperature = true;
@@ -265,7 +260,6 @@ process.stdin.on('end', () => {
 
     const plain = plainTerminalText(stdout);
     const pickerIndex = plain.indexOf('Pick a learner profile');
-    const modelIndex = plain.indexOf('tutor model [codex.gpt-5.6-terra; recommended] >');
     const temperatureIndex = plain.indexOf('stance temperature [0.85; recommended] >');
     const dropoutIndex = plain.indexOf('DAG fact dropout [0; recommended] >');
     const readyIndex = plain.indexOf('mixed learner answer + clue ready');
@@ -277,8 +271,10 @@ process.stdin.on('end', () => {
     assert.match(plain, /learner profiles > specialist failure modes \(6\)/u);
     assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
     assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
-    assert.ok(modelIndex > pickerIndex, plain);
-    assert.ok(temperatureIndex > modelIndex, plain);
+    // Model selection was removed from first-run setup (2026-07-12): profile
+    // flows straight to the temperature/dropout tuning prompts.
+    assert.doesNotMatch(plain, /tutor model \[/u);
+    assert.ok(temperatureIndex > pickerIndex, plain);
     assert.ok(dropoutIndex > temperatureIndex, plain);
     assert.ok(readyIndex > dropoutIndex, plain);
     assert.ok(profileIndex > readyIndex, plain);
@@ -304,7 +300,6 @@ test(
     let terminalOutput = '';
     let scenarioNavigated = false;
     let profileNavigated = false;
-    let modelNavigated = false;
     let requestedExit = false;
     const terminal = pty.spawn(
       process.execPath,
@@ -343,9 +338,6 @@ test(
         } else if (!profileNavigated && plain.includes('Pick a learner profile') && plain.includes('diligent')) {
           profileNavigated = true;
           terminal.write(`${'\x1b[B'.repeat(9)}\r`);
-        } else if (!modelNavigated && plain.includes('Pick a tutor model') && plain.includes('uses >')) {
-          modelNavigated = true;
-          terminal.write('\x1b[B\r');
         } else if (!requestedExit && plain.includes('DAG fact dropout [0; recommended] >')) {
           requestedExit = true;
           terminal.write('quit\r');
@@ -371,8 +363,8 @@ test(
     assert.match(plain, /edge > versus skeptical: skeptical asks for warrant/u);
     assert.match(plain, /↑ 2 more/u);
     assert.match(plain, /learner profile > contradiction_keeper — Contradiction keeper/u);
-    assert.match(plain, /Pick a tutor model/u);
-    assert.match(plain, /tutor model > codex\.gpt-5\.6-luna → gpt-5\.6-luna/u);
+    // Model selection was removed from first-run setup (2026-07-12).
+    assert.doesNotMatch(plain, /Pick a tutor model/u);
     assert.match(plain, /DAG fact dropout \[0; recommended\] >/u);
     assert.doesNotMatch(plain, /mixed learner answer \+ clue ready/u);
   },
@@ -453,12 +445,7 @@ test(
 );
 
 test('tutor-stub dry run exposes configurable register temperature', () => {
-  const config = tutorStubDryRun([
-    '--register-policy',
-    'continuous_dynamical_system',
-    '--register-temperature',
-    '0.4',
-  ]);
+  const config = tutorStubDryRun(['--register-policy', 'continuous_dynamical_system', '--register-temperature', '0.4']);
 
   assert.equal(config.registerSelection.temperature, 0.4);
   assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
@@ -481,7 +468,6 @@ test('mixed startup prompts preserve launch overrides while showing recommendati
 
   assert.deepEqual(config.mixedLearner.startupPrompts.order, [
     'learner_profile',
-    'tutor_model',
     'engagement_stance_temperature',
     'dag_fact_dropout',
   ]);
@@ -691,15 +677,7 @@ test('tutor-stub rejects DAG-fact dropout outside the closed unit interval', () 
 test('tutor-stub rejects unknown DAG discourse modes', () => {
   const result = spawnSync(
     process.execPath,
-    [
-      'scripts/tutor-stub.js',
-      '--dry-run',
-      '--no-trace',
-      '--world',
-      'world_005_marrick',
-      '--dag-mode',
-      'guesswork',
-    ],
+    ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--world', 'world_005_marrick', '--dag-mode', 'guesswork'],
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);

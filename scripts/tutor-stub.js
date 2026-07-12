@@ -662,8 +662,8 @@ const PREFERRED_TUTOR_MODEL_REFS = [
   'codex.gpt-5.6-luna',
   'codex.gpt-5.6-sol',
   'codex.gpt-5.5',
-  'codex.gpt-5.2-codex',
   'claude-code.sonnet',
+  'claude-code.fable',
   'claude-code.opus',
   'claude-code.haiku',
 ];
@@ -11160,25 +11160,20 @@ async function main() {
   };
   const mixedLearnerStartupPrompts = {
     enabled: initialMixedLearnerSetupEnabled,
+    // Model selection was removed from first-run setup (2026-07-12): the
+    // launch/default model is used and stays changeable via `/settings model`.
     order: [
       'learner_profile',
-      'tutor_model',
       ...(registerSelectionEnabled && registerTemperatureApplies(registerPolicy)
         ? ['engagement_stance_temperature']
         : []),
       ...(tutorLearnerDagEnabled ? ['dag_fact_dropout'] : []),
     ],
     tutorModel: {
-      enabled: true,
+      enabled: false,
+      firstRunSelection: false,
       default: args.model,
       recommended: STUB.model,
-      keyboardMenu: true,
-      choices: tutorModelChoiceEntries(args.model).map((entry) => ({
-        ref: entry.ref,
-        provider: entry.provider,
-        model: entry.model,
-        access: entry.access,
-      })),
       liveCommand: '/settings model <provider.alias>',
     },
     engagementStanceTemperature: {
@@ -13603,9 +13598,6 @@ async function main() {
       );
       const dropoutPromptEnabled = Boolean(state.learnerDag?.enabled);
 
-      console.log(`${C.cyan}Tune the dialogue${C.reset}`);
-      console.log(`${C.dim}  press Enter to accept each launch value; recommendations are shown beside it${C.reset}`);
-
       const promptForSetting = async ({ stage, label, defaultValue, recommendedValue, guidance, normalize }) => {
         console.log(`${C.dim}  ${guidance}${C.reset}`);
         while (!exiting) {
@@ -13631,41 +13623,20 @@ async function main() {
         return null;
       };
 
-      let tutorModelSelection = null;
-      if (keyboardMenuEnabled) {
-        console.log(`${C.cyan}Pick a tutor model${C.reset}`);
-        console.log(
-          `${C.dim}  ↑/↓ scroll · Enter select · highlighted model described below · Esc quit · ${state.modelRef} selected by default${C.reset}`,
-        );
-        const selectedModel = await pickInitialTutorModelWithKeyboard(state.modelRef);
-        if (!selectedModel) {
-          requestExit('initial_model_picker_exit');
-          return false;
-        }
-        tutorModelSelection = {
-          value: selectedModel.ref,
-          usedDefault: selectedModel.ref === state.modelRef,
-        };
-      } else {
-        attachLineListeners();
-        tutorModelSelection = await promptForSetting({
-          stage: 'model',
-          label: 'tutor model',
-          defaultValue: state.modelRef,
-          recommendedValue: STUB.model,
-          guidance: 'choose the speaking tutor model; analysis and learner models remain independent',
-          normalize: (value) => resolveTutorModelSelection(value).modelRef,
-        });
-        if (!tutorModelSelection) return false;
-      }
-      const appliedTutorModel = applyTutorModelSelection(tutorModelSelection.value, {
+      // First-run model selection was removed (user directive 2026-07-12): the
+      // launch/default model is used as-is and stays changeable at runtime via
+      // `/settings model`. Record the default in the trace so provenance is
+      // unchanged; applying the same ref is a no-op that skips the prefetch.
+      const appliedTutorModel = applyTutorModelSelection(state.modelRef, {
         source: 'initial_settings',
-        usedDefault: tutorModelSelection.usedDefault,
+        usedDefault: true,
       });
-      console.log(
-        `${C.cyan}tutor model >${C.reset} ${appliedTutorModel.modelRef} → ${appliedTutorModel.resolved.model}\n`,
-      );
       attachLineListeners();
+
+      if (temperaturePromptEnabled || dropoutPromptEnabled) {
+        console.log(`${C.cyan}Tune the dialogue${C.reset}`);
+        console.log(`${C.dim}  press Enter to accept each launch value; recommendations are shown beside it${C.reset}`);
+      }
 
       let temperatureSelection = null;
       if (temperaturePromptEnabled) {
@@ -13708,7 +13679,8 @@ async function main() {
           provider: appliedTutorModel.resolved.provider,
           model: appliedTutorModel.resolved.model,
           recommended: STUB.model,
-          usedDefault: tutorModelSelection.usedDefault,
+          usedDefault: true,
+          selectionSkipped: true,
         },
         engagementStanceTemperature: temperatureSelection
           ? {
