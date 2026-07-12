@@ -304,3 +304,8 @@ presentation:
   family: marrick
   variant_of: world_005_marrick
   temporal_frame: period
+  # Costume pinned deliberately (user directive 2026-07-12): the assay
+  # language is load-bearing for the marrick family — do not re-costume,
+  # re-dictionize, or modernize these worlds or author diction variants.
+  narrative_diction: medieval
+  ledger_term: trial-book

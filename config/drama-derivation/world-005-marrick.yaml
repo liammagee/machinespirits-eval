@@ -335,3 +335,8 @@ presentation:
   family: marrick
   temporal_frame: period
   scene_ecology: "moneyer's assay"
+  # Costume pinned deliberately (user directive 2026-07-12): the assay
+  # language is load-bearing for the marrick family — do not re-costume,
+  # re-dictionize, or modernize these worlds or author diction variants.
+  narrative_diction: medieval
+  ledger_term: trial-book

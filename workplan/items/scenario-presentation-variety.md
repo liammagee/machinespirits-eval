@@ -60,7 +60,10 @@ Landed:
 Remaining:
 
 - Live smoke the new worlds (zero have dialogue runs yet; lint-only).
-- Backfill scene_ecology/diction/summary for the 12 untagged legacy families
+- Backfill scene_ecology/diction/summary for the untagged legacy families
   (needs reading each fiction; conservative frame-only tags applied so far).
+  EXCLUDED: the marrick family — its costume is pinned by user directive
+  (2026-07-12): the assay language suits those scenarios; do not re-costume
+  them or author diction variants of them.
 - Author 2-3 more non-period base worlds (clinic, domestic decision,
   collaborative construction) once the first five have smoked clean.
