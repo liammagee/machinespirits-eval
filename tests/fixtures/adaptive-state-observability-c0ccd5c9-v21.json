@@ -1,0 +1,141 @@
+{
+  "schema": "machinespirits.adaptive-state-observability-construct-audit-fixture.v1",
+  "version": "1.0",
+  "source": {
+    "run_id": "adaptive-state-v2-observability-preflight-c0ccd5c9-v21",
+    "git_sha": "c0ccd5c920313445c678881b1f947f673803d00a",
+    "call_ledger_file_sha256": "29c604482a8a544df79fea9caf6b753ee11a23cc76badbf41937c1fdc4b02a99",
+    "cases_file_sha256": "ea1697cb968da9efe38ce095075fb55b7559e7a2238c191718028afdb714c0bd",
+    "run_seal_file_sha256": "df611f90eb3846b08890f51680653579a706d61cb378fc329ea00e458f1b82ac",
+    "seal_plan_sha256": "cdd7f90b6510ec7ce3a03dee5025eef906e02ca902cb4fa4388eefee50095bf2",
+    "seal_inventory_sha256": "2d780e26732fedc53c191e7346852a98487bb80ee1ba7ac7625e6bdb17d8b573",
+    "report_content_sha256": "f00768748f653f1033b62525ae3f5d036784febc82655ade57bd735f6d701dbe",
+    "result_content_sha256": "4da22737620396f35d882c0b258b768da35273993193260831c1b151801c6f68"
+  },
+  "case": {
+    "id": "preflight__ravensmark__derive__claude_sonnet",
+    "intended_family": "derive",
+    "observed_family": "none",
+    "learner_text": "Because the raven's-notch dusk-seal is the operative impression on the pass — pressed before the public ribbon was laid — the hand that holds that seal is the hand that pressed the pass.",
+    "learner_text_sha256": "723c5724416a3d3a07fe363b0588dd108f7cead629adfce15b32fbe95e426aee",
+    "analyzer_evidence_span": "the hand that holds that seal is the hand that pressed the pass",
+    "public_construct": {
+      "released_premise_fact": [
+        "sealMarkOf",
+        "gatePass",
+        "duskSeal"
+      ],
+      "released_premise_surface": "Hold the pass to the slant light: under the red wax is a second, older impression, the little dusk-seal used after curfew - a raven's notch under the wing, pressed before the public ribbon was laid across it.",
+      "structural_support_rule": {
+        "id": "R1_scope",
+        "if": [
+          [
+            "sealMarkOf",
+            "?pass",
+            "?seal"
+          ]
+        ],
+        "then": [
+          [
+            "materialSealAtIssue",
+            "?pass",
+            "?seal"
+          ]
+        ]
+      },
+      "harness_target_fact": [
+        "materialSealAtIssue",
+        "gatePass",
+        "duskSeal"
+      ],
+      "audit_disposition": "insufficiently_separable_for_event_family_gate_retarget_to_next_relational_fact"
+    },
+    "realizer_output": {
+      "learner_text": "Because the raven's-notch dusk-seal is the operative impression on the pass — pressed before the public ribbon was laid — the hand that holds that seal is the hand that pressed the pass.",
+      "realized_public_event_ids": [
+        "derive:inference_02"
+      ]
+    },
+    "realizer_artifact_hashes": {
+      "parsed_output_sha256": "a56b6f4013d68aa4ad07ea58acb1d0a154e16134a334e5d51396ad610d0dc51c",
+      "public_input_sha256": "2d150d611f99c6e80a90d9b575154a8fa5b7e7900cd6612fd2e7392f651d70d2",
+      "raw_output_sha256": "a56b6f4013d68aa4ad07ea58acb1d0a154e16134a334e5d51396ad610d0dc51c",
+      "system_prompt_sha256": "ec9d1f2d14417b3227e0ab1155b7d547f36e004af6e8fdb55ae5c6edb6a36448",
+      "user_prompt_sha256": "2d150d611f99c6e80a90d9b575154a8fa5b7e7900cd6612fd2e7392f651d70d2"
+    },
+    "analyzer_parsed_output": {
+      "benchmark_transition": {
+        "evidence_span": "the hand that holds that seal is the hand that pressed the pass",
+        "family": "none"
+      },
+      "classification": {
+        "overall": {
+          "current_state": "operative-seal premise unsupported",
+          "next_best_tutor_move": "Ask which public fact identifies the dusk-seal as the material seal and who holds it.",
+          "recurring_pattern": "none",
+          "summary": "The learner is applying the seal rule but has not established its required premises.",
+          "trajectory": "moving toward rule-based reasoning"
+        },
+        "turn": {
+          "affect": "neutral",
+          "agency": "attempting",
+          "discourse_move": "inference",
+          "epistemic_stance": "exploratory",
+          "evidence_use": "overleaps_evidence",
+          "pedagogical_need": "Separate the stated seal-mark from operative status.",
+          "request_type": "answer_seeking_or_overreach",
+          "scores": {
+            "conceptual_engagement": {
+              "reason": "Connects seal to signing rule.",
+              "score": 4
+            },
+            "epistemic_readiness": {
+              "reason": "Uses evidence but adds a premise.",
+              "score": 3
+            }
+          },
+          "summary": "The learner treats the dusk-seal as operative without public support."
+        }
+      },
+      "learner_record": {
+        "adopt": [],
+        "assert_answer": null,
+        "derive": [],
+        "human_discourse": {
+          "common_sense_bridges": [],
+          "illicit_hidden_premises": [
+            "The dusk-seal is the operative seal on gatePass."
+          ],
+          "implied_public_premises": [],
+          "implied_warrants": [],
+          "missing_warrants": [
+            "Public evidence that duskSeal is the operative material seal.",
+            "A public fact identifying the holder of duskSeal."
+          ],
+          "proof_debt_candidates": [],
+          "proof_status": "hidden_premise_risk",
+          "provisional_claims": [],
+          "side_arc": {
+            "detected": false,
+            "reason": null,
+            "return_target": null,
+            "type": null
+          },
+          "suppressed_or_private_premises": []
+        },
+        "hypothesis": null,
+        "notes": "The rule is invoked before its holder premise is supplied.",
+        "retract": []
+      }
+    },
+    "analyzer_artifact_hashes": {
+      "model_input_envelope_sha256": "863a1fa141e03b826071294e477176630529f00755264ebc29e70f00ff4e3c9d",
+      "output_schema_sha256": "b476616cf474ca2155cea1c9ff65831611dca0a469314625a0818fbc2dd34ec2",
+      "parsed_output_sha256": "53e81683fe318c6cb5835b89212402a1c51f642d0475ae357daa091df83d4e2f",
+      "prompt_sha256": "82f050c57f6c96449df04def33174dad59409910b8619d7655d899b552595965",
+      "public_input_sha256": "05eb2265ad54965f3294461c81563c5092288bd51c2b2cb1f400d7ec8b259848",
+      "raw_output_sha256": "67772c8a5cf84e8c5984832cdb0683915a87358e4905e83158b796792744d521",
+      "system_prompt_sha256": "bab9e5402ea07f8423c9cf5f4dff944e56cae43b10d50e07bb5be73734e7386b"
+    }
+  }
+}

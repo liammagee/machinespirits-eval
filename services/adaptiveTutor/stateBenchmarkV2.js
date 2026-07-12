@@ -375,6 +375,16 @@ export function validateAdaptiveStateBenchmarkV2Config(config) {
   ) {
     throw new Error('stateBenchmarkV2: worlds require distinct frozen derivation sources and declared geometries');
   }
+  for (const world of critical.worlds) {
+    const structural = world.structural_support_rule_ids || [];
+    if (
+      !Array.isArray(structural) ||
+      structural.some((id) => typeof id !== 'string' || !id.trim()) ||
+      new Set(structural).size !== structural.length
+    ) {
+      throw new Error('stateBenchmarkV2: structural support rule ids must be a unique string array');
+    }
+  }
   requireUniqueIds(critical.latent_generators, 'critical_path.latent_generators', 2);
   if (
     critical.latent_generators.some(

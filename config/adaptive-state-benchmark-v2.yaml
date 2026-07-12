@@ -118,6 +118,11 @@ critical_path:
     - id: ravensmark
       source: config/drama-derivation/world-009-ravensmark.yaml
       geometry: unary_dead_predicate_probe
+      # R1_scope converts a visible seal mark into the proof obligation named
+      # by the next rule. It remains in logical closure but is not itself a
+      # separately observable learner event.
+      structural_support_rule_ids:
+        - R1_scope
   latent_generators:
     - id: durable_state
       family: a21_durable_state_transition_kernel_v2

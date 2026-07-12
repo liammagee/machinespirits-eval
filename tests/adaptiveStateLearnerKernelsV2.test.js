@@ -80,6 +80,8 @@ test('canonical loader compiles Marrick, Hethel, and Ravensmark into normalized 
     [2, 2, 2],
   );
   assert.ok(adapters.every((adapter) => /^[0-9a-f]{64}$/u.test(adapter.world_sha256)));
+  assert.deepEqual(adapters[2].structural_support_rule_ids, ['R1_scope']);
+  assert.equal(adapters[2].version, '2.1');
 
   for (const [index, adapter] of adapters.entries()) {
     const source = path.resolve(ROOT, value.critical_path.worlds[index].source);
@@ -91,6 +93,41 @@ test('canonical loader compiles Marrick, Hethel, and Ravensmark into normalized 
     }
     assert.equal(serialized.includes(world.secret.surface), false, `${adapter.id} leaked its secret surface`);
   }
+});
+
+test('Ravensmark keeps scope closure but reserves public derive events for a separable relational inference', () => {
+  const value = config();
+  const adapter = loadAdaptiveStateWorldAdapters(value.critical_path.worlds).find(
+    (candidate) => candidate.id === 'ravensmark',
+  );
+  let proof = adapter.initialHiddenProofState();
+  proof = adapter.applyEvent(proof, adapter.adoptEvent('p_mark'));
+  assert.equal(adapter.nextDerivableFact(proof), null, 'scope conversion is structural support, not a learner event');
+  proof = adapter.applyEvent(proof, adapter.adoptEvent('p_registry'));
+  assert.deepEqual(adapter.nextDerivableFact(proof), ['pressedSealFor', 'gatePass', 'elian']);
+  const event = adapter.deriveEvent(adapter.nextDerivableFact(proof));
+  assert.equal(event.event_id, 'derive:inference_03');
+  assert.equal(event.semantic_role, 'supported_intermediate_inference');
+  assert.throws(
+    () => adapter.deriveEvent(['materialSealAtIssue', 'gatePass', 'duskSeal']),
+    /must be an observable fact/u,
+  );
+});
+
+test('structural support annotations fail closed unless they are unary non-answer rules feeding later rules', () => {
+  const value = config();
+  const unknown = structuredClone(value.critical_path.worlds);
+  unknown[2].structural_support_rule_ids = ['R404'];
+  assert.throws(
+    () => loadAdaptiveStateWorldAdapters(unknown),
+    /structural support rule R404 must be a unary non-answer rule that feeds a later rule/u,
+  );
+  const finalAnswer = structuredClone(value.critical_path.worlds);
+  finalAnswer[2].structural_support_rule_ids = ['R3_signature'];
+  assert.throws(
+    () => loadAdaptiveStateWorldAdapters(finalAnswer),
+    /structural support rule R3_signature must be a unary non-answer rule that feeds a later rule/u,
+  );
 });
 
 test('kernel implementation hashes bind every declared dependency source', () => {

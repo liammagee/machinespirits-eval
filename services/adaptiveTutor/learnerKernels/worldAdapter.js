@@ -161,7 +161,14 @@ function cloneProofState(proof) {
   };
 }
 
-export function createWorldNormalizedProofAdapter({ id, source, geometry, world, worldSha256 }) {
+export function createWorldNormalizedProofAdapter({
+  id,
+  source,
+  geometry,
+  world,
+  worldSha256,
+  structuralSupportRuleIds = [],
+}) {
   if (!id || !source || !geometry || !world || !worldSha256) {
     throw new Error('learnerKernel.worldAdapter: id, source, geometry, world, and worldSha256 are required');
   }
@@ -174,6 +181,37 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
   const criticalSet = new Set(criticalPremiseIds);
   const allFacts = [...world.background, ...world.premises.map((premise) => premise.fact)];
   const fullClosure = closure(allFacts, world.rules);
+  if (
+    !Array.isArray(structuralSupportRuleIds) ||
+    structuralSupportRuleIds.some((ruleId) => typeof ruleId !== 'string' || !ruleId.trim())
+  ) {
+    throw new Error(`learnerKernel.worldAdapter: ${id} structural support rule ids must be a string array`);
+  }
+  const structuralRuleIds = new Set(structuralSupportRuleIds);
+  if (structuralRuleIds.size !== structuralSupportRuleIds.length) {
+    throw new Error(`learnerKernel.worldAdapter: ${id} structural support rule ids must be unique`);
+  }
+  for (const ruleId of structuralRuleIds) {
+    const rule = world.rules.find((candidate) => candidate.id === ruleId);
+    const outputPredicate = rule?.then?.[0]?.[0];
+    const feedsLaterRule = world.rules.some(
+      (candidate) =>
+        candidate.id !== ruleId &&
+        candidate.if.some((pattern) => String(pattern?.[0] || '') === String(outputPredicate || '')),
+    );
+    if (
+      !rule ||
+      rule.if.length !== 1 ||
+      rule.then.length !== 1 ||
+      !outputPredicate ||
+      outputPredicate === world.questionPattern[0] ||
+      !feedsLaterRule
+    ) {
+      throw new Error(
+        `learnerKernel.worldAdapter: ${id} structural support rule ${ruleId} must be a unary non-answer rule that feeds a later rule`,
+      );
+    }
+  }
   const challengeIds = challengePremiseIds(world, criticalPremiseIds, fullClosure);
   const initialHeldIds = criticalPremiseIds.filter((premiseId) => !challengeIds.includes(premiseId));
   const initialFacts = [
@@ -188,6 +226,12 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
   const premiseSlot = new Map(criticalPremiseIds.map((premiseId, index) => [premiseId, index + 1]));
   const baseKeys = new Set(allFacts.map(factKey));
   const derivedKeys = [...fullClosure.facts.keys()].filter((key) => !baseKeys.has(key)).sort();
+  const structuralDerivedKeys = new Set(
+    derivedKeys.filter((key) => structuralRuleIds.has(String(fullClosure.proofs.get(key)?.rule || ''))),
+  );
+  const observableDerivedKeys = derivedKeys.filter((key) => !structuralDerivedKeys.has(key));
+  // Preserve stable event slots across ontology refinements. A structural fact
+  // keeps its reserved slot even though no public learner event may emit it.
   const derivedSlot = new Map(derivedKeys.map((key, index) => [key, index + 1]));
   const secretKey = factKey(world.secret.fact);
 
@@ -248,7 +292,7 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
 
   const nextDerivableFact = (proof) => {
     const closed = closure(factsForProof(proof), world.rules);
-    for (const key of derivedKeys) {
+    for (const key of observableDerivedKeys) {
       if (!closed.facts.has(key) || proof.voicedDerivedFactKeys.includes(key)) continue;
       return closed.facts.get(key);
     }
@@ -274,7 +318,9 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
   const deriveEvent = (fact, { harmfulDebtDelta = 0 } = {}) => {
     const key = factKey(fact);
     const slot = derivedSlot.get(key);
-    if (!slot) throw new Error('learnerKernel.worldAdapter: derive event must be licensed by the world closure');
+    if (!slot || structuralDerivedKeys.has(key)) {
+      throw new Error('learnerKernel.worldAdapter: derive event must be an observable fact licensed by the world closure');
+    }
     return {
       kind: 'derive',
       event_id: `derive:inference_${String(slot).padStart(2, '0')}`,
@@ -363,8 +409,9 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
         world_id: id,
         source_world_id: world.id,
         world_sha256: worldSha256,
-        adapter_version: 'world-normalized-proof-v2',
+        adapter_version: 'world-normalized-proof-v2.1',
         geometry,
+        structural_support_rule_ids: [...structuralRuleIds].sort(),
       },
     };
   };
@@ -495,7 +542,7 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
 
   return Object.freeze({
     schema: ADAPTIVE_STATE_WORLD_ADAPTER_SCHEMA,
-    version: '2.0',
+    version: '2.1',
     id,
     source_world_id: world.id,
     source,
@@ -504,6 +551,8 @@ export function createWorldNormalizedProofAdapter({ id, source, geometry, world,
     normalization_denominator: normalizationDenominator,
     critical_premise_count: criticalPremiseIds.length,
     challenge_premise_count: challengeIds.length,
+    structural_support_rule_ids: Object.freeze([...structuralRuleIds].sort()),
+    observable_derived_fact_count: observableDerivedKeys.length,
     validateHiddenProofState,
     initialHiddenProofState,
     proofSnapshot,
@@ -545,6 +594,7 @@ export function loadAdaptiveStateWorldAdapters(
       geometry: config.geometry,
       world,
       worldSha256: sha256File(sourceFile),
+      structuralSupportRuleIds: config.structural_support_rule_ids || [],
     });
   });
 }

@@ -49,6 +49,12 @@ const DERIVE_SEMANTIC_REGRESSIONS = JSON.parse(
     'utf8',
   ),
 );
+const CONSTRUCT_AUDIT_FIXTURE = JSON.parse(
+  fs.readFileSync(
+    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-c0ccd5c9-v21.json'),
+    'utf8',
+  ),
+);
 
 function label(modelRef) {
   return modelRef === 'codex.gpt-5.6-terra'
@@ -310,6 +316,24 @@ test('preflight executes 24 isolated public cases and passes only at 24/24', asy
       assert.equal(staged?.surface, atomic);
       assert.equal(analyzerInput.priorPublicLearnerState.adopted_premise_ids.includes('p_surface'), false);
     }
+    if (job.world.id === 'ravensmark' && job.event_family === 'derive') {
+      assert.deepEqual(analyzerInput.priorPublicLearnerState.adopted_premise_ids, ['p_mark', 'p_registry']);
+      assert.deepEqual(analyzerInput.priorPublicLearnerState.voiced_derived_facts, []);
+      assert.equal(analyzerInput.publicStagedEvidence.length, 2);
+      assert.match(realizerInput.priorPublicTranscript[0].text, /dusk-seal[\s\S]+private-seal register/iu);
+      assert.deepEqual(realizerInput.currentPublicActEnvelope.event_ids, ['derive:inference_03']);
+      const proof = {
+        heldPremiseIds: ['p_mark', 'p_registry'],
+        releasedPremiseIds: ['p_mark', 'p_registry'],
+        voicedDerivedFactKeys: [],
+        harmfulProofDebt: 0,
+      };
+      assert.deepEqual(adapters.get(job.world.id).nextDerivableFact(proof), [
+        'pressedSealFor',
+        'gatePass',
+        'elian',
+      ]);
+    }
   }
   const report = buildAdaptiveStateObservabilityPreflightReport({ plan, result, config: CONFIG });
   assert.equal(validateAdaptiveStateObservabilityPreflightReport(report), true);
@@ -418,6 +442,60 @@ test('the two second-run derive failures stay frozen with clause-level semantic 
     assert.doesNotMatch(
       source,
       /adaptive-state-observability-8d6d2b22|preflight__marrick__derive__codex_terra|preflight__ravensmark__derive__claude_sonnet/u,
+    );
+  }
+});
+
+test('the third-run Ravensmark failure stays frozen as construct-audit evidence, not a runtime lookup', () => {
+  assert.equal(
+    CONSTRUCT_AUDIT_FIXTURE.schema,
+    'machinespirits.adaptive-state-observability-construct-audit-fixture.v1',
+  );
+  assert.deepEqual(CONSTRUCT_AUDIT_FIXTURE.source, {
+    run_id: 'adaptive-state-v2-observability-preflight-c0ccd5c9-v21',
+    git_sha: 'c0ccd5c920313445c678881b1f947f673803d00a',
+    call_ledger_file_sha256: '29c604482a8a544df79fea9caf6b753ee11a23cc76badbf41937c1fdc4b02a99',
+    cases_file_sha256: 'ea1697cb968da9efe38ce095075fb55b7559e7a2238c191718028afdb714c0bd',
+    run_seal_file_sha256: 'df611f90eb3846b08890f51680653579a706d61cb378fc329ea00e458f1b82ac',
+    seal_plan_sha256: 'cdd7f90b6510ec7ce3a03dee5025eef906e02ca902cb4fa4388eefee50095bf2',
+    seal_inventory_sha256: '2d780e26732fedc53c191e7346852a98487bb80ee1ba7ac7625e6bdb17d8b573',
+    report_content_sha256: 'f00768748f653f1033b62525ae3f5d036784febc82655ade57bd735f6d701dbe',
+    result_content_sha256: '4da22737620396f35d882c0b258b768da35273993193260831c1b151801c6f68',
+  });
+  const row = CONSTRUCT_AUDIT_FIXTURE.case;
+  assert.equal(row.intended_family, 'derive');
+  assert.equal(row.observed_family, 'none');
+  assert.equal(sha256(row.learner_text), row.learner_text_sha256);
+  assert.equal(hashCanonicalJson(row.realizer_output), row.realizer_artifact_hashes.parsed_output_sha256);
+  assert.equal(
+    hashCanonicalJson(row.analyzer_parsed_output),
+    row.analyzer_artifact_hashes.parsed_output_sha256,
+  );
+  assert.deepEqual(row.public_construct.released_premise_fact, ['sealMarkOf', 'gatePass', 'duskSeal']);
+  assert.equal(row.public_construct.structural_support_rule.id, 'R1_scope');
+  assert.deepEqual(row.public_construct.harness_target_fact, [
+    'materialSealAtIssue',
+    'gatePass',
+    'duskSeal',
+  ]);
+  assert.equal(
+    row.public_construct.audit_disposition,
+    'insufficiently_separable_for_event_family_gate_retarget_to_next_relational_fact',
+  );
+  const runtimeFiles = [
+    ...fs
+      .readdirSync(path.join(ROOT, 'services/adaptiveTutor'))
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => `services/adaptiveTutor/${file}`),
+    'services/tutorStubPublicLearnerAnalysis.js',
+    'scripts/execute-adaptive-state-observability-preflight-v2.js',
+    'scripts/execute-adaptive-state-benchmark-v2-s1.js',
+  ];
+  for (const file of runtimeFiles) {
+    const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    assert.doesNotMatch(
+      source,
+      /adaptive-state-observability-preflight-c0ccd5c9|preflight__ravensmark__derive__claude_sonnet/u,
     );
   }
 });
