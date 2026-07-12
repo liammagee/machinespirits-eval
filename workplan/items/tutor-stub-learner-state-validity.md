@@ -399,3 +399,28 @@ exact-channel and S1 canonical-pilot runs are now packaged
 …-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.manifest.json) with archives in
 artifacts/adaptive-tutor-runs/ and copies in
 ~/.machinespirits-data/runs/adaptive-tutor/.
+
+2026-07-13 Claude: v2.4 EXECUTED, both parts, zero calls (results note
+PLAN_4_0/2026-07-13-adaptive-state-v24-results.md). Part 1a classification:
+`data_starved` — refits reproduce the sealed pilot bit-exactly at 1x penalty
+and the frozen regularization sweep eliminates the negatives
+(field_trajectory@16x reaches the negligible band on both targets); the A1
+schedule floor BEATS the pilot's no_state by +0.26/+0.20 nats (the reference
+was a schedule-overfit proxy, worse than the class prior under LOWO); BUT no
+rung ever beats matched-regularization no_state, so the stop's decision
+stands. Part 1b verdict: `close_sensor_program_on_substrate`
+(none_matched_conservative_default) with a corrected gloss — TRANSPARENCY,
+NOT CONCEALMENT: the exact Bayes filter (fixed-point-verified against the
+kernel oracles, 216/216) drives posterior entropy over latent kernel state to
+0.0000 bits at horizon on every trajectory under BOTH schedules; B3 capacity
+passes decisively on both arms (filter beats no_state by 0.66-0.84 nats);
+every action is informative (B1 medians 0.83-0.99 bits); greedy info-max
+scheduling changes nothing material and does not rescue the lean estimator
+(B4 -0.30/-0.62). The kernels, as authored, never instantiated a concealed
+interior — the benchmark adjudicates estimator efficiency at n=144, not the
+manifest-vs-latent question. Sensor program CLOSED on this substrate; any
+revival requires identifiability-limited kernels by construction (new
+instrument, fresh contract). Sealed VOI arm packaged
+(config/adaptive-tutor-evidence/adaptive-state-v24-voi-schedule-6135bf3f6c6b.manifest.json).
+S2, policy optimization, Phase 6B, shadow-pilot, efficacy, and human-learning
+claims all remain blocked.

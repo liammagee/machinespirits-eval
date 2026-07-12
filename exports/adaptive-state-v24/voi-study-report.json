@@ -1,0 +1,4594 @@
+{
+  "b1_information_gain": {
+    "definition": "Expected one-step posterior-entropy reduction over latent kernel state (bits): H(next-state prior) - E_obs[H(next-state posterior)], exact filter from the deterministic per-dialogue initial state (point-mass prior; the S0 executor initializes kernel state deterministically from the dialogue seed).",
+    "floor_bits": 0.1,
+    "max_gain_bits_by_kernel_world_action": {
+      "dag_dropout": {
+        "hethel": {
+          "diagnose_with_discriminating_question": 1.441257518359,
+          "minimal_hint": 1.560138901879,
+          "request_evidence": 1.525260303557
+        },
+        "marrick": {
+          "diagnose_with_discriminating_question": 1.33583656887,
+          "minimal_hint": 1.51981197649,
+          "request_evidence": 1.564576395394
+        },
+        "ravensmark": {
+          "diagnose_with_discriminating_question": 0.993964415296,
+          "minimal_hint": 0.971066299204,
+          "request_evidence": 0.977235954027
+        }
+      },
+      "durable_state": {
+        "hethel": {
+          "diagnose_with_discriminating_question": 0.958636633822,
+          "minimal_hint": 0.959520707957,
+          "request_evidence": 0.992709167446
+        },
+        "marrick": {
+          "diagnose_with_discriminating_question": 0.950672092687,
+          "minimal_hint": 0.998200208137,
+          "request_evidence": 0.983359697908
+        },
+        "ravensmark": {
+          "diagnose_with_discriminating_question": 0.919063578535,
+          "minimal_hint": 0.987940445401,
+          "request_evidence": 0.978858831252
+        }
+      }
+    },
+    "summary": {
+      "hethel": {
+        "dag_dropout": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 1.441258,
+            "mean_gain_bits": 1.10724,
+            "median_gain_bits": 0.997568,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "minimal_hint": {
+            "max_gain_bits": 1.560139,
+            "mean_gain_bits": 0.976824,
+            "median_gain_bits": 0.991611,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "request_evidence": {
+            "max_gain_bits": 1.52526,
+            "mean_gain_bits": 1.096681,
+            "median_gain_bits": 0.952746,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          }
+        },
+        "durable_state": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 0.958637,
+            "mean_gain_bits": 0.68404,
+            "median_gain_bits": 0.888762,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 9
+          },
+          "minimal_hint": {
+            "max_gain_bits": 0.959521,
+            "mean_gain_bits": 0.938857,
+            "median_gain_bits": 0.939765,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "request_evidence": {
+            "max_gain_bits": 0.992709,
+            "mean_gain_bits": 0.713805,
+            "median_gain_bits": 0.930155,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 9
+          }
+        }
+      },
+      "marrick": {
+        "dag_dropout": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 1.335837,
+            "mean_gain_bits": 1.197978,
+            "median_gain_bits": 1.313742,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "minimal_hint": {
+            "max_gain_bits": 1.519812,
+            "mean_gain_bits": 0.961838,
+            "median_gain_bits": 0.928787,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "request_evidence": {
+            "max_gain_bits": 1.564576,
+            "mean_gain_bits": 1.314109,
+            "median_gain_bits": 1.435588,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          }
+        },
+        "durable_state": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 0.950672,
+            "mean_gain_bits": 0.868039,
+            "median_gain_bits": 0.860287,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "minimal_hint": {
+            "max_gain_bits": 0.9982,
+            "mean_gain_bits": 0.909576,
+            "median_gain_bits": 0.934496,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "request_evidence": {
+            "max_gain_bits": 0.98336,
+            "mean_gain_bits": 0.852982,
+            "median_gain_bits": 0.908047,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          }
+        }
+      },
+      "ravensmark": {
+        "dag_dropout": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 0.993964,
+            "mean_gain_bits": 0.315789,
+            "median_gain_bits": 0,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 4
+          },
+          "minimal_hint": {
+            "max_gain_bits": 0.971066,
+            "mean_gain_bits": 0.96088,
+            "median_gain_bits": 0.96088,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 12
+          },
+          "request_evidence": {
+            "max_gain_bits": 0.977236,
+            "mean_gain_bits": 0.434794,
+            "median_gain_bits": 0.318339,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 6
+          }
+        },
+        "durable_state": {
+          "diagnose_with_discriminating_question": {
+            "max_gain_bits": 0.919064,
+            "mean_gain_bits": 0.281859,
+            "median_gain_bits": 0,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 4
+          },
+          "minimal_hint": {
+            "max_gain_bits": 0.98794,
+            "mean_gain_bits": 0.807327,
+            "median_gain_bits": 0.968638,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 10
+          },
+          "request_evidence": {
+            "max_gain_bits": 0.978859,
+            "mean_gain_bits": 0.634567,
+            "median_gain_bits": 0.943025,
+            "transitions": 12,
+            "transitions_at_or_above_floor": 8
+          }
+        }
+      }
+    },
+    "table": [
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.805494820347,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.805494820347
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.975626481615,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.975626481615
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.983359697908,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.983359697908
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.805494820347,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.805494820347
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.975626481615,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.975626481615
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.983359697908,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.983359697908
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "minimal_hint",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.828826175521,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.828826175521
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.956869054794,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.956869054794
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.963104468876,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.963104468876
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "request_evidence",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.828826175521,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.828826175521
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.960237107993,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.960237107993
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.965700261397,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.965700261397
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "request_evidence",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.87682446293,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.87682446293
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.90820131846,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.90820131846
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.897967925222,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.897967925222
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "minimal_hint",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.894763449198,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.894763449198
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.998200208137,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.998200208137
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.85189080035,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.85189080035
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 2,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.850265704649,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.850265704649
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.912122151269,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.912122151269
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.918125406534,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918125406534
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.850265704649,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.850265704649
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.912122151269,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.912122151269
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.918125406534,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918125406534
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "minimal_hint",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.870307389121,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.870307389121
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.877939293144,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.877939293144
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.876799514994,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.876799514994
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "request_evidence",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.911030214563,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.911030214563
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.791159185905,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.791159185905
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.758636217931,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.758636217931
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "request_evidence",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.943701091941,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.943701091941
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.67585652903,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.67585652903
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.589356734803,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.589356734803
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "minimal_hint",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.950672092687,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950672092687
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.970950594455,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.970950594455
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.529360865287,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.529360865287
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__marrick__durable_state__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 3,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.33583656887,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.33583656887
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.97893489927,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.97893489927
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.564576395394,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.564576395394
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "minimal_hint",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.33583656887,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.33583656887
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.97893489927,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.97893489927
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.564576395394,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.564576395394
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "request_evidence",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.895696679246,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.895696679246
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.948967884155,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.948967884155
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.992123428851,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.992123428851
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "request_evidence",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.33583656887,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.33583656887
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.97893489927,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.97893489927
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.564576395394,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.564576395394
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "minimal_hint",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.33583656887,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.33583656887
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 1.51981197649,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.51981197649
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.564576395394,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.564576395394
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.895696679246,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.895696679246
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.948967884155,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.948967884155
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.992123428851,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.992123428851
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 102,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.313741960415,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.313741960415
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.908605158089,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.908605158089
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.435588293946,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.435588293946
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "minimal_hint",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.313741960415,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.313741960415
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.908605158089,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.908605158089
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.435588293946,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.435588293946
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "request_evidence",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.313741960415,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.313741960415
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.908605158089,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.908605158089
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.435588293946,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.435588293946
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "request_evidence",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.993016152492,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.993016152492
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.776540618283,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.776540618283
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.892199122003,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.892199122003
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "minimal_hint",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.313741960415,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.313741960415
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.908605158089,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.908605158089
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.435588293946,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.435588293946
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.993016152492,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.993016152492
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.776540618283,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.776540618283
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.892199122003,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.892199122003
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__marrick__dag_dropout__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 103,
+        "world_id": "marrick"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.959520707957,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.959520707957
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "request_evidence",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.95868429425,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.95868429425
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "request_evidence",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.957839070864,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.957839070864
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "minimal_hint",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.830253991952,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.830253991952
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.933811478834,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.933811478834
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.944973942386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.944973942386
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.830253991952,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.830253991952
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.933811478834,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.933811478834
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.944973942386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.944973942386
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.830253991952,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.830253991952
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.929442695843,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.929442695843
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.941673374718,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.941673374718
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "minimal_hint",
+        "seed": 202,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.958636633822,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.958636633822
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.94571893148,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.94571893148
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.992709167446,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.992709167446
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "request_evidence",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.958636633822,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.958636633822
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.94571893148,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.94571893148
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.992709167446,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.992709167446
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "request_evidence",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.958636633822,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.958636633822
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.94571893148,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.94571893148
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.992709167446,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.992709167446
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "minimal_hint",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.947269420005,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.947269420005
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.918671042705,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918671042705
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.918636124067,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918636124067
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.947269420005,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.947269420005
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.918671042705,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918671042705
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.918636124067,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918636124067
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.947269420005,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.947269420005
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.918671042705,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918671042705
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.918636124067,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.918636124067
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__hethel__durable_state__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "minimal_hint",
+        "seed": 203,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.997568001943,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.997568001943
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.878250600386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.878250600386
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.928470244123,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.928470244123
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "request_evidence",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.997568001943,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.997568001943
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.878250600386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.878250600386
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.928470244123,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.928470244123
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "minimal_hint",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.441257518359,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.441257518359
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.878250600386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.878250600386
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.525260303557,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.525260303557
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.999773383897,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.999773383897
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.69908477276,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.69908477276
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.839826934023,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.839826934023
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.441257518359,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.441257518359
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.878250600386,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.878250600386
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.525260303557,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.525260303557
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "minimal_hint",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.441257518359,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.441257518359
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 1.560138901879,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.560138901879
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.525260303557,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.525260303557
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "request_evidence",
+        "seed": 302,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.91831449959,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.91831449959
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.75405692339,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.75405692339
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "request_evidence",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.91831449959,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.91831449959
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.75405692339,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.75405692339
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "minimal_hint",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.91831449959,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.91831449959
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.95274596977,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.95274596977
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.91831449959,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.91831449959
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.95274596977,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.95274596977
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.91831449959,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.91831449959
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.95274596977,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.95274596977
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "minimal_hint",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 1.376630680935,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.376630680935
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.991611013618,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.991611013618
+          },
+          "request_evidence": {
+            "expected_gain_bits": 1.521267655468,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 3,
+            "observation_count": 3,
+            "prior_entropy_bits": 1.521267655468
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__hethel__dag_dropout__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "request_evidence",
+        "seed": 303,
+        "world_id": "hethel"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.911417960134,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.911417960134
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.960816811657,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.960816811657
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.964058619988,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.964058619988
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "minimal_hint",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.919063578535,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.919063578535
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.96323194623,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.96323194623
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.964570719855,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.964570719855
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.945790721077,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.945790721077
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.940542734188,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.940542734188
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.945790721077,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.945790721077
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.945506500609,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.945506500609
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "minimal_hint",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.948690858657,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.948690858657
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "request_evidence",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.895749089992,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.895749089992
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "request_evidence",
+        "seed": 402,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.987940445401,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.987940445401
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "minimal_hint",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.974044528118,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.974044528118
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.974044528118,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.974044528118
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.974044528118,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.974044528118
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "minimal_hint",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.775911808572,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.775911808572
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.981108622258,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.981108622258
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.976820707754,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.976820707754
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "request_evidence",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.775911808572,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.775911808572
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.981108622258,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.981108622258
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.978858831252,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.978858831252
+          }
+        },
+        "generator_id": "durable_state",
+        "latent_pair_id": "s0_contract__ravensmark__durable_state__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "request_evidence",
+        "seed": 403,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 1,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 2,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 3,
+        "scheduled_action": "minimal_hint",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.993964415296,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.993964415296
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.87545950832,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.87545950832
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 4,
+        "scheduled_action": "request_evidence",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.993964415296,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.993964415296
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.87545950832,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.87545950832
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 5,
+        "scheduled_action": "request_evidence",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.993964415296,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.993964415296
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.950693589405,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.950693589405
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.87545950832,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.87545950832
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r1",
+        "prediction_turn": 6,
+        "scheduled_action": "minimal_hint",
+        "seed": 502,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 1,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 503,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 2,
+        "scheduled_action": "diagnose_with_discriminating_question",
+        "seed": 503,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 3,
+        "scheduled_action": "minimal_hint",
+        "seed": 503,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.977235954027,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.977235954027
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 4,
+        "scheduled_action": "request_evidence",
+        "seed": 503,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 1,
+            "observation_count": 1,
+            "prior_entropy_bits": 0
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.977235954027,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.977235954027
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 5,
+        "scheduled_action": "request_evidence",
+        "seed": 503,
+        "world_id": "ravensmark"
+      },
+      {
+        "belief_entropy_bits_before": 0,
+        "gains": {
+          "diagnose_with_discriminating_question": {
+            "expected_gain_bits": 0.807580261424,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.807580261424
+          },
+          "minimal_hint": {
+            "expected_gain_bits": 0.971066299204,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.971066299204
+          },
+          "request_evidence": {
+            "expected_gain_bits": 0.636677460694,
+            "expected_posterior_entropy_bits": 0,
+            "next_state_count": 2,
+            "observation_count": 2,
+            "prior_entropy_bits": 0.636677460694
+          }
+        },
+        "generator_id": "dag_dropout",
+        "latent_pair_id": "s0_contract__ravensmark__dag_dropout__r2",
+        "prediction_turn": 6,
+        "scheduled_action": "minimal_hint",
+        "seed": 503,
+        "world_id": "ravensmark"
+      }
+    ]
+  },
+  "b1_overall": {
+    "max_gain_bits": 1.564576,
+    "median_gain_bits": 0.944338
+  },
+  "b2_voi_arm": {
+    "action_basis_counts": {
+      "greedy": 144
+    },
+    "deterministic_realizer_calls": 168,
+    "dialogues": 24,
+    "fallback_count": 0,
+    "fallbacks": [],
+    "label": "adaptive-state-v24-voi-schedule",
+    "model_calls": 0,
+    "replay_passed": true,
+    "schedules_by_cell": {
+      "hethel__dag_dropout": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "minimal_hint",
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question"
+          ]
+        }
+      ],
+      "hethel__durable_state": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint"
+          ]
+        }
+      ],
+      "marrick__dag_dropout": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "request_evidence",
+            "request_evidence",
+            "minimal_hint",
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence"
+          ]
+        }
+      ],
+      "marrick__durable_state": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "diagnose_with_discriminating_question",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question",
+            "diagnose_with_discriminating_question"
+          ]
+        }
+      ],
+      "ravensmark__dag_dropout": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "minimal_hint",
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence"
+          ]
+        }
+      ],
+      "ravensmark__durable_state": [
+        {
+          "repetition": 1,
+          "schedule": [
+            "request_evidence",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint",
+            "minimal_hint"
+          ]
+        },
+        {
+          "repetition": 2,
+          "schedule": [
+            "minimal_hint",
+            "minimal_hint",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence",
+            "request_evidence"
+          ]
+        }
+      ]
+    },
+    "scored_transitions": 144,
+    "scramble_donor_state_identical_rows": 80
+  },
+  "b3_channel_capacity": {
+    "arm_contrast": {
+      "next_dag_event_family": {
+        "basis": "descriptive_unpaired_difference_of_point_deltas",
+        "brier_score": 0.03301222308829532,
+        "log_loss": -0.035177866176816064
+      },
+      "next_proof_trajectory": {
+        "basis": "descriptive_unpaired_difference_of_point_deltas",
+        "brier_score": 0.0793323972730457,
+        "log_loss": 0.07081407498287484
+      }
+    },
+    "fixed": {
+      "arm": "fixed",
+      "models": [
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=hethel",
+          "iterations": 945,
+          "level": "hethel",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=marrick",
+          "iterations": 817,
+          "level": "marrick",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 690,
+          "level": "ravensmark",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=hethel",
+          "iterations": 949,
+          "level": "hethel",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=marrick",
+          "iterations": 848,
+          "level": "marrick",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 706,
+          "level": "ravensmark",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=hethel",
+          "iterations": 664,
+          "level": "hethel",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=marrick",
+          "iterations": 603,
+          "level": "marrick",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 594,
+          "level": "ravensmark",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=hethel",
+          "iterations": 665,
+          "level": "hethel",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=marrick",
+          "iterations": 600,
+          "level": "marrick",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "fixed",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 612,
+          "level": "ravensmark",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        }
+      ],
+      "oracle_instrument": {
+        "next_dag_event_family": {
+          "oracle_beats_each_state_blind_baseline_on_both_metrics": {
+            "class_prior": true,
+            "no_state": true,
+            "uniform": true
+          },
+          "passed": true
+        },
+        "next_proof_trajectory": {
+          "oracle_beats_each_state_blind_baseline_on_both_metrics": {
+            "class_prior": true,
+            "no_state": true,
+            "uniform": true
+          },
+          "passed": true
+        }
+      },
+      "oracle_passes": true,
+      "targets": {
+        "next_dag_event_family": {
+          "absolute": {
+            "class_prior": {
+              "brier_score": 0.6728888888888905,
+              "ece": 0.2227777777777784,
+              "log_loss": 1.2376382177421268,
+              "predictions": 144
+            },
+            "filter_posterior": {
+              "brier_score": 0.3776908482857778,
+              "ece": 0.08511052777777768,
+              "log_loss": 0.5713714909502673,
+              "predictions": 144
+            },
+            "no_state": {
+              "brier_score": 0.5784034960422673,
+              "ece": 0.22278877608059916,
+              "log_loss": 1.414391057977659,
+              "predictions": 144
+            },
+            "oracle": {
+              "brier_score": 0.3776908482857778,
+              "ece": 0.08511052777777768,
+              "log_loss": 0.5713714909502673,
+              "predictions": 144
+            },
+            "schedule_only": {
+              "brier_score": 0.6012862842080329,
+              "ece": 0.14310089310448063,
+              "log_loss": 1.1506037633246713,
+              "predictions": 144
+            },
+            "uniform": {
+              "brier_score": 0.75,
+              "ece": 0.05555555555555558,
+              "log_loss": 1.3862943611198926,
+              "predictions": 144
+            }
+          },
+          "contrasts": {
+            "filter_vs_class_prior": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.1934029591842014,
+                    "upper": 0.40370783649917635
+                  },
+                  "point_delta": 0.29519804060311117,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.4939600731471334,
+                    "upper": 0.8766679913746869
+                  },
+                  "point_delta": 0.666266726791862,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_no_state": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.10956791204402799,
+                    "upper": 0.2986432043640499
+                  },
+                  "point_delta": 0.20071264775648914,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.49930946966953926,
+                    "upper": 1.2087390458575817
+                  },
+                  "point_delta": 0.8430195670273917,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_schedule_only": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.10294470127693105,
+                    "upper": 0.3383506953123725
+                  },
+                  "point_delta": 0.22359543592225548,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.3548044475599882,
+                    "upper": 0.8114783420322779
+                  },
+                  "point_delta": 0.5792322723744028,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            }
+          },
+          "filter_oracle_max_probability_delta": 0,
+          "no_state_reuse_max_probability_delta": 0,
+          "per_world_filter_vs_no_state_point_deltas": {
+            "hethel": {
+              "brier_score": 0.18164805377959972,
+              "log_loss": 0.4668653918419443,
+              "predictions": 48
+            },
+            "marrick": {
+              "brier_score": 0.2284814721692844,
+              "log_loss": 0.5685981987368856,
+              "predictions": 48
+            },
+            "ravensmark": {
+              "brier_score": 0.19200841732058302,
+              "log_loss": 1.4935951105033445,
+              "predictions": 48
+            }
+          }
+        },
+        "next_proof_trajectory": {
+          "absolute": {
+            "class_prior": {
+              "brier_score": 0.5927286331326725,
+              "ece": 0.10774410774410809,
+              "log_loss": 0.9828576667624562,
+              "predictions": 144
+            },
+            "filter_posterior": {
+              "brier_score": 0.28815386163694434,
+              "ece": 0.0479033333333334,
+              "log_loss": 0.41710205709424675,
+              "predictions": 144
+            },
+            "no_state": {
+              "brier_score": 0.534861889622577,
+              "ece": 0.08895325864900179,
+              "log_loss": 1.07233512902191,
+              "predictions": 144
+            },
+            "oracle": {
+              "brier_score": 0.28815386163694434,
+              "ece": 0.0479033333333334,
+              "log_loss": 0.41710205709424675,
+              "predictions": 144
+            },
+            "schedule_only": {
+              "brier_score": 0.5199865124996248,
+              "ece": 0.12000385821115023,
+              "log_loss": 0.8711056443326202,
+              "predictions": 144
+            },
+            "uniform": {
+              "brier_score": 0.6666666666666675,
+              "ece": 0.02777777777777818,
+              "log_loss": 1.098612288668108,
+              "predictions": 144
+            }
+          },
+          "contrasts": {
+            "filter_vs_class_prior": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.21514619446248043,
+                    "upper": 0.3923184495813621
+                  },
+                  "point_delta": 0.30457477149572904,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.4522733245464244,
+                    "upper": 0.6780838262622838
+                  },
+                  "point_delta": 0.5657556096682091,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_no_state": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.14697453210465267,
+                    "upper": 0.3803598968131849
+                  },
+                  "point_delta": 0.2467080279856319,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.40005340081173846,
+                    "upper": 0.9402187608096035
+                  },
+                  "point_delta": 0.6552330719276637,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_schedule_only": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.1507503253072483,
+                    "upper": 0.32827842700335913
+                  },
+                  "point_delta": 0.23183265086268084,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.318512878608678,
+                    "upper": 0.6106085327059975
+                  },
+                  "point_delta": 0.4540035872383739,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            }
+          },
+          "filter_oracle_max_probability_delta": 0,
+          "no_state_reuse_max_probability_delta": 0,
+          "per_world_filter_vs_no_state_point_deltas": {
+            "hethel": {
+              "brier_score": 0.16787666056420988,
+              "log_loss": 0.3752117423166578,
+              "predictions": 48
+            },
+            "marrick": {
+              "brier_score": 0.21000199718726864,
+              "log_loss": 0.3903092266560401,
+              "predictions": 48
+            },
+            "ravensmark": {
+              "brier_score": 0.3622454262054176,
+              "log_loss": 1.2001782468102926,
+              "predictions": 48
+            }
+          }
+        }
+      }
+    },
+    "note": "Filter posterior as predictor of both co-primary targets on each arm, against the arm’s own no_state baseline (frozen verdict binding). Part 1a showed the pilot’s no_state is schedule-overfit; class_prior and schedule_only columns are included descriptively for reading, but the frozen rule binds on no_state as written.",
+    "voi": {
+      "arm": "voi",
+      "models": [
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=hethel",
+          "iterations": 888,
+          "level": "hethel",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=marrick",
+          "iterations": 928,
+          "level": "marrick",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 777,
+          "level": "ravensmark",
+          "representation": "no_state",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=hethel",
+          "iterations": 939,
+          "level": "hethel",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=marrick",
+          "iterations": 1015,
+          "level": "marrick",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 786,
+          "level": "ravensmark",
+          "representation": "schedule_only",
+          "target": "next_dag_event_family"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=hethel",
+          "iterations": 684,
+          "level": "hethel",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=marrick",
+          "iterations": 664,
+          "level": "marrick",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 26,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 624,
+          "level": "ravensmark",
+          "representation": "no_state",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=hethel",
+          "iterations": 672,
+          "level": "hethel",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=marrick",
+          "iterations": 667,
+          "level": "marrick",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        },
+        {
+          "arm": "voi",
+          "converged": true,
+          "features": 20,
+          "fold": "world_transfer=ravensmark",
+          "iterations": 621,
+          "level": "ravensmark",
+          "representation": "schedule_only",
+          "target": "next_proof_trajectory"
+        }
+      ],
+      "oracle_instrument": {
+        "next_dag_event_family": {
+          "oracle_beats_each_state_blind_baseline_on_both_metrics": {
+            "class_prior": true,
+            "no_state": true,
+            "uniform": true
+          },
+          "passed": true
+        },
+        "next_proof_trajectory": {
+          "oracle_beats_each_state_blind_baseline_on_both_metrics": {
+            "class_prior": true,
+            "no_state": true,
+            "uniform": true
+          },
+          "passed": true
+        }
+      },
+      "oracle_passes": true,
+      "targets": {
+        "next_dag_event_family": {
+          "absolute": {
+            "class_prior": {
+              "brier_score": 0.6899111111111117,
+              "ece": 0.00944444444444531,
+              "log_loss": 1.2888949747661067,
+              "predictions": 144
+            },
+            "filter_posterior": {
+              "brier_score": 0.5071141577508059,
+              "ece": 0.11150687499999987,
+              "log_loss": 0.7465716436090916,
+              "predictions": 144
+            },
+            "no_state": {
+              "brier_score": 0.7408390285955903,
+              "ece": 0.22751696396873095,
+              "log_loss": 1.5544133444596684,
+              "predictions": 144
+            },
+            "oracle": {
+              "brier_score": 0.5071141577508059,
+              "ece": 0.11150687499999987,
+              "log_loss": 0.7465716436090916,
+              "predictions": 144
+            },
+            "schedule_only": {
+              "brier_score": 0.6601260295045653,
+              "ece": 0.10837120039320658,
+              "log_loss": 1.2342753926509706,
+              "predictions": 144
+            },
+            "uniform": {
+              "brier_score": 0.75,
+              "ece": 0.013888888888888895,
+              "log_loss": 1.3862943611198926,
+              "predictions": 144
+            }
+          },
+          "contrasts": {
+            "filter_vs_class_prior": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.11097301492775836,
+                    "upper": 0.24392939708342082
+                  },
+                  "point_delta": 0.18279695336030546,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.42327035104696836,
+                    "upper": 0.6478511322819062
+                  },
+                  "point_delta": 0.5423233311570128,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_no_state": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.12639272012669653,
+                    "upper": 0.3550669374271005
+                  },
+                  "point_delta": 0.23372487084478447,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.4220079547685866,
+                    "upper": 1.2560873298454893
+                  },
+                  "point_delta": 0.8078417008505756,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_schedule_only": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.09819197317056243,
+                    "upper": 0.20708176485177976
+                  },
+                  "point_delta": 0.1530118717537594,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.33996580901898876,
+                    "upper": 0.6408966632859628
+                  },
+                  "point_delta": 0.48770374904187896,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            }
+          },
+          "filter_oracle_max_probability_delta": 0,
+          "no_state_reuse_max_probability_delta": null,
+          "per_world_filter_vs_no_state_point_deltas": {
+            "hethel": {
+              "brier_score": 0.1120860750587276,
+              "log_loss": 0.3304340009334689,
+              "predictions": 48
+            },
+            "marrick": {
+              "brier_score": 0.12662006815503316,
+              "log_loss": 0.32972553253618786,
+              "predictions": 48
+            },
+            "ravensmark": {
+              "brier_score": 0.46246846932059266,
+              "log_loss": 1.76336556908207,
+              "predictions": 48
+            }
+          }
+        },
+        "next_proof_trajectory": {
+          "absolute": {
+            "class_prior": {
+              "brier_score": 0.4614835220895828,
+              "ece": 0.12752525252525296,
+              "log_loss": 0.7775031912826855,
+              "predictions": 144
+            },
+            "filter_posterior": {
+              "brier_score": 0.27957109067466684,
+              "ece": 0.08585486111111108,
+              "log_loss": 0.4083898586941569,
+              "predictions": 144
+            },
+            "no_state": {
+              "brier_score": 0.6056115159333442,
+              "ece": 0.2205742062077978,
+              "log_loss": 1.134437005604695,
+              "predictions": 144
+            },
+            "oracle": {
+              "brier_score": 0.27957109067466684,
+              "ece": 0.08585486111111108,
+              "log_loss": 0.4083898586941569,
+              "predictions": 144
+            },
+            "schedule_only": {
+              "brier_score": 0.4422956190994506,
+              "ece": 0.16751826201395847,
+              "log_loss": 0.7732182586728161,
+              "predictions": 144
+            },
+            "uniform": {
+              "brier_score": 0.6666666666666675,
+              "ece": 0.09722222222222265,
+              "log_loss": 1.098612288668108,
+              "predictions": 144
+            }
+          },
+          "contrasts": {
+            "filter_vs_class_prior": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.06377996310993035,
+                    "upper": 0.2843681276476587
+                  },
+                  "point_delta": 0.18191243141491584,
+                  "probability_of_improvement": 0.9976
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.2089415981555692,
+                    "upper": 0.5044358461808874
+                  },
+                  "point_delta": 0.3691133325885294,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_no_state": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.1758454764081715,
+                    "upper": 0.5117921956677881
+                  },
+                  "point_delta": 0.3260404252586776,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.3692336733725521,
+                    "upper": 1.137219504825655
+                  },
+                  "point_delta": 0.7260471469105385,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            },
+            "filter_vs_schedule_only": {
+              "groups": 12,
+              "metrics": {
+                "brier_score": {
+                  "confidence_interval": {
+                    "lower": 0.10086055422052123,
+                    "upper": 0.22261482399791052
+                  },
+                  "point_delta": 0.1627245284247843,
+                  "probability_of_improvement": 1
+                },
+                "log_loss": {
+                  "confidence_interval": {
+                    "lower": 0.2608028001819878,
+                    "upper": 0.46159850949981257
+                  },
+                  "point_delta": 0.3648283999786595,
+                  "probability_of_improvement": 1
+                }
+              },
+              "predictions": 144
+            }
+          },
+          "filter_oracle_max_probability_delta": 0,
+          "no_state_reuse_max_probability_delta": null,
+          "per_world_filter_vs_no_state_point_deltas": {
+            "hethel": {
+              "brier_score": 0.17131030898538338,
+              "log_loss": 0.34673999149505486,
+              "predictions": 48
+            },
+            "marrick": {
+              "brier_score": 0.15269389478937953,
+              "log_loss": 0.30936397399867543,
+              "predictions": 48
+            },
+            "ravensmark": {
+              "brier_score": 0.65411707200127,
+              "log_loss": 1.5220374752378838,
+              "predictions": 48
+            }
+          }
+        }
+      }
+    }
+  },
+  "b4_estimator_read": {
+    "fixed_arm_sealed_pilot": {
+      "next_dag_event_family": {
+        "brier_score": {
+          "confidence_interval": {
+            "lower": -0.14988663451294296,
+            "upper": 0.03481155240031736
+          },
+          "point_delta": -0.04848765249070652,
+          "probability_of_improvement": 0.155
+        },
+        "log_loss": {
+          "confidence_interval": {
+            "lower": -0.8944210758063832,
+            "upper": -0.15184283085747474
+          },
+          "point_delta": -0.5211809820432055,
+          "probability_of_improvement": 0.0014
+        }
+      },
+      "next_proof_trajectory": {
+        "brier_score": {
+          "confidence_interval": {
+            "lower": -0.15595664008878155,
+            "upper": 0.023515379241585053
+          },
+          "point_delta": -0.06740728465409078,
+          "probability_of_improvement": 0.0772
+        },
+        "log_loss": {
+          "confidence_interval": {
+            "lower": -0.7697950712753875,
+            "upper": -0.22786813170157094
+          },
+          "point_delta": -0.5012956363252652,
+          "probability_of_improvement": 0
+        }
+      }
+    },
+    "models": [
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=hethel",
+        "iterations": 1330,
+        "level": "hethel",
+        "representation": "lean_dag",
+        "target": "next_dag_event_family"
+      },
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=marrick",
+        "iterations": 1493,
+        "level": "marrick",
+        "representation": "lean_dag",
+        "target": "next_dag_event_family"
+      },
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=ravensmark",
+        "iterations": 1094,
+        "level": "ravensmark",
+        "representation": "lean_dag",
+        "target": "next_dag_event_family"
+      },
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=hethel",
+        "iterations": 1236,
+        "level": "hethel",
+        "representation": "lean_dag",
+        "target": "next_proof_trajectory"
+      },
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=marrick",
+        "iterations": 1290,
+        "level": "marrick",
+        "representation": "lean_dag",
+        "target": "next_proof_trajectory"
+      },
+      {
+        "converged": true,
+        "features": 91,
+        "fold": "world_transfer=ravensmark",
+        "iterations": 1021,
+        "level": "ravensmark",
+        "representation": "lean_dag",
+        "target": "next_proof_trajectory"
+      }
+    ],
+    "scheduling_rescues_lean_estimator": false,
+    "voi_arm": {
+      "next_dag_event_family": {
+        "absolute": {
+          "lean_dag": {
+            "brier_score": 0.7135556084743943,
+            "ece": 0.22385345209649254,
+            "log_loss": 1.8507041804620998,
+            "predictions": 144
+          },
+          "no_state": {
+            "brier_score": 0.7408390285955903,
+            "ece": 0.22751696396873095,
+            "log_loss": 1.5544133444596684,
+            "predictions": 144
+          }
+        },
+        "per_world_point_deltas": {
+          "hethel": {
+            "brier_score": 0.07405327896948781,
+            "log_loss": 0.11228494832003821,
+            "predictions": 48
+          },
+          "marrick": {
+            "brier_score": -0.05033892780974513,
+            "log_loss": -0.28715410992229945,
+            "predictions": 48
+          },
+          "ravensmark": {
+            "brier_score": 0.058135909203844566,
+            "log_loss": -0.7140033464050357,
+            "predictions": 48
+          }
+        },
+        "pooled": {
+          "groups": 12,
+          "metrics": {
+            "brier_score": {
+              "confidence_interval": {
+                "lower": -0.02719498418222213,
+                "upper": 0.0866055546103323
+              },
+              "point_delta": 0.027283420121195757,
+              "probability_of_improvement": 0.8282
+            },
+            "log_loss": {
+              "confidence_interval": {
+                "lower": -0.679544156902564,
+                "upper": 0.005501969710054126
+              },
+              "point_delta": -0.2962908360024322,
+              "probability_of_improvement": 0.0284
+            }
+          },
+          "predictions": 144
+        }
+      },
+      "next_proof_trajectory": {
+        "absolute": {
+          "lean_dag": {
+            "brier_score": 0.7166194992846632,
+            "ece": 0.31628081733509245,
+            "log_loss": 1.7495478555816275,
+            "predictions": 144
+          },
+          "no_state": {
+            "brier_score": 0.6056115159333442,
+            "ece": 0.2205742062077978,
+            "log_loss": 1.134437005604695,
+            "predictions": 144
+          }
+        },
+        "per_world_point_deltas": {
+          "hethel": {
+            "brier_score": -0.03132217613134068,
+            "log_loss": -0.0890696517609428,
+            "predictions": 48
+          },
+          "marrick": {
+            "brier_score": -0.18896967178440657,
+            "log_loss": -0.30907539114425414,
+            "predictions": 48
+          },
+          "ravensmark": {
+            "brier_score": -0.11273210213820949,
+            "log_loss": -1.4471875070256015,
+            "predictions": 48
+          }
+        },
+        "pooled": {
+          "groups": 12,
+          "metrics": {
+            "brier_score": {
+              "confidence_interval": {
+                "lower": -0.172141587783157,
+                "upper": -0.050536275214680695
+              },
+              "point_delta": -0.1110079833513189,
+              "probability_of_improvement": 0.0006
+            },
+            "log_loss": {
+              "confidence_interval": {
+                "lower": -1.072866298049102,
+                "upper": -0.24807574377547673
+              },
+              "point_delta": -0.6151108499769327,
+              "probability_of_improvement": 0
+            }
+          },
+          "predictions": 144
+        }
+      }
+    }
+  },
+  "b5_info_pedagogy": {
+    "fixed": {
+      "hethel": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 1.5
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 0.5
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 1.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 8,
+            "regress": 6,
+            "stall": 10
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 2
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "5": {
+              "mean_harmful_debt_after": 0.5,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "6": {
+              "mean_harmful_debt_after": 0.5,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1
+            }
+          },
+          "final_harmful_debt_mean": 0.5,
+          "final_raw_distance_mean": 0.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 6,
+            "regress": 2,
+            "stall": 16
+          }
+        }
+      },
+      "marrick": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 0.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 1.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 10,
+            "regress": 8,
+            "stall": 6
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0,
+              "mean_raw_distance_before": 1
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0,
+              "mean_raw_distance_before": 0
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 0,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 8,
+            "regress": 0,
+            "stall": 16
+          }
+        }
+      },
+      "ravensmark": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 0.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 6,
+            "regress": 0,
+            "stall": 18
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "3": {
+              "mean_harmful_debt_after": 1,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "4": {
+              "mean_harmful_debt_after": 1,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1.5
+            },
+            "5": {
+              "mean_harmful_debt_after": 1,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1
+            },
+            "6": {
+              "mean_harmful_debt_after": 1,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 0.5
+            }
+          },
+          "final_harmful_debt_mean": 1,
+          "final_raw_distance_mean": 0.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 6,
+            "regress": 4,
+            "stall": 14
+          }
+        }
+      }
+    },
+    "voi": {
+      "hethel": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 1.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 4,
+            "regress": 2,
+            "stall": 18
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0,
+              "mean_raw_distance_before": 1
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0,
+              "mean_raw_distance_before": 0
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0,
+              "mean_raw_distance_before": 0
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 0,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 8,
+            "regress": 0,
+            "stall": 16
+          }
+        }
+      },
+      "marrick": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2.5,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2.5
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 1.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 4,
+            "regress": 2,
+            "stall": 18
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 1.5
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 1.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 2,
+            "regress": 0,
+            "stall": 22
+          }
+        }
+      },
+      "ravensmark": {
+        "dag_dropout": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1.5
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 0.5
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 0.5
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 0.5
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 0.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 10,
+            "regress": 4,
+            "stall": 10
+          }
+        },
+        "durable_state": {
+          "by_turn": {
+            "1": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 2,
+              "mean_raw_distance_before": 2
+            },
+            "2": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1.5,
+              "mean_raw_distance_before": 2
+            },
+            "3": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1.5
+            },
+            "4": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 1,
+              "mean_raw_distance_before": 1
+            },
+            "5": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 1
+            },
+            "6": {
+              "mean_harmful_debt_after": 0,
+              "mean_raw_distance_after": 0.5,
+              "mean_raw_distance_before": 0.5
+            }
+          },
+          "final_harmful_debt_mean": 0,
+          "final_raw_distance_mean": 0.5,
+          "rows": 24,
+          "start_raw_distance": 2,
+          "trajectory_counts": {
+            "advance": 6,
+            "regress": 0,
+            "stall": 18
+          }
+        }
+      }
+    }
+  },
+  "claim_boundary": "Diagnostic decomposition of the v2.3 sensor stop plus a directional active-sensing value-of-information screen. Zero model calls. Nothing in this instrument can rescue or reinterpret a stopped row, name a sensor winner, open policy optimization, authorize S2 or Phase 6B, or ground any efficacy or human-learning claim.",
+  "content_sha256": "52719e9b018514f4c4625d505cf509b361b851c784e6e8b1fb8038c98a857895",
+  "coverage": {
+    "actions": [
+      "diagnose_with_discriminating_question",
+      "minimal_hint",
+      "request_evidence"
+    ],
+    "fixed_arm": {
+      "dialogues": 24,
+      "scored_transitions": 144
+    },
+    "generators": [
+      "dag_dropout",
+      "durable_state"
+    ],
+    "latent_pair_clusters_per_arm": 12,
+    "targets": [
+      "next_dag_event_family",
+      "next_proof_trajectory"
+    ],
+    "voi_arm": {
+      "dialogues": 24,
+      "scored_transitions": 144
+    },
+    "worlds": [
+      "hethel",
+      "marrick",
+      "ravensmark"
+    ]
+  },
+  "entropy": {
+    "fixed": {
+      "latent_trajectories": 12,
+      "max_reduction_bits": 6.630508,
+      "mean_posterior_bits_at_horizon": 0,
+      "mean_prior_bits_at_horizon": 4.775285,
+      "mean_reduction_bits": 4.775285,
+      "min_reduction_bits": 2.690218,
+      "per_trajectory": [
+        {
+          "index": 0,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.899262,
+          "reduction_bits": 4.899262
+        },
+        {
+          "index": 1,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.641689,
+          "reduction_bits": 4.641689
+        },
+        {
+          "index": 2,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.630508,
+          "reduction_bits": 6.630508
+        },
+        {
+          "index": 3,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.138528,
+          "reduction_bits": 6.138528
+        },
+        {
+          "index": 4,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 2.690218,
+          "reduction_bits": 2.690218
+        },
+        {
+          "index": 5,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.527133,
+          "reduction_bits": 4.527133
+        },
+        {
+          "index": 6,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 5.981564,
+          "reduction_bits": 5.981564
+        },
+        {
+          "index": 7,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 5.920086,
+          "reduction_bits": 5.920086
+        },
+        {
+          "index": 8,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 5.005571,
+          "reduction_bits": 5.005571
+        },
+        {
+          "index": 9,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 3.693924,
+          "reduction_bits": 3.693924
+        },
+        {
+          "index": 10,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 3.715504,
+          "reduction_bits": 3.715504
+        },
+        {
+          "index": 11,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 3.459435,
+          "reduction_bits": 3.459435
+        }
+      ]
+    },
+    "voi": {
+      "latent_trajectories": 12,
+      "max_reduction_bits": 6.686312,
+      "mean_posterior_bits_at_horizon": 0,
+      "mean_prior_bits_at_horizon": 5.398427,
+      "mean_reduction_bits": 5.398427,
+      "min_reduction_bits": 3.660593,
+      "per_trajectory": [
+        {
+          "index": 0,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.658595,
+          "reduction_bits": 4.658595
+        },
+        {
+          "index": 1,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.259706,
+          "reduction_bits": 4.259706
+        },
+        {
+          "index": 2,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.452038,
+          "reduction_bits": 6.452038
+        },
+        {
+          "index": 3,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.156187,
+          "reduction_bits": 6.156187
+        },
+        {
+          "index": 4,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.907856,
+          "reduction_bits": 4.907856
+        },
+        {
+          "index": 5,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.882207,
+          "reduction_bits": 4.882207
+        },
+        {
+          "index": 6,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.686312,
+          "reduction_bits": 6.686312
+        },
+        {
+          "index": 7,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 5.914759,
+          "reduction_bits": 5.914759
+        },
+        {
+          "index": 8,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 3.660593,
+          "reduction_bits": 3.660593
+        },
+        {
+          "index": 9,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 4.68279,
+          "reduction_bits": 4.68279
+        },
+        {
+          "index": 10,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 5.905713,
+          "reduction_bits": 5.905713
+        },
+        {
+          "index": 11,
+          "posterior_bits_at_horizon": 0,
+          "prior_only_bits_at_horizon": 6.614373,
+          "reduction_bits": 6.614373
+        }
+      ]
+    }
+  },
+  "model_calls": 0,
+  "provenance": {
+    "analyzer": {
+      "filter_module": "services/adaptiveTutor/latentKernelFilter.js",
+      "filter_module_sha256": "cf12feb7021a06ed1c089a97f3b4930e8a228db6be1f728a364e4235373f67f4",
+      "script": "scripts/run-adaptive-state-voi-v24.js",
+      "script_sha256": "e1f3a7223ccfc2e7dce58d59e7e73e461b9e668606ba5fab2659391ff4a7b831"
+    },
+    "base_config": {
+      "path": "config/adaptive-state-benchmark-v2.yaml",
+      "sha256": "6fb9c7ad6405f0ff27af68ad9b2500a182828b3efee6df93563228c35a8f0148"
+    },
+    "bootstrap": {
+      "clusters": "latent_pair_id",
+      "confidence_level": 0.95,
+      "refit_inside_resamples": false,
+      "resamples": 5000,
+      "seed": 20260713
+    },
+    "git": {
+      "dirty": true,
+      "sha": "797c25cf6f95b9f9e81642e03010d9886dd910e5",
+      "untracked": 6
+    },
+    "instrument_config": {
+      "path": "config/adaptive-state-instrument-v2.4.yaml",
+      "sha256": "105eb0240abd5da387b1267817867ef099c164d1fa54cbc741bfbdeae1774e96"
+    },
+    "part_1a_report": {
+      "classification_label": "data_starved",
+      "content_sha256": "17dddab391ef32573b8c6ee8a743796eb34051937c82a1a3ecd42436fd3849b6",
+      "path": "exports/adaptive-state-v24/decomposition-audit-report.json",
+      "sequencing": "1a_report_written_before_any_1b_inspection"
+    },
+    "protocol_doc": "PLAN_4_0/2026-07-13-adaptive-state-decomposition-and-voi-protocol-v2.4.md",
+    "restored_archives": {
+      "pilot": {
+        "archive_sha256": "d47cedc5968ab7474d604b6a32c20544f1ec87cf97af509f97109bd816c6d024",
+        "manifest_path": "config/adaptive-tutor-evidence/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.manifest.json",
+        "predictions_sha256": "fd28a83c357df94584356480818c673cf67b4b54c9589ef71b1e670adc2ce3c3",
+        "report_sha256": "a9f01ae60173e4e9eaa20141e8e83c8b8400c137acbe9f9ffe7c3f8a60d4673a",
+        "run_id": "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23",
+        "seal_sha256": "4df8541873c3bf55b64883d003422fd27f410531bdf84d272f45fd8ee054addd",
+        "verified": true
+      },
+      "s0": {
+        "archive_sha256": "6a0c0214e2532bf8d58849ade805d782a62ea07696281476f7b9ff1775e278ad",
+        "dataset_content_sha256": "e781beb4f51f876020d4e41dbd00606d8fffbfeb13db9daeb99224d71da78e61",
+        "manifest_path": "config/adaptive-tutor-evidence/adaptive-state-v2-s0-exact-channel-346e472a-v23-06f76257057c.manifest.json",
+        "run_id": "adaptive-state-v2-s0-exact-channel-346e472a-v23",
+        "seal_sha256": "06f76257057c583907a338ea3d6a8f133baae6db02b76f230decf0d48f0403b4",
+        "verified": true
+      }
+    },
+    "voi_run": {
+      "artifacts": 7,
+      "dataset_content_sha256": "1258c761c4ee6c18b5e8ec1eec7af40d4f6faa8bcce89a6168236abe4b77ff8b",
+      "label": "adaptive-state-v24-voi-schedule",
+      "run_dir": "exports/adaptive-state-v24/adaptive-state-v24-voi-schedule",
+      "seal_sha256": "6135bf3f6c6b34295a7d87b5b6c85c9bd3ba9754f6b510726f8ce2bfe617b39f"
+    }
+  },
+  "reading": "The exact dynamics-aware filter reproduces the kernel oracle on both arms (fixed-point check passed at every scored transition), and as a predictor its edge over each arm's own no_state baseline is 0.8430/0.6552 pooled log-loss nats on the fixed schedule and 0.8078/0.7260 on the info-optimal schedule (targets next_dag_event_family / next_proof_trajectory). The public channel is not the bottleneck under either schedule: with kernel dynamics and the per-dialogue seed, the terminal posterior over latent state sits at 0.0000 bits on the VOI arm against a predict-only prior of 5.3984 bits at horizon (5.3984 bits of reduction; fixed arm 4.7753 bits). Action choice does control how much uncertainty each turn generates (B1 max per-action gains reach 1.5646 bits, median 0.9443), and greedy info-optimal scheduling does not change the capacity verdict: both arms clear the frozen margins, so the graduate clause's flip condition fails. Scheduling alone does not rescue the lean estimator: refit at the pilot's own penalty on the VOI arm, lean_dag still fails its margins against the arm's no_state (B4), consistent with Part 1a's `data_starved` label — the v2.3 stop was estimator data-starvation, not channel concealment or schedule choice. No frozen clause matched literally (the rule does not name the measured configuration); the verdict defaults conservatively against further sensor spend to close_sensor_program_on_substrate. The boundary finding to report is transparency, not concealment: a dynamics-aware reader already extracts the full latent signal under the fixed schedule, so no schedule change adds channel capacity on this substrate — the remaining gap is estimator-side (1a label above).",
+  "rescue_authority": "none — directional only; winner: null and do_not_optimize_policy remain operative; S2 prohibited; graduate would authorize design only, under a new prospective contract",
+  "schema": "machinespirits.adaptive-state-voi-study-report.v2.4",
+  "stage": "part_1b_voi",
+  "status": "complete",
+  "verdict": {
+    "clauses": {
+      "close": {
+        "b3_failure": {
+          "fixed_arm_fails_margins_on_both_targets": false,
+          "oracle_passes_fixed_arm": true,
+          "oracle_passes_voi_arm": true,
+          "passed": false,
+          "voi_arm_fails_margins_on_both_targets": false
+        },
+        "entropy": {
+          "floor_bits": 0.1,
+          "mean_posterior_bits_at_horizon": 0,
+          "mean_prior_bits_at_horizon": 5.398427,
+          "mean_reduction_bits": 5.398427,
+          "passed": false
+        },
+        "passed": false
+      },
+      "graduate": {
+        "action_information_floor": {
+          "passed": true,
+          "per_kernel": {
+            "dag_dropout": {
+              "passed": true,
+              "qualifying_actions": {
+                "diagnose_with_discriminating_question": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ],
+                "minimal_hint": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ],
+                "request_evidence": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ]
+              }
+            },
+            "durable_state": {
+              "passed": true,
+              "qualifying_actions": {
+                "diagnose_with_discriminating_question": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ],
+                "minimal_hint": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ],
+                "request_evidence": [
+                  "hethel",
+                  "marrick",
+                  "ravensmark"
+                ]
+              }
+            }
+          }
+        },
+        "fixed_arm_passes_margins": true,
+        "passed": false,
+        "scheduling_flips_capacity_verdict": false,
+        "voi_arm_passes_margins": true
+      },
+      "inconclusive": {
+        "all_b3_contrast_cis_span_cut_lines": false,
+        "ci_spans": {
+          "fixed": {
+            "next_dag_event_family": {
+              "brier_spans_cut_line": false,
+              "log_loss_spans_cut_line": false
+            },
+            "next_proof_trajectory": {
+              "brier_spans_cut_line": false,
+              "log_loss_spans_cut_line": false
+            }
+          },
+          "voi": {
+            "next_dag_event_family": {
+              "brier_spans_cut_line": false,
+              "log_loss_spans_cut_line": false
+            },
+            "next_proof_trajectory": {
+              "brier_spans_cut_line": false,
+              "log_loss_spans_cut_line": false
+            }
+          }
+        },
+        "part_1a_label": "data_starved",
+        "passed": false,
+        "requires_1a_label": "data_starved"
+      }
+    },
+    "margins": {
+      "action_information_floor_bits": 0.1,
+      "action_information_world_floor": 2,
+      "brier": 0.02,
+      "entropy_reduction_floor_bits_at_horizon": 0.1,
+      "log_loss_nats": 0.05
+    },
+    "matched_clause": "none_matched_conservative_default",
+    "notes": [
+      "No frozen clause matched literally (the measured configuration is one the frozen rule does not name). The verdict defaults conservatively against further sensor spend, mirroring the Part 1a ambiguity default. The default grants no graduate authority and asserts no channel-concealment claim; read the clause numbers, not the token gloss, for the boundary finding."
+    ],
+    "schema": "machinespirits.adaptive-state-voi-verdict.v2.4",
+    "token": "close_sensor_program_on_substrate"
+  },
+  "version": "2.4"
+}

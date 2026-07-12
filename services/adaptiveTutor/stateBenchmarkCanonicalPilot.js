@@ -13,8 +13,7 @@ import { validateAdaptiveStateStage0DatasetContentSha256 } from './stateBenchmar
 
 export const ADAPTIVE_STATE_CANONICAL_PILOT_PREDICTIONS_SCHEMA =
   'machinespirits.adaptive-state-canonical-pilot-predictions.v2.3';
-export const ADAPTIVE_STATE_CANONICAL_PILOT_REPORT_SCHEMA =
-  'machinespirits.adaptive-state-canonical-pilot-report.v2.3';
+export const ADAPTIVE_STATE_CANONICAL_PILOT_REPORT_SCHEMA = 'machinespirits.adaptive-state-canonical-pilot-report.v2.3';
 
 const TARGET_LABELS = Object.freeze({
   next_dag_event_family: Object.freeze(['retract', 'derive', 'adopt', 'none']),
@@ -28,12 +27,7 @@ const LANE_AXIS = Object.freeze({
   realizer_transfer: 'realizer_id',
 });
 const CANDIDATES = Object.freeze(['lean_dag', 'dag_trajectory', 'field_trajectory']);
-const FITTED_REPRESENTATIONS = Object.freeze([
-  'no_state',
-  ...CANDIDATES,
-  'dag_stale',
-  'field_stale',
-]);
+const FITTED_REPRESENTATIONS = Object.freeze(['no_state', ...CANDIDATES, 'dag_stale', 'field_stale']);
 const BASELINES = Object.freeze(['no_state', 'class_prior', 'uniform']);
 
 function clone(value) {
@@ -80,7 +74,7 @@ function normalizedProbabilities(probabilities, labels) {
   return Object.fromEntries(labels.map((label) => [label, values[label] / total]));
 }
 
-function predictionLosses(prediction, labels) {
+export function predictionLosses(prediction, labels) {
   const probabilities = normalizedProbabilities(prediction.probabilities, labels);
   return {
     log_loss: -Math.log(Math.max(1e-12, Number(probabilities[prediction.truth] || 0))),
@@ -191,10 +185,7 @@ export function buildAdaptiveStateCanonicalPilotPredictions({ dataset, splitMani
           if (training.some((row) => !row) || testing.some((row) => !row)) {
             throw new Error(`stateBenchmarkCanonicalPilot: ${fold.id} references an unknown row`);
           }
-          const model = fitAdaptiveStateStage0Head(
-            training,
-            headOptions(baseConfig, representation, target),
-          );
+          const model = fitAdaptiveStateStage0Head(training, headOptions(baseConfig, representation, target));
           models.push({
             lane,
             fold: fold.id,
@@ -221,9 +212,7 @@ export function buildAdaptiveStateCanonicalPilotPredictions({ dataset, splitMani
         ['class_prior', stateBlind.class_prior.predictions],
         ['uniform', stateBlind.uniform.predictions],
       ]) {
-        predictions.push(
-          ...rows.map((row) => predictionRow(byId.get(row.id), lane, target, representation, row)),
-        );
+        predictions.push(...rows.map((row) => predictionRow(byId.get(row.id), lane, target, representation, row)));
       }
       predictions.push(
         ...dataset.rows.map((row) =>
@@ -267,7 +256,7 @@ export function validateAdaptiveStateCanonicalPilotPredictions(predictions) {
   return true;
 }
 
-function bootstrapMetric(deltasByCluster, { iterations, seed, confidenceLevel, material }) {
+export function bootstrapMetric(deltasByCluster, { iterations, seed, confidenceLevel, material }) {
   const clusters = stable(deltasByCluster.keys());
   if (clusters.length < 2) throw new Error('stateBenchmarkCanonicalPilot: paired bootstrap needs two clusters');
   const point = mean(clusters.flatMap((cluster) => deltasByCluster.get(cluster)));
@@ -409,8 +398,7 @@ function buildCalibration(predictions) {
   for (const target of TARGETS) {
     for (const representation of ['oracle', ...CANDIDATES]) {
       const subset = predictions.rows.filter(
-        (row) =>
-          row.lane === 'world_transfer' && row.target === target && row.representation === representation,
+        (row) => row.lane === 'world_transfer' && row.target === target && row.representation === representation,
       );
       const metrics = adaptiveStateStage0PredictionMetrics(subset, TARGET_LABELS[target]);
       rows.push({ target, representation, predictions: metrics.predictions, ece: metrics.ece });
@@ -428,7 +416,10 @@ function findComparison(comparisons, { lane = 'world_transfer', level = 'pooled'
       item.candidate === candidate &&
       item.baseline === baseline,
   );
-  if (!row) throw new Error(`stateBenchmarkCanonicalPilot: missing comparison ${lane}|${level}|${target}|${candidate}|${baseline}`);
+  if (!row)
+    throw new Error(
+      `stateBenchmarkCanonicalPilot: missing comparison ${lane}|${level}|${target}|${candidate}|${baseline}`,
+    );
   return row;
 }
 
@@ -447,8 +438,7 @@ function candidateAdequacy(candidate, comparisons, calibration, contract) {
           : contract.pooled_candidate_over_no_state.minimum_brier_score_delta;
       if (metric.point_delta < minimum) reasons.push(`pooled_${target}_${metric.metric}_below_minimum`);
       if (
-        metric.probability_of_improvement <
-        contract.pooled_candidate_over_no_state.minimum_probability_of_improvement
+        metric.probability_of_improvement < contract.pooled_candidate_over_no_state.minimum_probability_of_improvement
       ) {
         reasons.push(`pooled_${target}_${metric.metric}_probability_below_minimum`);
       }
@@ -545,7 +535,8 @@ export function evaluateAdaptiveStateCanonicalPilotScreen({
       }
     }
     const row = calibration.find((item) => item.target === target && item.representation === 'oracle');
-    if (!row || row.ece > contract.calibration.oracle_max_ece) instrumentReasons.push(`${target}_oracle_calibration_failed`);
+    if (!row || row.ece > contract.calibration.oracle_max_ece)
+      instrumentReasons.push(`${target}_oracle_calibration_failed`);
   }
   const instrument = { passed: instrumentReasons.length === 0, reasons: instrumentReasons };
   const lean = instrument.passed
@@ -574,10 +565,7 @@ export function evaluateAdaptiveStateCanonicalPilotScreen({
         : null;
   return {
     status: instrument.passed && confirmationCandidate ? 'pass' : 'stop',
-    decision:
-      instrument.passed && confirmationCandidate
-        ? contract.pass
-        : contract.stop,
+    decision: instrument.passed && confirmationCandidate ? contract.pass : contract.stop,
     confirmation_candidate: confirmationCandidate,
     validated_winner: null,
     policy_optimization_authorized: false,
