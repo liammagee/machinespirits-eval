@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-11T23:57:06.233Z",
+  "generated": "2026-07-12T07:40:29.830Z",
   "counts": {
     "total": 101,
     "byStatus": {
       "done": 85,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
-      "review": 3,
+      "review": 4,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -118,36 +118,6 @@
       ]
     },
     {
-      "id": "a22-green-room-coached-tutor-training",
-      "title": "A22. Green Room — coached tutor training, rehearsal, and the prompt book",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-11",
-      "updated": "2026-07-11",
-      "verification": "Gates 0-3 of GREEN-ROOM-PLAN.md executed in order with results recorded (or the arc stopped at a failed gate with the null written up as the closing paragraph), and the resulting section landed in paper-full-2.0.md.",
-      "claim_status": "planned",
-      "branch": "claude/tutor-coaching-memory-system-vvvrl8",
-      "links": {
-        "notes": "GREEN-ROOM-PLAN.md",
-        "items": [
-          "a1-human-learner-validation",
-          "d3-insight-action-gap-heavy-bridge-followups",
-          "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
-          "a18-38-teacher-as-learner-ml-fine-tuning-ladder"
-        ]
-      },
-      "tags": [
-        "green-room",
-        "coach",
-        "memory",
-        "tutor-training",
-        "a22"
-      ]
-    },
-    {
       "id": "blueprint-composition",
       "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
       "status": "active",
@@ -222,6 +192,36 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "a22-green-room-coached-tutor-training",
+      "title": "A22. Green Room — coached tutor training, rehearsal, and the prompt book",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "Gates 0-3 of GREEN-ROOM-PLAN.md executed in order with results recorded (or the arc stopped at a failed gate with the null written up as the closing paragraph), and the resulting section landed in paper-full-2.0.md.",
+      "claim_status": "planned",
+      "branch": "claude/tutor-coaching-memory-system-vvvrl8",
+      "links": {
+        "notes": "GREEN-ROOM-PLAN.md",
+        "items": [
+          "a1-human-learner-validation",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
+          "a18-38-teacher-as-learner-ml-fine-tuning-ladder"
+        ]
+      },
+      "tags": [
+        "green-room",
+        "coach",
+        "memory",
+        "tutor-training",
+        "a22"
+      ]
     },
     {
       "id": "abm-learner-population",

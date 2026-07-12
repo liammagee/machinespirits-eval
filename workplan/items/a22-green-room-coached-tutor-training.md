@@ -1,7 +1,7 @@
 ---
 id: a22-green-room-coached-tutor-training
 title: A22. Green Room — coached tutor training, rehearsal, and the prompt book
-status: active
+status: review
 type: experiment
 priority: P1
 owner: unassigned
@@ -46,7 +46,10 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: Gate-1 uptake report (scorer running); then Gate-2 decision.
+Next action: land the Gate-1 null + Gate-0 positive + C1 biography as a
+paper-full-2.0.md section (owner sign-off on framing); Gates 2-3 cancelled
+per the no-tune-and-retry rule. Any redesigned uptake test is a new
+pre-registered item.
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
 2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
@@ -97,3 +100,8 @@ Evidence at exports/greenroom-gate0-2026-07-12/. Awaiting owner scoring.
 book v0->v6 frozen; P4@v3 closed at 31 turns, sole closure); raw payloads
 bundled (tar.gz + sha256 manifest) after diff bloat; uptake scoring in
 flight.
+2026-07-12 claude: GATE 1 FAIL — 3/17 notes improved (18%) vs 60% bar,
+placebo 0/2; arc stops per pre-registration, Gates 2-3 cancelled. Standing:
+Gate-0 pass, the curated-book C1 artifact (v6, net compression across 3
+edits), P4's uncorroborated early closure, and the substrate. Report at
+exports/greenroom-gate1-2026-07-12/gate1-report.{md,json}.
