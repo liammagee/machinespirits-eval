@@ -15,9 +15,14 @@
  *
  * Usage:
  *   node scripts/greenroom-gate0.js --transcripts <file-or-dir> [more...]
- *     [--sessions 5] [--coach codex.sol] [--actor codex.luna]
+ *     [--sessions 5] [--coach claude-code.claude-opus-4-8]
+ *     [--actor claude-code.claude-sonnet-5]
  *     [--out exports/greenroom-gate0-<stamp>] [--seed 1]
  *     [--max-transcript-chars 16000] [--dry-run]
+ *
+ * Model defaults follow GREEN-ROOM-PLAN.md §0.1.4 (re-pinned 2026-07-12 to
+ * the Claude stack; pass --coach codex.sol --actor codex.luna to restore the
+ * original codex pins where that CLI is available).
  *
  * Typical local invocation against the preconscious stub's records:
  *   node scripts/greenroom-gate0.js \
@@ -51,8 +56,8 @@ export function parseArgs(argv) {
   const args = {
     transcripts: [],
     sessions: 5,
-    coach: 'codex.sol',
-    actor: 'codex.luna',
+    coach: 'claude-code.claude-opus-4-8',
+    actor: 'claude-code.claude-sonnet-5',
     out: null,
     seed: 1,
     maxTranscriptChars: 16000,

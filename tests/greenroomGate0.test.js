@@ -17,10 +17,10 @@ test('parseModelRef splits dot notation', () => {
   assert.throws(() => parseModelRef('codex.', '--coach'), /dot notation/);
 });
 
-test('parseArgs defaults match the P0 pins', () => {
+test('parseArgs defaults match the P0 pins (re-pinned 2026-07-12, plan §0.1.4)', () => {
   const args = parseArgs(['--transcripts', 'a.json', 'b.json']);
-  assert.equal(args.coach, 'codex.sol');
-  assert.equal(args.actor, 'codex.luna');
+  assert.equal(args.coach, 'claude-code.claude-opus-4-8');
+  assert.equal(args.actor, 'claude-code.claude-sonnet-5');
   assert.equal(args.sessions, 5);
   assert.equal(args.dryRun, false);
   assert.deepEqual(args.transcripts, ['a.json', 'b.json']);
