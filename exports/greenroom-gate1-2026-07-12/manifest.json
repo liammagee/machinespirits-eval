@@ -36,6 +36,8 @@
   "executionConditions": {
     "sequential": true,
     "CLI_PROVIDER_CLAUDE_TIMEOUT_MS": 480000,
-    "cliEffort": "medium"
-  }
+    "cliEffort": "medium",
+    "patchDowngradeRule": "edit/remove with unmatched match downgrades to a ledgered add (S4 fix; remove becomes recorded no-op)"
+  },
+  "s4Note": "S4 session recorded but its edit-match (certainty-word) was not verbatim in the book; patch applied post-hoc as downgraded add (book v4); chain resumed at P5"
 }

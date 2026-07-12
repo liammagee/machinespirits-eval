@@ -146,6 +146,29 @@ async function coachCommand(args) {
         source: { session_file: path.basename(sessionFile), post_distill: true },
       });
       console.log(`  patch applied post-distill: book v${reapplied.version} (${reapplied.tokens} tok)`);
+    } else if (/no entry matching/.test(String(error.message)) && (patch.op === 'edit' || patch.op === 'remove')) {
+      // The coach paraphrased its match string instead of quoting the book
+      // verbatim (observed S4, Gate 1). Downgrade to a ledgered add — the
+      // next distillation merges any resulting near-duplicate. remove with a
+      // bad match has nothing to add, so it becomes a recorded no-op.
+      if (patch.op === 'remove' || !patch.text) {
+        console.log(`  WARN: ${patch.op} match not found ("${patch.match}") — recorded as no-op`);
+      } else {
+        const applied = applyMemoryPatch(
+          profileId,
+          { section: patch.section, op: 'add', text: patch.text },
+          {
+            source: {
+              session_file: path.basename(sessionFile),
+              downgraded_from: patch.op,
+              failed_match: patch.match || null,
+            },
+          },
+        );
+        console.log(
+          `  patch downgraded ${patch.op}→add ("${patch.match}" not found) — book v${applied.version} (${applied.tokens} tok)`,
+        );
+      }
     } else {
       throw error;
     }
