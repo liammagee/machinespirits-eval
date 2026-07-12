@@ -162,3 +162,51 @@ test('auto mode plays both roles from the current transcript and returns after a
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('explanatory debug mode prints analysis, exact field calculations, and the register consequence', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explanatory-debug-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--register-policy',
+        'random',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/debug on\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('debug explain > turn 1'),
+    });
+
+    assert.match(result.plain, /debug explain > on/u);
+    assert.match(result.plain, /A · learner analysis/u);
+    assert.match(result.plain, /B · calculations and field update/u);
+    assert.match(result.plain, /mastery calculation: 0\.34×/u);
+    assert.match(result.plain, /risk calculation: 0\.45×/u);
+    assert.match(result.plain, /alignment calculation: 0\.30×/u);
+    assert.match(result.plain, /momentum calculation: 0\.42×/u);
+    assert.match(result.plain, /field updated for next turn: mastery=/u);
+    assert.match(result.plain, /C · resulting register decision/u);
+    assert.match(result.plain, /register change: initial choice →/u);
+    assert.match(result.plain, /policy path: stack=random; activated=random/u);
+    assert.match(result.plain, /explanatory debug: on/u);
+
+    const traces = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    assert.ok(traces.some((event) => event.type === 'explanatory_debug_mode_changed' && event.enabled));
+    assert.ok(traces.some((event) => event.type === 'explanatory_debug_output' && event.turn === 1));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

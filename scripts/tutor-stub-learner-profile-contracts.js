@@ -324,6 +324,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     shortName: 'Proof skipper',
     failureOperator: 'omits the warrant between clue and conclusion',
     contrastWith: {
+      overconfident: 'overconfident rushes specifically to a culprit; proof_skipper may make a plausible local claim but repeatedly omits the rule that licenses it',
       diligent: 'diligent repairs missing warrants; proof_skipper keeps producing claims without the bridge',
       false_memory: 'false_memory distorts evidence; proof_skipper usually remembers evidence but misuses it',
     },
@@ -496,6 +497,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     shortName: 'Affective resistance',
     failureOperator: 'becomes defensive or withholding under tutor pressure',
     contrastWith: {
+      low_agency: 'low_agency avoids authorship even with a supportive tutor; affective_resistant is specifically triggered by pressure and may steer strongly through pushback',
       diligent: 'diligent treats correction as useful; affective_resistant reads pressure as face threat',
       skeptical: 'skeptical challenges evidence; affective_resistant challenges the interactional pressure',
     },
@@ -746,6 +748,21 @@ export function learnerProfileDescription(id) {
   const profile = learnerProfileContract(id);
   if (!profile) return '';
   return `${profile.intent.shortName}. Primary pattern: ${profile.intent.failureOperator}.`;
+}
+
+export function learnerProfilePickerPresentation(id) {
+  const profile = learnerProfileContract(id);
+  if (!profile) return null;
+  const nearestNeighbor = profile.discriminationGate?.expectedNearestNeighbor || null;
+  const nearestContrast = nearestNeighbor ? profile.intent.contrastWith?.[nearestNeighbor] || null : null;
+  return {
+    id: profile.id,
+    label: profile.intent.shortName,
+    group: profile.family === 'stress' ? 'stress probe' : profile.family === 'control' ? 'core control' : 'core',
+    description: profile.behaviorContract.stableFailure.description,
+    nearestNeighbor,
+    contrast: nearestContrast,
+  };
 }
 
 export function learnerProfileContractSummary(id) {

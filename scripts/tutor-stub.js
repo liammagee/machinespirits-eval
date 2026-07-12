@@ -108,6 +108,7 @@ import {
   learnerProfileDescription,
   learnerProfileIds,
   learnerProfileListText,
+  learnerProfilePickerPresentation,
   learnerProfilePrompt,
   learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
@@ -221,6 +222,7 @@ const SLASH_COMMANDS = [
   '/html',
   '/settings',
   '/status',
+  '/debug',
   '/mode',
   '/learner',
   '/coach',
@@ -7326,13 +7328,13 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
+    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /debug on|off|show, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
   );
   console.log(
     `${C.dim}  learner mode sends public learner speech. coach mode stores private guidance for the next tutor turn; in mixed mode, follow it with /use. auto hands both roles to the models until grounded closure (or a safety cap); /auto 5 runs five turns. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
   );
   console.log(
-    `${C.dim}  /settings policy add state or field adds a strong-change overlay; remove <policy>, clear, and threshold <0-1> also work. /settings temp 0.4 sharpens only the dominant engagement stance; dropout 0.15 enables seeded evidence loss. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+    `${C.dim}  /debug on explains each turn as analysis → field calculations → register consequence. /settings policy add state or field adds a strong-change overlay; remove <policy>, clear, and threshold <0-1> also work. /settings temp 0.4 sharpens only the dominant engagement stance; dropout 0.15 enables seeded evidence loss. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
   );
 }
 
@@ -7539,6 +7541,204 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
     );
   }
   console.log(`${C.dim}  more evidence: /analysis technical (or /a technical)${C.reset}\n`);
+}
+
+function debugNumber(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(3)) : 'n/a';
+}
+
+function debugDelta(current, previous) {
+  if (previous === null || previous === undefined) return 'baseline';
+  const delta = fieldDelta(current, previous);
+  return `${delta >= 0 ? '+' : ''}${delta}`;
+}
+
+function registerPolicyCalculation(selection) {
+  if (!selection) return { features: null, scores: null, drivers: [] };
+  const policy =
+    selection.dynamical_system_policy ||
+    selection.trajectory_policy ||
+    selection.field_policy ||
+    selection.state_policy ||
+    null;
+  return {
+    features: policy?.features || null,
+    scores: policy?.scores || null,
+    drivers: policy?.drivers || [],
+  };
+}
+
+function printExplanatoryDebugTurn(state, { force = false } = {}) {
+  if (!force && !state.explanatoryDebug?.enabled) return false;
+  const turn = state.turns.at(-1) || null;
+  if (!turn) {
+    console.log(`${C.brightBlue}${C.bold}debug explain >${C.reset} no completed turns yet\n`);
+    return false;
+  }
+
+  const previousTurn = state.turns.at(-2) || null;
+  const classification = turn.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const overall = classification.overall || {};
+  const learnerDag = turn.tutorLearnerDagModel || {};
+  const assessment = learnerDag.assessment || {};
+  const metrics = learnerDag.metrics || {};
+  const selection = normalizeStoredRegisterSelection(turn.registerSelection || null);
+  const previousSelection = normalizeStoredRegisterSelection(previousTurn?.registerSelection || null);
+  const policyCalculation = registerPolicyCalculation(selection);
+  const policyFeatures = policyCalculation.features || {};
+  const policyField = policyFeatures.field || null;
+  const policyDag = policyFeatures.dag || null;
+  const field = buildLightweightDialogueField(state.turns);
+  const fieldRow = field.rows.at(-1) || null;
+  const previousFieldRow = field.rows.at(-2) || null;
+  const inputs = fieldRow?.calculation?.inputs || {};
+  const currentRegister = selection?.engagement_stance || selection?.selected_register || 'off';
+  const previousRegister = previousSelection?.engagement_stance || previousSelection?.selected_register || 'none';
+  const registerChanged = previousRegister !== 'none' && previousRegister !== currentRegister;
+  const activatedPolicy = selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off';
+  const distribution = formatEngagementStanceDistribution(selection?.distribution, { limit: 4 });
+
+  console.log(
+    `${C.brightBlue}${C.bold}debug explain >${C.reset} turn ${turn.turn} · ${turn.turnId || turnDebugId(state, turn.turn)}`,
+  );
+  console.log(`${C.brightCyan}${C.bold}  A · learner analysis${C.reset}`);
+  printAnalysisLine('reading', turnAnalysis.summary || overall.summary || 'No classifier summary was stored.');
+  printAnalysisLine(
+    'labels',
+    `request=${turnAnalysis.request_type || 'unknown'}; move=${turnAnalysis.discourse_move || 'unknown'}; evidence=${
+      turnAnalysis.evidence_use || 'unknown'
+    }; stance=${turnAnalysis.epistemic_stance || 'unknown'}; agency=${turnAnalysis.agency || 'unknown'}`,
+  );
+  printAnalysisLine(
+    'reasoning record',
+    `coverage=${assessment.bestPathCoverage ?? 'n/a'}; grounded=${metrics.groundedCount || 0}; missing=${
+      metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 'n/a'
+    }; bottleneck=${assessment.bottleneck || 'unknown'}`,
+  );
+
+  console.log(`${C.brightYellow}${C.bold}  B · calculations and field update${C.reset}`);
+  if (policyField) {
+    printAnalysisLine(
+      'policy input field',
+      `surface ${policyField.beforeScore ?? 'n/a'} → ${policyField.afterScore ?? 'n/a'} (Δ ${
+        policyField.delta === null || policyField.delta === undefined
+          ? 'initial'
+          : `${policyField.delta >= 0 ? '+' : ''}${policyField.delta}`
+      }); relation=${policyField.relation || 'unknown'}`,
+    );
+  }
+  if (policyDag) {
+    printAnalysisLine(
+      'policy proof calculation',
+      `progressScore=${policyDag.progressScore ?? 'n/a'}; progress=${policyDag.progress ?? 'n/a'}; coverage=${
+        policyDag.bestPathCoverage ?? 'n/a'
+      }; missing=${policyDag.missingPremiseCount ?? 'n/a'}; bottleneck=${policyDag.bottleneck || 'unknown'}`,
+    );
+  }
+  if (fieldRow) {
+    printAnalysisLine(
+      'mastery calculation',
+      `0.34×${debugNumber(inputs.conceptual)} + 0.26×${debugNumber(inputs.readiness)} + 0.30×${debugNumber(
+        inputs.coverage,
+      )} + 0.10×${debugNumber(inputs.grounded)} = ${fieldRow.learnerMastery}`,
+    );
+    printAnalysisLine(
+      'risk calculation',
+      `0.45×${debugNumber(inputs.missing)} + 0.25×(1-${debugNumber(inputs.readiness)}) + ${debugNumber(
+        inputs.overreach,
+      )} overreach = ${fieldRow.learnerRisk}`,
+    );
+    printAnalysisLine(
+      'alignment calculation',
+      `0.30×${debugNumber(inputs.registerConfidence)} + 0.24×${debugNumber(
+        inputs.efficacyScore,
+      )} + 0.22×${debugNumber(inputs.brevity)} + 0.24×${inputs.leakOk ? 1 : 0} = ${fieldRow.tutorAlignment}`,
+    );
+    printAnalysisLine(
+      'momentum calculation',
+      `0.42×${debugNumber(inputs.masteryGain)} + 0.28×${debugNumber(
+        inputs.coverageGain,
+      )} + 0.18×${debugNumber(inputs.efficacyScore)} + 0.12×${debugNumber(inputs.releasedShare)} = ${
+        fieldRow.jointMomentum
+      }`,
+    );
+    printAnalysisLine(
+      'field updated for next turn',
+      `mastery=${fieldRow.learnerMastery} (${debugDelta(
+        fieldRow.learnerMastery,
+        previousFieldRow?.learnerMastery,
+      )}); risk=${fieldRow.learnerRisk} (${debugDelta(
+        fieldRow.learnerRisk,
+        previousFieldRow?.learnerRisk,
+      )}); alignment=${fieldRow.tutorAlignment} (${debugDelta(
+        fieldRow.tutorAlignment,
+        previousFieldRow?.tutorAlignment,
+      )}); momentum=${fieldRow.jointMomentum} (${debugDelta(
+        fieldRow.jointMomentum,
+        previousFieldRow?.jointMomentum,
+      )})`,
+    );
+  }
+  const dynamical = selection?.dynamical_system_policy || null;
+  if (dynamical?.state_vector) {
+    printAnalysisLine('system vector', topNumericEntries(dynamical.state_vector, { limit: 5 }).join(', '));
+    printAnalysisLine('derivatives', topNumericEntries(dynamical.derivative_vector, { limit: 4, abs: true }).join(', '));
+    printAnalysisLine('stance scores', topNumericEntries(dynamical.scores, { limit: 5 }).join(', '));
+  } else if (policyCalculation.scores) {
+    printAnalysisLine('stance scores', topNumericEntries(policyCalculation.scores, { limit: 5 }).join(', '));
+  }
+
+  console.log(`${C.brightMagenta}${C.bold}  C · resulting register decision${C.reset}`);
+  printAnalysisLine(
+    'register change',
+    previousRegister === 'none'
+      ? `initial choice → ${currentRegister}`
+      : registerChanged
+        ? `${previousRegister} → ${currentRegister}`
+        : `${currentRegister} held`,
+  );
+  printAnalysisLine(
+    'policy path',
+    `stack=${selection?.policy || state.register?.policy || 'off'}; activated=${activatedPolicy}; temperature=${
+      selection?.temperature ?? state.register?.temperature ?? 'n/a'
+    }`,
+  );
+  if (selection?.policy_composition) {
+    const composition = selection.policy_composition;
+    printAnalysisLine(
+      'overlay result',
+      composition.activated_overlay
+        ? `${composition.activated_overlay} overrode the primary at strength ${composition.activated_strength}`
+        : `no overlay crossed ${composition.overlay_threshold}; primary retained`,
+    );
+  }
+  if (distribution) printAnalysisLine('stance distribution', distribution);
+  printAnalysisLine('decision basis', selection?.register_reason || policyCalculation.drivers.slice(0, 4).join('; '));
+  if (selection) {
+    printAnalysisLine(
+      'response configuration',
+      `action=${selection.action_family || 'none'}; audience=${selection.audience_register || 'unknown'}; language=${
+        selection.lexical_accessibility || 'unknown'
+      }; scene=${selection.scene_immersion || 'unknown'}`,
+    );
+  }
+  console.log(`${C.dim}  /debug off stops these automatic explanations · /analysis technical shows the full trace${C.reset}\n`);
+  appendTraceEvent(state.trace, {
+    type: 'explanatory_debug_output',
+    turn: turn.turn,
+    turnId: turn.turnId || null,
+    field: fieldRow,
+    register: {
+      previous: previousRegister,
+      selected: currentRegister,
+      changed: registerChanged,
+      policy: selection?.policy || state.register?.policy || 'off',
+      activatedPolicy,
+    },
+  });
+  return true;
 }
 
 function printCurrentTurnTechnicalAnalysis(state) {
@@ -7933,18 +8133,22 @@ function lightweightFieldTurn(turn, previous = null) {
     ? clampField01(Number(register.confidence))
     : 0.5;
   const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
+  const coverageGain = Math.max(0, fieldDelta(coverage, previous?.coverage));
+  const releasedShare =
+    Number(turn?.tutorDag?.leavesReleased || 0) / Math.max(1, Number(turn?.tutorDag?.leavesTotal || 1));
 
   const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
+  const masteryGain = Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery));
   const learnerRisk = roundField(clampField01(0.45 * missing + 0.25 * (1 - readiness) + overreach));
   const tutorAlignment = roundField(
     clampField01(0.3 * registerConfidence + 0.24 * efficacyScore + 0.22 * brevity + 0.24 * (leakOk ? 1 : 0)),
   );
   const jointMomentum = roundField(
     clampField01(
-      0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
-        0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
+      0.42 * masteryGain +
+        0.28 * coverageGain +
         0.18 * efficacyScore +
-        (0.12 * (turn?.tutorDag?.leavesReleased || 0)) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
+        0.12 * releasedShare,
     ),
   );
 
@@ -7962,6 +8166,30 @@ function lightweightFieldTurn(turn, previous = null) {
     register: register.selected_register || null,
     bottleneck: assessment.bottleneck || 'unknown',
     learnerMove: turnAnalysis.discourse_move || 'unknown',
+    calculation: {
+      inputs: {
+        conceptual,
+        readiness,
+        coverage,
+        grounded,
+        missing,
+        overreach,
+        responseWords,
+        brevity: roundField(brevity),
+        registerConfidence: roundField(registerConfidence),
+        efficacyScore: roundField(efficacyScore),
+        leakOk,
+        masteryGain: roundField(masteryGain),
+        coverageGain: roundField(coverageGain),
+        releasedShare: roundField(releasedShare),
+      },
+      formulas: {
+        learnerMastery: '0.34*conceptual + 0.26*readiness + 0.30*coverage + 0.10*grounded',
+        learnerRisk: '0.45*missing + 0.25*(1-readiness) + overreach',
+        tutorAlignment: '0.30*registerConfidence + 0.24*efficacy + 0.22*brevity + 0.24*leakOk',
+        jointMomentum: '0.42*masteryGain + 0.28*coverageGain + 0.18*efficacy + 0.12*releasedShare',
+      },
+    },
     speed: previous
       ? roundField(
           Math.sqrt(
@@ -9481,6 +9709,7 @@ async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null 
   printTutorDagSnapshot(response.dagSnapshot);
   printTutorResponse(response, state.stream);
   console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+  printExplanatoryDebugTurn(state);
   writeFieldVisualization(state, { reason: 'turn_complete' });
   return response;
 }
@@ -9839,6 +10068,12 @@ async function main() {
       stopOnGrounded: autoStopOnGrounded,
     },
   };
+  const explanatoryDebugConfig = {
+    enabledByDefault: false,
+    command: '/debug on|off|show',
+    sections: ['learner_analysis', 'field_calculations', 'register_consequence'],
+    automaticAfterCompletedTurn: true,
+  };
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -9936,6 +10171,7 @@ async function main() {
               }
             : { enabled: false, requested: mixedLearnerRequested },
           interactiveRoleModes,
+          explanatoryDebug: explanatoryDebugConfig,
           registerSelection: registerSelectionEnabled
             ? {
                 enabled: true,
@@ -10126,6 +10362,7 @@ async function main() {
           }
         : { enabled: false, requested: mixedLearnerRequested },
       interactiveRoleModes,
+      explanatoryDebug: explanatoryDebugConfig,
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
@@ -10270,6 +10507,9 @@ async function main() {
       mode: 'learner',
       previousMode: 'learner',
       autoRunning: false,
+    },
+    explanatoryDebug: {
+      enabled: false,
     },
     coach: {
       pending: [],
@@ -10543,6 +10783,7 @@ async function main() {
     printTutorDagSnapshot(response.dagSnapshot);
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+    printExplanatoryDebugTurn(state);
     writeFieldVisualization(state, { reason: 'once' });
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
     if (args.save) {
@@ -10650,6 +10891,11 @@ async function main() {
         const modeCompletions = ['/mode learner', '/mode coach', '/mode auto'];
         const matches = modeCompletions.filter((entry) => entry.startsWith(trimmed));
         return [matches.length ? matches : modeCompletions, trimmed];
+      }
+      if (trimmed.startsWith('/debug ')) {
+        const debugCompletions = ['/debug on', '/debug off', '/debug show'];
+        const matches = debugCompletions.filter((entry) => entry.startsWith(trimmed));
+        return [matches.length ? matches : debugCompletions, trimmed];
       }
       const mixedCompletion = mixedLearnerCompletionForLine(line);
       if (mixedCompletion) return [[mixedCompletion], line];
@@ -11464,14 +11710,25 @@ async function main() {
     const coreIds = new Set(learnerProfileSuiteIds('core'));
     const entries = learnerProfileIds().map((id) => {
       const contract = learnerProfileContract(id);
+      const presentation = learnerProfilePickerPresentation(id);
       return {
         id,
         label: contract?.intent?.shortName || id,
-        group: coreIds.has(id) ? 'core' : 'stress',
+        group: presentation?.group || (coreIds.has(id) ? 'core' : 'stress probe'),
+        description: presentation?.description || contract?.behaviorContract?.stableFailure?.description || '',
+        nearestNeighbor: presentation?.nearestNeighbor || null,
+        contrast: presentation?.contrast || null,
       };
     });
     if (!mixedLearner.profileId) {
-      entries.unshift({ id: null, label: 'Custom launch profile', group: 'custom' });
+      entries.unshift({
+        id: null,
+        label: 'Custom launch profile',
+        group: 'custom',
+        description: oneLine(mixedLearner.profile, { max: 180 }),
+        nearestNeighbor: null,
+        contrast: null,
+      });
     }
     let selectedIndex = Math.max(
       0,
@@ -11506,6 +11763,8 @@ async function main() {
       clearRenderedMenu();
       const width = Math.max(48, Math.min(Number(output.columns || 100), 140));
       const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+      const selectedEntry = entries[selectedIndex];
+      const descriptionWidth = Math.max(32, width - 11);
       const lines = [
         `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
         ...visible.map((entry, visibleIndex) => {
@@ -11522,6 +11781,14 @@ async function main() {
             ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
             : '  '
         }${C.reset}`,
+        `${C.brightYellow}${C.bold}  does >${C.reset} ${oneLine(selectedEntry.description, {
+          max: descriptionWidth,
+        })}`,
+        selectedEntry.nearestNeighbor && selectedEntry.contrast
+          ? `${C.dim}  edge > versus ${selectedEntry.nearestNeighbor}: ${oneLine(selectedEntry.contrast, {
+              max: Math.max(24, width - selectedEntry.nearestNeighbor.length - 20),
+            })}${C.reset}`
+          : `${C.dim}  edge > baseline for ordinary partial reasoning and repair${C.reset}`,
       ];
       for (const line of lines) output.write(`${line}\n`);
       renderedLineCount = lines.length;
@@ -11590,7 +11857,9 @@ async function main() {
     const keyboardMenuEnabled = Boolean(input.isTTY && output.isTTY && typeof input.setRawMode === 'function');
     console.log(`${C.cyan}Pick a learner profile${C.reset}`);
     if (keyboardMenuEnabled) {
-      console.log(`${C.dim}  ↑/↓ scroll · Enter select · Esc quit · ${defaultProfileId} selected by default${C.reset}`);
+      console.log(
+        `${C.dim}  ↑/↓ scroll · Enter select · highlighted learner described below · Esc quit · ${defaultProfileId} selected by default${C.reset}`,
+      );
     } else {
       console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
       console.log(
@@ -11853,6 +12122,7 @@ async function main() {
       dialogueClosure: state.dialogueClosure,
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
       interaction: jsonClone(state.interaction),
+      explanatoryDebug: jsonClone(state.explanatoryDebug),
       coach: jsonClone(state.coach),
       directorContext,
       trace: traceDisplayPath(state.trace),
@@ -11988,6 +12258,7 @@ async function main() {
           stream: state.stream?.enabled || false,
           trace: state.trace?.enabled ? traceDisplayPath(state.trace) : 'off',
           fieldVisualization: state.fieldViz?.enabled || false,
+          explanatoryDebug: state.explanatoryDebug?.enabled || false,
         },
       },
       prompts: {
@@ -12130,7 +12401,9 @@ async function main() {
     console.log(
       `${C.dim}  coach: ${coachPending} suggestion${coachPending === 1 ? '' : 's'} waiting; ${state.coach?.history?.length || 0} applied${C.reset}`,
     );
-    console.log(`${C.dim}  transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`);
+    console.log(
+      `${C.dim}  explanatory debug: ${state.explanatoryDebug?.enabled ? 'on' : 'off'} · transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`,
+    );
   }
 
   function queueCoachGuidance(text, { duringTurn = false } = {}) {
@@ -12712,6 +12985,43 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (command === '/debug') {
+      clearStatusLine();
+      const action = commandArg.toLowerCase();
+      if (!action) {
+        console.log(
+          `${C.brightBlue}${C.bold}debug explain >${C.reset} ${
+            state.explanatoryDebug?.enabled ? 'on' : 'off'
+          }`,
+        );
+        console.log(
+          `${C.dim}  /debug on prints analysis → calculations → register consequence after every turn; /debug show explains the latest completed turn once${C.reset}\n`,
+        );
+      } else if (action === 'on' || action === 'off') {
+        const enabled = action === 'on';
+        state.explanatoryDebug.enabled = enabled;
+        appendTraceEvent(state.trace, {
+          type: 'explanatory_debug_mode_changed',
+          enabled,
+          duringTurn,
+          effectiveTurn: state.turns.length + 1,
+        });
+        console.log(`${C.brightBlue}${C.bold}debug explain >${C.reset} ${enabled ? 'on' : 'off'}`);
+        console.log(
+          `${C.dim}  ${
+            enabled
+              ? `the ${duringTurn ? 'current' : 'next'} completed turn will show learner analysis, exact field updates, and the resulting register decision`
+              : 'automatic turn explanations stopped; /debug show remains available'
+          }${C.reset}\n`,
+        );
+      } else if (action === 'show' || action === 'once') {
+        printExplanatoryDebugTurn(state, { force: true });
+      } else {
+        console.log(`${C.red}debug error:${C.reset} use /debug, /debug on, /debug off, or /debug show\n`);
+      }
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/learner') {
       if (commandArg) {
         console.log(`${C.red}mode error:${C.reset} /learner takes no argument; type the learner line after switching\n`);
@@ -13007,6 +13317,7 @@ async function main() {
         printTutorDagSnapshot(response.dagSnapshot);
         printTutorResponse(response, state.stream);
         console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+        printExplanatoryDebugTurn(state);
         writeFieldVisualization(state, { reason: 'dialogue_closure_acknowledgement' });
         completedTurn = true;
         return;
@@ -13069,6 +13380,7 @@ async function main() {
       printTutorDagSnapshot(response.dagSnapshot);
       printTutorResponse(response, state.stream);
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+      printExplanatoryDebugTurn(state);
       if (state.dialogueClosure?.phase === 'awaiting_checkin') {
         console.log(
           `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,

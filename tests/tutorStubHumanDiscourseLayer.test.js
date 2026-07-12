@@ -309,6 +309,10 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /↑\/↓ scroll · Enter select/u);
+    assert.match(plain, /highlighted learner described below/u);
+    assert.match(plain, /does > Make occasional partial claims, then repair/u);
+    assert.match(plain, /does > Name competing interpretations and refuse closure/u);
+    assert.match(plain, /edge > versus skeptical: skeptical asks for warrant/u);
     assert.match(plain, /↑ 2 more/u);
     assert.match(plain, /learner profile > contradiction_keeper — Contradiction keeper/u);
     assert.match(plain, /DAG fact dropout \[0; recommended\] >/u);

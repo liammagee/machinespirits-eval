@@ -126,9 +126,13 @@ Useful variants:
   notice and compact profile card appear once per active profile. A fresh mixed
   session first asks `Pick a learner profile [diligent] >`; Enter accepts the
   default. In a TTY, all built-in profiles appear in a scrolling menu: Up/Down
-  moves the highlight and Enter selects it. The initial highlight is the launch
-  profile (`diligent` by default), and the viewport scrolls across both core and
-  stress profiles. Pipes and other non-TTY callers retain the typed-ID fallback;
+  moves the highlight and Enter selects it. Beneath the menu, `does >` describes
+  the highlighted learner's recurring public behavior and `edge >` explains
+  how it differs from its declared nearest-neighbour profile. Stress entries
+  are labeled `stress probe` to make clear that they sharpen a core boundary
+  rather than claiming to be an unrelated taxonomy. The initial highlight is
+  the launch profile (`diligent` by default), and the viewport scrolls across
+  both core and stress profiles. Pipes and other non-TTY callers retain the typed-ID fallback;
   there, `list`, `stress`, and `all` browse profile groups and Tab completes
   picker commands and ids.
   Before any clue or answer generation, the same fresh-session prelude asks for
@@ -217,6 +221,16 @@ Useful variants:
   realization count. Use `/analysis technical` or `/a technical` for the
   classifier labels, learner/tutor DAGs, field metrics, stance vectors,
   per-axis realization audit, scaffold audit, leak guard, and trace path.
+- `/debug on` enables a compact explanatory trace after every completed tutor
+  turn. It has three stable sections: `A` summarizes the learner analysis and
+  learner-DAG state; `B` shows the policy-input field/proof values plus the
+  exact lightweight-field formulas and resulting mastery, risk, alignment, and
+  momentum update; `C` shows whether the engagement stance changed, which
+  primary/overlay policy activated, the stance distribution, decision basis,
+  and independent response configuration. Use `/debug off` to stop automatic
+  output or `/debug show` to explain only the latest completed turn. The mode
+  survives `/clear`, appears in `/status` and transcript settings, and writes
+  an `explanatory_debug_output` trace event without changing the policy.
 - `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
   snapshot and opens it in the default browser. It includes raw, script,
   swimlane, analysis, prompt, and settings views; all completed public turns;

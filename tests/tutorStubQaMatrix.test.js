@@ -7,7 +7,9 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
   learnerProfileContractSummary,
+  learnerProfilePickerPresentation,
   learnerProfilePrompt,
+  learnerProfileSuiteIds,
 } from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -583,6 +585,17 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   assert.ok(affectiveSummary.traceSignatureTargets.requestType.authority_refusal_or_status_challenge);
   assert.deepEqual(affectiveSummary.traceSignatureTargets.evidenceUse.links_evidence_to_rule, [0.15, 0.45]);
   assert.deepEqual(affectiveSummary.traceSignatureTargets.epistemicStance.grounded, [0.2, 0.5]);
+});
+
+test('every stress profile explains its boundary against the declared nearest core profile', () => {
+  const coreIds = new Set(learnerProfileSuiteIds('core'));
+  for (const profileId of learnerProfileSuiteIds('stress')) {
+    const presentation = learnerProfilePickerPresentation(profileId);
+    assert.equal(presentation.group, 'stress probe');
+    assert.ok(presentation.description.length > 20, profileId);
+    assert.ok(coreIds.has(presentation.nearestNeighbor), `${profileId} nearest neighbor must be a core profile`);
+    assert.ok(presentation.contrast?.length > 20, `${profileId} must explain its edge from core`);
+  }
 });
 
 test('auto-eval dry run records selected learner profile contract', () => {
