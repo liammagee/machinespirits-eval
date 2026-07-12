@@ -46,10 +46,7 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: OWNER scores exports/greenroom-gate0-2026-07-12/
-gate0-review-checklist.md (pass = 4/5 sessions yield a qualifying note).
-On pass -> P1 substrate build. Gate 1-2 outcome contrasts run in the
-stub's headroom arena per plan §0.2.
+Next action: Gate-1 uptake report (scorer running); then Gate-2 decision.
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
 2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
@@ -94,3 +91,9 @@ convergence observed: over-braking after correct statements, withholding
 terminal recognition, re-eliciting already-produced distinctions each
 flagged independently in 2-3 sessions — the C1 notes-taxonomy signal.
 Evidence at exports/greenroom-gate0-2026-07-12/. Awaiting owner scoring.
+2026-07-12 human: GATE 0 SCORED — PASS 5/5 ("all five qualify").
+2026-07-12 claude: P1 substrate shipped (greenroom store/CLI/notes engine,
+26 tests); Gate 1 executed in-session per §7.2 (8 performances, 6 sessions,
+book v0->v6 frozen; P4@v3 closed at 31 turns, sole closure); raw payloads
+bundled (tar.gz + sha256 manifest) after diff bloat; uptake scoring in
+flight.

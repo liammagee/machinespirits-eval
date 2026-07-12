@@ -11,10 +11,14 @@ Criteria per note:
 
 | session | transcript | run notes | (a) evidence | (b) checkable | (c) non-generic | >=1 qualifying note? |
 |---|---|---|---|---|---|---|
-| 1 | `P03-A.md` |  |  |  |  |  |
-| 2 | `P01-B.md` |  |  |  |  |  |
-| 3 | `P03-B.md` |  |  |  |  |  |
-| 4 | `P02-A.md` |  |  |  |  |  |
-| 5 | `P01-A.md` |  |  |  |  |  |
+| 1 | `P03-A.md` | strongest: note 3 (reassurance cap) | yes | yes | yes | yes |
+| 2 | `P01-B.md` | strongest: note 3 (release the close) | yes | yes | yes | yes |
+| 3 | `P03-B.md` | strongest: note 3 (no narrowing after correct) | yes | yes | yes | yes |
+| 4 | `P02-A.md` | strongest: note 3 (name the error before damping) | yes | yes | yes | yes |
+| 5 | `P01-A.md` | strongest: note 1 (answer the check-in) | yes | yes | yes | yes |
 
-**Verdict (>=4 yes → Gate 0 PASS):** ____
+**Verdict (>=4 yes → Gate 0 PASS): PASS — 5/5.**
+
+Scored by owner (liammagee), 2026-07-12, in-session: "all five qualify",
+against the per-session strongest-note briefs (full 15-note set in
+session-N.{md,json}). Recorded by claude on the owner's behalf.
