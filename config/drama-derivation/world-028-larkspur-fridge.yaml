@@ -1,0 +1,184 @@
+# WORLD-028 — the THOROUGHLY CONTEMPORARY quickie (2026-07-12): an everyday
+# office mystery in plain modern language, built for testing. Same validated
+# template as world-022 (depth 2, four premises + one mirror fuel, S forced at
+# turn 7, cap 12): a fast floor world with no period costume at all — the
+# contrast case for prompts, pickers, and presentation machinery.
+#
+# Costume: Priya's labelled lunchbox vanishes from shelf two of the studio
+# fridge during the noon window. The studio's verdict is instant: Dario from
+# accounts, twice caught raiding the fridge before, unrepentant, and badged
+# into the kitchen at noon (the mirror — present, motivated, previous form,
+# innocent). The truth is a contingent particular in the Edony pattern: the
+# WRENFOLD crew, the building's fire-safety contractors, who cleared the
+# fridge to test its outlet during the annual inspection and logged every
+# item — lunchbox included — into lost property with their job number.
+# Nothing was stolen at all; procedure ate the lunch.
+#
+# Leak-guard design (world-022's tested template): the answer constant
+# (wrenfold) is a rare particular absent from the setting; premises naming it
+# release via DIRECTOR except the S-completing one, which the tutor releases
+# on the entailment turn. The mirror name (dario) is setting-public and
+# freely discussable.
+#
+# Proof DAG (depth 2, single chain + join — easy on purpose):
+#   p_crew + p_permit --R1--> couldClearShelf(wrenfold)
+#   couldClearShelf + p_tag --R2--> tookFromFridge(lunchbox, wrenfold)
+# Mirror stalls at R1: Dario badged in (p_noon) but holds no clearance.
+
+id: world_028_larkspur_fridge
+title: The Lunchbox on Shelf Two
+discipline: "Office forensics (a very small mystery)"
+
+question: "Who took Priya's labelled lunchbox from shelf two of the studio fridge?"
+question_pattern: [tookFromFridge, lunchbox, "?x"]
+
+setting: >-
+  Larkspur Studio is eleven desks, one kitchen, and a fridge with a strict
+  labelling rule. On Tuesday, during the noon window, Priya's lunchbox —
+  labelled, dated, and famously well-packed — vanished from shelf two. The
+  studio has its verdict before the kettle boils: Dario from accounts, twice
+  caught raiding the fridge, entirely unrepentant both times, and badged
+  into the kitchen at noon today. You are the studio coordinator, keeper of
+  the incident log, and you would love for it to be Dario. The office
+  manager's rule stands anyway: entries come from evidence, the badge system
+  and the ledgers say what they say, and nobody gets written up for their
+  reputation.
+
+learner_voice: >-
+  The studio coordinator: organized, fair-minded on a good day, and not
+  having a good day — Priya is furious, Dario has history, and closing the
+  incident log by two o'clock would feel wonderful. Learning, entry by
+  entry, that a history with the fridge is not a hand on the shelf.
+
+secret:
+  fact: [tookFromFridge, lunchbox, wrenfold]
+  surface: >-
+    The lunchbox was taken by the Wrenfold crew — the building's fire-safety
+    contractors, who cleared the studio fridge to test its outlet during the
+    annual inspection, logged every item into lost property under their job
+    number at 12:14, and left a receipt nobody read. Nothing was stolen;
+    procedure ate the lunch.
+
+mirror:
+  fact: [tookFromFridge, lunchbox, dario]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_clear
+    if:
+      - [badgedIntoKitchen, "?x", noonWindow]
+      - [holdsApplianceClearance, "?x"]
+    then:
+      - [couldClearShelf, "?x"]
+  - id: R2_take
+    if:
+      - [couldClearShelf, "?x"]
+      - [loggedToLostProperty, lunchbox, "?x"]
+    then:
+      - [tookFromFridge, lunchbox, "?x"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_noon # mirror fuel: keeps Dario a live candidate
+    fact: [badgedIntoKitchen, dario, noonWindow]
+    surface: >-
+      The badge log has Dario in the kitchen at 12:02 — mug in hand, by his
+      own cheerful admission, and not one bit sorry about the last two times.
+  - id: p_crew
+    fact: [badgedIntoKitchen, wrenfold, noonWindow]
+    surface: >-
+      One more badge in the noon window: a visitor code, WF-11, issued at the
+      front desk to an outside crew in hi-vis. Nobody at the desks remembers
+      them; the kettle queue does.
+  - id: p_permit
+    fact: [holdsApplianceClearance, wrenfold]
+    surface: >-
+      The building notice taped by the lifts, dated Monday: annual fire-safety
+      inspection Tuesday; the Wrenfold crew is authorized to power down and
+      clear appliances for outlet testing. Small print: contents will be
+      logged to lost property.
+  - id: p_tag
+    fact: [loggedToLostProperty, lunchbox, wrenfold]
+    surface: >-
+      The lost-property ledger, one floor down: one labelled lunchbox, logged
+      12:14, tagged with the Wrenfold job number, shelf photo attached. It has
+      been sitting there, cold and well-packed, all afternoon.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [keeperOf, coordinator, incidentLog]
+
+incompatible:
+  - [[tookFromFridge, lunchbox, wrenfold], [tookFromFridge, lunchbox, dario]]
+
+# One authored path through the chain.
+proof_paths:
+  - premises: [p_crew, p_permit, p_tag]
+
+# The plot: the mirror first, then the odd badge, the notice by the lifts,
+# and the ledger that closes it. The fun is watching the learner want it to
+# be Dario and learn to read the small print.
+release_schedule:
+  - { turn: 2, premise: p_noon, via: tutor }
+  - { turn: 3, premise: p_crew, via: director }
+  - { turn: 5, premise: p_permit, via: director }
+  - { turn: 7, premise: p_tag, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Previous Form
+      turns: [1, 4]
+      intent: >-
+        The empty shelf and the ready verdict: Dario has done it before,
+        Dario was there, Dario isn't even sorry. Against the certainty, one
+        odd entry — a visitor badge nobody can put a face to, in the same
+        noon window. The learner should leave Act I still wanting it to be
+        Dario while holding one line of the badge log that reputation cannot
+        explain.
+    - act: II
+      title: The Small Print
+      turns: [5, 8]
+      intent: >-
+        The chain closes the way office mysteries do — with paperwork. The
+        Monday notice authorizes an outside crew to clear appliances; the
+        lost-property ledger has the lunchbox, the timestamp, and the job
+        number. The learner should feel the join click — badge plus
+        clearance plus ledger — and notice that Dario, history and all,
+        never had more than a mug in his hand.
+
+slope:
+  t_min: 6 # anti-reveal: S must not be derivable before turn 6
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: dario # opens mis-bound to the mirror (previous form)
+      mirror_pull: high # Priya is furious and Dario would be so convenient
+    second_order:
+      from: officeManager
+      as: right
+      authority: rational_legal # "the badge system and the ledgers say what they say"
+    disposition:
+      overreach: high # ready to close the log by two o'clock
+      arc: softens # a history with the fridge is not a hand on the shelf
+  tutor:
+    stance: >-
+      The office manager: unhurried, mildly amused, allergic to convenient
+      verdicts. Fond of the coordinator, fonder of the small print, and
+      quietly certain the building always keeps a receipt.
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: larkspur
+  temporal_frame: contemporary
+  scene_ecology: "studio office kitchen"
+  narrative_diction: "plain contemporary"
+  ledger_term: incident log
+  summary: The everyday floor world — who took the labelled lunchbox from the studio fridge, solvable in about ten turns with no costume at all.
