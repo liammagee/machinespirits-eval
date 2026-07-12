@@ -26,6 +26,7 @@ links:
     - adaptive-state-v2-observability-preflight-c0ccd5c9-v21
     - adaptive-state-v2-s0-structural-support-2dd039c5-v21
     - adaptive-state-v2-observability-preflight-985bd542-v21
+    - adaptive-state-v2-observability-reliability-4133d7ff-v22
 tags:
   - adaptive-tutor
   - learner-state
@@ -290,3 +291,28 @@ the sealed fourth v2.1 stop, current S1-relevant hashes, CLI fingerprints,
 clean Git, and an immutable seal. A passing paid gate may authorize only a
 separately invoked full S1; it cannot launch S1 itself and is not a sensor or
 efficacy result.
+
+2026-07-12 Codex v2.2 repeated-draw outcome: The frozen implementation was
+committed and pushed at clean SHA `4133d7ff` after 125/125 adaptive-state tests,
+5,289 passing full-suite tests with one expected skip, tracked-source lint, and
+a no-write real-lineage dry run. Sealed paid run
+`adaptive-state-v2-observability-reliability-4133d7ff-v22` completed 72/72 cases
+and 144/144 serial CLI dispatches with zero technical failures and no retry,
+reroll, repair, fallback, exclusion, or row reuse. Aggregate recovery met 70/72
+(`0.972222`), and each draw block met 23/24, 23/24, and 24/24. The gate stopped
+because both misses repeated in `ravensmark × derive × codex_terra`: that base
+cell passed only 1/3, derive 16/18, Codex 34/36, and Ravensmark 22/24. Draws 1
+and 2 repeated the holder premise and were correctly analyzed as `none`. Draw
+3 was nominally analyzed as `derive`, but its possession paraphrase still did
+not state the intended `pressedSealFor` action, exposing a family-level false
+positive. The sealed decision is `stop_observability_channel_no_s1`,
+`s1_retry_eligible: false`; report SHA-256 is
+`987497dab7df085829c530432fe1ca3b38e8cfbf8d80ee91192272ba52a29f8f`.
+
+2026-07-12 Codex next gate after v2.2: Do not rerun this protocol or tune prompts
+against the failed cell. Preserve all 72 draws. Redesign the claim-bearing
+instrument without calls so exact harness transitions are rendered
+deterministically or checked programmatically before a family match can count;
+keep LLM naturalness as a separate descriptive lane. Any successor must be a
+new prospectively frozen version. Full S1, S2, policy optimization, Phase 6B,
+shadow pilot, efficacy, and human-learning claims remain blocked.

@@ -697,30 +697,52 @@ is a learner-state validity or efficacy result.
    sealed `stop_and_repair_observability_preflight` with
    `s1_retry_eligible: false`; report SHA-256 is
    `5b887f222419ce7944d477b3cb875ad1bebaa7080136e99dc889ba6d0398203c`.
-10. **S2 was not run and remains fail-closed.** No passing preflight or S1 seal
+10. **The prospectively frozen repeated-draw gate completed and stopped.**
+   Commit `4133d7ff` implemented Option 2 before any v2.2 model call: three
+   complete fresh draws of the unchanged 24-cell matrix, 72 cases and 144
+   serial CLI dispatches, with every draw retained and no retries, semantic
+   rerolls, repairs, fallbacks, exclusions, or reused rows. The sealed paid run
+   `adaptive-state-v2-observability-reliability-4133d7ff-v22` completed all
+   72/72 cases and 144/144 dispatches without technical failure. Aggregate
+   exact-family recovery was 70/72 (`0.972222`), meeting the overall threshold,
+   and each draw block passed 23/24, 23/24, and 24/24. The gate nevertheless
+   stopped because both misses repeated in the same
+   `ravensmark × derive × codex_terra` base cell: 1/3 there, derive 16/18,
+   Codex 34/36, and Ravensmark 22/24. Claude, Marrick, Hethel, and every
+   non-derive family passed perfectly. In draws 1 and 2 Codex repeated “The
+   dusk-seal on the pass was held by Elian,” while claiming
+   `derive:inference_03`; the analyzer correctly returned `none`. Draw 3 was a
+   nominal family match, but “The older dusk-seal on the pass was Elian’s seal”
+   still did not state the intended `pressedSealFor(gatePass,elian)` action
+   relation; the analyzer treated that possession paraphrase as `derive`.
+   Therefore the repeated-draw design did its job: it distinguished a repeated
+   condition-specific realizer failure from an isolated wording miss and also
+   exposed one family-level analyzer false positive. The sealed decision is
+   `stop_observability_channel_no_s1`, `s1_retry_eligible: false`; report
+   SHA-256 is
+   `987497dab7df085829c530432fe1ca3b38e8cfbf8d80ee91192272ba52a29f8f`.
+11. **S2 was not run and remains fail-closed.** No passing observability gate or S1 seal
    exists, so the fixed eight-per-cell confirmation and every downstream
    policy, efficacy, Phase 6B, shadow-pilot, and human-learning claim remain
    blocked.
 
-The fourth preflight did not clear the gate. The construct ambiguity diagnosed
-after the third run is now resolved: the replacement target was genuinely
-distinct, Claude realized it, and the analyzer recovered it. The remaining miss
-is a realizer-contract failure, not evidence that the analyzer cannot observe
-the transition and not evidence for or against the learner-state sensor.
+The repeated-draw experiment has answered the protocol-governance question.
+The earlier Codex/Ravensmark miss was not merely one unlucky draw: the same cell
+failed substantively three times, while the analyzer credited one of those
+three as the right family. The combined free-form realizer/analyzer channel is
+therefore not sufficiently identified for S1 under v2.2.
 
-The next permitted work is therefore a **zero-call protocol-governance review**,
-not another prompt patch, paid preflight, or 339-call S1. Preserve the fourth
-failed learner turn, sidecar, analyzer record, and seal. Decide prospectively
-whether exact 24/24 single-draw realization is truly the desired technical gate
-or whether a new versioned protocol should measure fixed repeated-draw
-realization reliability while keeping every failed draw and forbidding semantic
-rerolls. That decision must be made from the construct and deployment tolerance,
-not selected to convert 23/24 into a pass. The existing v2.1 decision remains
-immutable: no retrospective relabel, threshold change, row reuse, or full-S1
-authorization. Until a separately preregistered protocol is justified and
-passes from a clean pushed SHA, the scientifically correct action is to stop
-spending and leave S1, S2, policy optimization, Phase 6B, shadow pilot,
-efficacy, and human-learning claims blocked.
+The next permitted work is **zero-call instrument redesign**, not another
+prompt patch, repeat of v2.2, or 339-call S1. Preserve all 72 draws and the
+sealed stop. Separate the harness transition from free-form prose realization:
+either use a deterministic, fact-preserving renderer for the claim-bearing
+sensor benchmark and keep LLM naturalness as a descriptive side lane, or add a
+programmatic semantic-fidelity check against the exact public event before the
+family analyzer can count a match. Any successor must be a new versioned
+protocol, justified independently of these outcomes, and must freeze its gates
+before new calls. The existing v2.1 and v2.2 results remain immutable. Until a
+successor instrument passes, S1, S2, policy optimization, Phase 6B, shadow
+pilot, efficacy, and human-learning claims remain blocked.
 
 Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
 `1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
@@ -1286,6 +1308,24 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
     `none`; the run sealed stopped and S1 remains unauthorized. This narrows the
     problem from construct ambiguity to realizer fidelity. Further paid tuning
     is paused pending a zero-call, prospective gate-design review.
+28. Froze Option 2 prospectively at `4133d7ff`: three fresh draws per existing
+    base cell, 72 cases, 144 serial dispatches, aggregate and stratum gates,
+    every draw retained, and no reinterpretation or reuse of v2.1 rows. The
+    implementation passed 125 adaptive-state tests, 5,289 full-suite tests with
+    one expected skip, tracked-source lint, workplan validation, a clean-lineage
+    dry run, and a hermetic proof that only a sealed paid pass can authorize S1.
+29. Completed and sealed
+    `adaptive-state-v2-observability-reliability-4133d7ff-v22`. Aggregate
+    recovery met 70/72, but both misses repeated in the same
+    Ravensmark/derive/Codex cell, so its 1/3 base-cell result and the associated
+    world/family/model floors failed. The run correctly stopped and S1 remained
+    unauthorized.
+30. Audited the three repeated Codex outputs. Draws 1 and 2 merely repeated the
+    holder premise and were correctly scored `none`; draw 3 also failed to
+    state the intended pressed-seal action but was nominally scored `derive`.
+    This exposes both systematic realizer noncompliance and an analyzer false
+    positive. The next gate is zero-call instrument redesign, not another paid
+    rerun.
 
 ## 17. Things deliberately not scheduled
 
@@ -1357,9 +1397,13 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   unary scope event with a distinct two-premise action relation, and a fresh S0
   passed. The fourth fresh preflight remained 23/24, but the failure moved:
   Claude correctly realized the new conclusion while Codex merely restated a
-  released premise and the analyzer correctly returned `none`. S2 was not run.
-  The next gate is a zero-call prospective protocol-governance review, not
-  another prompt tweak or paid run, so no new sensor verdict exists.
+  released premise and the analyzer correctly returned `none`. A prospectively
+  frozen three-draw v2.2 gate then completed 72 cases and 144 calls at 70/72,
+  but both misses repeated in that same Ravensmark/derive/Codex cell; its third
+  nominal match still omitted the intended action relation and exposed an
+  analyzer false positive. S2 was not run. The next gate is zero-call
+  instrument redesign, not another prompt tweak or paid run, so no new sensor
+  verdict exists.
 - **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
   through a default-off tutor-stub adapter with separate move, support, task,
   difficulty, and register axes; complete candidate/propensity provenance;
