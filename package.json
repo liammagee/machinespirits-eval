@@ -125,6 +125,7 @@
     "derivation:smoke": "node scripts/run-derivation-smoke.js",
     "derivation:test": "node --test tests/dramaticDerivation.test.js tests/dramaticDerivationPhase1.test.js tests/dramaticDerivationCritic.test.js tests/dramaticDerivationCorruption.test.js tests/dramaticDerivationReplay.test.js",
     "derivation:lint": "node scripts/lint-derivation-world.js",
+    "derivation:quality": "node scripts/audit-derivation-world-quality.js",
     "derivation:lean-cert": "node scripts/check-proof-dag-lean.js",
     "derivation:lean-cert:check": "node scripts/check-proof-dag-lean.js --require-lake",
     "derivation:screen": "node scripts/screen-derivation-world.js",

@@ -165,6 +165,7 @@ premises:
       Liane, who kept them burning.
   # --- presence (path B: the ledger — scheduled late as corroboration) ---
   - id: p_ledger
+    evidence_role: corroboration
     fact: [signedLedger, liane, floodWinter]
     surface: >-
       The copy-room ledger's winter pages carry the same initials line after

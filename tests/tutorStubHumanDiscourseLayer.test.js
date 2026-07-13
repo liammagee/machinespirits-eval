@@ -68,6 +68,10 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscoursePreviewFrame.stepCompression.enabled, true);
   assert.equal(config.humanDiscoursePreviewFrame.generousInference.applied, false);
   assert.equal(config.humanDiscoursePreviewFrame.questionSupport.answerability, 'publicly_answerable');
+  assert.equal(config.modelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.resolved.model, 'gpt-5.6-sol');
+  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-5.6-terra');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-terra');
   assert.equal(config.cliEffort, 'medium');
   assert.deepEqual(config.dialogueClosure, {
     schema: 'machinespirits.tutor-stub.dialogue-closure.v1',
@@ -83,12 +87,43 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.match(config.systemPrompt, /Ask for an explicit missing bridge only when/u);
   assert.match(config.systemPrompt, /Treat learner questions as legitimate moves/u);
   assert.match(config.systemPrompt, /invite one concrete in-scene question/u);
+  assert.match(config.systemPrompt, /Make that permission visible/u);
+  assert.match(config.systemPrompt, /question may be answered with a clarifying question/u);
   assert.match(config.systemPrompt, /never call either speaker "the tutor" or "the learner"/u);
   assert.match(config.systemPrompt, /learner may connect several already-public premises/u);
   assert.match(config.systemPrompt, /credit the whole chain/u);
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.enabled, true);
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.schema, 'machinespirits.tutor-stub.learner-advance.v1');
   assert.ok(config.tutorLearnerDag.multiPremiseAdvance.downstream.includes('register'));
+});
+
+test('--all-models overrides tutor, classifier, learner-DAG analysis, and mixed learner together', () => {
+  const config = tutorStubDryRun([
+    '--mixed-learner',
+    '--all-models',
+    'codex.gpt-5.6-luna',
+    '--model',
+    'codex.gpt-5.6-terra',
+    '--classifier-model',
+    'codex.gpt-5.6-terra',
+    '--learner-record-model',
+    'codex.gpt-5.6-terra',
+    '--auto-learner-model',
+    'codex.gpt-5.6-terra',
+  ]);
+
+  assert.equal(config.modelRef, 'codex.gpt-5.6-luna');
+  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-5.6-luna');
+  assert.equal(config.classifier.modelRef, 'codex.gpt-5.6-luna');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-luna');
+  assert.equal(config.mixedLearner.modelRef, 'codex.gpt-5.6-luna');
+  assert.deepEqual(config.allModelsOverride, {
+    schema: 'machinespirits.tutor-stub.all-models-override.v1',
+    modelRef: 'codex.gpt-5.6-luna',
+    source: 'cli',
+    precedence: 'overrides_all_role_specific_model_flags_and_remembered_tutor_model',
+    roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
+  });
 });
 
 test('tutor-stub DAG mode defaults to strict audit mode', () => {
@@ -134,12 +169,23 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   assert.equal(config.mixedLearner.inspect, '/suggest');
   // Model selection was removed from first-run setup (2026-07-12); it stays
   // changeable at runtime via /settings model.
-  assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile', 'dag_fact_dropout']);
+  assert.deepEqual(config.mixedLearner.startupPrompts.order, [
+    'learner_profile',
+    'dag_fact_dropout',
+    'clue_release_speed',
+  ]);
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.enabled, false);
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.firstRunSelection, false);
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.liveCommand, '/settings model <provider.alias>');
   assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.85);
   assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.recommended, 0);
+  assert.deepEqual(config.mixedLearner.startupPrompts.clueReleaseSpeed, {
+    enabled: true,
+    default: 1,
+    recommended: 1,
+    range: [0.5, 2],
+    adaptive: true,
+  });
   assert.deepEqual(config.scenarioPicker, {
     enabled: true,
     defaultScenarioId: 'world_005_marrick',
@@ -217,6 +263,7 @@ process.stdin.on('end', () => {
       let acceptedDefault = false;
       let acceptedTemperature = false;
       let acceptedDropout = false;
+      let acceptedReleaseSpeed = false;
       let requestedExit = false;
       const timer = setTimeout(() => {
         child.kill('SIGKILL');
@@ -230,14 +277,17 @@ process.stdin.on('end', () => {
         if (!browsedStressProfiles && plain.includes('learner profile [diligent] >')) {
           browsedStressProfiles = true;
           child.stdin.write('stress\n');
-        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (6)')) {
+        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (8)')) {
           acceptedDefault = true;
           child.stdin.write('\n');
-        } else if (!acceptedTemperature && plain.includes('stance temperature [0.85; recommended] >')) {
+        } else if (!acceptedTemperature && plain.includes('teaching-style range [0.85; recommended] >')) {
           acceptedTemperature = true;
           child.stdin.write('\n');
-        } else if (!acceptedDropout && plain.includes('DAG fact dropout [0; recommended] >')) {
+        } else if (!acceptedDropout && plain.includes('evidence-memory dropout [0; recommended] >')) {
           acceptedDropout = true;
+          child.stdin.write('\n');
+        } else if (!acceptedReleaseSpeed && plain.includes('clue release speed [1; recommended] >')) {
+          acceptedReleaseSpeed = true;
           child.stdin.write('\n');
         } else if (!requestedExit && plain.includes('tutor >')) {
           requestedExit = true;
@@ -260,23 +310,25 @@ process.stdin.on('end', () => {
 
     const plain = plainTerminalText(stdout);
     const pickerIndex = plain.indexOf('Pick a learner profile');
-    const temperatureIndex = plain.indexOf('stance temperature [0.85; recommended] >');
-    const dropoutIndex = plain.indexOf('DAG fact dropout [0; recommended] >');
-    const readyIndex = plain.indexOf('mixed learner answer + clue ready');
+    const temperatureIndex = plain.indexOf('teaching-style range [0.85; recommended] >');
+    const dropoutIndex = plain.indexOf('evidence-memory dropout [0; recommended] >');
+    const releaseSpeedIndex = plain.indexOf('clue release speed [1; recommended] >');
+    const readyIndex = plain.indexOf('learner suggestion ready >');
     const profileIndex = plain.indexOf('profile > diligent — Diligent control');
     const directorIndex = plain.indexOf('director context >');
     const tutorIndex = plain.indexOf('tutor >');
     assert.ok(pickerIndex >= 0, plain);
     assert.match(plain, /learner profile \[diligent\] >/u);
-    assert.match(plain, /learner profiles > specialist failure modes \(6\)/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(8\)/u);
     assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
     assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
     // Model selection was removed from first-run setup (2026-07-12): profile
-    // flows straight to the temperature/dropout tuning prompts.
+    // flows straight to the temperature/dropout/clue-pacing tuning prompts.
     assert.doesNotMatch(plain, /tutor model \[/u);
     assert.ok(temperatureIndex > pickerIndex, plain);
     assert.ok(dropoutIndex > temperatureIndex, plain);
-    assert.ok(readyIndex > dropoutIndex, plain);
+    assert.ok(releaseSpeedIndex > dropoutIndex, plain);
+    assert.ok(readyIndex > releaseSpeedIndex, plain);
     assert.ok(profileIndex > readyIndex, plain);
     assert.ok(directorIndex > profileIndex, plain);
     assert.ok(tutorIndex > directorIndex, plain);
@@ -285,9 +337,13 @@ process.stdin.on('end', () => {
     assert.match(directorPrelude, /stage:/u);
     assert.match(directorPrelude, /tutor:/u);
     assert.match(directorPrelude, /learner:/u);
-    assert.match(directorPrelude, /register:/u);
-    assert.doesNotMatch(directorPrelude, /mixed learner answer \+ clue ready|profile > diligent/u);
-    assert.match(plain, /drafted as: Requests a specific evidentiary basis before making a conclusion\./u);
+    assert.match(directorPrelude, /voice:/u);
+    assert.doesNotMatch(directorPrelude, /learner suggestion ready >|profile > diligent/u);
+    const openingText = plain.slice(tutorIndex);
+    assert.match(openingText, /scene gives us an accusation, but no tested clue yet/u);
+    assert.match(openingText, /ask about any term in the question/u);
+    assert.doesNotMatch(openingText, /one mark the evidence can actually bear/u);
+    assert.match(plain, /this draft: Requests a specific evidentiary basis before making a conclusion\./u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -320,7 +376,7 @@ test(
         cols: 100,
         rows: 16,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color' },
+        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
       },
     );
 
@@ -338,7 +394,7 @@ test(
         } else if (!profileNavigated && plain.includes('Pick a learner profile') && plain.includes('diligent')) {
           profileNavigated = true;
           terminal.write(`${'\x1b[B'.repeat(9)}\r`);
-        } else if (!requestedExit && plain.includes('DAG fact dropout [0; recommended] >')) {
+        } else if (!requestedExit && plain.includes('evidence-memory dropout [0; recommended] >')) {
           requestedExit = true;
           terminal.write('quit\r');
         }
@@ -356,17 +412,17 @@ test(
     assert.match(plain, /question > Whose hand struck the false shillings/u);
     assert.match(plain, /question > Whose hand felled the Hethel bridge span/u);
     assert.match(plain, /scenario > world_006_hethel — The Fallen Span/u);
-    assert.match(plain, /world: world_006_hethel — The Fallen Span/u);
+    assert.match(plain, /scenario: world_006_hethel — The Fallen Span/u);
     assert.match(plain, /highlighted learner described below/u);
-    assert.match(plain, /does > Make occasional partial claims, then repair/u);
-    assert.match(plain, /does > Name competing interpretations and refuse closure/u);
-    assert.match(plain, /edge > versus skeptical: skeptical asks for warrant/u);
+    assert.match(plain, /pattern > Make occasional partial claims, then repair/u);
+    assert.match(plain, /pattern > Name competing interpretations and refuse closure/u);
+    assert.match(plain, /differs > from skeptical: skeptical asks for warrant/u);
     assert.match(plain, /↑ 2 more/u);
     assert.match(plain, /learner profile > contradiction_keeper — Contradiction keeper/u);
     // Model selection was removed from first-run setup (2026-07-12).
     assert.doesNotMatch(plain, /Pick a tutor model/u);
-    assert.match(plain, /DAG fact dropout \[0; recommended\] >/u);
-    assert.doesNotMatch(plain, /mixed learner answer \+ clue ready/u);
+    assert.match(plain, /evidence-memory dropout \[0; recommended\] >/u);
+    assert.doesNotMatch(plain, /learner suggestion ready >/u);
   },
 );
 
@@ -375,6 +431,7 @@ test(
   { skip: process.platform === 'win32', timeout: 10_000 },
   async () => {
     let terminalOutput = '';
+    let acceptedScenario = false;
     let opened = false;
     let selectedTemperature = false;
     let adjustedTemperature = false;
@@ -384,7 +441,6 @@ test(
       process.execPath,
       [
         'scripts/tutor-stub.js',
-        '--no-opening',
         '--no-closeout-report',
         '--no-interim-animation',
         '--no-stream',
@@ -397,7 +453,7 @@ test(
         cols: 100,
         rows: 20,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color' },
+        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
       },
     );
 
@@ -409,16 +465,19 @@ test(
       terminal.onData((chunk) => {
         terminalOutput += chunk;
         const plain = plainTerminalText(terminalOutput);
-        if (!opened && plain.includes('learner >')) {
+        if (!acceptedScenario && plain.includes('Pick a scenario')) {
+          acceptedScenario = true;
+          terminal.write('\r');
+        } else if (!opened && plain.includes('learner >')) {
           opened = true;
           terminal.write('/settings\r');
         } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
           selectedTemperature = true;
           terminal.write('\x1b[B\r');
-        } else if (!adjustedTemperature && plain.includes('Engagement-stance temperature')) {
+        } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
-        } else if (!closedPanel && plain.includes('stance temp 0.85 → 0.9')) {
+        } else if (!closedPanel && plain.includes('teaching-style range 0.85 → 0.9')) {
           closedPanel = true;
           terminal.write('\x1b[F\r');
         } else if (!requestedExit && plain.includes('settings closed')) {
@@ -435,12 +494,15 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /Settings · choose what to change/u);
-    assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-terra/u);
-    assert.match(plain, /State overlay\s+off/u);
-    assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc finish/u);
+    assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /Turn-change override\s+off/u);
+    assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc closes settings/u);
+    assert.match(plain, /Done — return to dialogue\s+press Enter/u);
     assert.match(plain, /range 0\.05–3 · ←\/→ 0\.05 · PgUp\/PgDn 0\.25 · R recommended 0\.85/u);
-    assert.match(plain, /stance temp 0\.85 → 0\.9/u);
+    assert.match(plain, /teaching-style range 0\.85 → 0\.9/u);
     assert.match(plain, /settings closed · type \/settings to reopen/u);
+    assert.match(plain, /tutor ↻ > Keep the case question in view/u);
+    assert.ok(plain.indexOf('tutor ↻ >') > plain.indexOf('settings closed'), plain);
   },
 );
 
@@ -470,6 +532,7 @@ test('mixed startup prompts preserve launch overrides while showing recommendati
     'learner_profile',
     'engagement_stance_temperature',
     'dag_fact_dropout',
+    'clue_release_speed',
   ]);
   assert.deepEqual(config.mixedLearner.startupPrompts.engagementStanceTemperature, {
     enabled: true,
@@ -483,6 +546,13 @@ test('mixed startup prompts preserve launch overrides while showing recommendati
     recommended: 0,
     range: [0, 1],
     seed: 7,
+  });
+  assert.deepEqual(config.mixedLearner.startupPrompts.clueReleaseSpeed, {
+    enabled: true,
+    default: 1,
+    recommended: 1,
+    range: [0.5, 2],
+    adaptive: true,
   });
 });
 
@@ -554,10 +624,10 @@ test('tutor-stub changes register temperature through live settings', () => {
     );
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /stance temp: 0\.85/u);
-    assert.match(result.stdout, /stance temp 0\.85 → 1/u);
-    assert.match(result.stdout, /stance temp: 1/u);
-    assert.match(result.stdout, /lower sharpens the dominant engagement stance/u);
+    assert.match(result.stdout, /teaching-style range: 0\.85/u);
+    assert.match(result.stdout, /teaching-style range 0\.85 → 1/u);
+    assert.match(result.stdout, /teaching-style range: 1/u);
+    assert.match(result.stdout, /lower concentrates the strongest style/u);
     const traces = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))
@@ -596,9 +666,9 @@ test('tutor-stub changes DAG-fact dropout through live settings', () => {
     );
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /DAG fact dropout: 0 \(off\)/u);
-    assert.match(result.stdout, /DAG fact dropout 0 → 0\.15/u);
-    assert.match(result.stdout, /DAG fact dropout: 0\.15 \(on\)/u);
+    assert.match(result.stdout, /evidence-memory dropout: 0 \(off\)/u);
+    assert.match(result.stdout, /evidence-memory dropout 0 → 0\.15/u);
+    assert.match(result.stdout, /evidence-memory dropout: 0\.15 \(on\)/u);
     const traces = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))
@@ -606,6 +676,45 @@ test('tutor-stub changes DAG-fact dropout through live settings', () => {
       .join('\n');
     assert.match(traces, /"type":"dag_fact_dropout_changed"/u);
     assert.match(traces, /"previous":0,"rate":0\.15,"seed":1/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('tutor-stub changes clue release speed through live settings', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-release-speed-'));
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/settings\n/settings release-speed 1.5\n/settings pace\n/quit\n',
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /clue release speed: 1x base/u);
+    assert.match(result.stdout, /clue release speed 1x → 1\.5x/u);
+    assert.match(result.stdout, /clue release speed: 1\.5x base/u);
+    const traces = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
+      .join('\n');
+    assert.match(traces, /"type":"release_speed_changed"/u);
+    assert.match(traces, /"previous":1,"speed":1\.5/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -636,9 +745,9 @@ test('tutor-stub lists and changes the speaking tutor model through live setting
 
     assert.equal(result.status, 0);
     const plain = plainTerminalText(result.stdout);
-    assert.match(plain, /tutor models > current codex\.gpt-5\.6-terra/u);
+    assert.match(plain, /tutor models > current codex\.gpt-5\.6-sol/u);
     assert.match(plain, /codex\.gpt-5\.6-luna/u);
-    assert.match(plain, /tutor model codex\.gpt-5\.6-terra → codex\.gpt-5\.6-luna/u);
+    assert.match(plain, /tutor model codex\.gpt-5\.6-sol → codex\.gpt-5\.6-luna/u);
     assert.match(plain, /tutor model: codex\.gpt-5\.6-luna → codex\/gpt-5\.6-luna/u);
     const traces = fs
       .readdirSync(tmp)
@@ -646,7 +755,7 @@ test('tutor-stub lists and changes the speaking tutor model through live setting
       .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
       .join('\n');
     assert.match(traces, /"type":"tutor_model_changed"/u);
-    assert.match(traces, /"previousRef":"codex\.gpt-5\.6-terra","modelRef":"codex\.gpt-5\.6-luna"/u);
+    assert.match(traces, /"previousRef":"codex\.gpt-5\.6-sol","modelRef":"codex\.gpt-5\.6-luna"/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -672,6 +781,17 @@ test('tutor-stub rejects DAG-fact dropout outside the closed unit interval', () 
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /--dag-fact-dropout must be between 0 and 1/u);
+});
+
+test('tutor-stub rejects clue release speeds outside the documented range', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--release-speed', '2.1'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /--release-speed must be between 0\.5 and 2/u);
 });
 
 test('tutor-stub rejects unknown DAG discourse modes', () => {
@@ -716,6 +836,31 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/suggest.*profile expression/u);
   assert.match(result.stdout, /\/use.*profile expression/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
+});
+
+test('detour slash commands reprise the latest tutor utterance before returning to the scene', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/help\n/status\n/id\n/quit\n',
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal((result.stdout.match(/tutor ↻ >/gu) || []).length, 3);
+  assert.match(result.stdout, /tutor ↻ >.*Keep the case question in view/gu);
 });
 
 test('tutor-stub /id exposes the local trace path for Codex debugging', () => {
@@ -799,7 +944,7 @@ test('resumed closing dialogue accepts one acknowledgement and terminates', () =
     assert.match(result.stdout, /saved dialogue had already stated its verdict/u);
     assert.match(result.stdout, /verdict stands on the public evidence/u);
     assert.match(result.stdout, /inquiry is complete/u);
-    assert.match(result.stdout, /dialogue_grounded_closure/u);
+    assert.match(result.stdout, /the conversation reached its natural ending/u);
     const traces = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))
@@ -857,6 +1002,17 @@ test('mixed tutor-stub can list and switch learner profiles interactively', () =
   assert.equal((result.stdout.match(/switched to diligent:/gu) || []).length, 2);
 });
 
+test('tutor-stub lists automated learner profiles without starting a dialogue', () => {
+  const output = execFileSync(process.execPath, ['scripts/tutor-stub.js', '--list-learner-profiles'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.match(output, /fast_learner/u);
+  assert.match(output, /slow_learner/u);
+  assert.match(output, /Fast learner/u);
+  assert.match(output, /Slow learner/u);
+});
+
 test('mixed tutor-stub separates stress profiles from the ordinary interactive list', () => {
   const result = spawnSync(
     process.execPath,
@@ -879,16 +1035,18 @@ test('mixed tutor-stub separates stress profiles from the ordinary interactive l
   );
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /learner profiles > specialist failure modes \(6\)/u);
+  assert.match(result.stdout, /learner profiles > specialist failure modes \(8\)/u);
   assert.match(result.stdout, /premature_closure:/u);
-  assert.match(result.stdout, /learner profiles > complete v3 registry \(12\)/u);
+  assert.match(result.stdout, /learner profiles > complete v3 registry \(14\)/u);
   assert.match(result.stdout, /answer_seeking:/u);
   assert.match(result.stdout, /low_trust_skeptic:/u);
+  assert.match(result.stdout, /fast_learner:/u);
+  assert.match(result.stdout, /slow_learner:/u);
   assert.match(result.stdout, /unknown learner profile list: sentinel/u);
   assert.match(result.stdout, /use \/profile list, \/profile list stress, or \/profile list all/u);
 });
 
-test('auto-eval dry run forwards DAG discourse mode and register temperature to tutor-stub children', () => {
+test('auto-eval dry run forwards dialogue, style, memory, and clue pace settings to tutor-stub children', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-human-scaffold-auto-'));
   try {
     execFileSync(
@@ -911,6 +1069,8 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
         '0.15',
         '--dag-fact-dropout-seed',
         '7',
+        '--release-speed',
+        '1.5',
         '--dry-run',
         '--no-html-report',
         '--no-ledger',
@@ -931,6 +1091,7 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
     assert.equal(summary.config.temperatureScope, 'engagement_stance_only');
     assert.equal(summary.config.dagFactDropout, 0.15);
     assert.equal(summary.config.dagFactDropoutSeed, 7);
+    assert.equal(summary.config.releaseSpeed, 1.5);
     assert.equal(summary.config.dagFactDropoutSemantics.visibility, 'conduct');
     assert.deepEqual(summary.config.responseConfiguration.independentAxes, [
       'engagement_stance',
@@ -952,6 +1113,9 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
     const dropoutSeedIndex = command.indexOf('--dag-fact-dropout-seed');
     assert.ok(dropoutSeedIndex > 0);
     assert.equal(command[dropoutSeedIndex + 1], '7');
+    const releaseSpeedIndex = command.indexOf('--release-speed');
+    assert.ok(releaseSpeedIndex > 0);
+    assert.equal(command[releaseSpeedIndex + 1], '1.5');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

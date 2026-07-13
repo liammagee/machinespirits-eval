@@ -690,6 +690,117 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'skeptical' },
   }),
+
+  fast_learner: contract({
+    id: 'fast_learner',
+    family: 'stress',
+    shortName: 'Fast learner',
+    failureOperator: 'outpaces the authored clue schedule without skipping public warrants',
+    contrastWith: {
+      proof_skipper: 'grounds the current inference before asking for the next clue',
+      answer_seeking: 'asks for more evidence, not the answer or a line to copy',
+      diligent: 'makes warranted connections more quickly and explicitly steers the release pace',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.35,
+      description:
+        'State the warranted inference from the current public clue concisely, then ask to move directly to the next clue.',
+    },
+    triggers: [
+      {
+        when: 'the current public clue licenses a local inference',
+        responseBias: 'state that inference and explicitly request the next clue',
+      },
+      {
+        when: 'several public premises can be connected safely',
+        responseBias: 'combine them in one concise turn, then ask to keep moving',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not guess unstaged evidence or the concealed answer.',
+      'Do not omit a warrant merely to appear fast.',
+      'Do not wait passively for the tutor to set the pace.',
+    ],
+    signature: {
+      requestType: { stepwise_support_request: [0.2, 0.5], conceptual_clarity_request: [0.1, 0.35] },
+      discourseMove: { inference: [0.3, 0.6], evidence_adoption: [0.2, 0.5], question: [0.1, 0.35] },
+      evidenceUse: { links_evidence_to_rule: [0.5, 0.8], cites_public_evidence: [0.15, 0.4] },
+      epistemicStance: { grounded: [0.45, 0.75], reflective: [0.1, 0.35] },
+      agency: { steering: [0.35, 0.65], self_correcting: [0.1, 0.35], attempting: [0.15, 0.45] },
+      scoreBands: { conceptualScore: [4, 5], epistemicReadinessScore: [4, 5] },
+    },
+    dag: {
+      coverageVelocity: 'fast',
+      missingPremiseReduction: 'high',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['release_or_pacing_gap'],
+    },
+    repair: {
+      firstCorrection: 'briefly repairs the local warrant and resumes the faster pace',
+      repeatedCorrection: 'slows only enough to make the disputed link public',
+      maxFullRepairsPer8Turns: 4,
+    },
+    publicRules: [
+      'Make pace steering public and natural, for example: “That follows; give me the next clue” or “I have that—move it along.”',
+    ],
+    gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'diligent' },
+  }),
+
+  slow_learner: contract({
+    id: 'slow_learner',
+    family: 'stress',
+    shortName: 'Slow learner',
+    failureOperator: 'needs one public clue at a time without losing or distorting it',
+    contrastWith: {
+      memory_limited: 'retains settled evidence but needs more time before a new clue arrives',
+      low_agency: 'actively regulates pace and still authors small reasoning steps',
+      diligent: 'integrates accurately but asks to consolidate each clue before proceeding',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.4,
+      description: 'Work carefully with one public clue, ask to slow down, and resist receiving another clue too soon.',
+    },
+    triggers: [
+      {
+        when: 'the tutor introduces a fresh clue before the current one is settled',
+        responseBias: 'ask to pause and restate the single inference currently in view',
+      },
+      {
+        when: 'the current clue has been integrated',
+        responseBias: 'state the small conclusion, then cautiously invite one next clue',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not forget or contradict already settled evidence.',
+      'Do not become passive or ask the tutor to answer for you.',
+      'Do not combine several fresh premises in one turn.',
+    ],
+    signature: {
+      requestType: { stepwise_support_request: [0.4, 0.7], conceptual_clarity_request: [0.15, 0.45] },
+      discourseMove: { repair_request: [0.2, 0.5], evidence_adoption: [0.15, 0.4], inference: [0.1, 0.35] },
+      evidenceUse: { links_evidence_to_rule: [0.3, 0.6], cites_public_evidence: [0.15, 0.4] },
+      epistemicStance: { reflective: [0.3, 0.6], receptive: [0.15, 0.4], grounded: [0.15, 0.4] },
+      agency: { steering: [0.25, 0.55], attempting: [0.25, 0.55] },
+      scoreBands: { conceptualScore: [3, 4.5], epistemicReadinessScore: [3, 4.5] },
+    },
+    dag: {
+      coverageVelocity: 'slow_safe',
+      missingPremiseReduction: 'medium',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['learner_integration_gap', 'release_or_pacing_gap'],
+    },
+    repair: {
+      firstCorrection: 'integrates one narrowly stated warrant',
+      repeatedCorrection: 'asks to keep only one clue active at a time',
+      maxFullRepairsPer8Turns: 3,
+    },
+    publicRules: [
+      'Make pace steering public and natural, for example: “One clue at a time, please” or “Slow down; let me settle this one.”',
+    ],
+    gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'memory_limited' },
+  }),
 });
 
 const CORE_LEARNER_PROFILE_IDS = Object.freeze([
@@ -708,6 +819,8 @@ const STRESS_LEARNER_PROFILE_IDS = Object.freeze([
   'contradiction_keeper',
   'affective_resistant',
   'low_trust_skeptic',
+  'fast_learner',
+  'slow_learner',
 ]);
 
 export const AUTO_LEARNER_PROFILE_SUITES = Object.freeze({

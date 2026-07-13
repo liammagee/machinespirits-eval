@@ -8,6 +8,7 @@ import {
   callAIWithCliBridge,
   cliAwareProviderConfig,
   codexFinalMessageFromEvents,
+  codexUsageFromEvents,
   createCodexJsonlEventParser,
   isCliProvider,
   isProviderConfigured,
@@ -157,6 +158,30 @@ describe('cliProviderBridge', () => {
     assert.equal(codexFinalMessageFromEvents([{ type: 'turn.completed' }]), '');
   });
 
+  it('extracts token accounting from the Codex turn-completed event', () => {
+    const usage = codexUsageFromEvents([
+      { type: 'turn.started' },
+      {
+        type: 'turn.completed',
+        usage: {
+          input_tokens: 23394,
+          cached_input_tokens: 5888,
+          output_tokens: 5,
+          reasoning_output_tokens: 0,
+        },
+      },
+    ]);
+
+    assert.deepEqual(usage, {
+      inputTokens: 23394,
+      outputTokens: 5,
+      totalTokens: 23399,
+      cachedInputTokens: 5888,
+      reasoningOutputTokens: 0,
+    });
+    assert.equal(codexUsageFromEvents([{ type: 'turn.completed' }]), null);
+  });
+
   it('rejects a pre-aborted Codex call without launching it', async () => {
     const controller = new AbortController();
     controller.abort();
@@ -187,13 +212,12 @@ describe('cliProviderBridge', () => {
       });
     };
 
-    const result = await callAIWithCliBridge(
-      { provider: 'codex', model: 'gpt-test' },
-      'system',
-      'user',
-      'learner',
-      { outputSchema, effort: 'low', timeoutMs: 1000, spawnImpl },
-    );
+    const result = await callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+      outputSchema,
+      effort: 'low',
+      timeoutMs: 1000,
+      spawnImpl,
+    });
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].command, 'codex');
@@ -205,6 +229,31 @@ describe('cliProviderBridge', () => {
     assert.deepEqual(result.structuredEventAudit.prohibited_events, []);
     assert.equal(result.modelAttestationBasis, 'explicit_cli_model_argument_accepted_bridge_echo');
     assert.equal(result.modelIndependentlyAttested, false);
+    assert.equal(result.tokenUsageAvailable, false);
+  });
+
+  it('returns real Codex CLI token usage when the JSON stream reports it', async () => {
+    const spawnImpl = (_command, args) => {
+      const outputPath = args[args.indexOf('-o') + 1];
+      return fakeChild({
+        stdoutText:
+          '{"type":"item.completed","item":{"type":"agent_message","text":"ready"}}\n' +
+          '{"type":"turn.completed","usage":{"input_tokens":120,"cached_input_tokens":40,"output_tokens":9,"reasoning_output_tokens":3}}\n',
+        onEnd: () => fs.writeFileSync(outputPath, 'ready\n'),
+      });
+    };
+
+    const result = await callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+      effort: 'low',
+      timeoutMs: 1000,
+      spawnImpl,
+    });
+
+    assert.equal(result.inputTokens, 120);
+    assert.equal(result.outputTokens, 9);
+    assert.equal(result.cachedInputTokens, 40);
+    assert.equal(result.reasoningOutputTokens, 3);
+    assert.equal(result.tokenUsageAvailable, true);
   });
 
   it('marks unknown or tool-capable Codex JSONL events as prohibited for structured calls', async () => {
@@ -212,18 +261,16 @@ describe('cliProviderBridge', () => {
     const spawnImpl = (_command, args) => {
       const outputPath = args[args.indexOf('-o') + 1];
       return fakeChild({
-        stdoutText:
-          '{"type":"thread.started"}\n{"type":"item.completed","item":{"type":"command_execution"}}\n',
+        stdoutText: '{"type":"thread.started"}\n{"type":"item.completed","item":{"type":"command_execution"}}\n',
         onEnd: () => fs.writeFileSync(outputPath, '{}\n'),
       });
     };
-    const result = await callAIWithCliBridge(
-      { provider: 'codex', model: 'gpt-test' },
-      'system',
-      'user',
-      'learner',
-      { outputSchema, effort: 'low', timeoutMs: 1000, spawnImpl },
-    );
+    const result = await callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+      outputSchema,
+      effort: 'low',
+      timeoutMs: 1000,
+      spawnImpl,
+    });
     assert.equal(result.prohibitedToolEventCount, 1);
     assert.deepEqual(result.structuredEventAudit.prohibited_events[0], {
       index: 1,
@@ -258,5 +305,6 @@ describe('cliProviderBridge', () => {
     assert.deepEqual(JSON.parse(calls[0].args[calls[0].args.indexOf('--json-schema') + 1]), outputSchema);
     assert.equal(calls[0].options.env.ANTHROPIC_API_KEY, undefined);
     assert.equal(result.structuredOutput, true);
+    assert.equal(result.tokenUsageAvailable, false);
   });
 });

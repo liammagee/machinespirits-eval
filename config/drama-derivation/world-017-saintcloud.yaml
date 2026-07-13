@@ -25,6 +25,10 @@
 id: world_017_saintcloud
 title: The Saint-Cloud Regulator
 
+eligibility:
+  status: screen_rejected
+  reason: Paid S-underivability screen rejected the world because the public rules telegraph the worn pallet at rank 1.
+
 discipline: horology
 question: "What is making the Saint-Cloud tower clock run slow?"
 question_pattern: [cause, slowing, "?x"]
@@ -72,7 +76,8 @@ premises:
 background:
   - [housedIn, clock, towerOfSaintCloud]
 
-incompatible: []
+incompatible:
+  - [[cause, slowing, pallet], [cause, slowing, mainspring]]
 
 # The authored proof DAG (plot skeleton): D(t) counts missing premises here.
 proof_paths:

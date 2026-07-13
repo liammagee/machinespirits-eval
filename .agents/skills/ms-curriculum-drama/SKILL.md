@@ -9,6 +9,7 @@ You drive the **curriculum → world → drama** pipeline: a CASE-inspired curri
 
 **Read the source of truth first — do not invent file shapes, flags, or module ids:**
 - `curriculum/CURRICULUM-FORMAT.md` — the curriculum object schema + the drama/world compilation contracts.
+- `curriculum/SCENARIO-DAG-GUIDE.md` — the handoff from curriculum design to a minimal, learner-legible scenario proof DAG.
 - `notes/poetics/2026-06-19-curriculum-world-adaptation-guide.html` — the canonical end-to-end walkthrough (artifact map, operational semantics, light-run cost ladder, acceptance checks).
 - `services/curriculum/curriculumCompiler.js` — the compiler the four `curriculum:*` scripts call (exports `compileCurriculumTo{WorldAdaptationSpec,RhetoricalDramaticPlans,DramaSpec}`, validators, hashers).
 - `notes/poetics/drama-machine/` — the slot/move vocabulary the compiled `turn_plan`s draw from (shared with /ms-drama-machine).
@@ -60,6 +61,11 @@ prerequisites and modules without tasks, verifiers, or misconception evidence.
 `--rhetorical`, and `--force` for validation-only, canonical-only, additional
 rhetorical artifacts, and deliberate overwrite respectively. Its
 `*.builder-report.md` is an authoring/readiness report, not an outcome evaluator.
+Its scenario-authoring handoff deliberately separates three graphs: the
+curriculum prerequisite DAG (what must be learned first), the world adaptation
+contract (which teaching actions are legal), and the scenario proof DAG (which
+staged facts warrant the answer). Do not copy prerequisite edges into a proof
+path unless they are actually needed to answer that scenario's public question.
 
 Run only the stretch the request needs. Each step's input defaults to the previous artifact; pass `--check` to validate without writing.
 
@@ -136,6 +142,14 @@ npm run drama:render -- \
 
 From the guide — a curriculum-world-drama slice is ready only when: canonical parse validates (tasks+verifiers+misconceptions present); every world spec has a deterministic `spec_hash` that fails validation if edited (`compile:worlds -- --check`); the adaptive selector respects allowed/preferred/disallowed families; the gate rejects a disallowed world action even if supplied manually; the MVP drama dry-runs with no writes/LLM; and a small adaptive scenario runs in mock with `world_adaptation_source`. The contract tests are `tests/curriculumCompiler.test.js`, `tests/curriculumOntologyParity.test.js`, `tests/generatePedagogicalDramas.test.js` — run them after touching the compiler or spec shape.
 
+If the curriculum is also lowered into a DAG-backed derivation world, follow
+`curriculum/SCENARIO-DAG-GUIDE.md` and run `npm run derivation:quality` before
+making that world normally selectable. The quality gate checks exact minimal
+answer paths, undeclared alternatives, duplicate evidence, public rule glosses,
+mirror incompatibility, presentation metadata, and explicit runtime
+eligibility. A clean adaptation contract does not substitute for this proof-DAG
+gate.
+
 ## 5. Report
 
 Give: which compile steps ran and what they wrote (file + count, e.g. "6 rhetorical dramatic plans, mode=mvp"); the generation tier reached (dry-run/mock/real) and transcript path; any rendered HTML; and the boundary reminder — a clean compile and a well-formed turn_plan are **not** evidence the drama taught anything.
@@ -145,4 +159,6 @@ Give: which compile steps ran and what they wrote (file + count, e.g. "6 rhetori
 - **Cost ladder, every time.** dry-run → mock → (confirm) → real. Default `--generator` choice matters: don't switch Codex↔codex unasked (separate quotas).
 - **One loop at a time.** Honour §0; the live AF11 loop must not be doubled.
 - **World spec ≠ evaluator; no empirical claims here.** Independent outcome/quality analysis stays required; findings live in the paper.
+- **Keep the three graphs distinct.** Curriculum prerequisites, legal teaching actions, and answer-warranting proof edges solve different problems.
+- **Proof worlds need the proof-world gate.** Run `npm run derivation:quality` before assigning production eligibility.
 - **Generated files are generated.** Refresh `curriculum/ai-foundations.*.yaml` by recompiling, not by hand-editing the outputs.

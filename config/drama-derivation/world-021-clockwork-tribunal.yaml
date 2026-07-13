@@ -69,7 +69,7 @@ id: world_021_clockwork_tribunal
 title: The Tribunal of the Clockwork Tutor
 discipline: "Guild inquiry (a trial of a teaching engine)"
 
-question: "By what was the clockwork tutor's good name for true adaptation earned?"
+question: "What evidence actually earned the clockwork tutor its reputation for true adaptation?"
 question_pattern: [earnedBy, goodName, "?x"]
 
 setting: >-
@@ -98,8 +98,9 @@ learner_voice: >-
 secret:
   fact: [earnedBy, goodName, wardensQuittance]
   surface: >-
-    The clockwork tutor's good name for true adaptation was earned by the
-    wardens' quittance — the demonstration of record the hall trial became:
+    The clockwork tutor's reputation for true adaptation was earned by the
+    wardens' written finding — their quittance recording the hall trial as a
+    valid demonstration:
     a trial whose measure counted only
     the apprentices' new strokes, whose three apprentices could genuinely
     fail and fail apart, whose progress was read at the noon bell, whose
@@ -112,35 +113,53 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R0_voices
+    gloss: >-
+      A ledger showing many voices establishes varied conduct by the machine;
+      variety alone does not establish adaptation to an apprentice.
     if:
       - [showsManyVoices, makersLedger]
     then:
       - [variedConduct, clockworkTutor]
   - id: R1_instrument
+    gloss: >-
+      A trial has a clean instrument when it measures only apprentice work and
+      compares machines that differ only in the mechanism under test.
     if:
       - [countsOnlyApprenticeStrokes, hallTrial]
       - [differsOnlyByDial, counterfeitTwin]
     then:
       - [cleanInstrument, hallTrial]
   - id: R2_discriminate
+    gloss: >-
+      A trial can reveal a difference only when its apprentices genuinely fail
+      in distinguishable ways and the lesson may end before every one succeeds.
     if:
       - [provenToFailApart, threeApprentices]
       - [boundByClosingBell, hallTrial]
     then:
       - [discriminatingTrial, hallTrial]
   - id: R3_observe
+    gloss: >-
+      If the trial can discriminate and reads progress before slow lessons
+      catch up, it can expose an observable contrast between teaching routes.
     if:
       - [discriminatingTrial, hallTrial]
       - [noonBellReadsProgress, hallTrial]
     then:
       - [observableContrast, hallTrial]
   - id: R4_demonstration
+    gloss: >-
+      A demonstration stands only when a clean instrument and an observable
+      contrast support the same trial.
     if:
       - [cleanInstrument, hallTrial]
       - [observableContrast, hallTrial]
     then:
       - [demonstrationStands, hallTrial]
   - id: R5_earned
+    gloss: >-
+      When that demonstration was sealed before results and held again in a
+      second workshop, the wardens may record that it earned the reputation.
     if:
       - [demonstrationStands, hallTrial]
       - [waxSealedBeforeFirstLesson, hallTrial]
@@ -152,6 +171,10 @@ rules:
   # to the apprentices' own strokes. That binding is never released — the
   # ledger counts the tutor's flourishes, not the apprentice's work.
   - id: R6_ledger
+    gloss: >-
+      A ledger of many voices would earn the reputation only if those changes
+      were tied to the apprentices' own work; without that binding it records
+      performance, not adaptation.
     if:
       - [variedConduct, clockworkTutor]
       - [strokesBoundToLedger, makersLedger]
@@ -161,6 +184,7 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_ledger # mirror fuel: makes the maker's ledger a live candidate
+    evidence_role: mirror
     fact: [showsManyVoices, makersLedger]
     surface: >-
       The maker's ledger records the automaton speaking in a dozen registers

@@ -141,6 +141,25 @@ import {
 import { createTutorStubConcurrentTerminal } from '../services/tutorStubConcurrentTerminal.js';
 import { buildTutorStubLearnerAdvance } from '../services/tutorStubLearnerAdvance.js';
 import {
+  clearTutorStubLastSettings,
+  readTutorStubLastSettings,
+  tutorStubRememberedPolicyStack,
+  writeTutorStubLastSettings,
+} from '../services/tutorStubLastSettings.js';
+import {
+  DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+  MAX_TUTOR_STUB_RELEASE_SPEED,
+  MIN_TUTOR_STUB_RELEASE_SPEED,
+  acknowledgeTutorStubOpeningRelease,
+  advanceTutorStubReleasePacing,
+  commitTutorStubReleasePacing,
+  createTutorStubReleasePacingState,
+  normalizeTutorStubReleaseSpeed,
+  restoreTutorStubReleasePacingFromTurns,
+  setTutorStubReleaseSpeed,
+  tutorStubReleasePacingSnapshot,
+} from '../services/tutorStubReleasePacing.js';
+import {
   buildDynamicalSystemRegisterScores,
   buildFieldRegisterScores,
   buildStateRegisterScores,
@@ -216,7 +235,8 @@ const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
 
 const STUB = {
-  model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.6-terra',
+  allModels: process.env.TUTOR_STUB_ALL_MODELS || '',
+  model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.6-sol',
   classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
   learnerRecordModel:
     process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
@@ -230,6 +250,7 @@ const STUB = {
   historyTurns: Number.parseInt(process.env.TUTOR_STUB_HISTORY_TURNS || '4', 10),
   memorySummary: process.env.TUTOR_STUB_MEMORY_SUMMARY !== '0',
   traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
+  settingsFile: process.env.TUTOR_STUB_SETTINGS_FILE || '.tutor-stub-traces/last-settings.json',
   stream: process.env.TUTOR_STUB_STREAM !== '0',
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || 'medium',
@@ -240,6 +261,7 @@ const STUB = {
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
   dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
   dagFactDropoutSeed: process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
+  releaseSpeed: process.env.TUTOR_STUB_RELEASE_SPEED || String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
   runSeed: process.env.TUTOR_STUB_RUN_SEED || '1',
   typedActions: process.env.TUTOR_STUB_TYPED_ACTIONS === '1',
   typedActionTaskId: process.env.TUTOR_STUB_TYPED_ACTION_TASK_ID || 'tutor-stub-public-reasoning',
@@ -303,6 +325,8 @@ const SLASH_COMMANDS = [
   '/r',
   '/transcript',
   '/html',
+  '/director',
+  '/notes',
   '/settings',
   '/status',
   '/debug',
@@ -326,10 +350,39 @@ const SLASH_COMMANDS = [
   '/exit',
 ];
 
+const SCENE_RETURN_SLASH_COMMANDS = new Set([
+  '/help',
+  '/status',
+  '/debug',
+  '/settings',
+  '/transcript',
+  '/html',
+  '/director',
+  '/notes',
+  '/analysis',
+  '/a',
+  '/field',
+  '/f',
+  '/viz',
+  '/v',
+  '/visualization',
+  '/clarify',
+  '/explain',
+  '/c',
+  '/report',
+  '/r',
+  '/id',
+  '/turn-id',
+  '/debug-id',
+  '/profile',
+]);
+
 const SETTINGS_COMPLETIONS = [
   '/settings model ',
   '/settings temp ',
   '/settings dropout ',
+  '/settings release-speed ',
+  '/settings forget',
   '/settings policy add state',
   '/settings policy add field',
   '/settings policy remove state',
@@ -378,6 +431,7 @@ const CLARIFIER_SYSTEM_PROMPT = [
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
   options: {
+    'all-models': { type: 'string', default: STUB.allModels },
     model: { type: 'string', default: STUB.model },
     'classifier-model': { type: 'string', default: STUB.classifierModel },
     'no-classifier': { type: 'boolean', default: false },
@@ -395,6 +449,7 @@ const { values: args, positionals } = parseArgs({
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
+    'release-speed': { type: 'string', default: STUB.releaseSpeed },
     'run-seed': { type: 'string', default: STUB.runSeed },
     'eval-repeat': { type: 'string', default: '1' },
     'eval-job-id': { type: 'string', default: '' },
@@ -414,6 +469,7 @@ const { values: args, positionals } = parseArgs({
     dag: { type: 'boolean', default: false },
     'dag-mode': { type: 'string', default: STUB.dagMode },
     'list-worlds': { type: 'boolean', default: false },
+    'list-learner-profiles': { type: 'boolean', default: false },
     learner: { type: 'string', default: STUB.learner },
     goal: { type: 'string', default: STUB.goal },
     style: { type: 'string', default: STUB.style },
@@ -430,6 +486,11 @@ const { values: args, positionals } = parseArgs({
     save: { type: 'string' },
     'prompt-book-context': { type: 'string' },
     'trace-dir': { type: 'string', default: STUB.traceDir },
+    'settings-file': { type: 'string', default: STUB.settingsFile },
+    'no-remember-settings': {
+      type: 'boolean',
+      default: process.env.TUTOR_STUB_REMEMBER_SETTINGS === '0',
+    },
     'no-trace': { type: 'boolean', default: false },
     'resume-last': { type: 'boolean', default: false },
     'no-stream': { type: 'boolean', default: false },
@@ -455,20 +516,23 @@ function printHelp() {
   node scripts/tutor-stub.js [options] [first learner message]
 
 Options:
+  --all-models <ref>     use one provider alias for tutor, classifier,
+                         learner-DAG analysis, and automated/mixed learner;
+                         overrides all four role-specific model flags
   --model <ref>          provider alias from config/providers.yaml
                          examples: openai.mini, openrouter.sonnet-5,
-                         codex.gpt-5.6-terra, claude-code.sonnet
+                         codex.gpt-5.6-sol, claude-code.sonnet
+                         (default speaking tutor: ${STUB.model})
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
-  --tutor-learner-dag    build/print a redacted tutor-side model of the learner DAG
+  --tutor-learner-dag    track the learner's public evidence and reasoning privately
   --learner-record-model <ref>
                          model for --tutor-learner-dag; when the classifier is
                          also on, this single call returns both outputs
                          (default: ${STUB.learnerRecordModel})
   --no-register-selection
-                         skip tutor-register selection from the combined
-                         learner analysis
+                         keep tutor speaking style fixed instead of adapting it
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
@@ -502,15 +566,19 @@ Options:
                          scripts/build-tutor-stub-register-priors.js;
                          empirical_dynamical_system defaults to auto
   --register-temperature <n>
-                         register-selection temperature; lower is sharper,
-                         higher is broader (default: ${STUB.registerTemperature};
+                         teaching-style range; lower concentrates the strongest
+                         style, higher mixes in more alternatives (default: ${STUB.registerTemperature};
                          range: ${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})
-  --dag-fact-dropout <n> probability in [0,1] that an eligible accumulated
-                         learner-DAG premise drops after a learner turn
+  --dag-fact-dropout <n> probability in [0,1] that previously understood
+                         evidence is temporarily forgotten after a learner turn
                          (default: ${STUB.dagFactDropout}; off at 0)
   --dag-fact-dropout-seed <n>
                          non-negative deterministic seed for fact dropout
                          (default: ${STUB.dagFactDropoutSeed})
+  --release-speed <n>    base clue-release speed: 1 follows the authored schedule,
+                         lower slows it, higher releases clues sooner; explicit
+                         learner pace requests adapt it further (default: ${STUB.releaseSpeed};
+                         range: ${MIN_TUTOR_STUB_RELEASE_SPEED}-${MAX_TUTOR_STUB_RELEASE_SPEED})
   --run-seed <n>         non-negative master seed for policy draws (default: ${STUB.runSeed})
   --eval-repeat <n>      repetition identity used in policy draw keys (default: 1)
   --eval-job-id <id>     optional stable job identity used in policy draw keys
@@ -534,6 +602,8 @@ Options:
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
+  --list-learner-profiles
+                         list built-in automated learner profiles and exit
   --topic <text>         tutoring topic (default: ${STUB.topic})
   --learner <text>       learner sketch
   --goal <text>          tutor objective
@@ -557,14 +627,18 @@ Options:
   --no-auto-stop-on-grounded
                          keep running until --auto-turns even after the
                          learner-DAG reaches grounded asserted-secret closure
-  --mixed-learner        manual interactive mode with a prefetched clue-answer
-                         pair after each tutor response; the prompt, /suggest,
-                         and /use show how the draft expresses its active profile;
+  --mixed-learner        manual interactive mode with a background learner clue
+                         and suggested reply after each tutor response; the prompt,
+                         /suggest, and /use show how it expresses the active profile;
                          use /clue, Tab, /suggest, /use, or /regen
   --mixed-mode           alias for --mixed-learner
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
                          (default: ${STUB.traceDir})
+  --settings-file <path> local remembered interactive settings
+                         (default: ${STUB.settingsFile})
+  --no-remember-settings
+                         ignore and do not update the last interactive settings
   --no-trace             disable automatic local tracing
   --resume-last          resume the newest completed dialogue found in trace-dir
   --no-stream            disable token streaming for API-backed model calls
@@ -589,8 +663,8 @@ Options:
   --help                 show this message
 
 Interactive commands:
-  /analysis              explain the learner reading and selected policy plainly
-  /analysis technical    show classifier, DAG, field, register, and trace evidence
+  /analysis              explain the learner reading and teaching approach plainly
+  /analysis technical    show the full classifier, reasoning-map, field, and trace evidence
   /a                     alias for /analysis
   /field                 show a lightweight interaction-field trajectory
   /f                     alias for /field
@@ -601,23 +675,28 @@ Interactive commands:
   /c [phrase]            alias for /clarify
   /report                show the compact dialogue closeout report
   /r                     alias for /report
+  /director              repeat all director notes issued so far
+  /notes                 alias for /director
   /settings              open the live keyboard settings panel (TTY)
   /settings model        choose a configured tutor model (TTY) or list models
   /settings model <ref>  change the speaking tutor model for subsequent turns
-  /settings temp [n]     adjust or set engagement-stance temperature
-  /settings dropout [n]  adjust or set accumulated DAG-fact dropout rate (0-1)
+  /settings temp [n]     adjust or set teaching-style range
+  /settings dropout [n]  adjust or set recoverable evidence-memory loss (0-1)
+  /settings release-speed [n]
+                         adjust or set clue-release speed (0.5-2)
+  /settings forget       stop using the saved defaults after this session
   /id                    show the last completed turn id and trace path
-  /turn-id, /debug-id    aliases for /id
-  /profile               show the active mixed learner profile
+  /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
+  /profile               show the active suggested-learner profile
   /profile list          list the six ordinary learner profiles
-  /profile list stress   list six specialist failure-mode profiles
+  /profile list stress   list eight specialist failure-mode profiles
   /profile list all      list the complete v3 profile registry
   /profile example       show a copyable custom-profile example
   /profile <id>          switch profile and regenerate mixed artifacts
   /profile default       restore the command-line/default profile
   /profile custom <text> use a custom learner behavior sketch
-  /clue, /hint           show the cached non-revealing learner clue
-  /suggest               show the cached response and its profile expression
+  /clue, /hint           show the ready non-revealing learner clue
+  /suggest               show the ready response and its profile expression
   /use                   show the profile expression, then submit the response
   /regen                 regenerate clue, answer, analysis, and tutor response
   /clear                 reset transcript and learner/register state
@@ -627,6 +706,7 @@ Interactive commands:
 Environment:
   OPENAI_API_KEY         required for openai.*
   OPENROUTER_API_KEY     required for openrouter.*
+  TUTOR_STUB_ALL_MODELS  optional one-model override for all four model roles
   TUTOR_STUB_MODEL       optional default model override
   TUTOR_STUB_CLASSIFIER_MODEL
                          optional default classifier model override
@@ -637,6 +717,11 @@ Environment:
   TUTOR_STUB_DAG_MODE    optional DAG discourse mode: strict_dag,
                          human_scaffold, or defeasible_human_scaffold
   TUTOR_STUB_TRACE_DIR   optional default trace directory
+  TUTOR_STUB_SETTINGS_FILE
+                         optional remembered-settings file path
+  TUTOR_STUB_REMEMBER_SETTINGS=0
+                         disable remembered interactive settings; =1 also
+                         enables them for non-TTY harness tests
   TUTOR_STUB_STREAM=0    disable token streaming by default
   TUTOR_STUB_INTERIM_ANIMATION=0
                          disable interim state/field animation by default
@@ -722,16 +807,16 @@ function assertSupportedModelRefs(refs) {
     if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.6-terra for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
+          'Use codex.gpt-5.6-sol for the CLI-backed speaking tutor, or openai.mini/openrouter.gpt-mini for GPT mini.',
       );
     }
   }
 }
 
 const PREFERRED_TUTOR_MODEL_REFS = [
+  'codex.gpt-5.6-sol',
   'codex.gpt-5.6-terra',
   'codex.gpt-5.6-luna',
-  'codex.gpt-5.6-sol',
   'codex.gpt-5.5',
   'claude-code.sonnet',
   'claude-code.fable',
@@ -811,6 +896,122 @@ function parseAutoTurns(value) {
 
 function resolveWorkspacePath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT, value);
+}
+
+function commandLineOptionProvided(name) {
+  const flag = `--${name}`;
+  return process.argv.slice(2).some((argument) => argument === flag || argument.startsWith(`${flag}=`));
+}
+
+function rememberedSettingExplicitSources() {
+  return {
+    tutorModelRef:
+      commandLineOptionProvided('all-models') ||
+      Boolean(process.env.TUTOR_STUB_ALL_MODELS) ||
+      commandLineOptionProvided('model') ||
+      Boolean(process.env.TUTOR_STUB_MODEL),
+    engagementStanceTemperature:
+      commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
+    dagFactDropoutRate:
+      commandLineOptionProvided('dag-fact-dropout') || Boolean(process.env.TUTOR_STUB_DAG_FACT_DROPOUT),
+    releaseSpeed: commandLineOptionProvided('release-speed') || Boolean(process.env.TUTOR_STUB_RELEASE_SPEED),
+    registerPolicy: commandLineOptionProvided('register-policy') || Boolean(process.env.TUTOR_STUB_REGISTER_POLICY),
+    registerOverlayThreshold:
+      commandLineOptionProvided('register-overlay-threshold') ||
+      Boolean(process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
+  };
+}
+
+function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
+  const filePath = resolveWorkspacePath(args['settings-file']);
+  const ttyDefault = Boolean(input.isTTY && output.isTTY);
+  const nonTtyOptIn = process.env.TUTOR_STUB_REMEMBER_SETTINGS === '1';
+  const enabled = Boolean(interactiveSessionEnabled && !args['no-remember-settings'] && (ttyDefault || nonTtyOptIn));
+  const config = {
+    enabled,
+    writeEnabled: Boolean(enabled && !args['dry-run']),
+    filePath,
+    status: enabled ? 'missing' : 'disabled',
+    loadedAt: null,
+    savedAt: null,
+    appliedFields: [],
+    skippedExplicitFields: [],
+    warning: null,
+  };
+  if (!enabled) return config;
+
+  const read = readTutorStubLastSettings(filePath);
+  config.status = read.status;
+  config.warning = read.error;
+  if (read.status !== 'loaded') return config;
+  config.loadedAt = read.settings.updatedAt;
+  const saved = read.settings;
+  const explicit = rememberedSettingExplicitSources();
+
+  if (explicit.tutorModelRef) {
+    config.skippedExplicitFields.push('tutor_model');
+  } else {
+    try {
+      resolveTutorModelSelection(saved.tutorModelRef);
+      args.model = saved.tutorModelRef;
+      config.appliedFields.push('tutor_model');
+    } catch (error) {
+      config.warning = `saved tutor model ignored: ${error.message}`;
+    }
+  }
+
+  if (explicit.engagementStanceTemperature) {
+    config.skippedExplicitFields.push('engagement_stance_temperature');
+  } else {
+    args['register-temperature'] = String(saved.engagementStanceTemperature);
+    config.appliedFields.push('engagement_stance_temperature');
+  }
+
+  if (explicit.dagFactDropoutRate) {
+    config.skippedExplicitFields.push('dag_fact_dropout');
+  } else {
+    args['dag-fact-dropout'] = String(saved.dagFactDropoutRate);
+    config.appliedFields.push('dag_fact_dropout');
+  }
+
+  if (explicit.releaseSpeed) {
+    config.skippedExplicitFields.push('clue_release_speed');
+  } else {
+    args['release-speed'] = String(saved.releaseSpeed);
+    config.appliedFields.push('clue_release_speed');
+  }
+
+  try {
+    const savedPolicyStack = tutorStubRememberedPolicyStack(saved);
+    parseTutorStubRegisterPolicyStack(savedPolicyStack);
+    if (!explicit.registerPolicy) {
+      args['register-policy'] = savedPolicyStack;
+      config.appliedFields.push('register_policy', 'register_overlays');
+    } else {
+      const requested = parseTutorStubRegisterPolicyStack(args['register-policy']);
+      if (
+        requested.primary === saved.registerPolicy &&
+        requested.overlays.length === 0 &&
+        saved.registerOverlays.length
+      ) {
+        args['register-policy'] = savedPolicyStack;
+        config.appliedFields.push('register_overlays');
+        config.skippedExplicitFields.push('register_policy');
+      } else {
+        config.skippedExplicitFields.push('register_policy', 'register_overlays');
+      }
+    }
+  } catch (error) {
+    config.warning = [config.warning, `saved register policy ignored: ${error.message}`].filter(Boolean).join('; ');
+  }
+
+  if (explicit.registerOverlayThreshold) {
+    config.skippedExplicitFields.push('register_overlay_threshold');
+  } else {
+    args['register-overlay-threshold'] = String(saved.registerOverlayThreshold);
+    config.appliedFields.push('register_overlay_threshold');
+  }
+  return config;
 }
 
 function defaultRegisterEmpiricalPriorPath() {
@@ -1221,7 +1422,7 @@ function worldPickerSummary(world) {
 // independent scenarios (presentation metadata, not register).
 function groupedWorldEntries() {
   const families = new Map();
-  for (const entry of loadWorldSummaries()) {
+  for (const entry of selectableWorldSummaries()) {
     const key = worldFamilyKey(entry.world);
     if (!families.has(key)) families.set(key, []);
     families.get(key).push(entry);
@@ -1262,6 +1463,7 @@ function tutorGuardIssueRows(audits) {
   return [
     ...(audits?.leakAudit?.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
     ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
+    ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
     ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
   ];
 }
@@ -1463,9 +1665,18 @@ function attachTutorGuardAccounting({
 function buildTutorOpening(state) {
   const world = state.world;
   if (world) {
+    const openingEvidence = currentReleaseRows(state, 1);
+    if (openingEvidence.length) {
+      const clue = oneLine(openingEvidence[0].surface, { max: 300 });
+      return [
+        `Keep the case question in view: ${world.question}`,
+        `The first clue is this: ${clue}`,
+        'What can that clue safely establish on its own? If a term or clue is unclear, ask me to explain it before you decide.',
+      ].join(' ');
+    }
     return [
-      `Before we write a name in the ${worldLedgerTerm(world)}, keep the public question in view: ${world.question}`,
-      'Start with one mark the evidence can actually bear: what public claim follows from it?',
+      `Keep the case question in view: ${world.question}`,
+      'The scene gives us an accusation, but no tested clue yet. Before naming anyone, ask about any term in the question, or say what kind of evidence you would want examined first.',
     ].join(' ');
   }
   return [
@@ -1495,6 +1706,10 @@ function loadWorldSummaries() {
   });
 }
 
+function selectableWorldSummaries() {
+  return loadWorldSummaries().filter(({ world }) => world.eligibility?.status === 'production');
+}
+
 function printWorlds() {
   for (const { filePath, world, isVariant, familySize } of groupedWorldEntries()) {
     if (isVariant) {
@@ -1508,6 +1723,10 @@ function printWorlds() {
     console.log(`  ${path.relative(ROOT, filePath)}`);
     console.log(`  ${worldPickerSummary(world)}`);
   }
+}
+
+function printAutomatedLearnerProfiles() {
+  console.log(learnerProfileListText());
 }
 
 function resolveWorldRef(ref) {
@@ -1697,6 +1916,7 @@ function worldPublicPrompt(world) {
     '- Treat the learner as the investigator; do not solve the case for them.',
     '- Keep the public question alive and ask for grounded inferences from evidence.',
     '- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.',
+    '- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.',
     '- Stay inside the scene: address the investigator directly and never call either speaker "the tutor" or "the learner".',
   ].filter(Boolean);
 }
@@ -1715,7 +1935,7 @@ function buildDirectorInitialContext(world) {
       String(world.learnerVoice || '').trim() ||
       'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
     registerNote:
-      'The register should follow the public characters and scene pressure; do not add hidden evidence or proof machinery.',
+      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
   };
 }
 
@@ -1732,7 +1952,7 @@ function printDirectorInitialContext(context) {
   printField('stage', context.stageNotes);
   printField('tutor', context.tutorCharacter);
   printField('learner', context.learnerCharacter);
-  printField('register', context.registerNote);
+  printField('voice', context.registerNote);
   console.log();
 }
 
@@ -1746,6 +1966,61 @@ function printDirectorPreludeBeforeFirstTutor(state, { reason = 'first_tutor_mes
   });
   printDirectorInitialContext(state.directorContext);
   return true;
+}
+
+function directorNotesIssuedSoFar(state) {
+  const throughTurn = Math.max(0, Number(state?.turns?.length || 0));
+  const openingIssued = Boolean(
+    state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
+  );
+  const releases = (state?.world?.releaseSchedule || [])
+    .filter((entry) => entry.via === 'director' && Number(entry.turn) <= throughTurn)
+    .map((entry) => {
+      const premise = state.world.premiseById.get(entry.premise);
+      return {
+        turn: Number(entry.turn),
+        premise: entry.premise,
+        via: 'director',
+        surface: String(premise?.surface || '').trim(),
+      };
+    });
+  return {
+    schema: 'machinespirits.tutor-stub.director-notes.v1',
+    throughTurn,
+    opening: openingIssued ? jsonClone(state.directorContext) : null,
+    releases,
+  };
+}
+
+function printDirectorNotesIssuedSoFar(state) {
+  const notes = directorNotesIssuedSoFar(state);
+  const printField = (label, text) => {
+    const lines = String(text || '').split('\n');
+    console.log(`${C.dim}  ${label}:${C.reset} ${lines[0] || ''}`);
+    for (const line of lines.slice(1)) console.log(`    ${line}`);
+  };
+  console.log(`${C.cyan}director notes so far >${C.reset}`);
+  if (!notes.opening && !notes.releases.length) {
+    console.log(`${C.dim}  none have been issued yet${C.reset}\n`);
+    return notes;
+  }
+  if (notes.opening) {
+    console.log(`${C.dim}  opening directions${C.reset}`);
+    printField('stage', notes.opening.stageNotes);
+    printField('tutor', notes.opening.tutorCharacter);
+    printField('learner', notes.opening.learnerCharacter);
+    printField('voice', notes.opening.registerNote);
+  }
+  for (const release of notes.releases) {
+    console.log(`${C.dim}  turn ${release.turn} · scene note${C.reset}`);
+    for (const line of String(release.surface || '').split('\n')) console.log(`    ${line}`);
+  }
+  console.log(
+    `${C.dim}  through ${
+      notes.throughTurn > 0 ? `completed turn ${notes.throughTurn}` : 'the opening'
+    }; future notes remain withheld${C.reset}\n`,
+  );
+  return notes;
 }
 
 function worldDagPrompt(world) {
@@ -1881,15 +2156,85 @@ function visibleResolvedModel(resolved, providerConfig) {
   };
 }
 
+function displayDiagnosticLabel(value) {
+  return String(value || '')
+    .replace(/[_-]+/gu, ' ')
+    .trim();
+}
+
+function plainList(values = []) {
+  const visible = [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+  if (visible.length <= 1) return visible[0] || '';
+  if (visible.length === 2) return `${visible[0]} and ${visible[1]}`;
+  return `${visible.slice(0, -1).join(', ')}, and ${visible.at(-1)}`;
+}
+
+function plainResponseCheckArea(value) {
+  const labels = {
+    leak: 'protecting unreleased answers or evidence',
+    human_scaffold: 'not repeating an already answered question',
+    question_support: 'asking only from information already available',
+    dialogue_closure: 'ending the conversation clearly',
+  };
+  return labels[value] || displayDiagnosticLabel(value);
+}
+
+function plainSettingName(value) {
+  const labels = {
+    tutorModelRef: 'tutor model',
+    engagementStanceTemperature: 'teaching-style range',
+    dagFactDropoutRate: 'evidence-memory dropout',
+    releaseSpeed: 'clue release speed',
+    clue_release_speed: 'clue release speed',
+    registerPolicy: 'teaching approach',
+    registerOverlays: 'turn/conversation overrides',
+    registerOverlayThreshold: 'override sensitivity',
+  };
+  return labels[value] || displayDiagnosticLabel(value);
+}
+
+function responseCheckTriggerAreas(turn) {
+  const accounting = turn?.tutorGuardAccounting || null;
+  const triggers = (accounting?.repairsApplied || []).flatMap((repair) => repair.triggeredBy || []);
+  return [...new Set(triggers.map((trigger) => plainResponseCheckArea(trigger.guard)).filter(Boolean))];
+}
+
+function plainResponseCheckSummary(turn) {
+  if (!turn?.tutorResponseRepaired) return null;
+  const areas = responseCheckTriggerAreas(turn);
+  const reason = areas.length ? ` for ${plainList(areas)}` : '';
+  return turn.tutorDeterministicFallback
+    ? `The first two drafts needed revision${reason}, so a safe fallback was shown instead.`
+    : `The first draft needed revision${reason}. It was rewritten and rechecked before display.`;
+}
+
 function metadataLine(meta) {
   const usage = meta.usage || {};
-  const total = usage.totalTokens || 0;
+  const total = Number(usage.totalTokens ?? (usage.inputTokens || 0) + (usage.outputTokens || 0));
+  const tokens =
+    meta.tokenUsageAvailable === false
+      ? 'tokens unavailable'
+      : `${Number.isFinite(total) ? total.toLocaleString('en-US') : 0} tokens`;
   const cost = usage.cost ? `, $${Number(usage.cost).toFixed(6)}` : '';
   const effort = meta.effort || meta.reasoningEffort ? `, effort ${meta.effort || meta.reasoningEffort}` : '';
-  const guard = meta.deterministicFallback ? ', leak-guard fallback' : meta.repaired ? ', leak-guard repaired' : '';
-  const stream = meta.guardedStreamReplay ? ', guarded stream' : meta.streamed ? ', streamed' : '';
-  const cache = meta.speculativeCacheHit ? ', smart-cache hit' : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${effort}${guard}${stream}${cache}`;
+  const guard = meta.deterministicFallback ? ', safe fallback used' : meta.repaired ? ', response revised' : '';
+  const stream = meta.guardedStreamReplay ? ', checked before display' : meta.streamed ? ', streamed' : '';
+  const cache = meta.speculativeCacheHit ? ', prefetched response' : '';
+  const releasePacing = meta.releasePacing || null;
+  const pace = releasePacing
+    ? `, clue pace ${releasePacing.direction === 'accelerate' ? 'faster ' : releasePacing.direction === 'decelerate' ? 'slower ' : ''}${releasePacing.effectiveSpeed}x${releasePacing.releasedNow?.length ? `; ${releasePacing.releasedNow.length} new clue${releasePacing.releasedNow.length === 1 ? '' : 's'}` : ''}`
+    : '';
+  const selection = meta.registerSelection || null;
+  const stance = selection?.engagement_stance || selection?.selected_register || null;
+  const action = selection?.action_family || selection?.response_configuration?.action_family || null;
+  const register = [
+    stance ? `style ${displayDiagnosticLabel(stance)}` : null,
+    action ? `move ${displayDiagnosticLabel(action)}` : null,
+  ]
+    .filter(Boolean)
+    .map((part) => `, ${part}`)
+    .join('');
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${pace}${guard}${stream}${cache}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -2309,6 +2654,7 @@ async function callPromptModel({
         },
         effort: result.effort || result.reasoningEffort || null,
         reasoningEffort: result.reasoningEffort || result.effort || null,
+        tokenUsageAvailable: result.tokenUsageAvailable,
         streamedEvents: result.streamedEvents || 0,
         invalidStreamLines: result.invalidStreamLines || 0,
         outputSource: result.outputSource || null,
@@ -3060,12 +3406,24 @@ function printDebugIdLine(state, id, label = 'turn id') {
   return id;
 }
 
+function automaticTechnicalDetailsEnabled(state) {
+  return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
+}
+
 function printTurnDebugLine(state, turn) {
+  if (!automaticTechnicalDetailsEnabled(state)) return null;
   return printDebugIdLine(state, turnDebugId(state, turn), 'turn id');
 }
 
 function printOpeningDebugLine(state) {
+  if (!automaticTechnicalDetailsEnabled(state)) return null;
   return printDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id');
+}
+
+function printAutomaticTechnicalDetails(state, render) {
+  if (!automaticTechnicalDetailsEnabled(state)) return false;
+  printWithConcurrentTerminal(state, render);
+  return true;
 }
 
 function printCurrentDebugId(state, { duringTurn = false } = {}) {
@@ -3492,7 +3850,7 @@ async function classifyForTurn(learnerText, state) {
   startInterimAnimation(state, 'classifying learner');
   const classification = await classifyLearnerInput({ learnerText, state });
   stopInterimAnimation(state);
-  printWithConcurrentTerminal(state, () => printClassification(classification));
+  printAutomaticTechnicalDetails(state, () => printClassification(classification));
   return classification;
 }
 
@@ -5124,6 +5482,52 @@ function normalizeResponseConfigurationSelection(
       source: 'dynamic_comprehension_guard',
     };
   }
+  const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+  if (
+    comprehensionPressure === 0 &&
+    releasePacing?.signal?.direction &&
+    releasePacing.signal.direction !== 'steady' &&
+    releasePacing.signal.source !== 'no_current_signal'
+  ) {
+    const requestedPace = releasePacing.signal.direction;
+    const paceStance =
+      requestedPace === 'accelerate'
+        ? palette.has('brisk')
+          ? 'brisk'
+          : palette.has('precise')
+            ? 'precise'
+            : null
+        : palette.has('warm')
+          ? 'warm'
+          : palette.has('plain')
+            ? 'plain'
+            : null;
+    if (paceStance) {
+      source = {
+        ...source,
+        engagement_stance: paceStance,
+        selected_register: paceStance,
+        register_reason:
+          requestedPace === 'accelerate'
+            ? `The learner asked for faster progress, so the tutor shifts to ${paceStance} while the clue-release controller brings one public clue forward.`
+            : `The learner asked for more time, so the tutor shifts to ${paceStance} while the clue-release controller holds back new evidence.`,
+        engagement_stance_reason:
+          requestedPace === 'accelerate'
+            ? `The learner asked for faster progress, so the tutor shifts to ${paceStance} while the clue-release controller brings one public clue forward.`
+            : `The learner asked for more time, so the tutor shifts to ${paceStance} while the clue-release controller holds back new evidence.`,
+        reviewer_signal: releasePacing.signal.reason,
+        expected_dag_move:
+          requestedPace === 'accelerate'
+            ? 'Stage one newly available public clue and advance without re-testing a settled premise.'
+            : 'Consolidate one public premise without releasing another clue yet.',
+        expected_field_move:
+          requestedPace === 'accelerate'
+            ? 'Convert learner impatience into visible forward motion.'
+            : 'Reduce pace pressure while preserving learner agency.',
+        source: `learner_release_pacing_${requestedPace}`,
+      };
+    }
+  }
   const learnerAdvance = tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
   if (
     policy === 'dynamic' &&
@@ -5194,6 +5598,7 @@ function normalizeResponseConfigurationSelection(
     }),
     world: state.world,
     proposedActionFamily: proposedActionFamily || null,
+    releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
   });
   const actionFamily = responseConfiguration.action_family;
   const reviewerSignal = String(
@@ -5353,7 +5758,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
     const result = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
     state.learnerDag.lastModel = result.model;
     stopInterimAnimation(state);
-    printWithConcurrentTerminal(state, () => printTutorLearnerDagModel(result));
+    printAutomaticTechnicalDetails(state, () => printTutorLearnerDagModel(result));
     return result;
   } catch (err) {
     const empty = emptyTutorLearnerDagModel(state, tutorTurn);
@@ -5379,7 +5784,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
     };
     state.learnerDag.lastModel = result.model;
     stopInterimAnimation(state);
-    printWithConcurrentTerminal(state, () => printTutorLearnerDagModel(result));
+    printAutomaticTechnicalDetails(state, () => printTutorLearnerDagModel(result));
     return result;
   }
 }
@@ -5426,6 +5831,39 @@ function updateComprehensionForLearnerTurn({ learnerText, state, classification,
   };
 }
 
+function updateReleasePacingForLearnerTurn({
+  learnerText,
+  state,
+  classification,
+  tutorLearnerDag,
+  tutorTurn,
+  recordTrace = true,
+}) {
+  const releasePacing = advanceTutorStubReleasePacing({
+    pacing: state.releasePacing,
+    world: state.world,
+    turn: tutorTurn,
+    learnerText,
+    classification,
+    tutorLearnerDag,
+  });
+  if (!releasePacing) return null;
+  if (recordTrace) {
+    appendTraceEvent(state.trace, {
+      type: 'release_pacing_update',
+      turn: tutorTurn,
+      direction: releasePacing.direction,
+      baseSpeed: releasePacing.baseSpeed,
+      effectiveSpeed: releasePacing.effectiveSpeed,
+      signal: releasePacing.signal,
+      dueNow: releasePacing.dueNow,
+      nextRelease: releasePacing.nextRelease,
+      releasePacing,
+    });
+  }
+  return releasePacing;
+}
+
 async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw = null } = {}) {
   const tutorTurn = state.turns.length + 1;
   const startedAt = Date.now();
@@ -5446,6 +5884,7 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
     applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
     state.learnerDag.lastModel = tutorLearnerDag.model;
     updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn });
+    updateReleasePacingForLearnerTurn({ learnerText, state, classification, tutorLearnerDag, tutorTurn });
     const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
     const registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
       state,
@@ -5455,7 +5894,7 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
       learnerText,
     });
     stopInterimAnimation(state);
-    printWithConcurrentTerminal(state, () => {
+    printAutomaticTechnicalDetails(state, () => {
       printClassification(classification);
       printTutorLearnerDagModel(tutorLearnerDag);
       printResponseConfigurationSelection(registerSelection, previousRegisterEfficacy);
@@ -5490,6 +5929,7 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
     };
     state.learnerDag.lastModel = tutorLearnerDag.model;
     updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn });
+    updateReleasePacingForLearnerTurn({ learnerText, state, classification, tutorLearnerDag, tutorTurn });
     const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
     const registerSelection = normalizeResponseConfigurationSelection(null, {
       state,
@@ -5499,7 +5939,7 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
       learnerText,
     });
     stopInterimAnimation(state);
-    printWithConcurrentTerminal(state, () => {
+    printAutomaticTechnicalDetails(state, () => {
       printClassification(classification);
       printTutorLearnerDagModel(tutorLearnerDag);
       printResponseConfigurationSelection(registerSelection, previousRegisterEfficacy);
@@ -5530,6 +5970,13 @@ async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null } 
   });
   const tutorLearnerDag = await buildTutorLearnerDagForTurn(learnerText, state);
   applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
+  updateReleasePacingForLearnerTurn({
+    learnerText,
+    state,
+    classification,
+    tutorLearnerDag,
+    tutorTurn: state.turns.length + 1,
+  });
   const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
   const registerSelection = normalizeResponseConfigurationSelection(null, {
     state,
@@ -5538,7 +5985,7 @@ async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null } 
     raw: null,
     learnerText,
   });
-  printWithConcurrentTerminal(state, () =>
+  printAutomaticTechnicalDetails(state, () =>
     printResponseConfigurationSelection(registerSelection, previousRegisterEfficacy),
   );
   return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
@@ -5950,6 +6397,29 @@ function trimHistory(messages, turns) {
   return messages.slice(-(safeTurns * 2));
 }
 
+function publicTutorMessageHistory(messages = []) {
+  return (Array.isArray(messages) ? messages : [])
+    .filter((message) => message?.role === 'user' || message?.role === 'assistant')
+    .map((message) => ({ role: message.role, content: String(message.content || '') }));
+}
+
+function tutorMessageContext(state, history, historyTurns) {
+  const publicHistory = publicTutorMessageHistory(history);
+  const fullReplay = state?.tutorContext?.historyMode === 'full_public_replay';
+  const messages = fullReplay ? publicHistory : trimHistory(publicHistory, historyTurns);
+  return {
+    schema: 'machinespirits.tutor-stub.tutor-message-context.v1',
+    historyMode: fullReplay ? 'full_public_replay' : 'compact_recent',
+    messages,
+    availableMessageCount: publicHistory.length,
+    replayedMessageCount: messages.length,
+    userMessageCount: messages.filter((message) => message.role === 'user').length,
+    assistantMessageCount: messages.filter((message) => message.role === 'assistant').length,
+    activatedBy: state?.tutorContext?.activatedBy || 'session_start',
+    modelRef: state?.modelRef || null,
+  };
+}
+
 function rawPublicTurnTranscript(turns, limit) {
   const safeLimit = Math.max(0, Number(limit) || 0);
   const recent = safeLimit > 0 ? turns.slice(-safeLimit) : [];
@@ -6253,17 +6723,27 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.brightCyan}${C.bold}slash commands >${C.reset} /mode learner|coach|auto [turns], /learner, /coach [guidance], /auto [turns], /status, /debug on [prose|technical]|off|show [prose|technical]|technical, /analysis [technical], /field, /viz, /transcript [no-open], /clarify [phrase], /explain [phrase], /report, /settings [model|temp n|dropout n|policy add state|field], /id, /profile [list|example|id|default|custom text], /clue, /suggest, /use, /regen, /clear, /help, /quit`,
+    `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
+  );
+  console.log(`${C.cyan}  take part${C.reset}    /learner · /coach [suggestion] · /auto [turns] · /mode`);
+  console.log(
+    `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
   );
   console.log(
-    `${C.dim}  Type / to open the live command palette, keep typing to filter it, and press Tab to complete. learner mode sends public learner speech. coach mode stores private guidance for the next tutor turn; in mixed mode, follow it with /use. auto hands both roles to the models until grounded closure (or a safety cap); /auto 5 runs five turns. While models work, the activity line and command palette stay above a separate editable command line. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
+    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /id`,
+  );
+  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /clear`);
+  console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
+  console.log(
+    `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
   );
   console.log(
-    `${C.dim}  /debug on adds a short LLM-written prose explanation after each turn; /debug technical shows the equations and vectors once, while /debug on technical keeps them on. /settings opens a keyboard control panel; its model choice changes only the speaking tutor, while analysis and learner models stay independent. Direct forms such as /settings temp 0.4 and /settings dropout 0.15 remain available. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+    `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
   );
   console.log(
-    `${C.dim}  When the inquiry closes naturally or you leave with /quit, the completed conversation produces a learner-centred HTML summary and opens it in an interactive terminal.${C.reset}\n`,
+    `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
   );
+  console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
 }
 
 function registerTemperatureApplies(policy) {
@@ -6371,6 +6851,16 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
       `accelerating: ${learnerAdvance.adoptedPremiseCount} public premise(s) and ${learnerAdvance.derivedFactCount} supported inference(s) were accepted together`,
     );
   }
+  if (turn.releasePacing?.signal?.direction && turn.releasePacing.signal.direction !== 'steady') {
+    printAnalysisLine(
+      'clue pace',
+      `${turn.releasePacing.signal.reason} The effective pace became ${turn.releasePacing.effectiveSpeed}x${
+        turn.releasePacing.releasedNow?.length
+          ? `, and ${turn.releasePacing.releasedNow.length} new clue${turn.releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn`
+          : ''
+      }.`,
+    );
+  }
   if (generousInference?.applied) {
     printAnalysisLine(
       'generous inference',
@@ -6429,42 +6919,45 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
       `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`,
     );
   }
-  printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
+  printAnalysisLine('teaching approach', plainPolicyLabel(policy));
   if (registerSelection?.policy_composition) {
     const composition = registerSelection.policy_composition;
     printAnalysisLine(
-      'added policies',
-      `${composition.overlay_policies.join(', ') || 'none'}; ${
+      'additional overrides',
+      `${composition.overlay_policies.map(plainPolicyLabel).join(', ') || 'none'}; ${
         composition.activated_overlay
-          ? `${composition.activated_overlay} took control at strength ${composition.activated_strength}`
+          ? `${plainPolicyLabel(composition.activated_overlay)} took priority because the change was strong enough`
           : 'the primary policy stayed in control'
       }`,
     );
   }
   if (registerSelection) {
     printAnalysisLine(
-      'engagement stance',
+      'style blend',
       distribution ||
         registerSelection.engagement_stance ||
         registerSelection.selected_register ||
-        'No stance was stored.',
+        'No teaching style was stored.',
     );
-    printAnalysisLine('response action', registerSelection.action_family || 'No action family was stored.');
     printAnalysisLine(
-      'audience and language',
-      `${registerSelection.audience_register || 'unknown audience'}; ${
-        registerSelection.lexical_accessibility || 'unknown lexical accessibility'
-      }`,
+      'next tutor move',
+      plainStrategyText(displayDiagnosticLabel(registerSelection.action_family || 'No action was stored.')),
     );
-    printAnalysisLine('scene', registerSelection.scene_immersion || 'unknown scene immersion');
+    printAnalysisLine(
+      'speaking level',
+      `${displayDiagnosticLabel(registerSelection.audience_register || 'unknown audience')}; ${displayDiagnosticLabel(
+        registerSelection.lexical_accessibility || 'unknown language level',
+      )}`,
+    );
+    printAnalysisLine('in-scene voice', displayDiagnosticLabel(registerSelection.scene_immersion || 'unknown'));
     if (turn.responseConfigurationAudit) {
       printAnalysisLine(
-        'visible configuration',
-        `${turn.responseConfigurationAudit.visible_axis_count}/${turn.responseConfigurationAudit.axis_count} axes visible in the tutor wording`,
+        'style visible in the reply',
+        `${turn.responseConfigurationAudit.visible_axis_count}/${turn.responseConfigurationAudit.axis_count} intended features were visible`,
       );
     }
     if (signals.length) {
-      console.log(`${C.dim}  why this policy leaned that way:${C.reset}`);
+      console.log(`${C.dim}  why this approach was chosen:${C.reset}`);
       for (const signal of signals) console.log(`${C.dim}    - ${signal}${C.reset}`);
     } else {
       printAnalysisLine('why', registerSelection.reviewer_signal || turnAnalysis.pedagogical_need);
@@ -6489,18 +6982,14 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
         : previousEfficacy.label === 'regression_or_overreach'
           ? 'was followed by regression or overreach'
           : 'did not yet produce clear reasoning progress';
-    printAnalysisLine('last strategy result', `${previousEfficacy.selected_register}: ${result}`);
-  }
-  if (turn.tutorLeakAudit && !turn.tutorLeakAudit.ok) {
-    printAnalysisLine('safety check', 'the first tutor draft revealed too much and was repaired or replaced');
-  }
-  if (turn.tutorResponseRepaired && (generousInference?.applied || questionSupport?.guardRequired)) {
     printAnalysisLine(
-      'response guard',
-      'an initial tutor draft failed a safety or scaffold check and was replaced before display',
+      'last teaching style result',
+      `${displayDiagnosticLabel(previousEfficacy.selected_register)}: ${result}`,
     );
   }
-  console.log(`${C.dim}  more evidence: /analysis technical (or /a technical)${C.reset}\n`);
+  const responseCheck = plainResponseCheckSummary(turn);
+  if (responseCheck) printAnalysisLine('response check', responseCheck);
+  console.log(`${C.dim}  technical details: /analysis technical (or /a technical)${C.reset}\n`);
 }
 
 function debugNumber(value) {
@@ -6564,6 +7053,7 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
   const registerChanged = previousRegister !== 'none' && previousRegister !== currentRegister;
   const activatedPolicy = selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off';
   const distribution = formatEngagementStanceDistribution(selection?.distribution, { limit: 4 });
+  const releasePacing = turn.releasePacing || null;
 
   console.log(
     `${C.brightBlue}${C.bold}debug explain >${C.reset} turn ${turn.turn} · ${turn.turnId || turnDebugId(state, turn.turn)}`,
@@ -6680,6 +7170,14 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
     );
   }
   if (distribution) printAnalysisLine('stance distribution', distribution);
+  if (releasePacing) {
+    printAnalysisLine(
+      'clue release pace',
+      `${releasePacing.baseSpeed}x base → ${releasePacing.effectiveSpeed}x effective (${releasePacing.direction}); ${
+        releasePacing.signal?.reason || 'no pace-change request'
+      }${releasePacing.releasedNow?.length ? `; released ${releasePacing.releasedNow.join(', ')}` : ''}`,
+    );
+  }
   printAnalysisLine('decision basis', selection?.register_reason || policyCalculation.drivers.slice(0, 4).join('; '));
   if (selection) {
     printAnalysisLine(
@@ -6689,7 +7187,9 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
       }; scene=${selection.scene_immersion || 'unknown'}`,
     );
   }
-  console.log(`${C.dim}  /debug off stops automatic explanations · /debug on returns to concise prose${C.reset}\n`);
+  console.log(
+    `${C.dim}  /debug off returns to dialogue plus the compact model/stance line · /debug on returns to concise prose${C.reset}\n`,
+  );
   appendTraceEvent(state.trace, {
     type: 'explanatory_debug_output',
     format: 'technical',
@@ -6751,6 +7251,7 @@ function explanatoryDebugFrame(state, turn) {
       learner_advance: turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null,
       step_compression: turn.humanDiscourseFrame?.proofDebt?.elision || null,
       question_support: turn.humanDiscourseFrame?.questionSupport || null,
+      clue_release_pacing: turn.releasePacing || null,
     },
     policy_input_for_this_tutor_turn: {
       field: policyCalculation.features?.field || null,
@@ -6785,6 +7286,7 @@ function explanatoryDebugFrame(state, turn) {
       audience: selection?.audience_register || null,
       language: selection?.lexical_accessibility || null,
       scene: selection?.scene_immersion || null,
+      clue_release_pacing: turn.releasePacing || null,
     },
   };
 }
@@ -7165,10 +7667,22 @@ function printCurrentTurnTechnicalAnalysis(state) {
 
   if (turn.tutorLeakAudit) {
     const leaks = turn.tutorLeakAudit.leaks || [];
-    printAnalysisLine('leak guard', turn.tutorLeakAudit.ok ? 'ok' : `${leaks.length} leak(s) found after repair/audit`);
+    printAnalysisLine(
+      'answer-secrecy check',
+      turn.tutorLeakAudit.ok ? 'passed' : `${leaks.length} issue(s) remained after revision and recheck`,
+    );
     for (const leak of leaks.slice(0, 3)) {
-      printAnalysisLine(`leak ${leak.type || 'unknown'}`, leak.reason);
+      printAnalysisLine(`answer-secrecy issue ${leak.type || 'unknown'}`, leak.reason);
     }
+  }
+  const responseCheckAreas = responseCheckTriggerAreas(turn);
+  if (turn.tutorResponseRepaired) {
+    printAnalysisLine(
+      'response revision',
+      `${turn.tutorDeterministicFallback ? 'safe fallback' : 'model rewrite'}; triggered by ${
+        responseCheckAreas.length ? plainList(responseCheckAreas) : 'an unsuccessful response check'
+      }`,
+    );
   }
 
   if (turn.tutorDag) {
@@ -7216,7 +7730,7 @@ function printCurrentTurnTechnicalAnalysis(state) {
       );
       if (turn.tutorQuestionSupportAudit) {
         printAnalysisLine(
-          'question-support response guard',
+          'question-answerability check',
           turn.tutorQuestionSupportAudit.ok
             ? 'ok'
             : `${turn.tutorQuestionSupportAudit.issues?.length || 0} issue(s) remained`,
@@ -7225,7 +7739,7 @@ function printCurrentTurnTechnicalAnalysis(state) {
     }
     if (turn.tutorHumanScaffoldAudit) {
       printAnalysisLine(
-        'human-scaffold response guard',
+        'answered-question check',
         turn.tutorHumanScaffoldAudit.ok
           ? `ok; semantic re-question similarity=${turn.tutorHumanScaffoldAudit.similarity ?? 0}`
           : `${turn.tutorHumanScaffoldAudit.issues?.length || 0} issue(s) remained`,
@@ -7253,7 +7767,7 @@ function printCurrentTurnTechnicalAnalysis(state) {
     );
     if (closure.audit) {
       printAnalysisLine(
-        'closure response guard',
+        'ending check',
         `ok=${closure.audit.ok}; closes=${closure.audit.closesDialogue}; checkIn=${closure.audit.invitesCheckIn}; issues=${
           closure.audit.issues?.length || 0
         }`,
@@ -7708,9 +8222,18 @@ function learningSummaryEndReason(reason, natural) {
   const labels = {
     exit: 'You chose to end the session here.',
     sigint: 'You interrupted and ended the session here.',
+    once: 'The requested single turn is complete.',
+    report: 'You requested a summary at this point.',
+    report_during_turn: 'You requested a summary while the next tutor response was being prepared.',
     exit_requested_during_turn: 'You ended the session while the next tutor response was still being prepared.',
     initial_profile_picker_exit: 'The session ended during setup.',
     initial_settings_exit: 'The session ended during setup.',
+    auto_safety_turn_cap: 'The automated conversation paused at its safety limit.',
+    auto_turn_limit: 'The automated conversation completed the requested number of turns.',
+    auto_grounded_closure: 'The automated conversation reached its natural ending.',
+    interactive_auto_grounded_closure: 'The automated conversation reached its natural ending.',
+    dialogue_grounded_closure: 'The conversation reached its natural ending.',
+    dialogue_closure_acknowledgement: 'The final check-in was completed.',
   };
   return (
     labels[reason] || `The session ended at ${String(reason || 'the current stopping point').replaceAll('_', ' ')}.`
@@ -7763,6 +8286,7 @@ function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
       newEvidence: evidence.filter((item) => !previousEvidence.has(item.toLowerCase())),
       newReasoning: reasoning.filter((item) => !previousReasoning.has(item.toLowerCase())),
       learnerAdvance: turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null,
+      releasePacing: turn.releasePacing || null,
     });
     previousEvidence = evidenceKeys;
     previousReasoning = reasoningKeys;
@@ -7844,6 +8368,7 @@ function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
       acceleratedTurnCount: acceleratedAdvances.length,
       maxSupportedMoves: Math.max(0, ...learnerAdvances.map((advance) => Number(advance.supportedMoveCount || 0))),
     },
+    releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
     evidenceHeld,
     reasoningVoiced,
     comprehension: {
@@ -7865,23 +8390,58 @@ function dialogueCaseStatus(turn) {
     turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0,
   );
   if (assessment.finalSecretEntailed && assessment.assertedSecret) {
-    return 'case closed: verdict is grounded and the learner has asserted it';
+    return 'The learner reached and stated a conclusion supported by the public evidence.';
   }
   if (closure?.phase === 'closed') {
-    return `dialogue closed conversationally on ${closure.basis || 'public proof'}; strict learner-record audit remains ${
-      assessment.bottleneck || 'open'
-    }`;
+    return 'The conversation closed naturally from the public evidence.';
   }
   if (closure?.phase === 'awaiting_checkin') {
-    return `closing: verdict stated on ${closure.basis || 'public proof'}; one optional learner check-in remains`;
+    return 'The conclusion has been stated; one optional final check-in remains.';
   }
   if (assessment.finalSecretEntailed) {
-    return 'ready for verdict: evidence entails the answer, but the learner has not fully stated it';
+    return 'The evidence supports the conclusion, but the learner has not fully stated it.';
   }
   if (missing > 0) {
-    return `open: ${missing} premise(s) still missing; bottleneck ${assessment.bottleneck || 'unknown'}`;
+    return `${missing} evidence ${missing === 1 ? 'step remains' : 'steps remain'}. Next need: ${plainInterimBottleneck(
+      assessment.bottleneck,
+    )}.`;
   }
-  return `open: bottleneck ${assessment.bottleneck || 'unknown'}`;
+  return `The inquiry remains open. Next need: ${plainInterimBottleneck(assessment.bottleneck)}.`;
+}
+
+function plainCloseoutReason(reason) {
+  const labels = {
+    exit: 'ended by you',
+    exit_requested_during_turn: 'ended by you while a response was being prepared',
+    once: 'single-turn run complete',
+    report: 'summary requested',
+    report_during_turn: 'summary requested while the next response was being prepared',
+    grounded_asserted_secret: 'the conclusion was supported and stated',
+    auto_grounded: 'the automated conversation reached its conclusion',
+    auto_safety_turn_cap: 'automation paused at its turn limit',
+    auto_turn_limit: 'automation completed the requested number of turns',
+    dialogue_grounded_closure: 'the conversation reached its natural ending',
+    interactive_auto_grounded_closure: 'the automated conversation reached its natural ending',
+    dialogue_closure_acknowledgement: 'the final check-in was completed',
+  };
+  return labels[reason] || displayDiagnosticLabel(reason || 'session ended');
+}
+
+function plainCloseoutStatus(turn) {
+  const assessment = turn?.tutorLearnerDagModel?.assessment || {};
+  const closure = turn?.dialogueClosure?.lifecycle || null;
+  const missing = Number(
+    turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0,
+  );
+  if (assessment.finalSecretEntailed && assessment.assertedSecret)
+    return 'The learner reached and stated the supported conclusion.';
+  if (closure?.phase === 'closed') return 'The conversation closed naturally from the public evidence.';
+  if (closure?.phase === 'awaiting_checkin') return 'The conclusion was stated; one optional final check-in remains.';
+  if (assessment.finalSecretEntailed)
+    return 'The evidence supports the conclusion, but the learner has not fully stated it.';
+  if (missing > 0)
+    return `${missing} evidence ${missing === 1 ? 'step remains' : 'steps remain'} before the conclusion is fully supported.`;
+  return 'The inquiry remains open.';
 }
 
 function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } = {}) {
@@ -7950,8 +8510,8 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
 function printDialogueCloseout(state, { reason = 'report', trace = state.trace } = {}) {
   const tracePath = traceDisplayPath(trace);
   if (!state.turns.length) {
-    console.log(`${C.cyan}closeout >${C.reset} ${reason}; no completed tutor turns`);
-    if (tracePath) console.log(`${C.dim}  trace: ${tracePath}${C.reset}`);
+    console.log(`${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; no completed tutor turns`);
+    if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
     console.log(
       `${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`,
     );
@@ -8017,6 +8577,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     comprehension: tutorStubComprehensionSnapshot(state.comprehension, {
       turn: state.turns.length + 1,
     }),
+    releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
     responseConfigurationVisibility,
     guardAccounting,
     dialogueClosure: last.dialogueClosure?.lifecycle || state.dialogueClosure || null,
@@ -8038,32 +8599,44 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     learning: buildDialogueLearningSummary(state, { reason }),
   };
 
-  console.log(`${C.cyan}closeout >${C.reset} ${reason}; ${state.turns.length} completed turn(s)`);
-  if (tracePath) console.log(`${C.dim}  trace: ${tracePath}${C.reset}`);
-  console.log(`${C.dim}  status: ${payload.finalStatus}${C.reset}`);
   console.log(
-    `${C.dim}  final: coverage ${payload.finalAssessment.bestPathCoverage ?? 'n/a'}, missing ${
+    `${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; ${state.turns.length} completed turn(s)`,
+  );
+  if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
+  console.log(`${C.dim}  outcome: ${plainCloseoutStatus(last)}${C.reset}`);
+  const coveragePercent = Number.isFinite(Number(payload.finalAssessment.bestPathCoverage))
+    ? `${Math.round(Number(payload.finalAssessment.bestPathCoverage) * 100)}%`
+    : 'not available';
+  console.log(
+    `${C.dim}  reasoning progress: ${coveragePercent} of the strongest proof path; ${
       payload.finalAssessment.missingPremiseCount
-    }, bottleneck ${payload.finalAssessment.bottleneck || 'unknown'}, leak ${
-      payload.finalTurn.leakOk === null ? 'n/a' : payload.finalTurn.leakOk ? 'ok' : 'blocked'
+    } evidence step(s) still missing; current sticking point ${displayDiagnosticLabel(
+      payload.finalAssessment.bottleneck || 'unknown',
+    )}; answer-secrecy check ${
+      payload.finalTurn.leakOk === null ? 'not available' : payload.finalTurn.leakOk ? 'passed' : 'failed'
     }${C.reset}`,
   );
   console.log(
-    `${C.dim}  field: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}; delta M ${
+    `${C.dim}  interaction measures: learner progress ${final.learnerMastery}, pressure ${final.learnerRisk}, tutor alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}; progress change ${
       delta.learnerMastery >= 0 ? '+' : ''
-    }${delta.learnerMastery}, R ${delta.learnerRisk >= 0 ? '+' : ''}${delta.learnerRisk}${C.reset}`,
+    }${delta.learnerMastery}, pressure change ${delta.learnerRisk >= 0 ? '+' : ''}${delta.learnerRisk}${C.reset}`,
   );
-  console.log(`${C.dim}  engagement stances: ${registerCounts}${C.reset}`);
+  console.log(`${C.dim}  tutor styles used: ${registerCounts}${C.reset}`);
   if (payload.learning.progress?.acceleratedTurnCount) {
     console.log(
-      `${C.dim}  learner pace: ${payload.learning.progress.acceleratedTurnCount} accelerated turn(s); largest accepted span ${payload.learning.progress.maxSupportedMoves} warranted moves${C.reset}`,
+      `${C.dim}  learner pace: accelerated on ${payload.learning.progress.acceleratedTurnCount} turn(s); longest supported leap ${payload.learning.progress.maxSupportedMoves} moves${C.reset}`,
+    );
+  }
+  if (payload.releasePacing) {
+    console.log(
+      `${C.dim}  clue pace: ${payload.releasePacing.baseSpeed}x base; ${payload.releasePacing.counts.accelerationSignals} faster request(s), ${payload.releasePacing.counts.decelerationSignals} slower request(s); ${payload.releasePacing.counts.early} clue(s) released early${C.reset}`,
     );
   }
   if (responseConfigurationVisibility.turns) {
     console.log(
-      `${C.dim}  response configuration: realization ${Math.round(
+      `${C.dim}  intended tutor style visible in wording: ${Math.round(
         responseConfigurationVisibility.mean_realization_rate * 100,
-      )}%; pairwise visible difference ${
+      )}%; visible difference between styles ${
         responseConfigurationVisibility.pairwise_visible_difference_rate === null
           ? 'n/a'
           : `${Math.round(responseConfigurationVisibility.pairwise_visible_difference_rate * 100)}%`
@@ -8071,34 +8644,34 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     );
   }
   console.log(
-    `${C.dim}  response guards: accounted ${guardAccounting.accountedTurns}/${guardAccounting.turns}; triggered ${
+    `${C.dim}  response checks: recorded ${guardAccounting.accountedTurns}/${guardAccounting.turns}; revisions ${
       guardAccounting.guardTriggeredTurns
-    }; model repairs ${guardAccounting.modelRepairTurns}; deterministic fallbacks ${
+    }; model rewrites ${guardAccounting.modelRepairTurns}; safe fallbacks ${
       guardAccounting.deterministicFallbackTurns
-    }; final audit failures ${guardAccounting.finalDeliveryAuditFailures}${C.reset}`,
+    }; final check failures ${guardAccounting.finalDeliveryAuditFailures}${C.reset}`,
   );
-  console.log(`${C.dim}  bottlenecks: ${bottleneckCounts}${C.reset}`);
+  console.log(`${C.dim}  sticking points seen: ${bottleneckCounts}${C.reset}`);
   if (payload.humanDiscourse.config?.scaffoldActive) {
     console.log(
-      `${C.dim}  human scaffold: ${payload.humanDiscourse.finalStatus || 'unknown'}; proof debt ${
+      `${C.dim}  human-friendly reasoning: ${payload.humanDiscourse.finalStatus || 'unknown'}; deferred proof steps ${
         payload.humanDiscourse.proofDebtStatus || 'unknown'
-      }; side arcs ${payload.humanDiscourse.sideArcCount}; open debt rows ${
+      }; side questions ${payload.humanDiscourse.sideArcCount}; open deferred steps ${
         payload.humanDiscourse.openProofDebtCount
-      }; elided bridges ${payload.humanDiscourse.elidedBridgeCount}; question support ${compactCounts(
+      }; obvious steps carried forward ${payload.humanDiscourse.elidedBridgeCount}; question support ${compactCounts(
         Object.entries(payload.humanDiscourse.questionSupportModes),
       )}${C.reset}`,
     );
   }
   if (payload.comprehension.features.unresolvedTerms.length || payload.comprehension.features.explainedTerms.length) {
     console.log(
-      `${C.dim}  comprehension: unresolved ${
+      `${C.dim}  language help: still unclear ${
         payload.comprehension.features.unresolvedTerms.join(', ') || 'none'
-      }; explained ${payload.comprehension.features.explainedTerms.join(', ') || 'none'}; language opacity ${
+      }; explained ${payload.comprehension.features.explainedTerms.join(', ') || 'none'}; difficulty ${
         payload.comprehension.features.languageOpacity
       }${C.reset}`,
     );
   }
-  console.log(`${C.dim}  last turn id: ${payload.finalTurn.turnId}${C.reset}`);
+  console.log(`${C.dim}  technical turn id: ${payload.finalTurn.turnId}${C.reset}`);
   console.log(`${C.dim}  last learner: ${oneLine(last.learner, { max: 180 })}${C.reset}`);
   console.log(`${C.dim}  last tutor: ${oneLine(last.tutor, { max: 220 })}${C.reset}\n`);
   return payload;
@@ -8174,9 +8747,17 @@ async function callTutor({
   roleBase = 'tutor_stub_tutor',
   signal = null,
 }) {
-  const context = trimHistory(history, historyTurns);
+  const messageContext = tutorMessageContext(state, history, historyTurns);
+  const context = messageContext.messages;
   const tutorTurn = Math.floor(history.length / 2) + 1;
-  const tutorMemory = tutorDialogueMemorySummary(state, { currentTutorTurn: tutorTurn, historyTurns });
+  const tutorMemory =
+    messageContext.historyMode === 'full_public_replay'
+      ? [
+          '[Tutor context continuity]',
+          `All ${messageContext.replayedMessageCount} previous public user/assistant messages are replayed in their original order for this model call.`,
+          '[End tutor context continuity]',
+        ].join('\n')
+      : tutorDialogueMemorySummary(state, { currentTutorTurn: tutorTurn, historyTurns });
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
@@ -8237,6 +8818,12 @@ async function callTutor({
         questionSupportGuard: questionSupportGuardEnabled,
         closureGuard: closureGuardEnabled,
         repairAttempt,
+        messageHistoryMode: messageContext.historyMode,
+        availableMessageCount: messageContext.availableMessageCount,
+        replayedMessageCount: messageContext.replayedMessageCount,
+        replayedUserMessageCount: messageContext.userMessageCount,
+        replayedAssistantMessageCount: messageContext.assistantMessageCount,
+        contextActivatedBy: messageContext.activatedBy,
       },
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
@@ -8263,6 +8850,7 @@ async function callTutor({
         },
         effort: result.effort || result.reasoningEffort || null,
         reasoningEffort: result.reasoningEffort || result.effort || null,
+        tokenUsageAvailable: result.tokenUsageAvailable,
       };
     } else if (useStreamingApi) {
       const sink = streamMode === 'live' ? createConsoleTokenSink(role, stream?.interim) : null;
@@ -8330,6 +8918,7 @@ async function callTutor({
         text: response.text,
         latencyMs: response.latencyMs,
         usage: response.usage,
+        tokenUsageAvailable: response.tokenUsageAvailable,
         streamed: Boolean(response.streamed),
         effort: response.effort || response.reasoningEffort || null,
       },
@@ -8552,12 +9141,17 @@ async function callTutor({
       repaired: true,
       deterministicFallback: true,
       deterministicClosure: closureFallbackSelected,
+      tokenUsageAvailable: response.tokenUsageAvailable,
       promptSnapshot: response.promptSnapshot || null,
     };
     if (canStreamTutor) {
       fallback.guardedStreamReplay = true;
     }
     const fallbackAudits = auditTutorDraft(fallback, { role: `${roleBase}_fallback`, attempt: 2 });
+    fallback.leakAudit = fallbackAudits.leakAudit;
+    fallback.scaffoldAudit = fallbackAudits.scaffoldAudit;
+    fallback.questionSupportAudit = fallbackAudits.questionSupportAudit;
+    fallback.closureAudit = fallbackAudits.closureAudit;
     const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
     attempts.push(
       tutorGuardAttemptEnvelope({
@@ -9446,6 +10040,7 @@ async function runOneTurn(
       scaffoldState: humanDiscourseFrame.scaffoldState,
       proofDebt: humanDiscourseFrame.proofDebt,
       warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
+      releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
     },
     previousObservation: state.turns.at(-1)?.stateObservation || null,
     previousTurnRecords: state.turns,
@@ -9561,6 +10156,24 @@ async function runOneTurn(
     });
   }
 
+  const releasePacing = commitTutorStubReleasePacing({
+    pacing: state.releasePacing,
+    world: state.world,
+    turn: tutorTurn,
+  });
+  if (releasePacing) {
+    appendTraceEvent(state.trace, {
+      type: 'release_pacing_committed',
+      turn: tutorTurn,
+      turnId,
+      releasedNow: releasePacing.releasedNow,
+      direction: releasePacing.direction,
+      effectiveSpeed: releasePacing.effectiveSpeed,
+      nextRelease: releasePacing.nextRelease,
+      releasePacing,
+    });
+  }
+
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
   if (coachGuidance.length && state.coach) {
@@ -9607,6 +10220,7 @@ async function runOneTurn(
     warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
     generousInference: humanDiscourseFrame.generousInference,
     questionSupport: humanDiscourseFrame.questionSupport,
+    releasePacing,
     comprehension: {
       beforeTutor: comprehensionBeforeTutor,
       afterTutor: comprehensionAfterTutor,
@@ -9651,6 +10265,7 @@ async function runOneTurn(
     model: response.model,
     latencyMs: response.latencyMs,
     usage: response.usage,
+    tokenUsageAvailable: response.tokenUsageAvailable,
   };
   state.turns.push(turnRecord);
   appendTraceEvent(state.trace, {
@@ -9659,7 +10274,12 @@ async function runOneTurn(
     turn: tutorTurn,
     turnRecord,
   });
-  return { ...response, dagSnapshot };
+  return {
+    ...response,
+    dagSnapshot,
+    registerSelection: jsonClone(registerSelection || null),
+    releasePacing: jsonClone(releasePacing),
+  };
 }
 
 async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null } = {}) {
@@ -9694,7 +10314,7 @@ async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null 
     stopInterimAnimation(state);
   }
   printWithConcurrentTerminal(state, () => {
-    printTutorDagSnapshot(response.dagSnapshot);
+    if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
     printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_generated_tutor_response' });
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
@@ -9708,6 +10328,7 @@ function emitTutorOpeningToState(state, { enabled = true, reason = 'start' } = {
   if (!enabled || state.history.length) return null;
   const opening = buildTutorOpening(state);
   state.history.push({ role: 'assistant', content: opening });
+  acknowledgeTutorStubOpeningRelease({ pacing: state.releasePacing, world: state.world });
   const turnId = openingDebugId(stateRunDebugId(state));
   appendTraceEvent(state.trace, { type: 'tutor_opening', turnId, reason, text: opening });
   printOpeningDebugLine(state);
@@ -9837,8 +10458,32 @@ async function main() {
     printWorlds();
     return;
   }
+  if (args['list-learner-profiles']) {
+    printAutomatedLearnerProfiles();
+    return;
+  }
 
   args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
+  const allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
+  if (allModelsOverrideRef) {
+    args.model = allModelsOverrideRef;
+    args['classifier-model'] = allModelsOverrideRef;
+    args['learner-record-model'] = allModelsOverrideRef;
+    args['auto-learner-model'] = allModelsOverrideRef;
+  }
+  const allModelsOverride = allModelsOverrideRef
+    ? {
+        schema: 'machinespirits.tutor-stub.all-models-override.v1',
+        modelRef: allModelsOverrideRef,
+        source: commandLineOptionProvided('all-models') ? 'cli' : 'environment',
+        precedence: 'overrides_all_role_specific_model_flags_and_remembered_tutor_model',
+        roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
+      }
+    : null;
+  const interactiveSessionIntent = Boolean(!args['auto-learner'] && !args.once && !positionals.join(' ').trim());
+  const rememberedSettings = applyRememberedInteractiveDefaults({
+    interactiveSessionEnabled: interactiveSessionIntent,
+  });
 
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
@@ -9849,6 +10494,9 @@ async function main() {
   });
   const dagFactDropoutSeed = normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
     label: '--dag-fact-dropout-seed',
+  });
+  const releaseSpeed = normalizeTutorStubReleaseSpeed(args['release-speed'], {
+    label: '--release-speed',
   });
   const experimentRunSeed = normalizeTutorStubDagFactDropoutSeed(args['run-seed'], {
     label: '--run-seed',
@@ -9901,13 +10549,21 @@ async function main() {
     backgroundFactsImmune: true,
     visibility: 'conduct',
   };
+  const releasePacingConfig = {
+    schema: 'machinespirits.tutor-stub.release-pacing.v1',
+    baseSpeed: releaseSpeed,
+    adaptive: true,
+    range: [MIN_TUTOR_STUB_RELEASE_SPEED, MAX_TUTOR_STUB_RELEASE_SPEED],
+    directLearnerRequests: true,
+    maxReleaseBatchesPerTutorTurn: 1,
+  };
   const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
   const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
   const memorySummaryEnabled = Boolean(STUB.memorySummary && !args['no-memory-summary']);
   const autoLearnerEnabled = Boolean(args['auto-learner']);
   const mixedLearnerRequested = Boolean(args['mixed-learner'] || args['mixed-mode']);
   const mixedLearnerEnabled = Boolean(mixedLearnerRequested && !autoLearnerEnabled);
-  const interactiveSessionEnabled = Boolean(!autoLearnerEnabled && !args.once && !positionals.join(' ').trim());
+  const interactiveSessionEnabled = interactiveSessionIntent;
   const learnerSuggestionEnabled = Boolean(autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled);
   const autoTurns = parseAutoTurns(args['auto-turns']);
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
@@ -10130,6 +10786,7 @@ async function main() {
         ? ['engagement_stance_temperature']
         : []),
       ...(tutorLearnerDagEnabled ? ['dag_fact_dropout'] : []),
+      ...(worldBundle ? ['clue_release_speed'] : []),
     ],
     tutorModel: {
       enabled: false,
@@ -10150,6 +10807,13 @@ async function main() {
       recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       range: [0, 1],
       seed: dagFactDropoutSeed,
+    },
+    clueReleaseSpeed: {
+      enabled: Boolean(worldBundle),
+      default: releaseSpeed,
+      recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+      range: [MIN_TUTOR_STUB_RELEASE_SPEED, MAX_TUTOR_STUB_RELEASE_SPEED],
+      adaptive: true,
     },
   };
   const interactiveRoleModes = {
@@ -10205,6 +10869,18 @@ async function main() {
     publicEvidenceOnly: true,
     launchInInteractiveTty: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
   };
+  const rememberedSettingsConfig = {
+    enabled: rememberedSettings.enabled,
+    writeEnabled: rememberedSettings.writeEnabled,
+    file: path.relative(ROOT, rememberedSettings.filePath),
+    status: rememberedSettings.status,
+    loadedAt: rememberedSettings.loadedAt,
+    appliedFields: [...rememberedSettings.appliedFields],
+    skippedExplicitFields: [...rememberedSettings.skippedExplicitFields],
+    warning: rememberedSettings.warning,
+    scope: 'human_interactive_sessions_only',
+    precedence: 'explicit_cli_or_environment_then_remembered_then_repository_default',
+  };
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -10218,6 +10894,8 @@ async function main() {
         {
           modelRef: args.model,
           resolved: visibleModel,
+          allModelsOverride,
+          rememberedSettings: rememberedSettingsConfig,
           topic: effectiveTopic,
           world: worldBundle
             ? {
@@ -10237,6 +10915,7 @@ async function main() {
             advancesLearnerDag: false,
           },
           dagFactDropout: dagFactDropoutConfig,
+          releasePacing: releasePacingConfig,
           experiment: experimentConfig,
           typedPedagogicalActions: typedActionConfig,
           responseConfiguration: {
@@ -10445,6 +11124,8 @@ async function main() {
     metadata: {
       modelRef: args.model,
       resolved: visibleModel,
+      allModelsOverride,
+      rememberedSettings: rememberedSettingsConfig,
       humanDiscourse: humanDiscourseConfig,
       scenarioPicker: initialScenarioPickerConfig,
       comprehensionSideState: {
@@ -10454,6 +11135,7 @@ async function main() {
         advancesLearnerDag: false,
       },
       dagFactDropout: dagFactDropoutConfig,
+      releasePacing: releasePacingConfig,
       experiment: experimentConfig,
       typedPedagogicalActions: typedActionConfig,
       responseConfiguration: {
@@ -10606,10 +11288,22 @@ async function main() {
     systemPrompt,
     modelRef: args.model,
     resolved,
+    rememberedSettings: {
+      ...rememberedSettingsConfig,
+      filePath: rememberedSettings.filePath,
+      savedAt: rememberedSettings.savedAt,
+    },
     requestedTemperature: temperature,
     temperature: effectiveTemperature,
     maxTokens,
     historyTurns,
+    tutorContext: {
+      schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
+      historyMode: 'compact_recent',
+      activatedBy: 'session_start',
+      activatedAtTurn: null,
+      modelRef: args.model,
+    },
     memory: {
       enabled: memorySummaryEnabled,
     },
@@ -10636,6 +11330,10 @@ async function main() {
       },
     }),
     comprehension: createTutorStubComprehensionState(),
+    releasePacing: createTutorStubReleasePacingState({
+      world: worldBundle?.world || null,
+      speed: releaseSpeed,
+    }),
     register: {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
@@ -10690,10 +11388,72 @@ async function main() {
     turns: [],
   };
 
+  function currentRememberedSettingsSnapshot() {
+    return {
+      tutorModelRef: state.modelRef,
+      engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+      dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+      releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+      registerPolicy: state.register?.policy || STUB.registerPolicy,
+      registerOverlays: [...(state.register?.overlays || [])],
+      registerOverlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+    };
+  }
+
+  function persistCurrentInteractiveSettings(reason) {
+    if (!state.rememberedSettings?.writeEnabled) return null;
+    try {
+      const saved = writeTutorStubLastSettings(state.rememberedSettings.filePath, currentRememberedSettingsSnapshot());
+      state.rememberedSettings.status = 'saved';
+      state.rememberedSettings.savedAt = saved.updatedAt;
+      state.rememberedSettings.warning = null;
+      appendTraceEvent(state.trace, {
+        type: 'interactive_settings_remembered',
+        schema: saved.schema,
+        reason,
+        file: path.relative(ROOT, state.rememberedSettings.filePath),
+        savedAt: saved.updatedAt,
+        settings: saved,
+      });
+      return saved;
+    } catch (error) {
+      state.rememberedSettings.status = 'write_error';
+      state.rememberedSettings.warning = error.message;
+      appendTraceEvent(state.trace, {
+        type: 'interactive_settings_remember_error',
+        reason,
+        file: path.relative(ROOT, state.rememberedSettings.filePath),
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  function forgetRememberedInteractiveSettings({ source = 'settings' } = {}) {
+    const result = clearTutorStubLastSettings(state.rememberedSettings.filePath);
+    state.rememberedSettings.enabled = false;
+    state.rememberedSettings.writeEnabled = false;
+    state.rememberedSettings.status = 'forgotten';
+    state.rememberedSettings.savedAt = null;
+    appendTraceEvent(state.trace, {
+      type: 'interactive_settings_forgotten',
+      source,
+      file: path.relative(ROOT, state.rememberedSettings.filePath),
+      existed: result.existed,
+      currentSessionChanged: false,
+    });
+    return result;
+  }
+
   const resumedDialogue = args['resume-last']
     ? restoreDialogueFromTrace(state, resumeCandidate, { currentWorld: worldBundle?.world || null })
     : null;
   if (resumedDialogue) {
+    restoreTutorStubReleasePacingFromTurns({
+      pacing: state.releasePacing,
+      world: state.world,
+      turns: state.turns,
+    });
     appendTraceEvent(state.trace, {
       type: 'resume_loaded',
       source: path.relative(ROOT, resumedDialogue.source),
@@ -10710,52 +11470,65 @@ async function main() {
       traceDir: path.relative(ROOT, traceDir),
     });
   }
+  persistCurrentInteractiveSettings(resumedDialogue ? 'resume_loaded' : 'session_start');
 
   console.log(
     `\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`,
   );
+  if (allModelsOverride) {
+    console.log(
+      `${C.dim}one model for every role: ${allModelsOverride.modelRef} (tutor, learner analysis, reasoning tracker, and automated/suggested learner)${C.reset}`,
+    );
+  }
+  if (rememberedSettings.status === 'loaded' && rememberedSettings.appliedFields.length) {
+    console.log(
+      `${C.dim}saved settings: restored ${plainList(rememberedSettings.appliedFields.map(plainSettingName))} from the last interactive session${C.reset}`,
+    );
+  } else if (rememberedSettings.warning) {
+    console.log(`${C.yellow}saved settings warning:${C.reset} ${rememberedSettings.warning}`);
+  }
   if (classifierEnabled && combinedLearnerAnalysisEnabled) {
     console.log(
-      `${C.dim}classifier: combined into learner-DAG analysis via ${args['learner-record-model']} -> ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
+      `${C.dim}learner analysis: one combined reading via ${args['learner-record-model']} → ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
     );
   } else if (classifierEnabled) {
     console.log(
-      `${C.dim}classifier: ${args['classifier-model']} -> ${visibleClassifierModel.provider}/${visibleClassifierModel.model}${C.reset}`,
+      `${C.dim}learner analysis: ${args['classifier-model']} → ${visibleClassifierModel.provider}/${visibleClassifierModel.model}${C.reset}`,
     );
   } else {
-    console.log(`${C.dim}classifier: off${C.reset}`);
+    console.log(`${C.dim}learner analysis: off${C.reset}`);
   }
   if (tutorLearnerDagEnabled) {
     console.log(
-      `${C.dim}tutor learner-DAG: on via ${args['learner-record-model']} -> ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
+      `${C.dim}learner reasoning tracker: on via ${args['learner-record-model']} → ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
     );
   } else if (args['tutor-learner-dag'] && !worldBundle) {
-    console.log(`${C.dim}tutor learner-DAG: requested, but off because no detective world is active${C.reset}`);
+    console.log(`${C.dim}learner reasoning tracker: unavailable because no scenario is active${C.reset}`);
   } else {
-    console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
+    console.log(`${C.dim}learner reasoning tracker: off${C.reset}`);
   }
   console.log(
-    `${C.dim}DAG discourse mode: ${dagMode} (${humanDiscourseConfig.phase}; ${
-      humanDiscourseConfig.behaviorChange ? 'human scaffold prompt active' : 'strict audit only'
+    `${C.dim}reasoning mode: ${displayDiagnosticLabel(dagMode)} (${humanDiscourseConfig.phase}; ${
+      humanDiscourseConfig.behaviorChange ? 'human-friendly inference active' : 'strict proof audit'
     })${C.reset}`,
   );
   if (autoLearnerEnabled) {
     const autoTurnSummary = autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
     console.log(
-      `${C.dim}auto learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; turns ${autoTurnSummary}; stopOnGrounded ${autoStopOnGrounded}${C.reset}`,
+      `${C.dim}automated learner: ${args['auto-learner-model']} → ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; ${autoTurnSummary}; stop when complete: ${autoStopOnGrounded ? 'yes' : 'no'}${C.reset}`,
     );
   } else if (mixedLearnerEnabled) {
     console.log(
-      `${C.dim}mixed learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; /clue, Tab autocomplete, /suggest, /use, /regen${C.reset}`,
+      `${C.dim}learner suggestions: on via ${args['auto-learner-model']} → ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; use /clue, Tab, /suggest, /use, or /regen${C.reset}`,
     );
   } else if (mixedLearnerRequested) {
-    console.log(`${C.dim}mixed learner: requested, but off because --auto-learner is running unattended${C.reset}`);
+    console.log(`${C.dim}learner suggestions: off while the automated learner is running${C.reset}`);
   } else if (interactiveSessionEnabled && visibleAutoLearnerModel) {
     console.log(
       `${C.dim}interactive roles: learner + private coach; /auto hands off to ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}${C.reset}`,
     );
   } else {
-    console.log(`${C.dim}auto learner: off${C.reset}`);
+    console.log(`${C.dim}automated learner: off${C.reset}`);
   }
   if (typedActionConfig.enabled) {
     console.log(
@@ -10768,10 +11541,10 @@ async function main() {
   }
   if (registerSelectionEnabled) {
     console.log(
-      `${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${tutorStubRegisterPolicyStackId(
+      `${C.dim}teaching style: ${plainPolicyLabel(state.register.policy)} | available stances [${registerPalette.join(', ')}] | policy ${tutorStubRegisterPolicyStackId(
         state.register.policy,
         state.register.overlays,
-      )} | overlay threshold ${state.register.overlayThreshold} | temp ${state.register.temperature}${C.reset}`,
+      )} | override sensitivity ${state.register.overlayThreshold} | style range ${state.register.temperature}${C.reset}`,
     );
     if (
       empiricalDynamicalSystemRegisterSelectionEnabled ||
@@ -10780,25 +11553,25 @@ async function main() {
     ) {
       const priorPath = registerEmpiricalPrior.filePath ? path.relative(ROOT, registerEmpiricalPrior.filePath) : 'none';
       console.log(
-        `${C.dim}register empirical prior: ${registerEmpiricalPrior.status}${
+        `${C.dim}cross-run style evidence: ${registerEmpiricalPrior.status}${
           priorPath ? ` | ${priorPath}` : ''
         }${C.reset}`,
       );
     }
     if (continuousRegisterSelectionEnabled) {
       console.log(
-        `${C.dim}continuous register anchors: ${
+        `${C.dim}style blend sources: ${
           continuousUnsafeRegisterAnchorsEnabled ? 'active palette' : 'safe router-selectable only'
         }${C.reset}`,
       );
     }
   } else {
-    console.log(`${C.dim}register selection: off${C.reset}`);
+    console.log(`${C.dim}teaching-style selection: off${C.reset}`);
   }
   if (trace.enabled) {
-    console.log(`${C.dim}trace: ${traceDisplayPath(trace)}${C.reset}`);
+    console.log(`${C.dim}technical trace: ${traceDisplayPath(trace)}${C.reset}`);
   } else {
-    console.log(`${C.dim}trace: off${C.reset}`);
+    console.log(`${C.dim}technical trace: off${C.reset}`);
   }
   if (streamEnabled) {
     const streamBits = [
@@ -10806,11 +11579,11 @@ async function main() {
       tutorStreamState === 'buffered_for_concurrent_input' ? 'tutor buffered while command line is live' : null,
       tutorStreamState === 'guarded_after_audit' ? 'tutor guarded-after-audit' : null,
       tutorStreamState === 'cli_events' ? 'tutor CLI events' : null,
-      classifierResolved && providerSupportsStreaming(classifierResolved) ? 'classifier' : null,
-      learnerRecordResolved && providerSupportsStreaming(learnerRecordResolved) ? 'learner-DAG/analysis' : null,
-      classifierResolved && providerSupportsEventStreaming(classifierResolved) ? 'classifier CLI events' : null,
+      classifierResolved && providerSupportsStreaming(classifierResolved) ? 'learner analysis' : null,
+      learnerRecordResolved && providerSupportsStreaming(learnerRecordResolved) ? 'reasoning tracker' : null,
+      classifierResolved && providerSupportsEventStreaming(classifierResolved) ? 'learner-analysis events' : null,
       learnerRecordResolved && providerSupportsEventStreaming(learnerRecordResolved)
-        ? 'learner-DAG/analysis CLI events'
+        ? 'reasoning-tracker events'
         : null,
     ].filter(Boolean);
     const streamSummary = streamBits.length
@@ -10818,20 +11591,20 @@ async function main() {
       : tutorStreamState === 'unavailable_cli_buffered'
         ? 'requested, but tutor provider is CLI-buffered'
         : 'requested, but selected providers are CLI-buffered';
-    console.log(`${C.dim}stream: ${streamSummary}${C.reset}`);
+    console.log(`${C.dim}live output: ${streamSummary}${C.reset}`);
   } else {
-    console.log(`${C.dim}stream: off${C.reset}`);
+    console.log(`${C.dim}live output: off${C.reset}`);
   }
   console.log(
-    `${C.dim}interim animation: ${interimAnimationEnabled ? (output.isTTY ? 'on' : 'off (non-TTY)') : 'off'}${C.reset}`,
+    `${C.dim}progress display: ${interimAnimationEnabled ? (output.isTTY ? 'on' : 'off outside an interactive terminal') : 'off'}${C.reset}`,
   );
   console.log(
-    `${C.dim}field visualization: ${
+    `${C.dim}interaction chart: ${
       fieldVisualizationEnabled ? `on -> ${path.relative(ROOT, traceDir)}` : 'off (/viz writes on demand)'
     }${C.reset}`,
   );
-  console.log(`${C.dim}opening prompt: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
-  console.log(`${C.dim}closeout report: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
+  console.log(`${C.dim}opening scene: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
+  console.log(`${C.dim}terminal summary at the end: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
   if (learningSummaryReportConfig.enabled) {
     console.log(
       `${C.dim}learning summary: automatic HTML on conclusion${
@@ -10840,7 +11613,7 @@ async function main() {
     );
   }
   console.log(
-    `${C.dim}dialogue closure: ${dialogueClosureConfig.enabled ? `on; ${dialogueClosureConfig.allowCheckIn ? 'one optional final check-in' : 'terminal close without check-in'}` : 'off'}${C.reset}`,
+    `${C.dim}natural ending: ${dialogueClosureConfig.enabled ? `on; ${dialogueClosureConfig.allowCheckIn ? 'one optional final check-in' : 'close without a check-in'}` : 'off'}${C.reset}`,
   );
   if (cliEffort) {
     console.log(`${C.dim}cli effort: ${cliEffort}${C.reset}`);
@@ -10851,7 +11624,7 @@ async function main() {
     );
     if (resumedDialogue.learnerDag.skipped) {
       console.log(
-        `${C.dim}resume: learner-DAG replayed ${resumedDialogue.learnerDag.replayed}, reused ${resumedDialogue.learnerDag.skipped} stored model snapshot(s)${C.reset}`,
+        `${C.dim}resume: rebuilt ${resumedDialogue.learnerDag.replayed} reasoning snapshot(s) and reused ${resumedDialogue.learnerDag.skipped}${C.reset}`,
       );
     }
     if (resumedDialogue.typedActions.enabled) {
@@ -10881,7 +11654,7 @@ async function main() {
   }
   if (worldBundle) {
     console.log(
-      `${C.dim}world: ${worldBundle.world.id} — ${worldBundle.world.title}${args.dag ? ' | DAG on' : ' | DAG off'}${C.reset}`,
+      `${C.dim}scenario: ${worldBundle.world.id} — ${worldBundle.world.title}${args.dag ? ' | proof map on' : ' | proof map off'}${C.reset}`,
     );
   }
   console.log(
@@ -10981,7 +11754,7 @@ async function main() {
     } finally {
       stopInterimAnimation(state);
     }
-    printTutorDagSnapshot(response.dagSnapshot);
+    if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
     printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_message_response' });
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
@@ -11077,8 +11850,8 @@ async function main() {
   function printMixedLearnerProfilePresentation(suggestion, { verb = 'drafted as' } = {}) {
     const presentation = mixedLearnerProfilePresentation(suggestion);
     console.log(`${C.magenta}profile >${C.reset} ${presentation.id} — ${presentation.name}`);
-    console.log(`${C.dim}  pattern: ${presentation.pattern}${C.reset}`);
-    console.log(`${C.dim}  ${verb}: ${presentation.signal}${C.reset}`);
+    console.log(`${C.dim}  tends to: ${presentation.pattern}${C.reset}`);
+    console.log(`${C.dim}  ${verb === 'drafted as' ? 'this draft' : verb}: ${presentation.signal}${C.reset}`);
   }
 
   let initialSetupStage = 'off';
@@ -11273,6 +12046,7 @@ async function main() {
       registerOverlayThreshold: state.register?.overlayThreshold ?? null,
       registerTemperature: state.register?.temperature ?? null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
+      releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: turnNumber }),
       registerHistory: (state.register?.history || []).map((entry) => ({
         turn: entry.turn || null,
@@ -11292,8 +12066,10 @@ async function main() {
       ...state,
       history: structuredClone(state.history),
       turns: structuredClone(state.turns),
+      world: structuredClone(state.world),
       learnerDag: structuredClone(state.learnerDag),
       comprehension: structuredClone(state.comprehension),
+      releasePacing: structuredClone(state.releasePacing),
       register: structuredClone(state.register),
       dialogueClosure: structuredClone(state.dialogueClosure),
       coach: structuredClone(state.coach),
@@ -11309,31 +12085,36 @@ async function main() {
     humanDiscourseFrame,
     dialogueClosureFrame,
     comprehensionState = state.comprehension,
+    runtimeState = state,
   }) {
     return mixedLearnerAnalysisCacheKey({
       learnerText,
-      history: state.history,
+      history: runtimeState.history,
       classifier: classifierTutorContext(classification),
       learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag),
-      dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
+      dagFactDropout: tutorStubDagFactDropoutSnapshot(runtimeState.learnerDag?.dropout),
+      releasePacing: tutorStubReleasePacingSnapshot(runtimeState.releasePacing, runtimeState.world),
       register: responseConfigurationContext(registerSelection, {
-        world: state?.world || null,
-        multipleChoice: state.multipleChoice,
+        world: runtimeState?.world || null,
+        multipleChoice: runtimeState.multipleChoice,
         humanDiscourseFrame,
         dialogueClosureFrame,
       }),
       humanDiscourse: humanDiscourseTutorContext(humanDiscourseFrame),
       dialogueClosure: dialogueClosureTutorContext(dialogueClosureFrame),
       comprehension: tutorStubComprehensionPrompt(comprehensionState, {
-        turn: state.turns.length + 1,
+        turn: runtimeState.turns.length + 1,
       }),
-      dagTurn: state.dag && state.world ? dagTurnContext(state.world, state.turns.length + 1) : null,
-      coachGuidance: tutorCoachGuidanceContext(state),
-      systemPrompt: state.systemPrompt,
-      tutorModel: state.resolved,
-      temperature: state.temperature,
-      maxTokens: state.maxTokens,
-      historyTurns: state.historyTurns,
+      dagTurn:
+        runtimeState.dag && runtimeState.world
+          ? dagTurnContext(runtimeState.world, runtimeState.turns.length + 1)
+          : null,
+      coachGuidance: tutorCoachGuidanceContext(runtimeState),
+      systemPrompt: runtimeState.systemPrompt,
+      tutorModel: runtimeState.resolved,
+      temperature: runtimeState.temperature,
+      maxTokens: runtimeState.maxTokens,
+      historyTurns: runtimeState.historyTurns,
       schema: 'mixed-learner-tutor-cache.v1',
     });
   }
@@ -11371,6 +12152,14 @@ async function main() {
         tutorTurn: entry.turn,
         recordTrace: false,
       });
+      updateReleasePacingForLearnerTurn({
+        learnerText: entry.answer,
+        state: speculativeState,
+        classification,
+        tutorLearnerDag,
+        tutorTurn: entry.turn,
+        recordTrace: false,
+      });
       evaluatePendingRegisterEfficacy(speculativeState, tutorLearnerDag, classification);
       const registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
         state: speculativeState,
@@ -11399,6 +12188,7 @@ async function main() {
         humanDiscourseFrame,
         dialogueClosureFrame,
         comprehensionState: speculativeState.comprehension,
+        runtimeState: speculativeState,
       });
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_tutor_prefetch_start',
@@ -11758,8 +12548,14 @@ async function main() {
           printWithConcurrentTerminal(state, () => {
             clearStatusLine();
             if (consumeMixedLearnerReadyAnnouncement(mixedLearner)) {
+              const technicalSuffix = automaticTechnicalDetailsEnabled(state)
+                ? ` · ${turnId}${analysisWarming ? ' · learner analysis running' : ''}`
+                : '';
               console.log(
-                `${C.dim}mixed learner answer + clue ready for ${turnId}; suggested move: ${move === 'ask_question' ? 'ask a question' : 'respond'}${analysisWarming ? '; analysis warming in background' : ''}; Tab inserts this ${mixedLearner.profileId || 'custom'} draft; /suggest inspects it; /use sends it${C.reset}`,
+                `${C.brightGreen}learner suggestion ready >${C.reset} ${move === 'ask_question' ? 'ask a question' : 'respond'}${technicalSuffix}`,
+              );
+              console.log(
+                `${C.dim}  Tab inserts it for editing · /clue gives direction · /suggest previews it · /use sends it${C.reset}`,
               );
               printMixedLearnerProfilePresentation(mixedLearner.suggestion);
               appendTraceEvent(state.trace, {
@@ -11792,7 +12588,9 @@ async function main() {
         if (!processingTurn && !exiting) {
           printWithConcurrentTerminal(state, () => {
             clearStatusLine();
-            console.log(`${C.red}mixed learner error:${C.reset} ${err.message}${C.dim} (/regen to retry)${C.reset}`);
+            console.log(
+              `${C.red}learner suggestion error:${C.reset} ${err.message}${C.dim} · use /regen to retry${C.reset}`,
+            );
             if (refreshPrompt && !concurrentTerminal.enabled) refreshMixedLearnerPrompt(rl);
           });
         }
@@ -11803,50 +12601,44 @@ async function main() {
   function showMixedLearnerSuggestion({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
-      console.log(
-        `${C.dim}mixed learner is off; run with --mixed-learner to enable autocomplete suggestions${C.reset}\n`,
-      );
+      console.log(`${C.dim}learner suggestions are off; start with --mixed-learner to enable them${C.reset}\n`);
       return;
     }
     if (mixedLearner.suggestion?.text) {
       console.log(
-        `${C.cyan}learner suggestion >${C.reset} ${mixedLearner.suggestion.turnId} · ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
+        `${C.cyan}learner suggestion >${C.reset} ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
       );
       printMixedLearnerProfilePresentation(mixedLearner.suggestion);
       console.log(`${mixedLearner.suggestion.text}\n`);
       return;
     }
     if (mixedLearner.pending) {
-      console.log(
-        `${C.dim}mixed learner is drafting ${mixedLearner.pending.turnId}; use /suggest again when ready${C.reset}\n`,
-      );
+      console.log(`${C.dim}the learner suggestion is still being drafted; use /suggest again shortly${C.reset}\n`);
       return;
     }
     if (mixedLearner.error) {
       console.log(
-        `${C.red}mixed learner error:${C.reset} ${mixedLearner.error.message}${C.dim} (${mixedLearner.error.turnId}; /regen to retry)${C.reset}\n`,
+        `${C.red}learner suggestion error:${C.reset} ${mixedLearner.error.message}${C.dim} · use /regen to retry${C.reset}\n`,
       );
       return;
     }
     if (duringTurn) {
-      console.log(
-        `${C.dim}tutor is still thinking; mixed learner drafting starts after the tutor responds${C.reset}\n`,
-      );
+      console.log(`${C.dim}the tutor is still responding; the next learner suggestion starts afterward${C.reset}\n`);
       return;
     }
-    console.log(`${C.dim}no mixed learner suggestion is ready; starting one now${C.reset}\n`);
+    console.log(`${C.dim}no learner suggestion is ready; starting one now${C.reset}\n`);
     startMixedLearnerPrefetch('suggest');
   }
 
   function showMixedLearnerClue({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
-      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to enable /clue${C.reset}\n`);
+      console.log(`${C.dim}learner suggestions are off; start with --mixed-learner to use /clue${C.reset}\n`);
       return;
     }
     if (mixedLearner.suggestion?.clue) {
       console.log(
-        `${C.cyan}learner clue >${C.reset} ${mixedLearner.suggestion.turnId} · ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
+        `${C.cyan}learner clue >${C.reset} ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
       );
       console.log(`${mixedLearner.suggestion.clue}\n`);
       return;
@@ -11858,22 +12650,20 @@ async function main() {
       return;
     }
     if (mixedLearner.pending) {
-      console.log(
-        `${C.dim}mixed learner is drafting the clue and answer for ${mixedLearner.pending.turnId}${C.reset}\n`,
-      );
+      console.log(`${C.dim}the clue and learner suggestion are still being drafted${C.reset}\n`);
       return;
     }
     if (mixedLearner.error) {
       console.log(
-        `${C.red}mixed learner error:${C.reset} ${mixedLearner.error.message}${C.dim} (/regen to retry)${C.reset}\n`,
+        `${C.red}learner suggestion error:${C.reset} ${mixedLearner.error.message}${C.dim} · use /regen to retry${C.reset}\n`,
       );
       return;
     }
     if (duringTurn) {
-      console.log(`${C.dim}tutor is still thinking; clue generation starts after the tutor responds${C.reset}\n`);
+      console.log(`${C.dim}the tutor is still responding; clue generation starts afterward${C.reset}\n`);
       return;
     }
-    console.log(`${C.dim}no mixed learner clue is ready; starting the clue-answer pair now${C.reset}\n`);
+    console.log(`${C.dim}no learner clue is ready; starting the clue and suggestion now${C.reset}\n`);
     startMixedLearnerPrefetch('clue');
   }
 
@@ -11909,7 +12699,7 @@ async function main() {
   function handleMixedLearnerProfileCommand(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
-      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to use /profile${C.reset}\n`);
+      console.log(`${C.dim}learner suggestions are off; start with --mixed-learner to use /profile${C.reset}\n`);
       return;
     }
     const requested = String(argument || '').trim();
@@ -11988,7 +12778,7 @@ async function main() {
     } else if (latestTutorMessage(state)) {
       startMixedLearnerPrefetch('profile_changed');
       console.log(
-        `${C.dim}  cleared the prior clue, answer, analysis, and tutor-response cache; regenerating for the current turn; Tab activates when the ready message appears${C.reset}\n`,
+        `${C.dim}  discarded the old clue and suggestion; rebuilding them for the current turn; Tab activates when the new suggestion is ready${C.reset}\n`,
       );
     } else {
       console.log(`${C.dim}  applies after the next tutor message${C.reset}\n`);
@@ -12019,7 +12809,18 @@ async function main() {
     args.model = selection.modelRef;
     visibleModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
     const changed = previousRef !== selection.modelRef || previousResolved.model !== selection.resolved.model;
+    const fullReplayActivated = Boolean(changed && source !== 'initial_settings' && state.history.length > 0);
+    if (fullReplayActivated) {
+      state.tutorContext = {
+        schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
+        historyMode: 'full_public_replay',
+        activatedBy: 'live_tutor_model_change',
+        activatedAtTurn: state.turns.length + 1,
+        modelRef: selection.modelRef,
+      };
+    }
     const invalidated = changed ? resetMixedLearnerSuggestion('tutor_model_changed') : null;
+    const remembered = changed ? persistCurrentInteractiveSettings('tutor_model_changed') : null;
     appendTraceEvent(state.trace, {
       type: source === 'initial_settings' ? 'mixed_learner_initial_tutor_model_selected' : 'tutor_model_changed',
       schema: 'machinespirits.tutor-stub.tutor-model-selection.v1',
@@ -12031,7 +12832,17 @@ async function main() {
       cli: isCliProvider(selection.resolved.provider),
       usedDefault,
       changed,
+      rememberedAt: remembered?.updatedAt || null,
       effectiveTurn: state.turns.length + 1,
+      contextReplay: fullReplayActivated
+        ? {
+            schema: 'machinespirits.tutor-stub.tutor-context-replay.v1',
+            historyMode: state.tutorContext.historyMode,
+            publicMessageCount: publicTutorMessageHistory(state.history).length,
+            includesRoles: ['user', 'assistant'],
+            persistence: 'every_subsequent_tutor_call_in_this_dialogue',
+          }
+        : null,
       cacheRefresh: invalidated
         ? {
             priorStateCleared: Boolean(invalidated.hadState),
@@ -12144,39 +12955,53 @@ async function main() {
       },
       {
         id: 'stance_temp',
-        label: 'Stance temperature',
+        label: 'Teaching-style range',
         value: String(state.register?.temperature ?? registerTemperature),
-        description: 'Lower sharpens the dominant engagement stance; higher allows a broader blend.',
+        description: 'Lower concentrates the strongest teaching style; higher mixes in more alternatives.',
       },
       {
         id: 'dropout',
-        label: 'DAG fact dropout',
+        label: 'Evidence-memory dropout',
         value: `${dropout.rate}${state.learnerDag?.enabled ? '' : ' · inactive'}`,
-        description: 'Set the seeded chance that an adopted public premise temporarily leaves active memory.',
+        description:
+          'Set the chance that previously understood evidence is temporarily forgotten and can be recovered.',
+      },
+      {
+        id: 'release_speed',
+        label: 'Clue release speed',
+        value: `${state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x`,
+        description:
+          'Set the baseline pace for new clues. The dialogue can still speed up or slow down when the learner asks.',
       },
       {
         id: 'state_overlay',
-        label: 'State overlay',
+        label: 'Turn-change override',
         value: overlays.has('state') ? 'on' : 'off',
-        description: 'Let a strong single-turn state change override the primary register policy.',
+        description: 'Let a strong change in the latest learner turn alter the teaching style immediately.',
       },
       {
         id: 'field_overlay',
-        label: 'Field overlay',
+        label: 'Conversation override',
         value: overlays.has('field') ? 'on' : 'off',
-        description: 'Let a strong field-level change override the primary register policy.',
+        description: 'Let a strong change in the conversation as a whole alter the teaching style.',
       },
       {
         id: 'overlay_threshold',
-        label: 'Overlay threshold',
+        label: 'Override sensitivity',
         value: String(state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
-        description: 'Set how strong an overlay recommendation must be before it can take control.',
+        description: 'Lower values react more often; higher values wait for a clearer change.',
+      },
+      {
+        id: 'forget',
+        label: 'Forget saved settings',
+        value: state.rememberedSettings?.enabled ? 'remembering on' : state.rememberedSettings?.status || 'off',
+        description: 'Stop reusing these choices next time without changing the current conversation.',
       },
       {
         id: 'done',
-        label: 'Done',
-        value: 'return to dialogue',
-        description: 'Close settings and return to the current learner or coach prompt.',
+        label: 'Done — return to dialogue',
+        value: 'press Enter',
+        description: 'Finish changing settings and return to the current learner or coach prompt.',
       },
     ];
     let selectedIndex = Math.max(0, Math.min(Number(defaultIndex) || 0, entries.length - 1));
@@ -12197,15 +13022,23 @@ async function main() {
       const width = Math.max(68, Math.min(Number(output.columns || 100), 140));
       const valueWidth = Math.max(16, Math.min(38, Math.floor(width * 0.34)));
       const selected = entries[selectedIndex];
+      const entryLines = entries.flatMap((entry, index) => {
+        const active = index === selectedIndex;
+        const value = oneLine(entry.value, { max: valueWidth }).padEnd(valueWidth);
+        const plain = `${active ? '›' : ' '} ${entry.label.padEnd(21)} ${value}`;
+        const row = active
+          ? `${entry.id === 'done' ? C.brightGreen : C.cyan}${C.bold}${plain}${C.reset}`
+          : entry.id === 'done'
+            ? `${C.green}${plain}${C.reset}`
+            : `${C.dim}${plain}${C.reset}`;
+        return entry.id === 'done'
+          ? [`${C.dim}  ${'─'.repeat(Math.max(24, Math.min(width - 4, 64)))}${C.reset}`, row]
+          : [row];
+      });
       const lines = [
         `${C.brightCyan}${C.bold}Settings · choose what to change${C.reset}`,
-        `${C.dim}  ↑/↓ move · Enter edit or toggle · Esc finish${C.reset}`,
-        ...entries.map((entry, index) => {
-          const active = index === selectedIndex;
-          const value = oneLine(entry.value, { max: valueWidth }).padEnd(valueWidth);
-          const plain = `${active ? '›' : ' '} ${entry.label.padEnd(21)} ${value}`;
-          return active ? `${C.cyan}${C.bold}${plain}${C.reset}` : `${C.dim}${plain}${C.reset}`;
-        }),
+        `${C.dim}  ↑/↓ move · Enter edit or toggle · Esc closes settings${C.reset}`,
+        ...entryLines,
         `${C.brightYellow}${C.bold}  about >${C.reset} ${oneLine(selected.description, {
           max: Math.max(44, width - 11),
         })}`,
@@ -12414,14 +13247,14 @@ async function main() {
             ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
             : '  '
         }${C.reset}`,
-        `${C.brightYellow}${C.bold}  does >${C.reset} ${oneLine(selectedEntry.description, {
+        `${C.brightYellow}${C.bold}  pattern >${C.reset} ${oneLine(selectedEntry.description, {
           max: descriptionWidth,
         })}`,
         selectedEntry.nearestNeighbor && selectedEntry.contrast
-          ? `${C.dim}  edge > versus ${selectedEntry.nearestNeighbor}: ${oneLine(selectedEntry.contrast, {
+          ? `${C.dim}  differs > from ${selectedEntry.nearestNeighbor}: ${oneLine(selectedEntry.contrast, {
               max: Math.max(24, width - selectedEntry.nearestNeighbor.length - 20),
             })}${C.reset}`
-          : `${C.dim}  edge > baseline for ordinary partial reasoning and repair${C.reset}`,
+          : `${C.dim}  differs > baseline for ordinary partial reasoning and repair${C.reset}`,
       ];
       for (const line of lines) output.write(`${line}\n`);
       renderedLineCount = lines.length;
@@ -12598,6 +13431,7 @@ async function main() {
         state.register?.enabled && registerTemperatureApplies(state.register.policy),
       );
       const dropoutPromptEnabled = Boolean(state.learnerDag?.enabled);
+      const releaseSpeedPromptEnabled = Boolean(state.world && state.releasePacing);
 
       const promptForSetting = async ({ stage, label, defaultValue, recommendedValue, guidance, normalize }) => {
         console.log(`${C.dim}  ${guidance}${C.reset}`);
@@ -12634,7 +13468,7 @@ async function main() {
       });
       attachLineListeners();
 
-      if (temperaturePromptEnabled || dropoutPromptEnabled) {
+      if (temperaturePromptEnabled || dropoutPromptEnabled || releaseSpeedPromptEnabled) {
         console.log(`${C.cyan}Tune the dialogue${C.reset}`);
         console.log(`${C.dim}  press Enter to accept each launch value; recommendations are shown beside it${C.reset}`);
       }
@@ -12643,13 +13477,13 @@ async function main() {
       if (temperaturePromptEnabled) {
         temperatureSelection = await promptForSetting({
           stage: 'temperature',
-          label: 'stance temperature',
+          label: 'teaching-style range',
           defaultValue: state.register.temperature,
           recommendedValue: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-          guidance: `0.85 balances a clear dominant stance with some blend; lower sharpens, higher broadens (${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})`,
+          guidance: `0.85 keeps one teaching style clear while retaining some nuance; lower concentrates it, higher mixes in more alternatives (${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})`,
           normalize: (value) =>
             normalizeTutorStubEngagementStanceTemperature(value, {
-              label: 'engagement-stance temperature',
+              label: 'teaching-style range',
             }),
         });
         if (!temperatureSelection) return false;
@@ -12661,14 +13495,35 @@ async function main() {
       if (dropoutPromptEnabled) {
         dropoutSelection = await promptForSetting({
           stage: 'dropout',
-          label: 'DAG fact dropout',
+          label: 'evidence-memory dropout',
           defaultValue: state.learnerDag.dropout.rate,
           recommendedValue: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
-          guidance: '0 keeps accumulated public facts reliable; values above 0 add seeded memory loss (0-1)',
-          normalize: (value) => normalizeTutorStubDagFactDropoutRate(value, { label: 'DAG fact dropout' }),
+          guidance:
+            '0 keeps previously understood evidence reliable; values above 0 simulate occasional, recoverable forgetting (0-1)',
+          normalize: (value) => normalizeTutorStubDagFactDropoutRate(value, { label: 'evidence-memory dropout' }),
         });
         if (!dropoutSelection) return false;
         state.learnerDag.dropout.rate = dropoutSelection.value;
+        console.log();
+      }
+
+      let releaseSpeedSelection = null;
+      if (releaseSpeedPromptEnabled) {
+        releaseSpeedSelection = await promptForSetting({
+          stage: 'release_speed',
+          label: 'clue release speed',
+          defaultValue: state.releasePacing.baseSpeed,
+          recommendedValue: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+          guidance: `1 follows the authored clue schedule; lower slows it and higher brings clues forward (${MIN_TUTOR_STUB_RELEASE_SPEED}-${MAX_TUTOR_STUB_RELEASE_SPEED}). Direct learner requests can adapt it further.`,
+          normalize: (value) => normalizeTutorStubReleaseSpeed(value, { label: 'clue release speed' }),
+        });
+        if (!releaseSpeedSelection) return false;
+        setTutorStubReleaseSpeed({
+          pacing: state.releasePacing,
+          world: state.world,
+          speed: releaseSpeedSelection.value,
+          turn: state.turns.length + 1,
+        });
         console.log();
       }
 
@@ -12698,7 +13553,16 @@ async function main() {
               usedDefault: dropoutSelection.usedDefault,
             }
           : null,
+        clueReleaseSpeed: releaseSpeedSelection
+          ? {
+              value: releaseSpeedSelection.value,
+              recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+              adaptive: true,
+              usedDefault: releaseSpeedSelection.usedDefault,
+            }
+          : null,
       });
+      persistCurrentInteractiveSettings('initial_settings_selected');
       return true;
     } finally {
       initialSetupStage = 'off';
@@ -12714,7 +13578,7 @@ async function main() {
   function acceptMixedLearnerSuggestion({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
-      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to enable /use${C.reset}\n`);
+      console.log(`${C.dim}learner suggestions are off; start with --mixed-learner to use /use${C.reset}\n`);
       return;
     }
     if (duringTurn) {
@@ -12744,7 +13608,7 @@ async function main() {
     console.log(`${C.bold}learner(mixed) >${C.reset} ${suggestion.text}\n`);
     if (processingTurn || duringTurn) {
       pendingLearnerLines.push(suggestion.text);
-      console.log(`${C.dim}queued mixed learner turn (${pendingLearnerLines.length} queued)${C.reset}`);
+      console.log(`${C.dim}learner reply queued (${pendingLearnerLines.length} waiting)${C.reset}`);
       return;
     }
     void processLearnerLine(suggestion.text);
@@ -12756,6 +13620,7 @@ async function main() {
       classifier: classifierEnabled ? visibleClassifierConfig : null,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
+      releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
@@ -12803,10 +13668,12 @@ async function main() {
       runId: state.debugRunId,
       title: state.world?.title || state.topic || 'Tutor Stub Transcript',
       directorContext: jsonClone(state.directorContext),
+      directorNotes: directorNotesIssuedSoFar(state),
       opening,
       history: jsonClone(state.history),
       turns: jsonClone(state.turns),
       settings: {
+        allModelsOverride: jsonClone(allModelsOverride),
         run: {
           id: state.debugRunId,
           completedTurns: state.turns.length,
@@ -12883,6 +13750,7 @@ async function main() {
           generousInference: Boolean(state.humanDiscourse?.behaviorChange),
         },
         dagFactDropout: dropout,
+        releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
         register: {
           enabled: state.register?.enabled || false,
           policy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
@@ -12895,9 +13763,24 @@ async function main() {
           current: state.register?.current || null,
           empiricalPriorStatus: state.register?.empiricalPriorStatus || null,
         },
+        rememberedDefaults: {
+          enabled: Boolean(state.rememberedSettings?.enabled),
+          status: state.rememberedSettings?.status || 'disabled',
+          file: path.relative(ROOT, state.rememberedSettings?.filePath || rememberedSettings.filePath),
+          loadedAt: state.rememberedSettings?.loadedAt || null,
+          savedAt: state.rememberedSettings?.savedAt || null,
+          appliedFields: state.rememberedSettings?.appliedFields || [],
+          scope: 'human_interactive_sessions_only',
+        },
         dialogue: {
           memorySummary: Boolean(state.memory?.enabled),
           rawHistoryTurns: state.historyTurns,
+          tutorMessageHistory: {
+            mode: state.tutorContext?.historyMode || 'compact_recent',
+            activatedBy: state.tutorContext?.activatedBy || 'session_start',
+            activatedAtTurn: state.tutorContext?.activatedAtTurn ?? null,
+            publicMessageCount: publicTutorMessageHistory(state.history).length,
+          },
           multipleChoice: state.multipleChoice,
           opening: openingEnabled,
           closeoutReport: closeoutReportEnabled,
@@ -13086,6 +13969,7 @@ async function main() {
 
   function printInteractiveStatus() {
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
+    const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
     const profile = mixedLearnerProfilePresentation(mixedLearner.suggestion);
     const policy = tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays);
     const closure = state.dialogueClosure?.phase || 'open';
@@ -13100,18 +13984,18 @@ async function main() {
     console.log(
       `${C.brightCyan}${C.bold}session status >${C.reset} ${interactionModeLabel()} · turn ${state.turns.length + 1}`,
     );
-    console.log(`${C.dim}  learner profile: ${profile.id} — ${profile.name}; mixed suggestion ${suggestion}${C.reset}`);
+    console.log(`${C.dim}  learner: ${profile.id} — ${profile.name}; suggested reply ${suggestion}${C.reset}`);
     console.log(
       `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
     );
     console.log(
-      `${C.dim}  policy: ${policy}; stance temp ${state.register?.temperature}; DAG dropout ${dropout.rate}; closure ${closure}${C.reset}`,
+      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
     );
     console.log(
-      `${C.dim}  coach: ${coachPending} suggestion${coachPending === 1 ? '' : 's'} waiting; ${state.coach?.history?.length || 0} applied${C.reset}`,
+      `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
     );
     console.log(
-      `${C.dim}  command input: live while models work · explanatory debug: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format || 'prose'})` : `off (next: ${state.explanatoryDebug?.format || 'prose'})`} · learning summary: automatic on close · transcript: /transcript · analysis: /analysis · commands: /help${C.reset}\n`,
+      `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
     );
   }
 
@@ -13145,7 +14029,7 @@ async function main() {
     );
     if (mixedLearner.enabled && !duringTurn && !processingTurn && latestTutorMessage(state)) {
       startMixedLearnerPrefetch('coach_guidance_added');
-      console.log(`${C.dim}  refreshed the mixed draft and tutor prefetch under this guidance${C.reset}`);
+      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response with this guidance${C.reset}`);
     }
     console.log();
     return entry;
@@ -13372,6 +14256,7 @@ async function main() {
     if (!openingEnabled || state.history.length) return null;
     const opening = buildTutorOpening(state);
     state.history.push({ role: 'assistant', content: opening });
+    acknowledgeTutorStubOpeningRelease({ pacing: state.releasePacing, world: state.world });
     const turnId = openingDebugId(stateRunDebugId(state));
     appendTraceEvent(state.trace, { type: 'tutor_opening', turnId, reason, text: opening });
     if (display) printInteractiveTutorOpening(opening);
@@ -13385,12 +14270,20 @@ async function main() {
     const currentRegisterOverlayThreshold =
       state.register?.overlayThreshold ?? registerOverlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD;
     const currentDagFactDropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
+    const currentReleaseSpeed = state.releasePacing?.baseSpeed ?? releaseSpeed;
     state.history = [];
     state.turns = [];
     state.coach = { pending: [], history: [] };
     mixedLearner.promptHistory = [];
     state.printedDebugIds = new Set();
     state.directorOpeningPresented = false;
+    state.tutorContext = {
+      schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
+      historyMode: 'compact_recent',
+      activatedBy: 'dialogue_reset',
+      activatedAtTurn: null,
+      modelRef: state.modelRef,
+    };
     state.dialogueClosure = { ...dialogueClosureConfig };
     state.learnerDag = createLearnerDagState({
       enabled: tutorLearnerDagEnabled,
@@ -13404,6 +14297,10 @@ async function main() {
       },
     });
     state.comprehension = createTutorStubComprehensionState();
+    state.releasePacing = createTutorStubReleasePacingState({
+      world: state.world,
+      speed: currentReleaseSpeed,
+    });
     state.register = {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
@@ -13427,27 +14324,44 @@ async function main() {
       `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}; effort ${state.cliEffort || 'provider default'}${C.reset}`,
     );
     console.log(
-      `${C.dim}  policy stack: ${tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays)}; primary ${
-        state.register?.policy || 'off'
-      }; overlays ${state.register?.overlays?.join(', ') || 'none'}; strong-change threshold ${
+      `${C.dim}  conversation memory: ${
+        state.tutorContext?.historyMode === 'full_public_replay'
+          ? `the tutor rereads all ${publicTutorMessageHistory(state.history).length} public messages after a model change`
+          : `the latest ${state.historyTurns} turns plus a compact summary`
+      }${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${tutorStubRegisterPolicyStackId(
+        state.register?.policy,
+        state.register?.overlays,
+      )}); turn/conversation overrides ${state.register?.overlays?.join(', ') || 'off'}; sensitivity ${
         state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD
       }${C.reset}`,
     );
     console.log(
-      `${C.dim}  stance temp: ${state.register?.temperature ?? registerTemperature} — lower sharpens the dominant engagement stance; higher broadens only that blend${C.reset}`,
+      `${C.dim}  teaching-style range: ${state.register?.temperature ?? registerTemperature} — lower concentrates the strongest style; higher mixes in more alternatives${C.reset}`,
     );
     console.log(
-      `${C.dim}  policy: ${state.register?.policy || 'off'}; temperature ${active ? 'active for engagement stance only' : 'stored but not used by this policy'}${C.reset}`,
+      `${C.dim}  style range is ${active ? 'active for this approach' : 'saved but not used by this approach'}${C.reset}`,
     );
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     console.log(
-      `${C.dim}  DAG fact dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); seed ${dropout.seed}; active dropped ${dropout.activeCount}; adopted facts tracked ${dropout.adoptedCount}${C.reset}`,
+      `${C.dim}  evidence-memory dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); currently forgotten ${dropout.activeCount}; understood items tracked ${dropout.adoptedCount}${C.reset}`,
+    );
+    const pace = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+    console.log(
+      `${C.dim}  clue release speed: ${pace?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x base; ${pace?.effectiveSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x now (${pace?.direction || 'steady'}); adapts to explicit learner requests${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings policy add state, /settings policy add field, /settings policy remove state, /settings policy clear, or /settings policy threshold 0.7${C.reset}`,
+      `${C.dim}  reuse these settings next time: ${state.rememberedSettings?.enabled ? 'yes' : 'no'}; ${
+        state.rememberedSettings?.status || 'disabled'
+      }${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings model, /settings model codex.gpt-5.6-luna, /settings temp 1.0, or /settings dropout 0.15${C.reset}\n`,
+      `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  use /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, or /settings forget${C.reset}\n`,
     );
   }
 
@@ -13481,14 +14395,14 @@ async function main() {
   async function chooseLiveNumericSetting(setting) {
     if (setting === 'stance_temp') {
       const next = await pickLiveNumericSettingWithKeyboard({
-        label: 'Engagement-stance temperature',
+        label: 'Teaching-style range',
         value: state.register?.temperature ?? registerTemperature,
         min: MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
         max: MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
         step: 0.05,
         coarseStep: 0.25,
         recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-        explanation: 'Lower values concentrate the dominant stance; higher values preserve more minor signals.',
+        explanation: 'Lower values concentrate the strongest style; higher values retain more alternative signals.',
       });
       if (next === null) return false;
       await handleDialogueSettings(`stance-temp ${next}`);
@@ -13496,28 +14410,43 @@ async function main() {
     }
     if (setting === 'dropout') {
       const next = await pickLiveNumericSettingWithKeyboard({
-        label: 'Accumulated DAG-fact dropout',
+        label: 'Evidence-memory dropout',
         value: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
         min: 0,
         max: 1,
         step: 0.05,
         coarseStep: 0.1,
         recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
-        explanation: 'Zero keeps adopted facts reliable; higher values inject seeded, recoverable evidence loss.',
+        explanation: 'Zero keeps understood evidence reliable; higher values simulate recoverable forgetting.',
       });
       if (next === null) return false;
       await handleDialogueSettings(`dropout ${next}`);
       return true;
     }
+    if (setting === 'release_speed') {
+      const next = await pickLiveNumericSettingWithKeyboard({
+        label: 'Clue release speed',
+        value: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+        min: MIN_TUTOR_STUB_RELEASE_SPEED,
+        max: MAX_TUTOR_STUB_RELEASE_SPEED,
+        step: 0.05,
+        coarseStep: 0.25,
+        recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+        explanation: 'One follows the authored schedule; lower slows new clues and higher brings them forward.',
+      });
+      if (next === null) return false;
+      await handleDialogueSettings(`release-speed ${next}`);
+      return true;
+    }
     const next = await pickLiveNumericSettingWithKeyboard({
-      label: 'Strong-change overlay threshold',
+      label: 'Override sensitivity',
       value: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
       min: 0,
       max: 1,
       step: 0.05,
       coarseStep: 0.1,
       recommended: DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
-      explanation: 'Lower values let overlays intervene more often; higher values reserve them for stronger changes.',
+      explanation: 'Lower values react more often; higher values wait for a stronger conversational change.',
     });
     if (next === null) return false;
     await handleDialogueSettings(`policy threshold ${next}`);
@@ -13548,12 +14477,19 @@ async function main() {
       });
       if (action.id === 'model') {
         await chooseLiveTutorModel();
-      } else if (action.id === 'stance_temp' || action.id === 'dropout' || action.id === 'overlay_threshold') {
+      } else if (
+        action.id === 'stance_temp' ||
+        action.id === 'dropout' ||
+        action.id === 'release_speed' ||
+        action.id === 'overlay_threshold'
+      ) {
         await chooseLiveNumericSetting(action.id);
       } else if (action.id === 'state_overlay' || action.id === 'field_overlay') {
         const overlay = action.id === 'state_overlay' ? 'state' : 'field';
         const enabled = state.register?.overlays?.includes(overlay);
         await handleDialogueSettings(`policy ${enabled ? 'remove' : 'add'} ${overlay}`);
+      } else if (action.id === 'forget') {
+        await handleDialogueSettings('forget');
       }
     }
     appendTraceEvent(state.trace, {
@@ -13574,6 +14510,7 @@ async function main() {
       .filter(Boolean);
     const temperatureNames = ['temp', 'temperature', 'stance-temp'];
     const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
+    const releaseSpeedNames = ['release-speed', 'release_speed', 'pace', 'speed'];
     const modelNames = ['model', 'tutor-model'];
     if (!parts.length) {
       if (liveSettingsPickerAvailable() && !duringTurn) {
@@ -13591,15 +14528,37 @@ async function main() {
       else printTutorModelChoices();
       return;
     }
-    if (parts.length === 1 && [...temperatureNames, ...dropoutNames].includes(parts[0].toLowerCase())) {
+    if (
+      parts.length === 1 &&
+      [...temperatureNames, ...dropoutNames, ...releaseSpeedNames].includes(parts[0].toLowerCase())
+    ) {
       if (liveSettingsPickerAvailable() && !duringTurn) {
-        await chooseLiveNumericSetting(temperatureNames.includes(parts[0].toLowerCase()) ? 'stance_temp' : 'dropout');
+        const requested = parts[0].toLowerCase();
+        await chooseLiveNumericSetting(
+          temperatureNames.includes(requested)
+            ? 'stance_temp'
+            : releaseSpeedNames.includes(requested)
+              ? 'release_speed'
+              : 'dropout',
+        );
       } else {
         printDialogueSettings();
       }
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (setting === 'forget' && parts.length === 1) {
+      if (duringTurn) {
+        console.log(`${C.dim}saved settings cannot be changed while the tutor is responding${C.reset}\n`);
+        return;
+      }
+      const forgotten = forgetRememberedInteractiveSettings({ source: 'live_settings' });
+      console.log(
+        `${C.cyan}settings >${C.reset} ${forgotten.existed ? 'saved settings forgotten' : 'there were no saved settings'}`,
+      );
+      console.log(`${C.dim}  this conversation is unchanged; the next one starts from its launch settings${C.reset}\n`);
+      return;
+    }
     if (modelNames.includes(setting)) {
       if (parts.length !== 2) {
         console.log(`${C.red}settings error:${C.reset} use /settings model or /settings model <provider.alias>\n`);
@@ -13607,7 +14566,7 @@ async function main() {
       }
       if (duringTurn) {
         console.log(`${C.dim}tutor model is unchanged while a tutor turn is in progress${C.reset}`);
-        console.log(`${C.dim}  change it after the response so one turn never mixes model provenance${C.reset}\n`);
+        console.log(`${C.dim}  change it after the response so the whole turn uses one model${C.reset}\n`);
         appendTraceEvent(state.trace, {
           type: 'tutor_model_change_rejected',
           reason: 'turn_in_progress',
@@ -13632,9 +14591,12 @@ async function main() {
         `${C.cyan}settings >${C.reset} tutor model ${selected.previousRef || 'previous'} → ${selected.modelRef}; applies from turn ${state.turns.length + 1}`,
       );
       console.log(`${C.dim}  resolved as ${selected.resolved.provider}/${selected.resolved.model}${C.reset}`);
+      console.log(
+        `${C.dim}  the new tutor model will reread all ${publicTutorMessageHistory(state.history).length} earlier public messages before every later response${C.reset}`,
+      );
       if (mixedLearner.enabled && latestTutorMessage(state)) {
         startMixedLearnerPrefetch('tutor_model_changed');
-        console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+        console.log(`${C.dim}  rebuilding the learner suggestion, its analysis, and the next tutor response${C.reset}`);
       }
       console.log();
       return;
@@ -13645,10 +14607,8 @@ async function main() {
         return;
       }
       if (duringTurn) {
-        console.log(`${C.dim}register policy overlays are unchanged while a tutor turn is in progress${C.reset}`);
-        console.log(
-          `${C.dim}  change them after the tutor response so the effective turn is deterministic${C.reset}\n`,
-        );
+        console.log(`${C.dim}teaching-style overrides cannot be changed while the tutor is responding${C.reset}`);
+        console.log(`${C.dim}  change them afterward so the whole turn uses one set of settings${C.reset}\n`);
         appendTraceEvent(state.trace, {
           type: 'register_policy_composition_change_rejected',
           reason: 'turn_in_progress',
@@ -13703,16 +14663,17 @@ async function main() {
         previous.overlays.every((overlay, index) => overlay === nextOverlays[index]);
       if (unchanged) {
         console.log(
-          `${C.cyan}settings >${C.reset} policy stack already ${tutorStubRegisterPolicyStackId(
+          `${C.cyan}settings >${C.reset} teaching approach is already ${tutorStubRegisterPolicyStackId(
             state.register.policy,
             state.register.overlays,
-          )}; threshold ${nextThreshold}\n`,
+          )}; override sensitivity ${nextThreshold}\n`,
         );
         return;
       }
       state.register.overlays = nextOverlays;
       state.register.overlayThreshold = nextThreshold;
       const invalidated = resetMixedLearnerSuggestion('register_policy_composition_changed');
+      const remembered = persistCurrentInteractiveSettings('register_policy_composition_changed');
       appendTraceEvent(state.trace, {
         type: 'register_policy_composition_changed',
         schema: TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
@@ -13722,6 +14683,7 @@ async function main() {
         threshold: nextThreshold,
         policyStack: tutorStubRegisterPolicyStackId(state.register.policy, nextOverlays),
         effectiveTurn: state.turns.length + 1,
+        rememberedAt: remembered?.updatedAt || null,
         cacheRefresh: {
           priorStateCleared: Boolean(invalidated?.hadState),
           analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
@@ -13729,33 +14691,33 @@ async function main() {
         },
       });
       console.log(
-        `${C.cyan}settings >${C.reset} policy stack ${tutorStubRegisterPolicyStackId(
+        `${C.cyan}settings >${C.reset} teaching approach ${tutorStubRegisterPolicyStackId(
           state.register.policy,
           nextOverlays,
-        )}; strong-change threshold ${nextThreshold}; applies from turn ${state.turns.length + 1}`,
+        )}; override sensitivity ${nextThreshold}; applies from turn ${state.turns.length + 1}`,
       );
       console.log(
-        `${C.dim}  the primary selects first; eligible overlays are compared deterministically and the strongest qualifying change wins${C.reset}`,
+        `${C.dim}  the normal approach selects first; a strong turn or conversation change can override it${C.reset}`,
       );
       if (mixedLearner.enabled && latestTutorMessage(state)) {
         startMixedLearnerPrefetch('register_policy_composition_changed');
-        console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+        console.log(`${C.dim}  rebuilding the learner suggestion, its analysis, and the next tutor response${C.reset}`);
       }
       console.log();
       return;
     }
-    if (![...temperatureNames, ...dropoutNames].includes(setting) || parts.length !== 2) {
+    if (![...temperatureNames, ...dropoutNames, ...releaseSpeedNames].includes(setting) || parts.length !== 2) {
       console.log(
-        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, or /settings policy add <state|field>`,
+        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings release-speed <0.5-2>, /settings policy add <state|field>, or /settings forget`,
       );
       console.log(
-        `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15${C.reset}\n`,
+        `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings release-speed 1.5${C.reset}\n`,
       );
       return;
     }
     if (duringTurn) {
-      console.log(`${C.dim}dialogue settings are unchanged while a tutor turn is in progress${C.reset}`);
-      console.log(`${C.dim}  set it after the tutor response so the effective turn is deterministic${C.reset}\n`);
+      console.log(`${C.dim}dialogue settings cannot be changed while the tutor is responding${C.reset}`);
+      console.log(`${C.dim}  change them afterward so the whole turn uses one value${C.reset}\n`);
       appendTraceEvent(state.trace, {
         type: 'dialogue_setting_change_rejected',
         setting,
@@ -13769,18 +14731,19 @@ async function main() {
     if (dropoutNames.includes(setting)) {
       let nextRate;
       try {
-        nextRate = normalizeTutorStubDagFactDropoutRate(parts[1], { label: 'DAG fact dropout' });
+        nextRate = normalizeTutorStubDagFactDropoutRate(parts[1], { label: 'evidence-memory dropout' });
       } catch (error) {
         console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
         return;
       }
       const previousRate = state.learnerDag.dropout.rate;
       if (nextRate === previousRate) {
-        console.log(`${C.cyan}settings >${C.reset} DAG fact dropout already ${nextRate}\n`);
+        console.log(`${C.cyan}settings >${C.reset} evidence-memory dropout is already ${nextRate}\n`);
         return;
       }
       state.learnerDag.dropout.rate = nextRate;
       const invalidated = resetMixedLearnerSuggestion('dag_fact_dropout_changed');
+      const remembered = persistCurrentInteractiveSettings('dag_fact_dropout_changed');
       appendTraceEvent(state.trace, {
         type: 'dag_fact_dropout_changed',
         schema: 'machinespirits.tutor-stub.dag-fact-dropout-change.v1',
@@ -13789,6 +14752,7 @@ async function main() {
         seed: state.learnerDag.dropout.seed,
         effectiveTurn: state.turns.length + 1,
         activeDroppedCount: Object.keys(state.learnerDag.dropout.activeDropped || {}).length,
+        rememberedAt: remembered?.updatedAt || null,
         cacheRefresh: {
           priorStateCleared: Boolean(invalidated?.hadState),
           analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
@@ -13796,17 +14760,67 @@ async function main() {
         },
       });
       console.log(
-        `${C.cyan}settings >${C.reset} DAG fact dropout ${previousRate} → ${nextRate}; applies from turn ${state.turns.length + 1}`,
+        `${C.cyan}settings >${C.reset} evidence-memory dropout ${previousRate} → ${nextRate}; applies from turn ${state.turns.length + 1}`,
       );
       console.log(
-        `${C.dim}  ${nextRate === 0 ? 'new losses are off; already dropped facts still need re-adoption or /clear' : 'each eligible accumulated premise now has this seeded per-turn loss probability'}${C.reset}`,
+        `${C.dim}  ${nextRate === 0 ? 'new forgetting is off; anything already forgotten can still be recalled in dialogue or reset with /clear' : 'previously understood evidence can now be temporarily forgotten at this per-turn rate'}${C.reset}`,
       );
       if (!state.learnerDag.enabled) {
-        console.log(`${C.dim}  stored but inactive because the tutor-side learner DAG is off${C.reset}`);
+        console.log(`${C.dim}  saved but inactive because learner evidence tracking is off${C.reset}`);
       }
       if (mixedLearner.enabled && latestTutorMessage(state)) {
         startMixedLearnerPrefetch('dag_fact_dropout_changed');
-        console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+        console.log(`${C.dim}  rebuilding the learner suggestion, its analysis, and the next tutor response${C.reset}`);
+      }
+      console.log();
+      return;
+    }
+
+    if (releaseSpeedNames.includes(setting)) {
+      let nextSpeed;
+      try {
+        nextSpeed = normalizeTutorStubReleaseSpeed(parts[1], { label: 'clue release speed' });
+      } catch (error) {
+        console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
+        return;
+      }
+      const previousSpeed = state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED;
+      if (nextSpeed === previousSpeed) {
+        console.log(`${C.cyan}settings >${C.reset} clue release speed is already ${nextSpeed}x\n`);
+        return;
+      }
+      const releasePacing = setTutorStubReleaseSpeed({
+        pacing: state.releasePacing,
+        world: state.world,
+        speed: nextSpeed,
+        turn: state.turns.length + 1,
+      });
+      const invalidated = resetMixedLearnerSuggestion('release_speed_changed');
+      const remembered = persistCurrentInteractiveSettings('release_speed_changed');
+      appendTraceEvent(state.trace, {
+        type: 'release_speed_changed',
+        schema: 'machinespirits.tutor-stub.release-speed-change.v1',
+        previous: previousSpeed,
+        speed: nextSpeed,
+        effectiveSpeed: releasePacing?.effectiveSpeed ?? nextSpeed,
+        effectiveTurn: state.turns.length + 1,
+        rememberedAt: remembered?.updatedAt || null,
+        releasePacing,
+        cacheRefresh: {
+          priorStateCleared: Boolean(invalidated?.hadState),
+          analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
+          tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
+        },
+      });
+      console.log(
+        `${C.cyan}settings >${C.reset} clue release speed ${previousSpeed}x → ${nextSpeed}x; applies from turn ${state.turns.length + 1}`,
+      );
+      console.log(
+        `${C.dim}  1x follows the authored schedule; the learner can still ask to move faster or slow down${C.reset}`,
+      );
+      if (mixedLearner.enabled && latestTutorMessage(state)) {
+        startMixedLearnerPrefetch('release_speed_changed');
+        console.log(`${C.dim}  rebuilding the learner suggestion, its analysis, and the next tutor response${C.reset}`);
       }
       console.log();
       return;
@@ -13815,7 +14829,7 @@ async function main() {
     let nextTemperature;
     try {
       nextTemperature = normalizeTutorStubEngagementStanceTemperature(parts[1], {
-        label: 'engagement-stance temperature',
+        label: 'teaching-style range',
       });
     } catch (error) {
       console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
@@ -13823,12 +14837,13 @@ async function main() {
     }
     const previousTemperature = state.register?.temperature ?? registerTemperature;
     if (nextTemperature === previousTemperature) {
-      console.log(`${C.cyan}settings >${C.reset} stance temp already ${nextTemperature}\n`);
+      console.log(`${C.cyan}settings >${C.reset} teaching-style range is already ${nextTemperature}\n`);
       return;
     }
 
     state.register.temperature = nextTemperature;
     const invalidated = resetMixedLearnerSuggestion('register_temperature_changed');
+    const remembered = persistCurrentInteractiveSettings('register_temperature_changed');
     appendTraceEvent(state.trace, {
       type: 'register_temperature_changed',
       schema: 'machinespirits.tutor-stub.engagement-stance-temperature-change.v1',
@@ -13838,6 +14853,7 @@ async function main() {
       active: registerTemperatureApplies(state.register.policy),
       scope: 'engagement_stance_only',
       effectiveTurn: state.turns.length + 1,
+      rememberedAt: remembered?.updatedAt || null,
       cacheRefresh: {
         priorStateCleared: Boolean(invalidated?.hadState),
         analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
@@ -13845,19 +14861,36 @@ async function main() {
       },
     });
     console.log(
-      `${C.cyan}settings >${C.reset} stance temp ${previousTemperature} → ${nextTemperature}; applies from turn ${state.turns.length + 1}`,
+      `${C.cyan}settings >${C.reset} teaching-style range ${previousTemperature} → ${nextTemperature}; applies from turn ${state.turns.length + 1}`,
     );
     console.log(
       `${C.dim}  ${nextTemperature < previousTemperature ? 'the next distribution will be sharper' : 'the next distribution will be broader'}${C.reset}`,
     );
     if (!registerTemperatureApplies(state.register.policy)) {
-      console.log(`${C.dim}  current policy ${state.register.policy} does not use local stance temperature${C.reset}`);
+      console.log(
+        `${C.dim}  the current teaching approach, ${plainPolicyLabel(state.register.policy)}, does not use this setting${C.reset}`,
+      );
     }
     if (mixedLearner.enabled && latestTutorMessage(state)) {
       startMixedLearnerPrefetch('register_temperature_changed');
-      console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+      console.log(`${C.dim}  rebuilding the learner suggestion, its analysis, and the next tutor response${C.reset}`);
     }
     console.log();
+  }
+
+  function repriseLatestTutorUtterance(command, { duringTurn = false } = {}) {
+    if (duringTurn || exiting || !SCENE_RETURN_SLASH_COMMANDS.has(command)) return false;
+    const utterance = String(latestTutorMessage(state) || '').trim();
+    if (!utterance) return false;
+    console.log(`${C.brightMagenta}${C.bold}tutor ↻ >${C.reset} ${utterance}\n`);
+    appendTraceEvent(state.trace, {
+      type: 'tutor_utterance_reprise',
+      command,
+      turn: state.turns[state.turns.length - 1]?.turn || 0,
+      text: utterance,
+      publicTranscriptChanged: false,
+    });
+    return true;
   }
 
   function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
@@ -13878,7 +14911,11 @@ async function main() {
       return true;
     }
     const pausedInterim = duringTurn ? pauseInterimAnimation(state) : false;
+    let slashCommandFinished = false;
     const finishSlashCommand = () => {
+      if (slashCommandFinished) return;
+      slashCommandFinished = true;
+      repriseLatestTutorUtterance(command, { duringTurn });
       if (pausedInterim) resumeInterimAnimation(state);
     };
     if (trimmed === '/help') {
@@ -13903,13 +14940,14 @@ async function main() {
       const requestedFormat = parts[1] || null;
       const validFormat = (value) => value === 'prose' || value === 'technical';
       if (!action) {
+        const formatLabel = state.explanatoryDebug?.format === 'technical' ? 'technical details' : 'plain explanation';
         console.log(
           `${C.brightBlue}${C.bold}debug >${C.reset} ${state.explanatoryDebug?.enabled ? 'on' : 'off'} · ${
-            state.explanatoryDebug?.format || 'prose'
+            formatLabel
           }`,
         );
         console.log(
-          `${C.dim}  /debug on adds concise LLM prose after every turn; /debug technical shows the full calculations once; /debug on technical keeps technical output on${C.reset}\n`,
+          `${C.dim}  off shows only the dialogue and compact response line; /debug on adds a short plain explanation; /debug technical shows all diagnostic evidence once${C.reset}\n`,
         );
         finishSlashCommand();
         return true;
@@ -13925,12 +14963,14 @@ async function main() {
           duringTurn,
           effectiveTurn: state.turns.length + 1,
         });
-        console.log(`${C.brightBlue}${C.bold}debug >${C.reset} on · ${format}`);
+        console.log(
+          `${C.brightBlue}${C.bold}debug >${C.reset} on · ${format === 'technical' ? 'technical details' : 'plain explanation'}`,
+        );
         console.log(
           `${C.dim}  the ${duringTurn ? 'current' : 'next'} completed turn will show ${
             format === 'prose'
               ? 'a short model-written explanation'
-              : 'the learner analysis, exact field updates, and register decision'
+              : 'the learner analysis, calculations, and teaching-style decision'
           }${C.reset}\n`,
         );
         finishSlashCommand();
@@ -13946,7 +14986,9 @@ async function main() {
           effectiveTurn: state.turns.length + 1,
         });
         console.log(`${C.brightBlue}${C.bold}debug >${C.reset} off`);
-        console.log(`${C.dim}  automatic explanations stopped; /debug show remains available${C.reset}\n`);
+        console.log(
+          `${C.dim}  automatic explanations stopped; the dialogue and compact response line remain; /debug show is still available${C.reset}\n`,
+        );
         finishSlashCommand();
         return true;
       }
@@ -14034,6 +15076,31 @@ async function main() {
         console.log(`${C.red}transcript error:${C.reset} use ${command} or ${command} no-open\n`);
       } else {
         writeCurrentTranscriptHtml({ launch: !option, duringTurn });
+      }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/director' || command === '/notes') {
+      clearStatusLine();
+      if (commandArg) {
+        console.log(`${C.red}director notes error:${C.reset} use /director or /notes\n`);
+      } else {
+        const notes = printDirectorNotesIssuedSoFar(state);
+        appendTraceEvent(state.trace, {
+          type: 'director_notes_reprise',
+          command,
+          duringTurn,
+          throughTurn: notes.throughTurn,
+          openingIncluded: Boolean(notes.opening),
+          releasedNoteCount: notes.releases.length,
+          notes,
+          publicTranscriptChanged: false,
+        });
+        if (duringTurn) {
+          console.log(
+            `${C.dim}tutor is still thinking; future and in-progress director notes remain withheld${C.reset}\n`,
+          );
+        }
       }
       finishSlashCommand();
       return true;
@@ -14162,12 +15229,12 @@ async function main() {
     if (trimmed === '/regen') {
       clearStatusLine();
       if (!mixedLearner.enabled) {
-        console.log(`${C.dim}mixed learner is off; run with --mixed-learner to enable /regen${C.reset}\n`);
+        console.log(`${C.dim}learner suggestions are off; start with --mixed-learner to use /regen${C.reset}\n`);
       } else if (duringTurn) {
         console.log(`${C.dim}tutor is still thinking; /regen is available after the tutor responds${C.reset}\n`);
       } else {
         startMixedLearnerPrefetch('regen', { force: true });
-        console.log(`${C.dim}regenerating mixed learner clue-answer pair${C.reset}\n`);
+        console.log(`${C.dim}rebuilding the learner clue and suggestion${C.reset}\n`);
       }
       finishSlashCommand();
       return true;
@@ -14188,14 +15255,14 @@ async function main() {
       resetInteractiveState();
       pendingLearnerLines.length = 0;
       appendTraceEvent(state.trace, { type: 'history_clear' });
-      console.log(`${C.dim}history cleared${C.reset}\n`);
+      console.log(`${C.dim}new dialogue started · previous turns cleared; profile and settings kept${C.reset}\n`);
       const opening = emitOpeningPrompt('clear');
       if (opening) startMixedLearnerPrefetch('clear_opening');
       finishSlashCommand();
       return true;
     }
     clearStatusLine();
-    console.log(`${C.red}unknown command:${C.reset} ${trimmed} ${C.dim}(try /help)${C.reset}\n`);
+    console.log(`${C.red}unknown command:${C.reset} ${trimmed}${C.dim} · type / to browse or use /help${C.reset}\n`);
     appendTraceEvent(state.trace, { type: 'unknown_slash_command', command: trimmed, duringTurn });
     finishSlashCommand();
     return true;
@@ -14264,7 +15331,7 @@ async function main() {
           },
         );
         printWithConcurrentTerminal(state, () => {
-          printTutorDagSnapshot(response.dagSnapshot);
+          if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
           printDirectorPreludeBeforeFirstTutor(state, { reason: 'closure_response_without_opening' });
           printTutorResponse(response, state.stream);
           console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
@@ -14330,7 +15397,7 @@ async function main() {
       }
       if (exiting) return;
       printWithConcurrentTerminal(state, () => {
-        printTutorDagSnapshot(response.dagSnapshot);
+        if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
         printDirectorPreludeBeforeFirstTutor(state, { reason: 'generated_response_without_opening' });
         printTutorResponse(response, state.stream);
         console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);

@@ -24,7 +24,7 @@
 #   corruptedThrough + p_tag    --R2--> taintTracedBy(seawallStory, doublePilcrow)
 #   taintTracedBy + p_house     --R3--> spliceFrom(seawallStory, pellamBureau)
 #   spliceFrom + p_runner       --R4--> splicedInto(quist, seawallStory)
-#   corruptedThrough + splicedInto --R5--> plantedQuote(seawallStory, quist)
+#   splicedInto                 --R5--> plantedQuote(seawallStory, quist)
 #
 # The DECOY (a parallel, fully derivable dead-end — hethel's distractor seat):
 #
@@ -34,11 +34,11 @@
 # answersFor is NOT the question predicate (plantedQuote). No rule consumes
 # answersFor to make plantedQuote; the decoy is a complete derivation to a
 # DEAD predicate. And plantedQuote(seawallStory, crane) can NEVER be derived —
-# planting the quote needs the hand that PUSHED the spliced file, and the
-# splice came out of the Pellam bureau whose queue Quist alone runs; Crane
-# owns the byline and the priors, never the bureau's queue key. The fact that
-# would convict her — soleRunnerOf(pellamBureau, crane) — is never released
-# because it is false. plotLint enforces the mirror non-entailment. The
+# planting the quote needs the hand that PUSHED the spliced file after filing,
+# and the queue log records Quist making that push from Pellam; Crane owns the
+# byline and the priors, but no such post-filing push. The event that would
+# convict her is never released because it did not happen. plotLint enforces
+# the mirror non-entailment. The
 # peripeteia is the version diff: the story did not fail of sloppy stringing
 # (Crane's filed copy was clean) — the kicker entered AFTER the file left her
 # hands. Answerability dies as the question's answer the instant the cause is
@@ -90,7 +90,8 @@ secret:
     Pellam transcription bureau, who has sweetened flat quotes for years and
     spliced a forged kicker into Crane's clean copy twenty minutes after she
     filed; the doubled pilcrow in the graf's revision log is Pellam's house
-    tic, and the queue key that pushed the file is Quist's alone.
+    tic, and the queue log records Quist pushing that Pellam file into the
+    story's slot after filing.
 
 mirror:
   fact: [plantedQuote, seawallStory, crane]
@@ -130,22 +131,20 @@ rules:
       - [spliceFrom, "?story", "?house"]
   - id: R4_runner
     gloss: >-
-      A file is pushed by the hand that runs it: if a story's splice came out
-      of a shop, and one hand alone runs that shop's files into the paper's
-      copy queue, then that hand spliced into the story.
+      If a story's splice came from a shop and the queue log records one person
+      pushing a file from that shop into that story after filing, that person
+      spliced into the story. Role or access alone is not enough.
     if:
       - [spliceFrom, "?story", "?house"]
-      - [soleRunnerOf, "?house", "?x"]
+      - [pushedFileInto, "?x", "?story", "?house"]
     then:
       - [splicedInto, "?x", "?story"]
   - id: R5_planted
     gloss: >-
-      To plant a quote is to splice it in after the filing: who spliced into
-      a story that was corrupted through a splice after filing, that hand
-      planted the quote. A clean stringer needs no rotten notebook for her
-      story to go bad — only a hand in the copy after it leaves hers.
+      In this inquiry, splicedInto already means a logged post-filing insertion
+      into the fabricated kicker. The person who made that insertion planted
+      the quote; the cause need not be proved a second time at the final step.
     if:
-      - [corruptedThrough, "?story", spliceAfterFile]
       - [splicedInto, "?x", "?story"]
     then:
       - [plantedQuote, "?story", "?x"]
@@ -208,7 +207,7 @@ premises:
       block landed in that graf was cut from Pellam paper.
   # --- the true spine: the hand ---
   - id: p_runner
-    fact: [soleRunnerOf, pellamBureau, quist]
+    fact: [pushedFileInto, quist, seawallStory, pellamBureau]
     surface: >-
       The queue log settles the hand. Since the paper cut the overnight desk
       to one, a single runner has pushed Pellam files into the copy queue:
@@ -243,7 +242,7 @@ background:
 
 incompatible:
   - [[plantedQuote, seawallStory, quist], [plantedQuote, seawallStory, crane]]
-  - [[spliceFrom, seawallStory, pellamBureau], [spliceFrom, seawallStory, craneNotebooks]]
+  - [[pushedFileInto, quist, seawallStory, pellamBureau], [pushedFileInto, crane, seawallStory, pellamBureau]]
 
 # One authored path through the spine (hethel's convention: no twin-fact
 # spares — the proof afterward describes only the play that was staged).
@@ -255,7 +254,7 @@ proof_paths:
 # and into that false rest the version diff comes up clean (the peripeteia):
 # the copy was spliced, not mis-reported, and answerability is shown beside
 # the question. The revision log's doubled pilcrow brands the splice to one
-# shop the desk never weighed; the queue log gives that shop one runner. The
+# shop the desk never weighed; the queue log records the post-filing push. The
 # cause and the hand meet in a name no one said.
 # S first derivable at turn 20 (>= t_min 19), 6 turns before cap.
 release_schedule:
@@ -308,8 +307,8 @@ dramaturgy:
       title: The Queue Log
       turns: [18, 26]
       intent: >-
-        The queue log gives that shop one runner, who pushed a file into the
-        story's slot twenty minutes after the filing, on a night no
+        The queue log records Quist pushing a Pellam file into the story's
+        slot twenty minutes after the filing, on a night no
         transcript was ordered. From turn 20 the learner's own grounded facts
         force the conclusion: the late splice and the hand that ran it meet
         in a name the desk never said. The remaining turns are the

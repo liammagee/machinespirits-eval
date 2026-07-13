@@ -18,6 +18,12 @@ function escapeHtml(value) {
   );
 }
 
+function plainLabel(value) {
+  return String(value ?? '')
+    .replace(/[_-]+/gu, ' ')
+    .trim();
+}
+
 function safeJson(value) {
   return JSON.stringify(value ?? null, null, 2).replace(/<\//gu, '<\\/');
 }
@@ -40,22 +46,30 @@ function flattenSettings(value, prefix = '', rows = []) {
 }
 
 function transcriptMessages(snapshot) {
-  if (Array.isArray(snapshot.history) && snapshot.history.length) return snapshot.history;
   const messages = [];
-  if (snapshot.opening) messages.push({ role: 'assistant', content: snapshot.opening, kind: 'opening' });
-  for (const turn of snapshot.turns || []) {
-    messages.push({ role: 'user', content: turn.learner, turn: turn.turn });
-    messages.push({ role: 'assistant', content: turn.tutor, turn: turn.turn });
+  if (snapshot.opening) {
+    messages.push({ role: 'assistant', content: snapshot.opening, kind: 'opening' });
   }
-  return messages;
+  for (const turn of snapshot.turns || []) {
+    messages.push({ role: 'user', content: turn.learner, turn: turn.turn, kind: 'learner' });
+    messages.push({ role: 'assistant', content: turn.tutor, turn: turn.turn, kind: 'tutor_reply' });
+  }
+  return messages.length ? messages : Array.isArray(snapshot.history) ? snapshot.history : [];
 }
 
 function rawView(snapshot) {
   const text = transcriptMessages(snapshot)
     .map((message, index) => {
       const speaker = message.role === 'assistant' ? 'TUTOR' : 'LEARNER';
-      const marker = message.kind === 'opening' ? 'OPENING' : `MESSAGE ${index + 1}`;
-      return `[${marker}] ${speaker}\n${message.content || ''}`;
+      const marker =
+        message.kind === 'opening'
+          ? 'OPENING · TUTOR'
+          : message.kind === 'learner'
+            ? `TURN ${message.turn} · LEARNER`
+            : message.kind === 'tutor_reply'
+              ? `TURN ${message.turn} · TUTOR REPLY`
+              : `MESSAGE ${index + 1} · ${speaker}`;
+      return `[${marker}]\n${message.content || ''}`;
     })
     .join('\n\n');
   return `<pre class="raw-transcript">${escapeHtml(text || '(No public transcript yet.)')}</pre>`;
@@ -67,26 +81,71 @@ function stageCard(snapshot) {
   return `<article class="speech-card stage"><div class="speaker">Stage</div><div class="speech">${escapeHtml(stage)}</div></article>`;
 }
 
+function directorNotesView(snapshot) {
+  const supplied = snapshot.directorNotes || {};
+  const opening = supplied.opening || snapshot.directorContext || null;
+  const releases = Array.isArray(supplied.releases) ? supplied.releases : [];
+  if (!opening && !releases.length) {
+    return '<aside class="director-ledger" data-director-notes><details open><summary>Director notes so far</summary><p class="empty">No director notes have been issued yet.</p></details></aside>';
+  }
+  const openingRows = opening
+    ? [
+        ['Stage', opening.stageNotes],
+        ['Tutor', opening.tutorCharacter],
+        ['Learner', opening.learnerCharacter],
+        ['Voice', opening.registerNote],
+      ]
+        .filter(([, value]) => value)
+        .map(
+          ([label, value]) =>
+            `<div class="director-note"><strong>${escapeHtml(label)}</strong><div>${escapeHtml(value)}</div></div>`,
+        )
+        .join('')
+    : '';
+  const releaseRows = releases
+    .map(
+      (release) =>
+        `<div class="director-note release"><strong>Turn ${escapeHtml(release.turn)} · scene note</strong><div>${escapeHtml(release.surface || '')}</div></div>`,
+    )
+    .join('');
+  const throughTurn = Number.isFinite(Number(supplied.throughTurn)) ? Number(supplied.throughTurn) : null;
+  return `<aside class="director-ledger" data-director-notes><details open><summary>Director notes so far</summary>
+    <p class="director-scope">Opening directions and released scene notes${throughTurn === null ? '' : throughTurn > 0 ? ` through completed turn ${escapeHtml(throughTurn)}` : ' through the opening'}. Future notes remain withheld.</p>
+    ${openingRows ? `<section><h2>Opening directions</h2>${openingRows}</section>` : ''}
+    ${releaseRows ? `<section><h2>Released scene notes</h2>${releaseRows}</section>` : ''}
+  </details></aside>`;
+}
+
 function registerPills(turn) {
   const selection = turn.registerSelection || {};
   const configuration = turn.responseConfiguration || selection.response_configuration || {};
   const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
   const values = [
-    ['policy', selection.policy],
-    ['active', selection.activated_policy],
-    ['stance', selection.engagement_stance || selection.selected_register],
-    ['action', configuration.action_family],
+    ['approach', selection.policy],
+    ['selected by', selection.activated_policy],
+    ['style', selection.engagement_stance || selection.selected_register],
+    ['move', configuration.action_family],
     ['audience', configuration.audience_register],
     ['language', configuration.lexical_accessibility],
     ['scene', configuration.scene_immersion],
     [
-      'pace',
+      'learning pace',
       learnerAdvance?.accelerated ? `${learnerAdvance.pace} (${learnerAdvance.supportedMoveCount} moves)` : null,
+    ],
+    [
+      'clue pace',
+      turn.releasePacing
+        ? `${turn.releasePacing.direction} ${turn.releasePacing.effectiveSpeed}x${
+            turn.releasePacing.releasedNow?.length
+              ? ` · ${turn.releasePacing.releasedNow.length} new clue${turn.releasePacing.releasedNow.length === 1 ? '' : 's'}`
+              : ''
+          }`
+        : null,
     ],
   ];
   return `<div class="pills">${values
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
-    .map(([label, value]) => `<span>${escapeHtml(label)}: ${escapeHtml(value)}</span>`)
+    .map(([label, value]) => `<span>${escapeHtml(label)}: ${escapeHtml(plainLabel(value))}</span>`)
     .join('')}</div>`;
 }
 
@@ -112,18 +171,23 @@ function swimlaneView(snapshot) {
   const rows = [];
   if (snapshot.opening) {
     rows.push(
-      `<div class="swim-row"><div class="lane tutor">${speechCard('tutor', snapshot.opening, 0, { opening: true })}</div><div class="spine"><b>0</b></div><div class="lane"></div></div>`,
+      `<div class="swim-row opening-step" data-swim-role="opening"><div class="lane tutor">${speechCard('tutor', snapshot.opening, null, { opening: true })}</div><div class="spine"><b class="opening-badge">open</b></div><div class="lane"></div></div>`,
     );
   }
   for (const turn of snapshot.turns || []) {
-    rows.push(`<div class="swim-row">
-      <div class="lane tutor">${speechCard('tutor', turn.tutor, turn.turn)}${registerPills(turn)}</div>
+    rows.push(`<div class="swim-row learner-step" data-swim-role="learner" data-turn="${escapeHtml(turn.turn)}">
+      <div class="lane"></div>
       <div class="spine"><b>${escapeHtml(turn.turn)}</b></div>
       <div class="lane learner">${speechCard('learner', turn.learner, turn.turn)}</div>
+    </div>
+    <div class="swim-row tutor-step" data-swim-role="tutor-reply" data-turn="${escapeHtml(turn.turn)}">
+      <div class="lane tutor">${speechCard('tutor', turn.tutor, turn.turn)}${registerPills(turn)}</div>
+      <div class="spine"><b class="reply-badge">↳</b></div>
+      <div class="lane"></div>
     </div>`);
   }
   if (!rows.length) return '<div class="empty">No public transcript yet.</div>';
-  return `<div class="swimlanes"><div class="swim-head"><span>tutor</span><i></i><span>learner</span></div>${rows.join('')}</div>`;
+  return `<div class="swimlanes"><p class="swim-guide">Read top to bottom: opening, then learner turn 1, then the tutor reply. The opening is an unnumbered prelude.</p><div class="swim-head"><span>tutor</span><i></i><span>learner</span></div>${rows.join('')}</div>`;
 }
 
 function promptBlock(title, prompt, meta = '') {
@@ -163,27 +227,30 @@ function analysisCard(turn) {
   const classification = turn.classification || {};
   const configuration = turn.responseConfiguration || selection.response_configuration || {};
   const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
+  const releasePacing = turn.releasePacing || null;
   const summary = classification.turn?.summary || classification.overall?.summary || 'No plain summary captured.';
   const rationale =
     selection.register_reason ||
     selection.engagement_stance_reason ||
     selection.reason ||
     selection.rationale ||
-    'No register-selection rationale captured.';
+    'No teaching-style rationale was captured.';
   return `<article class="analysis-card">
     <header><h3>Turn ${escapeHtml(turn.turn)}</h3><strong>${escapeHtml(selection.engagement_stance || selection.selected_register || 'no stance')}</strong></header>
     <p><b>Learner reading:</b> ${escapeHtml(summary)}</p>
     ${learnerAdvance?.accelerated ? `<p><b>Learning pace:</b> accelerating — ${escapeHtml(learnerAdvance.adoptedPremiseCount)} premises and ${escapeHtml(learnerAdvance.derivedFactCount)} supported inferences accepted together.</p>` : ''}
-    <p><b>Selection rationale:</b> ${escapeHtml(rationale)}</p>
+    ${releasePacing?.signal?.direction && releasePacing.signal.direction !== 'steady' ? `<p><b>Clue pace:</b> ${escapeHtml(releasePacing.signal.reason)} Effective pace: ${escapeHtml(releasePacing.effectiveSpeed)}x.${releasePacing.releasedNow?.length ? ` ${escapeHtml(releasePacing.releasedNow.length)} new clue${releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn.` : ''}</p>` : ''}
+    <p><b>Teaching-style rationale:</b> ${escapeHtml(rationale)}</p>
     ${registerPills(turn)}
     <details><summary>Full learner analysis</summary><pre>${escapeHtml(safeJson(classification))}</pre></details>
-    <details><summary>Learner DAG analysis</summary><pre>${escapeHtml(safeJson(turn.tutorLearnerDagModel))}</pre></details>
-    <details><summary>Register-selection input and result</summary><pre>${escapeHtml(
+    <details><summary>Full reasoning-map analysis</summary><pre>${escapeHtml(safeJson(turn.tutorLearnerDagModel))}</pre></details>
+    <details><summary>Teaching-style input and result</summary><pre>${escapeHtml(
       safeJson({
         selection,
         responseConfiguration: configuration,
         previousRegisterEfficacy: turn.previousRegisterEfficacy || null,
         responseConfigurationAudit: turn.responseConfigurationAudit || null,
+        releasePacing,
       }),
     )}</pre></details>
   </article>`;
@@ -193,7 +260,7 @@ function analysisView(snapshot) {
   const turns = snapshot.turns || [];
   return turns.length
     ? `<div class="analysis-list">${turns.map(analysisCard).join('')}</div>`
-    : '<div class="empty">No completed learner analysis or register selection yet.</div>';
+    : '<div class="empty">No completed learner analysis or teaching-style selection yet.</div>';
 }
 
 function settingsView(snapshot) {
@@ -212,6 +279,10 @@ function settingsView(snapshot) {
 
 export function renderTutorStubTranscriptHtml(snapshot = {}) {
   const title = snapshot.settings?.world?.title || snapshot.title || 'Tutor Stub Transcript';
+  const completedTurns = (snapshot.turns || []).length;
+  const completionLabel = completedTurns
+    ? `${completedTurns} completed turn${completedTurns === 1 ? '' : 's'}`
+    : 'opening only';
   const views = {
     raw: rawView(snapshot),
     script: scriptView(snapshot),
@@ -224,8 +295,9 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)} · transcript</title>
 <style>
-:root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
-</style></head><body><main class="shell"><header class="hero"><div class="eyebrow">Tutor stub · live transcript snapshot</div><h1>${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml((snapshot.turns || []).length)} completed turns · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
+:root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.director-ledger{margin:18px 0 0;border:2px solid var(--ink);background:#eee5d5}.director-ledger details{padding:12px 16px}.director-ledger summary{font:800 12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.director-ledger h2{font:800 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}.director-scope{color:var(--muted);margin:6px 0}.director-note{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid var(--rule)}.director-note div{white-space:pre-wrap}.director-note.release{grid-template-columns:160px minmax(0,1fr)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-guide{margin:0 0 4px;padding:8px 10px;border-left:4px solid var(--ink);background:var(--paper2);color:var(--muted)}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.spine b.opening-badge{width:52px;border-radius:15px}.spine b.reply-badge{background:var(--paper);color:var(--ink);border:2px solid var(--ink);line-height:26px}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.director-note,.director-note.release{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
+</style></head><body><main class="shell"><header class="hero"><div class="eyebrow">Tutor stub · live transcript snapshot</div><h1>${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml(completionLabel)} · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
+${directorNotesView(snapshot)}
 <nav class="tabs" aria-label="Transcript views">${Object.keys(views)
     .map(
       (name, index) =>

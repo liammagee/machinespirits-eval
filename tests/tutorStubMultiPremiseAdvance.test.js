@@ -167,12 +167,12 @@ process.stdin.on('end', () => {
 
     assert.equal(result.status, 0, result.stderr);
     const plain = plainTerminalText(result.stdout);
-    assert.match(plain, /pace: accelerating; reasoning span: multi_step/u);
-    assert.match(plain, /conceptual 4\/5, readiness 4\/5/u);
-    assert.match(plain, /update: adopted 2, derived 1/u);
-    assert.match(plain, /learner pace: accelerating — 3 warranted proof moves/u);
-    assert.match(plain, /engagement stance > brisk/u);
-    assert.match(plain, /source dynamic_learner_acceleration_guard/u);
+    assert.doesNotMatch(plain, /turn id >/u);
+    assert.doesNotMatch(plain, /learner classifier >/u);
+    assert.doesNotMatch(plain, /tutor learner-DAG model >/u);
+    assert.doesNotMatch(plain, /engagement stance >/u);
+    assert.doesNotMatch(plain, /tutor DAG >/u);
+    assert.match(plain, /tokens unavailable, effort medium, style brisk, move clarify distinction/u);
 
     const events = fs
       .readdirSync(tmp)

@@ -13,6 +13,14 @@ import {
 export const CURRICULUM_BUILDER_SCHEMA = 'ms-curriculum-builder-v0.1';
 export const CURRICULUM_SCHEMA = 'ms-curriculum-v0.1';
 export const DEFAULT_CURRICULUM_BUILDER_MODEL = 'codex.gpt-5.6-terra';
+export const CURRICULUM_SCENARIO_AUTHORING_GATE = Object.freeze([
+  'Keep curriculum prerequisites, world action constraints, and scenario proof DAGs distinct.',
+  'Make each prerequisite edge necessary; do not pad the module DAG with convenient sequencing.',
+  'Phrase each essential question so its expected answer has the same semantic type.',
+  'Name observable verifier evidence that could later support an exact staged fact.',
+  'When authoring a proof world, require valid public rule glosses, minimal declared proof paths, and explicit evidence roles for mirrors, controls, corroboration, and alternate routes.',
+  'Give contemporary and speculative worlds explicit scene ecology, narrative diction, public ledger term, and picker summary.',
+]);
 
 const STANDARD_PROFILE = Object.freeze({
   spine: '1EdTech CASE 1.1 inspired',
@@ -394,7 +402,9 @@ export function curriculumBuilderDraftPrompt({ brief, materials = [], moduleCoun
     `- Produce ${moduleCount || brief.module_count || 'the smallest coherent number of'} modules.`,
     '- Each module needs: title, essential_question, main_artifact, primary_verifier, at least two knowledge_components, at least one canonical_task, verifier, misconception_signature, mastery_gate, and transfer_challenge.',
     '- prerequisite_ids must form a directed acyclic graph and may only use module ids in this response.',
+    '- Include a prerequisite edge only when the earlier module is genuinely required; ordinary sequence is not enough.',
     '- A verifier must describe observable or mechanically checkable evidence; it cannot merely say an LLM will judge quality.',
+    '- Phrase each essential question so the expected answer is the same semantic type, and write verifier evidence precisely enough to become a staged fact later.',
     '- Misconception signatures must be plausible learner beliefs, not labels or caricatures.',
     '- Use reference_ids only when a supplied source directly supports that module or knowledge component.',
     '- Do not treat a reference as proof that a learner mastered anything.',
@@ -524,6 +534,18 @@ export function renderCurriculumBuilderReport({ curriculum, validation, outputs 
     '| ID | Module | KCs | Tasks | Verifiers | Misconceptions |',
     '|---|---|---:|---:|---:|---:|',
     ...moduleRows,
+    '',
+    '## Scenario-authoring handoff',
+    '',
+    'These are three distinct graphs: this report shows the curriculum prerequisite DAG; the compiled world artifact is an action contract; and a staged scenario proof DAG must be authored and checked separately.',
+    '',
+    ...CURRICULUM_SCENARIO_AUTHORING_GATE.map((item) => `- ${item}`),
+    '',
+    'For derivation worlds, follow `curriculum/SCENARIO-DAG-GUIDE.md` and run:',
+    '',
+    '```bash',
+    'npm run derivation:quality',
+    '```',
     '',
     '## Sources',
     '',

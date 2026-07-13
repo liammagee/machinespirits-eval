@@ -38,7 +38,10 @@ export function resolveCliEffort(provider, explicitEffort = null) {
   if (explicit) return explicit;
   if (normalizedProvider === 'codex') {
     return normalizeCliEffort(
-      process.env.CLI_PROVIDER_CODEX_EFFORT || process.env.CLI_PROVIDER_EFFORT || process.env.CODEX_REASONING_EFFORT || 'xhigh',
+      process.env.CLI_PROVIDER_CODEX_EFFORT ||
+        process.env.CLI_PROVIDER_EFFORT ||
+        process.env.CODEX_REASONING_EFFORT ||
+        'xhigh',
     );
   }
   if (normalizedProvider === 'claude-code') {
@@ -122,6 +125,38 @@ export function codexFinalMessageFromEvents(events = []) {
   return '';
 }
 
+function firstFiniteUsageValue(usage, keys) {
+  for (const key of keys) {
+    if (usage?.[key] === null || usage?.[key] === undefined) continue;
+    const value = Number(usage[key]);
+    if (Number.isFinite(value) && value >= 0) return value;
+  }
+  return null;
+}
+
+export function codexUsageFromEvents(events = []) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index] || {};
+    const usage = event.usage || event.metrics?.usage || null;
+    if (!usage || typeof usage !== 'object') continue;
+    const inputTokens = firstFiniteUsageValue(usage, ['input_tokens', 'inputTokens', 'prompt_tokens']);
+    const outputTokens = firstFiniteUsageValue(usage, ['output_tokens', 'outputTokens', 'completion_tokens']);
+    if (inputTokens === null && outputTokens === null) continue;
+    const cachedInputTokens = firstFiniteUsageValue(usage, ['cached_input_tokens', 'cachedInputTokens']);
+    const reasoningOutputTokens = firstFiniteUsageValue(usage, ['reasoning_output_tokens', 'reasoningOutputTokens']);
+    const normalizedInput = inputTokens ?? 0;
+    const normalizedOutput = outputTokens ?? 0;
+    return {
+      inputTokens: normalizedInput,
+      outputTokens: normalizedOutput,
+      totalTokens: normalizedInput + normalizedOutput,
+      cachedInputTokens: cachedInputTokens ?? 0,
+      reasoningOutputTokens: reasoningOutputTokens ?? 0,
+    };
+  }
+  return null;
+}
+
 function buildCliUserText(userPrompt, messageHistory) {
   let userText = '';
   if (Array.isArray(messageHistory) && messageHistory.length > 0) {
@@ -151,9 +186,7 @@ function normalizedOutputSchema(outputSchema) {
 }
 
 function cliModelAttestationBasis(model) {
-  return model
-    ? 'explicit_cli_model_argument_accepted_bridge_echo'
-    : 'cli_default_not_independently_attested';
+  return model ? 'explicit_cli_model_argument_accepted_bridge_echo' : 'cli_default_not_independently_attested';
 }
 
 const ALLOWED_STRUCTURED_CODEX_EVENT_TYPES = new Set([
@@ -275,6 +308,7 @@ async function callClaudeCli({
           latencyMs: Date.now() - start,
           inputTokens: 0,
           outputTokens: 0,
+          tokenUsageAvailable: false,
           cost: 0,
           structuredOutput: Boolean(schema),
           structuredEventAudit: {
@@ -397,6 +431,7 @@ async function callCodexCli({
 
         const fileText = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').trim() : '';
         const eventText = codexFinalMessageFromEvents(parsedStream.events);
+        const tokenUsage = codexUsageFromEvents(parsedStream.events);
         const text = fileText || eventText;
         if (!text) {
           reject(new Error(`codex CLI produced no output message (role=${role})`));
@@ -409,14 +444,20 @@ async function callCodexCli({
           effort: effectiveEffort || null,
           reasoningEffort: effectiveEffort || null,
           latencyMs: Date.now() - start,
-          inputTokens: 0,
-          outputTokens: 0,
+          inputTokens: tokenUsage?.inputTokens ?? 0,
+          outputTokens: tokenUsage?.outputTokens ?? 0,
+          cachedInputTokens: tokenUsage?.cachedInputTokens ?? 0,
+          reasoningOutputTokens: tokenUsage?.reasoningOutputTokens ?? 0,
+          tokenUsageAvailable: Boolean(tokenUsage),
           cost: 0,
           streamedEvents: parsedStream.events.length,
           streamEventTypeCounts: Object.fromEntries(
             [...new Set(parsedStream.events.map((event) => String(event?.type || 'unknown')))]
               .sort()
-              .map((type) => [type, parsedStream.events.filter((event) => String(event?.type || 'unknown') === type).length]),
+              .map((type) => [
+                type,
+                parsedStream.events.filter((event) => String(event?.type || 'unknown') === type).length,
+              ]),
           ),
           streamItemTypeCounts: Object.fromEntries(
             [...new Set(parsedStream.events.map((event) => String(event?.item?.type || 'none')))]

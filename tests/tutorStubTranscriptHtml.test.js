@@ -21,6 +21,24 @@ function fixtureSnapshot() {
     generatedAt: '2026-07-12T01:02:03.000Z',
     runId: 'html-test',
     directorContext: { stageNotes: 'The assay waits.' },
+    directorNotes: {
+      schema: 'machinespirits.tutor-stub.director-notes.v1',
+      throughTurn: 1,
+      opening: {
+        stageNotes: 'The assay waits.',
+        tutorCharacter: 'The tutor waits for evidence.',
+        learnerCharacter: 'The learner keeps the assay book.',
+        registerNote: 'Keep the scene restrained.',
+      },
+      releases: [
+        {
+          turn: 1,
+          premise: 'p1',
+          via: 'director',
+          surface: 'The first public assay note is now on the table.',
+        },
+      ],
+    },
     opening: 'Read the first mark.',
     history: [
       { role: 'assistant', content: 'Read the first mark.' },
@@ -116,6 +134,65 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, and setti
   assert.match(html, /0\.85/u);
   assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
   assert.doesNotMatch(html, /Does <this> identify the hand\?/u);
+  assert.equal((html.match(/data-director-notes/gu) || []).length, 1);
+  assert.ok(html.indexOf('data-director-notes') < html.indexOf('class="tabs"'));
+  assert.match(html, /Director notes so far/u);
+  assert.match(html, /The first public assay note is now on the table\./u);
+  assert.match(html, /Future notes remain withheld\./u);
+  assert.match(html, /\[OPENING · TUTOR\]/u);
+  assert.match(html, /\[TURN 1 · LEARNER\]/u);
+  assert.match(html, /\[TURN 1 · TUTOR REPLY\]/u);
+  assert.doesNotMatch(html, /<b>0<\/b>/u);
+  assert.match(html, /class="opening-badge">open<\/b>/u);
+  const swimlane = html.slice(html.indexOf('data-panel="swimlanes"'), html.indexOf('data-panel="analysis"'));
+  assert.ok(swimlane.indexOf('data-swim-role="learner"') < swimlane.indexOf('data-swim-role="tutor-reply"'));
+  assert.match(swimlane, /The opening is an unnumbered prelude\./u);
+});
+
+test('/director repeats only notes issued so far and records the non-transcript reprise', () => {
+  const traceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-director-notes-'));
+  try {
+    const run = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--world',
+        'world_005_marrick',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        traceDir,
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/director\n/quit\n',
+        env: { ...process.env, TUTOR_STUB_SUMMARY_OPEN: '0' },
+      },
+    );
+
+    assert.equal(run.status, 0, run.stderr || run.stdout);
+    const notesIndex = run.stdout.indexOf('director notes so far >');
+    assert.ok(notesIndex >= 0, run.stdout);
+    const reprise = run.stdout.slice(notesIndex);
+    assert.match(reprise, /opening directions/u);
+    assert.match(reprise, /through the opening; future notes remain withheld/u);
+    assert.doesNotMatch(reprise, /turn 2 · scene note/u);
+    const events = fs
+      .readdirSync(traceDir)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(traceDir, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const event = events.find((entry) => entry.type === 'director_notes_reprise');
+    assert.equal(event.throughTurn, 0);
+    assert.equal(event.openingIncluded, true);
+    assert.equal(event.releasedNoteCount, 0);
+    assert.equal(event.publicTranscriptChanged, false);
+  } finally {
+    fs.rmSync(traceDir, { recursive: true, force: true });
+  }
 });
 
 test('transcript HTML writer creates parent directories and writes a self-contained page', () => {

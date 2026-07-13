@@ -38,12 +38,20 @@ Key choices and defaults:
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Engagement-stance temperature: default `0.85`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
 - Accumulated DAG-fact dropout: default `0` (off). Use `--dag-fact-dropout <0..1>` and optional deterministic `--dag-fact-dropout-seed <n>`, or change the live rate with `/settings dropout <0..1>`. Only adopted public premises are eligible; background facts are immune; facts receive two grace turns; at most two may be dropped concurrently. A learner can repair a dropped fact by explicitly using or re-adopting it. The public transcript remains intact, exact dropped premise ids stay in technical traces rather than tutor speech, and `0` stops new losses without silently restoring already dropped facts. Live changes invalidate mixed suggestion analysis/prefetch state.
+- Clue release speed: default `1.0`. Use `--release-speed <0.5..2>` or `/settings release-speed <0.5..2>` (`pace` and `speed` are aliases). `1` follows authored clue timing; lower stretches the remaining schedule and higher compresses it. Explicit public requests such as “move it along” or “one clue at a time” adapt the effective pace further. At most one authored release batch is introduced per tutor turn (a deliberately co-released premise group stays together), and all evidence, question-support, and leak guards remain active. Pace changes are recorded in turn traces, transcript settings, debug explanations, and learning summaries.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic|fast_learner|slow_learner`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter eight are sharper stress profiles. `fast_learner` grounds the current warrant then asks for the next clue; `slow_learner` retains evidence but asks to settle one clue at a time.
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
-- Models: default tutor `codex.gpt-5.6-terra`, analysis/classifier/DAG `codex.gpt-5.6-terra`, automated learner `codex.gpt-5.6-terra`.
+- Models: default speaking tutor `codex.gpt-5.6-sol` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-terra`; automated learner `codex.gpt-5.6-terra`.
+- Human interactive sessions remember the last speaking-tutor model,
+  engagement-stance temperature, DAG-fact dropout rate, clue release speed,
+  register primary and overlays, and overlay threshold in
+  `.tutor-stub-traces/last-settings.json`.
+  Explicit CLI/environment values win; automated, one-shot, piped, and eval
+  runs neither load nor write this file. Use `--no-remember-settings` for a
+  clean interactive launch or `TUTOR_STUB_SETTINGS_FILE` to relocate it.
 - Model provenance: treat the observed tutor, analysis, and learner models in
   `profile-discrimination.md/json` as authoritative. A requested model in
   `qa-plan.json` is configuration intent only. Once a same-model profile gate
@@ -55,11 +63,12 @@ Key choices and defaults:
 - Memory compaction: default on; use `--history-turns 4` to keep only a short raw recent window plus compact state/field/dialogue summaries. Use `--no-memory-summary` only for legacy full-transcript debugging.
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
-- Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn. `/id` (aliases `/turn-id`, `/debug-id`) repeats the last completed or in-progress id plus the exact JSONL trace path; ask the user to paste that id into Codex when debugging a specific turn.
+- Debug turn ids: automatic `turn id > <run-id>:tNNN` lines appear only in persistent technical debug mode. `/id` (aliases `/turn-id`, `/debug-id`) always prints the last completed or in-progress id plus the exact JSONL trace path on demand; ask the user to paste that id into Codex when debugging a specific turn.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
-Codex ChatGPT-account route rejects those. Use `codex.gpt-5.6-terra` for CLI-backed
-Codex, or `openai.mini` / `openrouter.gpt-mini` for GPT mini.
+Codex ChatGPT-account route rejects those. Use `codex.gpt-5.6-sol` for the
+CLI-backed speaking tutor, `codex.gpt-5.6-terra` for the supporting analysis
+and learner roles, or `openai.mini` / `openrouter.gpt-mini` for GPT mini.
 
 ## Human Learner Session
 
@@ -117,18 +126,24 @@ Useful variants:
   colors; `/help` is the compact command index.
 - Add `--resume-last` to continue the latest dialogue in the trace dir.
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
-- Add `--model`, `--classifier-model`, `--learner-record-model`, or
-  `--auto-learner-model` only when overriding the default `codex.gpt-5.6-terra`.
-- Fresh mixed sessions include a scrolling tutor-model chooser in the settings
-  prelude, with the launch model highlighted and configured provider aliases
-  described as they are selected. This changes only the speaking tutor; the
-  analysis/DAG and automated-learner models remain independent. During a run,
-  `/settings model` lists choices and `/settings model <provider.alias>` changes
-  subsequent tutor turns, records provenance, and refreshes stale mixed caches.
+- Add `--model` only when overriding the default speaking tutor
+  `codex.gpt-5.6-sol`; classifier, learner-record, and automated-learner roles
+  retain their separate `codex.gpt-5.6-terra` defaults.
+- Use `--all-models <provider.alias>` when the same model should run the tutor,
+  classifier, learner-DAG analysis, and automated/mixed learner. This launch
+  override wins over all four role-specific model flags and the remembered
+  tutor model, and is recorded in dry-run, trace, and transcript provenance.
+  During a run, `/settings model` lists choices and `/settings model
+  <provider.alias>` changes only subsequent speaking-tutor turns, records
+  provenance, refreshes stale mixed caches, and switches the speaking tutor to
+  full public-history replay for every later tutor call in that dialogue. CLI
+  providers are stateless subprocesses: the bridge flattens those ordered
+  `user`/`assistant` messages under `Conversation so far`, then appends the
+  composite current-turn prompt under `Latest message`.
 - Multiple choice is opt-in globally with `--multiple-choice`, but the human
   scaffold may use one bounded public-safe choice after uncertainty when an
   open question would otherwise ask the learner to invent unstaged information.
-- Codex tutor-stub calls default to `gpt-5.6-terra` at `medium` effort; pass
+- Codex speaking-tutor calls default to `gpt-5.6-sol` at `medium` effort; pass
   `--cli-effort low|high|xhigh` only for an intentional override.
 - Add `--mixed-learner` for manual play with a prefetched clue-answer pair after
   each tutor turn. Use `/clue` or `/hint` for non-revealing direction, press Tab
@@ -136,9 +151,11 @@ Useful variants:
   `/suggest`, `/use`, `/regen`.
 - Mixed suggestions may be questions. The ready line, `/clue`, and `/suggest`
   label the proposed move as `ask a question` or `respond`; question clues say
-  what uncertainty to ask about without revealing the exact wording. Tutor
-  prompts may invite one concrete in-scene question when clarification is more
-  useful than guessing.
+  what uncertainty to ask about without revealing the exact wording. The first
+  tutor line establishes that asking which clue or term is unclear is a valid
+  public move. Later tutor prompts name the live clue plainly and repeat that
+  permission when the learner signals difficulty or the needed evidence is not
+  yet public, rather than privately expecting the learner to infer it.
 - Mixed artifacts also carry a separate `profile_signal`: a short account of
   how the visible draft expresses the active learner profile. The full ready
   notice and compact profile card appear once per active profile. A fresh
@@ -160,11 +177,13 @@ Useful variants:
   profiles. Pipes and other non-TTY callers retain the typed-ID profile
   fallback; there, `list`, `stress`, and `all` browse profile groups and Tab
   completes picker commands and ids.
-  Before any clue or answer generation, the same fresh-session prelude chooses
-  the speaking tutor model, then asks for engagement-stance temperature when the active policy uses it (`0.85` is the
+  Before any clue or answer generation, the same fresh-session prelude asks for
+  engagement-stance temperature when the active policy uses it (`0.85` is the
   recommended default) and accumulated DAG-fact dropout when the learner DAG is
   enabled (`0` is the recommended reliable-memory default). Enter accepts the
-  launch value, including any command-line override. Resumed and `--no-opening`
+  launch value, which is the last compatible interactive value when available
+  and otherwise the CLI/environment/repository default. Explicit command-line
+  overrides always win. Resumed and `--no-opening`
   sessions skip the prelude. The opening tutor text is then buffered until
   that first notice and card are ready. The card is printed, then the selected
   scenario's director block is printed once as the final visible prelude
@@ -240,7 +259,7 @@ Useful variants:
   turn invalidation, and exit abort stale Codex subprocesses.
 - Change the mixed learner interactively with `/profile <id>`. Use `/profile`
   for the current profile, `/profile list` for the six ordinary/core choices,
-  `/profile list stress` for the six specialist failure modes, `/profile list
+  `/profile list stress` for the eight specialist failure modes, `/profile list
   all` for the complete v3 registry, `/profile default` to restore the
   launch-time profile, or `/profile custom <description>` for an ad-hoc
   behavior sketch. Switching aborts and clears the old clue, answer, analysis,
@@ -259,7 +278,14 @@ Useful variants:
   scene configuration, main signals, tutor aim, and transcript-visible
   realization count. Use `/analysis technical` or `/a technical` for the
   classifier labels, learner/tutor DAGs, field metrics, stance vectors,
-  per-axis realization audit, scaffold audit, leak guard, and trace path.
+  per-axis realization audit, scaffold audit, response checks, and trace path.
+- The public CLI calls the combined safety/scaffold/question/closure mechanism
+  the `response check`. A successful model rewrite appears as `response
+  revised`; a deterministic replacement appears as `safe fallback used`.
+  Never describe either one as a `leak-guard repair`: answer secrecy is only
+  one of four possible triggers. `/analysis` gives a plain trigger summary and
+  `/analysis technical` retains the exact per-check evidence and stable trace
+  schema names.
 - `/debug on` adds a short, LLM-written prose explanation after every completed
   tutor turn. In no more than three sentences it says what the learner appears
   to understand or need, how the interaction moved, and whether the engagement
@@ -267,7 +293,11 @@ Useful variants:
   latest turn. The former exact diagnostic output remains available as
   `/debug technical` for a one-off view or `/debug on technical` for persistent
   output; `/debug on prose` returns to the default. Use `/debug off` to stop
-  automatic output. The mode survives `/clear`, appears with its format in
+  all automatic debug output, including turn ids, learner classifier details,
+  learner/tutor DAGs, stance efficacy, stance distributions, and calculation
+  reasons. Quiet mode retains only the public dialogue and one compact model
+  line with latency, honest token availability, effort, current engagement
+  stance, and action family. The mode survives `/clear`, appears with its format in
   `/status` and transcript settings, and writes an `explanatory_debug_output`
   trace event without changing the policy.
 - `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
@@ -278,7 +308,16 @@ Useful variants:
   prompts retained so far; and the learner/DAG analysis plus rationale used for
   each register selection. Use `/transcript no-open` to write without launching
   a browser. During a model call, the snapshot deliberately stops at the last
-  completed turn.
+  completed turn. A persistent director-notes ledger remains visible above all
+  six views. It contains the opening directions and only director-issued scene
+  notes released through the last completed turn; future notes stay withheld.
+  The opening is labeled as an unnumbered prelude, and completed learner-to-
+  tutor exchanges begin at turn 1. Swimlanes render the learner message before
+  its tutor reply instead of placing the later reply first in the row.
+- `/director` (alias `/notes`) repeats the same opening directions and released
+  director notes in the CLI, then returns to the live scene with the usual
+  tutor-utterance reprise. It never prints future or in-progress director notes
+  and records `publicTranscriptChanged: false` in the trace.
 - Every tutor-stub conversation with at least one completed tutor turn also
   writes `<run-id>-learning-summary.html` when it concludes, whether through
   natural grounded closure, `/quit`, SIGINT, or the automated learner reaching
@@ -289,25 +328,45 @@ Useful variants:
   disclose unreleased premises or the concealed answer. Finalization is
   idempotent and excludes any tutor turn still in progress.
 - In an interactive TTY, `/settings` opens a keyboard control panel rather than
-  a read-only dump. Up/Down selects the tutor model, stance temperature, DAG
-  dropout, state/field overlays, overlay threshold, or Done; Enter opens a
-  model chooser or numeric slider, toggles an overlay, or closes the panel.
+  a read-only dump. Its public labels are Tutor model, Teaching-style range,
+  Evidence-memory dropout, Turn-change override, Conversation override, and
+  Override sensitivity; the commands and trace schemas retain their technical
+  names. Up/Down selects one of these or the separated green
+  `Done — return to dialogue` action; Enter opens a model chooser or numeric
+  slider, toggles an overlay, or closes the panel when that action is selected.
   Left/Right makes fine slider changes, Page Up/Down makes coarse changes, `R`
   restores the recommended value, Enter applies, and Escape cancels. The panel
   stays open for several edits. Pipes and non-TTY callers retain the settings
   summary and direct command behavior.
+  Successful changes are written immediately as the defaults for the next
+  human interactive session. The settings panel's `Forget saved defaults` row,
+  or `/settings forget`, deletes that local file without changing the current
+  session. `/settings` reports whether remembered defaults are active and where
+  they are stored.
   `/settings model` opens the configured model chooser in a TTY and lists
   configured choices otherwise; `/settings model codex.gpt-5.6-luna` changes
   the tutor from the next turn without changing the classifier/DAG or learner
   models. Model changes are rejected during an in-flight tutor turn and
   invalidate mixed suggestion/analysis/tutor-prefetch state before regeneration.
+  After a live change, every subsequent tutor request replays all prior public
+  `user` and `assistant` messages in original order; `/clear` returns a new
+  dialogue to the normal compact recent-window plus memory-summary policy.
   `/settings stance-temp` opens its slider in a TTY, while `/settings
   stance-temp 0.4` sharpens subsequent locally selected stance
   distributions; `/settings stance-temp 1.4` broadens them. No other response
   axis is temperature-scaled. `/settings dropout` likewise opens its slider;
-  all direct forms remain available for fast or scripted changes. Interactive
+  `/settings release-speed` opens the clue-pacing slider, while `/settings
+  release-speed 1.5` brings the remaining authored clues forward. All direct
+  forms remain available for fast or scripted changes. Interactive
   editing and direct changes are rejected while a tutor turn is in progress so
   each turn has one deterministic setting.
+- When `/settings` or another detour command finishes, the CLI prints the latest
+  tutor utterance again as `tutor ↻ >` immediately before restoring the
+  learner/coach prompt. This applies to help, status, debug, analysis, field,
+  visualization, transcript, clarification, report, id, and profile views. The
+  reprise is terminal-only (`publicTranscriptChanged: false`), is suppressed
+  while a tutor response is still generating, and is not added after immediate
+  learner actions such as `/clue`, `/suggest`, `/use`, or `/regen`.
 - `/settings policy add state` and `/settings policy add field` add live
   strong-change overlays without replacing the primary policy. Use `/settings
   policy remove <state|field>`, `/settings policy clear`, or `/settings policy
@@ -327,7 +386,7 @@ Useful variants:
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
   include `/analysis`, `/settings [model|temp n|dropout n]`, `/field`, `/viz`,
-  `/transcript`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
+  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 
 ## Automated Single-Learner Eval
@@ -661,6 +720,7 @@ Prefer the latest `auto-eval-*.json` / `.html` in the trace dir. Report:
 - Engagement-stance entropy and dominant stances (`register` remains a legacy report label in older artifacts).
 - Response-configuration realization rate and pairwise transcript-visible difference rate; `n/a` means the run did not contain two distinct configurations to compare.
 - DAG-fact dropout opportunities, drops, re-adoptions, and active dropped facts at the end when `--dag-fact-dropout` is non-zero.
+- Clue-release pace signals, explicit faster/slower requests, final effective speed, and early/on-time/late release counts.
 - Bottlenecks: `learner_integration_gap`, `release_or_pacing_gap`, `assertion_gap`, `premature_assertion`, `grounded_asserted_secret`.
 - Check `.tutor-stub-auto-eval/ledger.md` for the local cross-run ledger before comparing recent evals.
 - For multi-eval comparisons, prefer `npm run analyze:tutor-stub-auto-evals`

@@ -65,12 +65,18 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R1_clear
+    gloss: >-
+      A person or crew could clear the fridge shelf only if they entered the
+      kitchen in the noon window and held the building's appliance-clearance authority.
     if:
       - [badgedIntoKitchen, "?x", noonWindow]
       - [holdsApplianceClearance, "?x"]
     then:
       - [couldClearShelf, "?x"]
   - id: R2_take
+    gloss: >-
+      If an authorized crew could clear the shelf and its job record logs the
+      lunchbox into lost property, that crew took the lunchbox from the fridge.
     if:
       - [couldClearShelf, "?x"]
       - [loggedToLostProperty, lunchbox, "?x"]
@@ -80,6 +86,7 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_noon # mirror fuel: keeps Dario a live candidate
+    evidence_role: mirror
     fact: [badgedIntoKitchen, dario, noonWindow]
     surface: >-
       The badge log has Dario in the kitchen at 12:02 — mug in hand, by his

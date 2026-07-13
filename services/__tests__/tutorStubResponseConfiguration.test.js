@@ -143,6 +143,31 @@ test('active accumulated-fact dropout independently selects a public-evidence re
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /without testing or shaming memory/u);
 });
 
+test('explicit clue pacing changes the action independently of stance', () => {
+  const faster = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    releasePacing: {
+      direction: 'accelerate',
+      effectiveSpeed: 1.75,
+      dueNow: ['p_next'],
+    },
+  });
+  assert.equal(faster.action_family, 'stage_next_step');
+  assert.equal(faster.engagement_stance, 'warm');
+  assert.match(faster.selection_reasons.action_family, /next public clue is now due/u);
+
+  const slower = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    releasePacing: {
+      direction: 'decelerate',
+      effectiveSpeed: 0.55,
+      dueNow: [],
+    },
+  });
+  assert.equal(slower.action_family, 'reanchor_public_evidence');
+  assert.equal(slower.engagement_stance, 'brisk');
+});
+
 test('child audience register requires an explicit public age signal', () => {
   const child = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',

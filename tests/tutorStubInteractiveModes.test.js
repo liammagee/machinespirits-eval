@@ -99,6 +99,81 @@ function runInteractive({ tmp, args, initialInput, stopWhen, timeoutMs = 10_000 
   });
 }
 
+function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000 }) {
+  installFakeCodex(tmp);
+  const logPath = path.join(tmp, 'fake-codex-input.log');
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'none',
+        '--history-turns',
+        '1',
+      ],
+      {
+        cwd: ROOT,
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          FAKE_CODEX_LOG: logPath,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        },
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    );
+    let stdout = '';
+    let stderr = '';
+    let stage = 0;
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL');
+      reject(new Error(`model switch sequence timed out\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+    }, timeoutMs);
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+      const plain = plainTerminalText(stdout);
+      const tutorReplies = plain.match(/tutor > Take the crucible as a fingerprint/gu) || [];
+      if (stage === 0 && tutorReplies.length >= 1) {
+        stage = 1;
+        child.stdin.write('/settings model codex.gpt-5.6-luna\n');
+      } else if (stage === 1 && /new tutor model will reread all 2 earlier public messages/u.test(plain)) {
+        stage = 2;
+        child.stdin.write('Second learner message.\n');
+      } else if (stage === 2 && tutorReplies.length >= 2) {
+        stage = 3;
+        child.stdin.end('/quit\n');
+      }
+    });
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(`model switch sequence exited ${code}\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+        return;
+      }
+      resolve({ stdout, stderr, plain: plainTerminalText(stdout), logPath });
+    });
+    child.stdin.write('First learner message.\n');
+  });
+}
+
 test('/quit writes a learner-centred HTML summary after a completed turn', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learning-summary-exit-'));
   try {
@@ -152,6 +227,41 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
   }
 });
 
+test('a live tutor-model change replays the full public user/assistant history on every later tutor call', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-model-context-replay-'));
+  try {
+    const result = await runInteractiveModelSwitchSequence({ tmp });
+    const calls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
+
+    assert.equal(calls.length, 2);
+    assert.doesNotMatch(calls[0], /Conversation so far:/u);
+    assert.match(calls[1], /Conversation so far:\nuser: First learner message\./u);
+    assert.match(calls[1], /assistant: Take the crucible as a fingerprint/u);
+    assert.match(calls[1], /Learner says:\nSecond learner message\./u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const modelChange = events.find((event) => event.type === 'tutor_model_changed' && event.changed === true);
+    assert.equal(modelChange.contextReplay.historyMode, 'full_public_replay');
+    assert.equal(modelChange.contextReplay.publicMessageCount, 2);
+    const laterTutorCall = events.find(
+      (event) =>
+        event.type === 'model_call' &&
+        event.role === 'tutor_stub_tutor' &&
+        event.request?.config?.messageHistoryMode === 'full_public_replay',
+    );
+    assert.equal(laterTutorCall.request.config.replayedMessageCount, 2);
+    assert.equal(laterTutorCall.request.config.replayedUserMessageCount, 1);
+    assert.equal(laterTutorCall.request.config.replayedAssistantMessageCount, 1);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test(
   'auto mode keeps a separate editable command line while model output is generated',
   { skip: process.platform === 'win32', timeout: 15_000 },
@@ -190,6 +300,7 @@ test(
             FAKE_CODEX_DELAY_MS: '800',
             CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
             TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_REMEMBER_SETTINGS: '0',
           },
         },
       );
@@ -227,7 +338,7 @@ test(
       assert.match(plain, /calling auto learner[^\n]*\nauto > \/sta/u);
       assert.match(plain, /learner\(auto\) >/u);
       assert.match(plain, /session status > AUTO/u);
-      assert.match(plain, /learning summary: automatic on close/u);
+      assert.match(plain, /learning summary: automatic HTML on conclusion/u);
       assert.doesNotMatch(plain, /unknown command/u);
       assert.ok(plain.indexOf('learner(auto) >') < plain.indexOf('session status > AUTO'), plain);
     } finally {
@@ -275,6 +386,7 @@ test(
             TERM: 'xterm-color',
             CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
             TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_REMEMBER_SETTINGS: '0',
           },
         },
       );
@@ -360,7 +472,7 @@ test('a non-interactive single run also writes its learning summary', () => {
     assert.equal(summaryFiles.length, 1);
     const html = fs.readFileSync(path.join(tmp, summaryFiles[0]), 'utf8');
     assert.match(html, /I would compare the metal residues first/u);
-    assert.match(html, /reason once/u);
+    assert.match(html, /The requested single turn is complete/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -461,7 +573,7 @@ test('technical explanatory debug mode prints exact field calculations and the r
       stopWhen: (plain) => plain.includes('debug explain > turn 1'),
     });
 
-    assert.match(result.plain, /debug > on · technical/u);
+    assert.match(result.plain, /debug > on · technical details/u);
     assert.match(result.plain, /A · learner analysis/u);
     assert.match(result.plain, /B · calculations and field update/u);
     assert.match(result.plain, /mastery calculation: 0\.34×/u);
@@ -472,7 +584,7 @@ test('technical explanatory debug mode prints exact field calculations and the r
     assert.match(result.plain, /C · resulting register decision/u);
     assert.match(result.plain, /register change: initial choice →/u);
     assert.match(result.plain, /policy path: stack=random; activated=random/u);
-    assert.match(result.plain, /explanatory debug: on \(technical\)/u);
+    assert.match(result.plain, /explanations: on \(technical details\)/u);
 
     const traces = fs
       .readdirSync(tmp)
@@ -490,6 +602,42 @@ test('technical explanatory debug mode prints exact field calculations and the r
         (event) => event.type === 'explanatory_debug_output' && event.turn === 1 && event.format === 'technical',
       ),
     );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('debug off suppresses automatic technical diagnostics but keeps the compact stance line', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-debug-off-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--register-policy',
+        'random',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/debug on technical\n/debug off\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+    });
+
+    assert.match(result.plain, /debug > off/u);
+    assert.match(result.plain, /automatic explanations stopped/u);
+    assert.doesNotMatch(result.plain, /turn id >/u);
+    assert.doesNotMatch(result.plain, /learner classifier >/u);
+    assert.doesNotMatch(result.plain, /tutor learner-DAG model >/u);
+    assert.doesNotMatch(result.plain, /engagement stance >/u);
+    assert.doesNotMatch(result.plain, /tutor DAG >/u);
+    assert.doesNotMatch(result.plain, /debug explain > turn 1/u);
+    assert.match(result.plain, /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -517,14 +665,14 @@ test('explanatory debug defaults to concise LLM-written prose', async () => {
       stopWhen: (plain) => plain.includes('debug > turn 1 · prose'),
     });
 
-    assert.match(result.plain, /debug > on · prose/u);
+    assert.match(result.plain, /debug > on · plain explanation/u);
     assert.match(result.plain, /debug > turn 1 · prose/u);
     assert.match(result.plain, /The learner is asking for orientation/u);
     assert.match(result.plain, /You held a warm, re-anchoring stance/u);
     assert.doesNotMatch(result.plain, /A · learner analysis/u);
     assert.doesNotMatch(result.plain, /mastery calculation/u);
     assert.match(result.plain, /technical evidence: \/debug technical/u);
-    assert.match(result.plain, /explanatory debug: on \(prose\)/u);
+    assert.match(result.plain, /explanations: on \(plain\)/u);
     assert.match(fs.readFileSync(result.logPath, 'utf8'), /# Explanatory debug task/u);
 
     const traces = fs

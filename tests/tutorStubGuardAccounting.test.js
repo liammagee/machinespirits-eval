@@ -87,7 +87,7 @@ process.stdin.on('end', () => {
   }
   const events = readTraceEvents(tmp);
   fs.rmSync(tmp, { recursive: true, force: true });
-  return events;
+  return { events, stdout: result.stdout };
 }
 
 function assertExactRepairSpan(span, original, repaired) {
@@ -97,7 +97,7 @@ function assertExactRepairSpan(span, original, repaired) {
 }
 
 test('tutor guard accounting preserves the original candidate and exact accepted-repair spans', () => {
-  const events = runGuardFixture('repair');
+  const { events, stdout } = runGuardFixture('repair');
   const event = events.find((row) => row.type === 'tutor_response_guard_accounting');
   const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
   const closeout = events.find((row) => row.type === 'closeout_report')?.report;
@@ -138,10 +138,12 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(closeout.guardAccounting.deterministicFallbackTurns, 0);
   assert.deepEqual(closeout.guardAccounting.byPolicyProfile[0].policy, 'dynamic');
   assert.deepEqual(closeout.guardAccounting.byPolicyProfile[0].profile, 'diligent');
+  assert.match(stdout, /response revised/u);
+  assert.doesNotMatch(stdout, /leak-guard/u);
 });
 
 test('tutor guard accounting records the failed repair and final deterministic fallback envelope', () => {
-  const events = runGuardFixture('fallback');
+  const { events, stdout } = runGuardFixture('fallback');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
   const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
   const closeout = events.find((row) => row.type === 'closeout_report')?.report;
@@ -175,4 +177,7 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(closeout.guardAccounting.modelRepairTurns, 1);
   assert.equal(closeout.guardAccounting.deterministicFallbackTurns, 1);
   assert.equal(closeout.guardAccounting.finalDeliveryAuditFailures, 0);
+  assert.equal(closeout.finalTurn.leakOk, true);
+  assert.match(stdout, /safe fallback used/u);
+  assert.doesNotMatch(stdout, /leak-guard/u);
 });

@@ -27,9 +27,9 @@
 # (larkinUnit).
 #
 # Proof DAG (depth 3, single chain with joins — easy to guess on purpose):
-#   p_offbooks + p_seal          --R1--> ranOffSpec(larkinUnit)
-#   ranOffSpec + p_held          --R2--> exposedCulture(larkinUnit)
-#   exposedCulture + p_strain    --R3--> ruined(corvatLine, larkinUnit)
+#   p_reservoir + p_seal         --R1--> activeExposureSource(larkinUnit, aspergillusG17)
+#   activeExposureSource + p_held --R2--> exposedCultureTo(corvatLine, larkinUnit, aspergillusG17)
+#   exposedCultureTo + p_strain  --R3--> ruined(corvatLine, larkinUnit)
 # Mirror (never completes): Devlin left the flasks unlabelled (p_unlabeled),
 # but the convicting rule R_blame also needs seededContaminant(devlin), which
 # is never released because it is false — a messy bench is not a mechanism.
@@ -66,34 +66,45 @@ secret:
   fact: [ruined, corvatLine, larkinUnit]
   surface: >-
     The Corvat line was ruined by the Larkin unit — an incubator Facilities
-    decommissioned last spring for a perished door gasket and someone quietly
-    wheeled back onto the floor, off the books, to cover the overflow. Its
-    cracked seal never holds a setpoint; the Corvat flasks were parked in it
-    overnight because it was the only shelf left before the deadline; and the
-    Aspergillus the swab grew is the same strain already living in that
-    chamber, from the mould bloom that got the unit pulled in the first place.
+    decommissioned last spring after a perished door gasket exposed a resident
+    Aspergillus G17 reservoir, then quietly wheeled back onto the floor off the
+    books to cover the overflow. Its cracked seal leaves that reservoir active;
+    the Corvat flasks were parked in it overnight because it was the only shelf
+    left; and whole-genome typing identifies the contaminant as the same G17
+    strain recorded inside the chamber.
 
 mirror:
   fact: [ruined, corvatLine, devlin]
 
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
-  - id: R1_offspec
+  - id: R1_source
+    gloss: >-
+      A chamber is an active exposure source when a specific strain is
+      demonstrably resident inside it and the chamber's containment seal is
+      breached.
     if:
-      - [broughtBackOffBooks, "?x"]
+      - [residentStrainIn, "?x", "?strain"]
       - [breachedSeal, "?x"]
     then:
-      - [ranOffSpec, "?x"]
+      - [activeExposureSource, "?x", "?strain"]
   - id: R2_expose
+    gloss: >-
+      Flasks held overnight inside an active source for a strain were exposed
+      to that strain.
     if:
-      - [ranOffSpec, "?x"]
+      - [activeExposureSource, "?x", "?strain"]
       - [heldFlasks, "?x", corvatLine]
     then:
-      - [exposedCulture, "?x"]
+      - [exposedCultureTo, corvatLine, "?x", "?strain"]
   - id: R3_ruin
+    gloss: >-
+      If the Corvat line was exposed to a chamber's strain and whole-genome
+      typing identifies the contaminant as that same strain, that chamber
+      ruined the line.
     if:
-      - [exposedCulture, "?x"]
-      - [strainMatches, contaminant, "?x"]
+      - [exposedCultureTo, corvatLine, "?x", "?strain"]
+      - [contaminantTypedAs, contaminant, "?strain"]
     then:
       - [ruined, corvatLine, "?x"]
   # The lab's inference, stated as law so its missing premise is public: an
@@ -102,6 +113,10 @@ rules:
   # messy shelf explains a mix-up, not a mould strain that was already resident
   # somewhere else on the floor.
   - id: R_blame
+    gloss: >-
+      An unlabelled shelf would justify blaming its keeper only if that same
+      person actually seeded the contaminant; untidiness by itself is not a
+      contamination mechanism.
     if:
       - [leftUnlabelled, "?x", corvatLine]
       - [seededContaminant, "?x", corvatLine]
@@ -111,19 +126,20 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_unlabelled # mirror fuel: keeps Devlin a live candidate
+    evidence_role: mirror
     fact: [leftUnlabelled, devlin, corvatLine]
     surface: >-
       Devlin labels nothing. The Corvat flasks spent the week on Devlin's
-      shelf, in a row of identical unmarked flasks — caps loose, no dates, no
-      initials. Everyone in Greyfen has a Devlin story.
-  - id: p_offbooks
-    fact: [broughtBackOffBooks, larkinUnit]
+      shelf, in a row of identical unmarked flasks — no dates, no initials.
+      Everyone in Greyfen has a Devlin story.
+  - id: p_reservoir
+    fact: [residentStrainIn, larkinUnit, aspergillusG17]
     surface: >-
       An incubator Facilities decommissioned last spring is back on the floor:
-      the Larkin unit, stencilled with a retired asset tag, carrying no current
-      calibration sticker and appearing in no equipment log this quarter.
-      Someone wheeled it out of storage and plugged it back in to cover the
-      overflow.
+      the Larkin unit, retired asset tag still showing, absent from this
+      quarter's equipment log. Its quarantine record and the swab taken when it
+      reappeared both identify a resident Aspergillus strain, G17. Someone
+      wheeled the unit out of storage and plugged it in to cover the overflow.
   - id: p_seal
     fact: [breachedSeal, larkinUnit]
     surface: >-
@@ -138,12 +154,11 @@ premises:
       flasks were parked in the Larkin unit overnight — the only shelf with
       room left before the nine o'clock deadline.
   - id: p_strain
-    fact: [strainMatches, contaminant, larkinUnit]
+    fact: [contaminantTypedAs, contaminant, aspergillusG17]
     surface: >-
-      The swab from the ruined flasks grew Aspergillus. The identical species
-      is logged in the Larkin unit's own maintenance history — the mould bloom
-      that got it decommissioned. The contaminant was already resident in that
-      chamber before the flasks ever went in.
+      Whole-genome sequencing of the swab from the ruined flasks identifies
+      Aspergillus strain G17 — the same strain named in the Larkin unit's
+      quarantine record, not merely the same species.
 
 # The learner's starting GROUNDED facts (public setup).
 background:
@@ -154,7 +169,7 @@ incompatible:
 
 # One authored path through the chain.
 proof_paths:
-  - premises: [p_offbooks, p_seal, p_held, p_strain]
+  - premises: [p_reservoir, p_seal, p_held, p_strain]
 
 # The plot: the ready verdict first, then the off-books unit and its bad seal,
 # then the overnight placement, then the strain match that signs the case.
@@ -162,7 +177,7 @@ proof_paths:
 # and learning to wait for the swab.
 release_schedule:
   - { turn: 2, premise: p_unlabelled, via: tutor }
-  - { turn: 3, premise: p_offbooks, via: director }
+  - { turn: 3, premise: p_reservoir, via: director }
   - { turn: 5, premise: p_seal, via: director }
   - { turn: 7, premise: p_held, via: director }
   - { turn: 8, premise: p_strain, via: tutor }
@@ -178,7 +193,8 @@ dramaturgy:
         certainty, the first odd exhibit — an incubator that Facilities
         decommissioned last spring is somehow back on the floor, off every log.
         The learner should leave Act I still blaming Devlin but holding one
-        fact a messy bench cannot explain.
+        fact a messy bench cannot explain: the retired unit still carries a
+        documented strain reservoir.
     - act: II
       title: The Asset Tag
       turns: [5, 8]
@@ -188,7 +204,7 @@ dramaturgy:
         flasks parked in that unit overnight for want of any other shelf, and
         the swab growing the exact Aspergillus strain already logged in the
         unit's own history. The learner should feel the click of the join —
-        off-books plus bad seal plus the flasks inside plus the matching strain
+        resident strain plus bad seal plus the flasks inside plus the matching strain
         — and notice that Devlin, mess and all, never touched the mechanism.
 
 slope:

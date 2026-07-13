@@ -143,6 +143,8 @@ test('model drafting prompt and parser keep source ids explicit', () => {
   assert.match(prompt, /Produce 2 modules/u);
   assert.match(prompt, /REF01: Standard/u);
   assert.match(prompt, /Do not treat a reference as proof/u);
+  assert.match(prompt, /prerequisite edge only when/u);
+  assert.match(prompt, /same semantic type/u);
 
   const parsed = parseCurriculumBuilderDraftResponse('```json\n{"title":"Course","modules":[]}\n```');
   assert.equal(parsed.title, 'Course');
@@ -167,6 +169,9 @@ test('custom curricula compile through the existing world and drama contracts', 
   assert.match(report, /```mermaid\nflowchart LR/u);
   assert.match(report, /ER1 --> ER2/u);
   assert.match(report, /world specs constrain tutor action/iu);
+  assert.match(report, /Scenario-authoring handoff/u);
+  assert.match(report, /three distinct graphs/u);
+  assert.match(report, /npm run derivation:quality/u);
 });
 
 test('curriculum builder CLI help short-circuits and deterministic build writes the complete bundle', () => {

@@ -55,6 +55,10 @@ import {
 } from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
 import {
+  DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+  normalizeTutorStubReleaseSpeed,
+} from '../services/tutorStubReleasePacing.js';
+import {
   learnerProfileContract,
   learnerProfileContractSummary,
   learnerProfileDescription,
@@ -97,6 +101,9 @@ const DAG_FACT_DROPOUT_SEED_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT_SEED ||
   process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
   argvHasOption('--dag-fact-dropout-seed'),
+);
+const RELEASE_SPEED_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_RELEASE_SPEED || process.env.TUTOR_STUB_RELEASE_SPEED || argvHasOption('--release-speed'),
 );
 const RUN_SEED_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_RUN_SEED || argvHasOption('--run-seed'));
 let activeReadOnlySourceDir = null;
@@ -165,6 +172,13 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
         String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
     },
+    'release-speed': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_RELEASE_SPEED ||
+        process.env.TUTOR_STUB_RELEASE_SPEED ||
+        String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
+    },
     'dag-mode': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
@@ -226,6 +240,7 @@ Options:
                               minimum strong-change score for +state/+field overlays (default: 0.7)
   --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
   --dag-fact-dropout-seed <n> deterministic non-negative dropout seed (default: 1)
+  --release-speed <n>          base clue-release speed, 0.5-2 (default: 1)
   --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
@@ -1103,6 +1118,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
     dagFactDropout: turn?.dagFactDropout || null,
+    releasePacing: turn?.releasePacing || null,
     register: {
       policy: selection.policy || null,
       engagementStance: selection.engagement_stance || selection.selected_register || null,
@@ -1417,6 +1433,9 @@ function summarizeLearnerBehavior(turnRecords = []) {
   const learnerWords = turnRecords.map((turn) => wordsInText(turn?.learner)).filter((value) => value > 0);
   const firstTurn = turnRecords[0] || {};
   const finalTurn = turnRecords.at(-1) || {};
+  const explicitPaceRequests = turnRecords
+    .map((turn) => turn?.releasePacing?.signal || null)
+    .filter((signal) => signal?.source === 'explicit_learner_request');
   return {
     schema: 'machinespirits.tutor-stub.learner-behavior-summary.v1',
     turnCount: turnRecords.length,
@@ -1430,6 +1449,7 @@ function summarizeLearnerBehavior(turnRecords = []) {
     epistemicStanceCounts: countBy(analyses.map((turn) => turn.epistemic_stance).filter(Boolean)),
     agencyCounts: countBy(analyses.map((turn) => turn.agency).filter(Boolean)),
     affectCounts: countBy(analyses.map((turn) => turn.affect).filter(Boolean)),
+    explicitCluePaceRequestCounts: countBy(explicitPaceRequests.map((signal) => signal.direction).filter(Boolean)),
     firstLearner: textSnippet(firstTurn.learner, 220),
     finalLearner: textSnippet(finalTurn.learner, 220),
     firstClassification: textSnippet(firstTurn.classification?.turn?.summary, 220),
@@ -1703,6 +1723,25 @@ function summarizeTrace(
     turnRecords.map((turn) => turn.responseConfigurationAudit),
   );
   const dagFactDropout = summarizeTutorStubDagFactDropoutTrace(turnRecords);
+  const releasePacingRows = turnRecords.map((turn) => turn.releasePacing).filter(Boolean);
+  const finalReleasePacing = releasePacingRows.at(-1) || null;
+  const releasePacing = finalReleasePacing
+    ? {
+        schema: 'machinespirits.tutor-stub.release-pacing-summary.v1',
+        baseSpeed: finalReleasePacing.baseSpeed,
+        finalEffectiveSpeed: finalReleasePacing.effectiveSpeed,
+        directionCounts: countBy(releasePacingRows.map((row) => row.direction).filter(Boolean)),
+        explicitRequestCounts: countBy(
+          releasePacingRows
+            .filter((row) => row.signal?.source === 'explicit_learner_request')
+            .map((row) => row.signal.direction),
+        ),
+        releasedPremiseCount: Number(finalReleasePacing.counts?.released || 0),
+        earlyReleaseCount: Number(finalReleasePacing.counts?.early || 0),
+        lateReleaseCount: Number(finalReleasePacing.counts?.late || 0),
+        authoredTurnReleaseCount: Number(finalReleasePacing.counts?.onAuthoredTurn || 0),
+      }
+    : null;
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -1770,6 +1809,7 @@ function summarizeTrace(
     sceneImmersionCounts: countBy(sceneImmersion),
     responseConfigurationVisibility,
     dagFactDropout,
+    releasePacing,
     efficacyCounts: countBy(efficacies),
     leakCount,
     guardAccounting,
@@ -10115,6 +10155,8 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     String(normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })),
     '--dag-fact-dropout-seed',
     String(normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], { label: '--dag-fact-dropout-seed' })),
+    '--release-speed',
+    String(normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' })),
     '--run-seed',
     String(normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' })),
     '--eval-repeat',
@@ -10272,6 +10314,13 @@ function buildResumePlan(summaryPath) {
           })
         : '',
     );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--release-speed',
+      RELEASE_SPEED_OVERRIDE
+        ? normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' })
+        : flagValue(childArgs, '--release-speed') || source.config?.releaseSpeed || DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+    );
     adjustedChildArgs = withFlagValue(adjustedChildArgs, '--run-seed', runSeed);
     adjustedChildArgs = withBooleanFlag(adjustedChildArgs, '--no-memory-summary', args['no-memory-summary']);
     const policy = result.policy || 'unknown';
@@ -10367,6 +10416,9 @@ function buildResumePlan(summaryPath) {
             label: '--dag-fact-dropout-seed',
           })
         : (source.config?.dagFactDropoutSeed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
+      releaseSpeed: RELEASE_SPEED_OVERRIDE
+        ? normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' })
+        : (source.config?.releaseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED),
       memorySummary: args['no-memory-summary'] ? { enabled: false } : source.config?.memorySummary || null,
       resumedFrom: path.relative(ROOT, resolvedSummaryPath),
       resumeStatuses: Array.from(retryStatuses),
@@ -10684,6 +10736,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       dagFactDropoutSeed: normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
         label: '--dag-fact-dropout-seed',
       }),
+      releaseSpeed: normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
       runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',

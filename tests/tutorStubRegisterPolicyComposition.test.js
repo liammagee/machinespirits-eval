@@ -202,10 +202,9 @@ test('interactive settings can add, remove, clear, and retune register overlays'
   );
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /policy stack dynamical_system\+state/u);
-  assert.match(result.stdout, /policy stack dynamical_system\+state\+field/u);
-  assert.ok((result.stdout.match(/policy stack: dynamical_system\+state\+field/gu) || []).length >= 1);
-  assert.match(result.stdout, /strong-change threshold 0\.8/u);
-  assert.match(result.stdout, /policy stack dynamical_system\+field/u);
-  assert.match(result.stdout, /policy stack dynamical_system; strong-change threshold 0\.8/u);
+  assert.match(result.stdout, /teaching approach dynamical_system\+state/u);
+  assert.match(result.stdout, /teaching approach dynamical_system\+state\+field/u);
+  assert.match(result.stdout, /override sensitivity 0\.8/u);
+  assert.match(result.stdout, /teaching approach dynamical_system\+field/u);
+  assert.match(result.stdout, /teaching approach dynamical_system; override sensitivity 0\.8/u);
 });

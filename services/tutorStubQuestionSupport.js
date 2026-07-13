@@ -82,15 +82,17 @@ export function buildTutorStubQuestionSupport({
       answerability: 'answerable_after_staging',
       modality,
       adaptiveMultipleChoice: modality === 'stage_then_bounded_choice',
-      guardRequired: false,
+      guardRequired: currentStruggle,
+      clarificationInvitationRequired: currentStruggle,
+      learnerMoves: ['answer_from_stated_clue', 'ask_which_clue', 'ask_what_term_means'],
       struggleCount,
       adaptiveChoiceCoolingDown,
       reason:
         'the next needed evidence is due now and must enter the public discourse before the learner is questioned about it',
       tutorInstruction:
         modality === 'stage_then_bounded_choice'
-          ? 'State the due evidence in ordinary scene language first, then offer 2-3 short interpretations grounded in that stated evidence; invite the learner to choose or answer freely.'
-          : 'State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it.',
+          ? 'State the due evidence in ordinary scene language first, then offer 2-3 short interpretations grounded in that stated evidence; invite the learner to choose or answer freely. If the learner is struggling, also say they may ask which clue or term needs explaining.'
+          : 'State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear.',
     };
   }
 
@@ -105,14 +107,16 @@ export function buildTutorStubQuestionSupport({
       modality,
       adaptiveMultipleChoice: modality === 'bounded_directional_choice',
       guardRequired: true,
+      clarificationInvitationRequired: currentStruggle,
+      learnerMoves: ['use_the_public_direction', 'ask_which_clue', 'ask_what_term_means'],
       struggleCount,
       adaptiveChoiceCoolingDown,
       reason:
         'a remaining best-path fact has not entered the public scene, so open recall would ask the learner to invent evidence',
       tutorInstruction:
         modality === 'bounded_directional_choice'
-          ? 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Name only the missing evidence category (for example custody rather than expertise), then offer 2-3 public-safe categories or interpretations. Do not include the actual unstaged record or answer.'
-          : 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Briefly state the direction of the missing support in the discourse (for example that possession needs custody evidence, not expert recognition), without revealing the unstaged fact. You may consolidate the current public inference without asking a question.',
+          ? 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Name only the missing evidence category (for example custody rather than expertise), then offer 2-3 public-safe categories or interpretations. Do not include the actual unstaged record or answer. If the learner is struggling, also say they may ask which clue or term needs explaining.'
+          : 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Briefly state the direction of the missing support in the discourse (for example that possession needs custody evidence, not expert recognition), without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear.',
     };
   }
 
@@ -126,15 +130,17 @@ export function buildTutorStubQuestionSupport({
       answerability: 'public_but_needs_scaffold',
       modality,
       adaptiveMultipleChoice: modality === 'bounded_public_choice',
-      guardRequired: false,
+      guardRequired: true,
+      clarificationInvitationRequired: true,
+      learnerMoves: ['answer_from_restated_clue', 'ask_which_clue', 'ask_what_term_means'],
       struggleCount,
       adaptiveChoiceCoolingDown,
       reason:
         'the needed material is public, but the learner has signalled that an unsupported open question is not enough',
       tutorInstruction:
         modality === 'bounded_public_choice'
-          ? 'Restate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely.'
-          : 'Put the directional hint into the discourse before asking: restate the live public clue and narrow the relation the learner is being asked to notice.',
+          ? 'Restate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely. Also say they may ask which clue or term needs explaining.'
+          : 'Put the directional hint into the discourse before asking: restate the live public clue and narrow the relation the learner is being asked to notice. Explicitly say that a short question about which clue or term is unclear is a valid response.',
     };
   }
 
@@ -144,10 +150,13 @@ export function buildTutorStubQuestionSupport({
     modality: 'open_question',
     adaptiveMultipleChoice: false,
     guardRequired: false,
+    clarificationInvitationRequired: false,
+    learnerMoves: ['answer_from_public_evidence', 'ask_which_clue', 'ask_what_term_means'],
     struggleCount,
     adaptiveChoiceCoolingDown,
     reason: 'the next move can be answered from evidence already in the public discourse',
-    tutorInstruction: 'Ask one light question grounded in the public evidence already stated.',
+    tutorInstruction:
+      'Ask one light question grounded in the public evidence already stated. Name the clue in plain language rather than referring vaguely to one mark, the record, or the evidence. If a compressed scene term or referent remains necessary, explicitly invite a short clarification question.',
   };
 }
 
@@ -165,6 +174,7 @@ function openRecallQuestions(text) {
 export function auditTutorStubQuestionSupportResponse({ text = '', support = null } = {}) {
   if (!support?.guardRequired) return { ok: true, issues: [] };
   const issues = [];
+  const source = String(text || '');
   const recall = openRecallQuestions(text);
   if (recall.length) {
     issues.push({
@@ -174,12 +184,27 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
     });
   }
   if (support.modality === 'bounded_directional_choice') {
-    const hasChoice = /(?:\bA[).:]\s|\bB[).:]\s|\beither\b.+\bor\b)/isu.test(String(text || ''));
+    const hasChoice = /(?:\bA[).:]\s|\bB[).:]\s|\beither\b.+\bor\b|\bbetween\b.+\band\b)/isu.test(source);
     if (!hasChoice) {
       issues.push({
         type: 'missing_bounded_choice',
         reason:
           'repeated uncertainty called for a small public-safe choice, but the draft left the learner with another unsupported open prompt',
+      });
+    }
+  }
+  if (support.clarificationInvitationRequired && source.includes('?')) {
+    const invitesClarification =
+      /\b(?:ask|tell)\s+me\b.{0,80}\b(?:clue|term|word|part|meaning|unclear|explain)/isu.test(source) ||
+      /\b(?:if|when)\b.{0,70}\b(?:unclear|not sure|unsure|doesn[’']?t make sense)\b.{0,80}\b(?:ask|say|tell)/isu.test(
+        source,
+      ) ||
+      /\byou (?:can|may) ask\b/iu.test(source);
+    if (!invitesClarification) {
+      issues.push({
+        type: 'missing_clarification_invitation',
+        reason:
+          'the learner has signalled difficulty, but the tutor asks another question without making a clarifying question visibly available',
       });
     }
   }
@@ -189,12 +214,12 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
 export function deterministicTutorStubQuestionSupportFallback(support = null) {
   if (support?.modality === 'bounded_directional_choice') {
     return [
-      'The mark identifies the tool, but expertise about a tool is not the same as having it.',
-      'Which would safely connect it to a hand: A) a record of custody, B) a witness who only recognizes its cut, or C) mere presence near the forge?',
+      'Let’s keep only the distinction the public evidence can support: identifying a source or role is not the same as showing who controlled the decisive act.',
+      'Which link would be safer: A) evidence of control or responsibility, B) recognition without control, or C) mere proximity? If any term is unclear, ask me to explain it.',
     ].join(' ');
   }
   return [
     'That is as far as the public evidence carries us for now.',
-    'The missing link is evidence of who actually kept the tool, not a guess about what an unseen record says.',
+    'The missing link is evidence of who controlled or performed the decisive act, not a guess about what an unseen record says.',
   ].join(' ');
 }

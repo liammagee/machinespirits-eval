@@ -1,6 +1,6 @@
 # WORLD-025 — the CIVIC-MINUTES world (2026-07-12): contemporary community
 # infrastructure in the deadpan of council meeting minutes. Depth 3 with one
-# AND-join, six premises (five proof + one mirror fuel), S forced at turn 12,
+# AND-join, six premises (four proof + one corroboration + one mirror fuel), S forced at turn 12,
 # cap 18 — a mid-weight world between world-022's cheerful floor and the
 # depth-4 tribunal of world-021. Contrast class: the roster's first
 # contemporary presentation family (everything else is medieval, sci-fi, or
@@ -27,7 +27,8 @@
 # freely discussable, as mirror candidates should be.
 #
 # Proof DAG (depth 3, one AND-join at R4):
-#   alpha (timing):  p_trace + p_idle   --R1--> sagBornOffDepot(tallowStreet)
+#   alpha (timing):  p_trace            --R1--> sagBornOffDepot(tallowStreet)
+#                    p_idle corroborates the same exclusion but is not proof-required
 #   beta (asset):    p_plate + p_gauge  --R2--> failingUnderLoad(grebeNine)
 #                    failingUnderLoad + p_switch --R3--> saggingSupplyOf(tallowStreet, grebeNine)
 #   join:            sagBornOffDepot + saggingSupplyOf --R4--> causesBrownout(tallowStreet, grebeNine)
@@ -84,29 +85,44 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R0_bulk
+    gloss: >-
+      The depot chargers are a heavy new evening load. That makes them a
+      plausible suspect, but says nothing yet about which feeder they use.
     if:
       - [drawsEveningLoad, depotChargers]
     then:
       - [heavyNewcomer, depotChargers]
   - id: R1_offdepot
+    gloss: >-
+      If Tallow Street begins to sag before the depot chargers energise, the
+      chargers cannot be the source of that sag; the timing puts its origin
+      elsewhere.
     if:
       - [sagLeadsChargers, tallowStreet]
-      - [sagPersistsWhenIdle, tallowStreet]
     then:
       - [sagBornOffDepot, tallowStreet]
   - id: R2_strain
+    gloss: >-
+      A transformer repeatedly marked for renewal and running above its safe
+      temperature under the recurring load is failing under that load.
     if:
       - [flaggedForRenewal, "?x"]
       - [runsHotOnThursdays, "?x"]
     then:
       - [failingUnderLoad, "?x"]
   - id: R3_supply
+    gloss: >-
+      A failing transformer that feeds Tallow Street on Thursdays is the
+      street's sagging supply at the relevant time.
     if:
       - [failingUnderLoad, "?x"]
       - [feedsOnThursdays, "?x", tallowStreet]
     then:
       - [saggingSupplyOf, tallowStreet, "?x"]
   - id: R4_verdict
+    gloss: >-
+      When the sag is known to originate away from the depot and one failing
+      supply is carrying the street, that supply causes the brownout.
     if:
       - [sagBornOffDepot, tallowStreet]
       - [saggingSupplyOf, tallowStreet, "?x"]
@@ -118,6 +134,10 @@ rules:
   # false: the depot draws from its own feeder off the ring main, and its
   # chargers never touch the street's spur.
   - id: R5_depot
+    gloss: >-
+      A heavy newcomer could cause the street's brownout only if its current
+      actually ran through Tallow Street's feeder; size and timing alone are
+      not the same wire.
     if:
       - [heavyNewcomer, depotChargers]
       - [wiredThroughTallow, depotChargers]
@@ -127,6 +147,7 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_new # mirror fuel: keeps the depot chargers a live candidate
+    evidence_role: mirror
     fact: [drawsEveningLoad, depotChargers]
     surface: >-
       The depot's six new chargers draw their heaviest current in the
@@ -140,6 +161,7 @@ premises:
       energise until 19:05, when the last van docks. The dip leads its
       suspect by twenty-five minutes.
   - id: p_idle
+    evidence_role: corroboration
     fact: [sagPersistsWhenIdle, tallowStreet]
     surface: >-
       On the Thursday of the depot's annual stocktake the chargers stood dark
@@ -176,7 +198,7 @@ incompatible:
 
 # One authored path through both evidence lines and the join.
 proof_paths:
-  - premises: [p_trace, p_idle, p_plate, p_gauge, p_switch]
+  - premises: [p_trace, p_plate, p_gauge, p_switch]
 
 # The plot: the motion first, then the clock that disagrees, the dark
 # Thursday, the deferred renewal, the Thursday fevers — and the standing

@@ -118,6 +118,8 @@ premises:
       the water has stood.
   # --- stage 2: the hand at the place (path A: the sexton) ---
   - id: p_lantern
+    evidence_role: alternative_route
+    alternative_group: mirel_presence
     fact: [steepedAt, mirel, springHouse]
     surface: >-
       The sexton, late from the fair-week ringing, saw lantern-light
@@ -127,6 +129,8 @@ premises:
   # --- stage 2: the hand (path B: the verger's wife — authored but
   #     unscheduled; the tutor's later freedom) ---
   - id: p_verger
+    evidence_role: alternative_route
+    alternative_group: mirel_presence
     fact: [steepedAt, mirel, springHouse]
     surface: >-
       The verger's wife, crossing the glebe before light in fair week,
@@ -134,6 +138,8 @@ premises:
       and no good answer for the hour.
   # --- stage 2: the stuff (path A: the order-book) ---
   - id: p_mordant
+    evidence_role: alternative_route
+    alternative_group: copperas_use
     fact: [steepsBitter, mirel]
     surface: >-
       The dye-master's order-book, against Mirel's name in fair week:
@@ -143,6 +149,8 @@ premises:
   # --- stage 2: the stuff (path B: the waste-jar — authored but
   #     unscheduled) ---
   - id: p_dyebook
+    evidence_role: alternative_route
+    alternative_group: copperas_use
     fact: [steepsBitter, mirel]
     surface: >-
       Behind the dye-yard, her waste-jar: gall lees and green copperas,

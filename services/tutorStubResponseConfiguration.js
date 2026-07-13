@@ -57,7 +57,7 @@ function configurationSignal({ learnerText, classification }) {
   );
 }
 
-export function selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension } = {}) {
+export function selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension, releasePacing } = {}) {
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
   const model = modelFrom(tutorLearnerDag);
@@ -77,6 +77,14 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
     actionFamily = 'reanchor_public_evidence';
     reason =
       'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
+  } else if (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length) {
+    actionFamily = 'stage_next_step';
+    reason = releasePacing?.dueNow?.length
+      ? 'The learner requested more momentum and the next public clue is now due, so stage it directly.'
+      : 'The learner requested more momentum, so shorten the handoff to the next available public clue.';
+  } else if (releasePacing?.direction === 'decelerate') {
+    actionFamily = 'reanchor_public_evidence';
+    reason = 'The learner requested a slower pace, so settle one already-public clue before adding another.';
   } else if (requestType === 'vulnerability_or_moral_exposure') {
     actionFamily = 'receive_vulnerability';
     reason = 'Affective or moral exposure requires an agency-preserving reception before evidence pressure.';
@@ -237,8 +245,9 @@ export function buildTutorStubResponseConfiguration({
   comprehension = null,
   world = null,
   proposedActionFamily = null,
+  releasePacing = null,
 } = {}) {
-  const action = selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension });
+  const action = selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension, releasePacing });
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
   const scene = selectTutorStubSceneImmersion({ classification, comprehension, world });
@@ -254,6 +263,7 @@ export function buildTutorStubResponseConfiguration({
     scene_immersion: scene.sceneImmersion,
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
+    release_pacing: releasePacing ? structuredClone(releasePacing) : null,
     engagement_stance_distribution: Array.isArray(stanceDistribution) ? structuredClone(stanceDistribution) : null,
     engagement_stance_vector: stanceVector && typeof stanceVector === 'object' ? structuredClone(stanceVector) : null,
     engagement_stance_temperature: Number.isFinite(Number(temperature)) ? Number(temperature) : null,
@@ -309,6 +319,11 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
       : 'Learner pace: steady unless the public turn itself warrants otherwise.',
+    configuration.release_pacing?.direction === 'accelerate'
+      ? `Clue release: faster at ${configuration.release_pacing.effectiveSpeed}x. Stage at most one newly available clue batch now, with a short handoff and no redundant proof demand.`
+      : configuration.release_pacing?.direction === 'decelerate'
+        ? `Clue release: slower at ${configuration.release_pacing.effectiveSpeed}x. Do not add a new clue unless it is already due; consolidate one public step first.`
+        : `Clue release: authored pace at ${configuration.release_pacing?.effectiveSpeed ?? 1}x; add no more than one authored clue batch this turn.`,
     'These are independent axes. Perform the action family; do not infer the action from the engagement stance.',
     'Temperature applies only to the engagement-stance distribution. Do not blur the audience, lexical, action, or scene contracts.',
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',

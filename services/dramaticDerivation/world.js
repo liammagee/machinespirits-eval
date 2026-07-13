@@ -18,6 +18,13 @@ import yaml from 'yaml';
 import { closure, entails, factKey, matchPattern } from './chainer.js';
 
 const RELEASE_VIAS = new Set(['director', 'tutor']);
+export const WORLD_ELIGIBILITY_STATUSES = Object.freeze([
+  'production',
+  'test_only',
+  'screen_pending',
+  'screen_rejected',
+]);
+const WORLD_ELIGIBILITY_STATUS_SET = new Set(WORLD_ELIGIBILITY_STATUSES);
 
 export function loadWorld(filePath) {
   const raw = yaml.parse(fs.readFileSync(filePath, 'utf8'));
@@ -65,6 +72,18 @@ export function validateWorld(raw, source = '<inline>') {
   if (!Number.isInteger(raw.slope.aporia_window)) fail('slope.aporia_window must be an integer');
   if (!Number.isInteger(raw.turn_cap)) fail('turn_cap must be an integer');
 
+  const eligibility = raw.eligibility || { status: 'production' };
+  if (!eligibility || typeof eligibility !== 'object' || Array.isArray(eligibility)) {
+    fail('eligibility must be an object when supplied');
+  }
+  const eligibilityStatus = eligibility.status || 'production';
+  if (!WORLD_ELIGIBILITY_STATUS_SET.has(eligibilityStatus)) {
+    fail(`eligibility.status must be one of ${WORLD_ELIGIBILITY_STATUSES.join(', ')}`);
+  }
+  if (eligibilityStatus !== 'production' && !String(eligibility.reason || '').trim()) {
+    fail(`eligibility.reason is required when status is ${eligibilityStatus}`);
+  }
+
   return Object.freeze({
     id: raw.id,
     title: raw.title || raw.id,
@@ -79,6 +98,13 @@ export function validateWorld(raw, source = '<inline>') {
     // speaker-hearer relation; presentation is how the author costumes the
     // world. Never read by the engine/chainer.
     presentation: raw.presentation || null,
+    // Normal scenario pickers show production worlds only. Non-production
+    // worlds remain explicitly addressable by id/path for smoke, screen, and
+    // regression work.
+    eligibility: Object.freeze({
+      status: eligibilityStatus,
+      reason: String(eligibility.reason || '').trim() || null,
+    }),
     setting: raw.setting || null,
     learnerVoice: raw.learner_voice || null,
     learnerDrift: raw.learner_drift || null,

@@ -6,9 +6,9 @@
 #
 # Costume: in the cliff-city of Brindlecliff, bread flies from the ovenloft
 # to the terraces in glider panniers. Every loaf bound for the east terrace
-# arrives stale on windless mornings, and the terrace has its culprit before
+# arrives cold on windless mornings, and the terrace has its culprit before
 # breakfast: Tibbin, the new apprentice baker, hired the very spring the
-# stale mornings began (the mirror — present, dated, and innocent). The truth
+# cold mornings began (the mirror — present, dated, and innocent). The truth
 # is a contingent particular of the city's own physics in the Edony pattern:
 # PIPER'S GULLET, a thermal vent in the cliff face whose frost shutter was
 # bolted for winter and never unbolted. On windy mornings the cliff wind
@@ -28,13 +28,13 @@
 #
 # Proof DAG (depth 3, single chain — cheerful on purpose):
 #   p_bolt + p_soleLift          --R1--> strandsGliders(pipersGullet, eastTerrace)
-#   strandsGliders + p_spiral    --R2--> slowsBread(pipersGullet, eastTerrace)
-#   slowsBread + p_warm          --R3--> stalesLoaves(eastTerrace, pipersGullet)
+#   strandsGliders + p_spiral    --R2--> delaysBread(pipersGullet, eastTerrace)
+#   delaysBread + p_warm         --R3--> coolsLoaves(eastTerrace, pipersGullet)
 # Mirror stalls at R0: Tibbin kneads the batch (p_hired), but R_newhand also
-# needs staleFromOven(morningBatch) — never released, because it is false.
+# needs coldFromOven(morningBatch) — never released, because it is false.
 
 id: world_026_skyway_bakery
-title: The Stale Loaves of the East Terrace
+title: The Cold Loaves of the East Terrace
 discipline: "Skyway forensics (a mystery of bread and air)"
 
 presentation:
@@ -44,11 +44,11 @@ presentation:
   narrative_diction: "tall-tale whimsy"
   ledger_term: "delivery ledger"
   summary: >-
-    A cliffside sky-city blames its new apprentice baker for stale bread
+    A cliffside sky-city blames its new apprentice baker for cold bread
     until still-morning glide physics point to a bolted thermal vent.
 
-question: "What stales every east-terrace loaf on windless mornings?"
-question_pattern: [stalesLoaves, eastTerrace, "?x"]
+question: "What makes every east-terrace loaf arrive cold on windless mornings?"
+question_pattern: [coolsLoaves, eastTerrace, "?x"]
 
 setting: >-
   Brindlecliff is a city stitched to a cliffside, its terraces joined by air:
@@ -56,9 +56,9 @@ setting: >-
   the morning batch in their panniers and ride the cliff wind down to
   breakfast. Lately the arrangement has a flaw. On windy mornings the east
   terrace eats warm bread like everyone else; on windless mornings every one
-  of its loaves lands cold and stale, and the terrace has settled its verdict
+  of its loaves lands cold, and the terrace has settled its verdict
   before the crumbs are swept — Tibbin, the new apprentice baker, whose first
-  spring in the ovenloft is exactly the spring the stale mornings began. You
+  spring in the ovenloft is exactly the spring the cold mornings began. You
   are the east terrace's crumb clerk, keeper of the delivery ledger, in which
   every loaf is entered with its condition and its cause. The loftmistress
   runs the inquiry the way she runs her flight line: causes from charts,
@@ -73,9 +73,9 @@ learner_voice: >-
   the calendar is not a hand in the dough.
 
 secret:
-  fact: [stalesLoaves, eastTerrace, pipersGullet]
+  fact: [coolsLoaves, eastTerrace, pipersGullet]
   surface: >-
-    The loaves are staled by Piper's Gullet — the old thermal vent in the
+    The loaves are cooled by Piper's Gullet — the old thermal vent in the
     cliff face whose frost shutter was bolted at first frost and never
     unbolted come spring. On windy mornings nobody misses it; on windless
     mornings the Gullet's warm breath was the only lift on the east crossing,
@@ -84,51 +84,67 @@ secret:
     is innocent, the baker is innocent; the city bolted its own weather.
 
 mirror:
-  fact: [stalesLoaves, eastTerrace, tibbin]
+  fact: [coolsLoaves, eastTerrace, tibbin]
 
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R1_strand
+    gloss: >-
+      If a thermal vent is still shuttered and it is the east crossing's only
+      lift in still air, gliders cannot take the direct route on windless mornings.
     if:
       - [shutterBoltedSinceFrost, "?v"]
       - [onlyStillAirLift, "?v", eastTerrace]
     then:
       - [strandsGliders, "?v", eastTerrace]
   - id: R2_detour
+    gloss: >-
+      Gliders denied the direct lift must take the long spiral; because that
+      route doubles the crossing, the vent closure delays the bread.
     if:
       - [strandsGliders, "?v", eastTerrace]
       - [longSpiralDoublesCrossing, eastTerrace]
     then:
-      - [slowsBread, "?v", eastTerrace]
-  - id: R3_stale
+      - [delaysBread, "?v", eastTerrace]
+  - id: R3_cold
+    gloss: >-
+      Bread that launches warm and is delayed on the crossing arrives cold;
+      the source of the delay is therefore what cools the loaves.
     if:
-      - [slowsBread, "?v", eastTerrace]
+      - [delaysBread, "?v", eastTerrace]
       - [launchedWarm, morningBatch]
     then:
-      - [stalesLoaves, eastTerrace, "?v"]
+      - [coolsLoaves, eastTerrace, "?v"]
   # The terrace's inference, stated as law so its missing premise is public:
-  # a new hand in the ovenloft stales the loaves only if the morning batch
-  # leaves the racks already stale. That fact is NEVER released — it is
+  # a new hand in the ovenloft cools the loaves only if the morning batch
+  # leaves the racks already cold. That fact is NEVER released — it is
   # false; the launch log shows the opposite.
   - id: R0_newhand
+    gloss: >-
+      Being hired in the same season establishes that Tibbin kneads the morning
+      batch; it does not establish that the batch leaves the oven cold.
     if:
       - [hiredThisSpring, "?x"]
     then:
       - [kneadsBatch, "?x", morningBatch]
   - id: R4_ovenfault
+    gloss: >-
+      A baker could be blamed for cold loaves only if the batch was already
+      cold when it left the oven; without that fact, recent hire is coincidence.
     if:
       - [kneadsBatch, "?x", morningBatch]
-      - [staleFromOven, morningBatch]
+      - [coldFromOven, morningBatch]
     then:
-      - [stalesLoaves, eastTerrace, "?x"]
+      - [coolsLoaves, eastTerrace, "?x"]
 
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_hired # mirror fuel: keeps Tibbin a live candidate
+    evidence_role: mirror
     fact: [hiredThisSpring, tibbin]
     surface: >-
       Tibbin joined the ovenloft this spring — the very season the east
-      terrace's stale mornings began. The terrace finds the arithmetic
+      terrace's cold mornings began. The terrace finds the arithmetic
       irresistible.
   - id: p_bolt
     fact: [shutterBoltedSinceFrost, pipersGullet]
@@ -160,7 +176,7 @@ background:
   - [adoresWarmCrust, crumbClerk]
 
 incompatible:
-  - [[stalesLoaves, eastTerrace, pipersGullet], [stalesLoaves, eastTerrace, tibbin]]
+  - [[coolsLoaves, eastTerrace, pipersGullet], [coolsLoaves, eastTerrace, tibbin]]
 
 # One authored path through the chain.
 proof_paths:
@@ -183,7 +199,7 @@ dramaturgy:
       turns: [1, 4]
       intent: >-
         Cold crusts and a ready culprit: Tibbin arrived in spring, the
-        staleness arrived in spring, and the terrace calls that a proof.
+        cold deliveries arrived in spring, and the terrace calls that a proof.
         Against the certainty, the first odd exhibit — a frost shutter high
         on the cliff face, still bolted long past thaw, on a vent no one has
         thought about since winter. The learner should leave Act I still
@@ -231,5 +247,5 @@ motivation:
     stance: >-
       The loftmistress: forty years on the cliff wind, fond of the clerk,
       fonder of her charts, and privately certain the suspect is the sky.
-      Keeps the inquiry light and the standard exact — a stale loaf is
+      Keeps the inquiry light and the standard exact — a cold loaf is
       entered in the ledger with its cause, or not at all.

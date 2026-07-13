@@ -1,5 +1,6 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
+export { auditWorldQuality, auditWorldDirectory, WORLD_EVIDENCE_ROLES } from './worldQuality.js';
 export {
   normalizeLemmaConfig,
   buildLemmaDag,

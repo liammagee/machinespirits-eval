@@ -169,7 +169,7 @@ Default outputs share one basename:
 - `*.worlds.yaml` — locked world contracts;
 - `*.dramas.yaml` — runnable drama seeds;
 - `*.builder-report.md` — Mermaid prerequisite DAG, readiness counts, source
-  ledger, and artifact map.
+  ledger, artifact map, and the scenario-authoring handoff gate.
 
 Use `--rhetorical` for the additional rhetorical-plan and rhetorical-drama
 artifacts, `--no-compile` to stop after the canonical object, `--check` to
@@ -177,3 +177,33 @@ validate without writing, and `--force` to replace existing artifacts.
 
 Generation itself (`scripts/generate-pedagogical-dramas.js`) follows a dry-run -> mock -> attended-real cost
 ladder; the `/ms-curriculum-drama` skill drives the whole chain.
+
+## From curriculum graph to scenario proof DAG
+
+Curriculum building involves three related but non-interchangeable graphs:
+
+1. The canonical curriculum's prerequisite DAG says which modules require
+   which earlier modules.
+2. The compiled world-adaptation spec constrains tutor actions for one module;
+   it is neither a proof nor an evaluator.
+3. A derivation world's proof DAG says which staged facts and public rules
+   entail its answer.
+
+The Curriculum Builder validates and reports the first, and compiles the
+second. It deliberately does not invent the third. If a module is adapted into
+a `config/drama-derivation/world-*.yaml` scenario, follow
+[`SCENARIO-DAG-GUIDE.md`](SCENARIO-DAG-GUIDE.md): align the question with the
+answer type, make every evidence surface support its exact formal fact, give
+every public rule a domain-valid gloss, keep proof paths minimal, label
+corroboration/controls/alternate routes, declare mirror incompatibility, and
+set presentation and eligibility metadata.
+
+Run the catalog gate after any such authoring change:
+
+```bash
+npm run derivation:quality
+```
+
+This is a structural authoring check. Scientific, legal, historical, and other
+domain entailments still require human review; the compiler and proof chainer
+cannot certify that a premise is true in the world outside the scenario.

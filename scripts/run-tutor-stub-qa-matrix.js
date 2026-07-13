@@ -28,6 +28,7 @@ import {
 } from '../services/experimentRunArtifacts.js';
 import { recordTutorStubModelObservation } from '../services/tutorStubEvalIntegrity.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
+import { normalizeTutorStubReleaseSpeed } from '../services/tutorStubReleasePacing.js';
 import {
   learnerProfileSuite,
   learnerProfileSuiteIds,
@@ -73,6 +74,10 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_EVAL_REGISTER_OVERLAY_THRESHOLD ||
         process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD ||
         '0.7',
+    },
+    'release-speed': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_RELEASE_SPEED || process.env.TUTOR_STUB_RELEASE_SPEED || '1',
     },
     'cli-effort': { type: 'string', default: process.env.TUTOR_STUB_EVAL_CLI_EFFORT || 'low' },
     'max-tokens': { type: 'string', default: process.env.TUTOR_STUB_EVAL_MAX_TOKENS || '4096' },
@@ -141,6 +146,7 @@ Options:
   --baseline-policy <p>  same-learner comparison baseline (default: bland)
   --register-overlay-threshold <n>
                          strong-change threshold for composed +state/+field policies (default: 0.7)
+  --release-speed <n>    base clue-release speed, 0.5-2 (default: 1)
   --primary-horizon <n>  preregistered learner-turn horizon (default: 16)
   --minimum-effect <n>   preregistered minimum outcome effect (default: 0.05)
   --dry-run              pass --dry-run to auto-eval children
@@ -303,6 +309,11 @@ function autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId }) {
       label: '--register-overlay-threshold',
     }),
   );
+  pushOptionalFlag(
+    command,
+    '--release-speed',
+    normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
+  );
   if (args['interleave-policies']) command.push('--interleave-policies');
   pushOptionalFlag(command, '--first-message', args['first-message']);
   if (args['dry-run']) command.push('--dry-run');
@@ -399,6 +410,7 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     registerOverlayThreshold: normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
       label: '--register-overlay-threshold',
     }),
+    releaseSpeed: normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
     parallelism: positiveInt(args.parallelism, '--parallelism'),
     model: args.model,
     analysisModel: args['analysis-model'],
@@ -440,6 +452,7 @@ function qaDesign(plan) {
     safetyTurns: plan.safetyTurns,
     interleavePolicies: plan.interleavePolicies,
     pressureTurns: plan.pressureTurns,
+    releaseSpeed: plan.releaseSpeed,
     parallelism: plan.parallelism,
     model: plan.model,
     analysisModel: plan.analysisModel,

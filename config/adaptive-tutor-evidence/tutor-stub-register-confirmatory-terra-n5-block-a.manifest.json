@@ -1,0 +1,56 @@
+{
+  "schema": "machinespirits.tutor-stub-evidence-manifest.v1",
+  "runDir": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13",
+  "createdAt": "2026-07-13T06:44:47.536199+00:00",
+  "claimStatus": "scope-bound",
+  "sourceCommit": "ad24d72c",
+  "prereg": "REGISTER-CONFIRMATORY-PREREGISTRATION.md",
+  "archive": {
+    "location": "~/.machinespirits-data/runs/tutor-stub/register-confirmatory-terra-n5-live-20260713.tar.gz",
+    "sha256": "c819763ee591c3d741b1fbbfac2fa2b0ebf2fa734c5e2f954468d42288400606",
+    "bytes": 129092490,
+    "note": "family block A (gpt-5.6-terra), 60/60 dialogues, root run verified; per-profile sealed runs inside"
+  },
+  "distilledFiles": [
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/qa-matrix.json",
+      "sha256": "0219fb3054ee820cadd0342ccae75f248a13c88b6a5ac50366a7c6cc0956c05e",
+      "bytes": 31847
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/qa-matrix.md",
+      "sha256": "2daf50c9bc5766a4d65b132a732019836f1a16ac27397b8b5f92566f7e216778",
+      "bytes": 6252
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/qa-plan.json",
+      "sha256": "e5b31d91c9b45b5778e1305c2194ac3d607b1c9f81afc14615b1f709ebc97c6e",
+      "bytes": 7592
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/diligent-auto-eval.json",
+      "sha256": "8a2be9ede1f02ccf276c8ec46dc63105931946ade38453633b8dd4315e956de8",
+      "bytes": 151039862
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/affective_resistant-auto-eval.json",
+      "sha256": "f7ef638a656004d8abc400a115654fb3087f802a979ebb913bb1c65a5d29f5f2",
+      "bytes": 166333816
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/false_memory-auto-eval.json",
+      "sha256": "09923d09dd707ba963775a92b2f6d684fec3ca29e1b1872e6e53fc6a00eacea4",
+      "bytes": 153100162
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/terra-n5-block-a/proof_skipper-auto-eval.json",
+      "sha256": "b4839abd89e997171a830e3a1e474cc45cf5f0c0b359888d31553d69a455bbab",
+      "bytes": 150943975
+    }
+  ],
+  "exclusions": [
+    "simulated learner outcomes do not estimate human learning effects",
+    "family block A only; two-family claim assessment pends block B"
+  ],
+  "notes": "Register confirmatory block A. Primary-endpoint verdict recorded in the prereg Results section: interaction CONFIRMED with bootstrap support, not in the exact pre-declared direction (negative-carried sign flip; bland led diligent in 0/5000 draws)."
+}

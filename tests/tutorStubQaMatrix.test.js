@@ -683,10 +683,7 @@ test('a failed child under --keep-going still seals the matrix root with forward
 
     // Observed-model provenance reaches the root with non-null models.
     const observations = rootEvents.filter((event) => event.type === 'model_observed');
-    assert.deepEqual(
-      observations.map((event) => event.role).sort(),
-      ['analyzer', 'learner', 'tutor'],
-    );
+    assert.deepEqual(observations.map((event) => event.role).sort(), ['analyzer', 'learner', 'tutor']);
     assert.ok(observations.every((event) => typeof event.observed === 'string' && event.observed.length > 0));
 
     const completed = rootEvents.find((event) => event.type === 'run_completed');
@@ -860,7 +857,7 @@ test('headroom suite defaults to discriminable profiles under a binding cap', ()
   assert.equal(equalsForm.safetyTurns, 100);
 });
 
-test('qa matrix threads interleave and pressure-probe flags to auto-eval children', () => {
+test('qa matrix threads interleave, pressure-probe, and clue-pace flags to auto-eval children', () => {
   const plan = JSON.parse(
     execFileSync(
       process.execPath,
@@ -873,16 +870,20 @@ test('qa matrix threads interleave and pressure-probe flags to auto-eval childre
         '--interleave-policies',
         '--pressure-turns',
         '6',
+        '--release-speed',
+        '1.5',
       ],
       { cwd: ROOT, encoding: 'utf8' },
     ),
   );
   assert.equal(plan.interleavePolicies, true);
   assert.equal(plan.pressureTurns, '6');
+  assert.equal(plan.releaseSpeed, 1.5);
   for (const job of plan.jobs) {
     const command = job.command.join(' ');
     assert.ok(command.includes('--interleave-policies'));
     assert.ok(command.includes('--pressure-turns 6'));
+    assert.ok(command.includes('--release-speed 1.5'));
   }
 });
 
@@ -1056,12 +1057,12 @@ test('qa matrix runner treats all-profile runs as explicit audits', () => {
   assert.equal(plan.policySuite, 'audit');
   assert.deepEqual(plan.policySuiteAliases, ['full', 'all']);
   assert.equal(plan.policySuiteCost, 'expensive');
-  assert.equal(plan.profiles.length, 12);
+  assert.equal(plan.profiles.length, 14);
   assert.equal(plan.policies.length, 11);
-  assert.equal(plan.expectedDialogueRows, 132);
+  assert.equal(plan.expectedDialogueRows, 154);
   assert.ok(plan.warnings.some((warning) => warning.includes('every register policy')));
   assert.ok(plan.warnings.some((warning) => warning.includes('expensive periodic audit')));
-  assert.ok(plan.warnings.some((warning) => warning.includes('132 dialogue rows')));
+  assert.ok(plan.warnings.some((warning) => warning.includes('154 dialogue rows')));
 });
 
 test('qa matrix runner expands pressure policy suite for sentinel checks', () => {
@@ -1131,6 +1132,8 @@ test('auto-eval lists stress learner profiles', () => {
   assert.match(output, /proof_skipper:/);
   assert.match(output, /false_memory:/);
   assert.match(output, /affective_resistant:/);
+  assert.match(output, /fast_learner:/);
+  assert.match(output, /slow_learner:/);
   assert.match(output, /Stress - Proof skipper/);
   assert.doesNotMatch(output, /classifier labels/);
 });
@@ -1178,6 +1181,18 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   assert.ok(affectiveSummary.traceSignatureTargets.requestType.authority_refusal_or_status_challenge);
   assert.deepEqual(affectiveSummary.traceSignatureTargets.evidenceUse.links_evidence_to_rule, [0.15, 0.45]);
   assert.deepEqual(affectiveSummary.traceSignatureTargets.epistemicStance.grounded, [0.2, 0.5]);
+
+  const fastPrompt = learnerProfilePrompt('fast_learner');
+  assert.match(fastPrompt, /give me the next clue|move it along/iu);
+  const fastSummary = learnerProfileContractSummary('fast_learner');
+  assert.deepEqual(fastSummary.dagSignatureTargets.expectedBottlenecks, ['release_or_pacing_gap']);
+  assert.equal(fastSummary.dagSignatureTargets.unsupportedAssertionRate, 'low');
+
+  const slowPrompt = learnerProfilePrompt('slow_learner');
+  assert.match(slowPrompt, /one clue at a time|slow down/iu);
+  const slowSummary = learnerProfileContractSummary('slow_learner');
+  assert.equal(slowSummary.dagSignatureTargets.coverageVelocity, 'slow_safe');
+  assert.equal(slowSummary.dagSignatureTargets.unsupportedAssertionRate, 'low');
 });
 
 test('every stress profile explains its boundary against the declared nearest core profile', () => {

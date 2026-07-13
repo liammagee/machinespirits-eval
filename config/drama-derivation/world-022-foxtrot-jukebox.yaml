@@ -67,12 +67,18 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R1_reach
+    gloss: >-
+      A machine could reach the jukebox core only if it physically docked at
+      the mess-hall rail and still held a service-panel override key.
     if:
       - [dockedAtRail, "?x", messHall]
       - [holdsOverrideKey, "?x"]
     then:
       - [couldReachCore, "?x"]
   - id: R2_wipe
+    gloss: >-
+      If a machine could reach the core and the recorded wipe pulse carries
+      that machine's cryptographic radio signature, that machine wiped it.
     if:
       - [couldReachCore, "?x"]
       - [pulseSignedBy, wipePulse, "?x"]
@@ -82,6 +88,7 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_glare # mirror fuel: keeps Hessa a live candidate
+    evidence_role: mirror
     fact: [dockedAtRail, hessa, messHall]
     surface: >-
       Hessa was at the mess-hall rail all evening — arms crossed, glaring at
@@ -89,9 +96,10 @@ premises:
   - id: p_clamp
     fact: [dockedAtRail, moth, messHall]
     surface: >-
-      Fresh docking-clamp marks on the mess-hall ceiling rail — courier-drone
-      gauge, still warm. Something small came down from the vents during the
-      second chorus.
+      Fresh docking-clamp marks score the mess-hall ceiling rail, still warm.
+      The maintenance registry matches their spacing and chipped left pad to
+      Moth's retired courier chassis: the little drone came down from the vents
+      and docked there during the second chorus.
   - id: p_key
     fact: [holdsOverrideKey, moth]
     surface: >-

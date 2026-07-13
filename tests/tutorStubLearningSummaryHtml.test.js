@@ -84,8 +84,9 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /Reasoning you established/u);
   assert.match(html, /Evidence held by the end/u);
   assert.match(html, /How the reasoning developed/u);
-  assert.match(html, /Accelerated turns:<\/b> 1/u);
-  assert.match(html, /3 warranted proof moves were accepted together/u);
+  assert.match(html, /Turns with several supported steps:<\/b> 1/u);
+  assert.match(html, /reasoning path complete/u);
+  assert.match(html, /3 reasoning moves were accepted together/u);
   assert.match(html, /Connect the crucible to its documented user/u);
   assert.match(html, /blank/u);
   assert.match(html, /cupel/u);

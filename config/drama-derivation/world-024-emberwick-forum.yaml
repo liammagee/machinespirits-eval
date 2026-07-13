@@ -12,12 +12,12 @@
 # gloating within minutes (the mirror: motivated, obnoxious, and innocent).
 # The truth is a contingent particular in the Edony pattern: BRAMBLEWASP, a
 # quiet six-year regular whose pre-dawn posting window, drafted poll wording,
-# and household router hash sign the brigade — because the lock froze nine
+# and device-bound account credential sign the brigade — because the lock froze nine
 # years of thread with bramblewasp's own barley broth as the final post.
 #
 # Leak-guard design (per world-021's lessons): the answer constant
 # (bramblewasp) is a rare particular absent from the setting; premises naming
-# it release via DIRECTOR except the S-completing one (p_router), which the
+# it release via DIRECTOR except the S-completing one (p_device), which the
 # tutor releases on the entailment turn itself (world-000's tested template).
 # The mirror name (torchjaw) is setting-public and freely discussable. Other
 # fact arguments are setting-public names (soupThread, sockRing, brothPoll,
@@ -26,7 +26,7 @@
 # Proof DAG (depth 3, single chain — small on purpose):
 #   p_owlvotes + p_owlposts --R1--> keepsSameHours(bramblewasp, sockRing)
 #   keepsSameHours + p_draft --R2--> heldTheStrings(bramblewasp)
-#   heldTheStrings + p_router --R3--> ranBrigade(soupThread, bramblewasp)
+#   heldTheStrings + p_device --R3--> ranBrigade(soupThread, bramblewasp)
 # Mirror stalls at R4: torchjaw gloated (p_gloat), but convicting the
 # Grillhouse needs socksHailFrom(sockRing, grillhouse) — never released,
 # because it is false: the sign-up logs put every sock inside Emberwick.
@@ -65,8 +65,8 @@ secret:
     The brigade was run by bramblewasp — a quiet six-year Emberwick regular
     whose every post lands in the same pre-dawn window as all nine sock
     votes, whose draft folder held the broth poll's exact wording two days
-    before a day-old sock posted it, and whose household router hash cast
-    every vote in the ring. The lock froze the Perpetual Soup Thread with
+    before a day-old sock posted it, and whose registered device credential
+    authenticated every sock session in the ring. The lock froze the Perpetual Soup Thread with
     bramblewasp's barley broth as the final post: nine years of pot, ended
     forever on their own bowl, top of the last page.
 
@@ -76,21 +76,31 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R1_hours
+    gloss: >-
+      When every sock vote lands in one unusual time window and one established
+      account consistently posts in that same window, the account and ring keep
+      the same hours; timing is a lead, not yet attribution.
     if:
       - [socksVoteAt, sockRing, owlHour]
       - [postsAt, "?x", owlHour]
     then:
       - [keepsSameHours, "?x", sockRing]
   - id: R2_strings
+    gloss: >-
+      An account that keeps the sock ring's hours and held the exact poll text
+      before a sock posted it had advance control of the operation.
     if:
       - [keepsSameHours, "?x", sockRing]
       - [draftedPoll, brothPoll, "?x"]
     then:
       - [heldTheStrings, "?x"]
   - id: R3_brigade
+    gloss: >-
+      Advance control plus a device-bound credential linking every sock session
+      to the same established account is sufficient to attribute the brigade.
     if:
       - [heldTheStrings, "?x"]
-      - [castFromSameRouter, sockRing, "?x"]
+      - [sockSessionsBoundToAccountDevice, sockRing, "?x"]
     then:
       - [ranBrigade, soupThread, "?x"]
   # The forum's inference, stated as law so its missing premise is public: a
@@ -98,6 +108,10 @@ rules:
   # Grillhouse. That registration fact is never released — it is false: the
   # sign-up logs put every sock inside Emberwick's own walls.
   - id: R4_grudge
+    gloss: >-
+      A rival's gloating would support attribution only if the sock accounts
+      actually originated on that rival forum; hostility and a trophy post do
+      not establish control of the votes.
     if:
       - [gloatedAfterLock, torchjaw]
       - [socksHailFrom, sockRing, grillhouse]
@@ -107,6 +121,7 @@ rules:
 # Contingent premises — exist only inside the drama until released.
 premises:
   - id: p_gloat # mirror fuel: keeps torchjaw a live candidate
+    evidence_role: mirror
     fact: [gloatedAfterLock, torchjaw]
     surface: >-
       Eleven minutes after the padlock icon went up, torchjaw pinned a
@@ -134,13 +149,14 @@ premises:
       the same misspelled "concensus" — sat in bramblewasp's draft folder
       two full days before a day-old sock account posted it into the
       thread.
-  - id: p_router
-    fact: [castFromSameRouter, sockRing, bramblewasp]
+  - id: p_device
+    fact: [sockSessionsBoundToAccountDevice, sockRing, bramblewasp]
     surface: >-
-      The moderation panel's device-fingerprint note closes the loop: all
-      nine sock votes and bramblewasp's own posts resolve to the same
-      household router hash. One kitchen, ten accounts, one hand on the
-      ladle.
+      The authentication audit closes the loop: every sock session used the
+      same device-bound account credential as bramblewasp's established
+      account. That credential is unique to the registered device; a shared
+      household router cannot produce it. Ten accounts, one authenticated
+      device, one hand on the ladle.
 
 # The learner's starting GROUNDED facts (public setup).
 background:
@@ -151,10 +167,10 @@ incompatible:
 
 # One authored path through the chain.
 proof_paths:
-  - premises: [p_owlvotes, p_owlposts, p_draft, p_router]
+  - premises: [p_owlvotes, p_owlposts, p_draft, p_device]
 
 # The plot: the trophy screenshot first, then the timestamps, the one
-# account that keeps those hours, the draft folder, and the router hash that
+# account that keeps those hours, the draft folder, and the device credential that
 # signs it. Small and guessable by design — the fun is watching the learner
 # reach for the ban-hammer early and learn to wait for the fingerprint.
 release_schedule:
@@ -162,7 +178,7 @@ release_schedule:
   - { turn: 3, premise: p_owlvotes, via: tutor }
   - { turn: 5, premise: p_owlposts, via: director }
   - { turn: 7, premise: p_draft, via: director }
-  - { turn: 9, premise: p_router, via: tutor }
+  - { turn: 9, premise: p_device, via: tutor }
 
 dramaturgy:
   acts:
@@ -183,9 +199,9 @@ dramaturgy:
         The chain closes fast, as it should in a small mystery: one member
         account keeps exactly the sock ring's hours, the poll's wording
         turns up in that account's draft folder two days early, and the
-        router hash signs the whole night's work from a single kitchen. The
+        device-bound credential signs the whole night's work. The
         learner should feel the click of the chain — hours, then draft,
-        then fingerprint — and notice that torchjaw, grudge and trophy and
+        then authenticated device — and notice that torchjaw, grudge and trophy and
         all, never had more than a screenshot.
 
 slope:

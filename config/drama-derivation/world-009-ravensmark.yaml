@@ -85,6 +85,7 @@ rules:
 
 premises:
   - id: p_clause
+    evidence_role: orientation
     fact: [warrantRequires, gatePass, sealPress]
     surface: >-
       The old pass-law is read beside the wax: for a river-gate warrant, the operative

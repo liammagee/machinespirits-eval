@@ -31,6 +31,10 @@
 id: world_018_edmund
 title: The Cracked Tenor of Saint-Edmund
 
+eligibility:
+  status: screen_pending
+  reason: Awaiting the paid S-underivability screen required before a generation run.
+
 discipline: bell-founding
 question: "Whose hand cracked the tenor bell of Saint-Edmund?"
 question_pattern: [crackedBy, tenorBell, "?x"]
