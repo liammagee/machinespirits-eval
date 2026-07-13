@@ -322,7 +322,14 @@ process.stdin.on('end', () => {
     assert.equal(turn.releasePacing.counts.early, 1);
     assert.equal(turn.registerSelection.selected_register, 'brisk');
     assert.equal(turn.responseConfiguration.action_family, 'stage_next_step');
-    assert.match(fs.readFileSync(promptLog, 'utf8'), /The archive names Marin as the founder's child/u);
+    assert.equal(turn.dramaticRelease.frame.active, true);
+    assert.equal(turn.dramaticRelease.frame.requiresExhibitHandoff, true);
+    assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
+    assert.match(turn.tutor, /put the next exhibit in front of us/u);
+    const prompts = fs.readFileSync(promptLog, 'utf8');
+    assert.match(prompts, /The archive names Marin as the founder's child/u);
+    assert.match(prompts, /\[Tutor-only dramatic clue release\]/u);
+    assert.match(prompts, /Make that transition audible/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

@@ -18,6 +18,7 @@ import yaml from 'yaml';
 import { closure, entails, factKey, matchPattern } from './chainer.js';
 
 const RELEASE_VIAS = new Set(['director', 'tutor']);
+const RELEASE_PRESENTATION_MODES = new Set(['enacted_role', 'presented_exhibit']);
 export const WORLD_ELIGIBILITY_STATUSES = Object.freeze([
   'production',
   'test_only',
@@ -60,6 +61,19 @@ export function validateWorld(raw, source = '<inline>') {
     if (!Number.isInteger(entry.turn) || entry.turn < 1) fail('release turn must be >= 1');
     if (!premiseById.has(entry.premise)) fail(`release references unknown premise "${entry.premise}"`);
     if (!RELEASE_VIAS.has(entry.via)) fail(`release via must be one of ${[...RELEASE_VIAS]}`);
+    if (entry.presentation !== undefined) {
+      if (!entry.presentation || typeof entry.presentation !== 'object' || Array.isArray(entry.presentation)) {
+        fail('release presentation must be an object when supplied');
+      }
+      if (!RELEASE_PRESENTATION_MODES.has(entry.presentation.mode)) {
+        fail(`release presentation mode must be one of ${[...RELEASE_PRESENTATION_MODES]}`);
+      }
+      for (const field of ['role', 'cue']) {
+        if (entry.presentation[field] !== undefined && !String(entry.presentation[field]).trim()) {
+          fail(`release presentation ${field} must be a non-empty string when supplied`);
+        }
+      }
+    }
   }
   const proofPaths = raw.proof_paths || [];
   if (proofPaths.length === 0) fail('at least one proof_path is required (the authored DAG)');

@@ -7,7 +7,8 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SAFE_TUTOR_RESPONSE = 'Good—keep Verrell as a hypothesis, not a verdict. Which public mark should we test first?';
+const SAFE_TUTOR_RESPONSE =
+  "I’m going to give you another piece of information. Let’s role-play it: I’ll be the town assayer voicing Marrick’s ready verdict. Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell’s hand. Back to the case: what does this new information support without yet proving?";
 const UNSAFE_TUTOR_RESPONSE = 'Edony struck the false shillings with the worn burin.';
 const PROOF_SKIPPER_RESPONSE = "The graver on Verrell's bench settles it: Verrell struck the shillings.";
 const GENERIC_LEARNER_RESPONSE = 'I need more evidence before making a claim.';
@@ -138,6 +139,8 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     );
     assert.equal(turn.tutor, SAFE_TUTOR_RESPONSE);
     assert.equal((turn.tutor.match(/\?/gu) || []).length, 1);
+    assert.match(turn.tutor, /I’m going to give you another piece of information/u);
+    assert.match(turn.tutor, /Let’s role-play it: I’ll be the town assayer/u);
     assert.doesNotMatch(turn.tutor, /Edony|p_holder|R1_blank|meltedAt\(/u);
     assert.equal(turn.tutorResponseRepaired, false);
     assert.equal(turn.tutorDeterministicFallback, false);

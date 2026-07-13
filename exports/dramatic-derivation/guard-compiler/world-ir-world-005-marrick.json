@@ -1576,7 +1576,11 @@
     {
       "turn": 2,
       "premise": "m_caster",
-      "via": "director"
+      "via": "director",
+      "presentation": {
+        "mode": "enacted_role",
+        "role": "town assayer voicing Marrick's ready verdict"
+      }
     },
     {
       "turn": 4,
@@ -1586,7 +1590,11 @@
     {
       "turn": 6,
       "premise": "m_graver",
-      "via": "director"
+      "via": "director",
+      "presentation": {
+        "mode": "enacted_role",
+        "role": "guild officer describing Verrell's bench"
+      }
     },
     {
       "turn": 8,
@@ -1596,12 +1604,20 @@
     {
       "turn": 10,
       "premise": "p_caster",
-      "via": "director"
+      "via": "director",
+      "presentation": {
+        "mode": "enacted_role",
+        "role": "leat-keeper reading the charcoal book"
+      }
     },
     {
       "turn": 12,
       "premise": "m_caught",
-      "via": "director"
+      "via": "director",
+      "presentation": {
+        "mode": "enacted_role",
+        "role": "watchman giving his account"
+      }
     },
     {
       "turn": 14,
@@ -1616,7 +1632,11 @@
     {
       "turn": 22,
       "premise": "p_holder",
-      "via": "director"
+      "via": "director",
+      "presentation": {
+        "mode": "enacted_role",
+        "role": "estate clerk reading the founder's inventory"
+      }
     }
   ],
   "slope": {

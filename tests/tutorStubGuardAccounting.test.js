@@ -8,7 +8,11 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
-const SAFE_REPAIR = 'Keep the verdict open. Which public mark on the coin can you state first?';
+const SAFE_REPAIR = [
+  "I'm going to give you another piece of information.",
+  "Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible.",
+  'Back to the case: what does this new clue support?',
+].join(' ');
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -166,7 +170,8 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(accounting.attempts[1].repairedSpans.length, 0);
 
   const fallbackText = accounting.finalDelivery.candidate.text;
-  assert.match(fallbackText, /concrete clue/u);
+  assert.match(fallbackText, /another piece of information/u);
+  assert.match(fallbackText, /role-play/u);
   assert.match(fallbackText, /Verrell alone draws the mint-yard crucible/u);
   assert.doesNotMatch(fallbackText, /can't put a name|decisive act/iu);
   assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');

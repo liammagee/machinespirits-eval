@@ -46,6 +46,25 @@ For a curriculum module, first identify the learning claim that should become me
 8. Author presentation explicitly for every world: `temporal_frame`, `scene_ecology`, `narrative_diction`, `ledger_term`, and `summary`. There is no implicit “period language” fallback.
 9. Put quantitative success criteria in the harness and reports, not in tutor or learner speech prompts.
 
+## Dramatic clue releases
+
+A scheduled release is a public dramatic beat, not an invisible state update. On every turn with newly available evidence, the speaking tutor must make three movements visible: announce that another piece of information is entering, stage or enact its source, and then return to the shared inquiry with one light interpretive question.
+
+The default follows `via`: `director` evidence is enacted as an in-scene role, while `tutor` evidence is presented as an exhibit, record, observation, or demonstration. For a more exact performance, author a release presentation:
+
+```yaml
+release_schedule:
+  - turn: 5
+    premise: p_notice
+    via: director
+    presentation:
+      mode: enacted_role
+      role: building manager reading the lift notice
+      cue: "She unfolds the notice and reads the small print aloud."
+```
+
+Supported modes are `enacted_role` and `presented_exhibit`. A role or cue may change how the clue enters, but must not add evidence beyond the linked premise surface. Avoid generic omniscient narration when an existing witness, clerk, examiner, document, or physical exhibit can carry the information inside the scene.
+
 The final language pass should ask: could a learner understand every public clue and rule without seeing the formal graph; does every requested reasoning step change what is licensed; and does the diction belong to this particular world rather than to a generic detective template?
 
 ## Required checks

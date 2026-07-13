@@ -68,6 +68,12 @@ import {
   deterministicTutorStubContextualFallback,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
+import {
+  auditTutorStubDramaticReleaseResponse,
+  buildTutorStubDramaticReleaseFrame,
+  deterministicTutorStubDramaticReleaseFallback,
+  tutorStubDramaticReleasePrompt,
+} from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
@@ -1393,6 +1399,7 @@ function tutorResponseRepairPrompt({
   leakAudit = null,
   scaffoldAudit = null,
   questionSupportAudit = null,
+  dramaticReleaseAudit = null,
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
@@ -1404,6 +1411,9 @@ function tutorResponseRepairPrompt({
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
   const questionSupportRows = (questionSupportAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
+  const dramaticReleaseRows = (dramaticReleaseAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
   const repetitionRows = (repetitionAudit?.issues || [])
@@ -1441,6 +1451,15 @@ function tutorResponseRepairPrompt({
     questionSupportRows
       ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 public-safe categories or interpretations without revealing the unstaged record or answer.'
       : null,
+    dramaticReleaseRows
+      ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as a visible dramatic beat.'
+      : null,
+    dramaticReleaseRows
+      ? 'Briefly tell the learner that another piece of information is entering; enact the supplied source role or physically present the exhibit; then step back and ask what the clue changes.'
+      : null,
+    dramaticReleaseRows
+      ? 'Stay inside the scene. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
+      : null,
     repetitionRows
       ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
       : null,
@@ -1463,6 +1482,8 @@ function tutorResponseRepairPrompt({
     scaffoldRows || null,
     questionSupportRows ? 'Question-support audit:' : null,
     questionSupportRows || null,
+    dramaticReleaseRows ? 'Dramatic-release audit:' : null,
+    dramaticReleaseRows || null,
     repetitionRows ? 'Repetition audit:' : null,
     repetitionRows || null,
     closureRows ? 'Dialogue-closure audit:' : null,
@@ -1553,6 +1574,7 @@ function tutorGuardIssueRows(audits) {
     ...(audits?.leakAudit?.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
     ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
     ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
+    ...(audits?.dramaticReleaseAudit?.issues || []).map((issue) => ({ guard: 'dramatic_release', ...issue })),
     ...(audits?.repetitionAudit?.issues || []).map((issue) => ({ guard: 'repetition', ...issue })),
     ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
   ];
@@ -3236,6 +3258,9 @@ function currentReleaseRows(state, tutorTurn) {
       premise: premiseId,
       turn: Number(tutorTurn),
       via: release?.via || null,
+      presentation: release?.presentation || null,
+      role: release?.role || null,
+      cue: release?.cue || null,
       surface: String(premise?.surface || '').trim(),
       fact: premise?.fact || null,
     };
@@ -8561,6 +8586,8 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     leak: { issues: 0, guardedSpans: 0 },
     human_scaffold: { issues: 0, guardedSpans: 0 },
     question_support: { issues: 0, guardedSpans: 0 },
+    dramatic_release: { issues: 0, guardedSpans: 0 },
+    repetition: { issues: 0, guardedSpans: 0 },
     dialogue_closure: { issues: 0, guardedSpans: 0 },
   };
   let repairActions = 0;
@@ -8874,6 +8901,10 @@ async function callTutor({
   ].join('\n');
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
+  const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: currentReleaseRows(state, tutorTurn),
+  });
+  const dramaticReleaseAdvisory = tutorStubDramaticReleasePrompt(dramaticReleaseFrame);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const dialogueClosureAdvisory = dialogueClosureTutorContext(dialogueClosureFrame);
   const comprehensionAdvisory = tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
@@ -8895,6 +8926,7 @@ async function callTutor({
   const promptParts = [
     tutorMemory,
     dag && world ? dagTurnContext(state, tutorTurn) : null,
+    dramaticReleaseAdvisory,
     advisory,
     learnerDagAdvisory,
     humanDiscourseAdvisory,
@@ -8910,6 +8942,7 @@ async function callTutor({
     systemPrompt: effectiveSystemPrompt,
     privateAdvisory: [
       dag && world ? dagTurnContext(state, tutorTurn) : null,
+      dramaticReleaseAdvisory,
       humanDiscourseAdvisory,
       dialogueClosureAdvisory,
       comprehensionAdvisory,
@@ -8934,6 +8967,7 @@ async function callTutor({
   const leakGuardEnabled = Boolean(dag && world);
   const scaffoldGuardEnabled = Boolean(humanDiscourseFrame?.generousInference?.applied);
   const questionSupportGuardEnabled = Boolean(humanDiscourseFrame?.questionSupport?.guardRequired);
+  const dramaticReleaseGuardEnabled = Boolean(dramaticReleaseFrame.active);
   const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const repetitionGuardEnabled = recentTutorTexts.length > 0;
   const closureGuardEnabled = Boolean(
@@ -8943,6 +8977,7 @@ async function callTutor({
     leakGuardEnabled ||
     scaffoldGuardEnabled ||
     questionSupportGuardEnabled ||
+    dramaticReleaseGuardEnabled ||
     repetitionGuardEnabled ||
     closureGuardEnabled;
   const guards = {
@@ -8950,6 +8985,7 @@ async function callTutor({
     leak: leakGuardEnabled,
     humanScaffold: scaffoldGuardEnabled,
     questionSupport: questionSupportGuardEnabled,
+    dramaticRelease: dramaticReleaseGuardEnabled,
     repetition: repetitionGuardEnabled,
     dialogueClosure: closureGuardEnabled,
   };
@@ -8970,6 +9006,7 @@ async function callTutor({
       instructionTexts: [
         systemPrompt,
         dag && world ? dagTurnContext(state, tutorTurn) : null,
+        dramaticReleaseAdvisory,
         advisory,
         learnerDagAdvisory,
         humanDiscourseAdvisory,
@@ -9136,6 +9173,9 @@ async function callTutor({
           support: humanDiscourseFrame.questionSupport,
         })
       : { ok: true, issues: [] };
+    const dramaticReleaseAudit = dramaticReleaseGuardEnabled
+      ? auditTutorStubDramaticReleaseResponse({ text: response.text, frame: dramaticReleaseFrame })
+      : { ok: true, active: false, issues: [] };
     const repetitionAudit = repetitionGuardEnabled
       ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
       : { ok: true, issues: [], maxSimilarity: 0 };
@@ -9175,6 +9215,17 @@ async function callTutor({
         support: humanDiscourseFrame.questionSupport,
       });
     }
+    if (dramaticReleaseGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_dramatic_release_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: dramaticReleaseAudit.ok,
+        issues: dramaticReleaseAudit.issues,
+        frame: dramaticReleaseFrame,
+      });
+    }
     if (repetitionGuardEnabled) {
       appendTraceEvent(trace, {
         type: 'tutor_repetition_audit',
@@ -9200,10 +9251,17 @@ async function callTutor({
       });
     }
     return {
-      ok: leakAudit.ok && scaffoldAudit.ok && questionSupportAudit.ok && repetitionAudit.ok && closureAudit.ok,
+      ok:
+        leakAudit.ok &&
+        scaffoldAudit.ok &&
+        questionSupportAudit.ok &&
+        dramaticReleaseAudit.ok &&
+        repetitionAudit.ok &&
+        closureAudit.ok,
       leakAudit,
       scaffoldAudit,
       questionSupportAudit,
+      dramaticReleaseAudit,
       repetitionAudit,
       closureAudit,
     };
@@ -9241,6 +9299,7 @@ async function callTutor({
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
+      response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
       response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       if (response.bufferedStream) {
@@ -9269,6 +9328,7 @@ async function callTutor({
         leakAudit: audits.leakAudit,
         scaffoldAudit: audits.scaffoldAudit,
         questionSupportAudit: audits.questionSupportAudit,
+        dramaticReleaseAudit: audits.dramaticReleaseAudit,
         repetitionAudit: audits.repetitionAudit,
         closureAudit: audits.closureAudit,
         dialogueClosureFrame,
@@ -9300,6 +9360,7 @@ async function callTutor({
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
+      response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
       response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       response.repaired = true;
@@ -9328,17 +9389,22 @@ async function callTutor({
       support: humanDiscourseFrame?.questionSupport || null,
       world,
       learnerText,
-      dueEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.dueNow || [],
+      dueEvidence: currentReleaseRows(state, tutorTurn),
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
     const fallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
-      : scaffoldGuardEnabled
-        ? deterministicGenerousInferenceFallback(fallbackContext)
-        : questionSupportGuardEnabled
-          ? deterministicTutorStubQuestionSupportFallback(fallbackContext)
-          : deterministicTutorStubContextualFallback(fallbackContext);
+      : dramaticReleaseGuardEnabled
+        ? deterministicTutorStubDramaticReleaseFallback({
+            frame: dramaticReleaseFrame,
+            support: humanDiscourseFrame?.questionSupport || null,
+          })
+        : scaffoldGuardEnabled
+          ? deterministicGenerousInferenceFallback(fallbackContext)
+          : questionSupportGuardEnabled
+            ? deterministicTutorStubQuestionSupportFallback(fallbackContext)
+            : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;
@@ -9357,6 +9423,7 @@ async function callTutor({
       leakAudit: audits.leakAudit,
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: fallbackQuestionSupportAudit,
+      dramaticReleaseAudit: audits.dramaticReleaseAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: fallbackClosureAudit,
       repaired: true,
@@ -9372,6 +9439,7 @@ async function callTutor({
     fallback.leakAudit = fallbackAudits.leakAudit;
     fallback.scaffoldAudit = fallbackAudits.scaffoldAudit;
     fallback.questionSupportAudit = fallbackAudits.questionSupportAudit;
+    fallback.dramaticReleaseAudit = fallbackAudits.dramaticReleaseAudit;
     fallback.repetitionAudit = fallbackAudits.repetitionAudit;
     fallback.closureAudit = fallbackAudits.closureAudit;
     const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
@@ -9399,6 +9467,7 @@ async function callTutor({
       leaks: audits.leakAudit.leaks,
       scaffoldIssues: audits.scaffoldAudit.issues,
       questionSupportIssues: audits.questionSupportAudit.issues,
+      dramaticReleaseIssues: audits.dramaticReleaseAudit.issues,
       repetitionIssues: audits.repetitionAudit.issues,
       closureIssues: audits.closureAudit.issues,
       text: fallbackText,
@@ -10409,9 +10478,9 @@ async function runOneTurn(
     });
   }
 
-  const duePremiseIds = (humanDiscourseFrame?.scaffoldState?.releaseState?.dueNow || [])
-    .map((row) => row?.premise)
-    .filter(Boolean);
+  const dueReleaseRows = currentReleaseRows(state, tutorTurn);
+  const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({ dueEvidence: dueReleaseRows });
+  const duePremiseIds = dueReleaseRows.map((row) => row?.premise).filter(Boolean);
   const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
     text: response.text,
     world: state.world,
@@ -10499,6 +10568,10 @@ async function runOneTurn(
     warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
     generousInference: humanDiscourseFrame.generousInference,
     questionSupport: humanDiscourseFrame.questionSupport,
+    dramaticRelease: {
+      frame: dramaticReleaseFrame,
+      audit: response.dramaticReleaseAudit || null,
+    },
     releasePacing,
     releaseDeliveryAudit,
     comprehension: {
@@ -10533,6 +10606,7 @@ async function runOneTurn(
     tutorLeakAudit: response.leakAudit || null,
     tutorHumanScaffoldAudit: response.scaffoldAudit || null,
     tutorQuestionSupportAudit: response.questionSupportAudit || null,
+    tutorDramaticReleaseAudit: response.dramaticReleaseAudit || null,
     tutorRepetitionAudit: response.repetitionAudit || null,
     tutorDialogueClosureAudit: response.closureAudit || null,
     tutorResponseRepaired: Boolean(response.repaired),

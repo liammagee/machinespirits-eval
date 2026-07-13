@@ -23,7 +23,9 @@ process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const response = input.includes('Write learner turn')
     ? 'I would compare the metal residues first.'
-    : 'Which public mark would connect this clue to one hand?';
+    : input.includes('[Tutor-only dramatic clue release]')
+      ? "I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Which public mark would connect this clue to one hand?"
+      : 'Which public mark would connect this clue to one hand?';
   if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
@@ -109,7 +111,7 @@ test('automated learner replays the full public dialogue with learner-relative n
     const secondLearnerCliCall = cliCalls.find((call) => call.includes('Write learner turn 2'));
     assert.match(
       secondLearnerCliCall,
-      /Conversation so far:\nuser: Keep the case question in view[\s\S]*assistant: I would compare the metal residues first\.[\s\S]*user: Which public mark would connect/u,
+      /Conversation so far:\nuser: Keep the case question in view[\s\S]*assistant: I would compare the metal residues first\.[\s\S]*user: [^\n]*Which public mark would connect/u,
     );
     assert.match(secondLearnerCliCall, /Latest message:\n/u);
   } finally {

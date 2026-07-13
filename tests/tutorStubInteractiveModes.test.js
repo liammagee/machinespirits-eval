@@ -67,7 +67,9 @@ process.stdin.on('end', () => {
       ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
       : input.includes('Write learner turn')
         ? 'I would compare the metal residues first.'
-        : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
+        : input.includes('[Tutor-only dramatic clue release]')
+          ? "I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Take the crucible as a fingerprint—which public mark would let you match it to one hand?"
+          : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
     if (outputPath) fs.writeFileSync(outputPath, response);
     process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
   };
@@ -263,7 +265,7 @@ test('learner messages sent before the tutor replies form one restart-safe compo
       ],
       initialInput: 'The first clue is unclear.\n',
       followupInputs: [{ delayMs: 200, text: 'I mean the residue comparison specifically.\n' }],
-      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
       timeoutMs: 12_000,
       env: {
         FAKE_CODEX_DELAY_MS: '800',
@@ -458,7 +460,7 @@ test('a late learner fragment discards already-computed analysis state before re
           text: 'Specifically, explain how the residue distinguishes a hand.\n',
         },
       ],
-      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
       timeoutMs: 20_000,
       env: {
         FAKE_CODEX_VALID_ANALYSIS: '1',
@@ -529,7 +531,7 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
         'world_005_marrick',
       ],
       initialInput: 'The assay still confuses me.\n',
-      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
     });
 
     assert.match(result.plain, /learning summary >/u);
@@ -915,7 +917,7 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
         'world_005_marrick',
       ],
       initialInput: `/coach ${guidance}\n/learner\nThe assay still confuses me.\n`,
-      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
     });
 
     assert.match(result.plain, /coach queued > Use a concrete analogy/u);
@@ -961,7 +963,7 @@ test('auto mode plays both roles from the current transcript and returns after a
 
     assert.match(result.plain, /AUTO mode · 1 turn · profile diligent/u);
     assert.match(result.plain, /A Diligent Learner \(auto\) > I would compare the metal residues first\./u);
-    assert.match(result.plain, /tutor > Take the crucible as a fingerprint/u);
+    assert.match(result.plain, /Take the crucible as a fingerprint/u);
     assert.match(result.plain, /automation paused > auto turn cap/u);
     assert.match(result.plain, /session status > LEARNER · turn 2/u);
   } finally {
@@ -1044,7 +1046,7 @@ test('debug off suppresses automatic technical diagnostics but keeps the compact
         'world_005_marrick',
       ],
       initialInput: '/debug on technical\n/debug off\nThe assay still confuses me.\n',
-      stopWhen: (plain) => plain.includes('tutor > Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
     });
 
     assert.match(result.plain, /debug > off/u);

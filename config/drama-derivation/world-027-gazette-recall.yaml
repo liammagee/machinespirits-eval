@@ -258,14 +258,29 @@ proof_paths:
 # cause and the hand meet in a name no one said.
 # S first derivable at turn 20 (>= t_min 19), 6 turns before cap.
 release_schedule:
-  - { turn: 2, premise: m_byline, via: director }
+  - turn: 2
+    premise: m_byline
+    via: director
+    presentation: { mode: enacted_role, role: copy-desk editor reading the byline }
   - { turn: 4, premise: p_graf, via: tutor }
-  - { turn: 6, premise: m_notes, via: director }
-  - { turn: 8, premise: m_record, via: director }
+  - turn: 6
+    premise: m_notes
+    via: director
+    presentation: { mode: enacted_role, role: archive clerk reading Crane's notebooks and call log }
+  - turn: 8
+    premise: m_record
+    via: director
+    presentation: { mode: enacted_role, role: corrections editor reading Crane's prior entries }
   - { turn: 9, premise: p_diff, via: tutor }
-  - { turn: 13, premise: p_tag, via: director }
+  - turn: 13
+    premise: p_tag
+    via: director
+    presentation: { mode: enacted_role, role: revision-log analyst showing the doubled pilcrow }
   - { turn: 17, premise: p_house, via: tutor }
-  - { turn: 20, premise: p_runner, via: director }
+  - turn: 20
+    premise: p_runner
+    via: director
+    presentation: { mode: enacted_role, role: queue clerk reading the transfer log }
 
 dramaturgy:
   acts:

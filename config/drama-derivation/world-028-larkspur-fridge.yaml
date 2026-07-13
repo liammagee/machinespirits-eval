@@ -127,8 +127,14 @@ proof_paths:
 # be Dario and learn to read the small print.
 release_schedule:
   - { turn: 2, premise: p_noon, via: tutor }
-  - { turn: 3, premise: p_crew, via: director }
-  - { turn: 5, premise: p_permit, via: director }
+  - turn: 3
+    premise: p_crew
+    via: director
+    presentation: { mode: enacted_role, role: front-desk clerk reading the visitor badge log }
+  - turn: 5
+    premise: p_permit
+    via: director
+    presentation: { mode: enacted_role, role: building manager reading the lift notice }
   - { turn: 7, premise: p_tag, via: tutor }
 
 dramaturgy:

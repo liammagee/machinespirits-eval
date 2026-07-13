@@ -239,15 +239,30 @@ proof_paths:
 # The two sub-chains meet in one name. S first derivable at turn 22 (>= t_min
 # 20), 6 turns before cap.
 release_schedule:
-  - { turn: 2, premise: m_caster, via: director }
+  - turn: 2
+    premise: m_caster
+    via: director
+    presentation: { mode: enacted_role, role: town assayer voicing Marrick's ready verdict }
   - { turn: 4, premise: p_alloy, via: tutor }
-  - { turn: 6, premise: m_graver, via: director }
+  - turn: 6
+    premise: m_graver
+    via: director
+    presentation: { mode: enacted_role, role: guild officer describing Verrell's bench }
   - { turn: 8, premise: p_crucible, via: tutor }
-  - { turn: 10, premise: p_caster, via: director }
-  - { turn: 12, premise: m_caught, via: director }
+  - turn: 10
+    premise: p_caster
+    via: director
+    presentation: { mode: enacted_role, role: leat-keeper reading the charcoal book }
+  - turn: 12
+    premise: m_caught
+    via: director
+    presentation: { mode: enacted_role, role: watchman giving his account }
   - { turn: 14, premise: p_flaw, via: tutor }
   - { turn: 18, premise: p_graver, via: tutor }
-  - { turn: 22, premise: p_holder, via: director }
+  - turn: 22
+    premise: p_holder
+    via: director
+    presentation: { mode: enacted_role, role: estate clerk reading the founder's inventory }
 
 dramaturgy:
   acts:
