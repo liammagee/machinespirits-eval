@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-multiworld-policy-replication
 title: "Register confirmatory: fixed-horizon policy x profile interaction at n=5 (final-stretch Step 2)"
-status: triaged
+status: done
 type: experiment
 priority: P1
 owner: unassigned
 source: review
 created: 2026-07-11
-updated: 2026-07-13
+updated: 2026-07-14
 verification: "A frozen pre-registration runs {bland, field, negative} x {diligent, affective_resistant, false_memory, proof_skipper} v3 contracts x n=5 per cell on both model families (codex.gpt-5.6-terra and claude-code sonnet-5), deterministically interleaved, turn-6 pressure probe in every arm, binding safety-turns 40, outcome-only scoring, in-run profile-discrimination gates on the run's own control cells. Primary endpoint: coverage at learner turn 16, estimated as policy x profile interaction contrasts. Secondary: coverage/mastery/risk AUC turns 1-16, until-grounded endpoint, post-probe recovery (window 4). Pre-committed interpretation: bland leading diligent is part of the predicted signature; the claim under test is the crossing; a null is no interaction at n=5 on either family."
 claim_status: planned
 depends_on:
@@ -103,3 +103,26 @@ at t16 (0.667 vs bland 0.500) unlike the probe-free exploratory ordering,
 but with 2/5 hard-safety failures and 9 leaks in the negative cell; endpoint
 pattern (all ground, bland fastest) reproduces. Decisive stress cells in
 flight.
+
+2026-07-14 Claude: BOTH FAMILIES COMPLETE (n=5), Step 2 CLOSED. Verdict
+under the frozen rules: the two-family general claim is NOT licensed. The
+profile-contingent register interaction replicates in STRUCTURE (rank
+crossings on both families) but not in GEOMETRY — no policy/direction
+generalizes across families (negative leads diligent on terra +0.167*,
+comes last on Sonnet -0.201; only terra's negative sign-flip and its
+affective collapse reach bootstrap significance; Sonnet is a floor-dominated
+null at n=5 with every CI crossing zero). The adaptive selector (field)
+confirms nothing on either family; its only edge is secondary
+(robustness/speed). Continuous with §6.3 adaptation null + §7.11 substitution
+law. Full result + two-family assessment: REGISTER-CONFIRMATORY-PREREGISTRATION.md
+Results. Block A archived (terra 129M), Block B archived (sonnet 225M, all
+legs incl. 5 quarantined window-death dirs + unsealed merged top-up).
+Execution: 5 Sonnet window deaths, all re-run per the frozen technical-failure
+rule; affective assembled from 3 sealed legs (4 top-up rows died post-t16 —
+included for the cov@t16 primary endpoint, verdict invariant to exclusion).
+Two harness fixes surfaced: qa-matrix root verification (landed by a
+concurrent session, e159a827) and a --resume-from draw-contract exemption
+(implemented + regression-tested; the concurrent session implemented the same
+fix in-tree). Next: Step 4 side-coaching gate (the contraindication-guardrail
+design this result argues for); Step 6 capstone drops the register SELECTOR,
+keeps the palette + a per-model contraindication guard.

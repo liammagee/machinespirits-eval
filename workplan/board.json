@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-12T22:47:42.408Z",
+  "generated": "2026-07-13T22:29:26.868Z",
   "counts": {
     "total": 118,
     "byStatus": {
-      "done": 93,
+      "done": 94,
       "blocked": 4,
       "dropped": 2,
-      "triaged": 9,
+      "triaged": 8,
       "review": 2,
       "active": 4,
       "archived": 4
@@ -51,41 +51,6 @@
         "phase6-gate",
         "adaptation",
         "pre-registration"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "tutor-stub-multiworld-policy-replication",
-      "title": "Register confirmatory: fixed-horizon policy x profile interaction at n=5 (final-stretch Step 2)",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-11",
-      "updated": "2026-07-13",
-      "verification": "A frozen pre-registration runs {bland, field, negative} x {diligent, affective_resistant, false_memory, proof_skipper} v3 contracts x n=5 per cell on both model families (codex.gpt-5.6-terra and claude-code sonnet-5), deterministically interleaved, turn-6 pressure probe in every arm, binding safety-turns 40, outcome-only scoring, in-run profile-discrimination gates on the run's own control cells. Primary endpoint: coverage at learner turn 16, estimated as policy x profile interaction contrasts. Secondary: coverage/mastery/risk AUC turns 1-16, until-grounded endpoint, post-probe recovery (window 4). Pre-committed interpretation: bland leading diligent is part of the predicted signature; the claim under test is the crossing; a null is no interaction at n=5 on either family.",
-      "claim_status": "planned",
-      "depends_on": [
-        "adaptive-eval-immutable-provenance",
-        "tutor-stub-typed-pedagogical-actions"
-      ],
-      "links": {
-        "notes": [
-          "REGISTER-CONFIRMATORY-PREREGISTRATION.md",
-          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md",
-          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
-          "PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md",
-          "PLAN_4_0/2026-07-10-adaptive-policy-discrimination-and-learner-diversity.md",
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "tutor-stub",
-        "multi-world",
-        "confirmatory",
-        "controls"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -1461,6 +1426,41 @@
         "proof-debt",
         "side-arcs"
       ]
+    },
+    {
+      "id": "tutor-stub-multiworld-policy-replication",
+      "title": "Register confirmatory: fixed-horizon policy x profile interaction at n=5 (final-stretch Step 2)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-14",
+      "verification": "A frozen pre-registration runs {bland, field, negative} x {diligent, affective_resistant, false_memory, proof_skipper} v3 contracts x n=5 per cell on both model families (codex.gpt-5.6-terra and claude-code sonnet-5), deterministically interleaved, turn-6 pressure probe in every arm, binding safety-turns 40, outcome-only scoring, in-run profile-discrimination gates on the run's own control cells. Primary endpoint: coverage at learner turn 16, estimated as policy x profile interaction contrasts. Secondary: coverage/mastery/risk AUC turns 1-16, until-grounded endpoint, post-probe recovery (window 4). Pre-committed interpretation: bland leading diligent is part of the predicted signature; the claim under test is the crossing; a null is no interaction at n=5 on either family.",
+      "claim_status": "planned",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance",
+        "tutor-stub-typed-pedagogical-actions"
+      ],
+      "links": {
+        "notes": [
+          "REGISTER-CONFIRMATORY-PREREGISTRATION.md",
+          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md",
+          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
+          "PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md",
+          "PLAN_4_0/2026-07-10-adaptive-policy-discrimination-and-learner-diversity.md",
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "tutor-stub",
+        "multi-world",
+        "confirmatory",
+        "controls"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-stub-typed-pedagogical-actions",
