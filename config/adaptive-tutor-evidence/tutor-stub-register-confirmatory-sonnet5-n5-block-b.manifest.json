@@ -1,0 +1,53 @@
+{
+  "schema": "machinespirits.tutor-stub-evidence-manifest.v1",
+  "runDir": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13",
+  "createdAt": "2026-07-13T22:23:21.538231+00:00",
+  "claimStatus": "scope-bound",
+  "prereg": "REGISTER-CONFIRMATORY-PREREGISTRATION.md",
+  "model": "claude-code.sonnet-5 (all four seams)",
+  "archive": {
+    "location": "~/.machinespirits-data/runs/tutor-stub/register-confirmatory-sonnet5-n5-live-20260714.tar.gz",
+    "sha256": "8150d2182015e7a1e91b537a385f545ed532e84125167f379c68ca02ead3e665",
+    "bytes": 234149200,
+    "note": "family block B, all legs incl. quarantined dead dirs (5 window deaths) + affective top-up + unsealed merged resume source, as execution record"
+  },
+  "affectiveAssembly": {
+    "note": "affective_resistant n=5 assembled across 3 sealed legs due to session-window deaths",
+    "r1_r2": "affective_resistant-dead-session-limit-0122Z-partial",
+    "r3_blandR4_fieldR4": "affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z",
+    "negR4_blandR5_fieldR5_negR5": "affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z (post-t16-death rows; valid primary endpoint)",
+    "deviation": "the 4 top-up dialogues died at turns 16-18 post-endpoint; included for cov@t16 (valid, unbiased); verdict invariant to exclusion"
+  },
+  "distilledFiles": [
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.json",
+      "sha256": "77e7af1223d0fc1251ea30e787f27d9ceec7bf99db9e5c01d1708d300ecc473b",
+      "bytes": 30811
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.md",
+      "sha256": "7ef2a28d3c548e5f4ef2ef590c5d77cb255b92f59999ee67ddd620459979adec",
+      "bytes": 6050
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/diligent-auto-eval.json",
+      "sha256": "34fe2f32715c7fdef541fb51860c0c99cbbe8ad035c8823f2b308992410ff843",
+      "bytes": 150258544
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/false_memory-auto-eval.json",
+      "sha256": "aa20bf412822c37c8322a2a1b39e2d30b88ca1b40951bc977ef0ed50ae5ec8e8",
+      "bytes": 180400171
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/proof_skipper-auto-eval.json",
+      "sha256": "7e6ea3055ffaea16084c47b05999d97156a87b86bf05a7cc29e2138b6e4de6fc",
+      "bytes": 186823988
+    }
+  ],
+  "exclusions": [
+    "simulated learner outcomes do not estimate human learning effects",
+    "affective secondary until-grounded outcomes unavailable for the 4 top-up rows"
+  ],
+  "notes": "Two-family general claim NOT licensed; interaction replicates in structure not geometry, model-indexed. Verdict in prereg Results."
+}
