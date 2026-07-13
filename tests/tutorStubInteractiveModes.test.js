@@ -99,7 +99,7 @@ function runInteractive({ tmp, args, initialInput, stopWhen, timeoutMs = 10_000 
   });
 }
 
-function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000 }) {
+function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeModel = true }) {
   installFakeCodex(tmp);
   const logPath = path.join(tmp, 'fake-codex-input.log');
   return new Promise((resolve, reject) => {
@@ -149,11 +149,15 @@ function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000 }) {
       const tutorReplies = plain.match(/tutor > Take the crucible as a fingerprint/gu) || [];
       if (stage === 0 && tutorReplies.length >= 1) {
         stage = 1;
-        child.stdin.write('/settings model codex.gpt-5.6-luna\n');
-      } else if (stage === 1 && /new tutor model will reread all 2 earlier public messages/u.test(plain)) {
+        child.stdin.write(changeModel ? '/settings model codex.gpt-5.6-luna\n' : 'Second learner message.\n');
+      } else if (
+        changeModel &&
+        stage === 1 &&
+        /new tutor model will continue replaying all 2 earlier public messages/u.test(plain)
+      ) {
         stage = 2;
         child.stdin.write('Second learner message.\n');
-      } else if (stage === 2 && tutorReplies.length >= 2) {
+      } else if (((changeModel && stage === 2) || (!changeModel && stage === 1)) && tutorReplies.length >= 2) {
         stage = 3;
         child.stdin.end('/quit\n');
       }
@@ -227,6 +231,39 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
   }
 });
 
+test('ordinary tutor turns replay the full public user/assistant history without a model change', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-default-context-replay-'));
+  try {
+    const result = await runInteractiveModelSwitchSequence({ tmp, changeModel: false });
+    const calls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
+
+    assert.equal(calls.length, 2);
+    assert.doesNotMatch(calls[0], /Conversation so far:/u);
+    assert.match(calls[1], /Conversation so far:\nuser: First learner message\./u);
+    assert.match(calls[1], /assistant: Take the crucible as a fingerprint/u);
+    assert.match(calls[1], /Learner says:\nSecond learner message\./u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const laterTutorCall = events.find(
+      (event) =>
+        event.type === 'model_call' &&
+        event.role === 'tutor_stub_tutor' &&
+        event.request?.config?.messageHistoryMode === 'full_public_replay' &&
+        event.request?.config?.replayedMessageCount === 2,
+    );
+    assert.ok(laterTutorCall);
+    assert.equal(laterTutorCall.request.config.replayedUserMessageCount, 1);
+    assert.equal(laterTutorCall.request.config.replayedAssistantMessageCount, 1);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('a live tutor-model change replays the full public user/assistant history on every later tutor call', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-model-context-replay-'));
   try {
@@ -247,12 +284,14 @@ test('a live tutor-model change replays the full public user/assistant history o
       .map((line) => JSON.parse(line));
     const modelChange = events.find((event) => event.type === 'tutor_model_changed' && event.changed === true);
     assert.equal(modelChange.contextReplay.historyMode, 'full_public_replay');
+    assert.equal(modelChange.contextReplay.alreadyActive, true);
     assert.equal(modelChange.contextReplay.publicMessageCount, 2);
     const laterTutorCall = events.find(
       (event) =>
         event.type === 'model_call' &&
         event.role === 'tutor_stub_tutor' &&
-        event.request?.config?.messageHistoryMode === 'full_public_replay',
+        event.request?.config?.messageHistoryMode === 'full_public_replay' &&
+        event.request?.config?.replayedMessageCount === 2,
     );
     assert.equal(laterTutorCall.request.config.replayedMessageCount, 2);
     assert.equal(laterTutorCall.request.config.replayedUserMessageCount, 1);

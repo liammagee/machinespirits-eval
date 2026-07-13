@@ -147,6 +147,10 @@ import {
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
 import {
+  tutorStubPublicMessageContext,
+  tutorStubPublicMessagesForSpeaker,
+} from '../services/tutorStubPublicHistory.js';
+import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
   MIN_TUTOR_STUB_RELEASE_SPEED,
@@ -656,7 +660,7 @@ Options:
                          (default: ${STUB.cliEffort})
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
-  --history-turns <n>    raw recent turns kept in context, after compact memory
+  --history-turns <n>    raw recent turns kept in compact analysis prompts
                          summary (default: ${STUB.historyTurns})
   --show-prompt          print the system prompt before starting
   --dry-run              print resolved config and first payload, but do not call a model
@@ -2592,6 +2596,7 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
 
 async function callPromptModel({
   prompt,
+  messageHistory = [],
   resolved,
   systemPrompt,
   role,
@@ -2604,6 +2609,11 @@ async function callPromptModel({
 }) {
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
+  const publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
+    role: message?.role === 'assistant' ? 'assistant' : 'user',
+    content: String(message?.content || ''),
+  }));
+  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
   try {
     let response;
     if (isCliProvider(resolved.provider)) {
@@ -2639,7 +2649,7 @@ async function callPromptModel({
         systemPrompt,
         prompt,
         role,
-        { messageHistory: [], effort: cliEffort, onEvent, signal },
+        { messageHistory: publicMessageHistory, effort: cliEffort, onEvent, signal },
       );
       response = {
         text: result.text,
@@ -2667,7 +2677,7 @@ async function callPromptModel({
         provider: resolved.provider,
         model: resolved.model,
         systemPrompt,
-        messages: [{ role: 'user', content: prompt }],
+        messages: requestMessages,
         preset: 'socratic',
         config: { temperature, maxTokens },
       })) {
@@ -2692,7 +2702,7 @@ async function callPromptModel({
         provider: resolved.provider,
         model: resolved.model,
         systemPrompt,
-        messages: [{ role: 'user', content: prompt }],
+        messages: requestMessages,
         preset: 'socratic',
         config: { temperature, maxTokens },
       });
@@ -2705,6 +2715,12 @@ async function callPromptModel({
       };
     }
 
+    response.promptSnapshot = {
+      systemPrompt,
+      userPrompt: prompt,
+      messageHistory: publicMessageHistory,
+      role,
+    };
     appendTraceEvent(trace, {
       type: 'model_call',
       role,
@@ -2715,6 +2731,8 @@ async function callPromptModel({
       request: {
         systemPrompt,
         prompt,
+        messageHistory: publicMessageHistory,
+        messages: requestMessages,
         maxTokens,
         cliEffort,
       },
@@ -2741,6 +2759,8 @@ async function callPromptModel({
       request: {
         systemPrompt,
         prompt,
+        messageHistory: publicMessageHistory,
+        messages: requestMessages,
         maxTokens,
       },
       error: err.message,
@@ -6392,30 +6412,13 @@ function createLearnerDagState({ enabled, resolved, world, dropout = null }) {
   };
 }
 
-function trimHistory(messages, turns) {
-  const safeTurns = Math.max(0, Number(turns) || 0);
-  return messages.slice(-(safeTurns * 2));
-}
-
-function publicTutorMessageHistory(messages = []) {
-  return (Array.isArray(messages) ? messages : [])
-    .filter((message) => message?.role === 'user' || message?.role === 'assistant')
-    .map((message) => ({ role: message.role, content: String(message.content || '') }));
-}
-
-function tutorMessageContext(state, history, historyTurns) {
-  const publicHistory = publicTutorMessageHistory(history);
-  const fullReplay = state?.tutorContext?.historyMode === 'full_public_replay';
-  const messages = fullReplay ? publicHistory : trimHistory(publicHistory, historyTurns);
-  return {
-    schema: 'machinespirits.tutor-stub.tutor-message-context.v1',
-    historyMode: fullReplay ? 'full_public_replay' : 'compact_recent',
-    messages,
-    availableMessageCount: publicHistory.length,
-    replayedMessageCount: messages.length,
-    userMessageCount: messages.filter((message) => message.role === 'user').length,
-    assistantMessageCount: messages.filter((message) => message.role === 'assistant').length,
+function tutorMessageContext(state, history) {
+  const context = tutorStubPublicMessageContext(history, {
+    speaker: 'tutor',
     activatedBy: state?.tutorContext?.activatedBy || 'session_start',
+  });
+  return {
+    ...context,
     modelRef: state?.modelRef || null,
   };
 }
@@ -6430,11 +6433,6 @@ function rawPublicTurnTranscript(turns, limit) {
       return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
     })
     .join('\n\n');
-}
-
-function signedMemoryValue(value) {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) return 'n/a';
-  return `${Number(value) >= 0 ? '+' : ''}${value}`;
 }
 
 function publicDialogueMemorySummary(state, { includeAnalysis = true } = {}) {
@@ -6496,73 +6494,6 @@ function compactPublicTranscriptForPrompt(state, limit, { includeAnalysis = true
     rawTranscript,
     '[End raw recent public transcript]',
   ].join('\n\n');
-}
-
-function tutorDialogueMemorySummary(state, { currentTutorTurn, historyTurns } = {}) {
-  const turns = state?.turns || [];
-  if (!state?.memory?.enabled || turns.length === 0) return '';
-
-  const latest = turns.at(-1);
-  const classification = latest?.classification || {};
-  const model = state.learnerDag?.lastModel || latest?.tutorLearnerDagModel || {};
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const field = buildLightweightDialogueField(turns);
-  const final = field.summary.final || {};
-  const delta = field.summary.fieldDelta || {};
-  const latestRow = field.rows.at(-1) || null;
-  const previousRow = field.rows.at(-2) || null;
-  const registerCounts = compactCounts(
-    countBy(
-      state.register?.history || [],
-      (entry) => normalizeStoredRegisterSelection(entry)?.selected_register || 'unknown',
-    ),
-    { limit: 6 },
-  );
-  const latestRegister = latestRegisterSelection(state);
-  const comprehension = tutorStubComprehensionFeatures(state.comprehension, {
-    turn: currentTutorTurn || turns.length + 1,
-  });
-
-  return [
-    '[Tutor-only compact dialogue memory]',
-    `Current tutor turn: ${currentTutorTurn || turns.length + 1}; completed prior turns: ${turns.length}; raw recent window: ${Math.min(
-      Number(historyTurns ?? state.historyTurns ?? STUB.historyTurns) || 0,
-      turns.length,
-    )} turn(s).`,
-    `Case status: ${dialogueCaseStatus(latest)}`,
-    `Latest learner move: ${classification.turn?.summary || oneLine(latest?.learner, { max: 160 })}`,
-    `Overall learner trajectory: ${
-      classification.overall?.trajectory || classification.overall?.summary || 'No trajectory summary yet.'
-    }`,
-    `Learner-DAG assessment: coverage ${assessment.bestPathCoverage ?? 'unknown'}, grounded ${
-      metrics.groundedCount ?? 0
-    }, missing ${metrics.missingPremiseCount ?? 0}, bottleneck ${assessment.bottleneck || 'unknown'}.`,
-    `Field final: mastery ${final.learnerMastery ?? 'n/a'}, risk ${final.learnerRisk ?? 'n/a'}, alignment ${
-      final.tutorAlignment ?? 'n/a'
-    }, momentum ${final.jointMomentum ?? 'n/a'}, coverage ${final.coverage ?? 'n/a'}.`,
-    `Field movement: mastery ${signedMemoryValue(delta.learnerMastery)}, risk ${signedMemoryValue(
-      delta.learnerRisk,
-    )}, alignment ${signedMemoryValue(delta.tutorAlignment)}, momentum ${signedMemoryValue(delta.jointMomentum)}; ${
-      latestRow ? describeFieldShift(latestRow, previousRow, field.summary) : 'no field row yet'
-    }`,
-    `Engagement-stance history: ${registerCounts}; latest ${
-      latestRegister?.engagement_stance || latestRegister?.selected_register || 'none yet'
-    }.`,
-    `Latest independent response axes: action ${latestRegister?.action_family || 'none'}; audience ${
-      latestRegister?.audience_register || 'unknown'
-    }; lexical ${latestRegister?.lexical_accessibility || 'unknown'}; scene ${
-      latestRegister?.scene_immersion || 'unknown'
-    }.`,
-    `Comprehension side-state: unresolved ${
-      comprehension.unresolvedTerms.length ? comprehension.unresolvedTerms.join(', ') : 'none'
-    }; explained ${comprehension.explainedTerms.length ? comprehension.explainedTerms.join(', ') : 'none'}; language opacity ${
-      comprehension.languageOpacity
-    }. This state does not advance the learner DAG.`,
-    'Use this as compressed continuity. The raw recent transcript below controls exact wording and immediate turn-taking.',
-    'Do not mention memory summaries, fields, DAGs, coverage, hidden paths, or internal state to the learner.',
-    '[End tutor-only compact dialogue memory]',
-  ].join('\n');
 }
 
 function classifierTutorContext(classification) {
@@ -8747,17 +8678,14 @@ async function callTutor({
   roleBase = 'tutor_stub_tutor',
   signal = null,
 }) {
-  const messageContext = tutorMessageContext(state, history, historyTurns);
+  const messageContext = tutorMessageContext(state, history);
   const context = messageContext.messages;
   const tutorTurn = Math.floor(history.length / 2) + 1;
-  const tutorMemory =
-    messageContext.historyMode === 'full_public_replay'
-      ? [
-          '[Tutor context continuity]',
-          `All ${messageContext.replayedMessageCount} previous public user/assistant messages are replayed in their original order for this model call.`,
-          '[End tutor context continuity]',
-        ].join('\n')
-      : tutorDialogueMemorySummary(state, { currentTutorTurn: tutorTurn, historyTurns });
+  const tutorMemory = [
+    '[Tutor context continuity]',
+    `All ${messageContext.replayedMessageCount} previous public user/assistant messages are replayed in their original order for this model call.`,
+    '[End tutor context continuity]',
+  ].join('\n');
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
@@ -9224,22 +9152,6 @@ function publicWorldSummary(world) {
     .join('\n');
 }
 
-function publicTranscriptForAutomatedLearner(state) {
-  const messages = state.memory?.enabled ? trimHistory(state.history || [], state.historyTurns) : state.history || [];
-  const rows = messages.map((message) => {
-    const role = message.role === 'assistant' ? 'Tutor' : 'Learner';
-    return `${role}: ${message.content || ''}`;
-  });
-  const recentTranscript = rows.join('\n\n') || '(No prior public transcript.)';
-  if (!state.memory?.enabled || !(state.turns || []).length) return recentTranscript;
-  return [
-    publicDialogueMemorySummary(state, { includeAnalysis: false }),
-    '[Raw recent public transcript]',
-    recentTranscript,
-    '[End raw recent public transcript]',
-  ].join('\n\n');
-}
-
 function latestTutorMessage(state) {
   return [...(state?.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
 }
@@ -9467,8 +9379,7 @@ function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
 }
 
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
-  const latestTutor =
-    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  const hasTutorMessage = Boolean(latestTutorMessage(state));
   return [
     automatedLearnerProfileRuntime({ state, profile, turnNumber }),
     '',
@@ -9476,13 +9387,11 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     '',
     publicWorldSummary(state.world),
     '',
-    '# Public transcript',
+    '# Dialogue context',
     '',
-    publicTranscriptForAutomatedLearner(state),
-    '',
-    '# Latest tutor message',
-    '',
-    latestTutor || '(The tutor has not spoken yet. Start by asking or stating what you would investigate first.)',
+    hasTutorMessage
+      ? 'The complete public dialogue precedes this task as native chat messages. Tutor speech is `user`; your own earlier learner speech is `assistant`.'
+      : 'There is no prior tutor message. Start by asking or stating what you would investigate first.',
     '',
     '# Task',
     '',
@@ -9506,10 +9415,14 @@ async function generateAutomatedLearnerTurn({
   stream = null,
   cliEffort = null,
 }) {
+  const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
+  const systemPrompt = automatedLearnerSystemPrompt(profile);
+  const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
   const raw = await callPromptModel({
-    prompt: buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback }),
+    prompt,
+    messageHistory,
     resolved,
-    systemPrompt: automatedLearnerSystemPrompt(profile),
+    systemPrompt,
     role: 'tutor_stub_auto_learner',
     maxTokens: 900,
     trace: state.trace,
@@ -9520,6 +9433,12 @@ async function generateAutomatedLearnerTurn({
   return {
     ...raw,
     text: cleanAutomatedLearnerReply(raw.text),
+    promptSnapshot: {
+      systemPrompt,
+      userPrompt: prompt,
+      messageHistory,
+      turn: turnNumber,
+    },
   };
 }
 
@@ -9551,8 +9470,10 @@ async function generateMixedLearnerArtifacts({
 }) {
   const prompt = buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber });
   const systemPrompt = mixedLearnerArtifactsSystemPrompt(profile);
+  const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
   const raw = await callPromptModel({
     prompt,
+    messageHistory,
     resolved,
     systemPrompt,
     role: 'tutor_stub_mixed_learner_artifacts',
@@ -9575,6 +9496,7 @@ async function generateMixedLearnerArtifacts({
     promptSnapshot: {
       systemPrompt,
       userPrompt: prompt,
+      messageHistory,
       turn: turnNumber,
     },
   };
@@ -11032,11 +10954,18 @@ async function main() {
             : { enabled: false },
           maxTokens,
           historyTurns,
+          speakerHistory: {
+            mode: 'full_public_replay',
+            perspectives: ['tutor', 'learner'],
+            roles: ['system', 'user', 'assistant'],
+            directApiTransport: 'native_messages',
+            cliTransport: 'flattened_at_bridge_boundary',
+          },
           memorySummary: {
             enabled: memorySummaryEnabled,
             rawRecentTurns: historyTurns,
             publicSummary: memorySummaryEnabled,
-            tutorStateFieldSummary: memorySummaryEnabled,
+            scope: 'auxiliary_analysis_prompts',
           },
           trace: traceEnabled
             ? {
@@ -11246,7 +11175,14 @@ async function main() {
         enabled: memorySummaryEnabled,
         rawRecentTurns: historyTurns,
         publicSummary: memorySummaryEnabled,
-        tutorStateFieldSummary: memorySummaryEnabled,
+        scope: 'auxiliary_analysis_prompts',
+      },
+      speakerHistory: {
+        mode: 'full_public_replay',
+        perspectives: ['tutor', 'learner'],
+        roles: ['system', 'user', 'assistant'],
+        directApiTransport: 'native_messages',
+        cliTransport: 'flattened_at_bridge_boundary',
       },
       opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
       closeoutReport: { enabled: closeoutReportEnabled },
@@ -11298,8 +11234,8 @@ async function main() {
     maxTokens,
     historyTurns,
     tutorContext: {
-      schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
-      historyMode: 'compact_recent',
+      schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
+      historyMode: 'full_public_replay',
       activatedBy: 'session_start',
       activatedAtTurn: null,
       modelRef: args.model,
@@ -12809,16 +12745,11 @@ async function main() {
     args.model = selection.modelRef;
     visibleModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
     const changed = previousRef !== selection.modelRef || previousResolved.model !== selection.resolved.model;
-    const fullReplayActivated = Boolean(changed && source !== 'initial_settings' && state.history.length > 0);
-    if (fullReplayActivated) {
-      state.tutorContext = {
-        schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
-        historyMode: 'full_public_replay',
-        activatedBy: 'live_tutor_model_change',
-        activatedAtTurn: state.turns.length + 1,
-        modelRef: selection.modelRef,
-      };
-    }
+    const contextReplayRecorded = Boolean(changed && source !== 'initial_settings' && state.history.length > 0);
+    state.tutorContext = {
+      ...state.tutorContext,
+      modelRef: selection.modelRef,
+    };
     const invalidated = changed ? resetMixedLearnerSuggestion('tutor_model_changed') : null;
     const remembered = changed ? persistCurrentInteractiveSettings('tutor_model_changed') : null;
     appendTraceEvent(state.trace, {
@@ -12834,13 +12765,14 @@ async function main() {
       changed,
       rememberedAt: remembered?.updatedAt || null,
       effectiveTurn: state.turns.length + 1,
-      contextReplay: fullReplayActivated
+      contextReplay: contextReplayRecorded
         ? {
-            schema: 'machinespirits.tutor-stub.tutor-context-replay.v1',
+            schema: 'machinespirits.tutor-stub.tutor-context-replay.v2',
             historyMode: state.tutorContext.historyMode,
-            publicMessageCount: publicTutorMessageHistory(state.history).length,
+            alreadyActive: true,
+            publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,
             includesRoles: ['user', 'assistant'],
-            persistence: 'every_subsequent_tutor_call_in_this_dialogue',
+            persistence: 'every_speaker_call_in_this_dialogue',
           }
         : null,
       cacheRefresh: invalidated
@@ -13776,10 +13708,10 @@ async function main() {
           memorySummary: Boolean(state.memory?.enabled),
           rawHistoryTurns: state.historyTurns,
           tutorMessageHistory: {
-            mode: state.tutorContext?.historyMode || 'compact_recent',
+            mode: state.tutorContext?.historyMode || 'full_public_replay',
             activatedBy: state.tutorContext?.activatedBy || 'session_start',
             activatedAtTurn: state.tutorContext?.activatedAtTurn ?? null,
-            publicMessageCount: publicTutorMessageHistory(state.history).length,
+            publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,
           },
           multipleChoice: state.multipleChoice,
           opening: openingEnabled,
@@ -14278,8 +14210,8 @@ async function main() {
     state.printedDebugIds = new Set();
     state.directorOpeningPresented = false;
     state.tutorContext = {
-      schema: 'machinespirits.tutor-stub.tutor-context-policy.v1',
-      historyMode: 'compact_recent',
+      schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
+      historyMode: 'full_public_replay',
       activatedBy: 'dialogue_reset',
       activatedAtTurn: null,
       modelRef: state.modelRef,
@@ -14324,11 +14256,9 @@ async function main() {
       `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}; effort ${state.cliEffort || 'provider default'}${C.reset}`,
     );
     console.log(
-      `${C.dim}  conversation memory: ${
-        state.tutorContext?.historyMode === 'full_public_replay'
-          ? `the tutor rereads all ${publicTutorMessageHistory(state.history).length} public messages after a model change`
-          : `the latest ${state.historyTurns} turns plus a compact summary`
-      }${C.reset}`,
+      `${C.dim}  conversation memory: tutor and learner replay all ${
+        tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
+      } public messages with speaker-relative user/assistant roles${C.reset}`,
     );
     console.log(
       `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${tutorStubRegisterPolicyStackId(
@@ -14592,7 +14522,9 @@ async function main() {
       );
       console.log(`${C.dim}  resolved as ${selected.resolved.provider}/${selected.resolved.model}${C.reset}`);
       console.log(
-        `${C.dim}  the new tutor model will reread all ${publicTutorMessageHistory(state.history).length} earlier public messages before every later response${C.reset}`,
+        `${C.dim}  the new tutor model will continue replaying all ${
+          tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
+        } earlier public messages before every later response${C.reset}`,
       );
       if (mixedLearner.enabled && latestTutorMessage(state)) {
         startMixedLearnerPrefetch('tutor_model_changed');

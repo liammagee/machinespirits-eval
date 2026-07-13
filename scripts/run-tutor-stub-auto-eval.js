@@ -245,7 +245,7 @@ Options:
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
   --max-tokens <n>           tutor response token cap passed to tutor-stub
-  --history-turns <n>        raw recent turns passed to tutor-stub after compact memory
+  --history-turns <n>        raw recent turns retained in compact auxiliary analysis prompts
   --parallelism <n>          child dialogues to run concurrently (default: 1)
   --progress-interval <sec>  active turn progress cadence (default: 30)
   --until-grounded           legacy alias for --turns until-grounded

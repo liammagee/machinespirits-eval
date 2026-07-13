@@ -60,7 +60,8 @@ Key choices and defaults:
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.
-- Memory compaction: default on; use `--history-turns 4` to keep only a short raw recent window plus compact state/field/dialogue summaries. Use `--no-memory-summary` only for legacy full-transcript debugging.
+- Speaker history: tutor and learner calls always replay the complete public dialogue as speaker-relative `user`/`assistant` messages. Direct API providers retain native roles; the Codex/Claude CLI bridge alone flattens them at the transport boundary.
+- Analysis memory compaction: default on; `--history-turns 4` controls the raw recent window plus compact state/field/dialogue summaries used by auxiliary classifier, learner-record, and clarification prompts. `--no-memory-summary` disables those auxiliary summaries; it does not change speaker-history replay.
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
 - Debug turn ids: automatic `turn id > <run-id>:tNNN` lines appear only in persistent technical debug mode. `/id` (aliases `/turn-id`, `/debug-id`) always prints the last completed or in-progress id plus the exact JSONL trace path on demand; ask the user to paste that id into Codex when debugging a specific turn.
@@ -135,11 +136,11 @@ Useful variants:
   tutor model, and is recorded in dry-run, trace, and transcript provenance.
   During a run, `/settings model` lists choices and `/settings model
   <provider.alias>` changes only subsequent speaking-tutor turns, records
-  provenance, refreshes stale mixed caches, and switches the speaking tutor to
-  full public-history replay for every later tutor call in that dialogue. CLI
-  providers are stateless subprocesses: the bridge flattens those ordered
-  `user`/`assistant` messages under `Conversation so far`, then appends the
-  composite current-turn prompt under `Latest message`.
+  provenance, and refreshes stale mixed caches. Full public-history replay is
+  already active for both speakers from session start. CLI providers are
+  stateless subprocesses: the bridge flattens those ordered `user`/`assistant`
+  messages under `Conversation so far`, then appends the composite current-turn
+  prompt under `Latest message`.
 - Multiple choice is opt-in globally with `--multiple-choice`, but the human
   scaffold may use one bounded public-safe choice after uncertainty when an
   open question would otherwise ask the learner to invent unstaged information.
@@ -348,9 +349,9 @@ Useful variants:
   the tutor from the next turn without changing the classifier/DAG or learner
   models. Model changes are rejected during an in-flight tutor turn and
   invalidate mixed suggestion/analysis/tutor-prefetch state before regeneration.
-  After a live change, every subsequent tutor request replays all prior public
-  `user` and `assistant` messages in original order; `/clear` returns a new
-  dialogue to the normal compact recent-window plus memory-summary policy.
+  After a live change, every subsequent tutor request continues replaying all
+  prior public `user` and `assistant` messages in original order; `/clear`
+  starts a new dialogue with the same full role-history policy.
   `/settings stance-temp` opens its slider in a TTY, while `/settings
   stance-temp 0.4` sharpens subsequent locally selected stance
   distributions; `/settings stance-temp 1.4` broadens them. No other response
@@ -473,10 +474,10 @@ npm run tutor:stub:auto-eval -- \
   --keep-going
 ```
 
-If failures say `max_tokens or model output limit was reached`, use compact
-memory (`--history-turns 4`, default on) and increase `--max-tokens`. If failures
-are quota/network failures, keep the same token cap and rerun after quota/network
-recovery.
+If failures say `max_tokens or model output limit was reached`, increase
+`--max-tokens`. `--history-turns 4` can reduce auxiliary analysis prompts but
+does not compact tutor or learner speaker history. If failures are quota/network
+failures, keep the same token cap and rerun after quota/network recovery.
 
 ## ABM Learner Panel
 
@@ -504,8 +505,8 @@ npm run tutor:stub:abm-panel -- \
 ABM panel output lives under `exports/tutor-stub-abm-panel/<run-id>/`. Rebuild a
 panel report from saved artifacts:
 
-The ABM wrapper currently inherits tutor-stub's compact-memory defaults; it does
-not expose `--history-turns` directly.
+The ABM wrapper inherits full speaker-history replay plus tutor-stub's compact
+auxiliary-analysis defaults; it does not expose `--history-turns` directly.
 
 ```bash
 npm run tutor:stub:abm-panel -- --summarize exports/tutor-stub-abm-panel/<run-id>
