@@ -1,6 +1,6 @@
 import { clearLine, cursorTo, moveCursor } from 'node:readline';
 
-export function createTutorStubConcurrentTerminal({ rl, output }) {
+export function createTutorStubConcurrentTerminal({ rl, output, decorateLine = null }) {
   const enabled = Boolean(rl && output?.isTTY);
   let closed = false;
   let surfaceVisible = false;
@@ -33,6 +33,7 @@ export function createTutorStubConcurrentTerminal({ rl, output }) {
     renderedRows = rows.length;
     rl.prompt(true);
     surfaceVisible = true;
+    if (typeof decorateLine === 'function') decorateLine();
   }
 
   return {

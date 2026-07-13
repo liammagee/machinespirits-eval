@@ -83,8 +83,10 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
-  const response = input.includes('# Learner-record extraction rules')
-    ? JSON.stringify({
+  const response = input.includes('You are an automated learner in an experimental tutoring dialogue.')
+    ? "Marin is Tessa's child, and Tessa is the founder's daughter, so Marin is the founder's grandchild."
+    : input.includes('# Learner-record extraction rules')
+      ? JSON.stringify({
         classification: {
           turn: {
             summary: 'The learner connects both lineage facts and supplies their consequence.',
@@ -124,7 +126,7 @@ process.stdin.on('end', () => {
           confidence: 0.8
         }
       })
-    : 'You have already joined both lineage facts. What would the house mark now settle?';
+      : 'You have already joined both lineage facts. What would the house mark now settle?';
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
 });
@@ -137,15 +139,15 @@ process.stdin.on('end', () => {
       process.execPath,
       [
         'scripts/tutor-stub.js',
-        '--once',
-        "Marin is Tessa's child, and Tessa is the founder's daughter, so Marin is the founder's grandchild.",
         '--world',
         worldPath,
         '--dag',
         '--tutor-learner-dag',
+        '--auto-learner',
+        '--auto-turns',
+        '1',
         '--register-policy',
         'dynamic',
-        '--no-opening',
         '--no-closeout-report',
         '--no-interim-animation',
         '--no-stream',

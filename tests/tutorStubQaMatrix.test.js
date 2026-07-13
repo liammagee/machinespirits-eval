@@ -9,11 +9,27 @@ import {
   learnerProfileContractSummary,
   learnerProfilePickerPresentation,
   learnerProfilePrompt,
+  learnerProfileSpeakerLabel,
+  learnerProfileIds,
   learnerProfileSuiteIds,
 } from '../scripts/tutor-stub-learner-profile-contracts.js';
 import { verifyExperimentRun } from '../services/experimentRunArtifacts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('every built-in learner profile has a readable speaker label', () => {
+  const labels = learnerProfileIds().map((profileId) => learnerProfileSpeakerLabel(profileId));
+  assert.equal(new Set(labels).size, labels.length);
+  for (const label of labels) {
+    assert.match(label, /^(?:A|An) .+ Learner$/u);
+    assert.ok(!label.includes('_'));
+    assert.ok(!label.includes('['));
+    assert.ok(!label.includes(']'));
+  }
+  assert.equal(learnerProfileSpeakerLabel('diligent'), 'A Diligent Learner');
+  assert.equal(learnerProfileSpeakerLabel('answer_seeking'), 'An Answer-Seeking Learner');
+  assert.equal(learnerProfileSpeakerLabel('custom'), 'A Custom Learner');
+});
 
 function writeFakeCodex(binDir, { failWhenInputIncludes = null } = {}) {
   const executable = path.join(binDir, 'codex');
@@ -617,7 +633,9 @@ test('a failed child under --keep-going still seals the matrix root with forward
   const qaDir = path.join(root, 'qa');
   const binDir = path.join(root, 'bin');
   fs.mkdirSync(binDir, { recursive: true });
-  writeFakeCodex(binDir, { failWhenInputIncludes: 'automated learner profile: proof_skipper' });
+  writeFakeCodex(binDir, {
+    failWhenInputIncludes: 'Recurring behavior: omits the warrant between clue and conclusion.',
+  });
   const env = {
     ...process.env,
     PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
@@ -1140,8 +1158,10 @@ test('auto-eval lists stress learner profiles', () => {
 
 test('stress profile contracts preserve observable discrimination cues', () => {
   const proofSkipperPrompt = learnerProfilePrompt('proof_skipper');
-  assert.match(proofSkipperPrompt, /at least five of the first eight learner turns/iu);
-  assert.match(proofSkipperPrompt, /attribution, source, actor, or trial-book judgment/iu);
+  assert.match(proofSkipperPrompt, /omits the warrant between clue and conclusion/iu);
+  assert.match(proofSkipperPrompt, /do not use because, therefore, since, so, or an if-then warrant/iu);
+  assert.doesNotMatch(proofSkipperPrompt, /at least five of the first eight learner turns/iu);
+  assert.doesNotMatch(proofSkipperPrompt, /Target recurrence|Score bands|Coverage velocity/iu);
   const proofSkipperSummary = learnerProfileContractSummary('proof_skipper');
   assert.equal(proofSkipperSummary.stableFailure.mustRecurMinRate, 0.6);
   assert.deepEqual(proofSkipperSummary.traceSignatureTargets.evidenceUse.omits_warrant, [0.5, 0.8]);
@@ -1172,7 +1192,7 @@ test('stress profile contracts preserve observable discrimination cues', () => {
 
   const affectivePrompt = learnerProfilePrompt('affective_resistant');
   assert.match(affectivePrompt, /negative, ironic, sarcastic, face_threat/u);
-  assert.match(affectivePrompt, /At least three times, push back/u);
+  assert.doesNotMatch(affectivePrompt, /At least three times, push back/u);
   assert.match(affectivePrompt, /pressure-only turns/u);
   assert.match(affectivePrompt, /That feels like a jump/u);
 
@@ -1244,7 +1264,9 @@ test('auto-eval dry run records selected learner profile contract', () => {
     );
     assert.equal(summary.config.autoLearnerProfileContract.id, 'proof_skipper');
     const profileArg = summary.results[0].command[summary.results[0].command.indexOf('--auto-learner-profile') + 1];
-    assert.match(profileArg, /Behavioral signature to approximate/);
+    assert.match(profileArg, /private behavior brief/);
+    assert.match(profileArg, /Recurring behavior/);
+    assert.doesNotMatch(profileArg, /Behavioral signature to approximate|Target recurrence|Score bands/);
     assert.match(profileArg, /Do not mention profile names/);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

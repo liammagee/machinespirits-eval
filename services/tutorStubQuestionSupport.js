@@ -1,3 +1,5 @@
+import { deterministicTutorStubContextualFallback } from './tutorStubResponseGuard.js';
+
 export const TUTOR_STUB_QUESTION_SUPPORT_SCHEMA = 'machinespirits.tutor-stub.question-support.v1';
 
 function labelsFor(classification = null) {
@@ -164,11 +166,31 @@ function openRecallQuestions(text) {
   return String(text || '')
     .split(/(?<=[?.!])\s+/u)
     .filter((sentence) => sentence.includes('?'))
+    .filter(
+      (sentence) =>
+        !/\b(?:which|what)\b.{0,45}\b(?:clue|record|term|word|part|connection)\b.{0,55}\b(?:clarif|unclear|explain|examine|start|first|revisit)\b/iu.test(
+          sentence,
+        ),
+    )
     .filter((sentence) =>
-      /\b(?:what|which)\s+(?:kind\s+of\s+)?(?:record|log|document|source|name|person|evidence)|\bwho\s+(?:held|owned|kept|signed|had)|\bwhat\s+name\b/iu.test(
+      /\bwhat\s+(?:kind\s+of\s+)?(?:record|log|document|source|name|person|evidence)|\bwhich\s+(?:new\s+|unseen\s+)?(?:record|log|document|source|name|person|evidence)\s+(?:would|could|might|shows?|proves?|names?)|\bwho\s+(?:held|owned|kept|signed|had)|\bwhat\s+name\b/iu.test(
         sentence,
       ),
     );
+}
+
+function invitesClarification(source) {
+  return (
+    /\b(?:ask|tell)\s+me\b.{0,80}\b(?:clue|term|word|part|meaning|unclear|explain)/isu.test(source) ||
+    /\b(?:if|when)\b.{0,70}\b(?:unclear|not sure|unsure|doesn[’']?t make sense)\b.{0,80}\b(?:ask|say|tell)/isu.test(
+      source,
+    ) ||
+    /\byou (?:can|may) (?:also )?ask\b/iu.test(source) ||
+    /\b(?:which|what)\b.{0,50}\b(?:clue|record|term|word|part|connection)\b.{0,55}\b(?:clarif|unclear|explain|unpack|revisit|examine|start|first)\b/isu.test(
+      source,
+    ) ||
+    /\bdoes (?:that|this|the distinction)\b.{0,45}\b(?:make sense|help)\b/isu.test(source)
+  );
 }
 
 export function auditTutorStubQuestionSupportResponse({ text = '', support = null } = {}) {
@@ -194,13 +216,7 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
     }
   }
   if (support.clarificationInvitationRequired && source.includes('?')) {
-    const invitesClarification =
-      /\b(?:ask|tell)\s+me\b.{0,80}\b(?:clue|term|word|part|meaning|unclear|explain)/isu.test(source) ||
-      /\b(?:if|when)\b.{0,70}\b(?:unclear|not sure|unsure|doesn[’']?t make sense)\b.{0,80}\b(?:ask|say|tell)/isu.test(
-        source,
-      ) ||
-      /\byou (?:can|may) ask\b/iu.test(source);
-    if (!invitesClarification) {
+    if (!invitesClarification(source)) {
       issues.push({
         type: 'missing_clarification_invitation',
         reason:
@@ -211,15 +227,7 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
   return { ok: issues.length === 0, issues };
 }
 
-export function deterministicTutorStubQuestionSupportFallback(support = null) {
-  if (support?.modality === 'bounded_directional_choice') {
-    return [
-      'Let’s keep only the distinction the public evidence can support: identifying a source or role is not the same as showing who controlled the decisive act.',
-      'Which link would be safer: A) evidence of control or responsibility, B) recognition without control, or C) mere proximity? If any term is unclear, ask me to explain it.',
-    ].join(' ');
-  }
-  return [
-    'That is as far as the public evidence carries us for now.',
-    'The missing link is evidence of who controlled or performed the decisive act, not a guess about what an unseen record says.',
-  ].join(' ');
+export function deterministicTutorStubQuestionSupportFallback(options = null) {
+  const context = options?.support || options?.world || options?.dueEvidence ? options : { support: options };
+  return deterministicTutorStubContextualFallback(context);
 }

@@ -232,3 +232,7 @@ turn_cap: 28
 presentation:
   family: sealhouse
   temporal_frame: period
+  scene_ecology: "priory sacristy inquiry"
+  narrative_diction: "medieval cloister formal"
+  ledger_term: "custody roll"
+  summary: An asymmetric proof joins wax handling and chest entry to identify who stole the priory's chapter seal.

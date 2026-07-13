@@ -19,6 +19,11 @@ function nonEmptyString(value, label) {
   return text;
 }
 
+function optionalNonEmptyString(value, label) {
+  if (value === undefined || value === null || value === '') return null;
+  return nonEmptyString(value, label);
+}
+
 export function normalizeTutorStubLastSettings(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('saved settings file must contain a JSON object');
@@ -42,6 +47,9 @@ export function normalizeTutorStubLastSettings(value) {
   return {
     schema: TUTOR_STUB_LAST_SETTINGS_SCHEMA,
     updatedAt: value.updatedAt ? String(value.updatedAt) : null,
+    scenarioId: optionalNonEmptyString(value.scenarioId, 'scenario id'),
+    learnerProfileId: optionalNonEmptyString(value.learnerProfileId, 'learner profile id'),
+    learnerProfile: optionalNonEmptyString(value.learnerProfile, 'custom learner profile'),
     tutorModelRef: nonEmptyString(value.tutorModelRef, 'tutor model ref'),
     engagementStanceTemperature: boundedNumber(value.engagementStanceTemperature, {
       label: 'teaching-style range',

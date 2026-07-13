@@ -63,8 +63,8 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldActive, true);
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.status, 'projected_from_dramaturgy');
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.activeAct.title, 'The Light Shillings');
-  assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.branch.id, 'mirror_pressure');
-  assert.match(config.humanDiscoursePreviewFrame.scaffoldState.localQuestion, /town case/u);
+  assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.branch.id, 'world_open_scaffold');
+  assert.match(config.humanDiscoursePreviewFrame.scaffoldState.localQuestion, /concrete question/u);
   assert.equal(config.humanDiscoursePreviewFrame.stepCompression.enabled, true);
   assert.equal(config.humanDiscoursePreviewFrame.generousInference.applied, false);
   assert.equal(config.humanDiscoursePreviewFrame.questionSupport.answerability, 'publicly_answerable');
@@ -187,7 +187,7 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
     adaptive: true,
   });
   assert.deepEqual(config.scenarioPicker, {
-    enabled: true,
+    enabled: false,
     defaultScenarioId: 'world_005_marrick',
     selectedScenarioId: 'world_005_marrick',
     keyboardMenu: true,
@@ -196,6 +196,7 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
     descriptionFields: ['question', 'setting', 'discipline'],
     nonTtyFallback: '--world',
     selection: null,
+    reason: 'existing_scenario_restored_or_explicit',
   });
 });
 
@@ -245,8 +246,6 @@ process.stdin.on('end', () => {
         '--no-interim-animation',
         '--no-stream',
         '--no-trace',
-        '--world',
-        'world_005_marrick',
       ],
       {
         cwd: ROOT,
@@ -368,8 +367,6 @@ test(
         '--no-interim-animation',
         '--no-stream',
         '--no-trace',
-        '--world',
-        'world_005_marrick',
       ],
       {
         cwd: ROOT,
@@ -515,7 +512,7 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
 });
 
-test('mixed startup prompts preserve launch overrides while showing recommendations', () => {
+test('mixed startup skips already supplied launch settings while retaining their values', () => {
   const config = tutorStubDryRun([
     '--mixed-learner',
     '--register-policy',
@@ -528,20 +525,15 @@ test('mixed startup prompts preserve launch overrides while showing recommendati
     '7',
   ]);
 
-  assert.deepEqual(config.mixedLearner.startupPrompts.order, [
-    'learner_profile',
-    'engagement_stance_temperature',
-    'dag_fact_dropout',
-    'clue_release_speed',
-  ]);
+  assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile', 'clue_release_speed']);
   assert.deepEqual(config.mixedLearner.startupPrompts.engagementStanceTemperature, {
-    enabled: true,
+    enabled: false,
     default: 0.4,
     recommended: 0.85,
     range: [0.05, 3],
   });
   assert.deepEqual(config.mixedLearner.startupPrompts.dagFactDropout, {
-    enabled: true,
+    enabled: false,
     default: 0.15,
     recommended: 0,
     range: [0, 1],
@@ -829,7 +821,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/explain \[phrase\]/u);
   assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /\/transcript \[no-open\]/u);
-  assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, and settings views/u);
+  assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, settings, and Replay JS views/u);
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
   assert.match(result.stdout, /paste the debug id into Codex/u);
@@ -945,6 +937,7 @@ test('resumed closing dialogue accepts one acknowledgement and terminates', () =
     assert.match(result.stdout, /verdict stands on the public evidence/u);
     assert.match(result.stdout, /inquiry is complete/u);
     assert.match(result.stdout, /the conversation reached its natural ending/u);
+    assert.match(result.stdout, /scenario complete >.*would you like to do another scenario/su);
     const traces = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))
@@ -965,6 +958,31 @@ test('resumed closing dialogue accepts one acknowledgement and terminates', () =
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('tutor-stub /scenario starts a fresh inquiry with the selected world', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/scenario world_006_hethel\n',
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0', TUTOR_STUB_SUMMARY_OPEN: '0' },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /next scenario >.*world_006_hethel.*The Fallen Span/su);
+  assert.match(result.stdout, /starting a fresh inquiry with your learner profile and dialogue settings/u);
+  assert.match(result.stdout, /scenario: world_006_hethel — The Fallen Span/u);
 });
 
 test('mixed tutor-stub can list and switch learner profiles interactively', () => {
@@ -1001,6 +1019,65 @@ test('mixed tutor-stub can list and switch learner profiles interactively', () =
   assert.doesNotMatch(result.stdout, /switched to custom profile/u);
   assert.equal((result.stdout.match(/switched to diligent:/gu) || []).length, 2);
 });
+
+test(
+  'mixed TTY uses readable profile-aware learner prompts and updates them after a profile change',
+  { skip: process.platform === 'win32', timeout: 10_000 },
+  async () => {
+    let terminalOutput = '';
+    let changedProfile = false;
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 120,
+        rows: 24,
+        name: 'xterm-color',
+        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      },
+    );
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`readable learner prompt test timed out\n${plainTerminalText(terminalOutput)}`));
+      }, 8_000);
+      terminal.onData((chunk) => {
+        terminalOutput += chunk;
+        const plain = plainTerminalText(terminalOutput);
+        if (!changedProfile && plain.includes('A Diligent Learner >')) {
+          changedProfile = true;
+          terminal.write('/profile answer_seeking\r');
+        } else if (!requestedExit && plain.includes('An Answer-Seeking Learner >')) {
+          requestedExit = true;
+          terminal.write('/quit\r');
+        }
+      });
+      terminal.onExit(({ exitCode, signal }) => {
+        clearTimeout(timer);
+        if (exitCode === 0) resolve();
+        else reject(new Error(`readable learner prompt test exited ${exitCode} (${signal})\n${terminalOutput}`));
+      });
+    });
+
+    const plain = plainTerminalText(terminalOutput);
+    assert.match(plain, /A Diligent Learner >/u);
+    assert.match(plain, /An Answer-Seeking Learner >/u);
+    assert.doesNotMatch(plain, /learner\[(?:diligent|answer_seeking)\]/u);
+  },
+);
 
 test('tutor-stub lists automated learner profiles without starting a dialogue', () => {
   const output = execFileSync(process.execPath, ['scripts/tutor-stub.js', '--list-learner-profiles'], {

@@ -65,8 +65,13 @@ test('uncertainty before release selects a bounded public-safe choice', () => {
     }).ok,
     true,
   );
-  assert.match(deterministicTutorStubQuestionSupportFallback(support), /A\) evidence of control or responsibility/u);
-  assert.doesNotMatch(deterministicTutorStubQuestionSupportFallback(support), /tool|forge|cut/iu);
+  const fallback = deterministicTutorStubQuestionSupportFallback({
+    support,
+    world: { title: 'The Missing Lunchbox', question: 'Who moved the lunchbox?' },
+  });
+  assert.match(fallback, /Who moved the lunchbox/u);
+  assert.match(fallback, /A\) this clue establishes one condition/u);
+  assert.doesNotMatch(fallback, /tool|forge|cut|decisive act/iu);
 });
 
 test('a scenario-grounded two-part contrast satisfies bounded directional support', () => {
@@ -170,4 +175,34 @@ test('adaptive choices cool down so the next scaffold is embedded in discourse',
   assert.equal(support.modality, 'embedded_directional_hint');
   assert.equal(support.adaptiveMultipleChoice, false);
   assert.equal(support.adaptiveChoiceCoolingDown, true);
+});
+
+test('natural clarification questions are not mistaken for unseen-record recall', () => {
+  const support = {
+    guardRequired: true,
+    clarificationInvitationRequired: true,
+    modality: 'embedded_public_hint',
+  };
+
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'Here are the four clues we have already seen. Which record—or term—needs clarifying first?',
+      support,
+    }).ok,
+    true,
+  );
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'We can take the clues one at a time. Which clue should we examine first?',
+      support,
+    }).ok,
+    true,
+  );
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'What record could connect the tool to a person?',
+      support,
+    }).ok,
+    false,
+  );
 });

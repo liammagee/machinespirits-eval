@@ -278,14 +278,17 @@ export function advanceTutorStubReleasePacing({
   return tutorStubReleasePacingSnapshot(pacing, world, row);
 }
 
-export function commitTutorStubReleasePacing({ pacing, world, turn } = {}) {
+export function commitTutorStubReleasePacing({ pacing, world, turn, deliveredPremises = [] } = {}) {
   if (!pacing || !world || !Number.isFinite(Number(turn))) return null;
   const tutorTurn = Number(turn);
+  const delivered = new Set(Array.isArray(deliveredPremises) ? deliveredPremises : []);
   const due = releaseEntries(world).filter(
     (entry) => Number(entry.turn) === tutorTurn && !pacing.released?.[entry.premise],
   );
   const dueBatchTurn = due.length ? authoredTurn(due[0]) : null;
-  const releaseBatch = due.filter((entry) => dueBatchTurn !== null && authoredTurn(entry) === dueBatchTurn);
+  const dueBatch = due.filter((entry) => dueBatchTurn !== null && authoredTurn(entry) === dueBatchTurn);
+  const releaseBatch = dueBatch.filter((entry) => delivered.has(entry.premise));
+  const notDelivered = dueBatch.filter((entry) => !delivered.has(entry.premise));
   for (const entry of releaseBatch) {
     pacing.released[entry.premise] = {
       turn: tutorTurn,
@@ -297,6 +300,7 @@ export function commitTutorStubReleasePacing({ pacing, world, turn } = {}) {
   const history = pacing.history.at(-1);
   if (history && Number(history.turn) === tutorTurn) {
     history.releasedNow = releaseBatch.map((entry) => entry.premise);
+    history.notDeliveredNow = notDelivered.map((entry) => entry.premise);
   }
   pacing.virtualTurn = Math.max(Number(pacing.virtualTurn || 0), tutorTurn);
   replanPendingSchedule(pacing, world, { turn: tutorTurn + 1 });
@@ -320,7 +324,12 @@ export function restoreTutorStubReleasePacingFromTurns({ pacing, world, turns = 
     pacing.signal = snapshot.signal || null;
     pacing.released = Object.fromEntries(
       (snapshot.schedule || [])
-        .filter((entry) => Number.isFinite(Number(entry.releasedTurn)))
+        .filter(
+          (entry) =>
+            entry.releasedTurn !== null &&
+            entry.releasedTurn !== undefined &&
+            Number.isFinite(Number(entry.releasedTurn)),
+        )
         .map((entry) => [
           entry.premise,
           {
@@ -376,6 +385,7 @@ export function tutorStubReleasePacingSnapshot(pacing, world, current = null) {
     urgentAdvance: Boolean(current?.urgentAdvance),
     dueNow: [...(current?.dueNow || [])],
     releasedNow: [...(current?.releasedNow || [])],
+    notDeliveredNow: [...(current?.notDeliveredNow || [])],
     nextRelease: current?.nextRelease || schedule.find((entry) => entry.releasedTurn === null) || null,
     counts: {
       released: released.length,

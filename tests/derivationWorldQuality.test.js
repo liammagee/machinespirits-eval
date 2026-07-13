@@ -24,6 +24,21 @@ test('the quality gate catches missing public rule language', () => {
   assert.ok(report.errors.some((issue) => issue.code === 'missing_rule_gloss'));
 });
 
+test('period worlds must author their presentation instead of inheriting a language fallback', () => {
+  const world = loadWorld(path.join(WORLD_DIR, 'world-000-smoke.yaml'));
+  const mutated = {
+    ...world,
+    presentation: { ...world.presentation, narrative_diction: '', ledger_term: '', summary: '' },
+  };
+  const report = auditWorldQuality(mutated);
+  const messages = report.errors.filter((issue) => issue.code === 'missing_presentation').map((issue) => issue.message);
+  assert.deepEqual(messages, [
+    'world needs explicit presentation.narrative_diction',
+    'world needs explicit presentation.ledger_term',
+    'world needs explicit presentation.summary',
+  ]);
+});
+
 test('the normal tutor-stub roster excludes non-production worlds', () => {
   const output = execFileSync(process.execPath, ['scripts/tutor-stub.js', '--list-worlds'], {
     cwd: ROOT,

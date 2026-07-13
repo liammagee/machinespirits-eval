@@ -46,6 +46,24 @@ test('concurrent terminal redraws activity above preserved readline input', () =
   });
 });
 
+test('concurrent terminal reapplies prompt decoration after every redraw', () => {
+  const { output, rl } = fixture();
+  let decorations = 0;
+  const terminal = createTutorStubConcurrentTerminal({
+    rl,
+    output,
+    decorateLine() {
+      decorations += 1;
+    },
+  });
+
+  terminal.show();
+  terminal.setStatus('model working');
+  terminal.print(() => output.write('background result\n'));
+
+  assert.equal(decorations, 3);
+});
+
 test('concurrent terminal keeps a multi-line command palette above preserved input', () => {
   const { output, rl, written } = fixture();
   const terminal = createTutorStubConcurrentTerminal({ rl, output });

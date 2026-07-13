@@ -297,6 +297,7 @@ test('a stochastic mock QA parent and child replay after checksum-verified clean
         '--no-html-report',
         '--no-ledger',
         '--no-memory-summary',
+        '--no-analyze',
       ],
       { cwd: ROOT, encoding: 'utf8', timeout: 30_000, env },
     );

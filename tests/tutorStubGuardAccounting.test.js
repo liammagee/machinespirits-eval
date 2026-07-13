@@ -56,6 +56,10 @@ process.stdin.on('end', () => {
       'scripts/tutor-stub.js',
       '--model',
       'codex.gpt-5.6-terra',
+      '--auto-learner-profile',
+      'diligent',
+      '--settings-file',
+      path.join(tmp, 'settings.json'),
       '--world',
       'world_005_marrick',
       '--dag',
@@ -162,7 +166,9 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(accounting.attempts[1].repairedSpans.length, 0);
 
   const fallbackText = accounting.finalDelivery.candidate.text;
-  assert.match(fallbackText, /can't put a name or private conclusion/u);
+  assert.match(fallbackText, /concrete clue/u);
+  assert.match(fallbackText, /Verrell alone draws the mint-yard crucible/u);
+  assert.doesNotMatch(fallbackText, /can't put a name|decisive act/iu);
   assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
   assert.equal(accounting.finalDelivery.deterministicFallback, true);
   assert.equal(accounting.finalDelivery.auditOk, true);

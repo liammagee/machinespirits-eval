@@ -57,6 +57,124 @@ function transcriptMessages(snapshot) {
   return messages.length ? messages : Array.isArray(snapshot.history) ? snapshot.history : [];
 }
 
+function replayMessages(snapshot) {
+  const source = Array.isArray(snapshot.history) ? snapshot.history : transcriptMessages(snapshot);
+  return source
+    .filter((message) => message?.role === 'user' || message?.role === 'assistant')
+    .map((message) => ({ role: message.role, content: String(message.content || '') }));
+}
+
+function replayRequestDetails(snapshot) {
+  const tutor = snapshot.settings?.tutor || {};
+  const provider = String(tutor.provider || '').toLowerCase();
+  const model = tutor.model || tutor.modelRef || 'replace-with-model-id';
+  const messages = replayMessages(snapshot);
+  const messageJson = JSON.stringify(messages, null, 2);
+
+  if (provider === 'anthropic' || provider === 'claude-code') {
+    return {
+      provider,
+      model,
+      messages,
+      transportNote:
+        provider === 'claude-code'
+          ? 'The original run used Claude Code. This standalone version sends the same public messages through the Anthropic Messages API and therefore needs an ANTHROPIC_API_KEY.'
+          : 'This standalone version uses the Anthropic Messages API and needs an ANTHROPIC_API_KEY.',
+      code: [
+        `const messages = ${messageJson};`,
+        '',
+        "const response = await fetch('https://api.anthropic.com/v1/messages', {",
+        "  method: 'POST',",
+        '  headers: {',
+        "    'content-type': 'application/json',",
+        "    'anthropic-version': '2023-06-01',",
+        "    'x-api-key': process.env.ANTHROPIC_API_KEY,",
+        '  },',
+        '  body: JSON.stringify({',
+        `    model: ${JSON.stringify(model)},`,
+        `    max_tokens: ${Number(tutor.maxTokens) || 4096},`,
+        '    messages,',
+        '  }),',
+        '});',
+        '',
+        'if (!response.ok) {',
+        '  throw new Error(`${response.status} ${await response.text()}`);',
+        '}',
+        'console.log(JSON.stringify(await response.json(), null, 2));',
+      ].join('\n'),
+    };
+  }
+
+  if (provider === 'openrouter') {
+    return {
+      provider,
+      model,
+      messages,
+      transportNote: 'This standalone version uses the OpenRouter Chat Completions API and needs an OPENROUTER_API_KEY.',
+      code: [
+        `const messages = ${messageJson};`,
+        '',
+        "const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {",
+        "  method: 'POST',",
+        '  headers: {',
+        "    'content-type': 'application/json',",
+        "    authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,",
+        '  },',
+        `  body: JSON.stringify({ model: ${JSON.stringify(model)}, messages }),`,
+        '});',
+        '',
+        'if (!response.ok) {',
+        '  throw new Error(`${response.status} ${await response.text()}`);',
+        '}',
+        'console.log(JSON.stringify(await response.json(), null, 2));',
+      ].join('\n'),
+    };
+  }
+
+  return {
+    provider: provider || 'openai',
+    model,
+    messages,
+    transportNote:
+      provider === 'codex'
+        ? 'The original run used the Codex CLI. This standalone version sends the same public messages through the OpenAI Responses API and therefore needs an OPENAI_API_KEY plus API access to the selected model id.'
+        : 'This standalone version uses the OpenAI Responses API and needs an OPENAI_API_KEY.',
+    code: [
+      `const messages = ${messageJson};`,
+      '',
+      "const response = await fetch('https://api.openai.com/v1/responses', {",
+      "  method: 'POST',",
+      '  headers: {',
+      "    'content-type': 'application/json',",
+      "    authorization: `Bearer ${process.env.OPENAI_API_KEY}`,",
+      '  },',
+      '  body: JSON.stringify({',
+      `    model: ${JSON.stringify(model)},`,
+      '    input: messages,',
+      '  }),',
+      '});',
+      '',
+      'if (!response.ok) {',
+      '  throw new Error(`${response.status} ${await response.text()}`);',
+      '}',
+      'console.log(JSON.stringify(await response.json(), null, 2));',
+    ].join('\n'),
+  };
+}
+
+export function buildTutorStubReplayJavascript(snapshot = {}) {
+  return replayRequestDetails(snapshot).code;
+}
+
+function replayView(snapshot) {
+  const replay = replayRequestDetails(snapshot);
+  return `<div class="replay-view" data-replay-message-count="${escapeHtml(replay.messages.length)}">
+    <div class="replay-head"><div><h2>Public-message replay</h2><p>The <code>messages</code> array preserves the completed public user/assistant sequence exactly as stored. Director notes, hidden prompts, DAG state, analysis, and response checks are intentionally absent.</p></div><button type="button" class="copy-code" data-copy-target="replay-js-code">Copy JavaScript</button></div>
+    <p class="replay-note"><b>Transport:</b> ${escapeHtml(replay.transportNote)}</p>
+    <pre id="replay-js-code" class="replay-code"><code>${escapeHtml(replay.code)}</code></pre>
+  </div>`;
+}
+
 function rawView(snapshot) {
   const text = transcriptMessages(snapshot)
     .map((message, index) => {
@@ -290,18 +408,21 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
     analysis: analysisView(snapshot),
     prompts: promptsView(snapshot),
     settings: settingsView(snapshot),
+    replay: replayView(snapshot),
   };
+  const viewLabels = { replay: 'Replay JS' };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)} · transcript</title>
 <style>
 :root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.director-ledger{margin:18px 0 0;border:2px solid var(--ink);background:#eee5d5}.director-ledger details{padding:12px 16px}.director-ledger summary{font:800 12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.director-ledger h2{font:800 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}.director-scope{color:var(--muted);margin:6px 0}.director-note{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid var(--rule)}.director-note div{white-space:pre-wrap}.director-note.release{grid-template-columns:160px minmax(0,1fr)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-guide{margin:0 0 4px;padding:8px 10px;border-left:4px solid var(--ink);background:var(--paper2);color:var(--muted)}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.spine b.opening-badge{width:52px;border-radius:15px}.spine b.reply-badge{background:var(--paper);color:var(--ink);border:2px solid var(--ink);line-height:26px}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.director-note,.director-note.release{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
+.replay-view{border:1px solid var(--rule);background:var(--paper2);padding:12px}.replay-head{display:flex;justify-content:space-between;gap:12px}.replay-head h2{margin-top:0}.replay-head p{margin-bottom:0;color:var(--muted);max-width:850px}.replay-note{padding:9px 12px;border-left:4px solid var(--tutor);background:var(--paper);color:var(--muted)}.copy-code{align-self:flex-start;border:2px solid var(--ink);background:var(--ink);color:var(--paper2);padding:8px 12px;cursor:pointer;font-weight:700;white-space:nowrap}.copy-code.copied{background:var(--tutor)}.replay-code{max-height:none}@media(max-width:760px){.replay-head{display:block}.copy-code{margin-top:12px}}
 </style></head><body><main class="shell"><header class="hero"><div class="eyebrow">Tutor stub · live transcript snapshot</div><h1>${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml(completionLabel)} · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
 ${directorNotesView(snapshot)}
 <nav class="tabs" aria-label="Transcript views">${Object.keys(views)
     .map(
       (name, index) =>
-        `<button type="button" data-view="${name}" class="${index === 0 ? 'active' : ''}">${name}</button>`,
+        `<button type="button" data-view="${name}" class="${index === 0 ? 'active' : ''}">${viewLabels[name] || name}</button>`,
     )
     .join('')}</nav>
 ${Object.entries(views)
@@ -310,7 +431,7 @@ ${Object.entries(views)
       `<section class="view ${index === 0 ? 'active' : ''}" data-panel="${name}">${html}</section>`,
   )
   .join('')}
-</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});</script></body></html>`;
+</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});async function copyReplayText(text){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}document.querySelectorAll('[data-copy-target]').forEach(function(button){button.addEventListener('click',async function(){var target=document.getElementById(button.dataset.copyTarget);if(!target)return;try{await copyReplayText(target.textContent);button.textContent='Copied';button.classList.add('copied');setTimeout(function(){button.textContent='Copy JavaScript';button.classList.remove('copied')},1400)}catch(error){button.textContent='Select code to copy'}})});</script></body></html>`;
 }
 
 export function writeTutorStubTranscriptHtml({ snapshot, filePath }) {

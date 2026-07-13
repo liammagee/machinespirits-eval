@@ -17,6 +17,7 @@
  */
 
 import 'dotenv/config';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { clearLine, cursorTo, emitKeypressEvents, moveCursor } from 'node:readline';
@@ -42,7 +43,7 @@ import {
   getRequestTypeDefinitions,
   resolveEngagementStance,
 } from '../services/engagementRegisterRegistry.js';
-import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   consumeMixedLearnerReadyAnnouncement,
   invalidateMixedLearnerCache,
@@ -61,6 +62,13 @@ import {
   buildTutorStubQuestionSupport,
   deterministicTutorStubQuestionSupportFallback,
 } from '../services/tutorStubQuestionSupport.js';
+import {
+  auditTutorStubReleaseDelivery,
+  auditTutorStubRepetitionResponse,
+  deterministicTutorStubContextualFallback,
+  tutorStubAnswerNameIsPublic,
+} from '../services/tutorStubResponseGuard.js';
+import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
@@ -72,7 +80,6 @@ import {
   parseTutorStubPublicLearnerAnalysisInteractive as parseClassifierJson,
   tutorStubHumanDiscoursePromptSchema as humanDiscourseExtractionSchema,
   tutorStubPublicFactSurface as factSurface,
-  tutorStubPublicReleaseLedger as releaseLedgerForTurn,
   tutorStubPublicStagedEvidence as stagedEvidenceRows,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
@@ -121,12 +128,19 @@ import {
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
 import {
+  auditTutorStubPrompt,
+  auditTutorStubSpeakerPrivilege,
+  tutorStubPromptArchitecture,
+  tutorStubPromptSurfaceForRole,
+} from '../services/tutorStubPromptAudit.js';
+import {
   learnerProfileContract,
   learnerProfileDescription,
   learnerProfileIds,
   learnerProfileListText,
   learnerProfilePickerPresentation,
   learnerProfilePrompt,
+  learnerProfileSpeakerLabel,
   learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
 import {
@@ -139,6 +153,11 @@ import {
   writeTutorStubLearningSummaryHtml,
 } from '../services/tutorStubLearningSummaryHtml.js';
 import { createTutorStubConcurrentTerminal } from '../services/tutorStubConcurrentTerminal.js';
+import { createTutorStubLineSelection } from '../services/tutorStubLineSelection.js';
+import {
+  tutorStubPublicMessageContext,
+  tutorStubPublicMessagesForSpeaker,
+} from '../services/tutorStubPublicHistory.js';
 import { buildTutorStubLearnerAdvance } from '../services/tutorStubLearnerAdvance.js';
 import {
   clearTutorStubLastSettings,
@@ -146,10 +165,6 @@ import {
   tutorStubRememberedPolicyStack,
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
-import {
-  tutorStubPublicMessageContext,
-  tutorStubPublicMessagesForSpeaker,
-} from '../services/tutorStubPublicHistory.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -345,9 +360,11 @@ const SLASH_COMMANDS = [
   '/clue',
   '/hint',
   '/profile',
+  '/scenario',
   '/use',
   '/accept',
   '/regen',
+  '/reset',
   '/clear',
   '/help',
   '/quit',
@@ -379,6 +396,7 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/turn-id',
   '/debug-id',
   '/profile',
+  '/scenario',
 ]);
 
 const SETTINGS_COMPLETIONS = [
@@ -416,8 +434,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
-  "The private learner-profile contract supplied below defines the experimental condition. It takes priority over generic helpfulness, smooth progress, and the tutor's request for a useful answer.",
-  "Preserve the contract's failure operator and repair limits. Do not silently become a diligent learner after correction.",
+  "The private behavior brief supplied below defines how this learner responds. It takes priority over generic helpfulness, smooth progress, and the tutor's request for a useful answer.",
+  'Preserve its recurring behavior and repair pattern. Do not silently become a generic diligent learner after correction.',
   'When the active profile permits progress, you may connect several already-public premises and state a supported follow-up conclusion in one concise turn. Never invent or anticipate unstaged evidence.',
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
@@ -661,7 +679,7 @@ Options:
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
   --history-turns <n>    raw recent turns kept in compact analysis prompts
-                         summary (default: ${STUB.historyTurns})
+                         (speaker calls replay full role history; default: ${STUB.historyTurns})
   --show-prompt          print the system prompt before starting
   --dry-run              print resolved config and first payload, but do not call a model
   --help                 show this message
@@ -681,6 +699,8 @@ Interactive commands:
   /r                     alias for /report
   /director              repeat all director notes issued so far
   /notes                 alias for /director
+  /scenario              choose another scenario and start it as a new inquiry
+  /scenario <id>         start a named scenario directly
   /settings              open the live keyboard settings panel (TTY)
   /settings model        choose a configured tutor model (TTY) or list models
   /settings model <ref>  change the speaking tutor model for subsequent turns
@@ -703,9 +723,19 @@ Interactive commands:
   /suggest               show the ready response and its profile expression
   /use                   show the profile expression, then submit the response
   /regen                 regenerate clue, answer, analysis, and tutor response
-  /clear                 reset transcript and learner/register state
+  /reset                 cancel unfinished work and restart this scenario
+  /clear                 alias for /reset
   /help                  show interactive commands
   /quit                  exit
+
+Prompt editing:
+  Alt/Option+Left/Right or Ctrl+Left/Right
+                         move by word
+  Shift+Left/Right       select by character
+  Alt/Option+Shift+Left/Right or Ctrl+Shift+Left/Right
+                         select by word
+  Shift+Home/End         select to the beginning/end of the line
+  Type or press Backspace/Delete to replace/remove selected text
 
 Environment:
   OPENAI_API_KEY         required for openai.*
@@ -909,6 +939,9 @@ function commandLineOptionProvided(name) {
 
 function rememberedSettingExplicitSources() {
   return {
+    scenario: commandLineOptionProvided('world') || Boolean(process.env.TUTOR_STUB_WORLD),
+    learnerProfile:
+      commandLineOptionProvided('auto-learner-profile') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
     tutorModelRef:
       commandLineOptionProvided('all-models') ||
       Boolean(process.env.TUTOR_STUB_ALL_MODELS) ||
@@ -951,6 +984,31 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   config.loadedAt = read.settings.updatedAt;
   const saved = read.settings;
   const explicit = rememberedSettingExplicitSources();
+
+  if (explicit.scenario) {
+    config.skippedExplicitFields.push('scenario');
+  } else if (saved.scenarioId) {
+    try {
+      const savedWorld = resolveWorldRef(saved.scenarioId);
+      args.world = savedWorld.filePath;
+      config.appliedFields.push('scenario');
+    } catch (error) {
+      config.warning = `saved scenario ignored: ${error.message}`;
+    }
+  }
+
+  if (explicit.learnerProfile) {
+    config.skippedExplicitFields.push('learner_profile');
+  } else if (saved.learnerProfileId || saved.learnerProfile) {
+    if (saved.learnerProfileId && !learnerProfileIds().includes(saved.learnerProfileId)) {
+      config.warning = [config.warning, `saved learner profile ignored: ${saved.learnerProfileId} is unavailable`]
+        .filter(Boolean)
+        .join('; ');
+    } else {
+      args['auto-learner-profile'] = saved.learnerProfileId || saved.learnerProfile;
+      config.appliedFields.push('learner_profile');
+    }
+  }
 
   if (explicit.tutorModelRef) {
     config.skippedExplicitFields.push('tutor_model');
@@ -1090,21 +1148,34 @@ function factMatches(a, b) {
   return factKey(a) === factKey(b);
 }
 
-function publicFactsAtTurn(world, tutorTurn) {
+function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = null } = {}) {
+  if (!world) return new Set();
+  if (state?.releasePacing) {
+    return new Set([
+      ...committedReleaseRows(state, tutorTurn).map((row) => row.premise),
+      ...currentReleaseRows(state, tutorTurn).map((row) => row.premise),
+    ]);
+  }
+  return new Set(
+    world.releaseSchedule.filter((entry) => Number(entry.turn) <= Number(tutorTurn)).map((entry) => entry.premise),
+  );
+}
+
+function publicFactsAtTurn(world, tutorTurn, state = null) {
   if (!world) return [];
-  const released = world.releaseSchedule
-    .filter((entry) => entry.turn <= tutorTurn)
-    .map((entry) => world.premiseById.get(entry.premise)?.fact)
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const released = [...available]
+    .map((premiseId) => world.premiseById.get(premiseId)?.fact)
     .filter(Boolean);
   return [...(world.background || []), ...released];
 }
 
-function entailedFactsAtTurn(world, tutorTurn) {
-  return [...closure(publicFactsAtTurn(world, tutorTurn), world.rules || []).facts.values()];
+function entailedFactsAtTurn(world, tutorTurn, state = null) {
+  return [...closure(publicFactsAtTurn(world, tutorTurn, state), world.rules || []).facts.values()];
 }
 
-function entailsFactAtTurn(world, tutorTurn, fact) {
-  return entailedFactsAtTurn(world, tutorTurn).some((entailed) => factMatches(entailed, fact));
+function entailsFactAtTurn(world, tutorTurn, fact, state = null) {
+  return entailedFactsAtTurn(world, tutorTurn, state).some((entailed) => factMatches(entailed, fact));
 }
 
 function answerTermForWorld(world) {
@@ -1114,11 +1185,11 @@ function answerTermForWorld(world) {
   return world?.secret?.fact?.[answerIndex] || null;
 }
 
-function publicTextForTurn(world, tutorTurn, learnerText = '') {
+function publicTextForTurn(world, tutorTurn, learnerText = '', state = null) {
   if (!world) return '';
-  const releasedSurface = world.releaseSchedule
-    .filter((entry) => entry.turn <= tutorTurn)
-    .map((entry) => world.premiseById.get(entry.premise)?.surface || '')
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const releasedSurface = [...available]
+    .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
     .join('\n');
   return [
     world.question,
@@ -1203,12 +1274,13 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'would',
 ]);
 
-function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText }) {
-  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText));
+function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state = null }) {
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText, state));
   const rows = [];
   for (const premise of world?.premises || []) {
     const release = world.releaseSchedule.find((entry) => entry.premise === premise.id);
-    if (!release || release.turn <= tutorTurn) continue;
+    if (!release || available.has(premise.id)) continue;
 
     const factTokens = new Set(
       (premise.fact || [])
@@ -1235,15 +1307,17 @@ function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText }) {
   return rows;
 }
 
-function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
+function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = null }) {
   if (!world) return { ok: true, leaks: [] };
   const leaks = [];
   const answerTerm = answerTermForWorld(world);
   const answerTokens = splitSymbolWords(answerTerm);
   const mentionsAnswer = answerTokens.some((token) => textContainsToken(text, token));
-  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact);
+  const publicText = publicTextForTurn(world, tutorTurn, learnerText, state);
+  const answerNamePublic = tutorStubAnswerNameIsPublic({ answerTerm, publicText });
+  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state);
 
-  if (mentionsAnswer && !finalEntailed) {
+  if (mentionsAnswer && !finalEntailed && !answerNamePublic) {
     leaks.push({
       type: 'concealed_answer_name',
       reason: `mentions ${answerTerm} before the public record entails the answer`,
@@ -1283,7 +1357,10 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
       } else if (!worldRulePredicates.has(check.fact[0])) {
         continue;
       }
-      if (check.words.some((pattern) => pattern.test(lower)) && !entailsFactAtTurn(world, tutorTurn, check.fact)) {
+      if (
+        check.words.some((pattern) => pattern.test(lower)) &&
+        !entailsFactAtTurn(world, tutorTurn, check.fact, state)
+      ) {
         leaks.push({
           type: check.label,
           reason: `states a conclusion about ${answerTerm} before that conclusion is derivable from released evidence`,
@@ -1293,7 +1370,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
     }
   }
 
-  for (const row of unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText })) {
+  for (const row of unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state })) {
     leaks.push({
       type: 'unreleased_premise_content',
       reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
@@ -1306,6 +1383,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
     ok: leaks.length === 0,
     leaks,
     finalEntailed,
+    answerNamePublic,
   };
 }
 
@@ -1315,6 +1393,7 @@ function tutorResponseRepairPrompt({
   leakAudit = null,
   scaffoldAudit = null,
   questionSupportAudit = null,
+  repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
 }) {
@@ -1325,6 +1404,9 @@ function tutorResponseRepairPrompt({
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
   const questionSupportRows = (questionSupportAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
+  const repetitionRows = (repetitionAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
   const closureRows = (closureAudit?.issues || [])
@@ -1359,6 +1441,9 @@ function tutorResponseRepairPrompt({
     questionSupportRows
       ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 public-safe categories or interpretations without revealing the unstaged record or answer.'
       : null,
+    repetitionRows
+      ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
+      : null,
     closureRows
       ? 'The response reached or stated the final verdict but failed to end the dialogue cleanly. Rewrite it as a natural closing act.'
       : null,
@@ -1378,6 +1463,8 @@ function tutorResponseRepairPrompt({
     scaffoldRows || null,
     questionSupportRows ? 'Question-support audit:' : null,
     questionSupportRows || null,
+    repetitionRows ? 'Repetition audit:' : null,
+    repetitionRows || null,
     closureRows ? 'Dialogue-closure audit:' : null,
     closureRows || null,
     '',
@@ -1399,12 +1486,12 @@ function worldPresentation(world) {
 }
 
 function worldLedgerTerm(world) {
-  return String(worldPresentation(world).ledger_term || 'trial-book');
+  return String(worldPresentation(world).ledger_term || 'evidence record');
 }
 
 function worldFlavourPhrase(world) {
   const diction = worldPresentation(world).narrative_diction;
-  return diction ? `${diction} flavour` : 'medieval flavour';
+  return diction ? `${diction} flavour` : "world's authored diction";
 }
 
 function worldFamilyKey(world) {
@@ -1442,25 +1529,23 @@ function groupedWorldEntries() {
   return ordered;
 }
 
-function deterministicLeakFallback({ learnerText, world = null }) {
-  const asksForChoice = /\b(choice|choose|which|what|next|write)\b/iu.test(learnerText || '');
-  if (asksForChoice) {
+function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null, world = null } = {}) {
+  const next = (Array.isArray(dueEvidence) ? dueEvidence : []).find((row) => row?.surface) || null;
+  if (next) {
     return [
-      `I can't put a name or private conclusion in the ${worldLedgerTerm(world)} yet.`,
-      'State the next warranted public claim in one line: what mark in the evidence before us licenses it?',
+      'Yes—that answers the last point, so we can move on.',
+      `The next concrete clue is: ${oneLine(next.surface, { max: 260 })}`,
+      'What does this new clue add on its own?',
     ].join(' ');
   }
-  return [
-    "I can't license that conclusion yet.",
-    'Name the public evidence that would make the next step follow, or keep the verdict open.',
-  ].join(' ');
-}
-
-function deterministicGenerousInferenceFallback() {
-  return [
-    'Yes—that answers this local question, so we can carry that step forward.',
-    'What other public mark would you test next before reaching a verdict?',
-  ].join(' ');
+  if (latestEvidence?.surface) {
+    return [
+      'Yes—that answers the last point, so we can carry it forward.',
+      `Keep the last concrete clue in view: ${oneLine(latestEvidence.surface, { max: 260 })}`,
+      'We can leave the wider conclusion open until another clue enters the conversation.',
+    ].join(' ');
+  }
+  return `Yes—that answers the last point. We can now return to the case question: ${oneLine(world?.question || '', { max: 240 })}`;
 }
 
 function tutorGuardIssueRows(audits) {
@@ -1468,6 +1553,7 @@ function tutorGuardIssueRows(audits) {
     ...(audits?.leakAudit?.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
     ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
     ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
+    ...(audits?.repetitionAudit?.issues || []).map((issue) => ({ guard: 'repetition', ...issue })),
     ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
   ];
 }
@@ -1671,10 +1757,17 @@ function buildTutorOpening(state) {
   if (world) {
     const openingEvidence = currentReleaseRows(state, 1);
     if (openingEvidence.length) {
-      const clue = oneLine(openingEvidence[0].surface, { max: 300 });
+      const clues = openingEvidence.map((row) => oneLine(row.surface, { max: 300 }));
+      if (clues.length > 1) {
+        return [
+          `Keep the case question in view: ${world.question}`,
+          `The opening clues are these: ${clues.map((clue, index) => `${index + 1}. ${clue}`).join(' ')}`,
+          'What can these clues safely establish together? If a term or clue is unclear, ask me to explain it before you decide.',
+        ].join(' ');
+      }
       return [
         `Keep the case question in view: ${world.question}`,
-        `The first clue is this: ${clue}`,
+        `The first clue is this: ${clues[0]}`,
         'What can that clue safely establish on its own? If a term or clue is unclear, ask me to explain it before you decide.',
       ].join(' ');
     }
@@ -1977,17 +2070,14 @@ function directorNotesIssuedSoFar(state) {
   const openingIssued = Boolean(
     state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
   );
-  const releases = (state?.world?.releaseSchedule || [])
-    .filter((entry) => entry.via === 'director' && Number(entry.turn) <= throughTurn)
-    .map((entry) => {
-      const premise = state.world.premiseById.get(entry.premise);
-      return {
-        turn: Number(entry.turn),
-        premise: entry.premise,
-        via: 'director',
-        surface: String(premise?.surface || '').trim(),
-      };
-    });
+  const releases = committedReleaseRows(state, throughTurn)
+    .filter((entry) => entry.via === 'director')
+    .map((entry) => ({
+      turn: Number(entry.turn),
+      premise: entry.premise,
+      via: 'director',
+      surface: String(entry.surface || '').trim(),
+    }));
   return {
     schema: 'machinespirits.tutor-stub.director-notes.v1',
     throughTurn,
@@ -2027,60 +2117,27 @@ function printDirectorNotesIssuedSoFar(state) {
   return notes;
 }
 
-function worldDagPrompt(world) {
+function worldSpeakerDagPrompt(world) {
   if (!world) return [];
-  const lint = plotLint(world);
-  const tutorDag = buildTutorDesireDag(world);
-  const premiseLedger = world.premises
-    .map((premise) => {
-      const scheduled = world.releaseSchedule.find((entry) => entry.premise === premise.id);
-      const cue = scheduled ? `turn ${scheduled.turn} via ${scheduled.via}` : 'unscheduled';
-      return `- ${premise.id} (${cue}): ${String(premise.surface || '').trim()}\n  fact: ${factText(premise.fact)}`;
-    })
-    .join('\n');
-  const proofPaths = world.proofPaths
-    .map((proofPath, index) => `- path ${index + 1}: ${proofPath.premises.join(' -> ')}`)
-    .join('\n');
-  const schedule = world.releaseSchedule
-    .map((entry) => `- turn ${entry.turn}: ${entry.premise} via ${entry.via}`)
-    .join('\n');
-
   return [
     '',
-    '# Optional DAG machinery for the tutor',
+    '# Speaking-tutor evidence contract',
     '',
-    'You hold the concealed answer, the public rules, the hidden premise ledger, the authored proof path, and the release schedule.',
-    'This is tutor-only control information. The learner must get evidence through staged releases, not through your authority.',
+    'A private deterministic planner owns the answer, proof path, future evidence, and release schedule.',
+    'You are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.',
+    'Never speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.',
     '',
-    `Concealed answer (never state, confirm, or deny directly): ${world.secret.surface || factText(world.secret.fact)}`,
-    world.mirror ? `Tempting public near-miss: ${factText(world.mirror.fact)}` : null,
-    `Plot lint: ${lint.ok ? 'ok' : `errors: ${lint.errors.join('; ')}`}`,
-    `First scheduled entailment turn: ${lint.firstEntailedTurn ?? 'not entailed'}`,
-    `Tutor desire-DAG leaves: ${(tutorDag.leaves || []).join(', ') || 'none'}`,
+    'Public evidence rules in ordinary language:',
+    ...world.rules.map((rule, index) => `${index + 1}. ${String(rule.gloss || '').trim()}`),
     '',
-    'Public rules of evidence:',
-    ...world.rules.map(ruleText),
-    '',
-    'Hidden premise ledger. Never voice an unreleased premise. When a premise is due, stage its surface as evidence:',
-    premiseLedger,
-    '',
-    'Authored proof path(s):',
-    proofPaths,
-    '',
-    'Release schedule:',
-    schedule,
-    '',
-    'DAG conduct:',
-    '- Work from released evidence and public rules only.',
-    '- Treat every fact: line, predicate name, rule id, premise id, and proof-path id as private notation. Never write that notation to the learner.',
-    `- Translate formal facts into ordinary ${worldLedgerTerm(world)} language before speaking: state each fact as a plain sentence a bystander could read aloud, never as notation like "meltedAt(...)".`,
+    'Speaking conduct:',
+    '- Work only from evidence already public or explicitly made available in the current turn context.',
+    '- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.',
     `- Treat the ${worldLedgerTerm(world)} as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the ${worldLedgerTerm(world)} entry.`,
     '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
-    '- Do not name the concealed answer, hidden answer-bearer, or any intermediate conclusion involving that bearer until the released public evidence derives that exact step.',
-    '- Especially avoid statements of the form "<hidden person> cast/cut/struck/made..." unless the learner has already derived it from staged evidence.',
     "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
-    '- If the learner guesses the concealed answer, do not confirm it until the released facts derive it.',
-    "- When a scheduled premise is due, introduce at most one piece of evidence and ask for the learner's natural reading of what it changes, not a full proof ledger.",
+    '- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.',
+    "- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.",
     '- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.',
     '- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.',
   ].filter(Boolean);
@@ -2122,7 +2179,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- When asking would be better than guessing, make that option explicit in character: for example, "Which part of that mark needs clarifying?" Never describe either speaker as "the tutor" or "the learner" in learner-facing prose.',
     '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
-    '- In story mode, speak in public evidence language: "what public claim does this mark license?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
+    '- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.',
     `- Do not make the learner deduce a claim and then separately enter it in the ${worldLedgerTerm(world)}. Their stated warranted claim is the entry.`,
     '- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.',
     `- In story mode, keep the ${worldFlavourPhrase(world)} but be terse: usually 2-4 short sentences, never a catalogue of routes.`,
@@ -2130,7 +2187,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
     '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
     ...worldPublicPrompt(world),
-    ...(dag ? worldDagPrompt(world) : []),
+    ...(dag ? worldSpeakerDagPrompt(world) : []),
   ].join('\n');
 }
 
@@ -2608,12 +2665,29 @@ async function callPromptModel({
   signal = null,
 }) {
   const startedAt = new Date().toISOString();
-  const shouldStream = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
+  const shouldStream = Boolean(stream?.enabled && !stream?.deferOutput && providerSupportsStreaming(resolved));
   const publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
     role: message?.role === 'assistant' ? 'assistant' : 'user',
     content: String(message?.content || ''),
   }));
   const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
+  const promptAudit = auditTutorStubPrompt({
+    surface: tutorStubPromptSurfaceForRole(role),
+    systemPrompt,
+    userPrompt: prompt,
+    messageHistory: publicMessageHistory,
+  });
+  if (!promptAudit.ok) {
+    appendTraceEvent(trace, {
+      type: 'prompt_audit_failed',
+      role,
+      turn,
+      audit: promptAudit,
+    });
+    throw new Error(
+      `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
+    );
+  }
   try {
     let response;
     if (isCliProvider(resolved.provider)) {
@@ -2720,6 +2794,7 @@ async function callPromptModel({
       userPrompt: prompt,
       messageHistory: publicMessageHistory,
       role,
+      promptAudit,
     };
     appendTraceEvent(trace, {
       type: 'model_call',
@@ -2735,6 +2810,7 @@ async function callPromptModel({
         messages: requestMessages,
         maxTokens,
         cliEffort,
+        promptAudit,
       },
       response: {
         text: response.text,
@@ -2747,6 +2823,7 @@ async function callPromptModel({
         outputSource: response.outputSource || null,
       },
     });
+    response.promptAudit = promptAudit;
     return response;
   } catch (err) {
     appendTraceEvent(trace, {
@@ -2762,6 +2839,7 @@ async function callPromptModel({
         messageHistory: publicMessageHistory,
         messages: requestMessages,
         maxTokens,
+        promptAudit,
       },
       error: err.message,
     });
@@ -2769,7 +2847,15 @@ async function callPromptModel({
   }
 }
 
-async function callClassifierModel({ prompt, resolved, trace = null, stream = null, cliEffort = null, turn = null }) {
+async function callClassifierModel({
+  prompt,
+  resolved,
+  trace = null,
+  stream = null,
+  cliEffort = null,
+  turn = null,
+  signal = null,
+}) {
   return await callPromptModel({
     prompt,
     resolved,
@@ -2780,6 +2866,7 @@ async function callClassifierModel({ prompt, resolved, trace = null, stream = nu
     stream,
     cliEffort,
     turn,
+    signal,
   });
 }
 
@@ -2811,7 +2898,7 @@ function failedClassification({ message, resolved, latencyMs = 0, usage = null }
   };
 }
 
-async function classifyLearnerInput({ learnerText, state }) {
+async function classifyLearnerInput({ learnerText, state, signal = null }) {
   const startedAt = Date.now();
   try {
     const prompt = buildLearnerClassifierPrompt({ learnerText, state });
@@ -2822,6 +2909,7 @@ async function classifyLearnerInput({ learnerText, state }) {
       stream: state.stream,
       cliEffort: state.cliEffort,
       turn: state.turns.length + 1,
+      signal,
     });
     const { parsed, parseError } = parseClassifierJson(raw.text);
     return {
@@ -2833,6 +2921,7 @@ async function classifyLearnerInput({ learnerText, state }) {
       usage: raw.usage,
     };
   } catch (err) {
+    if (err?.name === 'AbortError') throw err;
     return failedClassification({
       message: err.message,
       resolved: state.classifier.resolved,
@@ -3126,16 +3215,89 @@ function compactPendingRegisterSummary(context) {
 function currentReleaseRows(state, tutorTurn) {
   const world = state?.world;
   if (!world || !Number.isFinite(Number(tutorTurn))) return [];
-  return world.releaseSchedule
-    .filter((entry) => Number(entry.turn) === Number(tutorTurn))
+  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
+  const dueIds = snapshot
+    ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
+      ? snapshot.dueNow
+      : snapshot.schedule
+          .filter(
+            (entry) =>
+              Number(entry.effectiveTurn) === Number(tutorTurn) &&
+              (entry.releasedTurn === null || entry.releasedTurn === undefined),
+          )
+          .map((entry) => entry.premise)
+    : world.releaseSchedule
+        .filter((entry) => Number(entry.turn) === Number(tutorTurn))
+        .map((entry) => entry.premise);
+  return dueIds.map((premiseId) => {
+    const premise = world.premiseById.get(premiseId);
+    const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
+    return {
+      premise: premiseId,
+      turn: Number(tutorTurn),
+      via: release?.via || null,
+      surface: String(premise?.surface || '').trim(),
+      fact: premise?.fact || null,
+    };
+  });
+}
+
+function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
+  const world = state?.world;
+  if (!world) return [];
+  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
+  if (!snapshot) return stagedEvidenceRows(world, throughTurn);
+  return snapshot.schedule
+    .filter(
+      (entry) =>
+        entry.releasedTurn !== null &&
+        entry.releasedTurn !== undefined &&
+        Number.isFinite(Number(entry.releasedTurn)) &&
+        Number(entry.releasedTurn) <= Number(throughTurn),
+    )
     .map((entry) => {
       const premise = world.premiseById.get(entry.premise);
       return {
         premise: entry.premise,
+        turn: Number(entry.releasedTurn),
         via: entry.via || null,
         surface: String(premise?.surface || '').trim(),
+        fact: premise?.fact || null,
       };
     });
+}
+
+function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
+  return committedReleaseRows(state, throughTurn).map((row) => ({
+    turn: row.turn,
+    premiseId: row.premise,
+    via: row.via,
+  }));
+}
+
+function learnerPublicEvidenceState(state, tutorTurn) {
+  const staged = committedReleaseRows(state, tutorTurn);
+  return {
+    publicStagedEvidence: staged,
+    publicReleaseLedger: staged,
+  };
+}
+
+function nextReleaseRow(state) {
+  const world = state?.world;
+  if (!world) return null;
+  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
+  const next = snapshot?.nextRelease || null;
+  if (!next) return null;
+  const premise = world.premiseById.get(next.premise);
+  return {
+    premise: next.premise,
+    turn: Number(next.effectiveTurn),
+    authoredTurn: Number(next.authoredTurn),
+    via: next.via || null,
+    surface: String(premise?.surface || '').trim(),
+    fact: premise?.fact || null,
+  };
 }
 
 function compactEvidenceTimingSummary(state, context) {
@@ -3143,8 +3305,8 @@ function compactEvidenceTimingSummary(state, context) {
   const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
   if (!world || !Number.isFinite(tutorTurn)) return null;
   const dueNow = currentReleaseRows(state, tutorTurn);
-  const next = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
-  const last = [...world.releaseSchedule].reverse().find((entry) => entry.turn <= tutorTurn) || null;
+  const next = nextReleaseRow(state);
+  const last = committedReleaseRows(state, tutorTurn).at(-1) || null;
   const dueSummary = dueNow.length
     ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
     : last
@@ -3500,6 +3662,19 @@ function jsonClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function abortTutorStubTurnAttempt(message = 'learner turn attempt was superseded') {
+  const error = new Error(message);
+  error.name = 'AbortError';
+  error.code = 'TUTOR_STUB_TURN_SUPERSEDED';
+  return error;
+}
+
+function assertTutorStubTurnAttemptCurrent({ signal = null, isCurrent = null } = {}) {
+  if (signal?.aborted || (typeof isCurrent === 'function' && !isCurrent())) {
+    throw abortTutorStubTurnAttempt();
+  }
+}
+
 function readTraceEvents(filePath) {
   const events = [];
   const text = fs.readFileSync(filePath, 'utf8');
@@ -3723,6 +3898,7 @@ function replayLearnerDagFromTurns(state, turns) {
         tutorTurn: Number(turn.turn) || replayed + 1,
         learnerText: turn.learner || '',
         dropoutReplay: turn?.dagFactDropout || turn?.tutorLearnerDagUpdate?.dagFactDropout || { legacyNoDropout: true },
+        ...learnerPublicEvidenceState(state, Number(turn.turn) || replayed + 1),
       });
       state.learnerDag.lastModel = result.model;
       replayed += 1;
@@ -3865,10 +4041,10 @@ function printTutorResponse(response, stream = null) {
   }
 }
 
-async function classifyForTurn(learnerText, state) {
+async function classifyForTurn(learnerText, state, { signal = null } = {}) {
   if (!state.classifier.enabled) return null;
   startInterimAnimation(state, 'classifying learner');
-  const classification = await classifyLearnerInput({ learnerText, state });
+  const classification = await classifyLearnerInput({ learnerText, state, signal });
   stopInterimAnimation(state);
   printAutomaticTechnicalDetails(state, () => printClassification(classification));
   return classification;
@@ -3892,75 +4068,23 @@ function activeDramaturgyAct(world, tutorTurn) {
   };
 }
 
-function branchTemplateForEvidence(row = {}) {
-  const id = String(row.premise || '').trim();
-  const fact = Array.isArray(row.fact) ? factText(row.fact) : '';
-  const text = `${id} ${fact} ${row.surface || ''}`.toLowerCase();
-  if (/^m_/u.test(id) || /verrell|mirror|town|watch|caught|mintcrucible|broadgraver/u.test(text)) {
-    return {
-      id: 'mirror_pressure',
-      label: 'town case pressure',
-      localQuestion: 'What exactly does the town case prove, and what does it only make tempting?',
-      warrantFrame:
-        'Separate a tempting public fact from the stricter coin-evidence rule it would need to license a verdict.',
-      joinReminder: 'Do not let the town case stand in for the coin marks; keep it as pressure to be tested.',
-    };
-  }
-  if (/alloy|meltedat|crucible|blankfrom|solecasterat|castblank|dross|cupel|metal|blank/u.test(text)) {
-    return {
-      id: 'blank_chain',
-      label: 'blank and metal provenance',
-      localQuestion: 'What does the metal evidence license about where the blank came from?',
-      warrantFrame:
-        'Ask for a claim shaped as evidence plus rule plus limited conclusion about the blank, not yet the final hand.',
-      joinReminder: 'This can close the blank branch, but it is only half the proof until the die branch also closes.',
-    };
-  }
-  if (/die|flaw|graver|burin|holder|cutdie|notch|serif|tool/u.test(text)) {
-    return {
-      id: 'die_chain',
-      label: 'die and tool provenance',
-      localQuestion: 'What does the mark on the coin license about the tool that cut the die?',
-      warrantFrame: 'Ask for a claim shaped as mark plus rule plus limited conclusion about the die or tool.',
-      joinReminder:
-        'This can close the die branch, but the final verdict still needs the blank and die to meet in one hand.',
-    };
-  }
-  if (/struckby|secret|join|same hand|both/u.test(text)) {
-    return {
-      id: 'join',
-      label: 'blank-die join',
-      localQuestion: 'Do the cast blank and the cut die now meet in one hand?',
-      warrantFrame:
-        'Ask the learner to join the two public supports: the blank branch and the die branch must point to the same hand.',
-      joinReminder: 'Only now may the final verdict be named, and only as the result of those two public supports.',
-    };
-  }
-  return {
-    id: 'open_scaffold',
-    label: 'open evidence scaffold',
-    localQuestion: 'What public evidence is live, and what limited claim does it license?',
-    warrantFrame: 'Keep the learner on one public evidence claim and one warrant at a time.',
-    joinReminder: 'Treat any broader conclusion as provisional until the public proof catches up.',
-  };
+function branchTemplateForEvidence(row = {}, world = null, { conclusionReady = false } = {}) {
+  return buildTutorStubWorldScaffold({ world, evidence: row, conclusionReady });
 }
 
-function scaffoldBranchForTurn({ world, tutorTurn, tutorLearnerDag }) {
-  if (!world) return branchTemplateForEvidence();
-  const dueNow = currentReleaseRows({ world }, tutorTurn);
-  if (dueNow.length) return branchTemplateForEvidence(dueNow[0]);
-  const latestReleased = stagedEvidenceRows(world, tutorTurn).at(-1);
-  const nextRelease = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
+function scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }) {
+  if (!world) return branchTemplateForEvidence({}, world);
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  if (dueNow.length) return branchTemplateForEvidence(dueNow[0], world);
+  const latestReleased = committedReleaseRows(state, tutorTurn).at(-1);
   const assessment = tutorLearnerDag?.model?.assessment || tutorLearnerDag?.assessment || {};
   if (assessment.finalSecretEntailed || assessment.bottleneck === 'assertion_gap') {
-    return branchTemplateForEvidence({ premise: 'join', surface: 'blank and die meet in one hand' });
+    return branchTemplateForEvidence(latestReleased || {}, world, { conclusionReady: true });
   }
-  if (latestReleased) return branchTemplateForEvidence(latestReleased);
-  if (nextRelease) {
-    const premise = world.premiseById.get(nextRelease.premise);
-    return branchTemplateForEvidence({ ...nextRelease, surface: premise?.surface || '', fact: premise?.fact || null });
-  }
-  return branchTemplateForEvidence();
+  if (latestReleased) return branchTemplateForEvidence(latestReleased, world);
+  const nextRelease = nextReleaseRow(state);
+  if (nextRelease) return branchTemplateForEvidence(nextRelease, world);
+  return branchTemplateForEvidence({}, world);
 }
 
 function compactReleaseRow(row = {}) {
@@ -3975,11 +4099,10 @@ function compactReleaseRow(row = {}) {
 function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
   const enabled = dagMode !== 'strict_dag';
   const world = state?.world || null;
-  const dueNow = currentReleaseRows({ world }, tutorTurn);
-  const released = world ? stagedEvidenceRows(world, tutorTurn) : [];
-  const next = world?.releaseSchedule?.find((entry) => entry.turn > tutorTurn) || null;
-  const nextPremise = next ? world.premiseById.get(next.premise) : null;
-  const branch = scaffoldBranchForTurn({ world, tutorTurn, tutorLearnerDag });
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  const released = committedReleaseRows(state, tutorTurn);
+  const next = nextReleaseRow(state);
+  const branch = scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag });
   const modeNote =
     dagMode === 'defeasible_human_scaffold'
       ? 'Learner may make compressed local leaps; tutor carries obvious public bridges internally and surfaces proof debt only when it matters.'
@@ -4001,13 +4124,15 @@ function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
       releasedCount: released.length,
       dueNow: dueNow.map(compactReleaseRow),
       latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
-      nextRelease: next
-        ? compactReleaseRow({ ...next, surface: nextPremise?.surface || '', fact: nextPremise?.fact || null })
-        : null,
+      nextRelease: next ? compactReleaseRow(next) : null,
     },
     returnTarget: enabled
       ? {
-          kind: dueNow.length ? 'current_release' : branch.id === 'join' ? 'join_warrant' : 'local_branch_warrant',
+          kind: dueNow.length
+            ? 'current_release'
+            : branch.id === 'world_conclusion_join'
+              ? 'join_warrant'
+              : 'local_branch_warrant',
           prompt: branch.localQuestion,
           afterSideArc: `Return to: ${branch.localQuestion}`,
         }
@@ -4260,7 +4385,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
 }
 
 function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
-  const staged = stagedEvidenceRows(state.world, tutorTurn);
+  const staged = committedReleaseRows(state, tutorTurn);
   const comprehensionContext = tutorStubComprehensionPrompt(state.comprehension, { turn: tutorTurn });
   return [
     '# Task',
@@ -4339,6 +4464,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
 }
 
 function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
+  const { publicStagedEvidence } = learnerPublicEvidenceState(state, tutorTurn);
   return buildTutorStubPublicLearnerAnalysisPrompt({
     learnerText,
     topic: state.topic,
@@ -4363,9 +4489,10 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
       priorPublicLearnerDagPrompt: learnerDagPromptSummary(state.learnerDag.lastModel),
       historyPrompt: registerHistoryPromptSummary(state),
     },
+    publicStagedEvidence,
   });
 }
-async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
+async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn, signal = null }) {
   const prompt = buildLearnerRecordPrompt({ learnerText, state, tutorTurn });
   const raw = await callPromptModel({
     prompt,
@@ -4377,6 +4504,7 @@ async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
     stream: state.stream,
     cliEffort: state.cliEffort,
     turn: tutorTurn,
+    signal,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -5734,7 +5862,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn) {
     validFacts: [...record.board.values()],
     voiced: record.voiced,
     hypotheses: record.hypotheses,
-    ledger: releaseLedgerForTurn(world, tutorTurn),
+    ledger: publicReleaseLedger(state, tutorTurn),
     source: 'tutor_stub_tutor_learner_dag_model',
   });
   record.snapshots.push(snapshot);
@@ -5769,18 +5897,26 @@ function emptyTutorLearnerDagModel(state, tutorTurn) {
   return { model, dagFactDropout, advance };
 }
 
-async function buildTutorLearnerDagForTurn(learnerText, state) {
+async function buildTutorLearnerDagForTurn(learnerText, state, { signal = null, isCurrent = null } = {}) {
   if (!state.learnerDag.enabled || !state.world) return null;
   const tutorTurn = state.turns.length + 1;
   startInterimAnimation(state, 'modeling learner DAG', { learnerText, tutorTurn });
   try {
-    const update = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn });
-    const result = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
+    const update = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn, signal });
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+    const result = applyLearnerRecordUpdate({
+      update,
+      state,
+      tutorTurn,
+      learnerText,
+      ...learnerPublicEvidenceState(state, tutorTurn),
+    });
     state.learnerDag.lastModel = result.model;
     stopInterimAnimation(state);
     printAutomaticTechnicalDetails(state, () => printTutorLearnerDagModel(result));
     return result;
   } catch (err) {
+    if (err?.name === 'AbortError') throw err;
     const empty = emptyTutorLearnerDagModel(state, tutorTurn);
     const model = empty.model;
     const result = {
@@ -5884,7 +6020,11 @@ function updateReleasePacingForLearnerTurn({
   return releasePacing;
 }
 
-async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw = null } = {}) {
+async function analyzeLearnerTurnCombined(
+  learnerText,
+  state,
+  { precomputedRaw = null, signal = null, isCurrent = null } = {},
+) {
   const tutorTurn = state.turns.length + 1;
   const startedAt = Date.now();
   updateComprehensionForLearnerTurn({
@@ -5897,10 +6037,18 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
   startInterimAnimation(state, 'analyzing learner', { learnerText, tutorTurn });
 
   try {
-    const raw = precomputedRaw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn }));
+    const raw =
+      precomputedRaw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn, signal }));
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const classification = classificationFromCombinedAnalysis(raw, state);
     const update = learnerRecordFromCombinedAnalysis(raw);
-    const tutorLearnerDag = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
+    const tutorLearnerDag = applyLearnerRecordUpdate({
+      update,
+      state,
+      tutorTurn,
+      learnerText,
+      ...learnerPublicEvidenceState(state, tutorTurn),
+    });
     applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
     state.learnerDag.lastModel = tutorLearnerDag.model;
     updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn });
@@ -5921,6 +6069,7 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
     });
     return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
   } catch (err) {
+    if (err?.name === 'AbortError') throw err;
     const classification = failedClassification({
       message: err.message,
       resolved: state.learnerDag.resolved,
@@ -5968,10 +6117,15 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
   }
 }
 
-async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null } = {}) {
+async function analyzeLearnerTurn(
+  learnerText,
+  state,
+  { precomputedRaw = null, signal = null, isCurrent = null } = {},
+) {
   printWithConcurrentTerminal(state, () => printTurnDebugLine(state, state.turns.length + 1));
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   if (state.classifier.enabled && state.learnerDag.enabled && state.world) {
-    return await analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw });
+    return await analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw, signal, isCurrent });
   }
 
   updateComprehensionForLearnerTurn({
@@ -5981,14 +6135,16 @@ async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null } 
     tutorTurn: state.turns.length + 1,
     recordTrace: false,
   });
-  const classification = await classifyForTurn(learnerText, state);
+  const classification = await classifyForTurn(learnerText, state, { signal });
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   updateComprehensionForLearnerTurn({
     learnerText,
     state,
     classification,
     tutorTurn: state.turns.length + 1,
   });
-  const tutorLearnerDag = await buildTutorLearnerDagForTurn(learnerText, state);
+  const tutorLearnerDag = await buildTutorLearnerDagForTurn(learnerText, state, { signal, isCurrent });
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
   updateReleasePacingForLearnerTurn({
     learnerText,
@@ -6310,11 +6466,18 @@ function humanDiscourseTutorContext(frame) {
     scaffold.warrantFrame ? `Warrant frame: ${scaffold.warrantFrame}` : null,
     scaffold.joinReminder ? `Join reminder: ${scaffold.joinReminder}` : null,
     due.length
-      ? `Evidence due now: ${due.map((row) => `${row.premise}/${row.via}: ${oneLine(row.surface, { max: 120 })}`).join(' | ')}`
+      ? `Evidence available now: ${due
+          .map(
+            (row) =>
+              `${row.via === 'director' ? 'scene evidence' : 'tutor exhibit'}: ${oneLine(row.surface, { max: 120 })}`,
+          )
+          .join(' | ')}`
       : latest
-        ? `Latest released evidence: ${latest.premise}/${latest.via}: ${oneLine(latest.surface, { max: 140 })}`
+        ? `Latest public evidence: ${oneLine(latest.surface, { max: 140 })}`
         : null,
-    next ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}` : null,
+    next
+      ? `Next evidence window: turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}; its content remains withheld.`
+      : null,
     generousInference.applied ? 'Contextual answer resolution: APPLIED with high confidence.' : null,
     generousInference.applied ? `Resolved learner move: ${generousInference.resolvedMeaning}` : null,
     generousInference.applied ? `Authoritative next-turn rule: ${generousInference.tutorInstruction}` : null,
@@ -6534,9 +6697,9 @@ function buildTutorDagSnapshot(state, tutorTurn) {
   const dag = state.tutorDag;
   const nodesById = new Map((dag.nodes || []).map((node) => [node.id, node]));
   const releaseByPremise = new Map(world.releaseSchedule.map((entry) => [entry.premise, entry]));
-  const releasedPremises = new Set(
-    world.releaseSchedule.filter((entry) => entry.turn <= tutorTurn).map((entry) => entry.premise),
-  );
+  const releasedRows = committedReleaseRows(state, tutorTurn);
+  const releasedPremises = new Set(releasedRows.map((entry) => entry.premise));
+  const releasedTurnByPremise = new Map(releasedRows.map((entry) => [entry.premise, entry.turn]));
   const leaves = (dag.leaves || []).map((premiseId) => {
     const premise = world.premiseById.get(premiseId);
     const release = releaseByPremise.get(premiseId);
@@ -6545,10 +6708,11 @@ function buildTutorDagSnapshot(state, tutorTurn) {
       fact: premise ? factText(premise.fact) : premiseId,
       released: releasedPremises.has(premiseId),
       scheduledTurn: release?.turn ?? null,
+      releasedTurn: releasedTurnByPremise.get(premiseId) ?? null,
       via: release?.via || null,
     };
   });
-  const nextRelease = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
+  const nextRelease = nextReleaseRow(state);
   const nodes = (dag.nodes || []).map((node) => ({
     id: node.id,
     label: dagNodeLabel(node),
@@ -6663,16 +6827,23 @@ function printInteractiveHelp() {
   console.log(
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /id`,
   );
-  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /clear`);
+  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings`);
+  console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
   console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
   console.log(
     `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
   );
   console.log(
+    `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
+  );
+  console.log(
     `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
   );
   console.log(
-    `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, and settings views.${C.reset}`,
+    `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
   );
   console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
 }
@@ -7271,7 +7442,10 @@ function fallbackExplanatoryDebugProse(frame) {
   return oneLine(`${reading} ${fieldSentence} ${stanceSentence}`, { max: 650 });
 }
 
-async function printExplanatoryDebugTurn(state, { force = false, format = null } = {}) {
+async function printExplanatoryDebugTurn(
+  state,
+  { force = false, format = null, signal = null, isCurrent = null } = {},
+) {
   if (!force && !state.explanatoryDebug?.enabled) return false;
   const selectedFormat = format || state.explanatoryDebug?.format || 'prose';
   if (selectedFormat === 'technical') return printExplanatoryDebugTechnical(state, { force: true });
@@ -7301,10 +7475,13 @@ async function printExplanatoryDebugTurn(state, { force = false, format = null }
       stream: { enabled: false, interim: state.interim },
       cliEffort: state.cliEffort,
       turn: turn.turn,
+      signal,
     });
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     prose = cleanExplanatoryDebugProse(response.text);
     if (!prose) throw new Error('empty explanatory debug response');
   } catch (error) {
+    if (error?.name === 'AbortError') throw error;
     generated = false;
     prose = fallbackExplanatoryDebugProse(frame);
     appendTraceEvent(state.trace, {
@@ -7317,6 +7494,7 @@ async function printExplanatoryDebugTurn(state, { force = false, format = null }
     if (!existingInterim) stopInterimAnimation(state);
   }
 
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   printWithConcurrentTerminal(state, () => {
     console.log(`${C.brightBlue}${C.bold}debug >${C.reset} turn ${turn.turn} · prose${generated ? '' : ' fallback'}`);
     console.log(`${C.dim}${prose}${C.reset}`);
@@ -8608,28 +8786,34 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   return payload;
 }
 
-function dagTurnContext(world, tutorTurn) {
+function dagTurnContext(state, tutorTurn) {
+  const world = state?.world;
   if (!world) return '';
-  const released = world.releaseSchedule.filter((entry) => entry.turn <= tutorTurn);
-  const next = world.releaseSchedule.find((entry) => entry.turn > tutorTurn);
-  const releasedLines = released.length
-    ? released
-        .map((entry) => {
-          const premise = world.premiseById.get(entry.premise);
-          return `- ${entry.premise} (${entry.via}, scheduled turn ${entry.turn}): ${String(premise?.surface || '').trim()}`;
-        })
+  const earlier = committedReleaseRows(state, tutorTurn);
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  const earlierLines = earlier.length
+    ? earlier
+        .map((entry) => `- ${String(entry.surface || '').trim()}`)
         .join('\n')
     : '- none yet';
+  const dueLines = dueNow.length
+    ? dueNow
+        .map((entry) => {
+          const source = entry.via === 'director' ? 'scene evidence' : 'tutor exhibit';
+          return `- ${source}: ${String(entry.surface || '').trim()}`;
+        })
+        .join('\n')
+    : '- no new evidence is available this turn';
   return [
-    '[Tutor-only DAG turn context]',
+    '[Tutor-only public evidence window]',
     `Current tutor turn in this lightweight stub: ${tutorTurn}`,
-    'Evidence scheduled at or before this turn:',
-    releasedLines,
-    next
-      ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}`
-      : 'Next scheduled evidence: none',
-    'Use this as pacing guidance; never state the concealed answer by authority.',
-    '[End tutor-only DAG turn context]',
+    'Evidence actually spoken before this turn:',
+    earlierLines,
+    'New evidence permitted now (it becomes public only if this reply says it):',
+    dueLines,
+    'No future evidence, answer key, proof path, or release detail is included here.',
+    'Use this as a hard speaking boundary, not merely pacing advice.',
+    '[End tutor-only public evidence window]',
   ].join('\n');
 }
 
@@ -8676,6 +8860,8 @@ async function callTutor({
   cliEffort = null,
   multipleChoice = false,
   roleBase = 'tutor_stub_tutor',
+  learnerMessages = null,
+  deferStreamOutput = false,
   signal = null,
 }) {
   const messageContext = tutorMessageContext(state, history);
@@ -8701,10 +8887,14 @@ async function callTutor({
   const effectiveSystemPrompt = responseConfigurationAdvisory
     ? `${systemPrompt}\n\n${responseConfigurationAdvisory}`
     : systemPrompt;
-  const learnerPrompt = `Learner says:\n${learnerText}`;
+  const learnerMessageCount = Array.isArray(learnerMessages) ? learnerMessages.length : 1;
+  const learnerPrompt =
+    learnerMessageCount > 1
+      ? `Learner says in ${learnerMessageCount} consecutive messages before your reply (treat them as one compound turn):\n${learnerText}`
+      : `Learner says:\n${learnerText}`;
   const promptParts = [
     tutorMemory,
-    dag && world ? dagTurnContext(world, tutorTurn) : null,
+    dag && world ? dagTurnContext(state, tutorTurn) : null,
     advisory,
     learnerDagAdvisory,
     humanDiscourseAdvisory,
@@ -8714,26 +8904,97 @@ async function callTutor({
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
+  const speakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
+    world: dag ? world : null,
+    tutorTurn,
+    systemPrompt: effectiveSystemPrompt,
+    privateAdvisory: [
+      dag && world ? dagTurnContext(state, tutorTurn) : null,
+      humanDiscourseAdvisory,
+      dialogueClosureAdvisory,
+      comprehensionAdvisory,
+      coachAdvisory,
+      responseConfigurationAdvisory,
+    ]
+      .filter(Boolean)
+      .join('\n\n'),
+  });
+  if (!speakerPrivilegeAudit.ok) {
+    appendTraceEvent(trace, {
+      type: 'tutor_speaker_privilege_audit',
+      turn: tutorTurn,
+      audit: speakerPrivilegeAudit,
+    });
+    throw new Error(
+      `Speaking-tutor prompt crossed the private-planner boundary: ${speakerPrivilegeAudit.issues
+        .map((issue) => `${issue.code}:${issue.source}`)
+        .join(', ')}`,
+    );
+  }
   const leakGuardEnabled = Boolean(dag && world);
   const scaffoldGuardEnabled = Boolean(humanDiscourseFrame?.generousInference?.applied);
   const questionSupportGuardEnabled = Boolean(humanDiscourseFrame?.questionSupport?.guardRequired);
+  const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
+  const repetitionGuardEnabled = recentTutorTexts.length > 0;
   const closureGuardEnabled = Boolean(
     dialogueClosureFrame?.enabled && (dialogueClosureFrame.mandatory || dialogueClosureFrame.available),
   );
   const responseGuardEnabled =
-    leakGuardEnabled || scaffoldGuardEnabled || questionSupportGuardEnabled || closureGuardEnabled;
+    leakGuardEnabled ||
+    scaffoldGuardEnabled ||
+    questionSupportGuardEnabled ||
+    repetitionGuardEnabled ||
+    closureGuardEnabled;
   const guards = {
     enabled: responseGuardEnabled,
     leak: leakGuardEnabled,
     humanScaffold: scaffoldGuardEnabled,
     questionSupport: questionSupportGuardEnabled,
+    repetition: repetitionGuardEnabled,
     dialogueClosure: closureGuardEnabled,
   };
   const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
-  const tutorStreamMode = canStreamTutor ? (responseGuardEnabled ? 'buffered' : 'live') : 'none';
+  const tutorStreamMode = canStreamTutor
+    ? responseGuardEnabled || deferStreamOutput
+      ? 'buffered'
+      : 'live'
+    : 'none';
 
   async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
     const startedAt = new Date().toISOString();
+    const promptAudit = auditTutorStubPrompt({
+      surface: 'tutor_turn',
+      systemPrompt: effectiveSystemPrompt,
+      userPrompt: attemptUserPrompt,
+      messageHistory: context,
+      instructionTexts: [
+        systemPrompt,
+        dag && world ? dagTurnContext(state, tutorTurn) : null,
+        advisory,
+        learnerDagAdvisory,
+        humanDiscourseAdvisory,
+        dialogueClosureAdvisory,
+        comprehensionAdvisory,
+        coachAdvisory,
+        responseConfigurationAdvisory,
+      ].filter(Boolean),
+    });
+    if (!promptAudit.ok) {
+      appendTraceEvent(trace, {
+        type: 'prompt_audit_failed',
+        role,
+        turn: tutorTurn,
+        repairAttempt,
+        audit: promptAudit,
+      });
+      throw new Error(
+        `Tutor prompt audit failed: ${promptAudit.violations.map((violation) => violation.code).join(', ')}${
+          promptAudit.duplicateInstructionLines?.length
+            ? `; repeated instruction: ${promptAudit.duplicateInstructionLines[0].line}`
+            : ''
+        }`,
+      );
+    }
     const request = {
       systemPrompt: effectiveSystemPrompt,
       messages: [...context, { role: 'user', content: attemptUserPrompt }],
@@ -8744,6 +9005,7 @@ async function callTutor({
         leakGuard: leakGuardEnabled,
         scaffoldGuard: scaffoldGuardEnabled,
         questionSupportGuard: questionSupportGuardEnabled,
+        repetitionGuard: repetitionGuardEnabled,
         closureGuard: closureGuardEnabled,
         repairAttempt,
         messageHistoryMode: messageContext.historyMode,
@@ -8752,6 +9014,8 @@ async function callTutor({
         replayedUserMessageCount: messageContext.userMessageCount,
         replayedAssistantMessageCount: messageContext.assistantMessageCount,
         contextActivatedBy: messageContext.activatedBy,
+        promptAudit,
+        speakerPrivilegeAudit,
       },
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
@@ -8833,6 +9097,8 @@ async function callTutor({
       role,
       repairAttempt,
       config: request.config,
+      promptAudit,
+      speakerPrivilegeAudit,
     };
     appendTraceEvent(trace, {
       type: 'model_call',
@@ -8856,7 +9122,7 @@ async function callTutor({
 
   function auditTutorDraft(response, { role, attempt }) {
     const leakAudit = leakGuardEnabled
-      ? auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText })
+      ? auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText, state })
       : { ok: true, leaks: [] };
     const scaffoldAudit = scaffoldGuardEnabled
       ? auditTutorStubGenerousInferenceResponse({
@@ -8870,6 +9136,9 @@ async function callTutor({
           support: humanDiscourseFrame.questionSupport,
         })
       : { ok: true, issues: [] };
+    const repetitionAudit = repetitionGuardEnabled
+      ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
+      : { ok: true, issues: [], maxSimilarity: 0 };
     const closureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: response.text, frame: dialogueClosureFrame })
       : { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
@@ -8906,6 +9175,17 @@ async function callTutor({
         support: humanDiscourseFrame.questionSupport,
       });
     }
+    if (repetitionGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_repetition_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: repetitionAudit.ok,
+        issues: repetitionAudit.issues,
+        maxSimilarity: repetitionAudit.maxSimilarity,
+      });
+    }
     if (closureGuardEnabled) {
       appendTraceEvent(trace, {
         type: 'tutor_dialogue_closure_audit',
@@ -8920,10 +9200,11 @@ async function callTutor({
       });
     }
     return {
-      ok: leakAudit.ok && scaffoldAudit.ok && questionSupportAudit.ok && closureAudit.ok,
+      ok: leakAudit.ok && scaffoldAudit.ok && questionSupportAudit.ok && repetitionAudit.ok && closureAudit.ok,
       leakAudit,
       scaffoldAudit,
       questionSupportAudit,
+      repetitionAudit,
       closureAudit,
     };
   }
@@ -8960,6 +9241,7 @@ async function callTutor({
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
+      response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
@@ -8987,6 +9269,7 @@ async function callTutor({
         leakAudit: audits.leakAudit,
         scaffoldAudit: audits.scaffoldAudit,
         questionSupportAudit: audits.questionSupportAudit,
+        repetitionAudit: audits.repetitionAudit,
         closureAudit: audits.closureAudit,
         dialogueClosureFrame,
       }),
@@ -9017,6 +9300,7 @@ async function callTutor({
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
+      response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       response.repaired = true;
       if (response.bufferedStream) {
@@ -9040,13 +9324,21 @@ async function callTutor({
     const closureFallbackSelected = Boolean(
       closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
     );
+    const fallbackContext = {
+      support: humanDiscourseFrame?.questionSupport || null,
+      world,
+      learnerText,
+      dueEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.dueNow || [],
+      latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
+      recentTutorTexts,
+    };
     const fallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
       : scaffoldGuardEnabled
-        ? deterministicGenerousInferenceFallback()
+        ? deterministicGenerousInferenceFallback(fallbackContext)
         : questionSupportGuardEnabled
-          ? deterministicTutorStubQuestionSupportFallback(humanDiscourseFrame.questionSupport)
-          : deterministicLeakFallback({ learnerText, world });
+          ? deterministicTutorStubQuestionSupportFallback(fallbackContext)
+          : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;
@@ -9065,6 +9357,7 @@ async function callTutor({
       leakAudit: audits.leakAudit,
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: fallbackQuestionSupportAudit,
+      repetitionAudit: audits.repetitionAudit,
       closureAudit: fallbackClosureAudit,
       repaired: true,
       deterministicFallback: true,
@@ -9079,6 +9372,7 @@ async function callTutor({
     fallback.leakAudit = fallbackAudits.leakAudit;
     fallback.scaffoldAudit = fallbackAudits.scaffoldAudit;
     fallback.questionSupportAudit = fallbackAudits.questionSupportAudit;
+    fallback.repetitionAudit = fallbackAudits.repetitionAudit;
     fallback.closureAudit = fallbackAudits.closureAudit;
     const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
     attempts.push(
@@ -9105,6 +9399,7 @@ async function callTutor({
       leaks: audits.leakAudit.leaks,
       scaffoldIssues: audits.scaffoldAudit.issues,
       questionSupportIssues: audits.questionSupportAudit.issues,
+      repetitionIssues: audits.repetitionAudit.issues,
       closureIssues: audits.closureAudit.issues,
       text: fallbackText,
     });
@@ -9203,7 +9498,7 @@ function cleanClarificationReply(text, latestTutor = '') {
   return cleanTutorStubClarificationSpeech(cleaned, latestTutor);
 }
 
-async function generateTutorClarification({ state, term = '', resolved, cliEffort = null }) {
+async function generateTutorClarification({ state, term = '', resolved, cliEffort = null, signal = null }) {
   const raw = await callPromptModel({
     prompt: buildTutorClarificationPrompt({ state, term }),
     resolved,
@@ -9214,6 +9509,7 @@ async function generateTutorClarification({ state, term = '', resolved, cliEffor
     stream: { enabled: false },
     cliEffort,
     turn: state.turns.length,
+    signal,
   });
   return {
     ...raw,
@@ -9243,11 +9539,11 @@ function automatedLearnerSystemPrompt(profile) {
   return [
     AUTO_LEARNER_SYSTEM_PROMPT,
     '',
-    '# Private learner-profile contract',
+    '# Private behavior brief',
     '',
     profile,
     '',
-    'Apply this contract to every public learner turn. Never quote or describe the contract.',
+    'Apply this behavior brief to every public learner turn. Never quote or describe it.',
   ].join('\n');
 }
 
@@ -9255,23 +9551,30 @@ function mixedLearnerArtifactsSystemPrompt(profile) {
   return [
     'You generate a paired learner answer and non-revealing clue for an experimental tutoring dialogue.',
     'Use only the public transcript and latest tutor message. Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
-    'The private learner-profile contract defines the answer. Preserve its failure operator and repair limits.',
+    'The private behavior brief defines the answer. Preserve its recurring behavior and repair pattern.',
     'The clue describes where to look or what kind of move to make, but must not state or paraphrase the answer.',
     'The learner turn may be a concrete question. Keep all learner speech inside the scene and address the other speaker directly.',
     'Never write "the tutor", "the learner", "the dialogue", "the prompt", or commentary about a question being pending.',
     'The profile_signal field is private UI metadata, not learner speech. It may describe only how the visible answer expresses the profile.',
     '',
-    '# Private learner-profile contract',
+    '# Private behavior brief',
     '',
     profile,
     '',
-    'Never quote or name the private contract. The profile_signal may explain only visible response behavior in plain language. Return one JSON object only.',
+    'Never quote or name the private behavior brief. The profile_signal may explain only visible response behavior in plain language. Return one JSON object only.',
   ].join('\n');
 }
 
 function automatedLearnerProfileId(profile) {
-  const match = String(profile || '').match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
-  return match ? match[1].toLowerCase().replace(/-/gu, '_') : null;
+  const value = String(profile || '').trim();
+  const directId = value.toLowerCase().replace(/-/gu, '_');
+  if (learnerProfileIds().includes(directId)) return directId;
+  const renderedId = learnerProfileIds().find((id) => learnerProfilePrompt(id) === value);
+  if (renderedId) return renderedId;
+  const legacyMatch = value.match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
+  return legacyMatch
+    ? legacyMatch[1].toLowerCase().replace(/-/gu, '_')
+    : null;
 }
 
 function resolveAutomatedLearnerProfile(profile) {
@@ -9366,15 +9669,13 @@ function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
   const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
   if (!runtime) return '';
   return [
-    '# Private profile recurrence state',
+    '# Private behavior cue',
     '',
-    `Profile: ${runtime.profileId}. The current public tutor message is an eligible trigger: ${runtime.eligible ? 'yes' : 'no'}.`,
-    `Completed eligible learner turns: ${runtime.priorEligibleTurns}. Visible failure markers so far: ${runtime.observed}.`,
-    `Minimum markers expected through turn ${turnNumber}: ${runtime.targetCount}. Must first appear by turn: ${runtime.mustShowByTurn || 'not forced'}.`,
+    `The latest public tutor move ${runtime.eligible ? 'does' : 'does not'} trigger the recurring behavior in the brief.`,
     runtime.requiredNow
-      ? `This turn MUST visibly perform the primary failure operator: ${runtime.contract.intent.failureOperator}. Do not combine it with a fully repaired or fully warranted answer in the same turn.`
-      : 'This turn may repair or progress if the contract permits, but the profile remains active on later eligible turns.',
-    'This state is private. Never mention counts, policies, profiles, markers, or experimental conditions publicly.',
+      ? `This turn MUST visibly perform the recurring behavior: ${runtime.contract.intent.failureOperator}. Do not combine it with a fully repaired or fully warranted answer in the same turn.`
+      : 'This turn may repair or progress if the behavior brief permits, but the recurring behavior remains active later.',
+    'This cue is private. Never mention briefs, triggers, profiles, markers, or experimental conditions publicly.',
   ].join('\n');
 }
 
@@ -9398,7 +9699,7 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     adherenceFeedback || null,
     adherenceFeedback ? '' : null,
     `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,
-    'First preserve the private learner-profile condition. A required distortion, omitted warrant, refusal, resistance, or withheld evidence step takes priority over generic progress.',
+    'First preserve the private behavior brief. A required distortion, omitted warrant, refusal, resistance, or withheld evidence step takes priority over generic progress.',
     `Only when the profile permits progress: if the tutor asks for a ${worldLedgerTerm(state?.world)} line, write one concise public evidence claim and treat it as both deduction and book entry.`,
     'Only when the profile permits progress: if several already-public premises form a warranted chain, you may state the connected premises and their supported follow-up conclusion in the same concise turn. Do not stop artificially after one step, but never add unstaged evidence.',
     'Only when the profile permits a help request: if you are stuck, ask one concrete question about what evidence would count.',
@@ -9414,6 +9715,7 @@ async function generateAutomatedLearnerTurn({
   adherenceFeedback = '',
   stream = null,
   cliEffort = null,
+  signal = null,
 }) {
   const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
   const systemPrompt = automatedLearnerSystemPrompt(profile);
@@ -9429,6 +9731,7 @@ async function generateAutomatedLearnerTurn({
     stream,
     cliEffort,
     turn: turnNumber,
+    signal,
   });
   return {
     ...raw,
@@ -9438,6 +9741,7 @@ async function generateAutomatedLearnerTurn({
       userPrompt: prompt,
       messageHistory,
       turn: turnNumber,
+      promptAudit: raw.promptAudit,
     },
   };
 }
@@ -9498,6 +9802,7 @@ async function generateMixedLearnerArtifacts({
       userPrompt: prompt,
       messageHistory,
       turn: turnNumber,
+      promptAudit: raw.promptAudit,
     },
   };
 }
@@ -9524,7 +9829,17 @@ function automatedLearnerRepairInstruction(profileId) {
   return 'Make the required failure public and unmistakable without repairing it in the same turn.';
 }
 
-async function enforceAutomatedLearnerProfile({ state, resolved, profile, turnNumber, generated, cliEffort = null }) {
+async function enforceAutomatedLearnerProfile({
+  state,
+  resolved,
+  profile,
+  turnNumber,
+  generated,
+  cliEffort = null,
+  signal = null,
+  isCurrent = null,
+}) {
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
   const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
   if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
@@ -9537,7 +9852,13 @@ async function enforceAutomatedLearnerProfile({ state, resolved, profile, turnNu
   let passed = false;
   let repairs = 0;
   while (repairs <= maxRepairs) {
-    raw = await extractCombinedLearnerAnalysis({ learnerText: candidate.text, state, tutorTurn: turnNumber });
+    raw = await extractCombinedLearnerAnalysis({
+      learnerText: candidate.text,
+      state,
+      tutorTurn: turnNumber,
+      signal,
+    });
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
     if (passed || repairs === maxRepairs) break;
     appendTraceEvent(state.trace, {
@@ -9556,7 +9877,9 @@ async function enforceAutomatedLearnerProfile({ state, resolved, profile, turnNu
       adherenceFeedback: `Your previous draft was too normalized and did not visibly perform the required failure operator (${runtime.contract.intent.failureOperator}). Rewrite the learner turn. ${automatedLearnerRepairInstruction(runtime.profileId)} Keep it natural and concise.`,
       stream: { enabled: false, interim: state.interim },
       cliEffort,
+      signal,
     });
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     if (repaired.text) candidate = repaired;
     repairs += 1;
   }
@@ -9916,6 +10239,7 @@ async function runOneTurn(
   registerSelection = null,
   previousRegisterEfficacy = null,
   precomputedResponse = null,
+  runtimeOptions = {},
 ) {
   const learnerText = String(inputText || '').trim();
   if (!learnerText) {
@@ -9925,6 +10249,8 @@ async function runOneTurn(
     });
     throw new Error('empty learner turn: no tutor response can be generated without learner text');
   }
+  const learnerInput = runtimeOptions.learnerInput ? jsonClone(runtimeOptions.learnerInput) : null;
+  assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
   const humanDiscourseFrame = buildHumanDiscourseFrame({
@@ -9998,6 +10324,7 @@ async function runOneTurn(
           registerSelection,
         });
   registerSelection = typedAction.registerSelection;
+  assertTutorStubTurnAttemptCurrent(runtimeOptions);
   if (precomputedResponse?.speculativeCacheHit && typedAction.decision) {
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_tutor_prefetch_bypassed',
@@ -10029,7 +10356,11 @@ async function runOneTurn(
       stream: state.stream,
       cliEffort: state.cliEffort,
       multipleChoice: state.multipleChoice,
+      learnerMessages: learnerInput?.messages || null,
+      deferStreamOutput: Boolean(runtimeOptions.isCurrent),
+      signal: runtimeOptions.signal || null,
     }));
+  assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const priorDialogueClosure = state.dialogueClosure;
   state.dialogueClosure = advanceTutorStubDialogueClosure(priorDialogueClosure, {
     frame: dialogueClosureFrame,
@@ -10078,10 +10409,29 @@ async function runOneTurn(
     });
   }
 
+  const duePremiseIds = (humanDiscourseFrame?.scaffoldState?.releaseState?.dueNow || [])
+    .map((row) => row?.premise)
+    .filter(Boolean);
+  const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
+    text: response.text,
+    world: state.world,
+    premiseIds: duePremiseIds,
+  });
+  response.releaseDeliveryAudit = releaseDeliveryAudit;
+  if (duePremiseIds.length) {
+    appendTraceEvent(state.trace, {
+      type: 'release_delivery_audit',
+      turn: tutorTurn,
+      turnId,
+      audit: releaseDeliveryAudit,
+    });
+  }
+
   const releasePacing = commitTutorStubReleasePacing({
     pacing: state.releasePacing,
     world: state.world,
     turn: tutorTurn,
+    deliveredPremises: releaseDeliveryAudit.deliveredPremises,
   });
   if (releasePacing) {
     appendTraceEvent(state.trace, {
@@ -10089,6 +10439,7 @@ async function runOneTurn(
       turn: tutorTurn,
       turnId,
       releasedNow: releasePacing.releasedNow,
+      notDeliveredNow: releasePacing.notDeliveredNow,
       direction: releasePacing.direction,
       effectiveSpeed: releasePacing.effectiveSpeed,
       nextRelease: releasePacing.nextRelease,
@@ -10120,6 +10471,12 @@ async function runOneTurn(
     turnId,
     turn: tutorTurn,
     learner: learnerText,
+    ...(learnerInput
+      ? {
+          learnerInput,
+          learnerMessages: learnerInput.messages,
+        }
+      : {}),
     coachGuidance,
     stateObservation,
     classification,
@@ -10143,6 +10500,7 @@ async function runOneTurn(
     generousInference: humanDiscourseFrame.generousInference,
     questionSupport: humanDiscourseFrame.questionSupport,
     releasePacing,
+    releaseDeliveryAudit,
     comprehension: {
       beforeTutor: comprehensionBeforeTutor,
       afterTutor: comprehensionAfterTutor,
@@ -10175,6 +10533,7 @@ async function runOneTurn(
     tutorLeakAudit: response.leakAudit || null,
     tutorHumanScaffoldAudit: response.scaffoldAudit || null,
     tutorQuestionSupportAudit: response.questionSupportAudit || null,
+    tutorRepetitionAudit: response.repetitionAudit || null,
     tutorDialogueClosureAudit: response.closureAudit || null,
     tutorResponseRepaired: Boolean(response.repaired),
     tutorDeterministicFallback: Boolean(response.deterministicFallback),
@@ -10204,12 +10563,17 @@ async function runOneTurn(
   };
 }
 
-async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null } = {}) {
+async function runAnalyzedTutorTurn(
+  learnerText,
+  state,
+  { precomputedRaw = null, signal = null, isCurrent = null } = {},
+) {
   const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
     learnerText,
     state,
-    { precomputedRaw },
+    { precomputedRaw, signal, isCurrent },
   );
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   startInterimAnimation(
     state,
     'calling tutor',
@@ -10231,17 +10595,21 @@ async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null 
       tutorLearnerDag,
       registerSelection,
       previousRegisterEfficacy,
+      null,
+      { signal, isCurrent },
     );
   } finally {
     stopInterimAnimation(state);
   }
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   printWithConcurrentTerminal(state, () => {
     if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
     printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_generated_tutor_response' });
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
   });
-  await printExplanatoryDebugTurn(state);
+  await printExplanatoryDebugTurn(state, { signal, isCurrent });
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   writeFieldVisualization(state, { reason: 'turn_complete' });
   return response;
 }
@@ -10274,7 +10642,11 @@ async function runAutomatedLearnerDialogue({
   autoSafetyTurns,
   autoStopOnGrounded,
   cliEffort = null,
+  signal = null,
+  isCurrent = null,
 }) {
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+  const autoLearnerSpeakerLabel = learnerProfileSpeakerLabel(automatedLearnerProfileId(autoLearnerProfile));
   appendTraceEvent(state.trace, {
     type: 'auto_learner_run_start',
     model: autoLearnerResolved,
@@ -10291,6 +10663,7 @@ async function runAutomatedLearnerDialogue({
   let nextLearnerText = firstMessage.trim();
   let reason = 'auto_turn_cap';
   for (let i = 0; autoTurns === null || i < autoTurns; i += 1) {
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     if (autoTurns === null && i >= autoSafetyTurns) {
       reason = 'auto_safety_turn_cap';
       break;
@@ -10308,6 +10681,7 @@ async function runAutomatedLearnerDialogue({
           turnNumber,
           stream: { enabled: false, interim: state.interim },
           cliEffort,
+          signal,
         });
       } finally {
         stopInterimAnimation(state);
@@ -10319,7 +10693,10 @@ async function runAutomatedLearnerDialogue({
         turnNumber,
         generated,
         cliEffort,
+        signal,
+        isCurrent,
       });
+      assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       generated = enforced.generated;
       precomputedRaw = enforced.precomputedRaw;
       nextLearnerText = generated.text;
@@ -10346,16 +10723,17 @@ async function runAutomatedLearnerDialogue({
       });
       printWithConcurrentTerminal(state, () => {
         printTurnDebugLine(state, turnNumber);
-        console.log(`${C.brightBlue}${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+        console.log(`${C.brightBlue}${C.bold}${autoLearnerSpeakerLabel} (auto) >${C.reset} ${nextLearnerText}\n`);
       });
     } else {
       printWithConcurrentTerminal(state, () => {
         printTurnDebugLine(state, turnNumber);
-        console.log(`${C.brightBlue}${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+        console.log(`${C.brightBlue}${C.bold}${autoLearnerSpeakerLabel} (auto) >${C.reset} ${nextLearnerText}\n`);
       });
     }
 
-    await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw });
+    await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw, signal, isCurrent });
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     nextLearnerText = '';
 
     if (autoStopOnGrounded && learnerDagReachedGroundedClosure(state)) {
@@ -10363,6 +10741,7 @@ async function runAutomatedLearnerDialogue({
       break;
     }
   }
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   appendTraceEvent(state.trace, {
     type: 'auto_learner_run_end',
     reason,
@@ -10385,7 +10764,6 @@ async function main() {
     return;
   }
 
-  args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
   const allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
   if (allModelsOverrideRef) {
     args.model = allModelsOverrideRef;
@@ -10403,9 +10781,11 @@ async function main() {
       }
     : null;
   const interactiveSessionIntent = Boolean(!args['auto-learner'] && !args.once && !positionals.join(' ').trim());
+  const explicitRememberedSources = rememberedSettingExplicitSources();
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
 
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
@@ -10496,8 +10876,15 @@ async function main() {
     );
   }
   const launchWorldBundle = resolveWorldRef(args.world);
+  const rememberedScenarioAvailable = rememberedSettings.appliedFields.includes('scenario');
+  const existingScenarioAvailable = Boolean(explicitRememberedSources.scenario || rememberedScenarioAvailable);
   const initialScenarioPickerEnabled = Boolean(
-    interactiveSessionEnabled && STUB.opening && !args['no-opening'] && !args['resume-last'] && launchWorldBundle,
+    interactiveSessionEnabled &&
+    STUB.opening &&
+    !args['no-opening'] &&
+    !args['resume-last'] &&
+    launchWorldBundle &&
+    !existingScenarioAvailable,
   );
   const initialScenarioKeyboardMenuActive = Boolean(
     initialScenarioPickerEnabled &&
@@ -10553,6 +10940,33 @@ async function main() {
     const promptBookText = fs.readFileSync(path.resolve(args['prompt-book-context']), 'utf8');
     systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
     console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
+  }
+  const promptArchitecture = tutorStubPromptArchitecture({
+    dagEnabled: Boolean(args.dag && worldBundle),
+  });
+  promptArchitecture.audit.baseSystem = auditTutorStubPrompt({
+    surface: 'tutor_system',
+    systemPrompt,
+    instructionTexts: [systemPrompt],
+  });
+  promptArchitecture.audit.baseSpeakerPrivilege = auditTutorStubSpeakerPrivilege({
+    world: args.dag ? worldBundle?.world || null : null,
+    tutorTurn: 0,
+    systemPrompt,
+  });
+  if (!promptArchitecture.audit.baseSystem.ok) {
+    throw new Error(
+      `Base prompt audit failed: ${promptArchitecture.audit.baseSystem.violations
+        .map((violation) => violation.code)
+        .join(', ')}`,
+    );
+  }
+  if (!promptArchitecture.audit.baseSpeakerPrivilege.ok) {
+    throw new Error(
+      `Base speaking-tutor prompt crossed the private-planner boundary: ${promptArchitecture.audit.baseSpeakerPrivilege.issues
+        .map((issue) => `${issue.code}:${issue.source}`)
+        .join(', ')}`,
+    );
   }
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
@@ -10684,8 +11098,33 @@ async function main() {
             ? 'buffered_for_concurrent_input'
             : 'live';
   const resumeCandidate = args['resume-last'] ? latestDialogueTrace(args['trace-dir']) : null;
+  const rememberedDialogueSettingsAvailable = rememberedSettings.status === 'loaded';
+  const initialProfilePromptEnabled = Boolean(
+    mixedLearnerEnabled &&
+    !explicitRememberedSources.learnerProfile &&
+    !rememberedSettings.appliedFields.includes('learner_profile'),
+  );
+  const initialTemperaturePromptEnabled = Boolean(
+    registerSelectionEnabled &&
+    registerTemperatureApplies(registerPolicy) &&
+    !rememberedDialogueSettingsAvailable &&
+    !explicitRememberedSources.engagementStanceTemperature,
+  );
+  const initialDropoutPromptEnabled = Boolean(
+    tutorLearnerDagEnabled && !rememberedDialogueSettingsAvailable && !explicitRememberedSources.dagFactDropoutRate,
+  );
+  const initialReleaseSpeedPromptEnabled = Boolean(
+    worldBundle && !rememberedDialogueSettingsAvailable && !explicitRememberedSources.releaseSpeed,
+  );
   const initialMixedLearnerSetupEnabled = Boolean(
-    mixedLearnerEnabled && openingEnabled && !firstMessage && !resumeCandidate,
+    mixedLearnerEnabled &&
+    openingEnabled &&
+    !firstMessage &&
+    !resumeCandidate &&
+    (initialProfilePromptEnabled ||
+      initialTemperaturePromptEnabled ||
+      initialDropoutPromptEnabled ||
+      initialReleaseSpeedPromptEnabled),
   );
   const initialScenarioPickerConfig = {
     enabled: initialScenarioPickerEnabled,
@@ -10697,18 +11136,23 @@ async function main() {
     descriptionFields: ['question', 'setting', 'discipline'],
     nonTtyFallback: '--world',
     selection: initialScenarioSelection,
+    reason: initialScenarioPickerEnabled
+      ? 'no_saved_or_explicit_scenario'
+      : existingScenarioAvailable
+        ? 'existing_scenario_restored_or_explicit'
+        : args['resume-last']
+          ? 'resume_requested'
+          : 'not_interactive_opening',
   };
   const mixedLearnerStartupPrompts = {
     enabled: initialMixedLearnerSetupEnabled,
     // Model selection was removed from first-run setup (2026-07-12): the
     // launch/default model is used and stays changeable via `/settings model`.
     order: [
-      'learner_profile',
-      ...(registerSelectionEnabled && registerTemperatureApplies(registerPolicy)
-        ? ['engagement_stance_temperature']
-        : []),
-      ...(tutorLearnerDagEnabled ? ['dag_fact_dropout'] : []),
-      ...(worldBundle ? ['clue_release_speed'] : []),
+      ...(initialProfilePromptEnabled ? ['learner_profile'] : []),
+      ...(initialTemperaturePromptEnabled ? ['engagement_stance_temperature'] : []),
+      ...(initialDropoutPromptEnabled ? ['dag_fact_dropout'] : []),
+      ...(initialReleaseSpeedPromptEnabled ? ['clue_release_speed'] : []),
     ],
     tutorModel: {
       enabled: false,
@@ -10718,20 +11162,20 @@ async function main() {
       liveCommand: '/settings model <provider.alias>',
     },
     engagementStanceTemperature: {
-      enabled: Boolean(registerSelectionEnabled && registerTemperatureApplies(registerPolicy)),
+      enabled: initialTemperaturePromptEnabled,
       default: registerTemperature,
       recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       range: [MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE, MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE],
     },
     dagFactDropout: {
-      enabled: tutorLearnerDagEnabled,
+      enabled: initialDropoutPromptEnabled,
       default: dagFactDropoutRate,
       recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       range: [0, 1],
       seed: dagFactDropoutSeed,
     },
     clueReleaseSpeed: {
-      enabled: Boolean(worldBundle),
+      enabled: initialReleaseSpeedPromptEnabled,
       default: releaseSpeed,
       recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
       range: [MIN_TUTOR_STUB_RELEASE_SPEED, MAX_TUTOR_STUB_RELEASE_SPEED],
@@ -10769,6 +11213,14 @@ async function main() {
       acceptsCommandsDuringTutorTurn: true,
       acceptsCommandsDuringAutoMode: true,
       streamingDisplay: 'buffered_while_command_line_is_live',
+    },
+    compoundLearnerTurns: {
+      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
+      enabled: interactiveSessionEnabled,
+      boundary: 'until_tutor_response_is_displayed',
+      additionalMessages: 'abort_or_invalidate_then_regenerate',
+      tracePreservesTypedMessages: true,
+      analysisAndTutorView: 'one_compound_learner_turn',
     },
   };
   const explanatoryDebugConfig = {
@@ -10853,6 +11305,7 @@ async function main() {
             temperatureScope: 'engagement_stance_only',
             transcriptVisibilityAudit: true,
           },
+          promptArchitecture,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -11080,6 +11533,7 @@ async function main() {
         temperatureScope: 'engagement_stance_only',
         transcriptVisibilityAudit: true,
       },
+      promptArchitecture,
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       autoLearner: autoLearnerEnabled
@@ -11222,6 +11676,9 @@ async function main() {
   const state = {
     topic: effectiveTopic,
     systemPrompt,
+    promptArchitecture,
+    learnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
+    learnerProfile: args['auto-learner-profile'],
     modelRef: args.model,
     resolved,
     rememberedSettings: {
@@ -11326,6 +11783,9 @@ async function main() {
 
   function currentRememberedSettingsSnapshot() {
     return {
+      scenarioId: state.world?.id || null,
+      learnerProfileId: state.learnerProfileId || null,
+      learnerProfile: state.learnerProfileId ? null : state.learnerProfile || null,
       tutorModelRef: state.modelRef,
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
@@ -11336,10 +11796,13 @@ async function main() {
     };
   }
 
-  function persistCurrentInteractiveSettings(reason) {
+  function persistCurrentInteractiveSettings(reason, overrides = {}) {
     if (!state.rememberedSettings?.writeEnabled) return null;
     try {
-      const saved = writeTutorStubLastSettings(state.rememberedSettings.filePath, currentRememberedSettingsSnapshot());
+      const saved = writeTutorStubLastSettings(state.rememberedSettings.filePath, {
+        ...currentRememberedSettingsSnapshot(),
+        ...overrides,
+      });
       state.rememberedSettings.status = 'saved';
       state.rememberedSettings.savedAt = saved.updatedAt;
       state.rememberedSettings.warning = null;
@@ -11406,8 +11869,6 @@ async function main() {
       traceDir: path.relative(ROOT, traceDir),
     });
   }
-  persistCurrentInteractiveSettings(resumedDialogue ? 'resume_loaded' : 'session_start');
-
   console.log(
     `\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`,
   );
@@ -11594,7 +12055,7 @@ async function main() {
     );
   }
   console.log(
-    `${C.dim}topic: ${effectiveTopic} | type / for the command palette | slash commands work while thinking | /quit to exit${C.reset}\n`,
+    `${C.dim}topic: ${effectiveTopic} | type / for commands | /reset to recover | /quit to exit${C.reset}\n`,
   );
 
   if (autoLearnerEnabled) {
@@ -11769,6 +12230,7 @@ async function main() {
     return {
       id: profileId || 'custom',
       name: contract?.intent?.shortName || 'Custom learner',
+      speakerLabel: learnerProfileSpeakerLabel(profileId),
       pattern: contract?.intent?.failureOperator || oneLine(suggestion?.profile || mixedLearner.profile, { max: 180 }),
       signal:
         oneLine(suggestion?.profileSignal, { max: 220 }) ||
@@ -11780,7 +12242,7 @@ async function main() {
     if (state.interaction?.mode === 'coach') return `${C.brightYellow}${C.bold}coach >${C.reset} `;
     if (state.interaction?.mode === 'auto') return `${C.brightBlue}${C.bold}auto >${C.reset} `;
     if (!mixedLearner.enabled) return `${C.brightGreen}${C.bold}learner >${C.reset} `;
-    return `${C.brightGreen}${C.bold}learner[${mixedLearnerProfilePresentation().id}] >${C.reset} `;
+    return `${C.brightGreen}${C.bold}${mixedLearnerProfilePresentation().speakerLabel} >${C.reset} `;
   }
 
   function printMixedLearnerProfilePresentation(suggestion, { verb = 'drafted as' } = {}) {
@@ -11816,16 +12278,25 @@ async function main() {
       return [completion.candidates, completion.replacement];
     },
   });
-  const concurrentTerminal = createTutorStubConcurrentTerminal({ rl, output });
+  const lineSelection = createTutorStubLineSelection({ rl, output });
+  const concurrentTerminal = createTutorStubConcurrentTerminal({
+    rl,
+    output,
+    decorateLine: () => lineSelection.decorateLine(),
+  });
   state.concurrentTerminal = concurrentTerminal;
   state.interim.concurrentTerminal = concurrentTerminal;
   let slashPaletteRefreshHandle = null;
   let onInteractiveKeypress = null;
   let processingTurn = false;
-  let clarificationInFlight = false;
+  let clarificationInFlight = null;
+  let scenarioPickerActive = false;
+  let awaitingAnotherScenario = false;
   let exiting = false;
   let finalized = false;
   const pendingLearnerLines = [];
+  let activeLearnerTurn = null;
+  let activeAutoRun = null;
   let resolveInteractive = null;
   const interactiveDone = new Promise((resolve) => {
     resolveInteractive = resolve;
@@ -11887,6 +12358,8 @@ async function main() {
         '/profile custom ',
         ...learnerProfileIds().map((profileId) => `/profile ${profileId}`),
       ];
+    } else if (trimmed.startsWith('/scenario ')) {
+      pool = groupedWorldEntries().map(({ world }) => `/scenario ${world.id}`);
     }
     const matches = pool.filter((candidate) => candidate.startsWith(trimmed));
     return {
@@ -12013,6 +12486,89 @@ async function main() {
     };
   }
 
+  function cloneStateForInteractiveLearnerAttempt() {
+    return {
+      ...state,
+      history: structuredClone(state.history),
+      turns: structuredClone(state.turns),
+      learnerDag: structuredClone(state.learnerDag),
+      comprehension: structuredClone(state.comprehension),
+      releasePacing: structuredClone(state.releasePacing),
+      register: structuredClone(state.register),
+      dialogueClosure: structuredClone(state.dialogueClosure),
+      typedActions: structuredClone(state.typedActions),
+      coach: structuredClone(state.coach),
+      stream: { ...state.stream, interim: state.interim, deferOutput: true },
+    };
+  }
+
+  function replayConcurrentComprehensionChanges(target, baseline, current) {
+    const baselineHistoryLength = baseline?.history?.length || 0;
+    const concurrentEntries = (current?.history || []).slice(baselineHistoryLength);
+    for (const entry of concurrentEntries) {
+      if (entry?.type === 'request') {
+        applyTutorStubComprehensionRequest(target, {
+          ...entry,
+          detected: true,
+          schema: 'machinespirits.tutor-stub.comprehension-request.v1',
+        });
+      } else if (entry?.type === 'response') {
+        applyTutorStubComprehensionResponse(target, {
+          text: entry.text,
+          turn: entry.turn,
+          source: entry.source,
+          force: true,
+          terms: entry.terms,
+        });
+      }
+    }
+    return target;
+  }
+
+  function mergeConcurrentCoachChanges(attemptCoach, baselineCoach, currentCoach) {
+    const merged = structuredClone(attemptCoach || { pending: [], history: [] });
+    const baselinePendingIds = new Set((baselineCoach?.pending || []).map((entry) => entry.id));
+    const baselineHistoryKeys = new Set(
+      (baselineCoach?.history || []).map((entry) => `${entry.turn || 0}:${entry.appliedAt || ''}`),
+    );
+    const mergedPendingIds = new Set((merged.pending || []).map((entry) => entry.id));
+    for (const entry of currentCoach?.pending || []) {
+      if (!baselinePendingIds.has(entry.id) && !mergedPendingIds.has(entry.id)) {
+        merged.pending.push(structuredClone(entry));
+        mergedPendingIds.add(entry.id);
+      }
+    }
+    const mergedHistoryKeys = new Set(
+      (merged.history || []).map((entry) => `${entry.turn || 0}:${entry.appliedAt || ''}`),
+    );
+    for (const entry of currentCoach?.history || []) {
+      const key = `${entry.turn || 0}:${entry.appliedAt || ''}`;
+      if (!baselineHistoryKeys.has(key) && !mergedHistoryKeys.has(key)) {
+        merged.history.push(structuredClone(entry));
+        mergedHistoryKeys.add(key);
+      }
+    }
+    return merged;
+  }
+
+  function commitInteractiveLearnerAttempt(attemptState, baseline) {
+    const currentComprehension = state.comprehension;
+    const currentCoach = state.coach;
+    state.history = attemptState.history;
+    state.turns = attemptState.turns;
+    state.learnerDag = attemptState.learnerDag;
+    state.releasePacing = attemptState.releasePacing;
+    state.register = attemptState.register;
+    state.dialogueClosure = attemptState.dialogueClosure;
+    state.typedActions = attemptState.typedActions;
+    state.comprehension = replayConcurrentComprehensionChanges(
+      attemptState.comprehension,
+      baseline.comprehension,
+      currentComprehension,
+    );
+    state.coach = mergeConcurrentCoachChanges(attemptState.coach, baseline.coach, currentCoach);
+  }
+
   function mixedLearnerTutorContextKey({
     learnerText,
     classification,
@@ -12043,7 +12599,7 @@ async function main() {
       }),
       dagTurn:
         runtimeState.dag && runtimeState.world
-          ? dagTurnContext(runtimeState.world, runtimeState.turns.length + 1)
+          ? dagTurnContext(runtimeState, runtimeState.turns.length + 1)
           : null,
       coachGuidance: tutorCoachGuidanceContext(runtimeState),
       systemPrompt: runtimeState.systemPrompt,
@@ -12079,6 +12635,7 @@ async function main() {
         state: speculativeState,
         tutorTurn: entry.turn,
         learnerText: entry.answer,
+        ...learnerPublicEvidenceState(speculativeState, entry.turn),
       });
       speculativeState.learnerDag.lastModel = tutorLearnerDag.model;
       updateComprehensionForLearnerTurn({
@@ -12693,7 +13250,11 @@ async function main() {
     const invalidated = resetMixedLearnerSuggestion('profile_changed');
     mixedLearner.profile = nextProfile;
     mixedLearner.profileId = nextProfileId;
+    state.learnerProfile = nextProfile;
+    state.learnerProfileId = nextProfileId;
+    args['auto-learner-profile'] = nextProfile;
     rl.setPrompt(mixedLearnerPromptText());
+    const remembered = persistCurrentInteractiveSettings('learner_profile_changed');
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_profile_changed',
       previousProfileId,
@@ -12706,6 +13267,7 @@ async function main() {
         analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
         tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
       },
+      rememberedAt: remembered?.updatedAt || null,
     });
     const label = nextProfileId ? `${nextProfileId}: ${learnerProfileDescription(nextProfileId)}` : 'custom profile';
     console.log(`${C.cyan}learner profile >${C.reset} switched to ${label}`);
@@ -12726,6 +13288,9 @@ async function main() {
       mixedLearner.profileId = profileId;
       mixedLearner.profile = learnerProfilePrompt(profileId);
     }
+    state.learnerProfileId = mixedLearner.profileId || null;
+    state.learnerProfile = mixedLearner.profile;
+    args['auto-learner-profile'] = mixedLearner.profile;
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_initial_profile_selected',
       profileId: profileId || null,
@@ -12746,10 +13311,12 @@ async function main() {
     visibleModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
     const changed = previousRef !== selection.modelRef || previousResolved.model !== selection.resolved.model;
     const contextReplayRecorded = Boolean(changed && source !== 'initial_settings' && state.history.length > 0);
-    state.tutorContext = {
-      ...state.tutorContext,
-      modelRef: selection.modelRef,
-    };
+    if (contextReplayRecorded) {
+      state.tutorContext = {
+        ...state.tutorContext,
+        modelRef: selection.modelRef,
+      };
+    }
     const invalidated = changed ? resetMixedLearnerSuggestion('tutor_model_changed') : null;
     const remembered = changed ? persistCurrentInteractiveSettings('tutor_model_changed') : null;
     appendTraceEvent(state.trace, {
@@ -12769,10 +13336,10 @@ async function main() {
         ? {
             schema: 'machinespirits.tutor-stub.tutor-context-replay.v2',
             historyMode: state.tutorContext.historyMode,
-            alreadyActive: true,
             publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,
             includesRoles: ['user', 'assistant'],
-            persistence: 'every_speaker_call_in_this_dialogue',
+            persistence: 'every_subsequent_tutor_call_in_this_dialogue',
+            alreadyActive: true,
           }
         : null,
       cacheRefresh: invalidated
@@ -13250,19 +13817,22 @@ async function main() {
   }
 
   async function runInitialMixedLearnerSetup() {
-    if (!mixedLearner.enabled || !openingEnabled || state.history.length) return true;
+    if (!initialMixedLearnerSetupEnabled || !mixedLearner.enabled || !openingEnabled || state.history.length)
+      return true;
     const defaultProfileId = mixedLearner.profileId || 'custom';
     const keyboardMenuEnabled = Boolean(input.isTTY && output.isTTY && typeof input.setRawMode === 'function');
-    console.log(`${C.cyan}Pick a learner profile${C.reset}`);
-    if (keyboardMenuEnabled) {
-      console.log(
-        `${C.dim}  ↑/↓ scroll · Enter select · highlighted learner described below · Esc quit · ${defaultProfileId} selected by default${C.reset}`,
-      );
-    } else {
-      console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
-      console.log(
-        `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
-      );
+    if (initialProfilePromptEnabled) {
+      console.log(`${C.cyan}Pick a learner profile${C.reset}`);
+      if (keyboardMenuEnabled) {
+        console.log(
+          `${C.dim}  ↑/↓ scroll · Enter select · highlighted learner described below · Esc quit · ${defaultProfileId} selected by default${C.reset}`,
+        );
+      } else {
+        console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
+        console.log(
+          `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
+        );
+      }
     }
 
     const queuedLines = [];
@@ -13292,8 +13862,8 @@ async function main() {
       lineListenersAttached = true;
     };
     try {
-      let profileSelected = false;
-      if (keyboardMenuEnabled) {
+      let profileSelected = !initialProfilePromptEnabled;
+      if (initialProfilePromptEnabled && keyboardMenuEnabled) {
         const selection = await pickInitialMixedLearnerProfileWithKeyboard(defaultProfileId);
         if (!selection) {
           requestExit('initial_profile_picker_exit');
@@ -13306,7 +13876,7 @@ async function main() {
         const selectedLabel = selection.id ? `${selection.id} — ${selection.label}` : `custom — ${selection.label}`;
         console.log(`${C.cyan}learner profile >${C.reset} ${selectedLabel}\n`);
         profileSelected = true;
-      } else {
+      } else if (initialProfilePromptEnabled) {
         initialSetupStage = 'profile';
         attachLineListeners();
         while (!exiting) {
@@ -13360,10 +13930,10 @@ async function main() {
       if (!profileSelected || exiting) return false;
 
       const temperaturePromptEnabled = Boolean(
-        state.register?.enabled && registerTemperatureApplies(state.register.policy),
+        initialTemperaturePromptEnabled && state.register?.enabled && registerTemperatureApplies(state.register.policy),
       );
-      const dropoutPromptEnabled = Boolean(state.learnerDag?.enabled);
-      const releaseSpeedPromptEnabled = Boolean(state.world && state.releasePacing);
+      const dropoutPromptEnabled = Boolean(initialDropoutPromptEnabled && state.learnerDag?.enabled);
+      const releaseSpeedPromptEnabled = Boolean(initialReleaseSpeedPromptEnabled && state.world && state.releasePacing);
 
       const promptForSetting = async ({ stage, label, defaultValue, recommendedValue, guidance, normalize }) => {
         console.log(`${C.dim}  ${guidance}${C.reset}`);
@@ -13494,7 +14064,6 @@ async function main() {
             }
           : null,
       });
-      persistCurrentInteractiveSettings('initial_settings_selected');
       return true;
     } finally {
       initialSetupStage = 'off';
@@ -13539,6 +14108,7 @@ async function main() {
     printMixedLearnerProfilePresentation(suggestion, { verb: 'visible in response' });
     console.log(`${C.bold}learner(mixed) >${C.reset} ${suggestion.text}\n`);
     if (processingTurn || duringTurn) {
+      if (extendActiveLearnerTurn(suggestion.text)) return;
       pendingLearnerLines.push(suggestion.text);
       console.log(`${C.dim}learner reply queued (${pendingLearnerLines.length} waiting)${C.reset}`);
       return;
@@ -13846,12 +14416,178 @@ async function main() {
 
   function requestExit(reason) {
     exiting = true;
+    activeLearnerTurn?.abortController?.abort();
+    if (activeAutoRun) activeAutoRun.cancelledReason = reason;
+    activeAutoRun?.abortController?.abort();
+    if (clarificationInFlight) clarificationInFlight.cancelledReason = reason;
+    clarificationInFlight?.abortController?.abort();
     stopInterimAnimation(state);
     concurrentTerminal.close();
     resetMixedLearnerSuggestion(reason);
     finalizeInteractive(reason);
     rl.close();
     resolveInteractive();
+  }
+
+  function relaunchArgumentsForScenario(filePath) {
+    const current = process.argv.slice(2);
+    const next = [];
+    const replacedValueOptions = new Set([
+      '--all-models',
+      '--world',
+      '--auto-learner-profile',
+      '--model',
+      '--classifier-model',
+      '--learner-record-model',
+      '--auto-learner-model',
+      '--register-temperature',
+      '--dag-fact-dropout',
+      '--release-speed',
+      '--register-policy',
+      '--register-overlay-threshold',
+    ]);
+    for (let index = 0; index < current.length; index += 1) {
+      const argument = current[index];
+      if (argument === '--resume-last') continue;
+      if (replacedValueOptions.has(argument)) {
+        index += 1;
+        continue;
+      }
+      if ([...replacedValueOptions].some((option) => argument.startsWith(`${option}=`))) continue;
+      next.push(argument);
+    }
+    next.push(
+      '--world',
+      filePath,
+      '--auto-learner-profile',
+      state.learnerProfileId || state.learnerProfile,
+      '--model',
+      state.modelRef,
+      '--classifier-model',
+      args['classifier-model'],
+      '--learner-record-model',
+      args['learner-record-model'],
+      '--auto-learner-model',
+      args['auto-learner-model'],
+      '--register-temperature',
+      String(state.register?.temperature ?? registerTemperature),
+      '--dag-fact-dropout',
+      String(state.learnerDag?.dropout?.rate ?? dagFactDropoutRate),
+      '--release-speed',
+      String(state.releasePacing?.baseSpeed ?? releaseSpeed),
+      '--register-policy',
+      tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      '--register-overlay-threshold',
+      String(state.register?.overlayThreshold ?? registerOverlayThreshold),
+    );
+    return next;
+  }
+
+  function relaunchWithScenario(selection, reason = 'scenario_changed') {
+    const scenarioId = selection?.id || selection?.world?.id;
+    const title = selection?.title || selection?.world?.title;
+    const filePath = selection?.filePath;
+    if (!scenarioId || !filePath) throw new Error('scenario selection is incomplete');
+    persistCurrentInteractiveSettings('scenario_selected', { scenarioId });
+    appendTraceEvent(state.trace, {
+      type: 'next_scenario_selected',
+      reason,
+      previousScenarioId: state.world?.id || null,
+      scenarioId,
+      title,
+      file: path.relative(ROOT, filePath),
+    });
+    awaitingAnotherScenario = false;
+    exiting = true;
+    stopInterimAnimation(state);
+    concurrentTerminal.close();
+    resetMixedLearnerSuggestion(reason);
+    finalizeInteractive(reason);
+    rl.close();
+    console.log(`${C.brightGreen}${C.bold}next scenario >${C.reset} ${scenarioId} — ${title}`);
+    console.log(`${C.dim}  starting a fresh inquiry with your learner profile and dialogue settings${C.reset}\n`);
+    const child = spawnSync(
+      process.execPath,
+      [fileURLToPath(import.meta.url), ...relaunchArgumentsForScenario(filePath)],
+      {
+        cwd: process.cwd(),
+        env: process.env,
+        stdio: 'inherit',
+      },
+    );
+    if (child.error) {
+      console.log(`${C.red}scenario launch error:${C.reset} ${child.error.message}`);
+      process.exitCode = 1;
+    } else if (child.signal) {
+      process.exitCode = 1;
+    } else {
+      process.exitCode = child.status ?? 0;
+    }
+    resolveInteractive();
+  }
+
+  async function chooseAnotherScenario(argument = '', { reason = 'scenario_changed', duringTurn = false } = {}) {
+    clearStatusLine();
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}the scenario picker is available after the current tutor response completes${C.reset}\n`);
+      return false;
+    }
+    let selection = null;
+    const requested = String(argument || '').trim();
+    if (requested) {
+      try {
+        const bundle = resolveWorldRef(requested);
+        selection = {
+          id: bundle.world.id,
+          title: bundle.world.title,
+          filePath: bundle.filePath,
+          world: bundle.world,
+        };
+      } catch (error) {
+        console.log(`${C.red}scenario error:${C.reset} ${error.message}\n`);
+        return false;
+      }
+    } else if (input.isTTY && output.isTTY && typeof input.setRawMode === 'function') {
+      scenarioPickerActive = true;
+      initialSetupStage = 'scenario';
+      console.log(`${C.cyan}Pick another scenario${C.reset}`);
+      console.log(`${C.dim}  ↑/↓ scroll · Enter select · highlighted scenario described below · Esc return${C.reset}`);
+      try {
+        selection = await pickInitialScenarioWithKeyboard(state.world?.id || args.world);
+      } finally {
+        scenarioPickerActive = false;
+        initialSetupStage = 'off';
+      }
+      if (!selection) {
+        rl.setPrompt(
+          awaitingAnotherScenario
+            ? `${C.brightCyan}${C.bold}another scenario? [y/N] >${C.reset} `
+            : mixedLearnerPromptText(),
+        );
+        console.log(`${C.dim}scenario picker closed; the current inquiry is unchanged${C.reset}\n`);
+        return false;
+      }
+    } else {
+      console.log(`${C.cyan}scenario >${C.reset} type /scenario <id> to start another inquiry`);
+      console.log(`${C.dim}  run with --list-worlds outside the dialogue to browse scenario ids${C.reset}\n`);
+      return false;
+    }
+    relaunchWithScenario(selection, reason);
+    return true;
+  }
+
+  function offerAnotherScenario(reason = 'dialogue_grounded_closure') {
+    if (awaitingAnotherScenario || exiting) return;
+    pendingLearnerLines.length = 0;
+    resetMixedLearnerSuggestion(reason);
+    finalizeInteractive(reason);
+    awaitingAnotherScenario = true;
+    rl.setPrompt(`${C.brightCyan}${C.bold}another scenario? [y/N] >${C.reset} `);
+    console.log(`${C.brightGreen}${C.bold}scenario complete >${C.reset} would you like to do another scenario?`);
+    console.log(
+      `${C.dim}  y opens the scenario picker · Enter or n ends the session · /report revisits this inquiry${C.reset}\n`,
+    );
+    promptIfIdle();
   }
 
   function interactionModeLabel() {
@@ -14003,6 +14739,14 @@ async function main() {
     setInteractionMode('auto', { announce: false });
     state.interaction.autoRunning = true;
     processingTurn = true;
+    const active = {
+      id: `${stateRunDebugId(state)}:auto:${Date.now()}`,
+      abortController: new AbortController(),
+      cancelledReason: null,
+    };
+    activeAutoRun = active;
+    const isCurrent = () =>
+      !exiting && activeAutoRun === active && !active.abortController.signal.aborted;
     const capLabel =
       requestedTurns === null
         ? `until grounded · safety cap ${autoSafetyTurns}`
@@ -14029,12 +14773,15 @@ async function main() {
         autoSafetyTurns,
         autoStopOnGrounded,
         cliEffort,
+        signal: active.abortController.signal,
+        isCurrent,
       });
+      assertTutorStubTurnAttemptCurrent({ signal: active.abortController.signal, isCurrent });
       if (result.reason === 'auto_grounded_closure' || state.dialogueClosure?.phase === 'closed') {
         printWithConcurrentTerminal(state, () =>
           console.log(`${C.brightGreen}${C.bold}automation complete >${C.reset} grounded closure reached\n`),
         );
-        requestExit('interactive_auto_grounded_closure');
+        offerAnotherScenario('interactive_auto_grounded_closure');
         return;
       }
       const returnMode = state.interaction.previousMode === 'coach' ? 'coach' : 'learner';
@@ -14046,14 +14793,29 @@ async function main() {
         );
       });
     } catch (error) {
+      if (error?.name === 'AbortError' && active.cancelledReason) {
+        appendTraceEvent(state.trace, {
+          type: 'interactive_auto_discarded',
+          autoRunId: active.id,
+          reason: active.cancelledReason,
+        });
+        return;
+      }
       setInteractionMode(state.interaction.previousMode === 'coach' ? 'coach' : 'learner', { announce: false });
       printWithConcurrentTerminal(state, () => console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`));
       appendTraceEvent(state.trace, { type: 'interactive_auto_error', error: error.message });
     } finally {
-      state.interaction.autoRunning = false;
-      processingTurn = false;
-      if (!exiting) {
-        rl.setPrompt(mixedLearnerPromptText());
+      if (activeAutoRun === active) {
+        activeAutoRun = null;
+        state.interaction.autoRunning = false;
+        processingTurn = false;
+        if (!exiting) {
+          rl.setPrompt(
+            awaitingAnotherScenario
+              ? `${C.brightCyan}${C.bold}another scenario? [y/N] >${C.reset} `
+              : mixedLearnerPromptText(),
+          );
+        }
       }
     }
   }
@@ -14087,7 +14849,12 @@ async function main() {
       return;
     }
 
-    clarificationInFlight = true;
+    const clarificationAttempt = {
+      id: `${stateRunDebugId(state)}:clarify:${Date.now()}`,
+      abortController: new AbortController(),
+      cancelledReason: null,
+    };
+    clarificationInFlight = clarificationAttempt;
     const requestedTerm = String(term || '').trim();
     const comprehensionRequest = detectTutorStubComprehensionRequest({
       explicitTerm: requestedTerm,
@@ -14122,6 +14889,11 @@ async function main() {
         term: requestedTerm,
         resolved: state.resolved,
         cliEffort: state.cliEffort,
+        signal: clarificationAttempt.abortController.signal,
+      });
+      assertTutorStubTurnAttemptCurrent({
+        signal: clarificationAttempt.abortController.signal,
+        isCurrent: () => clarificationInFlight === clarificationAttempt,
       });
       printWithConcurrentTerminal(state, () => {
         clearStatusLine();
@@ -14159,6 +14931,14 @@ async function main() {
         usage: response.usage,
       });
     } catch (err) {
+      if (err?.name === 'AbortError' && clarificationAttempt.cancelledReason) {
+        appendTraceEvent(state.trace, {
+          type: 'clarification_discarded',
+          clarificationId: clarificationAttempt.id,
+          reason: clarificationAttempt.cancelledReason,
+        });
+        return;
+      }
       printWithConcurrentTerminal(state, () => {
         clearStatusLine();
         console.log(`${C.red}clarify error:${C.reset} ${err.message}\n`);
@@ -14171,8 +14951,10 @@ async function main() {
         error: err.message,
       });
     } finally {
-      clarificationInFlight = false;
-      if (!duringTurn) startMixedLearnerPrefetch('comprehension_state_changed');
+      if (clarificationInFlight === clarificationAttempt) {
+        clarificationInFlight = null;
+        if (!duringTurn) startMixedLearnerPrefetch('comprehension_state_changed');
+      }
     }
   }
 
@@ -14233,6 +15015,14 @@ async function main() {
       world: state.world,
       speed: currentReleaseSpeed,
     });
+    state.typedActions = {
+      enabled: state.typedActions?.enabled || false,
+      config: state.typedActions?.config || typedActionConfig,
+      ledger: [],
+      currentDecision: null,
+      scaffoldLifecycle: createScaffoldLifecycle(),
+    };
+    if (state.fieldViz) state.fieldViz.lastWrite = null;
     state.register = {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
@@ -14247,6 +15037,79 @@ async function main() {
       current: null,
       history: [],
     };
+  }
+
+  function resetInteractiveDialogue({ command = '/reset', duringTurn = false } = {}) {
+    const learnerAttempt = activeLearnerTurn;
+    const autoAttempt = activeAutoRun;
+    const clarificationAttempt = clarificationInFlight;
+    const queuedLearnerLines = pendingLearnerLines.length;
+    const interrupted = Boolean(
+      learnerAttempt || autoAttempt || clarificationAttempt || duringTurn || processingTurn,
+    );
+
+    stopInterimAnimation(state);
+    if (learnerAttempt) {
+      learnerAttempt.cancelledReason = 'dialogue_reset';
+      activeLearnerTurn = null;
+      learnerAttempt.abortController?.abort();
+    }
+    if (autoAttempt) {
+      autoAttempt.cancelledReason = 'dialogue_reset';
+      activeAutoRun = null;
+      autoAttempt.abortController?.abort();
+    }
+    if (clarificationAttempt) {
+      clarificationAttempt.cancelledReason = 'dialogue_reset';
+      clarificationInFlight = null;
+      clarificationAttempt.abortController.abort();
+    }
+    processingTurn = false;
+    pendingLearnerLines.length = 0;
+    awaitingAnotherScenario = false;
+    resetMixedLearnerSuggestion('dialogue_reset');
+    resetInteractiveState();
+
+    if (state.interaction?.mode === 'auto') {
+      state.interaction.mode = state.interaction.previousMode === 'coach' ? 'coach' : 'learner';
+    }
+    if (state.interaction) state.interaction.autoRunning = false;
+    rl.setPrompt(mixedLearnerPromptText());
+
+    appendTraceEvent(state.trace, {
+      type: 'history_clear',
+      reason: 'dialogue_reset',
+      command,
+      duringTurn,
+      interrupted,
+    });
+    appendTraceEvent(state.trace, {
+      type: 'interactive_dialogue_reset',
+      command,
+      interrupted,
+      interruptedLearnerTurn: learnerAttempt
+        ? {
+            turn: learnerAttempt.turn,
+            turnId: learnerAttempt.turnId,
+            revision: learnerAttempt.revision,
+            messageCount: learnerAttempt.fragments.length,
+          }
+        : null,
+      interruptedAutoRunId: autoAttempt?.id || null,
+      interruptedClarificationId: clarificationAttempt?.id || null,
+      queuedLearnerLinesDiscarded: queuedLearnerLines,
+      preserved: ['scenario', 'learner_profile', 'settings'],
+    });
+    clearStatusLine();
+    console.log(
+      `${C.brightCyan}${C.bold}dialogue reset >${C.reset} ${
+        interrupted ? 'unfinished work cancelled; ' : ''
+      }starting this scenario again`,
+    );
+    console.log(`${C.dim}  previous turns discarded · learner profile and settings kept${C.reset}\n`);
+    const opening = emitOpeningPrompt('reset');
+    if (opening) startMixedLearnerPrefetch('reset_opening');
+    return true;
   }
 
   function printDialogueSettings() {
@@ -14695,7 +15558,7 @@ async function main() {
         `${C.cyan}settings >${C.reset} evidence-memory dropout ${previousRate} → ${nextRate}; applies from turn ${state.turns.length + 1}`,
       );
       console.log(
-        `${C.dim}  ${nextRate === 0 ? 'new forgetting is off; anything already forgotten can still be recalled in dialogue or reset with /clear' : 'previously understood evidence can now be temporarily forgotten at this per-turn rate'}${C.reset}`,
+        `${C.dim}  ${nextRate === 0 ? 'new forgetting is off; anything already forgotten can still be recalled in dialogue or reset with /reset' : 'previously understood evidence can now be temporarily forgotten at this per-turn rate'}${C.reset}`,
       );
       if (!state.learnerDag.enabled) {
         console.log(`${C.dim}  saved but inactive because learner evidence tracking is off${C.reset}`);
@@ -14841,6 +15704,9 @@ async function main() {
       }
       requestExit('exit');
       return true;
+    }
+    if ((command === '/reset' || command === '/clear') && !commandArg) {
+      return resetInteractiveDialogue({ command, duringTurn });
     }
     const pausedInterim = duringTurn ? pauseInterimAnimation(state) : false;
     let slashCommandFinished = false;
@@ -14995,6 +15861,14 @@ async function main() {
       console.log(`${C.red}mode error:${C.reset} use /mode learner, /mode coach [guidance], or /mode auto [turns]\n`);
       finishSlashCommand();
       return true;
+    }
+    if (command === '/scenario') {
+      const promise = chooseAnotherScenario(commandArg, {
+        reason: awaitingAnotherScenario ? 'next_scenario_after_closure' : 'scenario_changed_by_user',
+        duringTurn,
+      }).finally(finishSlashCommand);
+      promise.tutorStubBlocksPrompt = true;
+      return promise;
     }
     if (command === '/settings') {
       const promise = handleDialogueSettings(commandArg, { duringTurn }).finally(finishSlashCommand);
@@ -15171,28 +16045,6 @@ async function main() {
       finishSlashCommand();
       return true;
     }
-    if (trimmed === '/clear') {
-      if (duringTurn) {
-        clearStatusLine();
-        console.log(`${C.dim}/clear is disabled while a tutor turn is in progress${C.reset}\n`);
-        appendTraceEvent(state.trace, {
-          type: 'slash_command_deferred',
-          command: '/clear',
-          reason: 'turn_in_progress',
-        });
-        finishSlashCommand();
-        return true;
-      }
-      resetMixedLearnerSuggestion('history_clear');
-      resetInteractiveState();
-      pendingLearnerLines.length = 0;
-      appendTraceEvent(state.trace, { type: 'history_clear' });
-      console.log(`${C.dim}new dialogue started · previous turns cleared; profile and settings kept${C.reset}\n`);
-      const opening = emitOpeningPrompt('clear');
-      if (opening) startMixedLearnerPrefetch('clear_opening');
-      finishSlashCommand();
-      return true;
-    }
     clearStatusLine();
     console.log(`${C.red}unknown command:${C.reset} ${trimmed}${C.dim} · type / to browse or use /help${C.reset}\n`);
     appendTraceEvent(state.trace, { type: 'unknown_slash_command', command: trimmed, duringTurn });
@@ -15200,151 +16052,317 @@ async function main() {
     return true;
   }
 
-  async function processLearnerLine(trimmed) {
+  function compoundLearnerInput(active, revision = active.revision) {
+    const messages = active.fragments.map((fragment, index) => ({
+      index: index + 1,
+      text: fragment.text,
+      receivedAt: fragment.receivedAt,
+    }));
+    return {
+      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
+      compoundTurnId: active.id,
+      turn: active.turn,
+      turnId: active.turnId,
+      revision,
+      messageCount: messages.length,
+      messages,
+      combinedText: messages.map((message) => message.text).join('\n'),
+      coalescedBeforeTutorReply: messages.length > 1,
+    };
+  }
+
+  function extendActiveLearnerTurn(text) {
+    const active = activeLearnerTurn;
+    if (!active || active.responseDisplayed || active.committed) return false;
+    const previousRevision = active.revision;
+    const receivedAt = new Date().toISOString();
+    active.fragments.push({ text, receivedAt });
+    active.revision += 1;
+    resetMixedLearnerSuggestion('learner_turn_extended');
+    appendTraceEvent(state.trace, {
+      type: 'learner_turn_fragment_received',
+      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
+      turn: active.turn,
+      turnId: active.turnId,
+      compoundTurnId: active.id,
+      fragmentIndex: active.fragments.length,
+      revision: active.revision,
+      text,
+      receivedAt,
+      whileTutorPending: true,
+      publicTranscriptStatus: 'pending_compound_turn',
+    });
+    appendTraceEvent(state.trace, {
+      type: 'learner_turn_attempt_superseded',
+      turn: active.turn,
+      turnId: active.turnId,
+      compoundTurnId: active.id,
+      previousRevision,
+      revision: active.revision,
+      messageCount: active.fragments.length,
+      reason: 'additional_learner_message_before_tutor_reply',
+    });
+    active.abortController?.abort();
+    console.log(
+      `${C.cyan}learner turn updated >${C.reset} added message ${active.fragments.length}; restarting the tutor with all ${active.fragments.length} messages`,
+    );
+    console.log(`${C.dim}  the messages stay separate in the trace and count as one learner turn${C.reset}\n`);
+    return true;
+  }
+
+  async function processLearnerLine(initialText) {
     if (exiting) return;
     if (state.dialogueClosure?.phase === 'closed') {
-      console.log(`${C.cyan}dialogue closed >${C.reset} this inquiry has already ended`);
-      console.log(`${C.dim}  use /report to inspect it, /clear to begin again, or /quit to leave${C.reset}\n`);
+      offerAnotherScenario('dialogue_grounded_closure');
       return;
     }
+
+    const tutorTurn = state.turns.length + 1;
+    const turnId = turnDebugId(state, tutorTurn);
+    const active = {
+      id: `${turnId}:learner`,
+      turn: tutorTurn,
+      turnId,
+      revision: 1,
+      fragments: [{ text: initialText, receivedAt: new Date().toISOString() }],
+      abortController: null,
+      responseDisplayed: false,
+      committed: false,
+    };
+    activeLearnerTurn = active;
     processingTurn = true;
     let completedTurn = false;
-    const closureAcknowledgement = Boolean(
-      state.dialogueClosure?.phase === 'awaiting_checkin' && tutorStubClosureAcknowledgement(trimmed),
-    );
-    const prefetchedAnalysis = closureAcknowledgement ? null : await takeMixedLearnerAnalysisPrefetch(trimmed);
-    resetMixedLearnerSuggestion('learner_turn_started', {
-      preserveAnalysisCache: Boolean(prefetchedAnalysis?.entry),
+    appendTraceEvent(state.trace, {
+      type: 'learner_turn_fragment_received',
+      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
+      turn: tutorTurn,
+      turnId,
+      compoundTurnId: active.id,
+      fragmentIndex: 1,
+      revision: 1,
+      text: initialText,
+      receivedAt: active.fragments[0].receivedAt,
+      whileTutorPending: false,
+      publicTranscriptStatus: 'pending_compound_turn',
     });
+
     try {
-      if (closureAcknowledgement) {
-        const tutorTurn = state.turns.length + 1;
-        const inheritedModel = state.turns.at(-1)?.tutorLearnerDagModel || null;
-        const tutorLearnerDag = { model: inheritedModel };
-        const { frame } = tutorDialogueClosureFrameForTurn({ state, tutorTurn, tutorLearnerDag });
-        const text = deterministicTutorStubClosureResponse(frame, { acknowledgement: true });
-        const closureAudit = auditTutorStubDialogueClosureResponse({ text, frame });
-        printWithConcurrentTerminal(state, () => printTurnDebugLine(state, tutorTurn));
-        const response = await runOneTurn(
-          trimmed,
-          state,
-          {
-            turn: {
-              summary: 'Learner declines the optional final check-in.',
-              request_type: 'off_task_or_mixed',
-              discourse_move: 'claim',
-              evidence_use: 'none',
-              epistemic_stance: 'grounded',
-              affect: 'settled',
-              agency: 'steering',
-              scores: {},
-              pedagogical_need: 'Close the inquiry without another question.',
-            },
-            overall: {
-              summary: 'The learner accepts dialogue closure.',
-              trajectory: 'terminal closure',
-              current_state: 'settled',
-              next_best_tutor_move: 'Close the inquiry.',
-            },
-          },
-          tutorLearnerDag,
-          null,
-          null,
-          {
-            text,
-            provider: state.resolved.provider,
-            model: state.resolved.model,
-            latencyMs: 0,
-            usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-            leakAudit: { ok: true, leaks: [] },
-            scaffoldAudit: { ok: true, issues: [], similarity: 0 },
-            closureAudit,
-            deterministicClosure: true,
-          },
-        );
-        printWithConcurrentTerminal(state, () => {
-          if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
-          printDirectorPreludeBeforeFirstTutor(state, { reason: 'closure_response_without_opening' });
-          printTutorResponse(response, state.stream);
-          console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+      while (!exiting && !completedTurn && activeLearnerTurn === active) {
+        const learnerInput = compoundLearnerInput(active);
+        const revision = learnerInput.revision;
+        const learnerText = learnerInput.combinedText;
+        const abortController = new AbortController();
+        active.abortController = abortController;
+        const isCurrent = () =>
+          !exiting && activeLearnerTurn === active && active.revision === revision && !abortController.signal.aborted;
+        const attemptState = cloneStateForInteractiveLearnerAttempt();
+        const baseline = {
+          comprehension: structuredClone(state.comprehension),
+          coach: structuredClone(state.coach),
+        };
+        appendTraceEvent(state.trace, {
+          type: 'learner_turn_attempt_started',
+          turn: tutorTurn,
+          turnId,
+          compoundTurnId: active.id,
+          revision,
+          messageCount: learnerInput.messageCount,
+          messages: learnerInput.messages,
         });
-        await printExplanatoryDebugTurn(state);
-        writeFieldVisualization(state, { reason: 'dialogue_closure_acknowledgement' });
-        completedTurn = true;
-        return;
-      }
-      const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
-        trimmed,
-        state,
-        { precomputedRaw: prefetchedAnalysis?.raw || null },
-      );
-      if (exiting) return;
-      const humanDiscourseFrame = buildHumanDiscourseFrame({
-        state,
-        tutorTurn: state.turns.length + 1,
-        tutorLearnerDag,
-        classification,
-        learnerText: trimmed,
-      });
-      const { frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
-        state,
-        tutorTurn: state.turns.length + 1,
-        tutorLearnerDag,
-      });
-      const prefetchedResponse = await takeMixedLearnerTutorPrefetch(prefetchedAnalysis?.entry, {
-        learnerText: trimmed,
-        classification,
-        tutorLearnerDag,
-        registerSelection,
-        humanDiscourseFrame,
-        dialogueClosureFrame,
-      });
-      if (!prefetchedResponse) {
-        startInterimAnimation(
-          state,
-          'calling tutor',
-          buildTutorInterimContext({
-            learnerText: trimmed,
-            state,
-            classification,
-            tutorLearnerDag,
-            registerSelection,
-            previousRegisterEfficacy,
-          }),
-        );
-      }
-      let response;
-      try {
-        response = await runOneTurn(
-          trimmed,
-          state,
-          classification,
-          tutorLearnerDag,
-          registerSelection,
-          previousRegisterEfficacy,
-          prefetchedResponse,
-        );
-      } finally {
-        stopInterimAnimation(state);
-      }
-      if (exiting) return;
-      printWithConcurrentTerminal(state, () => {
-        if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
-        printDirectorPreludeBeforeFirstTutor(state, { reason: 'generated_response_without_opening' });
-        printTutorResponse(response, state.stream);
-        console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
-      });
-      await printExplanatoryDebugTurn(state);
-      if (state.dialogueClosure?.phase === 'awaiting_checkin') {
-        printWithConcurrentTerminal(state, () => {
-          console.log(
-            `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,
+
+        try {
+          const closureAcknowledgement = Boolean(
+            attemptState.dialogueClosure?.phase === 'awaiting_checkin' &&
+              tutorStubClosureAcknowledgement(learnerText),
           );
-          console.log(`${C.dim}  reply once to revisit a link, or say “no thanks” to close immediately${C.reset}\n`);
-        });
+          const prefetchedAnalysis = closureAcknowledgement
+            ? null
+            : await takeMixedLearnerAnalysisPrefetch(learnerText);
+          assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
+          resetMixedLearnerSuggestion('learner_turn_started', {
+            preserveAnalysisCache: Boolean(prefetchedAnalysis?.entry),
+          });
+
+          let response;
+          let completionReason = 'turn_complete';
+          if (closureAcknowledgement) {
+            const inheritedModel = attemptState.turns.at(-1)?.tutorLearnerDagModel || null;
+            const tutorLearnerDag = { model: inheritedModel };
+            const { frame } = tutorDialogueClosureFrameForTurn({
+              state: attemptState,
+              tutorTurn,
+              tutorLearnerDag,
+            });
+            const text = deterministicTutorStubClosureResponse(frame, { acknowledgement: true });
+            const closureAudit = auditTutorStubDialogueClosureResponse({ text, frame });
+            printWithConcurrentTerminal(state, () => printTurnDebugLine(state, tutorTurn));
+            response = await runOneTurn(
+              learnerText,
+              attemptState,
+              {
+                turn: {
+                  summary: 'Learner declines the optional final check-in.',
+                  request_type: 'off_task_or_mixed',
+                  discourse_move: 'claim',
+                  evidence_use: 'none',
+                  epistemic_stance: 'grounded',
+                  affect: 'settled',
+                  agency: 'steering',
+                  scores: {},
+                  pedagogical_need: 'Close the inquiry without another question.',
+                },
+                overall: {
+                  summary: 'The learner accepts dialogue closure.',
+                  trajectory: 'terminal closure',
+                  current_state: 'settled',
+                  next_best_tutor_move: 'Close the inquiry.',
+                },
+              },
+              tutorLearnerDag,
+              null,
+              null,
+              {
+                text,
+                provider: attemptState.resolved.provider,
+                model: attemptState.resolved.model,
+                latencyMs: 0,
+                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+                leakAudit: { ok: true, leaks: [] },
+                scaffoldAudit: { ok: true, issues: [], similarity: 0 },
+                closureAudit,
+                deterministicClosure: true,
+              },
+              { signal: abortController.signal, isCurrent, learnerInput },
+            );
+            completionReason = 'dialogue_closure_acknowledgement';
+          } else {
+            const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } =
+              await analyzeLearnerTurn(learnerText, attemptState, {
+                precomputedRaw: prefetchedAnalysis?.raw || null,
+                signal: abortController.signal,
+                isCurrent,
+              });
+            assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
+            const humanDiscourseFrame = buildHumanDiscourseFrame({
+              state: attemptState,
+              tutorTurn,
+              tutorLearnerDag,
+              classification,
+              learnerText,
+            });
+            const { frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
+              state: attemptState,
+              tutorTurn,
+              tutorLearnerDag,
+            });
+            const prefetchedResponse = await takeMixedLearnerTutorPrefetch(prefetchedAnalysis?.entry, {
+              learnerText,
+              classification,
+              tutorLearnerDag,
+              registerSelection,
+              humanDiscourseFrame,
+              dialogueClosureFrame,
+            });
+            assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
+            if (!prefetchedResponse) {
+              startInterimAnimation(
+                attemptState,
+                'calling tutor',
+                buildTutorInterimContext({
+                  learnerText,
+                  state: attemptState,
+                  classification,
+                  tutorLearnerDag,
+                  registerSelection,
+                  previousRegisterEfficacy,
+                }),
+              );
+            }
+            try {
+              response = await runOneTurn(
+                learnerText,
+                attemptState,
+                classification,
+                tutorLearnerDag,
+                registerSelection,
+                previousRegisterEfficacy,
+                prefetchedResponse,
+                { signal: abortController.signal, isCurrent, learnerInput },
+              );
+            } finally {
+              stopInterimAnimation(attemptState);
+            }
+          }
+
+          assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
+          commitInteractiveLearnerAttempt(attemptState, baseline);
+          active.committed = true;
+          active.responseDisplayed = true;
+          appendTraceEvent(state.trace, {
+            type: 'learner_turn_compound_committed',
+            schema: learnerInput.schema,
+            turn: tutorTurn,
+            turnId,
+            compoundTurnId: active.id,
+            revision,
+            messageCount: learnerInput.messageCount,
+            messages: learnerInput.messages,
+            combinedText: learnerInput.combinedText,
+          });
+          printWithConcurrentTerminal(state, () => {
+            if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
+            printDirectorPreludeBeforeFirstTutor(state, {
+              reason: closureAcknowledgement
+                ? 'closure_response_without_opening'
+                : 'generated_response_without_opening',
+            });
+            printTutorResponse(response, state.stream);
+            console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+          });
+          await printExplanatoryDebugTurn(state, { signal: abortController.signal, isCurrent });
+          if (state.dialogueClosure?.phase === 'awaiting_checkin') {
+            printWithConcurrentTerminal(state, () => {
+              console.log(
+                `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,
+              );
+              console.log(`${C.dim}  reply once to revisit a link, or say “no thanks” to close immediately${C.reset}\n`);
+            });
+          }
+          writeFieldVisualization(state, { reason: completionReason });
+          completedTurn = true;
+        } catch (err) {
+          stopInterimAnimation(attemptState);
+          if (err?.name === 'AbortError' && activeLearnerTurn !== active) {
+            appendTraceEvent(state.trace, {
+              type: 'learner_turn_attempt_discarded',
+              turn: tutorTurn,
+              turnId,
+              compoundTurnId: active.id,
+              revision,
+              reason: active.cancelledReason || 'learner_turn_cancelled',
+              error: null,
+            });
+            break;
+          }
+          if (active.revision !== revision) {
+            appendTraceEvent(state.trace, {
+              type: 'learner_turn_attempt_discarded',
+              turn: tutorTurn,
+              turnId,
+              compoundTurnId: active.id,
+              revision,
+              replacedByRevision: active.revision,
+              reason: 'additional_learner_message_before_tutor_reply',
+              error: err?.name === 'AbortError' ? null : err.message,
+            });
+            continue;
+          }
+          if (exiting && err?.name === 'AbortError') break;
+          throw err;
+        } finally {
+          if (active.abortController === abortController) active.abortController = null;
+        }
       }
-      writeFieldVisualization(state, { reason: 'turn_complete' });
-      completedTurn = true;
     } catch (err) {
       stopInterimAnimation(state);
       printWithConcurrentTerminal(state, () => {
@@ -15352,11 +16370,12 @@ async function main() {
         console.error(`${C.red}error:${C.reset} ${err.message}\n`);
       });
     } finally {
-      processingTurn = false;
-      if (!exiting) {
+      const ownsActiveTurn = activeLearnerTurn === active;
+      if (ownsActiveTurn) activeLearnerTurn = null;
+      if (!activeLearnerTurn && !activeAutoRun) processingTurn = false;
+      if (!exiting && ownsActiveTurn && !active.cancelledReason) {
         if (state.dialogueClosure?.phase === 'closed') {
-          pendingLearnerLines.length = 0;
-          requestExit('dialogue_grounded_closure');
+          offerAnotherScenario('dialogue_grounded_closure');
         } else {
           const next = pendingLearnerLines.shift();
           if (next) {
@@ -15378,10 +16397,12 @@ async function main() {
     await interactiveDone;
     return;
   }
+  persistCurrentInteractiveSettings(resumedDialogue ? 'resume_loaded' : 'session_ready');
 
   if (input.isTTY && output.isTTY) {
     emitKeypressEvents(input, rl);
-    onInteractiveKeypress = () => {
+    onInteractiveKeypress = (character, key) => {
+      lineSelection.handleKeypress(character, key);
       if (slashPaletteRefreshHandle) clearImmediate(slashPaletteRefreshHandle);
       slashPaletteRefreshHandle = setImmediate(() => {
         slashPaletteRefreshHandle = null;
@@ -15395,8 +16416,30 @@ async function main() {
   printInteractionModeBanner({ detail: false });
 
   rl.on('line', (line) => {
+    lineSelection.clear();
     concurrentTerminal.acceptLine();
+    if (scenarioPickerActive) return;
     const trimmed = line.trim();
+    if (awaitingAnotherScenario && !trimmed) {
+      requestExit('dialogue_grounded_closure');
+      return;
+    }
+    if (awaitingAnotherScenario && !trimmed.startsWith('/')) {
+      const answer = trimmed.toLowerCase();
+      if (['n', 'no', 'no thanks', 'quit', 'exit'].includes(answer)) {
+        requestExit('dialogue_grounded_closure');
+        return;
+      }
+      if (['y', 'yes', 'another', 'another scenario'].includes(answer)) {
+        void chooseAnotherScenario('', { reason: 'next_scenario_after_closure' }).finally(() => {
+          if (!exiting) promptIfIdle();
+        });
+        return;
+      }
+      console.log(`${C.dim}type y to choose another scenario, or press Enter to finish${C.reset}`);
+      promptIfIdle();
+      return;
+    }
     if (!trimmed) {
       promptIfIdle();
       return;
@@ -15432,13 +16475,19 @@ async function main() {
     }
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
+      if (extendActiveLearnerTurn(trimmed)) {
+        if (pausedInterim) resumeInterimAnimation(state);
+        promptIfIdle();
+        return;
+      }
       pendingLearnerLines.push(trimmed);
       console.log(
-        `${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
+        `${C.dim}queued next learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
       );
       appendTraceEvent(state.trace, {
         type: 'learner_turn_queued',
         queued: pendingLearnerLines.length,
+        reason: 'previous_tutor_response_already_displayed',
       });
       if (pausedInterim) resumeInterimAnimation(state);
       promptIfIdle();

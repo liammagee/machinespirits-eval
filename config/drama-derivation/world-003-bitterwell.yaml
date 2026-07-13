@@ -252,3 +252,7 @@ turn_cap: 20
 presentation:
   family: bitterwell
   temporal_frame: period
+  scene_ecology: "parish water inquiry"
+  narrative_diction: "plain parish survey"
+  ledger_term: "survey book"
+  summary: A two-stage survey traces a bitter village well first to its source and then to the hand that fouled it.

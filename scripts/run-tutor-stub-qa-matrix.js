@@ -261,7 +261,7 @@ function pushOptionalFlag(command, flag, value) {
   if (value !== undefined && value !== null && String(value) !== '') command.push(flag, String(value));
 }
 
-function autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId }) {
+function autoEvalArgsForProfile({ profile, traceDir, indexRoot, policies, parentRunId }) {
   const command = [
     'scripts/run-tutor-stub-auto-eval.js',
     '--runs',
@@ -294,6 +294,8 @@ function autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId }) {
     args.world,
     '--trace-dir',
     traceDir,
+    '--index-root',
+    indexRoot,
     '--register-palette',
     args['register-palette'],
     '--keep-going',
@@ -378,7 +380,7 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
       ordinal: index + 1,
       profile,
       traceDir: path.relative(ROOT, traceDir),
-      command: ['node', ...autoEvalArgsForProfile({ profile, traceDir, policies, parentRunId })],
+      command: ['node', ...autoEvalArgsForProfile({ profile, traceDir, indexRoot: rootDir, policies, parentRunId })],
     };
   });
   return {

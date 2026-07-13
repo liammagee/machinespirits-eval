@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
+  buildTutorStubReplayJavascript,
   launchTutorStubTranscriptHtml,
   renderTutorStubTranscriptHtml,
   writeTutorStubTranscriptHtml,
@@ -83,6 +84,12 @@ function fixtureSnapshot() {
         question: 'Whose hand struck the false shillings?',
       },
       learner: { mode: 'mixed', profileId: 'diligent' },
+      tutor: {
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        maxTokens: 4096,
+      },
       register: { policy: 'field', engagementStanceTemperature: 0.85 },
       dagFactDropout: { rate: 0.15 },
     },
@@ -116,10 +123,10 @@ function fixtureSnapshot() {
   };
 }
 
-test('transcript HTML renders raw, script, swimlane, analysis, prompt, and settings views', () => {
+test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings, and replay views', () => {
   const html = renderTutorStubTranscriptHtml(fixtureSnapshot());
 
-  for (const view of ['raw', 'script', 'swimlanes', 'analysis', 'prompts', 'settings']) {
+  for (const view of ['raw', 'script', 'swimlanes', 'analysis', 'prompts', 'settings', 'replay']) {
     assert.match(html, new RegExp(`data-view="${view}"`, 'u'));
     assert.match(html, new RegExp(`data-panel="${view}"`, 'u'));
   }
@@ -147,6 +154,42 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, and setti
   const swimlane = html.slice(html.indexOf('data-panel="swimlanes"'), html.indexOf('data-panel="analysis"'));
   assert.ok(swimlane.indexOf('data-swim-role="learner"') < swimlane.indexOf('data-swim-role="tutor-reply"'));
   assert.match(swimlane, /The opening is an unnumbered prelude\./u);
+  assert.match(html, />Replay JS<\/button>/u);
+  assert.match(html, /data-replay-message-count="3"/u);
+  assert.match(html, /https:\/\/api\.openai\.com\/v1\/responses/u);
+  assert.match(html, /process\.env\.OPENAI_API_KEY/u);
+  assert.match(html, /const messages = \[/u);
+  assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
+});
+
+test('replay JavaScript preserves exact public message order without harness prompts', () => {
+  const javascript = buildTutorStubReplayJavascript(fixtureSnapshot());
+
+  assert.ok(javascript.indexOf('Read the first mark.') < javascript.indexOf('Does <this> identify the hand?'));
+  assert.ok(
+    javascript.indexOf('Does <this> identify the hand?') <
+      javascript.indexOf('It identifies a process, not yet a hand.'),
+  );
+  assert.match(javascript, /model: "gpt-5\.6-sol"/u);
+  assert.match(javascript, /input: messages/u);
+  assert.doesNotMatch(javascript, /FULL TUTOR BASE PROMPT/u);
+  assert.doesNotMatch(javascript, /missing/u);
+});
+
+test('replay JavaScript uses the Anthropic Messages API for Claude transcripts', () => {
+  const snapshot = fixtureSnapshot();
+  snapshot.settings.tutor = {
+    modelRef: 'claude-code.sonnet',
+    provider: 'claude-code',
+    model: 'claude-sonnet-5',
+    maxTokens: 2048,
+  };
+  const javascript = buildTutorStubReplayJavascript(snapshot);
+
+  assert.match(javascript, /https:\/\/api\.anthropic\.com\/v1\/messages/u);
+  assert.match(javascript, /process\.env\.ANTHROPIC_API_KEY/u);
+  assert.match(javascript, /model: "claude-sonnet-5"/u);
+  assert.match(javascript, /max_tokens: 2048/u);
 });
 
 test('/director repeats only notes issued so far and records the non-transcript reprise', () => {
@@ -205,7 +248,7 @@ test('transcript HTML writer creates parent directories and writes a self-contai
   assert.equal(fs.existsSync(written), true);
   const html = fs.readFileSync(written, 'utf8');
   assert.match(html, /^<!doctype html>/u);
-  assert.doesNotMatch(html, /https?:\/\//u);
+  assert.doesNotMatch(html, /(?:src|href)=["']https?:\/\//u);
 });
 
 test('transcript HTML launcher selects the platform browser command', () => {
@@ -262,7 +305,7 @@ test('interactive /transcript writes a mixed-mode snapshot without calling a mod
   assert.equal(htmlFiles.length, 1);
   const html = fs.readFileSync(path.join(traceDir, htmlFiles[0]), 'utf8');
   assert.match(html, /The Light Shillings/u);
-  assert.match(html, /Private learner-profile contract/u);
+  assert.match(html, /Private behavior brief/u);
   assert.match(html, /Base tutor system prompt/u);
   assert.match(html, /register\.policy/u);
   assert.match(html, /dagFactDropout\.rate/u);

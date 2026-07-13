@@ -58,14 +58,46 @@ test('premises authored as one release batch stay together', () => {
   );
 
   advanceTutorStubReleasePacing({ pacing, world, turn: 2, learnerText: 'Ready.' });
-  const committed = commitTutorStubReleasePacing({ pacing, world, turn: 2 });
+  const committed = commitTutorStubReleasePacing({
+    pacing,
+    world,
+    turn: 2,
+    deliveredPremises: ['p_left', 'p_right'],
+  });
   assert.deepEqual(committed.releasedNow, ['p_left', 'p_right']);
+});
+
+test('a scheduled clue is committed only after the delivered reply actually contains it', () => {
+  const world = sampleWorld();
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+  acknowledgeTutorStubOpeningRelease({ pacing, world });
+
+  for (let turn = 1; turn < 5; turn += 1) {
+    advanceTutorStubReleasePacing({ pacing, world, turn, learnerText: 'Continue.' });
+    commitTutorStubReleasePacing({ pacing, world, turn, deliveredPremises: [] });
+  }
+  advanceTutorStubReleasePacing({ pacing, world, turn: 5, learnerText: 'What happens next?' });
+  const omitted = commitTutorStubReleasePacing({ pacing, world, turn: 5, deliveredPremises: [] });
+  assert.deepEqual(omitted.releasedNow, []);
+  assert.deepEqual(omitted.notDeliveredNow, ['p_trace']);
+  assert.equal(omitted.schedule.find((entry) => entry.premise === 'p_trace').releasedTurn, null);
+  assert.equal(omitted.schedule.find((entry) => entry.premise === 'p_trace').effectiveTurn, 6);
+
+  advanceTutorStubReleasePacing({ pacing, world, turn: 6, learnerText: 'Try again.' });
+  const delivered = commitTutorStubReleasePacing({
+    pacing,
+    world,
+    turn: 6,
+    deliveredPremises: ['p_trace'],
+  });
+  assert.deepEqual(delivered.releasedNow, ['p_trace']);
+  assert.equal(delivered.schedule.find((entry) => entry.premise === 'p_trace').releasedTurn, 6);
 });
 
 test('an explicit move-it-along request releases the next clue now, but only one clue', () => {
   const world = sampleWorld();
   const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
-  commitTutorStubReleasePacing({ pacing, world, turn: 1 });
+  commitTutorStubReleasePacing({ pacing, world, turn: 1, deliveredPremises: ['p_open'] });
 
   const update = advanceTutorStubReleasePacing({
     pacing,
@@ -78,7 +110,7 @@ test('an explicit move-it-along request releases the next clue now, but only one
   assert.equal(update.direction, 'accelerate');
   assert.equal(update.signal.source, 'explicit_learner_request');
   assert.deepEqual(update.dueNow, ['p_trace']);
-  const committed = commitTutorStubReleasePacing({ pacing, world, turn: 2 });
+  const committed = commitTutorStubReleasePacing({ pacing, world, turn: 2, deliveredPremises: ['p_trace'] });
   assert.deepEqual(committed.releasedNow, ['p_trace']);
   assert.equal(committed.counts.early, 1);
   assert.equal(committed.schedule.find((entry) => entry.premise === 'p_witness').effectiveTurn > 2, true);
@@ -108,7 +140,7 @@ test('a clue already displayed in the opening is not released again', () => {
 test('one-clue-at-a-time requests slow the remaining authored schedule', () => {
   const world = sampleWorld();
   const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
-  commitTutorStubReleasePacing({ pacing, world, turn: 1 });
+  commitTutorStubReleasePacing({ pacing, world, turn: 1, deliveredPremises: ['p_open'] });
 
   const update = advanceTutorStubReleasePacing({
     pacing,
@@ -126,7 +158,7 @@ test('one-clue-at-a-time requests slow the remaining authored schedule', () => {
 test('the configured base speed changes release timing independently of learner signals', () => {
   const world = sampleWorld();
   const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
-  commitTutorStubReleasePacing({ pacing, world, turn: 1 });
+  commitTutorStubReleasePacing({ pacing, world, turn: 1, deliveredPremises: ['p_open'] });
 
   const snapshot = setTutorStubReleaseSpeed({ pacing, world, speed: 2, turn: 2 });
   assert.equal(snapshot.baseSpeed, 2);

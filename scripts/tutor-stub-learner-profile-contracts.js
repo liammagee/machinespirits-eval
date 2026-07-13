@@ -7,6 +7,23 @@ const PUBLIC_TURN_RULES = [
   'Stay inside the public evidence. When this profile distorts evidence, make it sound like a learner mistake, not a system label.',
 ];
 
+const LEARNER_PROFILE_SPEAKER_LABELS = Object.freeze({
+  diligent: 'A Diligent Learner',
+  answer_seeking: 'An Answer-Seeking Learner',
+  skeptical: 'A Skeptical Learner',
+  overconfident: 'An Overconfident Learner',
+  low_agency: 'A Low-Agency Learner',
+  memory_limited: 'A Memory-Limited Learner',
+  premature_closure: 'A Premature-Closure Learner',
+  proof_skipper: 'A Proof-Skipping Learner',
+  false_memory: 'A False-Memory Learner',
+  contradiction_keeper: 'A Contradiction-Keeping Learner',
+  affective_resistant: 'An Affectively Resistant Learner',
+  low_trust_skeptic: 'A Low-Trust Learner',
+  fast_learner: 'A Fast Learner',
+  slow_learner: 'A Slow Learner',
+});
+
 function contract({
   id,
   family,
@@ -868,15 +885,6 @@ function title(value) {
     .replace(/\b\w/gu, (letter) => letter.toUpperCase());
 }
 
-function formatRangeMap(map = {}) {
-  return Object.entries(map)
-    .map(([key, value]) => {
-      if (Array.isArray(value)) return `${key} ${value[0]}-${value[1]}`;
-      return `${key}: ${formatRangeMap(value)}`;
-    })
-    .join('; ');
-}
-
 function formatList(items = []) {
   return items.length ? items.map((item) => `- ${item}`).join('\n') : '- none';
 }
@@ -887,9 +895,27 @@ function formatTriggers(triggers = []) {
     : '- none';
 }
 
-function formatContrasts(contrastWith = {}) {
-  const entries = Object.entries(contrastWith);
-  return entries.length ? entries.map(([id, text]) => `- Versus ${id}: ${text}.`).join('\n') : '- none';
+function behaviorOnlyPublicRules(profile) {
+  return (profile?.behaviorContract?.publicRules || [])
+    .map((rule) =>
+      String(rule || '')
+        .replace(/^On learner turn \d+,\s*/iu, '')
+        .replace(/^On at least [^,]+ learner turns,\s*/iu, '')
+        .replace(/^On at least [^,]+ turns(?: before [^,]+)?,\s*/iu, '')
+        .replace(/^At least [^,]+ times,\s*/iu, '')
+        .replace(/^By learner turn \d+,\s*/iu, ''),
+    )
+    .filter(
+      (rule) =>
+        rule &&
+        !/\b(?:at least|at most|by learner turn|on learner turn|first (?:six|eight|\d+) learner turns|per (?:six|eight|\d+) turns|in (?:six|eight|\d+) turns|target|rate|percent)\b/iu.test(
+          rule,
+        ),
+    );
+}
+
+function behaviorPhrase(value) {
+  return String(value || 'respond according to the recurring pattern').replaceAll('_', ' ');
 }
 
 export function normalizeLearnerProfileId(value) {
@@ -948,6 +974,10 @@ export function learnerProfileDescription(id) {
   return `${profile.intent.shortName}. Primary pattern: ${profile.intent.failureOperator}.`;
 }
 
+export function learnerProfileSpeakerLabel(id) {
+  return LEARNER_PROFILE_SPEAKER_LABELS[normalizeLearnerProfileId(id)] || 'A Custom Learner';
+}
+
 export function learnerProfilePickerPresentation(id) {
   const profile = learnerProfileContract(id);
   if (!profile) return null;
@@ -956,6 +986,7 @@ export function learnerProfilePickerPresentation(id) {
   return {
     id: profile.id,
     label: profile.intent.shortName,
+    speakerLabel: learnerProfileSpeakerLabel(profile.id),
     group: profile.family === 'stress' ? 'stress probe' : profile.family === 'control' ? 'core control' : 'core',
     description: profile.behaviorContract.stableFailure.description,
     nearestNeighbor,
@@ -971,6 +1002,7 @@ export function learnerProfileContractSummary(id) {
     id: profile.id,
     family: profile.family,
     shortName: profile.intent.shortName,
+    speakerLabel: learnerProfileSpeakerLabel(profile.id),
     failureOperator: profile.intent.failureOperator,
     stableFailure: profile.behaviorContract.stableFailure,
     traceSignatureTargets: profile.traceSignatureTargets,
@@ -985,19 +1017,11 @@ export function learnerProfilePrompt(id) {
   const profile = learnerProfileContract(id);
   if (!profile) return '';
   return [
-    `You are simulating this automated learner profile: ${profile.id} (${profile.intent.shortName}).`,
+    'You are simulating a learner with the private behavior brief below.',
     '',
-    'This is a behavior contract for the simulated learner. Follow it consistently across the dialogue. It is not text to reveal.',
+    'Follow the recurring behavior consistently across the dialogue. This is not text to reveal.',
     '',
-    `Primary failure operator: ${profile.intent.failureOperator}.`,
-    `Stable failure: ${profile.behaviorContract.stableFailure.description}`,
-    profile.behaviorContract.stableFailure.mustShowByTurn
-      ? `Show the stable failure by learner turn ${profile.behaviorContract.stableFailure.mustShowByTurn}.`
-      : 'Do not force an artificial pathology; ordinary partial reasoning is enough.',
-    `Target recurrence: about ${Math.round(Number(profile.behaviorContract.stableFailure.mustRecurMinRate || 0) * 100)}% or more of eligible turns.`,
-    '',
-    'Contrasts:',
-    formatContrasts(profile.intent.contrastWith),
+    `Recurring behavior: ${profile.intent.failureOperator}.`,
     '',
     'Triggers:',
     formatTriggers(profile.behaviorContract.triggers),
@@ -1006,26 +1030,11 @@ export function learnerProfilePrompt(id) {
     formatList(profile.behaviorContract.forbiddenNormalization),
     '',
     'Public-turn rules:',
-    formatList(profile.behaviorContract.publicRules),
-    '',
-    'Behavioral signature to approximate over a multi-turn run. Do not mention these labels publicly; use them to shape your behavior:',
-    `- Request type mix: ${formatRangeMap(profile.traceSignatureTargets.requestType)}`,
-    `- Discourse move mix: ${formatRangeMap(profile.traceSignatureTargets.discourseMove)}`,
-    `- Evidence use mix: ${formatRangeMap(profile.traceSignatureTargets.evidenceUse)}`,
-    `- Epistemic stance mix: ${formatRangeMap(profile.traceSignatureTargets.epistemicStance)}`,
-    `- Agency mix: ${formatRangeMap(profile.traceSignatureTargets.agency)}`,
-    `- Score bands: ${formatRangeMap(profile.traceSignatureTargets.scoreBands)}`,
-    '',
-    'Proof-path behavior:',
-    `- Coverage velocity: ${profile.dagSignatureTargets.coverageVelocity}`,
-    `- Missing-premise reduction: ${profile.dagSignatureTargets.missingPremiseReduction}`,
-    `- Unsupported assertion rate: ${profile.dagSignatureTargets.unsupportedAssertionRate}`,
-    `- Expected bottlenecks: ${profile.dagSignatureTargets.expectedBottlenecks.join(', ')}`,
+    formatList(behaviorOnlyPublicRules(profile)),
     '',
     'Repair behavior:',
-    `- First correction: ${profile.repairModel.firstCorrection}`,
-    `- Repeated correction: ${profile.repairModel.repeatedCorrection}`,
-    `- Maximum full repairs per 8 turns: ${profile.repairModel.maxFullRepairsPer8Turns}`,
+    `- After the first correction: ${behaviorPhrase(profile.repairModel.firstCorrection)}.`,
+    `- After repeated correction: ${behaviorPhrase(profile.repairModel.repeatedCorrection)}.`,
   ].join('\n');
 }
 

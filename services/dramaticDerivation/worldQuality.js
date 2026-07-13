@@ -65,7 +65,6 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
   const errors = [];
   const warnings = [];
   const addError = (code, message) => errors.push({ code, message, source });
-  const addWarning = (code, message) => warnings.push({ code, message, source });
 
   const lint = plotLint(world);
   for (const message of lint.errors) addError('plot_lint', message);
@@ -109,20 +108,16 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
   const declaredPathKeys = new Set();
   for (const [index, proofPath] of world.proofPaths.entries()) {
     const key = pathKey(proofPath.premises);
-    if (declaredPathKeys.has(key)) addError('duplicate_proof_path', `proof path ${index + 1} duplicates an earlier path`);
+    if (declaredPathKeys.has(key))
+      addError('duplicate_proof_path', `proof path ${index + 1} duplicates an earlier path`);
     declaredPathKeys.add(key);
     for (const premiseId of proofPath.premises) {
       const reduced = [
         ...world.background,
-        ...proofPath.premises
-          .filter((id) => id !== premiseId)
-          .map((id) => world.premiseById.get(id).fact),
+        ...proofPath.premises.filter((id) => id !== premiseId).map((id) => world.premiseById.get(id).fact),
       ];
       if (entails(reduced, world.rules, world.secret.fact)) {
-        addError(
-          'nonminimal_proof_path',
-          `proof path ${index + 1} still entails the answer without ${premiseId}`,
-        );
+        addError('nonminimal_proof_path', `proof path ${index + 1} still entails the answer without ${premiseId}`);
       }
     }
   }
@@ -150,11 +145,7 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
     const premise = world.premiseById.get(entry.premise);
     adopted = [...adopted, premise.fact];
     const nextDistance = derivationDistance(world, adopted);
-    if (
-      nextDistance >= distance &&
-      !entry.premise.startsWith('m_') &&
-      !NON_PROGRESS_ROLES.has(premise.evidence_role)
-    ) {
+    if (nextDistance >= distance && !entry.premise.startsWith('m_') && !NON_PROGRESS_ROLES.has(premise.evidence_role)) {
       addError(
         'unmarked_nonprogress_release',
         `${entry.premise} does not reduce proof distance at turn ${entry.turn}; mark its evidence_role`,
@@ -180,15 +171,10 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
 
   const presentation = world.presentation || {};
   if (!presentation.temporal_frame) addError('missing_presentation', 'presentation.temporal_frame is required');
-  if (eligibilityStatus === 'production' && presentation.temporal_frame !== 'period') {
-    for (const field of ['scene_ecology', 'narrative_diction', 'ledger_term', 'summary']) {
-      if (!String(presentation[field] || '').trim()) {
-        addError('missing_presentation', `non-period production world needs presentation.${field}`);
-      }
+  for (const field of ['scene_ecology', 'narrative_diction', 'ledger_term', 'summary']) {
+    if (!String(presentation[field] || '').trim()) {
+      addError('missing_presentation', `world needs explicit presentation.${field}`);
     }
-  }
-  if (presentation.temporal_frame === 'period' && !presentation.narrative_diction) {
-    addWarning('legacy_period_presentation', 'period world uses the legacy period-language defaults');
   }
 
   return {

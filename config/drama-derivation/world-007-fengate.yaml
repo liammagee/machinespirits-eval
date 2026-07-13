@@ -242,3 +242,7 @@ turn_cap: 28
 presentation:
   family: fengate
   temporal_frame: period
+  scene_ecology: "quarantine-gate inquiry"
+  narrative_diction: "medieval civic formal"
+  ledger_term: "cordon roll"
+  summary: Two independent branches establish who opened a quarantine gate and drove the fever cart through it.

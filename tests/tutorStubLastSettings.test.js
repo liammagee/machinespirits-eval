@@ -85,9 +85,14 @@ test('interactive defaults restore the last settings while explicit launch flags
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-default-settings-'));
   const filePath = path.join(directory, 'last-settings.json');
   try {
-    writeTutorStubLastSettings(filePath, sampleSettings());
-    const restored = tutorStubDryRun(filePath);
+    writeTutorStubLastSettings(
+      filePath,
+      sampleSettings({ scenarioId: 'world_006_hethel', learnerProfileId: 'answer_seeking' }),
+    );
+    const restored = tutorStubDryRun(filePath, ['--mixed-learner']);
     assert.equal(restored.modelRef, 'codex.gpt-5.6-luna');
+    assert.equal(restored.world.id, 'world_006_hethel');
+    assert.equal(restored.mixedLearner.profileId, 'answer_seeking');
     assert.equal(restored.registerSelection.temperature, 0.4);
     assert.equal(restored.dagFactDropout.rate, 0.15);
     assert.equal(restored.releasePacing.baseSpeed, 1.4);
@@ -95,6 +100,8 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.registerSelection.overlayThreshold, 0.8);
     assert.equal(restored.rememberedSettings.status, 'loaded');
     assert.deepEqual(restored.rememberedSettings.appliedFields, [
+      'scenario',
+      'learner_profile',
       'tutor_model',
       'engagement_stance_temperature',
       'dag_fact_dropout',
@@ -110,6 +117,10 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.ok(compatiblePreset.rememberedSettings.skippedExplicitFields.includes('register_policy'));
 
     const explicit = tutorStubDryRun(filePath, [
+      '--world',
+      'world_005_marrick',
+      '--auto-learner-profile',
+      'diligent',
       '--model',
       'codex.gpt-5.6-terra',
       '--register-temperature',
@@ -124,12 +135,15 @@ test('interactive defaults restore the last settings while explicit launch flags
       '0.9',
     ]);
     assert.equal(explicit.modelRef, 'codex.gpt-5.6-terra');
+    assert.equal(explicit.world.id, 'world_005_marrick');
     assert.equal(explicit.registerSelection.temperature, 1.2);
     assert.equal(explicit.dagFactDropout.rate, 0.3);
     assert.equal(explicit.releasePacing.baseSpeed, 1.2);
     assert.equal(explicit.registerSelection.policy, 'field');
     assert.equal(explicit.registerSelection.overlayThreshold, 0.9);
     assert.deepEqual(explicit.rememberedSettings.appliedFields, []);
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('scenario'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('learner_profile'));
 
     const allModels = tutorStubDryRun(filePath, ['--mixed-learner', '--all-models', 'codex.gpt-5.6-terra']);
     assert.equal(allModels.modelRef, 'codex.gpt-5.6-terra');
@@ -145,6 +159,23 @@ test('interactive defaults restore the last settings while explicit launch flags
     const automated = tutorStubDryRun(filePath, ['--auto-learner']);
     assert.equal(automated.modelRef, 'codex.gpt-5.6-sol');
     assert.equal(automated.rememberedSettings.enabled, false);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('legacy saved controls request only the missing scenario and learner profile', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-partial-settings-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    writeTutorStubLastSettings(filePath, sampleSettings());
+    const config = tutorStubDryRun(filePath, ['--mixed-learner']);
+    assert.equal(config.scenarioPicker.enabled, true);
+    assert.equal(config.scenarioPicker.reason, 'no_saved_or_explicit_scenario');
+    assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile']);
+    assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.enabled, false);
+    assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.enabled, false);
+    assert.equal(config.mixedLearner.startupPrompts.clueReleaseSpeed.enabled, false);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
@@ -255,6 +286,73 @@ test(
       const loaded = readTutorStubLastSettings(filePath);
       assert.equal(loaded.status, 'loaded');
       assert.equal(loaded.settings.engagementStanceTemperature, 0.5);
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'a returning mixed TTY restores scenario, profile, and settings without reopening setup',
+  { skip: process.platform === 'win32', timeout: 10_000 },
+  async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-returning-settings-'));
+    const filePath = path.join(directory, 'last-settings.json');
+    writeTutorStubLastSettings(
+      filePath,
+      sampleSettings({ scenarioId: 'world_006_hethel', learnerProfileId: 'answer_seeking' }),
+    );
+    let output = '';
+    let requestedExit = false;
+    try {
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--mixed-learner',
+          '--dag',
+          '--tutor-learner-dag',
+          '--no-closeout-report',
+          '--no-interim-animation',
+          '--no-stream',
+          '--no-trace',
+        ],
+        {
+          cwd: ROOT,
+          cols: 100,
+          rows: 20,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            TERM: 'xterm-color',
+            TUTOR_STUB_SETTINGS_FILE: filePath,
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+          },
+        },
+      );
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`returning TTY setup test timed out\n${output}`));
+        }, 8_000);
+        terminal.onData((chunk) => {
+          output += chunk;
+          if (!requestedExit && output.includes('LEARNER') && output.includes('mode')) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`returning TTY setup test exited ${exitCode} (${signal})\n${output}`));
+        });
+      });
+      assert.match(output, /scenario: world_006_hethel/u);
+      assert.match(output, /saved settings: restored/u);
+      assert.doesNotMatch(output, /Pick a scenario/u);
+      assert.doesNotMatch(output, /Pick a learner profile/u);
+      assert.doesNotMatch(output, /Tune the dialogue/u);
     } finally {
       fs.rmSync(directory, { recursive: true, force: true });
     }
