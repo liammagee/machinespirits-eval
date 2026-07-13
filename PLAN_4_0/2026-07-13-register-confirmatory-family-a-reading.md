@@ -1,5 +1,14 @@
 # Register Confirmatory, Family A (terra): Reading and Trace Forensics
 
+> **2026-07-14 correction:** This Terra-only interim reading predates the
+> preregistered in-run profile gate. The exact final traces yield average cosine
+> `0.812` and max-to-diligent `0.912`; Terra therefore fails the frozen `<0.85`
+> / `<0.90` gate and is instrument-invalid for an interaction claim. The
+> hostile-arm sign flip below is descriptive and off-direction, not a family
+> confirmation. Canonical analysis lives in
+> `exports/register-confirmatory-evidence/final/` and the correction appended to
+> `REGISTER-CONFIRMATORY-PREREGISTRATION.md`.
+
 Date: 2026-07-13
 Status: interim analysis note, family A only. The canonical verdict lives in `REGISTER-CONFIRMATORY-PREREGISTRATION.md` (Results, family block A); this note records the interpretation and the trace-level forensics behind it. No numbers here go beyond that entry plus read-only trace inspection of the sealed run. Family B pends its final job; nothing here anticipates the two-family assessment.
 Provenance: run `.tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13` (60/60, root-verified, observed `gpt-5.6-terra` at all four seams, freeze SHA `ad24d72c`, clean tree); archive manifest `config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-terra-n5-block-a.manifest.json`; analysis validated against sealed aggregates (12/12 cell means) before bootstrap (within-cell, 5,000 draws, seed 20260713).

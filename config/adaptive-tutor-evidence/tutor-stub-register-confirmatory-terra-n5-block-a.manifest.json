@@ -48,9 +48,15 @@
       "bytes": 150943975
     }
   ],
+  "finalAnalysis": {
+    "path": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json",
+    "sha256": "5246fbc4b0b434f1ebf6aef48a4878a2af6b36b2a26246f1dc17af1c035e550c",
+    "bytes": 4003,
+    "note": "Canonical 120-row selection, bootstrap, in-run profile gates, sensitivity, and corrected selected-row QA matrix"
+  },
   "exclusions": [
     "simulated learner outcomes do not estimate human learning effects",
-    "family block A only; two-family claim assessment pends block B"
+    "Terra fails the frozen in-run profile-discrimination gate and is instrument-invalid for interaction confirmation"
   ],
-  "notes": "Register confirmatory block A. Primary-endpoint verdict recorded in the prereg Results section: interaction CONFIRMED with bootstrap support, not in the exact pre-declared direction (negative-carried sign flip; bland led diligent in 0/5000 draws)."
+  "notes": "Terra's negative x affective-resistant sign flip is bootstrap-supported but off-direction and descriptive only. The frozen manipulation gate fails (0.812 average cosine, 0.912 max to diligent), so there is no family confirmation. Corrected verdict in the appended prereg reproducibility correction and final-analysis manifest."
 }

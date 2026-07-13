@@ -7,7 +7,7 @@ priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-10
-updated: 2026-07-13
+updated: 2026-07-14
 verification: "The v2.1 gate requires a sealed passing Marrick x four-arm seed-0 canary as the same-SHA/model/runtime/CLI parent of seeds 1-5, then requires a sealed canary-bound provisional parent for seeds 6-10. It forbids real --force, validates immutable rows, matrix/numeric schema/output leaks and provenance, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same winner across both blocks plus pooled k=10."
 claim_status: planned
 depends_on:
@@ -102,3 +102,9 @@ retires, Phase 6B is declared moot (an actuator that cannot help with
 privileged state cannot help with reconstructed state), and the field
 machinery survives as reporting instrumentation only. If k5 clears, complete
 k10 exactly as frozen.
+
+2026-07-14 Codex: Still triaged and explicitly deferred behind the Step 4
+point-of-action coaching gate. Step 2 did not validate a register selector, so
+Phase 6A has lower information value and should not consume its canary/k5 quota
+until Step 4 is frozen and decided. The existing v2.1 protocol remains frozen;
+no paid Phase 6A row has run.

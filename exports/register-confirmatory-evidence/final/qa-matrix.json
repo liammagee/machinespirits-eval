@@ -2,7 +2,6 @@
   "schema": "machinespirits.tutor-stub.register-confirmatory-final-qa-matrix.v1",
   "generatedAt": "2026-07-14T00:00:00.000Z",
   "source": "exports/register-confirmatory-evidence/final/primary-endpoint-rows.json",
-  "replacementFor": "partial-run cross-run field generated 2026-07-13T01:35Z",
   "verdict": {
     "summary": "no family confirmation; no two-family claim; field selector closed on this evidence",
     "familyConfirmations": {
@@ -12,6 +11,182 @@
     "twoFamilyConfirmation": false
   },
   "families": {
+    "terra": {
+      "family": "terra",
+      "selectedRows": 60,
+      "primaryCompleteRows": 60,
+      "secondaryAvailableRows": 60,
+      "primaryOnlyRows": 0,
+      "sourceLegs": {
+        "sealed-profile-run": 60
+      },
+      "verdict": {
+        "status": "instrument_invalid",
+        "confirmation": false,
+        "frozenGatePassed": false,
+        "supportedInteraction": true,
+        "predeclaredDirectionObserved": false,
+        "reasons": [
+          "The frozen in-run profile-discrimination gate failed.",
+          "Bland did not lead the diligent control profile.",
+          "The only supported interaction is the off-direction negative x affective-resistant sign flip."
+        ]
+      },
+      "cells": {
+        "diligent": {
+          "bland": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.5,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 5,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 0,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 27.8
+          },
+          "field": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.467,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 5,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 0,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 31.6
+          },
+          "negative": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.667,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 3,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 6,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 29.2
+          }
+        },
+        "affective_resistant": {
+          "bland": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.533,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 32
+          },
+          "field": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.567,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 5,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 0,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 29.4
+          },
+          "negative": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.366,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 5,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 0,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 0,
+            "meanTurnsWhenAvailable": 40
+          }
+        },
+        "false_memory": {
+          "bland": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.4,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 32.8
+          },
+          "field": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.433,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 26.2
+          },
+          "negative": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.467,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 4,
+            "meanTurnsWhenAvailable": 31.6
+          }
+        },
+        "proof_skipper": {
+          "bland": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.433,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 0,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 4,
+            "meanTurnsWhenAvailable": 33.2
+          },
+          "field": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.366,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 4,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 4,
+            "meanTurnsWhenAvailable": 29.8
+          },
+          "negative": {
+            "selectedRows": 5,
+            "primaryCompleteRows": 5,
+            "primaryCoverageMean": 0.533,
+            "groundedByHorizon": 0,
+            "hardSafetyPassed": 3,
+            "safetyEvidenceComplete": 5,
+            "leaksAtHorizon": 1,
+            "secondaryAvailableRows": 5,
+            "groundedClosureRows": 5,
+            "meanTurnsWhenAvailable": 25.6
+          }
+        }
+      }
+    },
     "sonnet": {
       "family": "sonnet",
       "selectedRows": 60,

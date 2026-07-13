@@ -66,6 +66,7 @@
     "analyze:tutor-stub-fields": "node scripts/analyze-tutor-stub-field-traces.js",
     "analyze:tutor-stub-auto-evals": "node scripts/analyze-tutor-stub-auto-evals.js",
     "analyze:tutor-stub-profile-discrimination": "node scripts/analyze-tutor-stub-profile-discrimination.js",
+    "analyze:tutor-stub-register-confirmatory": "node scripts/analyze-register-confirmatory-step2.js",
     "analyze:reliability": "node scripts/analyze-judge-reliability.js",
     "analyze:trajectories": "node scripts/analyze-trajectory-curves.js",
     "analyze:change": "node scripts/analyze-within-test-change.js",

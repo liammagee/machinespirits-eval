@@ -7,7 +7,7 @@ priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-13
-updated: 2026-07-13
+updated: 2026-07-14
 verification: "A fresh pre-registration (successor to the Green Room Gate 1 arc under the no-tune-and-retry rule: both channel and grain change) runs four arms on stressed v3 profiles: (i) no coaching; (ii) standing-book placebo — the same notes injected via --prompt-book-context, the channel Gate 1 measured at 18% vs a 60% bar; (iii) compiled constraints — each note's trigger condition implemented mechanically over quantities the stub already computes (field velocity, DAG velocity, stagnation composite, re-gloss count), enforced in the register/stance layer; (iv) side-coaching — the note delivered mid-performance at the moment its trigger fires, action-shaped per the paper's §6.15 format law, tutor only complies. Coaching restricted to high-frequency predicates so compliance denominators are dense. Decision rules frozen at prereg: (iii) or (iv) must beat (ii) on per-note behavioural compliance AND not harm fixed-horizon outcomes; if (iv) fails while its triggers demonstrably fire, record the boundary result that the insight-action gap is generation-intrinsic on this model class."
 claim_status: planned
 depends_on:
@@ -51,3 +51,12 @@ cell registry at all. Launch requires: Step 0 provenance gate (done
 2026-07-13), the frozen dated prereg doc, and an explicit go (attended, ~1-2
 quota days). Sequencing per plan §10: after Step 2; outranks Phase 6A when
 budget-bound.
+
+2026-07-14 Codex: Remains triaged as the next scientific gate, not yet frozen
+or authorized for model calls. Before activation, replace the current
+no-coaching/standing-text comparison with claim-bearing `standing_book`,
+trigger-yoked `triggered_placebo`, action-shaped `side_coach`, and
+`compiled_constraint` arms; audit trigger density from existing traces; and
+hold automated learner, classifier, and learner-record seams fixed while only
+the speaking tutor family varies. Exact compliance, non-inferiority, safety,
+and family-interaction rules still require a fresh preregistration.

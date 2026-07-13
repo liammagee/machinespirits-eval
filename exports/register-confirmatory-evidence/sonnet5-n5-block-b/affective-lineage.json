@@ -1,0 +1,238 @@
+{
+  "schema": "machinespirits.tutor-stub.register-confirmatory-affective-lineage.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "family": "sonnet",
+  "profile": "affective_resistant",
+  "selectedRows": 15,
+  "primaryCompleteRows": 15,
+  "secondaryAvailableRows": 11,
+  "primaryOnlyRows": 4,
+  "legs": [
+    {
+      "sourceLeg": "original-r1-r2",
+      "rows": [
+        {
+          "key": "bland-r1",
+          "policy": "bland",
+          "runIndex": 1,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r1/2026-07-13T00-53-24-438Z.jsonl",
+          "traceSha256": "b226d2796486d73ad90db2186a5116e9a9c21a90da44d44c2000276c3eae6821",
+          "coverageAtTurn16": 0.167,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "field-r1",
+          "policy": "field",
+          "runIndex": 1,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r1/2026-07-13T00-53-36-124Z.jsonl",
+          "traceSha256": "2f043f64aa8f4e4bba9e083d6a6631c1182702ab376f217ffcb9e5eba8b2e4bb",
+          "coverageAtTurn16": 0.333,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "negative-r1",
+          "policy": "negative",
+          "runIndex": 1,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r1/2026-07-13T00-53-47-609Z.jsonl",
+          "traceSha256": "54eab633201437beb0b5b9e3912202ad829af0635ee015a007e0eeb2e4bae83a",
+          "coverageAtTurn16": 0,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "bland-r2",
+          "policy": "bland",
+          "runIndex": 2,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r2/2026-07-13T00-54-00-369Z.jsonl",
+          "traceSha256": "e9e0733ec5dbe7703f6b97cbc3eb2e932d20ef8abe68af4c97797e9a038feabe",
+          "coverageAtTurn16": 0.333,
+          "hardSafetyPassed": true,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "field-r2",
+          "policy": "field",
+          "runIndex": 2,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r2/2026-07-13T00-54-13-780Z.jsonl",
+          "traceSha256": "9fba9af9df0436c64243d6816dbf03ab7e2f76213e93a56a6e82892d6e4ea505",
+          "coverageAtTurn16": 0.5,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "negative-r2",
+          "policy": "negative",
+          "runIndex": 2,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "sourceSummarySha256": "2a625666ca4d21c3271426aee94bd8ea43524f8f255f5f8cf0ecbade096bc3cd",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r2/2026-07-13T00-54-28-661Z.jsonl",
+          "traceSha256": "852b7ded4de6b6a799c00dd0d041aa1e50d9065bf4dc0acd76b63db45e8ceda2",
+          "coverageAtTurn16": 0,
+          "hardSafetyPassed": true,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        }
+      ]
+    },
+    {
+      "sourceLeg": "resume-r3-and-r4-partial",
+      "rows": [
+        {
+          "key": "bland-r3",
+          "policy": "bland",
+          "runIndex": 3,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "sourceSummarySha256": "cf7a9e02e53262bd4e778091e49888460c40ee93255db597872aa25e90f4c459",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r3/2026-07-13T12-43-07-530Z.jsonl",
+          "traceSha256": "49e07363b4f98505e48a112487b3e547cbf7245a9f2f6e909cfe328c2f55f8bd",
+          "coverageAtTurn16": 0.5,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "field-r3",
+          "policy": "field",
+          "runIndex": 3,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "sourceSummarySha256": "cf7a9e02e53262bd4e778091e49888460c40ee93255db597872aa25e90f4c459",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r3/2026-07-13T12-43-07-552Z.jsonl",
+          "traceSha256": "da247e7f8d36df3aa8334359b143734305233a7c1202010fddd70b3394005548",
+          "coverageAtTurn16": 0.167,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "negative-r3",
+          "policy": "negative",
+          "runIndex": 3,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "sourceSummarySha256": "cf7a9e02e53262bd4e778091e49888460c40ee93255db597872aa25e90f4c459",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/negative-r3/2026-07-13T12-43-07-664Z.jsonl",
+          "traceSha256": "0c4fee84d586b3b50f3514f73a810900afdfa7866366a1908043661906515706",
+          "coverageAtTurn16": 0.167,
+          "hardSafetyPassed": false,
+          "observedTurns": 37,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "bland-r4",
+          "policy": "bland",
+          "runIndex": 4,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "sourceSummarySha256": "cf7a9e02e53262bd4e778091e49888460c40ee93255db597872aa25e90f4c459",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r4/2026-07-13T12-43-07-633Z.jsonl",
+          "traceSha256": "079ac203019eb32cbcaef101e36e652d0d69bd3c8c23fecda984f5b7fc954ad9",
+          "coverageAtTurn16": 0,
+          "hardSafetyPassed": false,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        },
+        {
+          "key": "field-r4",
+          "policy": "field",
+          "runIndex": 4,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "sourceSummarySha256": "cf7a9e02e53262bd4e778091e49888460c40ee93255db597872aa25e90f4c459",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r4/2026-07-13T12-43-07-587Z.jsonl",
+          "traceSha256": "7ed3a2d54e1e5653fa5d1a64f85dabf33d7cdc40b3304db1f2ff261f0c2b6c7a",
+          "coverageAtTurn16": 0.167,
+          "hardSafetyPassed": true,
+          "observedTurns": 40,
+          "secondaryAvailable": true,
+          "inclusionReason": "Completed selected row from the declared sealed profile run."
+        }
+      ]
+    },
+    {
+      "sourceLeg": "post-t16-topup",
+      "rows": [
+        {
+          "key": "negative-r4",
+          "policy": "negative",
+          "runIndex": 4,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/auto-eval-2026-07-13T14-38-33-594Z.json",
+          "sourceSummarySha256": "d02557255c24cb23955ed158a2ac0d97b17220df967d2bc7d5a2f1f104dd3dda",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r4/2026-07-13T14-28-04-452Z.jsonl",
+          "traceSha256": "7a223f9b36957c988c02fb795a5fdfbe7e92c913133e667de02072301dc51773",
+          "coverageAtTurn16": 0.333,
+          "hardSafetyPassed": false,
+          "observedTurns": 16,
+          "secondaryAvailable": false,
+          "inclusionReason": "Each row completed the frozen turn-16 endpoint before a session-window failure; until-grounded outcomes are unavailable."
+        },
+        {
+          "key": "bland-r5",
+          "policy": "bland",
+          "runIndex": 5,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/auto-eval-2026-07-13T14-38-33-594Z.json",
+          "sourceSummarySha256": "d02557255c24cb23955ed158a2ac0d97b17220df967d2bc7d5a2f1f104dd3dda",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/bland-r5/2026-07-13T14-28-04-476Z.jsonl",
+          "traceSha256": "61481c917ecff652241f269f9e698542f1f77238d995e2b0845438ebe97bd459",
+          "coverageAtTurn16": 0.167,
+          "hardSafetyPassed": false,
+          "observedTurns": 17,
+          "secondaryAvailable": false,
+          "inclusionReason": "Each row completed the frozen turn-16 endpoint before a session-window failure; until-grounded outcomes are unavailable."
+        },
+        {
+          "key": "field-r5",
+          "policy": "field",
+          "runIndex": 5,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/auto-eval-2026-07-13T14-38-33-594Z.json",
+          "sourceSummarySha256": "d02557255c24cb23955ed158a2ac0d97b17220df967d2bc7d5a2f1f104dd3dda",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/field-r5/2026-07-13T14-28-04-540Z.jsonl",
+          "traceSha256": "e401ba751606796ce9ba0c51e8359492390312638908f8aed63beface6f9ea3b",
+          "coverageAtTurn16": 0,
+          "hardSafetyPassed": true,
+          "observedTurns": 18,
+          "secondaryAvailable": false,
+          "inclusionReason": "Each row completed the frozen turn-16 endpoint before a session-window failure; until-grounded outcomes are unavailable."
+        },
+        {
+          "key": "negative-r5",
+          "policy": "negative",
+          "runIndex": 5,
+          "sourceSummary": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/auto-eval-2026-07-13T14-38-33-594Z.json",
+          "sourceSummarySha256": "d02557255c24cb23955ed158a2ac0d97b17220df967d2bc7d5a2f1f104dd3dda",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r5/2026-07-13T14-28-04-503Z.jsonl",
+          "traceSha256": "be8ce8add53a7c3f1727f28c54046866f46cb0b6bc018ddc2ff6fc20088c4c67",
+          "coverageAtTurn16": 0,
+          "hardSafetyPassed": false,
+          "observedTurns": 16,
+          "secondaryAvailable": false,
+          "inclusionReason": "Each row completed the frozen turn-16 endpoint before a session-window failure; until-grounded outcomes are unavailable."
+        }
+      ]
+    }
+  ],
+  "interpretation": "All 15 selected rows have complete turn-16 primary endpoints. Four top-up rows are excluded from until-grounded secondary outcomes."
+}

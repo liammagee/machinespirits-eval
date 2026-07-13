@@ -7,10 +7,10 @@ priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-09
-updated: 2026-07-13
+updated: 2026-07-14
 verification: "A sealed stable export from tutor_stub_turn_frames records typed actions, realized outcomes, guard exposure, and logging propensities; overlap and effective sample size are reported before estimation; ridge/logistic/GBM baselines use dialogue-grouped cross-fitting with held-out worlds and learner sources; a guarded learned ranker is compared out of sample with strong fixed, action-frequency-yoked, and guard-frequency-yoked controls on raw outcomes and cannot pass with a safety loss."
 claim_status: planned
-blocked_by: "No claim-grade multi-world transition dataset exists. Stays blocked pending final-stretch Step 1a's classification of the sensor null (representation_carries_nothing closes this lever; data_starved reopens design discussion only) and Step 2's confirmatory dataset (PRECONSCIOUS-FINAL-STRETCH-PLAN.md)."
+blocked_by: "Step 2 is a one-world dataset with no validated adaptive policy effect, and the v2.4 sensor program is closed on the authored substrate. No claim-grade multi-world transition dataset or supported action effect exists for fitting a learned ranker."
 depends_on:
   - tutor-stub-multiworld-policy-replication
 links:
@@ -52,3 +52,8 @@ Suggested sequence:
 - Keep simulation-only results exploratory until held-out worlds, held-out
   learner profiles, independent judging, and eventually human traces support a
   stronger claim.
+
+2026-07-14 Codex: Block retained. Step 2 closed the field selector rather than
+supplying a validated action effect, and its single Marrick world is not the
+held-out multi-world transition corpus required by this card. Do not launch
+model fitting from the 120 confirmatory rows.

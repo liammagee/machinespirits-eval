@@ -124,3 +124,42 @@ The frozen decision rule: two-family confirmation (an interaction with bootstrap
 Bounds: single world (world-005-marrick), simulated learners under contract personas (no human-learning claim, costume caveat), fixed-horizon mechanical endpoint (escapes the §7.9 slope-proxy regime but is one operationalisation), n=5. Paper landing: §6.17.
 
 **2026-07-14 execution notes (block B window deaths).** Block B's Sonnet runs were interrupted five times by session-window limits: (1) the original run died at 01:22Z leaving diligent + a partial affective and dead false_memory/proof_skipper; (2) false_memory recovered in a later window; (3–4) two full-column affective re-runs died mid-job (quarantined as `affective_resistant-dead-*`); (5) the 9-cell resume completed 5 cells then exhausted; a final 4-cell top-up landed the last cells as post-t16-death rows (above). Every dead dialogue was quarantined and re-run per the frozen technical-failure rule; no behavioral outcome was re-rolled. proof_skipper was also re-run whole after its window death. Two harness issues surfaced and were handled: the QA-matrix root-verification exit-1 on failed jobs (spun off as a fix task), and a `--resume-from` defect that rejected partial sources by demanding draw decisions from the rows it was about to re-run (fixed here with a draw-contract exemption threaded `buildResumePlan → verifyExperimentRun → replayRunRandomization` and regression-tested at both unit and end-to-end levels). The final 4-cell top-up was assembled via an unsealed merged resume manifest so exactly the 4 needed cells re-ran rather than a full 9.
+
+### 2026-07-14 reproducibility correction — binding interpretation
+
+The narrative above was written before the preregistered in-run profile gate
+had been computed on the exact final 60 traces per family. The deterministic
+archive analysis now lives at `scripts/analyze-register-confirmatory-step2.js`,
+with the row declaration in
+`config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-selection.json`
+and compact outputs under `exports/register-confirmatory-evidence/final/`.
+
+The missing binding check changes the claim interpretation:
+
+- Terra has average pairwise cosine `0.812` and max similarity to diligent
+  `0.912`. It fails the frozen `<0.85` / `<0.90` gate and is instrument-invalid
+  for an interaction claim. Its hostile-arm sign flip remains a descriptive,
+  off-direction safety hypothesis only.
+- Sonnet has `0.645` / `0.694` and passes the frozen cosine gate, but no primary
+  contrast or interaction interval excludes zero. Its family result is null.
+- Neither family confirms the predeclared direction because bland does not lead
+  diligent. There is no one-family confirmation and no two-family claim. The
+  earlier statements that the phenomenon was “confirmed,” “twice-seen,” or
+  “replicates in structure” are superseded as claim conclusions. Rank crossings
+  remain descriptive table geometry only.
+- The richer current-contract checks are non-binding sensitivities: Terra fails
+  false-memory observability and Sonnet fails proof-skipper observability.
+- The four Sonnet affective top-up rows retain complete turn-16 endpoints.
+  Excluding them leaves 56 rows and still yields no supported interaction. They
+  remain excluded from until-grounded secondary outcomes.
+
+The tracked bootstrap fixes the previously unspecified PRNG and traversal order
+as Mulberry32 with within-cell resampling, 5,000 draws, seed `20260713`. It
+reproduces every cell mean and support decision. A few percentile endpoints
+differ by one discrete resampling step from the earlier untracked calculation;
+the tracked JSON is authoritative because the freeze specified the seed and
+resampling unit but not the PRNG implementation.
+
+**Corrected strict verdict:** no family confirmation; no two-family claim; the
+`field` selector is closed on this evidence. All single-world, simulated-
+learner, whole-stack, and LLM-extractor bounds above remain in force.

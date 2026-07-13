@@ -1,15 +1,15 @@
 ---
 id: tutor-stub-learner-state-validity
 title: Validate adaptive-tutor learner-state predictions
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-07-13
+updated: 2026-07-14
 verification: "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size."
-claim_status: planned
+claim_status: scope-bound
 depends_on:
   - adaptive-eval-immutable-provenance
 links:
@@ -424,3 +424,11 @@ instrument, fresh contract). Sealed VOI arm packaged
 (config/adaptive-tutor-evidence/adaptive-state-v24-voi-schedule-6135bf3f6c6b.manifest.json).
 S2, policy optimization, Phase 6B, shadow-pilot, efficacy, and human-learning
 claims all remain blocked.
+
+2026-07-14 Codex closeout: Marked done and scope-bound. The v2.4 decomposition
+classifies the learned estimator failure as `data_starved`, while the exact
+Bayes filter establishes transparency rather than concealment and the VOI arm
+closes the sensor program on the authored substrate. This completes the card's
+scientific decision even though policy optimization, Phase 6B, shadow-pilot,
+efficacy, and human-learning claims remain blocked. Any revival requires a new
+identifiability-limited instrument and fresh contract.

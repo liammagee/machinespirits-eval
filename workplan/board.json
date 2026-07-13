@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-13T22:29:26.868Z",
+  "generated": "2026-07-13T23:32:19.552Z",
   "counts": {
     "total": 118,
     "byStatus": {
-      "done": 94,
+      "done": 95,
       "blocked": 4,
       "dropped": 2,
       "triaged": 8,
       "review": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4
     },
     "byType": {
@@ -31,7 +31,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-10",
-      "updated": "2026-07-13",
+      "updated": "2026-07-14",
       "verification": "The v2.1 gate requires a sealed passing Marrick x four-arm seed-0 canary as the same-SHA/model/runtime/CLI parent of seeds 1-5, then requires a sealed canary-bound provisional parent for seeds 6-10. It forbids real --force, validates immutable rows, matrix/numeric schema/output leaks and provenance, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same winner across both blocks plus pooled k=10.",
       "claim_status": "planned",
       "depends_on": [
@@ -63,7 +63,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-13",
-      "updated": "2026-07-13",
+      "updated": "2026-07-14",
       "verification": "A fresh pre-registration (successor to the Green Room Gate 1 arc under the no-tune-and-retry rule: both channel and grain change) runs four arms on stressed v3 profiles: (i) no coaching; (ii) standing-book placebo — the same notes injected via --prompt-book-context, the channel Gate 1 measured at 18% vs a 60% bar; (iii) compiled constraints — each note's trigger condition implemented mechanically over quantities the stub already computes (field velocity, DAG velocity, stagnation composite, re-gloss count), enforced in the register/stance layer; (iv) side-coaching — the note delivered mid-performance at the moment its trigger fires, action-shaped per the paper's §6.15 format law, tutor only complies. Coaching restricted to high-frequency predicates so compliance denominators are dense. Decision rules frozen at prereg: (iii) or (iv) must beat (ii) on per-note behavioural compliance AND not harm fixed-horizon outcomes; if (iv) fails while its triggers demonstrably fire, record the boundary result that the insight-action gap is generation-intrinsic on this model class.",
       "claim_status": "planned",
       "depends_on": [
@@ -302,53 +302,6 @@
       "branch": "worktree-blueprint-composition"
     },
     {
-      "id": "tutor-stub-learner-state-validity",
-      "title": "Validate adaptive-tutor learner-state predictions",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-11",
-      "updated": "2026-07-13",
-      "verification": "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size.",
-      "claim_status": "planned",
-      "depends_on": [
-        "adaptive-eval-immutable-provenance"
-      ],
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
-          "PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md",
-          "PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md",
-          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
-          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md"
-        ],
-        "runs": [
-          "adaptive-state-v2-s0-clean-5a3e5aae-v21",
-          "adaptive-state-v2-s1-technical-5a3e5aae-v21",
-          "adaptive-state-v2-s1-technical-b69775b6-v21",
-          "adaptive-state-v2-s1-repair-bb65da27-v21",
-          "adaptive-state-v2-observability-preflight-5fda0824-v21",
-          "adaptive-state-v2-observability-preflight-8d6d2b22-v21",
-          "adaptive-state-v2-observability-preflight-c0ccd5c9-v21",
-          "adaptive-state-v2-s0-structural-support-2dd039c5-v21",
-          "adaptive-state-v2-observability-preflight-985bd542-v21",
-          "adaptive-state-v2-observability-reliability-4133d7ff-v22",
-          "adaptive-state-v2-s0-exact-channel-346e472a-v23",
-          "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "learner-state",
-        "calibration",
-        "held-out-evaluation"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "codex/adaptive-tutor-implementation"
-    },
-    {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
       "status": "active",
@@ -465,10 +418,10 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-09",
-      "updated": "2026-07-13",
+      "updated": "2026-07-14",
       "verification": "A sealed stable export from tutor_stub_turn_frames records typed actions, realized outcomes, guard exposure, and logging propensities; overlap and effective sample size are reported before estimation; ridge/logistic/GBM baselines use dialogue-grouped cross-fitting with held-out worlds and learner sources; a guarded learned ranker is compared out of sample with strong fixed, action-frequency-yoked, and guard-frequency-yoked controls on raw outcomes and cannot pass with a safety loss.",
       "claim_status": "planned",
-      "blocked_by": "No claim-grade multi-world transition dataset exists. Stays blocked pending final-stretch Step 1a's classification of the sensor null (representation_carries_nothing closes this lever; data_starved reopens design discussion only) and Step 2's confirmatory dataset (PRECONSCIOUS-FINAL-STRETCH-PLAN.md).",
+      "blocked_by": "Step 2 is a one-world dataset with no validated adaptive policy effect, and the v2.4 sensor program is closed on the authored substrate. No claim-grade multi-world transition dataset or supported action effect exists for fitting a learned ranker.",
       "depends_on": [
         "tutor-stub-multiworld-policy-replication"
       ],
@@ -1428,6 +1381,53 @@
       ]
     },
     {
+      "id": "tutor-stub-learner-state-validity",
+      "title": "Validate adaptive-tutor learner-state predictions",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-14",
+      "verification": "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
+          "PLAN_4_0/2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md",
+          "PLAN_4_0/2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md",
+          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
+          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md"
+        ],
+        "runs": [
+          "adaptive-state-v2-s0-clean-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-b69775b6-v21",
+          "adaptive-state-v2-s1-repair-bb65da27-v21",
+          "adaptive-state-v2-observability-preflight-5fda0824-v21",
+          "adaptive-state-v2-observability-preflight-8d6d2b22-v21",
+          "adaptive-state-v2-observability-preflight-c0ccd5c9-v21",
+          "adaptive-state-v2-s0-structural-support-2dd039c5-v21",
+          "adaptive-state-v2-observability-preflight-985bd542-v21",
+          "adaptive-state-v2-observability-reliability-4133d7ff-v22",
+          "adaptive-state-v2-s0-exact-channel-346e472a-v23",
+          "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "learner-state",
+        "calibration",
+        "held-out-evaluation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/adaptive-tutor-implementation"
+    },
+    {
       "id": "tutor-stub-multiworld-policy-replication",
       "title": "Register confirmatory: fixed-horizon policy x profile interaction at n=5 (final-stretch Step 2)",
       "status": "done",
@@ -1438,7 +1438,7 @@
       "created": "2026-07-11",
       "updated": "2026-07-14",
       "verification": "A frozen pre-registration runs {bland, field, negative} x {diligent, affective_resistant, false_memory, proof_skipper} v3 contracts x n=5 per cell on both model families (codex.gpt-5.6-terra and claude-code sonnet-5), deterministically interleaved, turn-6 pressure probe in every arm, binding safety-turns 40, outcome-only scoring, in-run profile-discrimination gates on the run's own control cells. Primary endpoint: coverage at learner turn 16, estimated as policy x profile interaction contrasts. Secondary: coverage/mastery/risk AUC turns 1-16, until-grounded endpoint, post-probe recovery (window 4). Pre-committed interpretation: bland leading diligent is part of the predicted signature; the claim under test is the crossing; a null is no interaction at n=5 on either family.",
-      "claim_status": "planned",
+      "claim_status": "scope-bound",
       "depends_on": [
         "adaptive-eval-immutable-provenance",
         "tutor-stub-typed-pedagogical-actions"

@@ -9,7 +9,7 @@ source: review
 created: 2026-07-11
 updated: 2026-07-14
 verification: "A frozen pre-registration runs {bland, field, negative} x {diligent, affective_resistant, false_memory, proof_skipper} v3 contracts x n=5 per cell on both model families (codex.gpt-5.6-terra and claude-code sonnet-5), deterministically interleaved, turn-6 pressure probe in every arm, binding safety-turns 40, outcome-only scoring, in-run profile-discrimination gates on the run's own control cells. Primary endpoint: coverage at learner turn 16, estimated as policy x profile interaction contrasts. Secondary: coverage/mastery/risk AUC turns 1-16, until-grounded endpoint, post-probe recovery (window 4). Pre-committed interpretation: bland leading diligent is part of the predicted signature; the claim under test is the crossing; a null is no interaction at n=5 on either family."
-claim_status: planned
+claim_status: scope-bound
 depends_on:
   - adaptive-eval-immutable-provenance
   - tutor-stub-typed-pedagogical-actions
@@ -30,10 +30,9 @@ tags:
 milestone: adaptive-tutor-evidence-v1
 ---
 
-Confirm (or close) the arc's one replicated exploratory positive: policy x
-profile rank crossings at fixed horizons, found at n=3 on gpt-5.6-terra and
-replicated in structure on Sonnet 5. This is the single highest-value paid run
-in the final-stretch plan and runs before any other paid step.
+Test and close the arc's exploratory policy x profile rank-crossing signal at
+claimable n on the two original whole-stack model families. The final strict
+result is negative: no family confirmation and no two-family claim.
 
 2026-07-11 Codex: Blocked before paid policy calls. The first bounded formal
 benchmark did not clear its gates, but later audit showed it tested partial
@@ -126,3 +125,15 @@ concurrent session, e159a827) and a --resume-from draw-contract exemption
 fix in-tree). Next: Step 4 side-coaching gate (the contraindication-guardrail
 design this result argues for); Step 6 capstone drops the register SELECTOR,
 keeps the palette + a per-model contraindication guard.
+
+2026-07-14 Codex correction: The exact final 60 traces per family were selected
+from the hash-verified archives and analyzed through the tracked zero-call path
+`scripts/analyze-register-confirmatory-step2.js`. Terra's frozen profile gate
+fails (average cosine 0.812; max to diligent 0.912), so its off-direction
+negative x affective-resistant interaction is instrument-invalid for a family
+claim. Sonnet's frozen gate passes (0.645/0.694) but every interaction interval
+crosses zero. The strict verdict is no family confirmation, no two-family
+claim, and no field-selector effect. Compact canonical outputs:
+`exports/register-confirmatory-evidence/final/`; Sonnet's four post-t16 top-up
+rows remain primary-valid, secondary-unavailable, and the exclusion sensitivity
+is still null.
