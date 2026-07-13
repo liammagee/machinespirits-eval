@@ -68,3 +68,5 @@ node scripts/run-tutor-stub-qa-matrix.js \
 ## Results
 
 To be appended below the freeze line after each family block, per the card's conventions. Paper landing: §6.17 material either way.
+
+**2026-07-13 execution record — both blocks launched.** Block A (terra) launched from freeze commit `ad24d72c`, trace dir `.tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13`; provenance verified in-run (observed model `gpt-5.6-terra`, clean tree at the freeze SHA). Block B (Sonnet 5) launched same day on user go, same design and seed, command mirroring the pinned block-A command with `claude-code.sonnet-5` at all four seams, trace dir `.tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13`. The two blocks run concurrently by design revision at go time: they draw on independent subscription pools (codex vs Claude), so the sequential-when-quota-shared rule does not bind across them. Design, cells, seeds, endpoints, and decision rules unchanged.

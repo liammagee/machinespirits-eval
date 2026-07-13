@@ -92,3 +92,14 @@ Block A launching from the freeze commit; progress polled ~every 25 min
 with per-model call counts, payload-based token estimates, and ETA
 (subscription CLIs expose no token meters — call counts + wall clock are
 the quota-actionable metrics).
+
+2026-07-13 Claude: Block B (Sonnet 5, all four seams) LAUNCHED on user go,
+concurrent with block A — independent quota pools (codex vs Claude), so the
+sequential-when-quota-shared rule does not bind across blocks. Same design,
+same seed 20260713, trace dir register-confirmatory-sonnet5-n5-live-2026-07-13.
+Execution record appended to the prereg Results section. Interim block-A
+note (diligent column complete, monitoring only): negative leads diligent
+at t16 (0.667 vs bland 0.500) unlike the probe-free exploratory ordering,
+but with 2/5 hard-safety failures and 9 leaks in the negative cell; endpoint
+pattern (all ground, bland fastest) reproduces. Decisive stress cells in
+flight.
