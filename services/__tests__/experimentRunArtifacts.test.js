@@ -194,6 +194,49 @@ test('a declared stochastic job fails replay when no runtime draw was recorded',
   }
 });
 
+test('exemptDrawContractJobIds waives the draw minimum only for the named rerun rows', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-resume-exempt-'));
+  try {
+    createRunPlan(
+      runDir,
+      planFixture({
+        metadata: {
+          randomDrawContract: {
+            schema: EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+            requiredJobIds: ['diligent-field-r1', 'skeptical-bland-r1'],
+            minimumPerJob: 1,
+          },
+        },
+      }),
+    );
+    appendRunEvent(runDir, { type: 'run_started', recordedAt: '2026-07-11T00:00:01.000Z' });
+    createRunSeal(runDir, { closedAt: '2026-07-11T00:00:02.000Z' });
+
+    // Both stochastic rows are drawless (a window-killed source), so the bare
+    // check fails on both.
+    const bare = verifyExperimentRun(runDir);
+    assert.equal(bare.ok, false);
+    assert.match(bare.errors.join('\n'), /diligent-field-r1/u);
+    assert.match(bare.errors.join('\n'), /skeptical-bland-r1/u);
+
+    // Exempting exactly the rows queued for rerun clears the source.
+    const exempted = verifyExperimentRun(runDir, {
+      exemptDrawContractJobIds: new Set(['diligent-field-r1', 'skeptical-bland-r1']),
+    });
+    assert.equal(exempted.ok, true);
+
+    // A partial exemption stays precise: the non-exempt row still fails.
+    const partial = verifyExperimentRun(runDir, {
+      exemptDrawContractJobIds: new Set(['diligent-field-r1']),
+    });
+    assert.equal(partial.ok, false);
+    assert.doesNotMatch(partial.errors.join('\n'), /diligent-field-r1/u);
+    assert.match(partial.errors.join('\n'), /random draw contract missing decisions for skeptical-bland-r1/u);
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
 test('integrity-only verification tolerates unmet presence contracts but never tampering', () => {
   const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-integrity-only-'));
   try {

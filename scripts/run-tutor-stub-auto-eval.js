@@ -10220,10 +10220,28 @@ function buildResumePlan(summaryPath) {
   const resolvedSummaryPath = resolvePath(summaryPath);
   const sourceDir = path.dirname(resolvedSummaryPath);
   const sourceSealPath = path.join(sourceDir, 'run-seal.json');
-  const sourceVerification = fs.existsSync(sourceSealPath) ? assertExperimentRun(sourceDir) : null;
   const source = JSON.parse(fs.readFileSync(resolvedSummaryPath, 'utf8'));
   const traceDir = uniqueSiblingDirectory(sourceDir, 'resume');
   const retryStatuses = new Set(csv(args['resume-statuses']));
+  // The rows we are about to re-run legitimately have no draw decisions (a
+  // failed or window-killed dialogue never drew), so exempt exactly those job
+  // ids from the source's draw-contract check. Every other integrity check
+  // (event chain, replay of rows that did draw, model provenance, inventory,
+  // seal) still gates the source before it can seed the resume.
+  const exemptDrawContractJobIds = new Set(
+    (source.results || [])
+      .filter((result) => retryStatuses.has(result.status))
+      .map((result) => result.key)
+      .filter(Boolean),
+  );
+  let sourceVerification = null;
+  if (fs.existsSync(sourceSealPath)) {
+    const verification = verifyExperimentRun(sourceDir, { exemptDrawContractJobIds });
+    if (!verification.ok) {
+      throw new Error(`Resume source verification failed:\n- ${verification.errors.join('\n- ')}`);
+    }
+    sourceVerification = verification;
+  }
   const parallelism = positiveInt(args.parallelism, '--parallelism');
   const runSeed = normalizeTutorStubDagFactDropoutSeed(
     RUN_SEED_OVERRIDE ? args['run-seed'] : (source.config?.runSeed ?? args['run-seed']),

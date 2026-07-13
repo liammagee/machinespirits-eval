@@ -66,12 +66,13 @@ function treeSnapshot(root) {
   return rows.sort((left, right) => left.path.localeCompare(right.path));
 }
 
-function writeFakeCodex(binDir) {
+function writeFakeCodex(binDir, { failWhenInputIncludes = null } = {}) {
   const executable = path.join(binDir, 'codex');
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node
 const fs = require('node:fs');
+const failMarker = ${JSON.stringify(failWhenInputIncludes)};
 const args = process.argv.slice(2);
 const outputIndex = args.indexOf('-o');
 const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
@@ -79,6 +80,10 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
+  if (failMarker && input.includes(failMarker)) {
+    process.stderr.write('fake codex: induced failure for test marker\\n');
+    process.exit(1);
+  }
   const response = input.includes('You are an automated learner')
     ? 'I would test the newest public mark before deciding.'
     : input.includes('compact up-front reviewer')
@@ -297,6 +302,124 @@ test('resume creates a sealed sibling transaction with source hashes and no sour
     const traceFlag = resumedSummary.results[0].command.indexOf('--trace-dir');
     assert.equal(resumedSummary.results[0].command[traceFlag + 1], resumeDir);
     assert.notEqual(resumedSummary.results[0].command[traceFlag + 1], runDir);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('resume replaces drawless failed rows without weakening retained-row verification', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-resume-incomplete-'));
+  const runDir = path.join(root, 'source');
+  const binDir = path.join(root, 'bin');
+  fs.mkdirSync(binDir, { recursive: true });
+  writeFakeCodex(binDir, { failWhenInputIncludes: 'Automated learner run 2/2 for policy field.' });
+  const env = {
+    ...process.env,
+    PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+    CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+  };
+  try {
+    const sourceError = (() => {
+      try {
+        execFileSync(
+          process.execPath,
+          [
+            AUTO_EVAL,
+            '--runs',
+            '2',
+            '--policies',
+            'field',
+            '--turns',
+            '1',
+            '--primary-horizon',
+            '1',
+            '--model',
+            'codex.gpt-5.6-terra',
+            '--analysis-model',
+            'codex.gpt-5.6-terra',
+            '--auto-learner-model',
+            'codex.gpt-5.6-terra',
+            '--parallelism',
+            '1',
+            '--trace-dir',
+            runDir,
+            '--index-root',
+            path.join(root, 'index'),
+            '--keep-going',
+            '--no-progress',
+            '--no-html-report',
+            '--no-ledger',
+            '--no-memory-summary',
+          ],
+          { cwd: ROOT, encoding: 'utf8', timeout: 30_000, maxBuffer: 8 * 1024 * 1024, stdio: 'pipe', env },
+        );
+        return null;
+      } catch (error) {
+        return error;
+      }
+    })();
+    assert.ok(sourceError, 'the induced source failure must exit non-zero');
+    assert.equal(sourceError.status, 1);
+
+    const sourceSummary = summaryPath(runDir);
+    const source = JSON.parse(fs.readFileSync(sourceSummary, 'utf8'));
+    assert.deepEqual(
+      source.results.map((result) => [result.key, result.status]),
+      [
+        ['field-r1', 'ok'],
+        ['field-r2', 'failed'],
+      ],
+    );
+    const fullSourceVerification = verifyExperimentRun(runDir);
+    assert.equal(fullSourceVerification.ok, false);
+    assert.match(fullSourceVerification.errors.join('\n'), /random draw contract missing decisions for field-r2/u);
+    const scopedSourceVerification = verifyExperimentRun(runDir, {
+      exemptDrawContractJobIds: new Set(['field-r2']),
+    });
+    assert.equal(scopedSourceVerification.ok, true, scopedSourceVerification.errors.join('\n'));
+    const before = treeSnapshot(runDir);
+
+    writeFakeCodex(binDir);
+    execFileSync(
+      process.execPath,
+      [
+        AUTO_EVAL,
+        '--resume-from',
+        sourceSummary,
+        '--resume-statuses',
+        'failed',
+        '--parallelism',
+        '1',
+        '--index-root',
+        path.join(root, 'resume-index'),
+        '--no-progress',
+        '--no-html-report',
+        '--no-ledger',
+        '--no-memory-summary',
+      ],
+      { cwd: ROOT, encoding: 'utf8', timeout: 30_000, maxBuffer: 8 * 1024 * 1024, env },
+    );
+
+    assert.deepEqual(treeSnapshot(runDir), before);
+    const resumeDir = fs
+      .readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith('source-resume-'))
+      .map((entry) => path.join(root, entry.name))
+      .at(0);
+    assert.ok(resumeDir);
+    const resumeVerification = verifyExperimentRun(resumeDir);
+    assert.equal(resumeVerification.ok, true, resumeVerification.errors.join('\n'));
+    assert.equal(resumeVerification.plan.lineage.resumeOf, path.basename(runDir));
+    assert.deepEqual(resumeVerification.plan.randomization.jobOrder, ['field-r2']);
+    assert.equal(resumeVerification.plan.intent.sourceLineage.sourceVerified, true);
+    const resumedSummary = JSON.parse(fs.readFileSync(summaryPath(resumeDir), 'utf8'));
+    assert.deepEqual(
+      resumedSummary.results.map((result) => [result.key, result.status]),
+      [
+        ['field-r1', 'ok'],
+        ['field-r2', 'ok'],
+      ],
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

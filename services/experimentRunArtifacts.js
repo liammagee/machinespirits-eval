@@ -589,7 +589,7 @@ function verifyEventChain(events, errors) {
   }
 }
 
-export function replayRunRandomization(runDir, { enforceDrawContract = true } = {}) {
+export function replayRunRandomization(runDir, { enforceDrawContract = true, exemptDrawContractJobIds = null } = {}) {
   const errors = [];
   let plan;
   let events;
@@ -661,7 +661,13 @@ export function replayRunRandomization(runDir, { enforceDrawContract = true } = 
     });
   const drawContract = enforceDrawContract ? plan.metadata?.randomDrawContract || null : null;
   if (drawContract) {
+    const exempt = exemptDrawContractJobIds instanceof Set ? exemptDrawContractJobIds : null;
     for (const jobId of drawContract.requiredJobIds) {
+      // Rows queued for re-run legitimately carry no draw decisions (a failed
+      // or window-killed dialogue never drew); exempt exactly those job ids so
+      // a partial source can still seed a resume. Every other integrity check
+      // still applies to it.
+      if (exempt && exempt.has(jobId)) continue;
       const observed = decisionsByJob.get(jobId) || 0;
       if (observed < drawContract.minimumPerJob) {
         errors.push(
@@ -754,8 +760,14 @@ function verifyObservedModelProvenance(plan, events, errors, { requirePresence =
  * whose failed jobs never drew); a run that passes integrity-only but fails
  * the default full verification is honest about being incomplete, not
  * corrupt.
+ *
+ * `exemptDrawContractJobIds` is narrower: it waives only the required draw
+ * minimum for the named jobs in this run. Recorded draws are still replayed,
+ * every other job keeps its minimum, and all other completeness and integrity
+ * checks remain active. Resume uses this only for rows it will replace in a
+ * new sealed sibling transaction.
  */
-export function verifyExperimentRun(runDir, { completeness = true } = {}) {
+export function verifyExperimentRun(runDir, { completeness = true, exemptDrawContractJobIds = null } = {}) {
   const root = path.resolve(runDir);
   const errors = [];
   const warnings = [];
@@ -835,7 +847,7 @@ export function verifyExperimentRun(runDir, { completeness = true } = {}) {
     }
   }
 
-  const replay = replayRunRandomization(root, { enforceDrawContract: completeness });
+  const replay = replayRunRandomization(root, { enforceDrawContract: completeness, exemptDrawContractJobIds });
   if (!replay.ok) errors.push(...replay.errors);
   if (plan) verifyObservedModelProvenance(plan, events, errors, { requirePresence: completeness });
   return {
