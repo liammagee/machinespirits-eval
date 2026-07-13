@@ -24,6 +24,7 @@ import {
   EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
   hashCanonicalJson,
   hashFile,
+  verifyExperimentRun,
 } from '../services/experimentRunArtifacts.js';
 import { recordTutorStubModelObservation } from '../services/tutorStubEvalIntegrity.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
@@ -561,6 +562,7 @@ function collectChildPolicyDraws(rootDir, evidencePlan) {
   const parentJobs = new Map(evidencePlan.jobs.map((job) => [childJobKey(job), job]));
   const parentOrder = new Map(evidencePlan.randomization.jobOrder.map((jobId, index) => [jobId, index]));
   const rows = [];
+  const skippedChildren = [];
   const seen = new Set();
   const stack = [root];
   while (stack.length) {
@@ -575,7 +577,19 @@ function collectChildPolicyDraws(rootDir, evidencePlan) {
       const childPlanPath = path.join(directory, 'run-plan.json');
       const childSealPath = path.join(directory, 'run-seal.json');
       if (!fs.existsSync(childPlanPath) || !fs.existsSync(childSealPath)) continue;
-      const childVerification = assertExperimentRun(directory);
+      // Integrity-only: a sealed child whose failed jobs never drew (e.g. a
+      // dead-session casualty under --keep-going) still forwards the draws it
+      // DID seal; the root contract judges completeness at final
+      // verification. Only a broken child ledger blocks forwarding.
+      const childVerification = verifyExperimentRun(directory, { completeness: false });
+      if (!childVerification.ok) {
+        skippedChildren.push({
+          traceDir: path.relative(root, directory).split(path.sep).join('/'),
+          runId: childVerification.plan?.runId || null,
+          errors: childVerification.errors,
+        });
+        continue;
+      }
       const childJobs = new Map(childVerification.plan.jobs.map((job) => [job.id, job]));
       const lines = fs.readFileSync(entryPath, 'utf8').split('\n');
       for (let index = 0; index < lines.length; index += 1) {
@@ -609,7 +623,7 @@ function collectChildPolicyDraws(rootDir, evidencePlan) {
       }
     }
   }
-  return rows.sort(
+  rows.sort(
     (left, right) =>
       parentOrder.get(left.jobId) - parentOrder.get(right.jobId) ||
       Number(left.decision?.material?.learnerTurn || 0) - Number(right.decision?.material?.learnerTurn || 0) ||
@@ -618,10 +632,24 @@ function collectChildPolicyDraws(rootDir, evidencePlan) {
       ) ||
       left.digest.localeCompare(right.digest),
   );
+  return { rows, skippedChildren };
 }
 
 function appendChildPolicyDrawEvents(rootDir, evidencePlan) {
-  for (const row of collectChildPolicyDraws(rootDir, evidencePlan)) {
+  const { rows, skippedChildren } = collectChildPolicyDraws(rootDir, evidencePlan);
+  for (const skipped of skippedChildren) {
+    console.warn(
+      `[qa-matrix] warning: child run ${skipped.traceDir} failed integrity verification; its policy draws were not forwarded`,
+    );
+    appendRunEvent(rootDir, {
+      type: 'child_run_unverified',
+      traceDir: skipped.traceDir,
+      runId: skipped.runId,
+      errorCount: skipped.errors.length,
+      errors: skipped.errors.slice(0, 25),
+    });
+  }
+  for (const row of rows) {
     appendRunEvent(rootDir, {
       type: 'random_draw',
       jobId: row.jobId,
@@ -807,7 +835,9 @@ function main() {
   if (args['from-dir']) {
     const sealPath = path.join(rootDir, 'run-seal.json');
     if (fs.existsSync(sealPath)) {
-      assertExperimentRun(rootDir);
+      // Integrity-only: rebuilding reports from a sealed-but-incomplete run
+      // (failed profiles under --keep-going) is legitimate; tampering is not.
+      assertExperimentRun(rootDir, { completeness: false });
       reportRoot = path.join(path.dirname(rootDir), `${path.basename(rootDir)}-derived-${safeTimestampForFile()}`);
       console.log(`[qa-matrix] sealed source verified; derived reports will be written under ${reportRoot}`);
     }
@@ -905,6 +935,24 @@ function main() {
         summaryCount: summaryFiles.length,
       },
     });
+    if (status === 'incomplete') {
+      // Failed profiles never recorded their contracted draws, so full
+      // verification cannot pass. Seal the partial evidence truthfully,
+      // require it to be integrity-clean, surface the unmet contract items,
+      // and fail the matrix without destroying the completed work.
+      assertExperimentRun(rootDir, { completeness: false });
+      const verification = verifyExperimentRun(rootDir);
+      console.warn(`[qa-matrix] sealed ${rootDir} with status incomplete; integrity verified`);
+      for (const error of verification.errors.slice(0, 12)) console.warn(`[qa-matrix]   unmet: ${error}`);
+      if (verification.errors.length > 12) {
+        console.warn(`[qa-matrix]   ... ${verification.errors.length - 12} more unmet item(s)`);
+      }
+      const failedProfiles = profileStatuses.filter((row) => row.status !== 0).map((row) => row.profile);
+      throw new Error(
+        `${failedProfiles.length} profile job(s) failed (${failedProfiles.join(', ')}); ` +
+          `sealed incomplete run reports ${verification.errors.length} unmet contract item(s)`,
+      );
+    }
     assertExperimentRun(rootDir);
     console.log(`[qa-matrix] sealed and verified ${rootDir}`);
   }

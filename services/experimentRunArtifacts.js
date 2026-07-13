@@ -589,7 +589,7 @@ function verifyEventChain(events, errors) {
   }
 }
 
-export function replayRunRandomization(runDir) {
+export function replayRunRandomization(runDir, { enforceDrawContract = true } = {}) {
   const errors = [];
   let plan;
   let events;
@@ -659,7 +659,7 @@ export function replayRunRandomization(runDir) {
         return { sequence: event.sequence, matches: false, error: error.message };
       }
     });
-  const drawContract = plan.metadata?.randomDrawContract || null;
+  const drawContract = enforceDrawContract ? plan.metadata?.randomDrawContract || null : null;
   if (drawContract) {
     for (const jobId of drawContract.requiredJobIds) {
       const observed = decisionsByJob.get(jobId) || 0;
@@ -694,7 +694,7 @@ function modelContractAcceptsObserved(contract, observed) {
   return modelProvider(contract.resolved) !== null && modelProvider(contract.resolved) === modelProvider(observed);
 }
 
-function verifyObservedModelProvenance(plan, events, errors) {
+function verifyObservedModelProvenance(plan, events, errors, { requirePresence = true } = {}) {
   const observedByRole = new Map();
   for (const event of events.filter((row) => row.type === 'model_observed')) {
     const role = typeof event.role === 'string' ? event.role.trim() : '';
@@ -736,12 +736,26 @@ function verifyObservedModelProvenance(plan, events, errors) {
       errors.push(`conflicting observed models for role ${role}: ${[...observations].sort().join(', ')}`);
     }
   }
+  if (!requirePresence) return;
   for (const role of plan.requiredObservedModelRoles || []) {
     if (!observedByRole.get(role)?.size) errors.push(`missing observed model provenance for role ${role}`);
   }
 }
 
-export function verifyExperimentRun(runDir) {
+/**
+ * Verify a sealed experiment run.
+ *
+ * `completeness: false` switches to integrity-only verification: everything
+ * recorded must still be authentic and internally consistent (event hash
+ * chain, seal inventory, per-draw replay, observed-model consistency), but
+ * the frozen presence contracts (random-draw minimums per job, required
+ * observed-model roles) are not enforced, here or in nested runs. Use it when
+ * reading evidence out of a sealed-but-incomplete run (e.g. a QA-matrix child
+ * whose failed jobs never drew); a run that passes integrity-only but fails
+ * the default full verification is honest about being incomplete, not
+ * corrupt.
+ */
+export function verifyExperimentRun(runDir, { completeness = true } = {}) {
   const root = path.resolve(runDir);
   const errors = [];
   const warnings = [];
@@ -806,7 +820,7 @@ export function verifyExperimentRun(runDir) {
   if (seal && actualInventory.length) {
     for (const entry of actualInventory.filter((artifact) => artifact.path.endsWith(`/${EXPERIMENT_RUN_SEAL_FILE}`))) {
       const childDir = path.dirname(path.join(root, entry.path));
-      const childVerification = verifyExperimentRun(childDir);
+      const childVerification = verifyExperimentRun(childDir, { completeness });
       if (!childVerification.ok) {
         errors.push(
           `nested run ${path.relative(root, childDir).split(path.sep).join('/')} failed verification: ${childVerification.errors.join('; ')}`,
@@ -821,9 +835,9 @@ export function verifyExperimentRun(runDir) {
     }
   }
 
-  const replay = replayRunRandomization(root);
+  const replay = replayRunRandomization(root, { enforceDrawContract: completeness });
   if (!replay.ok) errors.push(...replay.errors);
-  if (plan) verifyObservedModelProvenance(plan, events, errors);
+  if (plan) verifyObservedModelProvenance(plan, events, errors, { requirePresence: completeness });
   return {
     ok: errors.length === 0,
     errors: [...new Set(errors)],
@@ -836,8 +850,8 @@ export function verifyExperimentRun(runDir) {
   };
 }
 
-export function assertExperimentRun(runDir) {
-  const verification = verifyExperimentRun(runDir);
+export function assertExperimentRun(runDir, options = {}) {
+  const verification = verifyExperimentRun(runDir, options);
   if (!verification.ok) {
     throw new Error(`Experiment run verification failed:\n- ${verification.errors.join('\n- ')}`);
   }

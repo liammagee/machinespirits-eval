@@ -29,6 +29,7 @@ import {
   extractTutorStubPolicyDrawDecisions,
   hashCanonicalJson,
   hashFile,
+  verifyExperimentRun,
 } from '../services/experimentRunArtifacts.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
 import {
@@ -10631,6 +10632,17 @@ function sealEvidenceTransaction({
       resumeOf: resumePlan?.sourceRunId || null,
     },
   });
+  if (status === 'incomplete') {
+    // Failed jobs never recorded their contracted draws, so full verification
+    // cannot pass. Require the sealed partial evidence to be integrity-clean
+    // and surface the unmet contract items without discarding the run.
+    const verification = assertExperimentRun(traceDir, { completeness: false });
+    const unmet = verifyExperimentRun(traceDir).errors;
+    console.warn(
+      `[auto-eval] sealed ${traceDir} with status incomplete; integrity verified, ${unmet.length} unmet contract item(s)`,
+    );
+    return verification;
+  }
   const verification = assertExperimentRun(traceDir);
   console.log(`[auto-eval] sealed and verified ${traceDir}`);
   return verification;
@@ -11049,16 +11061,17 @@ async function main() {
       summary: logicalArtifactPath(report.summaryPath, plan.traceDir),
       html: report.htmlPath ? logicalArtifactPath(report.htmlPath, plan.traceDir) : null,
     });
+    const failedRows = combinedResults.some((result) => result.status === 'failed');
     sealEvidenceTransaction({
       traceDir: plan.traceDir,
       evidencePlan,
       results: combinedResults,
       observedResults: retriedResults,
-      status: aborted ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
+      status: aborted || failedRows ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
       summaryPath: report.summaryPath,
       resumePlan: plan,
     });
-    if (aborted) process.exit(1);
+    if (aborted || failedRows) process.exit(1);
     return;
   }
 
@@ -11099,14 +11112,15 @@ async function main() {
     summary: logicalArtifactPath(report.summaryPath, traceDir),
     html: report.htmlPath ? logicalArtifactPath(report.htmlPath, traceDir) : null,
   });
+  const failedRows = results.some((result) => result.status === 'failed');
   sealEvidenceTransaction({
     traceDir,
     evidencePlan,
     results,
-    status: aborted ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
+    status: aborted || failedRows ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
     summaryPath: report.summaryPath,
   });
-  if (aborted) process.exit(1);
+  if (aborted || failedRows) process.exit(1);
 }
 
 function writeSummary({

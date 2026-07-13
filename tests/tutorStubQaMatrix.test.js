@@ -15,12 +15,13 @@ import { verifyExperimentRun } from '../services/experimentRunArtifacts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function writeFakeCodex(binDir) {
+function writeFakeCodex(binDir, { failWhenInputIncludes = null } = {}) {
   const executable = path.join(binDir, 'codex');
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node
 const fs = require('node:fs');
+const failMarker = ${JSON.stringify(failWhenInputIncludes)};
 const args = process.argv.slice(2);
 const outputIndex = args.indexOf('-o');
 const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
@@ -28,6 +29,10 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
+  if (failMarker && input.includes(failMarker)) {
+    process.stderr.write('fake codex: induced failure for test marker\\n');
+    process.exit(1);
+  }
   const response = input.includes('You are an automated learner')
     ? 'I would test the newest public mark before deciding.'
     : input.includes('compact up-front reviewer')
@@ -597,6 +602,117 @@ test('live-like QA matrix seals matching tutor, analyzer, and learner observatio
       assert.deepEqual(observations.map((event) => event.role).sort(), ['analyzer', 'learner', 'tutor']);
       assert.ok(verification.replay.decisions.every((decision) => decision.matches));
     }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a failed child under --keep-going still seals the matrix root with forwarded evidence', () => {
+  // Regression for the 2026-07-13 register-confirmatory failure: children
+  // whose jobs die (dead CLI sessions) seal without their contracted draws;
+  // root finalization previously asserted every sealed child and crashed
+  // before forwarding any draws or model observations, leaving the root
+  // unsealed after all paid work had completed.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-failed-child-'));
+  const qaDir = path.join(root, 'qa');
+  const binDir = path.join(root, 'bin');
+  fs.mkdirSync(binDir, { recursive: true });
+  writeFakeCodex(binDir, { failWhenInputIncludes: 'automated learner profile: proof_skipper' });
+  const env = {
+    ...process.env,
+    PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+    CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+  };
+  try {
+    const matrixError = (() => {
+      try {
+        execFileSync(
+          process.execPath,
+          [
+            'scripts/run-tutor-stub-qa-matrix.js',
+            '--trace-dir',
+            qaDir,
+            '--profiles',
+            'diligent,proof_skipper',
+            '--policies',
+            'field',
+            '--runs',
+            '1',
+            '--turns',
+            '1',
+            '--model',
+            'codex.gpt-5.6-terra',
+            '--analysis-model',
+            'codex.gpt-5.6-terra',
+            '--auto-learner-model',
+            'codex.gpt-5.6-terra',
+            '--parallelism',
+            '1',
+            '--keep-going',
+            '--no-html-report',
+            '--no-ledger',
+            '--no-memory-summary',
+          ],
+          { cwd: ROOT, encoding: 'utf8', timeout: 60_000, maxBuffer: 8 * 1024 * 1024, stdio: 'pipe', env },
+        );
+        return null;
+      } catch (error) {
+        return error;
+      }
+    })();
+    assert.ok(matrixError, 'matrix with a failed child must exit non-zero');
+    assert.equal(matrixError.status, 1);
+    assert.match(matrixError.stderr, /profile job\(s\) failed \(proof_skipper\)/u);
+    assert.match(matrixError.stderr, /sealed incomplete run reports \d+ unmet contract item\(s\)/u);
+    assert.match(matrixError.stderr, /status incomplete; integrity verified/u);
+
+    const rootSeal = JSON.parse(fs.readFileSync(path.join(qaDir, 'run-seal.json'), 'utf8'));
+    assert.equal(rootSeal.status, 'incomplete');
+    const rootEvents = fs
+      .readFileSync(path.join(qaDir, 'run-events.jsonl'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+
+    // The healthy child's draws land in the root ledger re-keyed with the
+    // profile prefix the root contract expects.
+    const forwardedDraws = rootEvents.filter((event) => event.type === 'random_draw');
+    assert.ok(forwardedDraws.length >= 1);
+    assert.ok(forwardedDraws.every((event) => event.jobId === 'diligent-field-r1'));
+    assert.ok(forwardedDraws.every((event) => event.sourceJobId === 'field-r1'));
+
+    // Observed-model provenance reaches the root with non-null models.
+    const observations = rootEvents.filter((event) => event.type === 'model_observed');
+    assert.deepEqual(
+      observations.map((event) => event.role).sort(),
+      ['analyzer', 'learner', 'tutor'],
+    );
+    assert.ok(observations.every((event) => typeof event.observed === 'string' && event.observed.length > 0));
+
+    const completed = rootEvents.find((event) => event.type === 'run_completed');
+    assert.equal(completed?.status, 'incomplete');
+    assert.deepEqual(completed?.profileStatuses, [
+      { profile: 'diligent', status: 0 },
+      { profile: 'proof_skipper', status: 1 },
+    ]);
+
+    // Full verification reports the failed profile's unmet contract; the
+    // sealed partial evidence itself is integrity-clean.
+    const full = verifyExperimentRun(qaDir);
+    assert.equal(full.ok, false);
+    assert.match(full.errors.join('\n'), /random draw contract missing decisions for proof_skipper-field-r1/u);
+    const integrityOnly = verifyExperimentRun(qaDir, { completeness: false });
+    assert.equal(integrityOnly.ok, true, integrityOnly.errors.join('\n'));
+
+    // The healthy child fully verifies; the failed child seals truthfully.
+    const healthy = verifyExperimentRun(path.join(qaDir, 'diligent'));
+    assert.equal(healthy.ok, true, healthy.errors.join('\n'));
+    const failedSeal = JSON.parse(fs.readFileSync(path.join(qaDir, 'proof_skipper', 'run-seal.json'), 'utf8'));
+    assert.equal(failedSeal.status, 'incomplete');
+    const failedChild = verifyExperimentRun(path.join(qaDir, 'proof_skipper'));
+    assert.equal(failedChild.ok, false);
+    const failedChildIntegrity = verifyExperimentRun(path.join(qaDir, 'proof_skipper'), { completeness: false });
+    assert.equal(failedChildIntegrity.ok, true, failedChildIntegrity.errors.join('\n'));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

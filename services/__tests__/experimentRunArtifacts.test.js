@@ -194,6 +194,125 @@ test('a declared stochastic job fails replay when no runtime draw was recorded',
   }
 });
 
+test('integrity-only verification tolerates unmet presence contracts but never tampering', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-integrity-only-'));
+  try {
+    createRunPlan(
+      runDir,
+      planFixture({
+        requiredObservedModelRoles: ['tutor', 'analyzer', 'learner'],
+        metadata: {
+          randomDrawContract: {
+            schema: EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+            requiredJobIds: ['diligent-field-r1'],
+            minimumPerJob: 1,
+          },
+        },
+      }),
+    );
+    appendRunEvent(runDir, { type: 'run_started', recordedAt: '2026-07-13T00:00:01.000Z' });
+    createRunSeal(runDir, { closedAt: '2026-07-13T00:00:02.000Z', status: 'incomplete' });
+
+    const full = verifyExperimentRun(runDir);
+    assert.equal(full.ok, false);
+    assert.match(full.errors.join('\n'), /random draw contract missing decisions for diligent-field-r1/u);
+    assert.match(full.errors.join('\n'), /missing observed model provenance for role tutor/u);
+
+    const integrityOnly = verifyExperimentRun(runDir, { completeness: false });
+    assert.equal(integrityOnly.ok, true, integrityOnly.errors.join('\n'));
+    assert.equal(assertExperimentRun(runDir, { completeness: false }).ok, true);
+
+    const eventsPath = path.join(runDir, 'run-events.jsonl');
+    fs.writeFileSync(eventsPath, fs.readFileSync(eventsPath, 'utf8').replace('run_started', 'run_tampered'));
+    const tampered = verifyExperimentRun(runDir, { completeness: false });
+    assert.equal(tampered.ok, false);
+    assert.match(tampered.errors.join('\n'), /checksum mismatch/u);
+    assert.throws(() => assertExperimentRun(runDir, { completeness: false }), /verification failed/u);
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
+test('integrity-only verification still replays every recorded draw', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-integrity-draws-'));
+  try {
+    const plan = planFixture();
+    createRunPlan(runDir, plan);
+    const decision = deterministicChoice(
+      [
+        { value: 'plain', weight: 1 },
+        { value: 'precise', weight: 2 },
+      ],
+      {
+        masterSeed: plan.randomization.masterSeed,
+        material: {
+          profile: 'diligent',
+          policy: 'field',
+          repeat: 1,
+          learnerTurn: 1,
+          decisionKind: 'engagement_stance',
+          jobId: 'diligent-field-r1',
+        },
+      },
+    );
+    const corrupted = {
+      ...decision,
+      selectedIndex: (decision.selectedIndex + 1) % decision.distribution.length,
+      selectedValue: decision.distribution[(decision.selectedIndex + 1) % decision.distribution.length].value,
+    };
+    appendRunEvent(runDir, {
+      type: 'random_draw',
+      jobId: 'diligent-field-r1',
+      recordedAt: '2026-07-13T00:00:01.000Z',
+      decision: corrupted,
+    });
+    createRunSeal(runDir, { closedAt: '2026-07-13T00:00:02.000Z', status: 'incomplete' });
+
+    const integrityOnly = verifyExperimentRun(runDir, { completeness: false });
+    assert.equal(integrityOnly.ok, false);
+    assert.match(integrityOnly.errors.join('\n'), /random draw mismatch at event 1/u);
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
+test('integrity-only verification threads into nested child runs', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-integrity-nested-'));
+  const child = path.join(root, 'child');
+  try {
+    createRunPlan(
+      child,
+      planFixture({
+        runId: 'child-run',
+        jobs: [{ id: 'field-r1', profile: 'diligent', policy: 'field', repeat: 1 }],
+        lineage: { parentRunId: 'parent-run', resumeOf: null, supersedes: [] },
+        metadata: {
+          randomDrawContract: {
+            schema: EXPERIMENT_RANDOM_DRAW_CONTRACT_SCHEMA,
+            requiredJobIds: ['field-r1'],
+            minimumPerJob: 1,
+          },
+        },
+      }),
+    );
+    appendRunEvent(child, { type: 'run_started', recordedAt: '2026-07-13T00:00:01.000Z' });
+    createRunSeal(child, { closedAt: '2026-07-13T00:00:02.000Z', status: 'incomplete' });
+
+    createRunPlan(root, planFixture({ runId: 'parent-run', jobs: [{ id: 'parent-job' }] }));
+    appendRunEvent(root, { type: 'run_started', recordedAt: '2026-07-13T00:00:03.000Z' });
+    createRunSeal(root, { closedAt: '2026-07-13T00:00:04.000Z', status: 'incomplete' });
+
+    const full = verifyExperimentRun(root);
+    assert.equal(full.ok, false);
+    assert.match(full.errors.join('\n'), /nested run child failed verification.*random draw contract missing/u);
+
+    const integrityOnly = verifyExperimentRun(root, { completeness: false });
+    assert.equal(integrityOnly.ok, true, integrityOnly.errors.join('\n'));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a parent seal binds and recursively verifies nested child seals', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'experiment-nested-seal-'));
   const child = path.join(root, 'child');

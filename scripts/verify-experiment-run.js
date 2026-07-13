@@ -10,17 +10,20 @@ function main() {
   const { values } = parseArgs({
     options: {
       'run-dir': { type: 'string' },
+      // Skip the presence contracts (draw minimums, required observed-model
+      // roles) but keep every integrity check; for sealed-but-incomplete runs.
+      'integrity-only': { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
   if (values.help || !values['run-dir']) {
-    console.log('Usage: node scripts/verify-experiment-run.js --run-dir DIR [--json]');
+    console.log('Usage: node scripts/verify-experiment-run.js --run-dir DIR [--integrity-only] [--json]');
     if (!values.help) process.exitCode = 1;
     return;
   }
   const runDir = path.resolve(values['run-dir']);
-  const verification = verifyExperimentRun(runDir);
+  const verification = verifyExperimentRun(runDir, { completeness: !values['integrity-only'] });
   const summary = {
     ok: verification.ok,
     runId: verification.plan?.runId || null,
