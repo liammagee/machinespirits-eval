@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 6–13 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-13 window=(2026-07-05,2026-07-13] arxiv=2607.07989,2607.07097,2607.08147,2607.07760 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">6–13 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  An 8-day window, (2026-07-05, 2026-07-13]. Four qualifying papers turned up, clustered in
+  agent architecture and rhetoric (all dated 7–9 Jul 2026). Targeted searches for ontology and
+  for dramaturgy/role-play work in this specific window came up empty — the closest candidates
+  either predate the window (arXiv submission dates before 5 Jul) or are off-topic (e.g. a
+  speaker-recognition benchmark for TV dramas, not dramatic structure). Reported honestly as a
+  gap rather than padded with out-of-window or tangential entries. Flags:
+  <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Who Broke the System? Failure Localization in LLM-Based Multi-Agent Systems
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Yufei Xia, Anjun Gao, Yueyang Quan, Zhuqing Liu, Minghong Fang ·
+    arXiv 2607.07989 · July 8, 2026 ·
+    <a href="https://arxiv.org/abs/2607.07989">https://arxiv.org/abs/2607.07989</a>
+  </div>
+  <p>
+    Introduces AgentLocate, a framework for attributing a multi-agent LLM system's failure to
+    both a specific responsible agent and the earliest decisive step in its trajectory, rather
+    than just flagging that a failure occurred somewhere in the pipeline. Outperforms existing
+    failure-localization methods on identifying both the responsible agent and the failure step.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly applicable to the bilateral ego-superego architecture, which already separates
+    private deliberation steps (<code>ego/generate</code> → <code>superego/review</code> →
+    <code>ego/revision</code>) with symmetric labels on both tutor and learner sides and persists
+    them to <code>tutor_deliberation_*</code> / <code>learner_deliberation_*</code> and
+    <code>deliberation_rounds</code>. There is currently no automated pass that attributes a
+    low-scoring turn to a specific step in that chain; AgentLocate's agent+step attribution
+    method is a ready-made complement to <code>analyze-mechanism-traces.js</code>, and would be
+    especially useful on cells 22-33 (divergent superego variants) and the adaptive trap suite
+    (110-125), where the counterfactual-replay machinery in <code>services/adaptiveTutor/</code>
+    already isolates individual turns but doesn't yet attribute failure within a turn's
+    deliberation chain.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Operational Reframing and Approval-Framed Delegation in Multi-Agent LLM Safety
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Lifei Liu, Haoran Yu, Xiaochong Jiang, Su Wang, Pin Qian, Yihang Chen ·
+    arXiv 2607.07097 · July 8, 2026 ·
+    <a href="https://arxiv.org/abs/2607.07097">https://arxiv.org/abs/2607.07097</a>
+  </div>
+  <p>
+    Argues that safety evaluations of multi-agent LLM systems conflate three distinct mechanisms:
+    harmful intent reframed as plausible operational work, a planner that refuses or transforms
+    the request, and an executor that acts under delegation prompts implying prior approval. A
+    five-condition controlled-contrast design across 30 synthetic harmful scenarios plus an
+    external validation set (four agent-safety benchmarks, LLM-judged compliance) finds
+    operational reframing is the most portable risk signal — raising compliance for GPT, Gemini,
+    and DeepSeek, while Claude is comparatively resistant.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Structurally close to how the dialectical_suspicious/adversary/advocate superego variants
+    (cells 22-33) and the id-director charisma family (101-109) work: a persona/framing layer
+    changes what the downstream ego treats as "already approved." The paper's five-condition
+    contrast design is a directly reusable template for testing whether recognition-mode or
+    dialectical framing induces similar approval-implying compliance shifts in the ego's revision
+    step, and — given the standing directive that nemotron/kimi nulls are stack-bounded — would
+    be worth running cross-model (nemotron/kimi vs. the mandated codex.gpt-5.5/Sonnet 5 stack) to
+    see whether the compliance-inflation effect the paper finds in GPT/Gemini/DeepSeek also shows
+    up as a stack-specific artifact here.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper">
+  <h3>
+    Prismata: Confining Cross-Site Prompt Injection in Web Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Corban Villa, Alp Eren Ozdarendeli, Sijun Tan, Raluca Ada Popa (UC Berkeley) ·
+    arXiv 2607.08147 · July 9, 2026 ·
+    <a href="https://arxiv.org/abs/2607.08147">https://arxiv.org/abs/2607.08147</a>
+  </div>
+  <p>
+    Addresses prompt injection in web agents by enforcing contextual least privilege: a dynamic
+    trust-derivation step produces permission labels for page content with structural confinement
+    guarantees, and a mechanical-confinement layer enforces those labels by redacting content and
+    restricting agent capabilities — with no developer annotations required, so it scales to the
+    long tail of websites.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Tangential — this project has no web-agent attack surface — but the underlying pattern
+    (label untrusted injected content with derived trust/permission scope rather than trusting it
+    uniformly) is conceptually adjacent to how cell 21's dynamic prompt rewriting (Writing Pad)
+    and cells 48-49 (prompt erosion) accumulate injected context into the tutor's prompt turn
+    over turn. Prismata's "no annotations required" trust-derivation could inform a lighter-weight
+    provenance tag on Writing Pad injections, distinguishing tutor-authored context from
+    learner-sourced content, for <code>services/evalSignature.js</code>'s existing
+    <code>prompt_content_hash</code> drift detection. Flagged WATCH rather than UNBLOCK since the
+    fit requires real adaptation, not direct reuse.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric</h2>
+
+<div class="paper hot">
+  <h3>
+    Adversarial Social Epistemology for Assemblies of Humans and Large Language Models
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Mihnea C. Moldoveanu, Joel A.C. Baum ·
+    arXiv 2607.07760 · July 8, 2026 ·
+    <a href="https://arxiv.org/abs/2607.07760">https://arxiv.org/abs/2607.07760</a>
+  </div>
+  <p>
+    Outlines an adversarial social epistemology for communicative landscapes where public
+    assertions are scaffolded by chains of testimony, inference, institutional certification, and
+    tacit trust. In such landscapes, agents have incentives and affordances to distort, color,
+    omit, fabricate, or strategically under-specify information for private, reputational,
+    rhetorical, or material gain — phenomena the authors argue existing accounts of epistemic
+    bubbles, echo chambers, or misinformation diffusion don't adequately capture. Provides
+    vocabulary for analyzing how agents exploit the commitments that normally make scaffolded
+    assertions trustworthy, plus machinery for auditing and redressing trust breaches.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close theoretical match for the suspicious/adversary/advocate superego variants (cells
+    22-27, 28-33) and the dialectical_suspicious mechanism (cells 93-100), whose entire design
+    premise is a superego agent that must catch an ego distorting, omitting, or strategically
+    under-specifying pedagogical claims. This paper's distort/color/omit/fabricate/under-specify
+    taxonomy is a more precise vocabulary than the project currently uses to describe what those
+    superego variants are meant to detect, and its trust-breach auditing machinery is a candidate
+    lens for the poetics rubric (<code>config/evaluation-rubric-poetics.yaml</code>) — dramatic
+    recognition (anagnorisis) is, in this paper's terms, the moment a scaffolded assertion's trust
+    breach is finally exposed, which could sharpen how the poetics pipeline scores whether a
+    dialogue's peripeteia genuinely surfaces a prior distortion versus merely gesturing at one.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>High Accuracy Means It's a Good Classifier — Until the Card Asks Where the Number Comes From</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-13 ·
+  Deep-research harness (fan-out WebSearch) plus targeted follow-up passes per topic (ontology and
+  dramaturgy/role-play returned no qualifying in-window paper despite repeated targeted searches) ·
+  Window: (2026-07-05, 2026-07-13] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
