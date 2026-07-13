@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of 15 Jun – 5 Jul 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .stale { font-size: .9rem; color: #555; background: #fff8ea; border: 1px solid #e6d8a8;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-13 reviews=2026-06-15,2026-06-16,2026-06-17,2026-06-18,2026-06-20,2026-06-21,2026-06-23,2026-06-24,2026-06-25,2026-06-26,2026-06-27,2026-07-02,2026-07-03,2026-07-05 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 15 Jun – 5 Jul 2026 roundups</small></h1>
+
+<div class="stale">
+  <strong>Pipeline note:</strong> the daily research-roundup generator has not produced a new note
+  since <code>2026-07-05-research-roundup.html</code> — 8 days ago as of this review, despite 60+
+  other commits landing on <code>main</code> in that window, so the gap looks specific to the
+  roundup trigger rather than general inactivity. Worth checking whether the daily "Research
+  roundup" schedule is still firing. Practically this means the rolling 14-file window
+  (<code>ls notes/daily-notes/*-research-roundup.html | sort | tail -14</code>) this review reads
+  is nearly identical to the one <code>2026-07-06-research-plan.html</code> already synthesized —
+  it drops 13–14 Jun and picks up 20–21 Jun, which is the only genuinely unreviewed material below.
+</div>
+
+<div class="intro-note">
+  <strong>Review → plan</strong> over the same ~45-paper corpus as last week's review, re-clustered:
+  narrative/dramatic form (CASPER, DramaDirector, Fabula, SemEval narrative-similarity — largely
+  already actioned as P2 last week), prompt/pipeline optimization (FAPO, APEX, SePO, MAS-PromptBench,
+  ARMOR-MAD), agent memory (bi-temporal/EvoArena/Multi-Agent Transactive Memory), and — new to this
+  window relative to last week's plan — a cluster on <strong>evaluator/judge integrity</strong>
+  (Contagion Networks, MACR knowledge-conflict resolution) that lands squarely on the project's
+  rubric-as-instrument and inter-judge-reliability machinery rather than on generation quality.
+  These two papers (2606.20493, 2606.20245) were in the <code>(2026-06-18,2026-06-21]</code> window
+  but fell outside the file range <code>2026-07-06-research-plan.html</code> covered, so they are
+  genuinely new triage material, not a re-derivation. "Geist in the Machine" (2603.10450) appears
+  once in the 15 Jun roundup as a back-reference only, per the usual exclusion.
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Audit the judge pipeline for contagion with "Contagion Networks: Evaluator Bias Propagation in Multi-Agent LLM Systems" (2606.20493)</h3>
+  <div class="row"><span class="k">Why:</span> formalizes how one agent's biased judgment
+    contaminates downstream agents that consume it as context, and proposes independent sampling
+    and adversarial-critic insertion as mitigations. This is a direct challenge to an assumption the
+    project's own inter-rater methodology depends on: <code>analyze-judge-reliability.js</code> and
+    the paired-rejudge protocol (CLAUDE.md → "Inter-Rater Reliability") treat judges as independent.
+    It is also a structural challenge to the Ego→Superego→Ego loop itself — a biased superego
+    critique can compound across revision rounds exactly the way the paper's "contagion" propagates
+    across an agent chain, which is what §5.4's systematic-drift checks are trying to catch from the
+    output side rather than the mechanism side.</div>
+  <div class="row"><span class="k">Do:</span> two read-only checks, no new cell. (1) Code audit:
+    trace the judge invocation path in <code>services/evaluationRunner.js</code> /
+    <code>scripts/eval-cli.js evaluate</code> and the rejudge path to confirm judge prompts never
+    include another judge's prior verdict or a superego's private critique as context — i.e. rule out
+    a literal contagion channel, not just a statistical one. (2) Re-analyze existing paired-rejudge
+    data with <code>analyze-judge-reliability.js</code> for a contagion <em>signature</em> — specifically,
+    do disagreements cluster by which cell's superego framing produced the transcript (22-33
+    divergent-superego family) rather than being uniform across cells — the pattern the paper's
+    network model predicts if superego bias is leaking into judged output rather than judges
+    disagreeing independently.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing rejudged pairs already in the DB
+    (<code>judge_model</code>-partitioned rows for any run with a <code>rejudge</code> pass) —
+    extend <code>analyze-judge-reliability.js</code>'s correlation output with a per-cell-family
+    breakdown. No new generation or judging. <span class="cost">existing data</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Cross-walk the two-pass/coupling superego cells against MACR explicit conflict resolution (2606.20245)</h3>
+  <div class="row"><span class="k">Why:</span> MACR rejects the binary "trust the model or trust
+    the context" framing and instead surfaces ego/context conflicts explicitly, adjudicating them
+    through a distinct third step rather than folding resolution into a single revision pass. Cells
+    98 (<code>cell_98_base_dialectical_suspicious_unified_two_pass</code>) and 99
+    (<code>cell_99_base_dialectical_coupling_unified_superego</code>) — the two-pass and coupling
+    variants of the dialectical-suspicious superego ablation family (93-100) — currently
+    resolve the ego/superego conflict within a single revision, which is exactly the pattern MACR
+    argues under-adjudicates.</div>
+  <div class="row"><span class="k">Do:</span> no new cell yet. Re-analyze existing
+    <code>tutor_deliberation_*</code> logs for cells 98 and 99 against the 93-100 family baseline,
+    checking whether <code>incorporation_rate</code> / <code>dimension_convergence</code> already
+    show a measurable "under-adjudication" signature (e.g. superego points raised but neither
+    accepted nor explicitly rejected in the ego's revision) — the read-only precursor that would
+    justify a MACR-style explicit-adjudication cell (a cell_126+ candidate, out of scope for this
+    review) rather than speculatively proposing one.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing dialogue logs for cells 93-100, no new
+    generation — a new analysis script over <code>tutor_deliberation_*</code>,
+    <code>incorporation_rate</code>, <code>dimension_convergence</code>.
+    <span class="cost">existing data</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Check whether recognition prompts state Hegelian dynamics as structure or prose, against Equation-to-Behavior Prompting (2606.17657)</h3>
+  <div class="row"><span class="k">Why:</span> the Princeton persuasion-simulation paper finds that
+    encoding a theoretical specification as explicit equations/structural rules in the prompt — not
+    prose description — makes larger models reproduce the target behavior more faithfully across a
+    broader range. This is a direct methodological twin to how recognition-mode prompts encode
+    Hegelian mutual-recognition theory today.</div>
+  <div class="row"><span class="k">Do:</span> read-only prompt audit first, not an autotune run:
+    diff the recognition-mode ego/superego prompts (the base cells 5-8 and messages-mode cells
+    84-90) against the placebo/base prompts using <code>npm run prompt-lab -- diff</code>, and
+    characterize how much of the recognition content is stated as prose narrative ("the tutor should
+    recognize the learner as an autonomous subject...") versus explicit structural rule/condition. If
+    it's predominantly prose, that's the concrete gap 2606.17657 predicts matters — a candidate input
+    to a future <code>prompt-lab -- fork</code> + <code>autotune</code> experiment on cells 5-8,
+    which would be a paid run and is out of scope here.</div>
+  <div class="row"><span class="k">Evaluate:</span> <code>prompt-lab -- diff</code> / direct reading
+    of <code>prompts/tutor-ego-recognition*.md</code> against
+    <code>prompts/tutor-ego-placebo.md</code> — no model calls. <span class="cost">existing data</span></div>
+</div>
+
+<h2>Still open from last week</h2>
+<p style="font-size:.92rem;">
+  <code>2026-07-06-research-plan.html</code>'s three items — auditing ego/superego incorporation
+  against the public/OTR-divergence paper (2607.02507), diagnosing the poetics κ failure with CASPER
+  (2606.22454), and checking the id-director charisma pilot against the persona-geometry papers
+  (2607.01034, 2607.02368) — show no corresponding workplan item or commit yet and remain live
+  candidates; not re-derived here to avoid duplicating that write-up.
+</p>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>LedgerAgent</strong> (2606.20529) — structured "ledger" constraining tool-calling
+    agents to stay policy-adherent across turns; parallels the Writing Pad (cell 21) and
+    <code>id_construction_trace</code>, and the adaptive runner's
+    <code>services/adaptiveTutor/stateSchema.js</code>.</li>
+  <li><strong>Argument-graph confidence-gated debate</strong> (2606.16047) — Proponent-Opponent-Judge
+    architecture with confidence gating; a structural match for cells 22-33 and a possible refinement
+    to <code>incorporationRate</code> in <code>services/dialogueTraceAnalyzer.js</code>.</li>
+  <li><strong>MAS-PromptBench</strong> (2606.23664) — prompt optimization helps multi-agent pipelines
+    by up to +24 points but hurts by as much as -16; a sanity check before any prompt-lab autotune
+    run targets a multi-agent (superego-configured) cell.</li>
+  <li><strong>DRIFTLENS</strong> (2607.02374) — measures memory-induced drift in the reasoning
+    trajectory, not just the final answer; relevant to the Writing Pad (cell 21) and prompt-erosion
+    cells 48-49.</li>
+  <li><strong>Bi-temporal memory / EvoArena / Multi-Agent Transactive Memory</strong> (2606.09900,
+    2606.13681, 2606.19911) — a memory cluster relevant to any future Writing Pad or cross-run
+    trajectory-sharing work.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  All three items above are fully read-only / existing-data — code audits and re-analyses of data
+  already in <code>data/evaluations.db</code> or the dialogue logs. No paid eval runs, no quota
+  spend, and nothing lands in the paper without sign-off. Backlog items and any cell_126+ design
+  implied by P2/P3 are the user's to authorize, given the pre-registration / single-paper
+  discipline. Recommend also checking the daily-roundup trigger given the 8-day gap noted above —
+  that's an infrastructure question, not a research one, but it determines how much fresh material
+  next week's review will have.
+</div>
+
+<footer>Generated by <code>ms-research-review</code> from the 15 Jun – 5 Jul 2026 daily roundups · reviewed by a human before any implementation.</footer>
+</body>
+</html>
