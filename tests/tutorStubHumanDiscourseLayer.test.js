@@ -177,7 +177,7 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.enabled, false);
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.firstRunSelection, false);
   assert.equal(config.mixedLearner.startupPrompts.tutorModel.liveCommand, '/settings model <provider.alias>');
-  assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.85);
+  assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.15);
   assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.recommended, 0);
   assert.deepEqual(config.mixedLearner.startupPrompts.clueReleaseSpeed, {
     enabled: true,
@@ -279,7 +279,7 @@ process.stdin.on('end', () => {
         } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (8)')) {
           acceptedDefault = true;
           child.stdin.write('\n');
-        } else if (!acceptedTemperature && plain.includes('teaching-style range [0.85; recommended] >')) {
+        } else if (!acceptedTemperature && plain.includes('teaching-style range [0.15; recommended] >')) {
           acceptedTemperature = true;
           child.stdin.write('\n');
         } else if (!acceptedDropout && plain.includes('evidence-memory dropout [0; recommended] >')) {
@@ -309,7 +309,7 @@ process.stdin.on('end', () => {
 
     const plain = plainTerminalText(stdout);
     const pickerIndex = plain.indexOf('Pick a learner profile');
-    const temperatureIndex = plain.indexOf('teaching-style range [0.85; recommended] >');
+    const temperatureIndex = plain.indexOf('teaching-style range [0.15; recommended] >');
     const dropoutIndex = plain.indexOf('evidence-memory dropout [0; recommended] >');
     const releaseSpeedIndex = plain.indexOf('clue release speed [1; recommended] >');
     const readyIndex = plain.indexOf('learner suggestion ready >');
@@ -432,7 +432,7 @@ test(
     let opened = false;
     let selectedTemperature = false;
     let adjustedTemperature = false;
-    let closedPanel = false;
+    let appliedPanel = false;
     let requestedExit = false;
     const terminal = pty.spawn(
       process.execPath,
@@ -474,10 +474,10 @@ test(
         } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
-        } else if (!closedPanel && plain.includes('teaching-style range 0.85 → 0.9')) {
-          closedPanel = true;
+        } else if (!appliedPanel && /Teaching-style range\s+0\.2/u.test(plain)) {
+          appliedPanel = true;
           terminal.write('\x1b[F\r');
-        } else if (!requestedExit && plain.includes('settings closed')) {
+        } else if (!requestedExit && plain.includes('settings applied')) {
           requestedExit = true;
           terminal.write('/quit\r');
         }
@@ -493,13 +493,92 @@ test(
     assert.match(plain, /Settings · choose what to change/u);
     assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-sol/u);
     assert.match(plain, /Turn-change override\s+off/u);
-    assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc closes settings/u);
-    assert.match(plain, /Done — return to dialogue\s+press Enter/u);
-    assert.match(plain, /range 0\.05–3 · ←\/→ 0\.05 · PgUp\/PgDn 0\.25 · R recommended 0\.85/u);
-    assert.match(plain, /teaching-style range 0\.85 → 0\.9/u);
-    assert.match(plain, /settings closed · type \/settings to reopen/u);
+    assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc discard changes and return/u);
+    assert.match(plain, /Done — apply and return\s+press Enter/u);
+    assert.match(plain, /range 0\.05–3 · ←\/→ 0\.05 · PgUp\/PgDn 0\.25 · R recommended 0\.15/u);
+    assert.match(plain, /teaching-style range 0\.15 → 0\.2/u);
+    assert.match(plain, /settings applied · returning to dialogue/u);
     assert.match(plain, /tutor ↻ > Keep the case question in view/u);
-    assert.ok(plain.indexOf('tutor ↻ >') > plain.indexOf('settings closed'), plain);
+    assert.ok(plain.indexOf('tutor ↻ >') > plain.indexOf('settings applied'), plain);
+  },
+);
+
+test(
+  'Escape discards every pending TTY settings-panel change',
+  { skip: process.platform === 'win32', timeout: 10_000 },
+  async () => {
+    let terminalOutput = '';
+    let acceptedScenario = false;
+    let opened = false;
+    let selectedTemperature = false;
+    let adjustedTemperature = false;
+    let cancelledPanel = false;
+    let requestedExit = false;
+    let quitSent = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 100,
+        rows: 20,
+        name: 'xterm-color',
+        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      },
+    );
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`TTY settings cancellation timed out\n${plainTerminalText(terminalOutput)}`));
+      }, 8_000);
+      terminal.onData((chunk) => {
+        terminalOutput += chunk;
+        const plain = plainTerminalText(terminalOutput);
+        if (!acceptedScenario && plain.includes('Pick a scenario')) {
+          acceptedScenario = true;
+          terminal.write('\r');
+        } else if (!opened && plain.includes('learner >')) {
+          opened = true;
+          terminal.write('/settings\r');
+        } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
+          selectedTemperature = true;
+          terminal.write('\x1b[B\r');
+        } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
+          adjustedTemperature = true;
+          terminal.write('\x1b[C\r');
+        } else if (!cancelledPanel && /Teaching-style range\s+0\.2/u.test(plain)) {
+          cancelledPanel = true;
+          terminal.write('\x1b');
+        } else if (!requestedExit && plain.includes('settings cancelled · unsaved changes discarded')) {
+          requestedExit = true;
+          terminal.write('/settings temp 0.2\r');
+        } else if (!quitSent && requestedExit && plain.includes('teaching-style range 0.15 → 0.2')) {
+          quitSent = true;
+          terminal.write('/quit\r');
+        }
+      });
+      terminal.onExit(({ exitCode, signal }) => {
+        clearTimeout(timer);
+        if (exitCode === 0) resolve();
+        else reject(new Error(`TTY settings cancellation exited ${exitCode} (${signal})\n${terminalOutput}`));
+      });
+    });
+
+    const plain = plainTerminalText(terminalOutput);
+    const cancelledAt = plain.indexOf('settings cancelled · unsaved changes discarded');
+    const directChangeAt = plain.indexOf('teaching-style range 0.15 → 0.2');
+    assert.ok(cancelledAt >= 0, plain);
+    assert.ok(directChangeAt > cancelledAt, plain);
+    assert.doesNotMatch(plain.slice(0, cancelledAt), /teaching-style range 0\.15 → 0\.2/u);
   },
 );
 
@@ -529,7 +608,7 @@ test('mixed startup skips already supplied launch settings while retaining their
   assert.deepEqual(config.mixedLearner.startupPrompts.engagementStanceTemperature, {
     enabled: false,
     default: 0.4,
-    recommended: 0.85,
+    recommended: 0.15,
     range: [0.05, 3],
   });
   assert.deepEqual(config.mixedLearner.startupPrompts.dagFactDropout, {
@@ -616,8 +695,8 @@ test('tutor-stub changes register temperature through live settings', () => {
     );
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /teaching-style range: 0\.85/u);
-    assert.match(result.stdout, /teaching-style range 0\.85 → 1/u);
+    assert.match(result.stdout, /teaching-style range: 0\.15/u);
+    assert.match(result.stdout, /teaching-style range 0\.15 → 1/u);
     assert.match(result.stdout, /teaching-style range: 1/u);
     assert.match(result.stdout, /lower concentrates the strongest style/u);
     const traces = fs
@@ -626,7 +705,7 @@ test('tutor-stub changes register temperature through live settings', () => {
       .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
       .join('\n');
     assert.match(traces, /"type":"register_temperature_changed"/u);
-    assert.match(traces, /"previous":0\.85,"temperature":1/u);
+    assert.match(traces, /"previous":0\.15,"temperature":1/u);
     assert.match(traces, /"scope":"engagement_stance_only"/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

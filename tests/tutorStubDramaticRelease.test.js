@@ -107,3 +107,43 @@ test('the deterministic release fallback performs the complete handoff', () => {
   assert.match(text, /ask me to unpack/u);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
+
+test('natural handoff and role-reading language from the live transcript passes', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_notice',
+        via: 'director',
+        surface: 'The lift notice authorizes Wrenfold to clear appliances.',
+        presentation: { mode: 'enacted_role', role: 'building manager' },
+      },
+    ],
+  });
+  const text = [
+    'Yes. The badge log shows entry; appliance-clearance authority needs separate evidence.',
+    'I’m bringing in the lift notice now, with the building manager reading: “Monday’s notice authorizes the Wrenfold crew to clear appliances.”',
+    'What does that add to the badge evidence?',
+  ].join(' ');
+
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('the release fallback keeps an unanswered-question repair visible', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_log',
+        via: 'director',
+        surface: 'The badge log records the visitor crew entering the kitchen.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk' },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    support: { responsiveRepairRequired: true },
+  });
+
+  assert.match(text, /did not answer your question directly/u);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});

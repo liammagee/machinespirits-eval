@@ -79,6 +79,28 @@ test('the deterministic repair uses the current Larkspur clue and passes the cla
   assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
 });
 
+test('bounded deterministic repair stays concrete and names the live public question', () => {
+  const permit = world.premiseById.get('p_permit');
+  const support = {
+    answerability: 'direction_only_until_evidence_is_public',
+    modality: 'bounded_directional_choice',
+    guardRequired: true,
+    clarificationInvitationRequired: true,
+  };
+  const text = deterministicTutorStubContextualFallback({
+    support,
+    world,
+    learnerText: "I don't know",
+    latestEvidence: { premise: 'p_permit', surface: permit.surface },
+  });
+
+  assert.match(text, /Who took Priya's labelled lunchbox/u);
+  assert.match(text, /A\) a plain explanation of the notice/u);
+  assert.match(text, /B\) to look at the next piece of evidence/u);
+  assert.doesNotMatch(text, /condition in the rule|whole case|supporting step|complete answer/iu);
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+});
+
 test('the repetition guard rejects verbatim and near-verbatim tutor loops', () => {
   const previous =
     'That is as far as the public evidence carries us for now. The missing link is evidence of who controlled the act.';

@@ -147,6 +147,28 @@ function currentRuleGloss(world, premiseId) {
   return oneLine(rule?.gloss || '');
 }
 
+function publicClueName(surface = '') {
+  const source = oneLine(surface).toLowerCase();
+  if (/\bbadge\b/u.test(source)) return 'badge record';
+  if (/\bnotice\b/u.test(source)) return 'notice';
+  if (/\b(?:call|revision|visitor|custody) log\b|\blogbook\b/u.test(source)) return 'log';
+  if (/\bledger\b/u.test(source)) return 'ledger';
+  if (/\bnotebook\b/u.test(source)) return 'notebook';
+  if (/\b(?:assay|residue|sample)\b/u.test(source)) return 'test result';
+  if (/\b(?:witness|statement|testimony)\b/u.test(source)) return 'witness statement';
+  if (/\b(?:record|register|file|entry)\b/u.test(source)) return 'record';
+  return 'clue';
+}
+
+function boundedPublicMove({ support = null, world = null, surface = '' } = {}) {
+  const clueName = publicClueName(surface);
+  const question = oneLine(world?.question || 'what happened').replace(/[.!?]+$/u, '');
+  if (support?.answerability === 'direction_only_until_evidence_is_public') {
+    return `Would you like A) a plain explanation of the ${clueName}, or B) to look at the next piece of evidence before we try to answer “${question}?” You can also answer in your own words or ask me to restate the ${clueName}.`;
+  }
+  return `Would you like A) a plain explanation of the ${clueName}, or B) to say what it tells us about “${question}?” You can also answer in your own words or ask me to restate the ${clueName}.`;
+}
+
 export function deterministicTutorStubContextualFallback({
   support = null,
   world = null,
@@ -160,18 +182,22 @@ export function deterministicTutorStubContextualFallback({
   const surface = clueSurface(clue);
   const ruleGloss = currentRuleGloss(world, clue?.premise);
   const struggling = Boolean(support?.clarificationInvitationRequired);
+  const responsiveRepairRequired = Boolean(support?.responsiveRepairRequired);
   const bounded = /bounded.*choice/iu.test(String(support?.modality || ''));
   const asksForReset = /\b(?:lost|where are we|what do you mean|explain|unclear|confus|don[’']?t know)\b/iu.test(
     learnerText,
   );
   const lead = surface
-    ? `${asksForReset ? 'Let’s reset with the concrete clue' : 'Here is the concrete clue'}: ${surface}`
-    : `Let’s return to the actual question: ${oneLine(world?.question || 'What can the evidence establish?')}`;
-  const rule = ruleGloss ? `The rule we can use is: ${ruleGloss}` : '';
+    ? responsiveRepairRequired
+      ? `You’re right—I did not answer your question directly. Here is the public record that answers what we can answer now: ${surface}`
+      : `${asksForReset ? 'Let’s reset with the concrete clue' : 'Here is the concrete clue'}: ${surface}`
+    : responsiveRepairRequired
+      ? 'You’re right—I did not answer your question directly. The public record so far does not yet settle it.'
+      : `Let’s return to the actual question: ${oneLine(world?.question || 'What can the evidence establish?')}`;
+  const rule = ruleGloss ? `In plain terms: ${ruleGloss}` : '';
   let move;
   if (bounded) {
-    move =
-      'Which reading is safer: A) this clue establishes one condition in the rule, or B) this clue settles the whole case? You can choose either, answer freely, or ask which part needs explaining.';
+    move = boundedPublicMove({ support, world, surface });
   } else if (support?.answerability === 'direction_only_until_evidence_is_public') {
     move =
       'The next step needs another stated clue, so we should keep the conclusion open instead of inventing a missing record.';
@@ -185,11 +211,12 @@ export function deterministicTutorStubContextualFallback({
   if (repetition.ok) return candidate;
   return [
     `A different way into ${oneLine(world?.title || 'this case')}:`,
-    surface || oneLine(world?.question || ''),
-    ruleGloss ? `Use this rule only: ${ruleGloss}` : null,
+    oneLine(world?.question || '') ? `We are trying to answer: “${oneLine(world.question)}”` : null,
+    surface ? `The ${publicClueName(surface)} says: ${surface}` : null,
+    ruleGloss ? `In plain terms: ${ruleGloss}` : null,
     bounded
-      ? 'Is this one supporting step, or the complete answer? Ask me to unpack any part before choosing.'
-      : 'Say only the smallest conclusion this supports, or ask me to unpack the clue.',
+      ? boundedPublicMove({ support, world, surface })
+      : `Tell me what the ${publicClueName(surface)} says about that question, or ask me to explain it plainly.`,
   ]
     .filter(Boolean)
     .join(' ');

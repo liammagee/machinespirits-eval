@@ -272,7 +272,7 @@ test(
           if (!changed && output.includes('learner >')) {
             changed = true;
             terminal.write('/settings temp 0.5\r');
-          } else if (!requestedExit && output.includes('teaching-style range 0.85')) {
+          } else if (!requestedExit && output.includes('teaching-style range 0.15')) {
             requestedExit = true;
             terminal.write('/quit\r');
           }

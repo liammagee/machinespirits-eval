@@ -56,13 +56,13 @@ export function buildTutorStubWorldScaffold({ world = null, evidence = null, con
     schema: TUTOR_STUB_WORLD_SCAFFOLD_SCHEMA,
     id: 'world_evidence_scaffold',
     label: 'current public clue',
-    localQuestion: `What does this clue show on its own: “${oneLine(surface, 150)}”?`,
+    localQuestion: `Keep “${oneLine(world?.question || 'What happened?', 150)}” in view while discussing this stated clue: “${oneLine(surface, 150)}”.`,
     warrantFrame: gloss
-      ? `Use this world rule in ordinary language: ${gloss}`
-      : 'Ask for the smallest conclusion this stated clue supports.',
+      ? `Explain this connection in ordinary scene language: ${gloss} Do not call it a rule or condition.`
+      : `Ask what this stated clue tells us about “${oneLine(world?.question || 'what happened', 150)}”.`,
     joinReminder: concludesQuestion(world, rule)
-      ? 'Do not name the final answer until every condition in this rule has a stated supporting clue.'
-      : 'Carry only what this clue and its public rule support; leave the rest of the case open.',
+      ? 'Do not name the final answer until the conversation contains every clue needed to answer the public question.'
+      : `Keep what this clue tells us separate from what is still unknown about “${oneLine(world?.question || 'what happened', 150)}”.`,
     ruleId: rule?.id || null,
   };
 }

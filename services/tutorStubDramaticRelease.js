@@ -92,9 +92,9 @@ export function tutorStubDramaticReleasePrompt(frame = null) {
 }
 
 const HANDOFF_PATTERN =
-  /\b(?:another|new|next)\s+(?:piece of\s+)?(?:information|clue|evidence|exhibit|record|observation)|\b(?:i(?:'m| am)|we(?:'re| are))\s+(?:now\s+)?(?:going to\s+)?(?:bring|give|show|add|open|read|put|test)|\blet(?:'s| us)\s+(?:bring|take|put|open|read|look|role-play)/iu;
+  /\b(?:another|new|next)\s+(?:piece of\s+)?(?:information|clue|evidence|exhibit|record|observation)|\b(?:i(?:[’']m| am)|we(?:[’']re| are))\s+(?:now\s+)?(?:(?:going to|about to)\s+)?(?:bring(?:ing)?|giv(?:e|ing)|show(?:ing)?|add(?:ing)?|open(?:ing)?|read(?:ing)?|put(?:ting)?|test(?:ing)?)|\blet(?:[’']s| us)\s+(?:bring|take|put|open|read|look|role-play)/iu;
 const ENACTMENT_PATTERN =
-  /\b(?:role-play|play the (?:role|part)|i(?:'ll| will| am going to) be|i(?:'m| am) (?:now )?(?:the|your) (?:witness|clerk|record-keeper|examiner|expert|source)|speaking as|in the role of|let me be)\b/iu;
+  /\b(?:role-play|play the (?:role|part)|i(?:[’']ll| will)\s+play\s+(?:the\s+)?[^.!?]{0,50}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)|i(?:[’']ll| will| am going to) be|i(?:[’']m| am) (?:now )?(?:the|your) (?:witness|clerk|record-keeper|examiner|expert|source)|speaking as|in the role of|let me be)\b|\bas (?:the|your|a) [^.!?]{0,60},?\s+i\s+(?:read|report|say|testify|recall|explain|state)\b|\b(?:the\s+)?(?:[\p{L}]+(?:-[\p{L}]+)?\s+){0,4}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)\s*[:—-]?\s*(?:read(?:s|ing)?|report(?:s|ing)?|say(?:s|ing)?|testif(?:y|ies|ying)|recall(?:s|ing)?|explain(?:s|ing)?|stat(?:e|es|ing))\b/iu;
 const EXHIBIT_PATTERN =
   /\b(?:put|place|lay|bring)\b[^.!?]{0,50}\b(?:table|before us|in front of us|evidence|exhibit|record|clue)\b|\b(?:open|read|show|examine|test|demonstrate|look at)\b/iu;
 const RETURN_PATTERN =
@@ -166,7 +166,11 @@ export function deterministicTutorStubDramaticReleaseFallback({ frame = null, su
   const clarification = support?.clarificationInvitationRequired
     ? 'You can also ask me to unpack any word or connection in it.'
     : null;
+  const directRepair = support?.responsiveRepairRequired
+    ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
+    : null;
   return [
+    directRepair,
     'I’m going to give you another piece of information now.',
     ...rendered,
     'Back to us: what does this new information change?',

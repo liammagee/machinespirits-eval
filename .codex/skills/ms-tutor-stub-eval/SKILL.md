@@ -36,7 +36,7 @@ Key choices and defaults:
   `--policies`, such as `--policies bland,dynamical_system+state+field`.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
-- Engagement-stance temperature: default `0.85`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
+- Engagement-stance temperature: default `0.15`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
 - Accumulated DAG-fact dropout: default `0` (off). Use `--dag-fact-dropout <0..1>` and optional deterministic `--dag-fact-dropout-seed <n>`, or change the live rate with `/settings dropout <0..1>`. Only adopted public premises are eligible; background facts are immune; facts receive two grace turns; at most two may be dropped concurrently. A learner can repair a dropped fact by explicitly using or re-adopting it. The public transcript remains intact, exact dropped premise ids stay in technical traces rather than tutor speech, and `0` stops new losses without silently restoring already dropped facts. Live changes invalidate mixed suggestion analysis/prefetch state.
 - Clue release speed: default `1.0`. Use `--release-speed <0.5..2>` or `/settings release-speed <0.5..2>` (`pace` and `speed` are aliases). `1` follows authored clue timing; lower stretches the remaining schedule and higher compresses it. Explicit public requests such as “move it along” or “one clue at a time” adapt the effective pace further. At most one authored release batch is introduced per tutor turn (a deliberately co-released premise group stays together), and all evidence, question-support, and leak guards remain active. Pace changes are recorded in turn traces, transcript settings, debug explanations, and learning summaries.
 - Every newly available clue is also a visible dramatic beat. The tutor briefly announces that new information is entering, enacts `director` releases as an in-scene source (for example a witness or clerk), presents `tutor` releases as concrete exhibits, then steps back into the inquiry. The dramatic-release response check rejects opaque clue dumps, missing enactment, and releases that never return to the learner. Worlds may refine the default with `release_schedule[].presentation.mode`, `.role`, and `.cue`; those fields may costume only the linked public premise and must not add evidence.
@@ -221,7 +221,7 @@ Useful variants:
   completes picker commands and ids.
   Before any clue or answer generation, the same first-run prelude asks only
   for dialogue settings that are not already saved or explicitly supplied:
-  engagement-stance temperature when the active policy uses it (`0.85` is the
+  engagement-stance temperature when the active policy uses it (`0.15` is the
   recommended default), accumulated DAG-fact dropout when the learner DAG is
   enabled (`0` is the recommended reliable-memory default), and clue release
   speed. Enter accepts the repository default. Explicit command-line overrides
@@ -392,13 +392,15 @@ Useful variants:
   Evidence-memory dropout, Turn-change override, Conversation override, and
   Override sensitivity; the commands and trace schemas retain their technical
   names. Up/Down selects one of these or the separated green
-  `Done — return to dialogue` action; Enter opens a model chooser or numeric
-  slider, toggles an overlay, or closes the panel when that action is selected.
+  `Done — apply and return` action; Enter opens a model chooser or numeric
+  slider, toggles a pending overlay, or applies the panel when that action is selected.
   Left/Right makes fine slider changes, Page Up/Down makes coarse changes, `R`
-  restores the recommended value, Enter applies, and Escape cancels. The panel
-  stays open for several edits. Pipes and non-TTY callers retain the settings
+  restores the recommended value, Enter accepts that pending edit, and Escape backs out. The panel
+  stays open for several edits; `Done — apply and return` commits all pending
+  changes, while Escape from the panel discards all of them. Pipes and non-TTY callers retain the settings
   summary and direct command behavior.
-  Successful changes are written immediately as the defaults for the next
+  Successful direct `/settings ...` commands are written immediately; panel
+  changes are written only when Done is selected, becoming the defaults for the next
   human interactive session. The settings panel's `Forget saved defaults` row,
   or `/settings forget`, deletes that local file without changing the current
   session. `/settings` reports whether remembered defaults are active and where

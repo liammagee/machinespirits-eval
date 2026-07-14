@@ -70,7 +70,9 @@ test('uncertainty before release selects a bounded public-safe choice', () => {
     world: { title: 'The Missing Lunchbox', question: 'Who moved the lunchbox?' },
   });
   assert.match(fallback, /Who moved the lunchbox/u);
-  assert.match(fallback, /A\) this clue establishes one condition/u);
+  assert.match(fallback, /A\) a plain explanation of the clue/u);
+  assert.match(fallback, /B\) to look at the next piece of evidence/u);
+  assert.doesNotMatch(fallback, /condition in the rule|whole case|supporting step|complete answer/iu);
   assert.doesNotMatch(fallback, /tool|forge|cut|decisive act/iu);
 });
 
@@ -93,6 +95,25 @@ test('a scenario-grounded two-part contrast satisfies bounded directional suppor
   });
 
   assert.equal(result.ok, true);
+});
+
+test('a natural concrete choice and an offer to clarify satisfy bounded support', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: true,
+  };
+  const text =
+    'Exactly. The badge and lift notice show that Wrenfold could enter and clear the fridge; they do not show that Priya’s lunchbox was moved. Shall we check lost property for a matching entry, or pause to clarify that difference?';
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'The badge shows that the crew entered at noon. We still need either their authority or what their visit involved. Which part of that distinction needs clarifying?',
+      support,
+    }).ok,
+    true,
+  );
 });
 
 test('due evidence is staged before interpretation is requested', () => {
@@ -203,6 +224,44 @@ test('natural clarification questions are not mistaken for unseen-record recall'
       text: 'What record could connect the tool to a person?',
       support,
     }).ok,
+    false,
+  );
+});
+
+test('an unanswered-question complaint requires a direct answer instead of another choice', () => {
+  const support = buildTutorStubQuestionSupport({
+    tutorTurn: 3,
+    scaffoldState: scaffold({ nextRelease: { premise: 'p_permit', turn: 5 } }),
+    assessment: { missingPremiseBuckets: { unreleased: 1 } },
+    classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'repair_request' } },
+    learnerText: 'still not answering my question',
+    recentTurns: [
+      {
+        learner: "you didn't answer my question though",
+        classification: { turn: { request_type: 'stepwise_support_request' } },
+      },
+    ],
+  });
+
+  assert.equal(support.modality, 'direct_answer_then_direction');
+  assert.equal(support.responsiveRepairRequired, true);
+  assert.equal(support.adaptiveMultipleChoice, false);
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'You’re right. Yes, the badge log is a record of who entered the kitchen; it records Dario and the visitor crew.',
+      support,
+    }).ok,
+    true,
+  );
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'A) check the badge, or B) check the notice?',
+      support,
+    }).ok,
+    false,
+  );
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({ text: 'You’re right—I should have answered directly.', support }).ok,
     false,
   );
 });

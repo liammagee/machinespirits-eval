@@ -1449,7 +1449,7 @@ function tutorResponseRepairPrompt({
       ? 'The previous draft asked for information the learner could not know from the public discourse. Do not ask them to invent an unseen record, source, name, person, or fact.'
       : null,
     questionSupportRows
-      ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 public-safe categories or interpretations without revealing the unstaged record or answer.'
+      ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 short choices using only the people, objects, and records already named in this scene. Say concretely what each choice means here; avoid labels such as “one condition,” “the rule,” or “the whole case.” Do not reveal the unstaged record or answer.'
       : null,
     dramaticReleaseRows
       ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as a visible dramatic beat.'
@@ -6416,14 +6416,35 @@ function responseConfigurationContext(
     .join('\n');
 }
 
-function tutorLearnerDagModelContext(result) {
+function tutorPromptSurfaceKey(value) {
+  return String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function tutorLearnerDagModelContext(result, { releasedEvidence = [] } = {}) {
   const model = result?.model || result;
   if (!model) return '';
   const metrics = model.metrics || {};
   const assessment = model.assessment || {};
   const record = model.learnerRecord || {};
   const memoryReliability = model.memoryReliability || null;
-  const grounded = (record.grounded || []).map((row) => `- ${row.surface}`).join('\n') || '- none';
+  const groundedRows = Array.isArray(record.grounded) ? record.grounded : [];
+  const groundedSurfaceKeys = new Set(groundedRows.map((row) => tutorPromptSurfaceKey(row?.surface)).filter(Boolean));
+  const groundedReleasedCount = (Array.isArray(releasedEvidence) ? releasedEvidence : []).filter((row) =>
+    groundedSurfaceKeys.has(tutorPromptSurfaceKey(row?.surface)),
+  ).length;
+  const groundedOtherCount = Math.max(0, groundedRows.length - groundedReleasedCount);
+  const groundingStatus = [
+    groundedReleasedCount
+      ? `- ${groundedReleasedCount} released public evidence item${groundedReleasedCount === 1 ? '' : 's'} currently learner-grounded; exact item labels appear in the public evidence window.`
+      : '- no released public evidence is currently learner-grounded',
+    groundedOtherCount
+      ? `- ${groundedOtherCount} additional public or derived fact${groundedOtherCount === 1 ? '' : 's'} currently grounded`
+      : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
   const hypotheses = (record.hypotheses || []).map((row) => `- ${row.text}`).join('\n') || '- none';
   const candidates = (record.answerCandidates || []).map((row) => `- ${row.surface}`).join('\n') || '- none';
   return [
@@ -6436,8 +6457,8 @@ function tutorLearnerDagModelContext(result) {
     memoryReliability?.activeDroppedCount
       ? `Memory reliability: ${memoryReliability.activeDroppedCount} previously accumulated public evidence item(s) are no longer active in the redacted record. Re-anchor gently from public evidence; do not announce forgetting, dropout, or an internal memory test.`
       : null,
-    'Grounded public record:',
-    grounded,
+    'Grounding status:',
+    groundingStatus,
     'Learner hypotheses:',
     hypotheses,
     'Answer candidates derivable from the tutor model of the learner record:',
@@ -8813,14 +8834,25 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   return payload;
 }
 
-function dagTurnContext(state, tutorTurn) {
+function dagTurnContext(state, tutorTurn, tutorLearnerDagModel = null) {
   const world = state?.world;
   if (!world) return '';
+  const learnerDagModel = tutorLearnerDagModel?.model || tutorLearnerDagModel || null;
+  const learnerGroundedSurfaceKeys = new Set(
+    (learnerDagModel?.learnerRecord?.grounded || [])
+      .map((row) => tutorPromptSurfaceKey(row?.surface))
+      .filter(Boolean),
+  );
   const earlier = committedReleaseRows(state, tutorTurn);
   const dueNow = currentReleaseRows(state, tutorTurn);
   const earlierLines = earlier.length
     ? earlier
-        .map((entry) => `- ${String(entry.surface || '').trim()}`)
+        .map((entry) => {
+          const grounding = learnerGroundedSurfaceKeys.has(tutorPromptSurfaceKey(entry.surface))
+            ? 'learner-grounded'
+            : 'public, not yet learner-grounded';
+          return `- [${grounding}] ${String(entry.surface || '').trim()}`;
+        })
         .join('\n')
     : '- none yet';
   const dueLines = dueNow.length
@@ -8900,7 +8932,9 @@ async function callTutor({
     '[End tutor context continuity]',
   ].join('\n');
   const advisory = classifierTutorContext(classification);
-  const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
+  const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel, {
+    releasedEvidence: dag && world ? committedReleaseRows(state, tutorTurn) : [],
+  });
   const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: currentReleaseRows(state, tutorTurn),
   });
@@ -8925,7 +8959,7 @@ async function callTutor({
       : `Learner says:\n${learnerText}`;
   const promptParts = [
     tutorMemory,
-    dag && world ? dagTurnContext(state, tutorTurn) : null,
+    dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
     dramaticReleaseAdvisory,
     advisory,
     learnerDagAdvisory,
@@ -8941,7 +8975,7 @@ async function callTutor({
     tutorTurn,
     systemPrompt: effectiveSystemPrompt,
     privateAdvisory: [
-      dag && world ? dagTurnContext(state, tutorTurn) : null,
+      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
       dramaticReleaseAdvisory,
       humanDiscourseAdvisory,
       dialogueClosureAdvisory,
@@ -9005,7 +9039,7 @@ async function callTutor({
       messageHistory: context,
       instructionTexts: [
         systemPrompt,
-        dag && world ? dagTurnContext(state, tutorTurn) : null,
+        dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
         dramaticReleaseAdvisory,
         advisory,
         learnerDagAdvisory,
@@ -12657,7 +12691,9 @@ async function main() {
       learnerText,
       history: runtimeState.history,
       classifier: classifierTutorContext(classification),
-      learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag),
+      learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag, {
+        releasedEvidence: committedReleaseRows(runtimeState, runtimeState.turns.length + 1),
+      }),
       dagFactDropout: tutorStubDagFactDropoutSnapshot(runtimeState.learnerDag?.dropout),
       releasePacing: tutorStubReleasePacingSnapshot(runtimeState.releasePacing, runtimeState.world),
       register: responseConfigurationContext(registerSelection, {
@@ -12673,7 +12709,7 @@ async function main() {
       }),
       dagTurn:
         runtimeState.dag && runtimeState.world
-          ? dagTurnContext(runtimeState, runtimeState.turns.length + 1)
+          ? dagTurnContext(runtimeState, runtimeState.turns.length + 1, tutorLearnerDag)
           : null,
       coachGuidance: tutorCoachGuidanceContext(runtimeState),
       systemPrompt: runtimeState.systemPrompt,
@@ -13516,33 +13552,33 @@ async function main() {
     return Boolean(input.isTTY && output.isTTY && typeof input.setRawMode === 'function');
   }
 
-  async function pickLiveSettingsActionWithKeyboard(defaultIndex = 0) {
+  async function pickLiveSettingsActionWithKeyboard(defaultIndex = 0, draft = null) {
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
-    const overlays = new Set(state.register?.overlays || []);
+    const overlays = new Set(draft?.overlays || state.register?.overlays || []);
     const entries = [
       {
         id: 'model',
         label: 'Tutor model',
-        value: state.modelRef,
+        value: draft?.modelRef || state.modelRef,
         description: 'Choose the model that speaks as the tutor. Analysis and learner models stay independent.',
       },
       {
         id: 'stance_temp',
         label: 'Teaching-style range',
-        value: String(state.register?.temperature ?? registerTemperature),
+        value: String(draft?.temperature ?? state.register?.temperature ?? registerTemperature),
         description: 'Lower concentrates the strongest teaching style; higher mixes in more alternatives.',
       },
       {
         id: 'dropout',
         label: 'Evidence-memory dropout',
-        value: `${dropout.rate}${state.learnerDag?.enabled ? '' : ' · inactive'}`,
+        value: `${draft?.dropoutRate ?? dropout.rate}${state.learnerDag?.enabled ? '' : ' · inactive'}`,
         description:
           'Set the chance that previously understood evidence is temporarily forgotten and can be recovered.',
       },
       {
         id: 'release_speed',
         label: 'Clue release speed',
-        value: `${state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x`,
+        value: `${draft?.releaseSpeed ?? state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x`,
         description:
           'Set the baseline pace for new clues. The dialogue can still speed up or slow down when the learner asks.',
       },
@@ -13561,20 +13597,28 @@ async function main() {
       {
         id: 'overlay_threshold',
         label: 'Override sensitivity',
-        value: String(state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
+        value: String(
+          draft?.overlayThreshold ??
+            state.register?.overlayThreshold ??
+            DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+        ),
         description: 'Lower values react more often; higher values wait for a clearer change.',
       },
       {
         id: 'forget',
         label: 'Forget saved settings',
-        value: state.rememberedSettings?.enabled ? 'remembering on' : state.rememberedSettings?.status || 'off',
-        description: 'Stop reusing these choices next time without changing the current conversation.',
+        value: draft?.forgetSavedSettings
+          ? 'yes · apply on Done'
+          : state.rememberedSettings?.enabled
+            ? 'no · remembering on'
+            : 'no · nothing saved',
+        description: 'Choose whether Done should forget saved defaults; Escape leaves them untouched.',
       },
       {
         id: 'done',
-        label: 'Done — return to dialogue',
+        label: 'Done — apply and return',
         value: 'press Enter',
-        description: 'Finish changing settings and return to the current learner or coach prompt.',
+        description: 'Apply every pending change and return to the current learner or coach prompt.',
       },
     ];
     let selectedIndex = Math.max(0, Math.min(Number(defaultIndex) || 0, entries.length - 1));
@@ -13610,7 +13654,7 @@ async function main() {
       });
       const lines = [
         `${C.brightCyan}${C.bold}Settings · choose what to change${C.reset}`,
-        `${C.dim}  ↑/↓ move · Enter edit or toggle · Esc closes settings${C.reset}`,
+        `${C.dim}  ↑/↓ move · Enter edit or toggle · Esc discard changes and return${C.reset}`,
         ...entryLines,
         `${C.brightYellow}${C.bold}  about >${C.reset} ${oneLine(selected.description, {
           max: Math.max(44, width - 11),
@@ -13700,7 +13744,7 @@ async function main() {
         `${C.cyan}${C.bold}  ${bar}  ${selected}${C.reset}`,
         `${C.dim}  range ${min}–${max} · ←/→ ${step} · PgUp/PgDn ${coarseStep} · R recommended ${recommended}${C.reset}`,
         `${C.brightYellow}${C.bold}  effect >${C.reset} ${oneLine(explanation, { max: Math.max(44, width - 12) })}`,
-        `${C.dim}  Enter apply · Esc cancel${C.reset}`,
+        `${C.dim}  Enter keep · Esc back · saved only when you choose Done${C.reset}`,
       ];
       for (const line of lines) output.write(`${line}\n`);
       renderedLineCount = lines.length;
@@ -14056,7 +14100,7 @@ async function main() {
           label: 'teaching-style range',
           defaultValue: state.register.temperature,
           recommendedValue: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-          guidance: `0.85 keeps one teaching style clear while retaining some nuance; lower concentrates it, higher mixes in more alternatives (${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})`,
+          guidance: `0.15 strongly concentrates the leading teaching style; higher values mix in more alternatives (${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})`,
           normalize: (value) =>
             normalizeTutorStubEngagementStanceTemperature(value, {
               label: 'teaching-style range',
@@ -15259,11 +15303,11 @@ async function main() {
     return true;
   }
 
-  async function chooseLiveNumericSetting(setting) {
+  async function pickLiveNumericSettingValue(setting, value = undefined) {
     if (setting === 'stance_temp') {
-      const next = await pickLiveNumericSettingWithKeyboard({
+      return pickLiveNumericSettingWithKeyboard({
         label: 'Teaching-style range',
-        value: state.register?.temperature ?? registerTemperature,
+        value: value ?? state.register?.temperature ?? registerTemperature,
         min: MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
         max: MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
         step: 0.05,
@@ -15271,14 +15315,11 @@ async function main() {
         recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
         explanation: 'Lower values concentrate the strongest style; higher values retain more alternative signals.',
       });
-      if (next === null) return false;
-      await handleDialogueSettings(`stance-temp ${next}`);
-      return true;
     }
     if (setting === 'dropout') {
-      const next = await pickLiveNumericSettingWithKeyboard({
+      return pickLiveNumericSettingWithKeyboard({
         label: 'Evidence-memory dropout',
-        value: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+        value: value ?? state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
         min: 0,
         max: 1,
         step: 0.05,
@@ -15286,14 +15327,11 @@ async function main() {
         recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
         explanation: 'Zero keeps understood evidence reliable; higher values simulate recoverable forgetting.',
       });
-      if (next === null) return false;
-      await handleDialogueSettings(`dropout ${next}`);
-      return true;
     }
     if (setting === 'release_speed') {
-      const next = await pickLiveNumericSettingWithKeyboard({
+      return pickLiveNumericSettingWithKeyboard({
         label: 'Clue release speed',
-        value: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+        value: value ?? state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
         min: MIN_TUTOR_STUB_RELEASE_SPEED,
         max: MAX_TUTOR_STUB_RELEASE_SPEED,
         step: 0.05,
@@ -15301,13 +15339,10 @@ async function main() {
         recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
         explanation: 'One follows the authored schedule; lower slows new clues and higher brings them forward.',
       });
-      if (next === null) return false;
-      await handleDialogueSettings(`release-speed ${next}`);
-      return true;
     }
-    const next = await pickLiveNumericSettingWithKeyboard({
+    return pickLiveNumericSettingWithKeyboard({
       label: 'Override sensitivity',
-      value: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+      value: value ?? state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
       min: 0,
       max: 1,
       step: 0.05,
@@ -15315,12 +15350,89 @@ async function main() {
       recommended: DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
       explanation: 'Lower values react more often; higher values wait for a stronger conversational change.',
     });
+  }
+
+  async function chooseLiveNumericSetting(setting) {
+    const next = await pickLiveNumericSettingValue(setting);
     if (next === null) return false;
-    await handleDialogueSettings(`policy threshold ${next}`);
+    const command =
+      setting === 'stance_temp'
+        ? `stance-temp ${next}`
+        : setting === 'dropout'
+          ? `dropout ${next}`
+          : setting === 'release_speed'
+            ? `release-speed ${next}`
+            : `policy threshold ${next}`;
+    await handleDialogueSettings(command);
     return true;
   }
 
+  function createLiveSettingsDraft() {
+    return {
+      modelRef: state.modelRef,
+      temperature: state.register?.temperature ?? registerTemperature,
+      dropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+      releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+      overlays: [...(state.register?.overlays || [])],
+      overlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+      forgetSavedSettings: false,
+    };
+  }
+
+  function liveSettingsDraftChangeIds(draft) {
+    const currentOverlays = state.register?.overlays || [];
+    const changes = [];
+    if (draft.modelRef !== state.modelRef) changes.push('model');
+    if (draft.temperature !== (state.register?.temperature ?? registerTemperature)) changes.push('stance_temp');
+    if (
+      draft.dropoutRate !==
+      (state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE)
+    ) {
+      changes.push('dropout');
+    }
+    if (draft.releaseSpeed !== (state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED)) {
+      changes.push('release_speed');
+    }
+    if (
+      currentOverlays.length !== draft.overlays.length ||
+      currentOverlays.some((overlay) => !draft.overlays.includes(overlay))
+    ) {
+      changes.push('overlays');
+    }
+    if (
+      draft.overlayThreshold !==
+      (state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD)
+    ) {
+      changes.push('overlay_threshold');
+    }
+    if (draft.forgetSavedSettings) changes.push('forget');
+    return changes;
+  }
+
+  async function applyLiveSettingsDraft(draft) {
+    const changes = liveSettingsDraftChangeIds(draft);
+    if (changes.includes('model')) await handleDialogueSettings(`model ${draft.modelRef}`);
+    if (changes.includes('stance_temp')) await handleDialogueSettings(`stance-temp ${draft.temperature}`);
+    if (changes.includes('dropout')) await handleDialogueSettings(`dropout ${draft.dropoutRate}`);
+    if (changes.includes('release_speed')) await handleDialogueSettings(`release-speed ${draft.releaseSpeed}`);
+    if (changes.includes('overlays')) {
+      const currentOverlays = [...(state.register?.overlays || [])];
+      for (const overlay of currentOverlays.filter((entry) => !draft.overlays.includes(entry))) {
+        await handleDialogueSettings(`policy remove ${overlay}`);
+      }
+      for (const overlay of draft.overlays.filter((entry) => !currentOverlays.includes(entry))) {
+        await handleDialogueSettings(`policy add ${overlay}`);
+      }
+    }
+    if (changes.includes('overlay_threshold')) {
+      await handleDialogueSettings(`policy threshold ${draft.overlayThreshold}`);
+    }
+    if (changes.includes('forget')) await handleDialogueSettings('forget');
+    return changes;
+  }
+
   async function openLiveSettingsPanel() {
+    const draft = createLiveSettingsDraft();
     appendTraceEvent(state.trace, {
       type: 'settings_panel_opened',
       turn: state.turns.length + 1,
@@ -15328,45 +15440,79 @@ async function main() {
       policyStack: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
     });
     let selectedIndex = 0;
-    let reason = 'done';
+    let reason = 'cancelled';
+    let changedSettings = [];
     while (!exiting) {
-      const action = await pickLiveSettingsActionWithKeyboard(selectedIndex);
+      const action = await pickLiveSettingsActionWithKeyboard(selectedIndex, draft);
       if (!action) {
         reason = 'cancelled';
+        changedSettings = liveSettingsDraftChangeIds(draft);
         break;
       }
       selectedIndex = action.index;
-      if (action.id === 'done') break;
+      if (action.id === 'done') {
+        changedSettings = await applyLiveSettingsDraft(draft);
+        reason = changedSettings.length ? 'applied' : 'unchanged';
+        break;
+      }
       appendTraceEvent(state.trace, {
         type: 'settings_panel_action_selected',
         action: action.id,
         turn: state.turns.length + 1,
       });
       if (action.id === 'model') {
-        await chooseLiveTutorModel();
+        console.log(`${C.brightCyan}${C.bold}Tutor model · choose with ↑/↓ and Enter${C.reset}`);
+        console.log(`${C.dim}  Esc back · saved only when you choose Done${C.reset}`);
+        const selection = await pickInitialTutorModelWithKeyboard(draft.modelRef);
+        if (selection) draft.modelRef = selection.ref;
       } else if (
         action.id === 'stance_temp' ||
         action.id === 'dropout' ||
         action.id === 'release_speed' ||
         action.id === 'overlay_threshold'
       ) {
-        await chooseLiveNumericSetting(action.id);
+        const draftValue =
+          action.id === 'stance_temp'
+            ? draft.temperature
+            : action.id === 'dropout'
+              ? draft.dropoutRate
+              : action.id === 'release_speed'
+                ? draft.releaseSpeed
+                : draft.overlayThreshold;
+        const next = await pickLiveNumericSettingValue(action.id, draftValue);
+        if (next !== null) {
+          if (action.id === 'stance_temp') draft.temperature = next;
+          else if (action.id === 'dropout') draft.dropoutRate = next;
+          else if (action.id === 'release_speed') draft.releaseSpeed = next;
+          else draft.overlayThreshold = next;
+        }
       } else if (action.id === 'state_overlay' || action.id === 'field_overlay') {
         const overlay = action.id === 'state_overlay' ? 'state' : 'field';
-        const enabled = state.register?.overlays?.includes(overlay);
-        await handleDialogueSettings(`policy ${enabled ? 'remove' : 'add'} ${overlay}`);
+        draft.overlays = draft.overlays.includes(overlay)
+          ? draft.overlays.filter((entry) => entry !== overlay)
+          : [...draft.overlays, overlay];
       } else if (action.id === 'forget') {
-        await handleDialogueSettings('forget');
+        draft.forgetSavedSettings = !draft.forgetSavedSettings;
       }
     }
     appendTraceEvent(state.trace, {
       type: 'settings_panel_closed',
       reason,
+      changedSettings,
+      changesDiscarded: reason === 'cancelled' ? changedSettings : [],
       turn: state.turns.length + 1,
       modelRef: state.modelRef,
       policyStack: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
     });
-    console.log(`${C.dim}settings closed · type /settings to reopen${C.reset}\n`);
+    if (reason === 'cancelled') {
+      console.log(
+        `${C.dim}settings cancelled · ${changedSettings.length ? 'unsaved changes discarded' : 'nothing changed'}${C.reset}\n`,
+      );
+    } else {
+      console.log(
+        `${C.dim}${reason === 'applied' ? 'settings applied' : 'settings unchanged'} · returning to dialogue${C.reset}\n`,
+      );
+    }
   }
 
   async function handleDialogueSettings(argument = '', { duringTurn = false } = {}) {

@@ -235,7 +235,7 @@ Options:
                               default: .tutor-stub-auto-eval/run-<timestamp>
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
-  --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.85)
+  --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.15)
   --register-overlay-threshold <n>
                               minimum strong-change score for +state/+field overlays (default: 0.7)
   --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
