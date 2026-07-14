@@ -1,3 +1,5 @@
+import { tutorStubFeedbackAdaptationPrompt } from './tutorStubFeedbackLearning.js';
+
 export const TUTOR_STUB_TURN_FEEDBACK_STATE_SCHEMA = 'machinespirits.tutor-stub.turn-feedback-state.v1';
 export const TUTOR_STUB_TURN_FEEDBACK_SCHEMA = 'machinespirits.tutor-stub.turn-feedback.v1';
 
@@ -129,7 +131,7 @@ export function commitTutorStubTurnFeedback(state, { learnerTurn = null, learner
   return feedback;
 }
 
-export function tutorStubTurnFeedbackPrompt(feedback) {
+export function tutorStubTurnFeedbackPrompt(feedback, { adaptationPlan = null } = {}) {
   const rating = feedback?.supplied ? normalizedRating(feedback.rating) : null;
   if (!rating) return null;
   const reading =
@@ -145,6 +147,7 @@ export function tutorStubTurnFeedbackPrompt(feedback) {
     reading,
     'Treat this as one subjective self-assessment signal alongside the public learner turn and objective reasoning-state movement.',
     action,
+    tutorStubFeedbackAdaptationPrompt(adaptationPlan),
     'Do not mention the rating, the feedback request, or this private note in public speech.',
     '[End private learner feedback]',
   ].join('\n');

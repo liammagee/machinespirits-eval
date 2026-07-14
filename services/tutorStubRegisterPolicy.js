@@ -1298,13 +1298,25 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
   if (!enabled) return emptyCorpusRegisterCorrections(palette);
   const prior = state.register?.empiricalPrior || null;
   if (!prior) return emptyCorpusRegisterCorrections(palette, 'missing_prior');
+  if (prior.schema?.endsWith('.v1')) {
+    return emptyCorpusRegisterCorrections(palette, 'legacy_prior_requires_rebuild');
+  }
+  if (prior.deployment?.objectiveRegisterPriorEligible === false) {
+    return emptyCorpusRegisterCorrections(palette, 'held_out_validation_not_passed');
+  }
+  const modelKey = [state.resolved?.provider, state.resolved?.model].filter(Boolean).join('/');
+  const modelPrior = prior.schema?.endsWith('.v2') ? prior.modelPriors?.[modelKey] || null : null;
+  if (prior.schema?.endsWith('.v2') && (!modelPrior || modelPrior.validation?.eligible !== true)) {
+    return emptyCorpusRegisterCorrections(palette, 'current_model_holdout_validation_not_passed');
+  }
+  const effectivePrior = modelPrior || prior;
   const corrections = Object.fromEntries((palette || []).map((register) => [register, 0]));
   const evidence = [];
   const contextKeys = corpusContextKeys(features);
   const highAxes = Object.entries(system.state_vector || {}).filter(([, value]) => Number(value) >= 0.55);
 
   for (const register of palette || []) {
-    const overall = prior.registerPriors?.[register] || null;
+    const overall = effectivePrior.registerPriors?.[register] || null;
     if (overall) {
       const adjustment = corpusPriorRowAdjustment(overall);
       corrections[register] += adjustment;
@@ -1317,7 +1329,7 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
       });
     }
     for (const [axis, value] of highAxes) {
-      const row = prior.axisPriors?.[axis]?.[register] || null;
+      const row = effectivePrior.axisPriors?.[axis]?.[register] || null;
       if (!row) continue;
       const adjustment = Number(value) * corpusPriorRowAdjustment(row);
       corrections[register] += adjustment;
@@ -1332,7 +1344,7 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
       });
     }
     for (const key of contextKeys) {
-      const row = prior.contextPriors?.[key]?.[register] || null;
+      const row = effectivePrior.contextPriors?.[key]?.[register] || null;
       if (!row) continue;
       const adjustment = corpusPriorRowAdjustment(row);
       corrections[register] += adjustment;
@@ -1353,6 +1365,8 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
     priorSchema: prior.schema || null,
     generatedAt: prior.generatedAt || null,
     source: prior.source || null,
+    modelKey: modelKey || null,
+    modelPriorValidation: modelPrior?.validation || null,
     contextKeys,
     highAxes: highAxes.map(([axis, value]) => ({ axis, value: roundField(value) })),
     corrections: Object.fromEntries(

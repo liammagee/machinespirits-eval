@@ -9,10 +9,10 @@ import {
   getRegisterOntologyVersion,
 } from '../services/engagementRegisterRegistry.js';
 
-test('register ontology v4 distinguishes speaker, hearer, and non-enacted audience', () => {
+test('register ontology v5 distinguishes speaker, hearer, and non-enacted audience', () => {
   const pragmatics = getCommunicativePragmatics();
 
-  assert.equal(getRegisterOntologyVersion(), 4);
+  assert.equal(getRegisterOntologyVersion(), 5);
   assert.equal(pragmatics.position_model.speaker.default_role, 'tutor');
   assert.equal(pragmatics.position_model.hearer.default_role, 'learner');
   assert.equal(pragmatics.position_model.audience.ontology_class, 'Audience');

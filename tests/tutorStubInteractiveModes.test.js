@@ -104,10 +104,18 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
     let stdout = '';
     let stderr = '';
     let stopping = false;
-    const followupTimers = followupInputs.map(({ delayMs, afterLogIncludes = null, text }) => {
+    const followupTimers = followupInputs.map(({ delayMs, afterLogIncludes = null, afterPlainIncludes = null, text }) => {
       if (afterLogIncludes) {
         const interval = setInterval(() => {
           if (!fs.existsSync(logPath) || !fs.readFileSync(logPath, 'utf8').includes(afterLogIncludes)) return;
+          clearInterval(interval);
+          if (!child.killed && child.stdin.writable) child.stdin.write(text);
+        }, 25);
+        return interval;
+      }
+      if (afterPlainIncludes) {
+        const interval = setInterval(() => {
+          if (!plainTerminalText(stdout).includes(afterPlainIncludes)) return;
           clearInterval(interval);
           if (!child.killed && child.stdin.writable) child.stdin.write(text);
         }, 25);
@@ -352,7 +360,12 @@ test('optional thumbs feedback is attached to the next human learner message and
         'none',
       ],
       initialInput: 'First learner message.\n',
-      followupInputs: [{ delayMs: 750, text: '/down\nSecond learner message.\n' }],
+      followupInputs: [
+        {
+          afterPlainIncludes: 'optional tutor feedback >',
+          text: '/down\nSecond learner message.\n',
+        },
+      ],
       stopWhen: (plain) => (plain.match(/optional tutor feedback >/gu) || []).length >= 2,
       timeoutMs: 12_000,
     });
@@ -374,9 +387,24 @@ test('optional thumbs feedback is attached to the next human learner message and
     assert.equal(secondTurn.learnerInput.tutorFeedback.supplied, true);
     assert.equal(secondTurn.learnerMessages[0].tutorFeedback.rating, 'down');
     assert.equal(secondTurn.learner, 'Second learner message.');
+    assert.equal(secondTurn.feedbackAdaptationPlan.rating, 'down');
+    assert.equal(secondTurn.feedbackAdaptationPlan.requiresRealizationChange, true);
+    assert.equal(secondTurn.feedbackObservation.feedback.helpfulness, -1);
+    assert.equal(secondTurn.feedbackObservation.outcomes.subjectiveHelpfulness, -1);
+    assert.ok(events.some((event) => event.type === 'tutor_feedback_observation' && event.turn === 2));
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'tutor_feedback_rating_recorded' &&
+          event.turn === 1 &&
+          event.record?.feedback?.helpfulness === -1,
+      ),
+    );
 
     const calls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
     assert.match(calls.at(-1), /The learner marked your previous public response unhelpful/u);
+    assert.match(calls.at(-1), /Private one-turn response adaptation contract/u);
+    assert.match(calls.at(-1), /This contract expires after this tutor response/u);
     assert.match(calls.at(-1), /Do not mention the rating/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -1101,6 +1129,58 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
   }
 });
 
+test('unsafe coach guidance is blocked and the tutor continues from a public-only rebuilt prompt', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-coach-boundary-recovery-'));
+  try {
+    const futureClue =
+      "The old founder's tools were never sold off. The inventory of his estate, sworn and unredeemed, leaves his graving-irons to his widow alone — among them the worn burin with the sprung heel, kept in Edony's keeping these ten years.";
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--dag',
+        '--tutor-learner-dag',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: `/coach ${futureClue}\n/learner\nThe assay still confuses me.\n`,
+      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+    });
+
+    assert.doesNotMatch(result.plain, /Speaking-tutor prompt crossed the private-planner boundary/u);
+    const trace = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const blocked = trace.find((event) => event.type === 'tutor_speaker_privilege_audit');
+    assert.ok(blocked, 'expected the contaminated prompt to be blocked before a model call');
+    assert.ok(blocked.audit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+    const recovery = trace.find((event) => event.type === 'tutor_speaker_privilege_recovery');
+    assert.equal(recovery?.applied, true);
+    assert.equal(recovery?.speakerPrivilegeAudit?.ok, true);
+    assert.equal(recovery?.promptAudit?.ok, true);
+    const tutorCall = trace.find((event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor');
+    assert.ok(tutorCall, 'expected the tutor model call to proceed after safe recovery');
+    assert.equal(tutorCall.request.config.speakerPrivilegeAudit.recovery.applied, true);
+    const tutorPrompt = tutorCall.request.messages.at(-1)?.content || '';
+    assert.doesNotMatch(tutorPrompt, /worn burin with the sprung heel/u);
+    assert.doesNotMatch(tutorPrompt, /Private coach guidance/u);
+    assert.ok(trace.some((event) => event.type === 'turn_complete'));
+    assert.equal(trace.some((event) => event.type === 'model_call_error'), false);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('auto mode plays both roles from the current transcript and returns after a bounded handoff', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-live-auto-mode-'));
   try {
@@ -1216,7 +1296,10 @@ test('debug off suppresses automatic technical diagnostics but keeps the compact
     assert.doesNotMatch(result.plain, /engagement stance >/u);
     assert.doesNotMatch(result.plain, /tutor DAG >/u);
     assert.doesNotMatch(result.plain, /debug explain > turn 1/u);
-    assert.match(result.plain, /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+/u);
+    assert.match(
+      result.plain,
+      /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+, character [^,\n]+/u,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

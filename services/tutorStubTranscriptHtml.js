@@ -378,6 +378,7 @@ function analysisCard(turn) {
     <header><h3>Turn ${escapeHtml(turn.turn)}</h3><strong>${escapeHtml(selection.engagement_stance || selection.selected_register || 'no stance')}</strong></header>
     <p><b>Learner reading:</b> ${escapeHtml(summary)}</p>
     ${turn.learnerInput?.tutorFeedback?.requested ? `<p><b>Learner rating of the previous tutor reply:</b> ${escapeHtml(turn.learnerInput.tutorFeedback.rating === 'up' ? '👍 helpful' : turn.learnerInput.tutorFeedback.rating === 'down' ? '👎 not helpful' : 'not supplied')}</p>` : ''}
+    ${turn.feedbackAdaptationAudit ? `<p><b>Response to that rating:</b> ${turn.feedbackAdaptationAudit.passed ? 'the one-turn adaptation was visible' : 'the requested adaptation was not clearly visible'}${turn.feedbackAdaptationAudit.changedAxes?.length ? ` · changed ${escapeHtml(turn.feedbackAdaptationAudit.changedAxes.map(plainLabel).join(', '))}` : ''}.</p>` : ''}
     ${learnerAdvance?.accelerated ? `<p><b>Learning pace:</b> accelerating — ${escapeHtml(learnerAdvance.adoptedPremiseCount)} premises and ${escapeHtml(learnerAdvance.derivedFactCount)} supported inferences accepted together.</p>` : ''}
     ${releasePacing?.signal?.direction && releasePacing.signal.direction !== 'steady' ? `<p><b>Clue pace:</b> ${escapeHtml(releasePacing.signal.reason)} Effective pace: ${escapeHtml(releasePacing.effectiveSpeed)}x.${releasePacing.releasedNow?.length ? ` ${escapeHtml(releasePacing.releasedNow.length)} new clue${releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn.` : ''}</p>` : ''}
     <p><b>Teaching-style rationale:</b> ${escapeHtml(rationale)}</p>
@@ -393,9 +394,12 @@ function analysisCard(turn) {
         previousRegisterEfficacy: turn.previousRegisterEfficacy || null,
         responseConfigurationAudit: turn.responseConfigurationAudit || null,
         responseComposition: turn.responseComposition || null,
+        feedbackAdaptationPlan: turn.feedbackAdaptationPlan || null,
+        feedbackAdaptationAudit: turn.feedbackAdaptationAudit || null,
         releasePacing,
       }),
     )}</pre></details>
+    ${turn.feedbackObservation ? `<details><summary>Rated-response learning record</summary><pre>${escapeHtml(safeJson(turn.feedbackObservation))}</pre></details>` : ''}
   </article>`;
 }
 

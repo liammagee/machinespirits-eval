@@ -100,6 +100,22 @@ function fixtureSnapshot() {
         },
         previousRegisterEfficacy: { status: 'no_prior_turn' },
         responseConfigurationAudit: { visible_axis_count: 6, axis_count: 6 },
+        feedbackAdaptationPlan: {
+          schema: 'machinespirits.tutor-stub.feedback-adaptation-plan.v1',
+          rating: 'down',
+          changedAxes: ['engagement_stance'],
+        },
+        feedbackAdaptationAudit: {
+          schema: 'machinespirits.tutor-stub.feedback-adaptation-audit.v1',
+          passed: true,
+          changedAxes: ['engagement_stance'],
+        },
+        feedbackObservation: {
+          schema: 'machinespirits.tutor-stub.feedback-observation.v1',
+          causalClaim: false,
+          feedback: { rating: 'down', helpfulness: -1 },
+          outcomes: { subjectiveHelpfulness: -1, objectiveProgress: null },
+        },
         responseComposition: {
           uptake: 'You are right to keep those claims separate.',
           development: 'Now compare the process mark with the custody record.',
@@ -178,6 +194,9 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.equal((html.match(/data-response-composition="uptake-development"/gu) || []).length, 2);
   assert.match(html, /<small>responds<\/small>/u);
   assert.match(html, /<small>develops<\/small>/u);
+  assert.match(html, /Response to that rating:<\/b> the one-turn adaptation was visible/u);
+  assert.match(html, /Rated-response learning record/u);
+  assert.match(html, /machinespirits\.tutor-stub\.feedback-observation\.v1/u);
   assert.match(html, /Response shape:<\/b> responds, then develops/u);
   assert.match(html, /Previous tutor reply: 👎 not helpful/u);
   assert.match(html, /Learner rating of the previous tutor reply:<\/b> 👎 not helpful/u);

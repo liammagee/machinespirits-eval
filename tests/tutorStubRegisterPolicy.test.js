@@ -30,6 +30,7 @@ import {
   buildTrajectoryRegisterScores,
   buildTrajectoryWindow,
   classifyFieldStateRelation,
+  corpusEmpiricalRegisterCorrections,
   dynamicalGuardAdjustment,
   fieldProgressFromClassification,
   learnerSurfaceFieldPoint,
@@ -360,6 +361,48 @@ test('golden: buildDynamicalSystemRegisterScores logits compose base + affinityÂ
     'expected the empirical-uncertainty guard driver for face_threat',
   );
   assert.deepEqual(result.scores, logitsToRegisterScores(result.logits, { temperature: 0.85 }));
+});
+
+test('corpus corrections remain off when a v2 prior has not passed independent-run validation', () => {
+  const palette = ['plain', 'precise'];
+  const result = corpusEmpiricalRegisterCorrections({
+    state: {
+      register: {
+        empiricalPrior: {
+          schema: 'machinespirits.tutor-stub.register-empirical-priors.v2',
+          deployment: { objectiveRegisterPriorEligible: false },
+          registerPriors: { plain: { logitAdjustment: 0.9 } },
+        },
+      },
+    },
+    palette,
+    system: { state_vector: {} },
+    features: {},
+    enabled: true,
+  });
+  assert.equal(result.enabled, false);
+  assert.equal(result.reason, 'held_out_validation_not_passed');
+  assert.deepEqual(result.corrections, { plain: 0, precise: 0 });
+});
+
+test('legacy v1 corpus priors remain readable but do not steer until rebuilt with validation', () => {
+  const result = corpusEmpiricalRegisterCorrections({
+    state: {
+      register: {
+        empiricalPrior: {
+          schema: 'machinespirits.tutor-stub.register-empirical-priors.v1',
+          registerPriors: { plain: { logitAdjustment: 0.9 } },
+        },
+      },
+    },
+    palette: ['plain'],
+    system: { state_vector: {} },
+    features: {},
+    enabled: true,
+  });
+  assert.equal(result.enabled, false);
+  assert.equal(result.reason, 'legacy_prior_requires_rebuild');
+  assert.deepEqual(result.corrections, { plain: 0 });
 });
 
 // ---------------------------------------------------------------------------

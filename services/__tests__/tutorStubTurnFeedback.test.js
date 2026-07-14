@@ -9,6 +9,14 @@ import {
   tutorStubTurnFeedbackEnvelope,
   tutorStubTurnFeedbackPrompt,
 } from '../tutorStubTurnFeedback.js';
+import {
+  auditTutorStubFeedbackAdaptation,
+  buildTutorStubFeedbackAdaptationPlan,
+  buildTutorStubFeedbackObservation,
+  buildTutorStubFeedbackRatingRecord,
+  findTutorStubFeedbackTargetTurn,
+  tutorStubFeedbackAdaptationPrompt,
+} from '../tutorStubFeedbackLearning.js';
 
 test('human turn feedback is on by default and may be skipped', () => {
   const state = createTutorStubTurnFeedbackState();
@@ -96,4 +104,116 @@ test('bare arrows rate a pending tutor response only from an empty idle prompt',
   ]) {
     assert.equal(tutorStubTurnFeedbackArrowRating(blocked), null);
   }
+});
+
+test('a down-rating becomes a one-turn observable adaptation contract tied to the rated response', () => {
+  const targetTurn = {
+    turn: 2,
+    turnId: 'run:t002',
+    tutor: 'The ledger names the tool. What follows from that?',
+    responseConfiguration: {
+      engagement_stance: 'precise',
+      action_family: 'clarify_distinction',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'grounded',
+      actorial_part: 'examiner',
+    },
+  };
+  const feedback = {
+    requested: true,
+    supplied: true,
+    rating: 'down',
+    targetTutorTurn: 2,
+    targetTutorTurnId: 'run:t002',
+    source: 'human_learner',
+  };
+  assert.equal(findTutorStubFeedbackTargetTurn({ feedback, turns: [targetTurn] }), targetTurn);
+  const plan = buildTutorStubFeedbackAdaptationPlan({
+    feedback,
+    targetTurn,
+    nextSelection: { response_configuration: targetTurn.responseConfiguration },
+  });
+  assert.equal(plan.sameConfiguration, true);
+  assert.deepEqual(plan.changedAxes, []);
+  assert.match(tutorStubFeedbackAdaptationPrompt(plan), /change the realization instead/u);
+
+  const audit = auditTutorStubFeedbackAdaptation({
+    plan,
+    targetTurn,
+    currentTurn: {
+      tutor: 'You are right to pause. In plain terms, the ledger only links a tool to the desk; it does not name a person.',
+      responseConfiguration: targetTurn.responseConfiguration,
+      responseConfigurationAudit: { axes: {} },
+      responseComposition: { uptake: 'You are right to pause.' },
+    },
+  });
+  assert.equal(audit.passed, true);
+  assert.equal(audit.sameConfigurationRecovery, true);
+  assert.equal(audit.surfaceDistinct, true);
+});
+
+test('feedback observations retain human helpfulness separately from objective progress', () => {
+  const targetTurn = {
+    turn: 1,
+    turnId: 'run:t001',
+    tutor: 'What does the mark establish?',
+    responseConfiguration: { engagement_stance: 'plain', action_family: 'clarify_distinction' },
+    registerSelection: { policy: 'continuous_dynamical_system_register_policy', selection_probability: 0.64 },
+    tutorLeakAudit: { ok: true },
+  };
+  const feedback = {
+    requested: true,
+    supplied: true,
+    rating: 'up',
+    targetTutorTurn: 1,
+    targetTutorTurnId: 'run:t001',
+    source: 'human_learner',
+  };
+  const observation = buildTutorStubFeedbackObservation({
+    feedback,
+    targetTurn,
+    learnerTurn: { turn: 2, turnId: 'run:t002', text: 'It identifies the tool.', classification: {} },
+    currentTurn: { turn: 2, turnId: 'run:t002', responseConfiguration: {} },
+    previousRegisterEfficacy: {
+      label: 'no_observed_progress',
+      progressScore: 0,
+      dagProgress: false,
+      field: { delta: 0 },
+    },
+    provenance: { runId: 'run' },
+  });
+  assert.equal(observation.feedback.helpfulness, 1);
+  assert.equal(observation.outcomes.subjectiveHelpfulness, 1);
+  assert.equal(observation.outcomes.objectiveProgress.progressScore, 0);
+  assert.equal(observation.causalClaim, false);
+  assert.equal(observation.ratedResponse.selectionProbability, 0.64);
+});
+
+test('an immediate rating record survives without a following learner turn', () => {
+  const feedback = {
+    requested: true,
+    supplied: true,
+    rating: 'down',
+    targetTutorTurn: 4,
+    targetTutorTurnId: 'run:t004',
+    ratedAt: '2026-07-14T08:00:00.000Z',
+  };
+  const record = buildTutorStubFeedbackRatingRecord({
+    feedback,
+    targetTurn: {
+      turn: 4,
+      turnId: 'run:t004',
+      tutor: 'Which conclusion follows?',
+      responseConfiguration: { engagement_stance: 'precise', action_family: 'clarify_distinction' },
+      provider: 'codex',
+      model: 'gpt-5.6-terra',
+    },
+    provenance: { runId: 'run', inputSource: 'empty_prompt_left_arrow' },
+  });
+  assert.equal(record.schema, 'machinespirits.tutor-stub.feedback-rating-record.v1');
+  assert.equal(record.feedback.helpfulness, -1);
+  assert.equal(record.ratedResponse.turnId, 'run:t004');
+  assert.equal(record.ratedResponse.responseConfiguration.engagement_stance, 'precise');
+  assert.equal(record.provenance.inputSource, 'empty_prompt_left_arrow');
 });

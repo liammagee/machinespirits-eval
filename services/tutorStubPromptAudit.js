@@ -192,6 +192,60 @@ export function auditTutorStubSpeakerPrivilege({
   };
 }
 
+export function recoverTutorStubSpeakerPrompt({
+  world = null,
+  tutorTurn = 0,
+  baseSystemPrompt = '',
+  continuityPrompt = '',
+  publicEvidencePrompt = '',
+  responseCompositionPrompt = '',
+  dramaticReleasePrompt = '',
+  responseConfigurationPrompt = '',
+  learnerPrompt = '',
+  messageHistory = [],
+} = {}) {
+  const advisoryParts = [
+    continuityPrompt,
+    publicEvidencePrompt,
+    responseCompositionPrompt,
+    dramaticReleasePrompt,
+    responseConfigurationPrompt,
+  ].filter(Boolean);
+  const userPrompt = [...advisoryParts, learnerPrompt].filter(Boolean).join('\n\n');
+  const instructionTexts = [baseSystemPrompt, ...advisoryParts].filter(Boolean);
+  const speakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
+    world,
+    tutorTurn,
+    systemPrompt: baseSystemPrompt,
+    privateAdvisory: advisoryParts.join('\n\n'),
+  });
+  const promptAudit = auditTutorStubPrompt({
+    surface: 'tutor_turn',
+    systemPrompt: baseSystemPrompt,
+    userPrompt,
+    messageHistory,
+    instructionTexts,
+  });
+  return {
+    schema: 'machinespirits.tutor-stub.speaker-prompt-recovery.v1',
+    method: 'rebuild_from_public_turn_contract',
+    applied: speakerPrivilegeAudit.ok && promptAudit.ok,
+    systemPrompt: baseSystemPrompt,
+    userPrompt,
+    instructionTexts,
+    speakerPrivilegeAudit,
+    promptAudit,
+    includedSurfaces: {
+      continuity: Boolean(continuityPrompt),
+      publicEvidence: Boolean(publicEvidencePrompt),
+      responseComposition: Boolean(responseCompositionPrompt),
+      dramaticRelease: Boolean(dramaticReleasePrompt),
+      responseConfiguration: Boolean(responseConfigurationPrompt),
+      learnerMessage: Boolean(learnerPrompt),
+    },
+  };
+}
+
 export function tutorStubPromptArchitecture({ dagEnabled = false } = {}) {
   return {
     schema: TUTOR_STUB_PROMPT_ARCHITECTURE_SCHEMA,

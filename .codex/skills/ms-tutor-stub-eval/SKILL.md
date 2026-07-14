@@ -104,8 +104,13 @@ this world format.
 - Runtime prompt calls are fail-closed on budgets and the speaker-privilege
   boundary. A tutor prompt that fails only because identical long instruction
   lines were composed twice is compacted once, recorded as
-  `prompt_audit_recovery`, and re-audited; any remaining duplication or any
-  budget/privilege failure still stops the call.
+  `prompt_audit_recovery`, and re-audited. A speaker-privilege failure blocks
+  the contaminated call and permits one deterministic rebuild from the public
+  turn contract only: base speaker rules, public continuity and evidence,
+  response composition, any due dramatic release, the compact response
+  configuration, and the learner message. The rebuilt prompt must pass both
+  privilege and budget/duplication audits before a fresh call may proceed;
+  otherwise the turn still stops.
 - Every world must explicitly author `temporal_frame`, `scene_ecology`,
   `narrative_diction`, `ledger_term`, and `summary`.
 
@@ -181,8 +186,18 @@ Useful variants:
   the next learner line skips the rating. The structured
   `tutorFeedback` envelope is copied onto every fragment in that learner turn,
   kept out of public speech, persisted in traces/transcript HTML, and used as
-  one subjective signal in the tutor's next efficacy assessment, register
-  history, and private response advisory. Use `/feedback on|off|clear` or
+  one subjective signal in the tutor's next efficacy assessment and register
+  history. It also creates a private, one-response adaptation contract tied to
+  the exact rated response. A down-rating requires a transcript-visible change
+  in configuration or realization; an up-rating preserves useful qualities
+  while still answering the learner's new words. The result is audited and
+  stored as a `feedback-observation.v1` record that joins the rated tutor
+  response, learner reply, objective progress, and next tutor adaptation.
+  A smaller `feedback-rating-record.v1` is written immediately, so the rating
+  survives `/quit` even when no subsequent learner turn is sent; the enriched
+  observation supersedes it during prior fitting.
+  Subjective helpfulness and objective progress remain separate channels, and
+  the record explicitly makes no causal claim. Use `/feedback on|off|clear` or
   `--no-turn-feedback`; it is on by default for human sessions and absent from
   fully automated learner turns.
 - Interactive TTY sessions keep a persistent editable command line beneath the
@@ -324,6 +339,11 @@ Useful variants:
   speaking tutor visibly plays—scene partner, examiner, record-keeper, authored
   clue source, advocate, skeptic, or closer—and receives only public/due
   evidence. An authored enacted clue role takes priority on its release turn.
+  A hard stance override for comprehension, clue pacing, learner acceleration,
+  or a declared pressure probe also replaces the stance distribution supplied
+  to character selection with a one-hot distribution; the displaced blend is
+  retained separately for trace diagnosis. This prevents character selection
+  from acting on a stale pre-override stance.
   `child_accessible` audience register requires an
   explicit public age signal—ordinary confusion defaults to `adult_novice`,
   never to child-directed speech. Every completed tutor response stores a
@@ -412,7 +432,8 @@ Useful variants:
   learner/tutor DAGs, stance efficacy, stance distributions, and calculation
   reasons. Quiet mode retains only the public dialogue and one compact model
   line with latency, honest token availability, effort, current engagement
-  stance, and action family. The mode survives `/reset`, appears with its format in
+  stance, action family, and the selected in-scene character (the internal
+  `actorial_part`). The mode survives `/reset`, appears with its format in
   `/status` and transcript settings, and writes an `explanatory_debug_output`
   trace event without changing the policy.
 - `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
@@ -573,7 +594,11 @@ npm run tutor:stub:auto-eval -- --dry-run <same flags>
 ```
 
 Build/update repository-informed register priors before using
-`empirical_dynamical_system`:
+`empirical_dynamical_system`. The builder scans both auto-eval and human
+interactive traces by default, deduplicates repeated run/turn observations,
+keeps human helpfulness separate from objective DAG/field progress, and marks
+corpus corrections ineligible unless they improve a chronological
+independent-run holdout. Human preference summaries remain advisory-only:
 
 ```bash
 npm run tutor:stub:register-priors -- \

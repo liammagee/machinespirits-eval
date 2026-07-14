@@ -10,7 +10,9 @@ import {
   auditTutorStubPrompt,
   auditTutorStubSpeakerPrivilege,
   recoverTutorStubDuplicateInstructionLines,
+  recoverTutorStubSpeakerPrompt,
 } from '../services/tutorStubPromptAudit.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   learnerProfileContractSummary,
   learnerProfileIds,
@@ -87,6 +89,248 @@ test('speaker privilege audit rejects planner-only answer and future evidence', 
   assert.equal(audit.ok, false);
   assert.ok(audit.issues.some((issue) => issue.code === 'concealed_answer_surface'));
   assert.ok(audit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+});
+
+test('speaker prompt recovery discards contaminated advisory and preserves the public turn contract', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const future = world.releaseSchedule.find((row) => row.turn > 1);
+  const futureSurface = world.premiseById.get(future.premise).surface;
+  const contaminated = auditTutorStubSpeakerPrivilege({
+    world,
+    tutorTurn: 1,
+    systemPrompt: 'Respond only from the public exchange.',
+    privateAdvisory: `A machine advisory accidentally included: ${futureSurface}`,
+  });
+  assert.equal(contaminated.ok, false);
+
+  const recovered = recoverTutorStubSpeakerPrompt({
+    world,
+    tutorTurn: 1,
+    baseSystemPrompt: 'Respond only from the public exchange.',
+    continuityPrompt: 'Continue from the complete public dialogue.',
+    publicEvidencePrompt: 'No public clue has yet established who handled the blanks.',
+    responseCompositionPrompt: 'First answer the learner, then develop the inquiry.',
+    responseConfigurationPrompt: 'Style: warm. Character: scene partner.',
+    learnerPrompt: 'Learner says: I am not sure where to begin.',
+  });
+
+  assert.equal(recovered.applied, true);
+  assert.equal(recovered.speakerPrivilegeAudit.ok, true);
+  assert.equal(recovered.promptAudit.ok, true);
+  assert.match(recovered.userPrompt, /I am not sure where to begin/u);
+  assert.match(recovered.userPrompt, /Character: scene partner/u);
+  assert.doesNotMatch(
+    recovered.userPrompt,
+    new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'),
+  );
+});
+
+test('speaker prompt recovery remains fail-closed when a retained public surface is itself contaminated', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const future = world.releaseSchedule.find((row) => row.turn > 1);
+  const futureSurface = world.premiseById.get(future.premise).surface;
+  const recovered = recoverTutorStubSpeakerPrompt({
+    world,
+    tutorTurn: 1,
+    baseSystemPrompt: 'Respond only from the public exchange.',
+    publicEvidencePrompt: `Incorrectly labelled public evidence: ${futureSurface}`,
+    learnerPrompt: 'Learner says: What is public so far?',
+  });
+
+  assert.equal(recovered.applied, false);
+  assert.equal(recovered.speakerPrivilegeAudit.ok, false);
+  assert.ok(recovered.speakerPrivilegeAudit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+});
+
+test('public-only speaker recovery passes every authored clue-release boundary', () => {
+  const worldDir = path.join(ROOT, 'config/drama-derivation');
+  const worldFiles = fs
+    .readdirSync(worldDir)
+    .filter((name) => /^world-.*\.yaml$/u.test(name))
+    .sort();
+  let checkedWindows = 0;
+  let rejectedFutureSurfaces = 0;
+
+  for (const file of worldFiles) {
+    const world = loadWorld(path.join(worldDir, file));
+    const lastReleaseTurn = Math.max(0, ...world.releaseSchedule.map((row) => row.turn));
+    for (let tutorTurn = 0; tutorTurn <= lastReleaseTurn; tutorTurn += 1) {
+      const releasedSurfaces = world.releaseSchedule
+        .filter((row) => row.turn <= tutorTurn)
+        .map((row) => world.premiseById.get(row.premise)?.surface)
+        .filter(Boolean);
+      const recovered = recoverTutorStubSpeakerPrompt({
+        world,
+        tutorTurn,
+        baseSystemPrompt: 'Speak only from the public scene and dialogue.',
+        publicEvidencePrompt: releasedSurfaces.length
+          ? `Public evidence now available:\n${releasedSurfaces.map((surface) => `- ${surface}`).join('\n')}`
+          : 'No contingent evidence is public yet.',
+        responseCompositionPrompt: 'Respond to the learner before developing the inquiry.',
+        responseConfigurationPrompt: 'Style: precise. Character: evidence examiner.',
+        learnerPrompt: 'Learner says: What can the current evidence establish?',
+      });
+      assert.equal(
+        recovered.applied,
+        true,
+        `${world.id} turn ${tutorTurn}: ${JSON.stringify({
+          privilege: recovered.speakerPrivilegeAudit.issues,
+          prompt: recovered.promptAudit.violations,
+        })}`,
+      );
+      checkedWindows += 1;
+
+      const next = world.releaseSchedule.find((row) => row.turn > tutorTurn);
+      const nextSurface = next ? world.premiseById.get(next.premise)?.surface : null;
+      if (!nextSurface) continue;
+      const contaminated = auditTutorStubSpeakerPrivilege({
+        world,
+        tutorTurn,
+        systemPrompt: recovered.systemPrompt,
+        privateAdvisory: `${recovered.userPrompt}\n${nextSurface}`,
+      });
+      assert.equal(contaminated.ok, false, `${world.id} turn ${tutorTurn} should reject its next clue`);
+      assert.ok(contaminated.issues.some((issue) => issue.code === 'future_evidence_surface'));
+      rejectedFutureSurfaces += 1;
+    }
+  }
+
+  assert.ok(checkedWindows > 100, `expected broad release-boundary coverage; got ${checkedWindows}`);
+  assert.ok(rejectedFutureSurfaces > 50, `expected broad future-clue rejection; got ${rejectedFutureSurfaces}`);
+});
+
+test('a clue postponed by slower pacing stays out of the speaking-tutor prompt', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-postponed-clue-'));
+  try {
+    const fakeCodex = path.join(tmp, 'codex');
+    fs.writeFileSync(
+      fakeCodex,
+      `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('-o');
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  let response;
+  if (input.includes('You are an automated learner in an experimental tutoring dialogue.')) {
+    response = 'I have no idea. Slow down.';
+  } else if (input.includes('Analyze the learner input once before the tutor responds.')) {
+    response = JSON.stringify({
+      classification: {
+        turn: {
+          summary: 'Learner is confused and explicitly asks for slower pacing.',
+          request_type: 'stepwise_support_request',
+          discourse_move: 'repair_request',
+          evidence_use: 'none',
+          epistemic_stance: 'confused',
+          affect: 'overwhelmed',
+          agency: 'attempting',
+          scores: {
+            conceptual_engagement: { score: 1, reason: 'No clue is available yet.' },
+            epistemic_readiness: { score: 2, reason: 'Requests a slower first step.' }
+          },
+          pedagogical_need: 'Slow down and offer one concrete starting point.'
+        },
+        overall: {
+          summary: 'Learner needs one step at a time.',
+          trajectory: 'initial confusion',
+          recurring_pattern: 'none',
+          current_state: 'waiting for a concrete starting point',
+          next_best_tutor_move: 'Acknowledge the confusion and orient without adding a clue.'
+        }
+      },
+      learner_record: {
+        human_discourse: { proof_status: 'side_arc' },
+        notes: 'No public evidence was adopted.'
+      }
+    });
+  } else {
+    response = "That's all right—we'll slow down. Start with the empty incident log: what kind of check would feel concrete?";
+  }
+  if (outputPath) fs.writeFileSync(outputPath, response);
+  process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+});
+`,
+      'utf8',
+    );
+    fs.chmodSync(fakeCodex, 0o755);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--world',
+        'world_028_larkspur_fridge',
+        '--dag',
+        '--tutor-learner-dag',
+        '--auto-learner',
+        '--auto-turns',
+        '1',
+        '--dag-mode',
+        'defeasible_human_scaffold',
+        '--register-policy',
+        'continuous_dynamical_system',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const pacing = events.find((event) => event.type === 'release_pacing_update' && event.turn === 1);
+    assert.ok(pacing, 'expected the first-turn pacing update');
+    assert.equal(pacing.direction, 'decelerate');
+    assert.deepEqual(pacing.releasePacing?.dueNow, []);
+    const completed = events.find((event) => event.type === 'turn_complete' && event.turn === 1);
+    assert.ok(completed, 'expected the slowed turn to complete');
+    const selection = completed.turnRecord.registerSelection;
+    assert.equal(selection.engagement_stance, 'warm');
+    assert.equal(selection.source, 'learner_release_pacing_decelerate');
+    assert.deepEqual(
+      selection.engagement_stance_distribution.map((row) => [row.engagement_stance, row.probability]),
+      [['warm', 1]],
+    );
+    assert.ok(selection.pre_override_engagement_stance_distribution?.length > 0);
+    const characterStanceDrivers = selection.response_configuration.actorial_part_selection.drivers.filter(
+      (driver) => driver.source.startsWith('stance:'),
+    );
+    assert.ok(characterStanceDrivers.length > 0);
+    assert.ok(characterStanceDrivers.every((driver) => driver.source === 'stance:warm'));
+    assert.equal(events.some((event) => event.type === 'tutor_speaker_privilege_audit'), false);
+    const tutorCall = events.find(
+      (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && event.turn === 1,
+    );
+    assert.ok(tutorCall, 'expected the speaking tutor to run after the clue was postponed');
+    const tutorPrompt = tutorCall.request.messages.at(-1)?.content || '';
+    assert.doesNotMatch(tutorPrompt, new RegExp(LARKSPUR_BADGE_SURFACE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'));
+    assert.doesNotMatch(tutorPrompt, /visitor badge|visitor code|WF-11|outside crew in hi-vis/iu);
+    assert.doesNotMatch(tutorPrompt, /Act intent:|Next evidence window:/u);
+    assert.match(tutorPrompt, /Current branch: opening The Lunchbox on Shelf Two/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('learner-grounded clues and overreach bookkeeping each appear once in tutor instruction prompts', () => {

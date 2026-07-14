@@ -147,6 +147,7 @@ import {
   auditTutorStubPrompt,
   auditTutorStubSpeakerPrivilege,
   recoverTutorStubDuplicateInstructionLines,
+  recoverTutorStubSpeakerPrompt,
   tutorStubPromptArchitecture,
   tutorStubPromptSurfaceForRole,
 } from '../services/tutorStubPromptAudit.js';
@@ -189,6 +190,13 @@ import {
   tutorStubTurnFeedbackPrompt,
   tutorStubTurnFeedbackRegisterPrompt,
 } from '../services/tutorStubTurnFeedback.js';
+import {
+  auditTutorStubFeedbackAdaptation,
+  buildTutorStubFeedbackAdaptationPlan,
+  buildTutorStubFeedbackObservation,
+  buildTutorStubFeedbackRatingRecord,
+  findTutorStubFeedbackTargetTurn,
+} from '../services/tutorStubFeedbackLearning.js';
 import {
   TUTOR_STUB_OPENING_REQUIREMENTS,
   auditTutorStubOpening,
@@ -1273,10 +1281,15 @@ function loadRegisterEmpiricalPrior(value, { policy }) {
   if (!filePath) return { prior: null, filePath: null, status: 'off' };
   if (!fs.existsSync(filePath)) return { prior: null, filePath, status: 'missing' };
   const prior = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  if (!/register-empirical-priors\.v1$/u.test(String(prior.schema || ''))) {
+  if (!/register-empirical-priors\.v[12]$/u.test(String(prior.schema || ''))) {
     throw new Error(`Invalid register empirical prior schema in ${filePath}: ${prior.schema || 'missing'}`);
   }
-  return { prior, filePath, status: 'loaded' };
+  const status = prior.schema.endsWith('.v1')
+    ? 'loaded_legacy_requires_rebuild'
+    : prior.deployment?.objectiveRegisterPriorEligible === false
+      ? 'loaded_holdout_not_passed'
+      : 'loaded';
+  return { prior, filePath, status };
 }
 
 function safeTimestampForFile(date = new Date()) {
@@ -2633,7 +2646,7 @@ function metadataLine(meta) {
   const selection = meta.registerSelection || null;
   const stance = selection?.engagement_stance || selection?.selected_register || null;
   const action = selection?.action_family || selection?.response_configuration?.action_family || null;
-  const actorialPart =
+  const character =
     selection?.actorial_part_label ||
     selection?.response_configuration?.actorial_part_label ||
     selection?.actorial_part ||
@@ -2642,7 +2655,7 @@ function metadataLine(meta) {
   const register = [
     stance ? `style ${displayDiagnosticLabel(stance)}` : null,
     action ? `move ${displayDiagnosticLabel(action)}` : null,
-    actorialPart ? `part ${displayDiagnosticLabel(actorialPart)}` : null,
+    character ? `character ${displayDiagnosticLabel(character)}` : null,
   ]
     .filter(Boolean)
     .map((part) => `, ${part}`)
@@ -4499,8 +4512,8 @@ function scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }) {
     return branchTemplateForEvidence(latestReleased || {}, world, { conclusionReady: true });
   }
   if (latestReleased) return branchTemplateForEvidence(latestReleased, world);
-  const nextRelease = nextReleaseRow(state);
-  if (nextRelease) return branchTemplateForEvidence(nextRelease, world);
+  // A scheduled-but-not-due clue belongs to the private planner. The public
+  // scaffold must remain open until that clue is actually due or released.
   return branchTemplateForEvidence({}, world);
 }
 
@@ -4510,6 +4523,13 @@ function compactReleaseRow(row = {}) {
     turn: row.turn ?? null,
     via: row.via || null,
     surface: oneLine(row.surface || '', { max: 220 }) || null,
+  };
+}
+
+function compactFutureReleaseWindow(row = {}) {
+  return {
+    turn: row.turn ?? null,
+    via: row.via || null,
   };
 }
 
@@ -4541,7 +4561,9 @@ function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
       releasedCount: released.length,
       dueNow: dueNow.map(compactReleaseRow),
       latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
-      nextRelease: next ? compactReleaseRow(next) : null,
+      // The public scaffold needs to know only that a future gap exists. Its
+      // premise id and surface remain owned by the deterministic planner.
+      nextRelease: next ? compactFutureReleaseWindow(next) : null,
     },
     returnTarget: enabled
       ? {
@@ -5995,6 +6017,30 @@ function predeclaredPressureTurns() {
   return cachedPressureTurns;
 }
 
+function applyEngagementStanceOverride(source, stance, patch = {}) {
+  const priorDistribution =
+    source?.engagement_stance_distribution || (Array.isArray(source?.distribution) ? source.distribution : null);
+  const lockedDistribution = [
+    {
+      engagement_stance: stance,
+      register: stance,
+      weight: 1,
+      probability: 1,
+      sourceScore: 1,
+    },
+  ];
+  return {
+    ...source,
+    ...patch,
+    engagement_stance: stance,
+    selected_register: stance,
+    pre_override_engagement_stance_distribution: priorDistribution,
+    distribution: lockedDistribution,
+    engagement_stance_distribution: lockedDistribution,
+    selected_probability: 1,
+  };
+}
+
 function normalizeResponseConfigurationSelection(
   rawSelection,
   { state, classification, tutorLearnerDag, raw, learnerText = '' },
@@ -6074,15 +6120,12 @@ function normalizeResponseConfigurationSelection(
       String(source.engagement_stance || source.selected_register || source.register || ''),
     )
   ) {
-    source = {
-      ...source,
-      engagement_stance: 'plain',
-      selected_register: 'plain',
+    source = applyEngagementStanceOverride(source, 'plain', {
       register_reason: `Comprehension side-state overrode challenge pressure at ${comprehensionPressure}; use one immediate plain-language gloss.`,
       expected_dag_move: 'Hold learner-DAG advancement while the wording gap is repaired.',
       expected_field_move: 'Resolve the vocabulary or wording gap before asking for another proof move.',
       source: 'dynamic_comprehension_guard',
-    };
+    });
   }
   const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
   if (
@@ -6105,10 +6148,7 @@ function normalizeResponseConfigurationSelection(
             ? 'plain'
             : null;
     if (paceStance) {
-      source = {
-        ...source,
-        engagement_stance: paceStance,
-        selected_register: paceStance,
+      source = applyEngagementStanceOverride(source, paceStance, {
         register_reason:
           requestedPace === 'accelerate'
             ? `The learner asked for faster progress, so the tutor shifts to ${paceStance} while the clue-release controller brings one public clue forward.`
@@ -6127,7 +6167,7 @@ function normalizeResponseConfigurationSelection(
             ? 'Convert learner impatience into visible forward motion.'
             : 'Reduce pace pressure while preserving learner agency.',
         source: `learner_release_pacing_${requestedPace}`,
-      };
+      });
     }
   }
   const learnerAdvance = tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
@@ -6146,10 +6186,7 @@ function normalizeResponseConfigurationSelection(
       : palette.has('precise')
         ? 'precise'
         : currentStanceForAcceleration;
-    source = {
-      ...source,
-      engagement_stance: acceleratedStance,
-      selected_register: acceleratedStance,
+    source = applyEngagementStanceOverride(source, acceleratedStance, {
       register_reason: `Learner-owned acceleration guard: ${learnerAdvance.supportedMoveCount} warranted proof moves were accepted, so the stance shifts to ${acceleratedStance} and tests only the next unresolved edge.`,
       engagement_stance_reason: `Learner-owned acceleration guard: ${learnerAdvance.supportedMoveCount} warranted proof moves were accepted, so the stance shifts to ${acceleratedStance} and tests only the next unresolved edge.`,
       reviewer_signal: `accelerating learner supplied ${learnerAdvance.supportedMoveCount} warranted proof moves`,
@@ -6157,20 +6194,17 @@ function normalizeResponseConfigurationSelection(
         'Preserve the entire learner-supplied chain and ask only about the next unresolved public proof edge.',
       expected_field_move: 'Match the learner’s quicker pace without forcing a restatement of already warranted steps.',
       source: 'dynamic_learner_acceleration_guard',
-    };
+    });
   }
   const pressureProbeTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
   if (predeclaredPressureTurns().has(pressureProbeTurn)) {
-    source = {
-      ...source,
-      engagement_stance: 'face_threat',
-      selected_register: 'face_threat',
+    source = applyEngagementStanceOverride(source, 'face_threat', {
       register_reason: `Predeclared pressure probe: hostile register forced at learner turn ${pressureProbeTurn} by design, independent of the register policy. The policy resumes control next turn.`,
       expected_dag_move: 'Learner-DAG advancement may stall or regress this turn; recovery is measured afterward.',
       expected_field_move: 'Interactional pressure spikes by design this turn.',
       source: 'predeclared_pressure_probe',
       predeclared_pressure: true,
-    };
+    });
   }
   const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
   const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
@@ -6302,6 +6336,11 @@ function normalizeResponseConfigurationSelection(
       : Array.isArray(source.distribution)
         ? source.distribution
         : null,
+    pre_override_engagement_stance_distribution: Array.isArray(
+      source.pre_override_engagement_stance_distribution,
+    )
+      ? source.pre_override_engagement_stance_distribution
+      : null,
     register_vector:
       source.register_vector && typeof source.register_vector === 'object' ? source.register_vector : null,
     engagement_stance_vector:
@@ -7023,7 +7062,6 @@ function humanDiscourseTutorContext(frame) {
   const questionSupport = frame.questionSupport || null;
   const due = scaffold.releaseState?.dueNow || [];
   const latest = scaffold.releaseState?.latestReleased || null;
-  const next = scaffold.releaseState?.nextRelease || null;
   const promptRule =
     frame.mode === 'defeasible_human_scaffold'
       ? 'Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.'
@@ -7034,8 +7072,6 @@ function humanDiscourseTutorContext(frame) {
     compression.enabled
       ? `Step compression: on; ${compression.policy || 'accept obvious public bridges as implied'}; max explicit demands per turn ${compression.maxExplicitDemandsPerTurn ?? 1}.`
       : null,
-    `Act: ${scaffold.activeAct?.act || 'unknown'}${scaffold.activeAct?.title ? ` — ${scaffold.activeAct.title}` : ''}.`,
-    scaffold.activeAct?.intent ? `Act intent: ${oneLine(scaffold.activeAct.intent, { max: 260 })}` : null,
     `Current branch: ${branch.label || branch.id || 'open scaffold'}.`,
     scaffold.localQuestion ? `Local question: ${scaffold.localQuestion}` : null,
     scaffold.warrantFrame ? `Warrant frame: ${scaffold.warrantFrame}` : null,
@@ -7050,9 +7086,6 @@ function humanDiscourseTutorContext(frame) {
       : latest
         ? `Latest public evidence: ${oneLine(latest.surface, { max: 140 })}`
         : null,
-    next
-      ? `Next evidence window: turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}; its content remains withheld.`
-      : null,
     generousInference.applied ? 'Contextual answer resolution: APPLIED with high confidence.' : null,
     generousInference.applied ? `Resolved learner move: ${generousInference.resolvedMeaning}` : null,
     generousInference.applied ? `Authoritative next-turn rule: ${generousInference.tutorInstruction}` : null,
@@ -9523,6 +9556,7 @@ async function callTutor({
   roleBase = 'tutor_stub_tutor',
   learnerMessages = null,
   tutorFeedback = null,
+  feedbackAdaptationPlan = null,
   deferStreamOutput = false,
   passthrough = false,
   signal = null,
@@ -9569,7 +9603,9 @@ async function callTutor({
     : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
   const coachAdvisory = passthrough ? null : tutorCoachGuidanceContext(state, { tutorTurn });
   const pointOfActionAdvisory = passthrough ? null : tutorStubPointOfActionPrompt(state?.pointOfAction?.current);
-  const tutorFeedbackAdvisory = passthrough ? null : tutorStubTurnFeedbackPrompt(tutorFeedback);
+  const tutorFeedbackAdvisory = passthrough
+    ? null
+    : tutorStubTurnFeedbackPrompt(tutorFeedback, { adaptationPlan: feedbackAdaptationPlan });
   const responseConfigurationAdvisory = passthrough
     ? null
     : responseConfigurationContext(registerSelection, {
@@ -9603,7 +9639,25 @@ async function callTutor({
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
-  const speakerPrivilegeAudit = passthrough
+  const machineAdvisoryParts = [
+    tutorMemory,
+    dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+    responseCompositionAdvisory,
+    dramaticReleaseAdvisory,
+    advisory,
+    learnerDagAdvisory,
+    humanDiscourseAdvisory,
+    dialogueClosureAdvisory,
+    comprehensionAdvisory,
+    coachAdvisory,
+    pointOfActionAdvisory,
+    tutorFeedbackAdvisory,
+    responseConfigurationAdvisory,
+  ].filter(Boolean);
+  let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
+  let effectiveSpeakerUserPrompt = userPrompt;
+  let effectiveSpeakerInstructionTexts = [systemPrompt, ...machineAdvisoryParts].filter(Boolean);
+  let speakerPrivilegeAudit = passthrough
     ? {
         schema: 'machinespirits.tutor-stub.speaker-privilege-audit.v1',
         ok: true,
@@ -9611,35 +9665,59 @@ async function callTutor({
         reason: 'passthrough_uses_only_system_setup_public_history_and_latest_user_message',
       }
     : auditTutorStubSpeakerPrivilege({
-    world: dag ? world : null,
-    tutorTurn,
-    systemPrompt: effectiveSystemPrompt,
-    privateAdvisory: [
-      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      responseCompositionAdvisory,
-      dramaticReleaseAdvisory,
-      humanDiscourseAdvisory,
-      dialogueClosureAdvisory,
-      comprehensionAdvisory,
-      coachAdvisory,
-      pointOfActionAdvisory,
-      tutorFeedbackAdvisory,
-      responseConfigurationAdvisory,
-    ]
-      .filter(Boolean)
-      .join('\n\n'),
+        world: dag ? world : null,
+        tutorTurn,
+        systemPrompt: effectiveSystemPrompt,
+        privateAdvisory: machineAdvisoryParts.join('\n\n'),
       });
   if (!speakerPrivilegeAudit.ok) {
+    const blockedAudit = speakerPrivilegeAudit;
     appendTraceEvent(trace, {
       type: 'tutor_speaker_privilege_audit',
       turn: tutorTurn,
-      audit: speakerPrivilegeAudit,
+      audit: blockedAudit,
     });
-    throw new Error(
-      `Speaking-tutor prompt crossed the private-planner boundary: ${speakerPrivilegeAudit.issues
-        .map((issue) => `${issue.code}:${issue.source}`)
-        .join(', ')}`,
-    );
+    const recovery = recoverTutorStubSpeakerPrompt({
+      world: dag ? world : null,
+      tutorTurn,
+      baseSystemPrompt: systemPrompt,
+      continuityPrompt: tutorMemory,
+      publicEvidencePrompt: dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      responseCompositionPrompt: responseCompositionAdvisory,
+      dramaticReleasePrompt: dramaticReleaseAdvisory,
+      responseConfigurationPrompt: tutorStubResponseConfigurationPrompt(
+        registerSelection?.response_configuration || registerSelection,
+      ),
+      learnerPrompt,
+      messageHistory: context,
+    });
+    appendTraceEvent(trace, {
+      type: 'tutor_speaker_privilege_recovery',
+      turn: tutorTurn,
+      method: recovery.method,
+      applied: recovery.applied,
+      originalIssues: blockedAudit.issues.map((issue) => ({ code: issue.code, source: issue.source })),
+      speakerPrivilegeAudit: recovery.speakerPrivilegeAudit,
+      promptAudit: recovery.promptAudit,
+    });
+    if (!recovery.applied) {
+      throw new Error(
+        `Speaking-tutor prompt crossed the private-planner boundary and public-only recovery failed: ${blockedAudit.issues
+          .map((issue) => `${issue.code}:${issue.source}`)
+          .join(', ')}`,
+      );
+    }
+    effectiveSpeakerSystemPrompt = recovery.systemPrompt;
+    effectiveSpeakerUserPrompt = recovery.userPrompt;
+    effectiveSpeakerInstructionTexts = recovery.instructionTexts;
+    speakerPrivilegeAudit = {
+      ...recovery.speakerPrivilegeAudit,
+      recovery: {
+        applied: true,
+        method: recovery.method,
+        originalIssues: blockedAudit.issues.map((issue) => ({ code: issue.code, source: issue.source })),
+      },
+    };
   }
   const leakGuardEnabled = Boolean(!passthrough && dag && world);
   const scaffoldGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.generousInference?.applied);
@@ -9680,22 +9758,8 @@ async function callTutor({
     const startedAt = new Date().toISOString();
     const instructionTexts = passthrough
       ? [systemPrompt]
-      : [
-        systemPrompt,
-        dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-        responseCompositionAdvisory,
-        dramaticReleaseAdvisory,
-      advisory,
-      learnerDagAdvisory,
-      humanDiscourseAdvisory,
-      dialogueClosureAdvisory,
-      comprehensionAdvisory,
-      coachAdvisory,
-      pointOfActionAdvisory,
-      tutorFeedbackAdvisory,
-      responseConfigurationAdvisory,
-        ].filter(Boolean);
-    let attemptSystemPrompt = effectiveSystemPrompt;
+      : effectiveSpeakerInstructionTexts;
+    let attemptSystemPrompt = effectiveSpeakerSystemPrompt;
     let effectiveAttemptUserPrompt = attemptUserPrompt;
     let effectiveInstructionTexts = instructionTexts;
     let promptAudit = passthrough
@@ -10071,7 +10135,7 @@ async function callTutor({
     const attempts = [];
     const repairsApplied = [];
     let response = await invokeTutorAttempt({
-      attemptUserPrompt: userPrompt,
+      attemptUserPrompt: effectiveSpeakerUserPrompt,
       role: roleBase,
       streamMode: tutorStreamMode,
       repairAttempt: 0,
@@ -10128,7 +10192,7 @@ async function callTutor({
     const firstPreservedUptake = preservableTutorUptake(audits);
     response = await invokeTutorAttempt({
       attemptUserPrompt: tutorResponseRepairPrompt({
-        originalUserPrompt: userPrompt,
+        originalUserPrompt: effectiveSpeakerUserPrompt,
         unsafeDraft: response.text,
         leakAudit: audits.leakAudit,
         scaffoldAudit: audits.scaffoldAudit,
@@ -11381,6 +11445,22 @@ async function runOneTurn(
         });
   registerSelection = typedAction.registerSelection;
   registerSelection = applyTutorStubPointOfActionConstraint(registerSelection, pointOfAction);
+  const tutorFeedback = learnerInput?.tutorFeedback || null;
+  const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
+    feedback: tutorFeedback,
+    turns: state.turns,
+    opening: {
+      turnId: openingDebugId(stateRunDebugId(state)),
+      text: state.history.find((message) => message.role === 'assistant')?.content || '',
+      provider: state.openingRealization?.provider || null,
+      model: state.openingRealization?.model || null,
+    },
+  });
+  const feedbackAdaptationPlan = buildTutorStubFeedbackAdaptationPlan({
+    feedback: tutorFeedback,
+    targetTurn: feedbackTargetTurn,
+    nextSelection: registerSelection,
+  });
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   if (
     precomputedResponse?.speculativeCacheHit &&
@@ -11399,6 +11479,14 @@ async function runOneTurn(
       type: 'mixed_learner_tutor_prefetch_bypassed',
       turn: tutorTurn,
       reason: 'typed_action_must_precede_tutor_output_generation',
+    });
+    precomputedResponse = null;
+  }
+  if (precomputedResponse?.speculativeCacheHit && feedbackAdaptationPlan) {
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_tutor_prefetch_bypassed',
+      turn: tutorTurn,
+      reason: 'rated_response_adaptation_contract_must_precede_tutor_output_generation',
     });
     precomputedResponse = null;
   }
@@ -11426,7 +11514,8 @@ async function runOneTurn(
       cliEffort: state.cliEffort,
       multipleChoice: state.multipleChoice,
       learnerMessages: learnerInput?.messages || null,
-      tutorFeedback: learnerInput?.tutorFeedback || null,
+      tutorFeedback,
+      feedbackAdaptationPlan,
       deferStreamOutput: Boolean(runtimeOptions.isCurrent),
       signal: runtimeOptions.signal || null,
     }));
@@ -11463,6 +11552,20 @@ async function runOneTurn(
       audit: responseConfigurationAudit,
     });
   }
+
+  const feedbackAdaptationAudit = auditTutorStubFeedbackAdaptation({
+    plan: feedbackAdaptationPlan,
+    targetTurn: feedbackTargetTurn,
+    currentTurn: {
+      turn: tutorTurn,
+      turnId,
+      tutor: response.text,
+      responseConfiguration: registerSelection?.response_configuration || null,
+      responseConfigurationAudit,
+      responseComposition: response.responseComposition || null,
+      responseCompositionAudit: response.responseCompositionAudit || null,
+    },
+  });
 
   const comprehensionResponse = applyTutorStubComprehensionResponse(state.comprehension, {
     text: response.text,
@@ -11545,6 +11648,46 @@ async function runOneTurn(
     });
   }
 
+  const feedbackObservation = buildTutorStubFeedbackObservation({
+    feedback: tutorFeedback,
+    targetTurn: feedbackTargetTurn,
+    learnerTurn: {
+      turn: tutorTurn,
+      turnId,
+      text: learnerText,
+      messageCount: learnerInput?.messageCount || learnerInput?.messages?.length || 1,
+      messages: learnerInput?.messages || null,
+      classification,
+    },
+    currentTurn: {
+      turn: tutorTurn,
+      turnId,
+      tutor: response.text,
+      responseConfiguration: registerSelection?.response_configuration || null,
+      responseConfigurationAudit,
+      responseComposition: response.responseComposition || null,
+      responseCompositionAudit: response.responseCompositionAudit || null,
+      tutorLeakAudit: response.leakAudit || null,
+      tutorHumanScaffoldAudit: response.scaffoldAudit || null,
+      tutorQuestionSupportAudit: response.questionSupportAudit || null,
+      tutorDramaticReleaseAudit: response.dramaticReleaseAudit || null,
+      tutorRepetitionAudit: response.repetitionAudit || null,
+      tutorDialogueClosureAudit: response.closureAudit || null,
+      tutorResponseRepaired: Boolean(response.repaired),
+      tutorDeterministicFallback: Boolean(response.deterministicFallback),
+    },
+    previousRegisterEfficacy,
+    adaptationPlan: feedbackAdaptationPlan,
+    adaptationAudit: feedbackAdaptationAudit,
+    provenance: {
+      runId: stateRunDebugId(state),
+      trace: state.trace?.filePath ? path.relative(ROOT, state.trace.filePath) : null,
+      worldId: state.world?.id || null,
+      learnerProfileId: state.learnerProfileId || null,
+      interactionMode: state.interaction?.mode || 'learner',
+    },
+  });
+
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
   if (coachGuidance.length && state.coach) {
@@ -11618,6 +11761,9 @@ async function runOneTurn(
     registerSelection,
     responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
     responseConfigurationAudit,
+    feedbackAdaptationPlan,
+    feedbackAdaptationAudit,
+    feedbackObservation,
     responseComposition: {
       frame: jsonClone(response.responseCompositionFrame || null),
       audit: jsonClone(response.responseCompositionAudit || null),
@@ -11662,6 +11808,15 @@ async function runOneTurn(
     tokenUsageAvailable: response.tokenUsageAvailable,
   };
   state.turns.push(turnRecord);
+  if (feedbackObservation) {
+    appendTraceEvent(state.trace, {
+      type: 'tutor_feedback_observation',
+      turnId,
+      turn: tutorTurn,
+      observation: feedbackObservation,
+      publicTranscriptChanged: false,
+    });
+  }
   appendTraceEvent(state.trace, {
     type: 'turn_complete',
     turnId,
@@ -12435,6 +12590,18 @@ async function main() {
     learnerMessageField: 'tutorFeedback',
     automatedLearner: 'disabled',
     tutorSelfAssessment: true,
+    liveAdaptation: {
+      horizon: 'next_tutor_response_only',
+      private: true,
+      observableChangeAudited: true,
+      safetyPrecedence: true,
+    },
+    learningRecord: {
+      schema: 'machinespirits.tutor-stub.feedback-observation.v1',
+      joinsRatedResponseToLearnerReplyAndNextTutorOutcome: true,
+      separatesSubjectiveHelpfulnessFromObjectiveProgress: true,
+      causalClaim: false,
+    },
   };
   const explanatoryDebugConfig = {
     enabledByDefault: false,
@@ -13273,7 +13440,13 @@ async function main() {
     ) {
       const priorPath = registerEmpiricalPrior.filePath ? path.relative(ROOT, registerEmpiricalPrior.filePath) : 'none';
       console.log(
-        `${C.dim}cross-run style evidence: ${registerEmpiricalPrior.status}${
+        `${C.dim}cross-run style evidence: ${
+          registerEmpiricalPrior.status === 'loaded_holdout_not_passed'
+            ? 'available but not steering (independent-run check not passed)'
+            : registerEmpiricalPrior.status === 'loaded_legacy_requires_rebuild'
+              ? 'legacy artifact not steering (rebuild to add deduplication and independent-run checks)'
+            : registerEmpiricalPrior.status
+        }${
           priorPath ? ` | ${priorPath}` : ''
         }${C.reset}`,
       );
@@ -17784,6 +17957,28 @@ async function main() {
     console.log(
       `${C.brightYellow}${C.bold}tutor feedback >${C.reset} ${tutorStubTurnFeedbackLabel(feedback)} · ${C.dim}private; send your learner reply whenever ready${C.reset}\n`,
     );
+    const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
+      feedback,
+      turns: state.turns,
+      opening: {
+        turnId: openingDebugId(stateRunDebugId(state)),
+        text: state.history.find((message) => message.role === 'assistant')?.content || '',
+        provider: state.openingRealization?.provider || null,
+        model: state.openingRealization?.model || null,
+      },
+    });
+    const ratingRecord = buildTutorStubFeedbackRatingRecord({
+      feedback,
+      targetTurn: feedbackTargetTurn,
+      provenance: {
+        runId: stateRunDebugId(state),
+        trace: state.trace?.filePath ? path.relative(ROOT, state.trace.filePath) : null,
+        worldId: state.world?.id || null,
+        learnerProfileId: state.learnerProfileId || null,
+        interactionMode: state.interaction?.mode || 'learner',
+        inputSource: source,
+      },
+    });
     appendTraceEvent(state.trace, {
       type: 'tutor_turn_feedback_selected',
       turn: feedback.targetTutorTurn,
@@ -17793,6 +17988,15 @@ async function main() {
       inputSource: source,
       publicTranscriptChanged: false,
     });
+    if (ratingRecord) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_feedback_rating_recorded',
+        turn: feedback.targetTutorTurn,
+        turnId: feedback.targetTutorTurnId,
+        record: ratingRecord,
+        publicTranscriptChanged: false,
+      });
+    }
     return true;
   }
 
