@@ -24,6 +24,15 @@ function optionalNonEmptyString(value, label) {
   return nonEmptyString(value, label);
 }
 
+function tuningMode(value) {
+  const mode = optionalNonEmptyString(value, 'tuning mode');
+  if (!mode) return null;
+  if (!['off', 'capture', 'on', 'canary'].includes(mode)) {
+    throw new Error('tuning mode must be off, capture, on, or canary');
+  }
+  return mode;
+}
+
 export function normalizeTutorStubLastSettings(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('saved settings file must contain a JSON object');
@@ -50,6 +59,8 @@ export function normalizeTutorStubLastSettings(value) {
     scenarioId: optionalNonEmptyString(value.scenarioId, 'scenario id'),
     learnerProfileId: optionalNonEmptyString(value.learnerProfileId, 'learner profile id'),
     learnerProfile: optionalNonEmptyString(value.learnerProfile, 'custom learner profile'),
+    tutorInstanceRef: optionalNonEmptyString(value.tutorInstanceRef, 'tutor instance ref'),
+    tuningMode: tuningMode(value.tuningMode),
     tutorModelRef: nonEmptyString(value.tutorModelRef, 'tutor model ref'),
     classifierModelRef: optionalNonEmptyString(value.classifierModelRef, 'learner interpretation model ref'),
     learnerRecordModelRef: optionalNonEmptyString(value.learnerRecordModelRef, 'learner reasoning model ref'),

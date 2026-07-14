@@ -70,6 +70,10 @@ test('fully automated learners never receive or supply tutor-message feedback', 
     requested: false,
     supplied: false,
     rating: null,
+    reason: null,
+    reasonLabel: null,
+    comment: null,
+    scope: null,
     targetTutorTurn: null,
     targetTutorTurnId: null,
     targetKind: null,
@@ -77,6 +81,19 @@ test('fully automated learners never receive or supply tutor-message feedback', 
     ratedAt: null,
     source: 'automated_learner_disabled',
   });
+});
+
+test('typed feedback reasons and comments remain attached to the rated response', () => {
+  const state = createTutorStubTurnFeedbackState();
+  requestTutorStubTurnFeedback(state, { tutorTurn: 2, tutorTurnId: 'run:t002' });
+  const feedback = setTutorStubTurnFeedbackRating(state, 'down', {
+    reason: 'too_abstract',
+    comment: 'I could not connect this to the scene.',
+  });
+  assert.equal(feedback.reason, 'too_abstract');
+  assert.equal(feedback.reasonLabel, 'too abstract');
+  assert.equal(feedback.scope, 'tutor_prompt');
+  assert.equal(feedback.comment, 'I could not connect this to the scene.');
 });
 
 test('bare arrows rate a pending tutor response only from an empty idle prompt', () => {

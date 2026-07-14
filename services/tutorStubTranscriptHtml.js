@@ -280,7 +280,8 @@ function learnerTutorFeedbackBadge(turn) {
   if (!feedback?.requested) return '';
   const label =
     feedback.rating === 'up' ? '👍 helpful' : feedback.rating === 'down' ? '👎 not helpful' : 'not rated';
-  return `<div class="turn-feedback" data-rating="${escapeHtml(feedback.rating || 'none')}">Previous tutor reply: ${escapeHtml(label)}</div>`;
+  const reason = feedback.reasonLabel || feedback.reason || null;
+  return `<div class="turn-feedback" data-rating="${escapeHtml(feedback.rating || 'none')}">Previous tutor reply: ${escapeHtml(label)}${reason ? ` · ${escapeHtml(plainLabel(reason))}` : ''}</div>`;
 }
 
 function tutorSpeechCard(turn) {
@@ -355,8 +356,31 @@ function promptsView(snapshot) {
     )
     .join('');
   return `<div class="prompt-grid">
-    <section><h2>Tutor prompts</h2>${promptBlock('Base tutor system prompt', tutor.baseSystemPrompt)}${tutorTurns || '<p class="empty">No completed tutor-turn prompt snapshots yet.</p>'}</section>
+    <section><h2>Tutor prompts</h2>${tutor.namedInstance ? promptBlock(`Named tutor ${tutor.namedInstance.activeRef || tutor.namedInstance.id}`, tutor.namedInstance.rolePrompt, tutor.namedInstance.rolePromptHash || '') : ''}${promptBlock('Base tutor system prompt', tutor.baseSystemPrompt)}${tutorTurns || '<p class="empty">No completed tutor-turn prompt snapshots yet.</p>'}</section>
     <section><h2>Learner prompts</h2>${promptBlock('Active learner system prompt', learner.activeSystemPrompt, learner.mode || '')}${promptBlock('Next learner user prompt', learner.nextUserPrompt)}${learnerHistory || '<p class="empty">No generated learner-prompt history yet.</p>'}</section>
+  </div>`;
+}
+
+function tuningView(snapshot) {
+  const tuning = snapshot.settings?.tuning || {};
+  const candidates = Array.isArray(tuning.candidates) ? tuning.candidates : [];
+  const rows = candidates.length
+    ? candidates.map((candidate) => `<article class="analysis-card tuning-candidate">
+        <header><h3>${escapeHtml(candidate.id)}</h3><strong>${escapeHtml(plainLabel(candidate.status))}</strong></header>
+        <p><b>Signal:</b> ${escapeHtml(candidate.evidence?.reasonLabel || candidate.evidence?.reason || 'manual review')}</p>
+        ${candidate.evidence?.comment ? `<p><b>Learner note:</b> ${escapeHtml(candidate.evidence.comment)}</p>` : ''}
+        <p><b>Bounded proposal:</b> ${escapeHtml(candidate.proposal?.rule || candidate.proposal?.explanation || 'No automatic prompt change.')}</p>
+        <p><b>Scope:</b> ${escapeHtml(plainLabel(candidate.proposal?.scope || 'manual review'))} · base v${escapeHtml(candidate.baseVersion)}${candidate.canaryVersion ? ` · canary v${escapeHtml(candidate.canaryVersion)}` : ''}</p>
+        <details><summary>Evidence and frozen-prefix replay plan</summary><pre>${escapeHtml(safeJson({ evidence: candidate.evidence, replay: candidate.replay, validation: candidate.validation }))}</pre></details>
+      </article>`).join('')
+    : '<p class="empty">No tutor-tuning candidates have been recorded.</p>';
+  return `<div class="analysis-list tuning-view">
+    <article class="analysis-card"><header><h3>Named tutor</h3><strong>${escapeHtml(tuning.activeRef || snapshot.settings?.tutor?.activeRef || 'not recorded')}</strong></header>
+      <p><b>Mode:</b> ${escapeHtml(tuning.mode || 'off')} · stable v${escapeHtml(tuning.stableVersion ?? 'n/a')}${tuning.canaryVersion ? ` · canary v${escapeHtml(tuning.canaryVersion)}` : ''}</p>
+      <p><b>Partition:</b> ${escapeHtml(snapshot.settings?.tutor?.instanceTitle || snapshot.settings?.tutor?.instanceId || '')} · role prompt ${escapeHtml(String(snapshot.settings?.tutor?.rolePromptHash || '').slice(0, 12))}</p>
+      <p><b>Safety boundary:</b> raw comments are evidence only. Promotion requires approval to canary, a helpful replay judgment, and an explicit promotion command.</p>
+      <p><b>Local store:</b> ${escapeHtml(tuning.storeDir || '')}</p>
+    </article>${rows}
   </div>`;
 }
 
@@ -436,6 +460,7 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
     analysis: analysisView(snapshot),
     prompts: promptsView(snapshot),
     settings: settingsView(snapshot),
+    tuning: tuningView(snapshot),
     replay: replayView(snapshot),
   };
   const viewLabels = { replay: 'Replay JS' };

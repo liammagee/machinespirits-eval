@@ -22,6 +22,7 @@ function withCleanEnv(fn) {
     'EVAL_WRITING_PAD_DIR',
     'TUTOR_CORE_LOG_DIR',
     'GREENROOM_DIR',
+    'TUTOR_STUB_TUNING_DIR',
   ];
   for (const k of keys) {
     saved[k] = process.env[k];
@@ -46,6 +47,7 @@ test('resolvePaths relocates every writable store under userData', () => {
       p.writingPadDir,
       p.tutorCoreLogDir,
       p.greenroomDir,
+      p.tutorStubTuningDir,
     ]) {
       assert.ok(v.startsWith(p.userData), `${v} should be under userData`);
     }
@@ -53,6 +55,7 @@ test('resolvePaths relocates every writable store under userData', () => {
     // the directories were actually created
     assert.ok(fs.existsSync(p.logsDir) && fs.existsSync(p.exportsDir) && fs.existsSync(p.writingPadDir));
     assert.ok(fs.existsSync(p.greenroomDir));
+    assert.ok(fs.existsSync(p.tutorStubTuningDir));
     assert.ok(fs.existsSync(path.dirname(p.dbPath)) && fs.existsSync(path.dirname(p.authDbPath)));
   });
 });
@@ -69,6 +72,7 @@ test('serverEnv sets all relocation env vars + MS_APP_ROOT', () => {
       'EVAL_WRITING_PAD_DIR',
       'TUTOR_CORE_LOG_DIR',
       'GREENROOM_DIR',
+      'TUTOR_STUB_TUNING_DIR',
       'MS_APP_ROOT',
     ]) {
       assert.ok(env[k], `serverEnv must set ${k}`);

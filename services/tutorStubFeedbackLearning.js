@@ -120,6 +120,10 @@ export function buildTutorStubFeedbackRatingRecord({ feedback, targetTurn, prove
     feedback: {
       rating,
       helpfulness: rating === 'up' ? 1 : -1,
+      reason: feedback.reason || null,
+      reasonLabel: feedback.reasonLabel || null,
+      comment: oneLine(feedback.comment) || null,
+      scope: feedback.scope || null,
       source: feedback.source || 'human_learner',
       requestedAt: feedback.requestedAt || null,
       ratedAt: feedback.ratedAt || null,

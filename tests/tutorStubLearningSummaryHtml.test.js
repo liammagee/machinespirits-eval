@@ -71,6 +71,19 @@ function fixtureSummary() {
       },
     ],
     boundary: 'This report uses public dialogue evidence only.',
+    tuning: {
+      mode: 'on',
+      activeRef: 'dramatic-detective@v1',
+      sessionFeedbackCount: 1,
+      promotionPolicy: 'candidate -> canary -> helpful replay validation -> stable promotion',
+      candidates: [
+        {
+          id: 'cand-example',
+          status: 'approval_required',
+          evidence: { reasonLabel: 'too abstract' },
+        },
+      ],
+    },
   };
 }
 
@@ -91,6 +104,9 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /blank/u);
   assert.match(html, /cupel/u);
   assert.match(html, /The residue matches the &lt;mint crucible&gt;/u);
+  assert.match(html, /Tutor learning from this session/u);
+  assert.match(html, /dramatic-detective@v1/u);
+  assert.match(html, /cand-example/u);
   assert.doesNotMatch(html, /The residue matches the <mint crucible>/u);
 });
 

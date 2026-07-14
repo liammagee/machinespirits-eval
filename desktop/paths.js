@@ -14,6 +14,7 @@
 //   EVAL_WRITING_PAD_DIR learner/tutor writing-pad DBs (services/memory/*)
 //   TUTOR_CORE_LOG_DIR   tutor-core dialogue/api logs (tutor-core dialogue engine)
 //   GREENROOM_DIR        tutor profiles + prompt books + ledgers (services/greenroom/store)
+//   TUTOR_STUB_TUNING_DIR versioned tutor tuning evidence + candidates + replay plans
 // MS_APP_ROOT carries the resource root for packaged-mode resolution.
 //
 // NOTE for future maintainers: if you add a NEW writable store, give it an env
@@ -34,6 +35,7 @@ export function resolvePaths(electronApp, repoRoot) {
   const writingPadDir = process.env.EVAL_WRITING_PAD_DIR || path.join(dataDir, 'writing-pads');
   const tutorCoreLogDir = process.env.TUTOR_CORE_LOG_DIR || path.join(logsDir, 'tutor-core');
   const greenroomDir = process.env.GREENROOM_DIR || path.join(dataDir, 'greenroom');
+  const tutorStubTuningDir = process.env.TUTOR_STUB_TUNING_DIR || path.join(dataDir, 'tutor-stub-tuning');
 
   for (const d of [
     path.dirname(dbPath),
@@ -43,6 +45,7 @@ export function resolvePaths(electronApp, repoRoot) {
     writingPadDir,
     tutorCoreLogDir,
     greenroomDir,
+    tutorStubTuningDir,
   ]) {
     fs.mkdirSync(d, { recursive: true });
   }
@@ -57,6 +60,7 @@ export function resolvePaths(electronApp, repoRoot) {
     writingPadDir,
     tutorCoreLogDir,
     greenroomDir,
+    tutorStubTuningDir,
   };
 }
 
@@ -71,6 +75,7 @@ export function serverEnv(paths) {
     EVAL_WRITING_PAD_DIR: paths.writingPadDir,
     TUTOR_CORE_LOG_DIR: paths.tutorCoreLogDir,
     GREENROOM_DIR: paths.greenroomDir,
+    TUTOR_STUB_TUNING_DIR: paths.tutorStubTuningDir,
     MS_APP_ROOT: paths.appRoot,
   };
 }

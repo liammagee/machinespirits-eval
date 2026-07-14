@@ -132,6 +132,10 @@ function fixtureSnapshot() {
       },
       learner: { mode: 'mixed', profileId: 'diligent' },
       tutor: {
+        instanceId: 'dramatic-detective',
+        instanceTitle: 'The Dramatic Detective Tutor',
+        activeRef: 'dramatic-detective@v1',
+        rolePromptHash: 'abc123',
         modelRef: 'codex.gpt-5.6-sol',
         provider: 'codex',
         model: 'gpt-5.6-sol',
@@ -139,6 +143,22 @@ function fixtureSnapshot() {
       },
       register: { policy: 'field', engagementStanceTemperature: 0.85 },
       dagFactDropout: { rate: 0.15 },
+      tuning: {
+        mode: 'on',
+        activeRef: 'dramatic-detective@v1',
+        stableVersion: 1,
+        canaryVersion: null,
+        candidates: [
+          {
+            id: 'cand-example',
+            status: 'approval_required',
+            baseVersion: 1,
+            evidence: { reason: 'too_abstract', reasonLabel: 'too abstract', comment: 'Use the scene.' },
+            proposal: { scope: 'tutor_prompt', rule: 'Use concrete public objects.' },
+            replay: { publicMessages: [] },
+          },
+        ],
+      },
     },
     prompts: {
       tutor: {
@@ -173,11 +193,13 @@ function fixtureSnapshot() {
 test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings, and replay views', () => {
   const html = renderTutorStubTranscriptHtml(fixtureSnapshot());
 
-  for (const view of ['raw', 'script', 'swimlanes', 'analysis', 'prompts', 'settings', 'replay']) {
+  for (const view of ['raw', 'script', 'swimlanes', 'analysis', 'prompts', 'settings', 'tuning', 'replay']) {
     assert.match(html, new RegExp(`data-view="${view}"`, 'u'));
     assert.match(html, new RegExp(`data-panel="${view}"`, 'u'));
   }
   assert.match(html, /FULL TUTOR BASE PROMPT/u);
+  assert.match(html, /dramatic-detective@v1/u);
+  assert.match(html, /cand-example/u);
   assert.match(html, /FULL EFFECTIVE TUTOR SYSTEM PROMPT/u);
   assert.match(html, /FULL USED LEARNER USER PROMPT/u);
   assert.match(html, /The unresolved evidentiary distinction calls for a calm re-anchor/u);

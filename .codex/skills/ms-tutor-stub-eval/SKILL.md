@@ -58,8 +58,28 @@ Key choices and defaults:
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-sol`; automated learner `codex.gpt-5.6-terra`. This intentionally places the stronger model at learner interpretation rather than public response realization.
+- Named tutor partition: the default speaking tutor is the versioned
+  `dramatic-detective` instance from `config/tutor-instances.yaml`. Its role
+  prompt, policy pack, model defaults, active version, and prompt hash are
+  recorded separately from the selected model. Use `--list-tutors`, select
+  with `--tutor <id>`, and pin an immutable version with
+  `--tutor <id>@vN`. A running dialogue never changes tutor version beneath
+  itself; promotion or rollback affects the next run.
+- Tutor tuning is off by default. Use `--tuning capture` to record feedback
+  evidence only, `--tuning on` to create typed review candidates, or
+  `--tuning canary` to run the approved canary version. The ignored local
+  store defaults to `.tutor-stub-tuning/` and may be relocated with
+  `TUTOR_STUB_TUNING_DIR` or `--tuning-dir`. Raw comments remain evidence and
+  are never interpolated into the speaking prompt. Only the bounded reason
+  taxonomy compiles candidate rules. Promotion is a gated loop:
+  `/tune review` -> `/tune approve <candidate>` -> run the frozen-prefix replay
+  or canary -> `/tune validate <candidate> up|down` ->
+  `/tune promote <candidate>`. Use `/tune rollback [vN]` to restore a previous
+  stable version. Candidate replay JSON preserves the exact system prompt,
+  public prefix, model settings, prompt hash, rated turn, and candidate overlay.
 - Human interactive sessions remember the selected scenario and learner
-  profile (including a custom profile), plus the last speaking-tutor model,
+  profile (including a custom profile), named tutor instance, tuning mode,
+  plus the last speaking-tutor model,
   engagement-stance temperature, DAG-fact dropout rate, clue release speed,
   register primary and overlays, and overlay threshold in
   `.tutor-stub-traces/last-settings.json`.
@@ -200,6 +220,12 @@ Useful variants:
   the record explicitly makes no causal claim. Use `/feedback on|off|clear` or
   `--no-turn-feedback`; it is on by default for human sessions and absent from
   fully automated learner turns.
+  A rating may carry a typed reason and a short evidence comment, for example
+  `/down too_abstract Uses labels instead of the objects in the scene` or
+  `/up helpful_pacing`. `/tune reasons` lists the bounded taxonomy. The typed
+  reason guides the next one-turn adaptation and, only when tuning is on,
+  creates a tutor-version candidate; the free-form comment is retained for
+  review but never becomes an instruction.
 - Interactive TTY sessions keep a persistent editable command line beneath the
   animated activity line while tutor, learner, analysis, clarification, or auto
   work is running. Readline is not paused in `/auto`: commands such as

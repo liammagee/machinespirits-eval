@@ -57,6 +57,18 @@ function journey(summary) {
     .join('');
 }
 
+function tuningSummary(summary) {
+  const tuning = summary.tuning;
+  if (!tuning) return '';
+  const candidates = Array.isArray(tuning.candidates) ? tuning.candidates : [];
+  return `<article class="card wide"><h2>Tutor learning from this session</h2>
+    <p><b>Named tutor:</b> ${escapeHtml(tuning.activeRef || tuning.tutorId || 'not recorded')} · tuning ${escapeHtml(tuning.mode || 'off')}.</p>
+    <p>${escapeHtml(tuning.sessionFeedbackCount || 0)} rated-response observation${Number(tuning.sessionFeedbackCount) === 1 ? '' : 's'} and ${escapeHtml(candidates.length)} reviewable candidate${candidates.length === 1 ? '' : 's'} are attached to this tutor partition.</p>
+    ${candidates.length ? `<ul>${candidates.map((candidate) => `<li><b>${escapeHtml(candidate.id)}</b> · ${escapeHtml(String(candidate.status || '').replaceAll('_', ' '))} · ${escapeHtml(candidate.evidence?.reasonLabel || candidate.evidence?.reason || 'manual review')}</li>`).join('')}</ul>` : '<p class="empty">No durable tutor change was proposed.</p>'}
+    <p><b>Promotion boundary:</b> ${escapeHtml(tuning.promotionPolicy || 'Candidates require explicit review and promotion.')}</p>
+  </article>`;
+}
+
 export function renderTutorStubLearningSummaryHtml(summary = {}) {
   const title = summary.world?.title || summary.topic || 'Learning summary';
   const question = summary.world?.question || summary.question || '';
@@ -95,6 +107,7 @@ export function renderTutorStubLearningSummaryHtml(summary = {}) {
   )}</article>
   <article class="card wide"><h2>Language and clarification</h2>${vocabulary(summary)}</article>
   <article class="card wide"><h2>Still open</h2>${list(summary.openQuestions, 'Nothing remains open in the recorded inquiry.')}</article>
+  ${tuningSummary(summary)}
 </section>
 <section><h2>How the reasoning developed</h2>${journey(summary)}</section>
 <footer class="meta">Generated ${escapeHtml(summary.generatedAt || '')} · ${escapeHtml(summary.completion?.plainReason || 'session ended')} · run ${escapeHtml(

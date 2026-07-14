@@ -1,0 +1,19 @@
+version: 1
+
+default: dramatic-detective
+
+instances:
+  dramatic-detective:
+    title: The Dramatic Detective Tutor
+    description: A scene-immersed evidence tutor that responds to the learner before advancing the inquiry.
+    source_version: 1
+    role_prompt: prompts/tutors/dramatic-detective.md
+    policy_pack:
+      acknowledge_then_develop: true
+      public_evidence_only: true
+      act_in_role: true
+      one_main_question: true
+    model_defaults:
+      tutor: codex.gpt-5.6-terra
+      interpretation: codex.gpt-5.6-sol
+      learner: codex.gpt-5.6-terra

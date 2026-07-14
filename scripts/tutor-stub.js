@@ -171,6 +171,31 @@ import {
   TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
   writeTutorStubLearningSummaryHtml,
 } from '../services/tutorStubLearningSummaryHtml.js';
+import {
+  listTutorStubTutorInstances,
+  resolveTutorStubTutorInstance,
+  tutorStubTutorInstancePrompt,
+} from '../services/tutorStubTutorInstance.js';
+import {
+  TUTOR_STUB_FEEDBACK_REASONS,
+  approveTutorStubTuningCandidate,
+  createTutorStubTuningRuntime,
+  listTutorStubTuningCandidates,
+  normalizeTutorStubTuningMode,
+  promoteTutorStubTuningCandidate,
+  readTutorStubTuningCandidate,
+  recordTutorStubTuningFeedback,
+  recordTutorStubTuningNote,
+  rejectTutorStubTuningCandidate,
+  rollbackTutorStubTutorVersion,
+  setTutorStubTuningMode,
+  synthesizeTutorStubTuningCandidate,
+  tutorStubTuningPrompt,
+  tutorStubTuningReplayPath,
+  tutorStubTuningSnapshot,
+  tutorStubTuningTurnAdvisory,
+  validateTutorStubTuningCandidate,
+} from '../services/tutorStubTuning.js';
 import { createTutorStubConcurrentTerminal } from '../services/tutorStubConcurrentTerminal.js';
 import { createTutorStubLineSelection } from '../services/tutorStubLineSelection.js';
 import {
@@ -318,6 +343,8 @@ const DEFAULT_INTERPRETATION_MODEL_REF = 'codex.gpt-5.6-sol';
 const DEFAULT_AUTO_LEARNER_MODEL_REF = 'codex.gpt-5.6-terra';
 
 const STUB = {
+  tutor: process.env.TUTOR_STUB_TUTOR || 'dramatic-detective',
+  tuning: process.env.TUTOR_STUB_TUNING || 'off',
   allModels: process.env.TUTOR_STUB_ALL_MODELS || '',
   model: process.env.TUTOR_STUB_MODEL || DEFAULT_TUTOR_MODEL_REF,
   classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || DEFAULT_INTERPRETATION_MODEL_REF,
@@ -418,6 +445,7 @@ const SLASH_COMMANDS = [
   '/up',
   '/down',
   '/feedback',
+  '/tune',
   '/settings',
   '/status',
   '/debug',
@@ -549,6 +577,9 @@ const CLARIFIER_SYSTEM_PROMPT = [
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
   options: {
+    tutor: { type: 'string', default: STUB.tutor },
+    tuning: { type: 'string', default: STUB.tuning },
+    'tuning-dir': { type: 'string', default: process.env.TUTOR_STUB_TUNING_DIR || '.tutor-stub-tuning' },
     'all-models': { type: 'string', default: STUB.allModels },
     model: { type: 'string', default: STUB.model },
     'classifier-model': { type: 'string', default: STUB.classifierModel },
@@ -589,6 +620,7 @@ const { values: args, positionals } = parseArgs({
     dag: { type: 'boolean', default: false },
     'dag-mode': { type: 'string', default: STUB.dagMode },
     'list-worlds': { type: 'boolean', default: false },
+    'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
     learner: { type: 'string', default: STUB.learner },
     goal: { type: 'string', default: STUB.goal },
@@ -638,6 +670,14 @@ function printHelp() {
   node scripts/tutor-stub.js [options] [first learner message]
 
 Options:
+  --tutor <id[@vN]>     named, versioned speaking-tutor instance
+                         (default: ${STUB.tutor})
+  --tuning <off|capture|on|canary>
+                         capture feedback and create reviewable tutor-version
+                         candidates; canary runs the approved candidate version
+                         (default: ${STUB.tuning})
+  --tuning-dir <path>   local evidence, version, candidate, and replay store
+                         (default: .tutor-stub-tuning; env TUTOR_STUB_TUNING_DIR)
   --passthrough          pure speaker baseline: system setup + full public
                          history + latest learner message; exactly one model
                          call per turn, with analysis and harness policy off
@@ -729,6 +769,7 @@ Options:
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
+  --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
   --topic <text>         tutoring topic (default: ${STUB.topic})
@@ -813,8 +854,13 @@ Interactive commands:
                          rate the latest tutor message down/up immediately
   /up, /down             rate the latest tutor message helpful or unhelpful
                          without sending a learner turn
-  /feedback [up|down|clear|on|off]
+  /feedback [up|down] [reason] [comment]
                          inspect, set, clear, enable, or disable optional ratings
+  /tune                  show the named tutor version and tuning status
+  /tune on|off|reasons|review
+                         capture typed feedback and inspect bounded candidates
+  /tune approve|replay|validate|promote|rollback ...
+                         test and explicitly promote or revert a tutor version
   /scenario              choose another scenario and start it as a new inquiry
   /scenario <id>         start a named scenario directly
   /settings              open the live keyboard settings panel (TTY)
@@ -1071,6 +1117,8 @@ function commandLineOptionProvided(name) {
 function rememberedSettingExplicitSources() {
   const allModels = commandLineOptionProvided('all-models') || Boolean(process.env.TUTOR_STUB_ALL_MODELS);
   return {
+    tutorInstance: commandLineOptionProvided('tutor') || Boolean(process.env.TUTOR_STUB_TUTOR),
+    tuningMode: commandLineOptionProvided('tuning') || Boolean(process.env.TUTOR_STUB_TUNING),
     scenario: commandLineOptionProvided('world') || Boolean(process.env.TUTOR_STUB_WORLD),
     learnerProfile:
       commandLineOptionProvided('auto-learner-profile') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
@@ -1122,6 +1170,20 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   config.loadedAt = read.settings.updatedAt;
   const saved = read.settings;
   const explicit = rememberedSettingExplicitSources();
+
+  if (explicit.tutorInstance) {
+    config.skippedExplicitFields.push('tutor_instance');
+  } else if (saved.tutorInstanceRef) {
+    args.tutor = saved.tutorInstanceRef;
+    config.appliedFields.push('tutor_instance');
+  }
+
+  if (explicit.tuningMode) {
+    config.skippedExplicitFields.push('tuning_mode');
+  } else if (saved.tuningMode) {
+    args.tuning = saved.tuningMode;
+    config.appliedFields.push('tuning_mode');
+  }
 
   if (explicit.scenario) {
     config.skippedExplicitFields.push('scenario');
@@ -2690,7 +2752,8 @@ function metadataLine(meta) {
     .filter(Boolean)
     .map((part) => `, ${part}`)
     .join('');
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${pace}${guard}${stream}${cache}`;
+  const tutor = meta.tutorRef ? `, tutor ${meta.tutorRef}` : '';
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${pace}${guard}${stream}${cache}${tutor}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -7481,8 +7544,8 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /id`,
   );
-  console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · or use 👍 / 👎`);
-  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings`);
+  console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
+  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune`);
   console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
   console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
   console.log(
@@ -7492,7 +7555,7 @@ function printInteractiveHelp(state = null) {
     `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
   );
   console.log(
-    `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. With text present, arrows still move the cursor. You can also enter 👍, 👎, /up, or /down.${C.reset}`,
+    `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
   );
   console.log(
     `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
@@ -9647,6 +9710,7 @@ async function callTutor({
     : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
   const coachAdvisory = passthrough ? null : tutorCoachGuidanceContext(state, { tutorTurn });
   const pointOfActionAdvisory = passthrough ? null : tutorStubPointOfActionPrompt(state?.pointOfAction?.current);
+  const tuningAdvisory = passthrough ? null : tutorStubTuningTurnAdvisory(state?.tuning);
   const tutorFeedbackAdvisory = passthrough
     ? null
     : tutorStubTurnFeedbackPrompt(tutorFeedback, { adaptationPlan: feedbackAdaptationPlan });
@@ -9679,6 +9743,7 @@ async function callTutor({
     comprehensionAdvisory,
     coachAdvisory,
     pointOfActionAdvisory,
+    tuningAdvisory,
     tutorFeedbackAdvisory,
     learnerPrompt,
   ].filter(Boolean);
@@ -9695,6 +9760,7 @@ async function callTutor({
     comprehensionAdvisory,
     coachAdvisory,
     pointOfActionAdvisory,
+    tuningAdvisory,
     tutorFeedbackAdvisory,
     responseConfigurationAdvisory,
   ].filter(Boolean);
@@ -11362,6 +11428,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     passthrough: true,
     signal: runtimeOptions.signal || null,
   });
+  response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
 
   state.history.push({ role: 'user', content: learnerText });
@@ -11369,6 +11436,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
   const turnRecord = {
     turnId,
     turn: tutorTurn,
+    tutorRef: response.tutorRef,
     learner: learnerText,
     ...(learnerInput
       ? {
@@ -11620,6 +11688,7 @@ async function runOneTurn(
       deferStreamOutput: Boolean(runtimeOptions.isCurrent),
       signal: runtimeOptions.signal || null,
     }));
+  response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const priorDialogueClosure = state.dialogueClosure;
   state.dialogueClosure = advanceTutorStubDialogueClosure(priorDialogueClosure, {
@@ -11812,6 +11881,7 @@ async function runOneTurn(
   const turnRecord = {
     turnId,
     turn: tutorTurn,
+    tutorRef: response.tutorRef,
     learner: learnerText,
     ...(learnerInput
       ? {
@@ -11910,6 +11980,7 @@ async function runOneTurn(
   };
   state.turns.push(turnRecord);
   if (feedbackObservation) {
+    recordTutorStubTuningFeedback(state.tuning, feedbackObservation);
     appendTraceEvent(state.trace, {
       type: 'tutor_feedback_observation',
       turnId,
@@ -12136,6 +12207,12 @@ async function main() {
     printWorlds();
     return;
   }
+  if (args['list-tutors']) {
+    for (const tutor of listTutorStubTutorInstances()) {
+      console.log(`${tutor.id}@v${tutor.source_version || 1}\t${tutor.title}\t${tutor.description || ''}`);
+    }
+    return;
+  }
   if (args['list-learner-profiles']) {
     printAutomatedLearnerProfiles();
     return;
@@ -12159,6 +12236,34 @@ async function main() {
     args['no-turn-feedback'] = true;
     args['no-interim-animation'] = true;
     args['field-viz'] = false;
+    args.tuning = 'off';
+  }
+
+  let tutorInstance = resolveTutorStubTutorInstance(args.tutor);
+  let tuningMode = normalizeTutorStubTuningMode(args.tuning);
+  if (!commandLineOptionProvided('model') && !process.env.TUTOR_STUB_MODEL && tutorInstance.modelDefaults.tutor) {
+    args.model = tutorInstance.modelDefaults.tutor;
+  }
+  if (
+    !commandLineOptionProvided('classifier-model') &&
+    !process.env.TUTOR_STUB_CLASSIFIER_MODEL &&
+    tutorInstance.modelDefaults.interpretation
+  ) {
+    args['classifier-model'] = tutorInstance.modelDefaults.interpretation;
+  }
+  if (
+    !commandLineOptionProvided('learner-record-model') &&
+    !process.env.TUTOR_STUB_LEARNER_RECORD_MODEL &&
+    tutorInstance.modelDefaults.interpretation
+  ) {
+    args['learner-record-model'] = tutorInstance.modelDefaults.interpretation;
+  }
+  if (
+    !commandLineOptionProvided('auto-learner-model') &&
+    !process.env.TUTOR_STUB_AUTO_LEARNER_MODEL &&
+    tutorInstance.modelDefaults.learner
+  ) {
+    args['auto-learner-model'] = tutorInstance.modelDefaults.learner;
   }
 
   let allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
@@ -12173,6 +12278,8 @@ async function main() {
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  tutorInstance = resolveTutorStubTutorInstance(args.tutor);
+  tuningMode = normalizeTutorStubTuningMode(args.tuning);
   if (!allModelsOverrideRef && rememberedSettings.restoredAllModelsOverrideRef) {
     allModelsOverrideRef = rememberedSettings.restoredAllModelsOverrideRef;
   }
@@ -12349,6 +12456,15 @@ async function main() {
     topic: effectiveTopic,
     multipleChoice: multipleChoiceEnabled,
   });
+  const tuning = createTutorStubTuningRuntime({
+    instance: tutorInstance,
+    mode: tuningMode,
+    dir: args['tuning-dir'],
+    write: !args['dry-run'],
+  });
+  systemPrompt = `${systemPrompt}\n\n${tutorStubTutorInstancePrompt(tutorInstance)}`;
+  const reviewedTutorMemory = tutorStubTuningPrompt(tuning);
+  if (reviewedTutorMemory) systemPrompt = `${systemPrompt}\n\n${reviewedTutorMemory}`;
   // Green Room prompt-book injection (GREEN-ROOM-PLAN.md §0.1.6): a static,
   // per-performance role memory appended to the tutor system prompt. Frozen
   // for the whole run; craft guidance only — never overrides world rules or
@@ -12681,7 +12797,8 @@ async function main() {
     optional: true,
     scope: 'human_learner_mode',
     ratings: ['up', 'down'],
-    commands: ['/up', '/down', '/feedback up|down|clear|on|off'],
+    commands: ['/up [reason]', '/down [reason] [comment]', '/feedback up|down|clear|on|off'],
+    reasons: Object.keys(TUTOR_STUB_FEEDBACK_REASONS),
     keyboardShortcuts: {
       scope: 'empty_input_line_with_pending_rating',
       immediate: true,
@@ -12781,6 +12898,18 @@ async function main() {
         {
           modelRef: args.model,
           resolved: visibleModel,
+          tutorInstance: {
+            id: tutorInstance.id,
+            title: tutorInstance.title,
+            requestedRef: args.tutor,
+            activeRef: tuning.activeRef,
+            sourceVersion: tutorInstance.sourceVersion,
+            rolePromptPath: path.relative(ROOT, tutorInstance.rolePromptPath),
+            rolePromptHash: tutorInstance.rolePromptHash,
+            policyPack: tutorInstance.policyPack,
+            modelDefaults: tutorInstance.modelDefaults,
+          },
+          tuning: tutorStubTuningSnapshot(tuning),
           allModelsOverride,
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
@@ -13032,6 +13161,17 @@ async function main() {
     metadata: {
       modelRef: args.model,
       resolved: visibleModel,
+      tutorInstance: {
+        schema: tutorInstance.schema,
+        id: tutorInstance.id,
+        title: tutorInstance.title,
+        requestedRef: args.tutor,
+        activeRef: tuning.activeRef,
+        rolePromptPath: path.relative(ROOT, tutorInstance.rolePromptPath),
+        rolePromptHash: tutorInstance.rolePromptHash,
+        policyPack: tutorInstance.policyPack,
+      },
+      tuning: tutorStubTuningSnapshot(tuning),
       allModelsOverride,
       rememberedSettings: rememberedSettingsConfig,
       passthrough: passthroughConfig,
@@ -13216,6 +13356,8 @@ async function main() {
     topic: effectiveTopic,
     systemPrompt,
     promptArchitecture,
+    tutorInstance,
+    tuning,
     learnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
     learnerProfile: args['auto-learner-profile'],
     modelRef: args.model,
@@ -13349,6 +13491,8 @@ async function main() {
       scenarioId: state.world?.id || null,
       learnerProfileId: state.learnerProfileId || null,
       learnerProfile: state.learnerProfileId ? null : state.learnerProfile || null,
+      tutorInstanceRef: state.tutorInstance.id,
+      tuningMode: state.tuning.mode,
       tutorModelRef: state.modelRef,
       classifierModelRef: state.classifier?.modelRef || args['classifier-model'],
       learnerRecordModelRef: state.learnerDag?.modelRef || args['learner-record-model'],
@@ -13450,7 +13594,7 @@ async function main() {
     });
   }
   console.log(
-    `\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`,
+    `\n${C.cyan}tutor-stub${C.reset} ${C.bold}${state.tuning.activeRef}${C.reset} ${C.dim}· ${args.model} -> ${visibleModel.provider}/${visibleModel.model} · tuning ${state.tuning.mode}${C.reset}`,
   );
   if (passthroughEnabled) {
     console.log(`${C.brightCyan}${C.bold}passthrough >${C.reset} pure speaker chat · one model call per turn`);
@@ -13946,7 +14090,26 @@ async function main() {
         '/debug technical',
       ];
     } else if (trimmed.startsWith('/feedback ')) {
-      pool = ['/feedback up', '/feedback down', '/feedback clear', '/feedback on', '/feedback off'];
+      pool = [
+        '/feedback up',
+        '/feedback down',
+        '/feedback clear',
+        '/feedback on',
+        '/feedback off',
+        ...Object.keys(TUTOR_STUB_FEEDBACK_REASONS).map((reason) => `/feedback down ${reason}`),
+      ];
+    } else if (trimmed.startsWith('/down ')) {
+      pool = Object.keys(TUTOR_STUB_FEEDBACK_REASONS).map((reason) => `/down ${reason}`);
+    } else if (trimmed.startsWith('/up ')) {
+      pool = Object.keys(TUTOR_STUB_FEEDBACK_REASONS)
+        .filter((reason) => reason.startsWith('helpful_') || reason === 'custom')
+        .map((reason) => `/up ${reason}`);
+    } else if (trimmed.startsWith('/tune ')) {
+      pool = [
+        '/tune status', '/tune on', '/tune capture', '/tune off', '/tune canary', '/tune reasons',
+        '/tune note ', '/tune review', '/tune show ', '/tune approve ', '/tune reject ',
+        '/tune replay ', '/tune validate ', '/tune promote ', '/tune rollback',
+      ];
     } else if (trimmed.startsWith('/settings model ')) {
       const modelCompletions = [
         '/settings model default',
@@ -15974,6 +16137,16 @@ async function main() {
   function transcriptPayload() {
     return {
       ...visibleModel,
+      tutorInstance: {
+        id: state.tutorInstance.id,
+        title: state.tutorInstance.title,
+        activeRef: state.tuning.activeRef,
+        rolePromptHash: state.tutorInstance.rolePromptHash,
+      },
+      tuning: {
+        ...tutorStubTuningSnapshot(state.tuning),
+        candidates: listTutorStubTuningCandidates(state.tuning),
+      },
       modelRouting: {
         allRolesOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
         roles: Object.fromEntries(
@@ -16072,6 +16245,13 @@ async function main() {
               question: null,
             },
         tutor: {
+          instanceId: state.tutorInstance.id,
+          instanceTitle: state.tutorInstance.title,
+          activeRef: state.tuning.activeRef,
+          sourceVersion: state.tutorInstance.sourceVersion,
+          rolePromptPath: path.relative(ROOT, state.tutorInstance.rolePromptPath),
+          rolePromptHash: state.tutorInstance.rolePromptHash,
+          policyPack: jsonClone(state.tutorInstance.policyPack),
           modelRef: state.modelRef,
           provider: state.resolved.provider,
           model: state.resolved.model,
@@ -16118,6 +16298,13 @@ async function main() {
           pending: tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback)),
           completedRatings: jsonClone(state.turnFeedback?.history || []),
           automatedLearner: 'disabled',
+          typedReasons: Object.keys(TUTOR_STUB_FEEDBACK_REASONS),
+        },
+        tuning: {
+          ...tutorStubTuningSnapshot(state.tuning),
+          candidates: listTutorStubTuningCandidates(state.tuning),
+          rawCommentsEnterPrompt: false,
+          promotionGate: 'approve_to_canary_then_validate_helpful_then_promote',
         },
         automation: {
           available: Boolean(autoLearnerResolved),
@@ -16201,6 +16388,14 @@ async function main() {
       prompts: {
         tutor: {
           baseSystemPrompt: state.systemPrompt,
+          namedInstance: {
+            id: state.tutorInstance.id,
+            title: state.tutorInstance.title,
+            activeRef: state.tuning.activeRef,
+            rolePrompt: state.tutorInstance.rolePrompt,
+            rolePromptHash: state.tutorInstance.rolePromptHash,
+            reviewedMemory: tutorStubTuningPrompt(state.tuning),
+          },
           turns: tutorPromptTurns,
         },
         learner: {
@@ -16253,12 +16448,20 @@ async function main() {
     const summary = buildDialogueLearningSummary(state, { reason });
     summary.session = {
       learnerProfile: args['auto-learner-profile'] || null,
+      tutorInstanceId: state.tutorInstance.id,
+      tutorInstanceTitle: state.tutorInstance.title,
+      tutorRef: state.tuning.activeRef,
       tutorModelRef: state.modelRef,
       tutorProvider: state.resolved.provider,
       tutorModel: state.resolved.model,
       registerPolicy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
       engagementStanceTemperature: state.register?.temperature ?? null,
       dagMode: state.dagMode,
+    };
+    summary.tuning = {
+      ...tutorStubTuningSnapshot(state.tuning),
+      candidates: listTutorStubTuningCandidates(state.tuning),
+      promotionPolicy: 'candidate -> canary -> helpful replay validation -> stable promotion',
     };
     const filePath = path.join(traceDir, `${state.debugRunId}-learning-summary.html`);
     const absolute = writeTutorStubLearningSummaryHtml({ summary, filePath });
@@ -16285,6 +16488,13 @@ async function main() {
   function finalizeInteractive(reason) {
     if (finalized) return;
     finalized = true;
+    appendTraceEvent(state.trace, {
+      type: 'tutor_tuning_session_closed',
+      reason,
+      tuning: tutorStubTuningSnapshot(state.tuning),
+      candidates: listTutorStubTuningCandidates(state.tuning),
+      publicTranscriptChanged: false,
+    });
     appendTraceEvent(state.trace, {
       type: 'run_end',
       reason,
@@ -16566,7 +16776,7 @@ async function main() {
     );
     console.log(`${C.dim}  learner: ${profile.id} — ${profile.name}; suggested reply ${suggestion}${C.reset}`);
     console.log(
-      `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
+      `${C.dim}  tutor: ${state.tuning?.activeRef || state.tutorInstance?.ref || 'unpartitioned'} · model ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
     );
     console.log(
       `${C.dim}  model routing: ${
@@ -16583,6 +16793,9 @@ async function main() {
     );
     console.log(
       `${C.dim}  tutor ratings: ${state.turnFeedback?.enabled ? `on · ${tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))}` : 'off'} · optional and private${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  tuning: ${state.tuning?.mode || 'off'} · stable v${state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1}${state.tuning?.manifest?.canaryVersion ? ` · canary v${state.tuning.manifest.canaryVersion}` : ''} · ${state.tuning?.sessionCandidateIds?.length || 0} session candidates${C.reset}`,
     );
     console.log(
       `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
@@ -17990,9 +18203,9 @@ async function main() {
 
   function handleTutorFeedbackCommand(action = '', { duringTurn = false, source = 'command' } = {}) {
     clearStatusLine();
-    const normalized = String(action || '')
-      .trim()
-      .toLowerCase();
+    const rawAction = String(action || '').trim();
+    const [ratingAction = '', reasonAction = '', ...commentParts] = rawAction.split(/\s+/u);
+    const normalized = ratingAction.toLowerCase();
     if (!normalized) {
       const feedback = tutorStubTurnFeedbackEnvelope(state.turnFeedback);
       console.log(
@@ -18046,11 +18259,29 @@ async function main() {
     }
     if (normalized !== 'up' && normalized !== 'down') {
       console.log(
-        `${C.red}feedback error:${C.reset} use /feedback, /feedback up, /feedback down, /feedback clear, /feedback on, or /feedback off\n`,
+        `${C.red}feedback error:${C.reset} use /feedback up [reason], /feedback down [reason] [comment], /feedback clear, /feedback on, or /feedback off\n`,
       );
       return true;
     }
-    const feedback = setTutorStubTurnFeedbackRating(state.turnFeedback, normalized);
+    let reason = null;
+    let comment = '';
+    if (reasonAction) {
+      const candidateReason = reasonAction.toLowerCase().replace(/[\s-]+/gu, '_');
+      if (TUTOR_STUB_FEEDBACK_REASONS[candidateReason]) {
+        reason = candidateReason;
+        comment = commentParts.join(' ');
+      } else {
+        reason = 'custom';
+        comment = [reasonAction, ...commentParts].join(' ');
+      }
+    }
+    let feedback;
+    try {
+      feedback = setTutorStubTurnFeedbackRating(state.turnFeedback, normalized, { reason, comment });
+    } catch (error) {
+      console.log(`${C.red}feedback error:${C.reset} ${error.message}\n`);
+      return true;
+    }
     if (!feedback) {
       console.log(`${C.dim}no tutor message is awaiting feedback; continue the dialogue first${C.reset}\n`);
       return true;
@@ -18097,8 +18328,169 @@ async function main() {
         record: ratingRecord,
         publicTranscriptChanged: false,
       });
+      const ratedPromptSnapshot =
+        feedbackTargetTurn?.prompts?.tutor ||
+        (feedback.targetKind === 'opening' ? state.openingRealization?.promptSnapshot || null : null);
+      const replaySystemPrompt = ratedPromptSnapshot?.systemPrompt || state.systemPrompt;
+      const replayMessageHistory = Array.isArray(ratedPromptSnapshot?.messageHistory)
+        ? ratedPromptSnapshot.messageHistory
+        : state.history.slice(0, -1).map((message) => ({ role: message.role, content: message.content }));
+      const tuningCandidate = synthesizeTutorStubTuningCandidate(state.tuning, {
+        rating: feedback.rating,
+        reason: feedback.reason,
+        comment: feedback.comment,
+        observation: ratingRecord,
+        publicMessages: replayMessageHistory,
+        runId: stateRunDebugId(state),
+        targetTurnId: feedback.targetTutorTurnId,
+        systemPromptHash: hashCanonicalJson({ systemPrompt: replaySystemPrompt }),
+        systemPrompt: replaySystemPrompt,
+        speaker: {
+          userPrompt: ratedPromptSnapshot?.userPrompt || '',
+          modelRef: state.modelRef,
+          provider: state.resolved.provider,
+          model: state.resolved.model,
+          temperature: state.temperature,
+          maxTokens: state.maxTokens,
+          effort: state.cliEffort,
+        },
+      });
+      if (tuningCandidate) {
+        appendTraceEvent(state.trace, {
+          type: 'tutor_tuning_candidate_created',
+          candidate: tuningCandidate,
+          publicTranscriptChanged: false,
+        });
+        console.log(
+          `${C.brightCyan}tuning candidate >${C.reset} ${tuningCandidate.id} · ${displayDiagnosticLabel(tuningCandidate.status)} · ${tuningCandidate.evidence.reasonLabel}`,
+        );
+        console.log(`${C.dim}  /tune review · raw comment retained as evidence, never inserted into the tutor prompt${C.reset}\n`);
+      }
     }
     return true;
+  }
+
+  function printTutorTuningStatus() {
+    const snapshot = tutorStubTuningSnapshot(state.tuning);
+    console.log(
+      `${C.brightCyan}${C.bold}tutor tuning >${C.reset} ${snapshot.mode} · ${snapshot.activeRef} · stable v${snapshot.stableVersion}${snapshot.canaryVersion ? ` · canary v${snapshot.canaryVersion}` : ''}`,
+    );
+    console.log(
+      `${C.dim}  ${snapshot.sessionFeedbackCount} feedback observation${snapshot.sessionFeedbackCount === 1 ? '' : 's'} this session · ${snapshot.sessionCandidateIds.length} candidate${snapshot.sessionCandidateIds.length === 1 ? '' : 's'} · ${snapshot.policyRuleCount} active learned rule${snapshot.policyRuleCount === 1 ? '' : 's'}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  evidence store: ${path.relative(ROOT, snapshot.storeDir)} · /tune reasons · /tune review${C.reset}\n`,
+    );
+    return snapshot;
+  }
+
+  function handleTutorTuningCommand(argument = '') {
+    clearStatusLine();
+    const raw = String(argument || '').trim();
+    const [actionRaw = 'status', id = '', value = '', ...rest] = raw.split(/\s+/u).filter(Boolean);
+    const action = actionRaw.toLowerCase();
+    try {
+      if (action === 'status') {
+        printTutorTuningStatus();
+        return true;
+      }
+      if (action === 'on' || action === 'capture' || action === 'off' || action === 'canary') {
+        const snapshot = setTutorStubTuningMode(state.tuning, action, { instance: state.tutorInstance });
+        persistCurrentInteractiveSettings('tuning_mode_changed');
+        appendTraceEvent(state.trace, {
+          type: 'tutor_tuning_mode_changed',
+          mode: snapshot.mode,
+          activeRef: snapshot.activeRef,
+          publicTranscriptChanged: false,
+        });
+        console.log(`${C.brightCyan}${C.bold}tutor tuning >${C.reset} ${snapshot.mode}`);
+        console.log(
+          `${C.dim}  ${snapshot.mode === 'capture' ? 'feedback is recorded as evidence, but no candidates are synthesized' : snapshot.enabled ? 'feedback is captured and typed candidates can be reviewed' : 'no tuning evidence or candidates will be written'}; the current tutor remains pinned to ${snapshot.activeRef}${C.reset}\n`,
+        );
+        return true;
+      }
+      if (action === 'reasons') {
+        console.log(`${C.brightCyan}${C.bold}feedback reasons >${C.reset}`);
+        for (const [reason, definition] of Object.entries(TUTOR_STUB_FEEDBACK_REASONS)) {
+          console.log(`  ${reason.padEnd(24)} ${definition.label}`);
+        }
+        console.log(`${C.dim}  example: /down too_abstract Uses labels instead of the objects in the scene${C.reset}\n`);
+        return true;
+      }
+      if (action === 'note') {
+        const text = [id, value, ...rest].filter(Boolean).join(' ');
+        const note = recordTutorStubTuningNote(state.tuning, text, {
+          runId: stateRunDebugId(state),
+          turn: state.turns.length + 1,
+        });
+        appendTraceEvent(state.trace, { type: 'tutor_tuning_note', note, publicTranscriptChanged: false });
+        console.log(`${C.brightCyan}${C.bold}tuning note >${C.reset} ${note.text}`);
+        console.log(`${C.dim}  provisional in this session; it is not a promoted tutor rule${C.reset}\n`);
+        return true;
+      }
+      if (action === 'review') {
+        const candidates = listTutorStubTuningCandidates(state.tuning);
+        console.log(`${C.brightCyan}${C.bold}tuning candidates >${C.reset} ${candidates.length}`);
+        if (!candidates.length) console.log(`${C.dim}  none yet; use /tune on and add a reason to a thumbs-down${C.reset}`);
+        for (const candidate of candidates.slice(-12)) {
+          console.log(
+            `  ${candidate.id} · ${displayDiagnosticLabel(candidate.status)} · ${candidate.evidence?.reasonLabel || 'manual review'}`,
+          );
+          console.log(`${C.dim}    ${candidate.proposal?.rule || candidate.proposal?.explanation || ''}${C.reset}`);
+        }
+        console.log();
+        return true;
+      }
+      if (!id && action !== 'rollback') throw new Error(`/tune ${action} needs a candidate id`);
+      if (action === 'show') {
+        const candidate = readTutorStubTuningCandidate(state.tuning, id);
+        console.log(JSON.stringify(candidate, null, 2));
+        return true;
+      }
+      if (action === 'approve') {
+        const result = approveTutorStubTuningCandidate(state.tuning, id);
+        console.log(
+          `${C.brightYellow}${C.bold}candidate approved >${C.reset} ${id} → canary ${state.tutorInstance.id}@v${result.version.version}`,
+        );
+        console.log(`${C.dim}  test with --tutor ${state.tutorInstance.id}@v${result.version.version} or --tuning canary; then /tune validate ${id} up|down${C.reset}\n`);
+        return true;
+      }
+      if (action === 'reject') {
+        const candidate = rejectTutorStubTuningCandidate(state.tuning, id, [value, ...rest].join(' '));
+        console.log(`${C.brightYellow}${C.bold}candidate rejected >${C.reset} ${candidate.id}\n`);
+        return true;
+      }
+      if (action === 'replay') {
+        const replayPath = tutorStubTuningReplayPath(state.tuning, id);
+        console.log(`${C.brightCyan}${C.bold}frozen-prefix replay >${C.reset} ${path.relative(ROOT, replayPath)}`);
+        console.log(`${C.dim}  exact public messages, tutor version, prompt hash, target turn, and candidate overlay are preserved${C.reset}\n`);
+        return true;
+      }
+      if (action === 'validate') {
+        const candidate = validateTutorStubTuningCandidate(state.tuning, id, value, rest.join(' '));
+        console.log(`${C.brightYellow}${C.bold}candidate validation >${C.reset} ${candidate.id} · ${candidate.validation.rating === 'up' ? 'helpful' : 'not helpful'}\n`);
+        return true;
+      }
+      if (action === 'promote') {
+        const candidate = promoteTutorStubTuningCandidate(state.tuning, id);
+        console.log(
+          `${C.brightGreen}${C.bold}tutor promoted >${C.reset} ${state.tutorInstance.id}@v${candidate.promotedVersion} is now stable`,
+        );
+        console.log(`${C.dim}  this running dialogue stays pinned to ${state.tuning.activeRef}; the next run uses the promoted version${C.reset}\n`);
+        return true;
+      }
+      if (action === 'rollback') {
+        const requested = id === 'previous' ? null : id;
+        const result = rollbackTutorStubTutorVersion(state.tuning, requested);
+        console.log(`${C.brightYellow}${C.bold}tutor rolled back >${C.reset} v${result.fromVersion} → v${result.toVersion}`);
+        console.log(`${C.dim}  this running dialogue remains pinned; the next run uses the restored stable version${C.reset}\n`);
+        return true;
+      }
+      throw new Error('use /tune status|on|off|reasons|note|review|show|approve|reject|replay|validate|promote|rollback');
+    } catch (error) {
+      console.log(`${C.red}tuning error:${C.reset} ${error.message}\n`);
+      return true;
+    }
   }
 
   function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
@@ -18143,8 +18535,17 @@ async function main() {
       if (pausedInterim) resumeInterimAnimation(state);
     };
     if (command === '/up' || command === '/down' || command === '/feedback') {
-      const action = command === '/up' ? 'up' : command === '/down' ? 'down' : commandArg;
+      const action = command === '/up'
+        ? ['up', commandArg].filter(Boolean).join(' ')
+        : command === '/down'
+          ? ['down', commandArg].filter(Boolean).join(' ')
+          : commandArg;
       handleTutorFeedbackCommand(action, { duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/tune') {
+      handleTutorTuningCommand(commandArg);
       finishSlashCommand();
       return true;
     }
