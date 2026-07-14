@@ -46,7 +46,7 @@ function fixtureSnapshot() {
       { role: 'user', content: 'Does <this> identify the hand?' },
       {
         role: 'assistant',
-        content: 'You are right to keep those claims separate.\n\nNow compare the process mark with the custody record.',
+        content: 'You are right to keep those claims separate. Now compare the process mark with the custody record.',
       },
     ],
     turns: [
@@ -62,7 +62,7 @@ function fixtureSnapshot() {
             targetTutorTurnId: 'html-test:opening',
           },
         },
-        tutor: 'You are right to keep those claims separate.\n\nNow compare the process mark with the custody record.',
+        tutor: 'You are right to keep those claims separate. Now compare the process mark with the custody record.',
         classification: {
           turn: { summary: 'The learner asks what the residue licenses.' },
           overall: { trajectory: 'careful inquiry' },
@@ -191,13 +191,12 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /0\.85/u);
   assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
   assert.doesNotMatch(html, /Does <this> identify the hand\?/u);
-  assert.equal((html.match(/data-response-composition="uptake-development"/gu) || []).length, 2);
-  assert.match(html, /<small>responds<\/small>/u);
-  assert.match(html, /<small>develops<\/small>/u);
+  assert.equal((html.match(/data-response-composition="continuous-performance"/gu) || []).length, 2);
+  assert.doesNotMatch(html, /<small>responds<\/small>|<small>develops<\/small>/u);
   assert.match(html, /Response to that rating:<\/b> the one-turn adaptation was visible/u);
   assert.match(html, /Rated-response learning record/u);
   assert.match(html, /machinespirits\.tutor-stub\.feedback-observation\.v1/u);
-  assert.match(html, /Response shape:<\/b> responds, then develops/u);
+  assert.match(html, /Response shape:<\/b> one continuous reply with learner uptake and development/u);
   assert.match(html, /Previous tutor reply: 👎 not helpful/u);
   assert.match(html, /Learner rating of the previous tutor reply:<\/b> 👎 not helpful/u);
   assert.equal((html.match(/data-director-notes/gu) || []).length, 1);
@@ -231,7 +230,7 @@ test('replay JavaScript preserves exact public message order without harness pro
   );
   assert.equal(
     javascript.includes(
-      'You are right to keep those claims separate.\\n\\nNow compare the process mark with the custody record.',
+      'You are right to keep those claims separate. Now compare the process mark with the custody record.',
     ),
     true,
   );

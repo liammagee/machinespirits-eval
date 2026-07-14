@@ -6,9 +6,14 @@ import {
   getLexicalAccessibilityDefinitions,
   getSceneImmersionDefinitions,
 } from './engagementRegisterRegistry.js';
+import {
+  tutorStubFirstPersonRoleVoiceVisible,
+  tutorStubRoleStageDirectionVisible,
+} from './tutorStubDramaticRelease.js';
 
 const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
+const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -270,6 +275,71 @@ const ACTION_PART_AFFINITY = {
   baseline_plain_response: { scene_partner: 0.9 },
 };
 
+const ACTORIAL_PERFORMANCE_BY_STANCE = {
+  plain: {
+    id: 'unadorned_report',
+    label: 'unadorned report',
+    contract: 'Use one direct action or spoken line, ordinary words, and no theatrical preface.',
+  },
+  precise: {
+    id: 'evidentiary_boundary',
+    label: 'evidentiary boundary',
+    contract: 'Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.',
+  },
+  brisk: {
+    id: 'rapid_handoff',
+    label: 'rapid evidence handoff',
+    contract: 'Enter on the live line, move the evidence straight to the learner, and ask the shortest useful question.',
+  },
+  warm: {
+    id: 'shared_scene_invitation',
+    label: 'shared-scene invitation',
+    contract: 'Make physical room for the learner beside the character or exhibit, then invite their reading without praise theatre.',
+  },
+  witnessing: {
+    id: 'measured_testimony',
+    label: 'measured testimony',
+    contract: 'Let the evidence stand in the character’s voice without forcing judgment beyond what its words can bear.',
+  },
+  charismatic: {
+    id: 'dramatic_counterpressure',
+    label: 'dramatic counterpressure',
+    contract: 'Use the character or exhibit to challenge the room’s easy verdict, then hand the decisive test to the learner.',
+  },
+  ironic: {
+    id: 'exposed_mismatch',
+    label: 'exposed mismatch',
+    contract: 'Let the character’s action expose the mismatch without making the learner the object of the joke.',
+  },
+  sarcastic: {
+    id: 'dry_counterexample',
+    label: 'dry counterexample',
+    contract: 'Put dry pressure on the weak claim through the scene while preserving a concrete repair path.',
+  },
+  face_threat: {
+    id: 'adversarial_pressure',
+    label: 'adversarial pressure',
+    contract: 'Make the assigned pressure legible through the live scene and keep it aimed at the claim rather than the learner’s person.',
+  },
+};
+
+export function selectTutorStubActorialPerformance({ engagementStance = 'precise', actorialPart = null } = {}) {
+  const tactic = ACTORIAL_PERFORMANCE_BY_STANCE[engagementStance] || ACTORIAL_PERFORMANCE_BY_STANCE.precise;
+  return {
+    ...tactic,
+    engagement_stance: engagementStance,
+    actorial_part: actorialPart,
+    selection_method: 'stance_realization_contract',
+    forbidden_meta_frames: [
+      'let us role-play',
+      'I will be the role',
+      'I will take the part',
+      'speaking as the role',
+      'back to us',
+    ],
+  };
+}
+
 function addPartScores(scores, additions, weight, drivers, source) {
   for (const [part, value] of Object.entries(additions || {})) {
     if (!(part in scores)) continue;
@@ -454,6 +524,10 @@ export function buildTutorStubResponseConfiguration({
       dueEvidence,
       recentActorialParts,
     });
+  const actorialPerformance = selectTutorStubActorialPerformance({
+    engagementStance: engagementStance || 'precise',
+    actorialPart: actorialPart.id,
+  });
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   const unresolvedTerms = [...(comprehensionFeatures(comprehension).unresolvedTerms || [])];
   return {
@@ -467,6 +541,7 @@ export function buildTutorStubResponseConfiguration({
     actorial_part: actorialPart.id,
     actorial_part_label: actorialPart.label,
     actorial_part_selection: actorialPart,
+    actorial_performance: actorialPerformance,
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     release_pacing: releasePacing ? structuredClone(releasePacing) : null,
@@ -481,6 +556,7 @@ export function buildTutorStubResponseConfiguration({
       lexical_accessibility: lexical.reason,
       scene_immersion: scene.reason,
       actorial_part: actorialPart.reason,
+      actorial_performance: `Realize ${engagementStance || 'precise'} through the selected public part instead of attaching a tone label to generic tutor prose.`,
     },
     compatibility: {
       selected_register: engagementStance || 'precise',
@@ -529,8 +605,12 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
       configuration.actorial_part,
     )}`,
     configuration.actorial_part_selection?.authored_role
-      ? `Authored public clue role: ${configuration.actorial_part_selection.authored_role}. Take this exact part for the clue; it supplies no knowledge beyond the public clue in the current turn context.`
+      ? `Authored public clue role: ${configuration.actorial_part_selection.authored_role}. Take this exact part for the clue and speak its evidence from inside the role in first person inside quotation marks. Do not prefix the speech with the role name or a stage direction. The part supplies no knowledge beyond the public clue in the current turn context.`
       : null,
+    `Performance tactic: ${configuration.actorial_performance?.label || 'direct in-scene enactment'}. ${oneLine(
+      configuration.actorial_performance?.contract ||
+        'Enter through a concrete character action or spoken line and keep the learner inside the scene.',
+    )}`,
     `Unresolved terms: ${unresolved}.`,
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
@@ -542,7 +622,8 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
         : `Clue release: authored pace at ${configuration.release_pacing?.effectiveSpeed ?? 1}x; add no more than one authored clue batch this turn.`,
     'These are independent axes. Perform the action family and visibly take the actorial part; do not infer either one from the engagement stance.',
     'Temperature sharpens or broadens only the engagement-stance and actorial-part distributions. Do not blur the audience, lexical, action, or scene contracts.',
-    'Enter the part through a concrete first-person action, position, or spoken role. Do not merely describe the part or announce an abstract teaching strategy. Preserve the learner-responsive opening before developing the scene.',
+    'Enter the part through concrete first-person action or direct speech. Do not use a role-name speaker label, stage direction, description of acting, or announcement of an abstract teaching strategy. Preserve the learner-responsive opening and let it flow into the scene as one voice.',
+    'Forbidden meta-frames: “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” “back to us,” and any stock announcement that another piece of information is being supplied. Let the scene itself signal the arrival.',
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',
     '[End tutor-only response configuration]',
   ].join('\n');
@@ -550,7 +631,7 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
 
 function responseSentences(text) {
   const sentences = oneLine(text)
-    .split(/(?<=[.!?])\s+/u)
+    .split(/(?<=[.!?])\s+|(?<=[.!?][”"'’])\s+/u)
     .map((sentence) => sentence.trim())
     .filter(Boolean);
   return sentences.length ? sentences : oneLine(text) ? [oneLine(text)] : [];
@@ -669,11 +750,17 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'authored_source') {
     const role = oneLine(configuration.actorial_part_selection?.authored_role || configuration.actorial_part_label);
-    const roleTokens = (role.toLowerCase().match(/[\p{L}][\p{L}'-]{3,}/gu) || []).filter(
-      (token) => !WORLD_STOP_WORDS.has(token),
+    const metaCasting = /\b(?:let(?:[’']s| us)\s+role-play|i(?:[’']ll| will)\s+(?:be|become|play|take the part)|speaking as|in the role of)\b/iu.test(
+      text,
     );
-    const roleVisible = roleTokens.some((token) => new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\b`, 'iu').test(text));
-    return roleVisible && /\b(?:i(?:[’']m| am|[’']ll| will)|as (?:the|a)|speaking as|in the part of|i (?:open|read|report|show|testify|say))\b/iu.test(text);
+    const frame = {
+      entries: [{ mode: 'enacted_role', role }],
+    };
+    return (
+      !metaCasting &&
+      !tutorStubRoleStageDirectionVisible({ text, frame }) &&
+      tutorStubFirstPersonRoleVoiceVisible(text)
+    );
   }
   if (part === 'advocate') {
     return /\b(?:i(?:[’']ll| will| am going to) (?:argue|make|put)|my case is|the strongest case|take the case for)\b/iu.test(text) && /\b(?:test|break|challenge|resist|object|what would|show me)\b/iu.test(text);
@@ -684,6 +771,37 @@ function actorialPartVisible(configuration, text, metrics) {
   if (part === 'foreperson') {
     return /\b(?:finding|verdict|case is closed|close the (?:case|record|book|log|ledger|inquiry)|we can conclude|therefore)\b/iu.test(text) && metrics.questionCount === 0;
   }
+  return false;
+}
+
+function actorialPerformanceVisible(configuration, text, metrics) {
+  const tactic = configuration.actorial_performance?.id;
+  if (!tactic) return true;
+  if (tactic === 'unadorned_report') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
+  if (tactic === 'evidentiary_boundary') {
+    return /\b(?:exact|establish|licensed|line that matters|no more|does not|doesn[’']t|limit|only)\b/iu.test(text);
+  }
+  if (tactic === 'rapid_handoff') {
+    return /\b(?:already|straight|live line|your call|move the case|what does that add)\b/iu.test(text) || metrics.wordCount <= 70;
+  }
+  if (tactic === 'shared_scene_invitation') {
+    return /\b(?:between us|both read|beside|together|what do you make|your reading|with me)\b/iu.test(text);
+  }
+  if (tactic === 'measured_testimony') {
+    return /\b(?:without (?:pushing|forcing)|stand as written|responsibly|honestly bear|let .* stand|no further)\b/iu.test(text);
+  }
+  if (tactic === 'dramatic_counterpressure') {
+    const forcefulExhibitAction =
+      /\b(?:block|challenge|confront|plant|press|push|slap|snap|strike|unsettle)\b/iu.test(text);
+    const contestedPublicJudgment =
+      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:answer|assumption|case|claim|guilty|story|verdict)\b|\b(?:answer|assumption|case|claim|story|verdict)\b[^.!?]{0,35}\b(?:break|challenge|survive|unsettle)\b/iu.test(
+        text,
+      );
+    return forcefulExhibitAction || contestedPublicJudgment;
+  }
+  if (tactic === 'exposed_mismatch') return /\b(?:apparently|as if|not exactly|small irony|conveniently)\b/iu.test(text);
+  if (tactic === 'dry_counterexample') return /\b(?:wonderful|nice trick|conveniently|apparently)\b/iu.test(text);
+  if (tactic === 'adversarial_pressure') return /\b(?:stop|refuse|weak|failed|answer now|choose)\b/iu.test(text);
   return false;
 }
 
@@ -748,6 +866,24 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
       glossedTerms.length === unresolvedTerms.length);
   const scenePass =
     !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
+  const performanceText = composition?.development || text;
+  const performanceWords = responseWords(performanceText);
+  const performanceSentences = responseSentences(performanceText);
+  const performanceMetrics = {
+    ...metrics,
+    wordCount: performanceWords.length,
+    sentenceCount: performanceSentences.length,
+    averageSentenceWords: Number(
+      (performanceWords.length / Math.max(1, performanceSentences.length)).toFixed(2),
+    ),
+    maxSentenceWords: Math.max(0, ...performanceSentences.map((sentence) => responseWords(sentence).length)),
+  };
+  const actorialPartPass = actorialPartVisible(configuration, performanceText, metrics);
+  const actorialPerformancePass = actorialPerformanceVisible(
+    configuration,
+    performanceText,
+    performanceMetrics,
+  );
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
@@ -778,11 +914,29 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     actorial_part: {
       selected: configuration.actorial_part,
       label: configuration.actorial_part_label || null,
-      visible: actorialPartVisible(configuration, composition?.development || text, metrics),
+      performance_tactic: configuration.actorial_performance?.id || null,
+      performance_label: configuration.actorial_performance?.label || null,
+      part_visible: actorialPartPass,
+      performance_visible: actorialPerformancePass,
+      visible: actorialPartPass && actorialPerformancePass,
       evaluated_segment: composition?.development ? 'development' : 'whole_response',
     },
   };
   const visibleAxes = Object.values(axes).filter((axis) => axis.visible).length;
+  const actorialIssues = [
+    !axes.actorial_part.part_visible
+      ? {
+          type: 'missing_selected_actorial_part',
+          reason: `does not directly perform the selected public part: ${configuration.actorial_part_label || configuration.actorial_part}`,
+        }
+      : null,
+    !axes.actorial_part.performance_visible
+      ? {
+          type: 'missing_selected_performance_tactic',
+          reason: `does not make the selected ${configuration.actorial_performance?.label || 'actorial'} tactic visible in the development beat`,
+        }
+      : null,
+  ].filter(Boolean);
   const configurationSignature = [
     configuration.engagement_stance,
     configuration.action_family,
@@ -790,19 +944,27 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     configuration.lexical_accessibility,
     configuration.scene_immersion,
     configuration.actorial_part,
+    configuration.actorial_performance?.id || 'legacy_performance',
   ].join('|');
   return {
     schema: RESPONSE_CONFIGURATION_AUDIT_SCHEMA,
     configuration_signature: configurationSignature,
-    visible_signature: `${visibleSignature(metrics)}|part:${axes.actorial_part.visible ? configuration.actorial_part : 'not_visible'}`,
+    visible_signature: `${visibleSignature(metrics)}|part:${
+      axes.actorial_part.visible ? configuration.actorial_part : 'not_visible'
+    }|tactic:${axes.actorial_part.performance_visible ? configuration.actorial_performance?.id || 'legacy' : 'not_visible'}`,
     axes,
     metrics,
     visible_axis_count: visibleAxes,
     axis_count: Object.keys(axes).length,
     realization_rate: Number((visibleAxes / Object.keys(axes).length).toFixed(3)),
+    actorial_realization: {
+      schema: ACTORIAL_REALIZATION_AUDIT_SCHEMA,
+      ok: actorialIssues.length === 0,
+      issues: actorialIssues,
+    },
     transcript_visible: visibleAxes >= 5 && axes.actorial_part.visible && !metrics.fourthWallBreak,
     limitations:
-      'Deterministic surface audit: it checks legible textual cues and constraints, not whether a human reader experiences the intended stance.',
+      'Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference.',
   };
 }
 

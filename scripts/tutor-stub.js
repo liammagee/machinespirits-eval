@@ -133,6 +133,7 @@ import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
   selectTutorStubActorialPart,
+  selectTutorStubActorialPerformance,
   summarizeTutorStubResponseConfigurationAudits,
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
@@ -1587,6 +1588,8 @@ function tutorResponseRepairPrompt({
   scaffoldAudit = null,
   questionSupportAudit = null,
   dramaticReleaseAudit = null,
+  actorialRealizationAudit = null,
+  responseConfiguration = null,
   responseCompositionAudit = null,
   preservedUptake = '',
   repetitionAudit = null,
@@ -1605,6 +1608,9 @@ function tutorResponseRepairPrompt({
   const dramaticReleaseRows = (dramaticReleaseAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
+  const actorialRealizationRows = (actorialRealizationAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
   const responseCompositionRows = (responseCompositionAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
@@ -1620,7 +1626,7 @@ function tutorResponseRepairPrompt({
     '[Tutor-only repair instruction]',
     'Your previous draft failed a learner-facing safety or scaffold check and must not be shown to the learner.',
     preservedUptake
-      ? 'The learner-responsive opening below passed its public-evidence check. Keep it verbatim as the first paragraph and rewrite only the development that follows.'
+      ? 'The learner-responsive opening below passed its public-evidence check. Keep it verbatim at the start, then continue directly into the rewritten development without making a second paragraph or second voice.'
       : 'Rewrite the tutor reply from scratch.',
     preservedUptake ? `Safe learner uptake to preserve:\n${preservedUptake}` : null,
     leakRows ? 'Use only public setup, already released evidence, and public rules.' : null,
@@ -1647,19 +1653,28 @@ function tutorResponseRepairPrompt({
       ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 short choices using only the people, objects, and records already named in this scene. Say concretely what each choice means here; avoid labels such as “one condition,” “the rule,” or “the whole case.” Do not reveal the unstaged record or answer.'
       : null,
     dramaticReleaseRows
-      ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as a visible dramatic beat.'
+      ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as dramatic action flowing inside the same continuous utterance.'
       : null,
     dramaticReleaseRows
-      ? 'Briefly tell the learner that another piece of information is entering; enact the supplied source role or physically present the exhibit; then step back and ask what the clue changes.'
+      ? 'Let the clue enter through a character, object, gesture, interruption, or spoken line; enact the supplied source role or physically handle the exhibit; then ask what it changes without stepping outside the scene.'
       : null,
     dramaticReleaseRows
-      ? 'Stay inside the scene. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
+      ? 'Stay inside the scene. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” “back to us,” or announce that another piece of information is being supplied. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
+      : null,
+    actorialRealizationRows
+      ? `The previous draft did not visibly perform the selected public part (${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'current scene part'}) with its selected tactic (${responseConfiguration?.actorial_performance?.label || 'direct in-scene performance'}). Rewrite the development beat so both are unmistakable in the action and wording.`
+      : null,
+    actorialRealizationRows && responseConfiguration?.actorial_performance?.contract
+      ? `Performance contract: ${responseConfiguration.actorial_performance.contract}`
+      : null,
+    actorialRealizationRows
+      ? 'Do not name the character as a speaker label or write a stage direction. Speak from inside the role in first person, and make the stance change what that voice emphasizes and asks.'
       : null,
     responseCompositionRows
-      ? 'The response must first take up what the learner just said, then develop the inquiry in a second paragraph. Do not replace acknowledgement with the next clue or question.'
+      ? 'The response must take up what the learner just said and then develop the inquiry without replacing acknowledgement with the next clue or question.'
       : null,
     responseCompositionRows
-      ? 'Keep the two parts inside one atomic assistant turn, separated by one blank line. Do not label the parts or mention private analysis.'
+      ? 'Write one continuous paragraph in one voice. Do not insert a blank line, arrow, role label, stage direction, or mention private analysis.'
       : null,
     repetitionRows
       ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
@@ -1685,6 +1700,8 @@ function tutorResponseRepairPrompt({
     questionSupportRows || null,
     dramaticReleaseRows ? 'Dramatic-release audit:' : null,
     dramaticReleaseRows || null,
+    actorialRealizationRows ? 'Actorial-realization audit:' : null,
+    actorialRealizationRows || null,
     responseCompositionRows ? 'Response-composition audit:' : null,
     responseCompositionRows || null,
     repetitionRows ? 'Repetition audit:' : null,
@@ -1778,6 +1795,10 @@ function tutorGuardIssueRows(audits) {
     ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
     ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
     ...(audits?.dramaticReleaseAudit?.issues || []).map((issue) => ({ guard: 'dramatic_release', ...issue })),
+    ...(audits?.actorialRealizationAudit?.issues || []).map((issue) => ({
+      guard: 'actorial_realization',
+      ...issue,
+    })),
     ...(audits?.responseCompositionAudit?.issues || []).map((issue) => ({
       guard: 'response_composition',
       ...issue,
@@ -2586,6 +2607,10 @@ function plainResponseCheckArea(value) {
     leak: 'protecting unreleased answers or evidence',
     human_scaffold: 'not repeating an already answered question',
     question_support: 'asking only from information already available',
+    dramatic_release: 'bringing the new clue into the scene clearly',
+    actorial_realization: 'making the selected character and teaching style visible',
+    response_composition: 'responding to the learner before developing the scene',
+    repetition: 'avoiding repeated wording or questions',
     dialogue_closure: 'ending the conversation clearly',
   };
   return labels[value] || displayDiagnosticLabel(value);
@@ -2652,10 +2677,15 @@ function metadataLine(meta) {
     selection?.actorial_part ||
     selection?.response_configuration?.actorial_part ||
     null;
+  const performance =
+    selection?.actorial_performance?.label ||
+    selection?.response_configuration?.actorial_performance?.label ||
+    null;
   const register = [
     stance ? `style ${displayDiagnosticLabel(stance)}` : null,
     action ? `move ${displayDiagnosticLabel(action)}` : null,
     character ? `character ${displayDiagnosticLabel(character)}` : null,
+    performance ? `performance ${displayDiagnosticLabel(performance)}` : null,
   ]
     .filter(Boolean)
     .map((part) => `, ${part}`)
@@ -3569,6 +3599,9 @@ function compactPendingRegisterSummary(context) {
     if (selection.actorial_part_label || selection.actorial_part) {
       bits.push(`playing ${oneLine(selection.actorial_part_label || displayDiagnosticLabel(selection.actorial_part), { max: 42 })}`);
     }
+    if (selection.actorial_performance?.label) {
+      bits.push(`through ${oneLine(selection.actorial_performance.label, { max: 32 })}`);
+    }
     if (selection.expected_field_move)
       bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
   }
@@ -4453,15 +4486,6 @@ function replayTextAsConsoleStream(role, text, stream = null) {
 }
 
 function printTutorResponse(response, stream = null) {
-  const uptake = String(response.responseComposition?.uptake || '').trim();
-  const development = String(response.responseComposition?.development || '').trim();
-  if (uptake && development && uptake !== development) {
-    console.log(`${C.brightMagenta}${C.bold}tutor >${C.reset} ${uptake}`);
-    console.log('');
-    console.log(`${C.dim}        ↳${C.reset} ${development}`);
-    response.streamed = Boolean(response.streamed || response.guardedStreamReplay);
-    return;
-  }
   if (response.guardedStreamReplay) {
     response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
     return;
@@ -6305,6 +6329,7 @@ function normalizeResponseConfigurationSelection(
     actorial_part: responseConfiguration.actorial_part,
     actorial_part_label: responseConfiguration.actorial_part_label,
     actorial_part_selection: responseConfiguration.actorial_part_selection,
+    actorial_performance: responseConfiguration.actorial_performance,
     unresolved_terms: responseConfiguration.unresolved_terms,
     valence: definition.valence || null,
     router_selectable: definition.router_selectable === true,
@@ -6920,6 +6945,12 @@ function responseConfigurationContext(
     actorial_part: selection.actorial_part,
     actorial_part_label: selection.actorial_part_label,
     actorial_part_selection: selection.actorial_part_selection,
+    actorial_performance:
+      selection.actorial_performance ||
+      selectTutorStubActorialPerformance({
+        engagementStance,
+        actorialPart: selection.actorial_part,
+      }),
     unresolved_terms: selection.unresolved_terms || [],
   };
   const typedAction = selection.typed_action_decision?.chosen_action || null;
@@ -7683,6 +7714,12 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
       'part in the scene',
       displayDiagnosticLabel(registerSelection.actorial_part_label || registerSelection.actorial_part || 'unknown'),
     );
+    if (registerSelection.actorial_performance?.label) {
+      printAnalysisLine(
+        'performance tactic',
+        `${displayDiagnosticLabel(registerSelection.actorial_performance.label)} — ${registerSelection.actorial_performance.contract}`,
+      );
+    }
     if (registerSelection.actorial_part_selection?.reason) {
       printAnalysisLine('why this part', registerSelection.actorial_part_selection.reason);
     }
@@ -8312,6 +8349,12 @@ function printCurrentTurnTechnicalAnalysis(state) {
       'actorial part',
       `${registerSelection.actorial_part || 'unknown'} (${registerSelection.actorial_part_label || 'no public label'})`,
     );
+    if (registerSelection.actorial_performance) {
+      printAnalysisLine(
+        'actorial performance',
+        `${registerSelection.actorial_performance.id || 'unknown'} (${registerSelection.actorial_performance.label || 'no public label'}): ${registerSelection.actorial_performance.contract || 'no contract stored'}`,
+      );
+    }
     if (registerSelection.actorial_part_selection?.distribution) {
       printAnalysisLine(
         'actorial-part distribution',
@@ -9582,6 +9625,7 @@ async function callTutor({
     : buildTutorStubDramaticReleaseFrame({
         dueEvidence: currentReleaseRows(state, tutorTurn),
       });
+  const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
   const dramaticReleaseAdvisory = passthrough ? null : tutorStubDramaticReleasePrompt(dramaticReleaseFrame);
   const humanDiscourseAdvisory = passthrough ? null : humanDiscourseTutorContext(humanDiscourseFrame);
   const dialogueClosureAdvisory = passthrough ? null : dialogueClosureTutorContext(dialogueClosureFrame);
@@ -9723,6 +9767,11 @@ async function callTutor({
   const scaffoldGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.generousInference?.applied);
   const questionSupportGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.questionSupport?.guardRequired);
   const dramaticReleaseGuardEnabled = Boolean(!passthrough && dramaticReleaseFrame.active);
+  const actorialRealizationGuardEnabled = Boolean(
+    dramaticReleaseGuardEnabled &&
+      responseConfiguration?.actorial_part &&
+      responseConfiguration?.actorial_performance,
+  );
   const responseCompositionGuardEnabled = Boolean(!passthrough && responseCompositionFrame.active);
   const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const repetitionGuardEnabled = Boolean(!passthrough && recentTutorTexts.length > 0);
@@ -9734,6 +9783,7 @@ async function callTutor({
     scaffoldGuardEnabled ||
     questionSupportGuardEnabled ||
     dramaticReleaseGuardEnabled ||
+    actorialRealizationGuardEnabled ||
     responseCompositionGuardEnabled ||
     repetitionGuardEnabled ||
     closureGuardEnabled;
@@ -9743,6 +9793,7 @@ async function callTutor({
     humanScaffold: scaffoldGuardEnabled,
     questionSupport: questionSupportGuardEnabled,
     dramaticRelease: dramaticReleaseGuardEnabled,
+    actorialRealization: actorialRealizationGuardEnabled,
     responseComposition: responseCompositionGuardEnabled,
     repetition: repetitionGuardEnabled,
     dialogueClosure: closureGuardEnabled,
@@ -9846,6 +9897,7 @@ async function callTutor({
         leakGuard: leakGuardEnabled,
         scaffoldGuard: scaffoldGuardEnabled,
         questionSupportGuard: questionSupportGuardEnabled,
+        actorialRealizationGuard: actorialRealizationGuardEnabled,
         responseCompositionGuard: responseCompositionGuardEnabled,
         repetitionGuard: repetitionGuardEnabled,
         closureGuard: closureGuardEnabled,
@@ -9999,8 +10051,24 @@ async function callTutor({
         })
       : { ok: true, issues: [] };
     const dramaticReleaseAudit = dramaticReleaseGuardEnabled
-      ? auditTutorStubDramaticReleaseResponse({ text: response.text, frame: dramaticReleaseFrame })
+      ? auditTutorStubDramaticReleaseResponse({
+          text: response.responseComposition?.development || response.text,
+          frame: dramaticReleaseFrame,
+        })
       : { ok: true, active: false, issues: [] };
+    const responseConfigurationAudit = actorialRealizationGuardEnabled
+      ? auditTutorStubResponseConfiguration({
+          text: response.text,
+          configuration: responseConfiguration,
+          world,
+          composition: response.responseComposition,
+        })
+      : null;
+    const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
+      ok: true,
+      issues: [],
+      active: false,
+    };
     const repetitionAudit = repetitionGuardEnabled
       ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
       : { ok: true, issues: [], maxSimilarity: 0 };
@@ -10051,6 +10119,20 @@ async function callTutor({
         frame: dramaticReleaseFrame,
       });
     }
+    if (actorialRealizationGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_actorial_realization_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: actorialRealizationAudit.ok,
+        issues: actorialRealizationAudit.issues,
+        selectedPart: responseConfiguration.actorial_part,
+        selectedPartLabel: responseConfiguration.actorial_part_label,
+        selectedPerformance: responseConfiguration.actorial_performance,
+        responseConfigurationAudit,
+      });
+    }
     if (responseCompositionGuardEnabled) {
       appendTraceEvent(trace, {
         type: 'tutor_response_composition_audit',
@@ -10093,6 +10175,7 @@ async function callTutor({
         scaffoldAudit.ok &&
         questionSupportAudit.ok &&
         dramaticReleaseAudit.ok &&
+        actorialRealizationAudit.ok &&
         responseCompositionAudit.ok &&
         repetitionAudit.ok &&
         closureAudit.ok,
@@ -10100,6 +10183,8 @@ async function callTutor({
       scaffoldAudit,
       questionSupportAudit,
       dramaticReleaseAudit,
+      actorialRealizationAudit,
+      responseConfigurationAudit,
       responseCompositionAudit,
       repetitionAudit,
       closureAudit,
@@ -10128,7 +10213,7 @@ async function callTutor({
       learnerText,
     });
     if (baseAudit.ok) return formatTutorStubResponseComposition(baseAudit) || String(text || '').trim();
-    return [String(uptake || '').trim(), String(text || '').trim()].filter(Boolean).join('\n\n');
+    return [String(uptake || '').trim(), String(text || '').trim()].filter(Boolean).join(' ');
   }
 
   try {
@@ -10168,6 +10253,7 @@ async function callTutor({
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
       response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
+      response.actorialRealizationAudit = audits.actorialRealizationAudit;
       response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       if (response.bufferedStream) {
@@ -10198,6 +10284,8 @@ async function callTutor({
         scaffoldAudit: audits.scaffoldAudit,
         questionSupportAudit: audits.questionSupportAudit,
         dramaticReleaseAudit: audits.dramaticReleaseAudit,
+        actorialRealizationAudit: audits.actorialRealizationAudit,
+        responseConfiguration,
         responseCompositionAudit: audits.responseCompositionAudit,
         preservedUptake: firstPreservedUptake,
         repetitionAudit: audits.repetitionAudit,
@@ -10232,6 +10320,7 @@ async function callTutor({
       response.scaffoldAudit = audits.scaffoldAudit;
       response.questionSupportAudit = audits.questionSupportAudit;
       response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
+      response.actorialRealizationAudit = audits.actorialRealizationAudit;
       response.repetitionAudit = audits.repetitionAudit;
       response.closureAudit = audits.closureAudit;
       response.repaired = true;
@@ -10279,6 +10368,8 @@ async function callTutor({
             frame: dramaticReleaseFrame,
             support: humanDiscourseFrame?.questionSupport || null,
             uptake: fallbackUptake,
+            responseConfiguration: registerSelection?.response_configuration || registerSelection,
+            variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
@@ -10303,10 +10394,13 @@ async function callTutor({
       model: resolved.model,
       latencyMs: response.latencyMs || 0,
       usage: response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+      effort: response.effort || response.reasoningEffort || cliEffort || null,
+      reasoningEffort: response.reasoningEffort || response.effort || cliEffort || null,
       leakAudit: audits.leakAudit,
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: fallbackQuestionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
+      actorialRealizationAudit: audits.actorialRealizationAudit,
       responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: fallbackClosureAudit,
@@ -10324,6 +10418,7 @@ async function callTutor({
     fallback.scaffoldAudit = fallbackAudits.scaffoldAudit;
     fallback.questionSupportAudit = fallbackAudits.questionSupportAudit;
     fallback.dramaticReleaseAudit = fallbackAudits.dramaticReleaseAudit;
+    fallback.actorialRealizationAudit = fallbackAudits.actorialRealizationAudit;
     fallback.repetitionAudit = fallbackAudits.repetitionAudit;
     fallback.closureAudit = fallbackAudits.closureAudit;
     const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
@@ -10352,6 +10447,7 @@ async function callTutor({
       scaffoldIssues: audits.scaffoldAudit.issues,
       questionSupportIssues: audits.questionSupportAudit.issues,
       dramaticReleaseIssues: audits.dramaticReleaseAudit.issues,
+      actorialRealizationIssues: audits.actorialRealizationAudit.issues,
       responseCompositionIssues: audits.responseCompositionAudit.issues,
       repetitionIssues: audits.repetitionAudit.issues,
       closureIssues: audits.closureAudit.issues,
@@ -11041,6 +11137,10 @@ function typedActionRegisterSelection({
     actorial_part: actorialPart.id,
     actorial_part_label: actorialPart.label,
     actorial_part_selection: actorialPart,
+    actorial_performance: selectTutorStubActorialPerformance({
+      engagementStance: register,
+      actorialPart: actorialPart.id,
+    }),
     support_level: patch.support_level,
     task_id: patch.task_id,
     knowledge_component: patch.knowledge_component,
@@ -11075,6 +11175,7 @@ function typedActionRegisterSelection({
     actorial_part: responseConfiguration.actorial_part,
     actorial_part_label: responseConfiguration.actorial_part_label,
     actorial_part_selection: responseConfiguration.actorial_part_selection,
+    actorial_performance: responseConfiguration.actorial_performance,
     unresolved_terms: responseConfiguration.unresolved_terms,
     valence: registerSelection?.valence || definition.valence || null,
     request_type:
@@ -17874,7 +17975,7 @@ async function main() {
     const feedback = requestTutorStubTurnFeedback(state.turnFeedback, target);
     if (!feedback) return false;
     console.log(
-      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.yellow}← 👎 not helpful${C.reset} · ${C.brightGreen}👍 helpful →${C.reset} · ${C.dim}empty prompt; no Enter · or just reply${C.reset}\n`,
+      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.red}← 👎 not helpful${C.reset} · ${C.brightGreen}👍 helpful →${C.reset} · ${C.dim}empty prompt; no Enter · or just reply${C.reset}\n`,
     );
     appendTraceEvent(state.trace, {
       type: 'tutor_turn_feedback_requested',

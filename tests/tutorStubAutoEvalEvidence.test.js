@@ -214,7 +214,11 @@ test('live-like auto-eval seals tutor, analyzer, and learner observations under 
     assert.ok(Number.isFinite(summary.aggregates.meanCoverageAtHorizon));
     assert.equal(summary.rows[0].fixedHorizon.horizon, 1);
     assert.equal(summary.rows[0].fixedHorizon.complete, true);
-    assert.equal(summary.rows[0].fixedHorizon.safetyStatus, 'safety_passed');
+    assert.equal(
+      summary.rows[0].fixedHorizon.safetyStatus,
+      'safety_passed',
+      JSON.stringify(summary.rows[0].fixedHorizon, null, 2),
+    );
     assert.equal(summary.rows[0].fixedHorizon.guardTurnsComplete, 1);
     assert.equal(summary.aggregates.horizonSafetyIncomplete, 0);
   } finally {

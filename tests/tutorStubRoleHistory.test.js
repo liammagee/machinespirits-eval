@@ -26,7 +26,7 @@ process.stdin.on('end', () => {
     : input.includes('Write learner turn')
       ? 'I would compare the metal residues first.'
       : input.includes('[Tutor-only dramatic clue release]')
-        ? "Yes—that gives us a concrete comparison.\\n\\nI'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Which public mark would connect this clue to one hand?"
+        ? "Yes—that gives us a concrete comparison. “I am tapping the mint-yard register: Verrell alone draws the mint-yard crucible.” Which public mark would connect this clue to one hand?"
         : 'Yes—that gives us a concrete comparison. Which public mark would connect this clue to one hand?';
   if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
   if (outputPath) fs.writeFileSync(outputPath, response);

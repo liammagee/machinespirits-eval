@@ -68,8 +68,8 @@ process.stdin.on('end', () => {
       : input.includes('Write learner turn')
         ? 'I would compare the metal residues first.'
         : input.includes('[Tutor-only dramatic clue release]')
-          ? "I see the point you are putting on the table.\\n\\nI'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Take the crucible as a fingerprint—which public mark would let you match it to one hand?"
-          : 'I see the point you are putting on the table.\\n\\nTake the crucible as a fingerprint: which public mark would let you match it to one hand?';
+          ? "I see the point you are putting on the table. “I am tapping the mint-yard register: Verrell alone draws the mint-yard crucible.” Take the crucible as a fingerprint—which public mark would let you match it to one hand?"
+          : 'I see the point you are putting on the table. Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
     if (outputPath) fs.writeFileSync(outputPath, response);
     process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
   };
@@ -206,10 +206,9 @@ function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeMode
     child.stdout.on('data', (chunk) => {
       stdout += chunk;
       const plain = plainTerminalText(stdout);
-      // Response composition renders one public assistant message as two
-      // visibly separated tutor beats. Count the development display marker
-      // so those two display lines are not mistaken for two tutor turns.
-      const tutorReplies = plain.match(/↳/gu) || [];
+      // Response composition is one continuous public tutor utterance even
+      // though uptake and development remain separately auditable internally.
+      const tutorReplies = plain.match(/tutor >/gu) || [];
       if (stage === 0 && tutorReplies.length >= 1) {
         if (changeModel) {
           stage = 1;
@@ -1285,7 +1284,7 @@ test('debug off suppresses automatic technical diagnostics but keeps the compact
         'world_005_marrick',
       ],
       initialInput: '/debug on technical\n/debug off\nThe assay still confuses me.\n',
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
     });
 
     assert.match(result.plain, /debug > off/u);

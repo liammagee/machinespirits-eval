@@ -403,7 +403,7 @@ process.stdin.on('end', () => {
     response = 'You are right that two badge entries do not prove two culprits. “The kettle queue” means the people waiting beside the kettle, who remember seeing the crew. What do the two entries establish, and what remains unproved?';
   } else if (input.includes(${JSON.stringify(LARKSPUR_BADGE_SURFACE)})) {
     response = ${JSON.stringify(
-      `I'm going to give you another piece of information. Let's role-play it: I'll be the badge clerk reading the log. “${LARKSPUR_BADGE_SURFACE}” Back to the case: what does this badge entry change?`,
+      `Badge clerk, finger on the visitor log: “${LARKSPUR_BADGE_SURFACE}” What does this badge entry change?`,
     )};
   } else {
     response = 'Good—keep that badge entry in the record while we examine the next public clue.';

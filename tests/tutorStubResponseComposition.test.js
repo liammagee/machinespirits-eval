@@ -54,6 +54,9 @@ test('response composition maps the selected action to uptake and the DAG move t
   const frame = traceFrame();
   assert.equal(frame.delivery.atomic_assistant_turn, true);
   assert.equal(frame.delivery.public_history_messages, 1);
+  assert.equal(frame.delivery.internal_functions, 2);
+  assert.equal(frame.delivery.display_beats, 1);
+  assert.equal(frame.delivery.public_shape, 'continuous_performance');
   assert.equal(frame.action_target, 'uptake');
   assert.equal(frame.uptake.action_family, 'answer_accountably');
   assert.equal(frame.development.action_family, null);
@@ -63,9 +66,10 @@ test('response composition maps the selected action to uptake and the DAG move t
 
   const prompt = tutorStubResponseCompositionPrompt(frame);
   assert.match(prompt, /one atomic assistant turn/u);
+  assert.match(prompt, /one continuous public performance/u);
   assert.match(prompt, /answer_accountably/u);
   assert.match(prompt, /Correctly limits what the badge log establishes/u);
-  assert.match(prompt, /Keep the response beat before the clue handoff/u);
+  assert.match(prompt, /do not let the release erase the learner uptake/u);
   assert.doesNotMatch(prompt, /p_noon|p_crew/u);
 });
 
@@ -89,14 +93,14 @@ test('a DAG-progression action is realized in development while uptake remains l
   assert.equal(frame.uptake.action_family, null);
   assert.equal(frame.development.action_family, 'stage_next_step');
   const prompt = tutorStubResponseCompositionPrompt(frame);
-  assert.match(prompt, /2\. Develop:[\s\S]*stage_next_step/u);
+  assert.match(prompt, /2\. Continue:[\s\S]*stage_next_step/u);
   assert.doesNotMatch(prompt, /1\. Respond:[^\n]*stage_next_step/u);
 });
 
 test('a responsive model draft is segmented into uptake and development without changing its words', () => {
   const frame = traceFrame();
   const text =
-    'Exactly—Dario’s presence keeps him in view, but it does not prove he touched the lunchbox. Step up to the front desk with me; I’m the clerk opening the visitor badge log: “Another noon entry—WF-11.” Back at the fridge, what does that change?';
+    'Exactly—Dario’s presence keeps him in view, but it does not prove he touched the lunchbox. “I issued one more noon badge from my front desk: visitor code WF-11.” What does that change?';
   const audit = auditTutorStubResponseComposition({
     text,
     frame,
@@ -106,13 +110,14 @@ test('a responsive model draft is segmented into uptake and development without 
   assert.equal(audit.ok, true);
   assert.match(audit.segments.uptake, /does not prove/u);
   assert.match(audit.segments.development, /front desk/u);
-  assert.equal(formatTutorStubResponseComposition(audit), `${audit.segments.uptake}\n\n${audit.segments.development}`);
+  assert.equal(formatTutorStubResponseComposition(audit), `${audit.segments.uptake} ${audit.segments.development}`);
+  assert.doesNotMatch(formatTutorStubResponseComposition(audit), /\n\s*\n/u);
 });
 
 test('a clue rehearsal without learner uptake fails composition even when it develops the lesson', () => {
   const frame = traceFrame();
   const audit = auditTutorStubResponseComposition({
-    text: 'I’m going to give you another piece of information now. Let’s role-play it with the front-desk clerk.',
+    text: 'Front-desk clerk, finger on the badge log: “Visitor code WF-11.” What does this entry change?',
     frame,
     learnerText: "nothing - doesn't prove he did it, just confirms he's a suspect",
   });
@@ -120,6 +125,22 @@ test('a clue rehearsal without learner uptake fails composition even when it dev
   assert.equal(audit.ok, false);
   assert.equal(audit.segments.method, 'development_only');
   assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_learner_uptake']);
+});
+
+test('a learner-responsive question before quoted role speech is not mistaken for a stage direction', () => {
+  const frame = traceFrame();
+  const text =
+    'Which public mark would you test next, and what would it show? “I have the front-desk log open at the exact line: visitor code WF-11 went to the outside crew.” What does that establish?';
+  const audit = auditTutorStubResponseComposition({
+    text,
+    frame,
+    learnerText: 'I would test the newest public mark before deciding.',
+  });
+
+  assert.equal(audit.segments.method, 'first_sentence');
+  assert.match(audit.segments.uptake, /^Which public mark/u);
+  assert.match(audit.segments.development, /^“I have the front-desk log/u);
+  assert.equal(audit.ok, true);
 });
 
 test('the deterministic uptake is public, learner-specific, and action-aware', () => {

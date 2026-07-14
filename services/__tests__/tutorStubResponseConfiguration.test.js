@@ -10,10 +10,15 @@ import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
   selectTutorStubActorialPart,
+  selectTutorStubActorialPerformance,
   selectTutorStubActionFamily,
   summarizeTutorStubResponseConfigurationAudits,
   tutorStubResponseConfigurationPrompt,
 } from '../tutorStubResponseConfiguration.js';
+import {
+  buildTutorStubDramaticReleaseFrame,
+  deterministicTutorStubDramaticReleaseFallback,
+} from '../tutorStubDramaticRelease.js';
 
 function learnerDag({ bottleneck = 'release_or_pacing_gap', coverage = 0.3 } = {}) {
   return {
@@ -134,6 +139,74 @@ test('actorial part turns the same public policy signals into distinct dramatic 
   assert.equal(overreach.id, 'skeptic');
   assert.equal(memoryRepair.id, 'record_keeper');
   assert.equal(memoryRepair.label, 'keeper of the trial-book');
+});
+
+test('the selected stance becomes a concrete performance tactic inside a structurally locked character', () => {
+  const common = {
+    learnerText: 'Move this along.',
+    classification: classification({ requestType: 'resistance_or_low_agency', conceptual: 2 }),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence: [
+      {
+        surface: 'Visitor code WF-11 was issued to an outside crew.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+      },
+    ],
+    world: testWorld(),
+  };
+  const brisk = buildTutorStubResponseConfiguration({ ...common, engagementStance: 'brisk' });
+  const witnessing = buildTutorStubResponseConfiguration({ ...common, engagementStance: 'witnessing' });
+
+  assert.equal(brisk.actorial_part, 'authored_source');
+  assert.equal(witnessing.actorial_part, 'authored_source');
+  assert.equal(brisk.actorial_performance.id, 'rapid_handoff');
+  assert.equal(witnessing.actorial_performance.id, 'measured_testimony');
+  assert.notEqual(brisk.actorial_performance.contract, witnessing.actorial_performance.contract);
+  assert.equal(
+    selectTutorStubActorialPerformance({ engagementStance: 'charismatic', actorialPart: 'authored_source' }).id,
+    'dramatic_counterpressure',
+  );
+  assert.match(tutorStubResponseConfigurationPrompt(brisk), /Performance tactic: rapid evidence handoff/u);
+  assert.match(tutorStubResponseConfigurationPrompt(brisk), /Forbidden meta-frames/u);
+});
+
+test('charismatic counterpressure can be realized through forceful exhibit action', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    classification: classification({ requestType: 'resistance_or_low_agency', conceptual: 2 }),
+    tutorLearnerDag: learnerDag(),
+    learnerText: 'Move this along.',
+    world: testWorld(),
+  });
+  const text = [
+    'Fair. We will move.',
+    'I slap the badge log beside the kettle and read the noon entry. What does this prove?',
+  ].join('\n\n');
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    world: testWorld(),
+    composition: {
+      uptake: 'Fair. We will move.',
+      development: 'I slap the badge log beside the kettle and read the noon entry. What does this prove?',
+    },
+  });
+
+  assert.equal(configuration.actorial_performance.id, 'dramatic_counterpressure');
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+
+  for (const development of [
+    'I snap open the badge log beside the kettle. The room wants “guilty”; what can we actually enter?',
+    'I open the incident log and block the room’s easy verdict with my pen. What does the badge prove?',
+  ]) {
+    const liveDraftAudit = auditTutorStubResponseConfiguration({
+      text: `Fair. One clean step.\n\n${development}`,
+      configuration,
+      world: testWorld(),
+      composition: { uptake: 'Fair. One clean step.', development },
+    });
+    assert.equal(liveDraftAudit.axes.actorial_part.performance_visible, true);
+  }
 });
 
 test('lower adaptive-performance temperature sharpens the actorial-part choice', () => {
@@ -310,7 +383,7 @@ test('surface audit measures realization and differences between selected config
     world,
   });
   const warmAudit = auditTutorStubResponseConfiguration({
-    text: "Let's take the silver coin beside the crucible. Which mint mark should you test next?",
+    text: "Let's stand beside the crucible together and take the silver coin. Which mint mark should you test next?",
     configuration: warm,
     world,
   });
@@ -320,11 +393,157 @@ test('surface audit measures realization and differences between selected config
   assert.equal(plainAudit.axes.lexical_accessibility.visible, true);
   assert.equal(warmAudit.axes.engagement_stance.visible, true);
   assert.equal(warmAudit.axes.actorial_part.selected, 'scene_partner');
+  assert.equal(warmAudit.axes.actorial_part.performance_tactic, 'shared_scene_invitation');
+  assert.equal(warmAudit.axes.actorial_part.performance_visible, true);
   assert.equal(warmAudit.axes.actorial_part.visible, true);
   assert.equal(warmAudit.axis_count, 6);
   assert.equal(summary.distinct_configuration_count, 2);
   assert.equal(summary.different_configuration_pairs, 1);
   assert.equal(summary.pairwise_visible_difference_rate, 1);
+});
+
+test('surface audit rejects a named character when the selected stance tactic does not permeate the performance', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'Move it along.',
+    classification: classification({ requestType: 'resistance_or_low_agency' }),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence: [
+      {
+        surface: 'Visitor code WF-11 was issued to an outside crew.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+      },
+    ],
+    world: testWorld(),
+  });
+  const flat = auditTutorStubResponseConfiguration({
+    text: 'Front-desk clerk, reading the badge log: “Visitor code WF-11 was issued to an outside crew.” What does that change?',
+    configuration,
+    world: testWorld(),
+  });
+  const realized = auditTutorStubResponseConfiguration({
+    text: '“I am striking my badge log open at the line that challenges the easy verdict: visitor code WF-11 was issued to an outside crew.” Does that break the obvious story, or not?',
+    configuration,
+    world: testWorld(),
+  });
+
+  assert.equal(flat.axes.actorial_part.part_visible, false);
+  assert.equal(flat.axes.actorial_part.performance_visible, false);
+  assert.equal(flat.axes.actorial_part.visible, false);
+  assert.equal(flat.actorial_realization.ok, false);
+  assert.deepEqual(flat.actorial_realization.issues.map((issue) => issue.type), [
+    'missing_selected_actorial_part',
+    'missing_selected_performance_tactic',
+  ]);
+  assert.equal(realized.axes.actorial_part.performance_visible, true);
+  assert.equal(realized.axes.actorial_part.visible, true);
+  assert.equal(realized.actorial_realization.ok, true);
+  assert.notEqual(flat.visible_signature, realized.visible_signature);
+});
+
+test('deterministic clue fallback preserves every selected stance as a visible character tactic', () => {
+  const dueEvidence = [
+    {
+      surface: 'Visitor code WF-11 was issued to an outside crew.',
+      via: 'director',
+      presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const stances = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
+
+  for (const engagementStance of stances) {
+    const configuration = buildTutorStubResponseConfiguration({
+      engagementStance,
+      learnerText: 'What does the log add?',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      dueEvidence,
+      world: testWorld(),
+    });
+    const text = deterministicTutorStubDramaticReleaseFallback({
+      frame,
+      responseConfiguration: configuration,
+      variationKey: `all-stances:${engagementStance}`,
+    });
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+    assert.equal(configuration.actorial_part, 'authored_source');
+    assert.equal(
+      audit.axes.actorial_part.performance_visible,
+      true,
+      `${engagementStance} should visibly realize ${configuration.actorial_performance.id}: ${text}`,
+    );
+    assert.equal(audit.axes.actorial_part.part_visible, true, `${engagementStance} should keep the authored role visible`);
+    assert.doesNotMatch(text, /front-desk clerk[^.!?]{0,140}(?::|—)/iu);
+    assert.doesNotMatch(text, /role-play|I(?:'|’)ll be|another piece of information|Back to us/iu);
+  }
+});
+
+test('actorial tactic is measured on development rather than a longer learner-responsive uptake', () => {
+  const dueEvidence = [
+    {
+      surface: 'Visitor code WF-11 was issued to an outside crew.',
+      via: 'director',
+      presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+    },
+  ];
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'I think the badge shows access but not who handled the lunchbox.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence,
+    world: testWorld(),
+  });
+  const uptake =
+    'Yes—the badge gives us a reason to examine access, while your qualification correctly keeps possession and actual handling unresolved until the public evidence supplies a stronger link.';
+  const development =
+    '“I opened my badge log at the noon line: WF-11 went to the outside crew.” What does that show?';
+  const audit = auditTutorStubResponseConfiguration({
+    text: `${uptake}\n\n${development}`,
+    configuration,
+    world: testWorld(),
+    composition: { uptake, development },
+  });
+
+  assert.equal(audit.actorial_realization.ok, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('presented-exhibit fallback preserves the selected part and tactic across every stance', () => {
+  const dueEvidence = [
+    {
+      surface: 'The archive names Marin as the founder’s child.',
+      via: 'tutor',
+      presentation: { mode: 'presented_exhibit' },
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const stances = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
+
+  for (const engagementStance of stances) {
+    const configuration = buildTutorStubResponseConfiguration({
+      engagementStance,
+      learnerText: 'What does the archive add?',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      dueEvidence,
+      world: testWorld(),
+    });
+    const text = deterministicTutorStubDramaticReleaseFallback({
+      frame,
+      responseConfiguration: configuration,
+      variationKey: `all-exhibit-stances:${engagementStance}`,
+    });
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+    assert.equal(
+      audit.actorial_realization.ok,
+      true,
+      `${engagementStance} should preserve ${configuration.actorial_part}/${configuration.actorial_performance.id}: ${text}`,
+    );
+  }
 });
 
 test('learner-responsive action families are audited on uptake rather than clue development', () => {

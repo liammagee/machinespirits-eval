@@ -8,14 +8,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
-const SAFE_REPAIR = [
-  'You’re right to ask what the public evidence licenses us to write.',
-  [
-    "I'm going to give you another piece of information.",
-    "Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible.",
-    'Back to the case: what does this new clue support?',
-  ].join(' '),
-].join('\n\n');
+const SAFE_REPAIR =
+  'You’re right to ask what the public evidence licenses us to write. “I have my finger on the exact line of the mint-yard register: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
+const META_THEATRICAL_DRAFT =
+  "You’re right to ask what the public evidence licenses us to write. I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: what does this new clue support?";
+const FLAT_CHARACTER_DRAFT =
+  'You’re right to ask what the public evidence licenses us to write. Town assayer, opening the mint-yard register: “Verrell alone draws the mint-yard crucible.” What changes?';
 const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
   'You’re right to separate suspicion from proof. The next clue appears without a source or exhibit.';
 
@@ -50,9 +48,13 @@ process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
   const response = process.env.TUTOR_GUARD_FAKE_MODE === 'preserve-uptake'
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'repair' && repaired
+    : ['repair', 'meta-repair', 'tactic-repair'].includes(process.env.TUTOR_GUARD_FAKE_MODE) && repaired
       ? ${JSON.stringify(SAFE_REPAIR)}
-      : ${JSON.stringify(UNSAFE_DRAFT)};
+      : process.env.TUTOR_GUARD_FAKE_MODE === 'meta-repair'
+        ? ${JSON.stringify(META_THEATRICAL_DRAFT)}
+        : process.env.TUTOR_GUARD_FAKE_MODE === 'tactic-repair'
+          ? ${JSON.stringify(FLAT_CHARACTER_DRAFT)}
+        : ${JSON.stringify(UNSAFE_DRAFT)};
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
 });
@@ -61,9 +63,7 @@ process.stdin.on('end', () => {
   );
   fs.chmodSync(fakeCodex, 0o755);
 
-  const result = spawnSync(
-    process.execPath,
-    [
+  const cliArgs = [
       'scripts/tutor-stub.js',
       '--model',
       'codex.gpt-5.6-terra',
@@ -83,7 +83,14 @@ process.stdin.on('end', () => {
       '--no-interim-animation',
       '--trace-dir',
       tmp,
-    ],
+    ];
+  if (mode === 'tactic-repair') {
+    cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
+    cliArgs.push('--register-policy', 'random', '--register-palette', 'precise');
+  }
+  const result = spawnSync(
+    process.execPath,
+    cliArgs,
     {
       cwd: ROOT,
       encoding: 'utf8',
@@ -177,10 +184,11 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(accounting.attempts[1].repairedSpans.length, 0);
 
   const fallbackText = accounting.finalDelivery.candidate.text;
-  assert.match(fallbackText, /another piece of information/u);
-  assert.match(fallbackText, /role-play/u);
   assert.match(fallbackText, /Verrell alone draws the mint-yard crucible/u);
-  assert.doesNotMatch(fallbackText, /can't put a name|decisive act/iu);
+  assert.doesNotMatch(
+    fallbackText,
+    /another piece of information|role-play|Back to (?:us|the case)|can't put a name|decisive act/iu,
+  );
   assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
   assert.equal(accounting.finalDelivery.deterministicFallback, true);
   assert.equal(accounting.finalDelivery.auditOk, true);
@@ -207,11 +215,54 @@ test('a dramatic fallback preserves safe learner uptake and replaces only develo
 
   assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
   assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
-  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\.\n\n/u);
-  assert.match(accounting.finalDelivery.candidate.text, /another piece of information/u);
+  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\. /u);
+  assert.doesNotMatch(
+    accounting.finalDelivery.candidate.text,
+    /another piece of information|role-play|Back to (?:us|the case)/iu,
+  );
   assert.doesNotMatch(accounting.finalDelivery.candidate.text, /That gives us a concrete contribution/u);
   assert.equal(turn.responseComposition.audit.ok, true);
   assert.equal(turn.responseComposition.uptake, 'You’re right to separate suspicion from proof.');
-  assert.match(turn.responseComposition.development, /role-play/u);
+  assert.match(turn.responseComposition.development, /mint-yard crucible/iu);
   assert.equal(turn.responseComposition.frame.uptake.action_family, null);
+});
+
+test('meta-theatrical clue narration is rejected and repaired into direct diegetic action', () => {
+  const { events } = runGuardFixture('meta-repair');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+
+  assert.equal(accounting.outcome, 'guarded_model_repair_accepted');
+  assert.equal(accounting.originalCandidate.candidate.text, META_THEATRICAL_DRAFT);
+  assert.equal(
+    accounting.originalCandidate.guardedSpans.some(
+      (span) => span.guard === 'dramatic_release' && span.issueType === 'meta_dramatic_announcement',
+    ),
+    true,
+  );
+  assert.equal(accounting.finalDelivery.source, 'model_repair_candidate');
+  assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
+  assert.doesNotMatch(turn.tutor, /role-play|I(?:'|’)ll be|Back to (?:us|the case)/iu);
+  assert.match(turn.tutor, /“I have my finger on the exact line of the mint-yard register/u);
+  assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
+});
+
+test('a flat named character is rewritten until the selected stance tactic is visible', () => {
+  const { events } = runGuardFixture('tactic-repair');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const actorAudits = events.filter((row) => row.type === 'tutor_actorial_realization_audit');
+
+  assert.equal(accounting.guards.actorialRealization, true);
+  assert.equal(accounting.originalCandidate.candidate.text, FLAT_CHARACTER_DRAFT);
+  assert.equal(accounting.originalCandidate.audits.dramaticReleaseAudit.ok, false);
+  assert.equal(accounting.originalCandidate.audits.actorialRealizationAudit.ok, false);
+  assert.deepEqual(
+    accounting.originalCandidate.audits.actorialRealizationAudit.issues.map((issue) => issue.type),
+    ['missing_selected_actorial_part', 'missing_selected_performance_tactic'],
+  );
+  assert.equal(accounting.outcome, 'guarded_model_repair_accepted');
+  assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
+  assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, true);
+  assert.equal(actorAudits.length, 2);
+  assert.equal(actorAudits[0].selectedPerformance.id, 'evidentiary_boundary');
 });

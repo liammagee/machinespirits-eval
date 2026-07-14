@@ -288,10 +288,9 @@ function tutorSpeechCard(turn) {
   const uptake = String(composition?.uptake || '').trim();
   const development = String(composition?.development || '').trim();
   if (!uptake || !development || uptake === development) return speechCard('tutor', turn?.tutor, turn?.turn);
-  return `<article class="speech-card tutor composed-response" data-response-composition="uptake-development">
+  return `<article class="speech-card tutor composed-response" data-response-composition="continuous-performance">
     <div class="speech-head"><span class="speaker">tutor</span><span>turn ${escapeHtml(turn.turn)}</span></div>
-    <div class="speech-beat"><small>responds</small><div class="speech">${escapeHtml(uptake)}</div></div>
-    <div class="speech-beat"><small>develops</small><div class="speech">${escapeHtml(development)}</div></div>
+    <div class="speech">${escapeHtml(turn?.tutor || `${uptake} ${development}`)}</div>
   </article>`;
 }
 
@@ -382,7 +381,7 @@ function analysisCard(turn) {
     ${learnerAdvance?.accelerated ? `<p><b>Learning pace:</b> accelerating — ${escapeHtml(learnerAdvance.adoptedPremiseCount)} premises and ${escapeHtml(learnerAdvance.derivedFactCount)} supported inferences accepted together.</p>` : ''}
     ${releasePacing?.signal?.direction && releasePacing.signal.direction !== 'steady' ? `<p><b>Clue pace:</b> ${escapeHtml(releasePacing.signal.reason)} Effective pace: ${escapeHtml(releasePacing.effectiveSpeed)}x.${releasePacing.releasedNow?.length ? ` ${escapeHtml(releasePacing.releasedNow.length)} new clue${releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn.` : ''}</p>` : ''}
     <p><b>Teaching-style rationale:</b> ${escapeHtml(rationale)}</p>
-    ${turn.responseComposition ? `<p><b>Response shape:</b> ${turn.responseComposition.audit?.ok ? 'responds, then develops' : 'composition needs attention'} · one atomic tutor turn.</p>` : ''}
+    ${turn.responseComposition ? `<p><b>Response shape:</b> ${turn.responseComposition.audit?.ok ? 'one continuous reply with learner uptake and development' : 'composition needs attention'} · one atomic tutor turn.</p>` : ''}
     ${registerPills(turn)}
     <details><summary>Full learner analysis</summary><pre>${escapeHtml(safeJson(classification))}</pre></details>
     <details><summary>DAG preflight and committed update</summary><pre>${escapeHtml(safeJson(turn.tutorLearnerDagUpdate || null))}</pre></details>

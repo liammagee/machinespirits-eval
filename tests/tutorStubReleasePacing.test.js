@@ -310,7 +310,7 @@ process.stdin.on('end', () => {
     assert.equal(result.status, 0, result.stderr);
     assert.match(
       result.stdout,
-      /style brisk, move stage next step, character [^,]+, clue pace faster 1\.75x; 1 new/u,
+      /style brisk, move stage next step, character [^,]+, performance rapid evidence handoff, clue pace faster 1\.75x; 1 new/u,
     );
     const events = fs
       .readdirSync(tmp)
@@ -328,11 +328,12 @@ process.stdin.on('end', () => {
     assert.equal(turn.dramaticRelease.frame.active, true);
     assert.equal(turn.dramaticRelease.frame.requiresExhibitHandoff, true);
     assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
-    assert.match(turn.tutor, /put the next exhibit in front of us/u);
+    assert.match(turn.tutor, /I (?:turn the record straight to|open the record at) the live line/u);
+    assert.doesNotMatch(turn.tutor, /role-play|another piece of information|back to (?:us|the case)/iu);
     const prompts = fs.readFileSync(promptLog, 'utf8');
     assert.match(prompts, /The archive names Marin as the founder's child/u);
     assert.match(prompts, /\[Tutor-only dramatic clue release\]/u);
-    assert.match(prompts, /Make that transition audible/u);
+    assert.match(prompts, /Make its arrival audible or visible inside the scene/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

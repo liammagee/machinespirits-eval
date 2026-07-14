@@ -6,6 +6,8 @@ const ACKNOWLEDGEMENT_PATTERN =
   /^(?:yes|right|exactly|fair|good|correct|almost|not quite|no\b|i (?:hear|see|agree|understand)|you(?:[’']re| are)|that(?:[’']s| is)|your\b)/iu;
 const DEVELOPMENT_LEAD_PATTERN =
   /^(?:i(?:[’']m| am) (?:going to|bringing|showing|opening|putting)|i(?:[’']ll| will) (?:bring|show|open|put|read|take)|let(?:[’']s| us) (?:role-play|bring|look|open|put|step)|step (?:up|over)|now (?:we|i)|the next (?:clue|piece|exhibit|record)|here(?:[’']s| is) (?:the|another|our) next)/iu;
+const DIRECT_SCENE_DEVELOPMENT_LEAD_PATTERN =
+  /^(?:i (?:lay|set|place|slide|hold|open|unfold|read|point|tap|trace)\b|[\p{Lu}][\p{L}\p{N}'’ -]{1,64},\s*[^.!?:“"']{1,120}:|[\p{Lu}][\p{L}\p{N}'’ -]{1,64}:\s*[“"'])/u;
 const DEVELOPMENT_BOUNDARY_PATTERN =
   /\b(?:i(?:[’']m| am) (?:going to|bringing|showing|opening|putting)|i(?:[’']ll| will) (?:bring|show|open|put|read|take)|let(?:[’']s| us) (?:role-play|bring|look|open|put|step)|step (?:up|over)|the next (?:clue|piece|exhibit|record)|here(?:[’']s| is) (?:the|another|our) next)\b/iu;
 const LEARNER_RESPONSIVE_ACTION_FAMILIES = new Set([
@@ -23,6 +25,10 @@ function oneLine(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
     .trim();
+}
+
+function developmentLeadVisible(value) {
+  return DEVELOPMENT_LEAD_PATTERN.test(value) || DIRECT_SCENE_DEVELOPMENT_LEAD_PATTERN.test(value);
 }
 
 function publicTokenSet(value) {
@@ -91,7 +97,9 @@ export function buildTutorStubResponseCompositionFrame({
     delivery: {
       atomic_assistant_turn: true,
       public_history_messages: 1,
-      display_beats: 2,
+      internal_functions: 2,
+      display_beats: 1,
+      public_shape: 'continuous_performance',
     },
     learner_move: move,
     learner_dag: dag,
@@ -116,7 +124,7 @@ export function buildTutorStubResponseCompositionFrame({
       clue_release_required: dramaticReleaseFrame?.active === true,
       closure_phase: closurePhase,
       instruction:
-        `Only after uptake, take the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
+        `Without announcing a switch, continue through the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
     },
     shared_realization: {
       engagement_stance: configuration.engagement_stance || registerSelection?.engagement_stance || null,
@@ -138,8 +146,8 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
   const learnerAdvance = dag.learner_advance || null;
   return [
     '[Tutor-only response composition]',
-    'Write one atomic assistant turn with two visibly separated public beats. Put one blank line between them.',
-    `1. Respond: directly take up the learner’s contribution before moving on.${
+    'Write one atomic assistant turn as one continuous public performance. It has two internal functions, but it must not look or sound like two stitched-together replies.',
+    `1. Respond: directly take up the learner’s contribution.${
       uptake.action_family ? ` Realize the selected action family here: ${uptake.action_family}.` : ''
     }`,
     move.summary ? `Public learner move to take up: ${move.summary}` : null,
@@ -149,7 +157,7 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
           learnerAdvance.supported_move_count === 1 ? '' : 's'
         } in this turn. Credit them; do not ask for them again.`
       : null,
-    `2. Develop: ${development.instruction}${
+    `2. Continue: ${development.instruction}${
       development.action_family ? ` Realize the selected action family here: ${development.action_family}.` : ''
     }`,
     development.expected_dag_move ? `Private next-reasoning aim: ${development.expected_dag_move}` : null,
@@ -157,13 +165,13 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
       ? `Private interaction aim: ${development.expected_interaction_move}`
       : null,
     development.clue_release_required
-      ? 'A clue is due in the development beat. Keep the response beat before the clue handoff; do not let the release erase or replace it.'
+      ? 'A clue is due. Let the response flow directly into the clue performance; do not let the release erase the learner uptake or create an announced change of role.'
       : null,
     development.kind === 'dialogue_closure'
       ? 'The development beat is a natural close, not another proof demand.'
       : null,
-    `The selected engagement stance, audience level, language accessibility, and scene immersion govern both beats. The actorial part (${frame.shared_realization?.actorial_part_label || frame.shared_realization?.actorial_part || 'selected public part'}) becomes fully visible in the development beat without erasing the uptake. Do not name either beat, this composition, or any private machinery in public speech.`,
-    'These two beats are one tutor turn and one public assistant message. Do not emit JSON, headings, labels, or commentary around them.',
+    `The selected engagement stance, audience level, language accessibility, and scene immersion govern the whole utterance. The actorial part (${frame.shared_realization?.actorial_part_label || frame.shared_realization?.actorial_part || 'selected public part'}) carries the continuation without a role label, stage direction, or change into a second tutor voice. Do not name either function, this composition, or any private machinery in public speech.`,
+    'Use one paragraph. Join uptake and continuation with ordinary sentence-level flow—not a blank line, arrow, heading, speaker label, or theatrical aside. Do not emit JSON or commentary around the reply.',
     '[End tutor-only response composition]',
   ]
     .filter(Boolean)
@@ -190,12 +198,12 @@ export function segmentTutorStubResponse({ text = '', frame = null } = {}) {
       uptake,
       development,
       method: 'authored_paragraphs',
-      formatted: `${uptake}\n\n${development}`,
+      formatted: `${uptake} ${development}`,
     };
   }
 
   const normalized = oneLine(source);
-  if (DEVELOPMENT_LEAD_PATTERN.test(normalized)) {
+  if (developmentLeadVisible(normalized)) {
     return { uptake: '', development: normalized, method: 'development_only', formatted: normalized };
   }
   const cue = frame?.development?.clue_release_required ? normalized.match(DEVELOPMENT_BOUNDARY_PATTERN) : null;
@@ -207,7 +215,7 @@ export function segmentTutorStubResponse({ text = '', frame = null } = {}) {
         uptake,
         development,
         method: 'development_cue',
-        formatted: `${uptake}\n\n${development}`,
+        formatted: `${uptake} ${development}`,
       };
     }
   }
@@ -220,11 +228,11 @@ export function segmentTutorStubResponse({ text = '', frame = null } = {}) {
       uptake,
       development,
       method: 'first_sentence',
-      formatted: `${uptake}\n\n${development}`,
+      formatted: `${uptake} ${development}`,
     };
   }
 
-  if (frame?.development?.kind === 'dialogue_closure' && !DEVELOPMENT_LEAD_PATTERN.test(normalized)) {
+  if (frame?.development?.kind === 'dialogue_closure' && !developmentLeadVisible(normalized)) {
     return {
       uptake: normalized,
       development: normalized,
@@ -233,7 +241,7 @@ export function segmentTutorStubResponse({ text = '', frame = null } = {}) {
     };
   }
 
-  return DEVELOPMENT_LEAD_PATTERN.test(normalized)
+  return developmentLeadVisible(normalized)
     ? { uptake: '', development: normalized, method: 'development_only', formatted: normalized }
     : { uptake: normalized, development: '', method: 'uptake_only', formatted: normalized };
 }
