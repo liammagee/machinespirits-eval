@@ -117,6 +117,11 @@ With the sensor null, Phase 6A is correctly framed as an **actuator test under p
 
 ## 7. Step 4 — Point-of-action coaching (the Green Room successor)
 
+**Execution note, 2026-07-14:** Superseded operationally by the frozen
+`POINT-OF-ACTION-COACHING-PREREGISTRATION.md`. Its two detectors and four arms
+are implemented, and the zero-model 80-dialogue plan passes. No paid Step 4
+dialogue has launched; the explicit-go gate remains binding.
+
 **Type:** paid, attended (~1–2 quota days). **Requires:** Step 0; a fresh pre-registration (this is a successor under the no-tune-and-retry rule — both the channel and the grain change relative to Gate 1, per the diagnosis's levers 1 and 3).
 
 The Gate-1 diagnosis localized the failure to situation-recognition at performance time. Attack it by moving recognition out of the actor:
@@ -128,6 +133,13 @@ The Gate-1 diagnosis localized the failure to situation-recognition at performan
 This is where the program's entire positive family converges (checkable trigger + point-of-action + action-shaped + new situational signal); it carries the clearest theory-stakes of any single run in the plan.
 
 ## 8. Step 5 — Close the stalled pre-registration
+
+**Execution correction, 2026-07-14:** This step was already complete in the
+repository. All 12 amended Codex-directed runs, the mechanical scorer, the
+results note, and the Paper §6.13.7 fold-in predate this plan. An isolated
+re-score reproduced the archive exactly after removing `scoredAt`, with zero
+schedule violations and zero G2 breaks. `UNRELIABLE-LEARNER-PREREG.md` now
+contains the missing results addendum; no paid rerun is warranted.
 
 **Type:** paid, small. `UNRELIABLE-LEARNER-PREREG.md` is registered (2026-06-11), its G2 gate is satisfied, both paid runs were superseded or stopped mid-flight, and no verdict is recorded. It is the follow-up to the program's one load-bearing explicit channel (§6.13.7, +0.49 per-slip repair) under fact-decay pressure. Re-run per its own amendments and record the verdict either way. A registered experiment with passed gates and no verdict reads later as motivated stopping; close it.
 

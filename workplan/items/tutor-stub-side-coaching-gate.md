@@ -22,6 +22,8 @@ links:
     - notes/2026-07-12-greenroom-gate1-diagnosis.md
   exports:
     - exports/tutor-stub-step4-trigger-audit/trigger-density.md
+    - exports/tutor-stub-step4-dry-run/zero-model-dry-run.json
+    - config/adaptive-tutor-evidence/tutor-stub-step4-zero-model-dry-run.manifest.json
   items:
     - a22-green-room-coached-tutor-training
 tags:
@@ -75,3 +77,16 @@ rejected. The four claim-bearing arms are now `standing_book`,
 `triggered_placebo`, `side_coach`, and `compiled_constraint`; supporting seams
 are fixed while only the speaking tutor varies. This card is ready for build
 and launch only after a separate explicit go; this update made zero model calls.
+
+2026-07-14 Codex: Implemented the frozen detector events and all four runtime
+arms, including per-turn provenance and compliance components. Deterministic
+fixtures cover positive, negative, co-fire priority, closure, glossary,
+release, and no-release cases; the trigger-yoked placebo is target-free and
+token-count matched. The archived zero-model gate passes with 0 model calls and
+an exactly balanced, seed-interleaved 80-dialogue plan. All classifier,
+learner-record, and automated-learner seams are fixed to Terra in both
+speaking-tutor blocks. The paid launcher fails closed unless it receives both
+`--launch-approved` and an exact clean commit SHA. Paid status remains locked
+pending explicit user approval. The frozen implementation commit is
+`092cf6723ec5ddcda735b59f1c53728f4f00248e`; the dry plan SHA-256 is
+`93bd2933d6124a2ee285e9747824cee5e2eba21c0b59ccf6dc8ac8d602156df0`.

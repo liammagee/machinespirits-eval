@@ -7,14 +7,19 @@ It is the execution guide from the current checkpoint onward. It does not alter
 the frozen preregistration or retroactively change a result.
 
 No further paid/model-backed experiment is authorized by this document alone.
-The next tranche is evidence repair, reproducibility, and workplan closeout with
-zero model calls.
+The zero-call evidence repair, reproducibility, implementation, and workplan
+closeout tranche is complete. The next possible experiment is the frozen paid
+Step 4 contrast, which still requires a separate explicit go.
 
 Execution update (2026-07-14): the zero-call evidence/Git closeout is complete,
 the strict Step 2 result has landed in canonical Paper 2.0 §6.17 and atlas
 module `register-selection-boundary`, and the Step 4 trigger audit plus frozen
-successor pre-registration are complete. Step 4 has **not** launched; paid
-execution still requires a separate explicit go.
+successor pre-registration are complete. The Step 4 arms/detectors and the
+balanced 80-dialogue launcher are implemented, and the zero-model gate passes.
+Step 4 has **not** launched; paid execution still requires a separate explicit
+go. The supposedly stalled unreliable-learner preregistration was already
+complete (12/12), reproducibly scored, and folded into Paper §6.13.7; its
+preregistration and workplan status are now reconciled with that evidence.
 
 ## 1. Sources and precedence
 
@@ -67,18 +72,23 @@ Precedence for future decisions:
   - `2e00a596`: prompt/world/response-contract hardening.
   - `f931d808`: dramatic clue-release behavior.
 - Step 2 execution: 60 Terra and 60 Sonnet dialogues were collected; result and
-  workplan closeout are in local commits `920515bb` and `16245d8d`.
+  workplan closeout were consolidated in `9997cc26`.
 - Resume-integrity hardening: commit `8db79b96` resumes sealed failed rows while
   preserving the integrity requirements for retained rows. Its focused tests
   and the full repository suite pass.
 
-### Not yet cleanly closed
+### Current Git and validation handoff
 
-- Branch `preconscious` is three commits ahead of `origin/preconscious` before
-  this plan is committed.
-- The focused resume-integrity verification passes 24/24 tests; the full suite
-  passes 5,485 tests with zero failures and one skip. `npm run wp:check` passes
-  118/118 workplan items.
+- Branch `preconscious` is clean and two local commits ahead of
+  `origin/preconscious`; they are not pushed by this closeout.
+- `092cf672` contains the frozen Step 4 implementation, response-composition
+  integration, hermetic test default, canonical-data wrapper, and idempotent DB
+  closeout/preflight.
+- The documentation closeout records the Step 4 launch lock and the completed
+  unreliable-learner result.
+- The full hermetic suite passes 5,539 tests with zero failures and one skip;
+  lint passes, the focused combined suite passes 73/73, the workplan validates
+  118/118, and `npm run merge:preflight` passes.
 - The three tracked Sonnet summary blobs are 150–187 MB each, are ordinary Git
   text blobs rather than LFS pointers, and exceed
   [GitHub's enforced 100 MB single-object limit](https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits).
@@ -464,12 +474,17 @@ check.”
 4. With approval, rewrite the two unpublished oversized commits and push the
    corrected compact evidence history.
 5. Land the bounded result in the canonical paper and atlas.
-6. Perform the zero-call Step 4 trigger-density/control audit and freeze the
-   revised preregistration.
-7. Run Step 4 on explicit go.
-8. Complete the stalled unreliable-learner preregistration.
-9. Make the terminal close-or-capstone decision; create a capstone card only on
-   a positive gate.
+6. **Done:** perform the zero-call Step 4 trigger-density/control audit, freeze
+   the revised preregistration, implement the arms/detectors, and pass the
+   balanced 80-dialogue zero-model gate.
+7. **Awaiting explicit go:** run and adjudicate the 80-dialogue Step 4 contrast.
+8. **Done by evidence reconciliation:** the unreliable-learner registration is
+   complete at 12/12; the independent mechanical re-score reproduces told
+   49/57 versus conduct 7/19 with zero integrity failures.
+9. After Step 4, make the terminal close-or-capstone decision. Create a narrow
+   capstone card only if point-of-action treatment survives; otherwise close
+   the arc. Phase 6A remains optional only if its privileged-actuator question
+   is independently worth its budget after Step 4.
 
 This order spends no further model quota until the current evidence is
 reproducible, pushable, and interpreted under its own frozen rules.

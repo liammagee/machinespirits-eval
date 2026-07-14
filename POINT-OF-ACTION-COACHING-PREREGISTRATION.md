@@ -1,6 +1,7 @@
 # Point-of-Action Coaching Gate — Frozen Pre-Registration
 
-Status: **FROZEN 2026-07-14; implementation and paid execution not yet authorized.**
+Status: **FROZEN 2026-07-14; implementation and zero-model gate complete;
+paid execution not authorized.**
 
 This is final-stretch Step 4 and the successor to Green Room Gate 1. Freezing
 this document authorizes no model call. Launch requires a separate, explicit
@@ -220,9 +221,32 @@ Before any model call:
 7. commit the clean implementation and append the exact SHA/commands below;
 8. obtain explicit user approval to launch.
 
-Launch commands and SHA: **intentionally blank until implementation passes.**
+Items 1–7 passed on the clean implementation commit
+`092cf6723ec5ddcda735b59f1c53728f4f00248e`.
+
+Validation commands:
+
+```bash
+npm run tutor:stub:step4 -- --dry-run
+node --test tests/tutorStubPointOfActionCoaching.test.js tests/tutorStubPointOfActionGate.test.js
+npm test
+npm run lint -- --no-warn-ignored
+```
+
+The zero-model gate planned the frozen balanced 80-dialogue matrix, executed
+all detector/compliance fixtures, and made zero model calls. Its plan SHA-256
+is `93bd2933d6124a2ee285e9747824cee5e2eba21c0b59ccf6dc8ac8d602156df0`.
+
+Paid launch remains locked. If and only if the user separately approves it,
+run from the exact clean implementation commit above:
+
+```bash
+npm run tutor:stub:step4 -- --launch-approved --expected-sha 092cf6723ec5ddcda735b59f1c53728f4f00248e
+```
 
 ## 10. Deviations and results
 
 No deviations. No claim-bearing runs started. No model calls were made while
-freezing this pre-registration.
+freezing or implementing this pre-registration. The archived dry-run manifest
+records `paidLaunchStatus: locked_pending_explicit_user_approval`; therefore no
+Step 4 outcome exists yet.
