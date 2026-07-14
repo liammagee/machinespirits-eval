@@ -10,6 +10,12 @@ No further paid/model-backed experiment is authorized by this document alone.
 The next tranche is evidence repair, reproducibility, and workplan closeout with
 zero model calls.
 
+Execution update (2026-07-14): the zero-call evidence/Git closeout is complete,
+the strict Step 2 result has landed in canonical Paper 2.0 §6.17 and atlas
+module `register-selection-boundary`, and the Step 4 trigger audit plus frozen
+successor pre-registration are complete. Step 4 has **not** launched; paid
+execution still requires a separate explicit go.
+
 ## 1. Sources and precedence
 
 Use these as linked evidence and historical rationale; do not duplicate or

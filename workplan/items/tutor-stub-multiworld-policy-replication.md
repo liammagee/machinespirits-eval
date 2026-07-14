@@ -14,6 +14,8 @@ depends_on:
   - adaptive-eval-immutable-provenance
   - tutor-stub-typed-pedagogical-actions
 links:
+  paper: docs/research/paper-full-2.0.md#617-register-selection-does-not-produce-a-confirmed-profile-contingent-benefit-across-two-model-families-pre-registered-gate
+  atlas: register-selection-boundary
   notes:
     - REGISTER-CONFIRMATORY-PREREGISTRATION.md
     - PRECONSCIOUS-FINAL-STRETCH-PLAN.md
@@ -137,3 +139,8 @@ claim, and no field-selector effect. Compact canonical outputs:
 `exports/register-confirmatory-evidence/final/`; Sonnet's four post-t16 top-up
 rows remain primary-valid, secondary-unavailable, and the exclusion sensitivity
 is still null.
+
+2026-07-14 Codex: The bounded result landed canonically in Paper 2.0 §6.17
+(v3.0.213) and research-atlas module `register-selection-boundary`, both with
+`scope-bound` claim status. The paper preserves the strict gate logic and the
+whole-stack, single-world, simulated-learner, extraction-seam, n=5 limits.

@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.212"
+version: "3.0.213"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3095,6 +3095,21 @@ Every cross-run memory or adaptation mechanism this programme has tested had the
 
 *Status and caveats (per §5.12.6).* Descriptive throughout; one profile, one world, one learner profile, one model stack. Per-note compliance pools are small (pre-note pools $n = 1$--4, post-note pools $n = 0$--6 binary observations, strict n/a discipline, haiku judge): blunt enough to hide a small effect, not the 3.4× miss recorded --- the pre-registered bet was that uptake would clear 60% under exactly these conditions. All roles share one vendor lineage after the re-pin; any successor positive requires the documented cross-lineage rejudge. Exports-only (no DB writes, no rubric scoring, no human-learning claim). Artifacts committed together: the pre-registration with dated amendments (`GREEN-ROOM-PLAN.md`), gate reports (`exports/greenroom-gate0-2026-07-12/`, `exports/greenroom-gate1-2026-07-12/` incl. `gate1-report.{md,json}` and a sha256-manifested raw bundle), the profile with full ledger and book versions (`data/greenroom/profiles/marrick-ps-a/`), the substrate and its 26 hermetic tests (`services/greenroom/`, `scripts/greenroom*.js`, `patches/preconscious-prompt-book-context.patch`), and the diagnosis note (`notes/2026-07-12-greenroom-gate1-diagnosis.md`). Total non-subscription cost \$0.
 
+### 6.17 Register Selection Does Not Produce a Confirmed Profile-Contingent Benefit Across Two Model Families (Pre-Registered Gate)
+
+The register-policy line asked whether a tutor should change its speaking stance according to a learner profile, rather than whether one register is best in aggregate. A frozen confirmatory design crossed three policies (`bland`, the adaptive `field` selector, and a fixed `negative` stress register) with four v3 simulated-learner contracts (`diligent`, `affective_resistant`, `false_memory`, `proof_skipper`) at $n=5$ per cell on `world_005_marrick`, once on an all-Terra stack and once on an all-Sonnet-5 stack: 60 dialogues per family, 120 total. The primary endpoint was mechanically computed proof-DAG coverage at learner turn 16. Each family also had to pass its own in-run profile-discrimination gate --- average pairwise cosine $<0.85$ and maximum similarity to `diligent` $<0.90$ --- before any policy-by-profile interaction could confirm. A block that failed this manipulation gate was instrument-invalid for the family claim, regardless of an attractive cell contrast.
+
+| Whole stack | Selected traces | Average profile cosine | Maximum similarity to diligent | Frozen manipulation gate | Interaction verdict |
+|---|---:|---:|---:|---|---|
+| Terra (`gpt-5.6-terra` at all four seams) | 60 | 0.812 | 0.912 | **fail** | instrument-invalid |
+| Sonnet 5 (Sonnet at all four seams) | 60 | 0.645 | 0.694 | **pass** | null |
+
+**Strict result: no family confirmation; no two-family claim.** Terra's only supported policy-by-profile contrast was produced by the fixed hostile floor: the `negative` contrast for `affective_resistant` relative to its diligent contrast was $-0.334$ (95% bootstrap interval $[-0.468,-0.167]$). It ran opposite to the pre-registered beneficial-crossing direction and the family failed the binding manipulation gate because its maximum similarity to diligent was 0.912. It is therefore descriptive evidence of a possible stack-bounded contraindication, not a register-selection positive. Sonnet passed the frozen cosine gate, but every primary interaction interval crossed zero. The adaptive `field` policy confirmed no interaction on either stack. Excluding the four Sonnet rows whose runs ended after their valid turn-16 assessment but before full secondary closure leaves 56 rows and the same null verdict.
+
+The comparison is deliberately read as a whole-stack boundary, not a tutor-model isolation. Tutor, automated learner, classifier, and learner-record extractor changed together between Terra and Sonnet; the coverage aggregate is deterministic, but the record from which it is computed still passes through an LLM extraction seam. The large cross-stack level difference can therefore arise from tutor conduct, learner conduct, extraction calibration, or their interaction. What closes is the general claim that this adaptive selector produces a profile-contingent fixed-horizon benefit on this apparatus. The register palette remains a useful implementation vocabulary, and Terra's hostile-register collapse remains a safety hypothesis, but neither licenses another selector-rescue block.
+
+*Status and caveats (per §5.12.6).* Pre-registered and complete at $n=5$ per cell; one detective world, simulated contract learners, one operational fixed-horizon endpoint, and no human-learning claim. Terra has complete secondary traces for all 60 selected rows; Sonnet has 60 primary-complete rows, 56 with full secondary closure, and four primary-only rows. Reproduction is zero-call and hash-verified: the explicit final-row selection, 5,000-draw bootstrap (seed 20260713), profile gates, QA matrix, archive lineage, and strict verdict live in `scripts/analyze-register-confirmatory-step2.js`, `exports/register-confirmatory-evidence/final/`, and `config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json`. The next experiment changes both delivery channel and intervention grain: point-of-action coaching and compiled constraints are a successor test, not a retry of the selector.
+
 ---
 
 ## 7. Discussion
@@ -4096,7 +4111,7 @@ Standard dimensions (including Productive Struggle and Epistemic Honesty) accoun
 
 ## Appendix D: Reproducibility and Key Evaluation Run IDs
 
-Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. The fifty-five key evaluations are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; eval-2026-02-11-35c53e99 and eval-2026-02-11-5f6d51f5 are combined as one dialectical modulation evaluation):
+Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. Key database evaluations and trace-run packages are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; eval-2026-02-11-35c53e99 and eval-2026-02-11-5f6d51f5 are combined as one dialectical modulation evaluation):
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
@@ -4167,6 +4182,8 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | A12 M3 disengagement replication, Gemini Flash 3.0 (cells 80, 84) | eval-2026-04-22-f4fb03f1 | 6.3.2 |
 | A11 M2-alone isolation on Gemini Flash 3.0 (cells 82, 83) | eval-2026-04-22-b56be6c7 | 6.4.2 |
 | A10 v1 matched-specificity prompt-density control (cells 1, 5, 95) --- **INVALIDATED BY BUG 007** (cell_95 silently ran the base prompt; see Appendix F v3.0.47) | eval-2026-04-22-04497df0 | 7.9 |
+| Register confirmatory, Terra whole-stack trace package (3 policies × 4 profiles × n=5) | register-confirmatory-terra-n5-live-2026-07-13 | 6.17 |
+| Register confirmatory, Sonnet-5 whole-stack trace package (3 policies × 4 profiles × n=5) | register-confirmatory-sonnet5-n5-live-2026-07-13 | 6.17 |
 
 ---
 
@@ -4381,6 +4398,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.213** (2026-07-14)
+
+:   **§6.17 added --- the two-family register confirmatory closes the adaptive selector.** The frozen 3-policy × 4-profile × n=5 design completed on both original whole-stack families (120 dialogues total), with fixed turn-16 proof-DAG coverage and an in-run profile-discrimination gate. The corrected zero-call, hash-verified final-row analysis gives the strict verdict: no family confirmation, no two-family claim, and no `field`-selector effect. Terra fails the binding manipulation gate (average pairwise cosine 0.812; maximum similarity to diligent 0.912 > 0.90); its supported hostile-register affective contrast is off-direction and instrument-invalid for confirmation. Sonnet passes the frozen gate (0.645/0.694), but every interaction interval crosses zero; excluding four primary-valid/post-turn-16-truncated rows leaves the null unchanged. The section explicitly bounds Terra-versus-Sonnet as a whole-stack comparison because tutor, automated learner, classifier, and learner-record seams changed together, and retains the single-world, simulated-learner, extraction-seam, n=5, and no-human-learning caveats. Appendix D records both trace-run packages; the research atlas adds a scope-bound module. Reproduction: `scripts/analyze-register-confirmatory-step2.js`, `exports/register-confirmatory-evidence/final/`, and the final analysis manifest. No sections renumbered.
 
 **v3.0.212** (2026-07-12)
 

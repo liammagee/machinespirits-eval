@@ -1513,6 +1513,47 @@ claims:
       - "If the tracked evidence manifest no longer records the observer v0.5 pass, either restore it from the accepted local robustness package, regenerate the artifact from the recorded fixture matrix, or soften/remove the §6.8.9 family robustness note."
     tags: [s6, adaptive, character-dag, exploratory, synthetic]
 
+  - id: paper2.s6_17.register_confirmatory.strict_verdict
+    description: "Section 6.17 records the frozen strict register-confirmatory verdict."
+    source_keys:
+      - "stat|6.17|register confirmatory strict verdict"
+    statement:
+      pattern: "no family confirmation; no two-family claim"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "exports/register-confirmatory-evidence/final/interaction-bootstrap.md"
+      pattern: "no family confirmation; no two-family claim"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "Regenerate the frozen Step 2 analysis and reconcile §6.17 if its strict verdict changes."
+    tags: [s6, register, adaptive, scope-bound, synthetic]
+
+  - id: paper2.s6_17.register_confirmatory.manipulation_gates
+    description: "Section 6.17 records Terra's failed and Sonnet's passed frozen cosine gates."
+    source_keys:
+      - "stat|6.17|register confirmatory manipulation gates"
+    statement:
+      pattern: "Terra.*0\\.812.*0\\.912|Sonnet.*0\\.645.*0\\.694"
+      flags: "is"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "exports/register-confirmatory-evidence/final/profile-discrimination.md"
+      pattern: "terra \\| 60 \\| 0\\.812 \\| 0\\.912 \\| fail|sonnet \\| 60 \\| 0\\.645 \\| 0\\.694 \\| pass"
+      flags: "i"
+      min_matches: 2
+    assertion:
+      op: gte
+      expected: 2
+    remediation:
+      - "Regenerate the frozen profile-discrimination report and reconcile the §6.17 gate table."
+    tags: [s6, register, manipulation-check, scope-bound, synthetic]
+
   # ── Section 5: Methodology claims ────────────────────────────
 
   - id: paper2.s5.rubric.tutor_v22_dims

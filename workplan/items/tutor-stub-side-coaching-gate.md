@@ -1,23 +1,27 @@
 ---
 id: tutor-stub-side-coaching-gate
 title: "Point-of-action coaching gate: compiled constraints + side-coaching (final-stretch Step 4)"
-status: triaged
+status: active
 type: experiment
 priority: P1
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-13
 updated: 2026-07-14
-verification: "A fresh pre-registration (successor to the Green Room Gate 1 arc under the no-tune-and-retry rule: both channel and grain change) runs four arms on stressed v3 profiles: (i) no coaching; (ii) standing-book placebo — the same notes injected via --prompt-book-context, the channel Gate 1 measured at 18% vs a 60% bar; (iii) compiled constraints — each note's trigger condition implemented mechanically over quantities the stub already computes (field velocity, DAG velocity, stagnation composite, re-gloss count), enforced in the register/stance layer; (iv) side-coaching — the note delivered mid-performance at the moment its trigger fires, action-shaped per the paper's §6.15 format law, tutor only complies. Coaching restricted to high-frequency predicates so compliance denominators are dense. Decision rules frozen at prereg: (iii) or (iv) must beat (ii) on per-note behavioural compliance AND not harm fixed-horizon outcomes; if (iv) fails while its triggers demonstrably fire, record the boundary result that the insight-action gap is generation-intrinsic on this model class."
+verification: "The frozen successor pre-registration runs standing_book, trigger-yoked placebo, side_coach, and compiled_constraint on proof_skipper and affective_resistant at n=5 per cell on two speaking-tutor families while learner/classifier/record seams stay fixed. A zero-call 68-trace audit selects two deterministic triggers (warrant_skip and stagnant_repeat), freezes opportunity minimums, and rejects affective-risk/re-gloss candidates. Side coaching or compilation must beat triggered placebo on equally weighted trigger compliance by >=0.15 with a positive dialogue-clustered 95% interval, improve both trigger types, clear coverage/safety non-inferiority, and produce zero leaks. No model calls occur until explicit launch approval."
 claim_status: planned
 depends_on:
   - adaptive-eval-immutable-provenance
 links:
+  paper: §6.16, §6.17
   notes:
+    - POINT-OF-ACTION-COACHING-PREREGISTRATION.md
     - PRECONSCIOUS-FINAL-STRETCH-PLAN.md
     - PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md
     - GREEN-ROOM-PLAN.md
     - notes/2026-07-12-greenroom-gate1-diagnosis.md
+  exports:
+    - exports/tutor-stub-step4-trigger-audit/trigger-density.md
   items:
     - a22-green-room-coached-tutor-training
 tags:
@@ -27,6 +31,7 @@ tags:
   - insight-action-gap
   - pre-registration
 milestone: adaptive-tutor-evidence-v1
+branch: preconscious
 ---
 
 Attack the bottleneck the Green Room Gate 1 diagnosis localized: written
@@ -60,3 +65,13 @@ trigger-yoked `triggered_placebo`, action-shaped `side_coach`, and
 hold automated learner, classifier, and learner-record seams fixed while only
 the speaking tutor family varies. Exact compliance, non-inferiority, safety,
 and family-interaction rules still require a fresh preregistration.
+
+2026-07-14 Codex: Activated after the zero-call instrument audit and frozen
+successor pre-registration. The audit verifies 68 trace hashes and retains two
+assigned triggers: 484 warrant-skip opportunities (31% baseline compliance)
+and 204 stagnant-repeat opportunities (28% baseline compliance); deterministic
+12-event samples were valid for both. Affective-risk and re-gloss triggers are
+rejected. The four claim-bearing arms are now `standing_book`,
+`triggered_placebo`, `side_coach`, and `compiled_constraint`; supporting seams
+are fixed while only the speaking tutor varies. This card is ready for build
+and launch only after a separate explicit go; this update made zero model calls.
