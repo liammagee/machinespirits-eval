@@ -248,7 +248,10 @@ release_schedule:
     premise: m_graver
     via: director
     presentation: { mode: enacted_role, role: guild officer describing Verrell's bench }
-  - { turn: 8, premise: p_crucible, via: tutor }
+  - turn: 8
+    premise: p_crucible
+    via: tutor
+    presentation: { mode: enacted_role, role: founder's man identifying the lead-sweat }
   - turn: 10
     premise: p_caster
     via: director

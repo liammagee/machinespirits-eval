@@ -34,6 +34,23 @@ test('the Larkspur clearance clue may name Wrenfold without asserting the concea
   );
 });
 
+test('a released multiword answer name is public when its world constant uses camel case', () => {
+  assert.equal(
+    tutorStubAnswerNameIsPublic({
+      answerTerm: 'larkinUnit',
+      publicText: 'The Facilities record names the Larkin unit and its retired asset tag.',
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubAnswerNameIsPublic({
+      answerTerm: 'larkinUnit',
+      publicText: 'The Facilities record names a retired incubator but gives no asset identity.',
+    }),
+    false,
+  );
+});
+
 test('release delivery requires the clue, not merely the answer name', () => {
   const delivered = auditTutorStubReleaseDelivery({
     text: [
@@ -120,6 +137,33 @@ test('the repetition guard rejects verbatim and near-verbatim tutor loops', () =
     }).ok,
     true,
   );
+});
+
+test('the repetition guard rejects a substantial repeated opener even when the clue changes', () => {
+  const opening = 'Right—that gives us a sound place to begin; we’ll examine it before extending the case.';
+  const audit = auditTutorStubRepetitionResponse({
+    text: `${opening} I draw the cupel close and show the poor alloy.`,
+    recentTutorTexts: [`${opening} I open the mint-yard register and read its first line.`],
+  });
+
+  assert.equal(audit.ok, false);
+  assert.deepEqual(audit.issues.map((issue) => issue.type), ['repeated_tutor_opening']);
+});
+
+test('the repetition guard rejects an exact stock opener nine tutor turns later', () => {
+  const opening = 'That is the right evidentiary limit; we will keep the conclusion open.';
+  const audit = auditTutorStubRepetitionResponse({
+    text: `${opening} I draw the charcoal book beside your entry.`,
+    recentTutorTexts: [
+      `${opening} I turn the cold crucible toward the candlelight.`,
+      ...Array.from({ length: 8 }, (_, index) =>
+        `Distinct intervening tutor turn ${index + 1} examines a different public exhibit.`,
+      ),
+    ],
+  });
+
+  assert.equal(audit.ok, false);
+  assert.ok(audit.issues.some((issue) => issue.type === 'repeated_tutor_opening'));
 });
 
 test('world scaffolds derive their language from Larkspur rules rather than Marrick vocabulary', () => {

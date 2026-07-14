@@ -177,6 +177,65 @@ test('ordinary open questions must name the clue plainly instead of using an opa
   assert.match(support.tutorInstruction, /clarification question/u);
 });
 
+test('internal proof-map language is rejected even when no extra question scaffold is required', () => {
+  const audit = auditTutorStubQuestionSupportResponse({
+    text: 'What mark on the coin would make that second branch speak?',
+    support: { guardRequired: false },
+  });
+
+  assert.equal(audit.ok, false);
+  assert.deepEqual(audit.issues.map((issue) => issue.type), ['abstract_proof_language']);
+});
+
+test('a purposeful stepwise move is not misread as learner struggle', () => {
+  const support = buildTutorStubQuestionSupport({
+    tutorTurn: 1,
+    scaffoldState: scaffold({ dueNow: [{ premise: 'p_assay', turn: 1 }] }),
+    assessment: { missingPremises: [{ premiseId: 'p_assay', bucket: 'unreleased', releaseTurn: 1 }] },
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        epistemic_stance: 'reflective',
+        pedagogical_need: 'Stage relevant assay evidence.',
+      },
+    },
+    learnerText: 'I would first set down the weights and touchstone marks before naming any hand.',
+  });
+
+  assert.equal(support.guardRequired, false);
+  assert.equal(support.clarificationInvitationRequired, false);
+  assert.equal(support.modality, 'stage_then_ask');
+});
+
+test('a tentative overreach is corrected without being misread as confusion', () => {
+  const support = buildTutorStubQuestionSupport({
+    tutorTurn: 2,
+    scaffoldState: scaffold({ nextRelease: { premise: 'p_alloy', turn: 3 } }),
+    assessment: {
+      missingPremises: [{ premiseId: 'p_alloy', bucket: 'unreleased', releaseTurn: 3 }],
+    },
+    classification: {
+      turn: {
+        request_type: 'answer_seeking_or_overreach',
+        epistemic_stance: 'reflective',
+        affect: 'tentative',
+      },
+    },
+    learnerText:
+      'If it led to Verrell’s crucible, it would support that he made the false shillings; I suppose it would not yet prove he struck them himself.',
+  });
+
+  assert.equal(support.modality, 'embedded_directional_hint');
+  assert.equal(support.clarificationInvitationRequired, false);
+  assert.equal(
+    auditTutorStubQuestionSupportResponse({
+      text: 'I tap the balance beam: precisely. Casting a blank is not yet striking a shilling. What is still missing: the blank, the die, or the finished coin?',
+      support,
+    }).ok,
+    true,
+  );
+});
+
 test('adaptive choices cool down so the next scaffold is embedded in discourse', () => {
   const support = buildTutorStubQuestionSupport({
     tutorTurn: 21,

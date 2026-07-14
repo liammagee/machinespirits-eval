@@ -45,8 +45,15 @@ function normalizedText(value) {
   return words(value).join(' ');
 }
 
+function openingSentence(value) {
+  return oneLine(value).match(/^.*?[.!?](?=\s|$)/u)?.[0] || oneLine(value);
+}
+
 export function tutorStubAnswerNameIsPublic({ answerTerm = '', publicText = '' } = {}) {
-  const answerWords = words(answerTerm);
+  // World constants use compact symbolic spelling (for example
+  // `larkinUnit`) while their public surfaces use ordinary words (`Larkin
+  // unit`). Compare semantic tokens instead of authoring notation.
+  const answerWords = words(String(answerTerm || '').replace(/([a-z0-9])([A-Z])/gu, '$1 $2'));
   const publicWords = new Set(words(publicText));
   return answerWords.length > 0 && answerWords.every((word) => publicWords.has(word));
 }
@@ -64,17 +71,31 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
   const candidate = normalizedText(text);
   if (!candidate) return { ok: true, issues: [], maxSimilarity: 0 };
   const comparisons = (Array.isArray(recentTutorTexts) ? recentTutorTexts : [])
-    .slice(-3)
+    .slice(-10)
     .map((previous, index, rows) => ({
       turnsAgo: rows.length - index,
       text: oneLine(previous),
       exact: normalizedText(previous) === candidate,
       similarity: similarity(previous, text),
+      openingText: openingSentence(previous),
+      openingExact:
+        words(openingSentence(text)).length >= 6 &&
+        normalizedText(openingSentence(previous)) === normalizedText(openingSentence(text)),
+      openingSimilarity:
+        words(openingSentence(text)).length >= 6
+          ? similarity(openingSentence(previous), openingSentence(text))
+          : 0,
     }))
     .filter((row) => row.text);
   const repeated = comparisons
     .filter((row) => row.exact || row.similarity >= Number(threshold))
     .sort((left, right) => Number(right.exact) - Number(left.exact) || right.similarity - left.similarity);
+  const repeatedOpening = comparisons
+    .filter((row) => row.openingExact || row.openingSimilarity >= 0.9)
+    .sort(
+      (left, right) =>
+        Number(right.openingExact) - Number(left.openingExact) || right.openingSimilarity - left.openingSimilarity,
+    );
   const issues = repeated.length
     ? [
         {
@@ -87,6 +108,16 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
           turnsAgo: repeated[0].turnsAgo,
         },
       ]
+    : repeatedOpening.length
+      ? [
+          {
+            type: 'repeated_tutor_opening',
+            reason: 'reuses a substantial recent opening even though the rest of the reply changes',
+            similarity: repeatedOpening[0].openingSimilarity,
+            previousText: repeatedOpening[0].openingText,
+            turnsAgo: repeatedOpening[0].turnsAgo,
+          },
+        ]
     : [];
   return {
     schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA,

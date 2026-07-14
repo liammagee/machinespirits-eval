@@ -16,6 +16,7 @@ import {
   buildTutorStubPublicLearnerAnalysisWorld,
   createTutorStubPublicLearnerRecord,
   extractTutorStubPublicLearnerAnalysis,
+  normalizeTutorStubClassificationAgainstLearnerSurface,
   parseTutorStubPublicLearnerAnalysisInteractive,
   parseTutorStubPublicLearnerAnalysisStrict,
   postprocessTutorStubPublicLearnerAnalysis,
@@ -92,6 +93,157 @@ function providerCompleteAnalysis() {
     },
   });
 }
+
+describe('surface-consistent classification', () => {
+  it('does not turn a declarative inference into a clarification request', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'conceptual_clarity_request',
+        discourse_move: 'inference',
+        epistemic_stance: 'grounded',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'It establishes that any blank proven from that crucible was cast by Verrell’s hand.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+    assert.equal(classification.turn.request_type, 'conceptual_clarity_request');
+  });
+
+  it('preserves an actual clarification question', () => {
+    const classification = validAnalysis({
+      turn: { request_type: 'conceptual_clarity_request', discourse_move: 'question' },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'What does blank mean?',
+    );
+
+    assert.equal(normalized.turn.request_type, 'conceptual_clarity_request');
+  });
+
+  it('does not retain off-task for a grounded public inference', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'off_task_or_mixed',
+        discourse_move: 'inference',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'grounded',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'It must show the light shillings bear the same metal as Verrell’s crucible casting.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+  });
+
+  it('does not mistake evidentiary restraint for a challenge to tutor authority', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'metacognitive_reflection',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'reflective',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'Then I should enter no verdict yet: the shilling’s alloy must first be matched to a crucible.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+  });
+
+  it('preserves an explicit challenge to interactional pressure', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'I am not sure why you are pressing that. Give me one smaller step.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'authority_refusal_or_status_challenge');
+  });
+
+  it('does not retain off-task for evidence-aware reflection on a clue limit', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'off_task_or_mixed',
+        discourse_move: 'metacognitive_reflection',
+        evidence_use: 'cites_public_evidence',
+        epistemic_stance: 'reflective',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'It points toward Verrell’s access to casting, but it does not yet prove he made these particular shillings.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+  });
+
+  it('does not mistake a bounded supported conclusion for answer seeking or overreach', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'answer_seeking_or_overreach',
+        discourse_move: 'evidence_adoption',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'grounded',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'It rules out mere clipping: these are newly struck, copper-thinned coins, not sterling shillings shaved lighter.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+  });
+
+  it('does not mistake waiting for named evidence for resistance or low agency', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'resistance_or_low_agency',
+        discourse_move: 'metacognitive_reflection',
+        evidence_use: 'repeats_setup',
+        epistemic_stance: 'reflective',
+        agency: 'steering',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'Then I shall hold the verdict back and await what balance and touchstone show.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'stepwise_support_request');
+  });
+
+  it('preserves visible resistance even when the learner asks to wait', () => {
+    const classification = validAnalysis({
+      turn: {
+        request_type: 'resistance_or_low_agency',
+        discourse_move: 'affective_signal',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+      },
+    }).classification;
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
+      classification,
+      'You are pressing me. I will wait for a smaller step.',
+    );
+
+    assert.equal(normalized.turn.request_type, 'resistance_or_low_agency');
+  });
+});
 
 const PROVIDER_SCHEMA_KEYWORDS = new Set([
   'type',

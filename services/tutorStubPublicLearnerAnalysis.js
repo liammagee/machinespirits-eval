@@ -1156,6 +1156,10 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     'Scores (1-5): conceptual_engagement = parroting, surface, partial concept, substantive reasoning, constructing/testing/revising; epistemic_readiness = reception, minimal awareness, generic awareness, evidence-aware monitoring, active bias/uncertainty monitoring.',
     'Use controlled labels:',
     '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
+    '- Use conceptual_clarity_request only when the learner actually asks for clarification. A declarative answer or inference is not a clarity request merely because the next tutor move should explain or stage something.',
+    '- Use authority_refusal_or_status_challenge only for an explicit challenge to the tutor’s pressure, framing, status, or trustworthiness. Withholding a verdict because evidence is incomplete is evidence-aware reflection, not an authority challenge.',
+    '- Do not use off_task_or_mixed for an evidence-aware statement that distinguishes what a public clue establishes from what remains unproved.',
+    '- Do not use answer_seeking_or_overreach for a supported, bounded evidence conclusion that stays within the public clue and its rule.',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
     '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
@@ -1742,6 +1746,55 @@ export function splitTutorStubPublicLearnerAnalysis(raw, options = {}) {
     learnerRecordUpdate: parts.learnerRecord ? { ...parts.learnerRecord, ...metadata } : null,
     registerSelection: parts.registerSelection,
     benchmarkTransitionEvent: parts.benchmarkTransition,
+  };
+}
+
+export function normalizeTutorStubClassificationAgainstLearnerSurface(classification, learnerText = '') {
+  if (!classification?.turn) return classification;
+  const turn = classification.turn;
+  const surface = String(learnerText || '');
+  const surfaceQuestion = /\?/u.test(surface) || turn.discourse_move === 'question';
+  const substantiveMove = ['claim', 'hypothesis', 'inference', 'evidence_adoption'].includes(turn.discourse_move);
+  const evidenceAwareReflection =
+    turn.discourse_move === 'metacognitive_reflection' &&
+    ['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence'].includes(turn.evidence_use);
+  const supportedEvidenceMove =
+    ['claim', 'evidence_adoption', 'inference'].includes(turn.discourse_move) &&
+    ['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence'].includes(turn.evidence_use) &&
+    ['grounded', 'reflective'].includes(turn.epistemic_stance);
+  const interactionalChallenge = ['challenge', 'repair_request', 'affective_signal'].includes(turn.discourse_move);
+  const explicitAuthorityChallenge =
+    /\b(?:why (?:are|do|should|would) you|who (?:are you|says)|i (?:will not|won[’']t|refuse|do not accept|don[’']t accept|do not trust|don[’']t trust|cannot work|can[’']t work)|you(?:[’']re| are) (?:pressing|pushing)|that feels like (?:a jump|pressure)|can we slow down|because you say so|your authority|what gives you the right)\b/iu.test(
+      surface,
+    );
+  const explicitEvidentiaryRestraint =
+    /\b(?:hold|keep|leave)\b[^.!?]{0,30}\b(?:claim|conclusion|entry|judg(?:e)?ment|line|verdict)\b[^.!?]{0,25}\b(?:back|blank|open|unentered|unwritten)\b|\b(?:await|wait for)\b[^.!?]{0,45}\b(?:assay|balance|evidence|fact|mark|result|show|touchstone)\b/iu.test(
+      surface,
+    );
+  const normalizedRequestType =
+    turn.request_type === 'conceptual_clarity_request' && !surfaceQuestion
+      ? 'stepwise_support_request'
+      : turn.request_type === 'off_task_or_mixed' && (substantiveMove || evidenceAwareReflection)
+        ? 'stepwise_support_request'
+        : turn.request_type === 'authority_refusal_or_status_challenge' &&
+            !interactionalChallenge &&
+            !explicitAuthorityChallenge
+          ? 'stepwise_support_request'
+          : turn.request_type === 'answer_seeking_or_overreach' && supportedEvidenceMove
+            ? 'stepwise_support_request'
+            : turn.request_type === 'resistance_or_low_agency' &&
+                !interactionalChallenge &&
+                !explicitAuthorityChallenge &&
+                explicitEvidentiaryRestraint
+              ? 'stepwise_support_request'
+        : turn.request_type;
+  if (normalizedRequestType === turn.request_type) return classification;
+  return {
+    ...classification,
+    turn: {
+      ...turn,
+      request_type: normalizedRequestType,
+    },
   };
 }
 
@@ -2408,18 +2461,22 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       Array.isArray(promptContext.registerPalette) &&
       promptContext.registerPalette.length,
     );
-    const { classification, learnerRecordUpdate, registerSelection, benchmarkTransitionEvent } =
+    const { classification: rawClassification, learnerRecordUpdate, registerSelection, benchmarkTransitionEvent } =
       splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
         strict,
         includeRegisterSelection,
         includeBenchmarkTransitionEvent,
       });
-    if (!classification || !learnerRecordUpdate) {
+    if (!rawClassification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
         'public learner analysis did not provide both classification and learner_record',
         { code: 'incomplete_analysis_output' },
       );
     }
+    const classification = normalizeTutorStubClassificationAgainstLearnerSurface(
+      rawClassification,
+      learnerText,
+    );
     const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({
       update: learnerRecordUpdate,
       world,

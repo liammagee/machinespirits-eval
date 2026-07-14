@@ -2,6 +2,9 @@ import { deterministicTutorStubContextualFallback } from './tutorStubResponseGua
 
 export const TUTOR_STUB_QUESTION_SUPPORT_SCHEMA = 'machinespirits.tutor-stub.question-support.v1';
 
+const ABSTRACT_PROOF_LANGUAGE_PATTERN =
+  /\b(?:DAG|proof (?:branch|leaf|node|path)|supporting step|condition in the rule|whole case|(?:first|second|next|other|blank|die) branch)\b/iu;
+
 function labelsFor(classification = null) {
   const turn = classification?.turn || {};
   return [
@@ -18,7 +21,7 @@ function labelsFor(classification = null) {
 }
 
 function isStruggle(classification = null, learnerText = '') {
-  return /confus|stepwise_support|plain_language|repair_request|answer_seeking|uncertain|not sure|don[’']?t know/iu.test(
+  return /confus|plain_language|repair_request|uncertain|not sure|don[’']?t know/iu.test(
     `${labelsFor(classification)} ${learnerText}`,
   );
 }
@@ -223,9 +226,17 @@ function directlyAnswersOutstandingQuestion(source) {
 }
 
 export function auditTutorStubQuestionSupportResponse({ text = '', support = null } = {}) {
-  if (!support?.guardRequired) return { ok: true, issues: [] };
   const issues = [];
   const source = String(text || '');
+  const abstractProofLanguage = source.match(ABSTRACT_PROOF_LANGUAGE_PATTERN)?.[0] || null;
+  if (abstractProofLanguage) {
+    issues.push({
+      type: 'abstract_proof_language',
+      reason: 'uses an internal proof-map label instead of the public people, objects, records, or actions',
+      excerpt: abstractProofLanguage,
+    });
+  }
+  if (!support?.guardRequired) return { ok: issues.length === 0, issues };
   if (support.responsiveRepairRequired && !directlyAnswersOutstandingQuestion(source)) {
     issues.push({
       type: 'missing_direct_response',

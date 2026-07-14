@@ -29,6 +29,8 @@ test('director evidence becomes an enacted in-scene release', () => {
   assert.match(prompt, /Make its arrival audible or visible inside the scene/u);
   assert.match(prompt, /Enact it from inside this role: watchman/u);
   assert.match(prompt, /Never say “let’s role-play/u);
+  assert.match(prompt, /begin the source quotation itself with I, My, We, or Our/u);
+  assert.match(prompt, /Do not write “as the assayer\/officer\/clerk speaks or says/u);
   assert.doesNotMatch(prompt, /p_watch/u);
 
   const performed = auditTutorStubDramaticReleaseResponse({
@@ -108,6 +110,26 @@ test('an opaque clue dump fails the dramatic release check', () => {
   );
 });
 
+test('a first-person action on a concrete token from the due exhibit is visibly staged', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_shelf',
+        via: 'tutor',
+        surface:
+          "Devlin labels nothing. The Corvat flasks spent the week on Devlin's shelf, in a row of identical unmarked flasks — no dates, no initials.",
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'I pull the shelf log beneath the fluorescent light: Devlin labels nothing, and Corvat sat all week among identical flasks with no dates or initials. That makes the shelf hard to trace; it does not show who seeded contamination. What does this shelf evidence actually support?';
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(audit.exhibitHandoffVisible, true);
+  assert.equal(audit.ok, true);
+});
+
 test('handling a record generically does not count as performing its authored source', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
@@ -152,6 +174,26 @@ test('tutor evidence is visibly presented as an exhibit', () => {
   );
 });
 
+test('turning a lab flask under the bench light visibly presents a lab exhibit', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_unlabelled',
+        via: 'tutor',
+        surface: 'Devlin labels nothing, and Corvat spent the week among identical unmarked flasks.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const audit = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I turn one of Devlin’s blank flasks under the bench light: no date, no initials, just a row beside Corvat all week. What does that establish—and no more?',
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exhibitHandoffVisible, true);
+});
+
 test('forceful but concrete exhibit handling remains an in-scene release', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
@@ -164,6 +206,25 @@ test('forceful but concrete exhibit handling remains an in-scene release', () =>
   });
   const text =
     'I slap the badge log beside the kettle and read: “Dario entered the kitchen at 12:02.” What does that prove?';
+
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exhibitHandoffVisible, true);
+});
+
+test('Marrick assay handling counts as a visible exhibit release', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_metal',
+        via: 'tutor',
+        surface: 'The cupel shows poor dross: silver thinned with copper and a grey lead-sweat.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'I clear space beside the cupel and draw the shilling across the warmed touchstone. The streak shows poor dross. What does that change?';
 
   const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
   assert.equal(audit.ok, true);
@@ -194,6 +255,82 @@ test('the deterministic release fallback performs the complete handoff', () => {
   assert.match(text, /exact line|exact limit|line that matters|limit of what/u);
   assert.match(text, /ask me to unpack/u);
   assert.doesNotMatch(text, /role-play|I’ll be|another piece of information|Back to us/iu);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('the deterministic release fallback grounds Marrick action in the crucible rather than an abstract assay line', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'm_caster',
+        via: 'director',
+        surface:
+          "The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day.",
+        presentation: { mode: 'enacted_role', role: "town assayer voicing Marrick's ready verdict" },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake: 'That is a fair question; I’ll answer it before we extend the case.',
+    responseConfiguration: {
+      engagement_stance: 'precise',
+      actorial_host_part: 'examiner',
+    },
+    variationKey: 'marrick:t001',
+  });
+
+  assert.match(text, /I examine the crucible without carrying its claim beyond the evidence/u);
+  assert.match(text, /“(?:I|My)\b/u);
+  assert.match(text, /Verrell alone draws the mint-yard crucible/u);
+  assert.doesNotMatch(text, /town has its founder ready/iu);
+  assert.doesNotMatch(text, /tap the assay|test its line|my crucible records/iu);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('a presented Marrick assay is handled through its physical cupel with clean punctuation', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_alloy',
+        via: 'tutor',
+        surface:
+          'The assay is plain in the cupel: these shillings are struck from poor dross, and grey lead-sweat catches on the touchstone.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'plain', actorial_host_part: 'examiner' },
+    variationKey: 'marrick:alloy',
+  });
+
+  assert.match(text, /I examine the cupel:/u);
+  assert.doesNotMatch(text, /examine the assay|\s+:/iu);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('Marrick founder testimony is voiced in first person rather than narrated', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crucible',
+        via: 'tutor',
+        surface:
+          "The founder's man knows that dross by its lead-sweat: it answers to the leavings of the weir-forge crucible.",
+        presentation: { mode: 'enacted_role', role: "founder's man identifying the lead-sweat" },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'warm', actorial_host_part: 'examiner' },
+    variationKey: 'marrick:founder',
+  });
+
+  assert.match(text, /“[^”]*I know that dross by its lead-sweat/iu);
+  assert.doesNotMatch(text, /The founder's man knows/iu);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
 
@@ -228,6 +365,51 @@ test('fallback realization varies reproducibly across run keys while preserving 
   }
 });
 
+test('a Marrick graver clue uses the graver as the fallback scene object', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'm_graver',
+        via: 'director',
+        surface: 'And Verrell engraves: the broad graver on Verrell’s bench is his alone.',
+        presentation: { mode: 'enacted_role', role: 'guild officer describing Verrell’s bench' },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'brisk', actorial_host_part: 'examiner' },
+    variationKey: 'marrick:graver',
+  });
+
+  assert.match(text, /I examine the graver and go straight to the live line/u);
+  assert.doesNotMatch(text, /:\s+And Verrell/iu);
+  assert.match(text, /:\s+Verrell engraves/iu);
+  assert.doesNotMatch(text, /examine the account/u);
+});
+
+test('a Marrick charcoal-book clue uses the book rather than the crucible as the fallback object', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_caster',
+        via: 'director',
+        surface:
+          "The leat-keeper's book is exact. One hand alone has drawn the weir crucible and signed for its charcoal: Edony.",
+        presentation: { mode: 'enacted_role', role: 'leat-keeper reading the charcoal book' },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'warm', actorial_host_part: 'record_keeper' },
+    variationKey: 'marrick:charcoal-book',
+  });
+
+  assert.match(text, /I enter the book beside the testimony in the trial-book/u);
+  assert.doesNotMatch(text, /enter the crucible beside/u);
+});
+
 test('natural handoff and role-reading language from the live transcript passes', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
@@ -246,6 +428,87 @@ test('natural handoff and role-reading language from the live transcript passes'
   ].join(' ');
 
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('a source physically rubbing and holding an exhibit is a visible entrance but still needs first-person testimony', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crucible',
+        via: 'director',
+        surface: 'The dross answers to the leavings of the weir-forge crucible.',
+        presentation: { mode: 'enacted_role', role: 'founder’s man reading the assay' },
+      },
+    ],
+  });
+  const text =
+    'The founder’s man rubs the grey lead-sweat from a shilling onto the assay slip and holds it beside the crucible record. “This dross answers to the weir-forge.” What does that change?';
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(audit.entranceVisible, true);
+  assert.equal(audit.exhibitHandoffVisible, true);
+  assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_in_scene_enactment']);
+});
+
+test('a where question visibly returns the released exhibit to the inquiry', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crucible',
+        via: 'tutor',
+        surface: 'The dross answers to the leavings of the weir-forge crucible.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'I hold the touchstone to the lamp and press the crucible scrap beside it. The grey lead-sweat answers to the weir-forge. Where, then, must these blanks have been cast?';
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(audit.returnVisible, true);
+  assert.equal(audit.ok, true);
+});
+
+test('a charismatic will-it-survive question returns the exhibit to the inquiry', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_alloy',
+        via: 'tutor',
+        surface: 'The cupel shows newly struck dross rather than clipped sterling.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'I examine the cupel against the room’s easy verdict: “The cupel shows newly struck dross rather than clipped sterling.” Will that line survive the case we were ready to make?';
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(audit.returnVisible, true);
+  assert.equal(audit.ok, true);
+});
+
+test('material assay handling makes a presented exhibit visible', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crucible',
+        via: 'tutor',
+        surface: 'The dross answers to the leavings of the weir-forge crucible.',
+        presentation: { mode: 'presented_exhibit', role: 'examiner' },
+      },
+    ],
+  });
+  const variants = [
+    'I keep the lamp on the coin while the founder’s man rubs the grey lead-sweat between thumb and nail. What does that show about the crucible?',
+    'I scrape the grey lead-sweat from the cupel into the founder’s man’s palm. What does that fix about the blanks?',
+  ];
+
+  for (const text of variants) {
+    const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+    assert.equal(audit.exhibitHandoffVisible, true, text);
+    assert.equal(audit.ok, true, text);
+  }
 });
 
 test('direct Larkspur performances pass while self-announced casting fails', () => {
@@ -286,4 +549,23 @@ test('the release fallback keeps an unanswered-question repair visible', () => {
 
   assert.match(text, /did not answer your question directly/u);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('a whose-hand question returns an enacted record to the inquiry', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_caster',
+        via: 'director',
+        surface: 'Edony alone drew the weir crucible and signed for its charcoal.',
+        presentation: { mode: 'enacted_role', role: 'leat-keeper reading the charcoal book' },
+      },
+    ],
+  });
+  const text =
+    'I turn the charcoal book beneath the lamp; “I kept this book exact: Edony alone drew the weir crucible.” Whose hand, then, cast the blank?';
+
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+  assert.equal(audit.returnVisible, true);
+  assert.equal(audit.ok, true);
 });

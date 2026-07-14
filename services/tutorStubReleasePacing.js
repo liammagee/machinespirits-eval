@@ -72,7 +72,7 @@ function classificationSignal(classification) {
 const DIRECT_ACCELERATE =
   /\b(?:move (?:it|this|things) along|get (?:to|on with) it|pick up the pace|speed (?:it )?up|go faster|faster please|skip ahead|next clue|keep (?:it|things) moving|hurry|cut to the chase|boring)\b/iu;
 const DIRECT_DECELERATE =
-  /\b(?:slow down|not so fast|too fast|one (?:clue|step|thing) at a time|wait|hold on|give me (?:a moment|some time|time)|go back|pause|let me think)\b/iu;
+  /(?:\b(?:slow down|not so fast|too fast|one (?:clue|step|thing) at a time|hold on|give me (?:a moment|some time|time)|go back|pause|let me think)\b|(?:^|[.!?]\s+)wait\b(?!\s+(?:for|until|to|and)\b))/iu;
 const ANALYZED_ACCELERATE =
   /\b(?:impatient|bored|faster|rapid|accelerat|move .*along|pick up .*pace|wants? speed|patience (?:is )?(?:low|declining)|pushes? for (?:concise|faster)|next decisive clue|ready for decisive)\b/iu;
 const ANALYZED_DECELERATE =

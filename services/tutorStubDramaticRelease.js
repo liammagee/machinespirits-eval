@@ -88,7 +88,7 @@ export function tutorStubDramaticReleasePrompt(frame = null) {
     'A new piece of public information enters in the development part of this reply. Make its arrival audible or visible inside the scene instead of explaining the tutoring machinery.',
     'Fold three short movements into the same continuous reply and voice:',
     '1. Entrance: let a character, object, interruption, gesture, or spoken line bring the new information into the scene. Do not announce that you are giving “another piece of information” or “bringing in another clue.”',
-    '2. Performance: for an enacted role, speak its evidence in first person inside quotation marks. Do not prefix the speech with the role name or a stage direction. For an exhibit, handle it directly in the existing tutor voice. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or otherwise describe the acting from outside it.',
+    '2. Performance: for an enacted role, speak its evidence in first person inside quotation marks. After the tutor-host entrance, begin the source quotation itself with I, My, We, or Our. Do not write “as the assayer/officer/clerk speaks or says,” prefix the speech with the role name, or insert a third-person stage direction. For an exhibit, handle it directly in the existing tutor voice. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or otherwise describe the acting from outside it.',
     '3. Handoff: keep the learner in that same continuous performance with one light interpretive question about what the clue changes, supports, or rules out. Do not say “back to us” or “back to the case.”',
     ...beats,
     'Do not add facts beyond the supplied clue. You may change person and phrasing for natural speech, but preserve its exact evidentiary content and uncertainty.',
@@ -102,9 +102,16 @@ const META_ROLEPLAY_PATTERN =
 const META_RELEASE_PATTERN =
   /\b(?:i(?:[’']m| am)\s+going to give you another piece of information|i(?:[’']m| am)\s+bringing in another clue|another piece of information (?:is|will be) entering|back to (?:us|the case))\b/iu;
 const EXHIBIT_PATTERN =
-  /\b(?:bring|demonstrate|draw|examine|hold|lay|look at|open|plant|place|put|read|rest|set|show|slap|slide|strike|tap|test|turn|unfold)\b[^.!?]{0,80}\b(?:assay|before us|book|clue|entry|evidence|exhibit|file|in front of us|ledger|line|log|notebook|notice|record|register|report|sample|table|tool)\b/iu;
+  /\b(?:bend(?:s|ing)?|bent|bring|clear|demonstrate|draw|enter|examine|hold(?:s|ing)?|held|keep|lay|lift|look at|open|plant|place|pour|press|put|read|rest|rub(?:s|bed|bing)?|scrape|set|show|slap|slide|smear(?:s|ed|ing)?|strike|tap|test|tip|turn|unfold|warm|weigh)\b[^.!?]{0,80}\b(?:assay|before us|book|chamber|clue|coin|crucible|cupel|dross|entry|evidence|exhibit|file|flasks?|gasket|in front of us|incubator|lamp|lead-sweat|leavings|ledger|line|log|metal|notebook|notice|record|register|report|residue|sample|shilling|streak|swab|table|tool|touchstone)\b/iu;
+const EXHIBIT_ACTION_SOURCE =
+  'bend|bring|carry|clear|demonstrate|draw|enter|examine|hold|keep|lay|lift|look|lower|open|place|plant|point|pour|press|pull|put|read|rest|rub|scrape|set|show|slap|slide|smear|strike|tap|test|tip|touch|trace|turn|unfold|warm|weigh';
+const EXHIBIT_FRAME_TOKEN_STOP_WORDS = new Set(
+  'about after again all among another because been before being does every everyone from have identical into labels line more nothing only other over same show shows showing spent story than that their them then there these they this those through under week were what when where which while with would'.split(
+    ' ',
+  ),
+);
 const RETURN_PATTERN =
-  /\b(?:what|which|does|do|can|your call)\b[^?]*\?/iu;
+  /\b(?:what|which|where|how|who|whose|does|do|can|could|will|would|is|are|has|have|should|your call)\b[^?]*\?/iu;
 
 function roleIdentity(entry) {
   return oneLine(entry?.role).split(
@@ -150,6 +157,37 @@ function directEnactmentVisible(response, frame) {
   return tutorStubFirstPersonRoleVoiceVisible(response);
 }
 
+function frameEvidenceTokens(frame) {
+  return new Set(
+    (frame?.entries || [])
+      .filter((entry) => entry.mode === 'presented_exhibit')
+      .flatMap((entry) => oneLine(entry.surface).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+      .map((token) => token.replace(/[’']s$/u, '').replace(/[’']/gu, ''))
+      .filter((token) => token.length >= 4 && !EXHIBIT_FRAME_TOKEN_STOP_WORDS.has(token)),
+  );
+}
+
+function dynamicExhibitActionVisible(response, frame) {
+  if (EXHIBIT_PATTERN.test(response)) return true;
+  const evidenceTokens = frameEvidenceTokens(frame);
+  if (!evidenceTokens.size) return false;
+  const clauses =
+    response.match(
+      new RegExp(
+        `\\b(?:i|we)\\b[^.!?]{0,40}\\b(?:${EXHIBIT_ACTION_SOURCE})(?:s|ed|ing)?\\b[^.!?]{0,120}`,
+        'giu',
+      ),
+    ) || [];
+  return clauses.some((clause) => {
+    const clauseTokens = new Set(
+      (clause.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []).map((token) =>
+        token.replace(/[’']s$/u, '').replace(/[’']/gu, ''),
+      ),
+    );
+    return [...evidenceTokens].some((token) => clauseTokens.has(token));
+  });
+}
+
 export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null } = {}) {
   if (!frame?.active) {
     return {
@@ -169,7 +207,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
   const roleStageDirection = tutorStubRoleStageDirectionVisible({ text: response, frame });
   const firstPersonRoleVoice = tutorStubFirstPersonRoleVoiceVisible(response);
   const enactmentVisible = directEnactmentVisible(response, frame);
-  const exhibitHandoffVisible = EXHIBIT_PATTERN.test(response);
+  const exhibitHandoffVisible = dynamicExhibitActionVisible(response, frame);
   const entranceVisible = enactmentVisible || exhibitHandoffVisible;
   const handoffVisible = entranceVisible;
   const returnVisible = RETURN_PATTERN.test(response);
@@ -238,59 +276,66 @@ function stableVariantIndex(value, length) {
 }
 
 function sceneObject(entry, fallback = 'record') {
-  const text = `${oneLine(entry.role)} ${oneLine(entry.surface)}`;
+  const text = oneLine(entry.surface);
+  const surfaceObject = text.match(
+    /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file|photograph|photo|crucible|coin|shilling|burin|cupel|die|graver|tool|sample|touchstone)\b/iu,
+  )?.[0];
+  if (surfaceObject) return surfaceObject;
+  // Authored roles often name a physical record that their paraphrased clue
+  // omits. Recover only those concrete record nouns here; broad role words
+  // such as "assayer" must not turn into a fictitious object named "assay".
   return (
-    text.match(
-      /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|ledger|notice|register|notebook|call log|record|report|file|photograph|photo|assay|tool|sample)\b/iu,
+    oneLine(entry.role).match(
+      /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file)\b/iu,
     )?.[0] || fallback
   );
 }
 
 const ROLE_VOICE_ENTRANCES = {
-  plain: (object) => [
-    `My ${object} records this:`,
-    `I can give you the ${object} entry as written:`,
-    `Here is what I entered in my ${object}:`,
+  plain: () => [
+    'I can say this:',
+    'I can give you my account as stated:',
+    'Here is what I can attest:',
   ],
-  precise: (object) => [
-    `The exact line in my ${object} reads—and it proves no more than this:`,
-    `My ${object} records one exact limit:`,
-    `I can certify only this line from my ${object}:`,
+  precise: () => [
+    'I can certify no more than this:',
+    'My evidence has one exact limit:',
+    'I can attest only this:',
   ],
-  brisk: (object) => [
-    `My ${object} has the live line:`,
-    `Here is the live entry in my ${object}:`,
-    `I will give it to you straight from my ${object}:`,
+  brisk: () => [
+    'I will give it to you straight:',
+    'Here is my evidence:',
+    'I will state it plainly:',
   ],
-  warm: (object) => [
-    `Here is the line we can read together in my ${object}:`,
-    `My ${object} gives us this line between us:`,
-    `I can put the ${object} entry plainly between us:`,
+  warm: () => [
+    'I can put my account plainly between us:',
+    'Here is what I can honestly tell you:',
+    'I can offer this much:',
   ],
-  witnessing: (object) => [
-    `I can let my ${object} stand as written:`,
-    `I will not force my ${object} beyond this entry:`,
-    `I can honestly testify to no more than my ${object} says:`,
+  witnessing: () => [
+    'I can let my words stand as given:',
+    'I will not force my account beyond this:',
+    'I can honestly testify to no more than this:',
   ],
-  charismatic: (object) => [
-    `My ${object} contradicts the room's easy verdict:`,
-    `I will put my ${object} against the obvious story:`,
-    `The line in my ${object} challenges the easy answer:`,
+  charismatic: () => [
+    "My evidence contradicts the room's easy verdict:",
+    'I will put my account against the obvious story:',
+    'My testimony challenges the easy answer:',
   ],
-  ironic: (object) => [
-    `My ${object} has an apparently inconvenient line:`,
-    `I can supply the conveniently overlooked entry in my ${object}:`,
-    `My ${object} makes the neat story not exactly so neat:`,
+  ironic: () => [
+    'My account has an apparently inconvenient line:',
+    'I can supply the conveniently overlooked evidence:',
+    'My testimony makes the neat story not exactly so neat:',
   ],
-  sarcastic: (object) => [
-    `My ${object} has a conveniently awkward line:`,
-    `I can show you the nice trick the claim forgot in my ${object}:`,
-    `My ${object} contains the apparently optional evidence:`,
+  sarcastic: () => [
+    'My account has a conveniently awkward line:',
+    'I can show you the nice trick the claim forgot:',
+    'My testimony contains the apparently optional evidence:',
   ],
-  face_threat: (object) => [
-    `My ${object} exposes the weak line:`,
-    `I will put my ${object} against the failed claim:`,
-    `My ${object} gives us the line we cannot refuse:`,
+  face_threat: () => [
+    'My evidence exposes the weak line:',
+    'I will put my account against the failed claim:',
+    'My testimony gives us the line we cannot refuse:',
   ],
 };
 
@@ -335,28 +380,69 @@ function fallbackStance(responseConfiguration) {
   return ROLE_VOICE_ENTRANCES[stance] ? stance : 'plain';
 }
 
-function renderEnactedEntry(entry, { stance, variationKey, index }) {
+function fallbackHostPart(responseConfiguration) {
+  const part = oneLine(
+    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
+  );
+  return ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'].includes(part)
+    ? part
+    : 'examiner';
+}
+
+function hostEntrance(part, object) {
+  return {
+    scene_partner: `I set the ${object} between us`,
+    examiner: `I examine the ${object}`,
+    record_keeper: `I enter the ${object} beside the testimony in the trial-book`,
+    advocate: `I rest my case on the ${object}; test its limit`,
+    skeptic: `Not so fast—I hold the claim against the ${object}`,
+    foreperson: `I enter the ${object} testimony in the trial-book`,
+  }[part];
+}
+
+function stanceInflection(stance) {
+  return {
+    plain: '',
+    precise: 'without carrying its claim beyond the evidence',
+    brisk: 'and go straight to the live line',
+    warm: 'where we can both read it',
+    witnessing: 'and let its words stand without forcing them',
+    charismatic: "against the room's easy verdict",
+    ironic: 'at its apparently inconvenient line',
+    sarcastic: 'at the nice trick the claim forgot',
+    face_threat: 'at the weak line we cannot refuse',
+  }[stance];
+}
+
+function spokenSourceSurface(surface) {
+  // Authored clue prose may continue a curriculum paragraph with a connective
+  // such as "And". Once voiced as a fresh witness statement, that connective
+  // becomes an audible splice. Some clues also begin with narrative casting
+  // ("The town has its founder ready:"); that belongs to the director, not in
+  // the source's mouth. Preserve the evidence after that narrow setup frame.
+  return oneLine(surface)
+    .replace(/^(?:and|but|so|then)\s+/iu, '')
+    .replace(/^the founder[’']s man knows\b/iu, 'I know')
+    .replace(
+      /^(?:the town has (?:its|the) [^:]{0,60} ready|the (?:record|report) (?:says|shows)|the [^:]{1,45} reports?)\s*:\s*/iu,
+      '',
+    );
+}
+
+function inflectedHost(part, object, stance) {
+  return [hostEntrance(part, object), stanceInflection(stance)].filter(Boolean).join(' ');
+}
+
+function renderEnactedEntry(entry, { stance, hostPart, variationKey, index }) {
   const object = sceneObject(entry, 'account');
   const entrances = ROLE_VOICE_ENTRANCES[stance](object);
   const entrance = entrances[stableVariantIndex(`${variationKey}:${index}:entrance`, entrances.length)];
-  return `“${entrance} ${entry.surface}”`;
+  return `${inflectedHost(hostPart, object, stance)}; “${entrance} ${spokenSourceSurface(entry.surface)}”`;
 }
 
-function renderExhibitEntry(entry, { stance, variationKey, index }) {
+function renderExhibitEntry(entry, { stance, hostPart }) {
   const object = sceneObject(entry);
-  const actions = {
-    plain: [`I open the ${object} between us`, `I turn the ${object} toward us`, `I read from the ${object}`],
-    precise: [`I turn the ${object} to its exact line`, `I open the ${object} at the relevant line`],
-    brisk: [`I turn the ${object} straight to the live line`, `I open the ${object} at the live line`],
-    warm: [`I open the ${object} between us`, `I read the ${object} where we can both see it`],
-    witnessing: [`I open the ${object} and let its line stand`, `I read the ${object} without pressing a verdict`],
-    charismatic: [`I open the ${object} at the line that challenges the easy story`, `I turn the ${object} on the obvious verdict`],
-    ironic: [`I open the ${object} on its apparently inconvenient line`, `I turn the ${object} to its conveniently overlooked entry`],
-    sarcastic: [`I open the ${object} on the nice trick the claim forgot`, `I open the ${object} to its conveniently awkward line`],
-    face_threat: [`I open the ${object} at the weak line`, `I turn the ${object} beside the failed claim`],
-  }[stance];
-  const action = actions[stableVariantIndex(`${variationKey}:${index}:exhibit`, actions.length)];
-  return `${action}: “${entry.surface}”`;
+  return `${inflectedHost(hostPart, object, stance)}: “${entry.surface}”`;
 }
 
 export function deterministicTutorStubDramaticReleaseFallback({
@@ -368,10 +454,11 @@ export function deterministicTutorStubDramaticReleaseFallback({
 } = {}) {
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
+  const hostPart = fallbackHostPart(responseConfiguration);
   const rendered = frame.entries.map((entry, index) =>
     entry.mode === 'enacted_role'
-      ? renderEnactedEntry(entry, { stance, variationKey, index })
-      : renderExhibitEntry(entry, { stance, variationKey, index }),
+      ? renderEnactedEntry(entry, { stance, hostPart, variationKey, index })
+      : renderExhibitEntry(entry, { stance, hostPart, variationKey, index }),
   );
   const clarification = support?.clarificationInvitationRequired
     ? 'You can also ask me to unpack any word or connection in it.'

@@ -60,7 +60,6 @@ import {
 import {
   auditTutorStubQuestionSupportResponse,
   buildTutorStubQuestionSupport,
-  deterministicTutorStubQuestionSupportFallback,
 } from '../services/tutorStubQuestionSupport.js';
 import {
   auditTutorStubReleaseDelivery,
@@ -68,6 +67,17 @@ import {
   deterministicTutorStubContextualFallback,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
+import { auditTutorStubEvidenceAssertions } from '../services/tutorStubEvidenceAssertion.js';
+import { tutorStubAnswerConclusionAsserted } from '../services/tutorStubConclusionAssertion.js';
+import {
+  TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+  TUTOR_STUB_QUARANTINE_CONTINUATION,
+  auditTutorStubQuarantineContinuation,
+  classifyTutorStubDiagnosticFailure,
+  normalizeTutorStubLoopMode,
+  restoreTutorStubDiagnosticTransaction,
+  snapshotTutorStubDiagnosticTransaction,
+} from '../services/tutorStubDiagnosticCollection.js';
 import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
@@ -140,6 +150,8 @@ import {
 import {
   auditTutorStubResponseComposition,
   buildTutorStubResponseCompositionFrame,
+  composeTutorStubFallbackWithUptake,
+  deterministicTutorStubConfiguredContinuationFallback,
   deterministicTutorStubLearnerUptake,
   formatTutorStubResponseComposition,
   tutorStubResponseCompositionPrompt,
@@ -604,6 +616,7 @@ const { values: args, positionals } = parseArgs({
     'run-seed': { type: 'string', default: STUB.runSeed },
     'eval-repeat': { type: 'string', default: '1' },
     'eval-job-id': { type: 'string', default: '' },
+    'loop-mode': { type: 'string', default: 'strict' },
     'typed-actions': { type: 'boolean', default: STUB.typedActions },
     'typed-action-task-id': { type: 'string', default: STUB.typedActionTaskId },
     'typed-action-knowledge-component': { type: 'string', default: STUB.typedActionKnowledgeComponent },
@@ -749,6 +762,11 @@ Options:
   --run-seed <n>         non-negative master seed for policy draws (default: ${STUB.runSeed})
   --eval-repeat <n>      repetition identity used in policy draw keys (default: 1)
   --eval-job-id <id>     optional stable job identity used in policy draw keys
+  --loop-mode <strict|diagnostic>
+                         strict fails the turn when every guarded response is
+                         rejected; diagnostic rolls back recoverable turn state,
+                         emits a fixed public-safe quarantine continuation, and
+                         continues collecting the requested fixed horizon
   --typed-actions        opt into Plan 2 typed pedagogical-action selection;
                          default off, with the decision persisted before output
   --typed-action-task-id <id>
@@ -1457,6 +1475,16 @@ function publicTextForTurn(world, tutorTurn, learnerText = '', state = null) {
   ].join('\n');
 }
 
+function publicEvidenceTextForAssertion(world, tutorTurn, learnerText = '', state = null) {
+  if (!world) return '';
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const releasedSurface = [...available]
+    .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
+    .join('\n');
+  const transcript = (state?.turns || []).flatMap((turn) => [turn?.learner || '', turn?.tutor || '']).join('\n');
+  return [world.question, world.setting, world.openingFrame?.situation, releasedSurface, transcript, learnerText].join('\n');
+}
+
 const PRIVATE_TOKEN_STOPWORDS = new Set([
   'about',
   'above',
@@ -1614,8 +1642,11 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
         continue;
       }
       if (
-        check.words.some((pattern) => pattern.test(lower)) &&
-        !entailsFactAtTurn(world, tutorTurn, check.fact, state)
+        tutorStubAnswerConclusionAsserted({
+          text: lower,
+          answerTerm,
+          wordPatterns: check.words,
+        }) && !entailsFactAtTurn(world, tutorTurn, check.fact, state)
       ) {
         leaks.push({
           type: check.label,
@@ -1632,6 +1663,18 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
       reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
       premise: row.premise,
       matches: row.matches,
+    });
+  }
+
+  const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
+    text,
+    permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state),
+  });
+  for (const issue of evidenceAssertionAudit.issues) {
+    leaks.push({
+      type: issue.type,
+      reason: issue.reason,
+      text: issue.text,
     });
   }
 
@@ -1714,13 +1757,26 @@ function tutorResponseRepairPrompt({
     questionSupportRows
       ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 short choices using only the people, objects, and records already named in this scene. Say concretely what each choice means here; avoid labels such as “one condition,” “the rule,” or “the whole case.” Do not reveal the unstaged record or answer.'
       : null,
+    (questionSupportAudit?.issues || []).some((issue) => issue.type === 'missing_clarification_invitation')
+      ? dramaticReleaseAudit?.active
+        ? 'The learner must be able to ask for clarification, and the clue still needs its interpretive handoff. Ask one short concrete question about what the clue changes, supports, or leaves unproved. Then add: “You can ask me to unpack any word or connection in that.” Do not replace the clue question with the clarification invitation.'
+        : 'The learner must be able to ask for clarification. End the rewritten turn with a short explicit invitation such as “You can ask me to unpack any word or connection in that,” either after the main question or instead of it.'
+      : null,
     dramaticReleaseRows
       ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as dramatic action flowing inside the same continuous utterance.'
       : null,
     dramaticReleaseRows
       ? 'Let the clue enter through a character, object, gesture, interruption, or spoken line; enact the supplied source role or physically handle the exhibit; then ask what it changes without stepping outside the scene.'
       : null,
-    dramaticReleaseRows
+    dramaticReleaseAudit?.active && responseConfiguration?.actorial_part_selection?.authored_role
+      ? `The required clue source is ${responseConfiguration.actorial_part_selection.authored_role}. Do not narrate or name that source outside the quotation. Put the supplied evidence into the source’s own first-person voice inside quotation marks, using “I”, “my”, “we”, or “our”; the adaptive host part remains the surrounding tutor action.`
+      : null,
+    dramaticReleaseAudit?.active && responseConfiguration?.actorial_part_selection?.authored_role
+      ? preservedUptake
+        ? 'Immediately after the preserved uptake, enter through the adaptive host’s concrete first-person action. Then begin the clue source with an unlabeled quotation whose first content word is “I”, “My”, “We”, or “Our”. Do not insert “the assayer”, a role name, a character action in third person, or any speaker label before that quotation.'
+        : 'Enter through the adaptive host’s first-person action, then begin the source with an unlabeled quotation whose first content word is “I”, “My”, “We”, or “Our”. Never introduce the source through a third-person noun phrase or speaker label.'
+      : null,
+    dramaticReleaseAudit?.active
       ? 'Stay inside the scene. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” “back to us,” or announce that another piece of information is being supplied. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
       : null,
     actorialRealizationRows
@@ -1737,6 +1793,9 @@ function tutorResponseRepairPrompt({
       : null,
     responseCompositionRows
       ? 'Write one continuous paragraph in one voice. Do not insert a blank line, arrow, role label, stage direction, or mention private analysis.'
+      : null,
+    responseConfiguration?.surface_budgets?.max_average_sentence_words
+      ? `Keep the rewrite’s average sentence length at or below ${responseConfiguration.surface_budgets.max_average_sentence_words} words. Split long evidence, qualification, and question clauses into separate sentences while keeping one paragraph.`
       : null,
     repetitionRows
       ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
@@ -2014,12 +2073,10 @@ function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, rep
   };
 }
 
-function attachTutorGuardAccounting({
+function buildTutorGuardAccounting({
   response,
   state,
-  trace,
   tutorTurn,
-  role = 'tutor_stub_tutor',
   guards,
   attempts,
   repairsApplied,
@@ -2028,7 +2085,7 @@ function attachTutorGuardAccounting({
   outcome,
 }) {
   const finalText = String(response?.text || '');
-  const accounting = jsonClone({
+  return jsonClone({
     schema: TUTOR_GUARD_ACCOUNTING_SCHEMA,
     turn: tutorTurn,
     policy: state?.experiment?.policy || state?.register?.policy || null,
@@ -2053,6 +2110,32 @@ function attachTutorGuardAccounting({
       audits: finalAudits,
       auditOk: finalAudits?.ok ?? null,
     },
+  });
+}
+
+function attachTutorGuardAccounting({
+  response,
+  state,
+  trace,
+  tutorTurn,
+  role = 'tutor_stub_tutor',
+  guards,
+  attempts,
+  repairsApplied,
+  finalSource,
+  finalAudits = null,
+  outcome,
+}) {
+  const accounting = buildTutorGuardAccounting({
+    response,
+    state,
+    tutorTurn,
+    guards,
+    attempts,
+    repairsApplied,
+    finalSource,
+    finalAudits,
+    outcome,
   });
   response.guardAccounting = accounting;
   appendTraceEvent(trace, {
@@ -9811,11 +9894,13 @@ async function callTutor({
       promptAudit: recovery.promptAudit,
     });
     if (!recovery.applied) {
-      throw new Error(
+      const error = new Error(
         `Speaking-tutor prompt crossed the private-planner boundary and public-only recovery failed: ${blockedAudit.issues
           .map((issue) => `${issue.code}:${issue.source}`)
           .join(', ')}`,
       );
+      error.code = 'TUTOR_SPEAKER_PRIVILEGE_RECOVERY_FAILED';
+      throw error;
     }
     effectiveSpeakerSystemPrompt = recovery.systemPrompt;
     effectiveSpeakerUserPrompt = recovery.userPrompt;
@@ -9834,7 +9919,7 @@ async function callTutor({
   const questionSupportGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.questionSupport?.guardRequired);
   const dramaticReleaseGuardEnabled = Boolean(!passthrough && dramaticReleaseFrame.active);
   const actorialRealizationGuardEnabled = Boolean(
-    dramaticReleaseGuardEnabled &&
+    !passthrough &&
       responseConfiguration?.actorial_part &&
       responseConfiguration?.actorial_performance,
   );
@@ -9945,13 +10030,16 @@ async function callTutor({
         repairAttempt,
         audit: promptAudit,
       });
-      throw new Error(
+      const error = new Error(
         `Tutor prompt audit failed: ${promptAudit.violations.map((violation) => violation.code).join(', ')}${
           promptAudit.duplicateInstructionLines?.length
             ? `; repeated instruction: ${promptAudit.duplicateInstructionLines[0].line}`
             : ''
         }`,
       );
+      error.code = 'TUTOR_PROMPT_AUDIT_FAILED';
+      error.promptAudit = promptAudit;
+      throw error;
     }
     const request = {
       systemPrompt: attemptSystemPrompt,
@@ -10118,7 +10206,7 @@ async function callTutor({
       : { ok: true, issues: [] };
     const dramaticReleaseAudit = dramaticReleaseGuardEnabled
       ? auditTutorStubDramaticReleaseResponse({
-          text: response.responseComposition?.development || response.text,
+          text: response.text,
           frame: dramaticReleaseFrame,
         })
       : { ok: true, active: false, issues: [] };
@@ -10267,19 +10355,30 @@ async function callTutor({
     }
     const uptake = String(audits?.responseCompositionAudit?.segments?.uptake || '').trim();
     if (!uptake) return '';
+    if (/^(?:correct|exactly(?: so)?|fair|good|just so|right|yes)[.!]?$/iu.test(uptake)) return '';
+    // A safe opening is not worth preserving when it is the very repetition
+    // that caused this draft to be rejected. Let the deterministic uptake
+    // selector choose a fresh acknowledgement for the repair/fallback.
+    if (!auditTutorStubRepetitionResponse({ text: uptake, recentTutorTexts }).ok) return '';
+    if (dramaticReleaseFrame?.active) {
+      const uptakeReleaseAudit = auditTutorStubDramaticReleaseResponse({ text: uptake, frame: dramaticReleaseFrame });
+      if (uptakeReleaseAudit.entranceVisible || uptakeReleaseAudit.enactmentVisible || uptakeReleaseAudit.exhibitHandoffVisible) {
+        return '';
+      }
+    }
     if (!leakGuardEnabled) return uptake;
     const uptakeLeakAudit = auditTutorResponseLeak({ text: uptake, world, tutorTurn, learnerText, state });
     return uptakeLeakAudit.ok ? uptake : '';
   }
 
   function ensureFallbackComposition(text, uptake) {
+    const candidate = composeTutorStubFallbackWithUptake({ text, uptake });
     const baseAudit = auditTutorStubResponseComposition({
-      text,
+      text: candidate,
       frame: responseCompositionFrame,
       learnerText,
     });
-    if (baseAudit.ok) return formatTutorStubResponseComposition(baseAudit) || String(text || '').trim();
-    return [String(uptake || '').trim(), String(text || '').trim()].filter(Boolean).join(' ');
+    return baseAudit.ok ? formatTutorStubResponseComposition(baseAudit) || candidate : candidate;
   }
 
   try {
@@ -10342,6 +10441,15 @@ async function callTutor({
 
     const firstRepairTriggers = tutorGuardIssueRows(audits);
     const firstPreservedUptake = preservableTutorUptake(audits);
+    const firstRepairUptake =
+      firstPreservedUptake ||
+      deterministicTutorStubLearnerUptake({
+        learnerText,
+        classification,
+        actionFamily: responseCompositionFrame.selected_action_family || null,
+        recentTutorTexts,
+        world,
+      });
     response = await invokeTutorAttempt({
       attemptUserPrompt: tutorResponseRepairPrompt({
         originalUserPrompt: effectiveSpeakerUserPrompt,
@@ -10353,7 +10461,7 @@ async function callTutor({
         actorialRealizationAudit: audits.actorialRealizationAudit,
         responseConfiguration,
         responseCompositionAudit: audits.responseCompositionAudit,
-        preservedUptake: firstPreservedUptake,
+        preservedUptake: firstRepairUptake,
         repetitionAudit: audits.repetitionAudit,
         closureAudit: audits.closureAudit,
         dialogueClosureFrame,
@@ -10419,14 +10527,19 @@ async function callTutor({
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
-    const fallbackUptake =
-      preservableTutorUptake(audits) ||
-      firstPreservedUptake ||
-      deterministicTutorStubLearnerUptake({
+    const fallbackRequiresSpecificUptake = (audits?.responseCompositionAudit?.issues || []).some(
+      (issue) => issue.type === 'learner_selected_test_not_acknowledged',
+    );
+    const deterministicFallbackUptake = deterministicTutorStubLearnerUptake({
         learnerText,
         classification,
         actionFamily: responseCompositionFrame.selected_action_family || null,
+        recentTutorTexts,
+        world,
       });
+    const fallbackUptake = fallbackRequiresSpecificUptake
+      ? deterministicFallbackUptake
+      : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const baseFallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
       : dramaticReleaseGuardEnabled
@@ -10440,7 +10553,21 @@ async function callTutor({
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
           : questionSupportGuardEnabled
-            ? deterministicTutorStubQuestionSupportFallback(fallbackContext)
+            ? deterministicTutorStubConfiguredContinuationFallback({
+                uptake: fallbackUptake,
+                responseConfiguration: registerSelection?.response_configuration || registerSelection,
+                support: humanDiscourseFrame?.questionSupport || null,
+                world,
+                learnerText,
+              })
+            : actorialRealizationGuardEnabled
+              ? deterministicTutorStubConfiguredContinuationFallback({
+                  uptake: fallbackUptake,
+                  responseConfiguration: registerSelection?.response_configuration || registerSelection,
+                  support: humanDiscourseFrame?.questionSupport || null,
+                  world,
+                  learnerText,
+                })
             : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackText = dramaticReleaseGuardEnabled
       ? baseFallbackText
@@ -10505,6 +10632,42 @@ async function callTutor({
       guardedSpans: attempts[1].guardedSpans,
       repairedSpans: fallbackRepairSpans,
     });
+    if (!fallbackAudits.ok) {
+      const rejectedIssues = tutorGuardIssueRows(fallbackAudits);
+      const exhaustedAccounting = buildTutorGuardAccounting({
+        response: fallback,
+        state,
+        tutorTurn,
+        guards,
+        attempts,
+        repairsApplied,
+        finalSource: 'rejected_deterministic_fallback',
+        finalAudits: fallbackAudits,
+        outcome: 'guard_exhausted_without_public_delivery',
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_fallback_rejected',
+        role: roleBase,
+        turn: tutorTurn,
+        issues: rejectedIssues,
+        text: fallbackText,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_guard_exhausted',
+        role: roleBase,
+        turn: tutorTurn,
+        accounting: exhaustedAccounting,
+        publicDelivery: null,
+      });
+      const error = new Error(
+        `Tutor deterministic fallback failed final audit: ${rejectedIssues
+          .map((issue) => `${issue.guard}:${issue.type}`)
+          .join(', ')}`,
+      );
+      error.code = 'TUTOR_FALLBACK_AUDIT_FAILED';
+      error.tutorGuardAccounting = exhaustedAccounting;
+      throw error;
+    }
     appendTraceEvent(trace, {
       type: 'tutor_response_fallback',
       role: roleBase,
@@ -12038,6 +12201,18 @@ async function runAnalyzedTutorTurn(
       null,
       { signal, isCurrent },
     );
+  } catch (error) {
+    error.tutorDiagnosticContext = jsonClone({
+      learnerText,
+      turn: state.turns.length + 1,
+      classification,
+      tutorLearnerDag,
+      registerSelection,
+      previousRegisterEfficacy,
+      dueReleaseRows: currentReleaseRows(state, state.turns.length + 1),
+      releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
+    });
+    throw error;
   } finally {
     stopInterimAnimation(state);
   }
@@ -12078,6 +12253,153 @@ async function emitTutorOpeningToState(state, { enabled = true, reason = 'start'
 function learnerDagReachedGroundedClosure(state) {
   const model = state.turns.at(-1)?.tutorLearnerDagModel || null;
   return tutorStubLearnerDagGrounded(model);
+}
+
+function quarantinedGuardAccounting(error, quarantineAudit) {
+  const exhausted = jsonClone(error?.tutorGuardAccounting || null);
+  const safeText = TUTOR_STUB_QUARANTINE_CONTINUATION;
+  return {
+    ...(exhausted || {
+      schema: TUTOR_GUARD_ACCOUNTING_SCHEMA,
+      guards: {},
+      attempts: [],
+      repairsApplied: [],
+      originalCandidate: null,
+    }),
+    outcome: 'quarantined_after_recoverable_turn_failure',
+    exhaustedFinalDelivery: exhausted?.finalDelivery || null,
+    finalDelivery: {
+      source: 'mechanical_public_safe_quarantine',
+      provider: 'harness',
+      model: 'mechanical-quarantine-v1',
+      deterministicFallback: false,
+      deterministicClosure: false,
+      candidate: {
+        start: 0,
+        end: safeText.length,
+        text: safeText,
+        offsetEncoding: 'utf16_code_units',
+      },
+      audits: quarantineAudit,
+      auditOk: quarantineAudit.ok,
+    },
+  };
+}
+
+function commitTutorStubQuarantinedTurn({ state, learnerText, error, failure, transaction }) {
+  const tutorTurn = state.turns.length + 1;
+  const turnId = turnDebugId(state, tutorTurn);
+  const text = TUTOR_STUB_QUARANTINE_CONTINUATION;
+  const mechanicalAudit = auditTutorStubQuarantineContinuation(text);
+  const leakAudit = state.dag && state.world
+    ? auditTutorResponseLeak({ text, world: state.world, tutorTurn, learnerText, state })
+    : { ok: true, leaks: [] };
+  const quarantineAudit = {
+    ...mechanicalAudit,
+    leakAudit,
+    ok: mechanicalAudit.ok && leakAudit.ok,
+  };
+  if (!quarantineAudit.ok) {
+    const corruption = new Error('Mechanical quarantine continuation failed its public-safety audit');
+    corruption.code = 'TUTOR_QUARANTINE_STATE_CORRUPTION';
+    corruption.quarantineAudit = quarantineAudit;
+    throw corruption;
+  }
+
+  const firstQuarantinedTurn = state.diagnosticCollection.firstQuarantinedTurn || tutorTurn;
+  state.diagnosticCollection.firstQuarantinedTurn = firstQuarantinedTurn;
+  state.diagnosticCollection.quarantinedTurns.push(tutorTurn);
+  const accounting = quarantinedGuardAccounting(error, quarantineAudit);
+  const lastValidModel = state.turns.at(-1)?.tutorLearnerDagModel || state.learnerDag?.lastModel || null;
+  const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+  const turnRecord = {
+    turnId,
+    turn: tutorTurn,
+    learner: learnerText,
+    tutor: text,
+    quarantined: true,
+    trajectoryContaminated: true,
+    contaminationOriginTurn: firstQuarantinedTurn,
+    quarantine: {
+      schema: 'machinespirits.tutor-stub.quarantined-turn.v1',
+      failure,
+      error: {
+        name: error?.name || 'Error',
+        code: error?.code || null,
+        message: error?.message || String(error),
+      },
+      audit: quarantineAudit,
+      transaction: {
+        rolledBack: true,
+        publicHistoryLengthBefore: transaction.history.length,
+        completedTurnCountBefore: transaction.turns.length,
+        clueReleaseCommitted: false,
+        preservedLastValidPublicState: true,
+      },
+      attempted: jsonClone(error?.tutorDiagnosticContext || null),
+    },
+    classification: null,
+    tutorLearnerDagModel: jsonClone(lastValidModel),
+    tutorLearnerDagUpdate: null,
+    registerSelection: null,
+    responseConfiguration: null,
+    responseConfigurationAudit: null,
+    responseComposition: null,
+    releasePacing,
+    releaseDeliveryAudit: {
+      schema: 'machinespirits.tutor-stub.release-delivery-audit.v1',
+      ok: true,
+      deliveredPremises: [],
+      missingPremises: [],
+      quarantined: true,
+    },
+    tutorLeakAudit: leakAudit,
+    tutorResponseRepaired: false,
+    tutorDeterministicFallback: false,
+    tutorGuardAccounting: accounting,
+    provider: 'harness',
+    model: 'mechanical-quarantine-v1',
+    latencyMs: 0,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+    tokenUsageAvailable: true,
+  };
+  state.history.push({ role: 'user', content: learnerText });
+  state.history.push({ role: 'assistant', content: text });
+  state.turns.push(turnRecord);
+  appendTraceEvent(state.trace, {
+    type: 'diagnostic_turn_transaction_rolled_back',
+    turn: tutorTurn,
+    turnId,
+    failure,
+    clueReleaseCommitted: false,
+    publicHistoryLengthRestored: transaction.history.length,
+    completedTurnCountRestored: transaction.turns.length,
+  });
+  appendTraceEvent(state.trace, {
+    type: 'tutor_quarantine_continuation',
+    turn: tutorTurn,
+    turnId,
+    text,
+    audit: quarantineAudit,
+    guardAccounting: accounting,
+    publicDelivery: 'mechanical_public_safe_quarantine',
+  });
+  appendTraceEvent(state.trace, {
+    type: 'turn_complete',
+    turn: tutorTurn,
+    turnId,
+    turnRecord,
+  });
+  return {
+    text,
+    provider: 'harness',
+    model: 'mechanical-quarantine-v1',
+    latencyMs: 0,
+    usage: turnRecord.usage,
+    tokenUsageAvailable: true,
+    guardAccounting: accounting,
+    quarantined: true,
+  };
 }
 
 async function runAutomatedLearnerDialogue({
@@ -12180,7 +12502,52 @@ async function runAutomatedLearnerDialogue({
       });
     }
 
-    await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw, signal, isCurrent });
+    const diagnosticCollection = state.loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE;
+    const transaction = diagnosticCollection ? snapshotTutorStubDiagnosticTransaction(state) : null;
+    if (diagnosticCollection) {
+      appendTraceEvent(state.trace, {
+        type: 'diagnostic_turn_transaction_started',
+        turn: turnNumber,
+        publicHistoryLength: transaction.history.length,
+        completedTurnCount: transaction.turns.length,
+        releasePacing: tutorStubReleasePacingSnapshot(transaction.releasePacing, state.world),
+      });
+    }
+    try {
+      await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw, signal, isCurrent });
+      if (diagnosticCollection) {
+        appendTraceEvent(state.trace, {
+          type: 'diagnostic_turn_transaction_committed',
+          turn: turnNumber,
+          publicHistoryLength: state.history.length,
+          completedTurnCount: state.turns.length,
+        });
+      }
+    } catch (error) {
+      if (!diagnosticCollection) throw error;
+      const failure = classifyTutorStubDiagnosticFailure(error);
+      if (failure.disposition !== 'quarantine') {
+        appendTraceEvent(state.trace, {
+          type: 'diagnostic_collection_aborted',
+          turn: turnNumber,
+          failure,
+          error: { name: error?.name || 'Error', code: error?.code || null, message: error.message },
+        });
+        throw error;
+      }
+      restoreTutorStubDiagnosticTransaction(state, transaction);
+      const quarantine = commitTutorStubQuarantinedTurn({
+        state,
+        learnerText: nextLearnerText,
+        error,
+        failure,
+        transaction,
+      });
+      printWithConcurrentTerminal(state, () => {
+        printTutorResponse(quarantine, state.stream);
+        console.log(`${C.dim}${metadataLine(quarantine)}; quarantined diagnostic turn${C.reset}\n`);
+      });
+    }
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     nextLearnerText = '';
 
@@ -12312,6 +12679,7 @@ async function main() {
   const releaseSpeed = normalizeTutorStubReleaseSpeed(args['release-speed'], {
     label: '--release-speed',
   });
+  const loopMode = normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' });
   const openingRealizer = String(args['opening-realizer'] || 'model')
     .trim()
     .toLowerCase();
@@ -12933,6 +13301,14 @@ async function main() {
           },
           dagFactDropout: dagFactDropoutConfig,
           releasePacing: releasePacingConfig,
+          loopExecution: {
+            mode: loopMode,
+            fixedPublicSafeQuarantine: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+            recoverableFailurePolicy:
+              loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE
+                ? 'rollback_turn_state_commit_mechanical_quarantine_and_continue'
+                : 'fail_fast',
+          },
           experiment: experimentConfig,
           typedPedagogicalActions: typedActionConfig,
           responseConfiguration: {
@@ -13185,6 +13561,14 @@ async function main() {
       },
       dagFactDropout: dagFactDropoutConfig,
       releasePacing: releasePacingConfig,
+      loopExecution: {
+        mode: loopMode,
+        fixedPublicSafeQuarantine: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+        recoverableFailurePolicy:
+          loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE
+            ? 'rollback_turn_state_commit_mechanical_quarantine_and_continue'
+            : 'fail_fast',
+      },
       experiment: experimentConfig,
       typedPedagogicalActions: typedActionConfig,
       responseConfiguration: {
@@ -13422,6 +13806,12 @@ async function main() {
       world: worldBundle?.world || null,
       speed: releaseSpeed,
     }),
+    loopMode,
+    diagnosticCollection: {
+      enabled: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+      firstQuarantinedTurn: null,
+      quarantinedTurns: [],
+    },
     register: {
       enabled: registerSelectionEnabled,
       palette: registerPalette,

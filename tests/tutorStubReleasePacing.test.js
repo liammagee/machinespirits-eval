@@ -170,6 +170,12 @@ test('direct pacing language is distinguished from inferred analysis', () => {
   assert.equal(detectTutorStubReleasePacingSignal({ learnerText: 'Wait, not so fast.' }).direction, 'decelerate');
   assert.equal(
     detectTutorStubReleasePacingSignal({
+      learnerText: 'I will wait for the touchstone streaks to agree before I enter any hand in the trial-book.',
+    }).direction,
+    'steady',
+  );
+  assert.equal(
+    detectTutorStubReleasePacingSignal({
       learnerText: 'Okay.',
       classification: { overall: { summary: 'The learner is impatient and ready for the next clue.' } },
     }).source,
@@ -328,7 +334,10 @@ process.stdin.on('end', () => {
     assert.equal(turn.dramaticRelease.frame.active, true);
     assert.equal(turn.dramaticRelease.frame.requiresExhibitHandoff, true);
     assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
-    assert.match(turn.tutor, /I (?:turn the record straight to|open the record at) the live line/u);
+    assert.match(
+      turn.tutor,
+      /I (?:turn the record straight to|open the record at|enter the record[^.!?]{0,80}go straight to) the live line/u,
+    );
     assert.doesNotMatch(turn.tutor, /role-play|another piece of information|back to (?:us|the case)/iu);
     const prompts = fs.readFileSync(promptLog, 'utf8');
     assert.match(prompts, /The archive names Marin as the founder's child/u);

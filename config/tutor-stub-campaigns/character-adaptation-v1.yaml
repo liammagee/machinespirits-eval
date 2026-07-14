@@ -1,0 +1,144 @@
+schema: machinespirits.tutor-stub.adaptation-campaign.v1
+id: character-adaptation-v1
+title: Character adaptation diagnostic and held-out verification
+created: 2026-07-15
+
+purpose: >-
+  Improve tutor character and engagement-stance realization from complete
+  diagnostic evidence, then verify the result on untouched trajectories.
+
+runner:
+  script: scripts/run-tutor-stub-character-adaptation-loop.js
+  npm_script: tutor:stub:character-loop
+  artifact_root: .tutor-stub-auto-eval/character-adaptation-loop
+
+fixed_configuration:
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+
+working_case:
+  world: world_005_marrick
+  learner_profile: affective_resistant
+  diagnostic_seed: 20260714
+  strict_seed: 20260714
+
+acceptance_cases:
+  - id: held_out_seed
+    world: world_005_marrick
+    learner_profile: affective_resistant
+    seeds:
+      active: 20260715
+      reserves: [20260730, 20260731]
+    rule: >-
+      Use the active seed only after strict working verification passes. If any
+      change is made after inspecting a failed run, retire that seed permanently
+      and promote the next still-unseen reserve before rerunning.
+
+  - id: held_out_world_and_profile
+    world: world_023_greyfen_lab
+    learner_profile: false_memory
+    seeds:
+      active: 20260722
+      retired:
+        - seed: 20260716
+          reason: consumed before camel-case public answer names were normalized
+        - seed: 20260717
+          reason: consumed before direct record corrections counted as skeptical learner uptake
+        - seed: 20260718
+          reason: consumed before lab exhibits and cross-domain character actions were audited generically
+        - seed: 20260719
+          reason: consumed before proof-complete objections and falsifiable advocacy counted as character work
+        - seed: 20260720
+          reason: consumed before explicit boundary stops, corrections, and lab-notebook acts counted as character work
+        - seed: 20260721
+          reason: three deterministic fallbacks exceeded the strict maximum of one
+      reserves: [20260723, 20260724]
+    rationale: >-
+      This changes both the setting register and the learner difficulty: a
+      contemporary laboratory incident review replaces Marrick's arcane
+      diction, while correction of invented evidence replaces affective
+      resistance.
+
+modes:
+  diagnostic_collection:
+    attempt_all_turns: true
+    abort_only_for:
+      - infrastructure_failure
+      - irrecoverable_state_corruption
+    unsafe_public_delivery_allowed: false
+    exhausted_turn_action:
+      rollback_clue_release_transaction: true
+      restore_last_valid_public_state: true
+      emit_mechanically_public_safe_continuation: true
+      mark_turn_quarantined: true
+      continue_collection: true
+    evidence_partition:
+      before_first_quarantine: diagnostic_causal_evidence
+      first_quarantine_and_after: trajectory_contaminated_exploratory_evidence
+    required_report_content:
+      - original_candidate_and_audits
+      - repair_candidate_and_audits
+      - deterministic_fallback_candidate_and_audits
+      - first_quarantined_turn
+      - contamination_boundary
+      - duplicate_failure_clusters_by_root_cause
+      - infrastructure_and_state_integrity_failures
+
+  strict_verification:
+    fail_fast: true
+    quarantines_allowed: 0
+    apply_all_gates: true
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+root_cause_cluster_key:
+  - guard
+  - issue_type
+  - candidate_stage
+  - normalized_trigger
+
+workflow:
+  - diagnostic_collection
+  - coordinated_fix_batch
+  - strict_working_verification
+  - held_out_seed_verification
+  - held_out_world_and_profile_verification
+
+change_control:
+  diagnostic_fixes_require_regression_tests: true
+  strict_failure_returns_to_diagnostics: true
+  tuning_after_acceptance_observation_retires_seed: true
+  held_out_world_must_remain_untuned: true
+  preserve_unrelated_worktree_changes: true
+
+terminal_states:
+  - diagnostic_complete
+  - strict_working_failed
+  - strict_working_passed
+  - acceptance_seed_retired
+  - held_out_seed_failed
+  - held_out_seed_passed
+  - held_out_world_failed
+  - campaign_passed
+  - stagnated
+  - infrastructure_blocked
+  - state_corruption_blocked

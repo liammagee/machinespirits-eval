@@ -54,6 +54,11 @@ import {
   summarizeTutorStubDagFactDropoutTrace,
 } from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
+import { auditTutorStubCharacterAdaptationTurns } from '../services/tutorStubCharacterAdaptationAudit.js';
+import {
+  normalizeTutorStubLoopMode,
+  summarizeTutorStubDiagnosticCollection,
+} from '../services/tutorStubDiagnosticCollection.js';
 import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOfActionCoaching.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -184,6 +189,10 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_RELEASE_SPEED ||
         String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
     },
+    'loop-mode': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_LOOP_MODE || 'strict',
+    },
     'dag-mode': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
@@ -248,6 +257,11 @@ Options:
   --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
   --dag-fact-dropout-seed <n> deterministic non-negative dropout seed (default: 1)
   --release-speed <n>          base clue-release speed, 0.5-2 (default: 1)
+  --loop-mode <strict|diagnostic>
+                              strict preserves fail-fast response verification;
+                              diagnostic rolls back recoverable failed turns,
+                              publishes only a fixed quarantine continuation,
+                              and continues the requested fixed horizon
   --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
@@ -1736,6 +1750,8 @@ function summarizeTrace(
   const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
     turnRecords.map((turn) => turn.responseConfigurationAudit),
   );
+  const characterAdaptation = auditTutorStubCharacterAdaptationTurns(turnRecords);
+  const diagnosticCollection = summarizeTutorStubDiagnosticCollection(turnRecords);
   const pointOfActionTurns = turnRecords.map((turn) => turn?.pointOfAction).filter(Boolean);
   const pointOfActionOpportunities = pointOfActionTurns.filter((turn) => turn.assigned_trigger);
   const pointOfActionCompliant = pointOfActionOpportunities.filter(
@@ -1844,6 +1860,8 @@ function summarizeTrace(
     sceneImmersionCounts: countBy(sceneImmersion),
     actorialPartCounts: countBy(actorialParts),
     responseConfigurationVisibility,
+    characterAdaptation,
+    diagnosticCollection,
     pointOfAction,
     dagFactDropout,
     releasePacing,
@@ -10242,6 +10260,8 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     `${safeSlug(policy)}-r${runIndex}`,
     '--trace-dir',
     traceDir,
+    '--loop-mode',
+    normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
     '--no-stream',
     '--no-interim-animation',
   ];
@@ -10837,6 +10857,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         label: '--dag-fact-dropout-seed',
       }),
       releaseSpeed: normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
+      loopMode: normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
       runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',

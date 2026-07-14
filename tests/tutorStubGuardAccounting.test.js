@@ -9,13 +9,14 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
 const SAFE_REPAIR =
-  'You’re right to ask what the public evidence licenses us to write. “I have my finger on the exact line of the mint-yard register: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
+  'You’re right to ask what the public evidence licenses us to write. I tap the mint-yard register at its exact limit; “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
 const META_THEATRICAL_DRAFT =
   "You’re right to ask what the public evidence licenses us to write. I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: what does this new clue support?";
 const FLAT_CHARACTER_DRAFT =
   'You’re right to ask what the public evidence licenses us to write. Town assayer, opening the mint-yard register: “Verrell alone draws the mint-yard crucible.” What changes?';
 const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
   'You’re right to separate suspicion from proof. The next clue appears without a source or exhibit.';
+const TERSE_UPTAKE_BROKEN_DEVELOPMENT = 'Exactly. The next clue appears without a source or exhibit.';
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -48,6 +49,8 @@ process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
   const response = process.env.TUTOR_GUARD_FAKE_MODE === 'preserve-uptake'
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
+    : process.env.TUTOR_GUARD_FAKE_MODE === 'terse-uptake'
+      ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
     : ['repair', 'meta-repair', 'tactic-repair'].includes(process.env.TUTOR_GUARD_FAKE_MODE) && repaired
       ? ${JSON.stringify(SAFE_REPAIR)}
       : process.env.TUTOR_GUARD_FAKE_MODE === 'meta-repair'
@@ -77,7 +80,9 @@ process.stdin.on('end', () => {
       '--no-classifier',
       '--no-register-selection',
       '--once',
-      'What should I write in the trial-book?',
+      mode === 'terse-uptake'
+        ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
+        : 'What should I write in the trial-book?',
       '--no-opening',
       '--no-stream',
       '--no-interim-animation',
@@ -227,6 +232,19 @@ test('a dramatic fallback preserves safe learner uptake and replaces only develo
   assert.equal(turn.responseComposition.frame.uptake.action_family, null);
 });
 
+test('a fallback replaces a terse generic acknowledgement with learner-specific uptake', () => {
+  const { events } = runGuardFixture('terse-uptake');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+
+  assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+  assert.match(
+    accounting.finalDelivery.candidate.text,
+    /^You’re right to separate suspicion from proof\./u,
+  );
+  assert.doesNotMatch(accounting.finalDelivery.candidate.text, /^Exactly\./u);
+  assert.equal(accounting.finalDelivery.auditOk, true);
+});
+
 test('meta-theatrical clue narration is rejected and repaired into direct diegetic action', () => {
   const { events } = runGuardFixture('meta-repair');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
@@ -243,7 +261,7 @@ test('meta-theatrical clue narration is rejected and repaired into direct dieget
   assert.equal(accounting.finalDelivery.source, 'model_repair_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.doesNotMatch(turn.tutor, /role-play|I(?:'|’)ll be|Back to (?:us|the case)/iu);
-  assert.match(turn.tutor, /“I have my finger on the exact line of the mint-yard register/u);
+  assert.match(turn.tutor, /I tap the mint-yard register[\s\S]*“I have my finger on the exact line/u);
   assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
 });
 
