@@ -79,8 +79,8 @@ export function tutorStubDramaticReleasePrompt(frame = null) {
   });
   return [
     '[Tutor-only dramatic clue release]',
-    'A new piece of public information enters in this reply. Make that transition audible instead of silently folding the clue into another question.',
-    'Use three short beats:',
+    'A new piece of public information enters in the development part of this reply. Make that transition audible instead of silently folding the clue into another question.',
+    'After the learner-responsive opening, use three short development movements:',
     '1. Handoff: tell the learner plainly that you are now bringing in, giving, showing, or testing another piece of information. Vary the wording naturally; do not recite a stock status line.',
     '2. Performance: stage the clue inside the drama. For an enacted role, explicitly invite the learner into the role-play, say whom you are becoming, and speak or read the clue from that position. For an exhibit, visibly put it on the table, open it, read it, show it, or demonstrate it.',
     '3. Return: step back into the shared inquiry and ask one light question about what this new information changes, supports, or rules out.',
@@ -92,9 +92,9 @@ export function tutorStubDramaticReleasePrompt(frame = null) {
 }
 
 const HANDOFF_PATTERN =
-  /\b(?:another|new|next)\s+(?:piece of\s+)?(?:information|clue|evidence|exhibit|record|observation)|\b(?:i(?:[’']m| am)|we(?:[’']re| are))\s+(?:now\s+)?(?:(?:going to|about to)\s+)?(?:bring(?:ing)?|giv(?:e|ing)|show(?:ing)?|add(?:ing)?|open(?:ing)?|read(?:ing)?|put(?:ting)?|test(?:ing)?)|\blet(?:[’']s| us)\s+(?:bring|take|put|open|read|look|role-play)/iu;
+  /\b(?:another|new|next)\s+(?:piece of\s+)?(?:information|clue|evidence|exhibit|record|observation)|\b(?:i(?:[’']m| am)|we(?:[’']re| are))\s+(?:now\s+)?(?:(?:going to|about to)\s+)?(?:bring(?:ing)?|giv(?:e|ing)|show(?:ing)?|add(?:ing)?|open(?:ing)?|read(?:ing)?|put(?:ting)?|test(?:ing)?)|\blet(?:[’']s| us)\s+(?:bring|take|put|open|read|look|role-play)|\bstep (?:up|over)\b[^.!?]{0,80}\b(?:desk|table|counter|archive|fridge|forge|window)\b/iu;
 const ENACTMENT_PATTERN =
-  /\b(?:role-play|play the (?:role|part)|i(?:[’']ll| will)\s+play\s+(?:the\s+)?[^.!?]{0,50}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)|i(?:[’']ll| will| am going to) be|i(?:[’']m| am) (?:now )?(?:the|your) (?:witness|clerk|record-keeper|examiner|expert|source)|speaking as|in the role of|let me be)\b|\bas (?:the|your|a) [^.!?]{0,60},?\s+i\s+(?:read|report|say|testify|recall|explain|state)\b|\b(?:the\s+)?(?:[\p{L}]+(?:-[\p{L}]+)?\s+){0,4}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)\s*[:—-]?\s*(?:read(?:s|ing)?|report(?:s|ing)?|say(?:s|ing)?|testif(?:y|ies|ying)|recall(?:s|ing)?|explain(?:s|ing)?|stat(?:e|es|ing))\b/iu;
+  /\b(?:role-play|play the (?:role|part)|i(?:[’']ll| will)\s+play\s+(?:the\s+)?[^.!?]{0,50}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)|i(?:[’']ll| will| am going to) be|i(?:[’']m| am) (?:now )?(?:the|your) (?:witness|clerk|record-keeper|examiner|expert|source)|speaking as|in the role of|let me be)\b|\bas (?:the|your|a) [^.!?]{0,60},?\s+i\s+(?:(?:open|unfold|take|lift)[^.!?]{0,45}\band\s+)?(?:read|report|say|testify|recall|explain|state)\b|\b(?:the\s+)?(?:[\p{L}]+(?:-[\p{L}]+)?\s+){0,4}(?:clerk|witness|manager|keeper|officer|editor|analyst|examiner|expert|assayer|watchman)\s*[:—-]?\s*(?:read(?:s|ing)?|report(?:s|ing)?|say(?:s|ing)?|testif(?:y|ies|ying)|recall(?:s|ing)?|explain(?:s|ing)?|stat(?:e|es|ing))\b/iu;
 const EXHIBIT_PATTERN =
   /\b(?:put|place|lay|bring)\b[^.!?]{0,50}\b(?:table|before us|in front of us|evidence|exhibit|record|clue)\b|\b(?:open|read|show|examine|test|demonstrate|look at)\b/iu;
 const RETURN_PATTERN =
@@ -155,7 +155,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
   };
 }
 
-export function deterministicTutorStubDramaticReleaseFallback({ frame = null, support = null } = {}) {
+export function deterministicTutorStubDramaticReleaseFallback({ frame = null, support = null, uptake = '' } = {}) {
   if (!frame?.active) return '';
   const rendered = frame.entries.map((entry) => {
     if (entry.mode === 'enacted_role') {
@@ -166,10 +166,10 @@ export function deterministicTutorStubDramaticReleaseFallback({ frame = null, su
   const clarification = support?.clarificationInvitationRequired
     ? 'You can also ask me to unpack any word or connection in it.'
     : null;
-  const directRepair = support?.responsiveRepairRequired
+  const directRepair = support?.responsiveRepairRequired && !oneLine(uptake)
     ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
     : null;
-  return [
+  const development = [
     directRepair,
     'I’m going to give you another piece of information now.',
     ...rendered,
@@ -178,4 +178,5 @@ export function deterministicTutorStubDramaticReleaseFallback({ frame = null, su
   ]
     .filter(Boolean)
     .join(' ');
+  return [oneLine(uptake), development].filter(Boolean).join('\n\n');
 }

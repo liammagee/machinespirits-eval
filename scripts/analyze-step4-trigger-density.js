@@ -146,7 +146,7 @@ function greenroomSources() {
   });
 }
 
-function turnRecords(buffer, trace) {
+function turnRecords(buffer, _trace) {
   return buffer
     .toString('utf8')
     .trim()
@@ -415,7 +415,7 @@ function buildAudit() {
       interpretation:
         'A family/arm below either minimum is an instrument failure for the affected trigger, not evidence of a coaching null.',
     },
-    sources: sources.map(({ buffer, ...source }) => source),
+    sources: sources.map(({ buffer: _buffer, ...source }) => source),
   };
 }
 

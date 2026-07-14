@@ -88,9 +88,11 @@ this world format.
 - Automated learners receive behavior-only briefs. Quantitative recurrence,
   scoring, classifier, DAG, and discrimination targets remain in the external
   profile contract and analyzers.
-- Runtime prompt calls are fail-closed on the budgets and duplicate-instruction
-  checks in `services/tutorStubPromptAudit.js`; DAG tutor calls also enforce the
-  speaker-privilege boundary.
+- Runtime prompt calls are fail-closed on budgets and the speaker-privilege
+  boundary. A tutor prompt that fails only because identical long instruction
+  lines were composed twice is compacted once, recorded as
+  `prompt_audit_recovery`, and re-audited; any remaining duplication or any
+  budget/privilege failure still stops the call.
 - Every world must explicitly author `temporal_frame`, `scene_ecology`,
   `narrative_diction`, `ledger_term`, and `summary`.
 

@@ -50,6 +50,8 @@ test('evaluation DB path falls back to canonical data home before repo data', ()
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-root-'));
   const dataHome = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-home-'));
   const dataHomeDb = path.join(dataHome, 'evaluations.db');
+  fs.mkdirSync(path.join(root, 'data'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'data', 'evaluations.db'), 'stale worktree shadow');
   fs.writeFileSync(dataHomeDb, '');
 
   withEnv({ MS_DATA_HOME: dataHome, EVAL_DB_PATH: null }, () => {

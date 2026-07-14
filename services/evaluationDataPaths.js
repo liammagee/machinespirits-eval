@@ -11,16 +11,26 @@ export function resolveEvaluationDataHome() {
   return process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
 }
 
+export function resolveCanonicalEvaluationDbPath() {
+  return path.join(resolveEvaluationDataHome(), 'evaluations.db');
+}
+
+export function resolveCanonicalEvaluationLogsRoot() {
+  return path.join(resolveEvaluationDataHome(), 'logs');
+}
+
 export function resolveEvaluationDbPath(rootDir, explicitPath = null) {
   const explicit = explicitPath || process.env.EVAL_DB_PATH;
   if (explicit) return resolvePathFromRoot(rootDir, explicit);
 
-  const repoDb = path.join(rootDir, 'data', 'evaluations.db');
-  if (fs.existsSync(repoDb)) return repoDb;
-
-  const dataHomeDb = path.join(resolveEvaluationDataHome(), 'evaluations.db');
+  // The canonical data-home DB wins over an ordinary worktree-local file.
+  // Isolated experiment DBs remain supported, but must be selected explicitly
+  // through EVAL_DB_PATH. This prevents a stale ignored file from silently
+  // shadowing the shared research database in a sibling worktree.
+  const dataHomeDb = resolveCanonicalEvaluationDbPath();
   if (fs.existsSync(dataHomeDb)) return dataHomeDb;
 
+  const repoDb = path.join(rootDir, 'data', 'evaluations.db');
   return repoDb;
 }
 

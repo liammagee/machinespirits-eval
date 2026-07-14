@@ -54,6 +54,7 @@ import {
   summarizeTutorStubDagFactDropoutTrace,
 } from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
+import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOfActionCoaching.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   normalizeTutorStubReleaseSpeed,
@@ -114,6 +115,10 @@ const { values: args } = parseArgs({
     'run-seed': { type: 'string', default: process.env.TUTOR_STUB_EVAL_RUN_SEED || '1' },
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
+    'point-of-action-arm': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_POINT_OF_ACTION_ARM || '',
+    },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || DEFAULT_CODEX_MODEL_REF },
     'analysis-model': {
       type: 'string',
@@ -217,6 +222,8 @@ Options:
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
+  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
+                              frozen final-stretch Step 4 arm; forwarded unchanged to every dialogue
   --model <ref>              tutor model (default: codex.gpt-5.5)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
   --auto-learner-model <ref> automated learner model (default: codex.gpt-5.5)
@@ -1117,6 +1124,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     selectedRegister: selection.selected_register || selection.engagement_stance || null,
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
+    pointOfAction: turn?.pointOfAction || null,
     dagFactDropout: turn?.dagFactDropout || null,
     releasePacing: turn?.releasePacing || null,
     register: {
@@ -1248,6 +1256,7 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
     },
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
+    pointOfAction: turn?.pointOfAction || null,
     learnerState: {
       summary: textSnippet(analysis.summary, 320),
       requestType: state.classifier.requestType || analysis.request_type || 'unknown',
@@ -1722,6 +1731,26 @@ function summarizeTrace(
   const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
     turnRecords.map((turn) => turn.responseConfigurationAudit),
   );
+  const pointOfActionTurns = turnRecords.map((turn) => turn?.pointOfAction).filter(Boolean);
+  const pointOfActionOpportunities = pointOfActionTurns.filter((turn) => turn.assigned_trigger);
+  const pointOfActionCompliant = pointOfActionOpportunities.filter(
+    (turn) => turn.compliance?.compliant === true,
+  ).length;
+  const pointOfAction = pointOfActionTurns.length
+    ? {
+        schema: 'machinespirits.tutor-stub.point-of-action-summary.v1',
+        arm: pointOfActionTurns[0]?.arm || null,
+        detectorVersion: pointOfActionTurns[0]?.detector_version || null,
+        observedTurns: pointOfActionTurns.length,
+        opportunities: pointOfActionOpportunities.length,
+        triggers: countBy(pointOfActionOpportunities.map((turn) => turn.assigned_trigger)),
+        compliant: pointOfActionCompliant,
+        complianceRate: pointOfActionOpportunities.length
+          ? pointOfActionCompliant / pointOfActionOpportunities.length
+          : null,
+        turns: pointOfActionTurns,
+      }
+    : null;
   const dagFactDropout = summarizeTutorStubDagFactDropoutTrace(turnRecords);
   const releasePacingRows = turnRecords.map((turn) => turn.releasePacing).filter(Boolean);
   const finalReleasePacing = releasePacingRows.at(-1) || null;
@@ -1808,6 +1837,7 @@ function summarizeTrace(
     lexicalAccessibilityCounts: countBy(lexicalAccessibility),
     sceneImmersionCounts: countBy(sceneImmersion),
     responseConfigurationVisibility,
+    pointOfAction,
     dagFactDropout,
     releasePacing,
     efficacyCounts: countBy(efficacies),
@@ -10171,6 +10201,9 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   if (!args['no-dag']) command.push('--dag');
   if (args['no-stop-on-grounded']) command.push('--no-auto-stop-on-grounded');
   if (args['pressure-turns']) command.push('--pressure-turns', args['pressure-turns']);
+  if (args['point-of-action-arm']) {
+    command.push('--point-of-action-arm', normalizeTutorStubPointOfActionArm(args['point-of-action-arm']));
+  }
   if (args['first-message']) command.push('--once', args['first-message']);
   if (args['cli-effort']) command.push('--cli-effort', args['cli-effort']);
   if (args['max-tokens']) command.push('--max-tokens', String(positiveInt(args['max-tokens'], '--max-tokens')));
@@ -10492,6 +10525,7 @@ function buildAutoEvalEvidencePlan({ traceDir, startedAt, jobs, config, resumePl
     tutorStub,
     path.join(ROOT, 'services', 'tutorStubPolicySampler.js'),
     path.join(ROOT, 'services', 'tutorStubContinuousRegister.js'),
+    path.join(ROOT, 'services', 'tutorStubPointOfActionCoaching.js'),
     path.join(ROOT, 'services', 'engagementRegisterRegistry.js'),
     path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js'),
   ];
@@ -10737,6 +10771,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         autoLearnerProfileLabel() === 'custom' ? null : learnerProfileContractSummary(resolvedAutoLearnerProfileId()),
       interleavePolicies: Boolean(args['interleave-policies']),
       pressureTurns: args['pressure-turns'] || null,
+      pointOfActionArm: normalizeTutorStubPointOfActionArm(args['point-of-action-arm']),
       dagMode: args['dag-mode'],
       registerTemperature: normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
         label: '--register-temperature',

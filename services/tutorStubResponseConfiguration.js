@@ -457,7 +457,7 @@ function visibleSignature(metrics) {
   ].join('|');
 }
 
-export function auditTutorStubResponseConfiguration({ text = '', configuration, world = null } = {}) {
+export function auditTutorStubResponseConfiguration({ text = '', configuration, world = null, composition = null } = {}) {
   if (!configuration) return null;
   const words = responseWords(text);
   const sentences = responseSentences(text);
@@ -504,7 +504,22 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     },
     action_family: {
       selected: configuration.action_family,
-      visible: actionVisible(configuration.action_family, text, metrics, unresolvedTerms),
+      visible: actionVisible(
+        configuration.action_family,
+        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance'].includes(configuration.action_family) &&
+          composition?.uptake
+          ? composition.uptake
+          : composition?.development || text,
+        metrics,
+        unresolvedTerms,
+      ),
+      evaluated_segment:
+        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance'].includes(configuration.action_family) &&
+        composition?.uptake
+          ? 'uptake'
+          : composition?.development
+            ? 'development'
+            : 'whole_response',
     },
     audience_register: { selected: configuration.audience_register, visible: audiencePass },
     lexical_accessibility: { selected: configuration.lexical_accessibility, visible: lexicalPass },

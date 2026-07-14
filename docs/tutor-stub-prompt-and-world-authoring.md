@@ -48,7 +48,9 @@ For a curriculum module, first identify the learning claim that should become me
 
 ## Dramatic clue releases
 
-A scheduled release is a public dramatic beat, not an invisible state update. On every turn with newly available evidence, the speaking tutor must make three movements visible: announce that another piece of information is entering, stage or enact its source, and then return to the shared inquiry with one light interpretive question.
+A public tutor turn after learner speech is one atomic assistant message with two visible beats. First, uptake responds to the learner's actual contribution by crediting, answering, qualifying, correcting, or receiving it. Then development performs the selected next pedagogical action. The private planner builds this composition from the public learner analysis, learner-DAG assessment, and independently selected response configuration; the speaking tutor realizes it without naming that machinery. Learner-responsive action families such as accountable answering are realized in uptake; progression actions such as staging the next step are realized in development alongside the expected DAG or interaction move. The engagement stance, audience, language, and scene settings govern both.
+
+A scheduled release is a public dramatic development beat, not an invisible state update. On every turn with newly available evidence, development must make three movements visible after learner uptake: announce that another piece of information is entering, stage or enact its source, and then return to the shared inquiry with one light interpretive question. Guards audit the two response parts separately; repairing a clue performance must not erase an already-safe learner acknowledgement. The combined text remains one transactional public assistant message, so evidence is committed only after the complete turn passes its checks.
 
 The default follows `via`: `director` evidence is enacted as an in-scene role, while `tutor` evidence is presented as an exhibit, record, observation, or demonstration. For a more exact performance, author a release presentation:
 

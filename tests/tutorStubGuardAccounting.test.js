@@ -9,10 +9,15 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
 const SAFE_REPAIR = [
-  "I'm going to give you another piece of information.",
-  "Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible.",
-  'Back to the case: what does this new clue support?',
-].join(' ');
+  'You’re right to ask what the public evidence licenses us to write.',
+  [
+    "I'm going to give you another piece of information.",
+    "Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible.",
+    'Back to the case: what does this new clue support?',
+  ].join(' '),
+].join('\n\n');
+const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
+  'You’re right to separate suspicion from proof. The next clue appears without a source or exhibit.';
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -43,9 +48,11 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
-  const response = process.env.TUTOR_GUARD_FAKE_MODE === 'repair' && repaired
-    ? ${JSON.stringify(SAFE_REPAIR)}
-    : ${JSON.stringify(UNSAFE_DRAFT)};
+  const response = process.env.TUTOR_GUARD_FAKE_MODE === 'preserve-uptake'
+    ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
+    : process.env.TUTOR_GUARD_FAKE_MODE === 'repair' && repaired
+      ? ${JSON.stringify(SAFE_REPAIR)}
+      : ${JSON.stringify(UNSAFE_DRAFT)};
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
 });
@@ -191,4 +198,20 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(closeout.finalTurn.leakOk, true);
   assert.match(stdout, /safe fallback used/u);
   assert.doesNotMatch(stdout, /leak-guard/u);
+});
+
+test('a dramatic fallback preserves safe learner uptake and replaces only development', () => {
+  const { events } = runGuardFixture('preserve-uptake');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+
+  assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+  assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
+  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\.\n\n/u);
+  assert.match(accounting.finalDelivery.candidate.text, /another piece of information/u);
+  assert.doesNotMatch(accounting.finalDelivery.candidate.text, /That gives us a concrete contribution/u);
+  assert.equal(turn.responseComposition.audit.ok, true);
+  assert.equal(turn.responseComposition.uptake, 'You’re right to separate suspicion from proof.');
+  assert.match(turn.responseComposition.development, /role-play/u);
+  assert.equal(turn.responseComposition.frame.uptake.action_family, null);
 });

@@ -99,8 +99,10 @@ test('the deterministic release fallback performs the complete handoff', () => {
   const text = deterministicTutorStubDramaticReleaseFallback({
     frame,
     support: { clarificationInvitationRequired: true },
+    uptake: 'Yes—the badge establishes access, not guilt.',
   });
 
+  assert.match(text, /^Yes—the badge establishes access, not guilt\.\n\n/u);
   assert.match(text, /another piece of information/u);
   assert.match(text, /role-play/u);
   assert.match(text, /building manager/u);
@@ -126,6 +128,26 @@ test('natural handoff and role-reading language from the live transcript passes'
   ].join(' ');
 
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('the original and repaired Larkspur drafts both count as natural role enactments', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crew',
+        via: 'director',
+        surface: 'Visitor code WF-11 was issued to an outside crew in hi-vis.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+      },
+    ],
+  });
+  const original =
+    'Exactly—presence makes Dario a suspect, not the person who handled the lunchbox. I’m bringing in the next exhibit: as the front-desk clerk, I open the visitor badge log and read, “One more noon entry: visitor code WF-11.” What does that add—and what still remains unproved?';
+  const repaired =
+    'Exactly—Dario’s presence keeps him in view, but it does not prove he touched the lunchbox. Step up to the front desk with me; I’m the clerk opening the visitor badge log: “Another noon entry—WF-11.” Back at the fridge, what does that change—and what remains unproved?';
+
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text: original, frame }).ok, true);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text: repaired, frame }).ok, true);
 });
 
 test('the release fallback keeps an unanswered-question repair visible', () => {

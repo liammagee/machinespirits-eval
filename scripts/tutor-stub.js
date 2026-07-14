@@ -134,8 +134,16 @@ import {
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
 import {
+  auditTutorStubResponseComposition,
+  buildTutorStubResponseCompositionFrame,
+  deterministicTutorStubLearnerUptake,
+  formatTutorStubResponseComposition,
+  tutorStubResponseCompositionPrompt,
+} from '../services/tutorStubResponseComposition.js';
+import {
   auditTutorStubPrompt,
   auditTutorStubSpeakerPrivilege,
+  recoverTutorStubDuplicateInstructionLines,
   tutorStubPromptArchitecture,
   tutorStubPromptSurfaceForRole,
 } from '../services/tutorStubPromptAudit.js';
@@ -186,6 +194,7 @@ import {
 } from '../services/tutorStubReleasePacing.js';
 import {
   buildDynamicalSystemRegisterScores,
+  buildDynamicalSystemState,
   buildFieldRegisterScores,
   buildStateRegisterScores,
   buildTrajectoryRegisterScores,
@@ -208,6 +217,14 @@ import {
   scoreValue,
   topNumericEntries,
 } from '../services/tutorStubRegisterPolicy.js';
+import {
+  applyTutorStubPointOfActionConstraint,
+  auditTutorStubPointOfActionCompliance,
+  buildTutorStubPointOfActionTurn,
+  normalizeTutorStubPointOfActionArm,
+  tutorStubPointOfActionPrompt,
+  tutorStubPointOfActionStandingBook,
+} from '../services/tutorStubPointOfActionCoaching.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
@@ -280,6 +297,7 @@ const STUB = {
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || 'medium',
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
+  pointOfActionArm: process.env.TUTOR_STUB_POINT_OF_ACTION_ARM || '',
   registerOverlayThreshold:
     process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD || String(DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
   registerTemperature:
@@ -468,6 +486,7 @@ const { values: args, positionals } = parseArgs({
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
+    'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
@@ -551,6 +570,8 @@ Options:
                          examples: openai.mini, openrouter.sonnet-5,
                          codex.gpt-5.6-sol, claude-code.sonnet
                          (default speaking tutor: ${STUB.model})
+  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
+                         frozen final-stretch Step 4 intervention arm
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -1400,6 +1421,8 @@ function tutorResponseRepairPrompt({
   scaffoldAudit = null,
   questionSupportAudit = null,
   dramaticReleaseAudit = null,
+  responseCompositionAudit = null,
+  preservedUptake = '',
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
@@ -1416,6 +1439,9 @@ function tutorResponseRepairPrompt({
   const dramaticReleaseRows = (dramaticReleaseAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
+  const responseCompositionRows = (responseCompositionAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
   const repetitionRows = (repetitionAudit?.issues || [])
     .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
     .join('\n');
@@ -1427,7 +1453,10 @@ function tutorResponseRepairPrompt({
     '',
     '[Tutor-only repair instruction]',
     'Your previous draft failed a learner-facing safety or scaffold check and must not be shown to the learner.',
-    'Rewrite the tutor reply from scratch.',
+    preservedUptake
+      ? 'The learner-responsive opening below passed its public-evidence check. Keep it verbatim as the first paragraph and rewrite only the development that follows.'
+      : 'Rewrite the tutor reply from scratch.',
+    preservedUptake ? `Safe learner uptake to preserve:\n${preservedUptake}` : null,
     leakRows ? 'Use only public setup, already released evidence, and public rules.' : null,
     leakRows
       ? 'Do not name the concealed answer, any hidden actor, any unreleased object, or any intermediate conclusion involving them.'
@@ -1460,6 +1489,12 @@ function tutorResponseRepairPrompt({
     dramaticReleaseRows
       ? 'Stay inside the scene. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
       : null,
+    responseCompositionRows
+      ? 'The response must first take up what the learner just said, then develop the inquiry in a second paragraph. Do not replace acknowledgement with the next clue or question.'
+      : null,
+    responseCompositionRows
+      ? 'Keep the two parts inside one atomic assistant turn, separated by one blank line. Do not label the parts or mention private analysis.'
+      : null,
     repetitionRows
       ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
       : null,
@@ -1484,6 +1519,8 @@ function tutorResponseRepairPrompt({
     questionSupportRows || null,
     dramaticReleaseRows ? 'Dramatic-release audit:' : null,
     dramaticReleaseRows || null,
+    responseCompositionRows ? 'Response-composition audit:' : null,
+    responseCompositionRows || null,
     repetitionRows ? 'Repetition audit:' : null,
     repetitionRows || null,
     closureRows ? 'Dialogue-closure audit:' : null,
@@ -1575,6 +1612,10 @@ function tutorGuardIssueRows(audits) {
     ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
     ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
     ...(audits?.dramaticReleaseAudit?.issues || []).map((issue) => ({ guard: 'dramatic_release', ...issue })),
+    ...(audits?.responseCompositionAudit?.issues || []).map((issue) => ({
+      guard: 'response_composition',
+      ...issue,
+    })),
     ...(audits?.repetitionAudit?.issues || []).map((issue) => ({ guard: 'repetition', ...issue })),
     ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
   ];
@@ -3237,6 +3278,13 @@ function compactPendingRegisterSummary(context) {
 function currentReleaseRows(state, tutorTurn) {
   const world = state?.world;
   if (!world || !Number.isFinite(Number(tutorTurn))) return [];
+  const pointOfAction = state?.pointOfAction?.current || null;
+  if (
+    Number(pointOfAction?.turn) === Number(tutorTurn) &&
+    pointOfAction?.compiled_constraint?.suppress_new_premise === true
+  ) {
+    return [];
+  }
   const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
   const dueIds = snapshot
     ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
@@ -4057,6 +4105,15 @@ function replayTextAsConsoleStream(role, text, stream = null) {
 }
 
 function printTutorResponse(response, stream = null) {
+  const uptake = String(response.responseComposition?.uptake || '').trim();
+  const development = String(response.responseComposition?.development || '').trim();
+  if (uptake && development && uptake !== development) {
+    console.log(`${C.brightMagenta}${C.bold}tutor >${C.reset} ${uptake}`);
+    console.log('');
+    console.log(`${C.dim}        ↳${C.reset} ${development}`);
+    response.streamed = Boolean(response.streamed || response.guardedStreamReplay);
+    return;
+  }
   if (response.guardedStreamReplay) {
     response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
     return;
@@ -6536,7 +6593,9 @@ function humanDiscourseTutorContext(frame) {
       ? `Compressed bridge accepted: ${proofDebt.elision.count} ordinary warrant row(s) are elided from learner-facing demands.`
       : null,
     proofDebt.elision?.tutorInstruction || null,
-    audit.warrants?.missing?.length ? `Missing warrants:\n${compactAuditRows(audit.warrants.missing)}` : null,
+    // proofDebt.open already contains every non-elided missing warrant. Rendering
+    // audit.warrants.missing again duplicated learner-derived context and made the
+    // prompt audit mistake repeated bookkeeping for repeated instructions.
     audit.premises?.suppressedOrPrivate?.length || audit.premises?.illicitHidden?.length
       ? `Hidden/private premise risk:\n${compactAuditRows([
           ...(audit.premises?.suppressedOrPrivate || []),
@@ -8608,6 +8667,7 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     human_scaffold: { issues: 0, guardedSpans: 0 },
     question_support: { issues: 0, guardedSpans: 0 },
     dramatic_release: { issues: 0, guardedSpans: 0 },
+    response_composition: { issues: 0, guardedSpans: 0 },
     repetition: { issues: 0, guardedSpans: 0 },
     dialogue_closure: { issues: 0, guardedSpans: 0 },
   };
@@ -8941,8 +9001,18 @@ async function callTutor({
   const dramaticReleaseAdvisory = tutorStubDramaticReleasePrompt(dramaticReleaseFrame);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const dialogueClosureAdvisory = dialogueClosureTutorContext(dialogueClosureFrame);
+  const responseCompositionFrame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification,
+    tutorLearnerDag: tutorLearnerDagModel,
+    registerSelection,
+    dramaticReleaseFrame,
+    dialogueClosureFrame,
+  });
+  const responseCompositionAdvisory = tutorStubResponseCompositionPrompt(responseCompositionFrame);
   const comprehensionAdvisory = tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
   const coachAdvisory = tutorCoachGuidanceContext(state, { tutorTurn });
+  const pointOfActionAdvisory = tutorStubPointOfActionPrompt(state?.pointOfAction?.current);
   const responseConfigurationAdvisory = responseConfigurationContext(registerSelection, {
     multipleChoice,
     humanDiscourseFrame,
@@ -8960,6 +9030,7 @@ async function callTutor({
   const promptParts = [
     tutorMemory,
     dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+    responseCompositionAdvisory,
     dramaticReleaseAdvisory,
     advisory,
     learnerDagAdvisory,
@@ -8967,6 +9038,7 @@ async function callTutor({
     dialogueClosureAdvisory,
     comprehensionAdvisory,
     coachAdvisory,
+    pointOfActionAdvisory,
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
@@ -8976,11 +9048,13 @@ async function callTutor({
     systemPrompt: effectiveSystemPrompt,
     privateAdvisory: [
       dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      responseCompositionAdvisory,
       dramaticReleaseAdvisory,
       humanDiscourseAdvisory,
       dialogueClosureAdvisory,
       comprehensionAdvisory,
       coachAdvisory,
+      pointOfActionAdvisory,
       responseConfigurationAdvisory,
     ]
       .filter(Boolean)
@@ -9002,6 +9076,7 @@ async function callTutor({
   const scaffoldGuardEnabled = Boolean(humanDiscourseFrame?.generousInference?.applied);
   const questionSupportGuardEnabled = Boolean(humanDiscourseFrame?.questionSupport?.guardRequired);
   const dramaticReleaseGuardEnabled = Boolean(dramaticReleaseFrame.active);
+  const responseCompositionGuardEnabled = Boolean(responseCompositionFrame.active);
   const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const repetitionGuardEnabled = recentTutorTexts.length > 0;
   const closureGuardEnabled = Boolean(
@@ -9012,6 +9087,7 @@ async function callTutor({
     scaffoldGuardEnabled ||
     questionSupportGuardEnabled ||
     dramaticReleaseGuardEnabled ||
+    responseCompositionGuardEnabled ||
     repetitionGuardEnabled ||
     closureGuardEnabled;
   const guards = {
@@ -9020,6 +9096,7 @@ async function callTutor({
     humanScaffold: scaffoldGuardEnabled,
     questionSupport: questionSupportGuardEnabled,
     dramaticRelease: dramaticReleaseGuardEnabled,
+    responseComposition: responseCompositionGuardEnabled,
     repetition: repetitionGuardEnabled,
     dialogueClosure: closureGuardEnabled,
   };
@@ -9032,24 +9109,70 @@ async function callTutor({
 
   async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
     const startedAt = new Date().toISOString();
-    const promptAudit = auditTutorStubPrompt({
-      surface: 'tutor_turn',
-      systemPrompt: effectiveSystemPrompt,
-      userPrompt: attemptUserPrompt,
-      messageHistory: context,
-      instructionTexts: [
+    const instructionTexts = [
         systemPrompt,
         dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+        responseCompositionAdvisory,
         dramaticReleaseAdvisory,
-        advisory,
-        learnerDagAdvisory,
-        humanDiscourseAdvisory,
-        dialogueClosureAdvisory,
-        comprehensionAdvisory,
-        coachAdvisory,
-        responseConfigurationAdvisory,
-      ].filter(Boolean),
+      advisory,
+      learnerDagAdvisory,
+      humanDiscourseAdvisory,
+      dialogueClosureAdvisory,
+      comprehensionAdvisory,
+      coachAdvisory,
+      pointOfActionAdvisory,
+      responseConfigurationAdvisory,
+    ].filter(Boolean);
+    let attemptSystemPrompt = effectiveSystemPrompt;
+    let effectiveAttemptUserPrompt = attemptUserPrompt;
+    let effectiveInstructionTexts = instructionTexts;
+    let promptAudit = auditTutorStubPrompt({
+      surface: 'tutor_turn',
+      systemPrompt: attemptSystemPrompt,
+      userPrompt: effectiveAttemptUserPrompt,
+      messageHistory: context,
+      instructionTexts: effectiveInstructionTexts,
     });
+    const duplicateOnlyFailure =
+      !promptAudit.ok &&
+      promptAudit.duplicateInstructionLines?.length > 0 &&
+      promptAudit.violations.every((violation) => violation.code === 'duplicate_instruction_lines');
+    if (duplicateOnlyFailure) {
+      const originalAudit = promptAudit;
+      const actualPromptRecovery = recoverTutorStubDuplicateInstructionLines({
+        texts: [attemptSystemPrompt, effectiveAttemptUserPrompt],
+        duplicateInstructionLines: originalAudit.duplicateInstructionLines,
+      });
+      const instructionRecovery = recoverTutorStubDuplicateInstructionLines({
+        texts: effectiveInstructionTexts,
+        duplicateInstructionLines: originalAudit.duplicateInstructionLines,
+      });
+      [attemptSystemPrompt, effectiveAttemptUserPrompt] = actualPromptRecovery.texts;
+      effectiveInstructionTexts = instructionRecovery.texts;
+      const recoveredAudit = auditTutorStubPrompt({
+        surface: 'tutor_turn',
+        systemPrompt: attemptSystemPrompt,
+        userPrompt: effectiveAttemptUserPrompt,
+        messageHistory: context,
+        instructionTexts: effectiveInstructionTexts,
+      });
+      const recovery = {
+        applied: actualPromptRecovery.applied && instructionRecovery.applied && recoveredAudit.ok,
+        method: 'deduplicate_exact_instruction_lines',
+        originalDuplicateInstructionLines: originalAudit.duplicateInstructionLines,
+        removedPromptLineCount: actualPromptRecovery.removedLines.length,
+        removedInstructionLineCount: instructionRecovery.removedLines.length,
+      };
+      promptAudit = { ...recoveredAudit, recovery };
+      appendTraceEvent(trace, {
+        type: 'prompt_audit_recovery',
+        role,
+        turn: tutorTurn,
+        repairAttempt,
+        recovery,
+        audit: promptAudit,
+      });
+    }
     if (!promptAudit.ok) {
       appendTraceEvent(trace, {
         type: 'prompt_audit_failed',
@@ -9067,8 +9190,8 @@ async function callTutor({
       );
     }
     const request = {
-      systemPrompt: effectiveSystemPrompt,
-      messages: [...context, { role: 'user', content: attemptUserPrompt }],
+      systemPrompt: attemptSystemPrompt,
+      messages: [...context, { role: 'user', content: effectiveAttemptUserPrompt }],
       config: {
         temperature,
         maxTokens,
@@ -9076,6 +9199,7 @@ async function callTutor({
         leakGuard: leakGuardEnabled,
         scaffoldGuard: scaffoldGuardEnabled,
         questionSupportGuard: questionSupportGuardEnabled,
+        responseCompositionGuard: responseCompositionGuardEnabled,
         repetitionGuard: repetitionGuardEnabled,
         closureGuard: closureGuardEnabled,
         repairAttempt,
@@ -9095,8 +9219,8 @@ async function callTutor({
     if (isCliProvider(resolved.provider)) {
       const result = await callAIWithCliBridge(
         { provider: resolved.provider, model: resolved.model },
-        effectiveSystemPrompt,
-        attemptUserPrompt,
+        attemptSystemPrompt,
+        effectiveAttemptUserPrompt,
         role,
         { messageHistory: context, effort: cliEffort, signal },
       );
@@ -9121,7 +9245,7 @@ async function callTutor({
       for await (const chunk of streamAI({
         provider: resolved.provider,
         model: resolved.model,
-        systemPrompt: effectiveSystemPrompt,
+        systemPrompt: attemptSystemPrompt,
         messages: request.messages,
         preset: 'socratic',
         config: { temperature, maxTokens },
@@ -9147,7 +9271,7 @@ async function callTutor({
       const result = await callAI({
         provider: resolved.provider,
         model: resolved.model,
-        systemPrompt: effectiveSystemPrompt,
+        systemPrompt: attemptSystemPrompt,
         messages: request.messages,
         preset: 'socratic',
         config: { temperature, maxTokens },
@@ -9162,8 +9286,8 @@ async function callTutor({
     }
 
     response.promptSnapshot = {
-      systemPrompt: effectiveSystemPrompt,
-      userPrompt: attemptUserPrompt,
+      systemPrompt: attemptSystemPrompt,
+      userPrompt: effectiveAttemptUserPrompt,
       messageHistory: context,
       role,
       repairAttempt,
@@ -9192,6 +9316,25 @@ async function callTutor({
   }
 
   function auditTutorDraft(response, { role, attempt }) {
+    let responseCompositionAudit = responseCompositionGuardEnabled
+      ? auditTutorStubResponseComposition({
+          text: response.text,
+          frame: responseCompositionFrame,
+          learnerText,
+        })
+      : { ok: true, active: false, issues: [], segments: null };
+    const composedText = formatTutorStubResponseComposition(responseCompositionAudit);
+    if (responseCompositionAudit.ok && composedText) {
+      response.text = composedText;
+      responseCompositionAudit = auditTutorStubResponseComposition({
+        text: response.text,
+        frame: responseCompositionFrame,
+        learnerText,
+      });
+    }
+    response.responseComposition = responseCompositionAudit.segments || null;
+    response.responseCompositionFrame = responseCompositionFrame;
+    response.responseCompositionAudit = responseCompositionAudit;
     const leakAudit = leakGuardEnabled
       ? auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText, state })
       : { ok: true, leaks: [] };
@@ -9260,6 +9403,18 @@ async function callTutor({
         frame: dramaticReleaseFrame,
       });
     }
+    if (responseCompositionGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_response_composition_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: responseCompositionAudit.ok,
+        issues: responseCompositionAudit.issues,
+        frame: responseCompositionFrame,
+        segments: responseCompositionAudit.segments,
+      });
+    }
     if (repetitionGuardEnabled) {
       appendTraceEvent(trace, {
         type: 'tutor_repetition_audit',
@@ -9290,15 +9445,42 @@ async function callTutor({
         scaffoldAudit.ok &&
         questionSupportAudit.ok &&
         dramaticReleaseAudit.ok &&
+        responseCompositionAudit.ok &&
         repetitionAudit.ok &&
         closureAudit.ok,
       leakAudit,
       scaffoldAudit,
       questionSupportAudit,
       dramaticReleaseAudit,
+      responseCompositionAudit,
       repetitionAudit,
       closureAudit,
     };
+  }
+
+  function preservableTutorUptake(audits) {
+    if (
+      (audits?.responseCompositionAudit?.issues || []).some((issue) =>
+        ['missing_learner_uptake', 'generic_learner_uptake'].includes(issue.type),
+      )
+    ) {
+      return '';
+    }
+    const uptake = String(audits?.responseCompositionAudit?.segments?.uptake || '').trim();
+    if (!uptake) return '';
+    if (!leakGuardEnabled) return uptake;
+    const uptakeLeakAudit = auditTutorResponseLeak({ text: uptake, world, tutorTurn, learnerText, state });
+    return uptakeLeakAudit.ok ? uptake : '';
+  }
+
+  function ensureFallbackComposition(text, uptake) {
+    const baseAudit = auditTutorStubResponseComposition({
+      text,
+      frame: responseCompositionFrame,
+      learnerText,
+    });
+    if (baseAudit.ok) return formatTutorStubResponseComposition(baseAudit) || String(text || '').trim();
+    return [String(uptake || '').trim(), String(text || '').trim()].filter(Boolean).join('\n\n');
   }
 
   try {
@@ -9355,6 +9537,7 @@ async function callTutor({
     }
 
     const firstRepairTriggers = tutorGuardIssueRows(audits);
+    const firstPreservedUptake = preservableTutorUptake(audits);
     response = await invokeTutorAttempt({
       attemptUserPrompt: tutorResponseRepairPrompt({
         originalUserPrompt: userPrompt,
@@ -9363,6 +9546,8 @@ async function callTutor({
         scaffoldAudit: audits.scaffoldAudit,
         questionSupportAudit: audits.questionSupportAudit,
         dramaticReleaseAudit: audits.dramaticReleaseAudit,
+        responseCompositionAudit: audits.responseCompositionAudit,
+        preservedUptake: firstPreservedUptake,
         repetitionAudit: audits.repetitionAudit,
         closureAudit: audits.closureAudit,
         dialogueClosureFrame,
@@ -9427,18 +9612,30 @@ async function callTutor({
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
-    const fallbackText = closureFallbackSelected
+    const fallbackUptake =
+      preservableTutorUptake(audits) ||
+      firstPreservedUptake ||
+      deterministicTutorStubLearnerUptake({
+        learnerText,
+        classification,
+        actionFamily: responseCompositionFrame.selected_action_family || null,
+      });
+    const baseFallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
       : dramaticReleaseGuardEnabled
         ? deterministicTutorStubDramaticReleaseFallback({
             frame: dramaticReleaseFrame,
             support: humanDiscourseFrame?.questionSupport || null,
+            uptake: fallbackUptake,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
           : questionSupportGuardEnabled
             ? deterministicTutorStubQuestionSupportFallback(fallbackContext)
             : deterministicTutorStubContextualFallback(fallbackContext);
+    const fallbackText = dramaticReleaseGuardEnabled
+      ? baseFallbackText
+      : ensureFallbackComposition(baseFallbackText, fallbackUptake);
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;
@@ -9458,6 +9655,7 @@ async function callTutor({
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: fallbackQuestionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
+      responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: fallbackClosureAudit,
       repaired: true,
@@ -9502,6 +9700,7 @@ async function callTutor({
       scaffoldIssues: audits.scaffoldAudit.issues,
       questionSupportIssues: audits.questionSupportAudit.issues,
       dramaticReleaseIssues: audits.dramaticReleaseAudit.issues,
+      responseCompositionIssues: audits.responseCompositionAudit.issues,
       repetitionIssues: audits.repetitionAudit.issues,
       closureIssues: audits.closureAudit.issues,
       text: fallbackText,
@@ -10401,6 +10600,38 @@ async function runOneTurn(
     },
   });
 
+  const dynamicalState = state.pointOfAction?.enabled
+    ? buildDynamicalSystemState({ state, classification, tutorLearnerDag })
+    : null;
+  const pointOfAction = state.pointOfAction?.enabled
+    ? buildTutorStubPointOfActionTurn({
+        arm: state.pointOfAction.arm,
+        turn: tutorTurn,
+        stagnation: dynamicalState?.state_vector?.stagnation || 0,
+        proposedActionFamily:
+          registerSelection?.action_family || registerSelection?.response_configuration?.action_family || null,
+        previousActionFamilies: state.turns
+          .map((turn) => turn?.registerSelection?.action_family || turn?.responseConfiguration?.action_family)
+          .filter(Boolean),
+        evidenceUse: classification?.turn?.evidence_use || null,
+        unresolvedTerms: comprehensionBeforeTutor?.features?.unresolvedTerms || [],
+        nearClosure: dynamicalState?.trajectory?.flags?.nearClosure === true,
+        closeInquiry:
+          registerSelection?.action_family === 'close_inquiry' || dialogueClosureFrame?.mandatory === true,
+        duePremises: currentReleaseRows(state, tutorTurn).map((row) => row.premise),
+      })
+    : null;
+  if (state.pointOfAction) state.pointOfAction.current = pointOfAction;
+  if (pointOfAction) {
+    appendTraceEvent(state.trace, {
+      type: 'point_of_action_assignment',
+      turn: tutorTurn,
+      turnId,
+      pointOfAction,
+    });
+    registerSelection = applyTutorStubPointOfActionConstraint(registerSelection, pointOfAction);
+  }
+
   if (dagFactDropout?.droppedNow?.length || dagFactDropout?.repairedNow?.length) {
     appendTraceEvent(state.trace, {
       type: 'dag_fact_dropout_update',
@@ -10427,7 +10658,20 @@ async function runOneTurn(
           registerSelection,
         });
   registerSelection = typedAction.registerSelection;
+  registerSelection = applyTutorStubPointOfActionConstraint(registerSelection, pointOfAction);
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
+  if (
+    precomputedResponse?.speculativeCacheHit &&
+    pointOfAction?.assigned_trigger &&
+    pointOfAction.arm !== 'standing_book'
+  ) {
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_tutor_prefetch_bypassed',
+      turn: tutorTurn,
+      reason: 'point_of_action_intervention_must_precede_tutor_output_generation',
+    });
+    precomputedResponse = null;
+  }
   if (precomputedResponse?.speculativeCacheHit && typedAction.decision) {
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_tutor_prefetch_bypassed',
@@ -10485,6 +10729,7 @@ async function runOneTurn(
     text: response.text,
     configuration: registerSelection?.response_configuration || registerSelection,
     world: state.world,
+    composition: response.responseComposition,
   });
   if (responseConfigurationAudit) {
     appendTraceEvent(state.trace, {
@@ -10547,6 +10792,33 @@ async function runOneTurn(
       effectiveSpeed: releasePacing.effectiveSpeed,
       nextRelease: releasePacing.nextRelease,
       releasePacing,
+    });
+  }
+
+  const pointOfActionCompliance = auditTutorStubPointOfActionCompliance({
+    turn: pointOfAction,
+    tutorText: response.text,
+    releasedPremiseCount: releasePacing?.releasedNow?.length || 0,
+    realizedActionFamily:
+      registerSelection?.action_family || registerSelection?.response_configuration?.action_family || null,
+    guardsPassed:
+      response.leakAudit?.ok !== false &&
+      response.scaffoldAudit?.ok !== false &&
+      response.questionSupportAudit?.ok !== false &&
+      response.dramaticReleaseAudit?.ok !== false &&
+      response.repetitionAudit?.ok !== false &&
+      response.closureAudit?.ok !== false &&
+      response.guardAccounting?.finalDelivery?.auditOk !== false,
+  });
+  if (pointOfAction) {
+    const completedPointOfAction = { ...pointOfAction, compliance: pointOfActionCompliance };
+    state.pointOfAction.current = completedPointOfAction;
+    state.pointOfAction.history.push(completedPointOfAction);
+    appendTraceEvent(state.trace, {
+      type: 'point_of_action_compliance',
+      turn: tutorTurn,
+      turnId,
+      compliance: pointOfActionCompliance,
     });
   }
 
@@ -10618,9 +10890,18 @@ async function runOneTurn(
       lifecycle: state.dialogueClosure,
     },
     closureCheckIn: dialogueClosureFrame.phase === 'final_checkin_response',
+    pointOfAction: state.pointOfAction?.current || null,
     registerSelection,
     responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
     responseConfigurationAudit,
+    responseComposition: {
+      frame: jsonClone(response.responseCompositionFrame || null),
+      audit: jsonClone(response.responseCompositionAudit || null),
+      uptake: response.responseComposition?.uptake || null,
+      development: response.responseComposition?.development || null,
+      segmentation: response.responseComposition?.method || null,
+      atomicAssistantTurn: true,
+    },
     previousRegisterEfficacy,
     ...(typedAction.decision || typedAction.priorOutcome
       ? {
@@ -11027,6 +11308,7 @@ async function main() {
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
   const dagMode = normalizeDagMode(args['dag-mode']);
+  const pointOfActionArm = normalizeTutorStubPointOfActionArm(args['point-of-action-arm']);
   const multipleChoiceEnabled = Boolean(args['multiple-choice']);
   assertSupportedModelRefs({
     '--model': args.model,
@@ -11048,6 +11330,11 @@ async function main() {
     const promptBookText = fs.readFileSync(path.resolve(args['prompt-book-context']), 'utf8');
     systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
     console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
+  }
+  if (pointOfActionArm === 'standing_book') {
+    const standingBook = tutorStubPointOfActionStandingBook();
+    systemPrompt = `${systemPrompt}\n\n${standingBook}`;
+    console.log(`[step4] standing point-of-action book injected: ${standingBook.length} chars`);
   }
   const promptArchitecture = tutorStubPromptArchitecture({
     dagEnabled: Boolean(args.dag && worldBundle),
@@ -11513,6 +11800,15 @@ async function main() {
                 },
               }
             : { enabled: false },
+          pointOfAction: pointOfActionArm
+            ? {
+                enabled: true,
+                arm: pointOfActionArm,
+                detectorVersion: 'step4-frozen-2026-07-14.v1',
+                eligibleTurns: [3, 24],
+                triggerPriority: ['stagnant_repeat', 'warrant_skip'],
+              }
+            : { enabled: false },
           maxTokens,
           historyTurns,
           speakerHistory: {
@@ -11641,6 +11937,15 @@ async function main() {
         temperatureScope: 'engagement_stance_only',
         transcriptVisibilityAudit: true,
       },
+      pointOfAction: pointOfActionArm
+        ? {
+            enabled: true,
+            arm: pointOfActionArm,
+            detectorVersion: 'step4-frozen-2026-07-14.v1',
+            eligibleTurns: [3, 24],
+            triggerPriority: ['stagnant_repeat', 'warrant_skip'],
+          }
+        : { enabled: false },
       promptArchitecture,
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
@@ -11846,6 +12151,12 @@ async function main() {
       empiricalPrior: registerEmpiricalPrior.prior,
       empiricalPriorStatus: registerEmpiricalPrior.status,
       empiricalPriorPath: registerEmpiricalPrior.filePath,
+      current: null,
+      history: [],
+    },
+    pointOfAction: {
+      enabled: Boolean(pointOfActionArm),
+      arm: pointOfActionArm,
       current: null,
       history: [],
     },

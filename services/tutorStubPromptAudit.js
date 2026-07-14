@@ -41,6 +41,38 @@ function duplicateInstructionLines(texts) {
     .sort((left, right) => right.count - left.count || left.normalized.localeCompare(right.normalized));
 }
 
+export function recoverTutorStubDuplicateInstructionLines({ texts = [], duplicateInstructionLines = [] } = {}) {
+  const targets = new Set(
+    (Array.isArray(duplicateInstructionLines) ? duplicateInstructionLines : [])
+      .map((row) => String(row?.normalized || '').trim())
+      .filter(Boolean),
+  );
+  const seen = new Set();
+  const removedLines = [];
+  const recoveredTexts = (Array.isArray(texts) ? texts : [texts]).map((text, textIndex) => {
+    const kept = [];
+    for (const line of String(text || '').split('\n')) {
+      const normalized = normalizedInstructionLine(line);
+      if (!normalized || !targets.has(normalized)) {
+        kept.push(line);
+        continue;
+      }
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        kept.push(line);
+        continue;
+      }
+      removedLines.push({ textIndex, line: line.trim(), normalized });
+    }
+    return kept.join('\n');
+  });
+  return {
+    applied: removedLines.length > 0,
+    texts: recoveredTexts,
+    removedLines,
+  };
+}
+
 export function tutorStubPromptSurfaceForRole(role) {
   const value = String(role || '').toLowerCase();
   if (value.includes('auto_learner')) return 'automated_learner';

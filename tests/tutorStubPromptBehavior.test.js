@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SAFE_TUTOR_RESPONSE =
-  "I’m going to give you another piece of information. Let’s role-play it: I’ll be the town assayer voicing Marrick’s ready verdict. Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell’s hand. Back to the case: what does this new information support without yet proving?";
+  "You’re right: owning a graver is suspicion, not tested evidence.\n\nI’m going to give you another piece of information. Let’s role-play it: I’ll be the town assayer voicing Marrick’s ready verdict. Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell’s hand. Back to the case: what does this new information support without yet proving?";
 const UNSAFE_TUTOR_RESPONSE = 'Edony struck the false shillings with the worn burin.';
 const PROOF_SKIPPER_RESPONSE = "The graver on Verrell's bench settles it: Verrell struck the shillings.";
 const GENERIC_LEARNER_RESPONSE = 'I need more evidence before making a claim.';
@@ -132,6 +132,8 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
 
     assert.ok(tutorRequest, 'expected one speaking-tutor model request');
     assert.match(tutorRequest.input, /Speaking-tutor evidence contract/u);
+    assert.match(tutorRequest.input, /Tutor-only response composition/u);
+    assert.match(tutorRequest.input, /one atomic assistant turn with two visibly separated public beats/u);
     assert.match(tutorRequest.input, /Learner says:\s*The town suspects Verrell/u);
     assert.doesNotMatch(
       tutorRequest.input,
@@ -148,6 +150,11 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     assert.equal(turn.prompts.tutor.promptAudit.ok, true);
     assert.equal(turn.prompts.tutor.speakerPrivilegeAudit.ok, true);
     assert.equal(turn.tutorGuardAccounting.finalDelivery.source, 'original_candidate');
+    assert.equal(turn.responseComposition.audit.ok, true);
+    assert.equal(turn.responseComposition.atomicAssistantTurn, true);
+    assert.equal(turn.responseComposition.uptake, 'You’re right: owning a graver is suspicion, not tested evidence.');
+    assert.match(turn.responseComposition.development, /I’m going to give you another piece of information/u);
+    assert.equal(turn.tutorGuardAccounting.guards.responseComposition, true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

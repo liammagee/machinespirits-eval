@@ -6,7 +6,11 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { auditTutorStubPrompt, auditTutorStubSpeakerPrivilege } from '../services/tutorStubPromptAudit.js';
+import {
+  auditTutorStubPrompt,
+  auditTutorStubSpeakerPrivilege,
+  recoverTutorStubDuplicateInstructionLines,
+} from '../services/tutorStubPromptAudit.js';
 import {
   learnerProfileContractSummary,
   learnerProfileIds,
@@ -32,6 +36,39 @@ test('prompt audit rejects oversized and duplicated instruction surfaces', () =>
   );
 });
 
+test('exact duplicate-only prompt rows can be compacted and re-audited safely', () => {
+  const repeated =
+    '- A learner-derived bookkeeping row is repeated across two internal summaries before the speaking tutor is called.';
+  const original = auditTutorStubPrompt({
+    surface: 'tutor_turn',
+    systemPrompt: 'Keep the response grounded in the public exchange.',
+    userPrompt: `Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`,
+    instructionTexts: [`Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`],
+  });
+  assert.equal(original.ok, false);
+
+  const actual = recoverTutorStubDuplicateInstructionLines({
+    texts: ['Keep the response grounded in the public exchange.', `Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`],
+    duplicateInstructionLines: original.duplicateInstructionLines,
+  });
+  const instructions = recoverTutorStubDuplicateInstructionLines({
+    texts: [`Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`],
+    duplicateInstructionLines: original.duplicateInstructionLines,
+  });
+  const recovered = auditTutorStubPrompt({
+    surface: 'tutor_turn',
+    systemPrompt: actual.texts[0],
+    userPrompt: actual.texts[1],
+    instructionTexts: instructions.texts,
+  });
+
+  assert.equal(actual.applied, true);
+  assert.equal(instructions.applied, true);
+  assert.equal(actual.removedLines.length, 1);
+  assert.equal(recovered.ok, true);
+  assert.equal(actual.texts.join('\n').split(repeated).length - 1, 1);
+});
+
 test('speaker privilege audit rejects planner-only answer and future evidence', () => {
   const world = {
     secret: { fact: ['owns', 'answer'], surface: 'The concealed answer belongs to Ada' },
@@ -52,7 +89,7 @@ test('speaker privilege audit rejects planner-only answer and future evidence', 
   assert.ok(audit.issues.some((issue) => issue.code === 'future_evidence_surface'));
 });
 
-test('a learner-grounded released clue appears once in the next tutor instruction prompt', () => {
+test('learner-grounded clues and overreach bookkeeping each appear once in tutor instruction prompts', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-grounded-prompt-'));
   try {
     const fakeCodex = path.join(tmp, 'codex');
@@ -69,18 +106,25 @@ process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   let response;
   if (input.includes('You are an automated learner in an experimental tutoring dialogue.')) {
-    response = input.includes('Write learner turn 2')
-      ? 'The badge log puts Dario in the kitchen at noon, so I will keep that clue in the record.'
-      : 'Can we start with the badge log?';
+    response = input.includes('Write learner turn 3')
+      ? "means there's more than one culprit. But what is the kettle queue?"
+      : input.includes('Write learner turn 2')
+        ? 'The badge log puts Dario in the kitchen at noon, so I will keep that clue in the record.'
+        : 'Can we start with the badge log?';
   } else if (input.includes('# Learner-record extraction rules')) {
+    const overreach = input.includes("means there's more than one culprit. But what is the kettle queue?");
     const badgeIsPublic = input.includes('- p_noon (staged turn');
     response = JSON.stringify({
       classification: {
         turn: {
-          summary: badgeIsPublic ? 'Learner adopts the public badge entry.' : 'Learner asks to see the badge entry.',
-          request_type: 'stepwise_support_request',
-          discourse_move: badgeIsPublic ? 'evidence_adoption' : 'question',
-          evidence_use: badgeIsPublic ? 'cites_public_evidence' : 'none',
+          summary: overreach
+            ? 'Learner overreads the second badge while asking what the kettle queue means.'
+            : badgeIsPublic
+              ? 'Learner adopts the public badge entry.'
+              : 'Learner asks to see the badge entry.',
+          request_type: overreach ? 'off_task_or_mixed' : 'stepwise_support_request',
+          discourse_move: overreach ? 'question' : badgeIsPublic ? 'evidence_adoption' : 'question',
+          evidence_use: overreach ? 'overleaps_evidence' : badgeIsPublic ? 'cites_public_evidence' : 'none',
           epistemic_stance: badgeIsPublic ? 'grounded' : 'exploratory',
           affect: 'neutral',
           agency: 'attempting',
@@ -88,7 +132,7 @@ process.stdin.on('end', () => {
             conceptual_engagement: { score: 3, reason: 'Uses the live record.' },
             epistemic_readiness: { score: 3, reason: 'Keeps claims evidence-bound.' }
           },
-          pedagogical_need: 'Continue with the next public clue.'
+          pedagogical_need: overreach ? 'Clarify the phrase and distinguish entry from guilt.' : 'Continue with the next public clue.'
         },
         overall: {
           summary: 'Learner is working from public evidence.',
@@ -98,8 +142,21 @@ process.stdin.on('end', () => {
           next_best_tutor_move: 'Introduce the next public clue.'
         }
       },
-      learner_record: badgeIsPublic ? { adopt: ['p_noon'] } : {}
+      learner_record: overreach
+        ? {
+            adopt: ['p_noon', 'p_crew'],
+            hypothesis: 'There is more than one culprit.',
+            human_discourse: {
+              proof_status: 'provisional_scaffold',
+              provisional_claims: ['There is more than one culprit.'],
+              missing_warrants: ['Two kitchen entries do not establish taking or multiple culprits.'],
+              side_arc: 'Asks what “the kettle queue” means.'
+            }
+          }
+        : badgeIsPublic ? { adopt: ['p_noon'] } : {}
     });
+  } else if (input.includes("means there's more than one culprit. But what is the kettle queue?")) {
+    response = 'You are right that two badge entries do not prove two culprits. “The kettle queue” means the people waiting beside the kettle, who remember seeing the crew. What do the two entries establish, and what remains unproved?';
   } else if (input.includes(${JSON.stringify(LARKSPUR_BADGE_SURFACE)})) {
     response = ${JSON.stringify(
       `I'm going to give you another piece of information. Let's role-play it: I'll be the badge clerk reading the log. “${LARKSPUR_BADGE_SURFACE}” Back to the case: what does this badge entry change?`,
@@ -125,7 +182,7 @@ process.stdin.on('end', () => {
         '--tutor-learner-dag',
         '--auto-learner',
         '--auto-turns',
-        '2',
+        '3',
         '--dag-mode',
         'defeasible_human_scaffold',
         '--no-register-selection',
@@ -138,7 +195,7 @@ process.stdin.on('end', () => {
       {
         cwd: ROOT,
         encoding: 'utf8',
-        timeout: 15_000,
+        timeout: 20_000,
         env: {
           ...process.env,
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
@@ -165,6 +222,16 @@ process.stdin.on('end', () => {
     assert.equal(tutorInstructionPrompt.split(LARKSPUR_BADGE_SURFACE).length - 1, 1);
     assert.match(tutorInstructionPrompt, /\[learner-grounded\].*badge log has Dario/iu);
     assert.match(tutorInstructionPrompt, /1 released public evidence item currently learner-grounded/iu);
+    const thirdTutorCall = events.find(
+      (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && event.turn === 3,
+    );
+    assert.ok(thirdTutorCall, 'expected a completed third tutor call after the overreach classification');
+    assert.equal(thirdTutorCall.request.config.promptAudit.ok, true);
+    const thirdTutorPrompt = thirdTutorCall.request.messages.at(-1)?.content || '';
+    const heuristicLine =
+      "- means there's more than one culprit. But what is the kettle queue? — classifier marked overreach or answer-seeking before an explicit public warrant was stored";
+    assert.equal(thirdTutorPrompt.split(heuristicLine).length - 1, 1);
+    assert.equal(thirdTutorPrompt.split('Two kitchen entries do not establish taking or multiple culprits.').length - 1, 1);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

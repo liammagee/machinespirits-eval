@@ -262,3 +262,26 @@ test('surface audit measures realization and differences between selected config
   assert.equal(summary.different_configuration_pairs, 1);
   assert.equal(summary.pairwise_visible_difference_rate, 1);
 });
+
+test('learner-responsive action families are audited on uptake rather than clue development', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: "That doesn't prove Dario took it.",
+    classification: classification({ requestType: 'authority_refusal_or_status_challenge', conceptual: 4 }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'You’re right: the badge does not prove Dario took it because it establishes entry only.\n\nI open the next log and ask what its entry changes?',
+    configuration,
+    world: testWorld(),
+    composition: {
+      uptake: 'You’re right: the badge does not prove Dario took it because it establishes entry only.',
+      development: 'I open the next log and ask what its entry changes?',
+    },
+  });
+
+  assert.equal(configuration.action_family, 'answer_accountably');
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.action_family.evaluated_segment, 'uptake');
+});

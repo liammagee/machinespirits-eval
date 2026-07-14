@@ -44,13 +44,16 @@ function fixtureSnapshot() {
     history: [
       { role: 'assistant', content: 'Read the first mark.' },
       { role: 'user', content: 'Does <this> identify the hand?' },
-      { role: 'assistant', content: 'It identifies a process, not yet a hand.' },
+      {
+        role: 'assistant',
+        content: 'You are right to keep those claims separate.\n\nNow compare the process mark with the custody record.',
+      },
     ],
     turns: [
       {
         turn: 1,
         learner: 'Does <this> identify the hand?',
-        tutor: 'It identifies a process, not yet a hand.',
+        tutor: 'You are right to keep those claims separate.\n\nNow compare the process mark with the custody record.',
         classification: {
           turn: { summary: 'The learner asks what the residue licenses.' },
           overall: { trajectory: 'careful inquiry' },
@@ -75,6 +78,12 @@ function fixtureSnapshot() {
         },
         previousRegisterEfficacy: { status: 'no_prior_turn' },
         responseConfigurationAudit: { visible_axis_count: 5, axis_count: 5 },
+        responseComposition: {
+          uptake: 'You are right to keep those claims separate.',
+          development: 'Now compare the process mark with the custody record.',
+          audit: { ok: true },
+          atomicAssistantTurn: true,
+        },
       },
     ],
     settings: {
@@ -141,6 +150,10 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /0\.85/u);
   assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
   assert.doesNotMatch(html, /Does <this> identify the hand\?/u);
+  assert.equal((html.match(/data-response-composition="uptake-development"/gu) || []).length, 2);
+  assert.match(html, /<small>responds<\/small>/u);
+  assert.match(html, /<small>develops<\/small>/u);
+  assert.match(html, /Response shape:<\/b> responds, then develops/u);
   assert.equal((html.match(/data-director-notes/gu) || []).length, 1);
   assert.ok(html.indexOf('data-director-notes') < html.indexOf('class="tabs"'));
   assert.match(html, /Director notes so far/u);
@@ -168,7 +181,13 @@ test('replay JavaScript preserves exact public message order without harness pro
   assert.ok(javascript.indexOf('Read the first mark.') < javascript.indexOf('Does <this> identify the hand?'));
   assert.ok(
     javascript.indexOf('Does <this> identify the hand?') <
-      javascript.indexOf('It identifies a process, not yet a hand.'),
+      javascript.indexOf('You are right to keep those claims separate.'),
+  );
+  assert.equal(
+    javascript.includes(
+      'You are right to keep those claims separate.\\n\\nNow compare the process mark with the custody record.',
+    ),
+    true,
   );
   assert.match(javascript, /model: "gpt-5\.6-sol"/u);
   assert.match(javascript, /input: messages/u);
