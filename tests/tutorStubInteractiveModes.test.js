@@ -383,6 +383,103 @@ test('optional thumbs feedback is attached to the next human learner message and
   }
 });
 
+test(
+  'empty-prompt arrow keys rate the tutor immediately without taking over cursor movement',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-arrow-feedback-'));
+    try {
+      installFakeCodex(tmp);
+      let terminalOutput = '';
+      let firstTurnSent = false;
+      let arrowPressed = false;
+      let secondTurnSent = false;
+      let requestedExit = false;
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--no-opening',
+          '--no-classifier',
+          '--no-register-selection',
+          '--no-closeout-report',
+          '--no-interim-animation',
+          '--no-stream',
+          '--trace-dir',
+          tmp,
+          '--world',
+          'none',
+        ],
+        {
+          cwd: ROOT,
+          cols: 120,
+          rows: 24,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+            TERM: 'xterm-color',
+            CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          },
+        },
+      );
+
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`arrow-feedback terminal timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 12_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          const feedbackRequests = plain.match(/optional tutor feedback >/gu) || [];
+          if (!firstTurnSent && plain.includes('learner >')) {
+            firstTurnSent = true;
+            terminal.write('First learner message.\r');
+          } else if (!arrowPressed && feedbackRequests.length >= 1) {
+            arrowPressed = true;
+            terminal.write('\x1b[C');
+          } else if (!secondTurnSent && plain.includes('tutor feedback > 👍 helpful · private')) {
+            secondTurnSent = true;
+            terminal.write('Second learner message.\r');
+          } else if (!requestedExit && feedbackRequests.length >= 2) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`arrow-feedback terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /← 👎 not helpful · 👍 helpful → · empty prompt; no Enter/u);
+      assert.match(plain, /tutor feedback > 👍 helpful · private/u);
+      const events = fs
+        .readdirSync(tmp)
+        .filter((name) => name.endsWith('.jsonl'))
+        .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+      const selection = events.find(
+        (event) =>
+          event.type === 'tutor_turn_feedback_selected' &&
+          event.inputSource === 'empty_prompt_right_arrow',
+      );
+      assert.equal(selection.rating, 'up');
+      const secondTurn = events.find((event) => event.type === 'turn_complete' && event.turn === 2)?.turnRecord;
+      assert.equal(secondTurn.learner, 'Second learner message.');
+      assert.equal(secondTurn.learnerInput.tutorFeedback.rating, 'up');
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
+
 test('/reset cancels an in-flight tutor turn and reopens the same scenario without stale output', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-dialogue-reset-'));
   try {

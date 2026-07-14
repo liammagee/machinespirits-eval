@@ -5,6 +5,7 @@ import {
   createTutorStubTurnFeedbackState,
   requestTutorStubTurnFeedback,
   setTutorStubTurnFeedbackRating,
+  tutorStubTurnFeedbackArrowRating,
   tutorStubTurnFeedbackEnvelope,
   tutorStubTurnFeedbackPrompt,
 } from '../tutorStubTurnFeedback.js';
@@ -68,4 +69,31 @@ test('fully automated learners never receive or supply tutor-message feedback', 
     ratedAt: null,
     source: 'automated_learner_disabled',
   });
+});
+
+test('bare arrows rate a pending tutor response only from an empty idle prompt', () => {
+  const feedback = {
+    enabled: true,
+    requested: true,
+  };
+  assert.equal(
+    tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'left' }, feedback }),
+    'down',
+  );
+  assert.equal(
+    tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'right' }, feedback }),
+    'up',
+  );
+
+  for (const blocked of [
+    { line: 'editing a reply', key: { name: 'left' }, feedback },
+    { line: '', key: { name: 'left', shift: true }, feedback },
+    { line: '', key: { name: 'right', ctrl: true }, feedback },
+    { line: '', key: { name: 'right' }, feedback, busy: true },
+    { line: '', key: { name: 'right' }, feedback, interactiveMode: 'auto' },
+    { line: '', key: { name: 'right' }, feedback, interfaceBlocked: true },
+    { line: '', key: { name: 'right' }, feedback: { enabled: true, requested: false } },
+  ]) {
+    assert.equal(tutorStubTurnFeedbackArrowRating(blocked), null);
+  }
 });

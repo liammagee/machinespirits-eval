@@ -174,8 +174,11 @@ Useful variants:
   profile and `--auto-learner-model`; it does not restart the scene or repeat an
   existing opening.
 - Human learner mode requests optional feedback after each displayed tutor
-  opening or completed tutor response. Enter `👍`, `👎`, `/up`, or `/down`, or
-  simply send the next learner line without rating. The structured
+  opening or completed tutor response. With an empty learner prompt, press
+  Left for not helpful or Right for helpful; the rating applies immediately
+  without Enter. Once any text is present, those keys retain normal cursor
+  movement. `👍`, `👎`, `/up`, and `/down` remain available, and simply sending
+  the next learner line skips the rating. The structured
   `tutorFeedback` envelope is copied onto every fragment in that learner turn,
   kept out of public speech, persisted in traces/transcript HTML, and used as
   one subjective signal in the tutor's next efficacy assessment, register
@@ -208,12 +211,19 @@ Useful variants:
   `codex.gpt-5.6-terra`.
 - Use `--all-models <provider.alias>` when the same model should run the tutor,
   classifier, learner-DAG analysis, and automated/mixed learner. This launch
-  override wins over all four role-specific model flags and the remembered
-  tutor model, and is recorded in dry-run, trace, and transcript provenance.
-  During a run, `/settings model` lists choices and `/settings model
-  <provider.alias>` changes only subsequent speaking-tutor turns, records
-  provenance, and refreshes stale mixed caches. Full public-history replay is
-  already active for both speakers from session start. CLI providers are
+  override wins over all four role-specific model settings and is recorded in
+  dry-run, trace, and transcript provenance. The live keyboard settings panel
+  mirrors this with `One model for all roles`, then exposes independent selectors
+  for `Tutor voice`, `Learner interpretation`, `Reasoning tracker`, and `Learner
+  voice`. `/settings models all <provider.alias>` changes all four together;
+  `/settings models tutor|classifier|reasoning|learner <provider.alias>` changes
+  one role and clears the live override. `/settings model <provider.alias>`
+  remains the tutor-only compatibility command. Every change records provenance,
+  persists for the next interactive session, and refreshes stale mixed caches.
+  When interpretation is combined with learner-DAG analysis, the classifier row
+  is visibly inactive and the reasoning tracker row identifies itself as the
+  owner of the combined call. Full public-history replay is already active for
+  both speakers from session start. CLI providers are
   stateless subprocesses: the bridge flattens those ordered `user`/`assistant`
   messages under `Conversation so far`, then appends the composite current-turn
   prompt under `Latest message`.
@@ -455,10 +465,11 @@ Useful variants:
   or `/settings forget`, deletes that local file without changing the current
   session. `/settings` reports whether remembered defaults are active and where
   they are stored.
-  `/settings model` opens the configured model chooser in a TTY and lists
-  configured choices otherwise; `/settings model codex.gpt-5.6-luna` changes
-  the tutor from the next turn without changing the classifier/DAG or learner
-  models. Model changes are rejected during an in-flight tutor turn and
+  `/settings model` opens the configured tutor-model chooser in a TTY and lists
+  configured choices otherwise; `/settings models` shows the complete live
+  routing. `/settings models all codex.gpt-5.6-luna` applies a single-model
+  override, while `/settings models tutor|classifier|reasoning|learner <ref>`
+  splits a role back out. Model changes are rejected during an in-flight tutor turn and
   invalidate mixed suggestion/analysis/tutor-prefetch state before regeneration.
   After a live change, every subsequent tutor request continues replaying all
   prior public `user` and `assistant` messages in original order; `/reset`

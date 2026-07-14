@@ -172,7 +172,7 @@ test('--all-models overrides tutor, classifier, learner-DAG analysis, and mixed 
     schema: 'machinespirits.tutor-stub.all-models-override.v1',
     modelRef: 'codex.gpt-5.6-luna',
     source: 'cli',
-    precedence: 'overrides_all_role_specific_model_flags_and_remembered_tutor_model',
+      precedence: 'overrides_all_role_specific_model_settings',
     roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
   });
 });
@@ -533,7 +533,7 @@ test(
           terminal.write('/settings\r');
         } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
           selectedTemperature = true;
-          terminal.write('\x1b[B\r');
+          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
         } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
@@ -554,7 +554,11 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /Settings · choose what to change/u);
-    assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-terra/u);
+    assert.match(plain, /Tutor voice\s+codex\.gpt-5\.6-terra/u);
+    assert.match(plain, /One model for all roles\s+off · roles selected separately/u);
+    assert.match(plain, /Learner interpretation\s+codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /Reasoning tracker\s+codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /Learner voice\s+codex\.gpt-5\.6-terra/u);
     assert.match(plain, /Turn-change override\s+off/u);
     assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc discard changes and return/u);
     assert.match(plain, /Done — apply and return\s+press Enter/u);
@@ -620,7 +624,7 @@ test(
           terminal.write('/settings\r');
         } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
           selectedTemperature = true;
-          terminal.write('\x1b[B\r');
+          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
         } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
@@ -886,10 +890,10 @@ test('tutor-stub lists and changes the speaking tutor model through live setting
 
     assert.equal(result.status, 0);
     const plain = plainTerminalText(result.stdout);
-    assert.match(plain, /tutor models > current codex\.gpt-5\.6-terra/u);
+    assert.match(plain, /tutor voice models > current codex\.gpt-5\.6-terra/u);
     assert.match(plain, /codex\.gpt-5\.6-luna/u);
     assert.match(plain, /tutor model codex\.gpt-5\.6-terra → codex\.gpt-5\.6-luna/u);
-    assert.match(plain, /tutor model: codex\.gpt-5\.6-luna → codex\/gpt-5\.6-luna/u);
+    assert.match(plain, /tutor voice: codex\.gpt-5\.6-luna → codex\/gpt-5\.6-luna/u);
     const traces = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))

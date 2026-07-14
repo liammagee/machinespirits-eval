@@ -88,6 +88,32 @@ export function tutorStubTurnFeedbackEnvelope(state) {
   };
 }
 
+export function tutorStubTurnFeedbackArrowRating({
+  line = '',
+  key = {},
+  feedback = null,
+  busy = false,
+  interactiveMode = 'learner',
+  interfaceBlocked = false,
+} = {}) {
+  if (
+    String(line).length > 0 ||
+    busy ||
+    interfaceBlocked ||
+    interactiveMode === 'auto' ||
+    !feedback?.enabled ||
+    !feedback?.requested ||
+    key?.shift ||
+    key?.ctrl ||
+    key?.meta
+  ) {
+    return null;
+  }
+  if (key?.name === 'left') return 'down';
+  if (key?.name === 'right') return 'up';
+  return null;
+}
+
 export function commitTutorStubTurnFeedback(state, { learnerTurn = null, learnerTurnId = null } = {}) {
   if (!state) return null;
   const feedback = tutorStubTurnFeedbackEnvelope(state);

@@ -183,6 +183,7 @@ import {
   requestTutorStubTurnFeedback,
   setTutorStubTurnFeedbackEnabled,
   setTutorStubTurnFeedbackRating,
+  tutorStubTurnFeedbackArrowRating,
   tutorStubTurnFeedbackEnvelope,
   tutorStubTurnFeedbackLabel,
   tutorStubTurnFeedbackPrompt,
@@ -481,6 +482,12 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
 
 const SETTINGS_COMPLETIONS = [
   '/settings model ',
+  '/settings models',
+  '/settings models all ',
+  '/settings models tutor ',
+  '/settings models classifier ',
+  '/settings models reasoning ',
+  '/settings models learner ',
   '/settings temp ',
   '/settings dropout ',
   '/settings release-speed ',
@@ -793,6 +800,8 @@ Interactive commands:
   /r                     alias for /report
   /director              repeat all director notes issued so far
   /notes                 alias for /director
+  Left/Right on an empty prompt
+                         rate the latest tutor message down/up immediately
   /up, /down             rate the latest tutor message helpful or unhelpful
                          without sending a learner turn
   /feedback [up|down|clear|on|off]
@@ -802,6 +811,11 @@ Interactive commands:
   /settings              open the live keyboard settings panel (TTY)
   /settings model        choose a configured tutor model (TTY) or list models
   /settings model <ref>  change the speaking tutor model for subsequent turns
+  /settings models       show every tutor/learner model role
+  /settings models all <ref>
+                         use one model for every role
+  /settings models tutor|classifier|reasoning|learner <ref>
+                         change one role independently
   /settings temp [n]     adjust or set teaching-style range
   /settings dropout [n]  adjust or set recoverable evidence-memory loss (0-1)
   /settings release-speed [n]
@@ -1046,15 +1060,21 @@ function commandLineOptionProvided(name) {
 }
 
 function rememberedSettingExplicitSources() {
+  const allModels = commandLineOptionProvided('all-models') || Boolean(process.env.TUTOR_STUB_ALL_MODELS);
   return {
     scenario: commandLineOptionProvided('world') || Boolean(process.env.TUTOR_STUB_WORLD),
     learnerProfile:
       commandLineOptionProvided('auto-learner-profile') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
-    tutorModelRef:
-      commandLineOptionProvided('all-models') ||
-      Boolean(process.env.TUTOR_STUB_ALL_MODELS) ||
-      commandLineOptionProvided('model') ||
-      Boolean(process.env.TUTOR_STUB_MODEL),
+    allModelsRef: allModels,
+    tutorModelRef: allModels || commandLineOptionProvided('model') || Boolean(process.env.TUTOR_STUB_MODEL),
+    classifierModelRef:
+      allModels || commandLineOptionProvided('classifier-model') || Boolean(process.env.TUTOR_STUB_CLASSIFIER_MODEL),
+    learnerRecordModelRef:
+      allModels ||
+      commandLineOptionProvided('learner-record-model') ||
+      Boolean(process.env.TUTOR_STUB_LEARNER_RECORD_MODEL),
+    autoLearnerModelRef:
+      allModels || commandLineOptionProvided('auto-learner-model') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_MODEL),
     engagementStanceTemperature:
       commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
     dagFactDropoutRate:
@@ -1081,6 +1101,7 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
     savedAt: null,
     appliedFields: [],
     skippedExplicitFields: [],
+    restoredAllModelsOverrideRef: null,
     warning: null,
   };
   if (!enabled) return config;
@@ -1127,6 +1148,55 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
       config.appliedFields.push('tutor_model');
     } catch (error) {
       config.warning = `saved tutor model ignored: ${error.message}`;
+    }
+  }
+
+  const rememberedModelRoles = [
+    {
+      explicit: explicit.classifierModelRef,
+      field: 'classifierModelRef',
+      arg: 'classifier-model',
+      applied: 'learner_interpretation_model',
+    },
+    {
+      explicit: explicit.learnerRecordModelRef,
+      field: 'learnerRecordModelRef',
+      arg: 'learner-record-model',
+      applied: 'learner_reasoning_model',
+    },
+    {
+      explicit: explicit.autoLearnerModelRef,
+      field: 'autoLearnerModelRef',
+      arg: 'auto-learner-model',
+      applied: 'learner_voice_model',
+    },
+  ];
+  for (const role of rememberedModelRoles) {
+    if (role.explicit) {
+      config.skippedExplicitFields.push(role.applied);
+      continue;
+    }
+    const savedRef = saved[role.field];
+    if (!savedRef) continue;
+    try {
+      resolveTutorModelSelection(savedRef);
+      args[role.arg] = savedRef;
+      config.appliedFields.push(role.applied);
+    } catch (error) {
+      config.warning = [config.warning, `saved ${plainSettingName(role.applied)} ignored: ${error.message}`]
+        .filter(Boolean)
+        .join('; ');
+    }
+  }
+  if (!explicit.allModelsRef && saved.allModelsOverrideRef) {
+    const refs = [
+      saved.tutorModelRef,
+      saved.classifierModelRef,
+      saved.learnerRecordModelRef,
+      saved.autoLearnerModelRef,
+    ];
+    if (refs.every((ref) => ref === saved.allModelsOverrideRef)) {
+      config.restoredAllModelsOverrideRef = saved.allModelsOverrideRef;
     }
   }
 
@@ -2511,6 +2581,13 @@ function plainResponseCheckArea(value) {
 function plainSettingName(value) {
   const labels = {
     tutorModelRef: 'tutor model',
+    classifierModelRef: 'learner interpretation model',
+    learnerRecordModelRef: 'learner reasoning model',
+    autoLearnerModelRef: 'learner voice model',
+    allModelsOverrideRef: 'one model for all roles',
+    learner_interpretation_model: 'learner interpretation model',
+    learner_reasoning_model: 'learner reasoning model',
+    learner_voice_model: 'learner voice model',
     engagementStanceTemperature: 'teaching-style range',
     dagFactDropoutRate: 'evidence-memory dropout',
     releaseSpeed: 'clue release speed',
@@ -7056,13 +7133,14 @@ function dialogueClosureTutorContext(frame) {
   ].join('\n');
 }
 
-function createLearnerDagState({ enabled, resolved, world, dropout = null }) {
+function createLearnerDagState({ enabled, modelRef = null, resolved, world, dropout = null }) {
   const board = new Map();
   if (world) {
     for (const fact of world.background || []) board.set(factKey(fact), fact);
   }
   return {
     enabled,
+    modelRef,
     resolved,
     dropout: createTutorStubDagFactDropoutState(dropout || {}),
     record: {
@@ -7339,7 +7417,7 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /id`,
   );
-  console.log(`${C.cyan}  rate tutor${C.reset}   👍 or /up · 👎 or /down · /feedback on|off`);
+  console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · or use 👍 / 👎`);
   console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings`);
   console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
   console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
@@ -7350,7 +7428,7 @@ function printInteractiveHelp(state = null) {
     `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
   );
   console.log(
-    `${C.dim}  Tutor ratings are optional. Enter 👍 or 👎 on its own, or just reply; the rating stays private and helps the next tutor self-assessment.${C.reset}`,
+    `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. With text present, arrows still move the cursor. You can also enter 👍, 👎, /up, or /down.${C.reset}`,
   );
   console.log(
     `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
@@ -11827,27 +11905,35 @@ async function main() {
     args['field-viz'] = false;
   }
 
-  const allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
+  let allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
   if (allModelsOverrideRef) {
     args.model = allModelsOverrideRef;
     args['classifier-model'] = allModelsOverrideRef;
     args['learner-record-model'] = allModelsOverrideRef;
     args['auto-learner-model'] = allModelsOverrideRef;
   }
-  const allModelsOverride = allModelsOverrideRef
-    ? {
-        schema: 'machinespirits.tutor-stub.all-models-override.v1',
-        modelRef: allModelsOverrideRef,
-        source: commandLineOptionProvided('all-models') ? 'cli' : 'environment',
-        precedence: 'overrides_all_role_specific_model_flags_and_remembered_tutor_model',
-        roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
-      }
-    : null;
   const interactiveSessionIntent = Boolean(!args['auto-learner'] && !args.once && !positionals.join(' ').trim());
   const explicitRememberedSources = rememberedSettingExplicitSources();
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  if (!allModelsOverrideRef && rememberedSettings.restoredAllModelsOverrideRef) {
+    allModelsOverrideRef = rememberedSettings.restoredAllModelsOverrideRef;
+  }
+  const allModelsOverride = allModelsOverrideRef
+    ? {
+        schema: 'machinespirits.tutor-stub.all-models-override.v1',
+        modelRef: allModelsOverrideRef,
+        source:
+          rememberedSettings.restoredAllModelsOverrideRef === allModelsOverrideRef
+            ? 'remembered_settings'
+            : commandLineOptionProvided('all-models')
+              ? 'cli'
+              : 'environment',
+        precedence: 'overrides_all_role_specific_model_settings',
+        roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
+      }
+    : null;
   args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
 
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
@@ -12051,8 +12137,8 @@ async function main() {
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
   const providerConfig = getProviderConfig(resolved.provider);
-  const autoLearnerResolved = learnerSuggestionEnabled ? resolveModel(args['auto-learner-model']) : null;
-  const autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
+  let autoLearnerResolved = learnerSuggestionEnabled ? resolveModel(args['auto-learner-model']) : null;
+  let autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
   const classifierEnabled = !args['no-classifier'];
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
   const humanDiscourseConfig = buildHumanDiscourseRunConfig({
@@ -12121,23 +12207,23 @@ async function main() {
     registerPalette.length &&
     (combinedLearnerAnalysisEnabled || randomRegisterSelectionEnabled || negativeRegisterSelectionEnabled),
   );
-  const classifierResolved =
+  let classifierResolved =
     classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
-  const classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
-  const learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
-  const learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
+  let classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
+  let learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
+  let learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
   const firstMessage = args.once || positionals.join(' ').trim() || '';
   let visibleModel = visibleResolvedModel(resolved, providerConfig);
-  const visibleAutoLearnerModel = autoLearnerResolved
+  let visibleAutoLearnerModel = autoLearnerResolved
     ? visibleResolvedModel(autoLearnerResolved, autoLearnerProviderConfig)
     : null;
-  const visibleClassifierModel = classifierResolved
+  let visibleClassifierModel = classifierResolved
     ? visibleResolvedModel(classifierResolved, classifierProviderConfig)
     : null;
-  const visibleLearnerRecordModel = learnerRecordResolved
+  let visibleLearnerRecordModel = learnerRecordResolved
     ? visibleResolvedModel(learnerRecordResolved, learnerRecordProviderConfig)
     : null;
-  const visibleClassifierConfig = classifierEnabled
+  let visibleClassifierConfig = classifierEnabled
     ? combinedLearnerAnalysisEnabled
       ? {
           combined: true,
@@ -12340,6 +12426,12 @@ async function main() {
     scope: 'human_learner_mode',
     ratings: ['up', 'down'],
     commands: ['/up', '/down', '/feedback up|down|clear|on|off'],
+    keyboardShortcuts: {
+      scope: 'empty_input_line_with_pending_rating',
+      immediate: true,
+      leftArrow: 'down',
+      rightArrow: 'up',
+    },
     learnerMessageField: 'tutorFeedback',
     automatedLearner: 'disabled',
     tutorSelfAssessment: true,
@@ -12860,6 +12952,10 @@ async function main() {
     learnerProfile: args['auto-learner-profile'],
     modelRef: args.model,
     resolved,
+    modelRouting: {
+      schema: 'machinespirits.tutor-stub.model-routing.v1',
+      allRolesOverrideRef: allModelsOverrideRef,
+    },
     rememberedSettings: {
       ...rememberedSettingsConfig,
       filePath: rememberedSettings.filePath,
@@ -12892,11 +12988,13 @@ async function main() {
     tutorDag,
     classifier: {
       enabled: classifierEnabled,
+      modelRef: args['classifier-model'],
       resolved: classifierResolved,
       combined: combinedLearnerAnalysisEnabled,
     },
     learnerDag: createLearnerDagState({
       enabled: tutorLearnerDagEnabled,
+      modelRef: args['learner-record-model'],
       resolved: learnerRecordResolved,
       world: worldBundle?.world || null,
       dropout: {
@@ -12904,6 +13002,11 @@ async function main() {
         seed: dagFactDropoutSeed,
       },
     }),
+    autoLearner: {
+      modelRef: args['auto-learner-model'],
+      resolved: autoLearnerResolved,
+      providerConfig: autoLearnerProviderConfig,
+    },
     comprehension: createTutorStubComprehensionState(),
     releasePacing: createTutorStubReleasePacingState({
       world: worldBundle?.world || null,
@@ -12979,6 +13082,10 @@ async function main() {
       learnerProfileId: state.learnerProfileId || null,
       learnerProfile: state.learnerProfileId ? null : state.learnerProfile || null,
       tutorModelRef: state.modelRef,
+      classifierModelRef: state.classifier?.modelRef || args['classifier-model'],
+      learnerRecordModelRef: state.learnerDag?.modelRef || args['learner-record-model'],
+      autoLearnerModelRef: state.autoLearner?.modelRef || args['auto-learner-model'],
+      allModelsOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -14554,7 +14661,10 @@ async function main() {
     });
   }
 
-  function applyTutorModelSelection(modelRef, { source = 'settings', usedDefault = false } = {}) {
+  function applyTutorModelSelection(
+    modelRef,
+    { source = 'settings', usedDefault = false, deferEffects = false, preserveAllOverride = false } = {},
+  ) {
     const selection = resolveTutorModelSelection(modelRef);
     const previousRef = state.modelRef;
     const previousResolved = state.resolved;
@@ -14564,6 +14674,7 @@ async function main() {
     args.model = selection.modelRef;
     visibleModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
     const changed = previousRef !== selection.modelRef || previousResolved.model !== selection.resolved.model;
+    if (changed && !preserveAllOverride) state.modelRouting.allRolesOverrideRef = null;
     const contextReplayRecorded = Boolean(changed && source !== 'initial_settings' && state.history.length > 0);
     if (contextReplayRecorded) {
       state.tutorContext = {
@@ -14571,8 +14682,8 @@ async function main() {
         modelRef: selection.modelRef,
       };
     }
-    const invalidated = changed ? resetMixedLearnerSuggestion('tutor_model_changed') : null;
-    const remembered = changed ? persistCurrentInteractiveSettings('tutor_model_changed') : null;
+    const invalidated = changed && !deferEffects ? resetMixedLearnerSuggestion('tutor_model_changed') : null;
+    const remembered = changed && !deferEffects ? persistCurrentInteractiveSettings('tutor_model_changed') : null;
     appendTraceEvent(state.trace, {
       type: source === 'initial_settings' ? 'mixed_learner_initial_tutor_model_selected' : 'tutor_model_changed',
       schema: 'machinespirits.tutor-stub.tutor-model-selection.v1',
@@ -14605,6 +14716,182 @@ async function main() {
         : null,
     });
     return { ...selection, previousRef, changed, invalidated };
+  }
+
+  const liveModelRoleDefinitions = {
+    tutor: {
+      label: 'Tutor voice',
+      setting: 'tutor',
+      defaultRef: STUB.model,
+    },
+    classifier: {
+      label: 'Learner interpretation',
+      setting: 'classifier',
+      defaultRef: STUB.classifierModel,
+    },
+    reasoning: {
+      label: 'Learner reasoning tracker',
+      setting: 'reasoning',
+      defaultRef: STUB.learnerRecordModel,
+    },
+    learner: {
+      label: 'Learner voice',
+      setting: 'learner',
+      defaultRef: STUB.autoLearnerModel,
+    },
+  };
+
+  function liveModelRoleRef(role) {
+    if (role === 'tutor') return state.modelRef;
+    if (role === 'classifier') return state.classifier?.modelRef || args['classifier-model'];
+    if (role === 'reasoning') return state.learnerDag?.modelRef || args['learner-record-model'];
+    if (role === 'learner') return state.autoLearner?.modelRef || args['auto-learner-model'];
+    throw new Error(`unknown model role: ${role}`);
+  }
+
+  function liveModelRoleSnapshot(role) {
+    const modelRef = liveModelRoleRef(role);
+    const resolvedRole =
+      role === 'tutor'
+        ? state.resolved
+        : role === 'classifier'
+          ? state.classifier?.resolved || resolveModel(modelRef)
+          : role === 'reasoning'
+            ? state.learnerDag?.resolved || resolveModel(modelRef)
+            : state.autoLearner?.resolved || resolveModel(modelRef);
+    const providerConfigRole = getProviderConfig(resolvedRole.provider);
+    return {
+      role,
+      label: liveModelRoleDefinitions[role].label,
+      modelRef,
+      resolved: visibleResolvedModel(resolvedRole, providerConfigRole),
+      active:
+        role === 'tutor' ||
+        (role === 'classifier' && state.classifier?.enabled && !state.classifier?.combined) ||
+        (role === 'reasoning' && state.learnerDag?.enabled) ||
+        (role === 'learner' && learnerSuggestionEnabled),
+      combinedOwner: role === 'reasoning' && Boolean(state.classifier?.enabled && state.classifier?.combined),
+    };
+  }
+
+  function refreshVisibleClassifierConfig() {
+    visibleClassifierConfig = classifierEnabled
+      ? combinedLearnerAnalysisEnabled
+        ? {
+            combined: true,
+            classifierModelRef: args['classifier-model'],
+            modelRef: args['learner-record-model'],
+            resolved: visibleLearnerRecordModel,
+          }
+        : {
+            modelRef: args['classifier-model'],
+            resolved: visibleClassifierModel,
+          }
+      : { enabled: false };
+  }
+
+  function applyRoleModelSelection(
+    role,
+    modelRef,
+    { source = 'live_settings', deferEffects = false, preserveAllOverride = false } = {},
+  ) {
+    if (role === 'tutor') {
+      return applyTutorModelSelection(modelRef, {
+        source,
+        deferEffects,
+        preserveAllOverride,
+      });
+    }
+    const selection = resolveTutorModelSelection(modelRef);
+    const previousRef = liveModelRoleRef(role);
+    const changed = previousRef !== selection.modelRef;
+    if (role === 'classifier') {
+      args['classifier-model'] = selection.modelRef;
+      state.classifier.modelRef = selection.modelRef;
+      state.classifier.resolved = selection.resolved;
+      classifierResolved = selection.resolved;
+      classifierProviderConfig = selection.providerConfig;
+      visibleClassifierModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
+    } else if (role === 'reasoning') {
+      args['learner-record-model'] = selection.modelRef;
+      state.learnerDag.modelRef = selection.modelRef;
+      state.learnerDag.resolved = selection.resolved;
+      learnerRecordResolved = selection.resolved;
+      learnerRecordProviderConfig = selection.providerConfig;
+      visibleLearnerRecordModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
+    } else if (role === 'learner') {
+      args['auto-learner-model'] = selection.modelRef;
+      state.autoLearner = {
+        modelRef: selection.modelRef,
+        resolved: selection.resolved,
+        providerConfig: selection.providerConfig,
+      };
+      mixedLearner.resolved = selection.resolved;
+      autoLearnerResolved = selection.resolved;
+      autoLearnerProviderConfig = selection.providerConfig;
+      visibleAutoLearnerModel = visibleResolvedModel(selection.resolved, selection.providerConfig);
+    } else {
+      throw new Error(`unknown model role: ${role}`);
+    }
+    refreshVisibleClassifierConfig();
+    if (changed && !preserveAllOverride) state.modelRouting.allRolesOverrideRef = null;
+    const invalidated = changed && !deferEffects ? resetMixedLearnerSuggestion(`${role}_model_changed`) : null;
+    const remembered = changed && !deferEffects ? persistCurrentInteractiveSettings(`${role}_model_changed`) : null;
+    appendTraceEvent(state.trace, {
+      type: 'role_model_changed',
+      schema: 'machinespirits.tutor-stub.role-model-selection.v1',
+      source,
+      role,
+      previousRef,
+      modelRef: selection.modelRef,
+      provider: selection.resolved.provider,
+      model: selection.resolved.model,
+      changed,
+      effectiveTurn: state.turns.length + 1,
+      rememberedAt: remembered?.updatedAt || null,
+      cacheRefresh: invalidated
+        ? {
+            priorStateCleared: Boolean(invalidated.hadState),
+            analysisDiscarded: Boolean(invalidated.discardedAnalysis),
+            tutorResponseDiscarded: Boolean(invalidated.discardedTutorResponse),
+          }
+        : null,
+    });
+    return { ...selection, previousRef, changed, invalidated };
+  }
+
+  function applyAllRoleModelSelection(modelRef, { source = 'live_settings' } = {}) {
+    const selection = resolveTutorModelSelection(modelRef);
+    const previousOverrideRef = state.modelRouting.allRolesOverrideRef;
+    state.modelRouting.allRolesOverrideRef = selection.modelRef;
+    const results = Object.keys(liveModelRoleDefinitions).map((role) =>
+      applyRoleModelSelection(role, selection.modelRef, {
+        source: `${source}_all_roles`,
+        deferEffects: true,
+        preserveAllOverride: true,
+      }),
+    );
+    const changed = results.some((result) => result.changed) || previousOverrideRef !== selection.modelRef;
+    const invalidated = changed ? resetMixedLearnerSuggestion('all_role_models_changed') : null;
+    const remembered = changed ? persistCurrentInteractiveSettings('all_role_models_changed') : null;
+    appendTraceEvent(state.trace, {
+      type: 'all_role_models_changed',
+      schema: 'machinespirits.tutor-stub.all-models-override.v1',
+      source,
+      modelRef: selection.modelRef,
+      changed,
+      effectiveTurn: state.turns.length + 1,
+      roles: Object.keys(liveModelRoleDefinitions),
+      rememberedAt: remembered?.updatedAt || null,
+      cacheRefresh: invalidated
+        ? {
+            priorStateCleared: Boolean(invalidated.hadState),
+            analysisDiscarded: Boolean(invalidated.discardedAnalysis),
+            tutorResponseDiscarded: Boolean(invalidated.discardedTutorResponse),
+          }
+        : null,
+    });
+    return { ...selection, changed, results, invalidated };
   }
 
   async function pickInitialTutorModelWithKeyboard(defaultRef) {
@@ -14701,10 +14988,42 @@ async function main() {
     const overlays = new Set(draft?.overlays || state.register?.overlays || []);
     const entries = [
       {
-        id: 'model',
-        label: 'Tutor model',
-        value: draft?.modelRef || state.modelRef,
-        description: 'Choose the model that speaks as the tutor. Analysis and learner models stay independent.',
+        id: 'all_models',
+        label: 'One model for all roles',
+        value: draft?.allModelsOverrideRef || 'off · roles selected separately',
+        description: 'Choose one model for tutor voice, learner interpretation, reasoning, and learner voice.',
+      },
+      {
+        id: 'tutor_model',
+        label: 'Tutor voice',
+        value: draft?.tutorModelRef || state.modelRef,
+        description: 'Choose the model that writes the public tutor response.',
+      },
+      {
+        id: 'classifier_model',
+        label: 'Learner interpretation',
+        value: `${draft?.classifierModelRef || liveModelRoleRef('classifier')}${
+          state.classifier?.combined ? ' · combined/inactive' : state.classifier?.enabled ? '' : ' · inactive'
+        }`,
+        description: state.classifier?.combined
+          ? 'Saved separately, but the reasoning tracker currently performs this interpretation in its combined call.'
+          : 'Choose the model that classifies what the learner just said.',
+      },
+      {
+        id: 'reasoning_model',
+        label: 'Reasoning tracker',
+        value: `${draft?.reasoningModelRef || liveModelRoleRef('reasoning')}${
+          state.learnerDag?.enabled ? ' · includes interpretation' : ' · inactive'
+        }`,
+        description: 'Choose the model that maps the learner turn onto the public reasoning record.',
+      },
+      {
+        id: 'learner_model',
+        label: 'Learner voice',
+        value: `${draft?.learnerModelRef || liveModelRoleRef('learner')}${
+          learnerSuggestionEnabled ? '' : ' · inactive'
+        }`,
+        description: 'Choose the model that writes automated turns and mixed-mode learner suggestions.',
       },
       {
         id: 'stance_temp',
@@ -15381,6 +15700,12 @@ async function main() {
   function transcriptPayload() {
     return {
       ...visibleModel,
+      modelRouting: {
+        allRolesOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
+        roles: Object.fromEntries(
+          Object.keys(liveModelRoleDefinitions).map((role) => [role, liveModelRoleSnapshot(role)]),
+        ),
+      },
       classifier: classifierEnabled ? visibleClassifierConfig : null,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
@@ -15439,7 +15764,20 @@ async function main() {
       history: jsonClone(state.history),
       turns: jsonClone(state.turns),
       settings: {
-        allModelsOverride: jsonClone(allModelsOverride),
+        allModelsOverride: state.modelRouting?.allRolesOverrideRef
+          ? {
+              schema: 'machinespirits.tutor-stub.all-models-override.v1',
+              modelRef: state.modelRouting.allRolesOverrideRef,
+              roles: Object.keys(liveModelRoleDefinitions),
+            }
+          : null,
+        modelRouting: {
+          schema: state.modelRouting?.schema || 'machinespirits.tutor-stub.model-routing.v1',
+          allRolesOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
+          roles: Object.fromEntries(
+            Object.keys(liveModelRoleDefinitions).map((role) => [role, liveModelRoleSnapshot(role)]),
+          ),
+        },
         run: {
           id: state.debugRunId,
           completedTurns: state.turns.length,
@@ -15470,15 +15808,18 @@ async function main() {
         classifier: {
           enabled: classifierEnabled,
           combinedWithLearnerDag: combinedLearnerAnalysisEnabled,
-          modelRef: classifierEnabled
+          modelRef: args['classifier-model'],
+          activeModelRef: classifierEnabled
             ? combinedLearnerAnalysisEnabled
               ? args['learner-record-model']
               : args['classifier-model']
             : null,
+          provider: liveModelRoleSnapshot('classifier').resolved.provider,
+          model: liveModelRoleSnapshot('classifier').resolved.model,
         },
         learnerRecord: {
           enabled: tutorLearnerDagEnabled,
-          modelRef: tutorLearnerDagEnabled ? args['learner-record-model'] : null,
+          modelRef: args['learner-record-model'],
           provider: visibleLearnerRecordModel?.provider || null,
           model: visibleLearnerRecordModel?.model || null,
         },
@@ -15487,9 +15828,9 @@ async function main() {
           profileId: mixedLearner.enabled ? learnerProfile.id : null,
           profileName: mixedLearner.enabled ? learnerProfile.name : null,
           profilePattern: mixedLearner.enabled ? learnerProfile.pattern : null,
-          modelRef: mixedLearner.enabled ? args['auto-learner-model'] : null,
-          provider: mixedLearner.enabled ? visibleAutoLearnerModel?.provider || null : null,
-          model: mixedLearner.enabled ? visibleAutoLearnerModel?.model || null : null,
+          modelRef: args['auto-learner-model'],
+          provider: visibleAutoLearnerModel?.provider || null,
+          model: visibleAutoLearnerModel?.model || null,
         },
         coach: {
           mode: interactionMode === 'coach',
@@ -15733,19 +16074,24 @@ async function main() {
       if ([...replacedValueOptions].some((option) => argument.startsWith(`${option}=`))) continue;
       next.push(argument);
     }
+    const modelArguments = state.modelRouting?.allRolesOverrideRef
+      ? ['--all-models', state.modelRouting.allRolesOverrideRef]
+      : [
+          '--model',
+          state.modelRef,
+          '--classifier-model',
+          args['classifier-model'],
+          '--learner-record-model',
+          args['learner-record-model'],
+          '--auto-learner-model',
+          args['auto-learner-model'],
+        ];
     next.push(
       '--world',
       filePath,
       '--auto-learner-profile',
       state.learnerProfileId || state.learnerProfile,
-      '--model',
-      state.modelRef,
-      '--classifier-model',
-      args['classifier-model'],
-      '--learner-record-model',
-      args['learner-record-model'],
-      '--auto-learner-model',
-      args['auto-learner-model'],
+      ...modelArguments,
       '--register-temperature',
       String(state.register?.temperature ?? registerTemperature),
       '--dag-fact-dropout',
@@ -15949,6 +16295,13 @@ async function main() {
       `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
     );
     console.log(
+      `${C.dim}  model routing: ${
+        state.modelRouting?.allRolesOverrideRef
+          ? `one model for all roles (${state.modelRouting.allRolesOverrideRef})`
+          : `interpretation ${liveModelRoleRef('classifier')} · reasoning ${liveModelRoleRef('reasoning')} · learner voice ${liveModelRoleRef('learner')}`
+      }${C.reset}`,
+    );
+    console.log(
       `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
     );
     console.log(
@@ -16023,8 +16376,11 @@ async function main() {
       console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`);
       return;
     }
-    if (!autoLearnerResolved?.isConfigured && !isCliProvider(autoLearnerResolved?.provider)) {
-      const envName = autoLearnerProviderConfig?.api_key_env || 'provider API key';
+    const activeAutoLearnerResolved = state.autoLearner?.resolved || autoLearnerResolved;
+    const activeAutoLearnerProviderConfig =
+      state.autoLearner?.providerConfig || autoLearnerProviderConfig;
+    if (!activeAutoLearnerResolved?.isConfigured && !isCliProvider(activeAutoLearnerResolved?.provider)) {
+      const envName = activeAutoLearnerProviderConfig?.api_key_env || 'provider API key';
       console.log(
         `${C.red}auto mode error:${C.reset} ${args['auto-learner-model']} is not configured; set ${envName}\n`,
       );
@@ -16072,7 +16428,7 @@ async function main() {
         state,
         firstMessage: '',
         openingEnabled,
-        autoLearnerResolved,
+        autoLearnerResolved: activeAutoLearnerResolved,
         autoLearnerProfile: mixedLearner.profile,
         autoTurns: requestedTurns,
         autoSafetyTurns,
@@ -16321,6 +16677,7 @@ async function main() {
     state.dialogueClosure = { ...dialogueClosureConfig };
     state.learnerDag = createLearnerDagState({
       enabled: tutorLearnerDagEnabled,
+      modelRef: args['learner-record-model'],
       resolved: learnerRecordResolved,
       world: worldBundle?.world || null,
       dropout: {
@@ -16434,10 +16791,24 @@ async function main() {
 
   function printDialogueSettings() {
     const active = registerTemperatureApplies(state.register?.policy);
+    const modelRoles = Object.keys(liveModelRoleDefinitions).map(liveModelRoleSnapshot);
     console.log(`${C.cyan}settings >${C.reset}`);
     console.log(
-      `${C.dim}  tutor model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}; effort ${state.cliEffort || 'provider default'}${C.reset}`,
+      `${C.dim}  one model for all roles: ${state.modelRouting?.allRolesOverrideRef || 'off — roles selected separately'}${C.reset}`,
     );
+    for (const role of modelRoles) {
+      const mode = role.combinedOwner
+        ? 'active; also performs learner interpretation'
+        : role.active
+          ? 'active'
+          : role.role === 'classifier' && state.classifier?.combined
+            ? 'inactive; combined into reasoning tracker'
+            : 'inactive in this mode';
+      console.log(
+        `${C.dim}  ${role.label.toLowerCase()}: ${role.modelRef} → ${role.resolved.provider}/${role.resolved.model}; ${mode}${C.reset}`,
+      );
+    }
+    console.log(`${C.dim}  tutor effort: ${state.cliEffort || 'provider default'}${C.reset}`);
     console.log(
       `${C.dim}  conversation memory: tutor and learner replay all ${
         tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
@@ -16474,14 +16845,16 @@ async function main() {
       `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, or /settings forget${C.reset}\n`,
+      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, or /settings forget${C.reset}\n`,
     );
   }
 
-  function printTutorModelChoices() {
-    const entries = tutorModelChoiceEntries(state.modelRef);
+  function printModelChoices(role = 'tutor') {
+    const definition = liveModelRoleDefinitions[role];
+    const currentRef = liveModelRoleRef(role);
+    const entries = tutorModelChoiceEntries(currentRef);
     const visible = entries.slice(0, 16);
-    console.log(`${C.cyan}tutor models >${C.reset} current ${state.modelRef}`);
+    console.log(`${C.cyan}${definition.label.toLowerCase()} models >${C.reset} current ${currentRef}`);
     for (const entry of visible) {
       console.log(
         `${entry.current ? C.brightCyan : C.dim}${entry.current ? '›' : ' '} ${entry.ref.padEnd(34)} ${entry.model} · ${entry.access}${C.reset}`,
@@ -16493,8 +16866,12 @@ async function main() {
       );
     }
     console.log(
-      `${C.dim}  choose with /settings model <provider.alias>; /settings model default restores ${STUB.model}${C.reset}\n`,
+      `${C.dim}  choose with /settings models ${definition.setting} <provider.alias>; default restores ${definition.defaultRef}${C.reset}\n`,
     );
+  }
+
+  function printTutorModelChoices() {
+    printModelChoices('tutor');
   }
 
   async function chooseLiveTutorModel() {
@@ -16502,6 +16879,15 @@ async function main() {
     const selection = await pickInitialTutorModelWithKeyboard(state.modelRef);
     if (!selection) return false;
     await handleDialogueSettings(`model ${selection.ref}`);
+    return true;
+  }
+
+  async function chooseLiveRoleModel(role) {
+    const definition = liveModelRoleDefinitions[role];
+    console.log(`${C.brightCyan}${C.bold}${definition.label} · choose with ↑/↓ and Enter${C.reset}`);
+    const selection = await pickInitialTutorModelWithKeyboard(liveModelRoleRef(role));
+    if (!selection) return false;
+    await handleDialogueSettings(`models ${definition.setting} ${selection.ref}`);
     return true;
   }
 
@@ -16571,7 +16957,11 @@ async function main() {
 
   function createLiveSettingsDraft() {
     return {
-      modelRef: state.modelRef,
+      allModelsOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
+      tutorModelRef: state.modelRef,
+      classifierModelRef: liveModelRoleRef('classifier'),
+      reasoningModelRef: liveModelRoleRef('reasoning'),
+      learnerModelRef: liveModelRoleRef('learner'),
       temperature: state.register?.temperature ?? registerTemperature,
       dropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -16584,7 +16974,20 @@ async function main() {
   function liveSettingsDraftChangeIds(draft) {
     const currentOverlays = state.register?.overlays || [];
     const changes = [];
-    if (draft.modelRef !== state.modelRef) changes.push('model');
+    if (
+      draft.allModelsOverrideRef &&
+      [draft.tutorModelRef, draft.classifierModelRef, draft.reasoningModelRef, draft.learnerModelRef].every(
+        (ref) => ref === draft.allModelsOverrideRef,
+      ) &&
+      draft.allModelsOverrideRef !== state.modelRouting?.allRolesOverrideRef
+    ) {
+      changes.push('all_models');
+    } else {
+      if (draft.tutorModelRef !== state.modelRef) changes.push('tutor_model');
+      if (draft.classifierModelRef !== liveModelRoleRef('classifier')) changes.push('classifier_model');
+      if (draft.reasoningModelRef !== liveModelRoleRef('reasoning')) changes.push('reasoning_model');
+      if (draft.learnerModelRef !== liveModelRoleRef('learner')) changes.push('learner_model');
+    }
     if (draft.temperature !== (state.register?.temperature ?? registerTemperature)) changes.push('stance_temp');
     if (
       draft.dropoutRate !==
@@ -16613,7 +17016,18 @@ async function main() {
 
   async function applyLiveSettingsDraft(draft) {
     const changes = liveSettingsDraftChangeIds(draft);
-    if (changes.includes('model')) await handleDialogueSettings(`model ${draft.modelRef}`);
+    if (changes.includes('all_models')) {
+      await handleDialogueSettings(`models all ${draft.allModelsOverrideRef}`);
+    } else {
+      if (changes.includes('tutor_model')) await handleDialogueSettings(`models tutor ${draft.tutorModelRef}`);
+      if (changes.includes('classifier_model')) {
+        await handleDialogueSettings(`models classifier ${draft.classifierModelRef}`);
+      }
+      if (changes.includes('reasoning_model')) {
+        await handleDialogueSettings(`models reasoning ${draft.reasoningModelRef}`);
+      }
+      if (changes.includes('learner_model')) await handleDialogueSettings(`models learner ${draft.learnerModelRef}`);
+    }
     if (changes.includes('stance_temp')) await handleDialogueSettings(`stance-temp ${draft.temperature}`);
     if (changes.includes('dropout')) await handleDialogueSettings(`dropout ${draft.dropoutRate}`);
     if (changes.includes('release_speed')) await handleDialogueSettings(`release-speed ${draft.releaseSpeed}`);
@@ -16662,11 +17076,50 @@ async function main() {
         action: action.id,
         turn: state.turns.length + 1,
       });
-      if (action.id === 'model') {
-        console.log(`${C.brightCyan}${C.bold}Tutor model · choose with ↑/↓ and Enter${C.reset}`);
+      if (
+        action.id === 'all_models' ||
+        action.id === 'tutor_model' ||
+        action.id === 'classifier_model' ||
+        action.id === 'reasoning_model' ||
+        action.id === 'learner_model'
+      ) {
+        const role =
+          action.id === 'all_models'
+            ? 'all'
+            : action.id === 'tutor_model'
+              ? 'tutor'
+              : action.id === 'classifier_model'
+                ? 'classifier'
+                : action.id === 'reasoning_model'
+                  ? 'reasoning'
+                  : 'learner';
+        const label = role === 'all' ? 'One model for all roles' : liveModelRoleDefinitions[role].label;
+        const currentRef =
+          role === 'all'
+            ? draft.allModelsOverrideRef || draft.tutorModelRef
+            : role === 'tutor'
+              ? draft.tutorModelRef
+              : role === 'classifier'
+                ? draft.classifierModelRef
+                : role === 'reasoning'
+                  ? draft.reasoningModelRef
+                  : draft.learnerModelRef;
+        console.log(`${C.brightCyan}${C.bold}${label} · choose with ↑/↓ and Enter${C.reset}`);
         console.log(`${C.dim}  Esc back · saved only when you choose Done${C.reset}`);
-        const selection = await pickInitialTutorModelWithKeyboard(draft.modelRef);
-        if (selection) draft.modelRef = selection.ref;
+        const selection = await pickInitialTutorModelWithKeyboard(currentRef);
+        if (selection && role === 'all') {
+          draft.allModelsOverrideRef = selection.ref;
+          draft.tutorModelRef = selection.ref;
+          draft.classifierModelRef = selection.ref;
+          draft.reasoningModelRef = selection.ref;
+          draft.learnerModelRef = selection.ref;
+        } else if (selection) {
+          draft.allModelsOverrideRef = null;
+          if (role === 'tutor') draft.tutorModelRef = selection.ref;
+          else if (role === 'classifier') draft.classifierModelRef = selection.ref;
+          else if (role === 'reasoning') draft.reasoningModelRef = selection.ref;
+          else draft.learnerModelRef = selection.ref;
+        }
       } else if (
         action.id === 'stance_temp' ||
         action.id === 'dropout' ||
@@ -16727,6 +17180,19 @@ async function main() {
     const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
     const releaseSpeedNames = ['release-speed', 'release_speed', 'pace', 'speed'];
     const modelNames = ['model', 'tutor-model'];
+    const modelRoleAliases = {
+      tutor: 'tutor',
+      speaker: 'tutor',
+      classifier: 'classifier',
+      interpretation: 'classifier',
+      assessment: 'classifier',
+      reasoning: 'reasoning',
+      tracker: 'reasoning',
+      'learner-record': 'reasoning',
+      learner: 'learner',
+      'learner-voice': 'learner',
+      auto: 'learner',
+    };
     if (state.passthrough?.enabled && !parts.length) {
       console.log(`${C.cyan}passthrough settings >${C.reset}`);
       console.log(
@@ -16778,6 +17244,91 @@ async function main() {
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (setting === 'models') {
+      if (parts.length === 1) {
+        printDialogueSettings();
+        return;
+      }
+      const requestedRole = String(parts[1] || '').toLowerCase();
+      const role = modelRoleAliases[requestedRole] || null;
+      if (requestedRole !== 'all' && !role) {
+        console.log(
+          `${C.red}settings error:${C.reset} use /settings models all|tutor|classifier|reasoning|learner [provider.alias]\n`,
+        );
+        return;
+      }
+      if (parts.length === 2) {
+        if (liveSettingsPickerAvailable() && !duringTurn) {
+          if (requestedRole === 'all') {
+            console.log(`${C.brightCyan}${C.bold}One model for all roles · choose with ↑/↓ and Enter${C.reset}`);
+            const selection = await pickInitialTutorModelWithKeyboard(
+              state.modelRouting?.allRolesOverrideRef || state.modelRef,
+            );
+            if (selection) await handleDialogueSettings(`models all ${selection.ref}`);
+          } else {
+            await chooseLiveRoleModel(role);
+          }
+        } else if (requestedRole === 'all') {
+          printTutorModelChoices();
+        } else {
+          printModelChoices(role);
+        }
+        return;
+      }
+      if (parts.length !== 3) {
+        console.log(
+          `${C.red}settings error:${C.reset} use /settings models all|tutor|classifier|reasoning|learner <provider.alias>\n`,
+        );
+        return;
+      }
+      if (duringTurn) {
+        console.log(`${C.dim}model routing is unchanged while a tutor turn is in progress${C.reset}`);
+        console.log(`${C.dim}  change it after the response so each turn uses one stable route${C.reset}\n`);
+        appendTraceEvent(state.trace, {
+          type: 'role_model_change_rejected',
+          reason: 'turn_in_progress',
+          role: requestedRole,
+          requested: parts[2],
+          turn: state.turns.length + 1,
+        });
+        return;
+      }
+      const defaultRef =
+        requestedRole === 'all'
+          ? STUB.model
+          : liveModelRoleDefinitions[role].defaultRef;
+      const requestedRef = parts[2].toLowerCase() === 'default' ? defaultRef : parts[2];
+      let selected;
+      try {
+        selected =
+          requestedRole === 'all'
+            ? applyAllRoleModelSelection(requestedRef, { source: 'live_settings' })
+            : applyRoleModelSelection(role, requestedRef, { source: 'live_settings' });
+      } catch (error) {
+        console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
+        return;
+      }
+      const label = requestedRole === 'all' ? 'all roles' : liveModelRoleDefinitions[role].label.toLowerCase();
+      if (!selected.changed && state.modelRouting?.allRolesOverrideRef === requestedRef) {
+        console.log(`${C.cyan}settings >${C.reset} ${label} already use ${selected.modelRef}\n`);
+        return;
+      }
+      console.log(
+        `${C.cyan}settings >${C.reset} ${label} → ${selected.modelRef}; applies from turn ${state.turns.length + 1}`,
+      );
+      console.log(`${C.dim}  resolved as ${selected.resolved.provider}/${selected.resolved.model}${C.reset}`);
+      if (requestedRole === 'all') {
+        console.log(`${C.dim}  tutor, interpretation, reasoning tracker, and learner voice now share this model${C.reset}`);
+      } else {
+        console.log(`${C.dim}  other model roles keep their current selections${C.reset}`);
+      }
+      if (latestTutorMessage(state)) {
+        startMixedLearnerPrefetch(`${requestedRole}_model_changed`);
+        console.log(`${C.dim}  rebuilding any affected learner suggestion, analysis, and prefetched tutor reply${C.reset}`);
+      }
+      console.log();
+      return;
+    }
     if (setting === 'forget' && parts.length === 1) {
       if (duringTurn) {
         console.log(`${C.dim}saved settings cannot be changed while the tutor is responding${C.reset}\n`);
@@ -17150,7 +17701,7 @@ async function main() {
     const feedback = requestTutorStubTurnFeedback(state.turnFeedback, target);
     if (!feedback) return false;
     console.log(
-      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.brightGreen}👍 /up helpful${C.reset} · ${C.yellow}👎 /down not helpful${C.reset} · ${C.dim}or just reply${C.reset}\n`,
+      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.yellow}← 👎 not helpful${C.reset} · ${C.brightGreen}👍 helpful →${C.reset} · ${C.dim}empty prompt; no Enter · or just reply${C.reset}\n`,
     );
     appendTraceEvent(state.trace, {
       type: 'tutor_turn_feedback_requested',
@@ -17163,7 +17714,7 @@ async function main() {
     return true;
   }
 
-  function handleTutorFeedbackCommand(action = '', { duringTurn = false } = {}) {
+  function handleTutorFeedbackCommand(action = '', { duringTurn = false, source = 'command' } = {}) {
     clearStatusLine();
     const normalized = String(action || '')
       .trim()
@@ -17174,7 +17725,7 @@ async function main() {
         `${C.brightYellow}${C.bold}tutor feedback >${C.reset} ${state.turnFeedback?.enabled ? 'on' : 'off'} · ${tutorStubTurnFeedbackLabel(feedback)}`,
       );
       console.log(
-        `${C.dim}  optional and private · use 👍, 👎, /up, /down, /feedback clear, /feedback on, or /feedback off${C.reset}\n`,
+        `${C.dim}  optional and private · on an empty prompt use ← for down or → for up; 👍, 👎, /up, /down, and /feedback controls also work${C.reset}\n`,
       );
       return true;
     }
@@ -17239,6 +17790,7 @@ async function main() {
       turnId: feedback.targetTutorTurnId,
       rating: feedback.rating,
       supplied: feedback.supplied,
+      inputSource: source,
       publicTranscriptChanged: false,
     });
     return true;
@@ -18012,6 +18564,27 @@ async function main() {
   if (input.isTTY && output.isTTY) {
     emitKeypressEvents(input, rl);
     onInteractiveKeypress = (character, key) => {
+      const arrowRating = tutorStubTurnFeedbackArrowRating({
+        line: rl.line,
+        key,
+        feedback: tutorStubTurnFeedbackEnvelope(state.turnFeedback),
+        busy: processingTurn,
+        interactiveMode: state.interaction?.mode,
+        interfaceBlocked: Boolean(
+          exiting ||
+            initialSetupStage !== 'off' ||
+            scenarioPickerActive ||
+            awaitingAnotherScenario
+        ),
+      });
+      if (arrowRating) {
+        lineSelection.clear();
+        handleTutorFeedbackCommand(arrowRating, {
+          source: key.name === 'right' ? 'empty_prompt_right_arrow' : 'empty_prompt_left_arrow',
+        });
+        promptIfIdle();
+        return;
+      }
       lineSelection.handleKeypress(character, key);
       if (slashPaletteRefreshHandle) clearImmediate(slashPaletteRefreshHandle);
       slashPaletteRefreshHandle = setImmediate(() => {
@@ -18031,7 +18604,10 @@ async function main() {
     if (scenarioPickerActive) return;
     const trimmed = line.trim();
     if (trimmed === '👍' || trimmed === '👎') {
-      handleTutorFeedbackCommand(trimmed === '👍' ? 'up' : 'down', { duringTurn: processingTurn });
+      handleTutorFeedbackCommand(trimmed === '👍' ? 'up' : 'down', {
+        duringTurn: processingTurn,
+        source: 'emoji_line',
+      });
       promptIfIdle();
       return;
     }

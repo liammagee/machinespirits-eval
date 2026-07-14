@@ -19,6 +19,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 function sampleSettings(overrides = {}) {
   return {
     tutorModelRef: 'codex.gpt-5.6-luna',
+    classifierModelRef: 'codex.gpt-5.6-sol',
+    learnerRecordModelRef: 'codex.gpt-5.6-sol',
+    autoLearnerModelRef: 'codex.gpt-5.6-terra',
+    allModelsOverrideRef: null,
     engagementStanceTemperature: 0.4,
     dagFactDropoutRate: 0.15,
     releaseSpeed: 1.4,
@@ -103,6 +107,9 @@ test('interactive defaults restore the last settings while explicit launch flags
       'scenario',
       'learner_profile',
       'tutor_model',
+      'learner_interpretation_model',
+      'learner_reasoning_model',
+      'learner_voice_model',
       'engagement_stance_temperature',
       'dag_fact_dropout',
       'clue_release_speed',
@@ -141,7 +148,11 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(explicit.releasePacing.baseSpeed, 1.2);
     assert.equal(explicit.registerSelection.policy, 'field');
     assert.equal(explicit.registerSelection.overlayThreshold, 0.9);
-    assert.deepEqual(explicit.rememberedSettings.appliedFields, []);
+    assert.deepEqual(explicit.rememberedSettings.appliedFields, [
+      'learner_interpretation_model',
+      'learner_reasoning_model',
+      'learner_voice_model',
+    ]);
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('scenario'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('learner_profile'));
 
@@ -151,6 +162,9 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(allModels.tutorLearnerDag.modelRef, 'codex.gpt-5.6-terra');
     assert.equal(allModels.mixedLearner.modelRef, 'codex.gpt-5.6-terra');
     assert.ok(allModels.rememberedSettings.skippedExplicitFields.includes('tutor_model'));
+    assert.ok(allModels.rememberedSettings.skippedExplicitFields.includes('learner_interpretation_model'));
+    assert.ok(allModels.rememberedSettings.skippedExplicitFields.includes('learner_reasoning_model'));
+    assert.ok(allModels.rememberedSettings.skippedExplicitFields.includes('learner_voice_model'));
 
     const disabled = tutorStubDryRun(filePath, ['--no-remember-settings']);
     assert.equal(disabled.modelRef, 'codex.gpt-5.6-terra');
@@ -176,6 +190,31 @@ test('legacy saved controls request only the missing scenario and learner profil
     assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.enabled, false);
     assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.enabled, false);
     assert.equal(config.mixedLearner.startupPrompts.clueReleaseSpeed.enabled, false);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('a remembered one-model override restores as an override rather than four accidental matches', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-saved-model-override-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    writeTutorStubLastSettings(
+      filePath,
+      sampleSettings({
+        tutorModelRef: 'codex.gpt-5.6-luna',
+        classifierModelRef: 'codex.gpt-5.6-luna',
+        learnerRecordModelRef: 'codex.gpt-5.6-luna',
+        autoLearnerModelRef: 'codex.gpt-5.6-luna',
+        allModelsOverrideRef: 'codex.gpt-5.6-luna',
+      }),
+    );
+    const restored = tutorStubDryRun(filePath, ['--mixed-learner']);
+    assert.equal(restored.allModelsOverride.modelRef, 'codex.gpt-5.6-luna');
+    assert.equal(restored.allModelsOverride.source, 'remembered_settings');
+    assert.equal(restored.classifier.classifierModelRef, 'codex.gpt-5.6-luna');
+    assert.equal(restored.tutorLearnerDag.modelRef, 'codex.gpt-5.6-luna');
+    assert.equal(restored.mixedLearner.modelRef, 'codex.gpt-5.6-luna');
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
@@ -213,6 +252,10 @@ test('live settings changes are written for the next interactive session', () =>
     assert.deepEqual(
       {
         tutorModelRef: loaded.settings.tutorModelRef,
+        classifierModelRef: loaded.settings.classifierModelRef,
+        learnerRecordModelRef: loaded.settings.learnerRecordModelRef,
+        autoLearnerModelRef: loaded.settings.autoLearnerModelRef,
+        allModelsOverrideRef: loaded.settings.allModelsOverrideRef,
         engagementStanceTemperature: loaded.settings.engagementStanceTemperature,
         dagFactDropoutRate: loaded.settings.dagFactDropoutRate,
         releaseSpeed: loaded.settings.releaseSpeed,
@@ -228,6 +271,51 @@ test('live settings changes are written for the next interactive session', () =>
         registerOverlayThreshold: 0.75,
       }),
     );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('live model routing supports one override and independent tutor/learner roles', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-model-routing-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input:
+          '/settings models all codex.gpt-5.6-luna\n/settings models classifier codex.gpt-5.6-sol\n/status\n/quit\n',
+        env: {
+          ...process.env,
+          TUTOR_STUB_REMEMBER_SETTINGS: '1',
+          TUTOR_STUB_SETTINGS_FILE: filePath,
+        },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /all roles → codex\.gpt-5\.6-luna/u);
+    assert.match(result.stdout, /learner interpretation → codex\.gpt-5\.6-sol/u);
+    assert.match(
+      result.stdout,
+      /model routing: interpretation codex\.gpt-5\.6-sol · reasoning codex\.gpt-5\.6-luna · learner voice codex\.gpt-5\.6-luna/u,
+    );
+    const loaded = readTutorStubLastSettings(filePath);
+    assert.equal(loaded.status, 'loaded');
+    assert.equal(loaded.settings.tutorModelRef, 'codex.gpt-5.6-luna');
+    assert.equal(loaded.settings.classifierModelRef, 'codex.gpt-5.6-sol');
+    assert.equal(loaded.settings.learnerRecordModelRef, 'codex.gpt-5.6-luna');
+    assert.equal(loaded.settings.autoLearnerModelRef, 'codex.gpt-5.6-luna');
+    assert.equal(loaded.settings.allModelsOverrideRef, null);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
@@ -327,6 +415,7 @@ test(
             TERM: 'xterm-color',
             TUTOR_STUB_SETTINGS_FILE: filePath,
             TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_OPENING_REALIZER: 'deterministic',
           },
         },
       );
@@ -339,7 +428,7 @@ test(
           output += chunk;
           if (!requestedExit && output.includes('LEARNER') && output.includes('mode')) {
             requestedExit = true;
-            terminal.write('/quit\r');
+            setTimeout(() => terminal.write('/quit\r'), 50);
           }
         });
         terminal.onExit(({ exitCode, signal }) => {

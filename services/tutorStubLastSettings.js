@@ -51,6 +51,10 @@ export function normalizeTutorStubLastSettings(value) {
     learnerProfileId: optionalNonEmptyString(value.learnerProfileId, 'learner profile id'),
     learnerProfile: optionalNonEmptyString(value.learnerProfile, 'custom learner profile'),
     tutorModelRef: nonEmptyString(value.tutorModelRef, 'tutor model ref'),
+    classifierModelRef: optionalNonEmptyString(value.classifierModelRef, 'learner interpretation model ref'),
+    learnerRecordModelRef: optionalNonEmptyString(value.learnerRecordModelRef, 'learner reasoning model ref'),
+    autoLearnerModelRef: optionalNonEmptyString(value.autoLearnerModelRef, 'learner voice model ref'),
+    allModelsOverrideRef: optionalNonEmptyString(value.allModelsOverrideRef, 'all-models override ref'),
     engagementStanceTemperature: boundedNumber(value.engagementStanceTemperature, {
       label: 'teaching-style range',
       min: 0.05,
