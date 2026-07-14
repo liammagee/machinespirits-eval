@@ -6,12 +6,15 @@ import { describe, it } from 'node:test';
 import { loadWorld } from '../dramaticDerivation/world.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
   analyzeTutorStubPublicLearnerTurn,
+  buildTutorStubLearnerDagPreflight,
   buildTutorStubPublicLearnerAnalysisOutputSchema,
   buildTutorStubPublicLearnerAnalysisPrompt,
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
   buildTutorStubPublicLearnerAnalysisWorld,
+  createTutorStubPublicLearnerRecord,
   extractTutorStubPublicLearnerAnalysis,
   parseTutorStubPublicLearnerAnalysisInteractive,
   parseTutorStubPublicLearnerAnalysisStrict,
@@ -524,6 +527,72 @@ describe('strict public learner analysis', () => {
 });
 
 describe('public evidence boundary and exact DAG postprocessor', () => {
+  it('computes a public constraint preflight before analysis without committing progress', async () => {
+    const world = smokeWorld();
+    const record = createTutorStubPublicLearnerRecord(world);
+    const p1 = world.premiseById.get('p1');
+    const p2 = world.premiseById.get('p2');
+    record.board.set(JSON.stringify(p1.fact), p1.fact);
+    const publicEvidence = [
+      { premise: 'p1', turn: 1, via: 'fixture', surface: p1.surface, fact: p1.fact },
+      { premise: 'p2', turn: 2, via: 'fixture', surface: p2.surface, fact: p2.fact },
+    ];
+    const boardSizeBefore = record.board.size;
+    const preflight = buildTutorStubLearnerDagPreflight({
+      world,
+      record,
+      tutorTurn: 2,
+      publicStagedEvidence: publicEvidence,
+    });
+
+    assert.equal(preflight.schema, TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA);
+    assert.equal(preflight.computedBeforeModelCall, true);
+    assert.equal(preflight.publicOnly, true);
+    assert.deepEqual(preflight.eligiblePublicPremiseIds, ['p1', 'p2']);
+    assert.deepEqual(preflight.alreadyAdoptedPremiseIds, ['p1']);
+    assert.deepEqual(preflight.retractablePremiseIds, ['p1']);
+    assert.deepEqual(preflight.possibleNextDerivations, [
+      {
+        fact: ['grandchild', 'marin', 'founder'],
+        publicRuleId: 'R1_lineage',
+        supportingPremiseIds: ['p1', 'p2'],
+      },
+    ]);
+    assert.equal(preflight.authority.semanticMappingRequired, true);
+    assert.equal(preflight.authority.commitsProgress, false);
+    assert.equal(preflight.authority.commitStage, 'deterministic_postprocessor_after_model');
+    assert.equal(record.board.size, boardSizeBefore);
+    assert.equal(record.voiced.length, 0);
+    assert.match(preflight.contentSha256, /^[a-f0-9]{64}$/u);
+    const serialized = JSON.stringify(preflight);
+    assert.doesNotMatch(serialized, /p3|proof_paths|release_schedule|rightful heir|\["heir","marin"\]/iu);
+
+    let modelDispatched = false;
+    const result = await analyzeTutorStubPublicLearnerTurn({
+      learnerText: 'I am not claiming a conclusion yet.',
+      topic: 'inheritance reasoning',
+      world,
+      tutorTurn: 2,
+      learnerRecord: record,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+      callModel: async (request) => {
+        modelDispatched = true;
+        const preflightIndex = request.prompt.indexOf('# Deterministic learner-DAG preflight');
+        const learnerTurnIndex = request.prompt.indexOf('# Current learner turn');
+        assert.ok(preflightIndex >= 0 && preflightIndex < learnerTurnIndex);
+        assert.match(request.prompt, /eligibility ceiling, not permission to invent a derivation/u);
+        return modelResponse(validAnalysis());
+      },
+    });
+    assert.equal(modelDispatched, true);
+    assert.equal(result.rawAnalysis.provenance.dag_preflight_before_model, true);
+    assert.equal(result.provenance.dag_preflight_before_model, true);
+    assert.equal(result.turnRecord.tutorLearnerDagUpdate.preflight.contentSha256, preflight.contentSha256);
+    assert.deepEqual(result.tutorLearnerDag.accepted.derive, []);
+    assert.equal(result.tutorLearnerDag.model.metrics.voicedDerivedCount, 0);
+  });
+
   it('keeps authored task-key state out of extraction and admits it only to deterministic postprocessing', async () => {
     const world = smokeWorld();
     const p3 = world.premiseById.get('p3');

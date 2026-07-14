@@ -238,7 +238,14 @@ function summarizeDagDeltas(delta) {
   return parts.join(', ') || 'no learner-DAG movement';
 }
 
-function registerEfficacyFromDagProgress({ selection, currentModel, accepted, state, classification }) {
+function registerEfficacyFromDagProgress({
+  selection,
+  currentModel,
+  accepted,
+  state,
+  classification,
+  tutorFeedback = null,
+}) {
   const before = dagProgressFeatures(selection?.selectedAtDag);
   const after = dagProgressFeatures(currentModel);
   const delta = Object.fromEntries(Object.keys(after).map((key) => [key, Number(after[key]) - Number(before[key])]));
@@ -252,6 +259,20 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted, st
     Math.max(0, delta.unsupportedAssertionCount);
   const label =
     progressScore > 0 ? 'positive_progress' : progressScore < 0 ? 'regression_or_overreach' : 'no_clear_progress';
+  const learnerRating = tutorFeedback?.supplied && ['up', 'down'].includes(tutorFeedback.rating)
+    ? tutorFeedback.rating
+    : null;
+  const learnerFeedbackScore = learnerRating === 'up' ? 1 : learnerRating === 'down' ? -1 : 0;
+  const selfAssessmentScore = progressScore + learnerFeedbackScore * 2;
+  const selfAssessmentLabel = learnerRating === 'up'
+    ? progressScore >= 0
+      ? 'learner_endorsed_with_stable_or_positive_progress'
+      : 'learner_endorsed_despite_dag_regression'
+    : learnerRating === 'down'
+      ? progressScore > 0
+        ? 'dag_progress_with_learner_disapproval'
+        : 'learner_disapproved_without_dag_progress'
+      : 'behavioral_evidence_only';
   const dagProgress = progressScore > 0;
   const field = fieldProgressFromClassification({ state, classification });
   const mismatch = classifyFieldStateRelation({ fieldProgress: field.progress, dagProgress });
@@ -262,6 +283,16 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted, st
     selected_register: selection?.selected_register || null,
     label,
     progressScore,
+    learnerFeedbackScore,
+    selfAssessmentScore,
+    selfAssessmentLabel,
+    learnerFeedback: {
+      requested: Boolean(tutorFeedback?.requested),
+      supplied: Boolean(learnerRating),
+      rating: learnerRating,
+      targetTutorTurn: tutorFeedback?.targetTutorTurn ?? null,
+      targetTutorTurnId: tutorFeedback?.targetTutorTurnId || null,
+    },
     dagProgress,
     field,
     mismatch,
@@ -277,7 +308,7 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted, st
       : null,
     summary: summarizeDagDeltas(delta),
     caveat:
-      'Heuristic local association only: the next learner turn is compared with the DAG and learner-field state when the register was selected.',
+      'Heuristic local association only: objective next-turn DAG/field movement remains separate from the learner’s optional subjective rating.',
   };
 }
 
@@ -1211,15 +1242,19 @@ function empiricalRegisterCorrections(state, palette) {
     const recency = (index + 1) / entries.length;
     const progress = Math.max(-1, Math.min(1, numberOr(efficacy.progressScore) / 4));
     const fieldDelta = Math.max(-1, Math.min(1, numberOr(efficacy.field?.delta) * 4));
+    const learnerFeedbackAdjustment =
+      efficacy.learnerFeedback?.rating === 'up' ? 0.3 : efficacy.learnerFeedback?.rating === 'down' ? -0.6 : 0;
     const labelAdjustment =
       efficacy.label === 'positive_progress' ? 0.15 : efficacy.label === 'regression_or_overreach' ? -0.35 : -0.08;
-    const update = recency * (0.45 * progress + 0.25 * fieldDelta + labelAdjustment);
+    const update = recency * (0.45 * progress + 0.25 * fieldDelta + labelAdjustment + learnerFeedbackAdjustment);
     corrections[entry.selected_register] += update;
     evidence.push({
       turn: entry.turn,
       register: entry.selected_register,
       label: efficacy.label,
       progressScore: efficacy.progressScore,
+      learnerFeedback: efficacy.learnerFeedback || null,
+      learnerFeedbackAdjustment,
       fieldDelta: efficacy.field?.delta ?? null,
       correction: roundField(update),
     });

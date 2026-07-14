@@ -96,6 +96,7 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
         PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
         FAKE_CODEX_LOG: logPath,
         CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        TUTOR_STUB_OPENING_REALIZER: 'deterministic',
         ...env,
       },
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -272,7 +273,7 @@ test('learner messages sent before the tutor replies form one restart-safe compo
       initialInput: 'The first clue is unclear.\n',
       followupInputs: [{ delayMs: 200, text: 'I mean the residue comparison specifically.\n' }],
       stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
-      timeoutMs: 12_000,
+      timeoutMs: 30_000,
       env: {
         FAKE_CODEX_DELAY_MS: '800',
         TUTOR_STUB_SUMMARY_OPEN: '0',
@@ -328,6 +329,55 @@ test('learner messages sent before the tutor replies form one restart-safe compo
         (event) => event.type === 'learner_turn_compound_committed' && event.revision === 2 && event.messageCount === 2,
       ),
     );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('optional thumbs feedback is attached to the next human learner message and guides the tutor privately', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-turn-feedback-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'none',
+      ],
+      initialInput: 'First learner message.\n',
+      followupInputs: [{ delayMs: 750, text: '/down\nSecond learner message.\n' }],
+      stopWhen: (plain) => (plain.match(/optional tutor feedback >/gu) || []).length >= 2,
+      timeoutMs: 12_000,
+    });
+
+    assert.match(result.plain, /tutor feedback > 👎 not helpful · private/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) =>
+        fs
+          .readFileSync(path.join(tmp, name), 'utf8')
+          .trim()
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line)),
+      );
+    const secondTurn = events.find((event) => event.type === 'turn_complete' && event.turn === 2)?.turnRecord;
+    assert.equal(secondTurn.learnerInput.tutorFeedback.rating, 'down');
+    assert.equal(secondTurn.learnerInput.tutorFeedback.supplied, true);
+    assert.equal(secondTurn.learnerMessages[0].tutorFeedback.rating, 'down');
+    assert.equal(secondTurn.learner, 'Second learner message.');
+
+    const calls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
+    assert.match(calls.at(-1), /The learner marked your previous public response unhelpful/u);
+    assert.match(calls.at(-1), /Do not mention the rating/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

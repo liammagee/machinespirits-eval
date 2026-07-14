@@ -116,13 +116,15 @@ export function buildTutorStubResponseCompositionFrame({
       clue_release_required: dramaticReleaseFrame?.active === true,
       closure_phase: closurePhase,
       instruction:
-        'Only after uptake, perform the selected next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.',
+        `Only after uptake, take the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
     },
     shared_realization: {
       engagement_stance: configuration.engagement_stance || registerSelection?.engagement_stance || null,
       audience_register: configuration.audience_register || registerSelection?.audience_register || null,
       lexical_accessibility: configuration.lexical_accessibility || registerSelection?.lexical_accessibility || null,
       scene_immersion: configuration.scene_immersion || registerSelection?.scene_immersion || null,
+      actorial_part: configuration.actorial_part || registerSelection?.actorial_part || null,
+      actorial_part_label: configuration.actorial_part_label || registerSelection?.actorial_part_label || null,
     },
   };
 }
@@ -160,7 +162,7 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
     development.kind === 'dialogue_closure'
       ? 'The development beat is a natural close, not another proof demand.'
       : null,
-    'The selected engagement stance, audience level, language accessibility, and scene immersion govern both beats. Do not name either beat, this composition, or any private machinery in public speech.',
+    `The selected engagement stance, audience level, language accessibility, and scene immersion govern both beats. The actorial part (${frame.shared_realization?.actorial_part_label || frame.shared_realization?.actorial_part || 'selected public part'}) becomes fully visible in the development beat without erasing the uptake. Do not name either beat, this composition, or any private machinery in public speech.`,
     'These two beats are one tutor turn and one public assistant message. Do not emit JSON, headings, labels, or commentary around them.',
     '[End tutor-only response composition]',
   ]

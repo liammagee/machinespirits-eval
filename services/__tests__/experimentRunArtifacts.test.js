@@ -470,6 +470,7 @@ test('tutor-stub trace roles map explicitly to frozen tutor, learner, and analyz
     'tutor_stub_tutor',
     'tutor_stub_tutor_repair',
     'tutor_stub_tutor_prefetch',
+    'tutor_stub_opening',
     'tutor_stub_clarifier',
   ]) {
     assert.equal(tutorStubTraceModelRole(role), 'tutor', role);

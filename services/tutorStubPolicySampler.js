@@ -9,6 +9,8 @@ export const TUTOR_STUB_STOCHASTIC_POLICY_IDS = Object.freeze([
   'state',
   'dynamical_system',
   'empirical_dynamical_system',
+  'continuous_dynamical_system',
+  'continuous_empirical_dynamical_system',
 ]);
 const STOCHASTIC_POLICIES = new Set(TUTOR_STUB_STOCHASTIC_POLICY_IDS);
 

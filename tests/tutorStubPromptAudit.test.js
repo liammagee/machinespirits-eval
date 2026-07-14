@@ -262,6 +262,8 @@ test('DAG dry run keeps private proof planning out of the speaking tutor prompt'
   assert.equal(dryRun.promptArchitecture.audit.baseSpeakerPrivilege.ok, true);
   assert.match(dryRun.systemPrompt, /Speaking-tutor evidence contract/u);
   assert.match(dryRun.systemPrompt, /A private deterministic planner owns the answer/u);
+  assert.match(dryRun.systemPrompt, /adaptive scene actor/u);
+  assert.match(dryRun.systemPrompt, /A part never grants knowledge/u);
   assert.doesNotMatch(dryRun.systemPrompt, /The false shillings were struck by Edony/u);
   assert.doesNotMatch(dryRun.systemPrompt, /Concealed answer|Hidden premise ledger|Authored proof path/u);
   assert.doesNotMatch(dryRun.systemPrompt, /meltedAt\(|p_holder|R1_blank/u);

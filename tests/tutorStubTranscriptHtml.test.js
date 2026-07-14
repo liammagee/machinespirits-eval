@@ -53,12 +53,32 @@ function fixtureSnapshot() {
       {
         turn: 1,
         learner: 'Does <this> identify the hand?',
+        learnerInput: {
+          tutorFeedback: {
+            requested: true,
+            supplied: true,
+            rating: 'down',
+            targetTutorTurn: 0,
+            targetTutorTurnId: 'html-test:opening',
+          },
+        },
         tutor: 'You are right to keep those claims separate.\n\nNow compare the process mark with the custody record.',
         classification: {
           turn: { summary: 'The learner asks what the residue licenses.' },
           overall: { trajectory: 'careful inquiry' },
         },
         tutorLearnerDagModel: { adopted: ['p1'], missing: ['p2'] },
+        tutorLearnerDagUpdate: {
+          preflight: {
+            schema: 'machinespirits.tutor-stub.learner-dag-preflight.v1',
+            computedBeforeModelCall: true,
+            eligiblePublicPremiseIds: ['p1'],
+            possibleNextDerivations: [],
+            authority: { commitsProgress: false },
+          },
+          accepted: { adopt: ['p1'], derive: [] },
+          rejected: [],
+        },
         learnerAdvance: {
           pace: 'accelerating',
           accelerated: true,
@@ -75,9 +95,11 @@ function fixtureSnapshot() {
           audience_register: 'adult_novice',
           lexical_accessibility: 'plain_language',
           scene_immersion: 'fully_in_scene',
+          actorial_part: 'record_keeper',
+          actorial_part_label: 'keeper of the trial-book',
         },
         previousRegisterEfficacy: { status: 'no_prior_turn' },
-        responseConfigurationAudit: { visible_axis_count: 5, axis_count: 5 },
+        responseConfigurationAudit: { visible_axis_count: 6, axis_count: 6 },
         responseComposition: {
           uptake: 'You are right to keep those claims separate.',
           development: 'Now compare the process mark with the custody record.',
@@ -145,7 +167,10 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /The unresolved evidentiary distinction calls for a calm re-anchor/u);
   assert.match(html, /Learning pace:<\/b> accelerating/u);
   assert.match(html, /pace: accelerating \(3 moves\)/u);
+  assert.match(html, /part: keeper of the trial book/u);
   assert.match(html, /&quot;missing&quot;: \[/u);
+  assert.match(html, /DAG preflight and committed update/u);
+  assert.match(html, /machinespirits\.tutor-stub\.learner-dag-preflight\.v1/u);
   assert.match(html, /register\.engagementStanceTemperature/u);
   assert.match(html, /0\.85/u);
   assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
@@ -154,6 +179,8 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /<small>responds<\/small>/u);
   assert.match(html, /<small>develops<\/small>/u);
   assert.match(html, /Response shape:<\/b> responds, then develops/u);
+  assert.match(html, /Previous tutor reply: 👎 not helpful/u);
+  assert.match(html, /Learner rating of the previous tutor reply:<\/b> 👎 not helpful/u);
   assert.equal((html.match(/data-director-notes/gu) || []).length, 1);
   assert.ok(html.indexOf('data-director-notes') < html.indexOf('class="tabs"'));
   assert.match(html, /Director notes so far/u);
@@ -230,7 +257,11 @@ test('/director repeats only notes issued so far and records the non-transcript 
         cwd: ROOT,
         encoding: 'utf8',
         input: '/director\n/quit\n',
-        env: { ...process.env, TUTOR_STUB_SUMMARY_OPEN: '0' },
+        env: {
+          ...process.env,
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
       },
     );
 

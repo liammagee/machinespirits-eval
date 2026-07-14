@@ -153,11 +153,11 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.ok(allModels.rememberedSettings.skippedExplicitFields.includes('tutor_model'));
 
     const disabled = tutorStubDryRun(filePath, ['--no-remember-settings']);
-    assert.equal(disabled.modelRef, 'codex.gpt-5.6-sol');
+    assert.equal(disabled.modelRef, 'codex.gpt-5.6-terra');
     assert.equal(disabled.rememberedSettings.enabled, false);
 
     const automated = tutorStubDryRun(filePath, ['--auto-learner']);
-    assert.equal(automated.modelRef, 'codex.gpt-5.6-sol');
+    assert.equal(automated.modelRef, 'codex.gpt-5.6-terra');
     assert.equal(automated.rememberedSettings.enabled, false);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });

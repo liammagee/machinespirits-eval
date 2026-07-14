@@ -39,7 +39,7 @@ test('the stochastic-policy registry matches the policies that invoke the seeded
   for (const policy of TUTOR_STUB_STOCHASTIC_POLICY_IDS) {
     assert.equal(tutorStubPolicyRequiresDeterministicDraw(policy), true, policy);
   }
-  for (const policy of ['bland', 'dynamic', 'continuous_dynamical_system', 'continuous_empirical_dynamical_system']) {
+  for (const policy of ['bland', 'dynamic']) {
     assert.equal(tutorStubPolicyRequiresDeterministicDraw(policy), false, policy);
   }
 });

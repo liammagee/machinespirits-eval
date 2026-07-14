@@ -16,6 +16,7 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT = [
   'You are a compact up-front reviewer for an experimental tutor.',
   'Return a pedagogical discourse classification, a conservative public learner-record update, and, only when requested, a reviewer-chosen tutor engagement stance.',
   'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
+  'A supplied learner-DAG preflight is a public eligibility boundary, not evidence that the learner voiced or adopted anything.',
   'Do not infer hidden story facts, concealed answers, private tutor prompts, proof paths, or unstaged evidence.',
   'Do not use tools, commands, files, browsing, external retrieval, or side effects.',
   'Return one JSON object only. No prose outside JSON.',
@@ -25,6 +26,9 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES = Object.freeze({
   STRICT_BENCHMARK: 'strict_benchmark',
   INTERACTIVE: 'interactive',
 });
+
+export const TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA =
+  'machinespirits.tutor-stub.learner-dag-preflight.v1';
 
 export const TUTOR_STUB_PUBLIC_STAGED_EVIDENCE_SCHEMA = Object.freeze({
   type: 'object',
@@ -820,6 +824,93 @@ function resolvedPublicReleaseLedger(world, tutorTurn, publicStagedEvidence, pub
   return tutorStubPublicReleaseLedger(world, tutorTurn);
 }
 
+/**
+ * Compute the public constraint envelope before learner-language analysis.
+ *
+ * The preflight deliberately does not decide what the learner said. It only
+ * freezes what could legally be adopted, retracted, or derived from the
+ * public record at this instant. A model still maps free-form language onto
+ * candidate updates; applyTutorStubPublicLearnerRecordUpdate remains the sole
+ * authority that can validate and commit those candidates afterward.
+ */
+export function buildTutorStubLearnerDagPreflight({
+  world,
+  record = null,
+  tutorTurn,
+  publicStagedEvidence = null,
+  priorPublicLearnerState = null,
+} = {}) {
+  if (!world) throw new TutorStubPublicLearnerAnalysisError('learner-DAG preflight requires a world');
+  if (!Number.isInteger(Number(tutorTurn)) || Number(tutorTurn) < 1) {
+    throw new TutorStubPublicLearnerAnalysisError('learner-DAG preflight requires tutorTurn >= 1');
+  }
+  const staged = resolvedPublicStagedEvidence(world, Number(tutorTurn), publicStagedEvidence);
+  const stagedByFactKey = new Map(staged.map((row) => [factKey(row.fact), row]));
+  const prior = priorPublicLearnerState && typeof priorPublicLearnerState === 'object'
+    ? priorPublicLearnerState
+    : {};
+  const groundedFacts = record?.board instanceof Map
+    ? [...record.board.values()].filter(validFactArray)
+    : (prior.groundedFacts || prior.grounded_facts || []).filter(validFactArray);
+  const voicedDerivedFacts = Array.isArray(record?.voiced)
+    ? record.voiced.map((row) => row?.fact).filter(validFactArray)
+    : (prior.voicedDerivedFacts || prior.voiced_derived_facts || []).filter(validFactArray);
+  const hypotheses = Array.isArray(record?.hypotheses)
+    ? record.hypotheses.map((row) => String(row?.text || '').trim()).filter(Boolean)
+    : (prior.hypotheses || prior.prior_hypotheses || []).map((row) => String(row || '').trim()).filter(Boolean);
+  const groundedKeys = new Set(groundedFacts.map(factKey));
+  const currentClosed = closure(groundedFacts, world.rules || []);
+  const publicClosed = closure(
+    [...groundedFacts, ...staged.map((row) => row.fact).filter(validFactArray)],
+    world.rules || [],
+  );
+  const alreadyAdoptedPremiseIds = staged
+    .filter((row) => groundedKeys.has(factKey(row.fact)))
+    .map((row) => row.premise);
+  const possibleNextDerivations = [...publicClosed.facts.entries()]
+    .filter(([key]) => !currentClosed.facts.has(key) && publicClosed.proofs.get(key))
+    .map(([key, fact]) => {
+      const proof = publicClosed.proofs.get(key);
+      const supportingPremiseIds = [...new Set(
+        proofBaseKeys(publicClosed, key)
+          .map((baseKey) => stagedByFactKey.get(baseKey)?.premise)
+          .filter(Boolean),
+      )];
+      return {
+        fact: [...fact],
+        publicRuleId: String(proof?.rule || ''),
+        supportingPremiseIds,
+      };
+    });
+  const body = {
+    schema: TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
+    turn: Number(tutorTurn),
+    computedBeforeModelCall: true,
+    publicOnly: true,
+    priorRecord: {
+      groundedFacts: groundedFacts.map((fact) => [...fact]),
+      derivableFacts: [...currentClosed.facts.entries()]
+        .filter(([key]) => currentClosed.proofs.get(key))
+        .map(([, fact]) => [...fact]),
+      voicedDerivedFacts: voicedDerivedFacts.map((fact) => [...fact]),
+      hypotheses,
+    },
+    eligiblePublicPremiseIds: staged.map((row) => row.premise),
+    alreadyAdoptedPremiseIds,
+    retractablePremiseIds: [...alreadyAdoptedPremiseIds],
+    possibleNextDerivations,
+    authority: {
+      semanticMappingRequired: true,
+      commitsProgress: false,
+      commitStage: 'deterministic_postprocessor_after_model',
+    },
+  };
+  return {
+    ...body,
+    contentSha256: sha256(canonicalJson(body)),
+  };
+}
+
 export function tutorStubPublicFactSurface(world, fact) {
   if (!world || !Array.isArray(fact)) return factText(fact);
   const key = factKey(fact);
@@ -963,6 +1054,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   registerPalette = [],
   registerContext = {},
   publicStagedEvidence = null,
+  dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
   strictProviderEnvelope = false,
@@ -1020,6 +1112,19 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '',
     ...world.rules.map(ruleText),
     '',
+    dagPreflight ? '# Deterministic learner-DAG preflight — computed before this model call' : null,
+    dagPreflight ? '' : null,
+    dagPreflight
+      ? 'This is a public constraint envelope, not a claim about what the learner said. It commits no progress.'
+      : null,
+    dagPreflight
+      ? 'Map the current learner language only onto candidates it actually expresses. possibleNextDerivations is an eligibility ceiling, not permission to invent a derivation.'
+      : null,
+    dagPreflight
+      ? 'The deterministic postprocessor will independently reject any unstaged premise or underivable conclusion after this call.'
+      : null,
+    dagPreflight ? JSON.stringify(dagPreflight, null, 2) : null,
+    dagPreflight ? '' : null,
     '# Staged public evidence available at or before this turn',
     '',
     staged.length
@@ -1157,6 +1262,9 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Prior tutor engagement stances and observed efficacy' : null,
     includeRegisterSelection ? registerContext.historyPrompt : null,
+    includeRegisterSelection && registerContext.feedbackPrompt ? '' : null,
+    includeRegisterSelection && registerContext.feedbackPrompt ? '# Explicit learner rating of the previous tutor response' : null,
+    includeRegisterSelection && registerContext.feedbackPrompt ? registerContext.feedbackPrompt : null,
     '',
     '# JSON schema',
     '',
@@ -1652,6 +1760,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   registerPalette = [],
   registerContext = {},
   publicStagedEvidence = null,
+  dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
   callModel,
@@ -1726,6 +1835,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         registerPalette,
         registerContext,
         publicStagedEvidence: effectivePublicStagedEvidence,
+        dagPreflight,
         priorPublicLearnerState,
         includeBenchmarkTransitionEvent,
         strictProviderEnvelope: strict,
@@ -1948,8 +2058,10 @@ export async function extractTutorStubPublicLearnerAnalysis({
     provenance: {
       model_input_public_only: true,
       public_world_projection: true,
+      dag_preflight_before_model: Boolean(dagPreflight),
       deterministic_task_key_postprocessor: false,
     },
+    dagPreflight: dagPreflight ? jsonClone(dagPreflight) : null,
   };
 }
 export function normalizeTutorStubHumanDiscourseRows(rows = [], source = 'learner_record') {
@@ -2235,6 +2347,7 @@ export function buildTutorStubPublicLearnerAnalysisTurnRecord({
     tutorLearnerDagModel: tutorLearnerDag?.model || null,
     tutorLearnerDagUpdate: tutorLearnerDag
       ? {
+          preflight: tutorLearnerDag.preflight || null,
           accepted: tutorLearnerDag.accepted || null,
           rejected: tutorLearnerDag.rejected || [],
           extractor: tutorLearnerDag.extractor || null,
@@ -2318,6 +2431,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       publicStagedEvidence,
       publicReleaseLedger,
     });
+    tutorLearnerDag.preflight = rawAnalysis.dagPreflight ? jsonClone(rawAnalysis.dagPreflight) : null;
     const turnRecord = buildTutorStubPublicLearnerAnalysisTurnRecord({
       learnerText,
       tutorTurn,
@@ -2351,6 +2465,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       dropout: dropoutState,
       provenance: {
         model_input_public_only: true,
+        dag_preflight_before_model: Boolean(rawAnalysis.dagPreflight),
         deterministic_task_key_postprocessor: true,
         analyzerCall: rawAnalysis.callMetadata || null,
       },
@@ -2395,6 +2510,13 @@ export async function analyzeTutorStubPublicLearnerTurn({
   const stagedPublicProjection = Array.isArray(publicStagedEvidence)
     ? publicStagedEvidence
     : tutorStubPublicStagedEvidence(world, Number(tutorTurn));
+  const effectiveLearnerRecord = learnerRecord || createTutorStubPublicLearnerRecord(world);
+  const dagPreflight = buildTutorStubLearnerDagPreflight({
+    world,
+    record: effectiveLearnerRecord,
+    tutorTurn,
+    publicStagedEvidence: stagedPublicProjection,
+  });
   const publicWorld = buildTutorStubPublicLearnerAnalysisWorld(world);
   const registerContext = {
     priorPublicLearnerDagPrompt: priorPublicLearnerDag
@@ -2415,6 +2537,7 @@ export async function analyzeTutorStubPublicLearnerTurn({
     registerContext,
     modelCallOptions,
     publicStagedEvidence: stagedPublicProjection,
+    dagPreflight,
     comprehensionContext: promptContext.comprehensionContext || '',
     learnerDagEnabled: promptContext.learnerDagEnabled ?? true,
     registerPolicy: promptContext.registerPolicy || null,
@@ -2428,7 +2551,7 @@ export async function analyzeTutorStubPublicLearnerTurn({
     learnerText,
     world,
     tutorTurn,
-    learnerRecord,
+    learnerRecord: effectiveLearnerRecord,
     dropout,
     dropoutReplay,
     parseMode,

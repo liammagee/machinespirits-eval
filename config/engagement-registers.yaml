@@ -2,11 +2,11 @@
 #
 # Engagement stances are reviewer-chosen tone/posture decisions for the next tutor
 # response. Request types describe the learner turn's logical role in the DAG or
-# proof path. Action family, audience register, lexical accessibility, and scene
-# immersion are selected independently. `registers` remains a compatibility name
-# in older traces and consumers; new runtime state uses `engagement_stance`.
+# proof path. Action family, actorial part, audience register, lexical accessibility,
+# and scene immersion are selected independently. `registers` remains a compatibility
+# name in older traces and consumers; new runtime state uses `engagement_stance`.
 
-register_ontology_version: 4
+register_ontology_version: 5
 
 # Formal pragmatic shell for register-in-use. This is descriptive metadata: it
 # does not change router choices or prompts. The default tutor-stub realization
@@ -416,6 +416,46 @@ action_families:
   baseline_plain_response:
     role: control_device
     description: Use a fixed compact response action for the bland comparison arm.
+
+# The part is what the speaking tutor theatrically does in the public scene.
+# It is not an agent role, the addressee profile, or hidden proof knowledge. The
+# runtime selects it from public learner/DAG signals after choosing the action.
+actorial_parts:
+  scene_partner:
+    label: fellow investigator
+    contract: |
+      Work beside the learner inside the scene. Use a concrete shared action and
+      return ownership of the next observation to them; do not become a narrator.
+  examiner:
+    label: evidence examiner
+    contract: |
+      Physically inspect, compare, test, weigh, or point to one public exhibit.
+      Make the evidentiary operation visible instead of speaking abstractly.
+  record_keeper:
+    label: record keeper
+    contract: |
+      Open, read, mark, or close the world's public record. Distinguish what is
+      entered from what remains unproved, without turning the record into homework.
+  authored_source:
+    label: source of the new clue
+    contract: |
+      Take the exact public part assigned by the authored clue release and voice,
+      read, or demonstrate only that clue before returning to the shared inquiry.
+  advocate:
+    label: advocate for the live case
+    contract: |
+      Make the strongest presently licensed case in first person, then hand the
+      learner a concrete way to test, resist, or break it.
+  skeptic:
+    label: skeptical examiner
+    contract: |
+      Challenge one unsafe leap or weak link in the live case. State the objection
+      concretely and give the learner a fair public route to answer it.
+  foreperson:
+    label: keeper of the final finding
+    contract: |
+      Gather the public supports, state the licensed finding, close the record,
+      and do not open another investigative branch.
 
 audience_registers:
   child_accessible:

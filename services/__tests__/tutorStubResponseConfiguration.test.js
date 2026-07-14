@@ -9,6 +9,7 @@ import {
 import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
+  selectTutorStubActorialPart,
   selectTutorStubActionFamily,
   summarizeTutorStubResponseConfigurationAudits,
   tutorStubResponseConfigurationPrompt,
@@ -91,8 +92,67 @@ test('action family is selected independently from engagement stance and tempera
   assert.equal(warm.audience_register, precise.audience_register);
   assert.equal(warm.lexical_accessibility, precise.lexical_accessibility);
   assert.equal(warm.scene_immersion, precise.scene_immersion);
-  assert.equal(warm.temperature_scope, 'engagement_stance_only');
-  assert.equal(precise.temperature_scope, 'engagement_stance_only');
+  assert.equal(warm.temperature_scope, 'engagement_stance_and_actorial_part');
+  assert.equal(precise.temperature_scope, 'engagement_stance_and_actorial_part');
+  assert.equal(warm.actorial_part_selection.temperature, 0.4);
+  assert.equal(precise.actorial_part_selection.temperature, 1.4);
+});
+
+test('actorial part turns the same public policy signals into distinct dramatic work', () => {
+  const dueRelease = selectTutorStubActorialPart({
+    engagementStance: 'brisk',
+    actionFamily: 'stage_next_step',
+    temperature: 0.15,
+    dueEvidence: [
+      {
+        surface: 'Visitor code WF-11 was issued to an outside crew.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+      },
+    ],
+  });
+  const overreach = selectTutorStubActorialPart({
+    engagementStance: 'precise',
+    actionFamily: 'answer_accountably',
+    temperature: 0.15,
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'premature_assertion' }),
+  });
+  const memoryRepairDag = learnerDag({ bottleneck: 'learner_integration_gap' });
+  memoryRepairDag.model.memoryReliability = { activeDroppedCount: 1 };
+  const memoryRepair = selectTutorStubActorialPart({
+    engagementStance: 'plain',
+    actionFamily: 'reanchor_public_evidence',
+    temperature: 0.15,
+    tutorLearnerDag: memoryRepairDag,
+    world: { presentation: { ledger_term: 'trial-book' } },
+  });
+
+  assert.equal(dueRelease.id, 'authored_source');
+  assert.equal(dueRelease.label, 'front-desk clerk reading the visitor badge log');
+  assert.equal(dueRelease.locked, true);
+  assert.equal(dueRelease.selection_method, 'structural_lock');
+  assert.equal(overreach.id, 'skeptic');
+  assert.equal(memoryRepair.id, 'record_keeper');
+  assert.equal(memoryRepair.label, 'keeper of the trial-book');
+});
+
+test('lower adaptive-performance temperature sharpens the actorial-part choice', () => {
+  const input = {
+    engagementStance: 'precise',
+    actionFamily: 'clarify_distinction',
+  };
+  const sharp = selectTutorStubActorialPart({ ...input, temperature: 0.15 });
+  const broad = selectTutorStubActorialPart({ ...input, temperature: 1.5 });
+
+  assert.equal(sharp.id, 'examiner');
+  assert.equal(broad.id, 'examiner');
+  assert.ok(sharp.probability > broad.probability);
+  assert.ok(broad.distribution.filter((row) => row.probability >= 0.05).length > 1);
+
+  const sampled = selectTutorStubActorialPart({ ...input, temperature: 1.5, selectedPartOverride: 'skeptic' });
+  assert.equal(sampled.id, 'skeptic');
+  assert.equal(sampled.selection_method, 'seeded_distribution');
+  assert.ok(sampled.probability > 0);
 });
 
 test('unresolved terms select a gloss action, novice audience, plain lexicon, and grounded scene', () => {
@@ -119,6 +179,7 @@ test('unresolved terms select a gloss action, novice audience, plain lexicon, an
   assert.equal(configuration.scene_immersion, 'grounded');
   assert.deepEqual(configuration.unresolved_terms, ['cupel']);
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /These are independent axes/u);
+  assert.match(tutorStubResponseConfigurationPrompt(configuration), /Actorial part: evidence examiner/u);
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Unresolved terms: cupel/u);
 });
 
@@ -258,6 +319,9 @@ test('surface audit measures realization and differences between selected config
   assert.equal(plainAudit.axes.action_family.visible, true);
   assert.equal(plainAudit.axes.lexical_accessibility.visible, true);
   assert.equal(warmAudit.axes.engagement_stance.visible, true);
+  assert.equal(warmAudit.axes.actorial_part.selected, 'scene_partner');
+  assert.equal(warmAudit.axes.actorial_part.visible, true);
+  assert.equal(warmAudit.axis_count, 6);
   assert.equal(summary.distinct_configuration_count, 2);
   assert.equal(summary.different_configuration_pairs, 1);
   assert.equal(summary.pairwise_visible_difference_rate, 1);

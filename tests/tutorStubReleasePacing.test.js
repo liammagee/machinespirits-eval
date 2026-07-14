@@ -308,7 +308,7 @@ process.stdin.on('end', () => {
     );
 
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /style brisk, move stage next step, clue pace faster 1\.75x; 1 new/u);
+    assert.match(result.stdout, /style brisk, move stage next step, part [^,]+, clue pace faster 1\.75x; 1 new/u);
     const events = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))

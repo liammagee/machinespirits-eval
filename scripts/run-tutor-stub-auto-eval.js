@@ -242,7 +242,7 @@ Options:
                               default: .tutor-stub-auto-eval/run-<timestamp>
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
-  --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.15)
+  --register-temperature <n> style + actorial part: lower sharpens; higher broadens (default: 0.15)
   --register-overlay-threshold <n>
                               minimum strong-change score for +state/+field overlays (default: 0.7)
   --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
@@ -1241,6 +1241,9 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
       audienceRegister: selection.audience_register || null,
       lexicalAccessibility: selection.lexical_accessibility || null,
       sceneImmersion: selection.scene_immersion || null,
+      actorialPart: selection.actorial_part || selection.response_configuration?.actorial_part || null,
+      actorialPartLabel:
+        selection.actorial_part_label || selection.response_configuration?.actorial_part_label || null,
       valence: selection.valence || null,
       probability: roundOptionalField(selection.selected_probability ?? selection.confidence),
       vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
@@ -1385,6 +1388,8 @@ function buildTurnTrainingExamples({ animatedViz = null, transcript = null } = {
         lexicalAccessibility:
           turn.register?.lexicalAccessibility || frame.responseConfiguration?.lexical_accessibility || null,
         sceneImmersion: turn.register?.sceneImmersion || frame.responseConfiguration?.scene_immersion || null,
+        actorialPart: turn.register?.actorialPart || frame.responseConfiguration?.actorial_part || null,
+        actorialPartLabel: turn.register?.actorialPartLabel || frame.responseConfiguration?.actorial_part_label || null,
         responseConfiguration: turn.responseConfiguration || frame.responseConfiguration || null,
         responseConfigurationAudit: turn.responseConfigurationAudit || frame.responseConfigurationAudit || null,
         registerPolicy: frame.register?.policy || turn.register?.policy || null,
@@ -1785,6 +1790,7 @@ function summarizeTrace(
   const audienceRegisters = turnRecords.map((turn) => turn.registerSelection?.audience_register).filter(Boolean);
   const lexicalAccessibility = turnRecords.map((turn) => turn.registerSelection?.lexical_accessibility).filter(Boolean);
   const sceneImmersion = turnRecords.map((turn) => turn.registerSelection?.scene_immersion).filter(Boolean);
+  const actorialParts = turnRecords.map((turn) => turn.registerSelection?.actorial_part).filter(Boolean);
   const efficacies = turns.map((event) => event.turnRecord?.previousRegisterEfficacy?.label).filter(Boolean);
   const leakCount = turns.reduce((sum, event) => {
     const leaks = event.turnRecord?.tutorLeakAudit?.leaks;
@@ -1836,6 +1842,7 @@ function summarizeTrace(
     audienceRegisterCounts: countBy(audienceRegisters),
     lexicalAccessibilityCounts: countBy(lexicalAccessibility),
     sceneImmersionCounts: countBy(sceneImmersion),
+    actorialPartCounts: countBy(actorialParts),
     responseConfigurationVisibility,
     pointOfAction,
     dagFactDropout,
@@ -1954,6 +1961,9 @@ function summarizeRows(rows) {
       Array.from({ length: count }, () => register),
     ),
   );
+  const scoredActorialParts = scored.flatMap((row) =>
+    Object.entries(row.actorialPartCounts || {}).flatMap(([part, count]) => Array.from({ length: count }, () => part)),
+  );
   const byPolicy = {};
   for (const row of rows) {
     if (!byPolicy[row.policy]) byPolicy[row.policy] = [];
@@ -1965,6 +1975,11 @@ function summarizeRows(rows) {
     const registers = okRows.flatMap((row) =>
       Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
         Array.from({ length: count }, () => register),
+      ),
+    );
+    const actorialParts = okRows.flatMap((row) =>
+      Object.entries(row.actorialPartCounts || {}).flatMap(([part, count]) =>
+        Array.from({ length: count }, () => part),
       ),
     );
     return {
@@ -1984,6 +1999,8 @@ function summarizeRows(rows) {
       meanFieldRiskDelta: mean(okRows.map((row) => row.field?.delta?.learnerRisk)),
       registerCounts: countBy(registers),
       registerEntropy: entropy(registers),
+      actorialPartCounts: countBy(actorialParts),
+      actorialPartEntropy: entropy(actorialParts),
       meanConfigurationRealization: mean(
         okRows
           .map((row) => row.responseConfigurationVisibility?.mean_realization_rate)
@@ -2026,6 +2043,8 @@ function summarizeRows(rows) {
     meanMissing: mean(scored.map((row) => row.missingPremiseCount)),
     registerCounts: countBy(scoredRegisters),
     registerEntropy: entropy(scoredRegisters),
+    actorialPartCounts: countBy(scoredActorialParts),
+    actorialPartEntropy: entropy(scoredActorialParts),
     meanConfigurationRealization: mean(
       scored
         .map((row) => row.responseConfigurationVisibility?.mean_realization_rate)
@@ -4558,9 +4577,19 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
     ),
   );
   const observedRegisters = registers.length ? registers : fallbackRegisters;
+  const actorialParts = examples.map((example) => example.action?.actorialPart).filter(Boolean);
+  const fallbackActorialParts = okRows.flatMap((row) =>
+    Object.entries(row.actorialPartCounts || {}).flatMap(([part, count]) =>
+      Array.from({ length: Number(count || 0) }, () => part),
+    ),
+  );
+  const observedActorialParts = actorialParts.length ? actorialParts : fallbackActorialParts;
   const stateActionPairs = examples
     .map((example) => [adaptationStateKey(example), example.action?.selectedRegister || ''])
     .filter(([, register]) => register);
+  const statePartPairs = examples
+    .map((example) => [adaptationStateKey(example), example.action?.actorialPart || ''])
+    .filter(([, part]) => part);
   const closureRate = okRows.length ? okRows.filter((row) => row.groundedClosure).length / okRows.length : null;
   const meanTurns = mean(okRows.map((row) => row.turnCount));
   const meanCoverage = mean(okRows.map((row) => row.bestPathCoverage));
@@ -4606,11 +4635,16 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       registerEntropyBits: categoricalEntropy(observedRegisters),
       distinctRegisters: new Set(observedRegisters).size,
       observations: observedRegisters.length,
+      actorialPartEntropyBits: categoricalEntropy(observedActorialParts),
+      distinctActorialParts: new Set(observedActorialParts).size,
+      actorialPartObservations: observedActorialParts.length,
     },
     contingency: {
       normalizedMutualInformation: normalizedMutualInformation(stateActionPairs),
       stateActionObservations: stateActionPairs.length,
       distinctStates: new Set(stateActionPairs.map(([state]) => state)).size,
+      actorialPartNormalizedMutualInformation: normalizedMutualInformation(statePartPairs),
+      statePartObservations: statePartPairs.length,
     },
     consequence: {
       transitionCount: transitions.length,
@@ -4667,8 +4701,13 @@ function adaptationEvidenceForRows(rows = [], summary = {}) {
               0.1 * benefitComponents.turnEfficiency,
           );
     const hasVariation = row.variation.distinctRegisters >= 2 && row.variation.registerEntropyBits >= 0.35;
+    const hasDramaticVariation =
+      row.variation.distinctActorialParts >= 2 && row.variation.actorialPartEntropyBits >= 0.35;
     const hasContingency =
       row.contingency.stateActionObservations >= 6 && row.contingency.normalizedMutualInformation >= 0.05;
+    const hasDramaticContingency =
+      row.contingency.statePartObservations >= 6 &&
+      row.contingency.actorialPartNormalizedMutualInformation >= 0.05;
     const hasConsequence = row.consequence.transitionCount >= 3 && Number(row.consequence.meanRewardProxy || 0) > 0;
     let verdict = 'not_established';
     if (row.policy === baselinePolicy) verdict = 'baseline';
@@ -4680,7 +4719,9 @@ function adaptationEvidenceForRows(rows = [], summary = {}) {
     row.verdict = verdict;
     row.dimensions = {
       variation: hasVariation ? 'present' : 'not_established',
+      dramaticVariation: hasDramaticVariation ? 'present' : 'not_established',
       contingency: hasContingency ? 'present' : 'not_established',
+      dramaticContingency: hasDramaticContingency ? 'present' : 'not_established',
       consequence: hasConsequence ? 'positive' : row.consequence.transitionCount ? 'not_established' : 'pending',
       benefit: benefitScore > 0.02 ? 'positive' : benefitScore < -0.02 ? 'negative' : 'not_established',
       validity: row.validity.technical === 'pass' && row.validity.transitionEvidence === 'pass' ? 'usable' : 'pending',
@@ -4740,6 +4781,10 @@ function renderSignalGuide() {
       'Register variation',
       'Entropy or diversity in tutor registers. It is purposeful when it coincides with progress, and just noisy when the field does not move.',
     ],
+    [
+      'Part variation',
+      'Diversity in the public parts the tutor actually plays. Read it with state-to-part contingency and transcript realization, not as theatrical variety for its own sake.',
+    ],
   ];
   return `<div class="signal-guide" aria-label="Signal guide">
     ${signals
@@ -4766,6 +4811,7 @@ function renderAdaptationVerdict(rows, summary) {
         <p>${row.policy === evidence.baselinePolicy ? 'Reference condition for within-profile differences.' : `Adaptation benefit vs ${escapeHtml(evidence.baselinePolicy)}: ${escapeHtml(formatSignedField(row.benefit.score))}.`}</p>
         <div class="read-first-card-stats">
           <span><b>${escapeHtml(`${row.variation.distinctRegisters} / ${row.variation.registerEntropyBits}b`)}</b> variation</span>
+          <span><b>${escapeHtml(`${row.variation.distinctActorialParts} / ${row.variation.actorialPartEntropyBits}b`)}</b> parts played</span>
           <span><b>${escapeHtml(formatFieldValue(row.contingency.normalizedMutualInformation))}</b> contingency NMI</span>
           <span><b>${escapeHtml(row.consequence.transitionCount ? `${Math.round(Number(row.consequence.positiveRate || 0) * 100)}% / ${row.consequence.transitionCount}` : 'pending')}</b> positive transitions</span>
           <span><b>${row.outcome.closureRate === null ? 'pending' : `${Math.round(row.outcome.closureRate * 100)}%`}</b> outcome closure</span>
@@ -5075,6 +5121,7 @@ function renderTranscriptExplorer(rows) {
         chip('audience', configuration.audience_register || (turn.register && turn.register.audienceRegister)) +
         chip('language', configuration.lexical_accessibility || (turn.register && turn.register.lexicalAccessibility)) +
         chip('scene', configuration.scene_immersion || (turn.register && turn.register.sceneImmersion)) +
+        chip('part', configuration.actorial_part_label || configuration.actorial_part || (turn.register && (turn.register.actorialPartLabel || turn.register.actorialPart))) +
         chip('configuration visible', configurationAudit.axis_count ? configurationAudit.visible_axis_count + '/' + configurationAudit.axis_count : null) +
         chip('efficacy', response.efficacyLabel) +
         (response.repaired ? chip('repair', 'yes', 'good') : '') +
@@ -10453,7 +10500,7 @@ function buildResumePlan(summaryPath) {
         : (source.config?.engagementStanceTemperature ??
           source.config?.registerTemperature ??
           DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
-      temperatureScope: 'engagement_stance_only',
+      temperatureScope: 'engagement_stance_and_actorial_part',
       registerOverlayThreshold: REGISTER_OVERLAY_THRESHOLD_OVERRIDE
         ? normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
             label: '--register-overlay-threshold',
@@ -10779,7 +10826,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       engagementStanceTemperature: normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
         label: '--register-temperature',
       }),
-      temperatureScope: 'engagement_stance_only',
+      temperatureScope: 'engagement_stance_and_actorial_part',
       registerOverlayThreshold: normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
         label: '--register-overlay-threshold',
       }),
@@ -10799,13 +10846,14 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         visibility: 'conduct',
       },
       responseConfiguration: {
-        schema: 'machinespirits.tutor-stub.response-configuration.v1',
+        schema: 'machinespirits.tutor-stub.response-configuration.v2',
         independentAxes: [
           'engagement_stance',
           'action_family',
           'audience_register',
           'lexical_accessibility',
           'scene_immersion',
+          'actorial_part',
         ],
         transcriptVisibilityAudit: true,
       },

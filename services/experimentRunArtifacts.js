@@ -156,7 +156,12 @@ export function tutorStubTraceModelRole(traceRole) {
     .trim()
     .toLowerCase();
   if (!normalized) return null;
-  if (normalized === 'tutor' || normalized.startsWith('tutor_stub_tutor') || normalized === 'tutor_stub_clarifier') {
+  if (
+    normalized === 'tutor' ||
+    normalized.startsWith('tutor_stub_tutor') ||
+    normalized === 'tutor_stub_opening' ||
+    normalized === 'tutor_stub_clarifier'
+  ) {
     return 'tutor';
   }
   if (

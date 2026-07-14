@@ -98,6 +98,21 @@ export function validateWorld(raw, source = '<inline>') {
     fail(`eligibility.reason is required when status is ${eligibilityStatus}`);
   }
 
+  const openingFrame = raw.opening_frame || null;
+  if (openingFrame !== null) {
+    if (!openingFrame || typeof openingFrame !== 'object' || Array.isArray(openingFrame)) {
+      fail('opening_frame must be an object when supplied');
+    }
+    for (const field of ['situation', 'authored_text']) {
+      if (
+        openingFrame[field] !== undefined &&
+        (typeof openingFrame[field] !== 'string' || !openingFrame[field].trim())
+      ) {
+        fail(`opening_frame.${field} must be a non-empty string when supplied`);
+      }
+    }
+  }
+
   return Object.freeze({
     id: raw.id,
     title: raw.title || raw.id,
@@ -112,6 +127,16 @@ export function validateWorld(raw, source = '<inline>') {
     // speaker-hearer relation; presentation is how the author costumes the
     // world. Never read by the engine/chainer.
     presentation: raw.presentation || null,
+    // Optional public-only opening authorship. `authored_text` is exact tutor
+    // speech; `situation` narrows the public frame supplied to the speaking
+    // model. Neither field may carry private proof or future-release content;
+    // the tutor-stub opening audit enforces that boundary at realization time.
+    openingFrame: openingFrame
+      ? Object.freeze({
+          situation: String(openingFrame.situation || '').trim() || null,
+          authoredText: String(openingFrame.authored_text || '').trim() || null,
+        })
+      : null,
     // Normal scenario pickers show production worlds only. Non-production
     // worlds remain explicitly addressable by id/path for smoke, screen, and
     // regression work.

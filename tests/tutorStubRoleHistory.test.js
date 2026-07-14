@@ -21,11 +21,13 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
-  const response = input.includes('Write learner turn')
-    ? 'I would compare the metal residues first.'
-    : input.includes('[Tutor-only dramatic clue release]')
-      ? "Yes—that gives us a concrete comparison.\\n\\nI'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Which public mark would connect this clue to one hand?"
-      : 'Yes—that gives us a concrete comparison. Which public mark would connect this clue to one hand?';
+  const response = input.includes('# Public-safe opening frame')
+    ? "The autumn fair booths are down, and light coin lies beside the guild-hall balance. Whose hand struck the false shillings passed at the Marrick fair? No assay mark has been entered yet; which public thing should we examine first?"
+    : input.includes('Write learner turn')
+      ? 'I would compare the metal residues first.'
+      : input.includes('[Tutor-only dramatic clue release]')
+        ? "Yes—that gives us a concrete comparison.\\n\\nI'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: Which public mark would connect this clue to one hand?"
+        : 'Yes—that gives us a concrete comparison. Which public mark would connect this clue to one hand?';
   if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
@@ -89,7 +91,7 @@ test('automated learner replays the full public dialogue with learner-relative n
     const [learnerCall, secondLearnerCall] = learnerCalls;
     assert.equal(learnerCall.request.messageHistory.length, 1);
     assert.equal(learnerCall.request.messageHistory[0].role, 'user');
-    assert.match(learnerCall.request.messageHistory[0].content, /Keep the case question in view/u);
+    assert.match(learnerCall.request.messageHistory[0].content, /autumn fair booths are down/u);
     assert.equal(learnerCall.request.messages.at(-1).role, 'user');
     assert.match(learnerCall.request.messages.at(-1).content, /Write learner turn 1/u);
     assert.doesNotMatch(learnerCall.request.prompt, /# Public transcript/u);
@@ -98,7 +100,10 @@ test('automated learner replays the full public dialogue with learner-relative n
       secondLearnerCall.request.messageHistory.map((message) => message.role),
       ['user', 'assistant', 'user'],
     );
-    assert.match(secondLearnerCall.request.messageHistory[0].content, /Keep the case question in view/u);
+    assert.match(
+      secondLearnerCall.request.messageHistory[0].content,
+      /autumn fair booths are down/u,
+    );
     assert.equal(secondLearnerCall.request.messageHistory[1].content, 'I would compare the metal residues first.');
     assert.match(secondLearnerCall.request.messageHistory[2].content, /Which public mark would connect/u);
     assert.equal(secondLearnerCall.request.messages.at(-1).role, 'user');
@@ -106,14 +111,22 @@ test('automated learner replays the full public dialogue with learner-relative n
 
     const cliCalls = fs.readFileSync(promptLog, 'utf8').split('\n---CALL---\n').filter(Boolean);
     const learnerCliCall = cliCalls.find((call) => call.includes('Write learner turn 1'));
-    assert.match(learnerCliCall, /Conversation so far:\nuser: Keep the case question in view/u);
+    assert.match(learnerCliCall, /Conversation so far:\nuser: The autumn fair booths are down/u);
     assert.match(learnerCliCall, /Latest message:\n/u);
     const secondLearnerCliCall = cliCalls.find((call) => call.includes('Write learner turn 2'));
     assert.match(
       secondLearnerCliCall,
-      /Conversation so far:\nuser: Keep the case question in view[\s\S]*assistant: I would compare the metal residues first\.[\s\S]*user: Yes—that gives us a concrete comparison\.[\s\S]*Which public mark would connect/u,
+      /Conversation so far:\nuser: The autumn fair booths are down[\s\S]*assistant: I would compare the metal residues first\.[\s\S]*user: Yes—that gives us a concrete comparison\.[\s\S]*Which public mark would connect/u,
     );
     assert.match(secondLearnerCliCall, /Latest message:\n/u);
+
+    const openingEvent = traceEvents(tmp).find((event) => event.type === 'tutor_opening');
+    assert.equal(openingEvent.realization.source, 'speaking_tutor_model');
+    assert.equal(openingEvent.realization.audit.ok, true);
+    assert.deepEqual(
+      openingEvent.realization.requirements.map((row) => row.id),
+      ['public_situation', 'public_question', 'available_evidence_only', 'observation_or_clarification'],
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

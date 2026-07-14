@@ -25,6 +25,7 @@
     "dev": "STANDALONE=true node server.js",
     "chat": "node scripts/chat-cli.js",
     "tutor:stub": "node scripts/tutor-stub.js",
+    "tutor:stub:passthrough": "node scripts/tutor-stub.js --passthrough --trace-dir .tutor-stub-traces/passthrough",
     "tutor:stub:direct": "node scripts/tutor-stub.js --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag",
     "tutor:stub:direct:mixed": "node scripts/tutor-stub.js --mixed-learner --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag-mixed",
     "tutor:stub:scaffold": "node scripts/tutor-stub.js --dag --tutor-learner-dag --dag-mode defeasible_human_scaffold --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/human-scaffold-direct",

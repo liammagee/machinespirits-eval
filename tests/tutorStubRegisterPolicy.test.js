@@ -172,6 +172,37 @@ test('golden: registerEfficacyFromDagProgress scores a clean positive advance', 
   });
 });
 
+test('register efficacy keeps subjective thumbs feedback separate while adding it to self-assessment', () => {
+  const state = stateFixture();
+  const efficacy = registerEfficacyFromDagProgress({
+    selection: { selectedAtDag: dagModelFixture(), turn: 1, selected_register: 'warm' },
+    currentModel: dagModelFixture({ turn: 2 }),
+    accepted: { adopt: [], derive: [], hypothesis: null, assertAnswer: null },
+    state,
+    classification: classificationFixture(),
+    tutorFeedback: {
+      requested: true,
+      supplied: true,
+      rating: 'down',
+      targetTutorTurn: 1,
+      targetTutorTurnId: 'run:t001',
+    },
+  });
+
+  assert.equal(efficacy.progressScore, 0, 'objective DAG progress remains unchanged');
+  assert.equal(efficacy.label, 'no_clear_progress');
+  assert.equal(efficacy.learnerFeedbackScore, -1);
+  assert.equal(efficacy.selfAssessmentScore, -2);
+  assert.equal(efficacy.selfAssessmentLabel, 'learner_disapproved_without_dag_progress');
+  assert.deepEqual(efficacy.learnerFeedback, {
+    requested: true,
+    supplied: true,
+    rating: 'down',
+    targetTutorTurn: 1,
+    targetTutorTurnId: 'run:t001',
+  });
+});
+
 test('golden: buildTrajectoryWindow single-point flags and rounded point values', () => {
   const trajectory = buildTrajectoryWindow({
     state: stateFixture(),

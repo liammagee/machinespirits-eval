@@ -32,6 +32,18 @@ discipline: "Office forensics (a very small mystery)"
 question: "Who took Priya's labelled lunchbox from shelf two of the studio fridge?"
 question_pattern: [tookFromFridge, lunchbox, "?x"]
 
+# Public-only opening authorship. Exact speech is optional in the world schema;
+# when absent, the speaking tutor model realizes the same structural frame.
+opening_frame:
+  situation: >-
+    At noon in Larkspur Studio, Priya has the kitchen fridge open and the
+    incident log lies blank beside her.
+  authored_text: >-
+    Priya has the fridge door open and the office is already pointing at
+    Dario. The incident log is still blank: Who took Priya's labelled lunchbox
+    from shelf two of the studio fridge? Tell me what you want checked first —
+    or stop me if any part of that question needs unpacking.
+
 setting: >-
   Larkspur Studio is eleven desks, one kitchen, and a fridge with a strict
   labelling rule. On Tuesday, during the noon window, Priya's lunchbox —

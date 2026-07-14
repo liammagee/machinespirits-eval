@@ -178,6 +178,10 @@ export function getSceneImmersionDefinitions() {
   return loadEngagementRegisterRegistry().scene_immersion_levels || {};
 }
 
+export function getActorialPartDefinitions() {
+  return loadEngagementRegisterRegistry().actorial_parts || {};
+}
+
 export function getResistanceSignalDefinitions() {
   return loadEngagementRegisterRegistry().resistance_signals || {};
 }

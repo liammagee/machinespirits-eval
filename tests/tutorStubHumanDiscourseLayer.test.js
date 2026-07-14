@@ -68,11 +68,18 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscoursePreviewFrame.stepCompression.enabled, true);
   assert.equal(config.humanDiscoursePreviewFrame.generousInference.applied, false);
   assert.equal(config.humanDiscoursePreviewFrame.questionSupport.answerability, 'publicly_answerable');
-  assert.equal(config.modelRef, 'codex.gpt-5.6-sol');
-  assert.equal(config.resolved.model, 'gpt-5.6-sol');
-  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-5.6-terra');
-  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-terra');
+  assert.equal(config.modelRef, 'codex.gpt-5.6-terra');
+  assert.equal(config.resolved.model, 'gpt-5.6-terra');
+  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-sol');
   assert.equal(config.cliEffort, 'medium');
+  assert.equal(config.opening.realization, 'speaking_tutor_model');
+  assert.equal(config.opening.speakingModelRef, 'codex.gpt-5.6-terra');
+  assert.equal(config.opening.safetyAudit, true);
+  assert.deepEqual(
+    config.opening.requirements.map((row) => row.id),
+    ['public_situation', 'public_question', 'available_evidence_only', 'observation_or_clarification'],
+  );
   assert.deepEqual(config.dialogueClosure, {
     schema: 'machinespirits.tutor-stub.dialogue-closure.v1',
     enabled: true,
@@ -95,6 +102,50 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.enabled, true);
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.schema, 'machinespirits.tutor-stub.learner-advance.v1');
   assert.ok(config.tutorLearnerDag.multiPremiseAdvance.downstream.includes('register'));
+  assert.deepEqual(config.tutorLearnerDag.preflight, {
+    schema: 'machinespirits.tutor-stub.learner-dag-preflight.v1',
+    enabled: true,
+    timing: 'before_first_learner_analysis_model_call',
+    inputs: ['prior_public_learner_record', 'committed_public_evidence', 'public_rules'],
+    output: ['eligible_public_premise_ids', 'possible_next_derivations'],
+    semanticMapping: 'analysis_model_maps_free_text_to_candidate_updates',
+    commitAuthority: 'deterministic_postprocessor_after_model',
+  });
+});
+
+test('world-authored opening speech overrides model realization while retaining the same audit contract', () => {
+  const config = tutorStubDryRun(['--world', 'world_028_larkspur_fridge']);
+
+  assert.equal(config.world.id, 'world_028_larkspur_fridge');
+  assert.equal(config.opening.realization, 'authored_world_opening');
+  assert.equal(config.opening.authoredTextAvailable, true);
+  assert.equal(config.opening.speakingModelRef, null);
+  assert.equal(config.opening.fallback, 'world_grounded_safe_fallback');
+});
+
+test('default model roles put Sol at interpretation and Terra at public generation', () => {
+  const config = tutorStubDryRun(['--mixed-learner']);
+
+  assert.equal(config.modelRef, 'codex.gpt-5.6-terra');
+  assert.equal(config.classifier.modelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.mixedLearner.modelRef, 'codex.gpt-5.6-terra');
+});
+
+test('optional tutor-message feedback defaults on for humans and off for automated learners', () => {
+  const human = tutorStubDryRun();
+  assert.equal(human.turnFeedback.enabled, true);
+  assert.equal(human.turnFeedback.defaultOn, true);
+  assert.equal(human.turnFeedback.optional, true);
+  assert.equal(human.turnFeedback.learnerMessageField, 'tutorFeedback');
+  assert.equal(human.turnFeedback.tutorSelfAssessment, true);
+
+  const disabled = tutorStubDryRun(['--no-turn-feedback']);
+  assert.equal(disabled.turnFeedback.enabled, false);
+
+  const automated = tutorStubDryRun(['--auto-learner']);
+  assert.equal(automated.turnFeedback.enabled, false);
+  assert.equal(automated.turnFeedback.automatedLearner, 'disabled');
 });
 
 test('--all-models overrides tutor, classifier, learner-DAG analysis, and mixed learner together', () => {
@@ -339,9 +390,11 @@ process.stdin.on('end', () => {
     assert.match(directorPrelude, /voice:/u);
     assert.doesNotMatch(directorPrelude, /learner suggestion ready >|profile > diligent/u);
     const openingText = plain.slice(tutorIndex);
-    assert.match(openingText, /scene gives us an accusation, but no tested clue yet/u);
-    assert.match(openingText, /ask about any term in the question/u);
+    assert.match(openingText, /autumn fair at Marrick passed in light shillings/u);
+    assert.match(openingText, /Whose hand struck the false shillings passed at the Marrick fair\?/u);
+    assert.match(openingText, /trial-book has no tested clue/u);
     assert.doesNotMatch(openingText, /one mark the evidence can actually bear/u);
+    assert.doesNotMatch(openingText, /Keep the case question in view/u);
     assert.match(plain, /this draft: Requests a specific evidentiary basis before making a conclusion\./u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -373,7 +426,12 @@ test(
         cols: 100,
         rows: 16,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        },
       },
     );
 
@@ -450,7 +508,12 @@ test(
         cols: 100,
         rows: 20,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        },
       },
     );
 
@@ -491,14 +554,15 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /Settings · choose what to change/u);
-    assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /Tutor model\s+codex\.gpt-5\.6-terra/u);
     assert.match(plain, /Turn-change override\s+off/u);
     assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc discard changes and return/u);
     assert.match(plain, /Done — apply and return\s+press Enter/u);
     assert.match(plain, /range 0\.05–3 · ←\/→ 0\.05 · PgUp\/PgDn 0\.25 · R recommended 0\.15/u);
     assert.match(plain, /teaching-style range 0\.15 → 0\.2/u);
     assert.match(plain, /settings applied · returning to dialogue/u);
-    assert.match(plain, /tutor ↻ > Keep the case question in view/u);
+    assert.match(plain, /tutor ↻ >.*question is exact:/u);
+    assert.doesNotMatch(plain, /Keep the case question in view/u);
     assert.ok(plain.indexOf('tutor ↻ >') > plain.indexOf('settings applied'), plain);
   },
 );
@@ -531,7 +595,12 @@ test(
         cols: 100,
         rows: 20,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        },
       },
     );
 
@@ -587,7 +656,7 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
 
   assert.equal(config.registerSelection.temperature, 0.4);
   assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
-  assert.equal(config.registerSelection.temperatureScope, 'engagement_stance_only');
+  assert.equal(config.registerSelection.temperatureScope, 'engagement_stance_and_actorial_part');
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
 });
 
@@ -647,13 +716,14 @@ test('tutor-stub dry run exposes independent response-configuration axes', () =>
   const config = tutorStubDryRun();
 
   assert.equal(config.responseConfiguration.primaryStanceField, 'engagement_stance');
-  assert.equal(config.responseConfiguration.temperatureScope, 'engagement_stance_only');
+  assert.equal(config.responseConfiguration.temperatureScope, 'engagement_stance_and_actorial_part');
   assert.deepEqual(config.responseConfiguration.independentAxes, [
     'engagement_stance',
     'action_family',
     'audience_register',
     'lexical_accessibility',
     'scene_immersion',
+    'actorial_part',
   ]);
   assert.equal(config.responseConfiguration.transcriptVisibilityAudit, true);
 });
@@ -706,7 +776,7 @@ test('tutor-stub changes register temperature through live settings', () => {
       .join('\n');
     assert.match(traces, /"type":"register_temperature_changed"/u);
     assert.match(traces, /"previous":0\.15,"temperature":1/u);
-    assert.match(traces, /"scope":"engagement_stance_only"/u);
+    assert.match(traces, /"scope":"engagement_stance_and_actorial_part"/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -816,9 +886,9 @@ test('tutor-stub lists and changes the speaking tutor model through live setting
 
     assert.equal(result.status, 0);
     const plain = plainTerminalText(result.stdout);
-    assert.match(plain, /tutor models > current codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /tutor models > current codex\.gpt-5\.6-terra/u);
     assert.match(plain, /codex\.gpt-5\.6-luna/u);
-    assert.match(plain, /tutor model codex\.gpt-5\.6-sol → codex\.gpt-5\.6-luna/u);
+    assert.match(plain, /tutor model codex\.gpt-5\.6-terra → codex\.gpt-5\.6-luna/u);
     assert.match(plain, /tutor model: codex\.gpt-5\.6-luna → codex\/gpt-5\.6-luna/u);
     const traces = fs
       .readdirSync(tmp)
@@ -826,7 +896,7 @@ test('tutor-stub lists and changes the speaking tutor model through live setting
       .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
       .join('\n');
     assert.match(traces, /"type":"tutor_model_changed"/u);
-    assert.match(traces, /"previousRef":"codex\.gpt-5\.6-sol","modelRef":"codex\.gpt-5\.6-luna"/u);
+    assert.match(traces, /"previousRef":"codex\.gpt-5\.6-terra","modelRef":"codex\.gpt-5\.6-luna"/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -892,6 +962,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
       cwd: ROOT,
       encoding: 'utf8',
       input: '/help\n/id\n/clarify cupel\n/quit\n',
+      env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
     },
   );
 
@@ -903,7 +974,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, settings, and Replay JS views/u);
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
-  assert.match(result.stdout, /paste the debug id into Codex/u);
+  assert.match(result.stdout, /clipboard unavailable/u);
   assert.match(result.stdout, /\/suggest.*profile expression/u);
   assert.match(result.stdout, /\/use.*profile expression/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
@@ -925,13 +996,19 @@ test('detour slash commands reprise the latest tutor utterance before returning 
       cwd: ROOT,
       encoding: 'utf8',
       input: '/help\n/status\n/id\n/quit\n',
-      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      env: {
+        ...process.env,
+        TUTOR_STUB_CLIPBOARD: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+        TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+      },
     },
   );
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal((result.stdout.match(/tutor ↻ >/gu) || []).length, 3);
-  assert.match(result.stdout, /tutor ↻ >.*Keep the case question in view/gu);
+  assert.match(result.stdout, /tutor ↻ >.*autumn fair at Marrick passed in light shillings/gu);
+  assert.doesNotMatch(result.stdout, /Keep the case question in view/gu);
 });
 
 test('tutor-stub /id exposes the local trace path for Codex debugging', () => {
@@ -950,13 +1027,19 @@ test('tutor-stub /id exposes the local trace path for Codex debugging', () => {
         '--world',
         'world_005_marrick',
       ],
-      { cwd: ROOT, encoding: 'utf8', input: '/id\n/quit\n' },
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/id\n/quit\n',
+        env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
+      },
     );
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /debug id >/u);
     assert.match(result.stdout, /run id:/u);
     assert.match(result.stdout, new RegExp(`trace: ${tmp.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}`));
+    assert.match(result.stdout, /clipboard unavailable/u);
     assert.ok(fs.readdirSync(tmp).some((name) => name.endsWith('.jsonl')));
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -1054,7 +1137,12 @@ test('tutor-stub /scenario starts a fresh inquiry with the selected world', () =
       cwd: ROOT,
       encoding: 'utf8',
       input: '/scenario world_006_hethel\n',
-      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0', TUTOR_STUB_SUMMARY_OPEN: '0' },
+      env: {
+        ...process.env,
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+      },
     },
   );
 
@@ -1124,7 +1212,12 @@ test(
         cols: 120,
         rows: 24,
         name: 'xterm-color',
-        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        },
       },
     );
 
@@ -1244,7 +1337,7 @@ test('auto-eval dry run forwards dialogue, style, memory, and clue pace settings
     assert.equal(summary.config.dagMode, 'human-scaffold');
     assert.equal(summary.config.registerTemperature, 0.4);
     assert.equal(summary.config.engagementStanceTemperature, 0.4);
-    assert.equal(summary.config.temperatureScope, 'engagement_stance_only');
+    assert.equal(summary.config.temperatureScope, 'engagement_stance_and_actorial_part');
     assert.equal(summary.config.dagFactDropout, 0.15);
     assert.equal(summary.config.dagFactDropoutSeed, 7);
     assert.equal(summary.config.releaseSpeed, 1.5);
@@ -1255,6 +1348,7 @@ test('auto-eval dry run forwards dialogue, style, memory, and clue pace settings
       'audience_register',
       'lexical_accessibility',
       'scene_immersion',
+      'actorial_part',
     ]);
     const command = summary.results[0].command;
     const modeIndex = command.indexOf('--dag-mode');

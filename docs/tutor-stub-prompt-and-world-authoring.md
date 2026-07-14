@@ -6,6 +6,8 @@ This is the authoring contract for future tutor-stub scenarios and for curriculu
 
 The deterministic harness is the private planner. It may read the concealed answer, formal facts and rules, authored proof paths, the complete premise ledger, and the release schedule. This is a programmatic role; it is not another model call.
 
+Before learner-language analysis, the harness also computes a narrower public-only learner-DAG preflight from the prior public learner record, committed public evidence, and public rules. That preflight may constrain which premise ids and conclusions are eligible, but it commits nothing and must never be treated as evidence that the learner voiced them. The analysis model proposes a semantic mapping from the current learner language; the deterministic postprocessor remains the sole authority for accepting learner-DAG progress.
+
 The speaking tutor is a public-state realizer. Its prompt may contain only:
 
 - the public scene and question;
@@ -46,9 +48,51 @@ For a curriculum module, first identify the learning claim that should become me
 8. Author presentation explicitly for every world: `temporal_frame`, `scene_ecology`, `narrative_diction`, `ledger_term`, and `summary`. There is no implicit “period language” fallback.
 9. Put quantitative success criteria in the harness and reports, not in tutor or learner speech prompts.
 
+## Opening the public scene
+
+The harness owns only four opening requirements:
+
+- state or enact the public situation;
+- keep the exact public question visible;
+- imply no evidence that is unavailable at the opening;
+- when no clue is available, invite observation or clarification.
+
+It does not own a reusable opening sentence. For each world, the opening is
+either exact authored speech or a fresh realization by the active speaking
+tutor model (Terra by default) from a public-only opening frame. The frame
+contains the setting, question, presentation metadata, and only those premise
+surfaces scheduled for the opening. It never contains the secret, future
+releases, proof paths, formal facts, or learner-DAG state.
+
+Exact authorship is optional:
+
+```yaml
+opening_frame:
+  # Optional: a shorter public situation for model realization. Otherwise the
+  # normal world setting is used.
+  situation: >-
+    Priya has the fridge door open and the incident log lies blank by the sink.
+
+  # Optional: exact tutor speech. Omit this field to let the speaking model
+  # realize the frame in the world's authored diction.
+  authored_text: >-
+    Priya has the fridge door open and the office is already pointing at
+    Dario. The incident log is still blank: Who took Priya's labelled lunchbox
+    from shelf two of the studio fridge? Tell me what you want checked first —
+    or stop me if any part of that question needs unpacking.
+```
+
+Every candidate is audited for the four requirements and the normal public
+evidence boundary before it enters history. A failed model realization falls
+back to a deterministic opening assembled from that world's public situation,
+question, in-world ledger term, and opening clues. The former shared “Keep the
+case question in view” boilerplate is not part of this fallback.
+
 ## Dramatic clue releases
 
 A public tutor turn after learner speech is one atomic assistant message with two visible beats. First, uptake responds to the learner's actual contribution by crediting, answering, qualifying, correcting, or receiving it. Then development performs the selected next pedagogical action. The private planner builds this composition from the public learner analysis, learner-DAG assessment, and independently selected response configuration; the speaking tutor realizes it without naming that machinery. Learner-responsive action families such as accountable answering are realized in uptake; progression actions such as staging the next step are realized in development alongside the expected DAG or interaction move. The engagement stance, audience, language, and scene settings govern both.
+
+The response configuration also selects an independent `actorial_part`: scene partner, evidence examiner, record-keeper, authored clue source, advocate, skeptic, or keeper of the final finding. Stance determines how the tutor relates; action family determines the pedagogical operation; the part determines what the tutor visibly does in the scene. The same adaptive temperature sharpens or broadens stance and part distributions, but does not temperature-scale the other axes. Realize the part through a concrete first-person action or voice in development, after learner uptake. A part is a public performance contract, never a knowledge privilege: it may use only already-public evidence or the clue explicitly due in the current turn.
 
 A scheduled release is a public dramatic development beat, not an invisible state update. On every turn with newly available evidence, development must make three movements visible after learner uptake: announce that another piece of information is entering, stage or enact its source, and then return to the shared inquiry with one light interpretive question. Guards audit the two response parts separately; repairing a clue performance must not erase an already-safe learner acknowledgement. The combined text remains one transactional public assistant message, so evidence is committed only after the complete turn passes its checks.
 

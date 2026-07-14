@@ -1,4 +1,5 @@
 import {
+  getActorialPartDefinitions,
   getActionFamilyDefinitions,
   getAudienceRegisterDefinitions,
   getEngagementStanceDefinition,
@@ -6,8 +7,8 @@ import {
   getSceneImmersionDefinitions,
 } from './engagementRegisterRegistry.js';
 
-const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v1';
-const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v1';
+const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
+const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -232,6 +233,191 @@ export function selectTutorStubSceneImmersion({ classification, comprehension, w
   };
 }
 
+const ACTORIAL_PART_IDS = [
+  'scene_partner',
+  'examiner',
+  'record_keeper',
+  'authored_source',
+  'advocate',
+  'skeptic',
+  'foreperson',
+];
+
+const STANCE_PART_AFFINITY = {
+  plain: { record_keeper: 0.8, scene_partner: 0.55, examiner: 0.35 },
+  precise: { examiner: 0.9, skeptic: 0.7, record_keeper: 0.4 },
+  brisk: { examiner: 0.7, authored_source: 0.65, advocate: 0.35 },
+  warm: { scene_partner: 1, record_keeper: 0.25 },
+  witnessing: { scene_partner: 1.2, record_keeper: 0.2 },
+  charismatic: { advocate: 1.15, authored_source: 0.35, skeptic: 0.25 },
+  ironic: { skeptic: 0.9, advocate: 0.35 },
+  sarcastic: { skeptic: 1.05, advocate: 0.4 },
+  face_threat: { skeptic: 1.15, advocate: 0.55 },
+};
+
+const ACTION_PART_AFFINITY = {
+  clarify_term: { examiner: 1.4, record_keeper: 0.45 },
+  clarify_distinction: { examiner: 1.25, skeptic: 0.45 },
+  stage_next_step: { authored_source: 1, examiner: 0.75, record_keeper: 0.4 },
+  answer_accountably: { advocate: 1.2, skeptic: 0.75 },
+  compress_sayback: { record_keeper: 1.35, scene_partner: 0.35 },
+  reanchor_lived_stake: { scene_partner: 1.4 },
+  reanchor_public_evidence: { record_keeper: 1.25, examiner: 0.65 },
+  ground_in_material: { examiner: 1.2, record_keeper: 0.5 },
+  challenge_resistance: { advocate: 1.25, skeptic: 0.7 },
+  receive_vulnerability: { scene_partner: 1.55 },
+  close_inquiry: { foreperson: 3 },
+  baseline_plain_response: { scene_partner: 0.9 },
+};
+
+function addPartScores(scores, additions, weight, drivers, source) {
+  for (const [part, value] of Object.entries(additions || {})) {
+    if (!(part in scores)) continue;
+    const contribution = Number(value || 0) * Number(weight || 0);
+    scores[part] += contribution;
+    if (Math.abs(contribution) >= 0.2) drivers.push({ part, source, contribution: Number(contribution.toFixed(3)) });
+  }
+}
+
+function normalizedStanceBlend(engagementStance, stanceDistribution) {
+  const rows = (Array.isArray(stanceDistribution) ? stanceDistribution : [])
+    .map((row) => ({
+      stance: String(row?.register || row?.stance || row?.engagement_stance || '').trim(),
+      weight: Number(row?.probability ?? row?.weight ?? row?.score),
+    }))
+    .filter((row) => row.stance && Number.isFinite(row.weight) && row.weight > 0);
+  if (!rows.length) return [{ stance: engagementStance || 'precise', weight: 1 }];
+  const total = rows.reduce((sum, row) => sum + row.weight, 0);
+  return rows.map((row) => ({ ...row, weight: row.weight / total }));
+}
+
+function partDistribution(scores, temperature) {
+  const resolvedTemperature = Math.min(3, Math.max(0.05, Number(temperature) || 0.15));
+  const maximum = Math.max(...Object.values(scores));
+  const weighted = Object.fromEntries(
+    Object.entries(scores).map(([part, score]) => [part, Math.exp((score - maximum) / resolvedTemperature)]),
+  );
+  const total = Object.values(weighted).reduce((sum, value) => sum + value, 0) || 1;
+  return Object.entries(weighted)
+    .map(([part, value]) => ({
+      part,
+      score: Number(scores[part].toFixed(3)),
+      weight: value,
+      probability: Number((value / total).toFixed(4)),
+    }))
+    .sort((left, right) => right.probability - left.probability || right.score - left.score || left.part.localeCompare(right.part));
+}
+
+function worldActorialLabel(part, world, dueEvidence) {
+  if (part === 'authored_source') {
+    const authoredRole = dueEvidence
+      .map((row) => oneLine(row?.presentation?.role || row?.role))
+      .find(Boolean);
+    if (authoredRole) return authoredRole;
+  }
+  if (part === 'record_keeper') {
+    const ledger = oneLine(world?.presentation?.ledger_term);
+    if (ledger) return `keeper of the ${ledger}`;
+  }
+  return oneLine(getActorialPartDefinitions()[part]?.label) || part.replace(/_/gu, ' ');
+}
+
+export function selectTutorStubActorialPart({
+  engagementStance = 'precise',
+  stanceDistribution = null,
+  actionFamily = 'clarify_distinction',
+  temperature = 0.15,
+  classification = null,
+  tutorLearnerDag = null,
+  comprehension = null,
+  world = null,
+  dueEvidence = [],
+  recentActorialParts = [],
+  selectedPartOverride = null,
+} = {}) {
+  const scores = Object.fromEntries(ACTORIAL_PART_IDS.map((part) => [part, part === 'scene_partner' ? 0.15 : 0]));
+  const drivers = [];
+  for (const row of normalizedStanceBlend(engagementStance, stanceDistribution)) {
+    addPartScores(scores, STANCE_PART_AFFINITY[row.stance], row.weight, drivers, `stance:${row.stance}`);
+  }
+  addPartScores(scores, ACTION_PART_AFFINITY[actionFamily], 1, drivers, `action:${actionFamily}`);
+
+  const requestType = requestTypeFrom(classification);
+  const assessment = modelFrom(tutorLearnerDag).assessment || {};
+  const memoryReliability = modelFrom(tutorLearnerDag).memoryReliability || {};
+  const pressure = Number(comprehensionFeatures(comprehension).pressure || 0);
+  if (requestType === 'authority_refusal_or_status_challenge') {
+    addPartScores(scores, { advocate: 0.9, skeptic: 0.45 }, 1, drivers, `request:${requestType}`);
+  }
+  if (requestType === 'answer_seeking_or_overreach' || assessment.bottleneck === 'premature_assertion') {
+    addPartScores(scores, { skeptic: 1.15, advocate: 0.35 }, 1, drivers, 'unsafe_leap');
+  }
+  if (requestType === 'vulnerability_or_moral_exposure' || pressure > 0) {
+    addPartScores(scores, { scene_partner: 0.95 }, 1, drivers, pressure > 0 ? 'comprehension_pressure' : `request:${requestType}`);
+  }
+  if (Number(memoryReliability.activeDroppedCount || 0) > 0 || assessment.bottleneck === 'assertion_gap') {
+    addPartScores(scores, { record_keeper: 1.05 }, 1, drivers, 'public_record_gap');
+  }
+  if (assessment.finalSecretEntailed === true && assessment.assertedSecret === true) {
+    addPartScores(scores, { foreperson: 3.5 }, 1, drivers, 'licensed_closeout');
+  }
+
+  const publicDueEvidence = (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence]).filter((row) => oneLine(row?.surface));
+  const enactedRelease = publicDueEvidence.some(
+    (row) => row?.presentation?.mode === 'enacted_role' || oneLine(row?.presentation?.role || row?.role),
+  );
+  if (enactedRelease) {
+    addPartScores(scores, { authored_source: 4.5 }, 1, drivers, 'authored_public_clue_role');
+  } else if (publicDueEvidence.length) {
+    const surfaces = publicDueEvidence.map((row) => oneLine(row.surface)).join(' ');
+    const recordLike = /\b(?:archive|log|ledger|book|record|file|notice|entry|inventory|notebook)\b/iu.test(surfaces);
+    addPartScores(
+      scores,
+      recordLike ? { record_keeper: 1.8, examiner: 0.45 } : { examiner: 1.6 },
+      1,
+      drivers,
+      recordLike ? 'new_public_record' : 'new_public_exhibit',
+    );
+  } else {
+    scores.authored_source -= 1.5;
+  }
+
+  for (const [index, part] of recentActorialParts.slice(-2).reverse().entries()) {
+    if (!(part in scores)) continue;
+    const penalty = index === 0 ? 0.42 : 0.18;
+    scores[part] -= penalty;
+    drivers.push({ part, source: index === 0 ? 'immediate_part_repetition' : 'recent_part_repetition', contribution: -penalty });
+  }
+
+  const distribution = partDistribution(scores, temperature);
+  const locked =
+    enactedRelease ||
+    actionFamily === 'close_inquiry' ||
+    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true);
+  const selected = (locked ? null : distribution.find((row) => row.part === selectedPartOverride)) || distribution[0];
+  const definition = getActorialPartDefinitions()[selected.part] || {};
+  const relevantDrivers = drivers
+    .filter((driver) => driver.part === selected.part)
+    .sort((left, right) => Math.abs(right.contribution) - Math.abs(left.contribution));
+  return {
+    id: selected.part,
+    label: worldActorialLabel(selected.part, world, publicDueEvidence),
+    contract: oneLine(definition.contract),
+    probability: selected.probability,
+    score: selected.score,
+    temperature: Math.min(3, Math.max(0.05, Number(temperature) || 0.15)),
+    distribution,
+    drivers: relevantDrivers,
+    reason: relevantDrivers.length
+      ? relevantDrivers.slice(0, 3).map((driver) => driver.source.replace(/_/gu, ' ')).join('; ')
+      : 'default public scene partnership',
+    authored_role: selected.part === 'authored_source' ? worldActorialLabel(selected.part, world, publicDueEvidence) : null,
+    selection_method: locked ? 'structural_lock' : selectedPartOverride ? 'seeded_distribution' : 'argmax',
+    locked,
+    lock_reason: enactedRelease ? 'authored_public_clue_role' : locked ? 'licensed_closeout' : null,
+  };
+}
+
 export function buildTutorStubResponseConfiguration({
   engagementStance,
   legacySelectedRegister = null,
@@ -246,11 +432,28 @@ export function buildTutorStubResponseConfiguration({
   world = null,
   proposedActionFamily = null,
   releasePacing = null,
+  dueEvidence = [],
+  recentActorialParts = [],
+  actorialPartOverride = null,
 } = {}) {
   const action = selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension, releasePacing });
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
   const scene = selectTutorStubSceneImmersion({ classification, comprehension, world });
+  const actorialPart =
+    actorialPartOverride ||
+    selectTutorStubActorialPart({
+      engagementStance: engagementStance || 'precise',
+      stanceDistribution,
+      actionFamily: action.actionFamily,
+      temperature,
+      classification,
+      tutorLearnerDag,
+      comprehension,
+      world,
+      dueEvidence,
+      recentActorialParts,
+    });
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   const unresolvedTerms = [...(comprehensionFeatures(comprehension).unresolvedTerms || [])];
   return {
@@ -261,18 +464,23 @@ export function buildTutorStubResponseConfiguration({
     audience_register: audience.audienceRegister,
     lexical_accessibility: lexical.lexicalAccessibility,
     scene_immersion: scene.sceneImmersion,
+    actorial_part: actorialPart.id,
+    actorial_part_label: actorialPart.label,
+    actorial_part_selection: actorialPart,
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     release_pacing: releasePacing ? structuredClone(releasePacing) : null,
     engagement_stance_distribution: Array.isArray(stanceDistribution) ? structuredClone(stanceDistribution) : null,
     engagement_stance_vector: stanceVector && typeof stanceVector === 'object' ? structuredClone(stanceVector) : null,
     engagement_stance_temperature: Number.isFinite(Number(temperature)) ? Number(temperature) : null,
-    temperature_scope: 'engagement_stance_only',
+    actorial_part_temperature: actorialPart.temperature,
+    temperature_scope: 'engagement_stance_and_actorial_part',
     selection_reasons: {
       action_family: action.reason,
       audience_register: audience.reason,
       lexical_accessibility: lexical.reason,
       scene_immersion: scene.reason,
+      actorial_part: actorialPart.reason,
     },
     compatibility: {
       selected_register: engagementStance || 'precise',
@@ -292,6 +500,7 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
   const audienceDefinitions = getAudienceRegisterDefinitions();
   const lexicalDefinitions = getLexicalAccessibilityDefinitions();
   const sceneDefinitions = getSceneImmersionDefinitions();
+  const actorialDefinitions = getActorialPartDefinitions();
   const stance = configuration.engagement_stance;
   const stanceContract = oneLine(getEngagementStanceDefinition(stance)?.stance_contract);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
@@ -315,6 +524,13 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
       sceneDefinitions,
       configuration.scene_immersion,
     )}`,
+    `Actorial part: ${configuration.actorial_part_label || configuration.actorial_part}. ${definitionContract(
+      actorialDefinitions,
+      configuration.actorial_part,
+    )}`,
+    configuration.actorial_part_selection?.authored_role
+      ? `Authored public clue role: ${configuration.actorial_part_selection.authored_role}. Take this exact part for the clue; it supplies no knowledge beyond the public clue in the current turn context.`
+      : null,
     `Unresolved terms: ${unresolved}.`,
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
@@ -324,8 +540,9 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
       : configuration.release_pacing?.direction === 'decelerate'
         ? `Clue release: slower at ${configuration.release_pacing.effectiveSpeed}x. Do not add a new clue unless it is already due; consolidate one public step first.`
         : `Clue release: authored pace at ${configuration.release_pacing?.effectiveSpeed ?? 1}x; add no more than one authored clue batch this turn.`,
-    'These are independent axes. Perform the action family; do not infer the action from the engagement stance.',
-    'Temperature applies only to the engagement-stance distribution. Do not blur the audience, lexical, action, or scene contracts.',
+    'These are independent axes. Perform the action family and visibly take the actorial part; do not infer either one from the engagement stance.',
+    'Temperature sharpens or broadens only the engagement-stance and actorial-part distributions. Do not blur the audience, lexical, action, or scene contracts.',
+    'Enter the part through a concrete first-person action, position, or spoken role. Do not merely describe the part or announce an abstract teaching strategy. Preserve the learner-responsive opening before developing the scene.',
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',
     '[End tutor-only response configuration]',
   ].join('\n');
@@ -367,6 +584,8 @@ function worldLexicon(world) {
     world.publicQuestion,
     world.opening,
     world.openingSituation,
+    world.openingFrame?.situation,
+    world.openingFrame?.authoredText,
   ];
   if (world.premiseById instanceof Map) {
     for (const premise of world.premiseById.values())
@@ -434,6 +653,38 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
   if (actionFamily === 'close_inquiry')
     return metrics.questionCount === 0 && /\b(?:closed|settled|conclude|therefore)\b/iu.test(text);
   return metrics.wordCount <= 110;
+}
+
+function actorialPartVisible(configuration, text, metrics) {
+  const part = configuration.actorial_part;
+  if (!part) return false;
+  if (part === 'scene_partner') {
+    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with you|beside you|together)\b/iu.test(text) && metrics.concreteSceneTermCount > 0;
+  }
+  if (part === 'examiner') {
+    return /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:inspect|examine|compare|test|weigh|hold|turn|set|place|put|open|read|show|trace|point)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(text);
+  }
+  if (part === 'record_keeper') {
+    return /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:open|read|write|mark|enter|turn|close|strike)\b[^.!?]{0,55}\b(?:log|ledger|book|record|file|roll|notes?|inventory|trial-book|incident log|mod log|formulation card)\b|\b(?:log|ledger|book|record|file|roll|notes?|inventory|trial-book|incident log|mod log|formulation card)\b[^.!?]{0,55}\b(?:open|read|write|mark|enter|turn|close|strike)\b/iu.test(text);
+  }
+  if (part === 'authored_source') {
+    const role = oneLine(configuration.actorial_part_selection?.authored_role || configuration.actorial_part_label);
+    const roleTokens = (role.toLowerCase().match(/[\p{L}][\p{L}'-]{3,}/gu) || []).filter(
+      (token) => !WORLD_STOP_WORDS.has(token),
+    );
+    const roleVisible = roleTokens.some((token) => new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\b`, 'iu').test(text));
+    return roleVisible && /\b(?:i(?:[’']m| am|[’']ll| will)|as (?:the|a)|speaking as|in the part of|i (?:open|read|report|show|testify|say))\b/iu.test(text);
+  }
+  if (part === 'advocate') {
+    return /\b(?:i(?:[’']ll| will| am going to) (?:argue|make|put)|my case is|the strongest case|take the case for)\b/iu.test(text) && /\b(?:test|break|challenge|resist|object|what would|show me)\b/iu.test(text);
+  }
+  if (part === 'skeptic') {
+    return /\b(?:i object|not so fast|i(?:[’']ll| will) challenge|let me challenge|cross-examine|weak link|that does not yet|doesn(?:[’']t| not) yet)\b/iu.test(text);
+  }
+  if (part === 'foreperson') {
+    return /\b(?:finding|verdict|case is closed|close the (?:case|record|book|log|ledger|inquiry)|we can conclude|therefore)\b/iu.test(text) && metrics.questionCount === 0;
+  }
+  return false;
 }
 
 function visibleSignature(metrics) {
@@ -524,6 +775,12 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     audience_register: { selected: configuration.audience_register, visible: audiencePass },
     lexical_accessibility: { selected: configuration.lexical_accessibility, visible: lexicalPass },
     scene_immersion: { selected: configuration.scene_immersion, visible: scenePass },
+    actorial_part: {
+      selected: configuration.actorial_part,
+      label: configuration.actorial_part_label || null,
+      visible: actorialPartVisible(configuration, composition?.development || text, metrics),
+      evaluated_segment: composition?.development ? 'development' : 'whole_response',
+    },
   };
   const visibleAxes = Object.values(axes).filter((axis) => axis.visible).length;
   const configurationSignature = [
@@ -532,17 +789,18 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     configuration.audience_register,
     configuration.lexical_accessibility,
     configuration.scene_immersion,
+    configuration.actorial_part,
   ].join('|');
   return {
     schema: RESPONSE_CONFIGURATION_AUDIT_SCHEMA,
     configuration_signature: configurationSignature,
-    visible_signature: visibleSignature(metrics),
+    visible_signature: `${visibleSignature(metrics)}|part:${axes.actorial_part.visible ? configuration.actorial_part : 'not_visible'}`,
     axes,
     metrics,
     visible_axis_count: visibleAxes,
     axis_count: Object.keys(axes).length,
     realization_rate: Number((visibleAxes / Object.keys(axes).length).toFixed(3)),
-    transcript_visible: visibleAxes >= 4 && !metrics.fourthWallBreak,
+    transcript_visible: visibleAxes >= 5 && axes.actorial_part.visible && !metrics.fourthWallBreak,
     limitations:
       'Deterministic surface audit: it checks legible textual cues and constraints, not whether a human reader experiences the intended stance.',
   };
@@ -550,7 +808,14 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
 
 export function summarizeTutorStubResponseConfigurationAudits(audits = []) {
   const rows = audits.filter(Boolean);
-  const axes = ['engagement_stance', 'action_family', 'audience_register', 'lexical_accessibility', 'scene_immersion'];
+  const axes = [
+    'engagement_stance',
+    'action_family',
+    'audience_register',
+    'lexical_accessibility',
+    'scene_immersion',
+    'actorial_part',
+  ];
   const configurationCounts = {};
   const visibleSignatureCounts = {};
   for (const audit of rows) {
