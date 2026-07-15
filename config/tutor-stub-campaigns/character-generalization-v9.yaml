@@ -1,0 +1,99 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v9
+created: 2026-07-15
+
+purpose: >-
+  Fresh acceptance matrix after supported-answer closure, complete-configuration
+  recovery enforcement, public-token inflection handling, and cross-sentence
+  record-keeper recognition. This matrix tests those coordinated repairs across
+  four unobserved scenario/profile pairings without weakening any safety,
+  source-separation, clue-delivery, or character-realization gate.
+
+code_under_test:
+  branch: preconscious
+  commit: ca9993f1
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i19-2026-07-15T18-56-21-361Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v8
+  affected_seeds: [20260800, 20260801, 20260802, 20260803]
+  reason: >-
+    The complete v8 matrix was inspected before sentence-form final-answer
+    commitment, full configuration-aware recovery, public-token inflection
+    handling, and cross-sentence record-keeper recognition were implemented.
+    Its four trajectories are tuning evidence and cannot be reused as
+    acceptance evidence.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: bitterwell_false_memory
+    world: world_003_bitterwell
+    learner_profile: false_memory
+    seed: 20260810
+    rationale: >-
+      Material-inquiry evidence with plausible imported recollections; this
+      world was previously paired only with a slow learner.
+
+  - id: nocturne_fast
+    world: world_001_nocturne
+    learner_profile: fast_learner
+    seed: 20260811
+    rationale: >-
+      Workshop attribution with accelerated multi-premise uptake; this world
+      was previously paired only with a skeptical learner.
+
+  - id: withercombe_slow
+    world: world_004_withercombe
+    learner_profile: slow_learner
+    seed: 20260812
+    rationale: >-
+      Surgical-inquiry evidence with deliberately narrow integration; this
+      world was previously paired only with false memory.
+
+  - id: tallow_low_agency
+    world: world_025_tallow_street
+    learner_profile: low_agency
+    seed: 20260813
+    rationale: >-
+      Contemporary incident-record attribution with repeated delegation; this
+      world was previously paired only with false memory.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four freshly paired scenario/profile
+  combinations and evidence modalities; it does not establish population-wide
+  generalization.
