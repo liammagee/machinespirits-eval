@@ -1,0 +1,79 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v2
+created: 2026-07-15
+
+purpose: >-
+  Fresh post-fix breadth screen for recovery-prompt privacy, bounded repair,
+  and transcript-visible character realization. The four seeds below were
+  declared after strict working verification passed and before any matrix cell
+  was run.
+
+code_under_test:
+  branch: preconscious
+  commit: 41674f6d07d360d7e1c5d598616952f0a8d91e20
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i4-2026-07-15T08-32-48-742Z/character-loop-result.md
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: office_skeptic
+    world: world_028_larkspur_fridge
+    learner_profile: skeptical
+    seed: 20260740
+    rationale: Everyday contemporary evidence skepticism.
+
+  - id: tribunal_fast
+    world: world_021_clockwork_tribunal
+    learner_profile: fast_learner
+    seed: 20260741
+    rationale: Arcane institutional language with accelerated multi-premise uptake.
+
+  - id: ai_syllabus_slow
+    world: world_016_ai_syllabus_af1
+    learner_profile: slow_learner
+    seed: 20260742
+    rationale: Non-detective teaching content with deliberately slower integration.
+
+  - id: forum_low_agency
+    world: world_024_emberwick_forum
+    learner_profile: low_agency
+    seed: 20260743
+    rationale: Online moderation drama with a learner needing explicit agency invitations.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four scenario/profile combinations;
+  it does not establish population-wide generalization.
