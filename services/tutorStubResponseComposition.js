@@ -707,6 +707,12 @@ export function deterministicTutorStubLearnerUptake({
     /\b(?:choose|decide|phrase|tell me|show me)\b/iu.test(text) &&
     /\b(?:enter|entry|examine|first|phrase|record|register|say|write)\b/iu.test(text)
   ) {
+    if (/\bconclusion\b/iu.test(text) && /\b(?:enter|record|write)\b/iu.test(text)) {
+      return fresh(
+        'I’ll choose the conclusion to enter, but only from what the public evidence supports.',
+        'Yes—I’ll choose the conclusion for this entry and keep it within the public evidence.',
+      );
+    }
     const recordNoun = text.match(/\b(?:account|book|entry|ledger|log|record|register|roll)\b/iu)?.[0];
     return fresh(
       recordNoun
@@ -1001,7 +1007,7 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
   const exhibitPattern =
     /\b(?:shilling|coin|crucible|cupel|touchstone|balance|tool|sample|notice|report|photograph|photo|lunchbox)\b/iu;
   if (part === 'record_keeper') return source.match(recordPattern)?.[0] || 'record';
-  return source.match(exhibitPattern)?.[0] || source.match(recordPattern)?.[0] || 'evidence before us';
+  return source.match(exhibitPattern)?.[0] || source.match(recordPattern)?.[0] || 'public record';
 }
 
 function configuredFallbackHost({ part, object }) {
@@ -1009,7 +1015,7 @@ function configuredFallbackHost({ part, object }) {
     scene_partner: `I set the ${object} between us so we can test the distinction together.`,
     examiner: `I set the ${object} under examination and mark the claim’s limit.`,
     record_keeper: `I enter that distinction in the ${object}.`,
-    advocate: `I lay the ${object} against the town’s case; your limit is where it fails.`,
+    advocate: `I lay the ${object} against the easy case; your limit is where it fails.`,
     skeptic: `Not so fast—I hold that claim against the ${object}.`,
     foreperson: `I keep that finding provisional in the ${object}.`,
   }[part] || `I set the ${object} under examination and mark the claim’s limit.`;
@@ -1022,7 +1028,7 @@ function configuredFallbackStance(stance) {
     brisk: 'Keep the live point and move to the next public check.',
     warm: 'We can carry that point forward without forcing the rest.',
     witnessing: 'Let the point stand without asking it to bear more.',
-    charismatic: 'The room’s easy verdict breaks at that limit.',
+    charismatic: 'The easy conclusion breaks at that limit.',
     ironic: 'Apparently the neat conclusion still has a gap.',
     sarcastic: 'Conveniently, the easy conclusion skipped that gap.',
     face_threat: 'Stop at the weak link; the conclusion has not earned the rest.',

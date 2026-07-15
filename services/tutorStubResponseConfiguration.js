@@ -791,7 +791,7 @@ function actorialPartVisible(configuration, text, metrics) {
   const part = configuration.actorial_part;
   if (!part) return false;
   if (part === 'scene_partner') {
-    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|i stand beside you|(?:bring|draw) you beside|clear space for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
+    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|i stand beside you|(?:bring|draw) you beside|clear (?:a )?space[^.!?]{0,45}for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
       (metrics.concreteSceneTermCount > 0 || /\b(?:log|ledger|book|record|file|tool|sample|assay|clue|entry|line)\b/iu.test(text));
   }
   if (part === 'examiner') {
@@ -1040,7 +1040,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     );
   }
   if (tactic === 'shared_scene_invitation') {
-    return /\b(?:between us|both read|beside|together|stand here|clear space for you|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|space for you|what do you make|your reading|with me|within your reach|take the moment|we can (?:carry|take)|what\b[^.!?]{0,45}\bwould you (?:choose|want)|which\b[^.!?]{0,55}\bwould you (?:like|want)(?: me to)?)\b/iu.test(text);
+    return /\b(?:between us|both read|beside|together|stand here|clear (?:a )?space[^.!?]{0,45}for you|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|space for you|what do you make|your reading|with me|within your reach|take the moment|we can (?:carry|take)|what\b[^.!?]{0,45}\bwould you (?:choose|want)|which\b[^.!?]{0,55}\bwould you (?:like|want)(?: me to)?)\b/iu.test(text);
   }
   if (tactic === 'measured_testimony') {
     return /\b(?:without (?:pushing|forcing)|stand as written|responsibly|honestly bear|let .* stand|no further)\b/iu.test(text);

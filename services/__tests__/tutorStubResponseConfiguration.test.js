@@ -1435,6 +1435,30 @@ test('clearing exhibit space for the learner realizes the fellow investigator', 
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('clearing a space beside exhibits realizes the fellow investigator', () => {
+  const audit = auditTutorStubResponseConfiguration({
+    text:
+      'I slide the two drafts across the light table and clear a space beside them for you. The archived draft has no kicker or commissioner quote.',
+    configuration: {
+      engagement_stance: 'warm',
+      action_family: 'stage_next_step',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'immersive',
+      actorial_part: 'scene_partner',
+      actorial_part_label: 'fellow investigator',
+      actorial_performance: { id: 'shared_scene_invitation' },
+    },
+    world: {
+      setting: 'The Gazette light table holds Crane’s draft and the depot copy.',
+      question: 'Who planted the fabricated quote?',
+    },
+  });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
 test('leaving room at the bench for the learner realizes the fellow investigator', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',

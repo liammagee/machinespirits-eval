@@ -1558,6 +1558,57 @@ test('deterministic uptake answers a low-agency request for the tutor to choose 
   assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
 });
 
+test('deterministic uptake answers a repeated low-agency request for the conclusion', () => {
+  const learnerText = 'Can you choose the conclusion you want me to enter?';
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks the tutor to provide the conclusion.',
+        request_type: 'answer_seeking_or_overreach',
+      },
+    },
+  });
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks the tutor to provide the conclusion.',
+        request_type: 'answer_seeking_or_overreach',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I pull the report beside the log and ask what their match supports.`,
+  });
+
+  assert.match(uptake, /choose the conclusion/iu);
+  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+});
+
+test('sparse scene-partner fallback uses a public record without a doubled spatial phrase', () => {
+  const learnerText = 'Can you choose the conclusion you want me to enter?';
+  const uptake = deterministicTutorStubLearnerUptake({ learnerText });
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration: {
+      engagement_stance: 'warm',
+      action_family: 'stage_next_step',
+      actorial_part: 'scene_partner',
+    },
+    support: { answerability: 'direction_only_until_evidence_is_public' },
+    world: { setting: 'A laboratory inquiry.', question: 'What ruined the line?' },
+    learnerText,
+  });
+
+  assert.match(text, /public record between us/iu);
+  assert.doesNotMatch(text, /before us between us/iu);
+  assert.match(text, /choose the conclusion/iu);
+});
+
 test('a learner-selected maker-mark test must be carried forward before another clue develops', () => {
   const learnerText =
     'Let us examine them for a maker’s mark; that could speak to the hand that struck them.';
