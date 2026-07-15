@@ -931,16 +931,7 @@ function normalizedAnswerSurface(value) {
 }
 
 function factFromQuestionAnswer(world, answer, candidateFacts = []) {
-  const answerSurface = normalizedAnswerSurface(answer);
-  const matchingCandidates = (candidateFacts || []).filter((fact) => {
-    const bindings = matchPattern(world?.questionPattern, fact);
-    if (!bindings) return false;
-    const values = Object.values(bindings).map(normalizedAnswerSurface).filter(Boolean);
-    return (
-      values.length > 0 &&
-      values.every((value) => ` ${answerSurface} `.includes(` ${value} `))
-    );
-  });
+  const matchingCandidates = matchingQuestionAnswerFacts(world, answer, candidateFacts);
   if (matchingCandidates.length === 1) return [...matchingCandidates[0]];
 
   const cleaned = String(answer || '')
@@ -950,6 +941,19 @@ function factFromQuestionAnswer(world, answer, candidateFacts = []) {
     .toLowerCase();
   if (!world || !cleaned) return null;
   return world.questionPattern.map((part) => (typeof part === 'string' && part.startsWith('?') ? cleaned : part));
+}
+
+function matchingQuestionAnswerFacts(world, answer, candidateFacts = []) {
+  const answerSurface = normalizedAnswerSurface(answer);
+  return (candidateFacts || []).filter((fact) => {
+    const bindings = matchPattern(world?.questionPattern, fact);
+    if (!bindings) return false;
+    const values = Object.values(bindings).map(normalizedAnswerSurface).filter(Boolean);
+    return (
+      values.length > 0 &&
+      values.every((value) => ` ${answerSurface} `.includes(` ${value} `))
+    );
+  });
 }
 
 function classifierWorldContext({ world, learnerDagEnabled = true }) {
@@ -2336,6 +2340,18 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     accepted.assertAnswer = update.assert_answer.trim();
   } else if (validFactArray(update?.asserts)) {
     assertion = update.asserts;
+  } else {
+    // A model may correctly map a learner's direct verdict into the derived
+    // public answer fact while redundantly leaving assert_answer null. Once
+    // that exact final fact has been accepted as learner-voiced, its uniquely
+    // named answer in the same public utterance is itself an assertion. Treat
+    // the two fields consistently so closure does not demand repeated saybacks.
+    const voicedAnswerFacts = accepted.derive.filter((fact) => matchPattern(world.questionPattern, fact));
+    const mentionedVoicedAnswers = matchingQuestionAnswerFacts(world, learnerText, voicedAnswerFacts);
+    if (mentionedVoicedAnswers.length === 1) {
+      assertion = [...mentionedVoicedAnswers[0]];
+      accepted.assertAnswer = String(learnerText || '').trim();
+    }
   }
   if (assertion && !matchPattern(world.questionPattern, assertion)) {
     rejected.push({ type: 'assert', value: assertion, reason: 'does not match public question pattern' });

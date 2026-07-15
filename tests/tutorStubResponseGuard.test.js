@@ -52,6 +52,16 @@ test('a released multiword answer name is public when its world constant uses ca
   );
 });
 
+test('a released possessive answer name matches a symbolic trailing-s constant', () => {
+  assert.equal(
+    tutorStubAnswerNameIsPublic({
+      answerTerm: 'pipersGullet',
+      publicText: "The frost shutter over Piper's Gullet is still bolted fast.",
+    }),
+    true,
+  );
+});
+
 test('a possessive released answer name is public without making its conclusion public', () => {
   assert.equal(
     tutorStubAnswerNameIsPublic({

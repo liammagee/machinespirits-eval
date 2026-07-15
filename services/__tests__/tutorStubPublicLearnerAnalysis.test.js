@@ -710,6 +710,38 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
   });
 
+  it('treats an accepted voiced final derivation as the learner assertion when the analyzer omits assert_answer', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-022-foxtrot-jukebox.yaml'));
+    const record = createTutorStubPublicLearnerRecord(world);
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 6,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const learnerText =
+      'Moth’s signed wipe pulse, rail docking, and active override key settle it: Moth wiped the core.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: null,
+      },
+      world,
+      record,
+      tutorTurn: 6,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.accepted.assertAnswer, learnerText);
+    assert.equal(result.model.assessment.finalSecretEntailed, true);
+    assert.equal(result.model.assessment.assertedSecret, true);
+    assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+  });
+
   it('computes a public constraint preflight before analysis without committing progress', async () => {
     const world = smokeWorld();
     const record = createTutorStubPublicLearnerRecord(world);

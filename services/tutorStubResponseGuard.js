@@ -56,7 +56,12 @@ export function tutorStubAnswerNameIsPublic({ answerTerm = '', publicText = '' }
   // unit`). Compare semantic tokens instead of authoring notation.
   const answerWords = words(String(answerTerm || '').replace(/([a-z0-9])([A-Z])/gu, '$1 $2'));
   const publicWords = new Set(words(publicText));
-  return answerWords.length > 0 && answerWords.every((word) => publicWords.has(word));
+  return (
+    answerWords.length > 0 &&
+    answerWords.every(
+      (word) => publicWords.has(word) || (word.endsWith('s') && publicWords.has(word.slice(0, -1))),
+    )
+  );
 }
 
 function similarity(left, right) {
