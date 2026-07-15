@@ -57,6 +57,7 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
     'proofDebt',
     'warrantPremiseAudit',
     'generousInference',
+    'conversationalCompletion',
     'questionSupport',
   ]);
   assert.equal(config.humanDiscoursePreviewFrame.mode, 'defeasible_human_scaffold');

@@ -228,6 +228,7 @@ export function advanceTutorStubReleasePacing({
   learnerText = '',
   classification = null,
   tutorLearnerDag = null,
+  conversationalCompletion = null,
 } = {}) {
   if (!pacing || !world || !Number.isFinite(Number(turn))) return null;
   const tutorTurn = Number(turn);
@@ -253,6 +254,13 @@ export function advanceTutorStubReleasePacing({
     (signal.source === 'explicit_learner_request' || releaseGap),
   );
   if (urgentAdvance) pacing.virtualTurn = Math.max(pacing.virtualTurn, authoredTurn(next));
+  const completionAdvance = Boolean(
+    next &&
+    conversationalCompletion?.resolved === true &&
+    conversationalCompletion?.releaseNextClue === true &&
+    signal.direction !== 'decelerate',
+  );
+  if (completionAdvance) pacing.virtualTurn = Math.max(pacing.virtualTurn, authoredTurn(next));
 
   replanPendingSchedule(pacing, world, { turn: tutorTurn });
   const dueEntries = pendingEntries(pacing, world).filter((entry) => Number(entry.turn) === tutorTurn);
@@ -271,6 +279,14 @@ export function advanceTutorStubReleasePacing({
     direction: pacing.direction,
     signal,
     urgentAdvance,
+    completionAdvance,
+    conversationalCompletion: conversationalCompletion
+      ? {
+          status: conversationalCompletion.status || null,
+          resolved: conversationalCompletion.resolved === true,
+          reason: conversationalCompletion.reason || null,
+        }
+      : null,
     dueNow,
     nextRelease: scheduleSnapshot(pacing, world).find((entry) => entry.releasedTurn === null) || null,
   };
@@ -383,6 +399,8 @@ export function tutorStubReleasePacingSnapshot(pacing, world, current = null) {
     virtualTurn: pacing.virtualTurn,
     signal: current?.signal || pacing.signal || null,
     urgentAdvance: Boolean(current?.urgentAdvance),
+    completionAdvance: Boolean(current?.completionAdvance),
+    conversationalCompletion: current?.conversationalCompletion || null,
     dueNow: [...(current?.dueNow || [])],
     releasedNow: [...(current?.releasedNow || [])],
     notDeliveredNow: [...(current?.notDeliveredNow || [])],

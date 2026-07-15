@@ -23,6 +23,66 @@ test('fallback composition includes a supplied uptake exactly once', () => {
   );
 });
 
+test('the Gazette completion frame rejects an elegant restatement loop and accepts new pressure', () => {
+  const learnerText = 'Crane is a possible culprit, but not proven guilty.';
+  const dueEvidence =
+    'The archive copy shows Crane filed clean prose; the false kicker was inserted after filing.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Treats Crane as a possible culprit while withholding a verdict.',
+        discourse_move: 'hypothesis',
+      },
+    },
+    registerSelection: {
+      expected_dag_move: 'Introduce genuinely new public evidence.',
+      response_configuration: { action_family: 'stage_next_step' },
+    },
+    conversationalCompletion: {
+      resolved: true,
+      status: 'qualified',
+      reopenForbidden: true,
+      requiresNewPressure: true,
+      sourceTutorQuestion:
+        'What does the byline establish—and what does it leave unproved about who planted the false quote?',
+      learnerSurface: learnerText,
+      acceptedMeaning: 'Treats Crane as a possible culprit while withholding a verdict.',
+    },
+    dramaticReleaseFrame: { active: true, entries: [{ surface: dueEvidence }] },
+  });
+  const looping = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: 'Exactly—the byline does not prove who planted the quote. For now, can we record Crane as responsible for the filed story while leaving the planting unproved?',
+  });
+  const advancing = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `Exactly—Crane remains possible, not proven. ${dueEvidence} Whose later access should we test next?`,
+  });
+
+  assert.equal(looping.ok, false);
+  assert.ok(looping.issues.some((issue) => issue.type === 'resolved_point_reopened'));
+  assert.equal(advancing.ok, true);
+  assert.match(tutorStubResponseCompositionPrompt(frame), /genuinely new pressure/iu);
+});
+
+test('response composition warns against a fourth repeated exhibit-handling gesture', () => {
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText: 'That leaves Crane unproved.',
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    recentTutorTexts: [
+      'I lay the page beside the archive copy.',
+      'I slide the log beneath the lamp.',
+      'I open the corrections file.',
+    ],
+  });
+
+  assert.equal(frame.scene_action_budget.saturated, true);
+  assert.match(tutorStubResponseCompositionPrompt(frame), /judgment, address, rhythm, and word choice/iu);
+});
+
 test('deterministic uptake preserves a learner distinction between die-cutting and striking', () => {
   const uptake = deterministicTutorStubLearnerUptake({
     learnerText:

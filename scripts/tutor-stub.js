@@ -58,6 +58,10 @@ import {
   resolveTutorStubGenerousInference,
 } from '../services/tutorStubGenerousInference.js';
 import {
+  applyTutorStubConversationalCompletionSelection,
+  resolveTutorStubConversationalCompletion,
+} from '../services/tutorStubConversationalCompletion.js';
+import {
   auditTutorStubQuestionSupportResponse,
   buildTutorStubQuestionSupport,
 } from '../services/tutorStubQuestionSupport.js';
@@ -1894,6 +1898,12 @@ function tutorResponseRecoveryPrompt({
     responseCompositionRows
       ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
       : null,
+    (responseCompositionAudit?.issues || []).some((issue) => issue.type === 'resolved_point_reopened')
+      ? 'The learner already answered the immediately preceding local question. Credit or qualify that answer once, then move to a genuinely new public clue or implication; do not ask the same distinction again.'
+      : null,
+    (responseCompositionAudit?.issues || []).some((issue) => issue.type === 'unsupported_endorsement_request')
+      ? 'Do not ask the learner to endorse a stronger proposition than their answer and the public evidence support.'
+      : null,
     responseConfiguration?.surface_budgets?.max_average_sentence_words
       ? `Keep average sentence length at or below ${responseConfiguration.surface_budgets.max_average_sentence_words} words.`
       : null,
@@ -2999,6 +3009,7 @@ function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnab
       'proofDebt',
       'warrantPremiseAudit',
       'generousInference',
+      'conversationalCompletion',
       'questionSupport',
     ],
     behaviorChange: scaffoldActive,
@@ -5042,6 +5053,15 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     branchId: scaffoldState.branch?.id || null,
     classification,
   });
+  const conversationalCompletion = resolveTutorStubConversationalCompletion({
+    mode: dagMode,
+    learnerText,
+    previousTutorText: latestTutorMessage(state),
+    classification,
+    tutorLearnerDag,
+    generousInference,
+  });
+  if (tutorLearnerDag) tutorLearnerDag.conversationalCompletion = conversationalCompletion;
   const sideArc = buildSideArcState({
     dagMode,
     classification,
@@ -5090,6 +5110,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     questionSupport,
     warrantPremiseAudit,
     generousInference,
+    conversationalCompletion,
   };
 }
 
@@ -6812,6 +6833,7 @@ function updateReleasePacingForLearnerTurn({
     learnerText,
     classification,
     tutorLearnerDag,
+    conversationalCompletion: tutorLearnerDag?.conversationalCompletion || null,
   });
   if (!releasePacing) return null;
   if (recordTrace) {
@@ -6828,6 +6850,29 @@ function updateReleasePacingForLearnerTurn({
     });
   }
   return releasePacing;
+}
+
+function resolveConversationalCompletionForLearnerTurn({ learnerText, state, classification, tutorLearnerDag }) {
+  const conversationalCompletion = resolveTutorStubConversationalCompletion({
+    mode: state?.dagMode || 'strict_dag',
+    learnerText,
+    previousTutorText: latestTutorMessage(state),
+    classification,
+    tutorLearnerDag,
+  });
+  if (tutorLearnerDag) tutorLearnerDag.conversationalCompletion = conversationalCompletion;
+  return conversationalCompletion;
+}
+
+function applyConversationalCompletionForLearnerTurn(state, registerSelection, conversationalCompletion) {
+  const application = applyTutorStubConversationalCompletionSelection(registerSelection, conversationalCompletion);
+  if (state.register?.enabled && application.selection) {
+    if (state.register.history.at(-1)?.turn === application.selection.turn) {
+      state.register.history[state.register.history.length - 1] = application.selection;
+    }
+    state.register.current = application.selection;
+  }
+  return application.selection;
 }
 
 async function analyzeLearnerTurnCombined(
@@ -6868,6 +6913,7 @@ async function analyzeLearnerTurnCombined(
     });
     tutorLearnerDag.preflight = raw.dagPreflight || null;
     applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
+    resolveConversationalCompletionForLearnerTurn({ learnerText, state, classification, tutorLearnerDag });
     state.learnerDag.lastModel = tutorLearnerDag.model;
     updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn });
     updateReleasePacingForLearnerTurn({ learnerText, state, classification, tutorLearnerDag, tutorTurn });
@@ -6877,13 +6923,18 @@ async function analyzeLearnerTurnCombined(
       classification,
       tutorFeedback,
     );
-    const registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
+    let registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
       state,
       classification,
       tutorLearnerDag,
       raw,
       learnerText,
     });
+    registerSelection = applyConversationalCompletionForLearnerTurn(
+      state,
+      registerSelection,
+      tutorLearnerDag.conversationalCompletion,
+    );
     stopInterimAnimation(state);
     printAutomaticTechnicalDetails(state, () => {
       printClassification(classification);
@@ -6921,6 +6972,7 @@ async function analyzeLearnerTurnCombined(
       },
     };
     state.learnerDag.lastModel = tutorLearnerDag.model;
+    resolveConversationalCompletionForLearnerTurn({ learnerText, state, classification, tutorLearnerDag });
     updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn });
     updateReleasePacingForLearnerTurn({ learnerText, state, classification, tutorLearnerDag, tutorTurn });
     const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(
@@ -6929,13 +6981,18 @@ async function analyzeLearnerTurnCombined(
       classification,
       tutorFeedback,
     );
-    const registerSelection = normalizeResponseConfigurationSelection(null, {
+    let registerSelection = normalizeResponseConfigurationSelection(null, {
       state,
       classification,
       tutorLearnerDag,
       raw: null,
       learnerText,
     });
+    registerSelection = applyConversationalCompletionForLearnerTurn(
+      state,
+      registerSelection,
+      tutorLearnerDag.conversationalCompletion,
+    );
     stopInterimAnimation(state);
     printAutomaticTechnicalDetails(state, () => {
       printClassification(classification);
@@ -6987,6 +7044,7 @@ async function analyzeLearnerTurn(
   });
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
+  resolveConversationalCompletionForLearnerTurn({ learnerText, state, classification, tutorLearnerDag });
   updateReleasePacingForLearnerTurn({
     learnerText,
     state,
@@ -7000,13 +7058,18 @@ async function analyzeLearnerTurn(
     classification,
     tutorFeedback,
   );
-  const registerSelection = normalizeResponseConfigurationSelection(null, {
+  let registerSelection = normalizeResponseConfigurationSelection(null, {
     state,
     classification,
     tutorLearnerDag,
     raw: null,
     learnerText,
   });
+  registerSelection = applyConversationalCompletionForLearnerTurn(
+    state,
+    registerSelection,
+    tutorLearnerDag.conversationalCompletion,
+  );
   printAutomaticTechnicalDetails(state, () =>
     printResponseConfigurationSelection(registerSelection, previousRegisterEfficacy),
   );
@@ -7336,6 +7399,7 @@ function humanDiscourseTutorContext(frame) {
   const audit = frame.warrantPremiseAudit || {};
   const compression = frame.stepCompression || {};
   const generousInference = frame.generousInference || null;
+  const conversationalCompletion = frame.conversationalCompletion || null;
   const questionSupport = frame.questionSupport || null;
   const due = scaffold.releaseState?.dueNow || [];
   const latest = scaffold.releaseState?.latestReleased || null;
@@ -7366,6 +7430,15 @@ function humanDiscourseTutorContext(frame) {
     generousInference.applied ? 'Contextual answer resolution: APPLIED with high confidence.' : null,
     generousInference.applied ? `Resolved learner move: ${generousInference.resolvedMeaning}` : null,
     generousInference.applied ? `Authoritative next-turn rule: ${generousInference.tutorInstruction}` : null,
+    conversationalCompletion?.resolved
+      ? `Conversational completion: ${conversationalCompletion.status}. The immediately preceding local question is closed in learner-facing discourse.`
+      : null,
+    conversationalCompletion?.resolved
+      ? `Accepted learner meaning: ${conversationalCompletion.acceptedMeaning || conversationalCompletion.learnerSurface}`
+      : null,
+    conversationalCompletion?.instruction
+      ? `Authoritative completion rule: ${conversationalCompletion.instruction}`
+      : null,
     sideArc.detected
       ? `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
       : 'Side arc: none detected; stay on the local warrant.',
@@ -9857,6 +9930,7 @@ async function callTutor({
 }) {
   const messageContext = tutorMessageContext(state, history);
   const context = messageContext.messages;
+  const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const tutorTurn = Math.floor(history.length / 2) + 1;
   const tutorMemory = passthrough
     ? null
@@ -9889,6 +9963,8 @@ async function callTutor({
         registerSelection,
         dramaticReleaseFrame,
         dialogueClosureFrame,
+        conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
+        recentTutorTexts,
       });
   const responseCompositionAdvisory = passthrough
     ? null
@@ -10024,7 +10100,6 @@ async function callTutor({
       responseConfiguration?.actorial_performance,
   );
   const responseCompositionGuardEnabled = Boolean(!passthrough && responseCompositionFrame.active);
-  const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const repetitionGuardEnabled = Boolean(!passthrough && recentTutorTexts.length > 0);
   const closureGuardEnabled = Boolean(
     dialogueClosureFrame?.enabled && (dialogueClosureFrame.mandatory || dialogueClosureFrame.available),
@@ -12282,6 +12357,29 @@ async function runOneTurn(
         });
   registerSelection = typedAction.registerSelection;
   registerSelection = applyTutorStubPointOfActionConstraint(registerSelection, pointOfAction);
+  const completionSelection = applyTutorStubConversationalCompletionSelection(
+    registerSelection,
+    humanDiscourseFrame.conversationalCompletion,
+  );
+  registerSelection = completionSelection.selection;
+  if (humanDiscourseFrame.conversationalCompletion?.resolved) {
+    if (state.register?.enabled && registerSelection) {
+      if (state.register.history.at(-1)?.turn === registerSelection.turn) {
+        state.register.history[state.register.history.length - 1] = registerSelection;
+      }
+      state.register.current = registerSelection;
+    }
+    appendTraceEvent(state.trace, {
+      type: 'conversational_completion_resolution',
+      turn: tutorTurn,
+      turnId,
+      completion: humanDiscourseFrame.conversationalCompletion,
+      actionFamilyBefore: completionSelection.previousActionFamily,
+      actionFamilyAfter:
+        registerSelection?.response_configuration?.action_family || registerSelection?.action_family || null,
+      actionFamilyChanged: completionSelection.changed,
+    });
+  }
   const tutorFeedback = learnerInput?.tutorFeedback || null;
   const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
     feedback: tutorFeedback,
@@ -12327,7 +12425,6 @@ async function runOneTurn(
     });
     precomputedResponse = null;
   }
-
   const response =
     precomputedResponse ||
     (await callTutor({
@@ -12579,6 +12676,7 @@ async function runOneTurn(
     proofDebt: humanDiscourseFrame.proofDebt,
     warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
     generousInference: humanDiscourseFrame.generousInference,
+    conversationalCompletion: humanDiscourseFrame.conversationalCompletion,
     questionSupport: humanDiscourseFrame.questionSupport,
     dramaticRelease: {
       frame: dramaticReleaseFrame,
@@ -15669,6 +15767,13 @@ async function main() {
         ...learnerPublicEvidenceState(speculativeState, entry.turn),
       });
       tutorLearnerDag.preflight = raw.dagPreflight || null;
+      applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
+      resolveConversationalCompletionForLearnerTurn({
+        learnerText: entry.answer,
+        state: speculativeState,
+        classification,
+        tutorLearnerDag,
+      });
       speculativeState.learnerDag.lastModel = tutorLearnerDag.model;
       updateComprehensionForLearnerTurn({
         learnerText: entry.answer,
@@ -15686,13 +15791,18 @@ async function main() {
         recordTrace: false,
       });
       evaluatePendingRegisterEfficacy(speculativeState, tutorLearnerDag, classification);
-      const registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
+      let registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
         state: speculativeState,
         classification,
         tutorLearnerDag,
         raw,
         learnerText: entry.answer,
       });
+      registerSelection = applyConversationalCompletionForLearnerTurn(
+        speculativeState,
+        registerSelection,
+        tutorLearnerDag.conversationalCompletion,
+      );
       const humanDiscourseFrame = buildHumanDiscourseFrame({
         state: speculativeState,
         tutorTurn: entry.turn,

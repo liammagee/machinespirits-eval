@@ -155,6 +155,42 @@ test('one-clue-at-a-time requests slow the remaining authored schedule', () => {
   assert.equal(update.schedule.find((entry) => entry.premise === 'p_trace').effectiveTurn > 5, true);
 });
 
+test('resolving a local question brings forward one new clue without overriding an explicit slowdown', () => {
+  const world = sampleWorld();
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+  commitTutorStubReleasePacing({ pacing, world, turn: 1, deliveredPremises: ['p_open'] });
+  const completion = {
+    status: 'qualified',
+    resolved: true,
+    releaseNextClue: true,
+    reason: 'the learner answered the local question',
+  };
+
+  const update = advanceTutorStubReleasePacing({
+    pacing,
+    world,
+    turn: 2,
+    learnerText: 'Crane is possible, but not proven guilty.',
+    conversationalCompletion: completion,
+  });
+  assert.equal(update.completionAdvance, true);
+  assert.deepEqual(update.dueNow, ['p_trace']);
+  assert.equal(update.schedule.find((entry) => entry.premise === 'p_witness').effectiveTurn > 2, true);
+
+  const slowWorld = sampleWorld();
+  const slowPacing = createTutorStubReleasePacingState({ world: slowWorld, speed: 1 });
+  commitTutorStubReleasePacing({ pacing: slowPacing, world: slowWorld, turn: 1, deliveredPremises: ['p_open'] });
+  const slowed = advanceTutorStubReleasePacing({
+    pacing: slowPacing,
+    world: slowWorld,
+    turn: 2,
+    learnerText: 'Yes, but slow down—one clue at a time.',
+    conversationalCompletion: completion,
+  });
+  assert.equal(slowed.completionAdvance, false);
+  assert.deepEqual(slowed.dueNow, []);
+});
+
 test('the configured base speed changes release timing independently of learner signals', () => {
   const world = sampleWorld();
   const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
@@ -336,7 +372,7 @@ process.stdin.on('end', () => {
     assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
     assert.match(
       turn.tutor,
-      /I (?:turn the record straight to|open the record at|enter the record[^.!?]{0,80}go straight to) the live line/u,
+      /I (?:turn the record straight to|open the record at|enter the record[^.!?]{0,80}go straight to|mark the record[^.!?]{0,80}go straight to) the live line/u,
     );
     assert.doesNotMatch(turn.tutor, /role-play|another piece of information|back to (?:us|the case)/iu);
     const prompts = fs.readFileSync(promptLog, 'utf8');

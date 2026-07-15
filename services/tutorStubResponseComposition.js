@@ -1,3 +1,5 @@
+import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
+
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.response-composition-audit.v1';
@@ -38,6 +40,8 @@ const DIRECT_SCENE_DEVELOPMENT_LEAD_PATTERN =
   /^(?:i (?:lay|set|place|slide|hold|open|unfold|read|point|tap|trace|circle|slap|snap|strike|test|weigh)\b|i\b[^.!?]{0,70}\b(?:across|against|along|atop|beside|beneath|into|onto|over|through|under)\b|[\p{Lu}][\p{L}\p{N}'’ -]{1,64},\s*[^.!?:“"']{1,120}:|[\p{Lu}][\p{L}\p{N}'’ -]{1,64}:\s*[“"'])/iu;
 const DEVELOPMENT_BOUNDARY_PATTERN =
   /\b(?:i(?:[’']m| am) (?:going to|bringing|showing|opening|putting)|i(?:[’']ll| will) (?:bring|show|open|put|read|take)|let(?:[’']s| us) (?:role-play|bring|look|open|put|step)|step (?:up|over)|the next (?:clue|piece|exhibit|record)|here(?:[’']s| is) (?:the|another|our) next)\b/iu;
+const SCENE_ACTION_PATTERN =
+  /\bi\s+(?:flatten|lay|mark|open|place|set|slide|tap|underline|unfold)\b/iu;
 const LEARNER_RESPONSIVE_ACTION_FAMILIES = new Set([
   'answer_accountably',
   'receive_vulnerability',
@@ -140,6 +144,8 @@ export function buildTutorStubResponseCompositionFrame({
   registerSelection = null,
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
+  conversationalCompletion = null,
+  recentTutorTexts = [],
 } = {}) {
   const configuration = registerSelection?.response_configuration || registerSelection || {};
   const move = learnerMove(classification);
@@ -147,6 +153,10 @@ export function buildTutorStubResponseCompositionFrame({
   const closurePhase = dialogueClosureFrame?.phase || 'open';
   const actionFamily = configuration.action_family || registerSelection?.action_family || null;
   const actionTarget = LEARNER_RESPONSIVE_ACTION_FAMILIES.has(actionFamily) ? 'uptake' : 'development';
+  const completion = conversationalCompletion || tutorLearnerDag?.conversationalCompletion || null;
+  const recentSceneActionCount = (Array.isArray(recentTutorTexts) ? recentTutorTexts : [])
+    .slice(-4)
+    .filter((text) => SCENE_ACTION_PATTERN.test(oneLine(text))).length;
   return {
     schema: TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA,
     active: Boolean(oneLine(learnerText)),
@@ -161,6 +171,14 @@ export function buildTutorStubResponseCompositionFrame({
     learner_dag: dag,
     selected_action_family: actionFamily,
     action_target: actionTarget,
+    conversational_completion: completion,
+    due_evidence_surfaces: (dramaticReleaseFrame?.entries || [])
+      .map((entry) => oneLine(entry?.surface))
+      .filter(Boolean),
+    scene_action_budget: {
+      recent_scene_action_count: recentSceneActionCount,
+      saturated: recentSceneActionCount >= 2,
+    },
     uptake: {
       required: true,
       action_family: actionTarget === 'uptake' ? actionFamily : null,
@@ -201,6 +219,7 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
   const uptake = frame.uptake || {};
   const development = frame.development || {};
   const learnerAdvance = dag.learner_advance || null;
+  const completion = frame.conversational_completion || null;
   return [
     '[Tutor-only response composition]',
     'Write one atomic assistant turn as one continuous public performance. It has two internal functions, but it must not look or sound like two stitched-together replies.',
@@ -214,6 +233,9 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
           learnerAdvance.supported_move_count === 1 ? '' : 's'
         } in this turn. Credit them; do not ask for them again.`
       : null,
+    completion?.resolved
+      ? `Conversational completion: the learner has ${completion.status} the immediately preceding local question. Accepted meaning: ${completion.acceptedMeaning || completion.learnerSurface}. Credit or qualify that meaning once. Do not restate it as another test, ask for endorsement, or reopen it in safer words.`
+      : null,
     `2. Continue: ${development.instruction}${
       development.action_family ? ` Realize the selected action family here: ${development.action_family}.` : ''
     }`,
@@ -223,6 +245,12 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
       : null,
     development.clue_release_required
       ? 'A clue is due. Let the response flow directly into the clue performance; do not let the release erase the learner uptake or create an announced change of role.'
+      : null,
+    completion?.requiresNewPressure
+      ? 'The continuation must create genuinely new pressure: stage the due public clue if one is supplied, or ask about a materially new implication. A paraphrase of the completed distinction is not forward movement.'
+      : null,
+    frame.scene_action_budget?.saturated
+      ? 'Recent turns have already used repeated exhibit-handling gestures. Unless a new physical exhibit genuinely requires handling, express the selected character through judgment, address, rhythm, and word choice rather than another “I lay/slide/open/mark” gesture.'
       : null,
     development.kind === 'dialogue_closure'
       ? 'The development beat is a natural close, not another proof demand.'
@@ -468,6 +496,13 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
       reason: 'responds to the learner but does not develop, clarify, advance, or close the inquiry',
     });
   }
+  const completionAudit = auditTutorStubConversationalCompletionResponse({
+    text,
+    completion: frame.conversational_completion,
+    learnerText,
+    dueEvidenceSurfaces: frame.due_evidence_surfaces || [],
+  });
+  issues.push(...completionAudit.issues);
   return {
     schema: TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA,
     ok: issues.length === 0,
@@ -477,6 +512,7 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
     action_target: frame.action_target || null,
     development_kind: frame.development?.kind || null,
     expected_dag_move: frame.development?.expected_dag_move || null,
+    conversational_completion: completionAudit,
     issues,
     segments,
   };
