@@ -747,7 +747,10 @@ function stanceVisible(stance, text, metrics) {
     return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together|both (?:read|test)|leav(?:e|ing) (?:you )?room|room for you|how do you read)\b/iu.test(text);
   if (stance === 'witnessing')
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
-  if (stance === 'charismatic') return /\b(?:but|yet|choose|risk|refuse|test|stake|stop|now)\b/iu.test(text);
+  if (stance === 'charismatic')
+    return /\b(?:break|but|yet|choose|risk|refuse|test|stake|stop|now|outrun|outruns|outrun the|easy verdict|old suspicion)\b/iu.test(
+      text,
+    );
   return true;
 }
 
@@ -923,6 +926,10 @@ function actorialPartVisible(configuration, text, metrics) {
     const offersLiveCaseToBreak =
       /\b(?:break|challenge|test)\s+(?:my|our|the)\s+(?:case|charge|claim)\b/iu.test(text) &&
       /\b(?:but|evidence|not yet|still|unless|until)\b/iu.test(text);
+    const putsCaseAgainstPublicVerdictToTest =
+      /\bmy case\b[^.!?]{0,70}\bagainst\b[^.!?]{0,45}\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,30}\b(?:accusation|case|charge|claim|verdict)\b[^.!?]{0,45}\bis this\b/iu.test(
+        text,
+      ) && /\bbreak it\b/iu.test(text);
     return (
       announcedCase ||
       stagesBoundedCase ||
@@ -940,7 +947,8 @@ function actorialPartVisible(configuration, text, metrics) {
       putsCaseToPublicAuthority ||
       statesSupportedFindingForTesting ||
       makesCaseForSupportedCause ||
-      offersLiveCaseToBreak
+      offersLiveCaseToBreak ||
+      putsCaseAgainstPublicVerdictToTest
     );
   }
   if (part === 'skeptic') {
@@ -1143,6 +1151,14 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\b(?:crowd|hall|room|sail[- ]loft|town|warden|witnesses?)\b[^.!?]{0,45}\b(?:is|are|keeps?|starts?)\b[^.!?]{0,25}\b(?:rushing|running|leaping) ahead\b[\s\S]{0,180}\b(?:does not|doesn[’']t|not yet|still (?:need|unshown)|unproved)\b/iu.test(
         text,
       );
+    const publicSuspicionOutrunsMaterial =
+      /\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,55}\b(?:old\s+)?(?:accusation|case|charge|claim|suspicion|verdict)\b[^.!?]{0,35}\b(?:has\s+)?outruns?\b[^.!?]{0,35}\b(?:evidence|mark|metal|record|result)\b/iu.test(
+        text,
+      );
+    const publicVerdictMeetsBreakableCase =
+      /\bmy case\b[^.!?]{0,70}\bagainst\b[^.!?]{0,45}\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,30}\b(?:accusation|case|charge|claim|verdict)\b[\s\S]{0,150}\bbreak it\b/iu.test(
+        text,
+      );
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -1160,7 +1176,9 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       materialEvidenceOutweighsReadyStory ||
       publicJudgmentOutrunsEvidence ||
       publicEyesMeetEvidentiaryChallenge ||
-      publicSceneRushesPastEvidence
+      publicSceneRushesPastEvidence ||
+      publicSuspicionOutrunsMaterial ||
+      publicVerdictMeetsBreakableCase
     );
   }
   if (tactic === 'exposed_mismatch') return /\b(?:apparently|as if|not exactly|small irony|conveniently)\b/iu.test(text);

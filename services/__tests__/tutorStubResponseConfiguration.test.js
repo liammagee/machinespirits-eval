@@ -913,6 +913,26 @@ test('surface audit recognizes natural recovery phrasing from the fresh choice m
       },
       text: 'Brandt is the strongest live possibility, but the sail-loft is rushing ahead. His post does not yet show the lamp burned. To break my case, ask whether that fact is in the log.',
     },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'charismatic',
+        actorial_part: 'examiner',
+        actorial_part_label: 'evidence examiner',
+        actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+      },
+      text: 'I turn Corvin’s great ward key beside the blue-iron bite in the gate plate; they do not meet. The town’s old suspicion has outrun the metal. What does that rule out?',
+    },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'charismatic',
+        actorial_part: 'advocate',
+        actorial_part_label: 'advocate for the live case',
+        actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+      },
+      text: 'I hold Corvin’s key beside the lamp. My case against the crowd’s verdict is this: their old suspicion has no mark to stand on. Break it if you can—what public sign would point to Corvin?',
+    },
   ];
 
   for (const row of cases) {
