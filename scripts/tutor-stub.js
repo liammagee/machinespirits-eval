@@ -1865,6 +1865,9 @@ function tutorResponseRecoveryPrompt({
     'Both candidates must answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
     'Never mention prompts, policies, checks, candidates, hidden evidence, a concealed answer, a DAG, or this recovery operation.',
     leakRows ? 'Do not name or imply concealed actors, conclusions, objects, or unreleased evidence.' : null,
+    (leakAudit?.leaks || []).some((issue) => issue.type === 'unsupported_evidence_correspondence')
+      ? 'State each released record directly. Do not add that records match, correspond, trace to one another, or share a source unless the compact public packet states that exact relationship.'
+      : null,
     scaffoldRows ? 'Accept the learner’s completed local move; do not ask it again in new words.' : null,
     questionSupportRows
       ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
@@ -1882,7 +1885,10 @@ function tutorResponseRecoveryPrompt({
       ? 'Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or “back to us.”'
       : null,
     actorialRealizationRows
-      ? `For policy_repair only, visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the selected public part'} through ${responseConfiguration?.actorial_performance?.label || 'the selected tactic'} without a role label or stage direction.`
+      ? `For policy_repair only, visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the selected public part'} without a role label or stage direction. Host-part contract: ${responseConfiguration?.actorial_part_selection?.contract || 'take the selected public part through concrete first-person action or speech'}`
+      : null,
+    actorialRealizationRows
+      ? `Performance contract: ${responseConfiguration?.actorial_performance?.contract || 'make the selected tactic transcript-visible through concrete action or direct speech'}`
       : null,
     responseCompositionRows
       ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
@@ -9905,6 +9911,7 @@ async function callTutor({
       });
   const safeResponseConfigurationAdvisory = sanitizeTutorStubSpeakerAdvisory({
     world: dag ? world : null,
+    tutorTurn,
     text: responseConfigurationAdvisory,
   });
   const effectiveSystemPrompt = safeResponseConfigurationAdvisory
@@ -9932,7 +9939,7 @@ async function callTutor({
     tutorFeedbackAdvisory,
   ]
     .filter(Boolean)
-    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, text }));
+    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
   const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
   const machineAdvisoryParts = [
@@ -10055,6 +10062,7 @@ async function callTutor({
     repairAttempt = 0,
     systemPromptOverride = null,
     instructionTextsOverride = null,
+    privilegeAdvisoryOverride = null,
   }) {
     const startedAt = new Date().toISOString();
     const instructionTexts =
@@ -10068,7 +10076,10 @@ async function callTutor({
         world: dag ? world : null,
         tutorTurn,
         systemPrompt: attemptSystemPrompt,
-        privateAdvisory: effectiveInstructionTexts.slice(1).join('\n\n'),
+        privateAdvisory:
+          privilegeAdvisoryOverride === null
+            ? effectiveInstructionTexts.slice(1).join('\n\n')
+            : privilegeAdvisoryOverride,
       });
       appendTraceEvent(trace, {
         type: 'tutor_speaker_privilege_audit',
@@ -10626,17 +10637,21 @@ async function callTutor({
         recentTutorTexts,
         world,
       });
-    const publicRecoveryPacket = [
-      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      responseCompositionAdvisory,
-      dramaticReleaseAdvisory,
-      humanDiscourseAdvisory,
-      dialogueClosureAdvisory,
-      comprehensionAdvisory,
-      tutorFeedbackAdvisory,
-      tutorStubResponseConfigurationPrompt(responseConfiguration),
-      learnerPrompt,
-    ].filter(Boolean);
+    // Reuse the already privilege-audited speaker packet. Reconstructing this
+    // list from raw planner advisories can reintroduce private IDs or future
+    // facts after the initial speaker prompt has been made public-safe.
+    const publicRecoveryMachinePacket = effectiveSpeakerInstructionTexts
+      .slice(1)
+      .filter(Boolean)
+      .map((text) =>
+        sanitizeTutorStubSpeakerAdvisory({
+          world: dag ? world : null,
+          tutorTurn,
+          text,
+        }),
+      )
+      .filter(Boolean);
+    const publicRecoveryPacket = [...publicRecoveryMachinePacket, learnerPrompt];
     const recoveryPrompt = tutorResponseRecoveryPrompt({
       publicPacket: publicRecoveryPacket,
       leakAudit: audits.leakAudit,
@@ -10650,13 +10665,30 @@ async function callTutor({
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
     });
+    const recoveryControlPrompt = tutorResponseRecoveryPrompt({
+      publicPacket: [],
+      leakAudit: audits.leakAudit,
+      scaffoldAudit: audits.scaffoldAudit,
+      questionSupportAudit: audits.questionSupportAudit,
+      dramaticReleaseAudit: audits.dramaticReleaseAudit,
+      actorialRealizationAudit: audits.actorialRealizationAudit,
+      responseConfiguration,
+      responseCompositionAudit: audits.responseCompositionAudit,
+      repetitionAudit: audits.repetitionAudit,
+      closureAudit: audits.closureAudit,
+      dialogueClosureFrame,
+    });
+    const recoveryPrivilegeAdvisory = [recoveryControlPrompt, ...publicRecoveryMachinePacket]
+      .filter(Boolean)
+      .join('\n\n');
     const recoveryBatchResponse = await invokeTutorAttempt({
       attemptUserPrompt: recoveryPrompt,
       role: `${roleBase}_recovery`,
       streamMode: canStreamTutor ? 'buffered' : 'none',
       repairAttempt: 1,
       systemPromptOverride: systemPrompt,
-      instructionTextsOverride: [systemPrompt, ...publicRecoveryPacket.slice(0, -1)],
+      instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
+      privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
     });
     const recoveryBatch = parseTutorStubGuardRecoveryCandidates(recoveryBatchResponse.text);
     appendTraceEvent(trace, {

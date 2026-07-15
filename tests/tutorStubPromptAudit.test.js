@@ -126,7 +126,7 @@ test('speaker prompt recovery discards contaminated advisory and preserves the p
   );
 });
 
-test('speaker prompt recovery remains fail-closed when a retained public surface is itself contaminated', () => {
+test('speaker prompt recovery sanitizes a contaminated retained surface before its fail-closed audit', () => {
   const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
   const future = world.releaseSchedule.find((row) => row.turn > 1);
   const futureSurface = world.premiseById.get(future.premise).surface;
@@ -138,9 +138,53 @@ test('speaker prompt recovery remains fail-closed when a retained public surface
     learnerPrompt: 'Learner says: What is public so far?',
   });
 
-  assert.equal(recovered.applied, false);
-  assert.equal(recovered.speakerPrivilegeAudit.ok, false);
-  assert.ok(recovered.speakerPrivilegeAudit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+  assert.equal(recovered.applied, true);
+  assert.equal(recovered.speakerPrivilegeAudit.ok, true);
+  assert.doesNotMatch(
+    recovered.userPrompt,
+    new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'),
+  );
+});
+
+test('recovery sanitization removes the three observed private-boundary failure forms', () => {
+  const world = {
+    secret: { fact: ['settles', 'wholeCase'], surface: 'The concealed verdict names Crane' },
+    mirror: { fact: ['mirrors', 'privateLedger'] },
+    rules: [{ id: 'R2_take' }],
+    premises: [
+      { id: 'p_public', fact: ['public', 'record'], surface: 'The public record is already open.' },
+      { id: 'p_sham', fact: ['differsOnlyByDial', 'counterfeitTwin'], surface: 'The sham dial differs once.' },
+      { id: 'p_staff', fact: ['staffRetainDecisionRight', 'campusFaq'], surface: 'Staff retain the final decision.' },
+    ],
+    releaseSchedule: [
+      { turn: 1, premise: 'p_public' },
+      { turn: 6, premise: 'p_sham' },
+      { turn: 10, premise: 'p_staff' },
+    ],
+  };
+  const sanitized = sanitizeTutorStubSpeakerAdvisory({
+    world,
+    tutorTurn: 5,
+    text: [
+      'Use R2_take only as private bookkeeping.',
+      'Released premise p_public can be discussed without its ID.',
+      'Future p_sham fact: differsOnlyByDial(counterfeitTwin)',
+      'Future p_staff fact: staffRetainDecisionRight(campusFaq)',
+      'Tutor desire-DAG: settle the hidden route.',
+    ].join('\n'),
+  });
+  const audit = auditTutorStubSpeakerPrivilege({
+    world,
+    tutorTurn: 5,
+    systemPrompt: 'Speak only from the public record.',
+    privateAdvisory: sanitized,
+  });
+
+  assert.equal(audit.ok, true);
+  assert.doesNotMatch(sanitized, /R2_take|p_public|p_sham|p_staff/u);
+  assert.doesNotMatch(sanitized, /differsOnlyByDial|staffRetainDecisionRight|Tutor desire-DAG/u);
+  assert.match(sanitized, /relevant public evidence rule/u);
+  assert.match(sanitized, /relevant public evidence item/u);
 });
 
 test('speaker advisories neutralize private bookkeeping ids without admitting future evidence', () => {

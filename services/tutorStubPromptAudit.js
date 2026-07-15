@@ -150,8 +150,43 @@ function escapedLiteral(value) {
   return String(value || '').replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
-export function sanitizeTutorStubSpeakerAdvisory({ world = null, text = '' } = {}) {
+const PRIVATE_SPEAKER_MARKERS = Object.freeze([
+  'Concealed answer',
+  'Hidden premise ledger',
+  'Authored proof path',
+  'Release schedule',
+  'First scheduled entailment turn',
+  'Tutor desire-DAG',
+]);
+
+function privateSpeakerContentNeedles(world, tutorTurn) {
+  if (!world) return [...PRIVATE_SPEAKER_MARKERS];
+  const needles = [
+    ...PRIVATE_SPEAKER_MARKERS,
+    world.secret?.surface,
+    factText(world.secret?.fact),
+    factText(world.mirror?.fact),
+  ];
+  for (const premise of world.premises || []) {
+    const release = (world.releaseSchedule || []).find((entry) => entry.premise === premise.id);
+    if (Number(release?.turn) <= Number(tutorTurn)) continue;
+    needles.push(premise.surface, factText(premise.fact));
+  }
+  return needles.map((needle) => String(needle || '').trim()).filter((needle) => needle.length >= 4);
+}
+
+export function sanitizeTutorStubSpeakerAdvisory({ world = null, tutorTurn = 0, text = '' } = {}) {
   let sanitized = String(text || '');
+  const privateNeedles = privateSpeakerContentNeedles(world, tutorTurn);
+  sanitized = sanitized
+    .split('\n')
+    .filter((line) => !privateNeedles.some((needle) => includesNeedle(line, needle)))
+    .join('\n');
+  // A surface can itself contain a newline. Remove any residual exact span so
+  // the final privilege audit remains fail-closed even for multiline worlds.
+  for (const needle of privateNeedles) {
+    sanitized = sanitized.replace(new RegExp(escapedLiteral(needle), 'gu'), '');
+  }
   if (!world) return sanitized;
   for (const rule of world.rules || []) {
     if (!rule?.id) continue;
@@ -183,12 +218,7 @@ export function auditTutorStubSpeakerPrivilege({
     issues.push({ code, source, needle: String(needle).trim() });
   };
   for (const marker of [
-    'Concealed answer',
-    'Hidden premise ledger',
-    'Authored proof path',
-    'Release schedule',
-    'First scheduled entailment turn',
-    'Tutor desire-DAG',
+    ...PRIVATE_SPEAKER_MARKERS,
   ]) {
     add('planner_marker_in_speaker_prompt', 'planner_contract', marker);
   }
@@ -236,7 +266,7 @@ export function recoverTutorStubSpeakerPrompt({
     responseConfigurationPrompt,
   ]
     .filter(Boolean)
-    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world, text }));
+    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world, tutorTurn, text }));
   const userPrompt = [...advisoryParts, learnerPrompt].filter(Boolean).join('\n\n');
   const instructionTexts = [baseSystemPrompt, ...advisoryParts].filter(Boolean);
   const speakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
