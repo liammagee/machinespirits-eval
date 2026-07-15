@@ -767,6 +767,23 @@ test('the deterministic uptake is public, learner-specific, and action-aware', (
   );
 });
 
+test('evidence adoption names the learner\'s record instead of using a generic transition', () => {
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText: 'The badge log puts Dario in the kitchen at noon, so I will keep that clue in the record.',
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        discourse_move: 'evidence_adoption',
+      },
+    },
+    actionFamily: 'stage_next_step',
+  });
+
+  assert.match(uptake, /badge log/iu);
+  assert.match(uptake, /public record|evidence/iu);
+  assert.doesNotMatch(uptake, /what you have established/iu);
+});
+
 test('Marrick source-and-striker gaps receive a concrete acknowledgement', () => {
   const uptake = deterministicTutorStubLearnerUptake({
     learnerText:

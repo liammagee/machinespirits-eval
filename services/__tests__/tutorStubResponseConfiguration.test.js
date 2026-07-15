@@ -2537,3 +2537,58 @@ test('an enacted clue source does not length-penalize its plain adaptive host', 
   assert.equal(audit.axes.lexical_accessibility.visible, true);
   assert.equal(audit.actorial_realization.ok, true);
 });
+
+test('directly bounded evidence language visibly clarifies a distinction', () => {
+  const configuration = {
+    ...buildTutorStubResponseConfiguration({
+      engagementStance: 'precise',
+      learnerText: 'So Crane planted the quote?',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      world: testWorld(),
+    }),
+    action_family: 'clarify_distinction',
+  };
+  const text = 'The byline establishes responsibility for the reporting, not who inserted the false kicker.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.action_family.visible, true);
+});
+
+test('stating what the record still needs visibly stages the next step', () => {
+  const configuration = {
+    ...buildTutorStubResponseConfiguration({
+      engagementStance: 'plain',
+      learnerText: 'Can we name the culprit now?',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      world: testWorld(),
+    }),
+    action_family: 'stage_next_step',
+  };
+  const text = 'To name a hand, the record still needs an entry that connects this tool to its user.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.action_family.visible, true);
+});
+
+test('opening a version history visibly performs the record-keeper part', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'What changed after filing?',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'record keeper',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text = 'I open the version history: it shows that the kicker was inserted after filing, but it does not name the editor.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});

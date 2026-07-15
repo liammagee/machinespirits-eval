@@ -106,8 +106,59 @@ test('an opaque clue dump fails the dramatic release check', () => {
   assert.equal(audit.ok, false);
   assert.deepEqual(
     audit.issues.map((issue) => issue.type),
-    ['opaque_clue_release', 'missing_in_scene_enactment'],
+    ['opaque_clue_release', 'missing_exhibit_action'],
   );
+});
+
+test('director records default to exhibits while witness accounts default to enacted roles', () => {
+  const recordFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_history',
+        via: 'director',
+        surface: 'The version history shows that the kicker was added after filing.',
+      },
+    ],
+  });
+  const witnessFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_watch',
+        via: 'director',
+        surface: 'The watchman saw the shutters close after midnight.',
+      },
+    ],
+  });
+
+  assert.equal(recordFrame.entries[0].mode, 'presented_exhibit');
+  assert.equal(recordFrame.requiresExhibitHandoff, true);
+  assert.equal(witnessFrame.entries[0].mode, 'enacted_role');
+  assert.equal(witnessFrame.requiresEnactment, true);
+});
+
+test('a report entering the scene and a hand running along a ledger are visible exhibit actions', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_report',
+        via: 'director',
+        surface: 'The sequencing report identifies strain G17 in the returned incubator.',
+      },
+    ],
+  });
+  const arriving = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'The sequencing report lands beside the incubator: it identifies strain G17 in the returned unit. What does that add?',
+  });
+  const handled = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I run a finger along the sequencing report: it identifies strain G17 in the returned incubator. What does that add?',
+  });
+
+  assert.equal(arriving.exhibitHandoffVisible, true);
+  assert.equal(arriving.ok, true);
+  assert.equal(handled.exhibitHandoffVisible, true);
+  assert.equal(handled.ok, true);
 });
 
 test('a first-person action on a concrete token from the due exhibit is visibly staged', () => {
@@ -406,7 +457,7 @@ test('a Marrick charcoal-book clue uses the book rather than the crucible as the
     variationKey: 'marrick:charcoal-book',
   });
 
-  assert.match(text, /I enter the book beside the testimony in the trial-book/u);
+  assert.match(text, /I mark the book in the open record/u);
   assert.doesNotMatch(text, /enter the crucible beside/u);
 });
 

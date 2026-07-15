@@ -69,6 +69,7 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
+  snapshotTutorStubPublicPremiseIds,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
 import { auditTutorStubEvidenceAssertions } from '../services/tutorStubEvidenceAssertion.js';
@@ -1563,7 +1564,14 @@ function factMatches(a, b) {
   return factKey(a) === factKey(b);
 }
 
-function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = null } = {}) {
+function candidatePublicPremiseIds({
+  state = null,
+  world = null,
+  tutorTurn = null,
+  publicPremiseIds = null,
+} = {}) {
+  if (publicPremiseIds instanceof Set) return new Set(publicPremiseIds);
+  if (Array.isArray(publicPremiseIds)) return new Set(publicPremiseIds.filter(Boolean));
   if (!world) return new Set();
   if (state?.releasePacing) {
     return new Set([
@@ -1576,21 +1584,25 @@ function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = nul
   );
 }
 
-function publicFactsAtTurn(world, tutorTurn, state = null) {
+function publicFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
   if (!world) return [];
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
   const released = [...available]
     .map((premiseId) => world.premiseById.get(premiseId)?.fact)
     .filter(Boolean);
   return [...(world.background || []), ...released];
 }
 
-function entailedFactsAtTurn(world, tutorTurn, state = null) {
-  return [...closure(publicFactsAtTurn(world, tutorTurn, state), world.rules || []).facts.values()];
+function entailedFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
+  return [
+    ...closure(publicFactsAtTurn(world, tutorTurn, state, publicPremiseIds), world.rules || []).facts.values(),
+  ];
 }
 
-function entailsFactAtTurn(world, tutorTurn, fact, state = null) {
-  return entailedFactsAtTurn(world, tutorTurn, state).some((entailed) => factMatches(entailed, fact));
+function entailsFactAtTurn(world, tutorTurn, fact, state = null, publicPremiseIds = null) {
+  return entailedFactsAtTurn(world, tutorTurn, state, publicPremiseIds).some((entailed) =>
+    factMatches(entailed, fact),
+  );
 }
 
 function answerTermForWorld(world) {
@@ -1600,9 +1612,9 @@ function answerTermForWorld(world) {
   return world?.secret?.fact?.[answerIndex] || null;
 }
 
-function publicTextForTurn(world, tutorTurn, learnerText = '', state = null) {
+function publicTextForTurn(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
   if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
   const releasedSurface = [...available]
     .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
     .join('\n');
@@ -1618,9 +1630,15 @@ function publicTextForTurn(world, tutorTurn, learnerText = '', state = null) {
   ].join('\n');
 }
 
-function publicEvidenceTextForAssertion(world, tutorTurn, learnerText = '', state = null) {
+function publicEvidenceTextForAssertion(
+  world,
+  tutorTurn,
+  learnerText = '',
+  state = null,
+  publicPremiseIds = null,
+) {
   if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
   const releasedSurface = [...available]
     .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
     .join('\n');
@@ -1701,9 +1719,18 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'would',
 ]);
 
-function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state = null }) {
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn });
-  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText, state));
+function unreleasedPremiseLeakRows({
+  text,
+  world,
+  tutorTurn,
+  learnerText,
+  state = null,
+  publicPremiseIds = null,
+}) {
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
+  const publicTokens = textTokens(
+    publicTextForTurn(world, tutorTurn, learnerText, state, publicPremiseIds),
+  );
   const rows = [];
   for (const premise of world?.premises || []) {
     const release = world.releaseSchedule.find((entry) => entry.premise === premise.id);
@@ -1734,15 +1761,23 @@ function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state 
   return rows;
 }
 
-function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = null }) {
+function auditTutorResponseLeak({
+  text,
+  world,
+  tutorTurn,
+  learnerText,
+  state = null,
+  publicPremiseIds = null,
+}) {
   if (!world) return { ok: true, leaks: [] };
+  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
   const leaks = [];
   const answerTerm = answerTermForWorld(world);
   const answerTokens = splitSymbolWords(answerTerm);
   const mentionsAnswer = answerTokens.some((token) => textContainsToken(text, token));
-  const publicText = publicTextForTurn(world, tutorTurn, learnerText, state);
+  const publicText = publicTextForTurn(world, tutorTurn, learnerText, state, available);
   const answerNamePublic = tutorStubAnswerNameIsPublic({ answerTerm, publicText });
-  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state);
+  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state, available);
 
   if (mentionsAnswer && !finalEntailed && !answerNamePublic) {
     leaks.push({
@@ -1789,7 +1824,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
           text: lower,
           answerTerm,
           wordPatterns: check.words,
-        }) && !entailsFactAtTurn(world, tutorTurn, check.fact, state)
+        }) && !entailsFactAtTurn(world, tutorTurn, check.fact, state, available)
       ) {
         leaks.push({
           type: check.label,
@@ -1800,7 +1835,14 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
     }
   }
 
-  for (const row of unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state })) {
+  for (const row of unreleasedPremiseLeakRows({
+    text,
+    world,
+    tutorTurn,
+    learnerText,
+    state,
+    publicPremiseIds: available,
+  })) {
     leaks.push({
       type: 'unreleased_premise_content',
       reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
@@ -1811,7 +1853,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
 
   const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
     text,
-    permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state),
+    permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state, available),
   });
   for (const issue of evidenceAssertionAudit.issues) {
     leaks.push({
@@ -1826,6 +1868,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
     leaks,
     finalEntailed,
     answerNamePublic,
+    publicPremiseIds: [...available],
   };
 }
 
@@ -6933,7 +6976,7 @@ async function analyzeLearnerTurnCombined(
     registerSelection = applyConversationalCompletionForLearnerTurn(
       state,
       registerSelection,
-      tutorLearnerDag.conversationalCompletion,
+      tutorLearnerDag?.conversationalCompletion || null,
     );
     stopInterimAnimation(state);
     printAutomaticTechnicalDetails(state, () => {
@@ -6991,7 +7034,7 @@ async function analyzeLearnerTurnCombined(
     registerSelection = applyConversationalCompletionForLearnerTurn(
       state,
       registerSelection,
-      tutorLearnerDag.conversationalCompletion,
+      tutorLearnerDag?.conversationalCompletion || null,
     );
     stopInterimAnimation(state);
     printAutomaticTechnicalDetails(state, () => {
@@ -7068,7 +7111,7 @@ async function analyzeLearnerTurn(
   registerSelection = applyConversationalCompletionForLearnerTurn(
     state,
     registerSelection,
-    tutorLearnerDag.conversationalCompletion,
+    tutorLearnerDag?.conversationalCompletion || null,
   );
   printAutomaticTechnicalDetails(state, () =>
     printResponseConfigurationSelection(registerSelection, previousRegisterEfficacy),
@@ -9932,6 +9975,18 @@ async function callTutor({
   const context = messageContext.messages;
   const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
   const tutorTurn = Math.floor(history.length / 2) + 1;
+  // Freeze the speaking boundary once for the whole call. Release pacing is
+  // transactional and can be rolled back or committed after generation; every
+  // candidate in this call must nevertheless be judged against exactly the
+  // evidence that appeared in the original speaking prompt.
+  const speakerPublicPremiseIds = new Set(
+    passthrough
+      ? []
+      : snapshotTutorStubPublicPremiseIds({
+          committedEvidence: committedReleaseRows(state, tutorTurn),
+          dueEvidence: currentReleaseRows(state, tutorTurn),
+        }),
+  );
   const tutorMemory = passthrough
     ? null
     : [
@@ -10401,7 +10456,14 @@ async function callTutor({
     response.responseCompositionFrame = responseCompositionFrame;
     response.responseCompositionAudit = responseCompositionAudit;
     const leakAudit = leakGuardEnabled
-      ? auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText, state })
+      ? auditTutorResponseLeak({
+          text: response.text,
+          world,
+          tutorTurn,
+          learnerText,
+          state,
+          publicPremiseIds: speakerPublicPremiseIds,
+        })
       : { ok: true, leaks: [] };
     const scaffoldAudit = scaffoldGuardEnabled
       ? auditTutorStubGenerousInferenceResponse({
@@ -10448,6 +10510,8 @@ async function callTutor({
         attempt,
         ok: leakAudit.ok,
         leaks: leakAudit.leaks,
+        publicPremiseIds: [...speakerPublicPremiseIds],
+        duePremiseIds: dramaticReleaseFrame.entries.map((entry) => entry.premise).filter(Boolean),
       });
     }
     if (scaffoldGuardEnabled) {
@@ -10572,13 +10636,27 @@ async function callTutor({
     // selector choose a fresh acknowledgement for the repair/fallback.
     if (!auditTutorStubRepetitionResponse({ text: uptake, recentTutorTexts }).ok) return '';
     if (dramaticReleaseFrame?.active) {
+      const duePremiseIds = dramaticReleaseFrame.entries.map((entry) => entry?.premise).filter(Boolean);
+      const uptakeDeliveryAudit = auditTutorStubReleaseDelivery({
+        text: uptake,
+        world,
+        premiseIds: duePremiseIds,
+      });
+      if (uptakeDeliveryAudit.deliveredPremises.length) return '';
       const uptakeReleaseAudit = auditTutorStubDramaticReleaseResponse({ text: uptake, frame: dramaticReleaseFrame });
       if (uptakeReleaseAudit.entranceVisible || uptakeReleaseAudit.enactmentVisible || uptakeReleaseAudit.exhibitHandoffVisible) {
         return '';
       }
     }
     if (!leakGuardEnabled) return uptake;
-    const uptakeLeakAudit = auditTutorResponseLeak({ text: uptake, world, tutorTurn, learnerText, state });
+    const uptakeLeakAudit = auditTutorResponseLeak({
+      text: uptake,
+      world,
+      tutorTurn,
+      learnerText,
+      state,
+      publicPremiseIds: speakerPublicPremiseIds,
+    });
     return uptakeLeakAudit.ok ? uptake : '';
   }
 
@@ -10874,12 +10952,21 @@ async function callTutor({
         'composition_repair_candidate',
         recoveryBatch,
       );
+      const compositionDraftAudits = auditTutorDraft(compositionResponse, {
+        role: `${roleBase}_composition_repair`,
+        attempt: compositionRepairAttempt,
+      });
       const compositionAudits = withTutorDeliveryDecision(
-        auditTutorDraft(compositionResponse, {
+        compositionDraftAudits,
+        {
+          allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+            compositionDraftAudits.actorialRealizationAudit,
+          ),
+          advisoryReason:
+            'the mechanically recomposed recovery preserves the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
           role: `${roleBase}_composition_repair`,
           attempt: compositionRepairAttempt,
-        }),
-        { role: `${roleBase}_composition_repair`, attempt: compositionRepairAttempt },
+        },
       );
       const compositionRepairSpans = exactTutorRepairSpans(
         policyRepairResponse.text,
@@ -12251,13 +12338,14 @@ async function runOneTurn(
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
-  const humanDiscourseFrame = buildHumanDiscourseFrame({
-    state,
-    tutorTurn,
-    tutorLearnerDag,
-    classification,
-    learnerText,
-  });
+  const humanDiscourseFrame =
+    buildHumanDiscourseFrame({
+      state,
+      tutorTurn,
+      tutorLearnerDag,
+      classification,
+      learnerText,
+    }) || {};
   const { tutorDagSnapshot: dagSnapshot, frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
     state,
     tutorTurn,
@@ -15801,7 +15889,7 @@ async function main() {
       registerSelection = applyConversationalCompletionForLearnerTurn(
         speculativeState,
         registerSelection,
-        tutorLearnerDag.conversationalCompletion,
+        tutorLearnerDag?.conversationalCompletion || null,
       );
       const humanDiscourseFrame = buildHumanDiscourseFrame({
         state: speculativeState,

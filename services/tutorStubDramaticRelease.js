@@ -12,14 +12,28 @@ function oneLine(value) {
     .trim();
 }
 
+function inferredPresentationMode(row = {}) {
+  const surface = oneLine(row.surface).toLowerCase();
+  const role = oneLine(row.role).toLowerCase();
+  const documentLike =
+    /\b(?:archive|badge|book|card|chart|file|history|inventory|ledger|log|notebook|notice|photo(?:graph)?|record|register|report|sequence|sheet|swab|transcript|version)\b/u.test(
+      surface,
+    );
+  const witnessLike =
+    /\b(?:attest|heard|remembers?|reported|saw|seen|swear|testif(?:y|ied)|watch(?:ed|man)?|witness)\b/u.test(
+      `${surface} ${role}`,
+    );
+  if (documentLike && !witnessLike) return 'presented_exhibit';
+  if (witnessLike) return 'enacted_role';
+  return row.via === 'director' ? 'enacted_role' : 'presented_exhibit';
+}
+
 function releasePresentation(row = {}) {
   const authored = row.presentation && typeof row.presentation === 'object' ? row.presentation : {};
   const mode =
     authored.mode === 'enacted_role' || authored.mode === 'presented_exhibit'
       ? authored.mode
-      : row.via === 'director'
-        ? 'enacted_role'
-        : 'presented_exhibit';
+      : inferredPresentationMode(row);
   return {
     mode,
     role: oneLine(authored.role || row.role || '') || null,
@@ -102,9 +116,9 @@ const META_ROLEPLAY_PATTERN =
 const META_RELEASE_PATTERN =
   /\b(?:i(?:[’']m| am)\s+going to give you another piece of information|i(?:[’']m| am)\s+bringing in another clue|another piece of information (?:is|will be) entering|back to (?:us|the case))\b/iu;
 const EXHIBIT_PATTERN =
-  /\b(?:bend(?:s|ing)?|bent|bring|clear|demonstrate|draw|enter|examine|hold(?:s|ing)?|held|keep|lay|lift|look at|open|plant|place|pour|press|put|read|rest|rub(?:s|bed|bing)?|scrape|set|show|slap|slide|smear(?:s|ed|ing)?|strike|tap|test|tip|turn|unfold|warm|weigh)\b[^.!?]{0,80}\b(?:assay|before us|book|chamber|clue|coin|crucible|cupel|dross|entry|evidence|exhibit|file|flasks?|gasket|in front of us|incubator|lamp|lead-sweat|leavings|ledger|line|log|metal|notebook|notice|record|register|report|residue|sample|shilling|streak|swab|table|tool|touchstone)\b/iu;
+  /\b(?:bend(?:s|ing)?|bent|bring|clear|demonstrate|draw|enter|examine|hold(?:s|ing)?|held|keep|lay|lift|look at|open|plant|place|pour|press|put|read|rest|rub(?:s|bed|bing)?|run|scrape|set|show|slap|slide|smear(?:s|ed|ing)?|strike|tap|test|tip|turn|unfold|warm|weigh)\b[^.!?]{0,80}\b(?:assay|before us|book|card|chamber|chart|clue|coin|crucible|cupel|dross|entry|evidence|exhibit|file|flasks?|gasket|history|in front of us|incubator|lamp|lead-sweat|leavings|ledger|line|log|metal|notebook|notice|photo(?:graph)?|record|register|report|residue|sample|sequence|sheet|shilling|streak|swab|table|tool|touchstone|version)\b/iu;
 const EXHIBIT_ACTION_SOURCE =
-  'bend|bring|carry|clear|demonstrate|draw|enter|examine|hold|keep|lay|lift|look|lower|open|place|plant|point|pour|press|pull|put|read|rest|rub|scrape|set|show|slap|slide|smear|strike|tap|test|tip|touch|trace|turn|unfold|warm|weigh';
+  'bend|bring|carry|clear|demonstrate|draw|enter|examine|hold|keep|lay|lift|look|lower|open|place|plant|point|pour|press|pull|put|read|rest|rub|run|scrape|set|show|slap|slide|smear|strike|tap|test|tip|touch|trace|turn|unfold|warm|weigh';
 const EXHIBIT_FRAME_TOKEN_STOP_WORDS = new Set(
   'about after again all among another because been before being does every everyone from have identical into labels line more nothing only other over same show shows showing spent story than that their them then there these they this those through under week were what when where which while with would'.split(
     ' ',
@@ -169,6 +183,13 @@ function frameEvidenceTokens(frame) {
 
 function dynamicExhibitActionVisible(response, frame) {
   if (EXHIBIT_PATTERN.test(response)) return true;
+  if (
+    /\b(?:archive|book|card|chart|file|history|ledger|log|notebook|notice|photo(?:graph)?|record|register|report|sequence|sheet|swab|transcript|version)\b[^.!?]{0,35}\b(?:arrives?|drops?|lands?|lies?|opens?|rests?|sits?)\b|\b(?:arrives?|drops?|lands?|lies?|opens?|rests?|sits?)\b[^.!?]{0,35}\b(?:archive|book|card|chart|file|history|ledger|log|notebook|notice|photo(?:graph)?|record|register|report|sequence|sheet|swab|transcript|version)\b/iu.test(
+      response,
+    )
+  ) {
+    return true;
+  }
   const evidenceTokens = frameEvidenceTokens(frame);
   if (!evidenceTokens.size) return false;
   const clauses =

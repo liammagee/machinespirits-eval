@@ -9,6 +9,7 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
+  snapshotTutorStubPublicPremiseIds,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
@@ -49,6 +50,18 @@ test('a released multiword answer name is public when its world constant uses ca
     }),
     false,
   );
+});
+
+test('the speaking boundary snapshots committed and due premise ids once', () => {
+  const committed = [{ premise: 'p_seen' }];
+  const due = [{ premise: 'p_due' }];
+  const snapshot = snapshotTutorStubPublicPremiseIds({ committedEvidence: committed, dueEvidence: due });
+
+  due.splice(0, 1, { premise: 'p_future' });
+  committed.push({ premise: 'p_later' });
+
+  assert.deepEqual(snapshot, ['p_seen', 'p_due']);
+  assert.equal(Object.isFrozen(snapshot), true);
 });
 
 test('release delivery requires the clue, not merely the answer name', () => {

@@ -890,6 +890,17 @@ export function deterministicTutorStubLearnerUptake({
       'I’ll answer that directly before bringing in anything new.',
     );
   }
+  if (discourseMove === 'evidence_adoption') {
+    const adoptedRecord = text.match(
+      /\b(?:badge log|call log|incident log|visitor log|version history|ledger|log|notebook|notice|record|report|swab)\b/iu,
+    )?.[0];
+    if (adoptedRecord) {
+      return fresh(
+        `You have kept the ${adoptedRecord} in the public record without claiming more than it shows.`,
+        `Your ${adoptedRecord} entry now stays with us as evidence, not as a verdict.`,
+      );
+    }
+  }
   if (requestType === 'stepwise_support_request') {
     if (proposesToolMarkTest) {
       return fresh(

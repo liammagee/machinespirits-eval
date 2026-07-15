@@ -742,12 +742,16 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
   }
   if (actionFamily === 'clarify_distinction') {
     return (
-      /\b(?:means|rather than|not .{0,24} but|distinction|difference|which)\b/iu.test(text) || metrics.questionCount > 0
+      /\b(?:means|rather than|not .{0,24} but|distinction|difference|which)\b/iu.test(text) ||
+      /\b(?:establishes?|shows?|supports?|proves?)\b[^.!?]{0,90}\b(?:but|not|only|rather than)\b|\b(?:not|only)\b[^.!?]{0,70}\b(?:establish|show|support|prove)\w*\b/iu.test(
+        text,
+      ) ||
+      metrics.questionCount > 0
     );
   }
   if (actionFamily === 'stage_next_step') {
     const explicitDirection =
-      /\b(?:before|next|needed|must|only if|requires?|until|let(?:[’']s| us)|shall we|compare|examine|inspect|test|trace|check)\b/iu.test(
+      /\b(?:before|next|need(?:ed|s)?|must|only if|requires?|until|let(?:[’']s| us)|shall we|compare|examine|inspect|test|trace|check)\b|\bto\s+(?:name|decide|settle|conclude)\b[^.!?]{0,45}\bneed\b/iu.test(
         text,
       );
     return metrics.wordCount <= 110 && (metrics.questionCount > 0 || explicitDirection);
@@ -801,11 +805,11 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'record_keeper') {
     return (
-      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b[^.!?]{0,55}\b(?:log|ledger|book|record|file|notebook|report|roll|sheet|notes?|inventory|trial-book|incident log|mod log|formulation card)\b|\b(?:log|ledger|book|record|file|notebook|report|roll|sheet|notes?|inventory|trial-book|incident log|mod log|formulation card)\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b/iu.test(text) ||
+      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b[^.!?]{0,55}\b(?:log|ledger|book|record|file|history|notebook|report|roll|sheet|notes?|inventory|rack card|trial-book|incident log|mod log|formulation card|version history)\b|\b(?:log|ledger|book|record|file|history|notebook|report|roll|sheet|notes?|inventory|rack card|trial-book|incident log|mod log|formulation card|version history)\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b/iu.test(text) ||
       (metrics.concreteSceneTermCount > 0 && /\bi\s+(?:enter|leave|record|write|mark)\s+(?:that|this|it|the (?:entry|line|record))\b/iu.test(text)) ||
       /\bi\s+leave\b[^.!?]{0,55}\b(?:entry|line|name|verdict)\b[^.!?]{0,25}\b(?:blank|open|unentered|uninked|unwritten)\b/iu.test(text) ||
       (metrics.concreteSceneTermCount > 0 &&
-        /\b(?:book|file|ledger|log|notebook|record|report|sheet|trial-book)\b[^.!?]{0,25}\b(?:contains?|gives?|holds?|marks?|reads?|says?|shows?)\b/iu.test(text))
+        /\b(?:book|file|history|ledger|log|notebook|rack card|record|report|sheet|trial-book|version history)\b[^.!?]{0,25}\b(?:contains?|gives?|holds?|marks?|reads?|says?|shows?)\b/iu.test(text))
     );
   }
   if (part === 'authored_source') {

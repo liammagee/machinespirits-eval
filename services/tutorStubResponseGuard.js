@@ -135,6 +135,18 @@ function premiseRows(world, premiseIds) {
   }));
 }
 
+export function snapshotTutorStubPublicPremiseIds({ committedEvidence = [], dueEvidence = [] } = {}) {
+  return Object.freeze(
+    [
+      ...new Set(
+        [...(committedEvidence || []), ...(dueEvidence || [])]
+          .map((row) => (typeof row === 'string' ? row : row?.premise))
+          .filter(Boolean),
+      ),
+    ],
+  );
+}
+
 export function auditTutorStubReleaseDelivery({ text = '', world = null, premiseIds = [] } = {}) {
   const responseWords = new Set(words(text));
   const rows = premiseRows(world, premiseIds).map(({ premise, row }) => {
