@@ -10,10 +10,10 @@ purpose: >-
 
 code_under_test:
   branch: preconscious
-  commit: 92845230957bf3391265b52c955493e11a5e5922
+  commit: 7dcb78cbdc307e06fc286ed712526dac01a40608
   strict_working_result: >-
     .tutor-stub-auto-eval/character-adaptation-loop/
-    strict-working-primary-i7-2026-07-15T13-12-55-500Z/character-loop-result.md
+    strict-working-primary-i8-2026-07-15T13-33-59-867Z/character-loop-result.md
 
 prior_acceptance_retirement:
   matrix: character-generalization-v3
