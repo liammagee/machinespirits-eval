@@ -62,7 +62,11 @@ export function repairTutorStubMissingClarificationInvitation({ text = '', deliv
     );
   if (!eligible) return { changed: false, text: candidateText(text) };
   const source = candidateText(text);
-  if (/\b(?:ask me|you can ask)\b[^.!?]{0,70}\b(?:clarif|explain|unpack)\b/iu.test(source)) {
+  if (
+    /\b(?:ask me|you can ask)\b[^.!?]{0,70}\b(?:clarif|explain|unpack)\b|\b(?:word|link|connection)\b[^.!?]{0,55}\b(?:needs? opening|ask me|ask (?:it|that) plainly)\b|\bneeds? opening\b[^.!?]{0,45}\bask me plainly\b/iu.test(
+      source,
+    )
+  ) {
     return { changed: false, text: source };
   }
   return {

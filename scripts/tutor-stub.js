@@ -11362,9 +11362,21 @@ async function callTutor({
     }
     const fallbackAttempt = attempts.length;
     const priorAttempt = attempts.at(-1);
+    const fallbackDraftAudits = auditTutorDraft(fallback, {
+      role: `${roleBase}_fallback`,
+      attempt: fallbackAttempt,
+    });
     const fallbackAudits = withTutorDeliveryDecision(
-      auditTutorDraft(fallback, { role: `${roleBase}_fallback`, attempt: fallbackAttempt }),
-      { role: `${roleBase}_fallback`, attempt: fallbackAttempt },
+      fallbackDraftAudits,
+      {
+        allowActorialAdvisory: tutorStubActorialPerformanceMayBeAdvisory(
+          fallbackDraftAudits.actorialRealizationAudit,
+        ),
+        advisoryReason:
+          'the mechanically public-safe fallback performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
+        role: `${roleBase}_fallback`,
+        attempt: fallbackAttempt,
+      },
     );
     attachTutorDraftAudits(fallback, fallbackAudits);
     const fallbackRepairSpans = exactTutorRepairSpans(priorAttempt.candidate.text, fallbackText);

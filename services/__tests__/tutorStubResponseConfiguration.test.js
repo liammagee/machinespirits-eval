@@ -531,6 +531,83 @@ test('unresolved terms select a gloss action, novice audience, plain lexicon, an
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Unresolved terms: cupel/u);
 });
 
+test('a completed public proof outranks accelerated release and requests the final sayback', () => {
+  const dag = learnerDag({ bottleneck: 'assertion_gap', coverage: 1 });
+  dag.model.assessment.finalSecretEntailed = true;
+  const selected = selectTutorStubActionFamily({
+    classification: classification({ requestType: 'stepwise_support_request' }),
+    tutorLearnerDag: dag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: { direction: 'accelerate', dueNow: [{ premise: 'p_late' }] },
+  });
+
+  assert.equal(selected.actionFamily, 'compress_sayback');
+  assert.match(selected.reason, /proof is complete/iu);
+});
+
+test('surface audit recognizes natural precision and declarative evidence re-anchors', () => {
+  const precise = auditTutorStubResponseConfiguration({
+    text: 'The mark identifies the tool, but not the hand that held it.',
+    configuration: {
+      engagement_stance: 'precise',
+      action_family: 'clarify_distinction',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'grounded',
+      actorial_part: 'skeptic',
+      actorial_part_label: 'skeptical examiner',
+      actorial_performance: { id: 'evidentiary_boundary' },
+    },
+    world: { setting: 'The tool mark is in the public record.' },
+  });
+  assert.equal(precise.axes.engagement_stance.visible, true);
+
+  for (const text of [
+    'I lay the ledger open. The record stands, but the verdict remains unproved.',
+    'I hold the chart beside the report: it identifies the bearing only, so leave the conclusion open.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text,
+      configuration: {
+        engagement_stance: 'precise',
+        action_family: 'reanchor_public_evidence',
+        audience_register: 'domain_apprentice',
+        lexical_accessibility: 'standard',
+        scene_immersion: 'immersive',
+        actorial_part: 'record_keeper',
+        actorial_part_label: 'keeper of the public record',
+        actorial_performance: { id: 'evidentiary_boundary' },
+      },
+      world: { setting: 'The ledger, chart, and public report lie open.' },
+    });
+    assert.equal(audit.axes.action_family.visible, true, text);
+  }
+});
+
+test('surface audit recognizes public judgment outrunning the stones or meeting a challenge', () => {
+  const configuration = {
+    engagement_stance: 'charismatic',
+    action_family: 'clarify_distinction',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure' },
+  };
+  for (const text of [
+    'The town’s easy verdict still outruns the stones. What does the bond actually prove?',
+    'That makes Reyner the builder in the town’s eyes, but does it yet show he struck the centering away?',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text,
+      configuration,
+      world: { setting: 'The bond and the fallen stones lie before the town.' },
+    });
+    assert.equal(audit.axes.actorial_part.performance_visible, true, text);
+  }
+});
+
 test('active accumulated-fact dropout independently selects a public-evidence re-anchor', () => {
   const dag = learnerDag({ bottleneck: 'learner_integration_gap', coverage: 0.2 });
   dag.model.memoryReliability = {

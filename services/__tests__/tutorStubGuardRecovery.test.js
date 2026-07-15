@@ -63,6 +63,19 @@ test('clarification repair applies only when that affordance is the sole hard fa
   assert.equal(unsafe.changed, false);
 });
 
+test('clarification repair does not duplicate an ordinary-language invitation', () => {
+  const source = 'If any word or link needs opening, ask me plainly.';
+  const repaired = repairTutorStubMissingClarificationInvitation({
+    text: source,
+    deliveryDecision: {
+      hardIssues: [{ guard: 'question_support', type: 'missing_clarification_invitation' }],
+    },
+  });
+
+  assert.equal(repaired.changed, false);
+  assert.equal(repaired.text, source);
+});
+
 test('third-person authored-source casting is repaired without changing the quoted evidence', () => {
   const source =
     'The town assayer presses a hand to the seal: “I say Verrell alone draws the crucible.” What does that establish?';

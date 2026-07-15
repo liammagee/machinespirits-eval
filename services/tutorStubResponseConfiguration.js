@@ -79,6 +79,9 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   } else if (assessment.finalSecretEntailed === true && assessment.assertedSecret === true) {
     actionFamily = 'close_inquiry';
     reason = 'The public proof and learner assertion are complete, so the next action is closure.';
+  } else if (assessment.finalSecretEntailed === true) {
+    actionFamily = 'compress_sayback';
+    reason = 'The public proof is complete; invite the one compact assertion still needed for closure.';
   } else if (Number(memoryReliability.activeDroppedCount || 0) > 0) {
     actionFamily = 'reanchor_public_evidence';
     reason =
@@ -727,7 +730,7 @@ function stanceVisible(stance, text, metrics) {
   }
   if (stance === 'plain') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
   if (stance === 'precise')
-    return /\b(?:if|because|means|rather than|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|does not|doesn[’']t|only|limit|until|unproved)\b/iu.test(text);
+    return /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|does not|doesn[’']t|only|limit|until|unproved)\b/iu.test(text);
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm')
     return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together|both (?:read|test))\b/iu.test(text);
@@ -774,7 +777,11 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;
   if (actionFamily === 'reanchor_public_evidence') {
-    return metrics.concreteSceneTermCount > 0 && metrics.questionCount > 0;
+    const visibleBoundary =
+      /\b(?:record stands|not yet|does not|doesn[’']t|only|remains? (?:open|unentered|unproved)|still (?:need|open|unproved)|hold (?:there|that)|leave (?:the )?(?:claim|conclusion|verdict) open)\b/iu.test(
+        text,
+      );
+    return metrics.concreteSceneTermCount > 0 && (metrics.questionCount > 0 || visibleBoundary);
   }
   if (actionFamily === 'ground_in_material') return metrics.concreteSceneTermCount > 0;
   if (actionFamily === 'challenge_resistance')
@@ -1102,7 +1109,11 @@ function actorialPerformanceVisible(configuration, text, metrics) {
         text,
       );
     const publicJudgmentOutrunsEvidence =
-      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?|town(?:[’']s)?)\b[^.!?]{0,40}\b(?:accusation|answer|case|charge|claim|story|verdict)\b[^.!?]{0,35}\b(?:has\s+)?outrun\b[^.!?]{0,35}\b(?:evidence|marks?|metal|record|result|swab|touchstone)\b/iu.test(
+      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?|town(?:[’']s)?)\b[^.!?]{0,40}\b(?:accusation|answer|case|charge|claim|story|verdict)\b[^.!?]{0,35}\b(?:has\s+)?outruns?\b[^.!?]{0,35}\b(?:evidence|marks?|metal|record|result|stones?|swab|touchstone)\b/iu.test(
+        text,
+      );
+    const publicEyesMeetEvidentiaryChallenge =
+      /\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\s+eyes\b[^.!?]{0,65}\bbut\b[^.!?]{0,45}\b(?:does|do|is|are)\b[^.!?]{0,20}\b(?:establish|name|prove|show|tie)\w*\b/iu.test(
         text,
       );
     return (
@@ -1120,7 +1131,8 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       setsReadyStoryAsideForEvidence ||
       explicitlyRefusesReadyVerdict ||
       materialEvidenceOutweighsReadyStory ||
-      publicJudgmentOutrunsEvidence
+      publicJudgmentOutrunsEvidence ||
+      publicEyesMeetEvidentiaryChallenge
     );
   }
   if (tactic === 'exposed_mismatch') return /\b(?:apparently|as if|not exactly|small irony|conveniently)\b/iu.test(text);

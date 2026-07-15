@@ -9,6 +9,7 @@ import {
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
   analyzeTutorStubPublicLearnerTurn,
+  applyTutorStubPublicLearnerRecordUpdate,
   buildTutorStubLearnerDagPreflight,
   buildTutorStubPublicLearnerAnalysisOutputSchema,
   buildTutorStubPublicLearnerAnalysisPrompt,
@@ -679,6 +680,36 @@ describe('strict public learner analysis', () => {
 });
 
 describe('public evidence boundary and exact DAG postprocessor', () => {
+  it('maps a sentence-form answer onto the uniquely entailed public answer fact', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-024-emberwick-forum.yaml'));
+    const record = createTutorStubPublicLearnerRecord(world);
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: 'The evidence establishes that bramblewasp ran the sock-puppet brigade.',
+      },
+      world,
+      record,
+      tutorTurn: 9,
+      learnerText: 'The evidence establishes that bramblewasp ran the sock-puppet brigade.',
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.deepEqual(result.model.assessment.finalSecretEntailed, true);
+    assert.deepEqual(result.model.assessment.assertedSecret, true);
+    assert.equal(result.model.assessment.unsupportedAssertionCount, 0);
+    assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+  });
+
   it('computes a public constraint preflight before analysis without committing progress', async () => {
     const world = smokeWorld();
     const record = createTutorStubPublicLearnerRecord(world);

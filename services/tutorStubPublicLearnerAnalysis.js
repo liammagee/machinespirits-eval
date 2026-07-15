@@ -920,7 +920,29 @@ export function tutorStubPublicFactSurface(world, fact) {
   return factText(fact);
 }
 
-function factFromQuestionAnswer(world, answer) {
+function normalizedAnswerSurface(value) {
+  return String(value || '')
+    .replace(/([a-z\d])([A-Z])/gu, '$1 $2')
+    .replace(/[_:-]+/gu, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function factFromQuestionAnswer(world, answer, candidateFacts = []) {
+  const answerSurface = normalizedAnswerSurface(answer);
+  const matchingCandidates = (candidateFacts || []).filter((fact) => {
+    const bindings = matchPattern(world?.questionPattern, fact);
+    if (!bindings) return false;
+    const values = Object.values(bindings).map(normalizedAnswerSurface).filter(Boolean);
+    return (
+      values.length > 0 &&
+      values.every((value) => ` ${answerSurface} `.includes(` ${value} `))
+    );
+  });
+  if (matchingCandidates.length === 1) return [...matchingCandidates[0]];
+
   const cleaned = String(answer || '')
     .trim()
     .replace(/\s+/g, '_')
@@ -2307,7 +2329,10 @@ export function applyTutorStubPublicLearnerRecordUpdate({
   }
   let assertion = null;
   if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
-    assertion = factFromQuestionAnswer(world, update.assert_answer);
+    const answerCandidates = [...closure([...record.board.values()], world.rules).facts.values()].filter((fact) =>
+      matchPattern(world.questionPattern, fact),
+    );
+    assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
     accepted.assertAnswer = update.assert_answer.trim();
   } else if (validFactArray(update?.asserts)) {
     assertion = update.asserts;
