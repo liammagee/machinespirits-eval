@@ -58,6 +58,17 @@ Key choices and defaults:
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-sol`; automated learner `codex.gpt-5.6-terra`. This intentionally places the stronger model at learner interpretation rather than public response realization.
+- Browser voice companion: use `/voice` in an interactive session, or launch
+  with `--voice`. The default renderer is `gpt-realtime-2.1-mini` with the
+  `marin` voice; switch with `/voice model gpt-realtime-2.1` or
+  `/voice speaker <name>`. This is a fifth, independent model role and is never
+  changed by `--all-models`: OpenAI Realtime transcribes microphone speech and
+  voices only the accepted tutor text, while the existing learner analysis,
+  DAG, register, response checks, trace, and compound-turn restart path remain
+  authoritative. The standard `OPENAI_API_KEY` stays in the local server;
+  automatic Realtime replies are disabled. Use `/voice status` and `/voice off`
+  to inspect or stop it. For a credential/schema smoke without a browser, run
+  `node scripts/smoke-tutor-stub-realtime.js`.
 - Named tutor partition: the default speaking tutor is the versioned
   `dramatic-detective` instance from `config/tutor-instances.yaml`. Its role
   prompt, policy pack, model defaults, active version, and prompt hash are
@@ -79,7 +90,8 @@ Key choices and defaults:
   public prefix, model settings, prompt hash, rated turn, and candidate overlay.
 - Human interactive sessions remember the selected scenario and learner
   profile (including a custom profile), named tutor instance, tuning mode,
-  plus the last speaking-tutor model,
+  plus the last speaking-tutor model, Realtime voice model and voice name,
+  terminal theme and motion preference,
   engagement-stance temperature, DAG-fact dropout rate, clue release speed,
   register primary and overlays, and overlay threshold in
   `.tutor-stub-traces/last-settings.json`.
@@ -543,6 +555,17 @@ Useful variants:
   forms remain available for fast or scripted changes. Interactive
   editing and direct changes are rejected while a tutor turn is in progress so
   each turn has one deterministic setting.
+- The TTY presentation layer uses semantic colors for tutor, learner, coach,
+  success, warning, and failure states. `/theme` previews `nocturne`, `ember`,
+  `parchment`, `high_contrast`, and `mono`; `/theme <name>`, `--theme <name>`,
+  and `/settings theme <name>` switch it. `/motion` previews `auto`, `full`,
+  `subtle`, and `off`; the corresponding command-line and settings forms also
+  work. The keyboard settings panel includes live theme and motion previews;
+  Escape restores the active appearance and Done persists it. `NO_COLOR`,
+  `--no-color`, `TERM=dumb`, non-TTY output, CI, `REDUCE_MOTION`, and
+  `NO_MOTION` degrade cleanly. Presentation changes are traced and included in
+  transcript settings but never enter the public dialogue. See
+  `docs/tutor-stub-cli.md`.
 - When `/settings` or another detour command finishes, the CLI prints the latest
   tutor utterance again as `tutor ↻ >` immediately before restoring the
   learner/coach prompt. This applies to help, status, debug, analysis, field,
@@ -571,11 +594,13 @@ Useful variants:
 - Interim waiting lines rotate labeled plain-language views such as Tutor
   focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
   Clue progress. `view n/N` is a carousel position, not a score; restrained
-  color distinguishes phase, view number, and panel category.
+  color distinguishes phase, view number, and panel category. Motion remains
+  confined to the single progress glyph: full is fluid, subtle is a slow pulse,
+  and off is still.
 - Type `/` during a run to open the live slash-command palette above the
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
-  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/field`, `/viz`,
+  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/theme`, `/motion`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - Consecutive public learner lines entered before the tutor reply appears form

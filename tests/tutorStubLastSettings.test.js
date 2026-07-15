@@ -23,6 +23,10 @@ function sampleSettings(overrides = {}) {
     learnerRecordModelRef: 'codex.gpt-5.6-sol',
     autoLearnerModelRef: 'codex.gpt-5.6-terra',
     allModelsOverrideRef: null,
+    voiceModel: 'gpt-realtime-2.1',
+    voiceName: 'cedar',
+    cliTheme: 'ember',
+    motion: 'full',
     engagementStanceTemperature: 0.4,
     dagFactDropoutRate: 0.15,
     releaseSpeed: 1.4,
@@ -102,6 +106,10 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.releasePacing.baseSpeed, 1.4);
     assert.equal(restored.registerSelection.policy, 'continuous_dynamical_system+state');
     assert.equal(restored.registerSelection.overlayThreshold, 0.8);
+    assert.equal(restored.voice.model, 'gpt-realtime-2.1');
+    assert.equal(restored.voice.voice, 'cedar');
+    assert.equal(restored.presentation.theme, 'ember');
+    assert.equal(restored.presentation.motion, 'full');
     assert.equal(restored.rememberedSettings.status, 'loaded');
     assert.deepEqual(restored.rememberedSettings.appliedFields, [
       'scenario',
@@ -110,6 +118,10 @@ test('interactive defaults restore the last settings while explicit launch flags
       'learner_interpretation_model',
       'learner_reasoning_model',
       'learner_voice_model',
+      'realtime_voice_model',
+      'realtime_voice_name',
+      'terminal_theme',
+      'terminal_motion',
       'engagement_stance_temperature',
       'dag_fact_dropout',
       'clue_release_speed',
@@ -140,6 +152,14 @@ test('interactive defaults restore the last settings while explicit launch flags
       'field',
       '--register-overlay-threshold',
       '0.9',
+      '--voice-model',
+      'gpt-realtime-2.1-mini',
+      '--voice-name',
+      'marin',
+      '--theme',
+      'parchment',
+      '--motion',
+      'off',
     ]);
     assert.equal(explicit.modelRef, 'codex.gpt-5.6-terra');
     assert.equal(explicit.world.id, 'world_005_marrick');
@@ -148,6 +168,10 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(explicit.releasePacing.baseSpeed, 1.2);
     assert.equal(explicit.registerSelection.policy, 'field');
     assert.equal(explicit.registerSelection.overlayThreshold, 0.9);
+    assert.equal(explicit.voice.model, 'gpt-realtime-2.1-mini');
+    assert.equal(explicit.voice.voice, 'marin');
+    assert.equal(explicit.presentation.theme, 'parchment');
+    assert.equal(explicit.presentation.motion, 'off');
     assert.deepEqual(explicit.rememberedSettings.appliedFields, [
       'learner_interpretation_model',
       'learner_reasoning_model',
@@ -155,6 +179,10 @@ test('interactive defaults restore the last settings while explicit launch flags
     ]);
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('scenario'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('learner_profile'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('realtime_voice_model'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('realtime_voice_name'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_theme'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_motion'));
 
     const allModels = tutorStubDryRun(filePath, ['--mixed-learner', '--all-models', 'codex.gpt-5.6-terra']);
     assert.equal(allModels.modelRef, 'codex.gpt-5.6-terra');
@@ -238,7 +266,7 @@ test('live settings changes are written for the next interactive session', () =>
         cwd: ROOT,
         encoding: 'utf8',
         input:
-          '/settings model codex.gpt-5.6-luna\n/settings temp 0.55\n/settings dropout 0.2\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
+          '/settings model codex.gpt-5.6-luna\n/voice model gpt-realtime-2.1\n/voice speaker cedar\n/theme ember\n/motion full\n/settings temp 0.55\n/settings dropout 0.2\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
         env: {
           ...process.env,
           TUTOR_STUB_REMEMBER_SETTINGS: '1',
@@ -256,6 +284,10 @@ test('live settings changes are written for the next interactive session', () =>
         learnerRecordModelRef: loaded.settings.learnerRecordModelRef,
         autoLearnerModelRef: loaded.settings.autoLearnerModelRef,
         allModelsOverrideRef: loaded.settings.allModelsOverrideRef,
+        voiceModel: loaded.settings.voiceModel,
+        voiceName: loaded.settings.voiceName,
+        cliTheme: loaded.settings.cliTheme,
+        motion: loaded.settings.motion,
         engagementStanceTemperature: loaded.settings.engagementStanceTemperature,
         dagFactDropoutRate: loaded.settings.dagFactDropoutRate,
         releaseSpeed: loaded.settings.releaseSpeed,

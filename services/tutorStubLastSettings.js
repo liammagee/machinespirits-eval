@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { normalizeTutorStubCliMotion, normalizeTutorStubCliThemeId } from './tutorStubCliTheme.js';
 
 export const TUTOR_STUB_LAST_SETTINGS_SCHEMA = 'machinespirits.tutor-stub.last-settings.v1';
 
@@ -66,6 +67,10 @@ export function normalizeTutorStubLastSettings(value) {
     learnerRecordModelRef: optionalNonEmptyString(value.learnerRecordModelRef, 'learner reasoning model ref'),
     autoLearnerModelRef: optionalNonEmptyString(value.autoLearnerModelRef, 'learner voice model ref'),
     allModelsOverrideRef: optionalNonEmptyString(value.allModelsOverrideRef, 'all-models override ref'),
+    voiceModel: optionalNonEmptyString(value.voiceModel, 'Realtime voice model'),
+    voiceName: optionalNonEmptyString(value.voiceName, 'Realtime voice name'),
+    cliTheme: normalizeTutorStubCliThemeId(value.cliTheme ?? 'nocturne', { strict: true }),
+    motion: normalizeTutorStubCliMotion(value.motion ?? 'auto', { strict: true }),
     engagementStanceTemperature: boundedNumber(value.engagementStanceTemperature, {
       label: 'teaching-style range',
       min: 0.05,

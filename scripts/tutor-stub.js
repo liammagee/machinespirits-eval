@@ -220,6 +220,14 @@ import {
 import { createTutorStubConcurrentTerminal } from '../services/tutorStubConcurrentTerminal.js';
 import { createTutorStubLineSelection } from '../services/tutorStubLineSelection.js';
 import {
+  DEFAULT_TUTOR_STUB_VOICE_MODEL,
+  DEFAULT_TUTOR_STUB_VOICE_NAME,
+  TUTOR_STUB_VOICE_MODELS,
+  createTutorStubVoiceBridge,
+  normalizeTutorStubVoiceModel,
+  normalizeTutorStubVoiceName,
+} from '../services/tutorStubVoiceBridge.js';
+import {
   copyTutorStubTextToClipboard,
   formatTutorStubDebugClipboardText,
 } from '../services/tutorStubClipboard.js';
@@ -263,6 +271,19 @@ import {
   tutorStubRememberedPolicyStack,
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
+import {
+  TUTOR_STUB_CLI_MOTION_IDS,
+  TUTOR_STUB_CLI_THEME_IDS,
+  createTutorStubCliPresentation,
+  normalizeTutorStubCliMotion,
+  normalizeTutorStubCliThemeId,
+  tutorStubCliMasthead,
+  tutorStubCliMotionInterval,
+  tutorStubCliPresentationSnapshot,
+  tutorStubCliSpinnerFrames,
+  tutorStubCliThemeOptions,
+  tutorStubCliThemePreview,
+} from '../services/tutorStubCliTheme.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -384,6 +405,8 @@ const STUB = {
   memorySummary: process.env.TUTOR_STUB_MEMORY_SUMMARY !== '0',
   traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
   settingsFile: process.env.TUTOR_STUB_SETTINGS_FILE || '.tutor-stub-traces/last-settings.json',
+  cliTheme: process.env.TUTOR_STUB_CLI_THEME || 'nocturne',
+  motion: process.env.TUTOR_STUB_MOTION || 'auto',
   stream: process.env.TUTOR_STUB_STREAM !== '0',
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || 'medium',
@@ -417,24 +440,29 @@ const STUB = {
   autoLearnerProfile: process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE || 'diligent',
   mixedLearner: process.env.TUTOR_STUB_MIXED_LEARNER === '1',
   turnFeedback: process.env.TUTOR_STUB_TURN_FEEDBACK !== '0',
+  voiceModel: process.env.TUTOR_STUB_VOICE_MODEL || DEFAULT_TUTOR_STUB_VOICE_MODEL,
+  voiceName: process.env.TUTOR_STUB_VOICE_NAME || DEFAULT_TUTOR_STUB_VOICE_NAME,
 };
 
-const C = {
-  reset: '\x1b[0m',
-  dim: '\x1b[2m',
-  bold: '\x1b[1m',
-  blue: '\x1b[34m',
-  red: '\x1b[31m',
-  cyan: '\x1b[36m',
-  magenta: '\x1b[35m',
-  yellow: '\x1b[33m',
-  green: '\x1b[32m',
-  brightBlue: '\x1b[94m',
-  brightCyan: '\x1b[96m',
-  brightMagenta: '\x1b[95m',
-  brightYellow: '\x1b[93m',
-  brightGreen: '\x1b[92m',
-};
+let cliPresentation = createTutorStubCliPresentation({
+  theme: STUB.cliTheme,
+  motion: STUB.motion,
+  output,
+  env: process.env,
+});
+const C = { ...cliPresentation.colors };
+
+function configureCliPresentation({ theme, motion, noColor = false } = {}) {
+  cliPresentation = createTutorStubCliPresentation({
+    theme: theme ?? cliPresentation.themeId,
+    motion: motion ?? cliPresentation.requestedMotion,
+    output,
+    env: process.env,
+    noColor,
+  });
+  Object.assign(C, cliPresentation.colors);
+  return cliPresentation;
+}
 
 const REGISTER_TEMPERATURE_POLICIES = new Set([
   'state',
@@ -451,6 +479,8 @@ const MAX_INTERACTIVE_DEMO_TURNS = 8;
 
 const SLASH_COMMANDS = [
   '/demo',
+  '/theme',
+  '/motion',
   '/analysis',
   '/a',
   '/field',
@@ -465,6 +495,7 @@ const SLASH_COMMANDS = [
   '/r',
   '/transcript',
   '/html',
+  '/voice',
   '/director',
   '/notes',
   '/up',
@@ -497,10 +528,13 @@ const SLASH_COMMANDS = [
 ];
 
 const PASSTHROUGH_SLASH_COMMANDS = [
+  '/theme',
+  '/motion',
   '/settings',
   '/status',
   '/transcript',
   '/html',
+  '/voice',
   '/director',
   '/notes',
   '/scenario',
@@ -516,11 +550,14 @@ const PASSTHROUGH_SLASH_COMMANDS = [
 
 const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/help',
+  '/theme',
+  '/motion',
   '/status',
   '/debug',
   '/settings',
   '/transcript',
   '/html',
+  '/voice',
   '/director',
   '/notes',
   '/analysis',
@@ -543,6 +580,8 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
 ]);
 
 const SETTINGS_COMPLETIONS = [
+  ...TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/settings theme ${theme}`),
+  ...TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/settings motion ${motion}`),
   '/settings model ',
   '/settings models',
   '/settings models all ',
@@ -560,6 +599,15 @@ const SETTINGS_COMPLETIONS = [
   '/settings policy remove field',
   '/settings policy clear',
   '/settings policy threshold ',
+];
+
+const VOICE_COMPLETIONS = [
+  '/voice on',
+  '/voice open',
+  '/voice status',
+  '/voice off',
+  ...TUTOR_STUB_VOICE_MODELS.map((model) => `/voice model ${model}`),
+  '/voice speaker marin',
 ];
 
 const CUSTOM_LEARNER_PROFILE_EXAMPLE =
@@ -666,6 +714,9 @@ const { values: args, positionals } = parseArgs({
     'prompt-book-context': { type: 'string' },
     'trace-dir': { type: 'string', default: STUB.traceDir },
     'settings-file': { type: 'string', default: STUB.settingsFile },
+    theme: { type: 'string', default: STUB.cliTheme },
+    motion: { type: 'string', default: STUB.motion },
+    'no-color': { type: 'boolean', default: false },
     'no-remember-settings': {
       type: 'boolean',
       default: process.env.TUTOR_STUB_REMEMBER_SETTINGS === '0',
@@ -681,6 +732,9 @@ const { values: args, positionals } = parseArgs({
     'opening-realizer': { type: 'string', default: STUB.openingRealizer },
     'no-closeout-report': { type: 'boolean', default: false },
     'no-turn-feedback': { type: 'boolean', default: false },
+    voice: { type: 'boolean', default: false },
+    'voice-model': { type: 'string', default: STUB.voiceModel },
+    'voice-name': { type: 'string', default: STUB.voiceName },
     'cli-effort': { type: 'string', default: STUB.cliEffort },
     temperature: { type: 'string', default: String(STUB.temperature) },
     'max-tokens': { type: 'string', default: String(STUB.maxTokens) },
@@ -689,6 +743,12 @@ const { values: args, positionals } = parseArgs({
     'dry-run': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
+});
+
+configureCliPresentation({
+  theme: args.theme,
+  motion: args.motion,
+  noColor: args['no-color'],
 });
 
 function printHelp() {
@@ -839,6 +899,12 @@ Options:
                          (default: ${STUB.traceDir})
   --settings-file <path> local remembered interactive settings
                          (default: ${STUB.settingsFile})
+  --theme <name>         terminal theme: ${TUTOR_STUB_CLI_THEME_IDS.join(', ')}
+                         (default: ${STUB.cliTheme}; env TUTOR_STUB_CLI_THEME)
+  --motion <level>       terminal motion: ${TUTOR_STUB_CLI_MOTION_IDS.join(', ')}
+                         auto respects TTY, CI, and reduced-motion signals
+                         (default: ${STUB.motion}; env TUTOR_STUB_MOTION)
+  --no-color             disable terminal color; NO_COLOR is also respected
   --no-remember-settings
                          ignore and do not update the last interactive settings
   --no-trace             disable automatic local tracing
@@ -858,6 +924,11 @@ Options:
   --no-closeout-report   do not print the compact dialogue closeout on exit
   --no-turn-feedback     do not ask for optional thumbs feedback after tutor
                          messages (on by default in human learner mode)
+  --voice                launch the local browser voice companion after the
+                         opening (also available at any time with /voice)
+  --voice-model <model>  OpenAI Realtime renderer, separate from the four
+                         text-model roles (default: ${STUB.voiceModel})
+  --voice-name <voice>   Realtime speaking voice (default: ${STUB.voiceName})
   --cli-effort <level>   effort for codex/claude-code CLI calls:
                          low, medium, high, xhigh, max, or config
                          (default: ${STUB.cliEffort})
@@ -871,6 +942,8 @@ Options:
 
 Interactive commands:
   /demo [turns]          run a guided live harness tour (default: ${DEFAULT_INTERACTIVE_DEMO_TURNS} turns)
+  /theme [name]          inspect or switch the live terminal theme
+  /motion [level]        inspect or switch full, subtle, or off motion
   /analysis              explain the learner reading and teaching approach plainly
   /analysis technical    show the full classifier, reasoning-map, field, and trace evidence
   /a                     alias for /analysis
@@ -898,6 +971,10 @@ Interactive commands:
                          test and explicitly promote or revert a tutor version
   /scenario              choose another scenario and start it as a new inquiry
   /scenario <id>         start a named scenario directly
+  /voice                 start or reopen the browser microphone companion
+  /voice status|off      inspect or stop the local voice bridge
+  /voice model <model>   choose ${TUTOR_STUB_VOICE_MODELS.join(' or ')}
+  /voice speaker <name>  choose the speaking voice for the next voice session
   /settings              open the live keyboard settings panel (TTY)
   /settings model        choose a configured tutor model (TTY) or list models
   /settings model <ref>  change the speaking tutor model for subsequent turns
@@ -945,7 +1022,7 @@ Prompt editing:
   Type or press Backspace/Delete to replace/remove selected text
 
 Environment:
-  OPENAI_API_KEY         required for openai.*
+  OPENAI_API_KEY         required for openai.* and the /voice Realtime bridge
   OPENROUTER_API_KEY     required for openrouter.*
   TUTOR_STUB_ALL_MODELS  optional one-model override for all four model roles
   TUTOR_STUB_MODEL       optional default model override
@@ -1167,6 +1244,10 @@ function rememberedSettingExplicitSources() {
       Boolean(process.env.TUTOR_STUB_LEARNER_RECORD_MODEL),
     autoLearnerModelRef:
       allModels || commandLineOptionProvided('auto-learner-model') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_MODEL),
+    voiceModel: commandLineOptionProvided('voice-model') || Boolean(process.env.TUTOR_STUB_VOICE_MODEL),
+    voiceName: commandLineOptionProvided('voice-name') || Boolean(process.env.TUTOR_STUB_VOICE_NAME),
+    cliTheme: commandLineOptionProvided('theme') || Boolean(process.env.TUTOR_STUB_CLI_THEME),
+    motion: commandLineOptionProvided('motion') || Boolean(process.env.TUTOR_STUB_MOTION),
     engagementStanceTemperature:
       commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
     dagFactDropoutRate:
@@ -1304,6 +1385,46 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
     if (refs.every((ref) => ref === saved.allModelsOverrideRef)) {
       config.restoredAllModelsOverrideRef = saved.allModelsOverrideRef;
     }
+  }
+
+  if (explicit.voiceModel) {
+    config.skippedExplicitFields.push('realtime_voice_model');
+  } else if (saved.voiceModel) {
+    try {
+      args['voice-model'] = normalizeTutorStubVoiceModel(saved.voiceModel);
+      config.appliedFields.push('realtime_voice_model');
+    } catch (error) {
+      config.warning = [config.warning, `saved Realtime voice model ignored: ${error.message}`]
+        .filter(Boolean)
+        .join('; ');
+    }
+  }
+
+  if (explicit.voiceName) {
+    config.skippedExplicitFields.push('realtime_voice_name');
+  } else if (saved.voiceName) {
+    try {
+      args['voice-name'] = normalizeTutorStubVoiceName(saved.voiceName);
+      config.appliedFields.push('realtime_voice_name');
+    } catch (error) {
+      config.warning = [config.warning, `saved Realtime voice name ignored: ${error.message}`]
+        .filter(Boolean)
+        .join('; ');
+    }
+  }
+
+  if (explicit.cliTheme) {
+    config.skippedExplicitFields.push('terminal_theme');
+  } else {
+    args.theme = saved.cliTheme;
+    config.appliedFields.push('terminal_theme');
+  }
+
+  if (explicit.motion) {
+    config.skippedExplicitFields.push('terminal_motion');
+  } else {
+    args.motion = saved.motion;
+    config.appliedFields.push('terminal_motion');
   }
 
   if (explicit.engagementStanceTemperature) {
@@ -3503,8 +3624,6 @@ function applyLearnerAdvanceAssessment(classification, tutorLearnerDag) {
   return classification;
 }
 
-const INTERIM_FRAMES = ['|', '/', '-', '\\'];
-
 function clearStatusLine() {
   process.stdout.write('\r\x1b[2K');
 }
@@ -3530,7 +3649,7 @@ function getInterimState(holder) {
 }
 
 function interimAnimationAvailable(interim) {
-  return Boolean(interim?.enabled && output.isTTY);
+  return Boolean(interim?.enabled && output.isTTY && cliPresentation.motion !== 'off');
 }
 
 function formatSignedInterimNumber(value, { decimals = 2 } = {}) {
@@ -3941,7 +4060,8 @@ function interimToneColor(tone) {
 
 function renderInterimStatus(active) {
   active.tick += 1;
-  const frame = INTERIM_FRAMES[active.tick % INTERIM_FRAMES.length];
+  const frames = tutorStubCliSpinnerFrames(cliPresentation);
+  const frame = frames[active.tick % frames.length];
   const elapsed = ((Date.now() - active.startedAt) / 1000).toFixed(1).padStart(4);
   const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
   const panels = compactInterimPanels(active);
@@ -3951,7 +4071,7 @@ function renderInterimStatus(active) {
   const prefix = `${frame} ${phase} · ${elapsed}s · view ${panelIndex + 1}/${panels.length} | ${panel.label}: `;
   const panelText = oneLine(panel.text, { max: Math.max(12, width - prefix.length) });
   return [
-    C.cyan,
+    C.accent2,
     frame,
     ' ',
     C.bold,
@@ -4003,7 +4123,7 @@ function startInterimAnimation(state, phase, context = null) {
   };
   interim.active = active;
   active.render();
-  active.interval = setInterval(active.render, 350);
+  active.interval = setInterval(active.render, tutorStubCliMotionInterval(cliPresentation));
   active.interval.unref?.();
   return active;
 }
@@ -4068,7 +4188,7 @@ function resumeInterimAnimation(holder) {
   if (!active || !active.paused || !interimAnimationAvailable(interim)) return false;
   active.paused = false;
   active.render();
-  active.interval = setInterval(active.render, 350);
+  active.interval = setInterval(active.render, tutorStubCliMotionInterval(cliPresentation));
   active.interval.unref?.();
   return true;
 }
@@ -7582,7 +7702,8 @@ function printInteractiveHelp(state = null) {
     console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
     console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
     console.log(`${C.cyan}  model${C.reset}      /settings model [provider.alias]`);
-    console.log(`${C.cyan}  inspect${C.reset}    /status · /transcript [no-open] · /director · /id`);
+    console.log(`${C.cyan}  inspect${C.reset}    /status · /transcript [no-open] · /voice · /director · /id`);
+    console.log(`${C.cyan}  appearance${C.reset} /theme · /motion`);
     console.log(`${C.cyan}  setup${C.reset}      /scenario · /reset`);
     console.log(`${C.cyan}  finish${C.reset}     /quit`);
     console.log(
@@ -7599,10 +7720,10 @@ function printInteractiveHelp(state = null) {
     `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
   );
   console.log(
-    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /id`,
+    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /voice · /id`,
   );
   console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
-  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune`);
+  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
   console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
   console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
   console.log(
@@ -7622,6 +7743,9 @@ function printInteractiveHelp(state = null) {
   );
   console.log(
     `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
   );
   console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
 }
@@ -12911,6 +13035,14 @@ async function main() {
     return;
   }
 
+  args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
+  args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
+  configureCliPresentation({
+    theme: args.theme,
+    motion: args.motion,
+    noColor: args['no-color'],
+  });
+
   const passthroughEnabled = Boolean(args.passthrough);
   if (passthroughEnabled) {
     args.dag = false;
@@ -12971,6 +13103,13 @@ async function main() {
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
+  args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
+  configureCliPresentation({
+    theme: args.theme,
+    motion: args.motion,
+    noColor: args['no-color'],
+  });
   tutorInstance = resolveTutorStubTutorInstance(args.tutor);
   tuningMode = normalizeTutorStubTuningMode(args.tuning);
   if (!allModelsOverrideRef && rememberedSettings.restoredAllModelsOverrideRef) {
@@ -12993,6 +13132,9 @@ async function main() {
   args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
 
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
+  const voiceModel = normalizeTutorStubVoiceModel(args['voice-model']);
+  const voiceName = normalizeTutorStubVoiceName(args['voice-name']);
+  const voiceLaunchRequested = Boolean(args.voice);
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
     label: '--register-temperature',
   });
@@ -13614,6 +13756,16 @@ async function main() {
           },
           tuning: tutorStubTuningSnapshot(tuning),
           allModelsOverride,
+          voice: {
+            schema: 'machinespirits.tutor-stub.voice-runtime.v1',
+            launchRequested: voiceLaunchRequested,
+            model: voiceModel,
+            voice: voiceName,
+            transcriptionModel: 'gpt-realtime-whisper',
+            apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY),
+            automaticRealtimeResponses: false,
+            authority: 'existing_cli_analysis_dag_register_guard_pipeline',
+          },
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
           topic: effectiveTopic,
@@ -13813,8 +13965,11 @@ async function main() {
           multipleChoice: { enabled: multipleChoiceEnabled },
           interimAnimation: {
             enabled: interimAnimationEnabled,
-            activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
+            activeInThisTerminal: Boolean(
+              interimAnimationEnabled && output.isTTY && cliPresentation.motion !== 'off',
+            ),
           },
+          presentation: tutorStubCliPresentationSnapshot(cliPresentation),
           fieldVisualization: {
             enabled: fieldVisualizationEnabled,
             dir: path.relative(ROOT, traceDir),
@@ -14042,8 +14197,11 @@ async function main() {
       multipleChoice: { enabled: multipleChoiceEnabled },
       interimAnimation: {
         enabled: interimAnimationEnabled,
-        activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
+        activeInThisTerminal: Boolean(
+          interimAnimationEnabled && output.isTTY && cliPresentation.motion !== 'off',
+        ),
       },
+      presentation: tutorStubCliPresentationSnapshot(cliPresentation),
       fieldVisualization: {
         enabled: fieldVisualizationEnabled,
         dir: path.relative(ROOT, traceDir),
@@ -14090,6 +14248,7 @@ async function main() {
       filePath: rememberedSettings.filePath,
       savedAt: rememberedSettings.savedAt,
     },
+    presentation: tutorStubCliPresentationSnapshot(cliPresentation),
     passthrough: passthroughConfig,
     requestedTemperature: temperature,
     temperature: effectiveTemperature,
@@ -14203,6 +14362,18 @@ async function main() {
       enabled: false,
       format: 'prose',
     },
+    voice: {
+      schema: 'machinespirits.tutor-stub.voice-runtime.v1',
+      enabled: false,
+      model: voiceModel,
+      voice: voiceName,
+      transcriptionModel: 'gpt-realtime-whisper',
+      bridge: null,
+      lastStartedAt: null,
+      lastStoppedAt: null,
+      deliveries: [],
+      interruptions: 0,
+    },
     coach: {
       pending: [],
       history: [],
@@ -14223,6 +14394,10 @@ async function main() {
       learnerRecordModelRef: state.learnerDag?.modelRef || args['learner-record-model'],
       autoLearnerModelRef: state.autoLearner?.modelRef || args['auto-learner-model'],
       allModelsOverrideRef: state.modelRouting?.allRolesOverrideRef || null,
+      voiceModel: state.voice?.model || voiceModel,
+      voiceName: state.voice?.voice || voiceName,
+      cliTheme: cliPresentation.themeId,
+      motion: cliPresentation.requestedMotion,
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -14318,8 +14493,21 @@ async function main() {
       traceDir: path.relative(ROOT, traceDir),
     });
   }
+  if (output.isTTY) {
+    console.log(
+      `\n${tutorStubCliMasthead(
+        {
+          eyebrow: 'MACHINE SPIRITS · LIVE INQUIRY',
+          title: worldBundle?.world?.title || 'Tutor studio',
+          subtitle: `${state.tuning.activeRef} · ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion`,
+          width: Math.min(output.columns || 68, 76),
+        },
+        cliPresentation,
+      )}`,
+    );
+  }
   console.log(
-    `\n${C.cyan}tutor-stub${C.reset} ${C.bold}${state.tuning.activeRef}${C.reset} ${C.dim}· ${args.model} -> ${visibleModel.provider}/${visibleModel.model} · tuning ${state.tuning.mode}${C.reset}`,
+    `${output.isTTY ? '' : '\n'}${C.accent2}tutor-stub${C.reset} ${C.bold}${state.tuning.activeRef}${C.reset} ${C.dim}· ${args.model} -> ${visibleModel.provider}/${visibleModel.model} · tuning ${state.tuning.mode}${C.reset}`,
   );
   if (passthroughEnabled) {
     console.log(`${C.brightCyan}${C.bold}passthrough >${C.reset} pure speaker chat · one model call per turn`);
@@ -14459,7 +14647,16 @@ async function main() {
     console.log(`${C.dim}live output: off${C.reset}`);
   }
   console.log(
-    `${C.dim}progress display: ${interimAnimationEnabled ? (output.isTTY ? 'on' : 'off outside an interactive terminal') : 'off'}${C.reset}`,
+    `${C.dim}terminal appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion · ${cliPresentation.colorMode}; /theme and /motion change it live${C.reset}`,
+  );
+  console.log(
+    `${C.dim}progress display: ${
+      interimAnimationEnabled
+        ? output.isTTY && cliPresentation.motion !== 'off'
+          ? `on (${cliPresentation.motion})`
+          : 'off in this terminal'
+        : 'off'
+    }${C.reset}`,
   );
   console.log(
     `${C.dim}interaction chart: ${
@@ -14777,10 +14974,268 @@ async function main() {
   const pendingLearnerLines = [];
   let activeLearnerTurn = null;
   let activeAutoRun = null;
+  let voiceBridge = null;
   let resolveInteractive = null;
   const interactiveDone = new Promise((resolve) => {
     resolveInteractive = resolve;
   });
+
+  function voiceRuntimeSnapshot() {
+    return {
+      schema: state.voice.schema,
+      enabled: Boolean(voiceBridge && state.voice.enabled),
+      model: state.voice.model,
+      voice: state.voice.voice,
+      transcriptionModel: state.voice.transcriptionModel,
+      apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY),
+      bridge: voiceBridge?.snapshot() || state.voice.bridge || null,
+      lastStartedAt: state.voice.lastStartedAt,
+      lastStoppedAt: state.voice.lastStoppedAt,
+      deliveryCount: state.voice.deliveries.length,
+      interruptions: state.voice.interruptions,
+      authority: 'existing_cli_analysis_dag_register_guard_pipeline',
+      automaticRealtimeResponses: false,
+    };
+  }
+
+  function publishAcceptedTutorToVoice({
+    text,
+    turn = null,
+    turnId = null,
+    response = null,
+    reason = 'accepted_tutor_text',
+  } = {}) {
+    if (!voiceBridge || !state.voice.enabled || !String(text || '').trim()) return null;
+    const selection = response?.registerSelection || null;
+    const delivery = voiceBridge.publishTutor({
+      text,
+      turn,
+      turnId,
+      register: selection?.engagement_stance || selection?.selected_register || null,
+      character:
+        selection?.actorial_part_label ||
+        selection?.response_configuration?.actorial_part_label ||
+        selection?.actorial_part ||
+        selection?.response_configuration?.actorial_part ||
+        null,
+      reason,
+    });
+    state.voice.deliveries.push({
+      deliveryId: delivery.deliveryId,
+      turn,
+      turnId,
+      reason,
+      acceptedAt: delivery.acceptedAt,
+      text,
+    });
+    appendTraceEvent(state.trace, {
+      type: 'voice_tutor_delivery',
+      schema: delivery.schema,
+      delivery,
+      canonicalTextSource: reason,
+      publicTranscriptChanged: false,
+    });
+    return delivery;
+  }
+
+  async function stopVoiceBridge(reason = 'voice_disabled') {
+    if (!voiceBridge) return null;
+    const bridge = voiceBridge;
+    voiceBridge = null;
+    state.voice.enabled = false;
+    state.voice.lastStoppedAt = new Date().toISOString();
+    try {
+      const snapshot = await bridge.stop(reason);
+      state.voice.bridge = snapshot;
+      return snapshot;
+    } catch (error) {
+      appendTraceEvent(state.trace, {
+        type: 'voice_bridge_stop_error',
+        reason,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+      return null;
+    }
+  }
+
+  async function startVoiceBridge({ open = true, restart = false, source = 'slash' } = {}) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured in this worktree');
+    }
+    if (restart && voiceBridge) await stopVoiceBridge('voice_configuration_changed');
+    if (!voiceBridge) {
+      voiceBridge = createTutorStubVoiceBridge({
+        apiKey: process.env.OPENAI_API_KEY,
+        model: state.voice.model,
+        voice: state.voice.voice,
+        title: state.world?.title ? `${state.world.title} · Voice` : 'Tutor Stub Voice',
+        runId: state.debugRunId,
+        onLearnerTranscript: async ({ text, itemId, receivedAt, source: transcriptSource }) => {
+          printWithConcurrentTerminal(state, () => {
+            clearStatusLine();
+            console.log(`${C.brightGreen}${C.bold}learner · voice >${C.reset} ${text}\n`);
+          });
+          appendTraceEvent(state.trace, {
+            type: 'voice_learner_transcript',
+            schema: 'machinespirits.tutor-stub.voice-learner-transcript.v1',
+            text,
+            itemId,
+            receivedAt,
+            source: transcriptSource,
+            whileTutorPending: Boolean(processingTurn),
+            compoundTurnPolicy: 'same_as_typed_learner_input',
+            publicTranscriptStatus: 'pending_compound_turn',
+          });
+          const routed = routeLearnerText(text, { source: 'voice' });
+          return {
+            ...routed,
+            turn: activeLearnerTurn?.turn || state.turns.length + 1,
+          };
+        },
+        onInterrupt: async ({ reason, receivedAt }) => {
+          state.voice.interruptions += 1;
+          appendTraceEvent(state.trace, {
+            type: 'voice_learner_barge_in',
+            schema: 'machinespirits.tutor-stub.voice-interruption.v1',
+            reason,
+            receivedAt,
+            tutorSpeechCancelledImmediately: true,
+            modelAttemptCancellation: 'when_the_completed_transcript_fragment_joins_the_compound_turn',
+            activeLearnerTurnId: activeLearnerTurn?.id || null,
+            publicTranscriptChanged: false,
+          });
+          return { tutorSpeechCancelled: true, awaitingTranscript: true };
+        },
+        onSpokenTranscript: async ({ deliveryId, transcript, canonical, matchesCanonical, receivedAt }) => {
+          appendTraceEvent(state.trace, {
+            type: 'voice_spoken_transcript_audit',
+            schema: 'machinespirits.tutor-stub.voice-spoken-transcript-audit.v1',
+            deliveryId,
+            transcript,
+            canonical,
+            matchesCanonical,
+            receivedAt,
+            canonicalTextRemainsAuthoritative: true,
+            publicTranscriptChanged: false,
+          });
+          return { matchesCanonical, canonicalTextRemainsAuthoritative: true };
+        },
+        onEvent: (event) => {
+          appendTraceEvent(state.trace, {
+            ...event,
+            type: `voice_${String(event.type || 'event').replace(/^voice_/u, '')}`,
+            publicTranscriptChanged: false,
+          });
+        },
+      });
+      const started = await voiceBridge.start();
+      state.voice.enabled = true;
+      state.voice.lastStartedAt = new Date().toISOString();
+      state.voice.bridge = voiceBridge.snapshot();
+      appendTraceEvent(state.trace, {
+        type: 'voice_runtime_enabled',
+        source,
+        voice: voiceRuntimeSnapshot(),
+        publicTranscriptChanged: false,
+      });
+      const latest = latestTutorMessage(state);
+      if (latest) {
+        const latestTurn = state.turns.at(-1);
+        publishAcceptedTutorToVoice({
+          text: latest,
+          turn: latestTurn?.turn || 0,
+          turnId: latestTurn?.turnId || openingDebugId(stateRunDebugId(state)),
+          response: latestTurn,
+          reason: latestTurn ? 'latest_accepted_tutor_text_on_voice_start' : 'accepted_opening_on_voice_start',
+        });
+      }
+      if (open && process.env.TUTOR_STUB_VOICE_OPEN !== '0') voiceBridge.open();
+      return { ...started, opened: Boolean(open && process.env.TUTOR_STUB_VOICE_OPEN !== '0') };
+    }
+    if (open && process.env.TUTOR_STUB_VOICE_OPEN !== '0') voiceBridge.open();
+    return { ...voiceBridge.snapshot(), url: voiceBridge.browserUrl(), opened: Boolean(open) };
+  }
+
+  async function handleVoiceCommand(argument = '', { source = 'slash' } = {}) {
+    clearStatusLine();
+    const [actionRaw = 'on', valueRaw = '', ...rest] = String(argument || '').trim().split(/\s+/u);
+    const action = actionRaw.toLowerCase() || 'on';
+    const value = [valueRaw, ...rest].filter(Boolean).join(' ');
+    try {
+      if (action === 'off' || action === 'stop') {
+        if (!voiceBridge) {
+          console.log(`${C.dim}voice is already off${C.reset}\n`);
+          return true;
+        }
+        await stopVoiceBridge('voice_command_off');
+        console.log(`${C.brightCyan}${C.bold}voice >${C.reset} off`);
+        console.log(`${C.dim}  the text dialogue remains active in this terminal${C.reset}\n`);
+        return true;
+      }
+      if (action === 'status') {
+        const snapshot = voiceRuntimeSnapshot();
+        console.log(
+          `${C.brightCyan}${C.bold}voice >${C.reset} ${snapshot.enabled ? 'on' : 'off'} · ${snapshot.model} · ${snapshot.voice}`,
+        );
+        console.log(
+          `${C.dim}  ${snapshot.apiKeyConfigured ? 'API key available server-side' : 'OPENAI_API_KEY missing'} · Realtime cannot answer independently · ${snapshot.deliveryCount} accepted tutor deliveries · ${snapshot.interruptions} interruptions${C.reset}`,
+        );
+        if (snapshot.bridge?.url) console.log(`${C.dim}  ${snapshot.bridge.url}${C.reset}`);
+        console.log();
+        return true;
+      }
+      if (action === 'model') {
+        if (!value) {
+          console.log(`${C.brightCyan}${C.bold}voice models >${C.reset} ${TUTOR_STUB_VOICE_MODELS.join(' · ')}`);
+          console.log(`${C.dim}  current: ${state.voice.model}; changing it restarts an active voice session${C.reset}\n`);
+          return true;
+        }
+        const previous = state.voice.model;
+        state.voice.model = normalizeTutorStubVoiceModel(value);
+        const remembered = persistCurrentInteractiveSettings('realtime_voice_model_changed');
+        if (voiceBridge) await startVoiceBridge({ open: true, restart: true, source: 'voice_model_changed' });
+        console.log(`${C.brightCyan}${C.bold}voice model >${C.reset} ${previous} → ${state.voice.model}`);
+        console.log(`${C.dim}  separate from the four text-model roles${remembered ? '; remembered for next time' : ''}${C.reset}\n`);
+        return true;
+      }
+      if (action === 'speaker' || action === 'name') {
+        if (!value) {
+          console.log(`${C.brightCyan}${C.bold}voice speaker >${C.reset} ${state.voice.voice}\n`);
+          return true;
+        }
+        const previous = state.voice.voice;
+        state.voice.voice = normalizeTutorStubVoiceName(value);
+        const remembered = persistCurrentInteractiveSettings('realtime_voice_name_changed');
+        if (voiceBridge) await startVoiceBridge({ open: true, restart: true, source: 'voice_name_changed' });
+        console.log(`${C.brightCyan}${C.bold}voice speaker >${C.reset} ${previous} → ${state.voice.voice}`);
+        console.log(`${C.dim}  ${remembered ? 'remembered for next time' : 'applies to the next voice session'}${C.reset}\n`);
+        return true;
+      }
+      if (!['on', 'open', 'start'].includes(action)) {
+        throw new Error('use /voice, /voice open, /voice status, /voice off, /voice model <model>, or /voice speaker <name>');
+      }
+      if (activeAutoRun) throw new Error('automation is running; use /reset or wait for it to finish before opening learner voice');
+      if (state.interaction?.mode !== 'learner') setInteractionMode('learner', { announce: false });
+      const started = await startVoiceBridge({ open: true, source });
+      console.log(`${C.brightCyan}${C.bold}voice >${C.reset} ${voiceBridge ? 'ready' : 'off'} · ${state.voice.model} · ${state.voice.voice}`);
+      console.log(`${C.dim}  ${started.url}${C.reset}`);
+      console.log(
+        `${C.dim}  microphone speech joins the normal learner turn; only accepted tutor text is spoken; browser ${started.opened ? 'opened' : 'opening is disabled by TUTOR_STUB_VOICE_OPEN=0'}${C.reset}\n`,
+      );
+      return true;
+    } catch (error) {
+      console.log(`${C.red}voice error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'voice_command_error',
+        action,
+        value: value || null,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+      return true;
+    }
+  }
 
   function mixedLearnerCompletionForLine(line) {
     if (!mixedLearner.enabled || processingTurn || state.interaction?.mode !== 'learner') return null;
@@ -14801,7 +15256,7 @@ async function main() {
     const trimmed = raw.trimStart();
     if (!trimmed.startsWith('/')) return { candidates: [], replacement: raw };
 
-      let pool = state.passthrough?.enabled ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
+    let pool = state.passthrough?.enabled ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
     if (trimmed.startsWith('/mode ')) {
       pool = ['/mode learner', '/mode coach', '/mode auto'];
     } else if (trimmed.startsWith('/debug ')) {
@@ -14836,6 +15291,10 @@ async function main() {
         '/tune note ', '/tune review', '/tune show ', '/tune approve ', '/tune reject ',
         '/tune replay ', '/tune validate ', '/tune promote ', '/tune rollback',
       ];
+    } else if (trimmed.startsWith('/theme ')) {
+      pool = TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/theme ${theme}`);
+    } else if (trimmed.startsWith('/motion ')) {
+      pool = TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/motion ${motion}`);
     } else if (trimmed.startsWith('/settings model ')) {
       const modelCompletions = [
         '/settings model default',
@@ -14851,6 +15310,8 @@ async function main() {
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
       const command = trimmed.startsWith('/html ') ? '/html' : '/transcript';
       pool = [`${command} no-open`, `${command} write`];
+    } else if (trimmed.startsWith('/voice ')) {
+      pool = VOICE_COMPLETIONS;
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
         '/profile list',
@@ -16191,6 +16652,19 @@ async function main() {
         description: 'Choose the model that writes automated turns and mixed-mode learner suggestions.',
       },
       {
+        id: 'theme',
+        label: 'Terminal theme',
+        value: tutorStubCliThemeOptions().find((option) => option.id === (draft?.theme || cliPresentation.themeId))
+          ?.label,
+        description: 'Cycle a live color preview. No-color terminals keep the same hierarchy without color.',
+      },
+      {
+        id: 'motion',
+        label: 'Terminal motion',
+        value: draft?.motion || cliPresentation.requestedMotion,
+        description: 'Choose full, subtle, automatic, or still progress motion.',
+      },
+      {
         id: 'stance_temp',
         label: 'Teaching-style range',
         value: String(draft?.temperature ?? state.register?.temperature ?? registerTemperature),
@@ -16881,6 +17355,7 @@ async function main() {
           Object.keys(liveModelRoleDefinitions).map((role) => [role, liveModelRoleSnapshot(role)]),
         ),
       },
+      voice: voiceRuntimeSnapshot(),
       classifier: classifierEnabled ? visibleClassifierConfig : null,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
@@ -16939,6 +17414,7 @@ async function main() {
       history: jsonClone(state.history),
       turns: jsonClone(state.turns),
       settings: {
+        presentation: tutorStubCliPresentationSnapshot(cliPresentation),
         allModelsOverride: state.modelRouting?.allRolesOverrideRef
           ? {
               schema: 'machinespirits.tutor-stub.all-models-override.v1',
@@ -16953,6 +17429,7 @@ async function main() {
             Object.keys(liveModelRoleDefinitions).map((role) => [role, liveModelRoleSnapshot(role)]),
           ),
         },
+        voice: voiceRuntimeSnapshot(),
         run: {
           id: state.debugRunId,
           completedTurns: state.turns.length,
@@ -17252,6 +17729,7 @@ async function main() {
     if (clarificationInFlight) clarificationInFlight.cancelledReason = reason;
     clarificationInFlight?.abortController?.abort();
     stopInterimAnimation(state);
+    void stopVoiceBridge(reason);
     concurrentTerminal.close();
     resetMixedLearnerSuggestion(reason);
     finalizeInteractive(reason);
@@ -17482,6 +17960,12 @@ async function main() {
         `${C.dim}  setup: ${state.world ? `${state.world.id} — ${state.world.title}` : state.topic}; public messages replayed next turn: ${state.history.length}${C.reset}`,
       );
       console.log(
+        `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion · ${cliPresentation.colorMode}${C.reset}`,
+      );
+      console.log(
+        `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · /voice${C.reset}`,
+      );
+      console.log(
         `${C.dim}  one speaker call per turn · classifier, DAG, register, response checks, releases, feedback, and summaries off${C.reset}\n`,
       );
       return;
@@ -17514,6 +17998,9 @@ async function main() {
       }${C.reset}`,
     );
     console.log(
+      `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · separate renderer; /voice${C.reset}`,
+    );
+    console.log(
       `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
     );
     console.log(
@@ -17524,6 +18011,11 @@ async function main() {
     );
     console.log(
       `${C.dim}  tuning: ${state.tuning?.mode || 'off'} · stable v${state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1}${state.tuning?.manifest?.canaryVersion ? ` · canary v${state.tuning.manifest.canaryVersion}` : ''} · ${state.tuning?.sessionCandidateIds?.length || 0} session candidates${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion${
+        cliPresentation.requestedMotion === cliPresentation.motion ? '' : ` (${cliPresentation.requestedMotion} selected)`
+      } · ${cliPresentation.colorMode}${C.reset}`,
     );
     console.log(
       `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
@@ -17999,6 +18491,12 @@ async function main() {
     printOpeningDebugLine(state);
     printDirectorPreludeBeforeFirstTutor(state, { reason: 'interactive_opening' });
     console.log(`${C.magenta}tutor >${C.reset} ${opening}\n`);
+    publishAcceptedTutorToVoice({
+      text: opening,
+      turn: 0,
+      turnId: openingDebugId(stateRunDebugId(state)),
+      reason: 'accepted_tutor_opening',
+    });
     printTutorFeedbackRequest({
       tutorTurn: 0,
       tutorTurnId: openingDebugId(stateRunDebugId(state)),
@@ -18185,6 +18683,9 @@ async function main() {
     }
     console.log(`${C.dim}  tutor effort: ${state.cliEffort || 'provider default'}${C.reset}`);
     console.log(
+      `${C.dim}  appearance: ${cliPresentation.themeLabel} theme; ${cliPresentation.requestedMotion} motion (${cliPresentation.motion} here); change with /theme or /motion${C.reset}`,
+    );
+    console.log(
       `${C.dim}  conversation memory: tutor and learner replay all ${
         tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
       } public messages with speaker-relative user/assistant roles${C.reset}`,
@@ -18220,7 +18721,7 @@ async function main() {
       `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, or /settings forget${C.reset}\n`,
+      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
     );
   }
 
@@ -18337,6 +18838,8 @@ async function main() {
       classifierModelRef: liveModelRoleRef('classifier'),
       reasoningModelRef: liveModelRoleRef('reasoning'),
       learnerModelRef: liveModelRoleRef('learner'),
+      theme: state.presentation?.theme || cliPresentation.themeId,
+      motion: state.presentation?.motion || cliPresentation.requestedMotion,
       temperature: state.register?.temperature ?? registerTemperature,
       dropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -18364,6 +18867,8 @@ async function main() {
       if (draft.learnerModelRef !== liveModelRoleRef('learner')) changes.push('learner_model');
     }
     if (draft.temperature !== (state.register?.temperature ?? registerTemperature)) changes.push('stance_temp');
+    if (draft.theme !== (state.presentation?.theme || cliPresentation.themeId)) changes.push('theme');
+    if (draft.motion !== (state.presentation?.motion || cliPresentation.requestedMotion)) changes.push('motion');
     if (
       draft.dropoutRate !==
       (state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE)
@@ -18404,6 +18909,8 @@ async function main() {
       if (changes.includes('learner_model')) await handleDialogueSettings(`models learner ${draft.learnerModelRef}`);
     }
     if (changes.includes('stance_temp')) await handleDialogueSettings(`stance-temp ${draft.temperature}`);
+    if (changes.includes('theme')) await handleDialogueSettings(`theme ${draft.theme}`);
+    if (changes.includes('motion')) await handleDialogueSettings(`motion ${draft.motion}`);
     if (changes.includes('dropout')) await handleDialogueSettings(`dropout ${draft.dropoutRate}`);
     if (changes.includes('release_speed')) await handleDialogueSettings(`release-speed ${draft.releaseSpeed}`);
     if (changes.includes('overlays')) {
@@ -18516,6 +19023,23 @@ async function main() {
           else if (action.id === 'release_speed') draft.releaseSpeed = next;
           else draft.overlayThreshold = next;
         }
+      } else if (action.id === 'theme') {
+        const current = TUTOR_STUB_CLI_THEME_IDS.indexOf(draft.theme);
+        draft.theme = TUTOR_STUB_CLI_THEME_IDS[(current + 1) % TUTOR_STUB_CLI_THEME_IDS.length];
+        configureCliPresentation({
+          theme: draft.theme,
+          motion: draft.motion,
+          noColor: args['no-color'],
+        });
+        rl.setPrompt(mixedLearnerPromptText());
+      } else if (action.id === 'motion') {
+        const current = TUTOR_STUB_CLI_MOTION_IDS.indexOf(draft.motion);
+        draft.motion = TUTOR_STUB_CLI_MOTION_IDS[(current + 1) % TUTOR_STUB_CLI_MOTION_IDS.length];
+        configureCliPresentation({
+          theme: draft.theme,
+          motion: draft.motion,
+          noColor: args['no-color'],
+        });
       } else if (action.id === 'state_overlay' || action.id === 'field_overlay') {
         const overlay = action.id === 'state_overlay' ? 'state' : 'field';
         draft.overlays = draft.overlays.includes(overlay)
@@ -18535,6 +19059,12 @@ async function main() {
       policyStack: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
     });
     if (reason === 'cancelled') {
+      configureCliPresentation({
+        theme: state.presentation?.theme || args.theme,
+        motion: state.presentation?.motion || args.motion,
+        noColor: args['no-color'],
+      });
+      rl.setPrompt(mixedLearnerPromptText());
       console.log(
         `${C.dim}settings cancelled · ${changedSettings.length ? 'unsaved changes discarded' : 'nothing changed'}${C.reset}\n`,
       );
@@ -18578,9 +19108,12 @@ async function main() {
       );
       return;
     }
-    if (state.passthrough?.enabled && !modelNames.includes(String(parts[0] || '').toLowerCase())) {
+    if (
+      state.passthrough?.enabled &&
+      ![...modelNames, 'theme', 'motion'].includes(String(parts[0] || '').toLowerCase())
+    ) {
       console.log(
-        `${C.dim}only the speaker model is adjustable in passthrough mode; use /settings model [provider.alias]${C.reset}\n`,
+        `${C.dim}only the speaker model and terminal appearance are adjustable in passthrough mode; use /settings model, /theme, or /motion${C.reset}\n`,
       );
       return;
     }
@@ -18619,6 +19152,74 @@ async function main() {
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (setting === 'theme') {
+      if (parts.length === 1) {
+        console.log(`${C.accent}${C.bold}themes >${C.reset} current ${cliPresentation.themeLabel}`);
+        console.log(`${C.dim}  choose ${TUTOR_STUB_CLI_THEME_IDS.join(' · ')}${C.reset}\n`);
+        return;
+      }
+      try {
+        const previous = cliPresentation.themeId;
+        args.theme = normalizeTutorStubCliThemeId(parts[1], { strict: true });
+        configureCliPresentation({
+          theme: args.theme,
+          motion: cliPresentation.requestedMotion,
+          noColor: args['no-color'],
+        });
+        state.presentation = tutorStubCliPresentationSnapshot(cliPresentation);
+        rl.setPrompt(mixedLearnerPromptText());
+        const remembered = persistCurrentInteractiveSettings('terminal_theme_changed');
+        appendTraceEvent(state.trace, {
+          type: 'terminal_presentation_changed',
+          axis: 'theme',
+          previous,
+          current: cliPresentation.themeId,
+          presentation: state.presentation,
+          duringTurn,
+        });
+        console.log(`${C.accent}${C.bold}settings >${C.reset} theme → ${cliPresentation.themeLabel}`);
+        console.log(`${C.dim}  ${tutorStubCliThemePreview(cliPresentation)}${remembered ? ' · remembered' : ''}${C.reset}\n`);
+      } catch (error) {
+        console.log(`${C.danger}settings error:${C.reset} ${error.message}\n`);
+      }
+      return;
+    }
+    if (setting === 'motion') {
+      if (parts.length === 1) {
+        console.log(
+          `${C.accent2}${C.bold}motion >${C.reset} ${cliPresentation.requestedMotion} selected · ${cliPresentation.motion} active`,
+        );
+        console.log(`${C.dim}  choose ${TUTOR_STUB_CLI_MOTION_IDS.join(' · ')}${C.reset}\n`);
+        return;
+      }
+      try {
+        const previous = cliPresentation.requestedMotion;
+        args.motion = normalizeTutorStubCliMotion(parts[1], { strict: true });
+        configureCliPresentation({
+          theme: cliPresentation.themeId,
+          motion: args.motion,
+          noColor: args['no-color'],
+        });
+        state.presentation = tutorStubCliPresentationSnapshot(cliPresentation);
+        const remembered = persistCurrentInteractiveSettings('terminal_motion_changed');
+        appendTraceEvent(state.trace, {
+          type: 'terminal_presentation_changed',
+          axis: 'motion',
+          previous,
+          current: cliPresentation.requestedMotion,
+          resolved: cliPresentation.motion,
+          presentation: state.presentation,
+          duringTurn,
+        });
+        console.log(
+          `${C.accent2}${C.bold}settings >${C.reset} motion → ${cliPresentation.requestedMotion} (${cliPresentation.motion} here)`,
+        );
+        console.log(`${C.dim}  ${remembered ? 'remembered for next time' : 'applies to this session'}${C.reset}\n`);
+      } catch (error) {
+        console.log(`${C.danger}settings error:${C.reset} ${error.message}\n`);
+      }
+      return;
+    }
     if (setting === 'models') {
       if (parts.length === 1) {
         printDialogueSettings();
@@ -19391,6 +19992,7 @@ async function main() {
         concurrentTerminal.close();
         clearStatusLine();
         console.log(`${C.dim}exit requested; stopping this stub now${C.reset}`);
+        void stopVoiceBridge('exit_requested_during_turn');
         resetMixedLearnerSuggestion('exit_requested_during_turn');
         finalizeInteractive('exit_requested_during_turn');
         process.exit(0);
@@ -19420,8 +20022,97 @@ async function main() {
       if (slashCommandFinished) return;
       slashCommandFinished = true;
       repriseLatestTutorUtterance(command, { duringTurn });
-      if (pausedInterim) resumeInterimAnimation(state);
+      if (pausedInterim || (duringTurn && state.interim?.active?.paused)) resumeInterimAnimation(state);
     };
+    if (command === '/theme') {
+      try {
+        const requested = commandArg
+          ? normalizeTutorStubCliThemeId(commandArg, { strict: true })
+          : null;
+        if (requested) {
+          const previous = cliPresentation.themeId;
+          args.theme = requested;
+          configureCliPresentation({
+            theme: requested,
+            motion: cliPresentation.requestedMotion,
+            noColor: args['no-color'],
+          });
+          state.presentation = tutorStubCliPresentationSnapshot(cliPresentation);
+          rl.setPrompt(mixedLearnerPromptText());
+          const remembered = persistCurrentInteractiveSettings('terminal_theme_changed');
+          appendTraceEvent(state.trace, {
+            type: 'terminal_presentation_changed',
+            axis: 'theme',
+            previous,
+            current: requested,
+            presentation: state.presentation,
+            duringTurn,
+          });
+          console.log(
+            `${C.accent}${C.bold}theme >${C.reset} ${cliPresentation.themeLabel} · ${cliPresentation.themeDescription}`,
+          );
+          console.log(`${C.dim}  ${tutorStubCliThemePreview(cliPresentation)}${C.reset}`);
+          console.log(`${C.dim}  ${remembered ? 'remembered for next time' : 'applies to this session'}${C.reset}\n`);
+        } else {
+          console.log(
+            `${C.accent}${C.bold}themes >${C.reset} ${cliPresentation.themeLabel} is active · /theme <name> switches instantly`,
+          );
+          for (const option of tutorStubCliThemeOptions()) {
+            const marker = option.id === cliPresentation.themeId ? `${C.success}◆${C.reset}` : `${C.border}◇${C.reset}`;
+            console.log(
+              `  ${marker} ${option.id.padEnd(13)} ${C.bold}${option.label}${C.reset} ${C.dim}— ${option.description}${C.reset}`,
+            );
+          }
+          console.log(`${C.dim}  NO_COLOR and --no-color are always respected${C.reset}\n`);
+        }
+      } catch (error) {
+        console.log(`${C.danger}theme error:${C.reset} ${error.message}\n`);
+      }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/motion') {
+      try {
+        const requested = commandArg ? normalizeTutorStubCliMotion(commandArg, { strict: true }) : null;
+        if (requested) {
+          const previous = cliPresentation.requestedMotion;
+          args.motion = requested;
+          configureCliPresentation({
+            theme: cliPresentation.themeId,
+            motion: requested,
+            noColor: args['no-color'],
+          });
+          state.presentation = tutorStubCliPresentationSnapshot(cliPresentation);
+          const remembered = persistCurrentInteractiveSettings('terminal_motion_changed');
+          appendTraceEvent(state.trace, {
+            type: 'terminal_presentation_changed',
+            axis: 'motion',
+            previous,
+            current: requested,
+            resolved: cliPresentation.motion,
+            presentation: state.presentation,
+            duringTurn,
+          });
+          console.log(
+            `${C.accent2}${C.bold}motion >${C.reset} ${requested}${
+              requested === cliPresentation.motion ? '' : ` → ${cliPresentation.motion} in this terminal`
+            }`,
+          );
+          console.log(
+            `${C.dim}  full is fluid · subtle is calm · off is still; auto respects TTY, CI, and reduced-motion signals${remembered ? ' · remembered' : ''}${C.reset}\n`,
+          );
+        } else {
+          console.log(
+            `${C.accent2}${C.bold}motion >${C.reset} ${cliPresentation.requestedMotion} selected · ${cliPresentation.motion} active`,
+          );
+          console.log(`${C.dim}  choose ${TUTOR_STUB_CLI_MOTION_IDS.join(' · ')}${C.reset}\n`);
+        }
+      } catch (error) {
+        console.log(`${C.danger}motion error:${C.reset} ${error.message}\n`);
+      }
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/up' || command === '/down' || command === '/feedback') {
       const action = command === '/up'
         ? ['up', commandArg].filter(Boolean).join(' ')
@@ -19611,6 +20302,10 @@ async function main() {
       }
       finishSlashCommand();
       return true;
+    }
+    if (command === '/voice') {
+      const promise = handleVoiceCommand(commandArg, { source: 'slash' }).finally(finishSlashCommand);
+      return promise;
     }
     if (command === '/director' || command === '/notes') {
       clearStatusLine();
@@ -20080,6 +20775,13 @@ async function main() {
             console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
             printTutorFeedbackRequest({ tutorTurn, tutorTurnId: turnId, kind: 'tutor_response' });
           });
+          publishAcceptedTutorToVoice({
+            text: response.text,
+            turn: tutorTurn,
+            turnId,
+            response,
+            reason: 'accepted_guarded_tutor_response',
+          });
           await printExplanatoryDebugTurn(state, { signal: abortController.signal, isCurrent });
           if (state.dialogueClosure?.phase === 'awaiting_checkin') {
             printWithConcurrentTerminal(state, () => {
@@ -20151,6 +20853,56 @@ async function main() {
         }
       }
     }
+  }
+
+  function routeLearnerText(text, { source = 'terminal' } = {}) {
+    const trimmed = String(text || '').trim();
+    if (!trimmed || exiting) return { accepted: false, reason: 'empty_or_exiting' };
+    appendTraceEvent(state.trace, {
+      type: 'learner_input_routed',
+      source,
+      text: trimmed,
+      duringTurn: processingTurn,
+      interactionMode: state.interaction?.mode || 'learner',
+      publicTranscriptStatus: 'pending_compound_turn',
+    });
+    if (state.interaction?.mode === 'coach') {
+      const pausedInterim = processingTurn ? pauseInterimAnimation(state) : false;
+      queueCoachGuidance(trimmed, { duringTurn: processingTurn });
+      if (pausedInterim) resumeInterimAnimation(state);
+      return { accepted: true, route: 'coach_guidance' };
+    }
+    if (processingTurn && state.interaction?.mode === 'auto') {
+      console.log(`${C.dim}automation is running; enter a slash command, or wait for learner mode to resume${C.reset}`);
+      appendTraceEvent(state.trace, {
+        type: 'auto_mode_non_command_ignored',
+        text: trimmed,
+        turn: state.turns.length + 1,
+        source,
+      });
+      return { accepted: false, reason: 'auto_mode_running' };
+    }
+    if (processingTurn) {
+      const pausedInterim = pauseInterimAnimation(state);
+      if (extendActiveLearnerTurn(trimmed)) {
+        if (pausedInterim) resumeInterimAnimation(state);
+        return { accepted: true, route: 'compound_learner_turn' };
+      }
+      pendingLearnerLines.push(trimmed);
+      console.log(
+        `${C.dim}queued next learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
+      );
+      appendTraceEvent(state.trace, {
+        type: 'learner_turn_queued',
+        queued: pendingLearnerLines.length,
+        reason: 'previous_tutor_response_already_displayed',
+        source,
+      });
+      if (pausedInterim) resumeInterimAnimation(state);
+      return { accepted: true, route: 'next_learner_turn_queue' };
+    }
+    void processLearnerLine(trimmed);
+    return { accepted: true, route: 'new_learner_turn' };
   }
 
   const initialSetupCompleted = await runInitialMixedLearnerSetup();
@@ -20246,44 +20998,7 @@ async function main() {
       }
       return;
     }
-    if (state.interaction?.mode === 'coach') {
-      const pausedInterim = processingTurn ? pauseInterimAnimation(state) : false;
-      queueCoachGuidance(trimmed, { duringTurn: processingTurn });
-      if (pausedInterim) resumeInterimAnimation(state);
-      promptIfIdle();
-      return;
-    }
-    if (processingTurn && state.interaction?.mode === 'auto') {
-      console.log(`${C.dim}automation is running; enter a slash command, or wait for learner mode to resume${C.reset}`);
-      appendTraceEvent(state.trace, {
-        type: 'auto_mode_non_command_ignored',
-        text: trimmed,
-        turn: state.turns.length + 1,
-      });
-      promptIfIdle();
-      return;
-    }
-    if (processingTurn) {
-      const pausedInterim = pauseInterimAnimation(state);
-      if (extendActiveLearnerTurn(trimmed)) {
-        if (pausedInterim) resumeInterimAnimation(state);
-        promptIfIdle();
-        return;
-      }
-      pendingLearnerLines.push(trimmed);
-      console.log(
-        `${C.dim}queued next learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
-      );
-      appendTraceEvent(state.trace, {
-        type: 'learner_turn_queued',
-        queued: pendingLearnerLines.length,
-        reason: 'previous_tutor_response_already_displayed',
-      });
-      if (pausedInterim) resumeInterimAnimation(state);
-      promptIfIdle();
-      return;
-    }
-    void processLearnerLine(trimmed);
+    routeLearnerText(trimmed, { source: 'terminal' });
     promptIfIdle();
   });
 
@@ -20296,6 +21011,7 @@ async function main() {
   rl.on('close', () => {
     exiting = true;
     stopInterimAnimation(state);
+    void stopVoiceBridge('terminal_closed');
     if (slashPaletteRefreshHandle) clearImmediate(slashPaletteRefreshHandle);
     if (onInteractiveKeypress) input.removeListener('keypress', onInteractiveKeypress);
     concurrentTerminal.close();
@@ -20315,6 +21031,10 @@ async function main() {
     }
   } else if (resumedDialogue) {
     printTutorFeedbackRequest(latestTutorFeedbackTarget());
+  }
+
+  if (voiceLaunchRequested && !exiting) {
+    await handleVoiceCommand('on', { source: 'launch_flag' });
   }
 
   if (args.demo && !exiting) {
