@@ -1,0 +1,99 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v10
+created: 2026-07-15
+
+purpose: >-
+  Fresh acceptance matrix after the complete v9 report exposed two independent
+  weaknesses: the last-resort configured continuation could omit its selected
+  performance tactic, and marginal sentence-segmentation overages could count
+  twice against configuration visibility. This matrix tests the coordinated
+  repairs across four new scenario/profile pairings without weakening safety,
+  source-separation, clue-delivery, or character-realization gates.
+
+code_under_test:
+  branch: preconscious
+  commit: 668c95cb
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i19-2026-07-15T18-56-21-361Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v9
+  affected_seeds: [20260810, 20260811, 20260812, 20260813]
+  reason: >-
+    The complete v9 matrix was inspected before tactic-aware deterministic
+    continuation and sentence-budget measurement tolerance were implemented.
+    Its four trajectories are tuning evidence and cannot be reused as
+    acceptance evidence.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: clockwork_false_memory
+    world: world_021_clockwork_tribunal
+    learner_profile: false_memory
+    seed: 20260820
+    rationale: >-
+      A public tribunal over adaptation claims paired for the first time with
+      plausible but unsupported recollection.
+
+  - id: foxtrot_fast
+    world: world_022_foxtrot_jukebox
+    learner_profile: fast_learner
+    seed: 20260821
+    rationale: >-
+      A technical custody inquiry paired for the first time with accelerated
+      multi-premise uptake.
+
+  - id: larkspur_slow
+    world: world_028_larkspur_fridge
+    learner_profile: slow_learner
+    seed: 20260822
+    rationale: >-
+      A contemporary workplace inquiry paired for the first time with
+      deliberately narrow, stepwise integration.
+
+  - id: skyway_low_agency
+    world: world_026_skyway_bakery
+    learner_profile: low_agency
+    seed: 20260823
+    rationale: >-
+      A logistics-and-temperature inquiry paired for the first time with
+      repeated delegation of the next evidentiary move.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four newly paired scenario/profile
+  combinations and evidence modalities; it does not establish population-wide
+  generalization.
