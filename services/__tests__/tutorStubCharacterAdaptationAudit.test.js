@@ -8,6 +8,7 @@ function turn({
   tutor,
   part = 'record_keeper',
   partVisible = true,
+  performanceVisible = partVisible,
   clue = null,
   roleStageDirection = false,
 } = {}) {
@@ -16,7 +17,15 @@ function turn({
     turnId: `run:t${id}`,
     tutor,
     responseConfiguration: { actorial_part: part, actorial_host_part: part },
-    responseConfigurationAudit: { axes: { actorial_part: { visible: partVisible } } },
+    responseConfigurationAudit: {
+      axes: {
+        actorial_part: {
+          part_visible: partVisible,
+          performance_visible: performanceVisible,
+          visible: partVisible && performanceVisible,
+        },
+      },
+    },
     dramaticRelease: clue
       ? {
           frame: { active: true, entries: [{ premise: `p${id}`, surface: clue }] },
@@ -65,5 +74,21 @@ test('character adaptation audit accepts a continuous adaptive host plus source 
   assert.equal(audit.sourceReplacementTurns, 0);
   assert.equal(audit.duplicateClueDeliveryTurns, 0);
   assert.equal(audit.hostVisibilityRate, 1);
+  assert.equal(audit.performanceVisibilityRate, 1);
   assert.equal(audit.distinctHostParts, 2);
+});
+
+test('character visibility remains distinct from the selected performance tactic', () => {
+  const audit = auditTutorStubCharacterAdaptationTurns([
+    turn({
+      id: 1,
+      tutor: 'I enter the finding in the warrant book.',
+      part: 'record_keeper',
+      partVisible: true,
+      performanceVisible: false,
+    }),
+  ]);
+
+  assert.equal(audit.hostVisibilityRate, 1);
+  assert.equal(audit.performanceVisibilityRate, 0);
 });

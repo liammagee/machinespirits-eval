@@ -132,8 +132,8 @@ test('actorial part turns the same public policy signals into distinct dramatic 
     world: { presentation: { ledger_term: 'trial-book' } },
   });
 
-  assert.equal(dueRelease.id, 'examiner');
-  assert.equal(dueRelease.label, 'evidence examiner');
+  assert.equal(dueRelease.id, 'record_keeper');
+  assert.equal(dueRelease.label, 'record keeper');
   assert.equal(dueRelease.locked, false);
   assert.equal(dueRelease.selection_method, 'argmax');
   assert.equal(dueRelease.authored_role, 'front-desk clerk reading the visitor badge log');
@@ -141,6 +141,37 @@ test('actorial part turns the same public policy signals into distinct dramatic 
   assert.equal(overreach.id, 'skeptic');
   assert.equal(memoryRepair.id, 'record_keeper');
   assert.equal(memoryRepair.label, 'keeper of the trial-book');
+});
+
+test('public evidence modality switches the host between record keeper and examiner at low temperature', () => {
+  const common = {
+    engagementStance: 'brisk',
+    actionFamily: 'stage_next_step',
+    temperature: 0.15,
+  };
+  const record = selectTutorStubActorialPart({
+    ...common,
+    dueEvidence: [
+      {
+        surface: 'The charcoal book records one signed drawing of the crucible.',
+        presentation: { mode: 'enacted_role', role: 'leat-keeper reading the charcoal book' },
+      },
+    ],
+  });
+  const exhibit = selectTutorStubActorialPart({
+    ...common,
+    dueEvidence: [
+      {
+        surface: 'Under the glass, each coin bears the same square notch.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+
+  assert.equal(record.id, 'record_keeper');
+  assert.equal(exhibit.id, 'examiner');
+  assert.match(record.reason, /authored source record/iu);
+  assert.match(exhibit.reason, /new public exhibit/iu);
 });
 
 test('the selected stance and adaptive host remain distinct from an authored clue source', () => {
@@ -159,8 +190,8 @@ test('the selected stance and adaptive host remain distinct from an authored clu
   const brisk = buildTutorStubResponseConfiguration({ ...common, engagementStance: 'brisk' });
   const witnessing = buildTutorStubResponseConfiguration({ ...common, engagementStance: 'witnessing' });
 
-  assert.equal(brisk.actorial_part, 'examiner');
-  assert.equal(witnessing.actorial_part, 'scene_partner');
+  assert.equal(brisk.actorial_part, 'record_keeper');
+  assert.equal(witnessing.actorial_part, 'record_keeper');
   assert.equal(brisk.evidence_enactment.authored_role, 'front-desk clerk reading the visitor badge log');
   assert.equal(witnessing.evidence_enactment.authored_role, 'front-desk clerk reading the visitor badge log');
   assert.equal(brisk.actorial_performance.id, 'rapid_handoff');

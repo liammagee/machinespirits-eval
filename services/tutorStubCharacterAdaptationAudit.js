@@ -63,9 +63,21 @@ export function auditTutorStubCharacterAdaptationTurns(turnRecords = []) {
     const part = configuration.actorial_host_part || configuration.actorial_part;
     if (part) hostPartCounts[part] = (hostPartCounts[part] || 0) + 1;
   }
-  const hostVisibleTurns = rows.filter(
-    (turn) => turn.responseConfigurationAudit?.axes?.actorial_part?.visible === true,
-  ).length;
+  // Host-part visibility and performance-tactic visibility are distinct. A
+  // record keeper can be unmistakably present even when the selected rhythm
+  // (for example, rapid handoff) misses its surface threshold. Keep the broad
+  // response-configuration realization rate responsible for that tactic.
+  const hostVisibleTurns = rows.filter((turn) => {
+    const axis = turn.responseConfigurationAudit?.axes?.actorial_part;
+    return axis?.part_visible === true || (axis?.part_visible === undefined && axis?.visible === true);
+  }).length;
+  const performanceVisibleTurns = rows.filter((turn) => {
+    const axis = turn.responseConfigurationAudit?.axes?.actorial_part;
+    return (
+      axis?.performance_visible === true ||
+      (axis?.performance_visible === undefined && axis?.visible === true)
+    );
+  }).length;
   const metaPerformanceRows = rows.filter((turn) => META_PERFORMANCE_PATTERN.test(oneLine(turn.tutor)));
   const stageDirectionRows = clueReleaseRows.filter(
     (turn) => turn.dramaticRelease?.audit?.roleStageDirection === true,
@@ -81,6 +93,10 @@ export function auditTutorStubCharacterAdaptationTurns(turnRecords = []) {
     clueReleaseTurns: clueReleaseRows.length,
     hostVisibleTurns,
     hostVisibilityRate: rows.length ? Number((hostVisibleTurns / rows.length).toFixed(3)) : null,
+    performanceVisibleTurns,
+    performanceVisibilityRate: rows.length
+      ? Number((performanceVisibleTurns / rows.length).toFixed(3))
+      : null,
     distinctHostParts: Object.keys(hostPartCounts).length,
     hostPartCounts,
     metaPerformanceTurns: metaPerformanceRows.length,

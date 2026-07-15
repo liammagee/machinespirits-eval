@@ -439,11 +439,15 @@ export function selectTutorStubActorialPart({
       row?.via === 'director',
   );
   if (enactedRelease) {
-    const surfaces = publicDueEvidence.map((row) => oneLine(row.surface)).join(' ');
-    const recordLike = /\b(?:archive|log|ledger|book|record|file|notice|entry|inventory|notebook)\b/iu.test(surfaces);
+    const evidenceVocabulary = publicDueEvidence
+      .map((row) => oneLine([row.surface, row?.presentation?.role, row?.role].filter(Boolean).join(' ')))
+      .join(' ');
+    const recordLike = /\b(?:archive|log|ledger|book|record|file|notice|entry|inventory|notebook)\b/iu.test(
+      evidenceVocabulary,
+    );
     addPartScores(
       scores,
-      recordLike ? { record_keeper: 0.8, examiner: 0.45 } : { examiner: 0.6, scene_partner: 0.25 },
+      recordLike ? { record_keeper: 2.25, examiner: 0.25 } : { examiner: 0.6, scene_partner: 0.25 },
       1,
       drivers,
       recordLike ? 'authored_source_record' : 'authored_source_exhibit',
@@ -453,7 +457,7 @@ export function selectTutorStubActorialPart({
     const recordLike = /\b(?:archive|log|ledger|book|record|file|notice|entry|inventory|notebook)\b/iu.test(surfaces);
     addPartScores(
       scores,
-      recordLike ? { record_keeper: 1.8, examiner: 0.45 } : { examiner: 1.6 },
+      recordLike ? { record_keeper: 2.25, examiner: 0.25 } : { examiner: 1.6 },
       1,
       drivers,
       recordLike ? 'new_public_record' : 'new_public_exhibit',

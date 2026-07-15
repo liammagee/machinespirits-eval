@@ -72,6 +72,7 @@ import {
   snapshotTutorStubPublicPremiseIds,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
+import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
 import { auditTutorStubEvidenceAssertions } from '../services/tutorStubEvidenceAssertion.js';
 import { tutorStubAnswerConclusionAsserted } from '../services/tutorStubConclusionAssertion.js';
 import {
@@ -1539,13 +1540,7 @@ function factText(fact) {
 }
 
 function splitSymbolWords(value) {
-  return String(value || '')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/[_-]+/g, ' ')
-    .toLowerCase()
-    .split(/[^a-z0-9']+/)
-    .map((word) => word.trim())
-    .filter(Boolean);
+  return splitTutorStubPublicWords(value);
 }
 
 function textTokens(text) {

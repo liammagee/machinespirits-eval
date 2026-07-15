@@ -692,6 +692,19 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    /\?/u.test(learnerText) &&
+    /\b(?:choose|decide|phrase|tell me|show me)\b/iu.test(text) &&
+    /\b(?:enter|entry|examine|first|phrase|record|register|say|write)\b/iu.test(text)
+  ) {
+    const recordNoun = text.match(/\b(?:account|book|entry|ledger|log|record|register|roll)\b/iu)?.[0];
+    return fresh(
+      recordNoun
+        ? 'I’ll choose the first concrete ' + recordNoun + ' entry for you before we extend the case.'
+        : 'I’ll choose the first concrete point for you before we extend the case.',
+      'I’ll answer that choice directly, then carry only the next public step.',
+    );
+  }
+  if (
     /\b(?:alloy|metal|touchstone|weigh|weight)\b/iu.test(text) &&
     /\b(?:die|graver|tools?)\b/iu.test(text) &&
     /\b(?:assay|compare|examine|inspect|test)\b/iu.test(text)

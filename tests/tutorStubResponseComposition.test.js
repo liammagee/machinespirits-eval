@@ -1458,6 +1458,29 @@ test('keep your contribution is always treated as generic uptake', () => {
   );
 });
 
+test('deterministic uptake answers a low-agency request for the tutor to choose the record entry', () => {
+  const learnerText = 'Could you choose what change in the register I should enter first?';
+  const uptake = deterministicTutorStubLearnerUptake({ learnerText });
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks the tutor to choose the first register entry.',
+        request_type: 'stepwise_support_request',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: uptake + ' I open the register to the next public line.',
+  });
+
+  assert.match(uptake, /choose the first concrete register entry/iu);
+  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+});
+
 test('a learner-selected maker-mark test must be carried forward before another clue develops', () => {
   const learnerText =
     'Let us examine them for a maker’s mark; that could speak to the hand that struck them.';
