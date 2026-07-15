@@ -754,6 +754,35 @@ test('surface audit measures realization and differences between selected config
   assert.equal(summary.pairwise_visible_difference_rate, 1);
 });
 
+test('sentence-budget visibility tolerates a marginal segmentation overage but not materially dense prose', () => {
+  const configuration = {
+    engagement_stance: 'plain',
+    action_family: 'baseline_plain_response',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'minimal',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const marginal = auditTutorStubResponseConfiguration({
+    text: `${Array(25).fill('word').join(' ')}.`,
+    configuration,
+    world: testWorld(),
+  });
+  const dense = auditTutorStubResponseConfiguration({
+    text: `${Array(30).fill('word').join(' ')}.`,
+    configuration,
+    world: testWorld(),
+  });
+
+  assert.equal(marginal.axes.audience_register.visible, true);
+  assert.equal(marginal.axes.lexical_accessibility.visible, true);
+  assert.equal(marginal.axes.audience_register.measurement_tolerance, 0.1);
+  assert.equal(dense.axes.audience_register.visible, false);
+  assert.equal(dense.axes.lexical_accessibility.visible, false);
+});
+
 test('surface audit rejects a named character when the selected stance tactic does not permeate the performance', () => {
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'charismatic',

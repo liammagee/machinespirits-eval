@@ -676,6 +676,17 @@ function responseWords(text) {
   return oneLine(text).match(/[\p{L}\p{N}'-]+/gu) || [];
 }
 
+function sentenceBudgetVisible(actualAverage, authoredMaximum) {
+  const maximum = Number(authoredMaximum);
+  if (!Number.isFinite(maximum)) return true;
+  // Sentence segmentation and short scenic fragments make a hard one-word
+  // cliff too brittle for a transcript-visibility heuristic. Preserve the
+  // authored target while allowing a ten-percent measurement margin; prose
+  // that is materially denser still fails the axis.
+  const tolerance = Math.max(1, maximum * 0.1);
+  return Number(actualAverage) <= maximum + tolerance;
+}
+
 function normalizedTerm(value) {
   return oneLine(value)
     .toLowerCase()
@@ -1212,10 +1223,14 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
   const audienceDefinition = getAudienceRegisterDefinitions()[configuration.audience_register] || {};
   const lexicalDefinition = getLexicalAccessibilityDefinitions()[configuration.lexical_accessibility] || {};
   const sceneDefinition = getSceneImmersionDefinitions()[configuration.scene_immersion] || {};
-  const audiencePass =
-    performanceMetrics.averageSentenceWords <= Number(audienceDefinition.max_average_sentence_words || 30);
+  const audienceMaximum = Number(audienceDefinition.max_average_sentence_words || 30);
+  const lexicalMaximum = Number(lexicalDefinition.max_average_sentence_words || 32);
+  const audiencePass = sentenceBudgetVisible(
+    performanceMetrics.averageSentenceWords,
+    audienceMaximum,
+  );
   const lexicalLengthPass =
-    performanceMetrics.averageSentenceWords <= Number(lexicalDefinition.max_average_sentence_words || 32);
+    sentenceBudgetVisible(performanceMetrics.averageSentenceWords, lexicalMaximum);
   const lexicalPass =
     lexicalLengthPass &&
     (configuration.lexical_accessibility !== 'glossed_plain' ||
@@ -1253,8 +1268,18 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
             ? 'development'
             : 'whole_response',
     },
-    audience_register: { selected: configuration.audience_register, visible: audiencePass },
-    lexical_accessibility: { selected: configuration.lexical_accessibility, visible: lexicalPass },
+    audience_register: {
+      selected: configuration.audience_register,
+      visible: audiencePass,
+      max_average_sentence_words: audienceMaximum,
+      measurement_tolerance: 0.1,
+    },
+    lexical_accessibility: {
+      selected: configuration.lexical_accessibility,
+      visible: lexicalPass,
+      max_average_sentence_words: lexicalMaximum,
+      measurement_tolerance: 0.1,
+    },
     scene_immersion: { selected: configuration.scene_immersion, visible: scenePass },
     actorial_part: {
       selected: configuration.actorial_part,

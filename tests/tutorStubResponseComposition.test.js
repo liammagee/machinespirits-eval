@@ -11,6 +11,7 @@ import {
   tutorStubLearnerSelectedToolMarkPath,
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
+import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 
 test('fallback composition includes a supplied uptake exactly once', () => {
   const uptake = 'I tap the trial-book shut on that line: fair.';
@@ -772,6 +773,48 @@ test('record-keeper fallback does not duplicate a first-person record action bef
   assert.match(text, /^I mark that beside the balance:/u);
   assert.doesNotMatch(text, /I enter that distinction/iu);
   assert.equal((text.match(/\b(?:mark|enter|note|record|write)\b/giu) || []).length, 1);
+});
+
+test('configured fallback makes charismatic advocate counterpressure visible to the strict auditor', () => {
+  const responseConfiguration = {
+    engagement_stance: 'charismatic',
+    action_family: 'stage_next_step',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'immersive',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+    },
+  };
+  const world = {
+    setting: 'The Tallow Street meeting room, with the minute-book open beside the depot motion.',
+    question: 'What browns out Tallow Street every Thursday evening?',
+  };
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'Yes: record that the lamps began to dim before the depot chargers switched on.',
+    responseConfiguration,
+    support: { answerability: 'direction_only_until_evidence_is_public' },
+    world,
+    learnerText: 'Could you choose what conclusion we should record from that gap?',
+  });
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration: responseConfiguration,
+    world,
+    composition: {
+      uptake: 'Yes: record that the lamps began to dim before the depot chargers switched on.',
+      development: text,
+    },
+  });
+
+  assert.match(text, /press the (?:record|minute-book) against the room’s easy verdict/iu);
+  assert.equal(audit.actorial_realization.ok, true, JSON.stringify(audit.actorial_realization));
+  assert.equal(audit.axes.engagement_stance.visible, true);
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.transcript_visible, true);
 });
 
 test('the deterministic uptake is public, learner-specific, and action-aware', () => {

@@ -1021,6 +1021,23 @@ function configuredFallbackHost({ part, object }) {
   }[part] || `I set the ${object} under examination and mark the claim’s limit.`;
 }
 
+function configuredFallbackPerformance({ part, object, tactic }) {
+  const host = configuredFallbackHost({ part, object });
+  if (tactic === 'dramatic_counterpressure' && part === 'advocate') {
+    return `I press the ${object} against the room’s easy verdict; but it cannot carry the charge past the limit you found.`;
+  }
+  if (tactic === 'measured_testimony') {
+    return `${host} Let the ${object} stand as written, no further.`;
+  }
+  if (tactic === 'shared_scene_invitation' && part !== 'scene_partner') {
+    return `${host} I make room beside the ${object} for you.`;
+  }
+  if (tactic === 'exposed_mismatch') return `Apparently, ${host.charAt(0).toLowerCase()}${host.slice(1)}`;
+  if (tactic === 'dry_counterexample') return `Conveniently, ${host.charAt(0).toLowerCase()}${host.slice(1)}`;
+  if (tactic === 'adversarial_pressure') return `Stop at the weak link. ${host}`;
+  return host;
+}
+
 function configuredFallbackStance(stance) {
   return {
     plain: 'Keep only what the public evidence already shows.',
@@ -1067,6 +1084,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
   );
   const actionFamily = oneLine(responseConfiguration?.action_family || '');
+  const tactic = oneLine(responseConfiguration?.actorial_performance?.id || '');
   const object = configuredFallbackObject({ world, learnerText, part });
   const uptakeAlreadyPerformsRecordKeeper =
     part === 'record_keeper' &&
@@ -1076,7 +1094,9 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       /\b(?:i|we)\s+(?:enter|mark|note|record|write)\s+(?:that|this|it)\b/iu.test(uptake));
   return [
     oneLine(uptake),
-    uptakeAlreadyPerformsRecordKeeper ? null : configuredFallbackHost({ part, object }),
+    uptakeAlreadyPerformsRecordKeeper
+      ? null
+      : configuredFallbackPerformance({ part, object, tactic }),
     configuredFallbackStance(stance),
     configuredFallbackHandoff({ support, actionFamily }),
   ]
