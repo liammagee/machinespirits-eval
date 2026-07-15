@@ -73,7 +73,10 @@ import {
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
-import { auditTutorStubEvidenceAssertions } from '../services/tutorStubEvidenceAssertion.js';
+import {
+  auditTutorStubEvidenceAssertions,
+  tutorStubPrivateTokenAlreadyPublic,
+} from '../services/tutorStubEvidenceAssertion.js';
 import { tutorStubAnswerConclusionAsserted } from '../services/tutorStubConclusionAssertion.js';
 import {
   TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
@@ -1742,11 +1745,19 @@ function unreleasedPremiseLeakRows({
       (premise.fact || [])
         .slice(1)
         .flatMap(splitSymbolWords)
-        .filter((token) => token.length >= 4 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token)),
+        .filter(
+          (token) =>
+            token.length >= 4 &&
+            !PRIVATE_TOKEN_STOPWORDS.has(token) &&
+            !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
+        ),
     );
     const surfaceTokens = new Set(
       splitSymbolWords(premise.surface).filter(
-        (token) => token.length >= 5 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token),
+        (token) =>
+          token.length >= 5 &&
+          !PRIVATE_TOKEN_STOPWORDS.has(token) &&
+          !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
       ),
     );
     const factMatches = [...factTokens].filter((token) => textContainsToken(text, token));

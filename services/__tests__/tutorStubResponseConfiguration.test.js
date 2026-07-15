@@ -845,6 +845,28 @@ test('surface audit recognizes natural skeptical, record-keeping, and advocacy a
   }
 });
 
+test('a trial-book mark may flow into the record across one sentence boundary', () => {
+  const text =
+    'I mark beside the broken R: Verrell’s broad graver is excluded from this damaged die. Make room at the trial-book; the estate inventory is opened beside it. What changes?';
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration: {
+      engagement_stance: 'warm',
+      action_family: 'stage_next_step',
+      audience_register: 'informed_peer',
+      lexical_accessibility: 'technical',
+      scene_immersion: 'grounded',
+      actorial_part: 'record_keeper',
+      actorial_part_label: 'keeper of the trial-book',
+      actorial_performance: { id: 'shared_scene_invitation' },
+    },
+    world: { setting: 'The broken R, trial-book, and estate inventory are open.' },
+  });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
 test('surface audit recognizes ordinary skeptical objections and shared standing', () => {
   for (const text of [
     'Not so—the pen chart says the lamps dim before the chargers start.',

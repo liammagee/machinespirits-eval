@@ -816,6 +816,9 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'record_keeper') {
     return (
+      /\bi\s+(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b[\s\S]{0,180}\b(?:log|ledger|book|record|file|history|notebook|report|roll|sheet|notes?|inventory|rack card|trial-book|incident log|mod log|formulation card|version history)\b/iu.test(
+        text,
+      ) ||
       /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b[^.!?]{0,55}\b(?:log|ledger|book|record|file|history|notebook|report|roll|sheet|notes?|inventory|rack card|trial-book|incident log|mod log|formulation card|version history)\b|\b(?:log|ledger|book|record|file|history|notebook|report|roll|sheet|notes?|inventory|rack card|trial-book|incident log|mod log|formulation card|version history)\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b/iu.test(text) ||
       (metrics.concreteSceneTermCount > 0 &&
         /\bi\b[^.!?]{0,95}\b(?:enter|leave|record|write|mark)\s+(?:that|this|it|the (?:entry|line|record|limit))\b/iu.test(text)) ||

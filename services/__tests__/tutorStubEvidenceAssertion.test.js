@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { auditTutorStubEvidenceAssertions } from '../tutorStubEvidenceAssertion.js';
+import {
+  auditTutorStubEvidenceAssertions,
+  tutorStubPrivateTokenAlreadyPublic,
+} from '../tutorStubEvidenceAssertion.js';
+
+test('an inflection of a current clue word is not mistaken for future evidence', () => {
+  const publicTokens = new Set(['notch', 'mended', 'square']);
+
+  assert.equal(tutorStubPrivateTokenAlreadyPublic('notched', publicTokens), true);
+  assert.equal(tutorStubPrivateTokenAlreadyPublic('unredeemed', publicTokens), false);
+});
 
 test('rejects a newly invented positive match between exhibits', () => {
   const audit = auditTutorStubEvidenceAssertions({

@@ -1,6 +1,24 @@
 export const TUTOR_STUB_EVIDENCE_ASSERTION_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.evidence-assertion-audit.v1';
 
+function evidenceTokenRoot(value) {
+  const token = String(value || '').toLowerCase();
+  if (token.length >= 7 && token.endsWith('ied')) return `${token.slice(0, -3)}y`;
+  if (token.length >= 7 && token.endsWith('ing')) return token.slice(0, -3);
+  if (token.length >= 7 && token.endsWith('ed')) return token.slice(0, -2);
+  if (token.length >= 7 && token.endsWith('es')) return token.slice(0, -2);
+  if (token.length >= 6 && token.endsWith('s')) return token.slice(0, -1);
+  return token;
+}
+
+/** Treat inflections of an already-public clue word as public, not future leakage. */
+export function tutorStubPrivateTokenAlreadyPublic(token, publicTokens = new Set()) {
+  const publicSet = publicTokens instanceof Set ? publicTokens : new Set(publicTokens || []);
+  if (publicSet.has(token)) return true;
+  const root = evidenceTokenRoot(token);
+  return [...publicSet].some((publicToken) => evidenceTokenRoot(publicToken) === root);
+}
+
 const CORRESPONDENCE_PATTERN =
   /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:alloy|flaw|mark|metal|residue|streak)|tie(?:s|d)?\b[^.!?;]{0,55}\bto|trace(?:s|d)?\b[^.!?;]{0,55}\bto)\b/iu;
 const EVIDENCE_OBJECT_PATTERN =
