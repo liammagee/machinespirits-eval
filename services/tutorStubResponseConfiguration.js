@@ -1008,6 +1008,10 @@ function actorialPartVisible(configuration, text, metrics) {
       /\bnothing\b[^.!?]{0,100}\b(?:identif(?:y|ies)|names?|ties?)\b[^.!?]{0,80}\b(?:name|person|tool|holder|hand)\b|\ba name\b[^.!?]{0,60}\b(?:too (?:quickly|soon)|without|unproved)\b/iu.test(
         text,
       );
+    const refusesToPlacePersonUnderUnsupportedMark =
+      /\bi\s+cannot\s+(?:place|put|set)\b[^.!?]{0,85}\b(?:beneath|under)\b[^.!?]{0,55}\b(?:yet|without)\b/iu.test(
+        text,
+      );
     return (
       /\b(?:i object|not so fast|i(?:[’']ll| will) challenge|let me challenge|cross-examine|weak link|that does not yet|doesn(?:[’']t| not) yet|not yet (?:show|prove|establish|tie|name)|public evidence does not settle)\b/iu.test(text) ||
       /\bi\s+(?:will not|won[’']t|refuse to)\s+let\b[^.!?]{0,65}\b(?:bear|carry)\b[^.!?]{0,35}\b(?:weight|proof|conclusion|verdict)\b/iu.test(
@@ -1027,7 +1031,8 @@ function actorialPartVisible(configuration, text, metrics) {
       holdsSceneAtUnsupportedAttribution ||
       stopsAtUnsupportedLink ||
       opensWithConcreteBoundary ||
-      refusesUnsupportedNameInPublicSpeech
+      refusesUnsupportedNameInPublicSpeech ||
+      refusesToPlacePersonUnderUnsupportedMark
     );
   }
   if (part === 'foreperson') {

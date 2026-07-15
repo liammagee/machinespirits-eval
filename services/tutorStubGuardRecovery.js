@@ -102,6 +102,46 @@ export function repairTutorStubUnanswerableOpenRecall({ text = '', deliveryDecis
   };
 }
 
+/**
+ * Add only a public host action when an otherwise deliverable draft misses the
+ * selected actorial part. This runs before another model call, so a purely
+ * stylistic miss cannot invite new evidence or alter the learner uptake.
+ */
+export function repairTutorStubMissingActorialPart({
+  text = '',
+  deliveryDecision = null,
+  responseConfiguration = null,
+  responseComposition = null,
+} = {}) {
+  const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
+  const eligible =
+    hardIssues.length > 0 &&
+    hardIssues.every(
+      (issue) =>
+        issue?.guard === 'actorial_realization' && issue?.type === 'missing_selected_actorial_part',
+    );
+  const source = candidateText(text);
+  const uptake = candidateText(responseComposition?.uptake);
+  const development = candidateText(responseComposition?.development);
+  if (!eligible || !source || !uptake || !development) return { changed: false, text: source, cue: null };
+  const part = String(responseConfiguration?.actorial_part || '').trim();
+  const cue = {
+    scene_partner: 'I make room beside the public record for you.',
+    examiner: 'I hold the public evidence before us.',
+    record_keeper: 'I mark that limit in the open record.',
+    advocate: 'I put the public case before us, no further than the evidence can carry it.',
+    skeptic: 'Not so fast—I hold the claim against the public record.',
+    foreperson: 'I enter the supported finding in the open record.',
+  }[part];
+  if (!cue) return { changed: false, text: source, cue: null };
+  const repaired = [uptake, cue, development].filter(Boolean).join(' ').trim();
+  return {
+    changed: repaired !== source,
+    text: repaired,
+    cue,
+  };
+}
+
 function jsonObjectText(value) {
   const source = String(value || '').trim();
   if (!source) return '';

@@ -933,6 +933,16 @@ test('surface audit recognizes natural recovery phrasing from the fresh choice m
       },
       text: 'I hold Corvin’s key beside the lamp. My case against the crowd’s verdict is this: their old suspicion has no mark to stand on. Break it if you can—what public sign would point to Corvin?',
     },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'warm',
+        actorial_part: 'skeptic',
+        actorial_part_label: 'skeptical examiner',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+      },
+      text: 'I cannot set Reyner’s men beneath that crowsfoot yet. I shift the broken stone and make room beside the green soffit for you; the mark still needs its yard.',
+    },
   ];
 
   for (const row of cases) {

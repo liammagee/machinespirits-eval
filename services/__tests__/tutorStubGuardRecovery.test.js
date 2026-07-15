@@ -4,6 +4,7 @@ import {
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
+  repairTutorStubMissingActorialPart,
   repairTutorStubUnanswerableOpenRecall,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubGuardDeliveryDecision,
@@ -106,6 +107,43 @@ test('open-recall repair removes only the impossible question when it is the sol
     },
   });
   assert.equal(unsafe.changed, false);
+});
+
+test('a sole actorial-part miss receives a public-only host cue between uptake and development', () => {
+  const result = repairTutorStubMissingActorialPart({
+    text: 'That limits the seal claim. A lodge account is read aloud. What does it add?',
+    deliveryDecision: {
+      hardIssues: [{ guard: 'actorial_realization', type: 'missing_selected_actorial_part' }],
+    },
+    responseConfiguration: { actorial_part: 'scene_partner' },
+    responseComposition: {
+      uptake: 'That limits the seal claim.',
+      development: 'A lodge account is read aloud. What does it add?',
+    },
+  });
+
+  assert.equal(result.changed, true);
+  assert.equal(
+    result.text,
+    'That limits the seal claim. I make room beside the public record for you. A lodge account is read aloud. What does it add?',
+  );
+  assert.doesNotMatch(result.text, /Reyner|future|hidden|premise/iu);
+});
+
+test('actorial host repair does not run alongside any safety or content failure', () => {
+  const result = repairTutorStubMissingActorialPart({
+    text: 'A lodge account is read aloud.',
+    deliveryDecision: {
+      hardIssues: [
+        { guard: 'actorial_realization', type: 'missing_selected_actorial_part' },
+        { guard: 'leak', type: 'unreleased_premise_content' },
+      ],
+    },
+    responseConfiguration: { actorial_part: 'scene_partner' },
+    responseComposition: { uptake: 'That limits the claim.', development: 'A lodge account is read aloud.' },
+  });
+
+  assert.equal(result.changed, false);
 });
 
 test('third-person authored-source casting is repaired without changing the quoted evidence', () => {

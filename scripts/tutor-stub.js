@@ -170,6 +170,7 @@ import {
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
+  repairTutorStubMissingActorialPart,
   repairTutorStubUnanswerableOpenRecall,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubActorialPerformanceMayBeAdvisory,
@@ -10833,6 +10834,75 @@ async function callTutor({
         finalAudits: audits,
         outcome: audits.ok ? 'guarded_original_accepted' : 'guarded_original_accepted_with_advisory',
       });
+    }
+
+    const hostPartRepair = repairTutorStubMissingActorialPart({
+      text: response.text,
+      deliveryDecision: audits.deliveryDecision,
+      responseConfiguration,
+      responseComposition: audits.responseCompositionAudit?.segments,
+    });
+    if (hostPartRepair.changed) {
+      const hostPartResponse = {
+        ...response,
+        text: hostPartRepair.text,
+      };
+      const hostPartAttempt = attempts.length;
+      const hostPartAudits = withTutorDeliveryDecision(
+        auditTutorDraft(hostPartResponse, {
+          role: `${roleBase}_actorial_part_repair`,
+          attempt: hostPartAttempt,
+        }),
+        { role: `${roleBase}_actorial_part_repair`, attempt: hostPartAttempt },
+      );
+      const hostPartRepairSpans = exactTutorRepairSpans(response.text, hostPartResponse.text);
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'actorial_part_repair_candidate',
+          attempt: hostPartAttempt,
+          response: hostPartResponse,
+          audits: hostPartAudits,
+          repairedSpans: hostPartRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'mechanical_actorial_part_repair',
+        fromAttempt: 0,
+        toAttempt: hostPartAttempt,
+        triggeredBy: tutorGuardIssueRows(audits),
+        guardedSpans: attempts[0].guardedSpans,
+        repairedSpans: hostPartRepairSpans,
+        cue: hostPartRepair.cue,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_mechanical_repair',
+        role: `${roleBase}_actorial_part_repair`,
+        turn: tutorTurn,
+        attempt: hostPartAttempt,
+        repairKind: 'missing_actorial_host_part',
+        accepted: hostPartAudits.deliveryOk,
+        cue: hostPartRepair.cue,
+        text: hostPartRepair.text,
+      });
+      if (hostPartAudits.deliveryOk) {
+        attachTutorDraftAudits(hostPartResponse, hostPartAudits);
+        hostPartResponse.repaired = true;
+        hostPartResponse.mechanicalRepair = true;
+        if (hostPartResponse.bufferedStream) hostPartResponse.guardedStreamReplay = true;
+        return attachTutorGuardAccounting({
+          response: hostPartResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'actorial_part_repair_candidate',
+          finalAudits: hostPartAudits,
+          outcome: 'guarded_actorial_part_repair_accepted',
+        });
+      }
     }
 
     const firstRepairTriggers = tutorGuardIssueRows(audits);
