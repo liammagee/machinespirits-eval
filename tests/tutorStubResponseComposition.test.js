@@ -1682,6 +1682,47 @@ test('deterministic uptake answers a low-agency request for the tutor to choose 
   assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
 });
 
+test('a concrete choice directly answers a low-agency which-first question', () => {
+  const learnerText = 'Can you choose which would tell us more first?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks the tutor to choose which public check comes first.',
+        request_type: 'stepwise_support_request',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    dramaticReleaseFrame: { active: true },
+  });
+
+  for (const text of [
+    'I’d start at the well. I lift the well-head stone and read the mason’s note.',
+    'The well first. I lift the well-head stone and read the mason’s note.',
+  ]) {
+    const audit = auditTutorStubResponseComposition({ learnerText, frame, text });
+    assert.equal(
+      audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+      false,
+      text,
+    );
+  }
+
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    recentTutorTexts: [
+      'I’ll choose the first concrete point for you before we extend the case. We start at the tan-pits.',
+    ],
+  });
+  assert.equal(uptake, 'I’ll choose the next public check and carry only that one step.');
+  const repaired = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I lift the well-head stone and read the mason’s note.`,
+  });
+  assert.equal(repaired.ok, true, JSON.stringify(repaired.issues));
+});
+
 test('deterministic uptake answers a repeated low-agency request for the conclusion', () => {
   const learnerText = 'Can you choose the conclusion you want me to enter?';
   const uptake = deterministicTutorStubLearnerUptake({

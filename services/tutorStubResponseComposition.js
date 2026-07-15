@@ -13,7 +13,7 @@ const DEICTIC_UPTAKE_PATTERN =
 const DEICTIC_EVIDENCE_REFERENCE_PATTERN =
   /\b(?:these|those|your)\s+(?:answer|claim|distinction|marks?|observation|point|reading|words?)\b/iu;
 const DIRECT_QUESTION_ANSWER_PATTERN =
-  /^(?:(?:i|we)\s+(?:can|cannot|can[’']t|do|do not|don[’']t|will|will not|won[’']t|would|would not|wouldn[’']t)|the (?:useful|needed) (?:mark|match) (?:is|would))\b/iu;
+  /^(?:(?:i|we)\s+(?:can|cannot|can[’']t|choose|do|do not|don[’']t|will|will not|won[’']t|would|would not|wouldn[’']t)|i(?:[’']d| would) (?:choose|start|take)|the (?:useful|needed) (?:mark|match) (?:is|would)|the\b[^.!?]{0,45}\bfirst\b)\b/iu;
 const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
   /\b(?:leave|keep)\b[^.!?]{0,35}\b(?:entry|line|record)\b[^.!?]{0,20}\b(?:blank|open|unentered|unwritten)\b|\b(?:do not|don[’']t|will not|won[’']t)\b[^.!?]{0,25}\b(?:enter|record|write)\b/iu;
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
@@ -718,7 +718,7 @@ export function deterministicTutorStubLearnerUptake({
       recordNoun
         ? 'I’ll choose the first concrete ' + recordNoun + ' entry for you before we extend the case.'
         : 'I’ll choose the first concrete point for you before we extend the case.',
-      'I’ll answer that choice directly, then carry only the next public step.',
+      'I’ll choose the next public check and carry only that one step.',
     );
   }
   if (
