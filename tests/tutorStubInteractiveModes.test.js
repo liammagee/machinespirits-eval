@@ -618,6 +618,65 @@ test('/reset escapes an in-flight automated sequence and returns control to lear
   }
 });
 
+test('/demo runs a bounded live tour, writes inspectable evidence, and returns control', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-guided-demo-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/demo 1\n',
+      stopWhen: (plain) => plain.includes('demonstration complete >'),
+      timeoutMs: 15_000,
+      env: {
+        TUTOR_STUB_TRANSCRIPT_OPEN: '0',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /guided harness demonstration · 1 live turn/u);
+    assert.match(result.plain, /limited tour: learner interpretation, reasoning-map tracking, adaptive teaching style, authored evidence DAG are off/u);
+    assert.match(result.plain, /A Diligent Learner \(auto\) >/u);
+    assert.match(result.plain, /demo readout · learner interpretation/u);
+    assert.match(result.plain, /demo readout · inspectable evidence/u);
+    assert.match(result.plain, /transcript HTML >/u);
+    assert.match(result.plain, /demonstration complete > 1 new turn · control returned/u);
+    assert.match(result.plain, /session status > LEARNER/u);
+
+    const transcriptFiles = fs.readdirSync(tmp).filter((name) => name.endsWith('-transcript.html'));
+    assert.equal(transcriptFiles.length, 1);
+    const transcriptHtml = fs.readFileSync(path.join(tmp, transcriptFiles[0]), 'utf8');
+    assert.match(transcriptHtml, /Replay JS/u);
+    assert.match(transcriptHtml, /I would compare the metal residues first\./u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const started = events.find((event) => event.type === 'interactive_harness_demo_started');
+    const completed = events.find((event) => event.type === 'interactive_harness_demo_completed');
+    assert.equal(started?.requestedTurns, 1);
+    assert.equal(started?.publicTranscriptChanged, false);
+    assert.equal(completed?.completedTurns, 1);
+    assert.match(completed?.transcript || '', /-transcript\.html$/u);
+    assert.equal(completed?.publicTranscriptChanged, false);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('a late learner fragment discards already-computed analysis state before regenerating every assessment', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-compound-analysis-restart-'));
   try {

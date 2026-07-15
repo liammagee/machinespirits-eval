@@ -47,7 +47,7 @@ acceptance_cases:
     world: world_023_greyfen_lab
     learner_profile: false_memory
     seeds:
-      active: 20260722
+      active: 20260729
       retired:
         - seed: 20260716
           reason: consumed before camel-case public answer names were normalized
@@ -61,7 +61,21 @@ acceptance_cases:
           reason: consumed before explicit boundary stops, corrections, and lab-notebook acts counted as character work
         - seed: 20260721
           reason: three deterministic fallbacks exceeded the strict maximum of one
-      reserves: [20260723, 20260724]
+        - seed: 20260722
+          reason: two deterministic fallbacks exceeded the strict maximum of one
+        - seed: 20260723
+          reason: three deterministic fallbacks and a recovered analysis timeout failed strict gates
+        - seed: 20260724
+          reason: consumed before cross-domain source-versus-custody boundaries received specific learner uptake
+        - seed: 20260725
+          reason: two safe fallbacks exceeded the strict maximum before cross-domain skeptic and advocate acts were recognized
+        - seed: 20260726
+          reason: three safe fallbacks exceeded the strict maximum before cross-domain comparison and supported-finding acts were recognized
+        - seed: 20260727
+          reason: three safe fallbacks exceeded the strict maximum before placement likelihood, explicit evidence boundaries, and supported advocacy were recognized
+        - seed: 20260728
+          reason: two safe fallbacks and undercounted corrective-answer realization failed the held-out transfer gates
+      reserves: [20260730, 20260731]
     rationale: >-
       This changes both the setting register and the learner difficulty: a
       contemporary laboratory incident review replaces Marrick's arcane

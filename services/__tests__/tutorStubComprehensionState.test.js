@@ -82,6 +82,43 @@ test('ordinary evidence questions do not become comprehension requests', () => {
   assert.deepEqual(request.terms, []);
 });
 
+test('a classifier cannot turn an ordinary declarative pronoun into a comprehension request', () => {
+  const request = detectTutorStubComprehensionRequest({
+    text: 'The light shillings are newly struck from a copper-and-lead alloy, so clipping cannot explain them.',
+    classification: { turn: { request_type: 'plain_language_request' } },
+    turn: 5,
+  });
+
+  assert.equal(request.detected, false);
+  assert.deepEqual(request.terms, []);
+});
+
+test('a visible generic clarification request still uses the classifier signal', () => {
+  const request = detectTutorStubComprehensionRequest({
+    text: 'I do not understand. Can you say that in plain words?',
+    classification: { turn: { request_type: 'plain_simplification_followup' } },
+    turn: 5,
+  });
+
+  assert.equal(request.detected, true);
+  assert.equal(request.generic, true);
+});
+
+test('quoted term definitions resolve the requested term', () => {
+  const state = createTutorStubComprehensionState();
+  applyTutorStubComprehensionRequest(
+    state,
+    detectTutorStubComprehensionRequest({ explicitTerm: 'them', source: 'slash_explain', turn: 5 }),
+  );
+  const result = applyTutorStubComprehensionResponse(state, {
+    text: '“Them” means the light shillings on the assay cloth.',
+    turn: 5,
+  });
+
+  assert.deepEqual(result.explainedTerms, ['them']);
+  assert.deepEqual(result.snapshot.features.unresolvedTerms, []);
+});
+
 test('a clarification response resolves only the requested term', () => {
   const state = createTutorStubComprehensionState();
   for (const term of ['cupel', 'burin']) {

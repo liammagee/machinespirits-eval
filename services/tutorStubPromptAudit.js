@@ -146,6 +146,30 @@ function includesNeedle(text, needle) {
   return value.length >= 4 && String(text || '').includes(value);
 }
 
+function escapedLiteral(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
+export function sanitizeTutorStubSpeakerAdvisory({ world = null, text = '' } = {}) {
+  let sanitized = String(text || '');
+  if (!world) return sanitized;
+  for (const rule of world.rules || []) {
+    if (!rule?.id) continue;
+    sanitized = sanitized.replace(
+      new RegExp(escapedLiteral(rule.id), 'gu'),
+      'the relevant public evidence rule',
+    );
+  }
+  for (const premise of world.premises || []) {
+    if (!premise?.id) continue;
+    sanitized = sanitized.replace(
+      new RegExp(escapedLiteral(premise.id), 'gu'),
+      'the relevant public evidence item',
+    );
+  }
+  return sanitized;
+}
+
 export function auditTutorStubSpeakerPrivilege({
   world = null,
   tutorTurn = 0,
@@ -210,7 +234,9 @@ export function recoverTutorStubSpeakerPrompt({
     responseCompositionPrompt,
     dramaticReleasePrompt,
     responseConfigurationPrompt,
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world, text }));
   const userPrompt = [...advisoryParts, learnerPrompt].filter(Boolean).join('\n\n');
   const instructionTexts = [baseSystemPrompt, ...advisoryParts].filter(Boolean);
   const speakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({

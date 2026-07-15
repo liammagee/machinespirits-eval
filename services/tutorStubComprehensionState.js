@@ -30,7 +30,7 @@ function extractedTerms(text) {
   const patterns = [
     /\bwhat\s+does\s+["'`“”‘’]?(.{1,64}?)["'`“”‘’]?\s+mean\b/iu,
     /\bwhat\s+do\s+you\s+mean\s+by\s+["'`“”‘’]?(.{1,64}?)["'`“”‘’]?(?:\?|$)/iu,
-    /\b(?:explain|define)\s+(?:the\s+)?(?:word|term\s+)?["'`“”‘’]?([\p{L}\p{N}_'-]+(?:\s+[\p{L}\p{N}_'-]+){0,2})/iu,
+    /(?:^|[.!?]\s*)(?:(?:can|could|would|will)\s+you\s+)?(?:please\s+)?(?:explain|define)\s+(?:the\s+)?(?:word|term\s+)?["'`“”‘’]?([\p{L}\p{N}_'-]+(?:\s+[\p{L}\p{N}_'-]+){0,2})/iu,
     /\bi\s+(?:do\s+not|don't|cannot|can't)\s+understand\s+(?:the\s+)?(?:word|term\s+)?["'`“”‘’]?([\p{L}\p{N}_'-]+(?:\s+[\p{L}\p{N}_'-]+){0,2})/iu,
   ];
   for (const pattern of patterns) {
@@ -47,7 +47,7 @@ function termLooksDefined(responseText, term) {
   if (!response || !key || !response.includes(key)) return false;
   const escaped = key.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
   return new RegExp(
-    `(?:${escaped}\\s+(?:is|means|refers to|was|were)|(?:by|with)\\s+${escaped}\\b|${escaped}[^.!?]{0,80}\\bused\\s+to)`,
+    `(?:${escaped}[”"'’]?\\s+(?:is|means|refers to|was|were)|(?:by|with)\\s+${escaped}\\b|${escaped}[^.!?]{0,80}\\bused\\s+to)`,
     'iu',
   ).test(response);
 }
@@ -72,9 +72,17 @@ export function detectTutorStubComprehensionRequest({
   const requestType = classificationRequestType(classification);
   const terms = explicitTerm ? [normalizeTerm(explicitTerm)].filter(Boolean) : extractedTerms(text);
   const lexicalSignal =
-    terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by|explain|define)\b/iu.test(text);
+    terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by)\b/iu.test(text);
   const classifiedSignal = ['plain_language_request', 'plain_simplification_followup'].includes(requestType);
-  const detected = source === 'slash_explain' || lexicalSignal || classifiedSignal;
+  const genericClarificationSignal =
+    /(?:^|[.!?]\s*)(?:what\??|huh\??|sorry\??)\s*$|\b(?:i (?:am|[’']m) lost|i (?:do not|don[’']t|cannot|can[’']t) (?:follow|understand)|can you (?:make|put|say) (?:that|it) (?:simpler|plainly|in plain (?:english|language|words))|say that (?:again|more simply)|in plain (?:english|language|words)|simpler words?|what are you asking)\b/iu.test(
+      oneLine(text),
+    );
+  // A model label is supporting evidence, not authority to manufacture a
+  // vocabulary gap. Ordinary declarative evidence can be misclassified as
+  // plain-language help, so require a learner-visible clarification signal.
+  const detected =
+    source === 'slash_explain' || lexicalSignal || (classifiedSignal && genericClarificationSignal);
   return {
     schema: 'machinespirits.tutor-stub.comprehension-request.v1',
     advancesLearnerDag: false,

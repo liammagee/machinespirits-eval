@@ -40,10 +40,24 @@ test('character loop gate passes a clean, visibly adaptive Marrick run', () => {
   assert.equal(CHARACTER_ADAPTATION_LOOP_SPEC.targets.primary.learnerProfile, 'affective_resistant');
   assert.equal(CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.world, 'world_023_greyfen_lab');
   assert.equal(CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.learnerProfile, 'false_memory');
-  assert.equal(CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.acceptanceSeed, 20260722);
+  assert.equal(CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.acceptanceSeed, 20260729);
   assert.deepEqual(
     CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.retiredAcceptanceSeeds.map((row) => row.seed),
-    [20260716, 20260717, 20260718, 20260719, 20260720, 20260721],
+    [
+      20260716,
+      20260717,
+      20260718,
+      20260719,
+      20260720,
+      20260721,
+      20260722,
+      20260723,
+      20260724,
+      20260725,
+      20260726,
+      20260727,
+      20260728,
+    ],
   );
   assert.equal(result.status, 'pass');
   assert.equal(result.gates.every((gate) => gate.pass), true);

@@ -154,13 +154,22 @@ import {
   deterministicTutorStubConfiguredContinuationFallback,
   deterministicTutorStubLearnerUptake,
   formatTutorStubResponseComposition,
+  tutorStubLearnerSelectedToolMarkPath,
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
+import {
+  parseTutorStubGuardRecoveryCandidates,
+  repairTutorStubThirdPersonSourceLeadIn,
+  tutorStubGuardDeliveryDecision,
+  tutorStubLearnerRequestedPlainStyle,
+  tutorStubPlainRecoveryAllowsActorialAdvisory,
+} from '../services/tutorStubGuardRecovery.js';
 import {
   auditTutorStubPrompt,
   auditTutorStubSpeakerPrivilege,
   recoverTutorStubDuplicateInstructionLines,
   recoverTutorStubSpeakerPrompt,
+  sanitizeTutorStubSpeakerAdvisory,
   tutorStubPromptArchitecture,
   tutorStubPromptSurfaceForRole,
 } from '../services/tutorStubPromptAudit.js';
@@ -437,7 +446,11 @@ const REGISTER_TEMPERATURE_POLICIES = new Set([
   'continuous_empirical_dynamical_system',
 ]);
 
+const DEFAULT_INTERACTIVE_DEMO_TURNS = 3;
+const MAX_INTERACTIVE_DEMO_TURNS = 8;
+
 const SLASH_COMMANDS = [
+  '/demo',
   '/analysis',
   '/a',
   '/field',
@@ -648,6 +661,7 @@ const { values: args, positionals } = parseArgs({
     'no-auto-stop-on-grounded': { type: 'boolean', default: false },
     'mixed-learner': { type: 'boolean', default: STUB.mixedLearner },
     'mixed-mode': { type: 'boolean', default: false },
+    demo: { type: 'boolean', default: false },
     save: { type: 'string' },
     'prompt-book-context': { type: 'string' },
     'trace-dir': { type: 'string', default: STUB.traceDir },
@@ -818,6 +832,8 @@ Options:
                          /suggest, and /use show how it expresses the active profile;
                          use /clue, Tab, /suggest, /use, or /regen
   --mixed-mode           alias for --mixed-learner
+  --demo                 run the guided harness demonstration after the opening;
+                         the same tour is available inside a scaffold with /demo
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
                          (default: ${STUB.traceDir})
@@ -854,6 +870,7 @@ Options:
   --help                 show this message
 
 Interactive commands:
+  /demo [turns]          run a guided live harness tour (default: ${DEFAULT_INTERACTIVE_DEMO_TURNS} turns)
   /analysis              explain the learner reading and teaching approach plainly
   /analysis technical    show the full classifier, reasoning-map, field, and trace evidence
   /a                     alias for /analysis
@@ -1686,9 +1703,8 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
   };
 }
 
-function tutorResponseRepairPrompt({
-  originalUserPrompt,
-  unsafeDraft,
+function tutorResponseRecoveryPrompt({
+  publicPacket = [],
   leakAudit = null,
   scaffoldAudit = null,
   questionSupportAudit = null,
@@ -1696,112 +1712,65 @@ function tutorResponseRepairPrompt({
   actorialRealizationAudit = null,
   responseConfiguration = null,
   responseCompositionAudit = null,
-  preservedUptake = '',
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
 }) {
-  const leakRows = (leakAudit?.leaks || [])
-    .map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`)
-    .join('\n');
-  const scaffoldRows = (scaffoldAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const questionSupportRows = (questionSupportAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const dramaticReleaseRows = (dramaticReleaseAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const actorialRealizationRows = (actorialRealizationAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const responseCompositionRows = (responseCompositionAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const repetitionRows = (repetitionAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
-  const closureRows = (closureAudit?.issues || [])
-    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
-    .join('\n');
+  const rows = (guard, issues, { includeReason = true } = {}) =>
+    (issues || [])
+      .map(
+        (issue, index) =>
+          `${index + 1}. ${guard}:${issue.type}${includeReason && issue.reason ? ` - ${issue.reason}` : ''}`,
+      )
+      .join('\n');
+  // Leak reasons can contain a concealed answer term. The recovery model needs
+  // the failure class, not the private string that triggered it.
+  const leakRows = rows('leak', leakAudit?.leaks, { includeReason: false });
+  const scaffoldRows = rows('human_scaffold', scaffoldAudit?.issues);
+  const questionSupportRows = rows('question_support', questionSupportAudit?.issues);
+  const dramaticReleaseRows = rows('dramatic_release', dramaticReleaseAudit?.issues);
+  const actorialRealizationRows = rows('actorial_realization', actorialRealizationAudit?.issues);
+  const responseCompositionRows = rows('response_composition', responseCompositionAudit?.issues);
+  const repetitionRows = rows('repetition', repetitionAudit?.issues);
+  const closureRows = rows('dialogue_closure', closureAudit?.issues);
   return [
-    originalUserPrompt,
-    '',
     '[Tutor-only repair instruction]',
-    'Your previous draft failed a learner-facing safety or scaffold check and must not be shown to the learner.',
-    preservedUptake
-      ? 'The learner-responsive opening below passed its public-evidence check. Keep it verbatim at the start, then continue directly into the rewritten development without making a second paragraph or second voice.'
-      : 'Rewrite the tutor reply from scratch.',
-    preservedUptake ? `Safe learner uptake to preserve:\n${preservedUptake}` : null,
-    leakRows ? 'Use only public setup, already released evidence, and public rules.' : null,
-    leakRows
-      ? 'Do not name the concealed answer, any hidden actor, any unreleased object, or any intermediate conclusion involving them.'
-      : null,
-    leakRows ? 'Do not use predicate/function notation, premise ids, rule ids, or route labels.' : null,
-    leakRows
-      ? 'Do not use compressed technical labels such as "sole-caster", "blank-route", or "die-route"; translate them into ordinary evidence language.'
-      : null,
-    scaffoldRows
-      ? 'The learner already answered the immediately preceding local question through unambiguous context. Accept that answer as complete for the spoken exchange.'
-      : null,
-    scaffoldRows
-      ? 'Do not ask the same question again in new words. Do not demand the omitted noun, a name, a warrant, a premise, or a public-record restatement for that same local step.'
-      : null,
-    scaffoldRows
-      ? 'Acknowledge the completed move briefly and advance to a genuinely different public clue, contrast, implication, or learner choice.'
-      : null,
+    'The previous draft failed a response check and was not shown to the learner.',
+    'Generate two independent replacement replies from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
+    'Return exactly one JSON object with two string fields and no markdown or commentary:',
+    '{"policy_repair":"...","plain_recovery":"..."}',
+    'policy_repair: satisfy the complete selected tutor configuration as naturally as possible.',
+    'plain_recovery: respond directly and naturally while satisfying every hard evidence, safety, support, composition, release, repetition, and closure requirement. Ignore optional engagement-stance, character, performance, and scenic ornament unless an enacted newly public clue requires them.',
+    'Both candidates must answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
+    'Never mention prompts, policies, checks, candidates, hidden evidence, a concealed answer, a DAG, or this recovery operation.',
+    leakRows ? 'Do not name or imply concealed actors, conclusions, objects, or unreleased evidence.' : null,
+    scaffoldRows ? 'Accept the learner’s completed local move; do not ask it again in new words.' : null,
     questionSupportRows
-      ? 'The previous draft asked for information the learner could not know from the public discourse. Do not ask them to invent an unseen record, source, name, person, or fact.'
-      : null,
-    questionSupportRows
-      ? 'Put the direction into the discourse first. If the active instruction calls for bounded choice, offer 2-3 short choices using only the people, objects, and records already named in this scene. Say concretely what each choice means here; avoid labels such as “one condition,” “the rule,” or “the whole case.” Do not reveal the unstaged record or answer.'
+      ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
       : null,
     (questionSupportAudit?.issues || []).some((issue) => issue.type === 'missing_clarification_invitation')
-      ? dramaticReleaseAudit?.active
-        ? 'The learner must be able to ask for clarification, and the clue still needs its interpretive handoff. Ask one short concrete question about what the clue changes, supports, or leaves unproved. Then add: “You can ask me to unpack any word or connection in that.” Do not replace the clue question with the clarification invitation.'
-        : 'The learner must be able to ask for clarification. End the rewritten turn with a short explicit invitation such as “You can ask me to unpack any word or connection in that,” either after the main question or instead of it.'
+      ? 'Make it explicit that the learner may ask you to unpack a word or connection.'
       : null,
     dramaticReleaseRows
-      ? 'The previous draft made a newly available clue feel like invisible machinery. Rewrite the release as dramatic action flowing inside the same continuous utterance.'
-      : null,
-    dramaticReleaseRows
-      ? 'Let the clue enter through a character, object, gesture, interruption, or spoken line; enact the supplied source role or physically handle the exhibit; then ask what it changes without stepping outside the scene.'
+      ? 'Deliver every newly public clue visibly through its supplied public source or exhibit, without announcing a role-play.'
       : null,
     dramaticReleaseAudit?.active && responseConfiguration?.actorial_part_selection?.authored_role
-      ? `The required clue source is ${responseConfiguration.actorial_part_selection.authored_role}. Do not narrate or name that source outside the quotation. Put the supplied evidence into the source’s own first-person voice inside quotation marks, using “I”, “my”, “we”, or “our”; the adaptive host part remains the surrounding tutor action.`
-      : null,
-    dramaticReleaseAudit?.active && responseConfiguration?.actorial_part_selection?.authored_role
-      ? preservedUptake
-        ? 'Immediately after the preserved uptake, enter through the adaptive host’s concrete first-person action. Then begin the clue source with an unlabeled quotation whose first content word is “I”, “My”, “We”, or “Our”. Do not insert “the assayer”, a role name, a character action in third person, or any speaker label before that quotation.'
-        : 'Enter through the adaptive host’s first-person action, then begin the source with an unlabeled quotation whose first content word is “I”, “My”, “We”, or “Our”. Never introduce the source through a third-person noun phrase or speaker label.'
+      ? `The required newly public clue source is ${responseConfiguration.actorial_part_selection.authored_role}; put its supplied evidence in first-person quoted speech without a role label.`
       : null,
     dramaticReleaseAudit?.active
-      ? 'Stay inside the scene. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” “back to us,” or announce that another piece of information is being supplied. Do not mention a director, release schedule, turn, prompt, harness, DAG, premise id, or evidence that has not been supplied for this turn.'
+      ? 'Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or “back to us.”'
       : null,
     actorialRealizationRows
-      ? `The previous draft did not visibly perform the selected public part (${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'current scene part'}) with its selected tactic (${responseConfiguration?.actorial_performance?.label || 'direct in-scene performance'}). Rewrite the development beat so both are unmistakable in the action and wording.`
-      : null,
-    actorialRealizationRows && responseConfiguration?.actorial_performance?.contract
-      ? `Performance contract: ${responseConfiguration.actorial_performance.contract}`
-      : null,
-    actorialRealizationRows
-      ? 'Do not name the character as a speaker label or write a stage direction. Speak from inside the role in first person, and make the stance change what that voice emphasizes and asks.'
+      ? `For policy_repair only, visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the selected public part'} through ${responseConfiguration?.actorial_performance?.label || 'the selected tactic'} without a role label or stage direction.`
       : null,
     responseCompositionRows
-      ? 'The response must take up what the learner just said and then develop the inquiry without replacing acknowledgement with the next clue or question.'
-      : null,
-    responseCompositionRows
-      ? 'Write one continuous paragraph in one voice. Do not insert a blank line, arrow, role label, stage direction, or mention private analysis.'
+      ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
       : null,
     responseConfiguration?.surface_budgets?.max_average_sentence_words
-      ? `Keep the rewrite’s average sentence length at or below ${responseConfiguration.surface_budgets.max_average_sentence_words} words. Split long evidence, qualification, and question clauses into separate sentences while keeping one paragraph.`
+      ? `Keep average sentence length at or below ${responseConfiguration.surface_budgets.max_average_sentence_words} words.`
       : null,
     repetitionRows
-      ? 'The previous draft repeated a recent tutor reply. Use the current concrete clue, add a genuinely new distinction, and do not restate the same question in different words.'
-      : null,
-    closureRows
-      ? 'The response reached or stated the final verdict but failed to end the dialogue cleanly. Rewrite it as a natural closing act.'
+      ? 'Do not repeat a recent tutor reply or restate the same question in different words.'
       : null,
     closureRows
       ? 'Explicitly say that the case, book, or inquiry is closed. Do not reopen the proof or ask another evidentiary question.'
@@ -1813,25 +1782,22 @@ function tutorResponseRepairPrompt({
       ? 'Do not ask any question. This is the terminal tutor turn.'
       : null,
     '',
-    leakRows ? 'Leak audit:' : null,
-    leakRows || null,
-    scaffoldRows ? 'Human-scaffold audit:' : null,
-    scaffoldRows || null,
-    questionSupportRows ? 'Question-support audit:' : null,
-    questionSupportRows || null,
-    dramaticReleaseRows ? 'Dramatic-release audit:' : null,
-    dramaticReleaseRows || null,
-    actorialRealizationRows ? 'Actorial-realization audit:' : null,
-    actorialRealizationRows || null,
-    responseCompositionRows ? 'Response-composition audit:' : null,
-    responseCompositionRows || null,
-    repetitionRows ? 'Repetition audit:' : null,
-    repetitionRows || null,
-    closureRows ? 'Dialogue-closure audit:' : null,
-    closureRows || null,
+    '[Compact public recovery packet]',
+    ...(Array.isArray(publicPacket) ? publicPacket : [publicPacket]).filter(Boolean),
+    '[End compact public recovery packet]',
     '',
-    'Unsafe draft to replace:',
-    unsafeDraft,
+    '[Response-check failures]',
+    ...[
+      leakRows,
+      scaffoldRows,
+      questionSupportRows,
+      dramaticReleaseRows,
+      actorialRealizationRows,
+      responseCompositionRows,
+      repetitionRows,
+      closureRows,
+    ].filter(Boolean),
+    '[End response-check failures]',
     '[End tutor-only repair instruction]',
   ]
     .filter((line) => line !== null)
@@ -2068,6 +2034,13 @@ function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, rep
       offsetEncoding: 'utf16_code_units',
     },
     audits,
+    auditOk: audits?.deliveryOk ?? audits?.ok ?? null,
+    generation: response?.recoveryBatch
+      ? {
+          candidateKind: response.recoveryCandidateKind || kind,
+          ...response.recoveryBatch,
+        }
+      : null,
     guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
     repairedSpans,
   };
@@ -2108,7 +2081,7 @@ function buildTutorGuardAccounting({
         offsetEncoding: 'utf16_code_units',
       },
       audits: finalAudits,
-      auditOk: finalAudits?.ok ?? null,
+      auditOk: finalAudits?.deliveryOk ?? finalAudits?.ok ?? null,
     },
   });
 }
@@ -7620,6 +7593,7 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
   );
+  console.log(`${C.cyan}  demonstrate${C.reset}  /demo [turns] · guided live tour with analysis and HTML evidence`);
   console.log(`${C.cyan}  take part${C.reset}    /learner · /coach [suggestion] · /auto [turns] · /mode`);
   console.log(
     `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
@@ -9805,8 +9779,12 @@ async function callTutor({
         dialogueClosureFrame,
         world: state?.world || null,
       });
-  const effectiveSystemPrompt = responseConfigurationAdvisory
-    ? `${systemPrompt}\n\n${responseConfigurationAdvisory}`
+  const safeResponseConfigurationAdvisory = sanitizeTutorStubSpeakerAdvisory({
+    world: dag ? world : null,
+    text: responseConfigurationAdvisory,
+  });
+  const effectiveSystemPrompt = safeResponseConfigurationAdvisory
+    ? `${systemPrompt}\n\n${safeResponseConfigurationAdvisory}`
     : systemPrompt;
   const learnerMessageCount = Array.isArray(learnerMessages) ? learnerMessages.length : 1;
   const learnerPrompt = passthrough
@@ -9814,7 +9792,7 @@ async function callTutor({
     : learnerMessageCount > 1
       ? `Learner says in ${learnerMessageCount} consecutive messages before your reply (treat them as one compound turn):\n${learnerText}`
       : `Learner says:\n${learnerText}`;
-  const promptParts = [
+  const speakerAdvisoryParts = [
     tutorMemory,
     dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
     responseCompositionAdvisory,
@@ -9828,24 +9806,14 @@ async function callTutor({
     pointOfActionAdvisory,
     tuningAdvisory,
     tutorFeedbackAdvisory,
-    learnerPrompt,
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, text }));
+  const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
   const machineAdvisoryParts = [
-    tutorMemory,
-    dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-    responseCompositionAdvisory,
-    dramaticReleaseAdvisory,
-    advisory,
-    learnerDagAdvisory,
-    humanDiscourseAdvisory,
-    dialogueClosureAdvisory,
-    comprehensionAdvisory,
-    coachAdvisory,
-    pointOfActionAdvisory,
-    tuningAdvisory,
-    tutorFeedbackAdvisory,
-    responseConfigurationAdvisory,
+    ...speakerAdvisoryParts,
+    safeResponseConfigurationAdvisory,
   ].filter(Boolean);
   let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
   let effectiveSpeakerUserPrompt = userPrompt;
@@ -9956,14 +9924,46 @@ async function callTutor({
       : 'live'
     : 'none';
 
-  async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
+  async function invokeTutorAttempt({
+    attemptUserPrompt,
+    role,
+    streamMode = 'none',
+    repairAttempt = 0,
+    systemPromptOverride = null,
+    instructionTextsOverride = null,
+  }) {
     const startedAt = new Date().toISOString();
-    const instructionTexts = passthrough
-      ? [systemPrompt]
-      : effectiveSpeakerInstructionTexts;
-    let attemptSystemPrompt = effectiveSpeakerSystemPrompt;
+    const instructionTexts =
+      instructionTextsOverride || (passthrough ? [systemPrompt] : effectiveSpeakerInstructionTexts);
+    let attemptSystemPrompt = systemPromptOverride || effectiveSpeakerSystemPrompt;
     let effectiveAttemptUserPrompt = attemptUserPrompt;
     let effectiveInstructionTexts = instructionTexts;
+    let attemptSpeakerPrivilegeAudit = speakerPrivilegeAudit;
+    if (!passthrough && (systemPromptOverride || instructionTextsOverride)) {
+      attemptSpeakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
+        world: dag ? world : null,
+        tutorTurn,
+        systemPrompt: attemptSystemPrompt,
+        privateAdvisory: effectiveInstructionTexts.slice(1).join('\n\n'),
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_speaker_privilege_audit',
+        role,
+        turn: tutorTurn,
+        repairAttempt,
+        audit: attemptSpeakerPrivilegeAudit,
+      });
+      if (!attemptSpeakerPrivilegeAudit.ok) {
+        const error = new Error(
+          `Tutor recovery prompt crossed the private-planner boundary: ${attemptSpeakerPrivilegeAudit.issues
+            .map((issue) => `${issue.code}:${issue.source}`)
+            .join(', ')}`,
+        );
+        error.code = 'TUTOR_RECOVERY_SPEAKER_PRIVILEGE_FAILED';
+        error.speakerPrivilegeAudit = attemptSpeakerPrivilegeAudit;
+        throw error;
+      }
+    }
     let promptAudit = passthrough
       ? {
           schema: 'machinespirits.tutor-stub.prompt-audit.v1',
@@ -10064,7 +10064,7 @@ async function callTutor({
         contextActivatedBy: messageContext.activatedBy,
         passthrough,
         promptAudit,
-        speakerPrivilegeAudit,
+        speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
       },
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
@@ -10147,7 +10147,7 @@ async function callTutor({
       repairAttempt,
       config: request.config,
       promptAudit,
-      speakerPrivilegeAudit,
+      speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
     };
     appendTraceEvent(trace, {
       type: 'model_call',
@@ -10381,6 +10381,58 @@ async function callTutor({
     return baseAudit.ok ? formatTutorStubResponseComposition(baseAudit) || candidate : candidate;
   }
 
+  function withTutorDeliveryDecision(
+    audits,
+    { allowActorialAdvisory = false, advisoryReason = null, role, attempt } = {},
+  ) {
+    const deliveryDecision = tutorStubGuardDeliveryDecision(tutorGuardIssueRows(audits), {
+      allowActorialAdvisory,
+    });
+    const result = {
+      ...audits,
+      deliveryOk: deliveryDecision.ok,
+      deliveryDecision,
+    };
+    if (deliveryDecision.ok && deliveryDecision.advisoryIssues.length) {
+      appendTraceEvent(trace, {
+        type: 'tutor_response_delivery_advisory',
+        role,
+        turn: tutorTurn,
+        attempt,
+        accepted: true,
+        advisoryIssues: deliveryDecision.advisoryIssues,
+        reason: advisoryReason || 'optional actorial realization did not outweigh the passing hard response checks',
+      });
+    }
+    return result;
+  }
+
+  function attachTutorDraftAudits(response, audits) {
+    response.leakAudit = audits.leakAudit;
+    response.scaffoldAudit = audits.scaffoldAudit;
+    response.questionSupportAudit = audits.questionSupportAudit;
+    response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
+    response.actorialRealizationAudit = audits.actorialRealizationAudit;
+    response.repetitionAudit = audits.repetitionAudit;
+    response.closureAudit = audits.closureAudit;
+    response.deliveryDecision = audits.deliveryDecision || null;
+    return response;
+  }
+
+  function tutorResponseFromRecoveryBatch(batchResponse, text, candidateKind, recoveryBatch) {
+    return {
+      ...batchResponse,
+      text,
+      recoveryCandidateKind: candidateKind,
+      recoveryBatch: {
+        schema: recoveryBatch.schema,
+        parseMode: recoveryBatch.parseMode,
+        parsed: recoveryBatch.ok,
+        error: recoveryBatch.error,
+      },
+    };
+  }
+
   try {
     const attempts = [];
     const repairsApplied = [];
@@ -10411,16 +10463,16 @@ async function callTutor({
       });
     }
 
-    let audits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
+    const learnerRequestedPlainStyle = tutorStubLearnerRequestedPlainStyle(learnerText, classification);
+    let audits = withTutorDeliveryDecision(auditTutorDraft(response, { role: roleBase, attempt: 0 }), {
+      allowActorialAdvisory: learnerRequestedPlainStyle,
+      advisoryReason: 'explicit learner style request outranks optional actorial realization',
+      role: roleBase,
+      attempt: 0,
+    });
     attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response, audits }));
-    if (audits.ok) {
-      response.leakAudit = audits.leakAudit;
-      response.scaffoldAudit = audits.scaffoldAudit;
-      response.questionSupportAudit = audits.questionSupportAudit;
-      response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
-      response.actorialRealizationAudit = audits.actorialRealizationAudit;
-      response.repetitionAudit = audits.repetitionAudit;
-      response.closureAudit = audits.closureAudit;
+    if (audits.deliveryOk) {
+      attachTutorDraftAudits(response, audits);
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
       }
@@ -10435,7 +10487,7 @@ async function callTutor({
         repairsApplied,
         finalSource: 'original_candidate',
         finalAudits: audits,
-        outcome: 'guarded_original_accepted',
+        outcome: audits.ok ? 'guarded_original_accepted' : 'guarded_original_accepted_with_advisory',
       });
     }
 
@@ -10450,31 +10502,74 @@ async function callTutor({
         recentTutorTexts,
         world,
       });
-    response = await invokeTutorAttempt({
-      attemptUserPrompt: tutorResponseRepairPrompt({
-        originalUserPrompt: effectiveSpeakerUserPrompt,
-        unsafeDraft: response.text,
-        leakAudit: audits.leakAudit,
-        scaffoldAudit: audits.scaffoldAudit,
-        questionSupportAudit: audits.questionSupportAudit,
-        dramaticReleaseAudit: audits.dramaticReleaseAudit,
-        actorialRealizationAudit: audits.actorialRealizationAudit,
-        responseConfiguration,
-        responseCompositionAudit: audits.responseCompositionAudit,
-        preservedUptake: firstRepairUptake,
-        repetitionAudit: audits.repetitionAudit,
-        closureAudit: audits.closureAudit,
-        dialogueClosureFrame,
-      }),
-      role: `${roleBase}_repair`,
+    const publicRecoveryPacket = [
+      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      responseCompositionAdvisory,
+      dramaticReleaseAdvisory,
+      humanDiscourseAdvisory,
+      dialogueClosureAdvisory,
+      comprehensionAdvisory,
+      tutorFeedbackAdvisory,
+      tutorStubResponseConfigurationPrompt(responseConfiguration),
+      learnerPrompt,
+    ].filter(Boolean);
+    const recoveryPrompt = tutorResponseRecoveryPrompt({
+      publicPacket: publicRecoveryPacket,
+      leakAudit: audits.leakAudit,
+      scaffoldAudit: audits.scaffoldAudit,
+      questionSupportAudit: audits.questionSupportAudit,
+      dramaticReleaseAudit: audits.dramaticReleaseAudit,
+      actorialRealizationAudit: audits.actorialRealizationAudit,
+      responseConfiguration,
+      responseCompositionAudit: audits.responseCompositionAudit,
+      repetitionAudit: audits.repetitionAudit,
+      closureAudit: audits.closureAudit,
+      dialogueClosureFrame,
+    });
+    const recoveryBatchResponse = await invokeTutorAttempt({
+      attemptUserPrompt: recoveryPrompt,
+      role: `${roleBase}_recovery`,
       streamMode: canStreamTutor ? 'buffered' : 'none',
       repairAttempt: 1,
+      systemPromptOverride: systemPrompt,
+      instructionTextsOverride: [systemPrompt, ...publicRecoveryPacket.slice(0, -1)],
     });
-    audits = auditTutorDraft(response, { role: `${roleBase}_repair`, attempt: 1 });
+    const recoveryBatch = parseTutorStubGuardRecoveryCandidates(recoveryBatchResponse.text);
+    appendTraceEvent(trace, {
+      type: 'tutor_response_recovery_candidates',
+      role: `${roleBase}_recovery`,
+      turn: tutorTurn,
+      modelCallCount: 1,
+      parse: {
+        schema: recoveryBatch.schema,
+        ok: recoveryBatch.ok,
+        mode: recoveryBatch.parseMode,
+        error: recoveryBatch.error,
+      },
+      candidates: [
+        { kind: 'policy_repair_candidate', text: recoveryBatch.policyRepair },
+        recoveryBatch.plainRecovery
+          ? { kind: 'plain_recovery_candidate', text: recoveryBatch.plainRecovery }
+          : null,
+      ].filter(Boolean),
+    });
+
+    response = tutorResponseFromRecoveryBatch(
+      recoveryBatchResponse,
+      recoveryBatch.policyRepair,
+      'policy_repair_candidate',
+      recoveryBatch,
+    );
+    audits = withTutorDeliveryDecision(
+      auditTutorDraft(response, { role: `${roleBase}_policy_repair`, attempt: 1 }),
+      { role: `${roleBase}_policy_repair`, attempt: 1 },
+    );
+    const policyRepairResponse = response;
+    const policyRepairAudits = audits;
     const modelRepairSpans = exactTutorRepairSpans(attempts[0].candidate.text, response.text);
     attempts.push(
       tutorGuardAttemptEnvelope({
-        kind: 'model_repair_candidate',
+        kind: 'policy_repair_candidate',
         attempt: 1,
         response,
         audits,
@@ -10489,14 +10584,8 @@ async function callTutor({
       guardedSpans: attempts[0].guardedSpans,
       repairedSpans: modelRepairSpans,
     });
-    if (audits.ok) {
-      response.leakAudit = audits.leakAudit;
-      response.scaffoldAudit = audits.scaffoldAudit;
-      response.questionSupportAudit = audits.questionSupportAudit;
-      response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
-      response.actorialRealizationAudit = audits.actorialRealizationAudit;
-      response.repetitionAudit = audits.repetitionAudit;
-      response.closureAudit = audits.closureAudit;
+    if (audits.deliveryOk) {
+      attachTutorDraftAudits(response, audits);
       response.repaired = true;
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
@@ -10510,10 +10599,248 @@ async function callTutor({
         guards,
         attempts,
         repairsApplied,
-        finalSource: 'model_repair_candidate',
+        finalSource: 'policy_repair_candidate',
         finalAudits: audits,
-        outcome: 'guarded_model_repair_accepted',
+        outcome: 'guarded_policy_repair_accepted',
       });
+    }
+
+    const policyCompositionIssues = (policyRepairAudits?.responseCompositionAudit?.issues || []).filter(
+      (issue) => ['missing_learner_uptake', 'generic_learner_uptake'].includes(issue.type),
+    );
+    const policyDevelopment = String(
+      policyRepairAudits?.responseCompositionAudit?.segments?.development || '',
+    ).trim();
+    if (firstRepairUptake && policyCompositionIssues.length && policyDevelopment) {
+      const compositionRepairAttempt = attempts.length;
+      const compositionRepairText = `${firstRepairUptake} ${policyDevelopment}`.trim();
+      const compositionResponse = tutorResponseFromRecoveryBatch(
+        recoveryBatchResponse,
+        compositionRepairText,
+        'composition_repair_candidate',
+        recoveryBatch,
+      );
+      const compositionAudits = withTutorDeliveryDecision(
+        auditTutorDraft(compositionResponse, {
+          role: `${roleBase}_composition_repair`,
+          attempt: compositionRepairAttempt,
+        }),
+        { role: `${roleBase}_composition_repair`, attempt: compositionRepairAttempt },
+      );
+      const compositionRepairSpans = exactTutorRepairSpans(
+        policyRepairResponse.text,
+        compositionRepairText,
+      );
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'composition_repair_candidate',
+          attempt: compositionRepairAttempt,
+          response: compositionResponse,
+          audits: compositionAudits,
+          repairedSpans: compositionRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'mechanical_composition_repair',
+        fromAttempt: 1,
+        toAttempt: compositionRepairAttempt,
+        triggeredBy: policyCompositionIssues.map((issue) => ({ guard: 'response_composition', ...issue })),
+        guardedSpans: attempts[1].guardedSpans,
+        repairedSpans: compositionRepairSpans,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_mechanical_repair',
+        role: `${roleBase}_composition_repair`,
+        turn: tutorTurn,
+        attempt: compositionRepairAttempt,
+        repairKind: 'learner_uptake_plus_policy_development',
+        accepted: compositionAudits.deliveryOk,
+        text: compositionRepairText,
+      });
+      if (compositionAudits.deliveryOk) {
+        attachTutorDraftAudits(compositionResponse, compositionAudits);
+        compositionResponse.repaired = true;
+        compositionResponse.mechanicalRepair = true;
+        if (compositionResponse.bufferedStream) compositionResponse.guardedStreamReplay = true;
+        return attachTutorGuardAccounting({
+          response: compositionResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'composition_repair_candidate',
+          finalAudits: compositionAudits,
+          outcome: 'guarded_composition_repair_accepted',
+        });
+      }
+    }
+
+    let plainRecoveryResponse = null;
+    let plainRecoveryAudits = null;
+    let plainRecoveryAttemptNumber = null;
+    if (recoveryBatch.plainRecovery) {
+      const plainRecoveryAttempt = attempts.length;
+      plainRecoveryAttemptNumber = plainRecoveryAttempt;
+      const plainResponse = tutorResponseFromRecoveryBatch(
+        recoveryBatchResponse,
+        recoveryBatch.plainRecovery,
+        'plain_recovery_candidate',
+        recoveryBatch,
+      );
+      const plainAudits = withTutorDeliveryDecision(
+        auditTutorDraft(plainResponse, {
+          role: `${roleBase}_plain_recovery`,
+          attempt: plainRecoveryAttempt,
+        }),
+        {
+          allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
+            loopMode: state?.loopMode,
+            learnerRequestedPlainStyle,
+          }),
+          advisoryReason: learnerRequestedPlainStyle
+            ? 'explicit learner style request outranks optional actorial realization'
+            : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
+          role: `${roleBase}_plain_recovery`,
+          attempt: plainRecoveryAttempt,
+        },
+      );
+      plainRecoveryResponse = plainResponse;
+      plainRecoveryAudits = plainAudits;
+      const plainRepairSpans = exactTutorRepairSpans(policyRepairResponse.text, plainResponse.text);
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'plain_recovery_candidate',
+          attempt: plainRecoveryAttempt,
+          response: plainResponse,
+          audits: plainAudits,
+          repairedSpans: plainRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'model_plain_recovery',
+        fromAttempt: 1,
+        toAttempt: plainRecoveryAttempt,
+        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        guardedSpans: attempts[1].guardedSpans,
+        repairedSpans: plainRepairSpans,
+        generatedInSameModelCall: true,
+      });
+      response = plainResponse;
+      audits = plainAudits;
+      if (audits.deliveryOk) {
+        attachTutorDraftAudits(response, audits);
+        response.repaired = true;
+        response.plainRecovery = true;
+        if (response.bufferedStream) {
+          response.guardedStreamReplay = true;
+        }
+        return attachTutorGuardAccounting({
+          response,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'plain_recovery_candidate',
+          finalAudits: audits,
+          outcome: 'guarded_plain_recovery_accepted',
+        });
+      }
+    }
+
+    const sourceVoiceRepairBases = [
+      {
+        kind: 'policy_repair_candidate',
+        attempt: 1,
+        response: policyRepairResponse,
+        audits: policyRepairAudits,
+      },
+      plainRecoveryResponse
+        ? {
+            kind: 'plain_recovery_candidate',
+            attempt: plainRecoveryAttemptNumber,
+            response: plainRecoveryResponse,
+            audits: plainRecoveryAudits,
+          }
+        : null,
+    ].filter(Boolean);
+    for (const base of sourceVoiceRepairBases) {
+      const mechanical = repairTutorStubThirdPersonSourceLeadIn({
+        text: base.response.text,
+        dramaticReleaseFrame,
+        responseConfiguration,
+      });
+      if (!mechanical.changed) continue;
+      const sourceRepairAttempt = attempts.length;
+      const sourceResponse = tutorResponseFromRecoveryBatch(
+        recoveryBatchResponse,
+        mechanical.text,
+        'source_voice_repair_candidate',
+        recoveryBatch,
+      );
+      const sourceAudits = withTutorDeliveryDecision(
+        auditTutorDraft(sourceResponse, {
+          role: `${roleBase}_source_voice_repair`,
+          attempt: sourceRepairAttempt,
+        }),
+        { role: `${roleBase}_source_voice_repair`, attempt: sourceRepairAttempt },
+      );
+      const sourceRepairSpans = exactTutorRepairSpans(base.response.text, mechanical.text);
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'source_voice_repair_candidate',
+          attempt: sourceRepairAttempt,
+          response: sourceResponse,
+          audits: sourceAudits,
+          repairedSpans: sourceRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'mechanical_source_voice_repair',
+        fromAttempt: base.attempt,
+        toAttempt: sourceRepairAttempt,
+        triggeredBy: tutorGuardIssueRows(base.audits),
+        guardedSpans: attempts.find((attempt) => attempt.attempt === base.attempt)?.guardedSpans || [],
+        repairedSpans: sourceRepairSpans,
+        replacements: mechanical.replacements,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_mechanical_repair',
+        role: `${roleBase}_source_voice_repair`,
+        turn: tutorTurn,
+        attempt: sourceRepairAttempt,
+        repairKind: 'third_person_source_lead_in',
+        basedOn: base.kind,
+        accepted: sourceAudits.deliveryOk,
+        replacements: mechanical.replacements,
+        text: mechanical.text,
+      });
+      response = sourceResponse;
+      audits = sourceAudits;
+      if (sourceAudits.deliveryOk) {
+        attachTutorDraftAudits(sourceResponse, sourceAudits);
+        sourceResponse.repaired = true;
+        sourceResponse.mechanicalRepair = true;
+        if (sourceResponse.bufferedStream) sourceResponse.guardedStreamReplay = true;
+        return attachTutorGuardAccounting({
+          response: sourceResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'source_voice_repair_candidate',
+          finalAudits: sourceAudits,
+          outcome: 'guarded_source_voice_repair_accepted',
+        });
+      }
     }
 
     const closureFallbackSelected = Boolean(
@@ -10529,14 +10856,14 @@ async function callTutor({
     };
     const fallbackRequiresSpecificUptake = (audits?.responseCompositionAudit?.issues || []).some(
       (issue) => issue.type === 'learner_selected_test_not_acknowledged',
-    );
+    ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
     const deterministicFallbackUptake = deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
-        recentTutorTexts,
-        world,
-      });
+      learnerText,
+      classification,
+      actionFamily: responseCompositionFrame.selected_action_family || null,
+      recentTutorTexts,
+      world,
+    });
     const fallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
@@ -10606,19 +10933,18 @@ async function callTutor({
     if (canStreamTutor) {
       fallback.guardedStreamReplay = true;
     }
-    const fallbackAudits = auditTutorDraft(fallback, { role: `${roleBase}_fallback`, attempt: 2 });
-    fallback.leakAudit = fallbackAudits.leakAudit;
-    fallback.scaffoldAudit = fallbackAudits.scaffoldAudit;
-    fallback.questionSupportAudit = fallbackAudits.questionSupportAudit;
-    fallback.dramaticReleaseAudit = fallbackAudits.dramaticReleaseAudit;
-    fallback.actorialRealizationAudit = fallbackAudits.actorialRealizationAudit;
-    fallback.repetitionAudit = fallbackAudits.repetitionAudit;
-    fallback.closureAudit = fallbackAudits.closureAudit;
-    const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
+    const fallbackAttempt = attempts.length;
+    const priorAttempt = attempts.at(-1);
+    const fallbackAudits = withTutorDeliveryDecision(
+      auditTutorDraft(fallback, { role: `${roleBase}_fallback`, attempt: fallbackAttempt }),
+      { role: `${roleBase}_fallback`, attempt: fallbackAttempt },
+    );
+    attachTutorDraftAudits(fallback, fallbackAudits);
+    const fallbackRepairSpans = exactTutorRepairSpans(priorAttempt.candidate.text, fallbackText);
     attempts.push(
       tutorGuardAttemptEnvelope({
         kind: 'deterministic_fallback',
-        attempt: 2,
+        attempt: fallbackAttempt,
         response: fallback,
         audits: fallbackAudits,
         repairedSpans: fallbackRepairSpans,
@@ -10626,13 +10952,13 @@ async function callTutor({
     );
     repairsApplied.push({
       kind: 'deterministic_fallback',
-      fromAttempt: 1,
-      toAttempt: 2,
+      fromAttempt: priorAttempt.attempt,
+      toAttempt: fallbackAttempt,
       triggeredBy: tutorGuardIssueRows(audits),
-      guardedSpans: attempts[1].guardedSpans,
+      guardedSpans: priorAttempt.guardedSpans,
       repairedSpans: fallbackRepairSpans,
     });
-    if (!fallbackAudits.ok) {
+    if (!fallbackAudits.deliveryOk) {
       const rejectedIssues = tutorGuardIssueRows(fallbackAudits);
       const exhaustedAccounting = buildTutorGuardAccounting({
         response: fallback,
@@ -13125,6 +13451,7 @@ async function main() {
       learner: ['/mode learner', '/learner'],
       coach: ['/mode coach [guidance]', '/coach [guidance]'],
       auto: ['/mode auto [turns]', '/auto [turns]'],
+      demo: ['/demo [turns]'],
       status: '/status',
     },
     coach: {
@@ -13140,6 +13467,14 @@ async function main() {
       defaultTurns: autoTurns ?? 'until-grounded',
       safetyTurns: autoSafetyTurns,
       stopOnGrounded: autoStopOnGrounded,
+    },
+    demo: {
+      launchRequested: Boolean(args.demo),
+      command: '/demo [turns]',
+      defaultTurns: DEFAULT_INTERACTIVE_DEMO_TURNS,
+      maxTurns: MAX_INTERACTIVE_DEMO_TURNS,
+      sequence: ['bounded_live_dialogue', 'plain_analysis', 'transcript_html', 'compact_outcome_report'],
+      returnsControl: true,
     },
     concurrentCommandSurface: {
       enabled: interactiveSessionEnabled,
@@ -14436,6 +14771,7 @@ async function main() {
   let clarificationInFlight = null;
   let scenarioPickerActive = false;
   let awaitingAnotherScenario = false;
+  let interactiveDemoRunning = false;
   let exiting = false;
   let finalized = false;
   const pendingLearnerLines = [];
@@ -14510,6 +14846,8 @@ async function main() {
       pool = SETTINGS_COMPLETIONS;
     } else if (trimmed.startsWith('/analysis ')) {
       pool = ['/analysis technical'];
+    } else if (trimmed.startsWith('/demo ')) {
+      pool = ['/demo 1', `/demo ${DEFAULT_INTERACTIVE_DEMO_TURNS}`, '/demo 5'];
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
       const command = trimmed.startsWith('/html ') ? '/html' : '/transcript';
       pool = [`${command} no-open`, `${command} write`];
@@ -17240,18 +17578,176 @@ async function main() {
     return parsed;
   }
 
+  function parseInteractiveDemoTurns(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return DEFAULT_INTERACTIVE_DEMO_TURNS;
+    const parsed = Number.parseInt(raw, 10);
+    if (!Number.isInteger(parsed) || parsed <= 0 || String(parsed) !== raw) {
+      throw new Error(`demo expects a whole-number turn count from 1 to ${MAX_INTERACTIVE_DEMO_TURNS}`);
+    }
+    if (parsed > MAX_INTERACTIVE_DEMO_TURNS) {
+      throw new Error(`demo is capped at ${MAX_INTERACTIVE_DEMO_TURNS} turns; use /auto for a longer run`);
+    }
+    return parsed;
+  }
+
+  async function runInteractiveDemo(argument = '', { duringTurn = false, source = 'slash' } = {}) {
+    clearStatusLine();
+    if (state.passthrough?.enabled) {
+      console.log(
+        `${C.dim}the guided harness demonstration is unavailable in passthrough mode because the harness is intentionally bypassed${C.reset}\n`,
+      );
+      return { started: false, reason: 'passthrough' };
+    }
+    if (duringTurn || processingTurn || interactiveDemoRunning) {
+      console.log(`${C.dim}the demonstration can start after the current tutor response completes${C.reset}\n`);
+      return { started: false, reason: 'busy' };
+    }
+    if (!latestTutorMessage(state)) {
+      console.log(`${C.dim}the demonstration needs a visible tutor opening; use /reset, then /demo${C.reset}\n`);
+      return { started: false, reason: 'no_tutor_message' };
+    }
+
+    let requestedTurns;
+    try {
+      requestedTurns = parseInteractiveDemoTurns(argument);
+    } catch (error) {
+      console.log(`${C.red}demo error:${C.reset} ${error.message}\n`);
+      return { started: false, reason: 'invalid_turn_count' };
+    }
+
+    const startingTurns = state.turns.length;
+    const policy = tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays);
+    const enabledMechanisms = [
+      state.classifier?.enabled ? 'learner interpretation' : null,
+      state.learnerDag?.enabled ? 'reasoning-map tracking' : null,
+      state.register?.enabled ? 'adaptive teaching style and character' : null,
+      state.dag ? 'authored evidence DAG' : null,
+      'response checks',
+      'trace and report evidence',
+    ].filter(Boolean);
+    const disabledCoreMechanisms = [
+      !state.classifier?.enabled ? 'learner interpretation' : null,
+      !state.learnerDag?.enabled ? 'reasoning-map tracking' : null,
+      !state.register?.enabled ? 'adaptive teaching style' : null,
+      !state.dag ? 'authored evidence DAG' : null,
+    ].filter(Boolean);
+
+    interactiveDemoRunning = true;
+    appendTraceEvent(state.trace, {
+      type: 'interactive_harness_demo_started',
+      schema: 'machinespirits.tutor-stub.interactive-harness-demo.v1',
+      source,
+      requestedTurns,
+      startingTurns,
+      worldId: state.world?.id || null,
+      learnerProfileId: mixedLearner.profileId || state.learnerProfileId || null,
+      tutorRef: state.tuning?.activeRef || null,
+      policy,
+      enabledMechanisms,
+      publicTranscriptChanged: false,
+    });
+
+    console.log(`${C.brightCyan}${C.bold}╭─ guided harness demonstration${C.reset} ${C.dim}· ${requestedTurns} live turn${requestedTurns === 1 ? '' : 's'}${C.reset}`);
+    console.log(`${C.cyan}│  1 · dialogue${C.reset}       the automated learner and tutor continue the public scene`);
+    console.log(`${C.cyan}│  2 · interpretation${C.reset} the harness reads progress and chooses the next teaching action`);
+    console.log(`${C.cyan}│  3 · evidence${C.reset}       the transcript, prompts, settings, analysis, and replay are preserved`);
+    console.log(`${C.cyan}╰─ configuration${C.reset}   ${state.world?.title || state.topic} · ${state.tuning?.activeRef || state.tutorInstance?.id || 'tutor'} · ${mixedLearner.profileId || state.learnerProfileId || 'learner'} · ${policy}`);
+    console.log(`${C.dim}  active: ${enabledMechanisms.join(' · ')}${C.reset}`);
+    if (disabledCoreMechanisms.length) {
+      console.log(`${C.yellow}  limited tour:${C.reset} ${disabledCoreMechanisms.join(', ')} ${disabledCoreMechanisms.length === 1 ? 'is' : 'are'} off in this session`);
+    }
+    console.log(`${C.dim}  commands remain live while the models work; /reset cancels safely${C.reset}\n`);
+
+    let transcript = null;
+    let report = null;
+    let demoError = null;
+    try {
+      const autoOutcome = await runInteractiveAutoMode(String(requestedTurns), { duringTurn: false });
+      if (autoOutcome?.reason === 'cancelled') {
+        appendTraceEvent(state.trace, {
+          type: 'interactive_harness_demo_cancelled',
+          schema: 'machinespirits.tutor-stub.interactive-harness-demo.v1',
+          source,
+          requestedTurns,
+          startingTurns,
+          endingTurns: state.turns.length,
+          reason: autoOutcome.cancelledReason || 'cancelled',
+          publicTranscriptChanged: false,
+        });
+        console.log(`${C.yellow}${C.bold}demonstration cancelled >${C.reset} ${autoOutcome.cancelledReason || 'control returned'}\n`);
+        return { started: true, reason: 'cancelled' };
+      }
+      if (autoOutcome?.reason === 'error') throw new Error(autoOutcome.error || 'automated demonstration failed');
+      if (autoOutcome?.started === false) throw new Error('automated demonstration could not start');
+      const completedTurns = Math.max(0, state.turns.length - startingTurns);
+
+      console.log(`${C.brightCyan}${C.bold}demo readout · learner interpretation${C.reset}`);
+      if (state.turns.length) printCurrentTurnAnalysis(state, { technical: false });
+      else console.log(`${C.dim}  no tutor turn completed, so there is no learner interpretation to show${C.reset}\n`);
+
+      console.log(`${C.brightCyan}${C.bold}demo readout · inspectable evidence${C.reset}`);
+      transcript = writeCurrentTranscriptHtml({ launch: true, duringTurn: false });
+      report = printDialogueCloseout(state, { reason: 'interactive_demo', trace: state.trace });
+
+      appendTraceEvent(state.trace, {
+        type: 'interactive_harness_demo_completed',
+        schema: 'machinespirits.tutor-stub.interactive-harness-demo.v1',
+        source,
+        requestedTurns,
+        startingTurns,
+        completedTurns,
+        endingTurns: state.turns.length,
+        transcript: transcript?.filePath ? path.relative(ROOT, transcript.filePath) : null,
+        transcriptLaunched: Boolean(transcript?.launched),
+        reportAvailable: Boolean(report),
+        closurePhase: state.dialogueClosure?.phase || null,
+        publicTranscriptChanged: false,
+      });
+
+      console.log(`${C.brightGreen}${C.bold}demonstration complete >${C.reset} ${completedTurns} new turn${completedTurns === 1 ? '' : 's'} · control returned`);
+      console.log(
+        `${C.dim}  ${
+          state.dialogueClosure?.phase === 'closed'
+            ? 'the inquiry reached closure; choose another scenario or finish the session'
+            : 'continue as the learner, use ←/→ to rate the latest tutor response, inspect /analysis technical, or run /demo again'
+        }${C.reset}\n`,
+      );
+      return { started: true, completedTurns, transcript, report };
+    } catch (error) {
+      demoError = error;
+      appendTraceEvent(state.trace, {
+        type: 'interactive_harness_demo_failed',
+        schema: 'machinespirits.tutor-stub.interactive-harness-demo.v1',
+        source,
+        requestedTurns,
+        startingTurns,
+        endingTurns: state.turns.length,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+      console.log(`${C.red}demo error:${C.reset} ${error.message}\n`);
+      return { started: true, reason: 'failed', error: error.message };
+    } finally {
+      interactiveDemoRunning = false;
+      if (demoError && state.interaction?.mode === 'auto') {
+        setInteractionMode(state.interaction.previousMode === 'coach' ? 'coach' : 'learner', { announce: false });
+      }
+    }
+  }
+
   async function runInteractiveAutoMode(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     if (duringTurn || processingTurn) {
       console.log(`${C.dim}auto mode can start after the current tutor response completes${C.reset}\n`);
-      return;
+      return { started: false, reason: 'busy' };
     }
     let requestedTurns;
     try {
       requestedTurns = parseInteractiveAutoTurns(argument);
     } catch (error) {
       console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`);
-      return;
+      return { started: false, reason: 'invalid_turn_count', error: error.message };
     }
     const activeAutoLearnerResolved = state.autoLearner?.resolved || autoLearnerResolved;
     const activeAutoLearnerProviderConfig =
@@ -17261,7 +17757,7 @@ async function main() {
       console.log(
         `${C.red}auto mode error:${C.reset} ${args['auto-learner-model']} is not configured; set ${envName}\n`,
       );
-      return;
+      return { started: false, reason: 'model_not_configured' };
     }
     resetMixedLearnerSuggestion('interactive_auto_started');
     const pendingFeedback = tutorStubTurnFeedbackEnvelope(state.turnFeedback);
@@ -17320,7 +17816,7 @@ async function main() {
           console.log(`${C.brightGreen}${C.bold}automation complete >${C.reset} grounded closure reached\n`),
         );
         offerAnotherScenario('interactive_auto_grounded_closure');
-        return;
+        return { started: true, reason: result.reason, result };
       }
       const returnMode = state.interaction.previousMode === 'coach' ? 'coach' : 'learner';
       setInteractionMode(returnMode, { announce: false });
@@ -17330,6 +17826,7 @@ async function main() {
           `${C.dim}  ${state.turns.length} total completed turn${state.turns.length === 1 ? '' : 's'}; use /auto to continue${C.reset}\n`,
         );
       });
+      return { started: true, reason: result.reason, result };
     } catch (error) {
       if (error?.name === 'AbortError' && active.cancelledReason) {
         appendTraceEvent(state.trace, {
@@ -17337,11 +17834,12 @@ async function main() {
           autoRunId: active.id,
           reason: active.cancelledReason,
         });
-        return;
+        return { started: true, reason: 'cancelled', cancelledReason: active.cancelledReason };
       }
       setInteractionMode(state.interaction.previousMode === 'coach' ? 'coach' : 'learner', { announce: false });
       printWithConcurrentTerminal(state, () => console.log(`${C.red}auto mode error:${C.reset} ${error.message}\n`));
       appendTraceEvent(state.trace, { type: 'interactive_auto_error', error: error.message });
+      return { started: true, reason: 'error', error: error.message };
     } finally {
       if (activeAutoRun === active) {
         activeAutoRun = null;
@@ -19049,6 +19547,11 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (command === '/demo') {
+      const promise = runInteractiveDemo(commandArg, { duringTurn, source: 'slash' });
+      finishSlashCommand();
+      return promise;
+    }
     if (command === '/auto') {
       const promise = runInteractiveAutoMode(commandArg, { duringTurn });
       finishSlashCommand();
@@ -19812,6 +20315,10 @@ async function main() {
     }
   } else if (resumedDialogue) {
     printTutorFeedbackRequest(latestTutorFeedbackTarget());
+  }
+
+  if (args.demo && !exiting) {
+    await runInteractiveDemo('', { source: 'launch_flag' });
   }
 
   promptIfIdle();

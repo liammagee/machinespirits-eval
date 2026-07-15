@@ -24,7 +24,7 @@ export const CHARACTER_ADAPTATION_LOOP_SPEC = Object.freeze({
     transfer: Object.freeze({
       world: 'world_023_greyfen_lab',
       learnerProfile: 'false_memory',
-      acceptanceSeed: 20260722,
+      acceptanceSeed: 20260729,
       retiredAcceptanceSeeds: Object.freeze([
         Object.freeze({
           seed: 20260716,
@@ -49,6 +49,34 @@ export const CHARACTER_ADAPTATION_LOOP_SPEC = Object.freeze({
         Object.freeze({
           seed: 20260721,
           reason: 'three deterministic fallbacks exceeded the strict maximum of one',
+        }),
+        Object.freeze({
+          seed: 20260722,
+          reason: 'two deterministic fallbacks exceeded the strict maximum of one',
+        }),
+        Object.freeze({
+          seed: 20260723,
+          reason: 'three deterministic fallbacks and a recovered analysis timeout failed strict gates',
+        }),
+        Object.freeze({
+          seed: 20260724,
+          reason: 'consumed before cross-domain source-versus-custody boundaries received specific learner uptake',
+        }),
+        Object.freeze({
+          seed: 20260725,
+          reason: 'two safe fallbacks exceeded the strict maximum before cross-domain skeptic and advocate acts were recognized',
+        }),
+        Object.freeze({
+          seed: 20260726,
+          reason: 'three safe fallbacks exceeded the strict maximum before cross-domain comparison and supported-finding acts were recognized',
+        }),
+        Object.freeze({
+          seed: 20260727,
+          reason: 'three safe fallbacks exceeded the strict maximum before placement likelihood, explicit evidence boundaries, and supported advocacy were recognized',
+        }),
+        Object.freeze({
+          seed: 20260728,
+          reason: 'two safe fallbacks and undercounted corrective-answer realization failed the held-out transfer gates',
         }),
       ]),
       purpose: 'held_out_scenario_and_profile_transfer_check',

@@ -393,10 +393,10 @@ function hostEntrance(part, object) {
   return {
     scene_partner: `I set the ${object} between us`,
     examiner: `I examine the ${object}`,
-    record_keeper: `I enter the ${object} beside the testimony in the trial-book`,
-    advocate: `I rest my case on the ${object}; test its limit`,
+    record_keeper: `I mark the ${object} in the open record`,
+    advocate: `I make the strongest case the ${object} can bear; test its limit`,
     skeptic: `Not so fast—I hold the claim against the ${object}`,
-    foreperson: `I enter the ${object} testimony in the trial-book`,
+    foreperson: `I enter the ${object} as a provisional finding`,
   }[part];
 }
 

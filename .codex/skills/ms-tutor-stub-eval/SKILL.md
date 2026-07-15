@@ -154,7 +154,14 @@ npm run tutor:stub:direct          # no DAG interpretation, human types turns
 npm run tutor:stub:direct:mixed    # no DAG interpretation, learner drafts available
 npm run tutor:stub:scaffold        # human-facing DAG scaffold, human types turns
 npm run tutor:stub:scaffold:mixed  # human-facing DAG scaffold, learner drafts available
+npm run tutor:stub:demo            # clean guided live tour plus analysis and HTML evidence
 ```
+
+Inside either scaffold, `/demo` runs the same guided tour against the current
+scene and settings: three bounded automated learner-tutor turns, the latest
+plain-language analysis, the seven-view transcript HTML, and the compact
+outcome report. It then returns control without ending the session. `/demo N`
+uses `N` turns, capped at eight; `/reset` cancels safely while it is running.
 
 Use passthrough when testing the model and setup without the tutoring harness:
 
@@ -568,7 +575,7 @@ Useful variants:
 - Type `/` during a run to open the live slash-command palette above the
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
-  include `/analysis`, `/settings [model|temp n|dropout n]`, `/field`, `/viz`,
+  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - Consecutive public learner lines entered before the tutor reply appears form

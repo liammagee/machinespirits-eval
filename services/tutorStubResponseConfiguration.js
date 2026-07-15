@@ -433,7 +433,10 @@ export function selectTutorStubActorialPart({
 
   const publicDueEvidence = (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence]).filter((row) => oneLine(row?.surface));
   const enactedRelease = publicDueEvidence.some(
-    (row) => row?.presentation?.mode === 'enacted_role' || oneLine(row?.presentation?.role || row?.role),
+    (row) =>
+      row?.presentation?.mode === 'enacted_role' ||
+      oneLine(row?.presentation?.role || row?.role) ||
+      row?.via === 'director',
   );
   if (enactedRelease) {
     const surfaces = publicDueEvidence.map((row) => oneLine(row.surface)).join(' ');
@@ -723,7 +726,7 @@ function stanceVisible(stance, text, metrics) {
     return /\b(?:if|because|means|rather than|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|does not|doesn[’']t|only|limit|until|unproved)\b/iu.test(text);
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm')
-    return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together)\b/iu.test(text);
+    return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together|both (?:read|test))\b/iu.test(text);
   if (stance === 'witnessing')
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
   if (stance === 'charismatic') return /\b(?:but|yet|choose|risk|refuse|test|stake|stop|now)\b/iu.test(text);
@@ -750,9 +753,15 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     return metrics.wordCount <= 110 && (metrics.questionCount > 0 || explicitDirection);
   }
   if (actionFamily === 'answer_accountably') {
-    return /\b(?:because|before|if|unless|until|would count|could show|test|check|wrong|revise)\b|\bnot\b[^.!?]{0,28}\b(?:convict|proof|prove|verdict)\b/iu.test(
-      text,
-    );
+    const explicitAccount =
+      /\b(?:because|before|if|unless|until|would count|could show|test|check|wrong|revise)\b|\bnot\b[^.!?]{0,28}\b(?:convict|proof|prove|verdict)\b/iu.test(
+        text,
+      );
+    const directCorrectiveAnswer =
+      /\b(?:establishes?|identif(?:y|ies)|means|puts?|says?|shows?|supports?|ties?)\b[^.!?]{0,110}\b(?:but\s+)?not\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
+        text,
+      );
+    return explicitAccount || directCorrectiveAnswer;
   }
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;
@@ -774,12 +783,12 @@ function actorialPartVisible(configuration, text, metrics) {
   const part = configuration.actorial_part;
   if (!part) return false;
   if (part === 'scene_partner') {
-    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with you|beside (?:me|you)|between us|together|(?:bring|draw) you beside|clear space for you|leav(?:e|ing) you room|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
+    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|(?:bring|draw) you beside|clear space for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
       (metrics.concreteSceneTermCount > 0 || /\b(?:log|ledger|book|record|file|tool|sample|assay|clue|entry|line)\b/iu.test(text));
   }
   if (part === 'examiner') {
     const namedExaminingAction =
-      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|clear|circle|compare|demonstrate|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|put|read|rest|run|set|show|slap|slide|snap|steady|strike|tap|test|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
+      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|clear|circle|compare|demonstrate|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|put|read|rest|rub|run|scrape|set|show|slap|slide|snap|steady|strike|tap|test|tip|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
         text,
       ) ||
       /\b(?:compare|examine|hold|inspect|look at|test|trace)\b[^.!?]{0,60}\bwith me\b/iu.test(text);
@@ -794,7 +803,9 @@ function actorialPartVisible(configuration, text, metrics) {
     return (
       /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b[^.!?]{0,55}\b(?:log|ledger|book|record|file|notebook|report|roll|sheet|notes?|inventory|trial-book|incident log|mod log|formulation card)\b|\b(?:log|ledger|book|record|file|notebook|report|roll|sheet|notes?|inventory|trial-book|incident log|mod log|formulation card)\b[^.!?]{0,55}\b(?:close|draw|enter|hold|keep|lay|leave|mark|open|press|read|slide|strike|turn|underline|write)\b/iu.test(text) ||
       (metrics.concreteSceneTermCount > 0 && /\bi\s+(?:enter|leave|record|write|mark)\s+(?:that|this|it|the (?:entry|line|record))\b/iu.test(text)) ||
-      /\bi\s+leave\b[^.!?]{0,55}\b(?:entry|line|name|verdict)\b[^.!?]{0,25}\b(?:blank|open|unentered|uninked|unwritten)\b/iu.test(text)
+      /\bi\s+leave\b[^.!?]{0,55}\b(?:entry|line|name|verdict)\b[^.!?]{0,25}\b(?:blank|open|unentered|uninked|unwritten)\b/iu.test(text) ||
+      (metrics.concreteSceneTermCount > 0 &&
+        /\b(?:book|file|ledger|log|notebook|record|report|sheet|trial-book)\b[^.!?]{0,25}\b(?:contains?|gives?|holds?|marks?|reads?|says?|shows?)\b/iu.test(text))
     );
   }
   if (part === 'authored_source') {
@@ -813,7 +824,7 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'advocate') {
     const announcedCase =
-      /\b(?:i(?:[’']ll| will| am going to) (?:argue|make|put)|my case (?:is|rests)|the strongest case|take the case for)\b/iu.test(
+      /\b(?:i(?:[’']ll| will| am going to) (?:argue|make|put)|i rest my case|my case (?:is|rests)|the strongest case|take the case for)\b/iu.test(
         text,
       ) && /\b(?:test|break|challenge|resist|object|what would|show me)\b/iu.test(text);
     const directlyAddressesPublicJudgment =
@@ -848,6 +859,32 @@ function actorialPartVisible(configuration, text, metrics) {
       /\btaken together\b[^.!?]{0,100}\b(?:caused|contaminated|ruined|shows?)\b[^.!?]{0,110}\bunless you can\b[^.!?]{0,70}\b(?:breaks?|challenges?|disproves?|refutes?)\b/iu.test(
         text,
       );
+    const pressesExhibitIntoPublicArgument =
+      /\bi\s+press\b[^.!?]{0,65}\binto\b[^.!?]{0,50}\b(?:argument|case|charge|claim|verdict)\b/iu.test(
+        text,
+      ) && /\b(?:nothing|not|until|unproved)\b/iu.test(text);
+    const directlyRefusesReadyVerdict =
+      /\bi\s+refuse\b[^.!?]{0,35}\b(?:easy|obvious|quick|ready)?\s*(?:accusation|answer|case|charge|claim|story|verdict)\b/iu.test(
+        text,
+      ) && /\b(?:crowd|hall|room|town|warden|witnesses?)\b/iu.test(text);
+    const holdsEvidenceAgainstPublicCry =
+      /\bi\s+hold\b[^.!?]{0,45}\b(?:entry|evidence|mark|record|shilling)\b[^.!?]{0,45}\bagainst\b[^.!?]{0,45}\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,25}\b(?:accusation|case|charge|claim|cry|verdict)\b/iu.test(
+        text,
+      ) && /\b(?:cannot|can[’']t|does not|doesn[’']t|not|unproved|without)\b/iu.test(text);
+    const putsCaseToPublicAuthority =
+      /\bi\s+(?:can|will|would)\s+put the case to\b[^.!?]{0,45}\b(?:bench|crowd|hall|pi|room|town|warden|witnesses?)\b[^.!?]{0,35}\b(?:as follows|this way)\b/iu.test(
+        text,
+      ) &&
+      /\b(?:if|unless)\b[^.!?]{0,100}\b(?:break|challenge|contradict|disprove|object|refute)\w*\b/iu.test(
+        text,
+      );
+    const statesSupportedFindingForTesting =
+      /\bstill\b[^.!?]{0,80}\b(?:caused|contaminated|ruined)\b/iu.test(text) &&
+      /\b(?:breach(?:ed)?|evidence|held|match(?:ed|es)?|overnight|record|same|strain)\b/iu.test(text) &&
+      metrics.questionCount > 0;
+    const makesCaseForSupportedCause =
+      /\bmake(?:s)? the case that\b[^.!?]{0,100}\b(?:caused|contaminated|ruined)\b/iu.test(text) &&
+      metrics.questionCount > 0;
     return (
       announcedCase ||
       directlyAddressesPublicJudgment ||
@@ -857,17 +894,26 @@ function actorialPartVisible(configuration, text, metrics) {
       directlyPressesPublicCase ||
       boundsPublicCase ||
       directlyMakesEvidenceCase ||
-      offersCaseForFalsification
+      offersCaseForFalsification ||
+      pressesExhibitIntoPublicArgument ||
+      directlyRefusesReadyVerdict ||
+      holdsEvidenceAgainstPublicCry ||
+      putsCaseToPublicAuthority ||
+      statesSupportedFindingForTesting ||
+      makesCaseForSupportedCause
     );
   }
   if (part === 'skeptic') {
     const explicitlyRejectsClaim =
-      /\bi\s+(?:(?:would|will|do|can)\s+not|won[’']t|don[’']t|can[’']t)\s+(?:accept|call|carry|enter|say|write)\b/iu.test(
+      /\bi\s+(?:(?:would|will|do|can)\s+not|won[’']t|don[’']t|can[’']t)\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
+        text,
+      ) ||
+      /\b(?:i|we)\s+(?:must|should|will|would)\s+refuse to\s+(?:accept|call|carry|enter|move|say|write)\b|\bwhat\s+(?:claim|conclusion|name|verdict)\b[^?]{0,65}\bmust we refuse to\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
         text,
       );
     const comparesClaimWithRecord =
-      /\bi\s+(?:check|hold|lay|place|press|set|slide)\b[^.!?]{0,85}\b(?:against|beside)\b/iu.test(text) &&
-      /\b(?:but|did not|didn[’']t|does not|doesn[’']t|not in|not yet|rather than)\b/iu.test(text);
+      /\bi\s+(?:check|hold|lay|place|press|set|slide|tap|test)\b[^.!?]{0,85}\b(?:against|beside)\b/iu.test(text) &&
+      /\b(?:but|did not|didn[’']t|does not|doesn[’']t|not (?:enough|evidence|in|proof|that|yet)|rather than)\b/iu.test(text);
     const marksClaimBoundary =
       /\bi\s+(?:draw|mark|underline)\b[^.!?]{0,45}\b(?:boundary|correction|limit|line)\b/iu.test(text) &&
       /\b(?:but|did not|didn[’']t|does not|doesn[’']t|not that|not yet|rather than)\b/iu.test(text);
@@ -879,7 +925,29 @@ function actorialPartVisible(configuration, text, metrics) {
     const visiblyStopsAtBoundary =
       /\bi\b[^.!?]{0,80}\bstop there\b/iu.test(text) &&
       /\b(?:but|not yet|only if|still need|until)\b/iu.test(text);
-    const opensWithCorrection = /^\s*not yet\b/iu.test(text);
+    const opensWithCorrection = /^\s*(?:no\b|not yet\b)/iu.test(text);
+    const testsWordingBoundary =
+      /\bi\b[^.!?]{0,55}\btest\b[^.!?]{0,30}\b(?:claim|conclusion|entry|language|verdict|wording)\b[^.!?]{0,90}\b(?:not|rather than|instead of)\b/iu.test(
+        text,
+      );
+    const keepsCompetingEvidenceSeparate =
+      /\bi\s+keep\b[^.!?]{0,80}\bseparate\b[^.!?]{0,100}\b(?:does not|doesn[’']t|not yet|still need|unproven)\b/iu.test(
+        text,
+      );
+    const physicallyWithholdsUnprovedLink =
+      /\bi\b[^.!?]{0,75}\b(?:hold|keep|lay|pull|set|slide|tap|test)\b[^.!?]{0,120}\bunless\b[^.!?]{0,100}\b(?:remain|remains|stay|stays)\s+unproven\b/iu.test(
+        text,
+      );
+    const holdsBackPrematureVerdict =
+      /\bi\b[^.!?]{0,75}\bhold back\b[^.!?]{0,35}\b(?:accusation|answer|case|charge|claim|conclusion|name|verdict)\b/iu.test(
+        text,
+      ) && /\b(?:not yet|still|until|unproved|without)\b/iu.test(text);
+    const narrowsEstablishedClaim =
+      /\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text);
+    const holdsSceneAtUnsupportedAttribution =
+      /\bi\s+(?:hold|keep|lay|leave|place|set|slide)\b[\s\S]{0,220}\b(?:cannot|can[’']t|does not|doesn[’']t|no\b[^.!?]{0,60}\b(?:identif|name|record|show)|not\b[^.!?]{0,60}\b(?:identif|name|record|show))\w*\b/iu.test(
+        text,
+      );
     return (
       /\b(?:i object|not so fast|i(?:[’']ll| will) challenge|let me challenge|cross-examine|weak link|that does not yet|doesn(?:[’']t| not) yet|not yet (?:show|prove|establish|tie|name)|public evidence does not settle)\b/iu.test(text) ||
       /\bi\s+(?:will not|won[’']t|refuse to)\s+let\b[^.!?]{0,65}\b(?:bear|carry)\b[^.!?]{0,35}\b(?:weight|proof|conclusion|verdict)\b/iu.test(
@@ -890,7 +958,13 @@ function actorialPartVisible(configuration, text, metrics) {
       marksClaimBoundary ||
       voicesConcreteObjection ||
       visiblyStopsAtBoundary ||
-      opensWithCorrection
+      opensWithCorrection ||
+      testsWordingBoundary ||
+      keepsCompetingEvidenceSeparate ||
+      physicallyWithholdsUnprovedLink ||
+      holdsBackPrematureVerdict ||
+      narrowsEstablishedClaim ||
+      holdsSceneAtUnsupportedAttribution
     );
   }
   if (part === 'foreperson') {
@@ -912,18 +986,36 @@ function actorialHostSurface(configuration, text) {
 function actorialPerformanceVisible(configuration, text, metrics) {
   const tactic = configuration.actorial_performance?.id;
   if (!tactic) return true;
-  if (tactic === 'unadorned_report') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
+  if (tactic === 'unadorned_report') {
+    const plainlyHandledExhibit =
+      metrics.wordCount <= 85 &&
+      metrics.questionCount <= 1 &&
+      /\bi\b[^.!?]{0,45}\b(?:check|examine|hold|lift|open|read|show|steady|turn)\b/iu.test(text) &&
+      !/\b(?:as if|behold|destiny|fate|ghost|haunt|thunder|whisper)\b/iu.test(text);
+    return (metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100) || plainlyHandledExhibit;
+  }
   if (tactic === 'evidentiary_boundary') {
     return (
-      /\b(?:beyond|exact|establish|licensed|line that matters|no more|does not|doesn[’']t|limit|only|not merely|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
-      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:must|remains?)\b/iu.test(text)
+      /\b(?:beyond|exact|establish|licensed|line that matters|no more|does not|doesn[’']t|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
+      /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
+      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
     );
   }
   if (tactic === 'rapid_handoff') {
-    return /\b(?:already|straight|live line|your call|move the case|what does that add)\b/iu.test(text) || metrics.wordCount <= 70;
+    const boundedDirectQuestion =
+      metrics.wordCount <= 85 &&
+      metrics.questionCount === 1 &&
+      /\bwhat\b[^?]{0,120}(?:\b(?:add|change|establish|matter|mean|move|settle|show|tell|tie)\b|\bmake\b[^?]{0,35}\blikely\b)/iu.test(
+        text,
+      );
+    return (
+      /\b(?:already|straight|live line|your call|move the case|what does that add)\b/iu.test(text) ||
+      metrics.wordCount <= 70 ||
+      boundedDirectQuestion
+    );
   }
   if (tactic === 'shared_scene_invitation') {
-    return /\b(?:between us|both read|beside|together|clear space for you|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|space for you|what do you make|your reading|with me|within your reach|take the moment|we can (?:carry|take)|what\b[^.!?]{0,45}\bwould you (?:choose|want))\b/iu.test(text);
+    return /\b(?:between us|both read|beside|together|clear space for you|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|space for you|what do you make|your reading|with me|within your reach|take the moment|we can (?:carry|take)|what\b[^.!?]{0,45}\bwould you (?:choose|want)|which\b[^.!?]{0,55}\bwould you like(?: me to)?)\b/iu.test(text);
   }
   if (tactic === 'measured_testimony') {
     return /\b(?:without (?:pushing|forcing)|stand as written|responsibly|honestly bear|let .* stand|no further)\b/iu.test(text);
@@ -932,7 +1024,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     const forcefulExhibitAction =
       /\b(?:block|challenge|confront|plant|press|push|slap|snap|strike|unsettle)\b/iu.test(text);
     const contestedPublicJudgment =
-      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:accusation|answer|assumption|case|charge|claim|cry|guilty|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)|\b(?:accusation|answer|assumption|case|charge|claim|cry|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b|\b(?:against|before)\b[^.!?]{0,30}\b(?:easy|obvious|ready)\b[^.!?]{0,25}\b(?:charge|claim|story|verdict)\b/iu.test(
+      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:accusation|answer|assumption|case|charge|claim|cry|guilty|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)|\b(?:accusation|answer|assumption|case|charge|claim|cry|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b|\b(?:against|before)\b[^.!?]{0,30}\b(?:easy|obvious|ready)\b[^.!?]{0,25}\b(?:charge|claim|story|verdict)\b/iu.test(
         text,
       );
     const challengesTheRoomDirectly =
@@ -965,6 +1057,29 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\b(?:silenc(?:e|es|ed|ing)|still(?:s|ed|ing)?)\b[^.!?]{0,60}\b(?:accusation|chant|cry|murmur|mutters?|name)\b/iu.test(
         text,
       );
+    const concreteReadyStoryLosesDecisiveWeight =
+      metrics.concreteSceneTermCount > 0 &&
+      /\b(?:easy|messy|obvious|quick|ready|sloppy|usual)\b[^.!?]{0,60}\b(?:is|are|was|were)\s+not\b[^.!?]{0,35}\b(?:decisive|enough|proof|verdict)\b/iu.test(
+        text,
+      );
+    const setsReadyStoryAsideForEvidence =
+      metrics.concreteSceneTermCount > 0 &&
+      /\b(?:leave|put|set)\b[^.!?]{0,60}\b(?:easy|messy|obvious|quick|ready|sloppy|usual)\b[^.!?]{0,45}\baside\b/iu.test(
+        text,
+      ) &&
+      /\b(?:cannot|can[’']t|does not|doesn[’']t|evidence|record)\b/iu.test(text);
+    const explicitlyRefusesReadyVerdict =
+      /\bi\s+refuse\b[^.!?]{0,35}\b(?:easy|obvious|quick|ready)?\s*(?:accusation|answer|case|charge|claim|story|verdict)\b/iu.test(
+        text,
+      );
+    const materialEvidenceOutweighsReadyStory =
+      /\b(?:coin|evidence|mark|metal|record|result|swab|touchstone)\b[^.!?]{0,35}\b(?:bites?|cuts?|weighs?)\b[^.!?]{0,20}\b(?:harder than|through)\b[^.!?]{0,35}\b(?:crowd|hall|room|town|warden)(?:[’']s)?\b[^.!?]{0,20}\b(?:answer|case|claim|story|tale|verdict)\b/iu.test(
+        text,
+      );
+    const publicJudgmentOutrunsEvidence =
+      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?|town(?:[’']s)?)\b[^.!?]{0,40}\b(?:accusation|answer|case|charge|claim|story|verdict)\b[^.!?]{0,35}\b(?:has\s+)?outrun\b[^.!?]{0,35}\b(?:evidence|marks?|metal|record|result|swab|touchstone)\b/iu.test(
+        text,
+      );
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -975,7 +1090,12 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       refusesPublicVerdict ||
       voicedPublicClaimMeetsEvidence ||
       refusesReadyJudgment ||
-      silencesPublicAccusation
+      silencesPublicAccusation ||
+      concreteReadyStoryLosesDecisiveWeight ||
+      setsReadyStoryAsideForEvidence ||
+      explicitlyRefusesReadyVerdict ||
+      materialEvidenceOutweighsReadyStory ||
+      publicJudgmentOutrunsEvidence
     );
   }
   if (tactic === 'exposed_mismatch') return /\b(?:apparently|as if|not exactly|small irony|conveniently)\b/iu.test(text);
@@ -1033,21 +1153,10 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
       closure: /\b(?:closed|settled|conclude|therefore)\b/iu.test(text),
     },
   };
-  const audienceDefinition = getAudienceRegisterDefinitions()[configuration.audience_register] || {};
-  const lexicalDefinition = getLexicalAccessibilityDefinitions()[configuration.lexical_accessibility] || {};
-  const sceneDefinition = getSceneImmersionDefinitions()[configuration.scene_immersion] || {};
-  const audiencePass = metrics.averageSentenceWords <= Number(audienceDefinition.max_average_sentence_words || 30);
-  const lexicalLengthPass = metrics.averageSentenceWords <= Number(lexicalDefinition.max_average_sentence_words || 32);
-  const lexicalPass =
-    lexicalLengthPass &&
-    (configuration.lexical_accessibility !== 'glossed_plain' ||
-      unresolvedTerms.length === 0 ||
-      glossedTerms.length === unresolvedTerms.length);
-  const scenePass =
-    !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
   // The adaptive host governs the whole utterance around any authored clue
   // source. A source quotation has its own fixed voice and sentence shape, so
-  // do not let that quotation impersonate—or length-penalize—the host part.
+  // do not let that quotation impersonate—or length-penalize—the host part,
+  // stance, audience register, or lexical accessibility.
   const performanceText = actorialHostSurface(configuration, text);
   const performanceWords = responseWords(performanceText);
   const performanceSentences = responseSentences(performanceText);
@@ -1060,6 +1169,20 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
     ),
     maxSentenceWords: Math.max(0, ...performanceSentences.map((sentence) => responseWords(sentence).length)),
   };
+  const audienceDefinition = getAudienceRegisterDefinitions()[configuration.audience_register] || {};
+  const lexicalDefinition = getLexicalAccessibilityDefinitions()[configuration.lexical_accessibility] || {};
+  const sceneDefinition = getSceneImmersionDefinitions()[configuration.scene_immersion] || {};
+  const audiencePass =
+    performanceMetrics.averageSentenceWords <= Number(audienceDefinition.max_average_sentence_words || 30);
+  const lexicalLengthPass =
+    performanceMetrics.averageSentenceWords <= Number(lexicalDefinition.max_average_sentence_words || 32);
+  const lexicalPass =
+    lexicalLengthPass &&
+    (configuration.lexical_accessibility !== 'glossed_plain' ||
+      unresolvedTerms.length === 0 ||
+      glossedTerms.length === unresolvedTerms.length);
+  const scenePass =
+    !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
   const actorialPartPass = actorialPartVisible(configuration, performanceText, metrics);
   const actorialPerformancePass = actorialPerformanceVisible(
     configuration,
@@ -1069,7 +1192,7 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
-      visible: stanceVisible(configuration.engagement_stance, text, metrics),
+      visible: stanceVisible(configuration.engagement_stance, performanceText, performanceMetrics),
     },
     action_family: {
       selected: configuration.action_family,

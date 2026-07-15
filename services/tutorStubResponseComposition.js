@@ -3,7 +3,7 @@ export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.response-composition-audit.v1';
 
 const ACKNOWLEDGEMENT_PATTERN =
-  /^(?:yes|right|exactly|precisely|just so|fair|good|correct|almost|not quite|no\b|i (?:hear|see|agree|understand)|you(?:[’']re| are)|that(?:[’']s| is)|your\b)/iu;
+  /^(?:yes|right|exactly|precisely|just so|fair|good|correct|almost|too fast|not so fast|not quite|no\b|thou hast it\b|i (?:hear|see|agree|understand)|you(?:[’']re| are)|that(?:[’']s| is)|your\b)/iu;
 const STOCK_TRANSITION_PATTERN =
   /^(?:(?:right—)?that gives us (?:a )?(?:concrete contribution|sound place) to (?:begin|carry forward)|right—that gives us a sound place to begin|i (?:keep|carry) your contribution\b)/iu;
 const DEICTIC_UPTAKE_PATTERN =
@@ -17,7 +17,7 @@ const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
   /\b(?:before (?:entering|recording|writing)|cannot yet|can[’']t yet|hold|not until|wait for|will wait|without .* (?:cannot|can[’']t))\b/iu;
 const LEARNER_PROPOSES_EXAMINATION_PATTERN =
-  /\b(?:(?:i (?:would|will)|let us|we (?:should|will)|(?:can|could|may|shall|should|would) (?:i|we))\b[^.!?]{0,100}\b(?:assay|behold|compare|examine|inspect|look at|press|see|test|weigh)|(?:have|get)\b[^.!?]{0,60}\b(?:assayed|compared|examined|inspected|tested|weighed))\b/iu;
+  /\b(?:(?:i (?:would|will)|let us|we (?:should|will)|(?:can|could|may|shall|should|would) (?:i|we))\b[^.!?]{0,100}\b(?:assay|behold|compare|examine|inspect|look at|mark|press|see|test|weigh)|(?:have|get)\b[^.!?]{0,60}\b(?:assayed|compared|examined|inspected|tested|weighed))\b/iu;
 const COMPLETED_MOVE_UPTAKE_PATTERN =
   /\b(?:completed (?:evidentiary )?(?:distinction|inference|step)|that inference stands|settles? the (?:point|question)|now established|has been established)\b/iu;
 const LEARNER_CONDITIONAL_INFERENCE_PATTERN =
@@ -28,6 +28,8 @@ const CONDITIONAL_ACKNOWLEDGEMENT_PATTERN =
   /\b(?:if|assuming|on that condition|under that condition|given that condition)\b/iu;
 const TOOL_MARK_PATH_PATTERN =
   /\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
+const TOOL_MARK_SELECTION_PATTERN =
+  /\b(?:assay|compare|examine|find|inspect|look for|match|seek|test|watch for)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b|\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b[^.!?]{0,110}\b(?:assay|compare|examine|find|inspect|match(?:ed|es|ing)?|need(?:ed|s)?|seek|test|watch)\b|\b(?:before|first|until)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
 const TOOL_MARK_ACKNOWLEDGEMENT_PATTERN =
   /\b(?:maker[’']s mark|maker mark|die|flaw|graver|mark|nick|burr|stroke|tool)\b/iu;
 const DEVELOPMENT_LEAD_PATTERN =
@@ -51,6 +53,11 @@ function oneLine(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
     .trim();
+}
+
+export function tutorStubLearnerSelectedToolMarkPath(value = '') {
+  const source = oneLine(value);
+  return TOOL_MARK_PATH_PATTERN.test(source) && TOOL_MARK_SELECTION_PATTERN.test(source);
 }
 
 export function composeTutorStubFallbackWithUptake({ text = '', uptake = '' } = {}) {
@@ -318,12 +325,37 @@ function uptakeRespondsToLearner(uptake, frame) {
 function fusedOpeningRespondsToLearner(uptake, frame, minimumOverlap = 3) {
   const surface = oneLine(uptake);
   if (!surface) return false;
-  if (/\b(?:wise|right|fair|exactly|precisely|just so|good|your point|your question|you propose|you suggest)\b/iu.test(surface)) {
+  if (
+    /\b(?:wise|right|rightly|fair|exactly|precisely|just so|good|your point|your question|you propose|you suggest)\b/iu.test(
+      surface,
+    ) ||
+    DEICTIC_UPTAKE_PATTERN.test(surface) ||
+    DEICTIC_EVIDENCE_REFERENCE_PATTERN.test(surface)
+  ) {
     return true;
   }
   if (
     EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN.test(surface) &&
     LEARNER_WITHHOLDS_JUDGMENT_PATTERN.test(oneLine(frame?.learner_text || ''))
+  ) {
+    return true;
+  }
+  const learnerSurface = oneLine(frame?.learner_text || '');
+  if (
+    LEARNER_PROPOSES_EXAMINATION_PATTERN.test(learnerSurface) &&
+    /\b(?:i|we)\b[^.!?]{0,90}\b(?:assay|compare|comparison|draw|examine|inspect|mark|press|rub|set|test|weigh)\b/iu.test(
+      surface,
+    ) &&
+    [...publicTokenSet(learnerSurface)].some((token) => publicTokenSet(surface).has(token))
+  ) {
+    return true;
+  }
+  if (
+    /\?/u.test(learnerSurface) &&
+    /\b(?:account|book|custody|entry|evidence|ledger|log|record)\b/iu.test(learnerSurface) &&
+    /\bi\b[^.!?]{0,45}\b(?:open|read|turn|unfold)\b[^.!?]{0,45}\b(?:account|book|entry|ledger|log|record)\b/iu.test(
+      surface,
+    )
   ) {
     return true;
   }
@@ -422,7 +454,7 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
   }
   if (
     segments.uptake &&
-    TOOL_MARK_PATH_PATTERN.test(oneLine(learnerText)) &&
+    tutorStubLearnerSelectedToolMarkPath(learnerText) &&
     !TOOL_MARK_ACKNOWLEDGEMENT_PATTERN.test(oneLine(text))
   ) {
     issues.push({
@@ -463,6 +495,9 @@ export function deterministicTutorStubLearnerUptake({
   ).toLowerCase();
   const requestType = classification?.turn?.request_type || null;
   const discourseMove = classification?.turn?.discourse_move || null;
+  const classificationText = oneLine(
+    `${classification?.turn?.summary || ''} ${classification?.turn?.pedagogical_need || ''}`,
+  ).toLowerCase();
   const recent = (Array.isArray(recentTutorTexts) ? recentTutorTexts : [])
     .slice(-10)
     .map((value) => oneLine(value).toLowerCase());
@@ -470,7 +505,7 @@ export function deterministicTutorStubLearnerUptake({
     candidates.find((candidate) => !recent.some((previous) => previous.startsWith(oneLine(candidate).toLowerCase()))) ||
     candidates[0];
   const proposesToolMarkTest =
-    /\b(?:compare|examine|find|inspect|look for|seek|trace)\b[^.!?]{0,70}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\btest\b[^.!?]{0,20}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b[^.!?]{0,50}\b(?:compare|examine|find|inspect|test|trace)\b/iu.test(
+    /\b(?:compare|examine|find|inspect|look for|match(?:es|ed|ing)?|seek|trace)\b[^.!?]{0,70}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\btest\b[^.!?]{0,20}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b[^.!?]{0,50}\b(?:compare|examine|find|inspect|match(?:es|ed|ing)?|test|trace)\b/iu.test(
       text,
     );
   if (
@@ -481,6 +516,15 @@ export function deterministicTutorStubLearnerUptake({
     return fresh(
       'Yes—start there: the balance and touchstone can distinguish clipped true coin from a newly struck blank made of poor metal.',
       'Yes—that is the first assay question: was true silver clipped away, or was a lighter debased coin struck anew?',
+    );
+  }
+  if (
+    /\b(?:leave|set|put)\b[^.!?]{0,45}\b(?:old\s+)?clipping\b[^.!?]{0,35}\b(?:aside|behind|out)\b/iu.test(text) &&
+    /\b(?:die|mark|metal)\b/iu.test(text)
+  ) {
+    return fresh(
+      'You have set the old clipping charge aside and kept the metal and die marks as the tests that can supply a specific link.',
+      'Old clipping stays out of the trial-book; the metal and die marks must provide the specific link instead.',
     );
   }
   if (
@@ -500,6 +544,16 @@ export function deterministicTutorStubLearnerUptake({
     return fresh(
       'You have kept the graver tied to die-cutting without treating it as proof of the striking hand.',
       'That keeps the graver’s possible work on the die separate from proof of who struck the shillings.',
+    );
+  }
+  if (
+    proposesToolMarkTest &&
+    /\b(?:before|could|must|need(?:ed|s)?|should|would)\b/iu.test(text) &&
+    /\b(?:blank|crucible)\b/iu.test(`${text} ${classificationText}`)
+  ) {
+    return fresh(
+      'You have named a coin-specific die-mark test, but it tests striking rather than which crucible supplied the blank.',
+      'That die-mark test belongs to the striking path; the blank still needs its own crucible link.',
     );
   }
   if (
@@ -698,6 +752,40 @@ export function deterministicTutorStubLearnerUptake({
     return fresh(
       'That is the right tool-mark test; I’ll keep it in view while the next public evidence enters.',
       'Your proposed die test stays open while this new evidence settles a different part of the coin’s making.',
+    );
+  }
+  if (
+    /\b(?:die|graver|tool)\b/iu.test(text) &&
+    /\bfail(?:s|ed|ing)?\b[^.!?]{0,55}\b(?:connect|link|mark|match|tie)\b[^.!?]{0,55}\b(?:coin|shilling)s?\b/iu.test(
+      text,
+    )
+  ) {
+    return fresh(
+      'You have kept both the graver and any die it cut unconnected from these shillings.',
+      'That leaves the graver and its possible die-work publicly unlinked to these coins.',
+    );
+  }
+  if (
+    /\b(?:corvat|g17|incubator|larkin)\b/iu.test(text) &&
+    /\b(?:exposure|likely|possible|risk|source)\b/iu.test(text) &&
+    /\b(?:but|need|still|unproved|unshown|without|yet)\b/iu.test(text) &&
+    /\b(?:booking|contact|custody|entered|inside|placement|placed|presence)\b/iu.test(text)
+  ) {
+    return fresh(
+      'You have identified Larkin as a plausible G17 exposure source while keeping Corvat’s presence there unproved.',
+      'You have separated Larkin’s G17 risk from the still-missing evidence that Corvat was placed inside it.',
+    );
+  }
+  if (
+    /\b(?:blanks?|coins?|shillings?)\b/iu.test(text) &&
+    /\b(?:leave|leaves|left|keep|keeps|kept|remain|remains|remained)\b[^.!?]{0,65}\b(?:open|unassigned|unplaced|unproved|untraced)\b|\b(?:open|unassigned|unplaced|unproved|untraced)\b[^.!?]{0,65}\b(?:blanks?|coins?|shillings?)\b/iu.test(
+      text,
+    ) &&
+    /\b(?:alloy|crucible|leavings|match|metal|residue|streak)\b/iu.test(text)
+  ) {
+    return fresh(
+      'You have kept the blanks unplaced until the mint-yard leavings match their alloy.',
+      'You have left the blanks unassigned while their metal still awaits a matching crucible residue.',
     );
   }
   if (/\b(?:but|cannot|can[’']t|missing|must|no|not|only|until|yet)\b/iu.test(text)) {

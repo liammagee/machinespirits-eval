@@ -11,6 +11,7 @@ import {
   auditTutorStubSpeakerPrivilege,
   recoverTutorStubDuplicateInstructionLines,
   recoverTutorStubSpeakerPrompt,
+  sanitizeTutorStubSpeakerAdvisory,
 } from '../services/tutorStubPromptAudit.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
@@ -140,6 +141,32 @@ test('speaker prompt recovery remains fail-closed when a retained public surface
   assert.equal(recovered.applied, false);
   assert.equal(recovered.speakerPrivilegeAudit.ok, false);
   assert.ok(recovered.speakerPrivilegeAudit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+});
+
+test('speaker advisories neutralize private bookkeeping ids without admitting future evidence', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const sanitized = sanitizeTutorStubSpeakerAdvisory({
+    world,
+    text: 'Explain R1_blank one premise at a time, but do not treat p_holder as public.',
+  });
+
+  assert.doesNotMatch(sanitized, /R1_blank|p_holder/u);
+  assert.match(sanitized, /relevant public evidence rule/u);
+  assert.match(sanitized, /relevant public evidence item/u);
+
+  const recovered = recoverTutorStubSpeakerPrompt({
+    world,
+    tutorTurn: 5,
+    baseSystemPrompt: 'Speak only from the public scene and dialogue.',
+    publicEvidencePrompt: 'Only the already-spoken assay and crucible claims are public.',
+    responseCompositionPrompt: 'The learner asks for R1_blank to be unpacked slowly.',
+    responseConfigurationPrompt: 'Apply R1_blank explicitly without naming p_holder.',
+    learnerPrompt: 'Learner says: What would tie this metal to one crucible?',
+  });
+
+  assert.equal(recovered.applied, true);
+  assert.equal(recovered.speakerPrivilegeAudit.ok, true);
+  assert.doesNotMatch(recovered.userPrompt, /R1_blank|p_holder/u);
 });
 
 test('public-only speaker recovery passes every authored clue-release boundary', () => {
@@ -318,7 +345,19 @@ process.stdin.on('end', () => {
     );
     assert.ok(characterStanceDrivers.length > 0);
     assert.ok(characterStanceDrivers.every((driver) => driver.source === 'stance:warm'));
-    assert.equal(events.some((event) => event.type === 'tutor_speaker_privilege_audit'), false);
+    const speakerPrivilegeAudits = events.filter((event) => event.type === 'tutor_speaker_privilege_audit');
+    assert.equal(
+      speakerPrivilegeAudits.every((event) => event.audit?.ok === true),
+      true,
+      `postponed clue produced a failed speaking-boundary audit: ${JSON.stringify(speakerPrivilegeAudits)}`,
+    );
+    assert.equal(
+      speakerPrivilegeAudits.some((event) =>
+        event.audit?.issues?.some((issue) => issue.code === 'future_evidence_surface'),
+      ),
+      false,
+      `postponed clue crossed the speaking boundary: ${JSON.stringify(speakerPrivilegeAudits)}`,
+    );
     const tutorCall = events.find(
       (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && event.turn === 1,
     );

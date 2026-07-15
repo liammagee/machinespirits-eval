@@ -51,6 +51,7 @@ function explicitlyWithholdsConclusion(text) {
  */
 export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', wordPatterns = [] } = {}) {
   const sentences = oneLine(text)
+    .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
     .split(/(?<=[.!?])\s+/u)
     .map((sentence) => sentence.trim())
     .filter(Boolean);

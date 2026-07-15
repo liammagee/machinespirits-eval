@@ -6,7 +6,7 @@ const CORRESPONDENCE_PATTERN =
 const EVIDENCE_OBJECT_PATTERN =
   /\b(?:alloys?|assays?|coins?|crucibles?|dies?|entries|entry|flaws?|leavings|logs?|marks?|metals?|records?|residues?|samples?|shillings?|streaks?|tools?|traces?)\b/iu;
 const NON_ASSERTIVE_PATTERN =
-  /\b(?:before|could|if|look for|may|might|must|need(?:s)? to|seek(?:s|ing)?|should|unless|until|whether|would)\b|\bneed(?:s|ed)?\b[^.!?;]{0,80}\bto\b|\b(?:do|does|did|has|have|is|are|was|were) not\b|\b(?:don[’']t|doesn[’']t|didn[’']t|hasn[’']t|haven[’']t|isn[’']t|aren[’']t|wasn[’']t|weren[’']t|never|no match|not yet|nor)\b|\b(?:no|neither)\b[^.!?;]{0,80}\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|match(?:es|ed)?|tie(?:s|d)? (?:back )?to|trace(?:s|d)? (?:back )?to)\b/iu;
+  /\b(?:before|can|could|if|look for|may|might|must|need(?:s)? to|seek(?:s|ing)?|should|unless|until|whether|would)\b|\b(?:missing|required)\s+(?:link|test|evidence)\b|\bneed(?:s|ed)?\b[^.!?;]{0,80}\bto\b|\b(?:do|does|did|has|have|is|are|was|were) not\b|\b(?:don[’']t|doesn[’']t|didn[’']t|hasn[’']t|haven[’']t|isn[’']t|aren[’']t|wasn[’']t|weren[’']t|never|no match|not yet|nor)\b|\b(?:no|neither)\b[^.!?;]{0,80}\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|match(?:es|ed)?|tie(?:s|d)? (?:back )?to|trace(?:s|d)? (?:back )?to)\b/iu;
 const PERSON_ATTRIBUTION_PATTERN =
   /\b(?:hand|holder|name|owner|person)\b[^.!?;]{0,18}\b(?:is|remains?|was) tied to\b/iu;
 const CUSTODY_ATTRIBUTION_PATTERN =

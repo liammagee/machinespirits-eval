@@ -664,6 +664,20 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
 });
 
+test('tutor-stub dry run exposes the guided demo launch contract', () => {
+  const config = tutorStubDryRun(['--demo']);
+
+  assert.deepEqual(config.interactiveRoleModes.demo, {
+    launchRequested: true,
+    command: '/demo [turns]',
+    defaultTurns: 3,
+    maxTurns: 8,
+    sequence: ['bounded_live_dialogue', 'plain_analysis', 'transcript_html', 'compact_outcome_report'],
+    returnsControl: true,
+  });
+  assert.deepEqual(config.interactiveRoleModes.commands.demo, ['/demo [turns]']);
+});
+
 test('mixed startup skips already supplied launch settings while retaining their values', () => {
   const config = tutorStubDryRun([
     '--mixed-learner',
@@ -971,6 +985,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   );
 
   assert.equal(result.status, 0);
+  assert.match(result.stdout, /\/demo \[turns\]/u);
   assert.match(result.stdout, /\/clarify \[phrase\]/u);
   assert.match(result.stdout, /\/explain \[phrase\]/u);
   assert.match(result.stdout, /\/analysis \[technical\]/u);

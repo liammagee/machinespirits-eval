@@ -30,6 +30,7 @@
     "tutor:stub:direct:mixed": "node scripts/tutor-stub.js --mixed-learner --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag-mixed",
     "tutor:stub:scaffold": "node scripts/tutor-stub.js --dag --tutor-learner-dag --dag-mode defeasible_human_scaffold --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/human-scaffold-direct",
     "tutor:stub:scaffold:mixed": "node scripts/tutor-stub.js --mixed-learner --dag --tutor-learner-dag --dag-mode defeasible_human_scaffold --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/human-scaffold-mixed",
+    "tutor:stub:demo": "node scripts/tutor-stub.js --demo --mixed-learner --dag --tutor-learner-dag --dag-mode defeasible_human_scaffold --register-policy continuous_dynamical_system --tutor dramatic-detective --tuning on --world world_005_marrick --auto-learner-profile diligent --register-temperature 0.15 --dag-fact-dropout 0 --release-speed 1 --cli-effort medium --history-turns 4 --max-tokens 4096 --no-remember-settings --trace-dir .tutor-stub-traces/demo",
     "tutor:stub:auto-eval": "node scripts/run-tutor-stub-auto-eval.js",
     "tutor:stub:character-loop": "node scripts/run-tutor-stub-character-adaptation-loop.js",
     "tutor:stub:step4": "node scripts/run-step4-point-of-action-gate.js",

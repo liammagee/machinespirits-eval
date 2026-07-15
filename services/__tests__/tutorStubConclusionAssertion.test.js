@@ -82,6 +82,16 @@ test('does not treat an answer-naming custody clue plus an unfound die-mark as a
   );
 });
 
+test('does not bind a quoted custody clue to a following die-boundary question', () => {
+  const text =
+    '“I have kept this book exact: since the forge was shut, Edony alone drew the weir crucible and signed for its charcoal.” What does that tell the trial-book about who cast these blanks, while the die remains unmarked?';
+
+  assert.equal(
+    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
+    false,
+  );
+});
+
 test('does not treat an answer-naming custody clue plus an unseen die-mark as a die conclusion', () => {
   const text =
     '“I have kept the charcoal reckonings since the forge shut. One hand alone drew the weir crucible and signed for its charcoal: Edony, the founder’s widow.” What does this fix about the hand that cast the blank, while the die-mark remains unseen?';

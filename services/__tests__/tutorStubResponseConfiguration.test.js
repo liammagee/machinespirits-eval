@@ -174,6 +174,29 @@ test('the selected stance and adaptive host remain distinct from an authored clu
   assert.match(tutorStubResponseConfigurationPrompt(brisk), /Forbidden meta-frames/u);
 });
 
+test('an authored clue source does not length-penalize the adaptive host register', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'Move this along.',
+    classification: classification({ requestType: 'resistance_or_low_agency', conceptual: 2 }),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence: [
+      {
+        surface: 'Visitor code WF-11 was issued to an outside crew.',
+        presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the visitor badge log' },
+      },
+    ],
+    world: testWorld(),
+  });
+  const text =
+    'I open the badge log and move straight to its live line. “I issued visitor code WF-11 to the outside crew in a very long fixed source sentence whose authored cadence should not redefine the adaptive host’s audience or lexical register.” What does that add?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.engagement_stance.visible, true);
+  assert.equal(audit.axes.audience_register.visible, true);
+  assert.equal(audit.axes.lexical_accessibility.visible, true);
+});
+
 test('charismatic counterpressure can be realized through forceful exhibit action', () => {
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'charismatic',
@@ -901,6 +924,34 @@ test('leaving a trial-book line unentered and inviting the learner realizes warm
   assert.equal(audit.axes.actorial_part.visible, true);
 });
 
+test('a rhetorical not-yet question and neither-nor contrast realize an evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'The cupel shows the metal, but not which hand cast or struck the coin.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    engagement_stance: 'precise',
+    action_family: 'stage_next_step',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const candidates = [
+    'I hold the grey-stained shilling to the light. The graver bears on who could have cut a die, but does it yet show that this shilling bears a die made by that graver?',
+    'I turn the light shilling beneath the lamp. The graver speaks to who could cut a die, but neither the cupel nor this graver yet ties this shilling to one.',
+  ];
+
+  for (const text of candidates) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+    assert.equal(audit.axes.actorial_part.performance_visible, true, text);
+    assert.equal(audit.actorial_realization.ok, true, text);
+  }
+});
+
 test('drawing a source book beside the trial-book realizes the record keeper', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',
@@ -1283,6 +1334,51 @@ test('leaving room at the bench for the learner realizes the fellow investigator
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('leaving exhibit space for the learner quill realizes the fellow investigator', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'Access to the crucible does not prove these shillings came from it.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'scene_partner',
+    actorial_part_label: 'fellow investigator',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I draw the balance nearer and leave space beside the crucible for your quill. Which distinction should we enter?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('inviting the learner beside an exhibit realizes the fellow investigator', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The graver has not yet been tied to this shilling.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'scene_partner',
+    actorial_part_label: 'fellow investigator',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text = 'Come beside the touchstone with me; what does this lead-sweat establish?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
 test('making room at the balance beside me realizes the fellow investigator', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',
@@ -1415,6 +1511,348 @@ test('a shared-scene correction visibly realizes the skeptical host', () => {
   const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
 
   assert.equal(audit.axes.actorial_part.visible, true);
+});
+
+test('holding a learner entry against the town cry realizes counterpressured advocacy', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The graver shows opportunity, not a die-mark on this shilling.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    engagement_stance: 'charismatic',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'I hold your entry against the town’s cry: Verrell’s graver cannot condemn this shilling without its own die-mark. The town’s easy case now buckles: what does the lead-sweat say about its blank?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('resting a case on an exhibit and offering its limit for testing realizes advocacy', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The graver still does not mark this coin.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    engagement_stance: 'charismatic',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'I rest my case on the crucible; test its limit against the room’s easy verdict. Will that line survive the case we were ready to make?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('putting a falsifiable lab case to the PI realizes the advocate', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'Devlin’s flasks were there too.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I set Devlin’s shelf note beside the Larkin booking sheet: we have no record placing Devlin’s flasks in Larkin overnight. I would put the case to the PI this way: Corvat spent the night in the breached G17 chamber, and the ruined-flask swab is G17. If you can point to a public record that contradicts that, bring it forward.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('physically separating exhibits while withholding an unproved link realizes the skeptic', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The swab proves Devlin’s shelf carried G17.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'The G17 swab does not yet place that mould on Devlin’s shelf. I pull a stool beside the retired unit and tap the seal: unless we can show a breach and overnight exposure, that link remains unproven. Which part of that link needs clarifying?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('steadying the assay weights keeps a concise plain release visibly unadorned', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'May I compare the coins first?',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const text =
+    'Aye—set the fair coin beside the light shilling; the balance and touchstone may show a difference, though they do not yet name the striker. I steady the weights as a voice cuts across the guild-hall: “Verrell alone draws the mint-yard crucible, licensed to no one else.” What does that tell us about the hand that could have cast a blank, and what does it still leave unknown?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('holding back the verdict while separating casting from striking realizes skepticism', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'Then Verrell cast it, if the metal came from his crucible.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'Aye—if the metal proves to be Marrick-cast, the blanks point to Verrell’s casting hand. I draw the balance nearer between us and hold back the verdict: casting a blank is not yet striking a coin. What further mark would we need?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('tipping a public shilling from the cupel visibly realizes the examiner', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'Leave the claim open until the metal is tested.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const text =
+    'Good. I tip a shilling from the cupel: it is not clipped sterling, but newly struck poor dross—silver thinned with copper and grey lead-sweat. What does that rule out?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('an easy verdict outrunning its marks realizes dramatic counterpressure', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The coin needs a distinctive die-flaw tied to the graver.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'Yes—the die must bear a distinctive flaw tied to Verrell’s graver. I turn the shilling beneath the lamp and set the touch-needle aside: the town’s easy verdict has outrun its marks. What does the metal trail rule out?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('yet not by itself states a visible evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'A peculiar alloy match would bind the blanks to the crucible.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'Just so: a peculiar alloy match would bind these blanks to the mint-yard crucible, yet not by itself to the striking hand. I scrape the touchstone and turn a shilling in the cupel.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('asking which evidentiary link is still absent realizes a boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'The cupel establishes the alloy, but the source crucible is still unknown.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'I lift the cupel for the hall to see. What does this settle, and what link to the crucible is still absent?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('tapping two lab records together while testing their limit realizes skepticism', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'The cracked gasket itself is proved to have carried G17 into Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'rapid_handoff', label: 'rapid evidence handoff' },
+  };
+  const text =
+    'I tap the sequencing report against the overnight booking sheet: the match identifies the strain, but the gasket and overnight placement establish the exposure. Together, do they license the finding that Larkin ruined the Corvat line?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('stating a supported lab finding while exposing its remaining limit realizes advocacy', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The report traced G17 through the gasket itself.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I set the sequencing report beside the cracked gasket: it matches G17 in the flasks to G17 in Larkin, not to one observed leak through the gasket. Still, Larkin ruined the line: it held G17 with a breached seal, Corvat sat there overnight, and the flasks carried that exact strain. Does that distinction fit what you carry forward?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('a placement likelihood question realizes a rapid examiner handoff', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'We need to know whether Corvat was actually inside Larkin.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'rapid_handoff', label: 'rapid evidence handoff' },
+  };
+  const text =
+    'That is the missing link. I compare the overnight placement sheet against the incubator bookings; the margin note puts Corvat in Larkin overnight. What does that placement make likely about Corvat’s contact with G17?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('establishes a breach not a witnessed release realizes an evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'The cracked gasket released G17 into Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'I hold the cracked gasket against the quarantine file: it establishes a breached Larkin chamber, not a witnessed release through the gasket. Does that license the narrower finding?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('making a supported causal case for testing realizes advocacy', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The gasket itself carried G17 into Corvat.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I keep the Larkin file beside the sequencing report: its resident G17, breached seal, and Corvat’s overnight stay make the case that Larkin ruined the line. Does that leave any basis for blaming Devlin personally?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
 });
 
 test('a first-person refusal to overweigh an exhibit visibly realizes the skeptical host', () => {
@@ -1613,6 +2051,290 @@ test('a first-person possessive objection realizes a skeptical shared-scene host
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('refusing to move a damaged object on one distinction realizes skepticism outside a courtroom', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The G17 swab shows Devlin carried the mould into Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'The G17 swab places that mould inside the Larkin incubator, not inside Devlin’s flasks. I would not move a ruined culture on that distinction alone—residency is not yet carriage or exposure. What mark or record would you want next to connect the incubator to the Corvat flasks?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+});
+
+test('a shared refusal to enter an unsupported claim realizes the skeptical host', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'Verrell’s old clipping proves nothing about these new coins.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I tap the trial-book shut on Verrell’s old offence. Just so: the cupel proves new false coin was struck, but it names neither the melt nor the hand. I draw the balance aside and make room for you at the touchstone. Until this dross answers to one crucible’s leavings, what claim about a caster must we refuse to enter?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('displacing a ready scene story with a concrete record realizes dramatic counterpressure', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The Corvat flasks sit between Devlin’s shelf log and the Larkin incubator booking sheet.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The return swab already tied G17 to Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'The return swab tied G17 to the Larkin chamber, not yet to Corvat. I hold up the booking sheet against Devlin’s shelf log: the messy shelf is not tonight’s decisive mark. “I found every booked incubator full. The Corvat flasks were parked in Larkin overnight—the only shelf left before nine.” Given G17 and the broken gasket, what does that overnight stay mean for Corvat?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a directly handled concise exhibit remains an unadorned report despite one long sentence', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'Devlin’s shelf holds unmarked flasks beside the Corvat line.',
+    question: 'What ruined Corvat?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'I saw Devlin’s flasks cloud first.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const text =
+    'I can inspect the shelf and the log, but we cannot treat what you saw as evidence until it is recorded. I lift one flask from Devlin’s shelf and turn it toward the light: no date, no initials; the Corvat flasks sat here all week among identical unmarked glass. What does that make the shelf suggest, and what does it still fail to show?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('setting the obvious story aside for contrary evidence realizes skeptical counterpressure', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'Devlin’s shelf faces the Larkin incubator across the lab.',
+    question: 'What ruined Corvat?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The swab proves Devlin’s shelf carried G17.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'No—the swab was taken from the retired Larkin incubator, not Devlin’s shelf. I set Devlin’s messy flask row aside: it cannot borrow evidence from a different machine. G17 is inside the Larkin unit, but for it to threaten Corvat, what must be true about that incubator besides merely containing the strain?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('testing verdict wording against an unobserved route realizes the skeptic', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The gasket, sequencing report, and booking sheet lie on the lab bench.',
+    question: 'What ruined Corvat?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'G17 escaped through the faulty gasket.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'assertion_gap', coverage: 1 }),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I put my finger on the cracked gasket, then the G17 sequencing report. I pull a stool beside the booking sheet for you, but I test the wording: enter Larkin as the source, not “G17 came through the gasket.” Does that distinction keep the record accurate?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('pressing an exhibit into the town argument realizes an advocate under counterpressure', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'This graver is not yet tied to the shillings.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  for (const text of [
+    'Just so. I press the broad graver into the town’s argument: Verrell’s sole hand on it proves nothing about these coins until a die-mark on them answers to that tool. The next decisive mark must be on the shilling itself.',
+    'I hold Verrell’s graver before the warden: the town calls it enough, but I refuse that easy verdict. Until a die-flaw on these shillings matches this tool, his graver has touched only suspicion.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+    assert.equal(audit.axes.actorial_part.part_visible, true, text);
+    assert.equal(audit.axes.actorial_part.performance_visible, true, text);
+  }
+});
+
+test('a bounded one-question exhibit transfer realizes a rapid handoff', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'Let us assay a fair shilling against residue from the crucible.',
+    classification: classification(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'rapid_handoff', label: 'rapid evidence handoff' },
+  };
+  const text =
+    'A sound assay, and it tests the gap between Verrell’s crucible and these coins. I set a fair shilling on the touchstone and scrape its edge: the cupel shows poor dross, silver thinned with copper and a grey sweat of lead. This is no clipped sterling; clipping shaves a true coin, but these shillings were struck anew. What does that settle about the shillings, and what comparison with the crucible residue still matters?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('an eighty-one word exhibit transfer remains a rapid handoff', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'Keep the name open until the metal answers.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'rapid_handoff', label: 'rapid evidence handoff' },
+  };
+  const text =
+    'Aye, you hold the line rightly: Verrell’s access names no hand until the metal itself points to one crucible. I draw the shilling across the touchstone beside the cupel; its streak shows poor dross, silver thinned with too much copper and a grey sweat of lead. These are not clipped sterling, for clipping shaves a true coin and strikes none anew. What does this tell you about the false shillings themselves, before we can tie their alloy to any crucible?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.metrics.wordCount, 81);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a record statement with a choice of clarification realizes a warm record keeper', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'Can we slow down?',
+    classification: classification({ requestType: 'stepwise_support_request' }),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial book',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'Yes—we can slow down. So far, the record says only that Verrell alone worked the mint-yard crucible. It does not show these shillings came from it or that he struck them. Which word or connection would you like me to unpack?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('material evidence biting harder than the town tale realizes dramatic counterpressure', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'A repeated flaw must answer uniquely to Verrell’s graver.',
+    classification: classification(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'A sound restraint: a flaw must bind these shillings to one graver before it names Verrell. The touchstone bites harder than the town’s tale; I hold the grey lead-sweat beneath the founder’s eye. What does the weir-forge match do to the easy verdict?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('rubbing a public sample on the touchstone visibly realizes the examiner host', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'A repeated die-flaw would tie these shillings to a graver.',
+    classification: classification(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+    actorial_part_selection: {
+      ...(base.actorial_part_selection || {}),
+      authored_role: "founder's man identifying the lead-sweat",
+    },
+  };
+  const text =
+    'A repeated die-flaw would tie these shillings to a graver, but none has yet been shown. I rub the grey lead-sweat from the touchstone as the founder’s man leans over it: “I know that dross; it answers to the weir-forge leavings.” What does that establish about the blank, and what remains unproved about the die?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
 test('presented-exhibit fallback preserves the selected part and tactic across every stance', () => {
   const dueEvidence = [
     {
@@ -1669,4 +2391,149 @@ test('learner-responsive action families are audited on uptake rather than clue 
   assert.equal(configuration.action_family, 'answer_accountably');
   assert.equal(audit.axes.action_family.visible, true);
   assert.equal(audit.axes.action_family.evaluated_segment, 'uptake');
+});
+
+test('a direct evidence correction visibly answers an overreaching learner', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The retired tag bears Devlin’s initials, so it names him.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach', conceptual: 3 }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'premature_assertion' }),
+    world: testWorld(),
+  });
+  const uptake = 'The retired tag identifies the Larkin unit, not Devlin or the person who moved Corvat.';
+  const audit = auditTutorStubResponseConfiguration({
+    text: `${uptake} I leave the tag beside the report so we can test its limit together.`,
+    configuration: { ...configuration, action_family: 'answer_accountably' },
+    world: testWorld(),
+    composition: {
+      uptake,
+      development: 'I leave the tag beside the report so we can test its limit together.',
+    },
+  });
+
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.action_family.evaluated_segment, 'uptake');
+});
+
+test('a skeptic can hold a physical record at an unsupported attribution across sentences', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The tag names Devlin as the person who moved Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach', conceptual: 3 }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'premature_assertion' }),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+  };
+  const text =
+    'I leave room beside the asset tag and booking sheet. The tag shows Larkin is retired, but no initials are recorded on it; we cannot add Devlin’s name because the loss hurts. Which actual mark identifies who moved Corvat?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('a skeptic can stop a lab inference at not-proof while holding both records', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'The cracked seal proves Corvat was exposed.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach', conceptual: 3 }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'premature_assertion' }),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'skeptic',
+    actorial_part_label: 'skeptical examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'I hold the cracked gasket beside the G17 swab and stop you there: it makes Larkin an active source, not proof that Corvat was inside it. The booking record must place the flasks there overnight.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('nothing yet beyond a handled crucible is a visible evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'Verrell alone used the crucible.',
+    classification: classification({ requestType: 'stepwise_support_request', conceptual: 3 }),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'I run a finger along the crucible’s rim and set the licence beside it: this shows Verrell alone used that vessel. It tells us nothing yet about whether these shillings came from its melt.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('an enacted clue source does not length-penalize its plain adaptive host', () => {
+  const dueEvidence = [
+    {
+      surface:
+        'An incubator Facilities decommissioned last spring is back on the floor. Its quarantine record and return swab identify resident Aspergillus G17. Someone retrieved it for overflow.',
+      via: 'director',
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'warm',
+    learnerText: 'The shelf log proves Devlin contaminated Corvat.',
+    classification: classification({ requestType: 'answer_seeking_or_overreach', conceptual: 2 }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'premature_assertion' }),
+    dueEvidence,
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    action_family: 'answer_accountably',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_host_part: 'advocate',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+    actorial_part_selection: { ...base.actorial_part_selection },
+    evidence_enactment: { ...base.evidence_enactment },
+  };
+  const uptake = 'The shelf log shows disorder and proximity, not that Devlin contaminated Corvat.';
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake,
+    responseConfiguration: configuration,
+    variationKey: 'greyfen-enacted-source-host',
+  });
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    world: testWorld(),
+    composition: { uptake, development: text.slice(uptake.length).trim() },
+  });
+
+  assert.doesNotMatch(text, /trial-book/iu);
+  assert.match(text, /strongest case/iu);
+  assert.equal(configuration.evidence_enactment.mode, 'enacted_role');
+  assert.ok(configuration.evidence_enactment.authored_role);
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.audience_register.visible, true);
+  assert.equal(audit.axes.lexical_accessibility.visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
 });

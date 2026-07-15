@@ -8,6 +8,7 @@ import {
   deterministicTutorStubConfiguredContinuationFallback,
   deterministicTutorStubLearnerUptake,
   formatTutorStubResponseComposition,
+  tutorStubLearnerSelectedToolMarkPath,
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
 
@@ -39,6 +40,121 @@ test('deterministic uptake preserves a selected die-mark test while correcting w
   assert.match(uptake, /die-mark/iu);
   assert.match(uptake, /cuts? the die|die-cutting tool/iu);
   assert.match(uptake, /does not strike|not the striking hand/iu);
+});
+
+test('deterministic uptake preserves a learner who sets old clipping aside for metal and die evidence', () => {
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText: 'I’ll leave Verrell’s old clipping aside until the metal or die marks give us a specific link.',
+  });
+
+  assert.match(uptake, /old clipping/iu);
+  assert.match(uptake, /metal and die marks/iu);
+  assert.match(uptake, /specific link/iu);
+  assert.doesNotMatch(uptake, /graver tied to its owner/iu);
+});
+
+test('deterministic uptake preserves a failed graver-to-die link as the selected tool test', () => {
+  const learnerText = 'It still fails to tie this graver or any die it cut to these shillings.';
+  const uptake = deterministicTutorStubLearnerUptake({ learnerText });
+
+  assert.match(uptake, /graver/iu);
+  assert.match(uptake, /die/iu);
+  assert.match(uptake, /unconnected|unlinked/iu);
+
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'The learner keeps the graver-to-die link unproved.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I lay the graver beside the shilling and leave the die-mark comparison open.`,
+  });
+  assert.equal(audit.ok, true);
+});
+
+test('the explicit selected-tool path survives a simultaneous blank conclusion', () => {
+  assert.equal(
+    tutorStubLearnerSelectedToolMarkPath(
+      'The blanks came from the old weir-forge; no striker is named until a repeated die-mark is matched.',
+    ),
+    true,
+  );
+});
+
+test('holding an unproved graver link open is not itself a selected tool-mark test', () => {
+  assert.equal(
+    tutorStubLearnerSelectedToolMarkPath(
+      'Let us hold it open for the next public fact; neither the crucible nor the graver yet binds this particular coin to Verrell.',
+    ),
+    false,
+  );
+});
+
+test('deterministic uptake preserves blanks withheld pending an alloy match', () => {
+  const learnerText = 'I will leave the blanks unplaced until the mint-yard leavings match their poor alloy.';
+  const uptake = deterministicTutorStubLearnerUptake({ learnerText });
+
+  assert.match(uptake, /blanks/iu);
+  assert.match(uptake, /unplaced|unassigned/iu);
+  assert.match(uptake, /alloy|metal/iu);
+
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'The learner withholds source attribution pending a match.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    dramaticReleaseFrame: { active: true },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I lay the graver beside the shilling for the next public comparison.`,
+  });
+  assert.equal(audit.ok, true);
+});
+
+test('a fused scene opening can acknowledge withheld attribution with rightly', () => {
+  const learnerText = 'I will leave the blanks unplaced until the mint-yard leavings match their poor alloy.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'The learner withholds source attribution pending a match.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    dramaticReleaseFrame: { active: true },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: 'I hold the shilling beside the untouched cupel: rightly so—the blanks still await the leavings’ answer. I lay the graver beside it for the next public comparison.',
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.method, 'fused_opening');
+});
+
+test('deterministic uptake preserves a lab source-versus-custody boundary', () => {
+  const learnerText =
+    'Then Larkin is the likely exposure source because its split gasket let G17 leak out; we still need custody evidence that Corvat was inside.';
+  const uptake = deterministicTutorStubLearnerUptake({ learnerText });
+
+  assert.match(uptake, /Larkin/iu);
+  assert.match(uptake, /G17|exposure/iu);
+  assert.match(uptake, /Corvat/iu);
+  assert.match(uptake, /unproved|missing/iu);
+
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'The learner distinguishes source risk from custody.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    dramaticReleaseFrame: { active: true },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I open the overnight booking sheet beside the Larkin shelf.`,
+  });
+
+  assert.equal(audit.ok, true);
 });
 
 function traceFrame() {
@@ -170,6 +286,29 @@ test('a short necessary acknowledgement may reuse the learner’s public terms',
   assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
 });
 
+test('too fast is a direct corrective uptake when the learner has overreached', () => {
+  const learnerText =
+    'With the G17 swab and the perished gasket, Larkin is the confirmed route into the Corvat flasks.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'The learner overstates an active source as a confirmed route into Corvat.',
+        request_type: 'answer_seeking_or_overreach',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'clarify_distinction' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: 'Too fast. I set the G17 swab beside Larkin’s cracked gasket and leave the Corvat flasks apart: together, the swab and failed seal make Larkin an active source of G17, not yet the route into those flasks.',
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.uptake, 'Too fast.');
+});
+
 test('an in-scene rightly-entered opening visibly acknowledges a trial-book inference', () => {
   const frame = traceFrame();
   const text =
@@ -194,6 +333,19 @@ test('a clue rehearsal without learner uptake fails composition even when it dev
   assert.equal(audit.ok, false);
   assert.equal(audit.segments.method, 'development_only');
   assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_learner_uptake']);
+});
+
+test('marking the learner distinction in the scene counts as fused uptake', () => {
+  const frame = traceFrame();
+  const learnerText =
+    'It rules out clipping as the cause of their lightness, but does not tell us whose melt supplied the dross.';
+  const text =
+    'I mark that beside the cupel: the false shillings were struck from debased metal, yet their melt remains unassigned. To bind that dross to any crucible, we need the crucible’s leavings to answer the same way.';
+  const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.method, 'fused_opening');
+  assert.match(audit.segments.uptake, /I mark that beside the cupel/u);
 });
 
 test('an uppercase first-person scene action is development, not preservable learner uptake', () => {
@@ -228,6 +380,43 @@ test('a scene action can fuse learner uptake into its first sentence without bec
   assert.match(audit.segments.uptake, /Weight, ring, and touchstone/u);
   assert.equal(audit.segments.development, text);
   assert.equal(formatTutorStubResponseComposition(audit), text);
+});
+
+test('enacting the learner proposed touchstone comparison is fused uptake', () => {
+  const frame = traceFrame();
+  const learnerText =
+    'I would first mark a fair shilling against one of the light pieces on the touchstone.';
+  const text =
+    'I set the two shillings upon the touchstone; that comparison may show what differs in their metal, but not yet whose hand struck either coin. A witness gives the next public entry.';
+  const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.method, 'fused_opening');
+  assert.match(audit.segments.uptake, /touchstone/u);
+});
+
+test('thou hast it is a direct period-appropriate acknowledgement', () => {
+  const frame = traceFrame();
+  const learnerText =
+    'The graver may connect Verrell to a die, but it does not connect this blank to his crucible.';
+  const text =
+    'Thou hast it: Verrell’s sole graver could connect him to a die, yet the coin still lacks a proved link to his crucible. We need the dross alloy itself to answer to a particular crucible.';
+  const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.method, 'first_sentence');
+});
+
+test('opening the requested custody record is a fused direct answer', () => {
+  const frame = traceFrame();
+  const learnerText = 'What custody evidence links the weir-forge’s cast blanks to a particular person?';
+  const text =
+    'I open the charcoal book beside the cold crucible: “I keep this account exact. Since the forge shut, one hand alone has drawn the weir crucible.” What does that make the named hand’s connection to this blank?';
+  const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.segments.method, 'fused_opening');
+  assert.match(audit.segments.uptake, /open the charcoal book/u);
 });
 
 test('leaving an evidentiary line unentered visibly takes up a learner who withholds judgment', () => {
@@ -795,6 +984,42 @@ test('mentioning an unproved die is not itself treated as a proposed tool-mark t
   assert.equal(uptake, 'You have kept the graver tied to its owner without pretending it has marked this coin.');
 });
 
+test('a modal die-mark proposal is acknowledged without confusing striking with the blank path', () => {
+  const learnerText = 'The shilling itself must bear a die-mark matching a die proved to be in Verrell’s hand.';
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    classification: {
+      turn: {
+        request_type: 'answer_seeking_or_overreach',
+        summary: 'Proposes the die path when the question asks about the blank path.',
+      },
+    },
+    actionFamily: 'stage_next_step',
+  });
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        request_type: 'answer_seeking_or_overreach',
+        summary: 'Proposes the die path when the question asks about the blank path.',
+      },
+    },
+    registerSelection: { action_family: 'stage_next_step' },
+    dramaticReleaseFrame: { active: false },
+  });
+  const audit = auditTutorStubResponseComposition({
+    text: `${uptake} I set the shilling between us so we can test the distinction together.`,
+    frame,
+    learnerText,
+  });
+
+  assert.equal(
+    uptake,
+    'You have named a coin-specific die-mark test, but it tests striking rather than which crucible supplied the blank.',
+  );
+  assert.equal(audit.ok, true);
+});
+
 test('what is public inside a declarative evidence boundary is not mistaken for a comprehension request', () => {
   const uptake = deterministicTutorStubLearnerUptake({
     learnerText: 'Let us test it against what is public: Verrell’s graver is his alone, but no flaw yet links it to these coins.',
@@ -812,7 +1037,9 @@ test('explicit alloy boundary outranks a resistant-profile misclassification', (
     actionFamily: 'challenge_resistance',
   });
 
-  assert.equal(uptake, 'You have kept the alloy link provisional until one crucible’s leavings answer it.');
+  assert.match(uptake, /kept|left/iu);
+  assert.match(uptake, /unplaced|unassigned|provisional/iu);
+  assert.match(uptake, /alloy|crucible|leavings/iu);
   assert.doesNotMatch(uptake, /route is not giving you enough|lower the pressure/u);
 });
 

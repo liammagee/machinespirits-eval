@@ -116,6 +116,29 @@ test('a natural concrete choice and an offer to clarify satisfy bounded support'
   );
 });
 
+test('a natural what-or contrast counts as a bounded directional choice', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: false,
+  };
+  const text =
+    'What still lacks a mark: that this coin bears a die cut by Verrell’s graver, or merely that he owns the graver?';
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+});
+
+test('an is-or question over two public exhibit readings is a bounded choice', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: false,
+  };
+  const text = 'Is the next want a mark on the coin itself, or a closer reckoning of the graver?';
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+});
+
 test('due evidence is staged before interpretation is requested', () => {
   const support = buildTutorStubQuestionSupport({
     tutorTurn: 22,

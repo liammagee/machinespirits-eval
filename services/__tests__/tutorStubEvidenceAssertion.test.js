@@ -30,6 +30,8 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
     'The shilling has not yet been matched to any crucible leavings.',
     'We need to look for a mark that corresponds to this tool.',
     'We still need the shilling’s alloy to answer to its leavings.',
+    'A distinctive alloy can lead us to the crucible whose leavings match it.',
+    'The missing link is a match between this alloy and one crucible’s leavings.',
     'The tool is tied to Verrell, not yet to this coin.',
     'Yet I object to one phrase: no shared flaw has been proved, nor has any flaw been matched to that graver.',
     'You have kept the graver tied to die-cutting without treating it as proof of the striking hand.',
