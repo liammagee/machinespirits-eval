@@ -1,0 +1,90 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v4
+created: 2026-07-15
+
+purpose: >-
+  Fresh post-boundary-fix breadth verification. This matrix tests whether one
+  immutable public-evidence boundary per tutor call, evidence-shaped dramatic
+  presentation, and bounded recovery selection transfer to four scenario and
+  learner trajectories not used in the v3 diagnosis.
+
+code_under_test:
+  branch: preconscious
+  commit: 92845230957bf3391265b52c955493e11a5e5922
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i7-2026-07-15T13-12-55-500Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v3
+  affected_seeds: [20260750, 20260751, 20260752, 20260753]
+  reason: >-
+    The complete v3 matrix and its Jukebox diagnostic trace were inspected
+    before the public-boundary snapshot, record-versus-witness presentation,
+    clue-uptake deduplication, and response-realization fixes were implemented.
+    All four observed trajectories are therefore tuning evidence, not reusable
+    acceptance evidence.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: nocturne_skeptic
+    world: world_001_nocturne
+    learner_profile: skeptical
+    seed: 20260760
+    rationale: Archival attribution with converging proof branches and a warrant-demanding learner.
+
+  - id: lantern_fast
+    world: world_002_lantern
+    learner_profile: fast_learner
+    seed: 20260761
+    rationale: Maritime elimination proof with accelerated multi-premise uptake.
+
+  - id: bitterwell_slow
+    world: world_003_bitterwell
+    learner_profile: slow_learner
+    seed: 20260762
+    rationale: Short two-stage causal inquiry with deliberately slower integration.
+
+  - id: ravensmark_low_agency
+    world: world_009_ravensmark
+    learner_profile: low_agency
+    seed: 20260763
+    rationale: Gate-record attribution with a tempting dead predicate and delegated next moves.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four fresh scenario/profile
+  combinations and proof shapes; it does not establish population-wide
+  generalization.
