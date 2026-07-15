@@ -10637,11 +10637,21 @@ async function callTutor({
         recentTutorTexts,
         world,
       });
-    // Reuse the already privilege-audited speaker packet. Reconstructing this
-    // list from raw planner advisories can reintroduce private IDs or future
-    // facts after the initial speaker prompt has been made public-safe.
-    const publicRecoveryMachinePacket = effectiveSpeakerInstructionTexts
-      .slice(1)
+    // Keep recovery materially smaller than the normal speaking prompt while
+    // sanitizing every retained contract at the current release boundary.
+    // The former raw reconstruction leaked private IDs/future facts; reusing
+    // every safe speaking advisory avoided that leak but made late-turn repair
+    // calls unnecessarily large and prone to CLI timeouts.
+    const publicRecoveryMachinePacket = [
+      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      responseCompositionAdvisory,
+      dramaticReleaseAdvisory,
+      humanDiscourseAdvisory,
+      dialogueClosureAdvisory,
+      comprehensionAdvisory,
+      tutorFeedbackAdvisory,
+      tutorStubResponseConfigurationPrompt(responseConfiguration),
+    ]
       .filter(Boolean)
       .map((text) =>
         sanitizeTutorStubSpeakerAdvisory({
