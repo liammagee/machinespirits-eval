@@ -309,6 +309,28 @@ test('the deterministic release fallback performs the complete handoff', () => {
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
 
+test('the deterministic release fallback does not repeat the resolved source question', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_log',
+        via: 'director',
+        surface: 'The visitor log records a second badge in the noon window.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'plain', actorial_host_part: 'examiner' },
+    variationKey: 'resolved-question-regression',
+    avoidQuestion: 'What can we safely say from that?',
+  });
+
+  assert.doesNotMatch(text, /What can we safely say from that\?/u);
+  assert.match(text, /\?/u);
+});
+
 test('the deterministic release fallback grounds Marrick action in the crucible rather than an abstract assay line', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

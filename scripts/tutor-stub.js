@@ -2038,7 +2038,7 @@ function groupedWorldEntries() {
   return ordered;
 }
 
-function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null, world = null } = {}) {
+function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null } = {}) {
   const next = (Array.isArray(dueEvidence) ? dueEvidence : []).find((row) => row?.surface) || null;
   if (next) {
     return [
@@ -2054,7 +2054,7 @@ function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEviden
       'We can leave the wider conclusion open until another clue enters the conversation.',
     ].join(' ');
   }
-  return `Yes—that answers the last point. We can now return to the case question: ${oneLine(world?.question || '', { max: 240 })}`;
+  return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
 }
 
 function tutorGuardIssueRows(audits) {
@@ -11217,6 +11217,7 @@ async function callTutor({
             uptake: fallbackUptake,
             responseConfiguration: registerSelection?.response_configuration || registerSelection,
             variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+            avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)

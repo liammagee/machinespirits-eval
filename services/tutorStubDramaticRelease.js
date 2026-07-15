@@ -296,6 +296,29 @@ function stableVariantIndex(value, length) {
   return Math.abs(hash >>> 0) % length;
 }
 
+function questionTokens(value) {
+  return new Set(
+    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []).filter(
+      (token) => !['about', 'does', 'from', 'that', 'this', 'what', 'which', 'with', 'would'].includes(token),
+    ),
+  );
+}
+
+function questionOverlap(left, right) {
+  const leftTokens = questionTokens(left);
+  const rightTokens = questionTokens(right);
+  if (!leftTokens.size || !rightTokens.size) return oneLine(left).toLowerCase() === oneLine(right).toLowerCase() ? 1 : 0;
+  const shared = [...leftTokens].filter((token) => rightTokens.has(token)).length;
+  return shared / Math.min(leftTokens.size, rightTokens.size);
+}
+
+function fallbackQuestion({ stance, variationKey, avoidQuestion = '' }) {
+  const candidates = PERFORMANCE_QUESTIONS[stance];
+  const start = stableVariantIndex(`${variationKey}:question`, candidates.length);
+  const rotated = candidates.map((_, offset) => candidates[(start + offset) % candidates.length]);
+  return rotated.find((candidate) => questionOverlap(candidate, avoidQuestion) < 0.55) || rotated[0];
+}
+
 function sceneObject(entry, fallback = 'record') {
   const text = oneLine(entry.surface);
   const surfaceObject = text.match(
@@ -472,6 +495,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   uptake = '',
   responseConfiguration = null,
   variationKey = '',
+  avoidQuestion = '',
 } = {}) {
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
@@ -490,9 +514,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   const development = [
     directRepair,
     ...rendered,
-    PERFORMANCE_QUESTIONS[stance][
-      stableVariantIndex(`${variationKey}:question`, PERFORMANCE_QUESTIONS[stance].length)
-    ],
+    fallbackQuestion({ stance, variationKey, avoidQuestion }),
     clarification,
   ]
     .filter(Boolean)
