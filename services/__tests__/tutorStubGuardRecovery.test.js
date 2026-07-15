@@ -6,6 +6,7 @@ import {
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
+  tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
 } from '../tutorStubGuardRecovery.js';
 
 test('third-person authored-source casting is repaired without changing the quoted evidence', () => {
@@ -109,4 +110,23 @@ test('plain recovery keeps character strict in verification and advisory in coll
     }),
     true,
   );
+});
+
+test('policy recovery may miss only the optional tactic after visibly performing its host part', () => {
+  assert.equal(
+    tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
+      issues: [{ type: 'missing_selected_performance_tactic' }],
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
+      issues: [
+        { type: 'missing_selected_actorial_part' },
+        { type: 'missing_selected_performance_tactic' },
+      ],
+    }),
+    false,
+  );
+  assert.equal(tutorStubPolicyRecoveryAllowsPerformanceAdvisory({ issues: [] }), false);
 });

@@ -163,6 +163,7 @@ import {
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
+  tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
 } from '../services/tutorStubGuardRecovery.js';
 import {
   auditTutorStubPrompt,
@@ -10726,9 +10727,21 @@ async function callTutor({
       'policy_repair_candidate',
       recoveryBatch,
     );
+    const policyRepairDraftAudits = auditTutorDraft(response, {
+      role: `${roleBase}_policy_repair`,
+      attempt: 1,
+    });
     audits = withTutorDeliveryDecision(
-      auditTutorDraft(response, { role: `${roleBase}_policy_repair`, attempt: 1 }),
-      { role: `${roleBase}_policy_repair`, attempt: 1 },
+      policyRepairDraftAudits,
+      {
+        allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+          policyRepairDraftAudits.actorialRealizationAudit,
+        ),
+        advisoryReason:
+          'the model recovery performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
+        role: `${roleBase}_policy_repair`,
+        attempt: 1,
+      },
     );
     const policyRepairResponse = response;
     const policyRepairAudits = audits;

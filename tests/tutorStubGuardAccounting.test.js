@@ -23,6 +23,12 @@ const PAIRED_RECOVERY = JSON.stringify({
 });
 const PLAIN_STYLE_DRAFT =
   'Fair. I’ll keep this direct. “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that public entry establish?';
+const HOST_PART_ONLY_RECOVERY =
+  'You’re right to ask what the public record supports. I hold the mint-yard register before us: “I have my finger on the line: Verrell alone draws the mint-yard crucible.” What follows from this line?';
+const HOST_PART_ONLY_RECOVERY_BATCH = JSON.stringify({
+  policy_repair: HOST_PART_ONLY_RECOVERY,
+  plain_recovery: HOST_PART_ONLY_RECOVERY,
+});
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -53,7 +59,9 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
-  const response = process.env.TUTOR_GUARD_FAKE_MODE === 'paired-plain' && repaired
+  const response = process.env.TUTOR_GUARD_FAKE_MODE === 'performance-advisory' && repaired
+    ? ${JSON.stringify(HOST_PART_ONLY_RECOVERY_BATCH)}
+    : process.env.TUTOR_GUARD_FAKE_MODE === 'paired-plain' && repaired
     ? ${JSON.stringify(PAIRED_RECOVERY)}
     : process.env.TUTOR_GUARD_FAKE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
@@ -101,7 +109,7 @@ process.stdin.on('end', () => {
       '--trace-dir',
       tmp,
     ];
-  if (mode === 'tactic-repair' || mode === 'soft-style') {
+  if (['tactic-repair', 'performance-advisory', 'soft-style'].includes(mode)) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
     cliArgs.push('--register-policy', 'random', '--register-palette', mode === 'soft-style' ? 'charismatic' : 'precise');
   }
@@ -296,6 +304,31 @@ test('a flat named character is rewritten until the selected stance tactic is vi
   assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, true);
   assert.equal(actorAudits.length, 2);
   assert.equal(actorAudits[0].selectedPerformance.id, 'evidentiary_boundary');
+});
+
+test('a policy recovery keeps its visible host part when only the optional tactic misses', () => {
+  const { events, stdout } = runGuardFixture('performance-advisory');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const advisory = events.find((row) => row.type === 'tutor_response_delivery_advisory');
+
+  assert.equal(
+    accounting.outcome,
+    'guarded_policy_repair_accepted',
+    JSON.stringify(accounting.attempts[1]?.audits),
+  );
+  assert.equal(accounting.finalDelivery.source, 'policy_repair_candidate');
+  assert.equal(accounting.finalDelivery.candidate.text, HOST_PART_ONLY_RECOVERY);
+  assert.equal(accounting.finalDelivery.deterministicFallback, false);
+  assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, false);
+  assert.deepEqual(
+    accounting.finalDelivery.audits.actorialRealizationAudit.issues.map((issue) => issue.type),
+    ['missing_selected_performance_tactic'],
+  );
+  assert.equal(accounting.finalDelivery.audits.deliveryOk, true);
+  assert.equal(advisory.accepted, true);
+  assert.match(advisory.reason, /optional performance tactic/u);
+  assert.match(stdout, /response revised/u);
+  assert.doesNotMatch(stdout, /safe fallback used/u);
 });
 
 test('one compact recovery call yields policy and plain candidates and can deliver the plain candidate', () => {

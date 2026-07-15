@@ -117,6 +117,24 @@ export function tutorStubPlainRecoveryAllowsActorialAdvisory({
   return learnerRequestedPlainStyle === true || String(loopMode || '').trim().toLowerCase() === 'diagnostic';
 }
 
+/**
+ * A model-authored policy recovery has already had one chance to realize the
+ * complete response configuration. Keep the selected host part mandatory, but
+ * do not replace an otherwise valid recovery with stock prose solely because
+ * the optional performance tactic was not legible enough to the heuristic
+ * auditor. The full configuration audit remains attached to the delivered turn
+ * and therefore still lowers its measured realization rate.
+ */
+export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(actorialRealizationAudit = null) {
+  const issues = Array.isArray(actorialRealizationAudit?.issues)
+    ? actorialRealizationAudit.issues
+    : [];
+  return (
+    issues.length > 0 &&
+    issues.every((issue) => issue?.type === 'missing_selected_performance_tactic')
+  );
+}
+
 export function tutorStubGuardDeliveryDecision(issueRows = [], { allowActorialAdvisory = false } = {}) {
   const issues = Array.isArray(issueRows) ? issueRows : [];
   const advisoryIssues = allowActorialAdvisory
