@@ -874,6 +874,61 @@ test('surface audit recognizes natural skeptical, record-keeping, and advocacy a
   }
 });
 
+test('surface audit recognizes natural recovery phrasing from the fresh choice matrix', () => {
+  const base = {
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    unresolved_terms: [],
+  };
+  const cases = [
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'precise',
+        actorial_part: 'examiner',
+        actorial_part_label: 'evidence examiner',
+        actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+      },
+      text: 'I draw the chest lock toward the lamp and turn its ward to the light: the key did not turn it cleanly. What does the scratch establish?',
+    },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'warm',
+        actorial_part: 'skeptic',
+        actorial_part_label: 'skeptical examiner',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+      },
+      text: 'I set the chest key and lamp roll side by side, leaving room for you at the lock. Nothing before us ties the thornpick to a name. How do you read that limit?',
+    },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'charismatic',
+        actorial_part: 'advocate',
+        actorial_part_label: 'advocate for the live case',
+        actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+      },
+      text: 'Brandt is the strongest live possibility, but the sail-loft is rushing ahead. His post does not yet show the lamp burned. To break my case, ask whether that fact is in the log.',
+    },
+  ];
+
+  for (const row of cases) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: row.text,
+      configuration: row.configuration,
+      world: {
+        setting: 'The chest lock, lamp roll, thornpick, sail-loft, post, and log are before us.',
+      },
+    });
+    assert.equal(audit.axes.engagement_stance.visible, true, row.text);
+    assert.equal(audit.axes.actorial_part.part_visible, true, row.text);
+    assert.equal(audit.axes.actorial_part.performance_visible, true, row.text);
+  }
+});
+
 test('a trial-book mark may flow into the record across one sentence boundary', () => {
   const text =
     'I mark beside the broken R: Verrell’s broad graver is excluded from this damaged die. Make room at the trial-book; the estate inventory is opened beside it. What changes?';

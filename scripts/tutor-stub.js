@@ -1902,6 +1902,25 @@ function tutorResponseRecoveryPrompt({
   closureAudit = null,
   dialogueClosureFrame = null,
 }) {
+  const partCue = {
+    scene_partner: 'Use a first-person shared-scene action such as making room beside a named public object for the learner.',
+    examiner: 'Use a first-person examining action such as holding, turning, comparing, or testing a named public object.',
+    record_keeper: 'Use a first-person record action such as opening, reading, marking, or entering a named public record.',
+    advocate: 'Put a bounded public case in your own voice and explicitly invite the learner to break, test, or challenge it.',
+    skeptic: 'Voice a first-person objection or hold the live claim against a named public fact before stating its limit.',
+    foreperson: 'Enter the supported finding in your own voice and close the inquiry without another proof question.',
+  }[responseConfiguration?.actorial_part];
+  const tacticCue = {
+    unadorned_report: 'Keep that action direct, short, and unadorned.',
+    evidentiary_boundary: 'State both the exact support and its limit with words such as only, not yet, or does not establish.',
+    rapid_handoff: 'Move straight from the public object or line to one short question.',
+    shared_scene_invitation: 'Make physical room beside the public object and invite the learner’s reading.',
+    measured_testimony: 'Let the public words stand while refusing to force a stronger judgment.',
+    dramatic_counterpressure: 'Press the public evidence against the room’s easy verdict, then hand its test to the learner.',
+    exposed_mismatch: 'Expose the mismatch through the public object rather than explaining the irony.',
+    dry_counterexample: 'Use the public object as a dry counterexample and leave a concrete repair path.',
+    adversarial_pressure: 'Put direct pressure on the claim, not on the learner, and name the public test.',
+  }[responseConfiguration?.actorial_performance?.id];
   const rows = (guard, issues, { includeReason = true } = {}) =>
     (issues || [])
       .map(
@@ -1957,6 +1976,11 @@ function tutorResponseRecoveryPrompt({
       : null,
     actorialRealizationRows
       ? `Performance contract: ${responseConfiguration?.actorial_performance?.contract || 'make the selected tactic transcript-visible through concrete action or direct speech'}`
+      : null,
+    actorialRealizationRows && partCue ? `Concrete host-part cue: ${partCue}` : null,
+    actorialRealizationRows && tacticCue ? `Concrete performance cue: ${tacticCue}` : null,
+    (questionSupportAudit?.issues || []).some((issue) => issue.type === 'missing_bounded_choice')
+      ? 'Ask an unmistakable two-way public choice, for example “Which should we test first: A) this public clue, or B) that public clue?” Do not disguise the choice as another open recall question.'
       : null,
     missingConfigurationAxes.length
       ? `For policy_repair, also make these selected configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`

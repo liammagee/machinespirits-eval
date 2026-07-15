@@ -144,6 +144,26 @@ test('ordinary field and document actions count as visible exhibit handoffs', ()
   assert.equal(documentAudit.exhibitHandoffVisible, true);
 });
 
+test('peering into a lock ward is a visible exhibit examination', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_scratch',
+        via: 'tutor',
+        surface: 'Inside the chest-lock ward is a narrow hooked three-pronged scratch.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const audit = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I peer into the chest-lock ward: a narrow hooked three-pronged scratch cuts beneath the plate. What does that mark change?',
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exhibitHandoffVisible, true);
+});
+
 test('steeping residue in a cup counts as a concrete exhibit demonstration', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

@@ -139,6 +139,17 @@ test('an is-or question over two public exhibit readings is a bounded choice', (
   assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
 });
 
+test('a does-or question over two public readings is a bounded choice', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: false,
+  };
+  const text = 'Does the key settle access, or the brig’s course?';
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+});
+
 test('an imperative choice among three named public checks is bounded support', () => {
   const support = {
     guardRequired: true,
