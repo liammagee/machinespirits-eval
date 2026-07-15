@@ -58,6 +58,14 @@ function overlapCoefficient(left, right) {
   return overlap / Math.min(a.size, b.size);
 }
 
+function sharedTokenCount(left, right) {
+  const a = new Set(left);
+  const b = new Set(right);
+  let shared = 0;
+  for (const token of a) if (b.has(token)) shared += 1;
+  return shared;
+}
+
 function learnerAdvance(tutorLearnerDag = null) {
   return tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
 }
@@ -167,15 +175,19 @@ export function auditTutorStubConversationalCompletionResponse({
   const sourceTokens = tokens(completion.sourceTutorQuestion || '');
   const responseQuestionTokens = tokens(responseQuestion);
   const questionOverlap = overlapCoefficient(sourceTokens, responseQuestionTokens);
+  const sharedQuestionTokenCount = sharedTokenCount(sourceTokens, responseQuestionTokens);
   // A newly visible exhibit can legitimately answer the previous question and
   // then press the same subject one evidentiary step further (tool -> keeper,
   // record -> actor, mark -> source). Treat only an almost verbatim question as
   // reopening once new evidence is actually present; without new evidence the
   // lower threshold still catches polished restatement loops.
   const reopenOverlapThreshold = newEvidenceVisible ? 0.9 : 0.55;
+  const overlapReopensResolvedPoint = newEvidenceVisible
+    ? questionOverlap >= reopenOverlapThreshold && sharedQuestionTokenCount >= 3
+    : questionOverlap >= reopenOverlapThreshold;
   const reopensResolvedPoint = Boolean(
     responseQuestion &&
-      (questionOverlap >= reopenOverlapThreshold ||
+      (overlapReopensResolvedPoint ||
         (!newEvidenceVisible && REOPEN_QUESTION_PATTERN.test(responseQuestion))),
   );
   const issues = [];
@@ -186,6 +198,7 @@ export function auditTutorStubConversationalCompletionResponse({
       sourceQuestion: completion.sourceTutorQuestion,
       responseQuestion,
       questionOverlap: Number(questionOverlap.toFixed(3)),
+      sharedQuestionTokenCount,
     });
   }
 
@@ -217,6 +230,7 @@ export function auditTutorStubConversationalCompletionResponse({
     active: true,
     newEvidenceVisible,
     questionOverlap: Number(questionOverlap.toFixed(3)),
+    sharedQuestionTokenCount,
     issues,
   };
 }

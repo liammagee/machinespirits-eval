@@ -170,6 +170,7 @@ import {
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
+  repairTutorStubUnanswerableOpenRecall,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubActorialPerformanceMayBeAdvisory,
   tutorStubGuardDeliveryDecision,
@@ -11126,6 +11127,76 @@ async function callTutor({
           repairsApplied,
           finalSource: 'question_support_repair_candidate',
           finalAudits: clarificationAudits,
+          outcome: 'guarded_question_support_repair_accepted',
+        });
+      }
+    }
+
+    const openRecallRepair = repairTutorStubUnanswerableOpenRecall({
+      text: policyRepairResponse.text,
+      deliveryDecision: policyRepairAudits.deliveryDecision,
+    });
+    if (openRecallRepair.changed) {
+      const openRecallAttempt = attempts.length;
+      const openRecallResponse = tutorResponseFromRecoveryBatch(
+        recoveryBatchResponse,
+        openRecallRepair.text,
+        'question_support_repair_candidate',
+        recoveryBatch,
+      );
+      const openRecallAudits = withTutorDeliveryDecision(
+        auditTutorDraft(openRecallResponse, {
+          role: `${roleBase}_question_support_repair`,
+          attempt: openRecallAttempt,
+        }),
+        { role: `${roleBase}_question_support_repair`, attempt: openRecallAttempt },
+      );
+      const openRecallRepairSpans = exactTutorRepairSpans(
+        policyRepairResponse.text,
+        openRecallRepair.text,
+      );
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'question_support_repair_candidate',
+          attempt: openRecallAttempt,
+          response: openRecallResponse,
+          audits: openRecallAudits,
+          repairedSpans: openRecallRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'mechanical_unanswerable_open_recall_removal',
+        fromAttempt: 1,
+        toAttempt: openRecallAttempt,
+        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        guardedSpans: attempts[1].guardedSpans,
+        repairedSpans: openRecallRepairSpans,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_mechanical_repair',
+        role: `${roleBase}_question_support_repair`,
+        turn: tutorTurn,
+        attempt: openRecallAttempt,
+        repairKind: 'unanswerable_open_recall_removal',
+        accepted: openRecallAudits.deliveryOk,
+        text: openRecallRepair.text,
+      });
+      if (openRecallAudits.deliveryOk) {
+        attachTutorDraftAudits(openRecallResponse, openRecallAudits);
+        openRecallResponse.repaired = true;
+        openRecallResponse.mechanicalRepair = true;
+        if (openRecallResponse.bufferedStream) openRecallResponse.guardedStreamReplay = true;
+        return attachTutorGuardAccounting({
+          response: openRecallResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'question_support_repair_candidate',
+          finalAudits: openRecallAudits,
           outcome: 'guarded_question_support_repair_accepted',
         });
       }

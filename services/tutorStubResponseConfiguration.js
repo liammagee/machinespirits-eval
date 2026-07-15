@@ -809,12 +809,12 @@ function actorialPartVisible(configuration, text, metrics) {
   const part = configuration.actorial_part;
   if (!part) return false;
   if (part === 'scene_partner') {
-    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|i stand beside you|(?:bring|draw) you beside|clear (?:a )?space[^.!?]{0,45}for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
+    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|i stand beside you|(?:bring|draw) you beside|i (?:draw|pull|set) (?:my|a) chair beside|i leave you (?:the|this|that)\b[^.!?]{0,30}|clear (?:a )?space[^.!?]{0,45}for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
       (metrics.concreteSceneTermCount > 0 || /\b(?:log|ledger|book|record|file|tool|sample|assay|clue|entry|line)\b/iu.test(text));
   }
   if (part === 'examiner') {
     const namedExaminingAction =
-      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|check|clear|circle|compare|demonstrate|dip|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|prise|put|read|rest|rub|run|scrape|set|show|slap|slide|snap|spread|steady|steep|strike|tap|taste|test|tip|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
+      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|check|clear|circle|compare|demonstrate|dip|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|prise|put|read|rest|rub|run|scrape|set|show|slap|slide|snap|spread|steady|steep|strike|tap|taste|test|tilt|tip|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
         text,
       ) ||
       /\b(?:compare|examine|hold|inspect|look at|test|trace)\b[^.!?]{0,60}\bwith me\b/iu.test(text);
@@ -941,7 +941,7 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'skeptic') {
     const explicitlyRejectsClaim =
-      /\bi\s+(?:(?:would|will|do|can)\s+not|cannot|won[’']t|don[’']t|can[’']t)\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
+      /\bi\s+(?:(?:would|will|do|can)\s+not|cannot|won[’']t|don[’']t|can[’']t)\s+(?:accept|admit|allow|call|carry|enter|move|say|write)\b/iu.test(
         text,
       ) ||
       /\b(?:i|we)\s+(?:must|should|will|would)\s+refuse to\s+(?:accept|call|carry|enter|move|say|write)\b|\bwhat\s+(?:claim|conclusion|name|verdict)\b[^?]{0,65}\bmust we refuse to\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
@@ -1044,7 +1044,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     return (
       /\b(?:beyond|exact|establish|licensed|line that matters|no more|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
       /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
-      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
+      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
     );
   }
   if (tactic === 'rapid_handoff') {

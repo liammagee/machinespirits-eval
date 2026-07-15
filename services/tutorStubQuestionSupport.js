@@ -254,7 +254,8 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
   if (support.modality === 'bounded_directional_choice') {
     const hasChoice =
       /(?:\bA[).:]\s|\bB[).:]\s|\beither\b.+\bor\b|\bbetween\b.+\band\b)/isu.test(source) ||
-      /\b(?:are|can|do|is|shall|should|would|what|which)\b[^?]{3,180}\bor\b[^?]{2,120}\?/isu.test(source);
+      /\b(?:are|can|do|is|shall|should|would|what|which)\b[^?]{3,180}\bor\b[^?]{2,120}\?/isu.test(source) ||
+      /\bchoose\b[^.!?]{0,240}\bor\b/isu.test(source);
     if (!hasChoice) {
       issues.push({
         type: 'missing_bounded_choice',

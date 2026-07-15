@@ -104,6 +104,87 @@ test('newly released custody evidence may advance from a tool to the hand that u
   assert.ok(audit.conversational_completion.questionOverlap < 0.9);
 });
 
+test('a short generic question about newly staged evidence is not a resolved-question loop', () => {
+  const learnerText = 'Crane answers for the reporting, but the planting remains open.';
+  const dueEvidence =
+    'The version history shows that the false kicker was inserted after Crane filed the clean story.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: learnerText, discourse_move: 'inference' } },
+    registerSelection: {
+      expected_dag_move: 'Introduce genuinely new public evidence.',
+      response_configuration: { action_family: 'stage_next_step' },
+    },
+    conversationalCompletion: {
+      resolved: true,
+      status: 'accepted',
+      reopenForbidden: true,
+      requiresNewPressure: true,
+      sourceTutorQuestion:
+        'What does that make Crane answer for—and what does it still leave open about who planted the quote?',
+      learnerSurface: learnerText,
+      acceptedMeaning: learnerText,
+    },
+    dramaticReleaseFrame: { active: true, entries: [{ surface: dueEvidence }] },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `Right—the planting remains open. I open the version history: ${dueEvidence} What do you make of it?`,
+  });
+
+  assert.equal(audit.conversational_completion.newEvidenceVisible, true);
+  assert.equal(audit.conversational_completion.sharedQuestionTokenCount, 1);
+  assert.equal(audit.issues.some((issue) => issue.type === 'resolved_point_reopened'), false);
+});
+
+test('natural scene-partner, skeptic, and evidentiary-boundary performances are visible', () => {
+  const base = {
+    engagement_stance: 'precise',
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+  };
+  const scenePartner = auditTutorStubResponseConfiguration({
+    text: 'I draw my chair beside the drying folio and leave you the lamp. What do you see in the correction?',
+    configuration: {
+      ...base,
+      actorial_part: 'scene_partner',
+      actorial_part_label: 'fellow investigator',
+      actorial_performance: { id: 'shared_scene_invitation', label: 'shared scene invitation' },
+    },
+    world: { setting: 'A flooded archive with a drying folio and lamp.' },
+  });
+  assert.equal(scenePartner.axes.actorial_part.part_visible, true);
+  assert.equal(scenePartner.axes.actorial_part.performance_visible, true);
+
+  const skeptic = auditTutorStubResponseConfiguration({
+    text: 'I cannot admit it to save Vess; the folio shows resemblance, not authorship.',
+    configuration: {
+      ...base,
+      actorial_part: 'skeptic',
+      actorial_part_label: 'skeptical examiner',
+      actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+    },
+    world: { setting: 'A flooded archive with Vess and the folio in view.' },
+  });
+  assert.equal(skeptic.axes.actorial_part.part_visible, true);
+  assert.equal(skeptic.axes.actorial_part.performance_visible, true);
+
+  const boundary = auditTutorStubResponseConfiguration({
+    text: 'Proximity is worth checking, but what would we still need before writing a name into the ledger?',
+    configuration: {
+      ...base,
+      actorial_part: 'skeptic',
+      actorial_part_label: 'skeptical examiner',
+      actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+    },
+    world: { setting: 'An archive with an open ledger.' },
+  });
+  assert.equal(boundary.axes.actorial_part.performance_visible, true);
+});
+
 test('response composition warns against a fourth repeated exhibit-handling gesture', () => {
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText: 'That leaves Crane unproved.',

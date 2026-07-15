@@ -139,6 +139,18 @@ test('an is-or question over two public exhibit readings is a bounded choice', (
   assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
 });
 
+test('an imperative choice among three named public checks is bounded support', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: false,
+  };
+  const text =
+    'Choose our next check: the basin under the trough, the lead-sweat on the coin, or wormwood signs in the cup.';
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+});
+
 test('due evidence is staged before interpretation is requested', () => {
   const support = buildTutorStubQuestionSupport({
     tutorTurn: 22,

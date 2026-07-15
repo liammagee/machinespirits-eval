@@ -46,6 +46,7 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
     'Yet I object to one phrase: no shared flaw has been proved, nor has any flaw been matched to that graver.',
     'You have kept the graver tied to die-cutting without treating it as proof of the striking hand.',
     'I turn a shilling beneath the lens, seeking a die-flaw that can answer to this broad graver.',
+    'The next safe check is a post-filing record tied to that graf.',
   ]) {
     assert.equal(auditTutorStubEvidenceAssertions({ text }).ok, true, text);
   }

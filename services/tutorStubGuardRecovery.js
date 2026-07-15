@@ -75,6 +75,33 @@ export function repairTutorStubMissingClarificationInvitation({ text = '', deliv
   };
 }
 
+/** Remove an impossible recall question only when it is the sole hard failure. */
+export function repairTutorStubUnanswerableOpenRecall({ text = '', deliveryDecision = null } = {}) {
+  const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
+  const eligible =
+    hardIssues.length > 0 &&
+    hardIssues.every(
+      (issue) => issue?.guard === 'question_support' && issue?.type === 'unanswerable_open_recall',
+    );
+  const source = candidateText(text);
+  if (!eligible || !source) return { changed: false, text: source };
+  const forbiddenQuestions = hardIssues.flatMap((issue) =>
+    Array.isArray(issue?.excerpts) ? issue.excerpts.map((excerpt) => candidateText(excerpt)) : [],
+  );
+  if (!forbiddenQuestions.length) return { changed: false, text: source };
+  const retained = recoverySentences(source).filter((sentence) => {
+    const normalized = candidateText(sentence);
+    return !forbiddenQuestions.some(
+      (question) => normalized.includes(question) || question.includes(normalized),
+    );
+  });
+  const repaired = retained.join(' ').trim();
+  return {
+    changed: Boolean(repaired && repaired !== source),
+    text: repaired || source,
+  };
+}
+
 function jsonObjectText(value) {
   const source = String(value || '').trim();
   if (!source) return '';

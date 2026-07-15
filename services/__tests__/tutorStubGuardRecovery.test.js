@@ -4,6 +4,7 @@ import {
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
+  repairTutorStubUnanswerableOpenRecall,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubGuardDeliveryDecision,
   tutorStubActorialPerformanceMayBeAdvisory,
@@ -74,6 +75,37 @@ test('clarification repair does not duplicate an ordinary-language invitation', 
 
   assert.equal(repaired.changed, false);
   assert.equal(repaired.text, source);
+});
+
+test('open-recall repair removes only the impossible question when it is the sole failure', () => {
+  const source =
+    'The resemblance keeps Vess possible without proving authorship. What archive record names the true composer?';
+  const repaired = repairTutorStubUnanswerableOpenRecall({
+    text: source,
+    deliveryDecision: {
+      hardIssues: [
+        {
+          guard: 'question_support',
+          type: 'unanswerable_open_recall',
+          excerpts: ['What archive record names the true composer?'],
+        },
+      ],
+    },
+  });
+
+  assert.equal(repaired.changed, true);
+  assert.equal(repaired.text, 'The resemblance keeps Vess possible without proving authorship.');
+
+  const unsafe = repairTutorStubUnanswerableOpenRecall({
+    text: source,
+    deliveryDecision: {
+      hardIssues: [
+        { guard: 'question_support', type: 'unanswerable_open_recall', excerpts: [source] },
+        { guard: 'leak', type: 'unreleased_premise_content' },
+      ],
+    },
+  });
+  assert.equal(unsafe.changed, false);
 });
 
 test('third-person authored-source casting is repaired without changing the quoted evidence', () => {

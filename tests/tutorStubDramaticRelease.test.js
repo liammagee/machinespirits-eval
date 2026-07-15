@@ -164,6 +164,14 @@ test('steeping residue in a cup counts as a concrete exhibit demonstration', () 
 
   assert.equal(audit.ok, true);
   assert.equal(audit.exhibitHandoffVisible, true);
+
+  const tilted = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text:
+      'I tilt the white cup beneath the lamp; the trough-rim crust gives the same grey, bitter liquor as wormwood. What does that establish?',
+  });
+  assert.equal(tilted.ok, true);
+  assert.equal(tilted.exhibitHandoffVisible, true);
 });
 
 test('director records default to exhibits while witness accounts default to enacted roles', () => {
