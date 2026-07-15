@@ -57,6 +57,17 @@ test('ignores an attribution conclusion that uses tied to without asserting an e
   );
 });
 
+test('allows a public tool-to-person inference without treating it as a new exhibit match', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text:
+      'Edony’s sole keeping of the sprung-heel burin ties her to cutting the flawed die. The same hand is already tied to the weir-forge blanks.',
+    permittedText:
+      'That ties the damaged die to Edony’s worn burin, so she likely cut it, though it does not prove she struck the shillings.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
 test('ignores an explicit tool-custody boundary that is not an exhibit match', () => {
   assert.equal(
     auditTutorStubEvidenceAssertions({

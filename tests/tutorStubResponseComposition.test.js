@@ -68,6 +68,41 @@ test('the Gazette completion frame rejects an elegant restatement loop and accep
   assert.match(tutorStubResponseCompositionPrompt(frame), /genuinely new pressure/iu);
 });
 
+test('newly released custody evidence may advance from a tool to the hand that used it', () => {
+  const learnerText =
+    'The mark shows a worn sprung-heel burin cut the die; the striking hand remains unproved.';
+  const dueEvidence =
+    'The estate inventory leaves the worn sprung-heel burin in Edony’s sole keeping.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: learnerText, discourse_move: 'inference' } },
+    registerSelection: {
+      expected_dag_move: 'Introduce genuinely new public evidence.',
+      response_configuration: { action_family: 'stage_next_step' },
+    },
+    conversationalCompletion: {
+      resolved: true,
+      status: 'accepted',
+      reopenForbidden: true,
+      requiresNewPressure: true,
+      sourceTutorQuestion:
+        'What does that mark tell you about the tool that cut this die, and what remains unproved of the striking hand?',
+      learnerSurface: learnerText,
+      acceptedMeaning: learnerText,
+    },
+    dramaticReleaseFrame: { active: true, entries: [{ surface: dueEvidence }] },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `Right—the mark identifies the cutting tool, not its keeper. ${dueEvidence} What does that now establish about who cut this die?`,
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.conversational_completion.newEvidenceVisible, true);
+  assert.ok(audit.conversational_completion.questionOverlap < 0.9);
+});
+
 test('response composition warns against a fourth repeated exhibit-handling gesture', () => {
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText: 'That leaves Crane unproved.',
@@ -807,6 +842,48 @@ test('Marrick source-and-striker gaps receive a concrete acknowledgement', () =>
     'You have kept both gaps open: these shillings are not yet tied to Marrick’s crucible, and no striking hand is proved.',
   );
   assert.doesNotMatch(uptake, /evidentiary distinction|inference stands|proof step/iu);
+});
+
+test('deterministic uptake preserves a settled blank source while leaving the die trail open', () => {
+  const learnerText =
+    'The divide is clear: the blank names the weir-forge, but nothing yet connects this shilling’s die to Verrell.';
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        discourse_move: 'inference',
+      },
+    },
+    actionFamily: 'reanchor_public_evidence',
+    world: {
+      id: 'world_005_marrick',
+      title: 'The Light Shillings',
+    },
+  });
+
+  assert.equal(
+    uptake,
+    'You have kept the blank’s known source separate from the still-unproved die trail.',
+  );
+
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Separates the blank source from the open die trail.' } },
+    registerSelection: { action_family: 'reanchor_public_evidence' },
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ surface: 'Twelve shillings bear the same square notch in the R.' }],
+    },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: `${uptake} I set twelve shillings beneath the glass: each bears the same square notch in the R. What does that shared flaw show?`,
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
 });
 
 test('generic safe uptake avoids evaluator vocabulary in public speech', () => {

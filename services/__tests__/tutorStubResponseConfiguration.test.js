@@ -716,6 +716,58 @@ test('surface audit rejects a named character when the selected stance tactic do
   assert.notEqual(flat.visible_signature, realized.visible_signature);
 });
 
+test('surface audit recognizes natural skeptical, record-keeping, and advocacy actions', () => {
+  const base = {
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    unresolved_terms: [],
+  };
+  const cases = [
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'warm',
+        actorial_part: 'skeptic',
+        actorial_part_label: 'skeptical examiner',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+      },
+      text: 'I stop you at the stone lead: we cannot carry Bray’s name there. Stand here by the font-house with me; what does the wormwood change?',
+    },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'warm',
+        actorial_part: 'record_keeper',
+        actorial_part_label: 'keeper of the mod log',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+      },
+      text: 'I keep the audit open between us beside the locked-thread notice and enter that limit in the mod log. What do you make of it?',
+    },
+    {
+      configuration: {
+        ...base,
+        engagement_stance: 'charismatic',
+        actorial_part: 'advocate',
+        actorial_part_label: 'advocate for the live case',
+        actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+      },
+      text: 'I argue the hall trial against the room’s easy verdict: the three apprentices fail differently. Will that claim survive the test?',
+    },
+  ];
+
+  for (const row of cases) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: row.text,
+      configuration: row.configuration,
+      world: testWorld(),
+    });
+    assert.equal(audit.axes.actorial_part.part_visible, true, row.text);
+    assert.equal(audit.axes.actorial_part.performance_visible, true, row.text);
+  }
+});
+
 test('deterministic clue fallback preserves every selected stance as a visible character tactic', () => {
   const dueEvidence = [
     {

@@ -1,13 +1,66 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
+  repairTutorStubMissingClarificationInvitation,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
 } from '../tutorStubGuardRecovery.js';
+
+test('guard uptake recomposition removes overlapping recovery acknowledgements', () => {
+  const text = composeTutorStubGuardUptakeDevelopment({
+    uptake:
+      'I run my finger beneath the ledger’s marks: enter it. The voices show varied performance, but not yet adaptation.',
+    development:
+      'I press my finger beside the ledger’s changing voices: yes, enter that. It proves varied conduct, but not yet adaptation. Turn now to the hall trial.',
+  });
+
+  assert.equal(
+    text,
+    'I run my finger beneath the ledger’s marks: enter it. The voices show varied performance, but not yet adaptation. Turn now to the hall trial.',
+  );
+  assert.equal((text.match(/not yet adaptation/gu) || []).length, 1);
+});
+
+test('guard uptake recomposition preserves an overlapping sentence that carries the host action', () => {
+  const text = composeTutorStubGuardUptakeDevelopment({
+    uptake: 'Aye—the burin fixes the notched die to Edony.',
+    development:
+      'I hold the notched R beside the estate inventory and trace the square bite with my needle: Edony kept the sprung-heel burin, so she cut this die. The weir-forge dross places the blanks with her.',
+  });
+
+  assert.match(text, /I hold the notched R beside the estate inventory/iu);
+  assert.match(text, /trace the square bite/iu);
+  assert.match(text, /weir-forge dross places the blanks with her/iu);
+});
+
+test('clarification repair applies only when that affordance is the sole hard failure', () => {
+  const repaired = repairTutorStubMissingClarificationInvitation({
+    text: 'I set the slate between us. Does that distinction fit?',
+    deliveryDecision: {
+      hardIssues: [
+        { guard: 'question_support', type: 'missing_clarification_invitation' },
+      ],
+    },
+  });
+  assert.equal(repaired.changed, true);
+  assert.match(repaired.text, /ask me to unpack any word or connection/iu);
+
+  const unsafe = repairTutorStubMissingClarificationInvitation({
+    text: 'A contaminated reply.',
+    deliveryDecision: {
+      hardIssues: [
+        { guard: 'question_support', type: 'missing_clarification_invitation' },
+        { guard: 'leak', type: 'unreleased_premise_content' },
+      ],
+    },
+  });
+  assert.equal(unsafe.changed, false);
+});
 
 test('third-person authored-source casting is repaired without changing the quoted evidence', () => {
   const source =

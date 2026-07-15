@@ -675,6 +675,17 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    /\bblank\b/iu.test(text) &&
+    /\bdie\b/iu.test(text) &&
+    /\b(?:source|names?|trace(?:s|d)?|crucible|forge)\b/iu.test(text) &&
+    /\b(?:but|nothing|not|unconnected|unproved|yet)\b/iu.test(text)
+  ) {
+    return fresh(
+      'You have kept the blank’s known source separate from the still-unproved die trail.',
+      'The blank’s source is settled separately; the die’s connection remains open.',
+    );
+  }
+  if (
     LEARNER_CONDITIONAL_INFERENCE_PATTERN.test(text) &&
     /\b(?:blank|coin|shilling)\b/iu.test(text) &&
     /\bcrucible\b/iu.test(text) &&

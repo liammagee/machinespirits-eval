@@ -164,7 +164,9 @@ import {
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
 import {
+  composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
+  repairTutorStubMissingClarificationInvitation,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
@@ -1655,10 +1657,12 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'bench',
   'blank',
   'blanks',
+  'building',
   'came',
   'cast',
   'coin',
   'coins',
+  'comparison',
   'contrast',
   'counts',
   'could',
@@ -1681,6 +1685,7 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'name',
   'nothing',
   'only',
+  'plain',
   'progress',
   'public',
   'record',
@@ -1693,6 +1698,7 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'should',
   'shown',
   'single',
+  'still',
   'struck',
   'that',
   'their',
@@ -10933,14 +10939,22 @@ async function callTutor({
     }
 
     const policyCompositionIssues = (policyRepairAudits?.responseCompositionAudit?.issues || []).filter(
-      (issue) => ['missing_learner_uptake', 'generic_learner_uptake'].includes(issue.type),
+      (issue) =>
+        [
+          'missing_learner_uptake',
+          'generic_learner_uptake',
+          'learner_selected_test_not_acknowledged',
+        ].includes(issue.type),
     );
     const policyDevelopment = String(
       policyRepairAudits?.responseCompositionAudit?.segments?.development || '',
     ).trim();
     if (firstRepairUptake && policyCompositionIssues.length && policyDevelopment) {
       const compositionRepairAttempt = attempts.length;
-      const compositionRepairText = `${firstRepairUptake} ${policyDevelopment}`.trim();
+      const compositionRepairText = composeTutorStubGuardUptakeDevelopment({
+        uptake: firstRepairUptake,
+        development: policyDevelopment,
+      });
       const compositionResponse = tutorResponseFromRecoveryBatch(
         recoveryBatchResponse,
         compositionRepairText,
@@ -11010,6 +11024,76 @@ async function callTutor({
           finalSource: 'composition_repair_candidate',
           finalAudits: compositionAudits,
           outcome: 'guarded_composition_repair_accepted',
+        });
+      }
+    }
+
+    const clarificationRepair = repairTutorStubMissingClarificationInvitation({
+      text: policyRepairResponse.text,
+      deliveryDecision: policyRepairAudits.deliveryDecision,
+    });
+    if (clarificationRepair.changed) {
+      const clarificationAttempt = attempts.length;
+      const clarificationResponse = tutorResponseFromRecoveryBatch(
+        recoveryBatchResponse,
+        clarificationRepair.text,
+        'question_support_repair_candidate',
+        recoveryBatch,
+      );
+      const clarificationAudits = withTutorDeliveryDecision(
+        auditTutorDraft(clarificationResponse, {
+          role: `${roleBase}_question_support_repair`,
+          attempt: clarificationAttempt,
+        }),
+        { role: `${roleBase}_question_support_repair`, attempt: clarificationAttempt },
+      );
+      const clarificationRepairSpans = exactTutorRepairSpans(
+        policyRepairResponse.text,
+        clarificationRepair.text,
+      );
+      attempts.push(
+        tutorGuardAttemptEnvelope({
+          kind: 'question_support_repair_candidate',
+          attempt: clarificationAttempt,
+          response: clarificationResponse,
+          audits: clarificationAudits,
+          repairedSpans: clarificationRepairSpans,
+        }),
+      );
+      repairsApplied.push({
+        kind: 'mechanical_clarification_invitation',
+        fromAttempt: 1,
+        toAttempt: clarificationAttempt,
+        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        guardedSpans: attempts[1].guardedSpans,
+        repairedSpans: clarificationRepairSpans,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_response_mechanical_repair',
+        role: `${roleBase}_question_support_repair`,
+        turn: tutorTurn,
+        attempt: clarificationAttempt,
+        repairKind: 'missing_clarification_invitation',
+        accepted: clarificationAudits.deliveryOk,
+        text: clarificationRepair.text,
+      });
+      if (clarificationAudits.deliveryOk) {
+        attachTutorDraftAudits(clarificationResponse, clarificationAudits);
+        clarificationResponse.repaired = true;
+        clarificationResponse.mechanicalRepair = true;
+        if (clarificationResponse.bufferedStream) clarificationResponse.guardedStreamReplay = true;
+        return attachTutorGuardAccounting({
+          response: clarificationResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'question_support_repair_candidate',
+          finalAudits: clarificationAudits,
+          outcome: 'guarded_question_support_repair_accepted',
         });
       }
     }

@@ -1,7 +1,74 @@
 export const TUTOR_STUB_GUARD_RECOVERY_SCHEMA = 'machinespirits.tutor-stub.guard-recovery.v1';
 
+const RECOVERY_TOKEN_STOPWORDS = new Set(
+  'about after again before could does from have into only that their there these this what when where which with would'.split(
+    ' ',
+  ),
+);
+const RECOVERY_HOST_ACTION_PATTERN =
+  /^i\s+(?:compare|examine|hold|inspect|test|trace)\b/iu;
+
 function candidateText(value) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function recoveryTokens(value) {
+  return new Set(
+    (String(value || '').toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+      .map((token) => token.replace(/[’']/gu, ''))
+      .filter((token) => !RECOVERY_TOKEN_STOPWORDS.has(token)),
+  );
+}
+
+function recoveryOverlap(left, right) {
+  const leftTokens = recoveryTokens(left);
+  const rightTokens = recoveryTokens(right);
+  if (!leftTokens.size || !rightTokens.size) return 0;
+  const shared = [...leftTokens].filter((token) => rightTokens.has(token)).length;
+  return shared / Math.min(leftTokens.size, rightTokens.size);
+}
+
+function recoverySentences(value) {
+  return String(value || '').trim().match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [];
+}
+
+/**
+ * Recompose a safe uptake with a model-authored development without repeating
+ * a near-identical acknowledgement that the recovery model placed at the
+ * front of its development. Only overlapping leading sentences are removed;
+ * the first genuinely new sentence and everything after it are preserved.
+ */
+export function composeTutorStubGuardUptakeDevelopment({ uptake = '', development = '' } = {}) {
+  const safeUptake = candidateText(uptake);
+  const sentences = recoverySentences(development).map((sentence) => sentence.trim()).filter(Boolean);
+  while (
+    sentences.length &&
+    recoveryOverlap(safeUptake, sentences[0]) >= 0.45 &&
+    !RECOVERY_HOST_ACTION_PATTERN.test(sentences[0])
+  ) {
+    sentences.shift();
+  }
+  return [safeUptake, sentences.join(' ').trim()].filter(Boolean).join(' ');
+}
+
+/** Append the clarification affordance only when it is the sole hard failure. */
+export function repairTutorStubMissingClarificationInvitation({ text = '', deliveryDecision = null } = {}) {
+  const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
+  const eligible =
+    hardIssues.length > 0 &&
+    hardIssues.every(
+      (issue) =>
+        issue?.guard === 'question_support' && issue?.type === 'missing_clarification_invitation',
+    );
+  if (!eligible) return { changed: false, text: candidateText(text) };
+  const source = candidateText(text);
+  if (/\b(?:ask me|you can ask)\b[^.!?]{0,70}\b(?:clarif|explain|unpack)\b/iu.test(source)) {
+    return { changed: false, text: source };
+  }
+  return {
+    changed: true,
+    text: `${source} You can ask me to unpack any word or connection.`.trim(),
+  };
 }
 
 function jsonObjectText(value) {

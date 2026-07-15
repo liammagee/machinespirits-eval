@@ -167,9 +167,16 @@ export function auditTutorStubConversationalCompletionResponse({
   const sourceTokens = tokens(completion.sourceTutorQuestion || '');
   const responseQuestionTokens = tokens(responseQuestion);
   const questionOverlap = overlapCoefficient(sourceTokens, responseQuestionTokens);
+  // A newly visible exhibit can legitimately answer the previous question and
+  // then press the same subject one evidentiary step further (tool -> keeper,
+  // record -> actor, mark -> source). Treat only an almost verbatim question as
+  // reopening once new evidence is actually present; without new evidence the
+  // lower threshold still catches polished restatement loops.
+  const reopenOverlapThreshold = newEvidenceVisible ? 0.9 : 0.55;
   const reopensResolvedPoint = Boolean(
     responseQuestion &&
-      (questionOverlap >= 0.55 || (!newEvidenceVisible && REOPEN_QUESTION_PATTERN.test(responseQuestion))),
+      (questionOverlap >= reopenOverlapThreshold ||
+        (!newEvidenceVisible && REOPEN_QUESTION_PATTERN.test(responseQuestion))),
   );
   const issues = [];
   if (reopensResolvedPoint) {

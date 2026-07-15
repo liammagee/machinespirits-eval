@@ -110,6 +110,40 @@ test('an opaque clue dump fails the dramatic release check', () => {
   );
 });
 
+test('ordinary field and document actions count as visible exhibit handoffs', () => {
+  const fieldFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_rill',
+        via: 'tutor',
+        surface: 'Above the font-house door the spring runs sweet.',
+      },
+    ],
+  });
+  const fieldAudit = auditTutorStubDramaticReleaseResponse({
+    frame: fieldFrame,
+    text: 'I dip the cup above the font-house door, taste it, and hold it toward you: the spring runs sweet. What does that rule out?',
+  });
+  assert.equal(fieldAudit.ok, true);
+  assert.equal(fieldAudit.exhibitHandoffVisible, true);
+
+  const auditFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_votes',
+        via: 'tutor',
+        surface: 'The vote audit records all nine votes in the owl hour.',
+      },
+    ],
+  });
+  const documentAudit = auditTutorStubDramaticReleaseResponse({
+    frame: auditFrame,
+    text: 'I spread the vote-audit printout beside the locked-thread notice: all nine votes landed in the owl hour. What does that add?',
+  });
+  assert.equal(documentAudit.ok, true);
+  assert.equal(documentAudit.exhibitHandoffVisible, true);
+});
+
 test('director records default to exhibits while witness accounts default to enacted roles', () => {
   const recordFrame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
