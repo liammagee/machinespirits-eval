@@ -791,7 +791,7 @@ function actorialPartVisible(configuration, text, metrics) {
   const part = configuration.actorial_part;
   if (!part) return false;
   if (part === 'scene_partner') {
-    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|(?:bring|draw) you beside|clear space for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
+    return /\b(?:let(?:[’']s| us)|we(?: can| will|[’']ll)?|with (?:me|you)|beside (?:me|you)|between us|together|come beside|i stand beside you|(?:bring|draw) you beside|clear space for you|leav(?:e|ing) you room|leav(?:e|ing) (?:room|space)[^.!?]{0,45}for (?:you|your\b[^.!?]{0,20})|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|make (?:room|space) at (?:the )?(?:balance|bench|table|trial-table)|room beside|space for you)\b/iu.test(text) &&
       (metrics.concreteSceneTermCount > 0 || /\b(?:log|ledger|book|record|file|tool|sample|assay|clue|entry|line)\b/iu.test(text));
   }
   if (part === 'examiner') {
@@ -920,7 +920,7 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'skeptic') {
     const explicitlyRejectsClaim =
-      /\bi\s+(?:(?:would|will|do|can)\s+not|won[’']t|don[’']t|can[’']t)\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
+      /\bi\s+(?:(?:would|will|do|can)\s+not|cannot|won[’']t|don[’']t|can[’']t)\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
         text,
       ) ||
       /\b(?:i|we)\s+(?:must|should|will|would)\s+refuse to\s+(?:accept|call|carry|enter|move|say|write)\b|\bwhat\s+(?:claim|conclusion|name|verdict)\b[^?]{0,65}\bmust we refuse to\s+(?:accept|call|carry|enter|move|say|write)\b/iu.test(
@@ -933,14 +933,14 @@ function actorialPartVisible(configuration, text, metrics) {
       /\bi\s+(?:draw|mark|underline)\b[^.!?]{0,45}\b(?:boundary|correction|limit|line)\b/iu.test(text) &&
       /\b(?:but|did not|didn[’']t|does not|doesn[’']t|not that|not yet|rather than)\b/iu.test(text);
     const voicesConcreteObjection =
-      /\b(?:(?:my|one|the|this)\s+objection\b|i\b[^.!?]{0,35}\b(?:object\b|press\b[^.!?]{0,20}\bthe objection\b))/iu.test(
+      /\b(?:(?:my|one|the|this)\s+(?:only\s+)?objection\b|i\b[^.!?]{0,35}\b(?:object\b|press\b[^.!?]{0,20}\bthe objection\b))/iu.test(
         text,
       ) &&
-      /\b(?:because|break|merely|neither|nor|not|rather than|still)\b/iu.test(text);
+      /\b(?:because|break|merely|neither|nor|not|rather than|still|whether)\b/iu.test(text);
     const visiblyStopsAtBoundary =
       /\bi\b[^.!?]{0,80}\bstop there\b/iu.test(text) &&
       /\b(?:but|not yet|only if|still need|until)\b/iu.test(text);
-    const opensWithCorrection = /^\s*(?:no\b|not yet\b)/iu.test(text);
+    const opensWithCorrection = /^\s*(?:no\b|not so\b|not yet\b)/iu.test(text);
     const testsWordingBoundary =
       /\bi\b[^.!?]{0,55}\btest\b[^.!?]{0,30}\b(?:claim|conclusion|entry|language|verdict|wording)\b[^.!?]{0,90}\b(?:not|rather than|instead of)\b/iu.test(
         text,

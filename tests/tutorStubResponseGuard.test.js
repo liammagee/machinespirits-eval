@@ -52,6 +52,16 @@ test('a released multiword answer name is public when its world constant uses ca
   );
 });
 
+test('a possessive released answer name is public without making its conclusion public', () => {
+  assert.equal(
+    tutorStubAnswerNameIsPublic({
+      answerTerm: 'moth',
+      publicText: "The decommission log says Moth’s override key was never revoked.",
+    }),
+    true,
+  );
+});
+
 test('the speaking boundary snapshots committed and due premise ids once', () => {
   const committed = [{ premise: 'p_seen' }];
   const due = [{ premise: 'p_due' }];

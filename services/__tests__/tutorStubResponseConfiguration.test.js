@@ -768,6 +768,47 @@ test('surface audit recognizes natural skeptical, record-keeping, and advocacy a
   }
 });
 
+test('surface audit recognizes ordinary skeptical objections and shared standing', () => {
+  for (const text of [
+    'Not so—the pen chart says the lamps dim before the chargers start.',
+    'I cannot accept it as the brownout cause yet; the feeder connection is still missing.',
+    'My only objection was whether that spur carried the street; the switch log answers it.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text,
+      configuration: {
+        engagement_stance: 'precise',
+        action_family: 'answer_accountably',
+        audience_register: 'informed_peer',
+        lexical_accessibility: 'technical',
+        scene_immersion: 'immersive',
+        actorial_part: 'skeptic',
+        actorial_part_label: 'skeptical examiner',
+        actorial_performance: { id: 'evidentiary_boundary' },
+      },
+      world: { setting: 'The switch log and pen chart are open in the meeting room.' },
+    });
+    assert.equal(audit.actorial_realization.issues.some((issue) => issue.type === 'missing_selected_actorial_part'), false, text);
+  }
+
+  const shared = auditTutorStubResponseConfiguration({
+    text:
+      'I stand beside you at the fridge door, leaving space at the ledger. What does the job number establish?',
+    configuration: {
+      engagement_stance: 'warm',
+      action_family: 'stage_next_step',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'immersive',
+      actorial_part: 'scene_partner',
+      actorial_part_label: 'fellow investigator',
+      actorial_performance: { id: 'shared_scene_invitation' },
+    },
+    world: { setting: 'The fridge door and lost-property ledger are open.' },
+  });
+  assert.equal(shared.actorial_realization.ok, true);
+});
+
 test('deterministic clue fallback preserves every selected stance as a visible character tactic', () => {
   const dueEvidence = [
     {

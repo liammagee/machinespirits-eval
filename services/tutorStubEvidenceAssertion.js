@@ -13,6 +13,8 @@ const CUSTODY_ATTRIBUTION_PATTERN =
   /\b(?:graver|tool)\b[^.!?;]{0,42}\btied to (?:its )?(?:holder|owner)\b/iu;
 const TOOL_FUNCTION_ATTRIBUTION_PATTERN =
   /\b(?:graver|tool)\b[^.!?;]{0,42}\btied to\b[^.!?;]{0,24}\b(?:cutting|die-cutting|engraving|graving)\b/iu;
+const RECORD_HANDLING_ATTRIBUTION_PATTERN =
+  /\b(?:entry|job number|ledger|log|record)\b[^.!?;]{0,90}\btie(?:s|d)?\b[^.!?;]{0,55}\bto\b[^.!?;]{0,55}\b(?:access|custody|handled|handling|possession)\b/iu;
 
 function oneLine(value) {
   return String(value || '')
@@ -54,6 +56,7 @@ function assertedCorrespondence(value) {
     !PERSON_ATTRIBUTION_PATTERN.test(surface) &&
     !CUSTODY_ATTRIBUTION_PATTERN.test(surface) &&
     !TOOL_FUNCTION_ATTRIBUTION_PATTERN.test(surface) &&
+    !RECORD_HANDLING_ATTRIBUTION_PATTERN.test(surface) &&
     !NON_ASSERTIVE_PATTERN.test(surface)
   );
 }

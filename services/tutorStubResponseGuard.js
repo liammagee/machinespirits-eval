@@ -36,6 +36,7 @@ function oneLine(value) {
 function words(value) {
   return oneLine(value)
     .toLowerCase()
+    .replace(/[’']s\b/gu, '')
     .replace(/[’']/gu, '')
     .split(/[^a-z0-9]+/u)
     .filter((word) => word.length >= 3 && !TOKEN_STOPWORDS.has(word));

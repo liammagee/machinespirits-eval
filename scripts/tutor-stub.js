@@ -168,6 +168,7 @@ import {
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
   repairTutorStubThirdPersonSourceLeadIn,
+  tutorStubActorialPerformanceMayBeAdvisory,
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
@@ -10754,9 +10755,14 @@ async function callTutor({
     }
 
     const learnerRequestedPlainStyle = tutorStubLearnerRequestedPlainStyle(learnerText, classification);
-    let audits = withTutorDeliveryDecision(auditTutorDraft(response, { role: roleBase, attempt: 0 }), {
-      allowActorialAdvisory: learnerRequestedPlainStyle,
-      advisoryReason: 'explicit learner style request outranks optional actorial realization',
+    const originalDraftAudits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
+    let audits = withTutorDeliveryDecision(originalDraftAudits, {
+      allowActorialAdvisory:
+        learnerRequestedPlainStyle ||
+        tutorStubActorialPerformanceMayBeAdvisory(originalDraftAudits.actorialRealizationAudit),
+      advisoryReason: learnerRequestedPlainStyle
+        ? 'explicit learner style request outranks optional actorial realization'
+        : 'the selected host part and every hard response check are visible; only the optional performance tactic remains below the deterministic threshold',
       role: roleBase,
       attempt: 0,
     });

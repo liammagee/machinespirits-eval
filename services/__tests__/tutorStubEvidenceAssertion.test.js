@@ -68,6 +68,17 @@ test('allows a public tool-to-person inference without treating it as a new exhi
   assert.equal(audit.ok, true);
 });
 
+test('allows a public job-number entry to support a handling attribution', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text:
+      'The Wrenfold job number ties that 12:14 entry to their handling of Priya’s lunchbox.',
+    permittedText:
+      'Priya’s labelled lunchbox was logged at 12:14, tagged with the Wrenfold job number, with a shelf photo attached.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
 test('ignores an explicit tool-custody boundary that is not an exhibit match', () => {
   assert.equal(
     auditTutorStubEvidenceAssertions({

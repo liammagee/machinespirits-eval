@@ -6,6 +6,7 @@ import {
   repairTutorStubMissingClarificationInvitation,
   repairTutorStubThirdPersonSourceLeadIn,
   tutorStubGuardDeliveryDecision,
+  tutorStubActorialPerformanceMayBeAdvisory,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
@@ -80,6 +81,21 @@ test('third-person authored-source casting is repaired without changing the quot
   );
   assert.match(repair.text, /“I say Verrell alone draws the crucible\.”/u);
   assert.doesNotMatch(repair.text, /town assayer/iu);
+});
+
+test('source repair matches the stable role when authoring adds a descriptive activity', () => {
+  const repair = repairTutorStubThirdPersonSourceLeadIn({
+    text:
+      'The building manager reads the notice: “I posted this Monday: Wrenfold may clear appliances.” What changes?',
+    dramaticReleaseFrame: {
+      entries: [{ mode: 'enacted_role', role: 'building manager reading the lift notice' }],
+    },
+    responseConfiguration: { actorial_host_part: 'record_keeper' },
+  });
+
+  assert.equal(repair.changed, true);
+  assert.match(repair.text, /^I mark the evidence in the open record:/u);
+  assert.match(repair.text, /“I posted this Monday: Wrenfold may clear appliances\.”/u);
 });
 
 test('mechanical source repair leaves presented exhibits and unrelated prose untouched', () => {
@@ -166,6 +182,12 @@ test('plain recovery keeps character strict in verification and advisory in coll
 });
 
 test('policy recovery may miss only the optional tactic after visibly performing its host part', () => {
+  assert.equal(
+    tutorStubActorialPerformanceMayBeAdvisory({
+      issues: [{ type: 'missing_selected_performance_tactic' }],
+    }),
+    true,
+  );
   assert.equal(
     tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
       issues: [{ type: 'missing_selected_performance_tactic' }],

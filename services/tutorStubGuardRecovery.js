@@ -114,14 +114,29 @@ export function repairTutorStubThirdPersonSourceLeadIn({
   for (const entry of dramaticReleaseFrame?.entries || []) {
     if (entry?.mode !== 'enacted_role' || !String(entry?.role || '').trim()) continue;
     const role = String(entry.role).trim();
-    const pattern = new RegExp(
-      `\\b(?:as\\s+)?(?:the|a|an)\\s+${escapeRegExp(role)}\\b[^:“”"\\n]{0,120}:\\s*(?=[“"])`,
-      'iu',
+    const roleStem = role.replace(
+      /\s+(?:carrying|holding|presenting|reading|reciting|reporting|showing)\b.*$/iu,
+      '',
     );
-    const match = repaired.match(pattern);
-    if (!match) continue;
+    const variants = [...new Set([role, roleStem].filter(Boolean))].sort(
+      (left, right) => right.length - left.length,
+    );
+    let match = null;
+    let matchedPattern = null;
+    for (const variant of variants) {
+      const pattern = new RegExp(
+        `\\b(?:as\\s+)?(?:the|a|an)\\s+${escapeRegExp(variant)}\\b[^:“”"\\n]{0,120}:\\s*(?=[“"])`,
+        'iu',
+      );
+      match = repaired.match(pattern);
+      if (match) {
+        matchedPattern = pattern;
+        break;
+      }
+    }
+    if (!match || !matchedPattern) continue;
     const replacement = `${mechanicalHostLeadIn(responseConfiguration)}: `;
-    repaired = repaired.replace(pattern, replacement);
+    repaired = repaired.replace(matchedPattern, replacement);
     replacements.push({ role, original: match[0], replacement });
   }
   return {
@@ -192,7 +207,7 @@ export function tutorStubPlainRecoveryAllowsActorialAdvisory({
  * auditor. The full configuration audit remains attached to the delivered turn
  * and therefore still lowers its measured realization rate.
  */
-export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(actorialRealizationAudit = null) {
+export function tutorStubActorialPerformanceMayBeAdvisory(actorialRealizationAudit = null) {
   const issues = Array.isArray(actorialRealizationAudit?.issues)
     ? actorialRealizationAudit.issues
     : [];
@@ -201,6 +216,9 @@ export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(actorialRealiza
     issues.every((issue) => issue?.type === 'missing_selected_performance_tactic')
   );
 }
+
+export const tutorStubPolicyRecoveryAllowsPerformanceAdvisory =
+  tutorStubActorialPerformanceMayBeAdvisory;
 
 export function tutorStubGuardDeliveryDecision(issueRows = [], { allowActorialAdvisory = false } = {}) {
   const issues = Array.isArray(issueRows) ? issueRows : [];
