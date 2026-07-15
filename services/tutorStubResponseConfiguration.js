@@ -814,7 +814,7 @@ function actorialPartVisible(configuration, text, metrics) {
   }
   if (part === 'examiner') {
     const namedExaminingAction =
-      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|check|clear|circle|compare|demonstrate|dip|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|prise|put|read|rest|rub|run|scrape|set|show|slap|slide|snap|spread|steady|strike|tap|taste|test|tip|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
+      /\b(?:i|we|let(?:[’']s| us))\b[^.!?]{0,55}\b(?:bring|check|clear|circle|compare|demonstrate|dip|draw|examine|hold|inspect|keep|lay|lift|look|lower|mark|open|place|plant|point|press|prise|put|read|rest|rub|run|scrape|set|show|slap|slide|snap|spread|steady|steep|strike|tap|taste|test|tip|touch|trace|turn|unfold|warm|weigh)\b|\b(?:under the lens|on the table|side by side)\b/iu.test(
         text,
       ) ||
       /\b(?:compare|examine|hold|inspect|look at|test|trace)\b[^.!?]{0,60}\bwith me\b/iu.test(text);
@@ -1051,7 +1051,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     const boundedDirectQuestion =
       metrics.wordCount <= 85 &&
       metrics.questionCount === 1 &&
-      /\bwhat\b[^?]{0,120}(?:\b(?:add|change|establish|matter|mean|move|settle|show|tell|tie)\b|\bmake\b[^?]{0,35}\blikely\b)/iu.test(
+      /\bwhat\b[^?]{0,120}(?:\b(?:add|change|establish|matter|mean|move|rule out|settle|show|tell|tie|trace)\b|\bmake\b[^?]{0,35}\blikely\b)/iu.test(
         text,
       );
     return (
@@ -1064,7 +1064,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     return /\b(?:between us|both read|beside|together|stand here|clear (?:a )?space[^.!?]{0,45}for you|leav(?:e|ing) room[^.!?]{0,35}for you|make (?:room|space)[^.!?]{0,40}beside me|make (?:room|space) for you|space for you|what do you make|your reading|with me|within your reach|take the moment|we can (?:carry|take)|what\b[^.!?]{0,45}\bwould you (?:choose|want)|which\b[^.!?]{0,55}\bwould you (?:like|want)(?: me to)?)\b/iu.test(text);
   }
   if (tactic === 'measured_testimony') {
-    return /\b(?:without (?:pushing|forcing)|stand as written|responsibly|honestly bear|let .* stand|no further)\b/iu.test(text);
+    return /\b(?:without (?:pushing|forcing)|cannot fairly|can[’']t fairly|keep (?:our|the) (?:account|claim|finding|record) to|stand as written|while (?:that|the) [^.!?]{0,35} stands|responsibly|honestly bear|let .* stand|no further)\b/iu.test(text);
   }
   if (tactic === 'dramatic_counterpressure') {
     const forcefulExhibitAction =

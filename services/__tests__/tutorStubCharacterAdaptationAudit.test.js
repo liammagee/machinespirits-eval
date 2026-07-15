@@ -78,6 +78,22 @@ test('character adaptation audit accepts a continuous adaptive host plus source 
   assert.equal(audit.distinctHostParts, 2);
 });
 
+test('a multi-sentence authored clue delivered once is not counted as a duplicate', () => {
+  const clue =
+    'The school well is no spring. It fills by a stone lead from the disused font-house on the church slope.';
+  const audit = auditTutorStubCharacterAdaptationTurns([
+    turn({
+      id: 1,
+      tutor:
+        'I open the survey book: “The school well is no spring. It fills by a stone lead from the disused font-house on the church slope.” What does that add?',
+      part: 'examiner',
+      clue,
+    }),
+  ]);
+
+  assert.equal(audit.duplicateClueDeliveryTurns, 0);
+});
+
 test('character visibility remains distinct from the selected performance tactic', () => {
   const audit = auditTutorStubCharacterAdaptationTurns([
     turn({

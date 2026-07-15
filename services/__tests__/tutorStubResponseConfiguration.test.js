@@ -2868,3 +2868,47 @@ test('opening a version history visibly performs the record-keeper part', () => 
   assert.equal(audit.axes.actorial_part.part_visible, true);
   assert.equal(audit.axes.actorial_part.performance_visible, true);
 });
+
+test('a bounded trace question visibly performs a rapid evidence handoff', () => {
+  const configuration = {
+    ...buildTutorStubResponseConfiguration({
+      engagementStance: 'brisk',
+      learnerText: 'Show me the next clue.',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      world: testWorld(),
+    }),
+    action_family: 'stage_next_step',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'rapid_handoff', label: 'rapid evidence handoff' },
+  };
+  const text =
+    'I kneel by the well curb and trace the worn channel-mark on the foundation stone. What must we now trace before Bray can be tied to this water?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('fairly limiting a standing record visibly performs measured testimony', () => {
+  const configuration = {
+    ...buildTutorStubResponseConfiguration({
+      engagementStance: 'witnessing',
+      learnerText: 'The bread was cold before launch.',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      world: testWorld(),
+    }),
+    action_family: 'answer_accountably',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'measured_testimony', label: 'measured testimony' },
+  };
+  const text =
+    'I set my finger on the dawn initials: every batch left warm. I cannot fairly place cooling before launch while that log stands. If you would break my case, which line says the windless batch left cold?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});

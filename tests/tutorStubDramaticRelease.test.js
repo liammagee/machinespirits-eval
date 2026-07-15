@@ -144,6 +144,28 @@ test('ordinary field and document actions count as visible exhibit handoffs', ()
   assert.equal(documentAudit.exhibitHandoffVisible, true);
 });
 
+test('steeping residue in a cup counts as a concrete exhibit demonstration', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_residue',
+        via: 'tutor',
+        surface:
+          'The crust from the trough rim, steeped in a white cup, gives the same grey liquor and bitterness as wormwood.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const audit = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text:
+      'I steep the trough-rim crust in a white cup and compare it with the wormwood sprig; both give the same grey, bitter liquor. What does that establish?',
+  });
+
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exhibitHandoffVisible, true);
+});
+
 test('director records default to exhibits while witness accounts default to enacted roles', () => {
   const recordFrame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

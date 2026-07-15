@@ -31,15 +31,25 @@ function sentenceRows(value) {
 }
 
 function clueBearingSentenceCount(text, surface) {
-  const clueTokens = contentTokens(surface);
-  if (!clueTokens.size) return 0;
-  const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
-  return sentenceRows(text).filter((sentence) => {
-    const sentenceTokens = contentTokens(sentence);
-    let overlap = 0;
-    for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
-    return overlap >= threshold;
-  }).length;
+  const responseSentences = sentenceRows(text);
+  const clueSentences = sentenceRows(surface);
+  if (!responseSentences.length || !clueSentences.length) return 0;
+  // One authored clue may legitimately span several sentences. Measure how
+  // many times any one source sentence is delivered, rather than treating the
+  // clue's own second sentence as a repeat of its first.
+  return Math.max(
+    ...clueSentences.map((clueSentence) => {
+      const clueTokens = contentTokens(clueSentence);
+      if (!clueTokens.size) return 0;
+      const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
+      return responseSentences.filter((sentence) => {
+        const sentenceTokens = contentTokens(sentence);
+        let overlap = 0;
+        for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
+        return overlap >= threshold;
+      }).length;
+    }),
+  );
 }
 
 export function auditTutorStubCharacterAdaptationTurns(turnRecords = []) {
