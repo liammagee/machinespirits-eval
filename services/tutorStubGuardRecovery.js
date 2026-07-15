@@ -211,18 +211,37 @@ export function tutorStubPlainRecoveryAllowsActorialAdvisory({
  * auditor. The full configuration audit remains attached to the delivered turn
  * and therefore still lowers its measured realization rate.
  */
-export function tutorStubActorialPerformanceMayBeAdvisory(actorialRealizationAudit = null) {
+export function tutorStubActorialPerformanceMayBeAdvisory(
+  actorialRealizationAudit = null,
+  responseConfigurationAudit = null,
+) {
   const issues = Array.isArray(actorialRealizationAudit?.issues)
     ? actorialRealizationAudit.issues
     : [];
+  const axes = responseConfigurationAudit?.axes || {};
+  const nonActorialAxesVisible = [
+    'engagement_stance',
+    'action_family',
+    'audience_register',
+    'lexical_accessibility',
+    'scene_immersion',
+  ].every((axis) => axes?.[axis]?.visible === true);
   return (
+    nonActorialAxesVisible &&
     issues.length > 0 &&
     issues.every((issue) => issue?.type === 'missing_selected_performance_tactic')
   );
 }
 
-export const tutorStubPolicyRecoveryAllowsPerformanceAdvisory =
-  tutorStubActorialPerformanceMayBeAdvisory;
+export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+  actorialRealizationAudit = null,
+  responseConfigurationAudit = null,
+) {
+  return tutorStubActorialPerformanceMayBeAdvisory(
+    actorialRealizationAudit,
+    responseConfigurationAudit,
+  );
+}
 
 export function tutorStubGuardDeliveryDecision(issueRows = [], { allowActorialAdvisory = false } = {}) {
   const issues = Array.isArray(issueRows) ? issueRows : [];

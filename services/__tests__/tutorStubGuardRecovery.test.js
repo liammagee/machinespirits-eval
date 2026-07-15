@@ -195,16 +195,25 @@ test('plain recovery keeps character strict in verification and advisory in coll
 });
 
 test('policy recovery may miss only the optional tactic after visibly performing its host part', () => {
+  const visibleConfiguration = {
+    axes: {
+      engagement_stance: { visible: true },
+      action_family: { visible: true },
+      audience_register: { visible: true },
+      lexical_accessibility: { visible: true },
+      scene_immersion: { visible: true },
+    },
+  };
   assert.equal(
     tutorStubActorialPerformanceMayBeAdvisory({
       issues: [{ type: 'missing_selected_performance_tactic' }],
-    }),
+    }, visibleConfiguration),
     true,
   );
   assert.equal(
     tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
       issues: [{ type: 'missing_selected_performance_tactic' }],
-    }),
+    }, visibleConfiguration),
     true,
   );
   assert.equal(
@@ -213,8 +222,20 @@ test('policy recovery may miss only the optional tactic after visibly performing
         { type: 'missing_selected_actorial_part' },
         { type: 'missing_selected_performance_tactic' },
       ],
-    }),
+    }, visibleConfiguration),
     false,
   );
-  assert.equal(tutorStubPolicyRecoveryAllowsPerformanceAdvisory({ issues: [] }), false);
+  assert.equal(tutorStubPolicyRecoveryAllowsPerformanceAdvisory({ issues: [] }, visibleConfiguration), false);
+  assert.equal(
+    tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+      { issues: [{ type: 'missing_selected_performance_tactic' }] },
+      {
+        axes: {
+          ...visibleConfiguration.axes,
+          engagement_stance: { visible: false },
+        },
+      },
+    ),
+    false,
+  );
 });

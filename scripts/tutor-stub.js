@@ -1881,6 +1881,7 @@ function tutorResponseRecoveryPrompt({
   questionSupportAudit = null,
   dramaticReleaseAudit = null,
   actorialRealizationAudit = null,
+  responseConfigurationAudit = null,
   responseConfiguration = null,
   responseCompositionAudit = null,
   repetitionAudit = null,
@@ -1901,6 +1902,9 @@ function tutorResponseRecoveryPrompt({
   const questionSupportRows = rows('question_support', questionSupportAudit?.issues);
   const dramaticReleaseRows = rows('dramatic_release', dramaticReleaseAudit?.issues);
   const actorialRealizationRows = rows('actorial_realization', actorialRealizationAudit?.issues);
+  const missingConfigurationAxes = Object.entries(responseConfigurationAudit?.axes || {})
+    .filter(([axis, value]) => axis !== 'actorial_part' && value?.visible !== true)
+    .map(([axis]) => axis);
   const responseCompositionRows = rows('response_composition', responseCompositionAudit?.issues);
   const repetitionRows = rows('repetition', repetitionAudit?.issues);
   const closureRows = rows('dialogue_closure', closureAudit?.issues);
@@ -1939,6 +1943,9 @@ function tutorResponseRecoveryPrompt({
       : null,
     actorialRealizationRows
       ? `Performance contract: ${responseConfiguration?.actorial_performance?.contract || 'make the selected tactic transcript-visible through concrete action or direct speech'}`
+      : null,
+    missingConfigurationAxes.length
+      ? `For policy_repair, also make these selected configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`
       : null,
     responseCompositionRows
       ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
@@ -10759,7 +10766,10 @@ async function callTutor({
     let audits = withTutorDeliveryDecision(originalDraftAudits, {
       allowActorialAdvisory:
         learnerRequestedPlainStyle ||
-        tutorStubActorialPerformanceMayBeAdvisory(originalDraftAudits.actorialRealizationAudit),
+        tutorStubActorialPerformanceMayBeAdvisory(
+          originalDraftAudits.actorialRealizationAudit,
+          originalDraftAudits.responseConfigurationAudit,
+        ),
       advisoryReason: learnerRequestedPlainStyle
         ? 'explicit learner style request outranks optional actorial realization'
         : 'the selected host part and every hard response check are visible; only the optional performance tactic remains below the deterministic threshold',
@@ -10830,6 +10840,7 @@ async function callTutor({
       questionSupportAudit: audits.questionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
       actorialRealizationAudit: audits.actorialRealizationAudit,
+      responseConfigurationAudit: audits.responseConfigurationAudit,
       responseConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
@@ -10843,6 +10854,7 @@ async function callTutor({
       questionSupportAudit: audits.questionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
       actorialRealizationAudit: audits.actorialRealizationAudit,
+      responseConfigurationAudit: audits.responseConfigurationAudit,
       responseConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
@@ -10896,6 +10908,7 @@ async function callTutor({
       {
         allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
           policyRepairDraftAudits.actorialRealizationAudit,
+          policyRepairDraftAudits.responseConfigurationAudit,
         ),
         advisoryReason:
           'the model recovery performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
@@ -10976,6 +10989,7 @@ async function callTutor({
         {
           allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
             compositionDraftAudits.actorialRealizationAudit,
+            compositionDraftAudits.responseConfigurationAudit,
           ),
           advisoryReason:
             'the mechanically recomposed recovery preserves the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
@@ -11371,6 +11385,7 @@ async function callTutor({
       {
         allowActorialAdvisory: tutorStubActorialPerformanceMayBeAdvisory(
           fallbackDraftAudits.actorialRealizationAudit,
+          fallbackDraftAudits.responseConfigurationAudit,
         ),
         advisoryReason:
           'the mechanically public-safe fallback performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',

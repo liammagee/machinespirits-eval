@@ -730,7 +730,7 @@ function stanceVisible(stance, text, metrics) {
   }
   if (stance === 'plain') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
   if (stance === 'precise')
-    return /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|does not|doesn[’']t|only|limit|until|unproved)\b/iu.test(text);
+    return /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(text);
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm')
     return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together|both (?:read|test))\b/iu.test(text);
@@ -1028,7 +1028,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
   }
   if (tactic === 'evidentiary_boundary') {
     return (
-      /\b(?:beyond|exact|establish|licensed|line that matters|no more|does not|doesn[’']t|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
+      /\b(?:beyond|exact|establish|licensed|line that matters|no more|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
       /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
       /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
     );

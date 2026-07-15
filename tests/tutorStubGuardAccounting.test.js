@@ -24,7 +24,7 @@ const PAIRED_RECOVERY = JSON.stringify({
 const PLAIN_STYLE_DRAFT =
   'Fair. I’ll keep this direct. “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that public entry establish?';
 const HOST_PART_ONLY_RECOVERY =
-  'You’re right to ask what the public record supports. I hold the mint-yard register before us: “I have my finger on the line: Verrell alone draws the mint-yard crucible.” What follows from this line?';
+  'You’re right to ask what the public record supports, because that is the question here. I hold the mint-yard register before us: “I have my finger on the line: Verrell alone draws the mint-yard crucible.” What follows from this line?';
 const HOST_PART_ONLY_RECOVERY_BATCH = JSON.stringify({
   policy_repair: HOST_PART_ONLY_RECOVERY,
   plain_recovery: HOST_PART_ONLY_RECOVERY,
