@@ -13,6 +13,7 @@ import {
 } from '../services/tutorStubResponseComposition.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
+import { auditTutorStubRepetitionResponse } from '../services/tutorStubResponseGuard.js';
 
 const WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT = Object.freeze({
   schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
@@ -1378,6 +1379,34 @@ test('configured non-release fallback stays current instead of rehearsing the cl
   assert.match(text, /Not so fast—I hold that claim against the (?:shilling|crucible)/u);
   assert.match(text, /ask me to clarify a word or connection\?/u);
   assert.doesNotMatch(text, /Here is the concrete clue|In plain terms|A blank is the work|Whose hand struck/iu);
+});
+
+test('configured non-release fallback varies after a recent deterministic recovery', () => {
+  const configuration = {
+    engagement_stance: 'plain',
+    action_family: 'stage_next_step',
+    actorial_part: 'examiner',
+  };
+  const first = deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'I keep your point about “First learner message” in view before we develop it.',
+    responseConfiguration: configuration,
+    learnerText: 'First learner message.',
+    variationKey: 'run:t1',
+  });
+  const second = deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'I hear the focus: “Second learner message”; that stays at the centre of this turn.',
+    responseConfiguration: configuration,
+    learnerText: 'Second learner message.',
+    recentTutorTexts: [first],
+    variationKey: 'run:t2',
+  });
+
+  assert.notEqual(second, first);
+  assert.match(second, /fresh line|new space|previous wording/iu);
+  assert.equal(
+    auditTutorStubRepetitionResponse({ text: second, recentTutorTexts: [first] }).ok,
+    true,
+  );
 });
 
 test('record-keeper fallback does not duplicate an uptake that already enters the distinction', () => {

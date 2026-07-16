@@ -199,6 +199,80 @@ function substantiveLearnerUptake({ uptake = '', focusTerms = [], acceptedMeanin
   };
 }
 
+function boundedPublicFocus(value, maxLength = 120) {
+  const surface = oneLine(value)
+    .replace(/[?]+/gu, '')
+    .replace(/[.!]+$/gu, '')
+    .trim();
+  if (surface.length <= maxLength) return surface;
+  const bounded = surface.slice(0, maxLength + 1).replace(/\s+\S*$/u, '').trim();
+  return `${bounded || surface.slice(0, maxLength).trim()}…`;
+}
+
+function interrogativeUptake(value) {
+  const text = oneLine(value);
+  return (
+    /\?/u.test(text) ||
+    /^(?:what|which|who|whose|where|when|why|how|can|could|do|does|did|is|are|was|were|have|has|had|may|might|shall|should|will|would)\b/iu.test(
+      text,
+    )
+  );
+}
+
+/**
+ * Preserve a deterministic acknowledgement only when it satisfies the same
+ * typed learner-focus linkage as the live progression audit. If a generic
+ * acknowledgement loses that focus, realize a bounded public-only uptake from
+ * the compiled contract instead of weakening recognition.
+ */
+export function deterministicTutorStubTurnProgressionUptake({
+  contract = null,
+  defaultUptake = '',
+  recentTutorTexts = [],
+  variationKey = '',
+} = {}) {
+  const fallback = oneLine(defaultUptake);
+  if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
+    return fallback;
+  }
+  const linkage = substantiveLearnerUptake({
+    uptake: fallback,
+    focusTerms: contract.learner_uptake?.focus_terms || [],
+    acceptedMeaning: contract.learner_uptake?.accepted_meaning || '',
+  });
+  if (linkage.visible && !interrogativeUptake(fallback)) return fallback;
+
+  const focus = boundedPublicFocus(
+    contract.turn_focus_contract?.primary_surface || contract.learner_uptake?.learner_surface,
+  );
+  if (!focus) return fallback;
+  const variants = [
+    `I keep your point about “${focus}” in view before we develop it.`,
+    `I hear the focus: “${focus}”; that stays at the centre of this turn.`,
+    `Your point about “${focus}” is the one I will answer now.`,
+  ];
+  const variantIndex = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).filter(oneLine).length
+    ? 1 + stableVariationIndex(variationKey, variants.length - 1)
+    : 0;
+  const candidate = variants[variantIndex];
+  const candidateLinkage = substantiveLearnerUptake({
+    uptake: candidate,
+    focusTerms: contract.learner_uptake?.focus_terms || [],
+    acceptedMeaning: contract.learner_uptake?.accepted_meaning || '',
+  });
+  return candidateLinkage.visible ? candidate : fallback;
+}
+
+function stableVariationIndex(value, count) {
+  if (count <= 1) return 0;
+  let hash = 2166136261;
+  for (const character of String(value || '')) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) % count;
+}
+
 function coverage(required = [], text = '') {
   if (!required.length) return { matched: [], count: 0, coverage: 1 };
   const matched = overlap(required, contentTerms(text));

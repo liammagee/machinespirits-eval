@@ -173,7 +173,10 @@ import {
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
-import { auditTutorStubLiveTurnProgressionV1 } from '../services/tutorStubTurnProgressionContract.js';
+import {
+  auditTutorStubLiveTurnProgressionV1,
+  deterministicTutorStubTurnProgressionUptake,
+} from '../services/tutorStubTurnProgressionContract.js';
 import {
   auditTutorStubLiveSourceActionAlignmentV1,
   tutorStubLiveResponseConfigurationSurface,
@@ -10926,6 +10929,13 @@ async function callTutor({
 
   function preservableTutorUptake(audits) {
     if (
+      (audits?.liveTurnProgressionAudit?.issues || []).some(
+        (issue) => issue.type === 'learner_uptake_not_realized',
+      )
+    ) {
+      return '';
+    }
+    if (
       (audits?.responseCompositionAudit?.issues || []).some((issue) =>
         ['missing_learner_uptake', 'generic_learner_uptake', 'verbatim_learner_echo'].includes(issue.type),
       )
@@ -10934,6 +10944,14 @@ async function callTutor({
     }
     const uptake = String(audits?.responseCompositionAudit?.segments?.uptake || '').trim();
     if (!uptake) return '';
+    if (
+      /\?/u.test(uptake) ||
+      /^(?:what|which|who|whose|where|when|why|how|can|could|do|does|did|is|are|was|were|have|has|had|may|might|shall|should|will|would)\b/iu.test(
+        uptake,
+      )
+    ) {
+      return '';
+    }
     if (/^(?:correct|exactly(?: so)?|fair|good|just so|right|yes)[.!]?$/iu.test(uptake)) return '';
     // A safe opening is not worth preserving when it is the very repetition
     // that caused this draft to be rejected. Let the deterministic uptake
@@ -11182,12 +11200,17 @@ async function callTutor({
     const firstPreservedUptake = preservableTutorUptake(audits);
     const firstRepairUptake =
       firstPreservedUptake ||
-      deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
+      deterministicTutorStubTurnProgressionUptake({
+        contract: firstDraftContract?.progression || null,
         recentTutorTexts,
-        world,
+        variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+        defaultUptake: deterministicTutorStubLearnerUptake({
+          learnerText,
+          classification,
+          actionFamily: responseCompositionFrame.selected_action_family || null,
+          recentTutorTexts,
+          world,
+        }),
       });
     // Keep recovery materially smaller than the normal speaking prompt while
     // sanitizing every retained contract at the current release boundary.
@@ -11669,12 +11692,17 @@ async function callTutor({
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
       ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
-    const deterministicFallbackUptake = deterministicTutorStubLearnerUptake({
-      learnerText,
-      classification,
-      actionFamily: responseCompositionFrame.selected_action_family || null,
+    const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
+      contract: firstDraftContract?.progression || null,
       recentTutorTexts,
-      world,
+      variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+      defaultUptake: deterministicTutorStubLearnerUptake({
+        learnerText,
+        classification,
+        actionFamily: responseCompositionFrame.selected_action_family || null,
+        recentTutorTexts,
+        world,
+      }),
     });
     const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
@@ -11710,6 +11738,8 @@ async function callTutor({
                 world,
                 learnerText,
                 turnProgressionContract: firstDraftContract?.progression || null,
+                recentTutorTexts,
+                variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
               })
             : actorialRealizationGuardEnabled
               ? deterministicTutorStubConfiguredContinuationFallback({
@@ -11719,8 +11749,21 @@ async function callTutor({
                   world,
                   learnerText,
                   turnProgressionContract: firstDraftContract?.progression || null,
+                  recentTutorTexts,
+                  variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
                 })
-              : deterministicTutorStubContextualFallback(fallbackContext);
+              : firstDraftContract?.progression?.complete === true
+                ? deterministicTutorStubConfiguredContinuationFallback({
+                    uptake: fallbackUptake,
+                    responseConfiguration: simplifiedRecoveryConfiguration,
+                    support: humanDiscourseFrame?.questionSupport || null,
+                    world,
+                    learnerText,
+                    turnProgressionContract: firstDraftContract.progression,
+                    recentTutorTexts,
+                    variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+                  })
+                : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackText = dramaticReleaseGuardEnabled
       ? baseFallbackText
       : ensureFallbackComposition(baseFallbackText, fallbackUptake);

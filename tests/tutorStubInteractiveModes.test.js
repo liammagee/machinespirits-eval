@@ -159,7 +159,7 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
   });
 }
 
-function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeModel = true }) {
+function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeModel = true, passthrough = true }) {
   installFakeCodex(tmp);
   const logPath = path.join(tmp, 'fake-codex-input.log');
   return new Promise((resolve, reject) => {
@@ -173,6 +173,8 @@ function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeMode
         '--no-closeout-report',
         '--no-interim-animation',
         '--no-stream',
+        '--no-turn-feedback',
+        ...(passthrough ? ['--passthrough'] : []),
         '--trace-dir',
         tmp,
         '--world',
@@ -254,7 +256,92 @@ test('ordinary tutor turns replay the full public user/assistant history without
       calls[1],
       /assistant: I see the point you are putting on the table\.[\s\S]*Take the crucible as a fingerprint/u,
     );
-    assert.match(calls[1], /Learner says:\nSecond learner message\./u);
+    assert.match(calls[1], /Latest message:\nSecond learner message\./u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('ordinary invalid tutor drafts recover through a progression-safe deterministic fallback', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-ordinary-progression-fallback-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-turn-feedback',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'none',
+      ],
+      initialInput: 'First learner message.\n',
+      stopWhen: (plain) => plain.includes('What does that let us carry forward about “First learner message”?'),
+      timeoutMs: 15_000,
+    });
+
+    assert.match(result.plain, /I keep your point about “First learner message” in view/iu);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const accounting = events.find((event) => event.type === 'tutor_response_guard_accounting')?.accounting;
+    assert.ok(accounting);
+    assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+    assert.deepEqual(
+      accounting.attempts.map((attempt) => attempt.kind),
+      ['original_candidate', 'plain_recovery_candidate', 'deterministic_fallback'],
+    );
+    assert.equal(accounting.attempts[0].audits.liveTurnProgressionAudit.ok, false);
+    assert.equal(accounting.attempts[1].audits.liveTurnProgressionAudit.ok, false);
+    assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
+    assert.equal(accounting.finalDelivery.auditOk, true);
+    assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.ok, true);
+    assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.observed.question_count, 1);
+    assert.deepEqual(accounting.attempts[2].audits.liveTurnProgressionAudit.issues, []);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('consecutive ordinary deterministic recoveries vary without weakening progression or repetition guards', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-consecutive-progression-fallback-'));
+  try {
+    const result = await runInteractiveModelSwitchSequence({
+      tmp,
+      changeModel: false,
+      passthrough: false,
+      timeoutMs: 15_000,
+    });
+    assert.equal((result.plain.match(/safe fallback used/gu) || []).length, 2);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const accountings = events
+      .filter((event) => event.type === 'tutor_response_guard_accounting')
+      .map((event) => event.accounting);
+    assert.equal(accountings.length, 2);
+    assert.notEqual(
+      accountings[0].finalDelivery.candidate.text,
+      accountings[1].finalDelivery.candidate.text,
+    );
+    for (const accounting of accountings) {
+      assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+      assert.equal(accounting.finalDelivery.auditOk, true);
+      assert.equal(accounting.finalDelivery.audits.liveTurnProgressionAudit.ok, true);
+      assert.equal(accounting.finalDelivery.audits.repetitionAudit.ok, true);
+    }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -279,7 +366,7 @@ test('learner messages sent before the tutor replies form one restart-safe compo
       ],
       initialInput: 'The first clue is unclear.\n',
       followupInputs: [{ delayMs: 200, text: 'I mean the residue comparison specifically.\n' }],
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('safe fallback used'),
       timeoutMs: 30_000,
       env: {
         FAKE_CODEX_DELAY_MS: '800',
@@ -290,7 +377,7 @@ test('learner messages sent before the tutor replies form one restart-safe compo
 
     assert.match(result.plain, /learner turn updated > added message 2; restarting the tutor with all 2 messages/u);
     assert.doesNotMatch(result.plain, /queued learner turn/u);
-    assert.equal((result.plain.match(/tutor > I see the point you are putting on the table\./gu) || []).length, 1);
+    assert.equal((result.plain.match(/tutor >/gu) || []).length, 1);
 
     const completedCalls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
     // A cancelled external CLI process may finish logging during the restart;
@@ -702,7 +789,7 @@ test('a late learner fragment discards already-computed analysis state before re
           text: 'Specifically, explain how the residue distinguishes a hand.\n',
         },
       ],
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('safe fallback used'),
       timeoutMs: 20_000,
       env: {
         FAKE_CODEX_VALID_ANALYSIS: '1',
@@ -715,7 +802,9 @@ test('a late learner fragment discards already-computed analysis state before re
 
     const completedCalls = fs.readFileSync(result.logPath, 'utf8').split('\n---CALL---\n').filter(Boolean);
     const analysisCalls = completedCalls.filter((call) => call.includes('# Current learner turn'));
-    const tutorCalls = completedCalls.filter((call) => call.includes('Learner says'));
+    const tutorCalls = completedCalls.filter(
+      (call) => call.includes('Learner says') && !call.includes('[Tutor-only repair instruction]'),
+    );
     assert.equal(analysisCalls.length, 2);
     assert.match(analysisCalls[0], /# Current learner turn[\s\S]*I do not follow the comparison\./u);
     assert.doesNotMatch(analysisCalls[0], /Specifically, explain how the residue/u);
@@ -821,7 +910,7 @@ test('a live tutor-model change replays the full public user/assistant history o
       calls[1],
       /assistant: I see the point you are putting on the table\.[\s\S]*Take the crucible as a fingerprint/u,
     );
-    assert.match(calls[1], /Learner says:\nSecond learner message\./u);
+    assert.match(calls[1], /Latest message:\nSecond learner message\./u);
 
     const events = fs
       .readdirSync(tmp)
@@ -836,7 +925,7 @@ test('a live tutor-model change replays the full public user/assistant history o
     const laterTutorCall = events.find(
       (event) =>
         event.type === 'model_call' &&
-        event.role === 'tutor_stub_tutor' &&
+        event.role === 'tutor_stub_passthrough' &&
         event.request?.config?.messageHistoryMode === 'full_public_replay' &&
         event.request?.config?.replayedMessageCount === 2,
     );

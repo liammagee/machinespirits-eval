@@ -1,5 +1,6 @@
 import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from './tutorStubFirstDraftContract.js';
+import { auditTutorStubRepetitionResponse } from './tutorStubResponseGuard.js';
 import {
   deterministicTutorStubTurnProgressionHandoff,
   tutorStubLearnerRequestsWritableEntry,
@@ -1512,6 +1513,26 @@ function configuredFallbackHandoff({ support = null, actionFamily = null } = {})
   return 'What does that let us carry forward?';
 }
 
+function configuredFallbackVariationBridge(variant) {
+  return [
+    '',
+    'A fresh line in the public record separates this point from the one we just tested.',
+    'I clear a new space on the table for this point before testing its limit.',
+    'We begin again from this public statement, leaving the previous wording behind.',
+  ][variant] || '';
+}
+
+function configuredFallbackVariantOrder({ variationKey = '', recentTutorTexts = [], count = 4 } = {}) {
+  if (!(Array.isArray(recentTutorTexts) ? recentTutorTexts : []).filter(oneLine).length) return [0];
+  let hash = 2166136261;
+  for (const character of String(variationKey || '')) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  const preferred = 1 + ((hash >>> 0) % Math.max(1, count - 1));
+  return [preferred, ...Array.from({ length: count - 1 }, (_, index) => index + 1).filter((row) => row !== preferred), 0];
+}
+
 /**
  * Last-resort continuation for a non-release turn. Unlike the historical
  * question-support fallback, this does not rehearse the current clue, public
@@ -1525,6 +1546,8 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   world = null,
   learnerText = '',
   turnProgressionContract = null,
+  recentTutorTexts = [],
+  variationKey = '',
 } = {}) {
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
   const part = oneLine(
@@ -1539,21 +1562,27 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       uptake,
     ) ||
       /\b(?:i|we)\s+(?:enter|mark|note|record|write)\s+(?:that|this|it)\b/iu.test(uptake));
-  return [
-    oneLine(uptake),
-    uptakeAlreadyPerformsRecordKeeper
-      ? null
-      : configuredFallbackPerformance({ part, object, tactic }),
-    configuredFallbackStance(stance),
-    deterministicTutorStubTurnProgressionHandoff({
-      contract: turnProgressionContract,
-      support,
-      defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
-      publicObject: object,
-    }),
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
+    [
+      oneLine(uptake),
+      configuredFallbackVariationBridge(variant),
+      uptakeAlreadyPerformsRecordKeeper
+        ? null
+        : configuredFallbackPerformance({ part, object, tactic }),
+      configuredFallbackStance(stance),
+      deterministicTutorStubTurnProgressionHandoff({
+        contract: turnProgressionContract,
+        support,
+        defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
+        publicObject: object,
+      }),
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+  return candidates.find((candidate) =>
+    auditTutorStubRepetitionResponse({ text: candidate, recentTutorTexts }).ok,
+  ) || candidates[0];
 }
 
 export function formatTutorStubResponseComposition(audit = null) {

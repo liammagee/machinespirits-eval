@@ -7,6 +7,7 @@ import {
   auditTutorStubTurnProgression,
   compileTutorStubTurnProgressionContract,
   deterministicTutorStubTurnProgressionHandoff,
+  deterministicTutorStubTurnProgressionUptake,
   tutorStubLearnerRequestsWritableEntry,
   tutorStubTurnProgressionContractPrompt,
 } from '../services/tutorStubTurnProgressionContract.js';
@@ -714,4 +715,73 @@ test('deterministic V1 recovery makes a bounded pacing choice declarative when q
   assert.doesNotMatch(handoff, /\?/u);
   assert.match(handoff, /slow the pace/iu);
   assert.match(handoff, /either begin with the incident log, or ask me to unpack/iu);
+});
+
+test('deterministic V1 recovery replaces generic uptake with bounded typed learner focus', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'First learner message?',
+    responseCompositionFrame: {
+      learner_move: {},
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'I hear the point; the next public fact must answer it.',
+  });
+
+  assert.equal(uptake, 'I keep your point about “First learner message” in view before we develop it.');
+  assert.doesNotMatch(uptake, /\?/u);
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake,
+      handoff: 'What does that let us carry forward about “First learner message”?',
+    }),
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
+test('deterministic V1 recovery varies bounded uptake after a recent tutor turn', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'Second learner message?',
+    responseCompositionFrame: {
+      learner_move: {},
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'I hear the point; the next public fact must answer it.',
+    recentTutorTexts: ['An earlier deterministic tutor reply.'],
+    variationKey: 'run:t2',
+  });
+
+  assert.doesNotMatch(uptake, /^I keep your point/iu);
+  assert.match(uptake, /Second learner message/iu);
+  assert.doesNotMatch(uptake, /\?/u);
+});
+
+test('deterministic V1 recovery replaces interrogative uptake instead of stripping punctuation', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'Which public mark would connect the tool to one hand?',
+    responseCompositionFrame: {
+      learner_move: {},
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'Which public mark would connect the tool to one hand?',
+  });
+
+  assert.notEqual(uptake, 'Which public mark would connect the tool to one hand');
+  assert.match(uptake, /I keep your point about/iu);
+  assert.doesNotMatch(uptake, /\?/u);
 });
