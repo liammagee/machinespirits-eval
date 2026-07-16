@@ -69,22 +69,35 @@ gates_per_cell:
 
 change_log:
   speaking_prompt: >-
-    Iteration 5 removes an internal punctuation conflict from the advocate
-    contract. The licensed case now occupies its own short sentence, while a
-    stage-next-step action must put a concrete public operation such as test,
-    check, compare, or trace in the separate handoff. It may not ask the
-    learner to name unspecified evidence.
+    Iteration 6 assigns each adaptive performance axis a stable host beat.
+    Sentence 2 performs the selected part, sentence 3 performs the selected
+    tactic outside the uptake and any authored quotation, and sentence 4 is
+    reserved for a separate handoff only when needed. Charismatic force must
+    intensify rather than replace the selected part's action.
   recovery_only: >-
     Recovery is disabled in original-only screening. Strict end-to-end repair
     and fallback behavior remains unchanged outside this development screen.
   audit_recognition_only: >-
-    No audit recognition change is made in iteration 5. The prior general
+    No audit recognition change is made in iteration 6. The prior general
     support/exclusion correction remains active and separately accounted.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
   stop_campaign_when_required_cell_fails: true
   maximum_consecutive_iterations_without_improvement: 2
+  final_frontier_attempt_iteration: 6
+  stop_if_final_frontier_attempt_fails: true
+  frontier_reference:
+    iteration: 2
+    turn_configuration_vector:
+      4: 1.0
+      5: 1.0
+      6: 1.0
+      9: 0.667
+    requirement: >-
+      Iteration 6 must retain full realization on turns 4, 5, and 6, reach
+      turn 9, and raise turn 9 to full realization. Any failed working gate is
+      stagnation; a shorter clean prefix is not a new frontier.
 
 claim_boundary: >-
   Passing means one fresh original tutor draw satisfies all strict delivery and

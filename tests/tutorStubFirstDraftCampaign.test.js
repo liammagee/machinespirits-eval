@@ -399,6 +399,28 @@ test('development stopping does not reward an early-stopped survivor rate', () =
   assert.equal(current.stop, false);
 });
 
+test('a predeclared final frontier attempt stops when the full working screen does not pass', () => {
+  const result = tutorStubFirstDraftIterationStopping({
+    current: {
+      completedTurns: 3,
+      originalCandidatesAccepted: 3,
+      meanConfigurationRealization: 1,
+      workingScreenPassed: false,
+    },
+    previous: {
+      completedTurns: 2,
+      originalCandidatesAccepted: 1,
+      meanConfigurationRealization: 0.833,
+      stopping: { consecutiveWithoutImprovement: 1 },
+    },
+    requireWorkingScreenPass: true,
+  });
+
+  assert.equal(result.measurableImprovement, true);
+  assert.equal(result.stop, true);
+  assert.equal(result.reason, 'predeclared_final_frontier_attempt_failed');
+});
+
 test('acceptance assessment keeps original, repair, fallback, safety, and latency separate', () => {
   const report = {
     rows: [

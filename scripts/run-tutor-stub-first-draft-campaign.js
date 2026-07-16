@@ -285,11 +285,15 @@ async function runDevelopment(plan, config, iteration) {
     semanticRecognitionCorrections: result.semanticRecognitionCorrections,
     safetyFailures: result.finalSafetyFailures,
     deterministicFallbacks: result.deterministicFallbacks,
+    workingScreenPassed: status === 'pass',
   };
   result.stopping = tutorStubFirstDraftIterationStopping({
     current: currentMetrics,
     previous: previousMetrics,
     maximumConsecutiveWithoutImprovement,
+    requireWorkingScreenPass:
+      Number(config.stopping?.final_frontier_attempt_iteration) === iteration &&
+      config.stopping?.stop_if_final_frontier_attempt_fails === true,
   });
   const resultPath = writeJson(path.join(plan.iterationRoot, 'working-screen-result.json'), result);
   console.log(`working screen ${status}: ${resultPath}`);

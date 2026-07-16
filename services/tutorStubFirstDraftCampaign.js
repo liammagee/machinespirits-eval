@@ -339,6 +339,7 @@ export function tutorStubFirstDraftIterationStopping({
   current = null,
   previous = null,
   maximumConsecutiveWithoutImprovement = 2,
+  requireWorkingScreenPass = false,
 } = {}) {
   const maximum = integer(
     maximumConsecutiveWithoutImprovement,
@@ -383,6 +384,7 @@ export function tutorStubFirstDraftIterationStopping({
   const consecutive = improved
     ? 0
     : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
+  const requiredPassMissed = requireWorkingScreenPass && current?.workingScreenPassed !== true;
   return {
     measurableImprovement: improved,
     configurationRealizationImproved,
@@ -390,8 +392,14 @@ export function tutorStubFirstDraftIterationStopping({
     semanticRecognitionCorrections: Number(current?.semanticRecognitionCorrections || 0),
     consecutiveWithoutImprovement: consecutive,
     maximumConsecutiveWithoutImprovement: maximum,
-    stop: consecutive >= maximum,
-    reason: consecutive >= maximum ? 'two_consecutive_iterations_without_measurable_improvement' : improved ? 'improved' : 'no_improvement',
+    stop: requiredPassMissed || consecutive >= maximum,
+    reason: requiredPassMissed
+      ? 'predeclared_final_frontier_attempt_failed'
+      : consecutive >= maximum
+        ? 'two_consecutive_iterations_without_measurable_improvement'
+        : improved
+          ? 'improved'
+          : 'no_improvement',
   };
 }
 

@@ -13,60 +13,69 @@ current:
   campaign_version: 24
   label: V24
   state: working_predeclared
-  working_iteration: 5
+  working_iteration: 6
   working_screen_id: first-draft-working-screens-v3
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v3.yaml
   acceptance_config: null
   last_observation:
     version: 24
-    working_iteration: 4
+    working_iteration: 5
     kind: frozen_prefix_development
     status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-4/working-screen-result.json
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-5/working-screen-result.json
     development_seed: 20261200
     seed_disposition: consumed_development_reusable
-    completed_turns: [4, 5, 6]
-    unstarted_turns: [9]
-    strict_originals_accepted: 3
+    completed_turns: [4, 5]
+    unstarted_turns: [6, 9]
+    strict_originals_accepted: 1
     final_safety_failures: 0
     fallbacks: 0
     uptake_failures: 0
     semantic_recognition_corrections: 0
-    mean_configuration_realization: 0.9443333333333334
+    mean_configuration_realization: 0.9165
     maximum_possible_mean_configuration_realization: 0.95825
     failed_gate: minimum_mean_configuration_realization
     failed_axes:
-      - turn_6_action_family_stage_next_step
+      - turn_5_actorial_performance_evidentiary_boundary
     comparison:
-      immediate_baseline: V24 working iteration 3
-      comparable_completion: true
-      baseline_completed_turns: 2
-      current_completed_turns: 3
-      current_originals: 3/3
-      current_mean_configuration_realization: 0.9443333333333334
-      measurable_improvement: true
-      configuration_realization_improved: true
-      consecutive_without_improvement: 0
+      immediate_baseline: V24 working iteration 4
+      comparable_completion: false
+      baseline_completed_turns: 3
+      current_completed_turns: 2
+      current_originals: 1/2
+      current_mean_configuration_realization: 0.9165
+      measurable_improvement: false
+      configuration_realization_improved: false
+      consecutive_without_improvement: 1
       stop: false
-      best_so_far_baseline: V24 working iteration 2 same turns 4, 5, and 6
+      best_so_far_baseline: V24 working iteration 2
       best_so_far_prefix_mean_configuration_realization: 1.0
       best_so_far_prefix_improved: false
       interpretation: >-
-        Iteration 4 is a valid local improvement over iteration 3 because it
-        completes a strict superset with three accepted originals. It does not
-        exceed iteration 2 on the common three-turn prefix. Turn 6 genuinely
-        misses the concrete next operation by asking the learner to name
-        unspecified evidence.
-    iteration_5_authority:
+        Iteration 5 is the first no-improvement result after iteration 4. Turn
+        5 places the evidentiary limit only in the learner-facing Write entry;
+        the adaptive host never performs the selected tactic after the exact
+        source quotation. This is a genuine generation miss, not recognition.
+    iteration_6_authority:
       bounded_change_owner: primary_agent
       speaking_change: >-
-        Remove the advocate cue's semicolon template, which conflicted with the
-        global form constraint. Put the licensed case in one short sentence
-        and require the selected stage-next-step action to supply a separate
-        concrete public operation in the final handoff.
+        Reserve explicit unquoted host beats for the selected part and tactic.
+        The uptake and authored source cannot satisfy the tactic; when exact
+        evidence is due, the tactic sentence follows its quotation. Require
+        charismatic force to intensify rather than replace the part action.
       recovery_change: none
       audit_recognition_change: none
       controller_change: none
+      frontier_gate:
+        best_so_far_iteration: 2
+        best_vector: {4: 1.0, 5: 1.0, 6: 1.0, 9: 0.667}
+        required_iteration_6_vector: {4: 1.0, 5: 1.0, 6: 1.0, 9: 1.0}
+        require_four_originals: true
+        on_failure: stagnated
+        rationale: >-
+          Iterations 3–5 shuffled misses without improving the full four-turn
+          frontier. Iteration 6 is the predeclared final no-regression attempt;
+          a shorter clean prefix cannot reset the no-progress count.
 
 versioning:
   current: 24

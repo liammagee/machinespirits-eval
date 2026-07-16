@@ -66,6 +66,7 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.match(prompt, /First person may report the evidence/iu);
   assert.match(prompt, /must not inherit any named person’s deed, ownership, or relationship/iu);
   assert.match(prompt, /Never print the source name outside that quotation/iu);
+  assert.match(prompt, /When an exact clue quotation is due, put this tactic sentence immediately after it/iu);
   assert.equal(prompt.split(clue).length - 1, 1);
   assert.match(prompt, /END — State the due evidence first, then ask what it changes/iu);
   assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|ENTRY|PROP|RETURN) —/u);
@@ -82,7 +83,8 @@ test('charismatic stance remains executable when counterpressure is replaced by 
 
   assert.match(prompt, /Execute the stance independently of the tactic/iu);
   assert.match(prompt, /final handoff a named challenge to one public claim or object/iu);
-  assert.match(prompt, /test, refuse, risk, or stop/iu);
+  assert.match(prompt, /intensify that same action rather than replacing it with a stance-only verb/iu);
+  assert.match(prompt, /decisive public action compatible with the selected part/iu);
   assert.match(prompt, /without inventing contrary evidence/iu);
 });
 
@@ -206,8 +208,10 @@ test('plain adult-novice form is executable before uptake without duplicating a 
 
   assert.ok(prompt.indexOf('FORM —') < prompt.indexOf('OPEN —'));
   assert.match(prompt, /Use 3–4 short host sentences whenever OPEN, DEVELOP, and END are active/iu);
-  assert.match(prompt, /Sentence 1 carries uptake[\s\S]*Sentence 2 performs the scene action/iu);
-  assert.match(prompt, /Sentence 3 states one evidentiary limit or one concrete next check/iu);
+  assert.match(prompt, /Sentence 1 carries uptake[\s\S]*Sentence 2 performs the selected part/iu);
+  assert.match(prompt, /Sentence 3 must perform the selected tactic in unquoted host voice/iu);
+  assert.match(prompt, /neither the opening uptake nor an authored clue quotation counts as tactic realization/iu);
+  assert.match(prompt, /if the selected tactic already carries the handoff, do not duplicate it/iu);
   assert.match(prompt, /Never join these beats with a colon, semicolon, dash, or “but”/iu);
   assert.match(prompt, /split every host sentence above 17 words/iu);
   assert.match(prompt, /Translate the learner’s named specialist term into common words in the uptake/iu);
