@@ -820,6 +820,84 @@ test('surface audit measures realization and differences between selected config
   assert.equal(summary.pairwise_visible_difference_rate, 1);
 });
 
+test('warm handoff recognizes bounded collective modal choice across worlds', () => {
+  const configuration = {
+    engagement_stance: 'warm',
+    action_family: 'stage_next_step',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'minimal',
+    actorial_part: 'scene_partner',
+    actorial_part_label: 'fellow investigator',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+    unresolved_terms: [],
+  };
+  const custodyWorld = {
+    title: 'The Missing Consignment',
+    setting: 'A custody seal and loading log lie on the depot desk.',
+    question: 'Where did the consignment leave the recorded route?',
+    premiseById: new Map(),
+  };
+  const weatherWorld = {
+    title: 'The Grounded Flight',
+    setting: 'A wind chart and morning route are pinned beside the closed vent.',
+    question: 'Why did the flight remain grounded?',
+    premiseById: new Map(),
+  };
+
+  const mayAudit = auditTutorStubResponseConfiguration({
+    text: 'We may next consider what the custody seal still cannot tell us about the route.',
+    configuration,
+    world: custodyWorld,
+  });
+  const couldAudit = auditTutorStubResponseConfiguration({
+    text: 'We could then check the wind chart against the morning route.',
+    configuration,
+    world: weatherWorld,
+  });
+  const canAudit = auditTutorStubResponseConfiguration({
+    text: 'We can now inspect the loading log before following the recorded route.',
+    configuration,
+    world: custodyWorld,
+  });
+
+  assert.equal(mayAudit.axes.engagement_stance.visible, true);
+  assert.equal(couldAudit.axes.engagement_stance.visible, true);
+  assert.equal(canAudit.axes.engagement_stance.visible, true);
+});
+
+test('warm handoff rejects solitary, vague, ungrounded, and pressuring modal language', () => {
+  const configuration = {
+    engagement_stance: 'warm',
+    action_family: 'stage_next_step',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'minimal',
+    actorial_part: 'scene_partner',
+    actorial_part_label: 'fellow investigator',
+    actorial_performance: { id: 'shared_scene_invitation', label: 'shared-scene invitation' },
+    unresolved_terms: [],
+  };
+  const world = {
+    title: 'The Missing Consignment',
+    setting: 'A custody seal and loading log lie on the depot desk.',
+    question: 'Where did the consignment leave the recorded route?',
+    premiseById: new Map(),
+  };
+  const rejected = [
+    'I may next compare the custody seal with the loading log.',
+    'We may continue with this.',
+    'We could next compare the options.',
+    'We can now inspect the loading log; answer now.',
+    'We may next check the custody seal; you must choose.',
+  ];
+
+  for (const text of rejected) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+    assert.equal(audit.axes.engagement_stance.visible, false, text);
+  }
+});
+
 test('sentence-budget visibility tolerates a marginal segmentation overage but not materially dense prose', () => {
   const configuration = {
     engagement_stance: 'plain',

@@ -767,10 +767,24 @@ function stanceVisible(stance, text, metrics) {
       text,
     );
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
-  if (stance === 'warm')
-    return /\b(?:let's|we can|try|notice|you can|start with|take|beside|between us|together|both (?:read|test)|leav(?:e|ing) (?:you )?room|room for you|how do you read)\b/iu.test(
-      text,
+  if (stance === 'warm') {
+    const boundedCollectiveModalChoice =
+      metrics.wordCount <= 28 &&
+      metrics.concreteSceneTermCount > 0 &&
+      /\bwe\s+(?:may|could|can)\b/iu.test(text) &&
+      /\b(?:next|now|then)\b[^.!?]{0,55}\b(?:check|compare|consider|examine|inspect|look|read|test|trace|turn|weigh)\b|\b(?:check|compare|consider|examine|inspect|look|read|test|trace|turn|weigh)\b[^.!?]{0,55}\b(?:next|now|then)\b/iu.test(
+        text,
+      ) &&
+      !/\b(?:answer|choose|decide|name|say|write)\s+now\b|\byou\s+(?:have to|must|need to)\b|\b(?:have to|must|need to)\s+(?:answer|choose|decide|name|say|write)\b|\bno choice\b/iu.test(
+        text,
+      );
+    return (
+      boundedCollectiveModalChoice ||
+      /\b(?:let's|try|notice|you can|start with|take|beside|between us|together|both (?:read|test)|leav(?:e|ing) (?:you )?room|room for you|how do you read)\b/iu.test(
+        text,
+      )
     );
+  }
   if (stance === 'witnessing')
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
   if (stance === 'charismatic')
