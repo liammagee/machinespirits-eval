@@ -48,6 +48,17 @@ export function loadTutorStubFirstDraftCampaign(configPath, { root = process.cwd
 
 function validateWorkingScreen(config, { root }) {
   if (config.held_out !== false) throw new Error('working screen must declare held_out: false');
+  if (config.fixed_configuration?.structured_generation === true) {
+    for (const gate of [
+      'require_structured_output',
+      'require_structured_slot_ownership',
+      'require_exact_source_once',
+    ]) {
+      if (config.gates_per_cell?.[gate] !== true) {
+        throw new Error(`structured working screen must declare gates_per_cell.${gate}: true`);
+      }
+    }
+  }
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
   if (!cells.length) throw new Error('working screen matrix is empty');
   const ids = new Set();
@@ -178,6 +189,9 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
   ];
   if (config.fixed_configuration?.semantic_adjudication === true) {
     command.splice(command.length - 2, 0, '--semantic-adjudication');
+  }
+  if (config.fixed_configuration?.structured_generation === true) {
+    command.splice(command.length - 2, 0, '--structured-generation');
   }
   if (config.fixed_configuration?.adjudicator_model) {
     command.splice(
@@ -335,6 +349,54 @@ export function tutorStubStrictOriginalCandidateAccepted(accounting = null) {
   );
 }
 
+function exactTextOccurrences(text, needle) {
+  const haystack = String(text || '');
+  const target = String(needle || '');
+  if (!target) return 0;
+  let count = 0;
+  let offset = 0;
+  while (offset <= haystack.length - target.length) {
+    const index = haystack.indexOf(target, offset);
+    if (index < 0) break;
+    count += 1;
+    offset = index + target.length;
+  }
+  return count;
+}
+
+function structuredSourceOccurrenceMetric({ row, bundle }) {
+  const frame = bundle?.frames?.dramaticRelease || null;
+  const active = frame?.active === true;
+  const entries = active && Array.isArray(frame?.entries) ? frame.entries : [];
+  const composition = row?.structuredGeneration?.composition || null;
+  const sourceSpans = Array.isArray(composition?.spans)
+    ? composition.spans.filter((span) => span?.kind === 'source')
+    : [];
+  const expectedOccurrenceCount = active ? entries.length : 0;
+  const declaredSourceCount = Number(composition?.sourceCount);
+  const sourceSpanCount = sourceSpans.length;
+  const actualOccurrenceCount = active
+    ? entries.reduce(
+        (sum, entry) => sum + exactTextOccurrences(composition?.text, entry?.surface),
+        0,
+      )
+    : sourceSpans.length;
+  return {
+    turn: Number(row?.turn),
+    active,
+    expectedOccurrenceCount,
+    declaredSourceCount: Number.isFinite(declaredSourceCount) ? declaredSourceCount : null,
+    sourceSpanCount,
+    actualOccurrenceCount,
+    ok:
+      composition !== null &&
+      (!active || entries.length > 0) &&
+      declaredSourceCount === expectedOccurrenceCount &&
+      sourceSpanCount === expectedOccurrenceCount &&
+      actualOccurrenceCount === expectedOccurrenceCount,
+  };
+}
+
 export function tutorStubFirstDraftIterationStopping({
   current = null,
   previous = null,
@@ -406,7 +468,17 @@ export function tutorStubFirstDraftIterationStopping({
 export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } = {}) {
   const requiredTurns = Number(config.gates_per_cell.required_turns);
   const requiredAccepted = Number(config.gates_per_cell.required_originals_accepted);
-  const results = reports.flatMap((report) => report.results || []);
+  const resultEntries = reports.flatMap((report) => {
+    const bundles = Array.isArray(report.bundles) ? report.bundles : [];
+    return (report.results || []).map((row) => ({
+      row,
+      bundle:
+        bundles.find((bundle) => bundle?.turnId && bundle.turnId === row?.turnId) ||
+        bundles.find((bundle) => Number(bundle?.turn) === Number(row?.turn)) ||
+        null,
+    }));
+  });
+  const results = resultEntries.map((entry) => entry.row);
   const strictlyAccepted = (audit) =>
     audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = results.filter((row) => strictlyAccepted(row.audit)).length;
@@ -442,6 +514,17 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       : 'gate';
   const configurationRealizationIsGate = configurationRealizationEnforcement === 'gate';
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
+  const structuredGenerationEnabled = config.fixed_configuration?.structured_generation === true;
+  const validStructuredOutputs = results.filter(
+    (row) =>
+      row.structuredGeneration?.ok === true &&
+      row.structuredGeneration?.composition !== null,
+  ).length;
+  const structuredSlotOwnershipPasses = results.filter(
+    (row) => row.audit?.audits?.structuredSlotOwnershipAudit?.ok === true,
+  ).length;
+  const structuredSourceOccurrences = resultEntries.map(structuredSourceOccurrenceMetric);
+  const exactSourceOccurrencePasses = structuredSourceOccurrences.filter((metric) => metric.ok).length;
   const failureCounts = new Map();
   for (const row of results) {
     // Original-only screening rejects a candidate when semantic recognition
@@ -489,6 +572,15 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     fallbacks: true,
     transcriptSpecificUptake:
       config.gates_per_cell.require_transcript_specific_uptake !== true || transcriptSpecificUptakeFailures === 0,
+    structuredOutput:
+      config.gates_per_cell.require_structured_output !== true ||
+      (structuredGenerationEnabled && validStructuredOutputs === results.length),
+    structuredSlotOwnership:
+      config.gates_per_cell.require_structured_slot_ownership !== true ||
+      (structuredGenerationEnabled && structuredSlotOwnershipPasses === results.length),
+    exactSourceOnce:
+      config.gates_per_cell.require_exact_source_once !== true ||
+      (structuredGenerationEnabled && exactSourceOccurrencePasses === results.length),
   };
   return {
     id: cell.id,
@@ -508,6 +600,18 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     deterministicFallbacks: 0,
     safetyFailures,
     transcriptSpecificUptakeFailures,
+    structuredModelOutputs: structuredGenerationEnabled ? results.length : 0,
+    validStructuredOutputs: structuredGenerationEnabled ? validStructuredOutputs : 0,
+    structuredOutputFailures: structuredGenerationEnabled ? results.length - validStructuredOutputs : 0,
+    structuredSlotOwnershipPasses: structuredGenerationEnabled ? structuredSlotOwnershipPasses : 0,
+    structuredSlotOwnershipFailures: structuredGenerationEnabled
+      ? results.length - structuredSlotOwnershipPasses
+      : 0,
+    exactSourceOccurrencePasses: structuredGenerationEnabled ? exactSourceOccurrencePasses : 0,
+    exactSourceOccurrenceFailures: structuredGenerationEnabled
+      ? results.length - exactSourceOccurrencePasses
+      : 0,
+    structuredSourceOccurrences: structuredGenerationEnabled ? structuredSourceOccurrences : [],
     meanConfigurationRealization,
     configurationRealizationEnforcement,
     meanOriginalLatencyMs: originalLatencies.length

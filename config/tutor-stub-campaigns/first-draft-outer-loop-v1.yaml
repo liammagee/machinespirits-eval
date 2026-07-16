@@ -12,145 +12,94 @@ purpose: >-
   than terminating the broader programme.
 
 current:
-  campaign_version: 25
-  label: V25
+  campaign_version: 26
+  label: V26
   state: working_predeclared
-  working_iteration: 4
-  working_screen_id: first-draft-working-screens-v4
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v4.yaml
+  working_iteration: 1
+  working_screen_id: first-draft-working-screens-v5
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v5.yaml
   acceptance_config: null
   required_confirmation_after_primary_pass:
     status: planned_not_runnable
-    screen_id: first-draft-working-screens-v5
+    screen_id: first-draft-working-screens-v6
     purpose: >-
-      A complete four-world development panel must confirm the typed host plan
-      before any V25 held-out matrix is predeclared. The focused Marrick pass
-      alone cannot establish cross-world robustness.
+      A complete cross-world development panel must confirm structured
+      generation and deterministic composition before any V26 held-out matrix
+      is predeclared. The focused Marrick pass alone cannot establish
+      generalization.
+    hardest_case:
+      world: world_026_skyway_bakery
+      learner_profile: answer_seeking
+      source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/skyway_answer_seeking/2026-07-16T04-44-58-444Z.jsonl
+      turn: 6
+      obligation: examiner_plus_presented_exhibit_plus_dramatic_counterpressure
     cells:
-      - { id: nocturne_answer_seeking, seed: 20261301 }
-      - { id: skyway_answer_seeking, seed: 20261302 }
-      - { id: greyfen_answer_seeking, seed: 20261303 }
-      - { id: marrick_answer_seeking_confirmation, seed: 20261304 }
+      - { id: skyway_answer_seeking, seed: 20261401 }
+      - { id: nocturne_answer_seeking, seed: 20261402 }
+      - { id: greyfen_answer_seeking, seed: 20261403 }
+      - { id: marrick_answer_seeking_confirmation, seed: 20261404 }
     execution: complete_all_cells_with_maximum_three_live_jobs
-    aggregate_gate: at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
-  pre_model_attempts:
-    - working_iteration: 1
-      attempted_head: 04e56f1a
-      status: pre_model_compatibility_failure
-      phase: refresh_frozen_first_draft_request
-      error: frozen turn 4 request has no replaceable first-draft contract
-      model_calls: 0
-      semantic_adjudicator_calls: 0
-      candidates: 0
-      results: 0
-      stopping_count_changed: false
-      development_seed: 20261300
-      seed_disposition: unconsumed_retryable_pre_model_failure
-      config_sha256: 7b2c45b65836be95334846807c712133fee3edc4428f99edad02302670fdf417
-      validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/attempts/iteration-1-pre-model-failure-validation.json
-      validation_sha256: 866237cb0c490c486f13416752d7bfbb5941757de83aeef5da1826f05e76d83e
-      correction_head: 8ecced40
-      retry: same_iteration_and_development_seed
-  working_history:
-    - version: 25
-      working_iteration: 1
-      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-1/working-screen-result.json
-      completed_turns: [4]
-      strict_originals_accepted: 0
-      mean_configuration_realization: 0.833
-      failed_axes: [turn_4_actorial_part_scene_partner]
-      measurable_improvement: false
-    - version: 25
-      working_iteration: 2
-      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-2/working-screen-result.json
-      completed_turns: [4, 5, 6, 9]
-      strict_originals_accepted: 3
-      mean_configuration_realization: 0.91675
-      failed_axes:
-        - turn_9_dramatic_release_enactment
-        - turn_9_actorial_performance_dramatic_counterpressure
-      measurable_improvement: true
-  last_observation:
-    version: 25
-    working_iteration: 3
-    status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-3/working-screen-result.json
-    development_seed: 20261300
-    seed_disposition: consumed_development_reusable
-    completed_turns: [4, 5, 6]
-    unstarted_turns: [9]
-    strict_originals_accepted: 2
-    final_safety_failures: 0
-    fallbacks: 0
-    semantic_recognition_corrections: 0
-    mean_original_latency_ms: 10902.67
-    mean_configuration_realization: 0.94433
-    maximum_possible_mean_configuration_realization: 0.95825
-    failed_axes:
-      - turn_6_actorial_part_advocate
-    model_free_reaudit:
-      artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-3/marrick_v25_typed_host_plan/turn-6-reaudited-iteration4.json
-      recognition_change: accountable_advocate_handoff_can_ask_what_named_evidence_still_needs_to_show
-      accepted_after_recognition_change: true
-      generation_credit: false
-    comparison:
-      measurable_improvement: false
-      consecutive_without_improvement: 1
-      baseline: V25_working_iteration_2
-      global_frontier: V25_iteration_2_vector_1_1_1_0.667
-      interpretation: >-
-        Iteration 3 stopped before turn 9 and therefore did not beat iteration
-        2's complete 3/4 frontier. The turn-6 request and contract were
-        byte-identical across iterations 2 and 3; the saved candidate is a
-        valid typed advocate construction missed by deterministic recognition.
-        Its model-free correction is not generation improvement.
-    iteration_4_authority:
-      speaking_change: none
-      recovery_change: none
-      audit_recognition_change: >-
-        Recognize an explicit first-person case plus an evidentiary boundary
-        plus a terminal question asking what a named public exhibit still
-        needs to show, establish, prove, or tie. Negative controls without the
-        case, boundary, or evidence-grounded handoff remain rejected.
-      controller_change: none
-      gate: full_vector_1_1_1_1_with_four_strict_originals_and_zero_hard_failures
-      final_frontier_attempt: true
-      frontier_to_beat: V25_iteration_2_vector_1_1_1_0.667
-      on_failure: stagnate_V25_and_predeclare_materially_different_V26
+    aggregate_gate: all_structured_outputs_valid_and_at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
+  pre_model_attempts: []
+  working_history: []
+  last_observation: null
   architectural_reset_from:
-    version: 24
+    version: 25
     terminal_state: stagnated
     kind: frozen_prefix_development
-    final_iteration: 6
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-6/working-screen-result.json
-    development_seed: 20261200
+    final_iteration: 4
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-4/working-screen-result.json
+    development_seed: 20261300
     seed_disposition: consumed_development_retired_after_stagnation
-    completed_turns: [4, 5]
-    unstarted_turns: [6, 9]
-    strict_originals_accepted: 1
+    completed_turns: [4, 5, 6, 9]
+    unstarted_turns: []
+    deterministic_strict_originals_accepted: 3
+    adjudicated_typed_plan_originals_accepted: 2
     final_safety_failures: 0
     fallbacks: 0
     uptake_failures: 0
+    repairs: 0
+    model_rewrites: 0
     semantic_recognition_corrections: 0
-    mean_configuration_realization: 0.8335
-    maximum_possible_mean_configuration_realization: 0.91675
+    mean_original_latency_ms: 11436.75
+    mean_configuration_realization: 0.95825
     stopping_reason: predeclared_final_frontier_attempt_failed
-    consecutive_without_improvement: 2
-    failed_axes:
-      - turn_5_actorial_performance_evidentiary_boundary
-    model_free_reaudit: >-
-      A generic support-versus-limit correction clears the hard tactic audit
-      on the saved candidate without a model call. This is one audit-recognition
-      correction only; charismatic stance remains genuinely absent and V24
-      remains stagnated.
+    failed_turns:
+      - turn: 4
+        deterministic_status: accepted
+        adjudicated_status: rejected
+        structural_failure: unowned_host_sentence_after_handoff
+      - turn: 9
+        deterministic_status: rejected
+        adjudicated_status: rejected
+        structural_failure: tactic_and_handoff_fused
+        recognition_false_negatives:
+          - possessive_source_object_misread_as_role_stage_direction
+          - enactment_failure_cascaded_from_role_stage_direction
+          - public_judgment_falters_not_recognized_as_counterpressure
+    retired_unstarted_confirmation_seeds: [20261301, 20261302, 20261303, 20261304]
     reset_reason: >-
-      The 778-word prose contract assigned part, tactic, action, stance, and
-      handoff across competing instructions. V25 replaces it with a compact
-      typed slot plan in which every delivered axis has exactly one owner.
-
+      V25 still asked one prose completion to maintain slot count, ordering,
+      source quotation, and semantic ownership. V26 moves those boundaries into
+      a strict four-field JSON envelope: the host validates each field, inserts
+      SOURCE deterministically, records owning spans, and rejects malformed or
+      cross-owned output before whole-response auditing.
+  prior_version_history:
+    - version: 24
+      terminal_state: stagnated
+      final_iteration: 6
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-6/working-screen-result.json
+      development_seed: 20261200
+      strict_originals_accepted: 1
+      completed_turns: [4, 5]
+      unstarted_turns: [6, 9]
+      final_safety_failures: 0
+      mean_configuration_realization: 0.8335
+      stopping_reason: predeclared_final_frontier_attempt_failed
+      reset_to: V25_compact_typed_host_plan
 versioning:
-  current: 25
-  next: 26
+  current: 26
+  next: 27
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -372,15 +321,20 @@ seed_ledger:
     - { version: 23, seed: 20261126, status: retired_reserve_due_to_tuning }
     - { version: 23, seed: 20261127, status: retired_reserve_due_to_tuning }
     - { version: 24, seed: 20261200, status: consumed_development_retired_after_stagnation }
+    - { version: 25, seed: 20261300, status: consumed_development_retired_after_stagnation }
+    - { version: 25, seed: 20261301, status: retired_unstarted_due_to_stagnation }
+    - { version: 25, seed: 20261302, status: retired_unstarted_due_to_stagnation }
+    - { version: 25, seed: 20261303, status: retired_unstarted_due_to_stagnation }
+    - { version: 25, seed: 20261304, status: retired_unstarted_due_to_stagnation }
   development:
-    - seed: 20261300
+    - seed: 20261400
       status: reusable_non_held_out_development
-      cell: marrick_v25_typed_host_plan
-      screen: first-draft-working-screens-v4
-    - { seed: 20261301, status: reusable_non_held_out_development, cell: nocturne_answer_seeking, screen: first-draft-working-screens-v5 }
-    - { seed: 20261302, status: reusable_non_held_out_development, cell: skyway_answer_seeking, screen: first-draft-working-screens-v5 }
-    - { seed: 20261303, status: reusable_non_held_out_development, cell: greyfen_answer_seeking, screen: first-draft-working-screens-v5 }
-    - { seed: 20261304, status: reusable_non_held_out_development, cell: marrick_answer_seeking_confirmation, screen: first-draft-working-screens-v5 }
+      cell: marrick_v26_structured_composition
+      screen: first-draft-working-screens-v5
+    - { seed: 20261401, status: reusable_non_held_out_development, cell: skyway_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261402, status: reusable_non_held_out_development, cell: nocturne_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261403, status: reusable_non_held_out_development, cell: greyfen_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261404, status: reusable_non_held_out_development, cell: marrick_answer_seeking_confirmation, screen: first-draft-working-screens-v6 }
   held_out:
     status: not_predeclared
     entries: []
@@ -406,5 +360,6 @@ claim_boundary: >-
   This manifest governs process integrity. A working-screen pass is reusable
   development evidence, not held-out evidence. Only an unchanged, fully
   predeclared acceptance version that passes every strict gate may terminate in
-  accepted. V24 stagnated before acceptance; V25 has not yet been predeclared
-  for acceptance, and V26+ remain available if a held-out version fails.
+  accepted. V24 and V25 stagnated before acceptance; V26 has not yet been
+  predeclared for acceptance, and V27+ remain available if a development or
+  held-out version fails.

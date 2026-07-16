@@ -202,6 +202,11 @@ function validateWorkingScreen(manifest, { root }) {
   expect(config.fixed_configuration?.original_only, true, 'working screen original-only mode');
   expect(config.fixed_configuration?.draws_per_turn, 1, 'working screen draws per turn');
   expect(config.fixed_configuration?.concurrency, 1, 'working screen concurrency');
+  if (config.fixed_configuration?.structured_generation === true) {
+    expect(config.gates_per_cell?.require_structured_output, true, 'structured output gate');
+    expect(config.gates_per_cell?.require_structured_slot_ownership, true, 'structured slot ownership gate');
+    expect(config.gates_per_cell?.require_exact_source_once, true, 'exact source once gate');
+  }
   expect(config.gates_per_cell?.required_turns, 4, 'working screen required turns');
   expect(config.gates_per_cell?.required_originals_accepted, 4, 'working screen required originals');
   expect(config.gates_per_cell?.minimum_mean_configuration_realization, 1, 'working screen configuration realization');
@@ -231,6 +236,9 @@ function validateWorkingScreen(manifest, { root }) {
       maximumSafetyFailures: 0,
       maximumFallbacks: 0,
       requireTranscriptSpecificUptake: true,
+      requireStructuredOutput: config.fixed_configuration?.structured_generation === true,
+      requireStructuredSlotOwnership: config.fixed_configuration?.structured_generation === true,
+      requireExactSourceOnce: config.fixed_configuration?.structured_generation === true,
     },
   };
 }

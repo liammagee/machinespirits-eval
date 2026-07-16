@@ -64,6 +64,14 @@ function workingConfig(tmp) {
   };
 }
 
+function enableStructuredGeneration(config) {
+  config.fixed_configuration.structured_generation = true;
+  config.gates_per_cell.require_structured_output = true;
+  config.gates_per_cell.require_structured_slot_ownership = true;
+  config.gates_per_cell.require_exact_source_once = true;
+  return config;
+}
+
 function acceptanceGateConfig(turns = 10) {
   return {
     fixed_configuration: { turns },
@@ -95,7 +103,7 @@ function acceptanceGateConfig(turns = 10) {
 test('campaign validation expands one original-only command per frozen turn without model calls', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-campaign-'));
   try {
-    const config = workingConfig(tmp);
+    const config = enableStructuredGeneration(workingConfig(tmp));
     const validation = validateTutorStubFirstDraftCampaign({ config, root: tmp });
     assert.equal(validation.kind, 'working_screen');
     const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 2 });
@@ -109,9 +117,171 @@ test('campaign validation expands one original-only command per frozen turn with
       assert.ok(command.argv.includes('--original-only'));
       assert.ok(command.argv.includes('--development-seed'));
       assert.ok(command.argv.includes('--semantic-adjudication'));
+      assert.ok(command.argv.includes('--structured-generation'));
       assert.ok(command.argv.includes('--adjudicator-effort'));
       assert.ok(!command.argv.includes('--dry-run'));
     }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('campaign validator fails closed when structured generation omits any structured gate', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-gates-'));
+  try {
+    for (const gate of [
+      'require_structured_output',
+      'require_structured_slot_ownership',
+      'require_exact_source_once',
+    ]) {
+      const missing = enableStructuredGeneration(workingConfig(tmp));
+      delete missing.gates_per_cell[gate];
+      assert.throws(
+        () => validateTutorStubFirstDraftCampaign({ config: missing, root: tmp }),
+        new RegExp(`gates_per_cell\\.${gate}: true`, 'u'),
+      );
+
+      const disabled = enableStructuredGeneration(workingConfig(tmp));
+      disabled.gates_per_cell[gate] = false;
+      assert.throws(
+        () => validateTutorStubFirstDraftCampaign({ config: disabled, root: tmp }),
+        new RegExp(`gates_per_cell\\.${gate}: true`, 'u'),
+      );
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('working summary reports and enforces each named structured-generation gate', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-summary-'));
+  try {
+    const config = enableStructuredGeneration(workingConfig(tmp));
+    const turns = [2, 3, 7, 10];
+    const reports = turns.map((turn, index) => {
+      const active = index % 2 === 0;
+      const surface = `Public source ${turn}.`;
+      const sourceSpan = { id: 'source_1', kind: 'source', text: surface };
+      return {
+        bundles: [
+          {
+            turn,
+            turnId: `run:t${turn}`,
+            frames: {
+              dramaticRelease: {
+                active,
+                entries: active ? [{ surface }] : [],
+              },
+            },
+          },
+        ],
+        results: [
+          {
+            turn,
+            turnId: `run:t${turn}`,
+            latencyMs: 100,
+            structuredGeneration: {
+              ok: true,
+              composition: {
+                text: active ? `I open the record. ${surface} What changes?` : 'I open the record. What changes?',
+                sourceCount: active ? 1 : 0,
+                spans: active ? [sourceSpan] : [],
+              },
+            },
+            audit: {
+              ok: true,
+              safetyFailure: false,
+              failureClusters: [],
+              audits: {
+                responseCompositionAudit: { ok: true },
+                actorialRealizationAudit: { ok: true },
+                responseConfigurationAudit: { realization_rate: 1 },
+                structuredSlotOwnershipAudit: { ok: true },
+              },
+            },
+          },
+        ],
+      };
+    });
+
+    const passing = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
+    assert.equal(passing.validStructuredOutputs, 4);
+    assert.equal(passing.structuredOutputFailures, 0);
+    assert.equal(passing.structuredSlotOwnershipPasses, 4);
+    assert.equal(passing.structuredSlotOwnershipFailures, 0);
+    assert.equal(passing.exactSourceOccurrencePasses, 4);
+    assert.equal(passing.exactSourceOccurrenceFailures, 0);
+    assert.deepEqual(
+      passing.structuredSourceOccurrences.map((row) => [row.turn, row.expectedOccurrenceCount, row.actualOccurrenceCount]),
+      [
+        [2, 1, 1],
+        [3, 0, 0],
+        [7, 1, 1],
+        [10, 0, 0],
+      ],
+    );
+    assert.equal(passing.gates.structuredOutput, true);
+    assert.equal(passing.gates.structuredSlotOwnership, true);
+    assert.equal(passing.gates.exactSourceOnce, true);
+    assert.equal(passing.status, 'pass');
+
+    const multipleSources = structuredClone(reports);
+    multipleSources[0].bundles[0].frames.dramaticRelease.entries.push({ surface: 'Second public source 2.' });
+    multipleSources[0].results[0].structuredGeneration.composition.text =
+      'I open the record. Public source 2. Second public source 2. What changes?';
+    multipleSources[0].results[0].structuredGeneration.composition.sourceCount = 2;
+    multipleSources[0].results[0].structuredGeneration.composition.spans.push({
+      id: 'source_2',
+      kind: 'source',
+      text: 'Second public source 2.',
+    });
+    const multipleSourceSummary = summarizeTutorStubWorkingScreen({
+      cell: config.matrix[0],
+      reports: multipleSources,
+      config,
+    });
+    assert.deepEqual(
+      [
+        multipleSourceSummary.structuredSourceOccurrences[0].expectedOccurrenceCount,
+        multipleSourceSummary.structuredSourceOccurrences[0].declaredSourceCount,
+        multipleSourceSummary.structuredSourceOccurrences[0].sourceSpanCount,
+        multipleSourceSummary.structuredSourceOccurrences[0].actualOccurrenceCount,
+      ],
+      [2, 2, 2, 2],
+    );
+    assert.equal(multipleSourceSummary.gates.exactSourceOnce, true);
+
+    const malformed = structuredClone(reports);
+    malformed[0].results[0].structuredGeneration.ok = false;
+    const malformedSummary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: malformed, config });
+    assert.equal(malformedSummary.gates.structuredOutput, false);
+    assert.equal(malformedSummary.status, 'fail');
+
+    const substituted = structuredClone(reports);
+    substituted[1].results[0].audit.audits.structuredSlotOwnershipAudit.ok = false;
+    const substitutedSummary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: substituted, config });
+    assert.equal(substitutedSummary.gates.structuredSlotOwnership, false);
+    assert.equal(substitutedSummary.status, 'fail');
+
+    const duplicated = structuredClone(reports);
+    duplicated[0].results[0].structuredGeneration.composition.text =
+      'I open the record. Public source 2. Public source 2. What changes?';
+    const duplicatedSummary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: duplicated, config });
+    assert.equal(duplicatedSummary.structuredSourceOccurrences[0].actualOccurrenceCount, 2);
+    assert.equal(duplicatedSummary.gates.exactSourceOnce, false);
+    assert.equal(duplicatedSummary.status, 'fail');
+
+    const sourceOnInactiveTurn = structuredClone(reports);
+    sourceOnInactiveTurn[1].results[0].structuredGeneration.composition.spans = [
+      { id: 'source_1', kind: 'source', text: 'Unexpected source.' },
+    ];
+    const inactiveSummary = summarizeTutorStubWorkingScreen({
+      cell: config.matrix[0],
+      reports: sourceOnInactiveTurn,
+      config,
+    });
+    assert.equal(inactiveSummary.structuredSourceOccurrences[1].actualOccurrenceCount, 1);
+    assert.equal(inactiveSummary.gates.exactSourceOnce, false);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
