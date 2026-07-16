@@ -226,7 +226,10 @@ function compactPartInstruction(contract) {
     ? 'Use an already-named object; add no prop.'
     : 'Name one public scene object.';
   const part = contract.performance?.actorial_part;
-  const action = COMPACT_PART_CUES[part] || 'perform one concrete public action or judgment';
+  const action =
+    part === 'scene_partner'
+      ? 'place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet'
+      : COMPACT_PART_CUES[part] || 'perform one concrete public action or judgment';
   return `As ${contract.performance?.actorial_part_label || 'the selected part'}, without naming the role, ${action}. ${prop}`;
 }
 
@@ -243,7 +246,11 @@ function compactTacticInstruction(contract) {
     contract.performance?.obligation_contract?.tactic_applicability?.applicable === false
       ? 'Use the delivered boundary tactic, not the requested pressure tactic.'
       : '';
-  return [contract.performance?.tactic_execution, support, transition].filter(Boolean).join(' ');
+  const tactic =
+    contract.performance?.tactic === 'shared_scene_invitation'
+      ? 'In a separate sentence, invite the learner’s reading of that same object; do not repeat the placement action.'
+      : contract.performance?.tactic_execution;
+  return [tactic, support, transition].filter(Boolean).join(' ');
 }
 
 function compactStanceInstruction(stance) {

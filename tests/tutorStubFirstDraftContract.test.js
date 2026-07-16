@@ -94,6 +94,34 @@ test('assigns every delivered response axis to exactly its intended host slot', 
   );
 });
 
+test('separates scene-partner placement from the shared-reading tactic', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration({
+      engagement_stance: 'warm',
+      actorial_part: 'scene_partner',
+      actorial_part_label: 'fellow investigator',
+      actorial_performance: {
+        id: 'shared_scene_invitation',
+        label: 'shared-scene invitation',
+        contract: 'Bring the learner into a shared reading of the evidence.',
+      },
+    }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const part = contract.host_plan.slots.find((slot) => slot.id === 'part');
+  const tactic = contract.host_plan.slots.find((slot) => slot.id === 'tactic');
+
+  assert.match(part.instruction, /place both speakers/iu);
+  assert.match(part.instruction, /“you”, “we”, or “together”/u);
+  assert.match(part.instruction, /solitary “I”[^.]*does not count/iu);
+  assert.match(part.instruction, /do not ask a question yet/iu);
+  assert.match(tactic.instruction, /In a separate sentence/iu);
+  assert.match(tactic.instruction, /invite the learner’s reading of that same object/iu);
+  assert.match(tactic.instruction, /do not repeat the placement action/iu);
+  assert.doesNotMatch(tactic.instruction, /make room beside/iu);
+});
+
 test('renders a compact prompt and removes the competing legacy prose sections', () => {
   const clue = 'Verrell alone draws the mint-yard crucible.';
   const contract = buildTutorStubFirstDraftContract({
