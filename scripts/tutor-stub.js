@@ -73,6 +73,7 @@ import {
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
+import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
 import {
   auditTutorStubEvidenceAssertions,
   tutorStubPrivateTokenAlreadyPublic,
@@ -1635,19 +1636,12 @@ function answerTermForWorld(world) {
 function publicTextForTurn(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
   if (!world) return '';
   const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const releasedSurface = [...available]
-    .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
-    .join('\n');
-  return [
-    world.question,
-    world.setting,
-    world.openingFrame?.situation,
-    world.openingFrame?.authoredText,
-    world.learnerVoice,
-    ...(world.rules || []).map((rule) => rule.gloss || ''),
-    releasedSurface,
+  return tutorStubPublicProvenanceText({
+    world,
+    publicPremiseIds: available,
+    priorTurns: state?.turns || [],
     learnerText,
-  ].join('\n');
+  });
 }
 
 function publicEvidenceTextForAssertion(

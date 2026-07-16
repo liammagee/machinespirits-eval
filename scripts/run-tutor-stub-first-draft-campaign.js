@@ -136,6 +136,7 @@ async function runWorkingPreflight(config, cellId) {
       'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
       'services/__tests__/tutorStubPerformanceObligationContract.test.js',
       'services/__tests__/tutorStubPerformanceAdjudication.test.js',
+      'services/__tests__/tutorStubResponseConfiguration.test.js',
     ],
     { label: `${cellId} focused tests` },
   );
@@ -200,7 +201,9 @@ async function runDevelopment(plan, config, iteration) {
       const interim = summarizeTutorStubWorkingScreen({ cell, reports, config });
       console.log(
         `${cell.id}: ${interim.originalCandidatesAccepted}/${interim.completedTurns} originals; ` +
-          `maximum possible ${interim.possibility.maximumPossibleAccepted}/${interim.possibility.required}`,
+          `maximum possible ${interim.possibility.maximumPossibleAccepted}/${interim.possibility.required}; ` +
+          `configuration ${Number(interim.meanConfigurationRealization || 0).toFixed(3)} ` +
+          `(maximum ${Number(interim.possibility.configurationRealization.maximumPossibleMean || 0).toFixed(3)})`,
       );
       if (!args['complete-all-cells'] && !interim.possibility.possible) break;
     }

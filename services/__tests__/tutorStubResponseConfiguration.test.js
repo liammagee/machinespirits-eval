@@ -497,6 +497,58 @@ test('a conditional requirement visibly stages the next step without a question'
   assert.equal(audit.axes.action_family.visible, true);
 });
 
+test('a breakable public condition is recognized as a concrete next check, but dense language still fails separately', () => {
+  const configuration = {
+    engagement_stance: 'charismatic',
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'I set the familiar manner against the heron-marked leaf beneath the archive lamp: my case names no composer; break it if the watermark can be tied to one Cassia period.';
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    world: { setting: 'The heron-marked leaf and archive lamp stand in the Cassia copy-room.' },
+  });
+
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.audience_register.visible, false);
+  assert.equal(audit.axes.lexical_accessibility.visible, false);
+});
+
+test('seeking a period in a named public record visibly stages the next step', () => {
+  const configuration = {
+    engagement_stance: 'precise',
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'I open the copy-room register and seek the period in which the heron paper entered its shelves.',
+    configuration,
+    world: { setting: 'The copy-room register and heron paper lie beneath the archive lamp.' },
+  });
+  assert.equal(audit.axes.action_family.visible, true);
+
+  const vague = auditTutorStubResponseConfiguration({
+    text: 'We seek understanding before continuing.',
+    configuration,
+    world: { setting: 'The copy-room register and heron paper lie beneath the archive lamp.' },
+  });
+  assert.equal(vague.axes.action_family.visible, false);
+  assert.equal(vague.axes.scene_immersion.visible, false);
+  assert.equal(vague.axes.actorial_part.visible, false);
+});
+
 test('lower adaptive-performance temperature sharpens the actorial-part choice', () => {
   const input = {
     engagementStance: 'precise',

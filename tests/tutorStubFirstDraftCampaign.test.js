@@ -57,6 +57,7 @@ function workingConfig(tmp) {
       required_turns: 4,
       maximum_safety_failures: 0,
       maximum_fallbacks: 0,
+      minimum_mean_configuration_realization: 0.9,
       require_transcript_specific_uptake: true,
     },
   };
@@ -117,6 +118,7 @@ test('working summary counts original acceptance, safety, uptake, and latency wi
             audits: {
               responseCompositionAudit: { ok: index !== 3 },
               actorialRealizationAudit: { ok: index !== 3 },
+              responseConfigurationAudit: { realization_rate: index === 3 ? 0.5 : 1 },
             },
           },
         },
@@ -128,10 +130,103 @@ test('working summary counts original acceptance, safety, uptake, and latency wi
     assert.equal(summary.modelRewrites, 0);
     assert.equal(summary.deterministicFallbacks, 0);
     assert.equal(summary.safetyFailures, 0);
+    assert.equal(summary.meanConfigurationRealization, 0.875);
+    assert.equal(summary.gates.configurationRealization, false);
     assert.equal(summary.status, 'fail', 'the required transcript-specific uptake gate remains strict');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('working screen cannot pass when full configuration realization becomes mathematically impossible', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-configuration-'));
+  try {
+    const config = workingConfig(tmp);
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
+    const reports = [2, 3].map((turn) => ({
+      results: [
+        {
+          turn,
+          latencyMs: 100,
+          audit: {
+            ok: true,
+            safetyFailure: false,
+            hardFailureClusters: [],
+            audits: {
+              responseCompositionAudit: { ok: true },
+              actorialRealizationAudit: { ok: true },
+              responseConfigurationAudit: { realization_rate: 0.5 },
+            },
+          },
+        },
+      ],
+    }));
+    const summary = summarizeTutorStubWorkingScreen({ cell: plan.cells[0], reports, config });
+    assert.equal(summary.possibility.originalAcceptance.possible, true);
+    assert.equal(summary.possibility.configurationRealization.maximumPossibleMean, 0.75);
+    assert.equal(summary.possibility.possible, false);
+    assert.equal(summary.status, 'fail');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('working screen clusters every rejected original including unresolved advisory performance misses', () => {
+  const reports = [
+    {
+      results: [
+        {
+          turn: 2,
+          candidate: 'Public candidate one.',
+          latencyMs: 10,
+          deterministicAudit: { ok: false },
+          audit: {
+            ok: false,
+            safetyFailure: false,
+            failureClusters: ['actorialRealizationAudit:missing_selected_performance_tactic'],
+            hardFailureClusters: [],
+            audits: { responseConfigurationAudit: { realization_rate: 5 / 6 } },
+          },
+          semanticAdjudication: { called: true, adjudication: { recognized: false }, latencyMs: 5 },
+        },
+      ],
+    },
+    {
+      results: [
+        {
+          turn: 3,
+          candidate: 'Public candidate two.',
+          latencyMs: 10,
+          deterministicAudit: { ok: false },
+          audit: {
+            ok: false,
+            safetyFailure: false,
+            failureClusters: ['actorialRealizationAudit:missing_selected_performance_tactic'],
+            hardFailureClusters: ['actorial_realization:missing_selected_performance_tactic'],
+            audits: { responseConfigurationAudit: { realization_rate: 4 / 6 } },
+          },
+          semanticAdjudication: { called: false, latencyMs: 0 },
+        },
+      ],
+    },
+  ];
+  const summary = summarizeTutorStubWorkingScreen({
+    cell: { id: 'hard', world: 'world', learnerProfile: 'answer_seeking', seed: 1, turns: [2, 3, 4, 5] },
+    reports,
+    config: {
+      gates_per_cell: {
+        required_turns: 4,
+        required_originals_accepted: 3,
+        minimum_mean_configuration_realization: 0.9,
+        maximum_safety_failures: 0,
+        require_transcript_specific_uptake: false,
+      },
+    },
+  });
+
+  assert.deepEqual(summary.dominantFailureClusters, [
+    { cluster: 'actorialRealizationAudit:missing_selected_performance_tactic', count: 2 },
+  ]);
 });
 
 test('development stopping gate halts only after two consecutive non-improving iterations', () => {

@@ -4,7 +4,7 @@ created: 2026-07-16
 held_out: false
 purpose: >-
   Cheap development-only first-draft screening on frozen public prefixes from
-  the two answer-seeking trajectories that defeated V18 and V19. These seeds
+  three answer-seeking trajectories that defeated V18, V19, and V22. These seeds
   are explicitly reusable development labels and can never certify held-out
   generalization.
 
@@ -29,10 +29,12 @@ preflight:
     tests/tutorStubV21PerformanceCalibrationFixture.test.js
     services/__tests__/tutorStubPerformanceObligationContract.test.js
     services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
   model_free_fixtures:
     - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
     - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
     - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
 
 artifacts:
   root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens
@@ -40,8 +42,17 @@ artifacts:
   separate_directory_per_cell: true
 
 matrix:
+  - id: nocturne_answer_seeking
+    priority: 1
+    world: world_001_nocturne
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/2026-07-16T09-34-06-063Z.jsonl
+    turns: [2, 3, 5, 7]
+    development_seed: 20261003
+    seed_status: reusable_non_held_out_development
+
   - id: greyfen_answer_seeking
-    priority: 2
+    priority: 3
     world: world_023_greyfen_lab
     learner_profile: answer_seeking
     source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/greyfen_answer_seeking/2026-07-16T05-50-54-528Z.jsonl
@@ -50,7 +61,7 @@ matrix:
     seed_status: reusable_non_held_out_development
 
   - id: skyway_answer_seeking
-    priority: 1
+    priority: 2
     world: world_026_skyway_bakery
     learner_profile: answer_seeking
     source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/skyway_answer_seeking/2026-07-16T04-44-58-444Z.jsonl
@@ -61,28 +72,30 @@ matrix:
 gates_per_cell:
   required_originals_accepted: 3
   required_turns: 4
+  minimum_mean_configuration_realization: 0.9
   maximum_safety_failures: 0
   maximum_fallbacks: 0
   require_transcript_specific_uptake: true
 
 change_log:
   speaking_prompt: >-
-    Compile the selected character tactic into typed compositional obligations:
-    identify the public pressure target, place contrary evidence against it,
-    perform a visible in-scene action, and return a concrete handoff. Preserve
-    the Write-first response for answer-seeking learners, but remove the brittle
-    requirement to use one stock verb. When clarification permission is due,
-    state it directly instead of hiding it inside another exercise.
+    Give uptake, performed development, and learner handoff separate short
+    sentences within one continuous reply. Preserve the Write-first response
+    for answer-seeking learners and make its sentence obey the selected
+    audience-language budget. When counterpressure is selected, identify an
+    already-public ready judgment rather than treating the learner's wording
+    request as the pressure target; put current evidence and its limit visibly
+    against that judgment.
   recovery_only: >-
     Give answer-seeking repairs a direct-answer instruction and keep their
     alternate realization strategy separate from the first speaking draw.
   audit_recognition_only: >-
-    A screen-only semantic recognizer may correct an isolated
-    dramatic-counterpressure false negative only when all hard audits, all
-    other response axes, and the selected host part already pass. It must cite
-    exact public quotations for every typed obligation; offsets are recovered
-    mechanically only when a quotation occurs exactly once. All safety,
-    evidence, composition, duplication, and delivery gates remain unchanged.
+    Use the complete public transcript when deciding whether vocabulary is
+    already public. Recognize a falsifiable break-it-if condition or a concrete
+    search in a named public record as staging the next step. Keep dense
+    audience and lexical misses unchanged. Screen-only semantic correction
+    remains limited to an isolated character-tactic miss after every other
+    hard and configuration gate passes.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

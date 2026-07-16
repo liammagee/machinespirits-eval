@@ -781,11 +781,28 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     );
   }
   if (actionFamily === 'stage_next_step') {
-    const explicitDirection =
-      /\b(?:ask|before|next|need(?:ed|s)?|must|only if|requires?|until|let(?:[’']s| us)|shall we|compare|examine|inspect|test|trace|check)\b|\bto\s+(?:name|decide|settle|conclude)\b[^.!?]{0,45}\bneed\b/iu.test(
+    const operationalDirection =
+      /\b(?:ask|compare|examine|inspect|look|test|trace|check)\b|\bto\s+(?:name|decide|settle|conclude)\b[^.!?]{0,45}\bneed(?:s|ed)?\b/iu.test(
         text,
       );
-    return metrics.wordCount <= 110 && (metrics.questionCount > 0 || explicitDirection);
+    const sequencedConcreteDirection =
+      metrics.concreteSceneTermCount > 0 &&
+      /\b(?:before|next|need(?:ed|s)?|must|only if|requires?|until|let(?:[’']s| us)|shall we)\b/iu.test(text);
+    const explicitDirection = operationalDirection || sequencedConcreteDirection;
+    const concreteRecordSearch =
+      metrics.concreteSceneTermCount > 0 &&
+      /\bseek\b[^.!?]{0,70}\b(?:date|entry|interval|period|record|span|time|when|which|who)\b|\b(?:book|file|ledger|log|record|register)\b[^.!?]{0,70}\bseek\b/iu.test(
+        text,
+      );
+    const falsifiableNextCheck =
+      metrics.concreteSceneTermCount > 0 &&
+      /\bbreak (?:it|this|the (?:case|claim)) if\b[^.!?]{0,100}\b(?:can be|could be|is|was|were)\b/iu.test(
+        text,
+      );
+    return (
+      metrics.wordCount <= 110 &&
+      (metrics.questionCount > 0 || explicitDirection || concreteRecordSearch || falsifiableNextCheck)
+    );
   }
   if (actionFamily === 'answer_accountably') {
     const explicitAccount =

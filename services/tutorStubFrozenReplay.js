@@ -8,6 +8,7 @@ import { buildTutorStubFirstDraftContract, tutorStubFirstDraftContractPrompt } f
 import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
+import { tutorStubPublicProvenanceText } from './tutorStubPublicProvenance.js';
 import { auditTutorStubQuestionSupportResponse } from './tutorStubQuestionSupport.js';
 import {
   auditTutorStubResponseComposition,
@@ -193,21 +194,12 @@ function entailsFactAtTurn(world, tutorTurn, fact, publicPremiseIds) {
 
 function publicTextForTurn({ world, tutorTurn, learnerText, priorTurns, publicPremiseIds }) {
   const available = candidatePublicPremiseIds(world, tutorTurn, publicPremiseIds);
-  const releasedSurface = [...available]
-    .map((premiseId) => world?.premiseById?.get?.(premiseId)?.surface || '')
-    .join('\n');
-  const transcript = (priorTurns || []).flatMap((turn) => [turn?.learner || '', turn?.tutor || '']).join('\n');
-  return [
-    world?.question,
-    world?.setting,
-    world?.openingFrame?.situation,
-    world?.openingFrame?.authoredText,
-    world?.learnerVoice,
-    ...(world?.rules || []).map((rule) => rule.gloss || ''),
-    releasedSurface,
-    transcript,
+  return tutorStubPublicProvenanceText({
+    world,
+    publicPremiseIds: available,
+    priorTurns,
     learnerText,
-  ].join('\n');
+  });
 }
 
 function tokenRegex(token) {

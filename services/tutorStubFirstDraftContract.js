@@ -221,6 +221,14 @@ export function buildTutorStubFirstDraftContract({
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
   const tactic = configuration.actorial_performance?.id || null;
+  const sentenceBudget = Math.max(
+    8,
+    Number(configuration.surface_budgets?.max_average_sentence_words || 24),
+  );
+  const actionInstruction =
+    actionFamily === 'stage_next_step' && releaseCues.length === 0
+      ? 'Name one concrete next public check using the evidence already in view, but do not invent its result. Make the check an observable action, comparison, record, or question—not an abstract category.'
+      : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
   const partExecution =
     PART_CUES[part] ||
     'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
@@ -242,7 +250,7 @@ export function buildTutorStubFirstDraftContract({
     },
     development: {
       action_family: actionFamily,
-      instruction: [acceleratedLearnerInstruction, ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction]
+      instruction: [acceleratedLearnerInstruction, actionInstruction]
         .filter(Boolean)
         .join(' '),
       learner_acceleration_instruction: acceleratedLearnerInstruction,
@@ -305,7 +313,8 @@ export function buildTutorStubFirstDraftContract({
       lexical_instruction: definitionContract(getLexicalAccessibilityDefinitions(), lexical),
       scene_immersion: scene,
       scene_instruction: definitionContract(getSceneImmersionDefinitions(), scene),
-      max_average_sentence_words: Number(configuration.surface_budgets?.max_average_sentence_words || 24),
+      max_average_sentence_words: sentenceBudget,
+      host_sentence_word_target: sentenceBudget,
     },
     compatibility: {
       decisions: compatibilityDecisions({
@@ -322,13 +331,18 @@ export function buildTutorStubFirstDraftContract({
 export function tutorStubFirstDraftContractPrompt(contract = null) {
   if (!contract) return '';
   const releaseRows = contract.evidence?.cues || [];
+  const counterpressure = contract.performance?.tactic === 'dramatic_counterpressure';
   return [
     '[Tutor-only first-draft performance contract]',
-    'Write one compact paragraph in one continuous voice. Perform these instructions in order:',
+    'Write one compact paragraph in one continuous voice. Perform these instructions in order. Every named beat is mandatory:',
+    `FORM — Use separate short sentences for learner uptake, performed development, and the final handoff. Keep each host sentence at or below ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words; the “Write:” sentence counts. Split a long inference instead of joining clauses with a semicolon. An exact authored clue quotation may retain its supplied wording.`,
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `ACT + ENACT — ${contract.development.instruction} This is one mandatory development beat, not style advice: perform it as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} Do not substitute generic prop handling for the selected part or tactic.`,
+    `ACT + ENACT — In a fresh host sentence after the uptake, ${contract.development.instruction} This action family is mandatory and distinct from the character tactic. Perform it as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} Do not substitute generic prop handling for the selected part or tactic.`,
+    counterpressure
+      ? 'COUNTERPRESSURE — The pressure target is an already-public ready judgment or shortcut, never the learner’s request for wording. In one short sentence or two adjacent short sentences, name that judgment, put the current public evidence against its overreach, and state the evidence’s limit. Concrete “but,” “yet,” or “not proof” wording is welcome; forcefulness without that collision fails.'
+      : null,
     tutorStubPerformanceObligationContractPrompt(contract.performance?.obligation_contract),
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
@@ -349,7 +363,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     `VOICE — ${contract.performance.stance_instruction}`,
     `LANGUAGE — ${contract.language.audience_instruction} ${contract.language.lexical_instruction}`,
     `SCENE — ${contract.language.scene_instruction}`,
-    `Keep average sentences at or below ${contract.language.max_average_sentence_words} words.`,
+    `Before returning, split any host sentence longer than ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words.`,
     'Do not mention roles, role-play, teaching strategy, configuration, analysis, proof machinery, hidden evidence, or future evidence. Do not split uptake and development into separate voices, headings, paragraphs, or asides.',
     '[End tutor-only first-draft performance contract]',
   ]

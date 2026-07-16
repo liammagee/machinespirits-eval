@@ -359,21 +359,59 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     (row) => row.audit?.audits?.responseCompositionAudit?.ok === false,
   ).length;
   const originalLatencies = results.map((row) => Number(row.latencyMs || 0));
+  const configurationRealizationRates = results.map((row) =>
+    Number(row.audit?.audits?.responseConfigurationAudit?.realization_rate || 0),
+  );
+  const configurationRealizationTotal = configurationRealizationRates.reduce(
+    (sum, rate) => sum + rate,
+    0,
+  );
+  const meanConfigurationRealization = results.length
+    ? configurationRealizationTotal / results.length
+    : null;
+  const minimumConfigurationRealization = Number(
+    config.gates_per_cell.minimum_mean_configuration_realization || 0,
+  );
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
   const failureCounts = new Map();
   for (const row of results) {
-    for (const cluster of row.audit?.hardFailureClusters || []) {
+    // Original-only screening rejects a candidate when semantic recognition
+    // does not clear an advisory performance miss, even though strict delivery
+    // could expose that advisory draft. Count the actual screen failures here,
+    // not only strict-delivery hard failures, so the development report does
+    // not hide a repeated first-draft generation problem.
+    for (const cluster of row.audit?.failureClusters || []) {
       failureCounts.set(cluster, Number(failureCounts.get(cluster) || 0) + 1);
     }
   }
-  const possibility = tutorStubFirstDraftGatePossibility({
+  const originalPossibility = tutorStubFirstDraftGatePossibility({
     accepted,
     completed: results.length,
     total: requiredTurns,
     required: requiredAccepted,
   });
+  const configurationMaximumPossibleMean =
+    (configurationRealizationTotal + Math.max(0, requiredTurns - results.length)) / requiredTurns;
+  const configurationPossibility = {
+    observedTotal: configurationRealizationTotal,
+    completed: results.length,
+    remaining: Math.max(0, requiredTurns - results.length),
+    requiredMean: minimumConfigurationRealization,
+    maximumPossibleMean: configurationMaximumPossibleMean,
+    possible: configurationMaximumPossibleMean >= minimumConfigurationRealization,
+    passed:
+      results.length === requiredTurns &&
+      meanConfigurationRealization >= minimumConfigurationRealization,
+  };
+  const possibility = {
+    ...originalPossibility,
+    originalAcceptance: originalPossibility,
+    configurationRealization: configurationPossibility,
+    possible: originalPossibility.possible && configurationPossibility.possible,
+  };
   const gates = {
     originalsAccepted: results.length === requiredTurns && accepted >= requiredAccepted,
+    configurationRealization: configurationPossibility.passed,
     safety: safetyFailures <= Number(config.gates_per_cell.maximum_safety_failures || 0),
     fallbacks: true,
     transcriptSpecificUptake:
@@ -397,6 +435,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     deterministicFallbacks: 0,
     safetyFailures,
     transcriptSpecificUptakeFailures,
+    meanConfigurationRealization,
     meanOriginalLatencyMs: originalLatencies.length
       ? originalLatencies.reduce((sum, latency) => sum + latency, 0) / originalLatencies.length
       : null,

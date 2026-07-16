@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  auditTutorStubFrozenLeak,
   auditTutorStubFrozenCandidate,
   refreshTutorStubFrozenFirstDraftRequest,
   TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
@@ -23,6 +24,7 @@ const FIXTURE_PATHS = [
   path.join(FIXTURE_DIR, 'greyfen-answer-seeking-v19.json'),
   path.join(FIXTURE_DIR, 'skyway-answer-seeking-v18.json'),
   path.join(FIXTURE_DIR, 'tallow-answer-seeking-v20.json'),
+  path.join(FIXTURE_DIR, 'nocturne-answer-seeking-v22.json'),
 ];
 
 function readFixture(fixturePath) {
@@ -135,7 +137,59 @@ test('model-free corpus re-audits every saved candidate without regressing accep
   );
   assert.deepEqual(corrections, [
     '2026-07-16T07-03-36-147Z:t001:known_v20_false_acceptance_duplicate_due_clue',
+    '2026-07-16T09-34-06-063Z:t004:full_public_prefix_proves_beside_and_corrections_are_already_public',
+    '2026-07-16T09-34-06-063Z:t004:full_public_prefix_proves_beside_and_corrections_are_already_public',
   ]);
+});
+
+test('V22 public-prefix provenance clears the false handwriting leak but still catches the unreleased attribution', () => {
+  const fixture = readFixture(FIXTURE_PATHS[3]);
+  const testCase = fixture.cases.find((row) => row.turn === 4);
+  const world = worldForId(testCase.worldId);
+  const original = testCase.candidates.find((candidate) => candidate.kind === 'original_candidate');
+  const current = auditTutorStubFrozenCandidate({
+    bundle: testCase.bundle,
+    world,
+    text: original.text,
+    deliveryConfiguration: original.deliveryConfiguration,
+    candidateKind: original.kind,
+  });
+  assert.equal(current.safetyFailure, false);
+  assert.equal(current.audits.leakAudit.ok, true);
+
+  const unsafe = auditTutorStubFrozenLeak({
+    text: 'Set beside her ledger entries, the draft strokes are Liane’s own hand.',
+    world,
+    tutorTurn: testCase.turn,
+    learnerText: testCase.bundle.learnerText,
+    priorTurns: testCase.bundle.priorTurns,
+    publicPremiseIds: testCase.bundle.publicPremiseIds,
+  });
+  assert.equal(unsafe.ok, false);
+  assert.ok(unsafe.leaks.some((leak) => leak.type === 'unreleased_premise_content'));
+});
+
+test('V22 configuration calibration recognizes the concrete next check without forgiving dense language', () => {
+  const fixture = readFixture(FIXTURE_PATHS[3]);
+  const expected = new Map([
+    [7, { action: true, audience: false, lexical: false }],
+    [9, { action: true, audience: false, lexical: false }],
+    [10, { action: true, audience: false, lexical: false }],
+  ]);
+  for (const [turn, visibility] of expected) {
+    const testCase = fixture.cases.find((row) => row.turn === turn);
+    const candidate = testCase.candidates.find((row) => row.kind === 'original_candidate');
+    const audit = auditTutorStubFrozenCandidate({
+      bundle: testCase.bundle,
+      world: worldForId(testCase.worldId),
+      text: candidate.text,
+      deliveryConfiguration: candidate.deliveryConfiguration,
+      candidateKind: candidate.kind,
+    });
+    assert.equal(audit.audits.responseConfigurationAudit.axes.action_family.visible, visibility.action);
+    assert.equal(audit.audits.responseConfigurationAudit.axes.audience_register.visible, visibility.audience);
+    assert.equal(audit.audits.responseConfigurationAudit.axes.lexical_accessibility.visible, visibility.lexical);
+  }
 });
 
 test('the V20 fixture preserves the uncontaminated duplicate and records no invented fallback', () => {
