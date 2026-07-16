@@ -550,6 +550,73 @@ test('seeking a period in a named public record visibly stages the next step', (
   assert.equal(vague.axes.actorial_part.visible, false);
 });
 
+test('scene-term matching recognizes singular and plural lexemes without admitting substrings', () => {
+  const configuration = {
+    engagement_stance: 'plain',
+    action_family: 'stage_next_step',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'immersive',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned exhibit report' },
+  };
+  const auditScene = (text, setting) =>
+    auditTutorStubResponseConfiguration({ text, configuration, world: { setting } });
+
+  const singularResponse = auditScene(
+    'I keep one shilling on the touchstone.',
+    'The shillings and touchstone lie on the assay bench.',
+  );
+  assert.deepEqual([...singularResponse.metrics.concreteSceneTerms].sort(), ['shillings', 'touchstone']);
+  assert.equal(singularResponse.axes.scene_immersion.visible, true);
+  assert.deepEqual(singularResponse.sceneLexiconMorphologyRecognition.aliases, [
+    {
+      world_term: 'shillings',
+      candidate_term: 'shilling',
+      canonical_singular: 'shilling',
+      rule_id: 'regular_terminal_s',
+    },
+  ]);
+
+  const pluralResponse = auditScene(
+    'I keep the shillings on the touchstones at the bench.',
+    'One shilling and one touchstone lie on the assay bench.',
+  );
+  assert.deepEqual([...pluralResponse.metrics.concreteSceneTerms].sort(), ['bench', 'shilling', 'touchstone']);
+  assert.equal(pluralResponse.axes.scene_immersion.visible, true);
+
+  const oneConcept = auditScene(
+    'I keep one shilling beside the shillings.',
+    'One shilling and the shillings lie on the assay bench.',
+  );
+  assert.equal(oneConcept.metrics.concreteSceneTermCount, 1);
+  assert.equal(oneConcept.axes.scene_immersion.visible, false);
+
+  const aliasesAlone = auditScene(
+    'I keep one shilling on one touchstone.',
+    'The shillings and touchstones lie on the assay bench.',
+  );
+  assert.equal(aliasesAlone.metrics.concreteSceneTermCount, 0);
+  assert.equal(aliasesAlone.axes.scene_immersion.visible, false);
+
+  const fourthWall = auditScene(
+    'The tutor keeps one shilling on the touchstone.',
+    'The shillings and touchstone lie on the assay bench.',
+  );
+  assert.equal(fourthWall.metrics.concreteSceneTermCount, 2);
+  assert.equal(fourthWall.axes.scene_immersion.visible, false);
+
+  for (const text of [
+    'A billing rests beside the milestone.',
+    'The shillingsmith checks a touchstonecase.',
+  ]) {
+    const unrelated = auditScene(text, 'The shillings and touchstones lie on the assay bench.');
+    assert.equal(unrelated.metrics.concreteSceneTermCount, 0, text);
+    assert.equal(unrelated.axes.scene_immersion.visible, false, text);
+  }
+});
+
 test('lower adaptive-performance temperature sharpens the actorial-part choice', () => {
   const input = {
     engagementStance: 'precise',

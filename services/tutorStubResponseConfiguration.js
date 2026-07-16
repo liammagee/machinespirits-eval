@@ -756,6 +756,85 @@ function worldLexicon(world) {
     .map(([word]) => word);
 }
 
+function normalizedSceneLexeme(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[’]/gu, "'")
+    .replace(/(?:'s|')$/u, '');
+}
+
+function singularSceneLexeme(value) {
+  const lexeme = normalizedSceneLexeme(value);
+  if (lexeme.length <= 4) return lexeme;
+  if (/s$/u.test(lexeme) && !/(?:ss|us|is)$/u.test(lexeme)) return lexeme.slice(0, -1);
+  return lexeme;
+}
+
+function sceneLexiconMatches(text, world) {
+  const candidateTerms = [
+    ...new Set(
+      (String(text || '').toLowerCase().match(/[\p{L}][\p{L}'’-]{3,}/gu) || []).map(normalizedSceneLexeme),
+    ),
+  ];
+  const candidateTermSet = new Set(candidateTerms);
+  const worldTerms = worldLexicon(world);
+  const byCanonicalTerm = new Map();
+
+  for (const worldTerm of worldTerms) {
+    const normalizedWorldTerm = normalizedSceneLexeme(worldTerm);
+    if (!candidateTermSet.has(normalizedWorldTerm)) continue;
+    const canonicalTerm = singularSceneLexeme(normalizedWorldTerm);
+    if (!byCanonicalTerm.has(canonicalTerm)) {
+      byCanonicalTerm.set(canonicalTerm, {
+        worldTerm,
+        candidateTerm: normalizedWorldTerm,
+        canonicalTerm,
+        match: 'exact',
+      });
+    }
+  }
+
+  // Number aliases may extend an already-grounded scene, but cannot establish
+  // immersion on their own. This prevents two inflected mentions of one object
+  // (or two generic world tokens) from manufacturing the two-term threshold.
+  const exactMatchCount = byCanonicalTerm.size;
+  if (exactMatchCount > 0) {
+    for (const worldTerm of worldTerms) {
+      const normalizedWorldTerm = normalizedSceneLexeme(worldTerm);
+      const canonicalTerm = singularSceneLexeme(normalizedWorldTerm);
+      if (byCanonicalTerm.has(canonicalTerm)) continue;
+      const candidateTerm = candidateTerms.find(
+        (term) => term !== normalizedWorldTerm && singularSceneLexeme(term) === canonicalTerm,
+      );
+      if (!candidateTerm) continue;
+      byCanonicalTerm.set(canonicalTerm, {
+        worldTerm,
+        candidateTerm,
+        canonicalTerm,
+        match: 'regular_terminal_s',
+      });
+    }
+  }
+
+  const matches = [...byCanonicalTerm.values()];
+  return {
+    matches,
+    sceneTerms: matches.map((row) => row.worldTerm),
+    morphologyRecognition: {
+      schema: 'machinespirits.tutor-stub.scene-lexicon-morphology-recognition.v1',
+      exact_match_count: exactMatchCount,
+      aliases: matches
+        .filter((row) => row.match === 'regular_terminal_s')
+        .map((row) => ({
+          world_term: row.worldTerm,
+          candidate_term: row.candidateTerm,
+          canonical_singular: row.canonicalTerm,
+          rule_id: row.match,
+        })),
+    },
+  };
+}
+
 function stanceVisible(
   stance,
   text,
@@ -1493,7 +1572,8 @@ export function auditTutorStubResponseConfiguration({
   if (!configuration) return null;
   const words = responseWords(text);
   const sentences = responseSentences(text);
-  const sceneTerms = worldLexicon(world).filter((term) => new RegExp(`\\b${term}\\b`, 'iu').test(text));
+  const sceneLexicon = sceneLexiconMatches(text, world);
+  const sceneTerms = sceneLexicon.sceneTerms;
   const unresolvedTerms = configuration.unresolved_terms || [];
   const glossedTerms = unresolvedTerms.filter((term) => termIsGlossed(text, term));
   const metrics = {
@@ -1688,6 +1768,7 @@ export function auditTutorStubResponseConfiguration({
       ok: actorialIssues.length === 0,
       issues: actorialIssues,
     },
+    sceneLexiconMorphologyRecognition: sceneLexicon.morphologyRecognition,
     publicJudgmentFalterRecognition,
     transcript_visible: visibleAxes >= 5 && axes.actorial_part.visible && !metrics.fourthWallBreak,
     limitations:
