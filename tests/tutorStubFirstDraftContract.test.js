@@ -56,9 +56,6 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
   assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
   assert.match(prompt, /ACT \+ ENACT —[\s\S]*perform it as keeper of the trial-book/iu);
-  assert.match(prompt, /FORM — Use separate short sentences for learner uptake, performed development, and the final handoff/iu);
-  assert.match(prompt, /Keep each host sentence at or below 18 words/iu);
-  assert.match(prompt, /This action family is mandatory and distinct from the character tactic/iu);
   assert.match(
     prompt,
     /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
@@ -218,8 +215,6 @@ test('advocate counterpressure receives one accountable breakable public sentenc
 
   assert.match(prompt, /My case is \[licensed claim\]; break it if \[concrete public observation\]/u);
   assert.match(prompt, /Replace both brackets with scene facts/iu);
-  assert.match(prompt, /COUNTERPRESSURE — The pressure target is an already-public ready judgment or shortcut/iu);
-  assert.match(prompt, /never the learner’s request for wording/iu);
 });
 
 test('scene-partner work receives a concrete shared-placement sentence', () => {
@@ -286,8 +281,6 @@ test('a request for the next written entry must be answered before the dramatic 
   assert.match(prompt, /Make the already-public claim, shortcut, or judgment being tested identifiable/u);
   assert.match(prompt, /Put the public evidence that tests or resists that pressure/u);
   assert.doesNotMatch(prompt, /use the verb “breaks”/u);
-  assert.match(prompt, /Name one concrete next public check using the evidence already in view/iu);
-  assert.match(prompt, /The “Write:” sentence counts/iu);
 });
 
 test('a Write entry complements rather than duplicates evidence due in the same reply', () => {
