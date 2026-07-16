@@ -215,6 +215,9 @@ function invitesClarification(source) {
     /\b(?:you (?:can|may)|or)\b.{0,70}\bask me to (?:clarif\w*|explain\w*|unpack\w*|restate\w*)\b/isu.test(
       source,
     ) ||
+    /\b(?:do|would) you want me to (?:say|tell you|explain)\b.{0,70}\bwhat\b.{0,45}\bmeans?\b/isu.test(
+      source,
+    ) ||
     /\bdoes (?:that|this|the distinction)\b.{0,45}\b(?:make sense|help)\b/isu.test(source)
   );
 }

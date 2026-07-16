@@ -77,7 +77,10 @@ import {
   auditTutorStubEvidenceAssertions,
   tutorStubPrivateTokenAlreadyPublic,
 } from '../services/tutorStubEvidenceAssertion.js';
-import { tutorStubAnswerConclusionAsserted } from '../services/tutorStubConclusionAssertion.js';
+import {
+  tutorStubAnswerConclusionAsserted,
+  tutorStubSecretConclusionWordPatterns,
+} from '../services/tutorStubConclusionAssertion.js';
 import {
   TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
   TUTOR_STUB_QUARANTINE_CONTINUATION,
@@ -1832,7 +1835,12 @@ function auditTutorResponseLeak({
       },
       {
         fact: world.secret.fact,
-        words: [/\bstruck\b/u, /\bstrike\b/u, /\bcoiner\b/u, /\bcoined\b/u, /\bmade\b/u],
+        words: [
+          ...(world.secret?.fact?.[0] === 'struckBy'
+            ? [/\bstruck\b/u, /\bstrike\b/u, /\bcoiner\b/u, /\bcoined\b/u, /\bmade\b/u]
+            : []),
+          ...tutorStubSecretConclusionWordPatterns(world.secret?.fact?.[0]),
+        ],
         label: 'private_final_conclusion',
       },
     ];
@@ -1844,9 +1852,7 @@ function auditTutorResponseLeak({
       // (castBlankFor/cutDieFor/struckBy vocabulary). Apply them only where
       // the world's own rules carry those predicates; every other world is
       // covered by the generic concealed-answer + unreleased-premise audits.
-      if (check.label === 'private_final_conclusion') {
-        if (world.secret?.fact?.[0] !== 'struckBy') continue;
-      } else if (!worldRulePredicates.has(check.fact[0])) {
+      if (check.label !== 'private_final_conclusion' && !worldRulePredicates.has(check.fact[0])) {
         continue;
       }
       if (
@@ -12222,6 +12228,9 @@ function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
 }
 
 function automatedLearnerRepairInstruction(profileId) {
+  if (profileId === 'answer_seeking') {
+    return 'Keep seeking supplied wording, but respond to the current public clue. Either ask for the next line using one concrete clue term, or copy part of the line just offered as a tentative entry. Do not repeat an earlier learner sentence verbatim.';
+  }
   if (profileId === 'proof_skipper') {
     return 'State an unsupported downstream attribution, source, actor, or public-record judgment as if the clue were sufficient; do not merely restate the clue. Remove because, since, so, therefore, if, then, would need, would want, and any sentence that explains or requests the missing bridge. Do not hedge or ask a question.';
   }

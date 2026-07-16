@@ -117,7 +117,7 @@ const META_ROLEPLAY_PATTERN =
 const META_RELEASE_PATTERN =
   /\b(?:i(?:[’']m| am)\s+going to give you another piece of information|i(?:[’']m| am)\s+bringing in another clue|another piece of information (?:is|will be) entering|back to (?:us|the case))\b/iu;
 const EXHIBIT_PATTERN =
-  /\b(?:bend(?:s|ing)?|bent|bring|check|clear|compare|demonstrate|dip|draw|enter|examine|hold(?:s|ing)?|held|inspect|keep|lay|lift|look at|open|peer|plant|place|pour|press|prise|pry|put|read|rest|rub(?:s|bed|bing)?|run|scrape|set|show|slap|slide|smear(?:s|ed|ing)?|spread|steep(?:s|ed|ing)?|strike|tap|taste|test|tilt|tip|turn|unfold|warm|weigh)\b[^.!?]{0,80}\b(?:assay|audit|before us|book|card|chamber|chart|chest|clue|coin|contract|crucible|cup|cupel|dross|entry|evidence|exhibit|file|flasks?|gasket|history|in front of us|incubator|key|lamp|lead-sweat|leavings|ledger|line|lock|log|metal|notebook|notice|photo(?:graph)?|plate|printout|record|register|report|residue|sample|scratch|sequence|sheet|shilling|slate|spring|streak|swab|table|thornpick|tool|touchstone|trough|version|ward)\b/iu;
+  /\b(?:bend(?:s|ing)?|bent|bring|check|clear|compare|demonstrate|dip|draw|enter|examine|hold(?:s|ing)?|held|inspect|keep|lay|lift|look at|open|peer|plant|place|pour|press|prise|pry|pull|put|read|rest|rub(?:s|bed|bing)?|run|scrape|set|show|slap|slide|smear(?:s|ed|ing)?|spread|steep(?:s|ed|ing)?|strike|tap|taste|test|tilt|tip|turn|unfold|warm|weigh)\b[^.!?]{0,80}\b(?:assay|audit|before us|book|card|chamber|chart|chest|clue|coin|contract|crucible|cup|cupel|dross|entry|evidence|exhibit|file|flasks?|gasket|history|in front of us|incubator|key|lamp|lead-sweat|leavings|ledger|line|lock|log|metal|notebook|notice|photo(?:graph)?|plate|printout|record|register|report|residue|sample|scratch|sequence|sheet|shilling|slate|spring|streak|swab|table|thornpick|tool|touchstone|trough|version|ward)\b/iu;
 const EXHIBIT_ACTION_SOURCE =
   'bend|bring|carry|check|clear|compare|demonstrate|dip|draw|enter|examine|hold|inspect|keep|lay|lift|look|lower|open|peer|place|plant|point|pour|press|prise|pry|pull|put|read|rest|rub|run|scrape|set|show|slap|slide|smear|spread|steep|strike|tap|taste|test|tip|touch|trace|turn|unfold|warm|weigh';
 const EXHIBIT_FRAME_TOKEN_STOP_WORDS = new Set(
@@ -235,6 +235,7 @@ function frameEvidenceTokens(frame) {
 }
 
 function dynamicExhibitActionVisible(response, frame) {
+  if (/\bpull(?:s|ed|ing)?\s+the room together\b/iu.test(response)) return false;
   if (EXHIBIT_PATTERN.test(response)) return true;
   if (
     /\b(?:archive|book|card|chart|file|history|ledger|log|notebook|notice|photo(?:graph)?|record|register|report|sequence|sheet|swab|transcript|version)\b[^.!?]{0,35}\b(?:arrives?|drops?|lands?|lies?|opens?|rests?|sits?)\b|\b(?:arrives?|drops?|lands?|lies?|opens?|rests?|sits?)\b[^.!?]{0,35}\b(?:archive|book|card|chart|file|history|ledger|log|notebook|notice|photo(?:graph)?|record|register|report|sequence|sheet|swab|transcript|version)\b/iu.test(

@@ -140,6 +140,27 @@ describe('tutor-stub dialogue closure', () => {
     );
   });
 
+  it('recognizes a plainly closed incident record but not a record left open', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
+      answerTerm: 'Larkin',
+    });
+    const closed = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'Larkin ruined the culture; the incident record is closed.',
+    });
+    const open = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'Larkin remains a hypothesis; the incident record is still open.',
+    });
+
+    assert.equal(closed.ok, true);
+    assert.equal(closed.closesDialogue, true);
+    assert.equal(open.ok, false);
+    assert.equal(open.verdict.explicitClosure, false);
+  });
+
   it('realizes a closure-compatible selected performance without reopening the case', () => {
     const response = deterministicTutorStubClosureResponse(
       { phase: 'grounded_closing_invitation', allowCheckIn: false },

@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+
+import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+
+import { call as callAI } from '../tutor-core/services/unifiedAIProviderService.js';
+import { callAIWithCliBridge, isCliProvider } from '../services/cliProviderBridge.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
+import {
+  auditTutorStubFrozenCandidate,
+  extractTutorStubFrozenTurn,
+  extractTutorStubRegressionFixture,
+  summarizeTutorStubFrozenReplay,
+  TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
+} from '../services/tutorStubFrozenReplay.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
+
+const { values: args } = parseArgs({
+  options: {
+    trace: { type: 'string' },
+    turns: { type: 'string' },
+    draws: { type: 'string', default: '1' },
+    concurrency: { type: 'string', default: '1' },
+    out: { type: 'string' },
+    'write-fixture': { type: 'string' },
+    'audit-fixture': { type: 'string' },
+    'development-seed': { type: 'string', default: '' },
+    'original-only': { type: 'boolean', default: false },
+    help: { type: 'boolean', default: false },
+  },
+});
+
+function usage() {
+  return `Usage:
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
+  node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
+
+The live path regenerates only the original speaking-tutor candidate. It never
+invokes tutor repair, deterministic fallback, learner generation, learner
+classification, DAG analysis, or dialogue continuation. Rejected text is kept
+inside the JSON artifact and is never printed as public tutor speech.`;
+}
+
+function positiveInt(value, label, { max = Number.MAX_SAFE_INTEGER } = {}) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > max) {
+    throw new Error(`${label} must be an integer from 1 to ${max}`);
+  }
+  return parsed;
+}
+
+function selectedTurns(value) {
+  const rows = String(value || '')
+    .split(',')
+    .map((item) => Number.parseInt(item.trim(), 10))
+    .filter(Number.isInteger);
+  if (!rows.length) throw new Error('--turns requires one or more comma-separated turn numbers');
+  return [...new Set(rows)];
+}
+
+function writeJson(filePath, value) {
+  const target = path.resolve(filePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`);
+  return target;
+}
+
+function worldPathForId(worldId) {
+  const files = fs
+    .readdirSync(WORLD_DIR)
+    .filter((name) => /^world-.*\.yaml$/u.test(name))
+    .map((name) => path.join(WORLD_DIR, name));
+  const matches = files.filter((file) => loadWorld(file).id === worldId);
+  if (matches.length !== 1) throw new Error(`expected exactly one world file for ${worldId}, found ${matches.length}`);
+  return matches[0];
+}
+
+function worldForBundle(bundle) {
+  return loadWorld(worldPathForId(bundle.worldId));
+}
+
+async function generateOriginal(bundle) {
+  const request = bundle.request || {};
+  const messages = request.messages || [];
+  const latest = messages.at(-1);
+  if (!latest || latest.role !== 'user') throw new Error(`frozen turn ${bundle.turn} has no final user request`);
+  const history = messages.slice(0, -1);
+  const started = Date.now();
+  let result;
+  if (isCliProvider(request.provider)) {
+    result = await callAIWithCliBridge(
+      { provider: request.provider, model: request.model },
+      request.systemPrompt,
+      latest.content,
+      'tutor_stub_tutor_frozen_screen',
+      { messageHistory: history, effort: request.effort || request.config?.cliEffort || null },
+    );
+    return {
+      text: result.text || '',
+      provider: result.provider || request.provider,
+      model: result.model || request.model,
+      effort: result.effort || result.reasoningEffort || request.effort || null,
+      latencyMs: Number(result.latencyMs || Date.now() - started),
+      usage: {
+        inputTokens: Number(result.inputTokens || 0),
+        outputTokens: Number(result.outputTokens || 0),
+        totalTokens: Number(result.inputTokens || 0) + Number(result.outputTokens || 0),
+      },
+      tokenUsageAvailable: result.tokenUsageAvailable === true,
+    };
+  }
+  result = await callAI({
+    provider: request.provider,
+    model: request.model,
+    systemPrompt: request.systemPrompt,
+    messages,
+    preset: 'socratic',
+    config: {
+      temperature: Number(request.config?.temperature ?? 0.35),
+      maxTokens: Number(request.config?.maxTokens ?? 4096),
+    },
+  });
+  return {
+    text: result.content || '',
+    provider: result.provider || request.provider,
+    model: result.model || request.model,
+    effort: request.effort || null,
+    latencyMs: Number(result.latencyMs || Date.now() - started),
+    usage: result.usage || null,
+    tokenUsageAvailable: Boolean(result.usage),
+  };
+}
+
+async function mapLimit(items, limit, fn) {
+  const output = new Array(items.length);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      output[index] = await fn(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
+  return output;
+}
+
+function auditFixture(fixture) {
+  const results = [];
+  for (const testCase of fixture.cases || []) {
+    const world = worldForBundle(testCase.bundle);
+    for (const candidate of testCase.candidates || []) {
+      const currentAudit = auditTutorStubFrozenCandidate({
+        bundle: testCase.bundle,
+        world,
+        text: candidate.text,
+        deliveryConfiguration: candidate.deliveryConfiguration,
+        candidateKind: candidate.kind,
+      });
+      results.push({
+        caseId: testCase.id,
+        turn: testCase.turn,
+        worldId: testCase.worldId,
+        learnerProfile: testCase.learnerProfile,
+        candidateKind: candidate.kind,
+        attempt: candidate.attempt,
+        recordedAuditOk: candidate.recordedAuditOk,
+        currentAuditOk: currentAudit.ok,
+        recognitionImproved: candidate.recordedAuditOk === false && currentAudit.ok === true,
+        recognitionRegressed: candidate.recordedAuditOk === true && currentAudit.ok === false,
+        safetyFailure: currentAudit.safetyFailure,
+        recordedFailureClusters: candidate.recordedFailureClusters,
+        currentFailureClusters: currentAudit.hardFailureClusters,
+        audit: currentAudit,
+      });
+    }
+  }
+  return {
+    schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
+    mode: 'model_free_regression',
+    sourceFixture: fixture.sourceTrace || null,
+    cases: fixture.cases?.length || 0,
+    candidates: results.length,
+    auditRecognitionImprovements: results.filter((row) => row.recognitionImproved).length,
+    auditRecognitionRegressions: results.filter((row) => row.recognitionRegressed).length,
+    safetyFailures: results.filter((row) => row.safetyFailure).length,
+    results,
+  };
+}
+
+async function main() {
+  if (args.help) {
+    console.log(usage());
+    return;
+  }
+  if (args['audit-fixture']) {
+    const fixture = JSON.parse(fs.readFileSync(path.resolve(args['audit-fixture']), 'utf8'));
+    const report = auditFixture(fixture);
+    if (args.out) writeJson(args.out, report);
+    console.log(
+      `model-free audit: ${report.candidates} candidates; ${report.auditRecognitionImprovements} recognition improvements; ${report.auditRecognitionRegressions} regressions; ${report.safetyFailures} safety failures`,
+    );
+    if (report.auditRecognitionRegressions > 0) process.exitCode = 1;
+    return;
+  }
+  if (!args.trace) throw new Error('--trace is required');
+  const tracePath = path.resolve(args.trace);
+  const turns = selectedTurns(args.turns);
+  if (args['write-fixture']) {
+    const fixture = extractTutorStubRegressionFixture({ tracePath, turns });
+    const target = writeJson(args['write-fixture'], fixture);
+    console.log(`wrote ${fixture.cases.length} frozen regression cases to ${target}`);
+    return;
+  }
+  if (!args['original-only']) {
+    throw new Error('live frozen replay requires --original-only so recovery and continuation cannot run');
+  }
+  const draws = positiveInt(args.draws, '--draws', { max: 20 });
+  const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
+  const bundles = turns.map((turn) => extractTutorStubFrozenTurn({ tracePath, turn }));
+  const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
+  const results = await mapLimit(jobs, concurrency, async ({ bundle, draw }) => {
+    const generated = await generateOriginal(bundle);
+    const world = worldForBundle(bundle);
+    const audit = auditTutorStubFrozenCandidate({
+      bundle,
+      world,
+      text: generated.text,
+      candidateKind: 'original_candidate',
+    });
+    console.log(
+      `turn ${bundle.turn} draw ${draw}: ${audit.ok ? 'accepted' : 'rejected'}; ${generated.latencyMs} ms; ${audit.hardFailureClusters.join(', ') || 'no hard failures'}`,
+    );
+    return {
+      turn: bundle.turn,
+      turnId: bundle.turnId,
+      worldId: bundle.worldId,
+      learnerProfile: bundle.learnerProfile,
+      draw,
+      developmentSeed: args['development-seed'] || null,
+      model: `${generated.provider}.${generated.model}`,
+      effort: generated.effort,
+      latencyMs: generated.latencyMs,
+      usage: generated.usage,
+      tokenUsageAvailable: generated.tokenUsageAvailable,
+      candidate: generated.text,
+      audit,
+    };
+  });
+  const report = {
+    schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
+    mode: 'original_only_screen',
+    originalOnly: true,
+    sourceTrace: tracePath,
+    turns,
+    drawsPerTurn: draws,
+    concurrency,
+    developmentSeed: args['development-seed'] || null,
+    invariants: {
+      priorDialogueRegenerated: false,
+      learnerGenerated: false,
+      learnerClassified: false,
+      learnerDagUpdated: false,
+      modelRepairInvoked: false,
+      deterministicFallbackInvoked: false,
+      dialogueContinued: false,
+      unsafeCandidatePubliclyExposed: false,
+    },
+    summary: summarizeTutorStubFrozenReplay(results),
+    bundles,
+    results,
+  };
+  if (!args.out) throw new Error('--out is required for live replay so every candidate and audit is preserved');
+  const target = writeJson(args.out, report);
+  console.log(`frozen original-only report: ${target}`);
+  console.log(
+    `accepted ${report.summary.originalCandidatesAccepted}/${report.summary.draws}; safety failures ${report.summary.safetyFailures}; mean original latency ${Math.round(report.summary.meanOriginalLatencyMs || 0)} ms`,
+  );
+}
+
+main().catch((error) => {
+  console.error(`error: ${error.message}`);
+  process.exitCode = 1;
+});

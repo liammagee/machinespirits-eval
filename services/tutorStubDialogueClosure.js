@@ -1,13 +1,13 @@
 const CLOSURE_SCHEMA = 'machinespirits.tutor-stub.dialogue-closure.v1';
 
 const EXPLICIT_CLOSURE_PATTERN =
-  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:case|book|inquiry)|inquiry (?:is )?(?:complete|closed|settled)|this (?:case|inquiry) is (?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry)|the verdict stands)\b/iu;
+  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:case|book|inquiry|ledger|log|record)|(?:inquiry|ledger|log|record) (?:is )?(?:complete|closed|settled)|this (?:case|inquiry|ledger|log|record) is (?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry|ledger|log|record)|the verdict stands)\b/iu;
 const ANSWER_VERDICT_PATTERN = /\b(?:culprit|guilty|struck|coined|responsible|final conclusion)\b/iu;
 const AFFIRMATIVE_VERDICT_PATTERN = /\b(?:the )?verdict(?:\s+now)?\s+(?:is|stands|has been)|\bverdict\s*:/iu;
 const NEGATED_VERDICT_PATTERN =
   /\b(?:no verdict|verdict (?:is|stands|has been) (?:not|un)|cannot|can't|not yet|before (?:a|the) verdict)\b/iu;
 const NEGATED_CLOSURE_PATTERN =
-  /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b/iu;
+  /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b|\b(?:case|inquiry|ledger|log|record)\s+(?:is|remains?|stands?)\s+(?:not|still)\s+(?:complete|closed|settled)\b|\b(?:case|inquiry|ledger|log|record)\s+(?:remains?|stays?|stands?)\s+open\b/iu;
 const CHECKIN_PATTERN =
   /\b(?:anything|any (?:step|link|part|question)|one (?:step|link|part|question)|want (?:me|us) to|need (?:me|us) to|revisit|unclear|before we close)\b/iu;
 const CLOSURE_ACKNOWLEDGEMENT_PATTERN =

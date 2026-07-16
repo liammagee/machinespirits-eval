@@ -1068,7 +1068,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     const plainlyHandledExhibit =
       metrics.wordCount <= 85 &&
       metrics.questionCount <= 1 &&
-      /\bi\b[^.!?]{0,45}\b(?:check|draw|examine|hold|lift|open|read|rub|scrape|set|show|steady|test|turn|weigh)\b/iu.test(text) &&
+      /\bi\b[^.!?]{0,45}\b(?:check|compare|draw|examine|hold|inspect|lift|mark|open|point|read|rub|scrape|set|show|steady|test|turn|weigh)\b/iu.test(text) &&
       !/\b(?:as if|behold|destiny|fate|ghost|haunt|thunder|whisper)\b/iu.test(text);
     return (metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100) || plainlyHandledExhibit;
   }

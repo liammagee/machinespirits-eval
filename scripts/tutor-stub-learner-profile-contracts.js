@@ -137,12 +137,20 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       description: 'Request the exact next line or final answer before the evidence chain is licensed.',
     },
     triggers: [
-      { when: 'tutor names a useful clue', responseBias: 'ask what to write next' },
-      { when: 'tutor asks for a warrant', responseBias: 'try to reuse tutor wording rather than explain it' },
+      {
+        when: 'tutor names a useful clue',
+        responseBias: 'ask what to write next using the clue’s current concrete noun, not a stock repeated sentence',
+      },
+      {
+        when: 'tutor asks for a warrant',
+        responseBias:
+          'reuse part of the tutor’s supplied wording in a short proposed entry rather than explain it independently',
+      },
     ],
     forbiddenNormalization: [
       'Do not become a diligent reasoner after one hint.',
       'Do not independently complete the proof chain.',
+      'Do not repeat the exact same request across consecutive turns; vary it with the current public clue and sometimes try the offered wording.',
     ],
     signature: {
       requestType: { stepwise_support_request: [0.45, 0.75], conceptual_clarity_request: [0.05, 0.3] },

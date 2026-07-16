@@ -127,3 +127,11 @@ test('ignores a released burin-to-hand custody attribution', () => {
     true,
   );
 });
+
+test('accepts a same-strain conclusion only when that strain correspondence is public', () => {
+  const text = 'Whole-genome typing identifies the Corvat contaminant as the same G17 strain.';
+  const permittedText = 'Whole-genome typing identifies the Corvat contaminant as the same G17 strain.';
+
+  assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText }).ok, true);
+  assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText: '' }).ok, false);
+});

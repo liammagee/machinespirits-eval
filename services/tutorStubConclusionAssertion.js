@@ -9,8 +9,13 @@ function escapedToken(token) {
 }
 
 function answerVisible(text, answerTerm) {
-  const tokens = oneLine(answerTerm).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || [];
-  return tokens.some((token) => new RegExp(`\\b${escapedToken(token)}\\b`, 'iu').test(text));
+  const tokens =
+    oneLine(answerTerm)
+      .replace(/([a-z\d])([A-Z])/gu, '$1 $2')
+      .toLowerCase()
+      .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || [];
+  const identifyingTokens = tokens.length > 1 ? [tokens[0]] : tokens;
+  return identifyingTokens.some((token) => new RegExp(`\\b${escapedToken(token)}\\b`, 'iu').test(text));
 }
 
 function explicitlyWithholdsConclusion(text) {
@@ -69,4 +74,21 @@ export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', 
     return true;
   }
   return false;
+}
+
+/**
+ * Build a conservative surface trigger for the world's final predicate. The
+ * first camel-case word is the public verb/noun used by authored questions;
+ * the answer name must still occur in the same asserted sentence.
+ */
+export function tutorStubSecretConclusionWordPatterns(predicate = '') {
+  const head = oneLine(predicate)
+    .replace(/([a-z\d])([A-Z])/gu, '$1 $2')
+    .split(/\s+/u)[0]
+    ?.toLowerCase();
+  if (!head) return [];
+  const escaped = escapedToken(head);
+  if (/[^\p{L}\p{N}]/u.test(head)) return [];
+  const suffix = /(?:ed|en|ing|s)$/u.test(head) ? '' : '(?:s|ed|ing)?';
+  return [new RegExp(`\\b${escaped}${suffix}\\b`, 'iu')];
 }

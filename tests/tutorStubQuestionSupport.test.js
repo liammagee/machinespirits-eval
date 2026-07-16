@@ -207,6 +207,23 @@ test('a struggling learner is visibly allowed to answer a tutor question with a 
   );
 });
 
+test('a natural offer to explain what a term means satisfies the clarification invitation', () => {
+  const support = buildTutorStubQuestionSupport({
+    tutorTurn: 7,
+    scaffoldState: scaffold(),
+    assessment: { missingPremiseBuckets: { released_but_not_held: 1 } },
+    classification: { turn: { pedagogical_need: 'plain_language', epistemic_stance: 'confused' } },
+    learnerText: 'What is a cupel?',
+  });
+
+  const audit = auditTutorStubQuestionSupportResponse({
+    text: 'A cupel is the porous dish used in the assay. Would you want me to say what “porous” means?',
+    support,
+  });
+
+  assert.equal(audit.ok, true);
+});
+
 test('ordinary open questions must name the clue plainly instead of using an opaque placeholder', () => {
   const support = buildTutorStubQuestionSupport({
     tutorTurn: 7,

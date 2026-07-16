@@ -309,11 +309,11 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `ACT — ${contract.development.instruction}`,
+    `ACT + ENACT — ${contract.development.instruction} Perform that development as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} The action and character obligation are one beat, not two optional tasks.`,
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
       : null,
-    `ENACT — Work as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction}`,
+    `ENTRY — ${contract.performance.prop_instruction}`,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     ...releaseRows.map((row) => `- ${row}`),
     `END — ${contract.ending.instruction}`,

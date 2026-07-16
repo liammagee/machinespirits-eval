@@ -45,6 +45,60 @@ test('answer-seeking fallback uptake names the requested entry instead of using 
   assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
 });
 
+test('a leading Write directive is uptake only when the learner asked for an entry', () => {
+  const requestedLearnerText = 'What should I write next about the Larkin incubator?';
+  const requestedFrame = buildTutorStubResponseCompositionFrame({
+    learnerText: requestedLearnerText,
+    classification: { turn: { summary: 'Asks for the next supported notebook entry.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const requested = auditTutorStubResponseComposition({
+    learnerText: requestedLearnerText,
+    frame: requestedFrame,
+    text: 'Write: “The Larkin incubator is now the stronger source lead.” Its breached seal and resident G17 give us a concrete source to test.',
+  });
+  const unrequestedLearnerText = 'I still think Devlin did it.';
+  const unrequested = auditTutorStubResponseComposition({
+    learnerText: unrequestedLearnerText,
+    frame: buildTutorStubResponseCompositionFrame({
+      learnerText: unrequestedLearnerText,
+      classification: { turn: { summary: 'Keeps Devlin as the leading hypothesis.' } },
+      registerSelection: { response_configuration: { action_family: 'clarify_distinction' } },
+    }),
+    text: 'Write: “The Larkin incubator is now the stronger source lead.” Its breached seal and resident G17 give us a concrete source to test.',
+  });
+
+  assert.equal(requested.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(
+    unrequested.issues.some((issue) =>
+      ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
+    ),
+    true,
+  );
+});
+
+test('matching language inside a scene action is not mistaken for learner acknowledgement', () => {
+  const learnerText = 'I still think Devlin did it.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Keeps Devlin as the leading hypothesis.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    dramaticReleaseFrame: { active: true },
+  });
+  const audit = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    text: 'I compare two swab labels, exactly matching their dates. The Larkin unit carries the G17 strain.',
+  });
+
+  assert.equal(
+    audit.issues.some((issue) =>
+      ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
+    ),
+    true,
+  );
+});
+
 test('supported terminal inference receives a non-echoing deterministic acknowledgement', () => {
   const learnerText = 'The record names bramblewasp as running the sock-puppet brigade.';
   const uptake = deterministicTutorStubLearnerUptake({

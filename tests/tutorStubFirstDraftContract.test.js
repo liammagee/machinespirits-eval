@@ -54,7 +54,7 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   ]);
   assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
   assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
-  assert.match(prompt, /ENACT — Work as keeper of the trial-book/iu);
+  assert.match(prompt, /ACT \+ ENACT —[\s\S]*Perform that development as keeper of the trial-book/iu);
   assert.match(
     prompt,
     /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
@@ -68,6 +68,8 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.match(prompt, /do not write “the clerk reads”/iu);
   assert.equal(prompt.split(clue).length - 1, 1);
   assert.match(prompt, /END — State the due evidence first, then ask what it changes/iu);
+  assert.match(prompt, /ENTRY — Enter through concrete first-person action/iu);
+  assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|PROP) —/u);
   assert.doesNotMatch(prompt, /release schedule|premise id|rule id|concealed answer/iu);
 });
 
@@ -158,7 +160,7 @@ test('a saturated shared-scene turn still receives one executable host-and-tacti
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.match(prompt, /ENACT — Work as fellow investigator/iu);
+  assert.match(prompt, /ACT \+ ENACT —[\s\S]*Perform that development as fellow investigator/iu);
   assert.match(prompt, /make concrete room beside the named public evidence/iu);
   assert.match(prompt, /Make room beside a named public object for the learner/iu);
   assert.match(prompt, /introduce no new prop/iu);

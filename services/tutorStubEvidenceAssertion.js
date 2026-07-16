@@ -20,9 +20,9 @@ export function tutorStubPrivateTokenAlreadyPublic(token, publicTokens = new Set
 }
 
 const CORRESPONDENCE_PATTERN =
-  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:alloy|flaw|mark|metal|residue|streak)|tie(?:s|d)?\b[^.!?;]{0,55}\bto|trace(?:s|d)?\b[^.!?;]{0,55}\bto)\b/iu;
+  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:[\p{L}\p{N}-]+\s+)?(?:alloy|flaw|mark|metal|residue|strain|streak)|tie(?:s|d)?\b[^.!?;]{0,55}\bto|trace(?:s|d)?\b[^.!?;]{0,55}\bto)\b/iu;
 const EVIDENCE_OBJECT_PATTERN =
-  /\b(?:alloys?|assays?|coins?|crucibles?|dies?|entries|entry|flaws?|leavings|logs?|marks?|metals?|records?|residues?|samples?|shillings?|streaks?|tools?|traces?)\b/iu;
+  /\b(?:alloys?|assays?|coins?|crucibles?|dies?|entries|entry|flaws?|leavings|logs?|marks?|metals?|records?|residues?|samples?|shillings?|strains?|streaks?|tools?|traces?)\b/iu;
 const NON_ASSERTIVE_PATTERN =
   /\b(?:before|can|could|if|look for|may|might|must|need(?:s)? to|seek(?:s|ing)?|should|unless|until|whether|would)\b|\b(?:missing|required)\s+(?:link|test|evidence)\b|\bthe next (?:safe )?(?:check|evidence|record|test)\b|\b(?:where|how|what)\b[^.!?;]{0,35}\bto trace\b|\bneed(?:s|ed)?\b[^.!?;]{0,80}\bto\b|\b(?:do|does|did|has|have|is|are|was|were) not\b|\b(?:don[’']t|doesn[’']t|didn[’']t|hasn[’']t|haven[’']t|isn[’']t|aren[’']t|wasn[’']t|weren[’']t|never|no match|not yet|nor)\b|\b(?:no|neither)\b[^.!?;]{0,80}\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|match(?:es|ed)?|tie(?:s|d)? (?:back )?to|trace(?:s|d)? (?:back )?to)\b/iu;
 const PERSON_ATTRIBUTION_PATTERN =

@@ -258,6 +258,29 @@ test('ordinary field and document actions count as visible exhibit handoffs', ()
   assert.equal(documentAudit.exhibitHandoffVisible, true);
 });
 
+test('pulling a named version history presents it, but pulling the room together does not', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_history',
+        via: 'tutor',
+        surface: 'The version history records a post-filing insertion.',
+      },
+    ],
+  });
+  const presented = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I pull the version history onto the screen: it records a post-filing insertion. What changed?',
+  });
+  const figurative = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I pull the room together around the version history: it records a post-filing insertion. What changed?',
+  });
+
+  assert.equal(presented.exhibitHandoffVisible, true);
+  assert.equal(figurative.exhibitHandoffVisible, false);
+});
+
 test('peering into a lock ward is a visible exhibit examination', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

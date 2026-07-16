@@ -14,6 +14,10 @@ const DEICTIC_EVIDENCE_REFERENCE_PATTERN =
   /\b(?:these|those|your)\s+(?:answer|claim|distinction|marks?|observation|point|reading|words?)\b/iu;
 const DIRECT_QUESTION_ANSWER_PATTERN =
   /^(?:(?:i|we)\s+(?:can|cannot|can[’']t|choose|do|do not|don[’']t|will|will not|won[’']t|would|would not|wouldn[’']t)|i(?:[’']d| would) (?:choose|start|take)|the (?:useful|needed) (?:mark|match) (?:is|would)|the\b[^.!?]{0,45}\bfirst\b)\b/iu;
+const LEARNER_REQUESTS_ENTRY_PATTERN =
+  /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b/iu;
+const DIRECT_REQUESTED_ENTRY_PATTERN =
+  /^(?:enter|record|say|write)(?:\s+(?:this|that|the following))?\s*[:—-]|^(?:the )?(?:entry|line|sentence|wording)(?:\s+to\s+(?:enter|record|say|write))?\s+(?:is|would be|should be)\b/iu;
 const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
   /\b(?:leave|keep)\b[^.!?]{0,35}\b(?:entry|line|record)\b[^.!?]{0,20}\b(?:blank|open|unentered|unwritten)\b|\b(?:do not|don[’']t|will not|won[’']t)\b[^.!?]{0,25}\b(?:enter|record|write)\b/iu;
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
@@ -76,6 +80,13 @@ export function composeTutorStubFallbackWithUptake({ text = '', uptake = '' } = 
 
 function developmentLeadVisible(value) {
   return DEVELOPMENT_LEAD_PATTERN.test(value) || DIRECT_SCENE_DEVELOPMENT_LEAD_PATTERN.test(value);
+}
+
+function directlySuppliesRequestedEntry(surface, learnerText) {
+  return (
+    LEARNER_REQUESTS_ENTRY_PATTERN.test(oneLine(learnerText)) &&
+    DIRECT_REQUESTED_ENTRY_PATTERN.test(oneLine(surface))
+  );
 }
 
 function publicTokenSet(value) {
@@ -289,7 +300,7 @@ export function segmentTutorStubResponse({ text = '', frame = null } = {}) {
   }
 
   const normalized = oneLine(source);
-  if (developmentLeadVisible(normalized)) {
+  if (developmentLeadVisible(normalized) && !directlySuppliesRequestedEntry(normalized, frame?.learner_text)) {
     return { uptake: '', development: normalized, method: 'development_only', formatted: normalized };
   }
   const cue = frame?.development?.clue_release_required ? normalized.match(DEVELOPMENT_BOUNDARY_PATTERN) : null;
@@ -336,6 +347,9 @@ function uptakeRespondsToLearner(uptake, frame) {
   const surface = oneLine(uptake);
   if (!surface) return false;
   if (STOCK_TRANSITION_PATTERN.test(surface)) return false;
+  if (DIRECT_REQUESTED_ENTRY_PATTERN.test(surface)) {
+    return directlySuppliesRequestedEntry(surface, frame?.learner_text);
+  }
   if (
     ACKNOWLEDGEMENT_PATTERN.test(surface) ||
     /\brightly entered\b/iu.test(surface) ||
@@ -353,8 +367,11 @@ function uptakeRespondsToLearner(uptake, frame) {
 function fusedOpeningRespondsToLearner(uptake, frame, minimumOverlap = 3) {
   const surface = oneLine(uptake);
   if (!surface) return false;
+  if (DIRECT_REQUESTED_ENTRY_PATTERN.test(surface)) {
+    return directlySuppliesRequestedEntry(surface, frame?.learner_text);
+  }
   if (
-    /\b(?:wise|right|rightly|fair|exactly|precisely|just so|good|your point|your question|you propose|you suggest)\b/iu.test(
+    /^(?:[^.!?]{0,90}\brightly so\b|(?:wise|right|rightly|fair|exactly|precisely|just so|good|your point|your question|you propose|you suggest)\b)/iu.test(
       surface,
     ) ||
     DEICTIC_UPTAKE_PATTERN.test(surface) ||
