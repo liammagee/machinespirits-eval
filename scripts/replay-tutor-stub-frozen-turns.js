@@ -19,6 +19,12 @@ import {
   TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
 } from '../services/tutorStubFrozenReplay.js';
 import {
+  addTutorStubFrozenReplayAdmissionState,
+  atomicWriteTutorStubFrozenReplayCheckpoint,
+  runTutorStubFrozenReplayStopMode,
+  validateTutorStubFrozenReplayStopMode,
+} from '../services/tutorStubFrozenReplayCheckpoint.js';
+import {
   parseTutorStubPerformanceAdjudication,
   tutorStubPerformanceAdjudicationSystemPrompt,
   tutorStubPerformanceAdjudicationUserPrompt,
@@ -56,6 +62,7 @@ const { values: args } = parseArgs({
     'adjudicate-report': { type: 'string' },
     'development-seed': { type: 'string', default: '' },
     'original-only': { type: 'boolean', default: false },
+    'stop-on-first-rejection': { type: 'boolean', default: false },
     'structured-generation': { type: 'boolean', default: false },
     'joint-performance-generation': { type: 'boolean', default: false },
     'semantic-adjudication': { type: 'boolean', default: false },
@@ -71,6 +78,7 @@ function usage() {
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --semantic-adjudication --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --structured-generation --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --joint-performance-generation --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --stop-on-first-rejection --concurrency 1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
   node scripts/replay-tutor-stub-frozen-turns.js --adjudicate-report original-screen.json --reuse-adjudication --out reaudited.json
@@ -78,7 +86,11 @@ function usage() {
 The live path regenerates only the original speaking-tutor candidate. It never
 invokes tutor repair, deterministic fallback, learner generation, learner
 classification, DAG analysis, or dialogue continuation. Rejected text is kept
-inside the JSON artifact and is never printed as public tutor speech.`;
+inside the JSON artifact and is never printed as public tutor speech.
+
+--stop-on-first-rejection is a predeclared, sequential original-only screen. It
+atomically checkpoints --out before generation and after every completed draw,
+then closes admission at the first strict rejection.`;
 }
 
 function structuredGenerationFailureAudit(error, { jointPerformance = false } = {}) {
@@ -188,9 +200,8 @@ function summarizeScreenResults(results = []) {
       ? {
           jointPerformanceModelOutputs: jointRows.length,
           jointPerformanceCompositions: jointRows.filter((row) => row.jointPerformanceGeneration?.ok === true).length,
-          jointPerformanceCompositionFailures: jointRows.filter(
-            (row) => row.jointPerformanceGeneration?.ok === false,
-          ).length,
+          jointPerformanceCompositionFailures: jointRows.filter((row) => row.jointPerformanceGeneration?.ok === false)
+            .length,
           jointPerformanceCompositionsClassifiedAsRepair: 0,
           jointPerformanceCompositionsClassifiedAsFallback: 0,
           transportNormalizedOutputs: jointRows.filter(
@@ -457,9 +468,7 @@ function auditFixture(fixture) {
         recognitionCorrectionConfirmed,
         expectationReason: candidate.expectationReason || null,
         recognitionRegressed:
-          candidate.recordedAuditOk === true &&
-          currentAudit.ok === false &&
-          !recognitionCorrectionConfirmed,
+          candidate.recordedAuditOk === true && currentAudit.ok === false && !recognitionCorrectionConfirmed,
         safetyFailure: currentAudit.safetyFailure,
         recordedFailureClusters: candidate.recordedFailureClusters,
         currentFailureClusters: currentAudit.hardFailureClusters,
@@ -533,8 +542,7 @@ async function main() {
         bundle,
         world,
         candidate: row.candidate,
-        composition:
-          row.jointPerformanceGeneration?.composition || row.structuredGeneration?.composition || null,
+        composition: row.jointPerformanceGeneration?.composition || row.structuredGeneration?.composition || null,
         jointPerformance: Boolean(row.jointPerformanceGeneration),
       });
       const reusableRaw = args['reuse-adjudication'] ? row.semanticAdjudication?.raw : null;
@@ -559,8 +567,7 @@ async function main() {
             bundle,
             world,
             candidate: row.candidate,
-            composition:
-              row.jointPerformanceGeneration?.composition || row.structuredGeneration?.composition || null,
+            composition: row.jointPerformanceGeneration?.composition || row.structuredGeneration?.composition || null,
             jointPerformance: Boolean(row.jointPerformanceGeneration),
             performanceAdjudication: semanticAdjudication.adjudication,
           })
@@ -611,7 +618,7 @@ async function main() {
     return structuredGeneration ? replaceTutorStubFrozenRequestWithStructuredPrompt(refreshed) : refreshed;
   });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
-  const results = await mapLimit(jobs, concurrency, async ({ bundle, draw }) => {
+  const runJob = async ({ bundle, draw }) => {
     const generated = await generateOriginal(bundle);
     const world = worldForBundle(bundle);
     let candidate = generated.text;
@@ -736,17 +743,17 @@ async function main() {
             jointPerformanceGeneration: structuredResult,
           }
         : structuredGeneration
-        ? {
-            candidateProvenance: { kind: 'structured_original_composition', recoveryStage: false },
-            structuredGeneration: structuredResult,
-          }
-        : {}),
+          ? {
+              candidateProvenance: { kind: 'structured_original_composition', recoveryStage: false },
+              structuredGeneration: structuredResult,
+            }
+          : {}),
       deterministicAudit,
       semanticAdjudication,
       audit,
     };
-  });
-  const report = {
+  };
+  const reportBase = {
     schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
     mode: jointPerformanceGeneration
       ? 'original_only_joint_performance_screen'
@@ -784,15 +791,46 @@ async function main() {
       ...(structuredGeneration ? { deterministicStructuredCompositionInvoked: true } : {}),
       ...(jointPerformanceGeneration ? { deterministicJointPerformanceCompositionInvoked: true } : {}),
     },
-    summary: summarizeScreenResults(results),
     bundles,
-    results,
   };
-  if (!args.out) throw new Error('--out is required for live replay so every candidate and audit is preserved');
-  const target = writeJson(args.out, report);
+  const buildReport = (results, admissionState = null, admissionPolicy = null) =>
+    addTutorStubFrozenReplayAdmissionState(
+      {
+        ...reportBase,
+        summary: summarizeScreenResults(results),
+        results,
+      },
+      { admissionState, admissionPolicy },
+    );
+  const stopMode = validateTutorStubFrozenReplayStopMode({
+    enabled: Boolean(args['stop-on-first-rejection']),
+    originalOnly: Boolean(args['original-only']),
+    concurrency,
+    out: args.out,
+  });
+  let results;
+  let report;
+  let target;
+  if (stopMode.enabled) {
+    const outcome = await runTutorStubFrozenReplayStopMode({
+      jobs,
+      runJob,
+      checkpoint: ({ results: partialResults, admissionState }) => {
+        report = buildReport(partialResults, admissionState, stopMode);
+        target = atomicWriteTutorStubFrozenReplayCheckpoint(args.out, report);
+      },
+    });
+    results = outcome.results;
+    report = buildReport(results, outcome.admissionState, stopMode);
+  } else {
+    results = await mapLimit(jobs, concurrency, runJob);
+    report = buildReport(results);
+    if (!args.out) throw new Error('--out is required for live replay so every candidate and audit is preserved');
+    target = writeJson(args.out, report);
+  }
   console.log(`frozen original-only report: ${target}`);
   console.log(
-    `accepted ${report.summary.originalCandidatesAccepted}/${report.summary.draws}; safety failures ${report.summary.safetyFailures}; mean original latency ${Math.round(report.summary.meanOriginalLatencyMs || 0)} ms`,
+    `accepted ${report.summary.originalCandidatesAccepted}/${report.summary.draws}; safety failures ${report.summary.safetyFailures}; mean original latency ${Math.round(report.summary.meanOriginalLatencyMs || 0)} ms${stopMode.enabled ? `; status ${report.status}` : ''}`,
   );
 }
 

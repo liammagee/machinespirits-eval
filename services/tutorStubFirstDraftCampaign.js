@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 import YAML from 'yaml';
 
@@ -8,8 +9,96 @@ import {
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from './tutorStubJointPerformanceFirstDraft.js';
+import { extractTutorStubFrozenTurn } from './tutorStubFrozenReplay.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
+
+export function acquireTutorStubFirstDraftCellClaim({
+  outputDir,
+  cellId,
+  seed = null,
+  configSha256 = null,
+  sourceTraceSha256 = null,
+  expectedInventory = [],
+  pid = process.pid,
+} = {}) {
+  const claimPath = `${outputDir}.claim.json`;
+  fs.mkdirSync(path.dirname(claimPath), { recursive: true });
+  let descriptor;
+  try {
+    descriptor = fs.openSync(claimPath, 'wx');
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(`${cellId} already has an active or crash-preserved development claim: ${claimPath}`);
+    }
+    throw error;
+  }
+  const claim = {
+    schema: 'machinespirits.tutor-stub.first-draft-cell-claim.v1',
+    cellId,
+    outputDir,
+    seed,
+    configSha256,
+    sourceTraceSha256,
+    expectedInventory,
+    pid,
+    acquiredAt: new Date().toISOString(),
+    disposition: 'active_or_crash_preserved',
+  };
+  try {
+    fs.writeFileSync(descriptor, `${JSON.stringify(claim, null, 2)}\n`, 'utf8');
+  } finally {
+    fs.closeSync(descriptor);
+  }
+  return { claimPath, claim };
+}
+
+export function releaseTutorStubFirstDraftCellClaim(claimPath) {
+  fs.rmSync(claimPath, { force: true });
+}
+
+export function tutorStubFirstDraftInterruptedCellResult({ cell, reportPath, error } = {}) {
+  let checkpoint = null;
+  let parseError = null;
+  if (reportPath && fs.existsSync(reportPath)) {
+    try {
+      checkpoint = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    } catch (checkpointError) {
+      parseError = checkpointError instanceof Error ? checkpointError.message : String(checkpointError);
+    }
+  }
+  const results = Array.isArray(checkpoint?.results) ? checkpoint.results : [];
+  const drawsPerPrefix = Number(checkpoint?.drawsPerTurn || checkpoint?.plan?.drawsPerTurn || 1);
+  const expectedInventory = cell.turns.flatMap((turn) =>
+    Array.from({ length: drawsPerPrefix }, (_, index) => `${Number(turn)}:${index + 1}`),
+  );
+  const observed = new Set(results.map((row) => `${Number(row.turn)}:${Number(row.draw ?? 1)}`));
+  return {
+    id: cell.id,
+    world: cell.world,
+    learnerProfile: cell.learnerProfile,
+    seed: cell.seed,
+    seedDisposition: results.length
+      ? 'consumed_development_incomplete'
+      : 'indeterminate_zero_output_claim_preserved',
+    status: 'infrastructure_error',
+    completedTurns: results.length,
+    unstartedTurns: cell.turns.filter(
+      (turn) => !results.some((row) => Number(row.turn) === Number(turn)),
+    ),
+    unstartedDraws: expectedInventory.filter((key) => !observed.has(key)),
+    error: error instanceof Error ? error.message : String(error),
+    partialCheckpoint: reportPath && (checkpoint || parseError)
+      ? {
+          path: reportPath,
+          schema: checkpoint?.schema || null,
+          completedDraws: results.length,
+          admissionState: checkpoint?.admissionState || null,
+          parseError,
+        }
+      : null,
+  };
+}
 
 function integer(value, label, { minimum = 0 } = {}) {
   const parsed = Number(value);
@@ -36,6 +125,28 @@ function requiredString(value, label) {
 function absolute(root, value) {
   const normalized = requiredString(value, 'path');
   return path.isAbsolute(normalized) ? normalized : path.join(root, normalized);
+}
+
+function sha256File(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function priorTutorDeliverySources(tracePath, targetTurn) {
+  const rows = [];
+  for (const line of fs.readFileSync(tracePath, 'utf8').split(/\r?\n/u)) {
+    if (!line.trim()) continue;
+    const event = JSON.parse(line);
+    if (
+      event?.type === 'tutor_response_guard_accounting' &&
+      Number(event.turn) < Number(targetTurn)
+    ) {
+      rows.push({
+        turn: Number(event.turn),
+        source: event?.accounting?.finalDelivery?.source || null,
+      });
+    }
+  }
+  return rows;
 }
 
 export function tutorStubFirstDraftCampaignValidationArtifactPath({
@@ -118,10 +229,36 @@ function validateWorkingScreen(config, { root }) {
   const ids = new Set();
   const seeds = new Set();
   const requiredTurns = integer(config.gates_per_cell?.required_turns, 'required turns', { minimum: 1 });
+  const drawsPerPrefix = integer(
+    config.gates_per_cell?.required_draws_per_prefix ?? config.fixed_configuration?.draws_per_turn ?? 1,
+    'required draws per prefix',
+    { minimum: 1 },
+  );
+  const requiredPrefixes = integer(
+    config.gates_per_cell?.required_prefixes ?? requiredTurns,
+    'required prefixes',
+    { minimum: 1 },
+  );
+  if (requiredPrefixes * drawsPerPrefix !== requiredTurns) {
+    throw new Error('required prefixes multiplied by draws per prefix must equal required turns');
+  }
+  if (Number(config.fixed_configuration?.draws_per_turn ?? 1) !== drawsPerPrefix) {
+    throw new Error('fixed draws per turn must equal required draws per prefix');
+  }
   const requiredAccepted = integer(config.gates_per_cell?.required_originals_accepted, 'required originals accepted', {
     minimum: 1,
   });
   if (requiredAccepted > requiredTurns) throw new Error('required originals exceeds required turns');
+  for (const [field, label] of [
+    ['maximum_safety_failures', 'maximum safety failures'],
+    ['maximum_fallbacks', 'maximum fallbacks'],
+    ['maximum_mechanical_repairs', 'maximum mechanical repairs'],
+    ['maximum_model_rewrites', 'maximum model rewrites'],
+    ['maximum_semantic_recognition_corrections', 'maximum semantic recognition corrections'],
+    ['maximum_transport_normalizations', 'maximum transport normalizations'],
+  ]) {
+    if (config.gates_per_cell?.[field] != null) integer(config.gates_per_cell[field], label);
+  }
   for (const cell of cells) {
     const id = requiredString(cell.id, 'cell id');
     if (ids.has(id)) throw new Error(`duplicate cell id ${id}`);
@@ -134,16 +271,97 @@ function validateWorkingScreen(config, { root }) {
     }
     const trace = absolute(root, cell.source_trace);
     if (!fs.existsSync(trace)) throw new Error(`${id} source trace is missing: ${trace}`);
+    if (cell.source_trace_sha256 && sha256File(trace) !== cell.source_trace_sha256) {
+      throw new Error(`${id} source trace hash does not match the predeclaration`);
+    }
     const turns = [...new Set((cell.turns || []).map(Number))];
-    if (turns.length !== requiredTurns || turns.some((turn) => !Number.isInteger(turn) || turn < 1)) {
-      throw new Error(`${id} must declare exactly ${requiredTurns} distinct positive turns`);
+    if (turns.length !== requiredPrefixes || turns.some((turn) => !Number.isInteger(turn) || turn < 1)) {
+      throw new Error(`${id} must declare exactly ${requiredPrefixes} distinct positive prefixes`);
+    }
+    if (cell.prefix_integrity) {
+      const targetTurn = integer(cell.prefix_integrity.target_turn, `${id} target turn`, { minimum: 1 });
+      if (!turns.includes(targetTurn)) throw new Error(`${id} target turn must be a declared prefix`);
+      const requiredSource = requiredString(
+        cell.prefix_integrity.required_prior_delivery_source,
+        `${id} required prior delivery source`,
+      );
+      const observed = priorTutorDeliverySources(trace, targetTurn);
+      const expectedTurns = (cell.prefix_integrity.verified_prior_turns || []).map(Number);
+      if (JSON.stringify(observed.map((row) => row.turn)) !== JSON.stringify(expectedTurns)) {
+        throw new Error(`${id} prior delivery turn inventory does not match the trace`);
+      }
+      if (observed.some((row) => row.source !== requiredSource)) {
+        throw new Error(`${id} frozen prefix contains a prior non-original tutor delivery`);
+      }
+      if (config.execution?.require_exact_target_bundle_binding === true) {
+        const bundle = extractTutorStubFrozenTurn({ tracePath: trace, turn: targetTurn });
+        const binding = cell.prefix_integrity.target_bundle || {};
+        for (const [field, actual, expected] of [
+          ['turn_id', bundle.turnId, binding.turn_id],
+          ['world', bundle.worldId, binding.world],
+          ['learner_profile', bundle.learnerProfile, binding.learner_profile],
+          ['request_model', bundle.request?.model, binding.request_model],
+          ['request_effort', bundle.request?.effort, binding.request_effort],
+        ]) {
+          if (actual !== expected) {
+            throw new Error(`${id} target bundle ${field} does not match the frozen trace`);
+          }
+        }
+      }
     }
   }
   for (const fixture of config.preflight?.model_free_fixtures || []) {
     const fixturePath = absolute(root, fixture);
     if (!fs.existsSync(fixturePath)) throw new Error(`model-free fixture is missing: ${fixturePath}`);
   }
-  return { kind: 'working_screen', requiredTurns, requiredAccepted };
+  const maxConcurrency = integer(config.fixed_configuration?.max_live_model_jobs ?? 1, 'maximum live model jobs', {
+    minimum: 1,
+  });
+  if (maxConcurrency > 3) throw new Error('live model concurrency may not exceed three');
+  if (config.execution) {
+    const execution = config.execution;
+    if (execution.hardest_cell_first !== true) throw new Error('development execution must run hardest cell first');
+    const hardCell = requiredString(execution.hard_cell, 'development hard cell');
+    const hardest = cells.find((cell) => Number(cell.priority) === 1);
+    if (!hardest || hardest.id !== hardCell) throw new Error('development hard cell must be the priority 1 cell');
+    if (execution.hard_cell_must_pass_before_remaining !== true) {
+      throw new Error('development hard cell must pass before remaining cells');
+    }
+    if (execution.remaining_cells_execution !== 'concurrent') {
+      throw new Error('remaining development cells must declare concurrent execution');
+    }
+    const remainingConcurrency = integer(
+      execution.maximum_concurrent_remaining_cells,
+      'maximum concurrent remaining cells',
+      { minimum: 1 },
+    );
+    if (remainingConcurrency > 3 || remainingConcurrency > maxConcurrency) {
+      throw new Error('remaining development concurrency may not exceed three or max_live_model_jobs');
+    }
+    for (const [field, label] of [
+      ['one_job_per_cell', 'one job per development cell'],
+      ['forbid_duplicate_active_or_completed_cells', 'duplicate development cell guard'],
+      ['complete_all_cells_after_hard_cell_passes', 'complete all development cells'],
+      ['stop_cell_when_gate_mathematically_impossible', 'mathematical impossibility stop'],
+      ['preserve_unstarted_seeds_as_unconsumed', 'unstarted seed preservation'],
+    ]) {
+      if (execution[field] !== true) throw new Error(`${label} must be enabled`);
+    }
+    if (
+      config.id === 'first-draft-working-screens-v7' &&
+      execution.require_exact_target_bundle_binding !== true
+    ) {
+      throw new Error('V7 development confirmation must require exact target bundle binding');
+    }
+  }
+  return {
+    kind: 'working_screen',
+    requiredTurns,
+    requiredAccepted,
+    requiredPrefixes,
+    drawsPerPrefix,
+    maxConcurrency,
+  };
 }
 
 function validateAcceptance(config) {
@@ -249,6 +467,12 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
   }
   if (config.fixed_configuration?.joint_performance_generation === true) {
     command.splice(command.length - 2, 0, '--joint-performance-generation');
+  }
+  if (
+    config.execution?.stop_cell_when_gate_mathematically_impossible === true &&
+    Number(config.fixed_configuration?.draws_per_turn || 1) > 1
+  ) {
+    command.splice(command.length - 2, 0, '--stop-on-first-rejection');
   }
   if (config.fixed_configuration?.adjudicator_model) {
     command.splice(
@@ -356,6 +580,9 @@ export function expandTutorStubFirstDraftCampaign({ config, root = process.cwd()
           seedStatus: cell.seed_status,
           world: cell.world,
           learnerProfile: cell.learner_profile,
+          sourceTrace: absolute(root, cell.source_trace),
+          sourceTraceSha256: cell.source_trace_sha256 || null,
+          targetBundle: cell.prefix_integrity?.target_bundle || null,
           outputDir,
           turns: cell.turns.map(Number),
           commands: cell.turns.map((turn) => ({
@@ -382,6 +609,39 @@ export function expandTutorStubFirstDraftCampaign({ config, root = process.cwd()
         argv: autoEvalCommand({ root, config, cell, outputDir }),
       };
     }),
+  };
+}
+
+export function tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config } = {}) {
+  if (plan?.kind !== 'working_screen') throw new Error('development execution requires a working-screen plan');
+  const cells = Array.isArray(plan.cells) ? plan.cells : [];
+  if (!cells.length) throw new Error('development execution plan has no cells');
+  const execution = config?.execution || {};
+  const hardCellId = execution.hard_cell || cells[0].id;
+  const hardCell = cells.find((cell) => cell.id === hardCellId);
+  if (!hardCell) throw new Error(`development hard cell is absent from plan: ${hardCellId}`);
+  const remainingCells = cells.filter((cell) => cell.id !== hardCellId);
+  const remainingConcurrency = Math.min(
+    3,
+    Number(plan.maxConcurrency || 1),
+    Number(execution.maximum_concurrent_remaining_cells || 1),
+    Math.max(1, remainingCells.length),
+  );
+  return {
+    hardCell,
+    remainingCells,
+    remainingConcurrency,
+    preflightRuns: 1,
+    hardCellMustPassBeforeRemaining: execution.hard_cell_must_pass_before_remaining === true,
+    completeAllCellsAfterHardCellPasses:
+      execution.complete_all_cells_after_hard_cell_passes === true,
+    oneJobPerCell: execution.one_job_per_cell === true,
+    forbidDuplicateActiveOrCompletedCells:
+      execution.forbid_duplicate_active_or_completed_cells === true,
+    stopCellWhenGateMathematicallyImpossible:
+      execution.stop_cell_when_gate_mathematically_impossible !== false,
+    preserveUnstartedSeedsAsUnconsumed:
+      execution.preserve_unstarted_seeds_as_unconsumed === true,
   };
 }
 
@@ -540,6 +800,59 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     }));
   });
   const results = resultEntries.map((entry) => entry.row);
+  const drawsPerPrefix = Number(
+    config.gates_per_cell.required_draws_per_prefix ?? config.fixed_configuration?.draws_per_turn ?? 1,
+  );
+  const expectedDrawKeys = new Set(
+    cell.turns.flatMap((turn) =>
+      Array.from({ length: drawsPerPrefix }, (_, index) => `${Number(turn)}:${index + 1}`),
+    ),
+  );
+  const observedDrawKeys = results.map((row) => `${Number(row.turn)}:${Number(row.draw ?? 1)}`);
+  const uniqueObservedDrawKeys = new Set(observedDrawKeys);
+  const drawInventory = {
+    expected: [...expectedDrawKeys].sort(),
+    observed: [...observedDrawKeys].sort(),
+    duplicateKeys: [...new Set(observedDrawKeys.filter((key, index) => observedDrawKeys.indexOf(key) !== index))].sort(),
+    missingKeys: [...expectedDrawKeys].filter((key) => !uniqueObservedDrawKeys.has(key)).sort(),
+    unexpectedKeys: [...uniqueObservedDrawKeys].filter((key) => !expectedDrawKeys.has(key)).sort(),
+    bindingFailures: [],
+  };
+  if (config.execution?.require_exact_target_bundle_binding === true) {
+    const binding = cell.targetBundle || cell.prefix_integrity?.target_bundle || {};
+    const expectedProfile = cell.learnerProfile || cell.learner_profile;
+    const expectedSeed = Number(cell.seed ?? cell.development_seed);
+    const expectedSourceTrace = path.resolve(cell.sourceTrace || cell.source_trace);
+    for (const report of reports) {
+      if (path.resolve(String(report?.sourceTrace || '')) !== expectedSourceTrace) {
+        drawInventory.bindingFailures.push('report:source_trace');
+      }
+    }
+    for (const row of results) {
+      const key = `${Number(row.turn)}:${Number(row.draw ?? 1)}`;
+      for (const [field, actual, expected] of [
+        ['world_id', row.worldId, binding.world || cell.world],
+        ['learner_profile', row.learnerProfile, binding.learner_profile || expectedProfile],
+        ['development_seed', Number(row.developmentSeed), expectedSeed],
+        ['turn_id', row.turnId, binding.turn_id],
+      ]) {
+        if (actual !== expected) drawInventory.bindingFailures.push(`${key}:${field}`);
+      }
+    }
+    drawInventory.bindingFailures = [...new Set(drawInventory.bindingFailures)].sort();
+  }
+  drawInventory.ok =
+    drawInventory.duplicateKeys.length === 0 &&
+    drawInventory.missingKeys.length === 0 &&
+    drawInventory.unexpectedKeys.length === 0 &&
+    drawInventory.bindingFailures.length === 0 &&
+    observedDrawKeys.length === expectedDrawKeys.size;
+  const reportMetric = (field, fallback = 0) => {
+    const summaries = reports.map((report) => report?.summary).filter(Boolean);
+    return summaries.some((summary) => Number.isFinite(Number(summary?.[field])))
+      ? summaries.reduce((sum, summary) => sum + Number(summary?.[field] || 0), 0)
+      : fallback;
+  };
   const strictlyAccepted = (audit) =>
     audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = results.filter((row) => strictlyAccepted(row.audit)).length;
@@ -608,6 +921,17 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const transportNormalizedOutputs = results.filter(
     (row) => row?.[generationField]?.parsed?.transport_normalizations?.length > 0,
   ).length;
+  const mechanicalRepairs = reportMetric('mechanicalRepairs');
+  const modelRewrites = reportMetric('modelRewrites');
+  const deterministicFallbacks = reportMetric('deterministicFallbacks');
+  const reportedTransportNormalizedOutputs = reportMetric(
+    'transportNormalizedOutputs',
+    transportNormalizedOutputs,
+  );
+  const reportedTransportNormalizationCount = reportMetric(
+    'transportNormalizationCount',
+    transportNormalizations.length,
+  );
   const failureCounts = new Map();
   for (const row of results) {
     // Original-only screening rejects a candidate when semantic recognition
@@ -648,11 +972,21 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       (!configurationRealizationIsGate || configurationPossibility.possible),
   };
   const gates = {
+    drawInventory: drawInventory.ok,
     originalsAccepted: results.length === requiredTurns && accepted >= requiredAccepted,
     configurationRealization:
       !configurationRealizationIsGate || configurationPossibility.passed,
     safety: safetyFailures <= Number(config.gates_per_cell.maximum_safety_failures || 0),
-    fallbacks: true,
+    mechanicalRepairs:
+      mechanicalRepairs <= Number(config.gates_per_cell.maximum_mechanical_repairs ?? 0),
+    modelRewrites:
+      modelRewrites <= Number(config.gates_per_cell.maximum_model_rewrites ?? 0),
+    fallbacks:
+      deterministicFallbacks <= Number(config.gates_per_cell.maximum_fallbacks ?? 0),
+    semanticRecognitionCorrections:
+      semanticCorrections <= Number(config.gates_per_cell.maximum_semantic_recognition_corrections ?? 0),
+    transportNormalizations:
+      reportedTransportNormalizationCount <= Number(config.gates_per_cell.maximum_transport_normalizations ?? 0),
     transcriptSpecificUptake:
       config.gates_per_cell.require_transcript_specific_uptake !== true || transcriptSpecificUptakeFailures === 0,
     structuredOutput:
@@ -687,12 +1021,13 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     semanticRecognitionCorrections: semanticCorrections,
     semanticAdjudicatorCalls: adjudicationRows.length,
     semanticAdjudicatorErrors: results.filter((row) => row.semanticAdjudication?.error).length,
-    mechanicalRepairs: 0,
-    modelRewrites: 0,
-    deterministicFallbacks: 0,
-    transportNormalizedOutputs,
-    transportNormalizationCount: transportNormalizations.length,
+    mechanicalRepairs,
+    modelRewrites,
+    deterministicFallbacks,
+    transportNormalizedOutputs: reportedTransportNormalizedOutputs,
+    transportNormalizationCount: reportedTransportNormalizationCount,
     transportNormalizations,
+    drawInventory,
     safetyFailures,
     transcriptSpecificUptakeFailures,
     structuredModelOutputs: structuredGenerationEnabled ? results.length : 0,

@@ -5,11 +5,16 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  acquireTutorStubFirstDraftCellClaim,
   assessTutorStubAcceptanceCell,
   expandTutorStubFirstDraftCampaign,
+  loadTutorStubFirstDraftCampaign,
+  releaseTutorStubFirstDraftCellClaim,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftDevelopmentExecutionPlan,
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftGatePossibility,
+  tutorStubFirstDraftInterruptedCellResult,
   tutorStubFirstDraftIterationStopping,
   tutorStubFirstDraftUnexpectedIterationArtifacts,
   tutorStubStrictOriginalCandidateAccepted,
@@ -92,6 +97,341 @@ function enableJointPerformanceGeneration(config) {
   config.gates_per_cell.require_exact_host_source_occurrences = true;
   return config;
 }
+
+function confirmationConfig(tmp) {
+  const config = enableJointPerformanceGeneration(workingConfig(tmp));
+  const trace = config.matrix[0].source_trace;
+  fs.writeFileSync(trace, [1, 2, 3, 4].map((turn) => JSON.stringify({
+    type: 'tutor_response_guard_accounting',
+    turn,
+    accounting: { finalDelivery: { source: 'original_candidate' } },
+  })).join('\n') + '\n');
+  config.fixed_configuration.draws_per_turn = 4;
+  config.gates_per_cell.required_turns = 4;
+  config.gates_per_cell.required_originals_accepted = 4;
+  config.gates_per_cell.required_prefixes = 1;
+  config.gates_per_cell.required_draws_per_prefix = 4;
+  config.gates_per_cell.minimum_mean_configuration_realization = 1;
+  config.gates_per_cell.configuration_realization_enforcement = 'gate';
+  config.matrix = [
+    ['hard', 1, 5, 81001],
+    ['second', 2, 5, 81002],
+    ['third', 3, 2, 81003],
+    ['fourth', 4, 4, 81004],
+  ].map(([id, priority, turn, development_seed]) => ({
+    id,
+    priority,
+    world: `world_${id}`,
+    learner_profile: id === 'hard' ? 'answer_seeking' : 'diligent',
+    source_trace: trace,
+    turns: [turn],
+    development_seed,
+    seed_status: 'reusable_non_held_out_development',
+    prefix_integrity: {
+      target_turn: turn,
+      required_prior_delivery_source: 'original_candidate',
+      verified_prior_turns: Array.from({ length: turn - 1 }, (_, index) => index + 1),
+    },
+  }));
+  config.execution = {
+    hardest_cell_first: true,
+    hard_cell: 'hard',
+    hard_cell_must_pass_before_remaining: true,
+    remaining_cells_execution: 'concurrent',
+    maximum_concurrent_remaining_cells: 3,
+    one_job_per_cell: true,
+    forbid_duplicate_active_or_completed_cells: true,
+    complete_all_cells_after_hard_cell_passes: true,
+    stop_cell_when_gate_mathematically_impossible: true,
+    preserve_unstarted_seeds_as_unconsumed: true,
+  };
+  return config;
+}
+
+test('development confirmation runs one hard cell then three remaining cells with one preflight', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-development-execution-'));
+  try {
+    const config = confirmationConfig(tmp);
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 8 });
+    const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
+    assert.equal(plan.maxConcurrency, 3);
+    assert.equal(execution.hardCell.id, 'hard');
+    assert.deepEqual(execution.remainingCells.map((cell) => cell.id), ['second', 'third', 'fourth']);
+    assert.equal(execution.remainingConcurrency, 3);
+    assert.equal(execution.preflightRuns, 1);
+    assert.equal(execution.hardCellMustPassBeforeRemaining, true);
+    assert.equal(execution.completeAllCellsAfterHardCellPasses, true);
+    assert.equal(execution.oneJobPerCell, true);
+    assert.equal(execution.forbidDuplicateActiveOrCompletedCells, true);
+    assert.equal(execution.stopCellWhenGateMathematicallyImpossible, true);
+    assert.equal(execution.preserveUnstartedSeedsAsUnconsumed, true);
+    for (const cell of plan.cells) {
+      assert.equal(cell.commands.length, 1);
+      const drawsIndex = cell.commands[0].argv.indexOf('--draws');
+      assert.equal(cell.commands[0].argv[drawsIndex + 1], '4');
+      assert.equal(cell.commands[0].argv.includes('--stop-on-first-rejection'), true);
+      assert.match(cell.commands[0].outputPath, new RegExp(`${cell.id}/turn-${cell.turns[0]}\\.json$`, 'u'));
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('atomic development cell claims reject duplicate live or crash-restart attempts', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-cell-claim-'));
+  try {
+    const outputDir = path.join(tmp, 'iteration-8', 'hard');
+    const first = acquireTutorStubFirstDraftCellClaim({
+      outputDir,
+      cellId: 'hard',
+      seed: 20261600,
+      configSha256: 'config-hash',
+      sourceTraceSha256: 'trace-hash',
+      expectedInventory: [1, 2, 3, 4].map((draw) => ({ turn: 5, draw })),
+      pid: 101,
+    });
+    assert.equal(fs.existsSync(first.claimPath), true);
+    assert.deepEqual(JSON.parse(fs.readFileSync(first.claimPath, 'utf8')), {
+      schema: 'machinespirits.tutor-stub.first-draft-cell-claim.v1',
+      cellId: 'hard',
+      outputDir,
+      seed: 20261600,
+      configSha256: 'config-hash',
+      sourceTraceSha256: 'trace-hash',
+      expectedInventory: [1, 2, 3, 4].map((draw) => ({ turn: 5, draw })),
+      pid: 101,
+      acquiredAt: first.claim.acquiredAt,
+      disposition: 'active_or_crash_preserved',
+    });
+    assert.throws(
+      () => acquireTutorStubFirstDraftCellClaim({ outputDir, cellId: 'hard', pid: 102 }),
+      /active or crash-preserved development claim/u,
+    );
+    releaseTutorStubFirstDraftCellClaim(first.claimPath);
+    const replacement = acquireTutorStubFirstDraftCellClaim({ outputDir, cellId: 'hard', pid: 103 });
+    assert.equal(JSON.parse(fs.readFileSync(replacement.claimPath, 'utf8')).pid, 103);
+    releaseTutorStubFirstDraftCellClaim(replacement.claimPath);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('interrupted cells distinguish partial consumption from zero-output indeterminacy', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-interrupted-cell-'));
+  try {
+    const cell = {
+      id: 'hard', world: 'world_hard', learnerProfile: 'answer_seeking', seed: 20261600, turns: [5],
+    };
+    const reportPath = path.join(tmp, 'turn-5.json');
+    fs.writeFileSync(reportPath, JSON.stringify({
+      schema: 'machinespirits.tutor-stub.frozen-replay.v1',
+      drawsPerTurn: 4,
+      admissionState: { status: 'in_progress', completedDraws: 2, unstartedDraws: 2 },
+      results: [{ turn: 5, draw: 1 }, { turn: 5, draw: 2 }],
+    }));
+    const partial = tutorStubFirstDraftInterruptedCellResult({
+      cell, reportPath, error: new Error('transport interrupted'),
+    });
+    assert.equal(partial.seedDisposition, 'consumed_development_incomplete');
+    assert.equal(partial.completedTurns, 2);
+    assert.deepEqual(partial.unstartedDraws, ['5:3', '5:4']);
+    assert.equal(partial.partialCheckpoint.completedDraws, 2);
+
+    fs.writeFileSync(reportPath, JSON.stringify({
+      schema: 'machinespirits.tutor-stub.frozen-replay.v1',
+      drawsPerTurn: 4,
+      admissionState: { status: 'in_progress', completedDraws: 0, unstartedDraws: 4 },
+      results: [],
+    }));
+    const empty = tutorStubFirstDraftInterruptedCellResult({
+      cell, reportPath, error: new Error('transport interrupted'),
+    });
+    assert.equal(empty.seedDisposition, 'indeterminate_zero_output_claim_preserved');
+    assert.equal(empty.completedTurns, 0);
+    assert.deepEqual(empty.unstartedDraws, ['5:1', '5:2', '5:3', '5:4']);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('four-draw confirmation requires the exact unique turn and draw inventory', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-draw-inventory-'));
+  try {
+    const config = confirmationConfig(tmp);
+    const cell = config.matrix[0];
+    const report = (draws) => ({
+      results: draws.map(({ turn = 5, draw }) => ({
+        turn,
+        draw,
+        latencyMs: 10,
+        audit: {
+          ok: true,
+          safetyFailure: false,
+          failureClusters: [],
+          audits: {
+            responseCompositionAudit: { ok: true },
+            actorialRealizationAudit: { ok: true },
+            responseConfigurationAudit: { realization_rate: 1 },
+            jointPerformanceAudit: { ok: true },
+          },
+        },
+      })),
+    });
+    const complete = summarizeTutorStubWorkingScreen({
+      cell,
+      reports: [report([1, 2, 3, 4].map((draw) => ({ draw })))],
+      config,
+    });
+    assert.equal(complete.drawInventory.ok, true);
+    assert.equal(complete.gates.drawInventory, true);
+
+    const duplicate = summarizeTutorStubWorkingScreen({
+      cell,
+      reports: [report([1, 1, 3, 4].map((draw) => ({ draw })))],
+      config,
+    });
+    assert.deepEqual(duplicate.drawInventory.duplicateKeys, ['5:1']);
+    assert.deepEqual(duplicate.drawInventory.missingKeys, ['5:2']);
+    assert.equal(duplicate.gates.drawInventory, false);
+    assert.equal(duplicate.status, 'fail');
+
+    const wrongTurn = summarizeTutorStubWorkingScreen({
+      cell,
+      reports: [report([1, 2, 3].map((draw) => ({ draw })).concat({ turn: 6, draw: 4 }))],
+      config,
+    });
+    assert.deepEqual(wrongTurn.drawInventory.missingKeys, ['5:4']);
+    assert.deepEqual(wrongTurn.drawInventory.unexpectedKeys, ['6:4']);
+    assert.equal(wrongTurn.status, 'fail');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('V7 draw inventory binds every row and report to the exact frozen target', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml');
+  const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
+  const plan = expandTutorStubFirstDraftCampaign({ config: loaded.config, root: repoRoot, iteration: 8 });
+  const cell = plan.cells[0];
+  const report = {
+    sourceTrace: cell.sourceTrace,
+    results: [1, 2, 3, 4].map((draw) => ({
+      turn: 5,
+      turnId: '2026-07-16T07-03-36-147Z:t005',
+      draw,
+      worldId: 'world_025_tallow_street',
+      learnerProfile: 'answer_seeking',
+      developmentSeed: '20261600',
+      latencyMs: 10,
+      audit: {
+        ok: true,
+        safetyFailure: false,
+        failureClusters: [],
+        audits: {
+          responseCompositionAudit: { ok: true },
+          actorialRealizationAudit: { ok: true },
+          responseConfigurationAudit: { realization_rate: 1 },
+        },
+      },
+    })),
+  };
+  const bound = summarizeTutorStubWorkingScreen({ cell, reports: [report], config: loaded.config });
+  assert.equal(bound.drawInventory.ok, true);
+  const drift = structuredClone(report);
+  drift.results[2].learnerProfile = 'diligent';
+  const rejected = summarizeTutorStubWorkingScreen({ cell, reports: [drift], config: loaded.config });
+  assert.deepEqual(rejected.drawInventory.bindingFailures, ['5:3:learner_profile']);
+  assert.equal(rejected.drawInventory.ok, false);
+});
+
+test('working summary reports and hard-gates every declared intervention maximum', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-intervention-gates-'));
+  try {
+    const config = workingConfig(tmp);
+    Object.assign(config.gates_per_cell, {
+      maximum_mechanical_repairs: 0,
+      maximum_model_rewrites: 0,
+      maximum_semantic_recognition_corrections: 0,
+      maximum_transport_normalizations: 0,
+    });
+    const reports = [2, 3, 7, 10].map((turn, index) => ({
+      summary: index === 0
+        ? {
+            mechanicalRepairs: 1,
+            modelRewrites: 1,
+            deterministicFallbacks: 1,
+            transportNormalizedOutputs: 1,
+            transportNormalizationCount: 1,
+          }
+        : {},
+      results: [{
+        turn,
+        draw: 1,
+        latencyMs: 10,
+        deterministicAudit: index === 0
+          ? { audits: { actorialRealizationAudit: { ok: false } } }
+          : null,
+        audit: {
+          ok: true,
+          safetyFailure: false,
+          failureClusters: [],
+          audits: {
+            responseCompositionAudit: { ok: true },
+            actorialRealizationAudit: { ok: true },
+            responseConfigurationAudit: { realization_rate: 1 },
+          },
+        },
+      }],
+    }));
+    const summary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
+    assert.equal(summary.mechanicalRepairs, 1);
+    assert.equal(summary.modelRewrites, 1);
+    assert.equal(summary.deterministicFallbacks, 1);
+    assert.equal(summary.semanticRecognitionCorrections, 1);
+    assert.equal(summary.transportNormalizationCount, 1);
+    assert.equal(summary.gates.mechanicalRepairs, false);
+    assert.equal(summary.gates.modelRewrites, false);
+    assert.equal(summary.gates.fallbacks, false);
+    assert.equal(summary.gates.semanticRecognitionCorrections, false);
+    assert.equal(summary.gates.transportNormalizations, false);
+    assert.equal(summary.status, 'fail');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('development confirmation rejects contaminated prefixes and orchestration drift', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-development-contamination-'));
+  try {
+    const contaminated = confirmationConfig(tmp);
+    fs.appendFileSync(contaminated.matrix[0].source_trace, `${JSON.stringify({
+      type: 'tutor_response_guard_accounting',
+      turn: 4,
+      accounting: { finalDelivery: { source: 'model_rewrite' } },
+    })}\n`);
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: contaminated, root: tmp }),
+      /prior delivery turn inventory|prior non-original tutor delivery/u,
+    );
+
+    const excessive = confirmationConfig(tmp);
+    excessive.execution.maximum_concurrent_remaining_cells = 4;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: excessive, root: tmp }),
+      /remaining development concurrency/u,
+    );
+
+    const duplicateGuard = confirmationConfig(tmp);
+    duplicateGuard.execution.forbid_duplicate_active_or_completed_cells = false;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: duplicateGuard, root: tmp }),
+      /duplicate development cell guard/u,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
 
 function acceptanceGateConfig(turns = 10) {
   return {
@@ -218,6 +558,7 @@ test('joint-performance campaign validation propagates only the explicit v2 repl
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-'));
   try {
     const config = enableJointPerformanceGeneration(workingConfig(tmp));
+    config.gates_per_cell.maximum_transport_normalizations = 1;
     const validation = validateTutorStubFirstDraftCampaign({ config, root: tmp });
     assert.equal(validation.kind, 'working_screen');
     const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
@@ -274,6 +615,7 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-summary-'));
   try {
     const config = enableJointPerformanceGeneration(workingConfig(tmp));
+    config.gates_per_cell.maximum_transport_normalizations = 1;
     const reports = [2, 3, 7, 10].map((turn, index) => {
       const entries = index === 0
         ? [{ surface: 'First public source.' }, { surface: 'Second public source.' }]

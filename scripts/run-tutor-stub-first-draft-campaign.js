@@ -9,10 +9,14 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import {
+  acquireTutorStubFirstDraftCellClaim,
   assessTutorStubAcceptanceCell,
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
+  releaseTutorStubFirstDraftCellClaim,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftInterruptedCellResult,
+  tutorStubFirstDraftDevelopmentExecutionPlan,
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftIterationStopping,
   tutorStubFirstDraftUnexpectedIterationArtifacts,
@@ -139,31 +143,13 @@ function assertFrozenAcceptanceState(frozen) {
 
 async function runWorkingPreflight(config, cellId) {
   console.log(`preflight before ${cellId}: focused deterministic gates and model-free corpus`);
-  await runCommand(['npm', 'run', 'derivation:quality'], { label: `${cellId} world quality` });
-  await runCommand(
-    [
-      process.execPath,
-      '--test',
-      'tests/tutorStubPromptAudit.test.js',
-      'tests/derivationWorldQuality.test.js',
-      'tests/tutorStubFrozenReplay.test.js',
-      'tests/tutorStubFirstDraftContract.test.js',
-      'tests/tutorStubStructuredFirstDraft.test.js',
-      ...(config.fixed_configuration?.joint_performance_generation === true
-        ? [
-            'tests/tutorStubJointPerformanceFirstDraft.test.js',
-            'tests/tutorStubV27JointPerformanceCalibration.test.js',
-          ]
-        : []),
-      'tests/tutorStubResponseComposition.test.js',
-      'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
-      'tests/tutorStubV25RecognitionFixture.test.js',
-      'services/__tests__/tutorStubPerformanceObligationContract.test.js',
-      'services/__tests__/tutorStubPerformanceAdjudication.test.js',
-      'services/__tests__/tutorStubResponseConfiguration.test.js',
-    ],
-    { label: `${cellId} focused tests` },
-  );
+  const worldQuality = String(config.preflight?.world_quality || '').trim();
+  const focusedTests = String(config.preflight?.focused_tests || '').trim();
+  if (!worldQuality || !focusedTests) {
+    throw new Error('working preflight must declare world_quality and focused_tests commands');
+  }
+  await runCommand(['/bin/sh', '-lc', worldQuality], { label: `${cellId} world quality` });
+  await runCommand(['/bin/sh', '-lc', focusedTests], { label: `${cellId} focused tests` });
   for (const fixture of config.preflight?.model_free_fixtures || []) {
     await runCommand(
       [
@@ -219,7 +205,9 @@ function replayWorkingStoppingHistory({ artifactRoot, throughIteration, maximum 
   return previous;
 }
 
-async function runDevelopment(plan, config, iteration) {
+async function runDevelopment(plan, loaded, iteration) {
+  const config = loaded.config;
+  const configSha256 = sha256File(loaded.configPath);
   const maximumConsecutiveWithoutImprovement =
     config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
   const previousMetrics = replayWorkingStoppingHistory({
@@ -242,39 +230,115 @@ async function runDevelopment(plan, config, iteration) {
       );
     }
   }
+  async function runCell(cell, { stopWhenImpossible = true } = {}) {
+    if (fs.existsSync(cell.outputDir) && fs.readdirSync(cell.outputDir).length) {
+      throw new Error(`${cell.id} already has artifacts; refusing to duplicate a development cell`);
+    }
+    const { claimPath } = acquireTutorStubFirstDraftCellClaim({
+      outputDir: cell.outputDir,
+      cellId: cell.id,
+      seed: cell.seed,
+      configSha256,
+      sourceTraceSha256: cell.sourceTraceSha256,
+      expectedInventory: cell.turns.flatMap((turn) =>
+        Array.from(
+          { length: Number(config.fixed_configuration?.draws_per_turn || 1) },
+          (_, index) => ({ turn: Number(turn), draw: index + 1 }),
+        ),
+      ),
+    });
+    let completedNormally = false;
+    try {
+      if (fs.existsSync(cell.outputDir) && fs.readdirSync(cell.outputDir).length) {
+        releaseTutorStubFirstDraftCellClaim(claimPath);
+        throw new Error(`${cell.id} acquired a claim but artifacts appeared; refusing to duplicate a development cell`);
+      }
+      const reports = [];
+      for (const command of cell.commands) {
+        await runCommand(command.argv, { label: `${cell.id} frozen turn ${command.turn}` });
+        reports.push(readJson(command.outputPath));
+        const interim = summarizeTutorStubWorkingScreen({ cell, reports, config });
+        console.log(
+          `${cell.id}: ${interim.originalCandidatesAccepted}/${interim.completedTurns} originals; ` +
+            `maximum possible ${interim.possibility.maximumPossibleAccepted}/${interim.possibility.required}; ` +
+            `configuration ${Number(interim.meanConfigurationRealization || 0).toFixed(3)} ` +
+            `(maximum ${Number(interim.possibility.configurationRealization.maximumPossibleMean || 0).toFixed(3)})`,
+        );
+        if (stopWhenImpossible && !args['complete-all-cells'] && !interim.possibility.possible) break;
+      }
+      const summary = summarizeTutorStubWorkingScreen({ cell, reports, config });
+      completedNormally = true;
+      return { ...summary, seedDisposition: reports.length ? 'consumed_development' : 'unconsumed' };
+    } finally {
+      if (completedNormally) releaseTutorStubFirstDraftCellClaim(claimPath);
+    }
+  }
+
+  async function runCellCaptured(cell, options) {
+    try {
+      return await runCell(cell, options);
+    } catch (error) {
+      const reportPath = cell.commands
+        ?.map((command) => command.outputPath)
+        .find((candidate) => fs.existsSync(candidate)) || cell.commands?.[0]?.outputPath || null;
+      return tutorStubFirstDraftInterruptedCellResult({ cell, reportPath, error });
+    }
+  }
+
   const cellResults = [];
-  let campaignStopped = false;
-  for (const cell of plan.cells) {
-    if (campaignStopped) {
-      cellResults.push({
+  if (config.execution) {
+    const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
+    await runWorkingPreflight(config, execution.hardCell.id);
+    const hardResult = await runCellCaptured(execution.hardCell, {
+      stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
+    });
+    cellResults.push(hardResult);
+    if (
+      hardResult.status !== 'pass' &&
+      execution.hardCellMustPassBeforeRemaining &&
+      !args['complete-all-cells']
+    ) {
+      cellResults.push(...execution.remainingCells.map((cell) => ({
         id: cell.id,
         world: cell.world,
         learnerProfile: cell.learnerProfile,
         seed: cell.seed,
         seedDisposition: 'unconsumed',
-        status: 'unstarted_after_required_cell_failure',
+        status: 'unstarted_after_hard_cell_failure',
         completedTurns: 0,
         unstartedTurns: cell.turns,
-      });
-      continue;
-    }
-    await runWorkingPreflight(config, cell.id);
-    const reports = [];
-    for (const command of cell.commands) {
-      await runCommand(command.argv, { label: `${cell.id} frozen turn ${command.turn}` });
-      reports.push(readJson(command.outputPath));
-      const interim = summarizeTutorStubWorkingScreen({ cell, reports, config });
-      console.log(
-        `${cell.id}: ${interim.originalCandidatesAccepted}/${interim.completedTurns} originals; ` +
-          `maximum possible ${interim.possibility.maximumPossibleAccepted}/${interim.possibility.required}; ` +
-          `configuration ${Number(interim.meanConfigurationRealization || 0).toFixed(3)} ` +
-          `(maximum ${Number(interim.possibility.configurationRealization.maximumPossibleMean || 0).toFixed(3)})`,
+      })));
+    } else {
+      const remainingResults = await mapLimit(
+        execution.remainingCells,
+        execution.remainingConcurrency,
+        (cell) => runCellCaptured(cell, {
+          stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
+        }),
       );
-      if (!args['complete-all-cells'] && !interim.possibility.possible) break;
+      cellResults.push(...remainingResults);
     }
-    const summary = summarizeTutorStubWorkingScreen({ cell, reports, config });
-    cellResults.push({ ...summary, seedDisposition: reports.length ? 'consumed_development' : 'unconsumed' });
-    if (!args['complete-all-cells'] && summary.status !== 'pass') campaignStopped = true;
+  } else {
+    let campaignStopped = false;
+    for (const cell of plan.cells) {
+      if (campaignStopped) {
+        cellResults.push({
+          id: cell.id,
+          world: cell.world,
+          learnerProfile: cell.learnerProfile,
+          seed: cell.seed,
+          seedDisposition: 'unconsumed',
+          status: 'unstarted_after_required_cell_failure',
+          completedTurns: 0,
+          unstartedTurns: cell.turns,
+        });
+        continue;
+      }
+      await runWorkingPreflight(config, cell.id);
+      const summary = await runCellCaptured(cell);
+      cellResults.push(summary);
+      if (!args['complete-all-cells'] && summary.status !== 'pass') campaignStopped = true;
+    }
   }
   const status =
     cellResults.length === plan.cells.length && cellResults.every((cell) => cell.status === 'pass') ? 'pass' : 'fail';
@@ -292,9 +356,18 @@ async function runDevelopment(plan, config, iteration) {
       (sum, cell) => sum + Number(cell.semanticRecognitionCorrections || 0),
       0,
     ),
-    mechanicalRepairs: 0,
-    modelRewrites: 0,
-    deterministicFallbacks: 0,
+    mechanicalRepairs: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.mechanicalRepairs || 0),
+      0,
+    ),
+    modelRewrites: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.modelRewrites || 0),
+      0,
+    ),
+    deterministicFallbacks: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.deterministicFallbacks || 0),
+      0,
+    ),
     transportNormalizedOutputs: cellResults.reduce(
       (sum, cell) => sum + Number(cell.transportNormalizedOutputs || 0),
       0,
@@ -495,7 +568,7 @@ async function main() {
   let result;
   if (mode === 'development') {
     if (plan.kind !== 'working_screen') throw new Error('development mode requires a working-screen config');
-    result = await runDevelopment(plan, loaded.config, iteration);
+    result = await runDevelopment(plan, loaded, iteration);
   } else {
     if (plan.kind !== 'acceptance') throw new Error('acceptance mode requires a held-out generalization config');
     result = await runAcceptance(plan, loaded.config, loaded);
