@@ -55,6 +55,10 @@ export function tutorStubFirstDraftCampaignValidationArtifactPath({
   return path.join(root, 'campaign-validation.json');
 }
 
+export function tutorStubFirstDraftUnexpectedIterationArtifacts(entries = []) {
+  return entries.filter((entry) => String(entry || '') !== 'campaign-validation.json');
+}
+
 function workingScreen(config) {
   return config?.schema === 'machinespirits.tutor-stub.first-draft-working-screen.v1';
 }

@@ -15,6 +15,7 @@ import {
   summarizeTutorStubWorkingScreen,
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftIterationStopping,
+  tutorStubFirstDraftUnexpectedIterationArtifacts,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -232,7 +233,9 @@ async function runDevelopment(plan, config, iteration) {
     );
   }
   if (fs.existsSync(plan.iterationRoot)) {
-    const existing = fs.readdirSync(plan.iterationRoot);
+    const existing = tutorStubFirstDraftUnexpectedIterationArtifacts(
+      fs.readdirSync(plan.iterationRoot),
+    );
     if (existing.length) {
       throw new Error(
         `iteration ${iteration} already has artifacts at ${plan.iterationRoot}; refusing to duplicate live draws`,

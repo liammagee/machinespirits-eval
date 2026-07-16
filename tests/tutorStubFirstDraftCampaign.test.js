@@ -11,6 +11,7 @@ import {
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftGatePossibility,
   tutorStubFirstDraftIterationStopping,
+  tutorStubFirstDraftUnexpectedIterationArtifacts,
   tutorStubStrictOriginalCandidateAccepted,
   validateTutorStubFirstDraftCampaign,
 } from '../services/tutorStubFirstDraftCampaign.js';
@@ -145,6 +146,18 @@ test('development validation artifacts are immutable per iteration while dry val
   assert.throws(
     () => tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'unknown', iteration: 1 }),
     /unsupported campaign mode/u,
+  );
+  assert.deepEqual(
+    tutorStubFirstDraftUnexpectedIterationArtifacts(['campaign-validation.json']),
+    [],
+  );
+  assert.deepEqual(
+    tutorStubFirstDraftUnexpectedIterationArtifacts([
+      'campaign-validation.json',
+      'marrick_v27_joint_performance',
+      'working-screen-result.json',
+    ]),
+    ['marrick_v27_joint_performance', 'working-screen-result.json'],
   );
 });
 
