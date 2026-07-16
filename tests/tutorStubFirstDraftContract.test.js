@@ -55,7 +55,7 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   ]);
   assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
   assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
-  assert.match(prompt, /ACT \+ ENACT —[\s\S]*perform it as keeper of the trial-book/iu);
+  assert.match(prompt, /DEVELOP —[\s\S]*Perform one mandatory development beat as keeper of the trial-book/iu);
   assert.match(
     prompt,
     /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
@@ -69,10 +69,7 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.match(prompt, /do not write “the clerk reads”/iu);
   assert.equal(prompt.split(clue).length - 1, 1);
   assert.match(prompt, /END — State the due evidence first, then ask what it changes/iu);
-  assert.match(prompt, /RETURN — End the clue performance with one direct learner-facing question/iu);
-  assert.match(prompt, /final inquiry sentence must contain a question mark/iu);
-  assert.match(prompt, /ENTRY — Enter through concrete first-person action/iu);
-  assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|PROP) —/u);
+  assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|ENTRY|PROP|RETURN) —/u);
   assert.doesNotMatch(prompt, /release schedule|premise id|rule id|concealed answer/iu);
 });
 
@@ -163,7 +160,7 @@ test('a saturated shared-scene turn still receives one executable host-and-tacti
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.match(prompt, /ACT \+ ENACT —[\s\S]*perform it as fellow investigator/iu);
+  assert.match(prompt, /DEVELOP —[\s\S]*Perform one mandatory development beat as fellow investigator/iu);
   assert.match(prompt, /I make room for you beside \[named public object\]/u);
   assert.match(prompt, /Make room beside a named public object for the learner/iu);
   assert.match(prompt, /introduce no new prop/iu);
@@ -277,9 +274,11 @@ test('a request for the next written entry must be answered before the dramatic 
   assert.equal(contract.opening.writable_entry_requested, true);
   assert.match(prompt, /Begin exactly with “Write:”/u);
   assert.match(prompt, /only then perform the selected development beat/iu);
-  assert.match(prompt, /Tutor-only typed performance obligations/u);
-  assert.match(prompt, /Make the already-public claim, shortcut, or judgment being tested identifiable/u);
-  assert.match(prompt, /Put the public evidence that tests or resists that pressure/u);
+  assert.match(prompt, /COUNTERPRESSURE PAIR/u);
+  assert.match(prompt, /TARGET — The easy answer sends every glider by the direct route\./u);
+  assert.match(prompt, /CONTRARY EVIDENCE — The route board closes the direct crossing\./u);
+  assert.equal(prompt.split('The easy answer sends every glider by the direct route.').length - 1, 1);
+  assert.equal(prompt.split('The route board closes the direct crossing.').length - 1, 1);
   assert.doesNotMatch(prompt, /use the verb “breaks”/u);
 });
 

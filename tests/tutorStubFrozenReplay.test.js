@@ -69,7 +69,7 @@ test('frozen replay fixtures retain the exact public prefix and original speaker
   }
 });
 
-test('frozen screens recompile the current typed performance contract without changing the public prefix', () => {
+test('frozen screens recompile the current single-development contract without changing the public prefix', () => {
   const fixture = readFixture(FIXTURE_PATHS[0]);
   const original = fixture.cases[0].bundle;
   const refreshed = refreshTutorStubFrozenFirstDraftRequest({
@@ -80,7 +80,9 @@ test('frozen screens recompile the current typed performance contract without ch
   assert.deepEqual(refreshed.priorTurns, original.priorTurns);
   assert.deepEqual(refreshed.publicPremiseIds, original.publicPremiseIds);
   assert.equal(refreshed.performanceObligationContract.complete, true);
-  assert.match(refreshed.request.messages.at(-1).content, /Tutor-only typed performance obligations/u);
+  assert.match(refreshed.request.messages.at(-1).content, /DEVELOP —/u);
+  assert.doesNotMatch(refreshed.request.messages.at(-1).content, /ACT \+ ENACT|ENTRY —|RETURN —/u);
+  assert.deepEqual(refreshed.speakingResponseConfiguration, original.selectedResponseConfiguration);
   assert.doesNotMatch(refreshed.request.messages.at(-1).content, /use the verb “breaks”/u);
   const semanticPromptAudit = auditTutorStubPrompt({
     surface: 'performance_adjudication',
@@ -92,6 +94,36 @@ test('frozen screens recompile the current typed performance contract without ch
     instructionTexts: [tutorStubPerformanceAdjudicationSystemPrompt()],
   });
   assert.equal(semanticPromptAudit.ok, true);
+});
+
+test('frozen counterpressure never binds the learner Write question as its public target', () => {
+  const fixture = readFixture(FIXTURE_PATHS[0]);
+  const source = fixture.cases.find(
+    (entry) => entry.bundle.selectedResponseConfiguration?.actorial_performance?.id === 'dramatic_counterpressure',
+  );
+  assert.ok(source);
+  const refreshed = refreshTutorStubFrozenFirstDraftRequest({
+    bundle: source.bundle,
+    world: worldForId(source.bundle.worldId),
+  });
+  const pair = refreshed.performanceObligationContract.pressure_pair;
+
+  assert.notEqual(pair?.target_span, source.bundle.learnerText);
+  assert.doesNotMatch(pair?.target_span || '', /\?/u);
+  if (pair) {
+    assert.match(refreshed.request.messages.at(-1).content, /COUNTERPRESSURE PAIR/u);
+    assert.equal(
+      refreshed.request.messages.at(-1).content.split(pair.target_span).length - 1,
+      1,
+    );
+  } else {
+    assert.equal(refreshed.performanceObligationContract.tactic_applicability.applicable, false);
+    assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'evidentiary_boundary');
+    assert.equal(
+      refreshed.speakingResponseConfiguration.actorial_part,
+      source.bundle.selectedResponseConfiguration.actorial_part,
+    );
+  }
 });
 
 test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {

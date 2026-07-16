@@ -177,7 +177,6 @@ import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.j
 import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
-  parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
   repairTutorStubMissingActorialPart,
   repairTutorStubUnanswerableOpenRecall,
@@ -186,7 +185,6 @@ import {
   tutorStubGuardDeliveryDecision,
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
-  tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
   tutorStubSimplifiedRecoveryPrompt,
 } from '../services/tutorStubGuardRecovery.js';
 import {
@@ -1906,6 +1904,7 @@ function auditTutorResponseLeak({
 
 function tutorResponseRecoveryPrompt({
   publicPacket = [],
+  hardIssues = [],
   leakAudit = null,
   scaffoldAudit = null,
   questionSupportAudit = null,
@@ -1917,7 +1916,6 @@ function tutorResponseRecoveryPrompt({
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
-  policyContractPrompt = '',
   minimalRecoveryPrompt = '',
 }) {
   const partCue = {
@@ -1946,38 +1944,54 @@ function tutorResponseRecoveryPrompt({
           `${index + 1}. ${guard}:${issue.type}${includeReason && issue.reason ? ` - ${issue.reason}` : ''}`,
       )
       .join('\n');
+  const hardIssueKeys = new Set(
+    (hardIssues || []).map((issue) => `${issue.guard || ''}:${issue.type || ''}`),
+  );
+  const hardFor = (guard, issues) =>
+    (issues || []).filter((issue) => hardIssueKeys.has(`${guard}:${issue.type || ''}`));
   // Leak reasons can contain a concealed answer term. The recovery model needs
   // the failure class, not the private string that triggered it.
-  const leakRows = rows('leak', leakAudit?.leaks, { includeReason: false });
-  const scaffoldRows = rows('human_scaffold', scaffoldAudit?.issues);
-  const questionSupportRows = rows('question_support', questionSupportAudit?.issues);
-  const dramaticReleaseRows = rows('dramatic_release', dramaticReleaseAudit?.issues);
-  const actorialRealizationRows = rows('actorial_realization', actorialRealizationAudit?.issues);
-  const missingConfigurationAxes = Object.entries(responseConfigurationAudit?.axes || {})
-    .filter(([axis, value]) => axis !== 'actorial_part' && value?.visible !== true)
-    .map(([axis]) => axis);
-  const responseCompositionRows = rows('response_composition', responseCompositionAudit?.issues);
-  const repetitionRows = rows('repetition', repetitionAudit?.issues);
-  const closureRows = rows('dialogue_closure', closureAudit?.issues);
+  const leakIssues = hardFor('leak', leakAudit?.leaks);
+  const scaffoldIssues = hardFor('human_scaffold', scaffoldAudit?.issues);
+  const questionSupportIssues = hardFor('question_support', questionSupportAudit?.issues);
+  const dramaticReleaseIssues = hardFor('dramatic_release', dramaticReleaseAudit?.issues);
+  const actorialRealizationIssues = hardFor('actorial_realization', actorialRealizationAudit?.issues);
+  const responseCompositionIssues = hardFor('response_composition', responseCompositionAudit?.issues);
+  const repetitionIssues = hardFor('repetition', repetitionAudit?.issues);
+  const closureIssues = hardFor('dialogue_closure', closureAudit?.issues);
+  const leakRows = rows('leak', leakIssues, { includeReason: false });
+  const scaffoldRows = rows('human_scaffold', scaffoldIssues);
+  const questionSupportRows = rows('question_support', questionSupportIssues);
+  const dramaticReleaseRows = rows('dramatic_release', dramaticReleaseIssues);
+  const actorialRealizationRows = rows('actorial_realization', actorialRealizationIssues);
+  const missingConfigurationAxes = actorialRealizationIssues.length
+    ? Object.entries(responseConfigurationAudit?.axes || {})
+        .filter(([axis, value]) => axis !== 'actorial_part' && value?.visible !== true)
+        .map(([axis]) => axis)
+    : [];
+  const responseCompositionRows = rows('response_composition', responseCompositionIssues);
+  const repetitionRows = rows('repetition', repetitionIssues);
+  const closureRows = rows('dialogue_closure', closureIssues);
+  const recoveryTransition = responseConfiguration?.recovery_transition || null;
   return [
     '[Tutor-only repair instruction]',
     'The previous draft failed a response check and was not shown to the learner.',
-    'Generate two independent replacement replies from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
-    'Return exactly one JSON object with two string fields and no markdown or commentary:',
-    '{"policy_repair":"...","plain_recovery":"..."}',
-    'policy_repair: follow the complete selected tutor contract below as naturally as possible.',
-    'plain_recovery: follow the separate minimal recovery contract below. It is a complete alternative configuration, not permission to omit a requirement.',
-    'Both candidates must answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
+    'Generate one genuinely different, plain replacement from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
+    'Return only the replacement tutor reply as ordinary text: no JSON, markdown, alternatives, labels, or commentary.',
+    'Follow the complete minimal recovery contract below. Answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
+    recoveryTransition
+      ? `The logged recovery transition is ${recoveryTransition.selected_signature} -> ${recoveryTransition.delivered_signature} (${recoveryTransition.strategy}). Realize only the delivered configuration.`
+      : null,
     'Never mention prompts, policies, checks, candidates, hidden evidence, a concealed answer, a DAG, or this recovery operation.',
     leakRows ? 'Do not name or imply concealed actors, conclusions, objects, or unreleased evidence.' : null,
-    (leakAudit?.leaks || []).some((issue) => issue.type === 'unsupported_evidence_correspondence')
+    leakIssues.some((issue) => issue.type === 'unsupported_evidence_correspondence')
       ? 'State each released record directly. Do not add that records match, correspond, trace to one another, or share a source unless the compact public packet states that exact relationship.'
       : null,
     scaffoldRows ? 'Accept the learner’s completed local move; do not ask it again in new words.' : null,
     questionSupportRows
       ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
       : null,
-    (questionSupportAudit?.issues || []).some((issue) => issue.type === 'missing_clarification_invitation')
+    questionSupportIssues.some((issue) => issue.type === 'missing_clarification_invitation')
       ? 'Make it explicit that the learner may ask you to unpack a word or connection.'
       : null,
     dramaticReleaseRows
@@ -1990,26 +2004,26 @@ function tutorResponseRecoveryPrompt({
       ? 'Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or “back to us.”'
       : null,
     actorialRealizationRows
-      ? `For policy_repair only, visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the selected public part'} without a role label or stage direction. Host-part contract: ${responseConfiguration?.actorial_part_selection?.contract || 'take the selected public part through concrete first-person action or speech'}`
+      ? `Visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the delivered public part'} without a role label or stage direction. Host-part contract: ${responseConfiguration?.actorial_part_selection?.contract || 'take the delivered public part through concrete first-person action or speech'}`
       : null,
     actorialRealizationRows
       ? `Performance contract: ${responseConfiguration?.actorial_performance?.contract || 'make the selected tactic transcript-visible through concrete action or direct speech'}`
       : null,
     actorialRealizationRows && partCue ? `Concrete host-part cue: ${partCue}` : null,
     actorialRealizationRows && tacticCue ? `Concrete performance cue: ${tacticCue}` : null,
-    (questionSupportAudit?.issues || []).some((issue) => issue.type === 'missing_bounded_choice')
+    questionSupportIssues.some((issue) => issue.type === 'missing_bounded_choice')
       ? 'Ask an unmistakable two-way public choice, for example “Which should we test first: A) this public clue, or B) that public clue?” Do not disguise the choice as another open recall question.'
       : null,
     missingConfigurationAxes.length
-      ? `For policy_repair, also make these selected configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`
+      ? `Make these delivered configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`
       : null,
     responseCompositionRows
       ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
       : null,
-    (responseCompositionAudit?.issues || []).some((issue) => issue.type === 'resolved_point_reopened')
+    responseCompositionIssues.some((issue) => issue.type === 'resolved_point_reopened')
       ? 'The learner already answered the immediately preceding local question. Credit or qualify that answer once, then move to a genuinely new public clue or implication; do not ask the same distinction again.'
       : null,
-    (responseCompositionAudit?.issues || []).some((issue) => issue.type === 'unsupported_endorsement_request')
+    responseCompositionIssues.some((issue) => issue.type === 'unsupported_endorsement_request')
       ? 'Do not ask the learner to endorse a stronger proposition than their answer and the public evidence support.'
       : null,
     responseConfiguration?.surface_budgets?.max_average_sentence_words
@@ -2027,7 +2041,6 @@ function tutorResponseRecoveryPrompt({
     closureRows && !dialogueClosureFrame?.allowCheckIn
       ? 'Do not ask any question. This is the terminal tutor turn.'
       : null,
-    policyContractPrompt,
     minimalRecoveryPrompt,
     '',
     '[Compact public recovery packet]',
@@ -2251,16 +2264,17 @@ function exactTutorRepairSpans(originalText, repairedText) {
 
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
   const text = String(response?.text || '');
+  const recoveryMetadata = response?.recoveryStrategy || response?.recoveryBatch || null;
   const generation = {
     callId: response?.guardCallId || null,
     role: response?.guardRole || null,
     latencyMs: Number(response?.latencyMs || 0),
     usage: response?.usage ? jsonClone(response.usage) : null,
     tokenUsageAvailable: response?.tokenUsageAvailable ?? null,
-    ...(response?.recoveryBatch
+    ...(recoveryMetadata
       ? {
           candidateKind: response.recoveryCandidateKind || kind,
-          ...response.recoveryBatch,
+          ...recoveryMetadata,
         }
       : {}),
   };
@@ -2343,6 +2357,8 @@ function buildTutorGuardAccounting({
       source: finalSource,
       provider: response?.provider || null,
       model: response?.model || null,
+      deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
+      configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
       deterministicFallback: Boolean(response?.deterministicFallback),
       deterministicClosure: Boolean(response?.deterministicClosure),
       candidate: {
@@ -9822,7 +9838,13 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
       mechanicalRepairTurns += 1;
     }
     if (row.attempts?.[0]?.guardedSpans?.length) guardTriggeredTurns += 1;
-    if (row.repairsApplied?.some((repair) => repair.kind === 'model_rewrite')) modelRepairTurns += 1;
+    if (
+      row.repairsApplied?.some((repair) =>
+        ['model_rewrite', 'model_plain_recovery'].includes(repair.kind),
+      )
+    ) {
+      modelRepairTurns += 1;
+    }
     if (delivery === 'deterministic_fallback') deterministicFallbackTurns += 1;
     repairActions += row.repairsApplied?.length || 0;
     if (row.finalDelivery?.auditOk === false) finalDeliveryAuditFailures += 1;
@@ -10190,7 +10212,6 @@ async function callTutor({
         publicTurn: {
           visibility: 'public',
           learner_move: learnerText,
-          pressure_target: learnerText,
           public_claims: [
             ...context.slice(-4).map((message) => message.content),
             learnerText,
@@ -10199,6 +10220,20 @@ async function callTutor({
           due_evidence: duePublicEvidence,
         },
       });
+  const speakingResponseConfiguration =
+    performanceObligationContract?.tactic_applicability?.applicable === false
+      ? {
+          ...structuredClone(responseConfiguration || {}),
+          actorial_performance: structuredClone(
+            performanceObligationContract.selection?.actorial_performance ||
+              responseConfiguration?.actorial_performance ||
+              {},
+          ),
+          speaking_transition: structuredClone(
+            performanceObligationContract.selection?.speaking_transition || null,
+          ),
+        }
+      : responseConfiguration;
   const firstDraftHumanDiscourseAdvisory = passthrough
     ? null
     : humanDiscourseTutorContext(humanDiscourseFrame, {
@@ -10221,7 +10256,7 @@ async function callTutor({
     ? null
     : buildTutorStubFirstDraftContract({
         learnerText,
-        responseConfiguration,
+        responseConfiguration: speakingResponseConfiguration,
         responseCompositionFrame,
         dramaticReleaseFrame,
         questionSupport: humanDiscourseFrame?.questionSupport || null,
@@ -10633,7 +10668,7 @@ async function callTutor({
     return response;
   }
 
-  function auditTutorDraft(response, { role, attempt, auditConfiguration = responseConfiguration }) {
+  function auditTutorDraft(response, { role, attempt, auditConfiguration = speakingResponseConfiguration }) {
     let responseCompositionAudit = responseCompositionGuardEnabled
       ? auditTutorStubResponseComposition({
           text: response.text,
@@ -10700,8 +10735,9 @@ async function callTutor({
       active: false,
     };
     response.deliveryResponseConfiguration = jsonClone(auditConfiguration || null);
-    response.responseConfigurationTransition =
-      auditConfiguration?.recovery_transition ? jsonClone(auditConfiguration.recovery_transition) : null;
+    response.responseConfigurationTransition = jsonClone(
+      auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
+    );
     const repetitionAudit = repetitionGuardEnabled
       ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
       : { ok: true, issues: [], maxSimilarity: 0 };
@@ -10919,16 +10955,16 @@ async function callTutor({
     return response;
   }
 
-  function tutorResponseFromRecoveryBatch(batchResponse, text, candidateKind, recoveryBatch) {
+  function tutorResponseFromSimplifiedRecovery(recoveryResponse, text, candidateKind) {
     return {
-      ...batchResponse,
+      ...recoveryResponse,
       text,
       recoveryCandidateKind: candidateKind,
-      recoveryBatch: {
-        schema: recoveryBatch.schema,
-        parseMode: recoveryBatch.parseMode,
-        parsed: recoveryBatch.ok,
-        error: recoveryBatch.error,
+      recoveryStrategy: {
+        schema: 'machinespirits.tutor-stub.guard-recovery.v1',
+        parseMode: 'single_plain_text',
+        parsed: Boolean(String(text || '').trim()),
+        error: String(text || '').trim() ? null : 'empty simplified recovery candidate',
       },
     };
   }
@@ -11011,7 +11047,7 @@ async function callTutor({
     const hostPartRepair = repairTutorStubMissingActorialPart({
       text: response.text,
       deliveryDecision: audits.deliveryDecision,
-      responseConfiguration,
+      responseConfiguration: speakingResponseConfiguration,
       responseComposition: audits.responseCompositionAudit?.segments,
     });
     if (hostPartRepair.changed) {
@@ -11094,7 +11130,7 @@ async function callTutor({
     // every safe speaking advisory avoided that leak but made late-turn repair
     // calls unnecessarily large and prone to CLI timeouts.
     const simplifiedRecoveryConfiguration = buildTutorStubSimplifiedRecoveryConfiguration(
-      responseConfiguration,
+      speakingResponseConfiguration,
       { closureRequired: dialogueClosureFrame?.mandatory === true },
     );
     const minimalRecoveryPrompt = tutorStubSimplifiedRecoveryPrompt({
@@ -11120,40 +11156,40 @@ async function callTutor({
     const publicRecoveryPacket = [...publicRecoveryMachinePacket, learnerPrompt];
     const recoveryPrompt = tutorResponseRecoveryPrompt({
       publicPacket: publicRecoveryPacket,
+      hardIssues: audits.deliveryDecision?.hardIssues || [],
       leakAudit: audits.leakAudit,
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: audits.questionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
       actorialRealizationAudit: audits.actorialRealizationAudit,
       responseConfigurationAudit: audits.responseConfigurationAudit,
-      responseConfiguration,
+      responseConfiguration: simplifiedRecoveryConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
-      policyContractPrompt: firstDraftContractAdvisory,
       minimalRecoveryPrompt,
     });
     const recoveryControlPrompt = tutorResponseRecoveryPrompt({
       publicPacket: [],
+      hardIssues: audits.deliveryDecision?.hardIssues || [],
       leakAudit: audits.leakAudit,
       scaffoldAudit: audits.scaffoldAudit,
       questionSupportAudit: audits.questionSupportAudit,
       dramaticReleaseAudit: audits.dramaticReleaseAudit,
       actorialRealizationAudit: audits.actorialRealizationAudit,
       responseConfigurationAudit: audits.responseConfigurationAudit,
-      responseConfiguration,
+      responseConfiguration: simplifiedRecoveryConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
-      policyContractPrompt: firstDraftContractAdvisory,
       minimalRecoveryPrompt,
     });
     const recoveryPrivilegeAdvisory = [recoveryControlPrompt, ...publicRecoveryMachinePacket]
       .filter(Boolean)
       .join('\n\n');
-    const recoveryBatchResponse = await invokeTutorAttempt({
+    const simplifiedRecoveryResponse = await invokeTutorAttempt({
       attemptUserPrompt: recoveryPrompt,
       role: `${roleBase}_recovery`,
       streamMode: canStreamTutor ? 'buffered' : 'none',
@@ -11162,55 +11198,61 @@ async function callTutor({
       instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
       privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
     });
-    const recoveryBatch = parseTutorStubGuardRecoveryCandidates(recoveryBatchResponse.text);
+    const recoveryCandidate = {
+      schema: 'machinespirits.tutor-stub.guard-recovery.v1',
+      ok: Boolean(String(simplifiedRecoveryResponse.text || '').trim()),
+      parseMode: 'single_plain_text',
+      text: String(simplifiedRecoveryResponse.text || '').trim(),
+      error: String(simplifiedRecoveryResponse.text || '').trim()
+        ? null
+        : 'empty simplified recovery candidate',
+    };
     appendTraceEvent(trace, {
-      type: 'tutor_response_recovery_candidates',
+      type: 'tutor_response_recovery_candidate',
       role: `${roleBase}_recovery`,
       turn: tutorTurn,
       modelCallCount: 1,
       parse: {
-        schema: recoveryBatch.schema,
-        ok: recoveryBatch.ok,
-        mode: recoveryBatch.parseMode,
-        error: recoveryBatch.error,
+        schema: recoveryCandidate.schema,
+        ok: recoveryCandidate.ok,
+        mode: recoveryCandidate.parseMode,
+        error: recoveryCandidate.error,
       },
-      candidates: [
-        { kind: 'policy_repair_candidate', text: recoveryBatch.policyRepair },
-        recoveryBatch.plainRecovery
-          ? { kind: 'plain_recovery_candidate', text: recoveryBatch.plainRecovery }
-          : null,
-      ].filter(Boolean),
+      recoveryTransition: simplifiedRecoveryConfiguration.recovery_transition,
+      failedHardChecks: audits.deliveryDecision?.hardIssues || [],
+      candidate: { kind: 'plain_recovery_candidate', text: recoveryCandidate.text },
     });
 
-    response = tutorResponseFromRecoveryBatch(
-      recoveryBatchResponse,
-      recoveryBatch.policyRepair,
-      'policy_repair_candidate',
-      recoveryBatch,
+    response = tutorResponseFromSimplifiedRecovery(
+      simplifiedRecoveryResponse,
+      recoveryCandidate.text,
+      'plain_recovery_candidate',
     );
-    const policyRepairDraftAudits = auditTutorDraft(response, {
-      role: `${roleBase}_policy_repair`,
+    const plainRecoveryDraftAudits = auditTutorDraft(response, {
+      role: `${roleBase}_plain_recovery`,
       attempt: 1,
+      auditConfiguration: simplifiedRecoveryConfiguration,
     });
     audits = withTutorDeliveryDecision(
-      policyRepairDraftAudits,
+      plainRecoveryDraftAudits,
       {
-        allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
-          policyRepairDraftAudits.actorialRealizationAudit,
-          policyRepairDraftAudits.responseConfigurationAudit,
-        ),
-        advisoryReason:
-          'the model recovery performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
-        role: `${roleBase}_policy_repair`,
+        allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
+          loopMode: state?.loopMode,
+          learnerRequestedPlainStyle,
+        }),
+        advisoryReason: learnerRequestedPlainStyle
+          ? 'explicit learner style request outranks optional actorial realization'
+          : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
+        role: `${roleBase}_plain_recovery`,
         attempt: 1,
       },
     );
-    const policyRepairResponse = response;
-    const policyRepairAudits = audits;
+    const plainRecoveryResponse = response;
+    const plainRecoveryAudits = audits;
     const modelRepairSpans = exactTutorRepairSpans(attempts[0].candidate.text, response.text);
     attempts.push(
       tutorGuardAttemptEnvelope({
-        kind: 'policy_repair_candidate',
+        kind: 'plain_recovery_candidate',
         attempt: 1,
         response,
         audits,
@@ -11218,16 +11260,19 @@ async function callTutor({
       }),
     );
     repairsApplied.push({
-      kind: 'model_rewrite',
+      kind: 'model_plain_recovery',
       fromAttempt: 0,
       toAttempt: 1,
       triggeredBy: firstRepairTriggers,
       guardedSpans: attempts[0].guardedSpans,
       repairedSpans: modelRepairSpans,
+      generatedInSameModelCall: false,
+      recoveryTransition: simplifiedRecoveryConfiguration.recovery_transition,
     });
     if (audits.deliveryOk) {
       attachTutorDraftAudits(response, audits);
       response.repaired = true;
+      response.plainRecovery = true;
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
       }
@@ -11240,13 +11285,13 @@ async function callTutor({
         guards,
         attempts,
         repairsApplied,
-        finalSource: 'policy_repair_candidate',
+        finalSource: 'plain_recovery_candidate',
         finalAudits: audits,
-        outcome: 'guarded_policy_repair_accepted',
+        outcome: 'guarded_plain_recovery_accepted',
       });
     }
 
-    const policyCompositionIssues = (policyRepairAudits?.responseCompositionAudit?.issues || []).filter(
+    const recoveryCompositionIssues = (plainRecoveryAudits?.responseCompositionAudit?.issues || []).filter(
       (issue) =>
         [
           'missing_learner_uptake',
@@ -11254,32 +11299,32 @@ async function callTutor({
           'learner_selected_test_not_acknowledged',
         ].includes(issue.type),
     );
-    const policyDevelopment = String(
-      policyRepairAudits?.responseCompositionAudit?.segments?.development || '',
+    const recoveryDevelopment = String(
+      plainRecoveryAudits?.responseCompositionAudit?.segments?.development || '',
     ).trim();
-    if (firstRepairUptake && policyCompositionIssues.length && policyDevelopment) {
+    if (firstRepairUptake && recoveryCompositionIssues.length && recoveryDevelopment) {
       const compositionRepairAttempt = attempts.length;
       const compositionRepairText = composeTutorStubGuardUptakeDevelopment({
         uptake: firstRepairUptake,
-        development: policyDevelopment,
+        development: recoveryDevelopment,
       });
-      const compositionResponse = tutorResponseFromRecoveryBatch(
-        recoveryBatchResponse,
+      const compositionResponse = tutorResponseFromSimplifiedRecovery(
+        simplifiedRecoveryResponse,
         compositionRepairText,
         'composition_repair_candidate',
-        recoveryBatch,
       );
       const compositionDraftAudits = auditTutorDraft(compositionResponse, {
         role: `${roleBase}_composition_repair`,
         attempt: compositionRepairAttempt,
+        auditConfiguration: simplifiedRecoveryConfiguration,
       });
       const compositionAudits = withTutorDeliveryDecision(
         compositionDraftAudits,
         {
-          allowActorialAdvisory: tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
-            compositionDraftAudits.actorialRealizationAudit,
-            compositionDraftAudits.responseConfigurationAudit,
-          ),
+          allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
+            loopMode: state?.loopMode,
+            learnerRequestedPlainStyle,
+          }),
           advisoryReason:
             'the mechanically recomposed recovery preserves the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
           role: `${roleBase}_composition_repair`,
@@ -11287,7 +11332,7 @@ async function callTutor({
         },
       );
       const compositionRepairSpans = exactTutorRepairSpans(
-        policyRepairResponse.text,
+        plainRecoveryResponse.text,
         compositionRepairText,
       );
       attempts.push(
@@ -11303,7 +11348,7 @@ async function callTutor({
         kind: 'mechanical_composition_repair',
         fromAttempt: 1,
         toAttempt: compositionRepairAttempt,
-        triggeredBy: policyCompositionIssues.map((issue) => ({ guard: 'response_composition', ...issue })),
+        triggeredBy: recoveryCompositionIssues.map((issue) => ({ guard: 'response_composition', ...issue })),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: compositionRepairSpans,
       });
@@ -11338,26 +11383,26 @@ async function callTutor({
     }
 
     const clarificationRepair = repairTutorStubMissingClarificationInvitation({
-      text: policyRepairResponse.text,
-      deliveryDecision: policyRepairAudits.deliveryDecision,
+      text: plainRecoveryResponse.text,
+      deliveryDecision: plainRecoveryAudits.deliveryDecision,
     });
     if (clarificationRepair.changed) {
       const clarificationAttempt = attempts.length;
-      const clarificationResponse = tutorResponseFromRecoveryBatch(
-        recoveryBatchResponse,
+      const clarificationResponse = tutorResponseFromSimplifiedRecovery(
+        simplifiedRecoveryResponse,
         clarificationRepair.text,
         'question_support_repair_candidate',
-        recoveryBatch,
       );
       const clarificationAudits = withTutorDeliveryDecision(
         auditTutorDraft(clarificationResponse, {
           role: `${roleBase}_question_support_repair`,
           attempt: clarificationAttempt,
+          auditConfiguration: simplifiedRecoveryConfiguration,
         }),
         { role: `${roleBase}_question_support_repair`, attempt: clarificationAttempt },
       );
       const clarificationRepairSpans = exactTutorRepairSpans(
-        policyRepairResponse.text,
+        plainRecoveryResponse.text,
         clarificationRepair.text,
       );
       attempts.push(
@@ -11373,7 +11418,7 @@ async function callTutor({
         kind: 'mechanical_clarification_invitation',
         fromAttempt: 1,
         toAttempt: clarificationAttempt,
-        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
+        triggeredBy: tutorStubGuardIssueRows(plainRecoveryAudits),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: clarificationRepairSpans,
       });
@@ -11408,26 +11453,26 @@ async function callTutor({
     }
 
     const openRecallRepair = repairTutorStubUnanswerableOpenRecall({
-      text: policyRepairResponse.text,
-      deliveryDecision: policyRepairAudits.deliveryDecision,
+      text: plainRecoveryResponse.text,
+      deliveryDecision: plainRecoveryAudits.deliveryDecision,
     });
     if (openRecallRepair.changed) {
       const openRecallAttempt = attempts.length;
-      const openRecallResponse = tutorResponseFromRecoveryBatch(
-        recoveryBatchResponse,
+      const openRecallResponse = tutorResponseFromSimplifiedRecovery(
+        simplifiedRecoveryResponse,
         openRecallRepair.text,
         'question_support_repair_candidate',
-        recoveryBatch,
       );
       const openRecallAudits = withTutorDeliveryDecision(
         auditTutorDraft(openRecallResponse, {
           role: `${roleBase}_question_support_repair`,
           attempt: openRecallAttempt,
+          auditConfiguration: simplifiedRecoveryConfiguration,
         }),
         { role: `${roleBase}_question_support_repair`, attempt: openRecallAttempt },
       );
       const openRecallRepairSpans = exactTutorRepairSpans(
-        policyRepairResponse.text,
+        plainRecoveryResponse.text,
         openRecallRepair.text,
       );
       attempts.push(
@@ -11443,7 +11488,7 @@ async function callTutor({
         kind: 'mechanical_unanswerable_open_recall_removal',
         fromAttempt: 1,
         toAttempt: openRecallAttempt,
-        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
+        triggeredBy: tutorStubGuardIssueRows(plainRecoveryAudits),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: openRecallRepairSpans,
       });
@@ -11477,113 +11522,27 @@ async function callTutor({
       }
     }
 
-    let plainRecoveryResponse = null;
-    let plainRecoveryAudits = null;
-    let plainRecoveryAttemptNumber = null;
-    if (recoveryBatch.plainRecovery) {
-      const plainRecoveryAttempt = attempts.length;
-      plainRecoveryAttemptNumber = plainRecoveryAttempt;
-      const plainResponse = tutorResponseFromRecoveryBatch(
-        recoveryBatchResponse,
-        recoveryBatch.plainRecovery,
-        'plain_recovery_candidate',
-        recoveryBatch,
-      );
-      const plainAudits = withTutorDeliveryDecision(
-        auditTutorDraft(plainResponse, {
-          role: `${roleBase}_plain_recovery`,
-          attempt: plainRecoveryAttempt,
-          auditConfiguration: simplifiedRecoveryConfiguration,
-        }),
-        {
-          allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
-            loopMode: state?.loopMode,
-            learnerRequestedPlainStyle,
-          }),
-          advisoryReason: learnerRequestedPlainStyle
-            ? 'explicit learner style request outranks optional actorial realization'
-            : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
-          role: `${roleBase}_plain_recovery`,
-          attempt: plainRecoveryAttempt,
-        },
-      );
-      plainRecoveryResponse = plainResponse;
-      plainRecoveryAudits = plainAudits;
-      const plainRepairSpans = exactTutorRepairSpans(policyRepairResponse.text, plainResponse.text);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'plain_recovery_candidate',
-          attempt: plainRecoveryAttempt,
-          response: plainResponse,
-          audits: plainAudits,
-          repairedSpans: plainRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'model_plain_recovery',
-        fromAttempt: 1,
-        toAttempt: plainRecoveryAttempt,
-        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
-        guardedSpans: attempts[1].guardedSpans,
-        repairedSpans: plainRepairSpans,
-        generatedInSameModelCall: true,
-      });
-      response = plainResponse;
-      audits = plainAudits;
-      if (audits.deliveryOk) {
-        attachTutorDraftAudits(response, audits);
-        response.repaired = true;
-        response.plainRecovery = true;
-        if (response.bufferedStream) {
-          response.guardedStreamReplay = true;
-        }
-        return attachTutorGuardAccounting({
-          response,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'plain_recovery_candidate',
-          finalAudits: audits,
-          outcome: 'guarded_plain_recovery_accepted',
-        });
-      }
-    }
-
     const sourceVoiceRepairBases = [
       {
-        kind: 'policy_repair_candidate',
+        kind: 'plain_recovery_candidate',
         attempt: 1,
-        response: policyRepairResponse,
-        audits: policyRepairAudits,
-        auditConfiguration: responseConfiguration,
+        response: plainRecoveryResponse,
+        audits: plainRecoveryAudits,
+        auditConfiguration: simplifiedRecoveryConfiguration,
       },
-      plainRecoveryResponse
-        ? {
-            kind: 'plain_recovery_candidate',
-            attempt: plainRecoveryAttemptNumber,
-            response: plainRecoveryResponse,
-            audits: plainRecoveryAudits,
-            auditConfiguration: simplifiedRecoveryConfiguration,
-          }
-        : null,
-    ].filter(Boolean);
+    ];
     for (const base of sourceVoiceRepairBases) {
       const mechanical = repairTutorStubThirdPersonSourceLeadIn({
         text: base.response.text,
         dramaticReleaseFrame,
-        responseConfiguration,
+        responseConfiguration: simplifiedRecoveryConfiguration,
       });
       if (!mechanical.changed) continue;
       const sourceRepairAttempt = attempts.length;
-      const sourceResponse = tutorResponseFromRecoveryBatch(
-        recoveryBatchResponse,
+      const sourceResponse = tutorResponseFromSimplifiedRecovery(
+        simplifiedRecoveryResponse,
         mechanical.text,
         'source_voice_repair_candidate',
-        recoveryBatch,
       );
       const sourceAudits = withTutorDeliveryDecision(
         auditTutorDraft(sourceResponse, {
