@@ -25,6 +25,12 @@ import {
 } from '../services/tutorStubPerformanceAdjudication.js';
 import { tutorStubActorialHostSurface } from '../services/tutorStubResponseConfiguration.js';
 import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
+import {
+  applyTutorStubStructuredSlotOwnershipAudit,
+  composeTutorStubStructuredFirstDraft,
+  parseTutorStubStructuredFirstDraft,
+  replaceTutorStubFrozenRequestWithStructuredPrompt,
+} from '../services/tutorStubStructuredFirstDraft.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
@@ -41,6 +47,7 @@ const { values: args } = parseArgs({
     'adjudicate-report': { type: 'string' },
     'development-seed': { type: 'string', default: '' },
     'original-only': { type: 'boolean', default: false },
+    'structured-generation': { type: 'boolean', default: false },
     'semantic-adjudication': { type: 'boolean', default: false },
     'adjudicator-model': { type: 'string' },
     'adjudicator-effort': { type: 'string' },
@@ -52,6 +59,7 @@ const { values: args } = parseArgs({
 function usage() {
   return `Usage:
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --semantic-adjudication --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --structured-generation --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
   node scripts/replay-tutor-stub-frozen-turns.js --adjudicate-report original-screen.json --reuse-adjudication --out reaudited.json
@@ -60,6 +68,81 @@ The live path regenerates only the original speaking-tutor candidate. It never
 invokes tutor repair, deterministic fallback, learner generation, learner
 classification, DAG analysis, or dialogue continuation. Rejected text is kept
 inside the JSON artifact and is never printed as public tutor speech.`;
+}
+
+function structuredGenerationFailureAudit(error) {
+  const reason = error instanceof Error ? error.message : String(error || 'unknown structured generation error');
+  const structuralType =
+    /structured (?:first draft|composition|source) invalid: ([a-z_]+)/u.exec(reason)?.[1] ||
+    'malformed_structured_output';
+  const cluster = `structuredGenerationAudit:${structuralType}`;
+  const issue = {
+    type: structuralType,
+    reason,
+  };
+  return {
+    schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
+    ok: false,
+    safetyFailure: false,
+    auditedText: '',
+    failureClusters: [cluster],
+    hardFailureClusters: [cluster],
+    advisoryFailureClusters: [],
+    reportOnlyFailureClusters: [],
+    shadowAdvisoryFailureClusters: [],
+    deliveryDecision: {
+      ok: false,
+      hardIssues: [{ guard: 'structuredGenerationAudit', ...issue }],
+      advisoryIssues: [],
+      reportOnlyIssues: [],
+    },
+    audits: {
+      structuredGenerationAudit: { ok: false, active: true, issues: [issue] },
+      actorialRealizationAudit: {
+        ok: false,
+        active: false,
+        issues: [{ type: 'candidate_not_composed', reason: 'malformed structured output was not exposed' }],
+      },
+    },
+    performanceAdjudicationEligibility: {
+      eligible: false,
+      reason: 'candidate_not_composed',
+    },
+    performanceAdjudication: null,
+  };
+}
+
+function auditOriginalCandidate({ bundle, world, candidate, composition = null, performanceAdjudication = null }) {
+  const wholeResponseAudit = auditTutorStubFrozenCandidate({
+    bundle,
+    world,
+    text: candidate,
+    candidateKind: 'original_candidate',
+    performanceAdjudication,
+  });
+  if (!composition) return wholeResponseAudit;
+  return applyTutorStubStructuredSlotOwnershipAudit({
+    audit: wholeResponseAudit,
+    composition,
+    candidate,
+    configuration: bundle.speakingResponseConfiguration || bundle.selectedResponseConfiguration,
+    world,
+    performanceObligationContract: bundle.performanceObligationContract,
+  });
+}
+
+function summarizeScreenResults(results = []) {
+  const summary = summarizeTutorStubFrozenReplay(results);
+  const structuredRows = results.filter((row) => row.structuredGeneration);
+  if (!structuredRows.length) return summary;
+  return {
+    ...summary,
+    structuredModelOutputs: structuredRows.length,
+    structuredCompositions: structuredRows.filter((row) => row.structuredGeneration?.ok === true).length,
+    structuredCompositionFailures: structuredRows.filter((row) => row.structuredGeneration?.ok === false).length,
+    structuredCompositionsClassifiedAsRepair: 0,
+    structuredCompositionsClassifiedAsFallback: 0,
+  };
 }
 
 function parsedModelReference(value) {
@@ -369,12 +452,25 @@ async function main() {
     const results = await mapLimit(source.results || [], concurrency, async (row) => {
       const bundle = bundlesByTurn.get(Number(row.turn));
       if (!bundle) throw new Error(`screen report has no frozen bundle for turn ${row.turn}`);
+      if (row.structuredGeneration?.ok === false) {
+        return {
+          ...row,
+          semanticAdjudication: {
+            called: false,
+            eligibility: row.audit?.performanceAdjudicationEligibility || null,
+            adjudication: null,
+            latencyMs: 0,
+            error: null,
+            skipReason: 'structured candidate was not composed',
+          },
+        };
+      }
       const world = worldForBundle(bundle);
-      const deterministicAudit = auditTutorStubFrozenCandidate({
+      const deterministicAudit = auditOriginalCandidate({
         bundle,
         world,
-        text: row.candidate,
-        candidateKind: 'original_candidate',
+        candidate: row.candidate,
+        composition: row.structuredGeneration?.composition || null,
       });
       const reusableRaw = args['reuse-adjudication'] ? row.semanticAdjudication?.raw : null;
       const semanticAdjudication = reusableRaw
@@ -394,11 +490,11 @@ async function main() {
             deterministicAudit,
           });
       const audit = semanticAdjudication.adjudication
-        ? auditTutorStubFrozenCandidate({
+        ? auditOriginalCandidate({
             bundle,
             world,
-            text: row.candidate,
-            candidateKind: 'original_candidate',
+            candidate: row.candidate,
+            composition: row.structuredGeneration?.composition || null,
             performanceAdjudication: semanticAdjudication.adjudication,
           })
         : deterministicAudit;
@@ -406,14 +502,16 @@ async function main() {
     });
     const report = {
       ...source,
-      mode: 'original_only_screen_semantic_reaudit',
+      mode: source.structuredGeneration
+        ? 'original_only_structured_screen_semantic_reaudit'
+        : 'original_only_screen_semantic_reaudit',
       sourceReport: sourcePath,
       regeneratedTutorCandidates: false,
       reusedSavedAdjudication: Boolean(args['reuse-adjudication']),
       semanticAdjudication: true,
       adjudicatorModelOverride: args['adjudicator-model'] || source.adjudicatorModelOverride || null,
       adjudicatorEffortOverride: args['adjudicator-effort'] || source.adjudicatorEffortOverride || null,
-      summary: summarizeTutorStubFrozenReplay(results),
+      summary: summarizeScreenResults(results),
       results,
     };
     const target = writeJson(args.out, report);
@@ -437,29 +535,95 @@ async function main() {
   }
   const draws = positiveInt(args.draws, '--draws', { max: 20 });
   const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
+  const structuredGeneration = Boolean(args['structured-generation']);
   const bundles = turns.map((turn) => {
     const extracted = extractTutorStubFrozenTurn({ tracePath, turn });
-    return refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world: worldForBundle(extracted) });
+    const refreshed = refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world: worldForBundle(extracted) });
+    return structuredGeneration ? replaceTutorStubFrozenRequestWithStructuredPrompt(refreshed) : refreshed;
   });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
   const results = await mapLimit(jobs, concurrency, async ({ bundle, draw }) => {
     const generated = await generateOriginal(bundle);
     const world = worldForBundle(bundle);
-    const deterministicAudit = auditTutorStubFrozenCandidate({
+    let candidate = generated.text;
+    let structuredResult = null;
+    if (structuredGeneration) {
+      try {
+        const parsed = parseTutorStubStructuredFirstDraft(generated.text, {
+          maxWordsPerSlot:
+            bundle.firstDraftContract?.language?.host_sentence_word_target ||
+            bundle.firstDraftContract?.language?.max_average_sentence_words ||
+            null,
+        });
+        const composition = composeTutorStubStructuredFirstDraft({
+          structured: parsed,
+          dramaticReleaseFrame: bundle.frames?.dramaticRelease,
+        });
+        candidate = composition.text;
+        structuredResult = {
+          ok: true,
+          raw: generated.text,
+          parsed,
+          composition,
+          error: null,
+        };
+      } catch (error) {
+        candidate = null;
+        structuredResult = {
+          ok: false,
+          raw: generated.text,
+          parsed: null,
+          composition: null,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }
+    if (structuredGeneration && !candidate) {
+      const audit = structuredGenerationFailureAudit(structuredResult?.error);
+      console.log(
+        `turn ${bundle.turn} draw ${draw}: rejected; ${generated.latencyMs} ms generation; ${audit.hardFailureClusters[0]}`,
+      );
+      return {
+        turn: bundle.turn,
+        turnId: bundle.turnId,
+        worldId: bundle.worldId,
+        learnerProfile: bundle.learnerProfile,
+        draw,
+        developmentSeed: args['development-seed'] || null,
+        model: `${generated.provider}.${generated.model}`,
+        effort: generated.effort,
+        latencyMs: generated.latencyMs,
+        usage: generated.usage,
+        tokenUsageAvailable: generated.tokenUsageAvailable,
+        candidate: null,
+        candidateProvenance: { kind: 'structured_model_output_rejected_before_composition', recoveryStage: false },
+        structuredGeneration: structuredResult,
+        deterministicAudit: audit,
+        semanticAdjudication: {
+          called: false,
+          eligibility: audit.performanceAdjudicationEligibility,
+          adjudication: null,
+          latencyMs: 0,
+          error: null,
+        },
+        audit,
+      };
+    }
+    const deterministicAudit = auditOriginalCandidate({
       bundle,
       world,
-      text: generated.text,
-      candidateKind: 'original_candidate',
+      candidate,
+      composition: structuredResult?.composition || null,
     });
     const semanticAdjudication = args['semantic-adjudication']
-      ? await adjudicateOriginal({ bundle, candidate: generated.text, deterministicAudit })
+      ? await adjudicateOriginal({ bundle, candidate, deterministicAudit })
       : { called: false, eligibility: deterministicAudit.performanceAdjudicationEligibility, latencyMs: 0 };
     const audit = semanticAdjudication.adjudication
-      ? auditTutorStubFrozenCandidate({
+      ? auditOriginalCandidate({
           bundle,
           world,
-          text: generated.text,
-          candidateKind: 'original_candidate',
+          candidate,
+          composition: structuredResult?.composition || null,
           performanceAdjudication: semanticAdjudication.adjudication,
         })
       : deterministicAudit;
@@ -479,7 +643,13 @@ async function main() {
       latencyMs: generated.latencyMs,
       usage: generated.usage,
       tokenUsageAvailable: generated.tokenUsageAvailable,
-      candidate: generated.text,
+      candidate,
+      ...(structuredGeneration
+        ? {
+            candidateProvenance: { kind: 'structured_original_composition', recoveryStage: false },
+            structuredGeneration: structuredResult,
+          }
+        : {}),
       deterministicAudit,
       semanticAdjudication,
       audit,
@@ -487,8 +657,9 @@ async function main() {
   });
   const report = {
     schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
-    mode: 'original_only_screen',
+    mode: structuredGeneration ? 'original_only_structured_screen' : 'original_only_screen',
     originalOnly: true,
+    ...(structuredGeneration ? { structuredGeneration: true } : {}),
     sourceTrace: tracePath,
     turns,
     drawsPerTurn: draws,
@@ -507,8 +678,9 @@ async function main() {
       dialogueContinued: false,
       unsafeCandidatePubliclyExposed: false,
       runtimeDialoguePathChanged: false,
+      ...(structuredGeneration ? { deterministicStructuredCompositionInvoked: true } : {}),
     },
-    summary: summarizeTutorStubFrozenReplay(results),
+    summary: summarizeScreenResults(results),
     bundles,
     results,
   };
