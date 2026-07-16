@@ -877,10 +877,10 @@ test('surface audit rejects a named character when the selected stance tactic do
   assert.equal(flat.axes.actorial_part.performance_visible, false);
   assert.equal(flat.axes.actorial_part.visible, false);
   assert.equal(flat.actorial_realization.ok, false);
-  assert.deepEqual(flat.actorial_realization.issues.map((issue) => issue.type), [
-    'missing_selected_actorial_part',
-    'missing_selected_performance_tactic',
-  ]);
+  assert.deepEqual(
+    flat.actorial_realization.issues.map((issue) => issue.type),
+    ['missing_selected_actorial_part', 'missing_selected_performance_tactic'],
+  );
   assert.equal(realized.axes.actorial_part.performance_visible, true);
   assert.equal(realized.axes.actorial_part.visible, true);
   assert.equal(realized.actorial_realization.ok, true);
@@ -1066,12 +1066,15 @@ test('surface audit recognizes ordinary skeptical objections and shared standing
       },
       world: { setting: 'The switch log and pen chart are open in the meeting room.' },
     });
-    assert.equal(audit.actorial_realization.issues.some((issue) => issue.type === 'missing_selected_actorial_part'), false, text);
+    assert.equal(
+      audit.actorial_realization.issues.some((issue) => issue.type === 'missing_selected_actorial_part'),
+      false,
+      text,
+    );
   }
 
   const shared = auditTutorStubResponseConfiguration({
-    text:
-      'I stand beside you at the fridge door, leaving space at the ledger. What does the job number establish?',
+    text: 'I stand beside you at the fridge door, leaving space at the ledger. What does the job number establish?',
     configuration: {
       engagement_stance: 'warm',
       action_family: 'stage_next_step',
@@ -1096,7 +1099,17 @@ test('deterministic clue fallback preserves every selected stance as a visible c
     },
   ];
   const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
-  const stances = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
+  const stances = [
+    'plain',
+    'precise',
+    'brisk',
+    'warm',
+    'witnessing',
+    'charismatic',
+    'ironic',
+    'sarcastic',
+    'face_threat',
+  ];
 
   for (const engagementStance of stances) {
     const configuration = buildTutorStubResponseConfiguration({
@@ -1121,7 +1134,11 @@ test('deterministic clue fallback preserves every selected stance as a visible c
       true,
       `${engagementStance} should visibly realize ${configuration.actorial_performance.id}: ${text}`,
     );
-    assert.equal(audit.axes.actorial_part.part_visible, true, `${engagementStance} should keep the adaptive host visible`);
+    assert.equal(
+      audit.axes.actorial_part.part_visible,
+      true,
+      `${engagementStance} should keep the adaptive host visible`,
+    );
     assert.doesNotMatch(text, /front-desk clerk[^.!?]{0,140}(?::|—)/iu);
     assert.doesNotMatch(text, /role-play|I(?:'|’)ll be|another piece of information|Back to us/iu);
   }
@@ -1296,10 +1313,7 @@ test('a prop preference using comma-not is not an evidentiary boundary', () => {
     actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
   };
 
-  for (const text of [
-    'I press the trace, not the balance.',
-    'I prefer the touchstone, not the cupel.',
-  ]) {
+  for (const text of ['I press the trace, not the balance.', 'I prefer the touchstone, not the cupel.']) {
     const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
     assert.equal(audit.axes.actorial_part.performance_visible, false, text);
   }
@@ -1827,8 +1841,7 @@ test('clearing exhibit space for the learner realizes the fellow investigator', 
 
 test('clearing a space beside exhibits realizes the fellow investigator', () => {
   const audit = auditTutorStubResponseConfiguration({
-    text:
-      'I slide the two drafts across the light table and clear a space beside them for you. The archived draft has no kicker or commissioner quote.',
+    text: 'I slide the two drafts across the light table and clear a space beside them for you. The archived draft has no kicker or commissioner quote.',
     configuration: {
       engagement_stance: 'warm',
       action_family: 'stage_next_step',
@@ -2828,6 +2841,47 @@ test('an accountable case that names how it could fail realizes advocate counter
   }
 });
 
+test('a bounded first-person case may hand off with what the evidence still needs to show', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The notebook and swab lie beside the incubator.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const positive =
+    'My case is that the notebook keeps Larkin in view, but it does not establish contamination. What does the swab still need to show?';
+  const negatives = [
+    'My case is that Verrell did it. What happens next?',
+    'My case is beside the coin. What do you think?',
+    'The swab still needs to show contamination. What does it prove?',
+  ];
+
+  assert.equal(
+    auditTutorStubResponseConfiguration({ text: positive, configuration, world }).axes.actorial_part.part_visible,
+    true,
+  );
+  for (const negative of negatives) {
+    assert.equal(
+      auditTutorStubResponseConfiguration({ text: negative, configuration, world }).axes.actorial_part.part_visible,
+      false,
+      negative,
+    );
+  }
+});
+
 test('the explicit accountable breakable case shape realizes advocate counterpressure', () => {
   const world = {
     title: 'The Contamination in the Greyfen Lab',
@@ -3106,7 +3160,17 @@ test('presented-exhibit fallback preserves the selected part and tactic across e
     },
   ];
   const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
-  const stances = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
+  const stances = [
+    'plain',
+    'precise',
+    'brisk',
+    'warm',
+    'witnessing',
+    'charismatic',
+    'ironic',
+    'sarcastic',
+    'face_threat',
+  ];
 
   for (const engagementStance of stances) {
     const configuration = buildTutorStubResponseConfiguration({
@@ -3374,7 +3438,8 @@ test('opening a version history visibly performs the record-keeper part', () => 
     actorial_part_label: 'record keeper',
     actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
   };
-  const text = 'I open the version history: it shows that the kicker was inserted after filing, but it does not name the editor.';
+  const text =
+    'I open the version history: it shows that the kicker was inserted after filing, but it does not name the editor.';
   const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
 
   assert.equal(audit.axes.actorial_part.part_visible, true);
