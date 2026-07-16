@@ -1,0 +1,276 @@
+schema: machinespirits.tutor-stub.first-draft-outer-loop.v1
+id: tutor-stub-first-draft-outer-loop-v1
+created: 2026-07-17
+purpose: >-
+  Durable control surface for first-draft tutor improvement. It separates
+  reusable frozen-prefix development from immutable held-out acceptance,
+  records who may interpret or change each layer, and makes success,
+  stagnation, infrastructure blocking, version retirement, and seed freshness
+  explicit. It begins at V24 but does not yet predeclare a V24 acceptance
+  matrix or any V24 held-out seed.
+
+current:
+  campaign_version: 24
+  label: V24
+  state: working_predeclared
+  working_iteration: 1
+  working_screen_id: first-draft-working-screens-v3
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v3.yaml
+  acceptance_config: null
+  last_observation:
+    version: 23
+    status: failed
+    result_note: notes/status/2026-07-17-first-draft-generalization-v23.md
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/campaign-result.json
+    hard_cell_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
+    strict_originals_accepted: 8
+    turns: 10
+    mean_configuration_realization: 0.833
+    failed_gate: minimum_mean_configuration_realization
+    dominant_target_axes:
+      - plain_lexical_accessibility
+      - adult_novice_audience
+      - selected_actorial_tactic
+
+versioning:
+  current: 24
+  next: 25
+  increment: 1
+  unbounded: true
+  label_template: V{n}
+  config_template: config/tutor-stub-campaigns/first-draft-generalization-v{n}.yaml
+  acceptance_version_immutable_after_first_paid_call: true
+  tuning_after_observation_retires_entire_version: true
+  examples:
+    - from: 24
+      to: 25
+    - from: 25
+      to: 26
+    - from: 26
+      to: 27
+  rule: >-
+    After any held-out candidate or result is observed, code, prompt, audit, or
+    campaign changes retire that entire version. Advance exactly one version,
+    predeclare a wholly fresh matrix and seed ledger in a new commit, and never
+    relabel the old campaign as development.
+
+state_machine:
+  states:
+    awaiting_working_screen:
+      terminal_scope: none
+      outcome: pending
+      meaning: A root failure is recorded but no reusable development screen is frozen.
+    working_predeclared:
+      terminal_scope: none
+      outcome: pending
+      meaning: The exact frozen prefixes, development seed, gates, and iteration are committed.
+    working_running:
+      terminal_scope: none
+      outcome: pending
+      meaning: One original-only working iteration is active; do not duplicate it.
+    working_passed:
+      terminal_scope: none
+      outcome: pending
+      meaning: Every frozen turn passed the declared strict working gates.
+    acceptance_predeclared:
+      terminal_scope: none
+      outcome: pending
+      meaning: A fresh held-out matrix, seeds, gates, and code/config hashes are committed.
+    hard_cell_running:
+      terminal_scope: none
+      outcome: pending
+      meaning: Only the predeclared priority-one cell may run.
+    remaining_cells_running:
+      terminal_scope: none
+      outcome: pending
+      meaning: The hard cell passed and at most three remaining cells may run concurrently.
+    accepted:
+      terminal_scope: loop
+      outcome: success
+      meaning: Every predeclared strict and first-draft gate passed without between-cell changes.
+    stagnated:
+      terminal_scope: loop
+      outcome: no_progress
+      meaning: Two consecutive working iterations produced no measurable improvement.
+    blocked_infrastructure:
+      terminal_scope: loop
+      outcome: infrastructure
+      meaning: Verified infrastructure failure or irrecoverable state corruption prevents valid continuation.
+    retired_after_acceptance_failure:
+      terminal_scope: version
+      outcome: acceptance_failure
+      meaning: A held-out cell failed; preserve artifacts and retire the whole version before further tuning.
+
+  transitions:
+    - from: awaiting_working_screen
+      to: working_predeclared
+      when: A focused frozen-prefix config and reusable development seed are committed.
+    - from: working_predeclared
+      to: working_running
+      when: Model-free fixtures and focused tests pass and no matching job or artifact is active.
+    - from: working_running
+      to: working_predeclared
+      when: The screen failed but measurably improved and one new bounded iteration is authorized.
+    - from: working_running
+      to: working_passed
+      when: All four frozen turns satisfy every enforced working gate.
+    - from: working_running
+      to: stagnated
+      when: Two consecutive completed iterations show no measurable improvement.
+    - from: working_running
+      to: blocked_infrastructure
+      when: A verified infrastructure failure or irrecoverable state corruption prevents valid measurement.
+    - from: working_passed
+      to: acceptance_predeclared
+      when: A fresh four-cell acceptance matrix and global seed ledger are committed with a clean worktree.
+    - from: acceptance_predeclared
+      to: hard_cell_running
+      when: Config validation passes and the frozen git and config hashes match the predeclaration.
+    - from: acceptance_predeclared
+      to: blocked_infrastructure
+      when: Infrastructure prevents the priority-one cell from starting without consuming its seed.
+    - from: hard_cell_running
+      to: remaining_cells_running
+      when: The priority-one cell passes every strict and first-draft gate.
+    - from: hard_cell_running
+      to: retired_after_acceptance_failure
+      when: The priority-one cell returns a valid result that fails any predeclared gate.
+    - from: hard_cell_running
+      to: blocked_infrastructure
+      when: Verified infrastructure failure prevents a valid result and state cannot be safely resumed.
+    - from: remaining_cells_running
+      to: accepted
+      when: All four cells complete and every per-cell and aggregate gate passes.
+    - from: remaining_cells_running
+      to: retired_after_acceptance_failure
+      when: Any remaining cell returns a valid result that fails a predeclared gate.
+    - from: remaining_cells_running
+      to: blocked_infrastructure
+      when: Verified infrastructure failure or irrecoverable state corruption prevents honest consolidation.
+    - from: retired_after_acceptance_failure
+      to: working_predeclared
+      when: The failure is converted into a reusable screen and the next version has no held-out calls or seeds yet.
+      version_action: increment_by_one
+
+inner_review_roles:
+  - id: loop_observer
+    authority: Read traces, candidates, audits, latency, and seed state; never change gates or code.
+    responsibilities:
+      - observe_evidence
+      - cluster_root_causes
+  - id: bounded_change_owner
+    authority: Select one dominant root-cause cluster and one coordinated implementation change per iteration.
+    responsibilities:
+      - select_single_bounded_change
+      - separate_prompt_recovery_and_recognition_changes
+  - id: speaking_tutor
+    authority: Generate exactly one original tutor candidate from the frozen public state in working-screen mode.
+    responsibilities:
+      - generate_original_candidate
+  - id: deterministic_guard
+    authority: Run public-boundary, safety, uptake, composition, and configuration audits fail-closed without model calls.
+    responsibilities:
+      - deterministic_audit
+      - preserve_safety_boundary
+  - id: semantic_recognition_reviewer
+    authority: Review only eligible actorial-recognition misses; never waive safety, uptake, or non-actorial obligations.
+    responsibilities:
+      - semantic_recognition_review
+      - report_recognition_corrections_separately
+  - id: recovery_guard
+    authority: Keep recovery disabled in original-only screens and preserve strict end-to-end recovery outside them.
+    responsibilities:
+      - preserve_strict_recovery
+  - id: campaign_controller
+    authority: Validate gates, freeze hashes, prevent duplicate jobs, enforce concurrency three, and stop or advance the loop.
+    responsibilities:
+      - verify_gates
+      - record_provenance
+      - enforce_stop_conditions
+
+stop_policy:
+  success:
+    terminal_state: accepted
+    requires:
+      - every predeclared cell passes all strict delivery gates
+      - every per-cell and aggregate first-draft gate passes
+      - no code, prompt, audit, model, or config changes occur between acceptance cells
+      - all seeds and artifacts are accounted for
+  stagnation:
+    terminal_state: stagnated
+    maximum_consecutive_iterations_without_improvement: 2
+    measurable_improvement_order:
+      - higher strict original acceptance rate
+      - higher strict original count at equal completed turns
+      - fewer final safety failures
+      - fewer deterministic fallbacks
+    note: Audit-recognition corrections are reported separately and do not count as generation improvement.
+  infrastructure:
+    terminal_state: blocked_infrastructure
+    allowed_causes:
+      - verified provider or bridge outage before a valid result
+      - missing or corrupt frozen public state
+      - irrecoverable artifact or process-state corruption
+    forbidden_causes:
+      - a difficult prompt or poor candidate
+      - a failed strict gate
+      - slow but progressing model work
+  acceptance_failure:
+    terminal_state: retired_after_acceptance_failure
+    action: Preserve all artifacts, retire active, unstarted, and reserve seeds, and return through a new development screen.
+  early_abort: Only infrastructure failure, irrecoverable state corruption, or a mathematically impossible required gate may stop early.
+
+seed_rules:
+  global_ledger_required: true
+  same_seed_retry_only_before_any_candidate_or_result: true
+  tuning_retires_active_unstarted_and_reserve_seeds: true
+  fresh_acceptance_seeds_predeclared_before_paid_calls: true
+  seed_freshness_sources:
+    - config/tutor-stub-campaigns/*.yaml
+    - /Users/lmagee/Dev/.tutor-stub-auto-eval/**
+  infrastructure_retry_rule: >-
+    Reuse a held-out seed only when logs prove that no candidate or result was
+    obtained and the frozen public state, code hash, config hash, model, and
+    settings remain identical. Otherwise retire it.
+
+seed_ledger:
+  historical:
+    - { version: 23, seed: 20261120, status: consumed_failed_retired }
+    - { version: 23, seed: 20261121, status: retired_unstarted_due_to_tuning }
+    - { version: 23, seed: 20261122, status: retired_unstarted_due_to_tuning }
+    - { version: 23, seed: 20261123, status: retired_unstarted_due_to_tuning }
+    - { version: 23, seed: 20261124, status: retired_reserve_due_to_tuning }
+    - { version: 23, seed: 20261125, status: retired_reserve_due_to_tuning }
+    - { version: 23, seed: 20261126, status: retired_reserve_due_to_tuning }
+    - { version: 23, seed: 20261127, status: retired_reserve_due_to_tuning }
+  development:
+    - seed: 20261200
+      status: reusable_non_held_out_development
+      cell: marrick_v23_configuration_misses
+      screen: first-draft-working-screens-v3
+  held_out:
+    status: not_predeclared
+    entries: []
+  reserve:
+    status: not_predeclared
+    entries: []
+
+commit_boundaries:
+  before_paid_working_call:
+    - commit this outer-loop manifest and the exact working-screen config
+    - commit any bounded prompt, recovery, or audit change with focused tests
+    - record clean git HEAD and working-screen config hash
+  before_first_paid_acceptance_call:
+    - record the passing working result and separate recognition corrections from generation gains
+    - commit a fresh Vn acceptance config in a separate predeclaration commit
+    - validate global seed and world-profile freshness
+    - require a clean worktree and freeze git HEAD and config hash
+  after_acceptance:
+    - commit only a result note with exact artifact paths and hashes
+    - do not commit ignored generated model artifacts
+
+claim_boundary: >-
+  This manifest governs process integrity. A working-screen pass is reusable
+  development evidence, not held-out evidence. Only an unchanged, fully
+  predeclared acceptance version that passes every strict gate may terminate in
+  accepted; V24 has not yet been predeclared for acceptance.

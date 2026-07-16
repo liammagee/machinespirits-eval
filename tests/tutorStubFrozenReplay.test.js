@@ -112,10 +112,7 @@ test('frozen counterpressure never binds the learner Write question as its publi
   assert.doesNotMatch(pair?.target_span || '', /\?/u);
   if (pair) {
     assert.match(refreshed.request.messages.at(-1).content, /COUNTERPRESSURE PAIR/u);
-    assert.equal(
-      refreshed.request.messages.at(-1).content.split(pair.target_span).length - 1,
-      1,
-    );
+    assert.equal(refreshed.request.messages.at(-1).content.split(pair.target_span).length - 1, 1);
   } else {
     assert.equal(refreshed.performanceObligationContract.tactic_applicability.applicable, false);
     assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'evidentiary_boundary');
@@ -124,6 +121,31 @@ test('frozen counterpressure never binds the learner Write question as its publi
       source.bundle.selectedResponseConfiguration.actorial_part,
     );
   }
+});
+
+test('frozen refresh never promotes prior tutor prose or a due clue into counterpressure', () => {
+  const fixture = readFixture(FIXTURE_PATHS[0]);
+  const source = fixture.cases.find(
+    (entry) => entry.bundle.selectedResponseConfiguration?.actorial_performance?.id === 'dramatic_counterpressure',
+  );
+  assert.ok(source, 'fixture must contain a selected counterpressure turn');
+
+  const bundle = structuredClone(source.bundle);
+  bundle.learnerText = 'What should I write next?';
+  bundle.priorTurns = [
+    {
+      learner: 'What should I write?',
+      tutor: 'My case remains open. The last clue points one way, but another record is still due.',
+    },
+  ];
+  const refreshed = refreshTutorStubFrozenFirstDraftRequest({
+    bundle,
+    world: worldForId(bundle.worldId),
+  });
+
+  assert.equal(refreshed.performanceObligationContract.pressure_pair, null);
+  assert.equal(refreshed.performanceObligationContract.tactic_applicability.applicable, false);
+  assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'evidentiary_boundary');
 });
 
 test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {
@@ -162,7 +184,10 @@ test('model-free corpus re-audits every saved candidate without regressing accep
       }
     }
   }
-  assert.ok(improvements.length > 0, 'the corpus should identify audit-recognition improvements without calling them generation');
+  assert.ok(
+    improvements.length > 0,
+    'the corpus should identify audit-recognition improvements without calling them generation',
+  );
   assert.ok(
     improvements.some((row) => row.startsWith('2026-07-16T05-50-54-528Z:')),
     'at least one recognition improvement should come from the Greyfen corpus',

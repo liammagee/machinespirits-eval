@@ -437,13 +437,8 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
     },
     semanticAdjudicatorDefault: clone({
       provider:
-        runStart.metadata?.classifier?.resolved?.provider ||
-        runStart.metadata?.tutorLearnerDag?.provider ||
-        null,
-      model:
-        runStart.metadata?.classifier?.resolved?.model ||
-        runStart.metadata?.tutorLearnerDag?.model ||
-        null,
+        runStart.metadata?.classifier?.resolved?.provider || runStart.metadata?.tutorLearnerDag?.provider || null,
+      model: runStart.metadata?.classifier?.resolved?.model || runStart.metadata?.tutorLearnerDag?.model || null,
       effort: runStart.metadata?.cliEffort || 'low',
     }),
     recorded: {
@@ -489,10 +484,6 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     publicTurn: {
       visibility: 'public',
       learner_move: bundle.learnerText,
-      public_claims: [
-        ...(bundle.priorTurns || []).slice(-2).flatMap((turn) => [turn.learner, turn.tutor]),
-        bundle.learnerText,
-      ],
       public_evidence: publicEvidence,
       due_evidence: dueEvidence,
     },
@@ -506,9 +497,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
               bundle.selectedResponseConfiguration?.actorial_performance ||
               {},
           ),
-          speaking_transition: clone(
-            performanceObligationContract.selection?.speaking_transition || null,
-          ),
+          speaking_transition: clone(performanceObligationContract.selection?.speaking_transition || null),
         }
       : clone(bundle.selectedResponseConfiguration);
   const firstDraftContract = buildTutorStubFirstDraftContract({
@@ -586,9 +575,7 @@ export function auditTutorStubFrozenCandidate({
     ? auditTutorStubResponseConfiguration({
         text: auditedText,
         configuration:
-          deliveryConfiguration ||
-          bundle.speakingResponseConfiguration ||
-          bundle.selectedResponseConfiguration,
+          deliveryConfiguration || bundle.speakingResponseConfiguration || bundle.selectedResponseConfiguration,
         world,
         composition: responseCompositionAudit.segments,
       })
@@ -624,9 +611,7 @@ export function auditTutorStubFrozenCandidate({
     audits,
     contract: bundle.performanceObligationContract,
     configuration:
-      deliveryConfiguration ||
-      bundle.speakingResponseConfiguration ||
-      bundle.selectedResponseConfiguration,
+      deliveryConfiguration || bundle.speakingResponseConfiguration || bundle.selectedResponseConfiguration,
   });
   if (performanceAdjudication) {
     const applied = applyTutorStubPerformanceAdjudication({
@@ -710,11 +695,10 @@ export function extractTutorStubRegressionFixture({ tracePath, turns = null } = 
 
 export function summarizeTutorStubFrozenReplay(results = []) {
   const rows = Array.isArray(results) ? results : [];
-  const strictOriginalAccepted = (audit) =>
-    audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
+  const strictOriginalAccepted = (audit) => audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = rows.filter((row) => strictOriginalAccepted(row.audit)).length;
-  const deterministicAccepted = rows.filter(
-    (row) => strictOriginalAccepted(row.deterministicAudit || row.audit),
+  const deterministicAccepted = rows.filter((row) =>
+    strictOriginalAccepted(row.deterministicAudit || row.audit),
   ).length;
   const semanticRows = rows.filter((row) => row.semanticAdjudication?.called === true);
   const semanticErrorRows = rows.filter((row) => row.semanticAdjudication?.error);
@@ -736,12 +720,8 @@ export function summarizeTutorStubFrozenReplay(results = []) {
     deterministicOriginalCandidateAcceptanceRate: rows.length ? deterministicAccepted / rows.length : null,
     semanticRecognitionCorrections: semanticCorrections,
     semanticAdjudicatorCalls: semanticRows.length,
-    semanticAdjudicatorNewCalls: semanticRows.filter(
-      (row) => row.semanticAdjudication?.newModelCall !== false,
-    ).length,
-    semanticAdjudicationsReused: semanticRows.filter(
-      (row) => row.semanticAdjudication?.reusedRaw === true,
-    ).length,
+    semanticAdjudicatorNewCalls: semanticRows.filter((row) => row.semanticAdjudication?.newModelCall !== false).length,
+    semanticAdjudicationsReused: semanticRows.filter((row) => row.semanticAdjudication?.reusedRaw === true).length,
     semanticAdjudicatorErrors: semanticErrorRows.length,
     meanSemanticAdjudicationLatencyMs: semanticRows.length
       ? semanticRows.reduce((sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0), 0) /
@@ -755,8 +735,7 @@ export function summarizeTutorStubFrozenReplay(results = []) {
       : null,
     meanTotalScreenLatencyMs: rows.length
       ? rows.reduce(
-          (sum, row) =>
-            sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
+          (sum, row) => sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
           0,
         ) / rows.length
       : null,

@@ -7,16 +7,14 @@ import {
 } from './engagementRegisterRegistry.js';
 import { tutorStubPerformanceObligationContractPrompt } from './tutorStubPerformanceObligationContract.js';
 
-export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA =
-  'machinespirits.tutor-stub.first-draft-turn-contract.v1';
+export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 
 const ACTION_CUES = Object.freeze({
   clarify_term:
     'Define the unresolved word in ordinary language with one concrete scene referent. Do not turn the definition into a proof test.',
   clarify_distinction:
     'State one concrete distinction, show what each side would look like in this scene, and test only that distinction.',
-  stage_next_step:
-    'Put the next available public evidence into the scene before asking the learner to interpret it.',
+  stage_next_step: 'Put the next available public evidence into the scene before asking the learner to interpret it.',
   answer_accountably:
     'Answer the learner directly, state the limit of the answer, and give one public way it could be checked or corrected.',
   compress_sayback:
@@ -33,15 +31,13 @@ const ACTION_CUES = Object.freeze({
     'Receive the learner’s concern without praise or capture, reduce the immediate pressure, and leave the next judgment with them.',
   close_inquiry:
     'State the licensed public finding, name its decisive support briefly, and close the inquiry without another proof demand.',
-  baseline_plain_response:
-    'Give one direct public response and one compact next move without decorative explanation.',
+  baseline_plain_response: 'Give one direct public response and one compact next move without decorative explanation.',
 });
 
 const PART_CUES = Object.freeze({
   scene_partner:
     'In the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner.',
-  examiner:
-    'In the unquoted host voice, visibly inspect, compare, test, weigh, or point to a named public exhibit.',
+  examiner: 'In the unquoted host voice, visibly inspect, compare, test, weigh, or point to a named public exhibit.',
   record_keeper:
     'In the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved.',
   authored_source:
@@ -69,8 +65,7 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
     'Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.',
   exposed_mismatch:
     'Let the named public object expose the mismatch through the action itself rather than explaining the irony.',
-  dry_counterexample:
-    'Use the named public object as a dry counterexample, then leave one concrete repair path.',
+  dry_counterexample: 'Use the named public object as a dry counterexample, then leave one concrete repair path.',
   adversarial_pressure:
     'Put direct pressure on the claim rather than the learner and name the public test that could answer it.',
 });
@@ -101,7 +96,8 @@ function sourceReportingLead(entry) {
   if (/\b(?:book|clerk|inventory|keeper|ledger|log|reading|record)\b/u.test(role)) {
     return 'I read in the record that';
   }
-  if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role)) return 'I know or I can identify that';
+  if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role))
+    return 'I know or I can identify that';
   return 'I can attest that';
 }
 
@@ -111,10 +107,8 @@ function releaseCue(entry) {
   if (entry.mode === 'enacted_role') {
     return [
       `Source to inhabit silently: ${oneLine(entry.role) || 'the public source'}.`,
-      'The source name is casting information, not dialogue or narration: never print it outside the quotation.',
-      `After the host responds or acts, start a new sentence whose opening quotation mark is followed immediately by this kind of reporting lead: ${sourceReportingLead(entry)}.`,
-      'First person belongs only to the source’s act of seeing, reading, knowing, or attesting. Preserve every named actor, owner, family relation, and possession in the evidence exactly: never turn what Verrell, Edony, a founder, or another named person did or owned into what “I” did or owned.',
-      'Transform only the reporting frame into direct source voice; do not write “the clerk reads”, “the officer says”, “the witness opens”, “as the assayer speaks”, or an equivalent role entrance.',
+      `After one unquoted host action, start a new quotation immediately with a reporting lead like “${sourceReportingLead(entry)}”.`,
+      'Never print the source name outside that quotation. First person may report the evidence, but must not inherit any named person’s deed, ownership, or relationship.',
       `Public evidentiary content to voice once: ${surface}`,
     ].join(' ');
   }
@@ -221,9 +215,9 @@ export function buildTutorStubFirstDraftContract({
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
   const tactic = configuration.actorial_performance?.id || null;
+  const sentenceBudget = Math.max(8, Number(configuration.surface_budgets?.max_average_sentence_words || 24));
   const directionOnlyWithoutNewEvidence =
-    questionSupport?.answerability === 'direction_only_until_evidence_is_public' &&
-    releaseCues.length === 0;
+    questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;
   const partExecution =
     PART_CUES[part] ||
     'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
@@ -233,17 +227,16 @@ export function buildTutorStubFirstDraftContract({
       : TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
   const actionInstruction =
     directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
-      ? 'No new evidence is available in this reply. Restage one already-public clue, state what it supports, and name only the direction of the missing support. Do not ask the learner what unseen evidence would prove the case.'
+      ? 'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence.'
       : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
 
   return {
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
     learner_move: learnerMove,
     opening: {
-      instruction:
-        writableEntryBeforeDueEvidence
-          ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
-          : writableEntryRequested
+      instruction: writableEntryBeforeDueEvidence
+        ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
+        : writableEntryRequested
           ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
           : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
@@ -252,13 +245,9 @@ export function buildTutorStubFirstDraftContract({
     },
     development: {
       action_family: actionFamily,
-      instruction: [acceleratedLearnerInstruction, actionInstruction]
-        .filter(Boolean)
-        .join(' '),
+      instruction: [acceleratedLearnerInstruction, actionInstruction].filter(Boolean).join(' '),
       learner_acceleration_instruction: acceleratedLearnerInstruction,
-      support_level: Number.isFinite(Number(configuration.support_level))
-        ? Number(configuration.support_level)
-        : null,
+      support_level: Number.isFinite(Number(configuration.support_level)) ? Number(configuration.support_level) : null,
       support_instruction:
         Number(configuration.support_level) === 3
           ? 'Supply strong concrete support now: make the relevant public evidence or connection explicit before asking for the learner’s next judgment.'
@@ -294,9 +283,7 @@ export function buildTutorStubFirstDraftContract({
         saturated && !requiresExhibit
           ? 'Use already-named public evidence and introduce no new prop. Still perform the host-and-tactic beat once through direct judgment, address, rhythm, or a small action on that existing evidence.'
           : 'Enter through concrete first-person action or direct speech; never announce or label the part.',
-      obligation_contract: performanceObligationContract
-        ? structuredClone(performanceObligationContract)
-        : null,
+      obligation_contract: performanceObligationContract ? structuredClone(performanceObligationContract) : null,
     },
     evidence: {
       active: releaseCues.length > 0,
@@ -315,7 +302,8 @@ export function buildTutorStubFirstDraftContract({
       lexical_instruction: definitionContract(getLexicalAccessibilityDefinitions(), lexical),
       scene_immersion: scene,
       scene_instruction: definitionContract(getSceneImmersionDefinitions(), scene),
-      max_average_sentence_words: Number(configuration.surface_budgets?.max_average_sentence_words || 24),
+      max_average_sentence_words: sentenceBudget,
+      host_sentence_word_target: sentenceBudget,
     },
     compatibility: {
       decisions: compatibilityDecisions({
@@ -342,13 +330,12 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   return [
     '[Tutor-only first-draft performance contract]',
     'Write one compact paragraph in one continuous voice. Perform these instructions in order:',
+    `FORM — ${contract.language.audience_instruction} ${contract.language.lexical_instruction} Use separate host sentences for learner uptake, performed development, and the final handoff. Put one evidence relation in each sentence. Keep every host sentence at or below ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words; the “Write:” sentence counts. An exact supplied clue quotation may retain its wording.`,
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `DEVELOP — ${contract.development.instruction} Perform one mandatory development beat as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction} Do not substitute generic prop handling for the selected part or tactic.${semanticPerformanceInstruction ? `\n${semanticPerformanceInstruction}` : ''}`,
-    contract.development.support_instruction
-      ? `SUPPORT — ${contract.development.support_instruction}`
-      : null,
+    `DEVELOP — In a fresh host sentence after the uptake, ${contract.development.instruction} Perform one mandatory development beat as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction} Do not substitute generic prop handling for the selected part or tactic.${semanticPerformanceInstruction ? `\n${semanticPerformanceInstruction}` : ''}`,
+    contract.development.support_instruction ? `SUPPORT — ${contract.development.support_instruction}` : null,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     releaseRows.length
       ? 'SINGLE DELIVERY — State each due clue exactly once. Do not preview or paraphrase it in the Write entry, opening, or closing summary.'
@@ -359,9 +346,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
       ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining. Make this a separate direct permission statement; do not hide it inside an option list or another exercise.'
       : null,
     `VOICE — ${contract.performance.stance_instruction}`,
-    `LANGUAGE — ${contract.language.audience_instruction} ${contract.language.lexical_instruction}`,
     `SCENE — ${contract.language.scene_instruction}`,
-    `Keep average sentences at or below ${contract.language.max_average_sentence_words} words.`,
     'Do not mention roles, role-play, teaching strategy, configuration, analysis, proof machinery, hidden evidence, or future evidence. Do not split uptake and development into separate voices, headings, paragraphs, or asides.',
     '[End tutor-only first-draft performance contract]',
   ]

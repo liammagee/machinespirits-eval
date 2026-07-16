@@ -128,6 +128,28 @@ test('question-shaped learner requests cannot become pressure targets and fall b
   assert.doesNotMatch(JSON.stringify(contract.anchors), /What should I write next/u);
 });
 
+test('prior tutor prose and merely due evidence cannot manufacture a counterpressure pair', () => {
+  const contract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: counterpressureConfiguration(),
+    ...publicContext({
+      publicTurn: {
+        learner_move: 'What should I write next?',
+        pressure_target: null,
+        public_claims: [
+          'Write: The metal points away from the mint crucible. My case remains open until another clue arrives.',
+        ],
+        contrary_evidence: [],
+        due_evidence: [{ surface: 'The charcoal book names the hand at the weir crucible.' }],
+      },
+    }),
+  });
+
+  assert.equal(contract.pressure_pair, null);
+  assert.equal(contract.tactic_applicability.applicable, false);
+  assert.equal(contract.selection.actorial_performance.id, 'evidentiary_boundary');
+  assert.equal(contract.selection.actorial_part, 'advocate');
+});
+
 test('accepts a concrete declarative learner handoff instead of forcing every turn into a question', () => {
   const contract = compileTutorStubPerformanceObligationContract({
     responseConfiguration: counterpressureConfiguration(),
@@ -152,9 +174,9 @@ test('accepts a concrete declarative learner handoff instead of forcing every tu
     'counterpressure remains pinned to the exact selected contrary evidence',
   );
   assert.ok(
-    contract.anchors.find((entry) => entry.id === 'learner_handoff').surfaces.includes(
-      'The visitor ledger names Mira at the desk.',
-    ),
+    contract.anchors
+      .find((entry) => entry.id === 'learner_handoff')
+      .surfaces.includes('The visitor ledger names Mira at the desk.'),
     'the handoff may use a different declared public exhibit',
   );
 });
@@ -202,10 +224,7 @@ test('recovers offsets mechanically only for a unique exact quotation', () => {
   ];
   const audit = validateTutorStubPerformanceEvidence({ contract, candidate, evidence });
   assert.equal(audit.pass, true);
-  assert.equal(
-    audit.evidence.find((row) => row.obligation_id === 'public_pressure_target').offset_recovered,
-    true,
-  );
+  assert.equal(audit.evidence.find((row) => row.obligation_id === 'public_pressure_target').offset_recovered, true);
 });
 
 test('the same structural contract accepts a different world without any scenario vocabulary table', () => {
@@ -337,5 +356,8 @@ test('closure compiles a finding and terminal declaration instead of a learner h
     contract.obligations.map((entry) => entry.id),
     ['public_evidence', 'visible_action', 'public_finding', 'terminal_closure'],
   );
-  assert.equal(contract.obligations.some((entry) => entry.id === 'learner_handoff'), false);
+  assert.equal(
+    contract.obligations.some((entry) => entry.id === 'learner_handoff'),
+    false,
+  );
 });

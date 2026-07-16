@@ -104,10 +104,9 @@ export function buildTutorStubQuestionSupport({
       reason: responsiveRepairRequired
         ? 'the learner says their question was not answered, so responsiveness takes priority while the due evidence is staged'
         : 'the next needed evidence is due now and must enter the public discourse before the learner is questioned about it',
-      tutorInstruction:
-        responsiveRepairRequired
-          ? 'First acknowledge that the learner’s question was not answered and answer it directly from the public record. Then stage the due evidence in ordinary scene language. Do not replace that direct answer with a new exercise; a short confirmation question is optional.'
-          : modality === 'stage_then_bounded_choice'
+      tutorInstruction: responsiveRepairRequired
+        ? 'First acknowledge that the learner’s question was not answered and answer it directly from the public record. Then stage the due evidence in ordinary scene language. Do not replace that direct answer with a new exercise; a short confirmation question is optional.'
+        : modality === 'stage_then_bounded_choice'
           ? 'State the due evidence in ordinary scene language first, then offer 2-3 short choices using the people, objects, and records already named in the scene; invite the learner to choose or answer freely. Say what each choice means in this case. Avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” If the learner is struggling, also say they may ask which clue or term needs explaining.'
           : 'State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear.',
     };
@@ -133,12 +132,11 @@ export function buildTutorStubQuestionSupport({
       reason: responsiveRepairRequired
         ? 'the learner says their question remains unanswered; answer from the existing public record before discussing any missing support'
         : 'a remaining best-path fact has not entered the public scene, so open recall would ask the learner to invent evidence',
-      tutorInstruction:
-        responsiveRepairRequired
-          ? 'Directly answer the learner’s outstanding question using only evidence already stated. Explicitly distinguish what the record does establish from what it does not. Do not pivot into a new quiz or require a multiple-choice response; after answering, you may briefly name the category of support still missing without revealing it.'
-          : modality === 'bounded_directional_choice'
+      tutorInstruction: responsiveRepairRequired
+        ? 'Directly answer the learner’s outstanding question using only evidence already stated. Explicitly distinguish what the record does establish from what it does not. Do not pivot into a new quiz or require a multiple-choice response; after answering, you may briefly name the category of support still missing without revealing it.'
+        : modality === 'bounded_directional_choice'
           ? 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Offer 2-3 short choices using only people, objects, and records already named in the scene. Say what each choice means in this case; avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” Do not include the actual unstaged record or answer. If the learner is struggling, also say they may ask which clue or term needs explaining.'
-          : 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Briefly state the direction of the missing support in the discourse (for example that possession needs custody evidence, not expert recognition), without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear.',
+          : 'Do not ask the learner to invent or name an unseen record, source, person, or fact. Name the missing connection using only public people, objects, and actions already in this scene, without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear.',
     };
   }
 
@@ -215,12 +213,8 @@ function invitesClarification(source) {
       source,
     ) ||
     /\b(?:pause|stop)\b.{0,35}\b(?:to\s+)?(?:clarif\w*|explain\w*|unpack\w*|restate\w*)\b/isu.test(source) ||
-    /\b(?:you (?:can|may)|or)\b.{0,70}\bask me to (?:clarif\w*|explain\w*|unpack\w*|restate\w*)\b/isu.test(
-      source,
-    ) ||
-    /\b(?:do|would) you want me to (?:say|tell you|explain)\b.{0,70}\bwhat\b.{0,45}\bmeans?\b/isu.test(
-      source,
-    ) ||
+    /\b(?:you (?:can|may)|or)\b.{0,70}\bask me to (?:clarif\w*|explain\w*|unpack\w*|restate\w*)\b/isu.test(source) ||
+    /\b(?:do|would) you want me to (?:say|tell you|explain)\b.{0,70}\bwhat\b.{0,45}\bmeans?\b/isu.test(source) ||
     /\bdoes (?:that|this|the distinction)\b.{0,45}\b(?:make sense|help)\b/isu.test(source)
   );
 }

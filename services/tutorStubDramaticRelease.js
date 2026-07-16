@@ -1,9 +1,7 @@
 export const TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA = 'machinespirits.tutor-stub.dramatic-release.v1';
 
 const ROLE_TOKEN_STOP_WORDS = new Set(
-  'about after another before being from into reading role source that their them these this with'.split(
-    ' ',
-  ),
+  'about after another before being from into reading role source that their them these this with'.split(' '),
 );
 const CLUE_TOKEN_STOP_WORDS = new Set(
   'about after again also and are because before being between could does from had has have her him his into its just more not one only other our out over same she should some than that the their them then there these they this those through too under very was were what when where which while who will with would your'.split(
@@ -19,7 +17,11 @@ function oneLine(value) {
 
 function clueContentTokens(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’']/gu, ''))
       .filter((token) => !CLUE_TOKEN_STOP_WORDS.has(token)),
   );
@@ -39,19 +41,21 @@ function clueBearingSentenceMatches(text, surface) {
   // An authored clue may itself contain several sentences. Detect repeated
   // delivery of any one source sentence, rather than mistaking the clue's own
   // second sentence for a duplicate of its first.
-  return clueSentences
-    .map((clueSentence) => {
-      const clueTokens = clueContentTokens(clueSentence);
-      if (!clueTokens.size) return [];
-      const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
-      return responseSentences.filter((sentence) => {
-        const sentenceTokens = clueContentTokens(sentence);
-        let overlap = 0;
-        for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
-        return overlap >= threshold;
-      });
-    })
-    .sort((left, right) => right.length - left.length)[0] || [];
+  return (
+    clueSentences
+      .map((clueSentence) => {
+        const clueTokens = clueContentTokens(clueSentence);
+        if (!clueTokens.size) return [];
+        const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
+        return responseSentences.filter((sentence) => {
+          const sentenceTokens = clueContentTokens(sentence);
+          let overlap = 0;
+          for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
+          return overlap >= threshold;
+        });
+      })
+      .sort((left, right) => right.length - left.length)[0] || []
+  );
 }
 
 /**
@@ -206,10 +210,12 @@ const EXHIBIT_FRAME_TOKEN_STOP_WORDS = new Set(
 const RETURN_PATTERN =
   /\b(?:what|which|where|how|who|whose|does|do|can|could|will|would|is|are|has|have|should|your call)\b[^?]*\?|\b(?:choose|name|say|show|tell)\b[^.!?]{0,100}\b(?:change|changes|changed|mean|means|support|supports|rule out|rules out)\b/iu;
 
+const ROLE_ACTION_PATTERN =
+  /\b(?:attesting|describing|giving|holding|identifying|opening|presenting|reading|reporting|showing|testifying|unfolding|voicing|witnessing)\b/iu;
+const ROLE_OBJECT_TOKEN_STOP_WORDS = new Set('a an her his its our the their this those your'.split(' '));
+
 function roleIdentity(entry) {
-  return oneLine(entry?.role).split(
-    /\b(?:attesting|describing|giving|holding|identifying|opening|presenting|reading|reporting|showing|testifying|unfolding|voicing|witnessing)\b/iu,
-  )[0].trim();
+  return oneLine(entry?.role).split(ROLE_ACTION_PATTERN)[0].trim();
 }
 
 function roleIdentityPattern(entry) {
@@ -217,6 +223,20 @@ function roleIdentityPattern(entry) {
   if (!identity) return null;
   const tokens = (identity.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).filter(
     (token) => !ROLE_TOKEN_STOP_WORDS.has(token.toLowerCase()),
+  );
+  if (!tokens.length) return null;
+  return tokens
+    .map((token) => token.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&').replace(/[-‐‑‒–—]/gu, '[-\\s]'))
+    .join('(?:[-\\s]+|,\\s*)');
+}
+
+function roleEvidenceObjectPattern(entry) {
+  const role = oneLine(entry?.role);
+  const action = ROLE_ACTION_PATTERN.exec(role);
+  if (!action) return null;
+  const objectText = role.slice(action.index + action[0].length).trim();
+  const tokens = (objectText.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).filter(
+    (token) => !ROLE_OBJECT_TOKEN_STOP_WORDS.has(token.toLowerCase()),
   );
   if (!tokens.length) return null;
   return tokens
@@ -232,15 +252,20 @@ export function tutorStubRoleStageDirectionVisible({ text = '', frame = null } =
     .some((entry) => {
       const pattern = roleIdentityPattern(entry);
       if (!pattern) return false;
-      return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(unquotedResponse);
+      const evidenceObjectPattern = roleEvidenceObjectPattern(entry);
+      const stageDirectionSurface = evidenceObjectPattern
+        ? unquotedResponse.replace(
+            new RegExp(`\\b(?:the\\s+)?${pattern}[’']s\\s+(?:the\\s+)?${evidenceObjectPattern}\\b`, 'giu'),
+            ' ',
+          )
+        : unquotedResponse;
+      return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(stageDirectionSurface);
     });
 }
 
 export function tutorStubFirstPersonRoleVoiceVisible(text = '') {
   const response = oneLine(text);
-  return /(?:“[^”]{0,900}\b(?:i|we|my|our)\b[^”]{0,900}”|"[^"]{0,900}\b(?:i|we|my|our)\b[^"]{0,900}")/iu.test(
-    response,
-  );
+  return /(?:“[^”]{0,900}\b(?:i|we|my|our)\b[^”]{0,900}”|"[^"]{0,900}\b(?:i|we|my|our)\b[^"]{0,900}")/iu.test(response);
 }
 
 function factTermWords(value) {
@@ -253,10 +278,7 @@ function factTermWords(value) {
 
 function quotedRoleSpeech(text = '') {
   const response = String(text || '');
-  return [
-    ...(response.matchAll(/“([^”]{0,1200})”/gu)),
-    ...(response.matchAll(/"([^"\n]{0,1200})"/gu)),
-  ]
+  return [...response.matchAll(/“([^”]{0,1200})”/gu), ...response.matchAll(/"([^"\n]{0,1200})"/gu)]
     .map((match) => oneLine(match[1]))
     .filter((quote) => /\b(?:i|my|our|we)\b/iu.test(quote));
 }
@@ -282,9 +304,7 @@ function entrySourcePerspectiveDrift(entry, response) {
     const selfOwnedObject =
       objectPattern &&
       (new RegExp(`\\bmy\\b[^.!?;]{0,35}${objectPattern.source}`, 'iu').test(quote) ||
-        new RegExp(`${objectPattern.source}[^.!?;]{0,24}\\b(?:is|remains?|was|were)\\s+mine\\b`, 'iu').test(
-          quote,
-        ));
+        new RegExp(`${objectPattern.source}[^.!?;]{0,24}\\b(?:is|remains?|was|were)\\s+mine\\b`, 'iu').test(quote));
     return selfSoleAction || reassignedRelation || selfOwnedObject;
   });
 }
@@ -306,7 +326,12 @@ function frameEvidenceTokens(frame) {
   return new Set(
     (frame?.entries || [])
       .filter((entry) => entry.mode === 'presented_exhibit')
-      .flatMap((entry) => oneLine(entry.surface).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+      .flatMap(
+        (entry) =>
+          oneLine(entry.surface)
+            .toLowerCase()
+            .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [],
+      )
       .map((token) => token.replace(/[’']s$/u, '').replace(/[’']/gu, ''))
       .filter((token) => token.length >= 4 && !EXHIBIT_FRAME_TOKEN_STOP_WORDS.has(token)),
   );
@@ -326,10 +351,7 @@ function dynamicExhibitActionVisible(response, frame) {
   if (!evidenceTokens.size) return false;
   const clauses =
     response.match(
-      new RegExp(
-        `\\b(?:i|we)\\b[^.!?]{0,40}\\b(?:${EXHIBIT_ACTION_SOURCE})(?:s|ed|ing)?\\b[^.!?]{0,120}`,
-        'giu',
-      ),
+      new RegExp(`\\b(?:i|we)\\b[^.!?]{0,40}\\b(?:${EXHIBIT_ACTION_SOURCE})(?:s|ed|ing)?\\b[^.!?]{0,120}`, 'giu'),
     ) || [];
   return clauses.some((clause) => {
     const clauseTokens = new Set(
@@ -442,16 +464,19 @@ function stableVariantIndex(value, length) {
 
 function questionTokens(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []).filter(
-      (token) => !['about', 'does', 'from', 'that', 'this', 'what', 'which', 'with', 'would'].includes(token),
-    ),
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    ).filter((token) => !['about', 'does', 'from', 'that', 'this', 'what', 'which', 'with', 'would'].includes(token)),
   );
 }
 
 function questionOverlap(left, right) {
   const leftTokens = questionTokens(left);
   const rightTokens = questionTokens(right);
-  if (!leftTokens.size || !rightTokens.size) return oneLine(left).toLowerCase() === oneLine(right).toLowerCase() ? 1 : 0;
+  if (!leftTokens.size || !rightTokens.size)
+    return oneLine(left).toLowerCase() === oneLine(right).toLowerCase() ? 1 : 0;
   const shared = [...leftTokens].filter((token) => rightTokens.has(token)).length;
   return shared / Math.min(leftTokens.size, rightTokens.size);
 }
@@ -480,21 +505,9 @@ function sceneObject(entry, fallback = 'record') {
 }
 
 const ROLE_VOICE_ENTRANCES = {
-  plain: () => [
-    'I can say this:',
-    'I can give you my account as stated:',
-    'Here is what I can attest:',
-  ],
-  precise: () => [
-    'I can certify no more than this:',
-    'My evidence has one exact limit:',
-    'I can attest only this:',
-  ],
-  brisk: () => [
-    'I will give it to you straight:',
-    'Here is my evidence:',
-    'I will state it plainly:',
-  ],
+  plain: () => ['I can say this:', 'I can give you my account as stated:', 'Here is what I can attest:'],
+  precise: () => ['I can certify no more than this:', 'My evidence has one exact limit:', 'I can attest only this:'],
+  brisk: () => ['I will give it to you straight:', 'Here is my evidence:', 'I will state it plainly:'],
   warm: () => [
     'I can put my account plainly between us:',
     'Here is what I can honestly tell you:',
@@ -569,9 +582,7 @@ function fallbackStance(responseConfiguration) {
 }
 
 function fallbackHostPart(responseConfiguration) {
-  const part = oneLine(
-    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
-  );
+  const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
   return ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'].includes(part)
     ? part
     : 'examiner';
@@ -653,9 +664,10 @@ export function deterministicTutorStubDramaticReleaseFallback({
   const clarification = support?.clarificationInvitationRequired
     ? 'You can also ask me to unpack any word or connection in it.'
     : null;
-  const directRepair = support?.responsiveRepairRequired && !oneLine(uptake)
-    ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
-    : null;
+  const directRepair =
+    support?.responsiveRepairRequired && !oneLine(uptake)
+      ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
+      : null;
   const development = [
     directRepair,
     ...rendered,

@@ -22,7 +22,8 @@ function configuration(overrides = {}) {
     actorial_performance: {
       id: 'evidentiary_boundary',
       label: 'evidentiary boundary',
-      contract: 'Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.',
+      contract:
+        'Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.',
     },
     surface_budgets: { max_average_sentence_words: 18 },
     ...overrides,
@@ -58,17 +59,13 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
   assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
   assert.match(prompt, /DEVELOP —[\s\S]*Perform one mandatory development beat as keeper of the trial-book/iu);
-  assert.match(
-    prompt,
-    /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
-  );
+  assert.match(prompt, /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu);
   assert.match(prompt, /state the exact support and its limit[\s\S]*“only,” “not yet,” or “does not establish[.”]*”/iu);
   assert.match(prompt, /Source to inhabit silently: mint warden/iu);
-  assert.match(prompt, /reporting lead: I can attest that/iu);
-  assert.match(prompt, /First person belongs only to the source’s act of seeing, reading, knowing, or attesting/iu);
-  assert.match(prompt, /Preserve every named actor, owner, family relation, and possession/iu);
-  assert.match(prompt, /never print it outside the quotation/iu);
-  assert.match(prompt, /do not write “the clerk reads”/iu);
+  assert.match(prompt, /reporting lead like “I can attest that”/iu);
+  assert.match(prompt, /First person may report the evidence/iu);
+  assert.match(prompt, /must not inherit any named person’s deed, ownership, or relationship/iu);
+  assert.match(prompt, /Never print the source name outside that quotation/iu);
   assert.equal(prompt.split(clue).length - 1, 1);
   assert.match(prompt, /END — State the due evidence first, then ask what it changes/iu);
   assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|ENTRY|PROP|RETURN) —/u);
@@ -94,9 +91,8 @@ test('an enacted source is compiled as direct speech rather than a printable rol
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
   assert.match(prompt, /Source to inhabit silently: estate clerk reading the founder’s inventory/iu);
-  assert.match(prompt, /reporting lead: I read in the record that/iu);
-  assert.match(prompt, /Transform only the reporting frame into direct source voice/iu);
-  assert.match(prompt, /do not write [\s\S]*the officer says[\s\S]*the witness opens/iu);
+  assert.match(prompt, /reporting lead like “I read in the record that”/iu);
+  assert.match(prompt, /Never print the source name outside that quotation/iu);
   assert.equal(
     prompt.split('The old founder’s tools were never sold off; the inventory leaves them to Edony alone.').length - 1,
     1,
@@ -167,12 +163,9 @@ test('direction-only support with no new evidence recasts a rapid handoff as a d
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.ok(
-    contract.compatibility.decisions.includes(
-      'direction_only_recasts_rapid_handoff_as_declarative_boundary',
-    ),
-  );
+  assert.ok(contract.compatibility.decisions.includes('direction_only_recasts_rapid_handoff_as_declarative_boundary'));
   assert.match(prompt, /No new evidence is available in this reply/iu);
+  assert.match(prompt, /next public check with a concrete verb such as test, check, compare, or trace/iu);
   assert.match(prompt, /State the direction of the missing support yourself and end declaratively/iu);
   assert.doesNotMatch(prompt, /Put the next available public evidence/iu);
   assert.doesNotMatch(prompt, /ending with the shortest useful concrete question/iu);
@@ -186,6 +179,26 @@ test('direction-only support with no new evidence recasts a rapid handoff as a d
   });
   assert.equal(realization.axes.actorial_part.part_visible, true);
   assert.equal(realization.axes.actorial_part.performance_visible, true);
+});
+
+test('plain adult-novice form is executable before uptake without duplicating a late language budget', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next about the shilling?',
+    responseConfiguration: configuration({ surface_budgets: { max_average_sentence_words: 17 } }),
+    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.ok(prompt.indexOf('FORM —') < prompt.indexOf('OPEN —'));
+  assert.match(prompt, /separate host sentences for learner uptake, performed development, and the final handoff/iu);
+  assert.match(prompt, /one evidence relation in each sentence/iu);
+  assert.match(prompt, /every host sentence at or below 17 words/iu);
+  assert.match(prompt, /Presume adult intelligence but no domain fluency/iu);
+  assert.match(prompt, /Prefer common words, short sentences, and one relation at a time/iu);
+  assert.match(prompt, /DEVELOP — In a fresh host sentence after the uptake/iu);
+  assert.equal((prompt.match(/17 words/gu) || []).length, 1);
+  assert.doesNotMatch(prompt, /LANGUAGE —|Keep average sentences/iu);
 });
 
 test('a saturated shared-scene turn still receives one executable host-and-tactic beat', () => {
@@ -307,7 +320,7 @@ test('a request for the next written entry must be answered before the dramatic 
     publicTurn: {
       visibility: 'public',
       learner_move: 'What should I write next about the gliders?',
-      public_claims: ['The easy answer sends every glider by the direct route.'],
+      pressure_target: 'The easy answer sends every glider by the direct route.',
       contrary_evidence: ['The route board closes the direct crossing.'],
     },
   });

@@ -28,6 +28,8 @@ test('unreleased evidence produces an embedded direction instead of an open reca
   assert.equal(support.clarificationInvitationRequired, false);
   assert.deepEqual(support.learnerMoves, ['use_the_public_direction', 'ask_which_clue', 'ask_what_term_means']);
   assert.match(support.tutorInstruction, /Do not ask the learner to invent/u);
+  assert.match(support.tutorInstruction, /using only public people, objects, and actions already in this scene/u);
+  assert.doesNotMatch(support.tutorInstruction, /custody evidence|expert recognition|forge|tool/iu);
 });
 
 test('uncertainty before release selects a bounded public-safe choice', () => {
@@ -268,7 +270,10 @@ test('internal proof-map language is rejected even when no extra question scaffo
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['abstract_proof_language']);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['abstract_proof_language'],
+  );
 });
 
 test('a purposeful stepwise move is not misread as learner struggle', () => {

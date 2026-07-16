@@ -86,50 +86,51 @@ process.stdin.on('end', () => {
   fs.chmodSync(fakeCodex, 0o755);
 
   const cliArgs = [
-      'scripts/tutor-stub.js',
-      '--model',
-      'codex.gpt-5.6-terra',
-      '--auto-learner-profile',
-      'diligent',
-      '--settings-file',
-      path.join(tmp, 'settings.json'),
-      '--world',
-      'world_005_marrick',
-      '--dag',
-      '--no-classifier',
-      '--no-register-selection',
-      '--once',
-      mode === 'terse-uptake'
-        ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
-        : mode === 'soft-style'
-          ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
+    'scripts/tutor-stub.js',
+    '--model',
+    'codex.gpt-5.6-terra',
+    '--auto-learner-profile',
+    'diligent',
+    '--settings-file',
+    path.join(tmp, 'settings.json'),
+    '--world',
+    'world_005_marrick',
+    '--dag',
+    '--no-classifier',
+    '--no-register-selection',
+    '--once',
+    mode === 'terse-uptake'
+      ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
+      : mode === 'soft-style'
+        ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
         : 'What should I write in the trial-book?',
-      '--no-opening',
-      '--no-stream',
-      '--no-interim-animation',
-      '--trace-dir',
-      tmp,
-    ];
+    '--no-opening',
+    '--no-stream',
+    '--no-interim-animation',
+    '--trace-dir',
+    tmp,
+  ];
   if (['tactic-repair', 'performance-advisory', 'soft-style'].includes(mode)) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
-    cliArgs.push('--register-policy', 'random', '--register-palette', mode === 'soft-style' ? 'charismatic' : 'precise');
+    cliArgs.push(
+      '--register-policy',
+      'random',
+      '--register-palette',
+      mode === 'soft-style' ? 'charismatic' : 'precise',
+    );
   }
   if (mode === 'soft-style') cliArgs.splice(cliArgs.indexOf('--dag'), 1);
-  const result = spawnSync(
-    process.execPath,
-    cliArgs,
-    {
-      cwd: ROOT,
-      encoding: 'utf8',
-      timeout: 10_000,
-      env: {
-        ...process.env,
-        PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
-        CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
-        TUTOR_GUARD_FAKE_MODE: mode,
-      },
+  const result = spawnSync(process.execPath, cliArgs, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 10_000,
+    env: {
+      ...process.env,
+      PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+      CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+      TUTOR_GUARD_FAKE_MODE: mode,
     },
-  );
+  });
   if (result.status !== 0) {
     fs.rmSync(tmp, { recursive: true, force: true });
     assert.fail(`tutor-stub exited ${result.status}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
@@ -265,10 +266,7 @@ test('a fallback replaces a terse generic acknowledgement with learner-specific 
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
 
   assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
-  assert.match(
-    accounting.finalDelivery.candidate.text,
-    /^You’re right to separate suspicion from proof\./u,
-  );
+  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\./u);
   assert.doesNotMatch(accounting.finalDelivery.candidate.text, /^Exactly\./u);
   assert.equal(accounting.finalDelivery.auditOk, true);
 });
@@ -340,6 +338,7 @@ test('a flat named character is rewritten until the selected stance tactic is vi
 test('simplified recovery uses its logged plain configuration rather than retrying the failed policy', () => {
   const { events, stdout } = runGuardFixture('performance-advisory');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
 
   assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
@@ -349,10 +348,26 @@ test('simplified recovery uses its logged plain configuration rather than retryi
   assert.equal(accounting.finalDelivery.audits.deliveryOk, true);
   assert.equal(accounting.finalDelivery.deliveryConfiguration.engagement_stance, 'plain');
   assert.equal(accounting.finalDelivery.deliveryConfiguration.actorial_performance.id, 'unadorned_report');
+  assert.equal(turn.responseConfiguration.engagement_stance, 'precise');
+  assert.equal(turn.deliveredResponseConfiguration.engagement_stance, 'plain');
+  assert.deepEqual(turn.responseConfigurationAudit, accounting.finalDelivery.audits.responseConfigurationAudit);
   assert.equal(
-    accounting.repairsApplied[0].recoveryTransition.strategy,
-    'plain_grounded_unadorned',
+    turn.responseConfigurationAudit.configuration_signature,
+    [
+      accounting.finalDelivery.deliveryConfiguration.engagement_stance,
+      accounting.finalDelivery.deliveryConfiguration.action_family,
+      accounting.finalDelivery.deliveryConfiguration.audience_register,
+      accounting.finalDelivery.deliveryConfiguration.lexical_accessibility,
+      accounting.finalDelivery.deliveryConfiguration.scene_immersion,
+      accounting.finalDelivery.deliveryConfiguration.actorial_part,
+      accounting.finalDelivery.deliveryConfiguration.actorial_performance.id,
+    ].join('|'),
   );
+  assert.notEqual(
+    turn.selectedResponseConfigurationAudit.configuration_signature,
+    turn.responseConfigurationAudit.configuration_signature,
+  );
+  assert.equal(accounting.repairsApplied[0].recoveryTransition.strategy, 'plain_grounded_unadorned');
   assert.match(stdout, /response revised/u);
   assert.doesNotMatch(stdout, /safe fallback used/u);
 });
@@ -401,7 +416,7 @@ test('one compact recovery call requests and audits exactly one plain candidate'
   assert.doesNotMatch(stdout, /safe fallback used/u);
 });
 
-test('an explicit request for plain peer-level speech makes actorial realization advisory', () => {
+test('an explicit request for plain peer-level speech accepts the applicable plain boundary', () => {
   const { events } = runGuardFixture('soft-style');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
   const advisory = events.find((row) => row.type === 'tutor_response_delivery_advisory');
@@ -410,13 +425,12 @@ test('an explicit request for plain peer-level speech makes actorial realization
   );
 
   assert.equal(modelCalls.length, 1);
-  assert.equal(accounting.outcome, 'guarded_original_accepted_with_advisory');
+  assert.equal(accounting.outcome, 'guarded_original_accepted');
   assert.equal(accounting.attempts.length, 1);
-  assert.equal(accounting.originalCandidate.audits.actorialRealizationAudit.ok, false);
+  assert.equal(accounting.originalCandidate.audits.actorialRealizationAudit.ok, true);
   assert.equal(accounting.originalCandidate.audits.deliveryOk, true);
   assert.equal(accounting.finalDelivery.source, 'original_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, PLAIN_STYLE_DRAFT);
   assert.equal(accounting.finalDelivery.auditOk, true);
-  assert.equal(advisory.accepted, true);
-  assert.match(advisory.reason, /learner style request/u);
+  assert.equal(advisory, undefined);
 });

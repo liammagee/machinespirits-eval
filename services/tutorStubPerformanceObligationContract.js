@@ -1,7 +1,6 @@
 export const TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA =
   'machinespirits.tutor-stub.performance-obligation-contract.v1';
-export const TUTOR_STUB_PERFORMANCE_EVIDENCE_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.performance-evidence-audit.v1';
+export const TUTOR_STUB_PERFORMANCE_EVIDENCE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.performance-evidence-audit.v1';
 
 const PRESSURE_TACTICS = new Set([
   'dramatic_counterpressure',
@@ -10,12 +9,7 @@ const PRESSURE_TACTICS = new Set([
   'exposed_mismatch',
 ]);
 
-const EVIDENCE_TACTICS = new Set([
-  'evidentiary_boundary',
-  'rapid_handoff',
-  'measured_testimony',
-  ...PRESSURE_TACTICS,
-]);
+const EVIDENCE_TACTICS = new Set(['evidentiary_boundary', 'rapid_handoff', 'measured_testimony', ...PRESSURE_TACTICS]);
 
 const EVIDENTIARY_BOUNDARY_PERFORMANCE = Object.freeze({
   id: 'evidentiary_boundary',
@@ -103,23 +97,17 @@ function questionShaped(value) {
   const text = oneLine(value);
   if (!text) return true;
   if (text.includes('?')) return true;
-  return /^(?:can|could|did|do|does|how|is|may|should|what|when|where|which|who|why|will|would)\b/iu.test(
-    text,
-  );
+  return /^(?:can|could|did|do|does|how|is|may|should|what|when|where|which|who|why|will|would)\b/iu.test(text);
 }
 
 function exactCounterpressurePair(turn) {
-  const targetCandidates = uniqueStrings([
-    turn.pressure_target,
-    ...[...turn.public_claims].reverse(),
-    turn.learner_move,
-  ]);
-  const targetSpan = targetCandidates.find((surface) => !questionShaped(surface)) || null;
-  const contraryEvidenceSpan = uniqueStrings([
-    ...turn.contrary_evidence,
-    ...turn.due_evidence.map((entry) => entry.surface),
-    ...[...turn.public_evidence].reverse().map((entry) => entry.surface),
-  ])[0] || null;
+  // Counterpressure is semantic, not merely sequential. A previous tutor
+  // paragraph is not automatically the pressure target, and newly due
+  // evidence is not automatically contrary to it. Require the planner to
+  // provide both sides explicitly; otherwise retain the selected part and
+  // fall back to the existing public evidentiary-boundary tactic.
+  const targetSpan = questionShaped(turn.pressure_target) ? null : turn.pressure_target;
+  const contraryEvidenceSpan = uniqueStrings(turn.contrary_evidence)[0] || null;
   if (!targetSpan || !contraryEvidenceSpan || targetSpan === contraryEvidenceSpan) return null;
   return {
     target_span: targetSpan,
@@ -200,12 +188,13 @@ export function compileTutorStubPerformanceObligationContract({
   const turn = sanitizePublicTurn(publicTurn || {});
   const requestedTactic = requestedConfiguration.actorial_performance.id || 'unadorned_report';
   const pressurePair = PRESSURE_TACTICS.has(requestedTactic) ? exactCounterpressurePair(turn) : null;
-  const configuration = PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
-    ? counterpressureFallbackConfiguration(
-        requestedConfiguration,
-        'counterpressure_inapplicable_without_exact_public_target_and_contrary_evidence_pair',
-      )
-    : requestedConfiguration;
+  const configuration =
+    PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
+      ? counterpressureFallbackConfiguration(
+          requestedConfiguration,
+          'counterpressure_inapplicable_without_exact_public_target_and_contrary_evidence_pair',
+        )
+      : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
   const terminal = configuration.action_family === 'close_inquiry' || configuration.actorial_part === 'foreperson';
   const allEvidenceSurfaces = uniqueStrings([
@@ -213,24 +202,14 @@ export function compileTutorStubPerformanceObligationContract({
     ...turn.due_evidence.map((entry) => entry.surface),
     ...turn.public_evidence.map((entry) => entry.surface),
   ]);
-  const contraryEvidenceSurfaces = pressurePair
-    ? [pressurePair.contrary_evidence_span]
-    : allEvidenceSurfaces;
-  const sceneReferences = uniqueStrings([
-    ...world.public_objects,
-    world.ledger_term,
-    ...allEvidenceSurfaces,
-  ]);
+  const contraryEvidenceSurfaces = pressurePair ? [pressurePair.contrary_evidence_span] : allEvidenceSurfaces;
+  const sceneReferences = uniqueStrings([...world.public_objects, world.ledger_term, ...allEvidenceSurfaces]);
   const pressureSurfaces = pressurePair
     ? [pressurePair.target_span]
     : uniqueStrings([turn.pressure_target, ...turn.public_claims, turn.learner_move]).filter(
         (surface) => !questionShaped(surface),
       );
-  const handoffSurfaces = uniqueStrings([
-    ...allEvidenceSurfaces,
-    ...pressureSurfaces,
-    world.question,
-  ]);
+  const handoffSurfaces = uniqueStrings([...allEvidenceSurfaces, ...pressureSurfaces, world.question]);
   const findingSurfaces = uniqueStrings([turn.public_finding, world.question, ...allEvidenceSurfaces]);
   const anchors = [
     anchor('pressure_target', pressureSurfaces),
@@ -337,9 +316,7 @@ export function compileTutorStubPerformanceObligationContract({
       applied_tactic: tactic,
       applicable: !PRESSURE_TACTICS.has(requestedTactic) || Boolean(pressurePair),
       reason:
-        PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
-          ? 'missing_exact_public_counterpressure_pair'
-          : null,
+        PRESSURE_TACTICS.has(requestedTactic) && !pressurePair ? 'missing_exact_public_counterpressure_pair' : null,
     },
     pressure_pair: pressurePair,
     delivery_configuration: configuration,
@@ -357,10 +334,7 @@ export function compileTutorStubPerformanceObligationContract({
  * prompt below; generation is never told to emit offsets or audit JSON.
  */
 export function tutorStubPerformanceObligationContractPrompt(contract = null) {
-  if (
-    contract?.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA ||
-    contract?.complete !== true
-  ) {
+  if (contract?.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA || contract?.complete !== true) {
     return '';
   }
   const pair = contract.pressure_pair;
@@ -388,11 +362,7 @@ function terminalTail(candidate, end) {
 }
 
 function anchorTermsFor(obligation, anchorsById) {
-  return [
-    ...new Set(
-      obligation.anchor_ids.flatMap((id) => anchorsById.get(id)?.content_tokens || []),
-    ),
-  ];
+  return [...new Set(obligation.anchor_ids.flatMap((id) => anchorsById.get(id)?.content_tokens || []))];
 }
 
 function exactOccurrences(candidate, quotation) {
@@ -452,11 +422,7 @@ function relevanceIssues({ candidate, evidence, obligation, anchorsById }) {
   if (obligation.evidence_rule === 'terminal_declarative_public_anchor') {
     if (quotedText.includes('?') || terminalTail(candidate, evidence.end)) {
       issues.push(
-        spanIssue(
-          'irrelevant_evidence_span',
-          evidence,
-          'Closure evidence must be a terminal declarative span.',
-        ),
+        spanIssue('irrelevant_evidence_span', evidence, 'Closure evidence must be a terminal declarative span.'),
       );
     }
   }
@@ -481,7 +447,10 @@ export function validateTutorStubPerformanceEvidence({ contract, candidate = '',
   }));
 
   if (contract?.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA) {
-    issues.push({ type: 'invalid_contract_schema', reason: 'The evidence validator requires a v1 obligation contract.' });
+    issues.push({
+      type: 'invalid_contract_schema',
+      reason: 'The evidence validator requires a v1 obligation contract.',
+    });
   }
   if (contract?.complete !== true) {
     issues.push({ type: 'incomplete_contract', reason: 'The obligation contract has unresolved public-input issues.' });
@@ -509,11 +478,7 @@ export function validateTutorStubPerformanceEvidence({ contract, candidate = '',
     let end = row.end;
     let offsetRecovered = false;
     const declaredRangeValid =
-      Number.isInteger(start) &&
-      Number.isInteger(end) &&
-      start >= 0 &&
-      end <= text.length &&
-      start < end;
+      Number.isInteger(start) && Number.isInteger(end) && start >= 0 && end <= text.length && start < end;
     if (!declaredRangeValid || text.slice(start, end) !== row.text) {
       const occurrences = exactOccurrences(text, row.text);
       if (occurrences.length === 1) {

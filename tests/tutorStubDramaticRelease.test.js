@@ -99,10 +99,9 @@ test('director evidence becomes an enacted in-scene release', () => {
 
   const performed = auditTutorStubDramaticReleaseResponse({
     frame,
-    text: [
-      '“I had the midnight watch, and I saw the shutters closed after midnight.”',
-      'What does that change?',
-    ].join(' '),
+    text: ['“I had the midnight watch, and I saw the shutters closed after midnight.”', 'What does that change?'].join(
+      ' ',
+    ),
   });
   assert.equal(performed.ok, true);
   assert.equal(performed.metaRoleplayAnnouncement, false);
@@ -175,6 +174,32 @@ test('narrating a source entrance before quoted speech still exposes the role la
   );
 });
 
+test('a possessive evidence object is not mistaken for a role-label stage direction', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_caster',
+        via: 'director',
+        surface: 'The charcoal book records that the forge was shut and only Edony cast blanks there.',
+        presentation: { mode: 'enacted_role', role: 'leat-keeper reading the charcoal book' },
+      },
+    ],
+  });
+  const evidenceObject =
+    'I open the leat-keeper’s charcoal book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?';
+  const trueRoleLabel =
+    'The leat-keeper opens the charcoal book: “I record that the forge was shut and only Edony cast blanks there.” What does that change?';
+
+  assert.equal(tutorStubRoleStageDirectionVisible({ text: evidenceObject, frame }), false);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text: evidenceObject, frame }).ok, true);
+  assert.equal(tutorStubRoleStageDirectionVisible({ text: trueRoleLabel, frame }), true);
+  assert.ok(
+    auditTutorStubDramaticReleaseResponse({ text: trueRoleLabel, frame }).issues.some(
+      (issue) => issue.type === 'role_label_stage_direction',
+    ),
+  );
+});
+
 test('announcing role-play fails even when the clue and return question are present', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
@@ -208,8 +233,7 @@ test('an enacted assayer may report Verrell’s act but must not inherit it', ()
       },
     ],
   });
-  const drifted =
-    'I open the assay book. “I alone draw the mint-yard crucible.” What does that establish?';
+  const drifted = 'I open the assay book. “I alone draw the mint-yard crucible.” What does that establish?';
   const preserved =
     'I open the assay book. “I can attest that Verrell alone draws the mint-yard crucible.” What does that establish?';
 
@@ -236,8 +260,7 @@ test('an enacted guild officer must preserve Verrell’s ownership of the graver
     ],
   });
   const drifted = 'I open the guild book. “My broad graver is mine alone.” What changes?';
-  const preserved =
-    'I open the guild book. “I attest that the broad graver belongs to Verrell alone.” What changes?';
+  const preserved = 'I open the guild book. “I attest that the broad graver belongs to Verrell alone.” What changes?';
 
   assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: drifted, frame }), true);
   assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: preserved, frame }), false);
@@ -255,8 +278,7 @@ test('an enacted estate clerk must not turn the founder’s widow into the clerk
       },
     ],
   });
-  const drifted =
-    'I open the inventory. “I read that the worn burin was left to my widow, Edony.” What follows?';
+  const drifted = 'I open the inventory. “I read that the worn burin was left to my widow, Edony.” What follows?';
   const preserved =
     'I open the inventory. “I read that the worn burin was left to the founder’s widow, Edony.” What follows?';
 
@@ -395,8 +417,7 @@ test('steeping residue in a cup counts as a concrete exhibit demonstration', () 
   });
   const audit = auditTutorStubDramaticReleaseResponse({
     frame,
-    text:
-      'I steep the trough-rim crust in a white cup and compare it with the wormwood sprig; both give the same grey, bitter liquor. What does that establish?',
+    text: 'I steep the trough-rim crust in a white cup and compare it with the wormwood sprig; both give the same grey, bitter liquor. What does that establish?',
   });
 
   assert.equal(audit.ok, true);
@@ -404,8 +425,7 @@ test('steeping residue in a cup counts as a concrete exhibit demonstration', () 
 
   const tilted = auditTutorStubDramaticReleaseResponse({
     frame,
-    text:
-      'I tilt the white cup beneath the lamp; the trough-rim crust gives the same grey, bitter liquor as wormwood. What does that establish?',
+    text: 'I tilt the white cup beneath the lamp; the trough-rim crust gives the same grey, bitter liquor as wormwood. What does that establish?',
   });
   assert.equal(tilted.ok, true);
   assert.equal(tilted.exhibitHandoffVisible, true);
@@ -821,10 +841,10 @@ test('a source physically rubbing and holding an exhibit is a visible entrance b
 
   assert.equal(audit.entranceVisible, true);
   assert.equal(audit.exhibitHandoffVisible, true);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), [
-    'role_label_stage_direction',
-    'missing_in_scene_enactment',
-  ]);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['role_label_stage_direction', 'missing_in_scene_enactment'],
+  );
 });
 
 test('a where question visibly returns the released exhibit to the inquiry', () => {
