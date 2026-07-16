@@ -13,6 +13,14 @@ function integer(value, label, { minimum = 0 } = {}) {
   return parsed;
 }
 
+function rate(value, label) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+    throw new Error(`${label} must be a number between 0 and 1`);
+  }
+  return parsed;
+}
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -76,9 +84,32 @@ function validateWorkingScreen(config, { root }) {
 function validateAcceptance(config) {
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
   if (!cells.length) throw new Error('acceptance matrix is empty');
-  if (config.first_draft_gates?.require_all_four_cells === true && cells.length !== 4) {
+  const strict = config.strict_delivery_gates_per_cell || {};
+  const first = config.first_draft_gates || {};
+  if (first.require_all_four_cells !== true) {
+    throw new Error('acceptance must require all four cells');
+  }
+  if (cells.length !== 4) {
     throw new Error('acceptance matrix must declare exactly four cells');
   }
+  integer(config.fixed_configuration?.turns, 'fixed turns', { minimum: 1 });
+  integer(strict.final_delivery_audit_failures, 'final delivery audit failures');
+  integer(strict.maximum_deterministic_fallback_turns, 'maximum deterministic fallback turns');
+  integer(strict.error_count, 'error count');
+  integer(strict.quarantine_count, 'quarantine count');
+  integer(strict.meta_performance_turns, 'meta performance turns');
+  integer(strict.role_stage_direction_turns, 'role stage direction turns');
+  integer(strict.source_replacement_turns, 'source replacement turns');
+  integer(strict.duplicate_clue_delivery_turns, 'duplicate clue delivery turns');
+  rate(strict.minimum_host_visibility_rate, 'minimum host visibility rate');
+  rate(strict.minimum_mean_configuration_realization, 'minimum mean configuration realization');
+  integer(strict.minimum_distinct_host_parts, 'minimum distinct host parts', { minimum: 1 });
+  rate(first.minimum_accounted_turn_rate, 'minimum accounted turn rate');
+  rate(first.minimum_aggregate_original_candidate_acceptance_rate, 'minimum aggregate original acceptance rate');
+  rate(first.minimum_cell_original_candidate_acceptance_rate, 'minimum cell original acceptance rate');
+  rate(first.maximum_aggregate_model_rewrite_rate, 'maximum aggregate model rewrite rate');
+  integer(first.maximum_model_rewrite_turns_per_cell, 'maximum model rewrite turns per cell');
+  integer(first.maximum_total_deterministic_fallback_turns, 'maximum total deterministic fallback turns');
   const ids = new Set();
   const seeds = new Set();
   const priorities = new Set();
@@ -297,6 +328,13 @@ export function tutorStubFirstDraftGatePossibility({ accepted = 0, completed = 0
   };
 }
 
+export function tutorStubStrictOriginalCandidateAccepted(accounting = null) {
+  return Boolean(
+    accounting?.finalDelivery?.source === 'original_candidate' &&
+      accounting?.originalCandidate?.audits?.actorialRealizationAudit?.ok === true,
+  );
+}
+
 export function tutorStubFirstDraftIterationStopping({
   current = null,
   previous = null,
@@ -479,7 +517,12 @@ export function assessTutorStubAcceptanceCell(summary, config) {
   const rows = (summary.rows || []).filter((row) => row.status === 'ok');
   const sum = (reader) => rows.reduce((total, row) => total + Number(reader(row) || 0), 0);
   const turns = sum((row) => row.turnCount);
-  const original = sum((row) => row.guardAccounting?.originalCandidateAcceptedTurns);
+  const declaredTurns = integer(config.fixed_configuration?.turns, 'fixed turns', { minimum: 1 });
+  const reportedGuardTurns = sum((row) => row.guardAccounting?.turns);
+  const accountedTurns = sum((row) => row.guardAccounting?.accountedTurns);
+  const accountedTurnRate = turns ? accountedTurns / turns : null;
+  const deliveredOriginal = sum((row) => row.guardAccounting?.originalCandidateAcceptedTurns);
+  const strictOriginal = sum((row) => row.guardAccounting?.strictOriginalCandidateAcceptedTurns);
   const hostVisible = sum((row) => row.characterAdaptation?.hostVisibleTurns);
   const realization = rows.reduce(
     (total, row) =>
@@ -491,8 +534,18 @@ export function assessTutorStubAcceptanceCell(summary, config) {
   );
   const observed = {
     turns,
-    originalCandidatesAccepted: original,
-    originalCandidateAcceptanceRate: turns ? original / turns : null,
+    declaredTurns,
+    reportedGuardTurns,
+    accountedTurns,
+    accountedTurnRate,
+    originalCandidatesDelivered: deliveredOriginal,
+    originalCandidateDeliveryRate: turns ? deliveredOriginal / turns : null,
+    strictOriginalCandidatesAccepted: strictOriginal,
+    strictOriginalCandidateAcceptanceRate: turns ? strictOriginal / turns : null,
+    // Compatibility aliases now intentionally name the stricter first-draft
+    // measurement rather than ordinary safe delivery of an original draft.
+    originalCandidatesAccepted: strictOriginal,
+    originalCandidateAcceptanceRate: turns ? strictOriginal / turns : null,
     mechanicalRepairs: sum((row) => row.guardAccounting?.mechanicalRepairTurns),
     modelRewrites: sum((row) => row.guardAccounting?.modelRepairTurns),
     deterministicFallbacks: sum((row) => row.guardAccounting?.deterministicFallbackTurns),
@@ -512,7 +565,11 @@ export function assessTutorStubAcceptanceCell(summary, config) {
   const strict = config.strict_delivery_gates_per_cell || {};
   const first = config.first_draft_gates || {};
   const gates = {
-    complete: rows.length === 1 && turns > 0,
+    complete: rows.length === 1 && turns === declaredTurns,
+    accountedTurns:
+      reportedGuardTurns === turns &&
+      accountedTurns <= turns &&
+      accountedTurnRate >= rate(first.minimum_accounted_turn_rate, 'minimum accounted turn rate'),
     finalSafety: observed.finalSafetyFailures === Number(strict.final_delivery_audit_failures || 0),
     fallback: observed.deterministicFallbacks <= Number(strict.maximum_deterministic_fallback_turns || 0),
     errors: observed.errorCount === Number(strict.error_count || 0),

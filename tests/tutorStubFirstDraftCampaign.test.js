@@ -10,6 +10,7 @@ import {
   summarizeTutorStubWorkingScreen,
   tutorStubFirstDraftGatePossibility,
   tutorStubFirstDraftIterationStopping,
+  tutorStubStrictOriginalCandidateAccepted,
   validateTutorStubFirstDraftCampaign,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
@@ -59,6 +60,34 @@ function workingConfig(tmp) {
       maximum_fallbacks: 0,
       minimum_mean_configuration_realization: 0.9,
       require_transcript_specific_uptake: true,
+    },
+  };
+}
+
+function acceptanceGateConfig(turns = 10) {
+  return {
+    fixed_configuration: { turns },
+    strict_delivery_gates_per_cell: {
+      final_delivery_audit_failures: 0,
+      maximum_deterministic_fallback_turns: 1,
+      error_count: 0,
+      quarantine_count: 0,
+      meta_performance_turns: 0,
+      role_stage_direction_turns: 0,
+      source_replacement_turns: 0,
+      duplicate_clue_delivery_turns: 0,
+      minimum_host_visibility_rate: 1,
+      minimum_mean_configuration_realization: 0.9,
+      minimum_distinct_host_parts: 2,
+    },
+    first_draft_gates: {
+      minimum_accounted_turn_rate: 1,
+      minimum_aggregate_original_candidate_acceptance_rate: 0.7,
+      minimum_cell_original_candidate_acceptance_rate: 0.6,
+      maximum_aggregate_model_rewrite_rate: 0.3,
+      maximum_model_rewrite_turns_per_cell: 4,
+      maximum_total_deterministic_fallback_turns: 2,
+      require_all_four_cells: true,
     },
   };
 }
@@ -314,7 +343,10 @@ test('acceptance assessment keeps original, repair, fallback, safety, and latenc
         status: 'ok',
         turnCount: 4,
         guardAccounting: {
-          originalCandidateAcceptedTurns: 3,
+          turns: 4,
+          accountedTurns: 4,
+          originalCandidateAcceptedTurns: 4,
+          strictOriginalCandidateAcceptedTurns: 3,
           mechanicalRepairTurns: 1,
           modelRepairTurns: 0,
           deterministicFallbackTurns: 0,
@@ -337,28 +369,13 @@ test('acceptance assessment keeps original, repair, fallback, safety, and latenc
     ],
     aggregates: { errorCount: 0 },
   };
-  const config = {
-    strict_delivery_gates_per_cell: {
-      final_delivery_audit_failures: 0,
-      maximum_deterministic_fallback_turns: 0,
-      error_count: 0,
-      quarantine_count: 0,
-      meta_performance_turns: 0,
-      role_stage_direction_turns: 0,
-      source_replacement_turns: 0,
-      duplicate_clue_delivery_turns: 0,
-      minimum_host_visibility_rate: 1,
-      minimum_mean_configuration_realization: 0.9,
-      minimum_distinct_host_parts: 2,
-    },
-    first_draft_gates: {
-      minimum_cell_original_candidate_acceptance_rate: 0.75,
-      maximum_model_rewrite_turns_per_cell: 1,
-    },
-  };
+  const config = acceptanceGateConfig(4);
+  config.first_draft_gates.minimum_cell_original_candidate_acceptance_rate = 0.75;
   const assessment = assessTutorStubAcceptanceCell(report, config);
   assert.equal(assessment.status, 'pass');
   assert.equal(assessment.observed.originalCandidateAcceptanceRate, 0.75);
+  assert.equal(assessment.observed.originalCandidateDeliveryRate, 1);
+  assert.equal(assessment.observed.accountedTurnRate, 1);
   assert.equal(assessment.observed.mechanicalRepairs, 1);
   assert.equal(assessment.observed.modelRewrites, 0);
   assert.equal(assessment.observed.deterministicFallbacks, 0);
@@ -367,10 +384,104 @@ test('acceptance assessment keeps original, repair, fallback, safety, and latenc
   assert.equal(assessment.observed.meanTotalTutorLatencyMs, 125);
 });
 
+test('acceptance first-draft gate uses strict originals while preserving ordinary original delivery', () => {
+  const config = acceptanceGateConfig(4);
+  config.first_draft_gates.minimum_cell_original_candidate_acceptance_rate = 0.75;
+  const report = {
+    rows: [
+      {
+        status: 'ok',
+        turnCount: 4,
+        guardAccounting: {
+          turns: 4,
+          accountedTurns: 4,
+          originalCandidateAcceptedTurns: 4,
+          strictOriginalCandidateAcceptedTurns: 2,
+        },
+        characterAdaptation: {
+          hostVisibleTurns: 4,
+          hostPartCounts: { examiner: 2, advocate: 2 },
+        },
+        responseConfigurationVisibility: { mean_realization_rate: 1 },
+      },
+    ],
+    aggregates: { errorCount: 0 },
+  };
+  const assessment = assessTutorStubAcceptanceCell(report, config);
+  assert.equal(assessment.observed.originalCandidatesDelivered, 4);
+  assert.equal(assessment.observed.strictOriginalCandidatesAccepted, 2);
+  assert.equal(assessment.gates.originalAcceptance, false);
+  assert.equal(assessment.status, 'fail');
+});
+
+test('strict original accounting requires original delivery and selected part/tactic realization', () => {
+  const strictOriginal = {
+    finalDelivery: { source: 'original_candidate' },
+    originalCandidate: { audits: { actorialRealizationAudit: { ok: true } } },
+  };
+  assert.equal(tutorStubStrictOriginalCandidateAccepted(strictOriginal), true);
+  assert.equal(
+    tutorStubStrictOriginalCandidateAccepted({
+      ...strictOriginal,
+      originalCandidate: { audits: { actorialRealizationAudit: { ok: false } } },
+    }),
+    false,
+  );
+  assert.equal(
+    tutorStubStrictOriginalCandidateAccepted({
+      ...strictOriginal,
+      finalDelivery: { source: 'policy_repair_candidate' },
+    }),
+    false,
+  );
+});
+
+test('acceptance requires the declared turn horizon and complete guard accounting', () => {
+  const config = acceptanceGateConfig(4);
+  const baseRow = {
+    status: 'ok',
+    turnCount: 4,
+    guardAccounting: {
+      turns: 4,
+      accountedTurns: 4,
+      originalCandidateAcceptedTurns: 4,
+      strictOriginalCandidateAcceptedTurns: 4,
+    },
+    characterAdaptation: {
+      hostVisibleTurns: 4,
+      hostPartCounts: { examiner: 2, advocate: 2 },
+    },
+    responseConfigurationVisibility: { mean_realization_rate: 1 },
+  };
+  const short = assessTutorStubAcceptanceCell(
+    { rows: [{ ...baseRow, turnCount: 3 }], aggregates: { errorCount: 0 } },
+    config,
+  );
+  assert.equal(short.gates.complete, false);
+  assert.equal(short.status, 'fail');
+
+  const unaccounted = assessTutorStubAcceptanceCell(
+    {
+      rows: [
+        {
+          ...baseRow,
+          guardAccounting: { ...baseRow.guardAccounting, accountedTurns: 3 },
+        },
+      ],
+      aggregates: { errorCount: 0 },
+    },
+    config,
+  );
+  assert.equal(unaccounted.observed.accountedTurnRate, 0.75);
+  assert.equal(unaccounted.gates.accountedTurns, false);
+  assert.equal(unaccounted.status, 'fail');
+});
+
 test('acceptance expansion freezes explicit palette and safety-turn controls', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-acceptance-'));
   try {
     const config = {
+      ...acceptanceGateConfig(10),
       schema: 'machinespirits.tutor-stub.first-draft-generalization-plan.v1',
       id: 'acceptance-test',
       fixed_configuration: {
@@ -405,7 +516,6 @@ test('acceptance expansion freezes explicit palette and safety-turn controls', (
         learner_profile,
         seed,
       })),
-      first_draft_gates: { require_all_four_cells: true },
       change_control: { maximum_concurrent_cells: 3, hardest_cell_first: true },
     };
     const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp });
@@ -419,6 +529,59 @@ test('acceptance expansion freezes explicit palette and safety-turn controls', (
       '--safety-turns',
       '80',
     ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('acceptance validation fails closed when a required strict or first-draft gate is omitted', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-acceptance-gates-'));
+  try {
+    const base = {
+      ...acceptanceGateConfig(10),
+      schema: 'machinespirits.tutor-stub.first-draft-generalization-plan.v1',
+      id: 'acceptance-gate-test',
+      fixed_configuration: {
+        ...acceptanceGateConfig(10).fixed_configuration,
+        safety_turns: 80,
+        register_palette: 'all',
+      },
+      artifacts: { live_root: path.join(tmp, 'live') },
+      matrix: [
+        ['hard', 1, 'answer_seeking', 92001],
+        ['second', 2, 'diligent', 92002],
+        ['third', 3, 'premature_closure', 92003],
+        ['fourth', 4, 'low_trust_skeptic', 92004],
+      ].map(([id, priority, learner_profile, seed]) => ({
+        id,
+        priority,
+        world: `world_${id}`,
+        learner_profile,
+        seed,
+      })),
+      change_control: { maximum_concurrent_cells: 3, hardest_cell_first: true },
+    };
+
+    const missingStrict = structuredClone(base);
+    delete missingStrict.strict_delivery_gates_per_cell.minimum_mean_configuration_realization;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: missingStrict, root: tmp }),
+      /minimum mean configuration realization must be a number between 0 and 1/u,
+    );
+
+    const missingFirstDraft = structuredClone(base);
+    delete missingFirstDraft.first_draft_gates.minimum_accounted_turn_rate;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: missingFirstDraft, root: tmp }),
+      /minimum accounted turn rate must be a number between 0 and 1/u,
+    );
+
+    const missingAllCells = structuredClone(base);
+    delete missingAllCells.first_draft_gates.require_all_four_cells;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: missingAllCells, root: tmp }),
+      /acceptance must require all four cells/u,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

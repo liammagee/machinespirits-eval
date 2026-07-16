@@ -60,6 +60,7 @@ import {
   summarizeTutorStubDiagnosticCollection,
 } from '../services/tutorStubDiagnosticCollection.js';
 import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOfActionCoaching.js';
+import { tutorStubStrictOriginalCandidateAccepted } from '../services/tutorStubFirstDraftCampaign.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   normalizeTutorStubReleaseSpeed,
@@ -1817,6 +1818,7 @@ function summarizeTrace(
   const originalCandidateAcceptedTurns = guardRows.filter(
     (row) => row.finalDelivery?.source === 'original_candidate',
   ).length;
+  const strictOriginalCandidateAcceptedTurns = guardRows.filter(tutorStubStrictOriginalCandidateAccepted).length;
   const totalTutorGenerationLatencyMs = guardRows.reduce(
     (sum, row) => sum + Number(row.generation?.totalModelLatencyMs || 0),
     0,
@@ -1838,6 +1840,10 @@ function summarizeTrace(
     originalCandidateAcceptedTurns,
     originalCandidateAcceptanceRate: guardRows.length
       ? Number((originalCandidateAcceptedTurns / guardRows.length).toFixed(4))
+      : null,
+    strictOriginalCandidateAcceptedTurns,
+    strictOriginalCandidateAcceptanceRate: guardRows.length
+      ? Number((strictOriginalCandidateAcceptedTurns / guardRows.length).toFixed(4))
       : null,
     mechanicalRepairTurns: guardRows.filter(
       (row) =>
@@ -2061,6 +2067,10 @@ function summarizeRows(rows) {
         (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
         0,
       ),
+      strictOriginalCandidateAcceptedTurns: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.strictOriginalCandidateAcceptedTurns || 0),
+        0,
+      ),
       mechanicalRepairTurns: okRows.reduce(
         (sum, row) => sum + Number(row.guardAccounting?.mechanicalRepairTurns || 0),
         0,
@@ -2115,6 +2125,10 @@ function summarizeRows(rows) {
     guardTriggeredTurns: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0), 0),
     originalCandidateAcceptedTurns: scored.reduce(
       (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
+      0,
+    ),
+    strictOriginalCandidateAcceptedTurns: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.strictOriginalCandidateAcceptedTurns || 0),
       0,
     ),
     mechanicalRepairTurns: scored.reduce(
@@ -4674,6 +4688,10 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
     (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
     0,
   );
+  const strictOriginalCandidateAcceptedTurns = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.strictOriginalCandidateAcceptedTurns || 0),
+    0,
+  );
   const mechanicalRepairTurns = okRows.reduce(
     (sum, row) => sum + Number(row.guardAccounting?.mechanicalRepairTurns || 0),
     0,
@@ -4705,6 +4723,10 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       originalCandidateAcceptedTurns,
       originalCandidateAcceptanceRate: guardTurns
         ? roundField(originalCandidateAcceptedTurns / guardTurns)
+        : null,
+      strictOriginalCandidateAcceptedTurns,
+      strictOriginalCandidateAcceptanceRate: guardTurns
+        ? roundField(strictOriginalCandidateAcceptedTurns / guardTurns)
         : null,
       mechanicalRepairTurns,
       modelRepairTurns,
