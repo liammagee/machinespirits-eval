@@ -77,6 +77,8 @@ async function mapLimit(items, limit, fn) {
 }
 
 function validationReport(plan, loaded) {
+  const jointPerformanceGeneration =
+    loaded.config.fixed_configuration?.joint_performance_generation === true;
   return {
     schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
     generatedAt: new Date().toISOString(),
@@ -87,6 +89,18 @@ function validationReport(plan, loaded) {
     oneCampaignLevelExpansion: true,
     makesModelCalls: false,
     maxConcurrency: plan.maxConcurrency,
+    generationMode: jointPerformanceGeneration ? 'joint_performance_v2' :
+      loaded.config.fixed_configuration?.structured_generation === true ? 'structured_v1' : 'plain',
+    ...(jointPerformanceGeneration
+      ? {
+          jointPerformanceSchema:
+            loaded.config.fixed_configuration.joint_performance_schema,
+          jointPerformanceCompositionSchema:
+            loaded.config.fixed_configuration.joint_performance_composition_schema,
+          jointPerformanceAuditSchema:
+            loaded.config.fixed_configuration.joint_performance_audit_schema,
+        }
+      : {}),
     cells: plan.cells.map((cell) => ({
       id: cell.id,
       priority: cell.priority,
@@ -133,6 +147,12 @@ async function runWorkingPreflight(config, cellId) {
       'tests/tutorStubFrozenReplay.test.js',
       'tests/tutorStubFirstDraftContract.test.js',
       'tests/tutorStubStructuredFirstDraft.test.js',
+      ...(config.fixed_configuration?.joint_performance_generation === true
+        ? [
+            'tests/tutorStubJointPerformanceFirstDraft.test.js',
+            'tests/tutorStubV27JointPerformanceCalibration.test.js',
+          ]
+        : []),
       'tests/tutorStubResponseComposition.test.js',
       'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
       'tests/tutorStubV25RecognitionFixture.test.js',

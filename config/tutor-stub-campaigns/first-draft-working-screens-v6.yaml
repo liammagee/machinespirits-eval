@@ -1,0 +1,130 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens-v6
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V27 architectural-reset screen after V26 stagnated. The speaking model
+  returns a typed v2 object containing UPTAKE, a joint PERFORMANCE with ENTRY
+  and RESPONSE, and HANDOFF. The harness owns every public SOURCE, inserts all
+  due source entries between the two performance spans, and audits the
+  performance across its two model-owned spans while excluding host-owned
+  SOURCE. This is reusable development evidence only.
+
+fixed_configuration:
+  original_only: true
+  joint_performance_generation: true
+  joint_performance_schema: machinespirits.tutor-stub.structured-first-draft.v2
+  joint_performance_composition_schema: machinespirits.tutor-stub.structured-first-draft-composition.v2
+  joint_performance_audit_schema: machinespirits.tutor-stub.structured-first-draft-joint-performance-audit.v2
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_joint_performance_host_plan
+  effort_source: exact_saved_request
+  max_live_model_jobs: 1
+  semantic_adjudication: true
+  semantic_adjudication_scope: eligible_actorial_recognition_only
+  adjudicator_model_source: saved_analysis_model
+  adjudicator_effort: low
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubStructuredFirstDraft.test.js
+    tests/tutorStubJointPerformanceFirstDraft.test.js
+    tests/tutorStubV27JointPerformanceCalibration.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    tests/tutorStubV25RecognitionFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+    services/__tests__/tutorStubCounterpressure.test.js
+    tests/tutorStubFirstDraftCampaign.test.js
+    tests/tutorStubFirstDraftOuterLoop.test.js
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+matrix:
+  - id: marrick_v27_joint_performance
+    priority: 1
+    world: world_005_marrick
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
+    source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
+    turns: [4, 5, 6, 9]
+    development_seed: 20261500
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v27_predeclaration
+    target_failures:
+      - joint_performance_entry_response_ownership
+      - host_source_exclusion_from_performance
+      - exact_host_source_occurrences_for_zero_one_or_many_entries
+      - host_slot_count_order_and_terminality
+      - plain_lexical_accessibility
+      - adult_novice_audience
+      - selected_action_stance_part_and_tactic
+
+gates_per_cell:
+  required_originals_accepted: 4
+  required_turns: 4
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_fallbacks: 0
+  require_transcript_specific_uptake: true
+  require_joint_performance_output: true
+  require_joint_performance_ownership: true
+  require_exact_host_source_occurrences: true
+
+change_log:
+  structured_contract: >-
+    V27 replaces V26's separate PART and TACTIC performance ownership with one
+    typed PERFORMANCE object containing ENTRY and RESPONSE. The selected part,
+    tactic, stance, and immersion must be visible across those two model-owned
+    spans together. HANDOFF owns only the action family. The host inserts every
+    due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
+    once, and excludes all SOURCE spans from performance recognition.
+  speaking_prompt: >-
+    The model now returns exactly uptake, performance.entry,
+    performance.response, and handoff. It is told explicitly that ENTRY and
+    RESPONSE form one performance beat; it must not copy, paraphrase, label, or
+    quote SOURCE.
+  recovery_only: >-
+    Recovery remains disabled in original-only screening. Strict end-to-end
+    repair and fallback behavior is unchanged outside this explicit v2 frozen
+    screen.
+  audit_recognition_only: >-
+    No phrase-level recognition rule changes in V27 iteration 1. The change is
+    architectural ownership: deterministic v2 composition and joint-span
+    auditing replace the invalid requirement that TACTIC alone realize a
+    performance established jointly by PART and TACTIC.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_cell_fails: true
+  maximum_consecutive_iterations_without_improvement: 2
+
+planned_cross_world_confirmation:
+  required_after_primary_pass: true
+  screen_id: first-draft-working-screens-v7
+  status: not_predeclared
+  seed_status: not_reserved
+  execution: complete_all_cells_with_maximum_three_live_jobs
+
+claim_boundary: >-
+  Passing means one fresh v2 tutor draw realizes the selected joint performance
+  and every other required response axis on all four frozen prefixes. Every due
+  host SOURCE must occur exactly once, including turns with multiple sources,
+  while all whole-response safety, uptake, delivery, repair, and fallback gates
+  remain clean. It is reusable development evidence, not held-out acceptance.

@@ -13,6 +13,11 @@ import {
   tutorStubStrictOriginalCandidateAccepted,
   validateTutorStubFirstDraftCampaign,
 } from '../services/tutorStubFirstDraftCampaign.js';
+import {
+  TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
+  TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+  TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
+} from '../services/tutorStubJointPerformanceFirstDraft.js';
 
 function workingConfig(tmp) {
   const trace = path.join(tmp, 'source.jsonl');
@@ -69,6 +74,20 @@ function enableStructuredGeneration(config) {
   config.gates_per_cell.require_structured_output = true;
   config.gates_per_cell.require_structured_slot_ownership = true;
   config.gates_per_cell.require_exact_source_once = true;
+  return config;
+}
+
+function enableJointPerformanceGeneration(config) {
+  config.fixed_configuration.joint_performance_generation = true;
+  config.fixed_configuration.joint_performance_schema =
+    TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA;
+  config.fixed_configuration.joint_performance_composition_schema =
+    TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA;
+  config.fixed_configuration.joint_performance_audit_schema =
+    TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA;
+  config.gates_per_cell.require_joint_performance_output = true;
+  config.gates_per_cell.require_joint_performance_ownership = true;
+  config.gates_per_cell.require_exact_host_source_occurrences = true;
   return config;
 }
 
@@ -148,6 +167,138 @@ test('campaign validator fails closed when structured generation omits any struc
         new RegExp(`gates_per_cell\\.${gate}: true`, 'u'),
       );
     }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('joint-performance campaign validation propagates only the explicit v2 replay flag', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-'));
+  try {
+    const config = enableJointPerformanceGeneration(workingConfig(tmp));
+    const validation = validateTutorStubFirstDraftCampaign({ config, root: tmp });
+    assert.equal(validation.kind, 'working_screen');
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
+    for (const command of plan.cells.flatMap((cell) => cell.commands)) {
+      assert.ok(command.argv.includes('--joint-performance-generation'));
+      assert.ok(!command.argv.includes('--structured-generation'));
+      assert.ok(command.argv.includes('--original-only'));
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('joint-performance campaign validation fails closed on mode, schema, or gate drift', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-gates-'));
+  try {
+    const conflicting = enableJointPerformanceGeneration(enableStructuredGeneration(workingConfig(tmp)));
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: conflicting, root: tmp }),
+      /generation modes are mutually exclusive/iu,
+    );
+
+    for (const field of [
+      'joint_performance_schema',
+      'joint_performance_composition_schema',
+      'joint_performance_audit_schema',
+    ]) {
+      const config = enableJointPerformanceGeneration(workingConfig(tmp));
+      delete config.fixed_configuration[field];
+      assert.throws(
+        () => validateTutorStubFirstDraftCampaign({ config, root: tmp }),
+        new RegExp(`fixed_configuration\\.${field}`, 'u'),
+      );
+    }
+
+    for (const gate of [
+      'require_joint_performance_output',
+      'require_joint_performance_ownership',
+      'require_exact_host_source_occurrences',
+    ]) {
+      const config = enableJointPerformanceGeneration(workingConfig(tmp));
+      delete config.gates_per_cell[gate];
+      assert.throws(
+        () => validateTutorStubFirstDraftCampaign({ config, root: tmp }),
+        new RegExp(`gates_per_cell\\.${gate}: true`, 'u'),
+      );
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('working summary enforces v2 joint output, ownership, and N host-owned SOURCE occurrences', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-summary-'));
+  try {
+    const config = enableJointPerformanceGeneration(workingConfig(tmp));
+    const reports = [2, 3, 7, 10].map((turn, index) => {
+      const entries = index === 0
+        ? [{ surface: 'First public source.' }, { surface: 'Second public source.' }]
+        : [];
+      const sourceSpans = entries.map((entry, sourceIndex) => ({
+        id: `source_${sourceIndex + 1}`,
+        kind: 'source',
+        owner: 'host',
+        text: entry.surface,
+      }));
+      const sourceText = entries.map((entry) => entry.surface).join(' ');
+      return {
+        bundles: [{
+          turn,
+          turnId: `run:t${turn}`,
+          frames: { dramaticRelease: { active: entries.length > 0, entries } },
+        }],
+        results: [{
+          turn,
+          turnId: `run:t${turn}`,
+          latencyMs: 100,
+          jointPerformanceGeneration: {
+            ok: true,
+            composition: {
+              text: `We enter the scene. ${sourceText} What do you see?`.replace(/\s+/gu, ' ').trim(),
+              sourceCount: entries.length,
+              spans: sourceSpans,
+            },
+          },
+          audit: {
+            ok: true,
+            safetyFailure: false,
+            failureClusters: [],
+            audits: {
+              responseCompositionAudit: { ok: true },
+              actorialRealizationAudit: { ok: true },
+              responseConfigurationAudit: { realization_rate: 1 },
+              jointPerformanceAudit: { ok: true },
+            },
+          },
+        }],
+      };
+    });
+
+    const passing = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
+    assert.equal(passing.validJointPerformanceOutputs, 4);
+    assert.equal(passing.jointPerformanceOwnershipPasses, 4);
+    assert.equal(passing.exactHostSourceOccurrencePasses, 4);
+    assert.deepEqual(
+      passing.hostSourceOccurrences.map((row) => [
+        row.expectedOccurrenceCount,
+        row.sourceSpanCount,
+        row.hostOwnedSourceSpanCount,
+        row.actualOccurrenceCount,
+      ]),
+      [[2, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+    );
+    assert.equal(passing.gates.jointPerformanceOutput, true);
+    assert.equal(passing.gates.jointPerformanceOwnership, true);
+    assert.equal(passing.gates.exactHostSourceOccurrences, true);
+    assert.equal(passing.status, 'pass');
+
+    const wrongOwner = structuredClone(reports);
+    wrongOwner[0].results[0].jointPerformanceGeneration.composition.spans[1].owner = 'model';
+    const rejected = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: wrongOwner, config });
+    assert.equal(rejected.gates.exactHostSourceOccurrences, false);
+    assert.equal(rejected.status, 'fail');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

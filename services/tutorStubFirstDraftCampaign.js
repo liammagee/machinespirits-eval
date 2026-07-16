@@ -3,6 +3,12 @@ import path from 'node:path';
 
 import YAML from 'yaml';
 
+import {
+  TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
+  TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+  TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
+} from './tutorStubJointPerformanceFirstDraft.js';
+
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
 
 function integer(value, label, { minimum = 0 } = {}) {
@@ -48,6 +54,12 @@ export function loadTutorStubFirstDraftCampaign(configPath, { root = process.cwd
 
 function validateWorkingScreen(config, { root }) {
   if (config.held_out !== false) throw new Error('working screen must declare held_out: false');
+  if (
+    config.fixed_configuration?.structured_generation === true &&
+    config.fixed_configuration?.joint_performance_generation === true
+  ) {
+    throw new Error('working screen generation modes are mutually exclusive');
+  }
   if (config.fixed_configuration?.structured_generation === true) {
     for (const gate of [
       'require_structured_output',
@@ -56,6 +68,27 @@ function validateWorkingScreen(config, { root }) {
     ]) {
       if (config.gates_per_cell?.[gate] !== true) {
         throw new Error(`structured working screen must declare gates_per_cell.${gate}: true`);
+      }
+    }
+  }
+  if (config.fixed_configuration?.joint_performance_generation === true) {
+    const expectedSchemas = {
+      joint_performance_schema: TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
+      joint_performance_composition_schema: TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+      joint_performance_audit_schema: TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
+    };
+    for (const [field, expected] of Object.entries(expectedSchemas)) {
+      if (config.fixed_configuration?.[field] !== expected) {
+        throw new Error(`joint-performance working screen must declare fixed_configuration.${field}: ${expected}`);
+      }
+    }
+    for (const gate of [
+      'require_joint_performance_output',
+      'require_joint_performance_ownership',
+      'require_exact_host_source_occurrences',
+    ]) {
+      if (config.gates_per_cell?.[gate] !== true) {
+        throw new Error(`joint-performance working screen must declare gates_per_cell.${gate}: true`);
       }
     }
   }
@@ -192,6 +225,9 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
   }
   if (config.fixed_configuration?.structured_generation === true) {
     command.splice(command.length - 2, 0, '--structured-generation');
+  }
+  if (config.fixed_configuration?.joint_performance_generation === true) {
+    command.splice(command.length - 2, 0, '--joint-performance-generation');
   }
   if (config.fixed_configuration?.adjudicator_model) {
     command.splice(
@@ -364,17 +400,18 @@ function exactTextOccurrences(text, needle) {
   return count;
 }
 
-function structuredSourceOccurrenceMetric({ row, bundle }) {
+function hostSourceOccurrenceMetric({ row, bundle, generationField = 'structuredGeneration' }) {
   const frame = bundle?.frames?.dramaticRelease || null;
   const active = frame?.active === true;
   const entries = active && Array.isArray(frame?.entries) ? frame.entries : [];
-  const composition = row?.structuredGeneration?.composition || null;
+  const composition = row?.[generationField]?.composition || null;
   const sourceSpans = Array.isArray(composition?.spans)
     ? composition.spans.filter((span) => span?.kind === 'source')
     : [];
   const expectedOccurrenceCount = active ? entries.length : 0;
   const declaredSourceCount = Number(composition?.sourceCount);
   const sourceSpanCount = sourceSpans.length;
+  const hostOwnedSourceSpanCount = sourceSpans.filter((span) => span?.owner === 'host').length;
   const actualOccurrenceCount = active
     ? entries.reduce(
         (sum, entry) => sum + exactTextOccurrences(composition?.text, entry?.surface),
@@ -387,12 +424,15 @@ function structuredSourceOccurrenceMetric({ row, bundle }) {
     expectedOccurrenceCount,
     declaredSourceCount: Number.isFinite(declaredSourceCount) ? declaredSourceCount : null,
     sourceSpanCount,
+    hostOwnedSourceSpanCount,
     actualOccurrenceCount,
     ok:
       composition !== null &&
       (!active || entries.length > 0) &&
       declaredSourceCount === expectedOccurrenceCount &&
       sourceSpanCount === expectedOccurrenceCount &&
+      (generationField !== 'jointPerformanceGeneration' ||
+        hostOwnedSourceSpanCount === expectedOccurrenceCount) &&
       actualOccurrenceCount === expectedOccurrenceCount,
   };
 }
@@ -515,15 +555,26 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const configurationRealizationIsGate = configurationRealizationEnforcement === 'gate';
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
   const structuredGenerationEnabled = config.fixed_configuration?.structured_generation === true;
+  const jointPerformanceGenerationEnabled =
+    config.fixed_configuration?.joint_performance_generation === true;
+  const typedGenerationEnabled = structuredGenerationEnabled || jointPerformanceGenerationEnabled;
+  const generationField = jointPerformanceGenerationEnabled
+    ? 'jointPerformanceGeneration'
+    : 'structuredGeneration';
+  const ownershipAuditField = jointPerformanceGenerationEnabled
+    ? 'jointPerformanceAudit'
+    : 'structuredSlotOwnershipAudit';
   const validStructuredOutputs = results.filter(
     (row) =>
-      row.structuredGeneration?.ok === true &&
-      row.structuredGeneration?.composition !== null,
+      row?.[generationField]?.ok === true &&
+      row?.[generationField]?.composition !== null,
   ).length;
   const structuredSlotOwnershipPasses = results.filter(
-    (row) => row.audit?.audits?.structuredSlotOwnershipAudit?.ok === true,
+    (row) => row.audit?.audits?.[ownershipAuditField]?.ok === true,
   ).length;
-  const structuredSourceOccurrences = resultEntries.map(structuredSourceOccurrenceMetric);
+  const structuredSourceOccurrences = resultEntries.map((entry) =>
+    hostSourceOccurrenceMetric({ ...entry, generationField }),
+  );
   const exactSourceOccurrencePasses = structuredSourceOccurrences.filter((metric) => metric.ok).length;
   const failureCounts = new Map();
   for (const row of results) {
@@ -581,6 +632,15 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     exactSourceOnce:
       config.gates_per_cell.require_exact_source_once !== true ||
       (structuredGenerationEnabled && exactSourceOccurrencePasses === results.length),
+    jointPerformanceOutput:
+      config.gates_per_cell.require_joint_performance_output !== true ||
+      (jointPerformanceGenerationEnabled && validStructuredOutputs === results.length),
+    jointPerformanceOwnership:
+      config.gates_per_cell.require_joint_performance_ownership !== true ||
+      (jointPerformanceGenerationEnabled && structuredSlotOwnershipPasses === results.length),
+    exactHostSourceOccurrences:
+      config.gates_per_cell.require_exact_host_source_occurrences !== true ||
+      (jointPerformanceGenerationEnabled && exactSourceOccurrencePasses === results.length),
   };
   return {
     id: cell.id,
@@ -612,6 +672,24 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       ? results.length - exactSourceOccurrencePasses
       : 0,
     structuredSourceOccurrences: structuredGenerationEnabled ? structuredSourceOccurrences : [],
+    jointPerformanceModelOutputs: jointPerformanceGenerationEnabled ? results.length : 0,
+    validJointPerformanceOutputs: jointPerformanceGenerationEnabled ? validStructuredOutputs : 0,
+    jointPerformanceOutputFailures: jointPerformanceGenerationEnabled
+      ? results.length - validStructuredOutputs
+      : 0,
+    jointPerformanceOwnershipPasses: jointPerformanceGenerationEnabled
+      ? structuredSlotOwnershipPasses
+      : 0,
+    jointPerformanceOwnershipFailures: jointPerformanceGenerationEnabled
+      ? results.length - structuredSlotOwnershipPasses
+      : 0,
+    exactHostSourceOccurrencePasses: jointPerformanceGenerationEnabled
+      ? exactSourceOccurrencePasses
+      : 0,
+    exactHostSourceOccurrenceFailures: jointPerformanceGenerationEnabled
+      ? results.length - exactSourceOccurrencePasses
+      : 0,
+    hostSourceOccurrences: typedGenerationEnabled ? structuredSourceOccurrences : [],
     meanConfigurationRealization,
     configurationRealizationEnforcement,
     meanOriginalLatencyMs: originalLatencies.length

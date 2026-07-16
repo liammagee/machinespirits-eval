@@ -223,6 +223,23 @@ function validateWorkingScreen(manifest, { root }) {
     expect(config.gates_per_cell?.require_structured_slot_ownership, true, 'structured slot ownership gate');
     expect(config.gates_per_cell?.require_exact_source_once, true, 'exact source once gate');
   }
+  if (config.fixed_configuration?.joint_performance_generation === true) {
+    expect(
+      config.gates_per_cell?.require_joint_performance_output,
+      true,
+      'joint-performance output gate',
+    );
+    expect(
+      config.gates_per_cell?.require_joint_performance_ownership,
+      true,
+      'joint-performance ownership gate',
+    );
+    expect(
+      config.gates_per_cell?.require_exact_host_source_occurrences,
+      true,
+      'exact host source occurrences gate',
+    );
+  }
   expect(config.gates_per_cell?.required_turns, 4, 'working screen required turns');
   expect(config.gates_per_cell?.required_originals_accepted, 4, 'working screen required originals');
   expect(config.gates_per_cell?.minimum_mean_configuration_realization, 1, 'working screen configuration realization');
@@ -258,6 +275,14 @@ function validateWorkingScreen(manifest, { root }) {
       finalFrontierAttemptIteration == null ? null : Number(finalFrontierAttemptIteration),
     stopIfFinalFrontierAttemptFails:
       config.stopping?.stop_if_final_frontier_attempt_fails === true,
+    jointPerformanceGeneration:
+      config.fixed_configuration?.joint_performance_generation === true,
+    jointPerformanceSchema:
+      config.fixed_configuration?.joint_performance_schema || null,
+    jointPerformanceCompositionSchema:
+      config.fixed_configuration?.joint_performance_composition_schema || null,
+    jointPerformanceAuditSchema:
+      config.fixed_configuration?.joint_performance_audit_schema || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -268,6 +293,12 @@ function validateWorkingScreen(manifest, { root }) {
       requireStructuredOutput: config.fixed_configuration?.structured_generation === true,
       requireStructuredSlotOwnership: config.fixed_configuration?.structured_generation === true,
       requireExactSourceOnce: config.fixed_configuration?.structured_generation === true,
+      requireJointPerformanceOutput:
+        config.gates_per_cell?.require_joint_performance_output === true,
+      requireJointPerformanceOwnership:
+        config.gates_per_cell?.require_joint_performance_ownership === true,
+      requireExactHostSourceOccurrences:
+        config.gates_per_cell?.require_exact_host_source_occurrences === true,
     },
   };
 }
@@ -332,6 +363,59 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   const roles = validateReviewRoles(manifest);
   const seeds = validateSeedLedger(manifest);
   const workingScreen = validateWorkingScreen(manifest, { root });
+
+  if (currentVersion === 27) {
+    expect(state.currentState, 'working_predeclared', 'V27 current state');
+    expect(workingIteration, 1, 'V27 working iteration');
+    expect(manifest.current?.last_observation, null, 'V27 last observation before iteration 1');
+    if ((manifest.current?.working_history || []).length !== 0) {
+      throw new Error('V27 working history must be empty before iteration 1');
+    }
+    expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
+    expect(
+      manifest.current?.architectural_reset_from?.terminal_state,
+      'stagnated',
+      'V27 reset source state',
+    );
+    expect(manifest.current?.architectural_reset_from?.final_iteration, 3, 'V26 final iteration');
+    expect(
+      manifest.current?.architectural_reset_from?.provenance?.result_sha256,
+      '2643b16921017de46573bd4d92ae08dc8a7e7303b07ff094dc798a239b61e1ae',
+      'V26 terminal result hash',
+    );
+    expect(
+      manifest.current?.required_confirmation_after_primary_pass?.status,
+      'planned_not_predeclared',
+      'V27 confirmation status',
+    );
+    expect(
+      manifest.current?.required_confirmation_after_primary_pass?.seed_status,
+      'not_reserved',
+      'V27 confirmation seed status',
+    );
+    expect(workingScreen.jointPerformanceGeneration, true, 'V27 joint-performance generation');
+    if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
+      throw new Error('V27 must predeclare only development seed 20261500');
+    }
+    expect(
+      seeds.development[0]?.status,
+      'reusable_non_held_out_development',
+      'V27 development seed status',
+    );
+    const retiredV26Statuses = new Map([
+      [20261400, 'consumed_development_retired_after_stagnation'],
+      [20261401, 'retired_unstarted_due_to_stagnation'],
+      [20261402, 'retired_unstarted_due_to_stagnation'],
+      [20261403, 'retired_unstarted_due_to_stagnation'],
+      [20261404, 'retired_unstarted_due_to_stagnation'],
+    ]);
+    for (const [seed, status] of retiredV26Statuses) {
+      const retired = seeds.historical.find((entry) => Number(entry.seed) === seed);
+      if (!retired || retired.status !== status) {
+        throw new Error(`V27 history must preserve retired V26 seed ${seed}`);
+      }
+    }
+  }
 
   if (state.currentState === 'stagnated') {
     expect(
