@@ -15,7 +15,7 @@ current:
   campaign_version: 25
   label: V25
   state: working_predeclared
-  working_iteration: 2
+  working_iteration: 3
   working_screen_id: first-draft-working-screens-v4
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v4.yaml
   acceptance_config: null
@@ -51,41 +51,63 @@ current:
       validation_sha256: 866237cb0c490c486f13416752d7bfbb5941757de83aeef5da1826f05e76d83e
       correction_head: 8ecced40
       retry: same_iteration_and_development_seed
+  working_history:
+    - version: 25
+      working_iteration: 1
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-1/working-screen-result.json
+      completed_turns: [4]
+      strict_originals_accepted: 0
+      mean_configuration_realization: 0.833
+      failed_axes: [turn_4_actorial_part_scene_partner]
+      measurable_improvement: false
   last_observation:
     version: 25
-    working_iteration: 1
+    working_iteration: 2
     status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-1/working-screen-result.json
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-2/working-screen-result.json
     development_seed: 20261300
     seed_disposition: consumed_development_reusable
-    completed_turns: [4]
-    unstarted_turns: [5, 6, 9]
-    strict_originals_accepted: 0
+    completed_turns: [4, 5, 6, 9]
+    unstarted_turns: []
+    strict_originals_accepted: 3
     final_safety_failures: 0
     fallbacks: 0
     semantic_recognition_corrections: 0
-    mean_configuration_realization: 0.833
-    maximum_possible_mean_configuration_realization: 0.95825
-    failed_axes: [turn_4_actorial_part_scene_partner]
+    mean_original_latency_ms: 10404.25
+    mean_configuration_realization: 0.91675
+    maximum_possible_mean_configuration_realization: 0.91675
+    failed_axes:
+      - turn_9_dramatic_release_enactment
+      - turn_9_actorial_performance_dramatic_counterpressure
+    model_free_reaudit:
+      artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-2/marrick_v25_typed_host_plan/turn-9-reaudited-iteration3.json
+      recognition_change: exact_authored_source_is_not_a_role_stage_direction
+      remains_rejected_for:
+        - missing_in_scene_enactment
+        - missing_selected_performance_tactic
     comparison:
-      measurable_improvement: false
+      measurable_improvement: true
       consecutive_without_improvement: 0
-      baseline: V24_best_turn_4
+      baseline: V25_working_iteration_1
+      global_frontier: tied_V24_iteration_2_vector_1_1_1_0.667
       interpretation: >-
-        A genuine generation miss and a regression from the V24 best turn-4
-        frontier. The candidate merged duplicated PART and TACTIC jobs into a
-        solitary object action. This is V25's first measured iteration, so it
-        authorizes one bounded slot-separation correction without advancing
-        the stagnation count.
-    iteration_2_authority:
+        Iteration 2 improved locally from 0/1 to 3/4 strict originals and
+        preserved full configuration through turns 4-6, resetting the local
+        no-progress count. It only ties the V24 global frontier because turn 9
+        still realizes 4/6 axes.
+    iteration_3_authority:
       speaking_change: >-
-        Make scene-partner PART place both speakers at a public object, then
-        make shared-scene TACTIC invite the learner's reading in a separate
-        sentence without repeating the placement.
+        Serialize an enacted role SOURCE as one complete quotation, then write
+        a separate unquoted TACTIC that refers to that source once while
+        challenging the already-public ready judgment. Remove the duplicate
+        contrary-evidence instruction.
       recovery_change: none
-      audit_recognition_change: none
+      audit_recognition_change: >-
+        Exclude the exact authored source surface from role-label detection and
+        require quoted first-person role speech to overlap at least three
+        substantive source tokens. The saved turn remains rejected.
       controller_change: none
-      gate: turn_4_must_recover_to_six_of_six_then_complete_all_four_turns
+      gate: full_vector_1_1_1_1_with_four_strict_originals_and_zero_hard_failures
   architectural_reset_from:
     version: 24
     terminal_state: stagnated

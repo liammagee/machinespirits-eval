@@ -81,14 +81,20 @@ change_log:
     delivered axis has one owner and each host sentence has one job. Iteration
     2 separates the scene-partner's shared placement from the tactic's later
     invitation to read that object, so the model cannot collapse two duplicate
-    make-room instructions into one solitary action.
+    make-room instructions into one solitary action. Iteration 3 serializes an
+    enacted role source inside one complete quotation and makes a due-source
+    counterpressure tactic refer back to that quotation instead of duplicating
+    the clue.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
     repair and fallback behavior is unchanged outside this screen.
   audit_recognition_only: >-
     A model-free evidentiary-boundary correction recognizes a public evidence
-    bearer proving one property but not another. It is reported separately and
-    does not count as generation improvement.
+    bearer proving one property but not another. Iteration 3 also excludes an
+    exact authored clue from role-label detection while requiring quoted role
+    speech to overlap substantive clue terms. The saved turn remains rejected;
+    these corrections are reported separately and do not count as generation
+    improvement.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
