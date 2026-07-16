@@ -232,7 +232,7 @@ function compactUptakeInstruction(contract) {
   if (contract.opening?.writable_entry_requested) {
     instruction = contract.opening?.complementary_to_due_evidence
       ? 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.'
-      : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record.';
+      : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
   }

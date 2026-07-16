@@ -218,6 +218,88 @@ test('the focus audit distinguishes a requested relation from a sibling relation
   assert.ok(rejected.issues.some((issue) => issue.type === 'handoff_loses_turn_focus'));
 });
 
+test('focus recognition treats hyphenated compounds as lexical terms without admitting unrelated handoffs', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'What should I record about the blue seal and its custody chain?',
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks how the blue seal relates to its custody chain.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+
+  const accepted = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'Write: “The blue seal is identified, but its custody chain remains open.”',
+      handoff: 'Next, compare the blue-seal custody-chain with the register.',
+    }),
+  });
+  assert.equal(accepted.ok, true, JSON.stringify(accepted.issues));
+  assert.deepEqual(accepted.handoff.target_coverage.matched, ['blue', 'seal', 'custody', 'chain']);
+
+  const unrelated = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'Write: “The blue seal is identified, but its custody chain remains open.”',
+      handoff: 'Next, compare the red-wax archive-tag with the noon ledger.',
+    }),
+  });
+  assert.equal(unrelated.ok, false);
+  assert.deepEqual(unrelated.issues.map((issue) => issue.type), ['handoff_loses_turn_focus']);
+});
+
+test('saved V32 diagnostic 2 handoff retains its exact learner focus model-free', () => {
+  const learnerText =
+    'What should I put in the minutes about the chargers being dark during the stocktake?';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Asks for wording about the stocktake evidence.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+    tactic: 'evidentiary_boundary',
+  });
+  const savedSlots = {
+    uptake: 'Write: “The dark chargers did not stop Tallow Street’s brownout.”',
+    entry: 'My case is the depot caused it, but dark chargers cannot explain the brownout.',
+    response:
+      'The stocktake shows the brownout continued without charger current; it does not identify its source.',
+    handoff: 'Next, compare the dark-charger stocktake with the 18:40 pen chart.',
+  };
+
+  // This saved draw isolates lexical focus recognition. Its separate
+  // “did not stop” wording debt is recorded in the V32 result note and is not
+  // endorsed as a semantically ideal minutes entry by this regression.
+  const reaudited = auditTutorStubTurnProgression({
+    contract,
+    composition: composition(savedSlots),
+  });
+  assert.deepEqual(reaudited.handoff.target_coverage, {
+    matched: ['charger', 'dark', 'stocktake'],
+    count: 3,
+    coverage: 0.6,
+  });
+  assert.equal(
+    reaudited.issues.some((issue) => issue.type === 'handoff_loses_turn_focus'),
+    false,
+  );
+
+  const unrelated = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      ...savedSlots,
+      handoff: 'Next, compare the visitor-badge roster with the noon gate.',
+    }),
+  });
+  assert.equal(unrelated.ok, false);
+  assert.deepEqual(unrelated.issues.map((issue) => issue.type), ['handoff_loses_turn_focus']);
+});
+
 test('closure and accountable answers cannot acquire a shared-scene question', () => {
   for (const input of [
     { dialogueClosureFrame: { mandatory: true }, actionFamily: 'close_inquiry', expected: 'closure' },

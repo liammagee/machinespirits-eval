@@ -135,6 +135,8 @@ test('v2 prompt keeps a writable-entry shared scene declarative after direct upt
     /\{"uptake":"\.\.\.","performance":\{"entry":"\.\.\.","response":"\.\.\."\},"handoff":"\.\.\."\}/u,
   );
   assert.match(prompt, /SOURCE between performance\.entry and performance\.response/u);
+  assert.match(prompt, /UPTAKE — Begin exactly “Write:”/iu);
+  assert.match(prompt, /Preserve actors, relation, and polarity; never reverse cause or evidentiary force/iu);
   assert.match(prompt, /JOINT PERFORMANCE —/u);
   assert.match(prompt, /PERFORMANCE RESPONSE CONTRACT — Invite shared attention declaratively/u);
   assert.match(prompt, /Ask no question here/iu);

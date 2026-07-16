@@ -169,6 +169,11 @@ test('keeps a writable-entry scene invitation declarative after the uptake answe
   const prompt = tutorStubFirstDraftContractPrompt(contract);
   assert.match(prompt, /four unlabeled host sentences \(only Write: UPTAKE may quote\)/iu);
   assert.doesNotMatch(prompt, /four unlabeled, unquoted host sentences/iu);
+  assert.match(
+    contract.host_plan.slots.find((slot) => slot.id === 'uptake').instruction,
+    /Preserve actors, relation, and polarity/iu,
+  );
+  assert.match(prompt, /never reverse cause or evidentiary force/iu);
   assert.ok(wordCount(prompt) <= 220, `expected writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
 });
 

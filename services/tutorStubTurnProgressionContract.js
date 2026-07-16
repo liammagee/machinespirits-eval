@@ -162,7 +162,7 @@ function normalizeToken(value) {
 function contentTerms(value) {
   return [
     ...new Set(
-      (oneLine(value).match(TOKEN_PATTERN) || [])
+      (oneLine(value).replace(/[_-]+/gu, ' ').match(TOKEN_PATTERN) || [])
         .map(normalizeToken)
         .filter((token) => token.length >= 3 && !FOCUS_STOP_WORDS.has(token)),
     ),
