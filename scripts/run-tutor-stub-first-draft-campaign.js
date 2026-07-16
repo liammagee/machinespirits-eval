@@ -27,6 +27,14 @@ import {
   tutorStubFirstDraftUnexpectedIterationArtifacts,
   writeTutorStubFirstDraftJsonExclusive,
 } from '../services/tutorStubFirstDraftCampaign.js';
+import {
+  buildTutorStubFirstDraftPreflightBoundary,
+  buildTutorStubFirstDraftPreflightCertificate,
+  materializeTutorStubFirstDraftPreflightCertificate,
+  tutorStubFirstDraftHardCellBlocksRemaining,
+  tutorStubFirstDraftPreflightCertificatePath,
+  validateTutorStubFirstDraftPreflightCertificate,
+} from '../services/tutorStubFirstDraftPreflightCertificate.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_WORKING_CONFIG = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens.yaml');
@@ -278,6 +286,24 @@ function gitHead() {
   return result.stdout.trim();
 }
 
+function deterministicPreflightRuntime() {
+  const npm = spawnSync('npm', ['--version'], { cwd: ROOT, encoding: 'utf8' });
+  if (npm.status !== 0) throw new Error(`could not resolve npm version: ${npm.stderr}`);
+  return {
+    node: process.version,
+    v8: process.versions.v8,
+    npm: String(npm.stdout || '').trim(),
+    platform: process.platform,
+    arch: process.arch,
+    environment: Object.fromEntries(
+      ['CI', 'LANG', 'LC_ALL', 'NODE_ENV', 'NODE_OPTIONS'].map((name) => [
+        name,
+        process.env[name] || null,
+      ]),
+    ),
+  };
+}
+
 function gitWorktreeState({ required = false } = {}) {
   const result = spawnSync(
     'git',
@@ -400,6 +426,46 @@ async function runWorkingPreflight(
       suiteId: null,
     })),
   ];
+  const { boundary, key, observedHead } = buildTutorStubFirstDraftPreflightBoundary({
+    root: ROOT,
+    config,
+    commands,
+    focusedTestSuites,
+    implementationHead: gitHead(),
+    runtime: deterministicPreflightRuntime(),
+  });
+  const cacheDir = process.env.TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR ||
+    path.join(ROOT, '.tutor-stub-auto-eval', 'preflight-certificates');
+  const certificatePath = tutorStubFirstDraftPreflightCertificatePath({ cacheDir, key });
+  if (fs.existsSync(certificatePath)) {
+    let certificate = null;
+    let validation = { ok: false, reasons: ['unreadable_certificate'] };
+    try {
+      certificate = readJson(certificatePath);
+      validation = validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key });
+    } catch {
+      // Fail closed below: preserve the bad certificate and execute the preflight again.
+    }
+    if (validation.ok) {
+      const report = materializeTutorStubFirstDraftPreflightCertificate({
+        certificate,
+        iterationRoot,
+        reportName,
+        campaignId: config.id,
+        cellId,
+        certificatePath,
+      });
+      writeTutorStubFirstDraftJsonExclusive(reportPath, report);
+      console.log(`preflight certificate reused: ${certificatePath}`);
+      return { report, reportPath, revision: report.preflightRevision };
+    }
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.renameSync(
+      certificatePath,
+      path.join(cacheDir, `${key}.rejected-${Date.now()}.json`),
+    );
+    console.log(`preflight certificate rejected (${validation.reasons.join(', ')}); executing gates`);
+  }
   const executions = [];
   const startedAt = new Date();
   let failure = null;
@@ -492,14 +558,34 @@ async function runWorkingPreflight(
         }
       : null,
   };
+  const certificate = buildTutorStubFirstDraftPreflightCertificate({
+    boundary,
+    key,
+    report,
+    observedHead,
+  });
+  fs.mkdirSync(cacheDir, { recursive: true });
+  writeJson(certificatePath, certificate);
+  report.preflightRevision = {
+    kind: 'deterministic_preflight_certificate',
+    tutorGenerationResult: false,
+    disposition: 'executed',
+    certificateKey: key,
+    certificateSha256: certificate.certificateSha256,
+    certificatePath,
+    reusable: certificate.reusable,
+    certificateStatus: certificate.status,
+    observedHead,
+  };
   writeTutorStubFirstDraftJsonExclusive(reportPath, report);
   if (failure) {
     if (failure.tutorStubPreflightCommandFailure) {
       failure.tutorStubPreflightCommandFailure.preflightExecutionArtifactPath = reportPath;
+      failure.tutorStubPreflightCommandFailure.preflightRevision = report.preflightRevision;
     }
     throw failure;
   }
-  return { report, reportPath };
+  return { report, reportPath, revision: report.preflightRevision };
 }
 
 function readJson(filePath) {
@@ -548,6 +634,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
   const config = loaded.config;
   const configSha256 = sha256File(loaded.configPath);
   const preflightExecutionArtifactPaths = [];
+  const preflightRevisions = [];
   assertFrozenDevelopmentState(frozen, loaded);
   const maximumConsecutiveWithoutImprovement =
     config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
@@ -638,16 +725,17 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
       plan.iterationRoot,
     );
     preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
+    preflightRevisions.push(preflightExecution.revision);
     assertFrozenDevelopmentState(frozen, loaded, execution.hardCell);
     const hardResult = await runCellCaptured(execution.hardCell, {
       stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
     });
     cellResults.push(hardResult);
-    if (
-      hardResult.status !== 'pass' &&
-      execution.hardCellMustPassBeforeRemaining &&
-      !args['complete-all-cells']
-    ) {
+    if (tutorStubFirstDraftHardCellBlocksRemaining({
+      execution: config.execution,
+      hardCellStatus: hardResult.status,
+      completeAllCells: args['complete-all-cells'],
+    })) {
       cellResults.push(...execution.remainingCells.map((cell) => ({
         id: cell.id,
         world: cell.world,
@@ -691,6 +779,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
         { reportName: `preflight-execution-${cell.id}.json` },
       );
       preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
+      preflightRevisions.push(preflightExecution.revision);
       const summary = await runCellCaptured(cell);
       cellResults.push(summary);
       if (!args['complete-all-cells'] && summary.status !== 'pass') campaignStopped = true;
@@ -711,6 +800,11 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
         ? preflightExecutionArtifactPaths[0]
         : null,
     preflightExecutionArtifactPaths,
+    deterministicPreflight: {
+      kind: 'deterministic_preflight_revisions',
+      tutorGenerationResult: false,
+      revisions: preflightRevisions,
+    },
     status,
     completeAllCells: args['complete-all-cells'],
     changes: config.change_log,

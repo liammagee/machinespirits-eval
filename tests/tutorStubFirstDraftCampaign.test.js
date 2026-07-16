@@ -45,6 +45,329 @@ import {
   auditTutorStubSourceAccessibilityCompensation,
   compileTutorStubSourceAccessibilityContract,
 } from '../services/tutorStubSourceAccessibilityContract.js';
+import {
+  buildTutorStubFirstDraftPreflightBoundary,
+  buildTutorStubFirstDraftPreflightCertificate,
+  materializeTutorStubFirstDraftPreflightCertificate,
+  tutorStubFirstDraftHardCellBlocksRemaining,
+  validateTutorStubFirstDraftPreflightCertificate,
+} from '../services/tutorStubFirstDraftPreflightCertificate.js';
+
+function certificateFixture(tmp, overrides = {}) {
+  for (const [fileName, content] of [
+    ['engagementRegisterRegistry.js', 'export const version = 1;\n'],
+    ['compiler.js', 'export const compile = true;\n'],
+    ['focused.test.js', '// focused test\n'],
+    ['fixture.json', '{}\n'],
+  ]) {
+    const filePath = path.join(tmp, fileName);
+    if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, content);
+  }
+  const config = {
+    id: 'campaign-a',
+    artifacts: { root: '/tmp/artifact-a' },
+    notes: 'not deterministic input',
+    matrix: [{ id: 'cell-a', seed: 111 }],
+    preflight: {
+      world_quality: 'node compiler.js',
+      focused_test_suites: [{ id: 'focused', test_files: ['focused.test.js'] }],
+      model_free_fixtures: ['fixture.json'],
+    },
+    ...overrides.config,
+  };
+  const focusedTestSuites = overrides.focusedTestSuites || [
+    { id: 'focused', testFiles: ['focused.test.js'] },
+  ];
+  const commands = overrides.commands || [
+    { id: 'world-quality', kind: 'world_quality', suiteId: null, tap: false, argv: ['node', 'compiler.js'] },
+    { id: 'focused-focused', kind: 'focused_test_suite', suiteId: 'focused', tap: true, argv: ['node', '--test', 'focused.test.js'] },
+  ];
+  const built = buildTutorStubFirstDraftPreflightBoundary({
+    root: tmp,
+    config,
+    commands,
+    focusedTestSuites,
+    implementationHead: overrides.implementationHead || 'head-a',
+    runtime: overrides.runtime || { node: 'v-test', v8: 'v8-test', platform: 'test', arch: 'test' },
+    implementationFiles: overrides.implementationFiles || ['engagementRegisterRegistry.js'],
+    worldCompilerFiles: overrides.worldCompilerFiles || ['compiler.js'],
+  });
+  return { config, focusedTestSuites, commands, ...built };
+}
+
+function certificateReport(tmp, { status = 'pass', tests = 3, pass = 3, fail = 0 } = {}) {
+  const commands = [
+    { id: 'world-quality', order: 1, kind: 'world_quality', suiteId: null, tap: null },
+    {
+      id: 'focused-focused',
+      order: 2,
+      kind: 'focused_test_suite',
+      suiteId: 'focused',
+      tap: {
+        tests,
+        suites: 1,
+        pass,
+        fail,
+        cancelled: 0,
+        skipped: 0,
+        todo: 0,
+        durationMs: 1,
+        failureNames: fail ? ['saved failure'] : [],
+      },
+    },
+  ].map((command) => {
+    const stem = `${command.order}-${command.id}`;
+    const stdoutPath = path.join(tmp, `${stem}.stdout.log`);
+    const stderrPath = path.join(tmp, `${stem}.stderr.log`);
+    const stdout = Buffer.from(command.tap ? `# tests ${tests}\n# pass ${pass}\n# fail ${fail}\n` : 'world ok\n');
+    const stderr = Buffer.from('');
+    fs.writeFileSync(stdoutPath, stdout);
+    fs.writeFileSync(stderrPath, stderr);
+    return {
+      schema: 'machinespirits.tutor-stub.first-draft-preflight-command-execution.v1',
+      ...command,
+      label: command.id,
+      argv: command.tap ? ['node', '--test', 'focused.test.js'] : ['node', 'compiler.js'],
+      command: command.tap
+        ? '"node" "--test" "focused.test.js"'
+        : '"node" "compiler.js"',
+      attempt: 1,
+      retryPolicy: 'none',
+      startedAt: '2026-07-17T00:00:00.000Z',
+      finishedAt: '2026-07-17T00:00:01.000Z',
+      elapsedMs: 1000,
+      status: status === 'pass' ? 'pass' : 'fail',
+      exitCode: status === 'pass' ? 0 : 1,
+      signal: null,
+      spawnErrorCode: null,
+      stdout: { path: stdoutPath, bytes: stdout.byteLength, sha256: createHash('sha256').update(stdout).digest('hex') },
+      stderr: { path: stderrPath, bytes: 0, sha256: createHash('sha256').update(stderr).digest('hex') },
+      makesModelCalls: false,
+      modelCalls: 0,
+    };
+  });
+  return {
+    schema: 'machinespirits.tutor-stub.first-draft-preflight-execution.v1',
+    generatedAt: '2026-07-17T00:00:01.000Z',
+    status,
+    startedAt: '2026-07-17T00:00:00.000Z',
+    finishedAt: '2026-07-17T00:00:01.000Z',
+    elapsedMs: 1000,
+    executionPolicy: { sequential: true, attemptsPerCommand: 1, retryPolicy: 'none' },
+    commands,
+    failedCommand: status === 'pass' ? null : { kind: 'focused_test_suite' },
+  };
+}
+
+test('preflight certificate key binds deterministic content but not campaign bookkeeping or HEAD', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-key-'));
+  try {
+    const baseline = certificateFixture(tmp);
+    const metadataOnly = certificateFixture(tmp, {
+      implementationHead: 'head-b',
+      config: {
+        id: 'campaign-b',
+        artifacts: { root: '/elsewhere/results' },
+        notes: 'different note',
+        matrix: [{ id: 'different-cell', seed: 999 }],
+      },
+    });
+    assert.equal(metadataOnly.key, baseline.key);
+    assert.notEqual(metadataOnly.observedHead, baseline.observedHead);
+
+    const runtime = certificateFixture(tmp, {
+      runtime: {
+        node: 'v-other',
+        v8: 'v8-test',
+        npm: 'npm-test',
+        platform: 'test',
+        arch: 'test',
+        environment: { NODE_OPTIONS: '--conditions=test' },
+      },
+    });
+    assert.notEqual(runtime.key, baseline.key);
+
+    fs.writeFileSync(path.join(tmp, 'engagementRegisterRegistry.js'), 'export const version = 2;\n');
+    const source = certificateFixture(tmp);
+    assert.notEqual(source.key, baseline.key);
+
+    fs.writeFileSync(path.join(tmp, 'engagementRegisterRegistry.js'), 'export const version = 1;\n');
+    fs.writeFileSync(path.join(tmp, 'focused-b.test.js'), '// second test\n');
+    const inventory = certificateFixture(tmp, {
+      focusedTestSuites: [{ id: 'focused', testFiles: ['focused.test.js', 'focused-b.test.js'] }],
+    });
+    assert.notEqual(inventory.key, baseline.key);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('passing preflight certificate is reusable and materializes complete captured evidence', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-hit-'));
+  try {
+    const { boundary, key, observedHead } = certificateFixture(tmp);
+    const report = certificateReport(tmp);
+    const certificate = buildTutorStubFirstDraftPreflightCertificate({
+      boundary,
+      key,
+      report,
+      observedHead,
+    });
+    assert.equal(certificate.status, 'pass');
+    assert.equal(certificate.tapTotals.tests, 3);
+    assert.deepEqual(certificate.failingNames, []);
+    assert.deepEqual(
+      validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }),
+      { ok: true, reasons: [] },
+    );
+    const iterationRoot = path.join(tmp, 'iteration-2');
+    const reused = materializeTutorStubFirstDraftPreflightCertificate({
+      certificate,
+      iterationRoot,
+      reportName: 'preflight-execution.json',
+      campaignId: 'campaign-b',
+      cellId: 'cell-b',
+      certificatePath: path.join(tmp, `${key}.json`),
+    });
+    assert.equal(reused.status, 'pass');
+    assert.equal(reused.preflightRevision.disposition, 'reused');
+    assert.equal(reused.preflightRevision.tutorGenerationResult, false);
+    assert.equal(fs.readFileSync(reused.commands[0].stdout.path, 'utf8'), 'world ok\n');
+    assert.equal(reused.commands[1].tap.tests, 3);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('preflight certificates reject tamper, mismatch, failure, incompleteness, and zero TAP', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-reject-'));
+  try {
+    const { boundary, key } = certificateFixture(tmp);
+    const passing = buildTutorStubFirstDraftPreflightCertificate({
+      boundary,
+      key,
+      report: certificateReport(tmp),
+    });
+    const tampered = structuredClone(passing);
+    tampered.commands[0].stdout.base64 = Buffer.from('tampered').toString('base64');
+    assert.equal(
+      validateTutorStubFirstDraftPreflightCertificate(tampered, { boundary, key }).ok,
+      false,
+    );
+
+    const missingTap = structuredClone(passing);
+    missingTap.commands[1].tap = null;
+    assert.ok(
+      validateTutorStubFirstDraftPreflightCertificate(missingTap, { boundary, key })
+        .reasons.includes('command_evidence_mismatch'),
+    );
+
+    const zeroOneSuite = structuredClone(passing);
+    zeroOneSuite.commands[1].tap.tests = 0;
+    zeroOneSuite.commands[1].tap.pass = 0;
+    assert.ok(
+      validateTutorStubFirstDraftPreflightCertificate(zeroOneSuite, { boundary, key })
+        .reasons.includes('command_evidence_mismatch'),
+    );
+
+    const commandDrift = structuredClone(passing);
+    commandDrift.commands[1].argv.push('--changed');
+    assert.ok(
+      validateTutorStubFirstDraftPreflightCertificate(commandDrift, { boundary, key })
+        .reasons.includes('command_evidence_mismatch'),
+    );
+
+    const changedRuntime = certificateFixture(tmp, {
+      runtime: { node: 'v-new', v8: 'v8-test', platform: 'test', arch: 'test' },
+    });
+    assert.equal(
+      validateTutorStubFirstDraftPreflightCertificate(passing, changedRuntime).ok,
+      false,
+    );
+
+    const failed = buildTutorStubFirstDraftPreflightCertificate({
+      boundary,
+      key,
+      report: certificateReport(tmp, { status: 'fail', tests: 3, pass: 2, fail: 1 }),
+    });
+    assert.equal(failed.status, 'fail');
+    assert.equal(validateTutorStubFirstDraftPreflightCertificate(failed, { boundary, key }).ok, false);
+
+    const zeroTap = buildTutorStubFirstDraftPreflightCertificate({
+      boundary,
+      key,
+      report: certificateReport(tmp, { tests: 0, pass: 0, fail: 0 }),
+    });
+    assert.equal(zeroTap.status, 'incomplete');
+    assert.ok(
+      validateTutorStubFirstDraftPreflightCertificate(zeroTap, { boundary, key }).reasons.includes('zero_tap'),
+    );
+
+    const incomplete = structuredClone(passing);
+    incomplete.complete = false;
+    assert.ok(
+      validateTutorStubFirstDraftPreflightCertificate(incomplete, { boundary, key }).reasons.includes('incomplete'),
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('one valid TAP suite cannot mask a second exit-zero suite with missing TAP', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-two-suite-'));
+  try {
+    fs.writeFileSync(path.join(tmp, 'focused-b.test.js'), '// second focused test\n');
+    const focusedTestSuites = [
+      { id: 'focused', testFiles: ['focused.test.js'] },
+      { id: 'focused_b', testFiles: ['focused-b.test.js'] },
+    ];
+    const commands = [
+      { id: 'world-quality', kind: 'world_quality', suiteId: null, tap: false, argv: ['node', 'compiler.js'] },
+      { id: 'focused-focused', kind: 'focused_test_suite', suiteId: 'focused', tap: true, argv: ['node', '--test', 'focused.test.js'] },
+      { id: 'focused-focused_b', kind: 'focused_test_suite', suiteId: 'focused_b', tap: true, argv: ['node', '--test', 'focused-b.test.js'] },
+    ];
+    const { boundary, key } = certificateFixture(tmp, { focusedTestSuites, commands });
+    const report = certificateReport(tmp);
+    const missingTap = structuredClone(report.commands[1]);
+    missingTap.id = 'focused-focused_b';
+    missingTap.order = 3;
+    missingTap.suiteId = 'focused_b';
+    missingTap.argv = ['node', '--test', 'focused-b.test.js'];
+    missingTap.tap = null;
+    report.commands.push(missingTap);
+    const certificate = buildTutorStubFirstDraftPreflightCertificate({ boundary, key, report });
+    assert.equal(certificate.status, 'incomplete');
+    assert.equal(certificate.commandEvidenceComplete, false);
+    assert.equal(
+      validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }).ok,
+      false,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('mandatory staged diagnostics cannot be bypassed by complete-all-cells', () => {
+  const execution = {
+    hard_cell_must_pass_before_remaining: true,
+    mandatory_stage_dependency: true,
+  };
+  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
+    execution,
+    hardCellStatus: 'fail',
+    completeAllCells: true,
+  }), true);
+  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
+    execution: { ...execution, mandatory_stage_dependency: false },
+    hardCellStatus: 'fail',
+    completeAllCells: true,
+  }), false);
+  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
+    execution,
+    hardCellStatus: 'pass',
+    completeAllCells: true,
+  }), false);
+});
 
 function workingConfig(tmp) {
   const trace = path.join(tmp, 'source.jsonl');
@@ -680,7 +1003,11 @@ test('deterministic preflight command failures preserve validation, exact failur
         {
           cwd: repoRoot,
           encoding: 'utf8',
-          env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` },
+          env: {
+            ...process.env,
+            PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+            TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR: path.join(root, 'certificates'),
+          },
         },
       );
 
@@ -825,6 +1152,7 @@ test('structured focused suite failure is captured once and blocks every model c
     const childEnv = {
       ...process.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+      TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR: path.join(root, 'certificates'),
     };
     delete childEnv.NODE_TEST_CONTEXT;
     const execution = spawnSync(
@@ -947,6 +1275,7 @@ test('zero-test TAP is a failed captured suite and cannot unlock a replay', () =
           ...process.env,
           PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
           NODE_TEST_CONTEXT: process.env.NODE_TEST_CONTEXT || 'child-v8',
+          TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR: path.join(root, 'certificates'),
         },
       },
     );
