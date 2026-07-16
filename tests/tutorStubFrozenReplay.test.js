@@ -7,9 +7,15 @@ import { fileURLToPath } from 'node:url';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   auditTutorStubFrozenCandidate,
+  refreshTutorStubFrozenFirstDraftRequest,
   TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
   TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA,
 } from '../services/tutorStubFrozenReplay.js';
+import {
+  tutorStubPerformanceAdjudicationSystemPrompt,
+  tutorStubPerformanceAdjudicationUserPrompt,
+} from '../services/tutorStubPerformanceAdjudication.js';
+import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
@@ -59,6 +65,31 @@ test('frozen replay fixtures retain the exact public prefix and original speaker
       );
     }
   }
+});
+
+test('frozen screens recompile the current typed performance contract without changing the public prefix', () => {
+  const fixture = readFixture(FIXTURE_PATHS[0]);
+  const original = fixture.cases[0].bundle;
+  const refreshed = refreshTutorStubFrozenFirstDraftRequest({
+    bundle: original,
+    world: worldForId(original.worldId),
+  });
+
+  assert.deepEqual(refreshed.priorTurns, original.priorTurns);
+  assert.deepEqual(refreshed.publicPremiseIds, original.publicPremiseIds);
+  assert.equal(refreshed.performanceObligationContract.complete, true);
+  assert.match(refreshed.request.messages.at(-1).content, /Tutor-only typed performance obligations/u);
+  assert.doesNotMatch(refreshed.request.messages.at(-1).content, /use the verb “breaks”/u);
+  const semanticPromptAudit = auditTutorStubPrompt({
+    surface: 'performance_adjudication',
+    systemPrompt: tutorStubPerformanceAdjudicationSystemPrompt(),
+    userPrompt: tutorStubPerformanceAdjudicationUserPrompt({
+      candidate: 'I hold the public claim against the public record.',
+      contract: refreshed.performanceObligationContract,
+    }),
+    instructionTexts: [tutorStubPerformanceAdjudicationSystemPrompt()],
+  });
+  assert.equal(semanticPromptAudit.ok, true);
 });
 
 test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {

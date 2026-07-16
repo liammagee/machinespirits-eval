@@ -6,6 +6,7 @@ import {
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
+import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
 
 function configuration(overrides = {}) {
   return {
@@ -239,27 +240,47 @@ test('scene-partner work receives a concrete shared-placement sentence', () => {
 });
 
 test('a request for the next written entry must be answered before the dramatic beat', () => {
+  const responseConfiguration = configuration({
+    engagement_stance: 'charismatic',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+      contract: 'Break the easy answer with the route evidence.',
+    },
+  });
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    publicWorld: {
+      visibility: 'public',
+      setting: 'The route board hangs beside the gliders.',
+      question: 'Which route could the gliders have taken?',
+      public_objects: ['route board', 'gliders'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'What should I write next about the gliders?',
+      public_claims: ['The easy answer sends every glider by the direct route.'],
+      contrary_evidence: ['The route board closes the direct crossing.'],
+    },
+  });
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next about the gliders?',
-    responseConfiguration: configuration({
-      engagement_stance: 'charismatic',
-      actorial_part: 'examiner',
-      actorial_part_label: 'evidence examiner',
-      actorial_performance: {
-        id: 'dramatic_counterpressure',
-        label: 'dramatic counterpressure',
-        contract: 'Break the easy answer with the route evidence.',
-      },
-    }),
+    responseConfiguration,
     responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
     dramaticReleaseFrame: { active: false, entries: [] },
+    performanceObligationContract,
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
   assert.equal(contract.opening.writable_entry_requested, true);
   assert.match(prompt, /Begin exactly with “Write:”/u);
   assert.match(prompt, /only then perform the selected development beat/iu);
-  assert.match(prompt, /use the verb “breaks”/u);
+  assert.match(prompt, /Tutor-only typed performance obligations/u);
+  assert.match(prompt, /Make the already-public claim, shortcut, or judgment being tested identifiable/u);
+  assert.match(prompt, /Put the public evidence that tests or resists that pressure/u);
+  assert.doesNotMatch(prompt, /use the verb “breaks”/u);
 });
 
 test('a Write entry complements rather than duplicates evidence due in the same reply', () => {

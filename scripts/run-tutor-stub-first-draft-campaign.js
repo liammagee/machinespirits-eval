@@ -13,6 +13,7 @@ import {
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftIterationStopping,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -132,6 +133,9 @@ async function runWorkingPreflight(config, cellId) {
       'tests/tutorStubFrozenReplay.test.js',
       'tests/tutorStubFirstDraftContract.test.js',
       'tests/tutorStubResponseComposition.test.js',
+      'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
+      'services/__tests__/tutorStubPerformanceObligationContract.test.js',
+      'services/__tests__/tutorStubPerformanceAdjudication.test.js',
     ],
     { label: `${cellId} focused tests` },
   );
@@ -153,6 +157,17 @@ function readJson(filePath) {
 }
 
 async function runDevelopment(plan, config, iteration) {
+  const previousResultPath = path.join(
+    plan.artifactRoot,
+    `iteration-${iteration - 1}`,
+    'working-screen-result.json',
+  );
+  const previousResult = iteration > 1 && fs.existsSync(previousResultPath) ? readJson(previousResultPath) : null;
+  if (previousResult?.stopping?.stop === true) {
+    throw new Error(
+      `development loop already stopped after ${previousResult.stopping.consecutiveWithoutImprovement} consecutive iterations without measurable improvement`,
+    );
+  }
   if (fs.existsSync(plan.iterationRoot)) {
     const existing = fs.readdirSync(plan.iterationRoot);
     if (existing.length) {
@@ -212,6 +227,30 @@ async function runDevelopment(plan, config, iteration) {
     cells: cellResults,
     claimBoundary: config.claim_boundary,
   };
+  const currentMetrics = {
+    completedTurns: cellResults.reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0),
+    originalCandidatesAccepted: result.originalAcceptance,
+    safetyFailures: result.finalSafetyFailures,
+    deterministicFallbacks: result.deterministicFallbacks,
+  };
+  const previousMetrics = previousResult
+    ? {
+        completedTurns: (previousResult.cells || []).reduce(
+          (sum, cell) => sum + Number(cell.completedTurns || 0),
+          0,
+        ),
+        originalCandidatesAccepted: Number(previousResult.originalAcceptance || 0),
+        safetyFailures: Number(previousResult.finalSafetyFailures || 0),
+        deterministicFallbacks: Number(previousResult.deterministicFallbacks || 0),
+        stopping: previousResult.stopping || null,
+      }
+    : null;
+  result.stopping = tutorStubFirstDraftIterationStopping({
+    current: currentMetrics,
+    previous: previousMetrics,
+    maximumConsecutiveWithoutImprovement:
+      config.stopping?.maximum_consecutive_iterations_without_improvement || 2,
+  });
   const resultPath = writeJson(path.join(plan.iterationRoot, 'working-screen-result.json'), result);
   console.log(`working screen ${status}: ${resultPath}`);
   return result;

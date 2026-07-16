@@ -5,6 +5,7 @@ import {
   getLexicalAccessibilityDefinitions,
   getSceneImmersionDefinitions,
 } from './engagementRegisterRegistry.js';
+import { tutorStubPerformanceObligationContractPrompt } from './tutorStubPerformanceObligationContract.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA =
   'machinespirits.tutor-stub.first-draft-turn-contract.v1';
@@ -65,7 +66,7 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
   measured_testimony:
     'Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.',
   dramatic_counterpressure:
-    'Name the easy accusation, expected shortcut, or ready answer, then use the verb “breaks” to say how the named contrary evidence breaks it. For an advocate, keep that collision inside the accountable case. Do not merely say one clue matters more.',
+    'Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.',
   exposed_mismatch:
     'Let the named public object expose the mismatch through the action itself rather than explaining the irony.',
   dry_counterexample:
@@ -200,6 +201,7 @@ export function buildTutorStubFirstDraftContract({
   dramaticReleaseFrame = null,
   questionSupport = null,
   dialogueClosureFrame = null,
+  performanceObligationContract = null,
 } = {}) {
   const configuration = responseConfiguration || {};
   const stance = configuration.engagement_stance || 'precise';
@@ -282,6 +284,9 @@ export function buildTutorStubFirstDraftContract({
         saturated && !requiresExhibit
           ? 'Use already-named public evidence and introduce no new prop. Still perform the host-and-tactic beat once through direct judgment, address, rhythm, or a small action on that existing evidence.'
           : 'Enter through concrete first-person action or direct speech; never announce or label the part.',
+      obligation_contract: performanceObligationContract
+        ? structuredClone(performanceObligationContract)
+        : null,
     },
     evidence: {
       active: releaseCues.length > 0,
@@ -324,6 +329,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
     `ACT + ENACT — ${contract.development.instruction} This is one mandatory development beat, not style advice: perform it as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} Do not substitute generic prop handling for the selected part or tactic.`,
+    tutorStubPerformanceObligationContractPrompt(contract.performance?.obligation_contract),
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
       : null,
@@ -338,7 +344,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
       ? 'RETURN — End the clue performance with one direct learner-facing question about what the named clue changes, supports, or rules out. The final inquiry sentence must contain a question mark.'
       : null,
     contract.ending.clarification_invitation_required
-      ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining.'
+      ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining. Make this a separate direct permission statement; do not hide it inside an option list or another exercise.'
       : null,
     `VOICE — ${contract.performance.stance_instruction}`,
     `LANGUAGE — ${contract.language.audience_instruction} ${contract.language.lexical_instruction}`,

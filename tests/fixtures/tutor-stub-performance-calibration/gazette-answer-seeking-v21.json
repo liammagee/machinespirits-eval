@@ -1,0 +1,175 @@
+{
+  "schema": "machinespirits.tutor-stub.performance-calibration.v1",
+  "campaign": "first-draft-generalization-v21",
+  "run": {
+    "id": "2026-07-16T08-35-26-101Z",
+    "worldId": "world_027_gazette_recall",
+    "learnerProfile": "answer_seeking",
+    "seed": 20260950,
+    "loopMode": "strict",
+    "models": {
+      "tutor": "codex.gpt-5.6-terra",
+      "analysis": "codex.gpt-5.6-sol",
+      "learner": "codex.gpt-5.6-terra",
+      "tutorEffort": "low"
+    },
+    "settings": {
+      "dagMode": "defeasible_human_scaffold",
+      "policy": "continuous_dynamical_system",
+      "registerTemperature": 0.15,
+      "releaseSpeed": 1,
+      "dagFactDropout": 0,
+      "historyTurns": 4,
+      "maxTokens": 4096
+    }
+  },
+  "sourceArtifacts": {
+    "campaignResult": {
+      "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v21-live/campaign-result.json",
+      "sha256": "d8d4fad3da424f43909302c6c3cbb3bcce45b0b8dd9214c76eba4b65bc5be46e"
+    },
+    "autoEvalReport": {
+      "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v21-live/gazette_answer_seeking/auto-eval-2026-07-16T08-41-51-353Z.json",
+      "sha256": "34ce40a20ea383a37f6f569aaf1d3844deeb96260d339eedc69b897dc7875b7b"
+    },
+    "trace": {
+      "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v21-live/gazette_answer_seeking/2026-07-16T08-35-26-101Z.jsonl",
+      "sha256": "85dd314476e8fe0dcff37f04957c6e577a1c516c1b3896590df9478955cdaf46"
+    }
+  },
+  "publicTranscript": {
+    "opening": "The Gazette pulled its morning run at 4 a. m. On the corrections file, the question is exact: Whose hand planted the fabricated quote that sank the seawall story? The corrections file has no tested clue in it yet. What should we examine first—or which word should we unpack?",
+    "exchanges": [
+      {
+        "turn": 1,
+        "learner": "What should I write next about the corrections file?",
+        "tutor": "Write: We have no tested clue yet, so the file cannot name the hand. I hold the page-one byline against the corrections file. “I read in the record that the byline is no secret: the seawall story ran under Crane's name, her slug, her page-one turn. The desk needs to read no further — the story is Crane's copy, and so, it says, is its poison.” That ties the story to Crane's copy, but not yet to the hand that planted the quote. You may ask which clue, connection, or term needs explaining. What does the byline change?"
+      },
+      {
+        "turn": 2,
+        "learner": "What should I write next about the byline?",
+        "tutor": "Write: “The byline puts the seawall story under Crane’s name, but it does not show whose hand planted the quote.” I mark that in the corrections file beside Crane’s slug; the page-one turn is hers, while the poisoned line’s maker remains unproved. Does the byline show Crane owned the story, or that she inserted the quote?"
+      },
+      {
+        "turn": 3,
+        "learner": "Does the byline show Crane owned the story, or that she inserted the quote?",
+        "tutor": "Crane’s byline makes her answer for the story, but it does not put the false words in her hand. I open the archive beside the corrections file and mark the page. The archive settles where, not why. The fabrication is not in the lede, the numbers, or the commissioner’s on-record hedging. It is the kicker: the closing graf, the last quote, where a story is least read twice before press. The desk’s ready accusation is Crane, but the archive’s finding breaks the shortcut from a byline to the hand behind the quote. What does the kicker’s fixed place change, and what does it still leave unproved?"
+      },
+      {
+        "turn": 4,
+        "learner": "What should I write next about the kicker?",
+        "tutor": "Write: “The false quote sits in the kicker, so we know where the story was poisoned, but not whose hand put it there.” My case is that Crane’s byline alone cannot name the planter; break it if the kicker itself points to Crane. The archive breaks the desk’s shortcut: a byline owns the story, not necessarily the last inserted words. We need evidence tying someone to that closing graf."
+      },
+      {
+        "turn": 5,
+        "learner": "What should I write next to show who had access to that closing graf?",
+        "tutor": "Write: “We know where the false quote sits, but not yet who could reach that closing graf.” I open Crane’s ring-bound notebooks beside the corrections file and leave space beside the kicker. “I read in the record that. And the sourcing was hers throughout: every quote in the piece traces to Crane's own ring-bound notebooks — her shorthand, her call log, her harbor contacts. No line went into that story she did not gather the getting of.” That ties the story’s filing to Crane, but still does not show a logged hand in the kicker. What does Crane’s own sourcing support, and what does it still leave unproved?"
+      },
+      {
+        "turn": 6,
+        "learner": "What should I write next about Crane’s sourcing?",
+        "tutor": "Write: “Crane’s byline and her own notebooks show she filed the story under her name, but they do not establish that she planted the false quote.” I enter the supported finding in the open record. I close the ring-bound notebooks beside the corrections file: Crane answers for the story, only; the hand in the kicker still needs evidence tied to that insertion."
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "2026-07-16T08-35-26-101Z:t004",
+      "turn": 4,
+      "publicPrefixThroughTurn": 3,
+      "learnerMessage": "What should I write next about the kicker?",
+      "originalCandidate": "Write: “The false quote sits in the kicker, so we know where the story was poisoned, but not whose hand put it there.” My case is that Crane’s byline alone cannot name the planter; break it if the kicker itself points to Crane. The archive breaks the desk’s shortcut: a byline owns the story, not necessarily the last inserted words. We need evidence tying someone to that closing graf.",
+      "selectedConfiguration": {
+        "engagement_stance": "charismatic",
+        "action_family": "stage_next_step",
+        "audience_register": "adult_novice",
+        "lexical_accessibility": "plain",
+        "scene_immersion": "immersive",
+        "actorial_part": "advocate",
+        "actorial_part_label": "advocate for the live case",
+        "performance_tactic": "dramatic_counterpressure",
+        "performance_contract": "Use the character or exhibit to challenge the room’s easy verdict, then hand the decisive test to the learner."
+      },
+      "recordedAudit": {
+        "safetyOk": true,
+        "questionSupportOk": true,
+        "compositionOk": true,
+        "repetitionOk": true,
+        "actorialRealizationOk": false,
+        "issues": [
+          {
+            "type": "missing_selected_performance_tactic",
+            "reason": "does not make the selected dramatic counterpressure tactic visible in the development beat"
+          }
+        ],
+        "deliveryOutcome": "guarded_original_accepted_with_advisory",
+        "realizationRate": 0.833
+      },
+      "calibration": {
+        "expectedLabel": "semantic_realization_structural_false_negative",
+        "expectedPerformanceRealized": true,
+        "rationale": "The candidate visibly makes an accountable case, invites it to be broken, names the archive as contrary public evidence, breaks the desk's shortcut, and hands off the missing evidentiary direction. The recorded lexical surface check missed that composition.",
+        "componentEvidence": {
+          "public_pressure_target": "Crane’s byline alone cannot name the planter",
+          "contrary_evidence": "The archive breaks the desk’s shortcut",
+          "dramatic_action": "My case is that Crane’s byline alone cannot name the planter; break it if the kicker itself points to Crane.",
+          "learner_handoff": "We need evidence tying someone to that closing graf."
+        },
+        "missingComponents": []
+      }
+    },
+    {
+      "id": "2026-07-16T08-35-26-101Z:t007",
+      "turn": 7,
+      "publicPrefixThroughTurn": 6,
+      "learnerMessage": "What should I write next about Crane’s ring-bound notebooks?",
+      "duePublicEvidence": "The corrections file holds two priors under Crane's name — a misdated permit, a misattributed figure, both within the year. The desk reads the file as a confession already written: her name is in the book twice, and now her story is pulped on the depot floor.",
+      "originalCandidate": "Write: “Crane’s notebooks and byline show she filed the story under her own name, but they do not identify the hand that inserted the false kicker.” I open the corrections file beside the ring-bound notebooks and mark the distinction: the desk wants Crane’s name to end it, but that shortcut breaks when answering for a story is confused with planting its poison. “I read in the record that. The corrections file holds two priors under Crane's name — a misdated permit, a misattributed figure, both within the year. The desk reads the file as a confession already written: her name is in the book twice, and now her story is pulped on the depot floor.” What do those priors support about Crane, and what do they still rule out about the hand in the kicker?",
+      "selectedConfiguration": {
+        "engagement_stance": "charismatic",
+        "action_family": "stage_next_step",
+        "audience_register": "adult_novice",
+        "lexical_accessibility": "plain",
+        "scene_immersion": "immersive",
+        "actorial_part": "record_keeper",
+        "actorial_part_label": "keeper of the corrections file",
+        "performance_tactic": "dramatic_counterpressure",
+        "performance_contract": "Use the character or exhibit to challenge the room’s easy verdict, then hand the decisive test to the learner."
+      },
+      "recordedAudit": {
+        "safetyOk": true,
+        "dramaticReleaseOk": true,
+        "compositionOk": true,
+        "repetitionOk": true,
+        "actorialRealizationOk": false,
+        "issues": [
+          {
+            "type": "missing_selected_performance_tactic",
+            "reason": "does not make the selected dramatic counterpressure tactic visible in the development beat"
+          }
+        ],
+        "deliveryOutcome": "guarded_plain_recovery_accepted",
+        "realizationRate": 0.833
+      },
+      "deliveredRecovery": {
+        "kind": "plain_recovery_candidate",
+        "text": "Write: “Crane’s notebooks tie the story to her, but not the false quote to her hand.” I open the corrections file. “I read in the record that. The corrections file holds two priors under Crane's name — a misdated permit, a misattributed figure, both within the year. The desk reads the file as a confession already written: her name is in the book twice, and now her story is pulped on the depot floor.” The priors may make Crane answer for the story, but they do not show who inserted the kicker. What does that distinction change for the accusation against Crane?"
+      },
+      "calibration": {
+        "expectedLabel": "genuine_performance_miss",
+        "expectedPerformanceRealized": false,
+        "rationale": "The candidate stages and reads the due record, but its host beat states a general distinction before that evidence appears. It never uses the newly read priors as the contrary observation that pressures the desk's ready verdict, so the selected counterpressure is not performed.",
+        "componentEvidence": {
+          "public_pressure_target": "the desk wants Crane’s name to end it",
+          "contrary_evidence": null,
+          "dramatic_action": null,
+          "learner_handoff": "What do those priors support about Crane, and what do they still rule out about the hand in the kicker?"
+        },
+        "missingComponents": [
+          "contrary_evidence_applied_to_pressure",
+          "performed_counterpressure"
+        ]
+      }
+    }
+  ]
+}

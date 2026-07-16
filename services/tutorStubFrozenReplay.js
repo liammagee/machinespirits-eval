@@ -5,6 +5,7 @@ import { auditTutorStubDialogueClosureResponse } from './tutorStubDialogueClosur
 import { auditTutorStubDramaticReleaseResponse } from './tutorStubDramaticRelease.js';
 import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from './tutorStubEvidenceAssertion.js';
 import { buildTutorStubFirstDraftContract, tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
+import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
 import { auditTutorStubQuestionSupportResponse } from './tutorStubQuestionSupport.js';
@@ -27,6 +28,10 @@ import {
   tutorStubGuardDeliveryDecision,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
 } from './tutorStubGuardRecovery.js';
+import {
+  applyTutorStubPerformanceAdjudication,
+  tutorStubPerformanceAdjudicationEligibility,
+} from './tutorStubPerformanceAdjudication.js';
 
 export const TUTOR_STUB_FROZEN_REPLAY_SCHEMA = 'machinespirits.tutor-stub.frozen-replay.v1';
 export const TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.first-draft-regression-fixture.v1';
@@ -436,6 +441,17 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
       model: modelCall.model,
       effort: modelCall.response?.effort || modelCall.request.config?.cliEffort || null,
     },
+    semanticAdjudicatorDefault: clone({
+      provider:
+        runStart.metadata?.classifier?.resolved?.provider ||
+        runStart.metadata?.tutorLearnerDag?.provider ||
+        null,
+      model:
+        runStart.metadata?.classifier?.resolved?.model ||
+        runStart.metadata?.tutorLearnerDag?.model ||
+        null,
+      effort: runStart.metadata?.cliEffort || 'low',
+    }),
     recorded: {
       originalCandidate: compactRecordedAttempt(originalAttempt),
       attempts: (accounting.attempts || []).map(compactRecordedAttempt),
@@ -444,12 +460,76 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
   };
 }
 
+/**
+ * Recompile only the current speaking contract against an immutable public
+ * prefix. This lets development screens exercise the current generation
+ * prompt without rerunning the learner, classifier, DAG, or prior dialogue.
+ */
+export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) {
+  if (!bundle || !world) throw new Error('frozen request refresh requires bundle and world');
+  const refreshed = clone(bundle);
+  const messages = refreshed.request?.messages || [];
+  const latestRequest = messages.at(-1);
+  if (!latestRequest || latestRequest.role !== 'user' || !FIRST_DRAFT_BLOCK.test(latestRequest.content)) {
+    throw new Error(`frozen turn ${bundle.turn} request has no replaceable first-draft contract`);
+  }
+  const publicEvidence = (bundle.publicPremiseIds || [])
+    .map((premiseId) => world?.premiseById?.get?.(premiseId))
+    .filter(Boolean);
+  const dueEvidence = (bundle.duePremiseIds || [])
+    .map((premiseId) => world?.premiseById?.get?.(premiseId))
+    .filter(Boolean);
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: bundle.selectedResponseConfiguration,
+    publicWorld: {
+      visibility: 'public',
+      title: world.title,
+      setting: world.setting,
+      question: world.question || world.publicQuestion,
+      summary: world.openingFrame?.situation || world.openingSituation,
+      temporal_frame: world.presentation?.temporal_frame,
+      narrative_diction: world.presentation?.narrative_diction,
+      ledger_term: world.presentation?.ledger_term,
+      public_objects: [world.presentation?.ledger_term].filter(Boolean),
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: bundle.learnerText,
+      pressure_target: bundle.learnerText,
+      public_claims: [
+        ...(bundle.priorTurns || []).slice(-2).flatMap((turn) => [turn.learner, turn.tutor]),
+        bundle.learnerText,
+      ],
+      public_evidence: publicEvidence,
+      due_evidence: dueEvidence,
+    },
+  });
+  const firstDraftContract = buildTutorStubFirstDraftContract({
+    learnerText: bundle.learnerText,
+    responseConfiguration: bundle.selectedResponseConfiguration,
+    responseCompositionFrame: bundle.frames?.responseComposition,
+    dramaticReleaseFrame: bundle.frames?.dramaticRelease,
+    questionSupport: bundle.frames?.questionSupport,
+    dialogueClosureFrame: bundle.frames?.dialogueClosure,
+    performanceObligationContract,
+  });
+  latestRequest.content = latestRequest.content.replace(
+    FIRST_DRAFT_BLOCK,
+    tutorStubFirstDraftContractPrompt(firstDraftContract),
+  );
+  refreshed.firstDraftContract = firstDraftContract;
+  refreshed.performanceObligationContract = performanceObligationContract;
+  refreshed.request.messages = messages;
+  return refreshed;
+}
+
 export function auditTutorStubFrozenCandidate({
   bundle,
   world,
   text,
   deliveryConfiguration = null,
   candidateKind = 'original_candidate',
+  performanceAdjudication = null,
 } = {}) {
   if (!bundle || !world) throw new Error('frozen candidate audit requires bundle and world');
   const guards = bundle.guards || {};
@@ -501,11 +581,6 @@ export function auditTutorStubFrozenCandidate({
         composition: responseCompositionAudit.segments,
       })
     : null;
-  const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
-    ok: true,
-    active: false,
-    issues: [],
-  };
   const repetitionAudit = guards.repetition
     ? auditTutorStubRepetitionResponse({ text: auditedText, recentTutorTexts: bundle.priorTutorTexts })
     : { ok: true, issues: [], maxSimilarity: 0 };
@@ -517,18 +592,36 @@ export function auditTutorStubFrozenCandidate({
     world,
     premiseIds: bundle.duePremiseIds,
   });
-  const audits = {
+  let audits = {
     leakAudit,
     scaffoldAudit,
     questionSupportAudit,
     dramaticReleaseAudit,
-    actorialRealizationAudit,
+    actorialRealizationAudit: responseConfigurationAudit?.actorial_realization || {
+      ok: true,
+      active: false,
+      issues: [],
+    },
     responseConfigurationAudit,
     responseCompositionAudit,
     repetitionAudit,
     closureAudit,
     releaseDeliveryAudit,
   };
+  const performanceAdjudicationEligibility = tutorStubPerformanceAdjudicationEligibility({
+    audits,
+    contract: bundle.performanceObligationContract,
+    configuration: deliveryConfiguration || bundle.selectedResponseConfiguration,
+  });
+  if (performanceAdjudication) {
+    const applied = applyTutorStubPerformanceAdjudication({
+      audits,
+      adjudication: performanceAdjudication,
+      eligibility: performanceAdjudicationEligibility,
+    });
+    audits = applied.audits;
+  }
+  const actorialRealizationAudit = audits.actorialRealizationAudit;
   const issueRows = [
     ...(leakAudit.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
     ...(scaffoldAudit.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
@@ -564,6 +657,8 @@ export function auditTutorStubFrozenCandidate({
     advisoryFailureClusters: deliveryDecision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`),
     deliveryDecision,
     audits,
+    performanceAdjudicationEligibility,
+    performanceAdjudication: performanceAdjudication || null,
   };
 }
 
@@ -600,7 +695,19 @@ export function extractTutorStubRegressionFixture({ tracePath, turns = null } = 
 
 export function summarizeTutorStubFrozenReplay(results = []) {
   const rows = Array.isArray(results) ? results : [];
-  const accepted = rows.filter((row) => row.audit?.ok).length;
+  const strictOriginalAccepted = (audit) =>
+    audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
+  const accepted = rows.filter((row) => strictOriginalAccepted(row.audit)).length;
+  const deterministicAccepted = rows.filter(
+    (row) => strictOriginalAccepted(row.deterministicAudit || row.audit),
+  ).length;
+  const semanticRows = rows.filter((row) => row.semanticAdjudication?.called === true);
+  const semanticErrorRows = rows.filter((row) => row.semanticAdjudication?.error);
+  const semanticCorrections = rows.filter(
+    (row) =>
+      row.deterministicAudit?.audits?.actorialRealizationAudit?.ok === false &&
+      row.audit?.audits?.actorialRealizationAudit?.ok === true,
+  ).length;
   const failureCounts = {};
   for (const row of rows) {
     for (const cluster of row.audit?.failureClusters || []) {
@@ -610,11 +717,33 @@ export function summarizeTutorStubFrozenReplay(results = []) {
   return {
     schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
     draws: rows.length,
+    deterministicOriginalCandidatesAccepted: deterministicAccepted,
+    deterministicOriginalCandidateAcceptanceRate: rows.length ? deterministicAccepted / rows.length : null,
+    semanticRecognitionCorrections: semanticCorrections,
+    semanticAdjudicatorCalls: semanticRows.length,
+    semanticAdjudicatorNewCalls: semanticRows.filter(
+      (row) => row.semanticAdjudication?.newModelCall !== false,
+    ).length,
+    semanticAdjudicationsReused: semanticRows.filter(
+      (row) => row.semanticAdjudication?.reusedRaw === true,
+    ).length,
+    semanticAdjudicatorErrors: semanticErrorRows.length,
+    meanSemanticAdjudicationLatencyMs: semanticRows.length
+      ? semanticRows.reduce((sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0), 0) /
+        semanticRows.length
+      : null,
     originalCandidatesAccepted: accepted,
     originalCandidateAcceptanceRate: rows.length ? accepted / rows.length : null,
     safetyFailures: rows.filter((row) => row.audit?.safetyFailure).length,
     meanOriginalLatencyMs: rows.length
       ? rows.reduce((sum, row) => sum + Number(row.latencyMs || 0), 0) / rows.length
+      : null,
+    meanTotalScreenLatencyMs: rows.length
+      ? rows.reduce(
+          (sum, row) =>
+            sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
+          0,
+        ) / rows.length
       : null,
     mechanicalRepairs: 0,
     modelRewrites: 0,

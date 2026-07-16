@@ -9,6 +9,7 @@ export const TUTOR_STUB_PROMPT_BUDGETS = Object.freeze({
   automated_learner: Object.freeze({ maxChars: 24_000, maxApproxTokens: 6_000 }),
   mixed_learner: Object.freeze({ maxChars: 28_000, maxApproxTokens: 7_000 }),
   clarifier: Object.freeze({ maxChars: 16_000, maxApproxTokens: 4_000 }),
+  performance_adjudication: Object.freeze({ maxChars: 12_000, maxApproxTokens: 3_000 }),
   default: Object.freeze({ maxChars: 32_000, maxApproxTokens: 8_000 }),
 });
 
@@ -75,6 +76,9 @@ export function recoverTutorStubDuplicateInstructionLines({ texts = [], duplicat
 
 export function tutorStubPromptSurfaceForRole(role) {
   const value = String(role || '').toLowerCase();
+  if (value.includes('performance_adjudication') || value.includes('actorial_adjudication')) {
+    return 'performance_adjudication';
+  }
   if (value.includes('auto_learner')) return 'automated_learner';
   if (value.includes('mixed_learner')) return 'mixed_learner';
   if (value.includes('learner_analysis') || value.includes('learner_record') || value.includes('classifier')) {

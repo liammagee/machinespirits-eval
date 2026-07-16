@@ -12,6 +12,7 @@ import {
   recoverTutorStubDuplicateInstructionLines,
   recoverTutorStubSpeakerPrompt,
   sanitizeTutorStubSpeakerAdvisory,
+  tutorStubPromptSurfaceForRole,
 } from '../services/tutorStubPromptAudit.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
@@ -37,6 +38,20 @@ test('prompt audit rejects oversized and duplicated instruction surfaces', () =>
     new Set(audit.violations.map((violation) => violation.code)),
     new Set(['character_budget_exceeded', 'approximate_token_budget_exceeded', 'duplicate_instruction_lines']),
   );
+});
+
+test('semantic performance adjudication has its own bounded non-speaking prompt surface', () => {
+  assert.equal(
+    tutorStubPromptSurfaceForRole('tutor_stub_performance_adjudication'),
+    'performance_adjudication',
+  );
+  const audit = auditTutorStubPrompt({
+    surface: 'performance_adjudication',
+    systemPrompt: 'Classify the supplied public performance. Never rewrite it.',
+    userPrompt: '{"candidate":"I open the public ledger."}',
+  });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.budget.maxApproxTokens, 3000);
 });
 
 test('exact duplicate-only prompt rows can be compacted and re-audited safely', () => {

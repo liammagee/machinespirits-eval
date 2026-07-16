@@ -171,6 +171,7 @@ import {
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
+import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
 import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
@@ -10193,6 +10194,35 @@ async function callTutor({
         dueEvidence: currentReleaseRows(state, tutorTurn),
       });
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
+  const committedPublicEvidence = passthrough ? [] : committedReleaseRows(state, tutorTurn);
+  const duePublicEvidence = passthrough ? [] : currentReleaseRows(state, tutorTurn);
+  const performanceObligationContract = passthrough
+    ? null
+    : compileTutorStubPerformanceObligationContract({
+        responseConfiguration,
+        publicWorld: {
+          visibility: 'public',
+          title: world?.title,
+          setting: world?.setting,
+          question: world?.question || world?.publicQuestion,
+          summary: world?.openingFrame?.situation || world?.openingSituation,
+          temporal_frame: world?.presentation?.temporal_frame,
+          narrative_diction: world?.presentation?.narrative_diction,
+          ledger_term: world?.presentation?.ledger_term,
+          public_objects: [world?.presentation?.ledger_term].filter(Boolean),
+        },
+        publicTurn: {
+          visibility: 'public',
+          learner_move: learnerText,
+          pressure_target: learnerText,
+          public_claims: [
+            ...context.slice(-4).map((message) => message.content),
+            learnerText,
+          ],
+          public_evidence: committedPublicEvidence,
+          due_evidence: duePublicEvidence,
+        },
+      });
   const firstDraftHumanDiscourseAdvisory = passthrough
     ? null
     : humanDiscourseTutorContext(humanDiscourseFrame, {
@@ -10220,6 +10250,7 @@ async function callTutor({
         dramaticReleaseFrame,
         questionSupport: humanDiscourseFrame?.questionSupport || null,
         dialogueClosureFrame,
+        performanceObligationContract,
       });
   const firstDraftContractAdvisory = passthrough
     ? null

@@ -14,9 +14,17 @@ import {
   auditTutorStubFrozenCandidate,
   extractTutorStubFrozenTurn,
   extractTutorStubRegressionFixture,
+  refreshTutorStubFrozenFirstDraftRequest,
   summarizeTutorStubFrozenReplay,
   TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
 } from '../services/tutorStubFrozenReplay.js';
+import {
+  parseTutorStubPerformanceAdjudication,
+  tutorStubPerformanceAdjudicationSystemPrompt,
+  tutorStubPerformanceAdjudicationUserPrompt,
+} from '../services/tutorStubPerformanceAdjudication.js';
+import { tutorStubActorialHostSurface } from '../services/tutorStubResponseConfiguration.js';
+import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
@@ -30,22 +38,38 @@ const { values: args } = parseArgs({
     out: { type: 'string' },
     'write-fixture': { type: 'string' },
     'audit-fixture': { type: 'string' },
+    'adjudicate-report': { type: 'string' },
     'development-seed': { type: 'string', default: '' },
     'original-only': { type: 'boolean', default: false },
+    'semantic-adjudication': { type: 'boolean', default: false },
+    'adjudicator-model': { type: 'string' },
+    'adjudicator-effort': { type: 'string' },
+    'reuse-adjudication': { type: 'boolean', default: false },
     help: { type: 'boolean', default: false },
   },
 });
 
 function usage() {
   return `Usage:
-  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --semantic-adjudication --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
+  node scripts/replay-tutor-stub-frozen-turns.js --adjudicate-report original-screen.json --reuse-adjudication --out reaudited.json
 
 The live path regenerates only the original speaking-tutor candidate. It never
 invokes tutor repair, deterministic fallback, learner generation, learner
 classification, DAG analysis, or dialogue continuation. Rejected text is kept
 inside the JSON artifact and is never printed as public tutor speech.`;
+}
+
+function parsedModelReference(value) {
+  const ref = String(value || '').trim();
+  if (!ref) return null;
+  const separator = ref.indexOf('.');
+  if (separator <= 0 || separator === ref.length - 1) {
+    throw new Error('--adjudicator-model must use provider.model notation');
+  }
+  return { provider: ref.slice(0, separator), model: ref.slice(separator + 1) };
 }
 
 function positiveInt(value, label, { max = Number.MAX_SAFE_INTEGER } = {}) {
@@ -136,6 +160,112 @@ async function generateOriginal(bundle) {
     usage: result.usage || null,
     tokenUsageAvailable: Boolean(result.usage),
   };
+}
+
+async function adjudicateOriginal({ bundle, candidate, deterministicAudit }) {
+  const eligibility = deterministicAudit.performanceAdjudicationEligibility;
+  if (eligibility?.eligible !== true) {
+    return { called: false, eligibility, adjudication: null, latencyMs: 0, error: null };
+  }
+  const override = parsedModelReference(args['adjudicator-model']);
+  const selected = override || bundle.semanticAdjudicatorDefault;
+  if (!selected?.provider || !selected?.model) {
+    return {
+      called: false,
+      eligibility,
+      adjudication: null,
+      latencyMs: 0,
+      error: 'no saved or explicit semantic adjudicator model',
+    };
+  }
+  const configuration = bundle.selectedResponseConfiguration;
+  const hostCandidate = tutorStubActorialHostSurface(configuration, candidate);
+  const systemPrompt = tutorStubPerformanceAdjudicationSystemPrompt();
+  const userPrompt = tutorStubPerformanceAdjudicationUserPrompt({
+    candidate: hostCandidate,
+    contract: bundle.performanceObligationContract,
+  });
+  const promptAudit = auditTutorStubPrompt({
+    surface: 'performance_adjudication',
+    systemPrompt,
+    userPrompt,
+    instructionTexts: [systemPrompt],
+  });
+  if (!promptAudit.ok) {
+    return {
+      called: false,
+      eligibility,
+      adjudication: null,
+      latencyMs: 0,
+      error: `semantic adjudication prompt audit failed: ${promptAudit.violations.map((row) => row.code).join(', ')}`,
+      promptAudit,
+    };
+  }
+  const started = Date.now();
+  try {
+    let raw;
+    let responseModel;
+    let usage = null;
+    const effort = args['adjudicator-effort'] || selected.effort || 'low';
+    if (isCliProvider(selected.provider)) {
+      const result = await callAIWithCliBridge(
+        { provider: selected.provider, model: selected.model },
+        systemPrompt,
+        userPrompt,
+        'tutor_stub_performance_adjudication',
+        { messageHistory: [], effort },
+      );
+      raw = result.text || '';
+      responseModel = `${result.provider || selected.provider}.${result.model || selected.model}`;
+      usage = {
+        inputTokens: Number(result.inputTokens || 0),
+        outputTokens: Number(result.outputTokens || 0),
+        totalTokens: Number(result.inputTokens || 0) + Number(result.outputTokens || 0),
+      };
+    } else {
+      const result = await callAI({
+        provider: selected.provider,
+        model: selected.model,
+        systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+        preset: 'socratic',
+        config: { temperature: 0, maxTokens: 1200 },
+      });
+      raw = result.content || '';
+      responseModel = `${result.provider || selected.provider}.${result.model || selected.model}`;
+      usage = result.usage || null;
+    }
+    const adjudication = parseTutorStubPerformanceAdjudication({
+      raw,
+      candidate: hostCandidate,
+      contract: bundle.performanceObligationContract,
+    });
+    return {
+      called: true,
+      eligibility,
+      adjudication,
+      raw,
+      model: responseModel,
+      effort,
+      latencyMs: Date.now() - started,
+      usage,
+      error: null,
+      promptAudit,
+      candidateSurface: 'adaptive_host_public_text',
+    };
+  } catch (error) {
+    return {
+      called: true,
+      eligibility,
+      adjudication: null,
+      model: `${selected.provider}.${selected.model}`,
+      effort: args['adjudicator-effort'] || selected.effort || 'low',
+      latencyMs: Date.now() - started,
+      usage: null,
+      error: error.message,
+      promptAudit,
+    };
+  }
 }
 
 async function mapLimit(items, limit, fn) {
@@ -230,6 +360,69 @@ async function main() {
     }
     return;
   }
+  if (args['adjudicate-report']) {
+    if (!args.out) throw new Error('--out is required with --adjudicate-report');
+    const sourcePath = path.resolve(args['adjudicate-report']);
+    const source = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+    const bundlesByTurn = new Map((source.bundles || []).map((bundle) => [Number(bundle.turn), bundle]));
+    const concurrency = positiveInt(args.concurrency || '1', '--concurrency', { max: 3 });
+    const results = await mapLimit(source.results || [], concurrency, async (row) => {
+      const bundle = bundlesByTurn.get(Number(row.turn));
+      if (!bundle) throw new Error(`screen report has no frozen bundle for turn ${row.turn}`);
+      const world = worldForBundle(bundle);
+      const deterministicAudit = auditTutorStubFrozenCandidate({
+        bundle,
+        world,
+        text: row.candidate,
+        candidateKind: 'original_candidate',
+      });
+      const reusableRaw = args['reuse-adjudication'] ? row.semanticAdjudication?.raw : null;
+      const semanticAdjudication = reusableRaw
+        ? {
+            ...row.semanticAdjudication,
+            adjudication: parseTutorStubPerformanceAdjudication({
+              raw: reusableRaw,
+              candidate: tutorStubActorialHostSurface(bundle.selectedResponseConfiguration, row.candidate),
+              contract: bundle.performanceObligationContract,
+            }),
+            reusedRaw: true,
+            newModelCall: false,
+          }
+        : await adjudicateOriginal({
+            bundle,
+            candidate: row.candidate,
+            deterministicAudit,
+          });
+      const audit = semanticAdjudication.adjudication
+        ? auditTutorStubFrozenCandidate({
+            bundle,
+            world,
+            text: row.candidate,
+            candidateKind: 'original_candidate',
+            performanceAdjudication: semanticAdjudication.adjudication,
+          })
+        : deterministicAudit;
+      return { ...row, deterministicAudit, semanticAdjudication, audit };
+    });
+    const report = {
+      ...source,
+      mode: 'original_only_screen_semantic_reaudit',
+      sourceReport: sourcePath,
+      regeneratedTutorCandidates: false,
+      reusedSavedAdjudication: Boolean(args['reuse-adjudication']),
+      semanticAdjudication: true,
+      adjudicatorModelOverride: args['adjudicator-model'] || source.adjudicatorModelOverride || null,
+      adjudicatorEffortOverride: args['adjudicator-effort'] || source.adjudicatorEffortOverride || null,
+      summary: summarizeTutorStubFrozenReplay(results),
+      results,
+    };
+    const target = writeJson(args.out, report);
+    console.log(
+      `semantic re-audit: ${report.summary.originalCandidatesAccepted}/${report.summary.draws} accepted; ${report.summary.semanticRecognitionCorrections} recognition corrections; ${report.summary.semanticAdjudicatorCalls} adjudicator calls; ${report.summary.semanticAdjudicatorErrors} errors`,
+    );
+    console.log(`semantic re-audit report: ${target}`);
+    return;
+  }
   if (!args.trace) throw new Error('--trace is required');
   const tracePath = path.resolve(args.trace);
   const turns = selectedTurns(args.turns);
@@ -244,19 +437,35 @@ async function main() {
   }
   const draws = positiveInt(args.draws, '--draws', { max: 20 });
   const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
-  const bundles = turns.map((turn) => extractTutorStubFrozenTurn({ tracePath, turn }));
+  const bundles = turns.map((turn) => {
+    const extracted = extractTutorStubFrozenTurn({ tracePath, turn });
+    return refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world: worldForBundle(extracted) });
+  });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
   const results = await mapLimit(jobs, concurrency, async ({ bundle, draw }) => {
     const generated = await generateOriginal(bundle);
     const world = worldForBundle(bundle);
-    const audit = auditTutorStubFrozenCandidate({
+    const deterministicAudit = auditTutorStubFrozenCandidate({
       bundle,
       world,
       text: generated.text,
       candidateKind: 'original_candidate',
     });
+    const semanticAdjudication = args['semantic-adjudication']
+      ? await adjudicateOriginal({ bundle, candidate: generated.text, deterministicAudit })
+      : { called: false, eligibility: deterministicAudit.performanceAdjudicationEligibility, latencyMs: 0 };
+    const audit = semanticAdjudication.adjudication
+      ? auditTutorStubFrozenCandidate({
+          bundle,
+          world,
+          text: generated.text,
+          candidateKind: 'original_candidate',
+          performanceAdjudication: semanticAdjudication.adjudication,
+        })
+      : deterministicAudit;
+    const accepted = audit.ok && audit.audits?.actorialRealizationAudit?.ok;
     console.log(
-      `turn ${bundle.turn} draw ${draw}: ${audit.ok ? 'accepted' : 'rejected'}; ${generated.latencyMs} ms; ${audit.hardFailureClusters.join(', ') || 'no hard failures'}`,
+      `turn ${bundle.turn} draw ${draw}: ${accepted ? 'accepted' : 'rejected'}; ${generated.latencyMs} ms generation${semanticAdjudication.called ? ` + ${semanticAdjudication.latencyMs} ms semantic recognition` : ''}; ${audit.hardFailureClusters.join(', ') || (audit.audits?.actorialRealizationAudit?.ok ? 'no hard failures' : 'performance tactic not realized')}`,
     );
     return {
       turn: bundle.turn,
@@ -271,6 +480,8 @@ async function main() {
       usage: generated.usage,
       tokenUsageAvailable: generated.tokenUsageAvailable,
       candidate: generated.text,
+      deterministicAudit,
+      semanticAdjudication,
       audit,
     };
   });
@@ -283,6 +494,9 @@ async function main() {
     drawsPerTurn: draws,
     concurrency,
     developmentSeed: args['development-seed'] || null,
+    semanticAdjudication: Boolean(args['semantic-adjudication']),
+    adjudicatorModelOverride: args['adjudicator-model'] || null,
+    adjudicatorEffortOverride: args['adjudicator-effort'] || null,
     invariants: {
       priorDialogueRegenerated: false,
       learnerGenerated: false,
@@ -292,6 +506,7 @@ async function main() {
       deterministicFallbackInvoked: false,
       dialogueContinued: false,
       unsafeCandidatePubliclyExposed: false,
+      runtimeDialoguePathChanged: false,
     },
     summary: summarizeTutorStubFrozenReplay(results),
     bundles,

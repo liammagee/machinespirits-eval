@@ -128,7 +128,7 @@ export function validateTutorStubFirstDraftCampaign({ config, root = process.cwd
 }
 
 function replayCommand({ root, config, cell, turn, outputPath }) {
-  return [
+  const command = [
     process.execPath,
     path.join(root, 'scripts', 'replay-tutor-stub-frozen-turns.js'),
     '--trace',
@@ -145,6 +145,26 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
     '--out',
     outputPath,
   ];
+  if (config.fixed_configuration?.semantic_adjudication === true) {
+    command.splice(command.length - 2, 0, '--semantic-adjudication');
+  }
+  if (config.fixed_configuration?.adjudicator_model) {
+    command.splice(
+      command.length - 2,
+      0,
+      '--adjudicator-model',
+      String(config.fixed_configuration.adjudicator_model),
+    );
+  }
+  if (config.fixed_configuration?.adjudicator_effort) {
+    command.splice(
+      command.length - 2,
+      0,
+      '--adjudicator-effort',
+      String(config.fixed_configuration.adjudicator_effort),
+    );
+  }
+  return command;
 }
 
 function autoEvalCommand({ root, config, cell, outputDir }) {
@@ -277,16 +297,69 @@ export function tutorStubFirstDraftGatePossibility({ accepted = 0, completed = 0
   };
 }
 
+export function tutorStubFirstDraftIterationStopping({
+  current = null,
+  previous = null,
+  maximumConsecutiveWithoutImprovement = 2,
+} = {}) {
+  const maximum = integer(
+    maximumConsecutiveWithoutImprovement,
+    'maximum consecutive iterations without improvement',
+    { minimum: 1 },
+  );
+  if (!previous) {
+    return {
+      measurableImprovement: null,
+      consecutiveWithoutImprovement: 0,
+      maximumConsecutiveWithoutImprovement: maximum,
+      stop: false,
+      reason: 'first_measured_iteration',
+    };
+  }
+  const currentCompleted = Number(current?.completedTurns || 0);
+  const previousCompleted = Number(previous?.completedTurns || 0);
+  const currentAccepted = Number(current?.originalCandidatesAccepted || 0);
+  const previousAccepted = Number(previous?.originalCandidatesAccepted || 0);
+  const currentRate = currentCompleted ? currentAccepted / currentCompleted : 0;
+  const previousRate = previousCompleted ? previousAccepted / previousCompleted : 0;
+  const improved =
+    currentRate > previousRate ||
+    (currentRate === previousRate && currentAccepted > previousAccepted) ||
+    Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0) ||
+    Number(current?.deterministicFallbacks || 0) < Number(previous?.deterministicFallbacks || 0);
+  const consecutive = improved
+    ? 0
+    : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
+  return {
+    measurableImprovement: improved,
+    consecutiveWithoutImprovement: consecutive,
+    maximumConsecutiveWithoutImprovement: maximum,
+    stop: consecutive >= maximum,
+    reason: consecutive >= maximum ? 'two_consecutive_iterations_without_measurable_improvement' : improved ? 'improved' : 'no_improvement',
+  };
+}
+
 export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } = {}) {
   const requiredTurns = Number(config.gates_per_cell.required_turns);
   const requiredAccepted = Number(config.gates_per_cell.required_originals_accepted);
   const results = reports.flatMap((report) => report.results || []);
-  const accepted = results.filter((row) => row.audit?.ok).length;
+  const strictlyAccepted = (audit) =>
+    audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
+  const accepted = results.filter((row) => strictlyAccepted(row.audit)).length;
+  const deterministicAccepted = results.filter((row) =>
+    strictlyAccepted(row.deterministicAudit || row.audit),
+  ).length;
+  const semanticCorrections = results.filter(
+    (row) =>
+      row.deterministicAudit?.audits?.actorialRealizationAudit?.ok === false &&
+      row.audit?.audits?.actorialRealizationAudit?.ok === true,
+  ).length;
   const safetyFailures = results.filter((row) => row.audit?.safetyFailure).length;
   const transcriptSpecificUptakeFailures = results.filter(
     (row) => row.audit?.audits?.responseCompositionAudit?.ok === false,
   ).length;
   const originalLatencies = results.map((row) => Number(row.latencyMs || 0));
+  const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
   const failureCounts = new Map();
   for (const row of results) {
     for (const cluster of row.audit?.hardFailureClusters || []) {
@@ -315,6 +388,10 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     unstartedTurns: cell.turns.filter((turn) => !results.some((row) => Number(row.turn) === Number(turn))),
     originalCandidatesAccepted: accepted,
     originalCandidateAcceptanceRate: results.length ? accepted / results.length : null,
+    deterministicOriginalCandidatesAccepted: deterministicAccepted,
+    semanticRecognitionCorrections: semanticCorrections,
+    semanticAdjudicatorCalls: adjudicationRows.length,
+    semanticAdjudicatorErrors: results.filter((row) => row.semanticAdjudication?.error).length,
     mechanicalRepairs: 0,
     modelRewrites: 0,
     deterministicFallbacks: 0,
@@ -324,7 +401,17 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       ? originalLatencies.reduce((sum, latency) => sum + latency, 0) / originalLatencies.length
       : null,
     meanTotalTutorLatencyMs: originalLatencies.length
-      ? originalLatencies.reduce((sum, latency) => sum + latency, 0) / originalLatencies.length
+      ? results.reduce(
+          (sum, row) =>
+            sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
+          0,
+        ) / originalLatencies.length
+      : null,
+    meanSemanticAdjudicationLatencyMs: adjudicationRows.length
+      ? adjudicationRows.reduce(
+          (sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0),
+          0,
+        ) / adjudicationRows.length
       : null,
     dominantFailureClusters: [...failureCounts.entries()]
       .map(([cluster, count]) => ({ cluster, count }))

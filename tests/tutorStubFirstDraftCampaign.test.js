@@ -9,6 +9,7 @@ import {
   expandTutorStubFirstDraftCampaign,
   summarizeTutorStubWorkingScreen,
   tutorStubFirstDraftGatePossibility,
+  tutorStubFirstDraftIterationStopping,
   validateTutorStubFirstDraftCampaign,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
@@ -21,7 +22,12 @@ function workingConfig(tmp) {
     schema: 'machinespirits.tutor-stub.first-draft-working-screen.v1',
     id: 'working-test',
     held_out: false,
-    fixed_configuration: { draws_per_turn: 1, max_live_model_jobs: 3 },
+    fixed_configuration: {
+      draws_per_turn: 1,
+      max_live_model_jobs: 3,
+      semantic_adjudication: true,
+      adjudicator_effort: 'low',
+    },
     preflight: { model_free_fixtures: [fixture] },
     artifacts: { root: path.join(tmp, 'out') },
     matrix: [
@@ -72,6 +78,8 @@ test('campaign validation expands one original-only command per frozen turn with
     for (const command of plan.cells.flatMap((cell) => cell.commands)) {
       assert.ok(command.argv.includes('--original-only'));
       assert.ok(command.argv.includes('--development-seed'));
+      assert.ok(command.argv.includes('--semantic-adjudication'));
+      assert.ok(command.argv.includes('--adjudicator-effort'));
       assert.ok(!command.argv.includes('--dry-run'));
     }
   } finally {
@@ -106,7 +114,10 @@ test('working summary counts original acceptance, safety, uptake, and latency wi
             ok: index !== 3,
             safetyFailure: false,
             hardFailureClusters: index === 3 ? ['response_composition:missing_learner_uptake'] : [],
-            audits: { responseCompositionAudit: { ok: index !== 3 } },
+            audits: {
+              responseCompositionAudit: { ok: index !== 3 },
+              actorialRealizationAudit: { ok: index !== 3 },
+            },
           },
         },
       ],
@@ -121,6 +132,48 @@ test('working summary counts original acceptance, safety, uptake, and latency wi
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('development stopping gate halts only after two consecutive non-improving iterations', () => {
+  const first = tutorStubFirstDraftIterationStopping({
+    current: { completedTurns: 8, originalCandidatesAccepted: 4 },
+    previous: null,
+  });
+  assert.equal(first.stop, false);
+  assert.equal(first.consecutiveWithoutImprovement, 0);
+
+  const second = tutorStubFirstDraftIterationStopping({
+    current: { completedTurns: 8, originalCandidatesAccepted: 4 },
+    previous: {
+      completedTurns: 8,
+      originalCandidatesAccepted: 4,
+      stopping: first,
+    },
+  });
+  assert.equal(second.stop, false);
+  assert.equal(second.consecutiveWithoutImprovement, 1);
+
+  const third = tutorStubFirstDraftIterationStopping({
+    current: { completedTurns: 8, originalCandidatesAccepted: 4 },
+    previous: {
+      completedTurns: 8,
+      originalCandidatesAccepted: 4,
+      stopping: second,
+    },
+  });
+  assert.equal(third.stop, true);
+  assert.equal(third.consecutiveWithoutImprovement, 2);
+
+  const improved = tutorStubFirstDraftIterationStopping({
+    current: { completedTurns: 8, originalCandidatesAccepted: 5 },
+    previous: {
+      completedTurns: 8,
+      originalCandidatesAccepted: 4,
+      stopping: second,
+    },
+  });
+  assert.equal(improved.stop, false);
+  assert.equal(improved.consecutiveWithoutImprovement, 0);
 });
 
 test('acceptance assessment keeps original, repair, fallback, safety, and latency separate', () => {

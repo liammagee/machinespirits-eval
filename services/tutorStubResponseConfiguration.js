@@ -1055,7 +1055,7 @@ function actorialPartVisible(configuration, text, metrics) {
   return false;
 }
 
-function actorialHostSurface(configuration, text) {
+export function tutorStubActorialHostSurface(configuration, text) {
   const hasAuthoredSource = Boolean(configuration?.actorial_part_selection?.authored_role);
   if (!hasAuthoredSource) return text;
   return String(text || '')
@@ -1294,7 +1294,7 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
   // source. A source quotation has its own fixed voice and sentence shape, so
   // do not let that quotation impersonate—or length-penalize—the host part,
   // stance, audience register, or lexical accessibility.
-  const performanceText = actorialHostSurface(configuration, text);
+  const performanceText = tutorStubActorialHostSurface(configuration, text);
   const performanceWords = responseWords(performanceText);
   const performanceSentences = responseSentences(performanceText);
   const performanceMetrics = {
