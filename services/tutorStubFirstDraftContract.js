@@ -126,7 +126,7 @@ function releaseCue(entry) {
   const surface = oneLine(entry?.surface);
   if (!surface) return null;
   if (entry.mode === 'enacted_role') {
-    return `After PART, silently inhabit ${oneLine(entry.role) || 'the public source'}. Quote “${sourceReportingLead(entry)}” plus this exact public content once: ${surface} Print no source label; inherit no named deed or ownership.`;
+    return `Copy exactly, marks included: “${sourceReportingLead(entry)} ${surface}” Keep SOURCE words inside; inherit no deed or ownership.`;
   }
   return `After PART, open, read, show, test, or place this public exhibit exactly once: ${surface}`;
 }
@@ -250,7 +250,8 @@ function compactTacticInstruction(contract) {
     contract.performance?.tactic === 'shared_scene_invitation'
       ? 'In a separate sentence, invite the learner’s reading of that same object; do not repeat the placement action.'
       : contract.performance?.tactic_execution;
-  return [tactic, support, transition].filter(Boolean).join(' ');
+  const sourceBoundary = contract.evidence?.active ? 'After SOURCE closes, make TACTIC a new unquoted sentence.' : '';
+  return [sourceBoundary, tactic, support, transition].filter(Boolean).join(' ');
 }
 
 function compactStanceInstruction(stance) {

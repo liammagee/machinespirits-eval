@@ -65,9 +65,9 @@ test('compiles one ordered host plan with exact source between part and tactic',
   assert.ok(prompt.indexOf('SOURCE —') < prompt.indexOf('TACTIC —'));
   assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('HANDOFF —'));
   assert.equal(prompt.split(clue).length - 1, 1);
-  assert.match(prompt, /silently inhabit mint warden/iu);
-  assert.match(prompt, /Quote “I can attest that”/u);
-  assert.match(prompt, /Print no source label; inherit no named deed or ownership/iu);
+  assert.match(prompt, /Copy exactly, marks included/iu);
+  assert.match(prompt, /“I can attest that Verrell alone draws the mint-yard crucible\.”/u);
+  assert.match(prompt, /Keep SOURCE words inside/iu);
 });
 
 test('assigns every delivered response axis to exactly its intended host slot', () => {
@@ -183,6 +183,57 @@ test('keeps a complete typed counterpressure pair inside the tactic slot only', 
   assert.ok(prompt.indexOf('COUNTERPRESSURE PAIR —') < prompt.indexOf('HANDOFF —'));
   assert.equal(prompt.split('The easy answer sends every glider by the direct route.').length - 1, 1);
   assert.equal(prompt.split('The route board closes the direct crossing.').length - 1, 1);
+});
+
+test('a due role source carries contrary evidence once before a separate counterpressure tactic', () => {
+  const target = 'The room has already decided the north route is open.';
+  const clue = 'The signal book closes the north route after dusk.';
+  const responseConfiguration = configuration({
+    engagement_stance: 'charismatic',
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the signal book',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+      contract: 'Challenge the ready route judgment with the public record.',
+    },
+  });
+  const obligation = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    publicWorld: {
+      visibility: 'public',
+      setting: 'The signal book lies open beside the route board.',
+      question: 'Which route remained open?',
+      public_objects: ['signal book', 'route board'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'What should I write next?',
+      pressure_target: target,
+      contrary_evidence: [clue],
+      due_evidence: [{ surface: clue }],
+    },
+  });
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration,
+    dramaticReleaseFrame: {
+      active: true,
+      requiresEnactment: true,
+      entries: [{ mode: 'enacted_role', role: 'signal keeper reading the book', surface: clue }],
+    },
+    performanceObligationContract: obligation,
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.equal(prompt.split(clue).length - 1, 1);
+  assert.equal(prompt.split(target).length - 1, 1);
+  assert.match(prompt, /SOURCE already supplies the contrary evidence exactly once/iu);
+  assert.match(prompt, /After SOURCE closes, name that ready judgment/iu);
+  assert.match(prompt, /Do not repeat SOURCE or quote TARGET in full/iu);
+  assert.match(prompt, /After SOURCE closes, make TACTIC a new unquoted sentence/iu);
+  assert.ok(prompt.indexOf('SOURCE —') < prompt.indexOf('TACTIC —'));
+  assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('HANDOFF —'));
 });
 
 test('uses the delivered safe tactic after typed counterpressure is inapplicable', () => {

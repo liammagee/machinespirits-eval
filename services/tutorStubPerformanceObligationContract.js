@@ -339,6 +339,16 @@ export function tutorStubPerformanceObligationContractPrompt(contract = null) {
   }
   const pair = contract.pressure_pair;
   if (!pair || !PRESSURE_TACTICS.has(contract.selection?.actorial_performance?.id)) return '';
+  const dueSourceCarriesContraryEvidence = (contract.public_context?.turn?.due_evidence || []).some(
+    (entry) => oneLine(entry?.surface) === pair.contrary_evidence_span,
+  );
+  if (dueSourceCarriesContraryEvidence) {
+    return [
+      'COUNTERPRESSURE PAIR — SOURCE already supplies the contrary evidence exactly once.',
+      `TARGET — ${pair.target_span}`,
+      'After SOURCE closes, name that ready judgment in a compact phrase and state how the quoted evidence challenges it. Do not repeat SOURCE or quote TARGET in full. Then continue to the configured handoff.',
+    ].join('\n');
+  }
   return [
     'COUNTERPRESSURE PAIR — In this same development beat, put this exact already-public target against this exact public evidence:',
     `TARGET — ${pair.target_span}`,
