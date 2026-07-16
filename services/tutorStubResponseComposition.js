@@ -1,5 +1,9 @@
 import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from './tutorStubFirstDraftContract.js';
+import {
+  deterministicTutorStubTurnProgressionHandoff,
+  tutorStubLearnerRequestsWritableEntry,
+} from './tutorStubTurnProgressionContract.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
@@ -17,8 +21,6 @@ const DEICTIC_EVIDENCE_REFERENCE_PATTERN =
   /\b(?:these|those|your)\s+(?:answer|claim|distinction|marks?|observation|point|reading|words?)\b/iu;
 const DIRECT_QUESTION_ANSWER_PATTERN =
   /^(?:(?:i|we)\s+(?:can|cannot|can[’']t|choose|do|do not|don[’']t|will|will not|won[’']t|would|would not|wouldn[’']t)|i(?:[’']d| would) (?:choose|start|take)|the (?:useful|needed) (?:mark|match) (?:is|would)|the\b[^.!?]{0,45}\bfirst\b)\b/iu;
-const LEARNER_REQUESTS_ENTRY_PATTERN =
-  /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b/iu;
 const DIRECT_REQUESTED_ENTRY_PATTERN =
   /^(?:enter|record|say|write)(?:\s+(?:this|that|the following))?\s*[:—-]|^(?:the )?(?:entry|line|sentence|wording)(?:\s+to\s+(?:enter|record|say|write))?\s+(?:is|would be|should be)\b/iu;
 const REQUESTED_ENTRY_META_PATTERN =
@@ -26,7 +28,15 @@ const REQUESTED_ENTRY_META_PATTERN =
 const REQUESTED_ENTRY_QUESTION_LEAD_PATTERN =
   /^(?:what|which|who|whose|where|when|why|how|should|could|can|do|does|did|is|are|was|were|have|has|had)\b/iu;
 const REQUESTED_ENTRY_LIMIT_PATTERN =
-  /\b(?:(?:can(?:not|[’']t)|could(?: not|n[’']t)|do(?:es)? not|don[’']t|doesn[’']t|have not|haven[’']t|has not|hasn[’']t|had not|hadn[’']t|is not|isn[’']t|are not|aren[’']t|was not|wasn[’']t|were not|weren[’']t)\b[^.!?]{0,70}\b(?:yet|establish(?:ed)?|identif(?:ied|y)|know|known|learn(?:ed|t)?|name(?:d)?|prov(?:e|ed|en)|settle(?:d)?|show(?:n)?|support(?:ed)?|trace(?:d)?)\b|not yet\b|still\s+(?:absent|missing|open|unknown|unproved|unshown)|remains?\s+(?:absent|missing|open|unknown|unproved|unshown)|(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:establishes?|identif(?:y|ies)|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,90}\b(?:but not|does not|doesn[’']t|not|only|rather than|without)\b)\b/iu;
+  /\b(?:(?:can(?:not|[’']t)|could(?: not|n[’']t)|do(?:es)? not|don[’']t|doesn[’']t|have not|haven[’']t|has not|hasn[’']t|had not|hadn[’']t|is not|isn[’']t|are not|aren[’']t|was not|wasn[’']t|were not|weren[’']t)\b[^.!?]{0,70}\b(?:yet|establish(?:ed)?|identif(?:ied|y)|know|known|learn(?:ed|t)?|name(?:d)?|prov(?:e|ed|en)|settle(?:d)?|show(?:n)?|support(?:ed)?|trace(?:d)?)\b|(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t)\s+(?:account for|cause|explain|prevent|produce|stop)\b|(?:still\s+)?need(?:s)?\s+evidence\b|not yet\b|still\s+(?:absent|missing|open|unknown|unproved|unshown)|remains?\s+(?:absent|missing|open|unknown|unproved|unshown)|(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:establishes?|identif(?:y|ies)|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,90}\b(?:but not|does not|doesn[’']t|not|only|rather than|without)\b)\b/iu;
+const GENERIC_EPISTEMIC_LIMIT_PATTERN =
+  /^(?:(?:we|i)\b[^.!?]{0,80}\b(?:cannot|can[’']t|could not|couldn[’']t|do not|don[’']t|have not|haven[’']t|not yet|still need)\b[^.!?]{0,60}\b(?:establish|identify|know|learn|name|prove|settle|show|support|trace)|(?:the )?(?:(?:available|current|public)\s+){0,2}(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:we\s+)?(?:still\s+)?need(?:s)?\s+evidence\b)/iu;
+const REQUESTED_ENTRY_CAUSAL_CLAIM_PATTERN =
+  /\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
+const REQUESTED_ENTRY_NEGATIVE_CAUSAL_PATTERN =
+  /\b(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t|never)\b[^.!?]{0,24}\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
+const PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN =
+  /\b(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t|never)\b[^.!?]{0,40}\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b|\b(?:despite|regardless|even though|even when|all the same|nevertheless)\b|\b(?:before|leads?)\b[^.!?]{0,70}\b(?:after|later|until)\b/iu;
 const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
   /\b(?:leave|keep)\b[^.!?]{0,35}\b(?:entry|line|record)\b[^.!?]{0,20}\b(?:blank|open|unentered|unwritten)\b|\b(?:do not|don[’']t|will not|won[’']t)\b[^.!?]{0,25}\b(?:enter|record|write)\b/iu;
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
@@ -65,6 +75,22 @@ const CONTENT_STOP_WORDS = new Set(
     ' ',
   ),
 );
+const PUBLIC_STATUS_QUALIFIER_PATTERN =
+  /\b(?:alleged(?:ly)?|apparently|appears?|can(?:not)?|could|hardly|likely|may|merely|might|must|neither|never|no|nobody|none|nor|not|nothing|nowhere|only|perhaps|possible|possibly|probably|reported(?:ly)?|scarcely|seems?|should|suggests?|unlikely|without|would|yet)\b|\b[\p{L}]+n[’']t\b/giu;
+const PUBLIC_STATUS_CLAUSE_BOUNDARY_PATTERN =
+  /(?<=[.!?;])\s+|\s*[—–]\s*|,\s+(?:and|but|however|though|while|whereas)\s+|\s+(?:although|but|however|though|whereas)\s+/iu;
+const PUBLIC_STATUS_CLAUSE_PREDICATE_PATTERN =
+  /\b(?:am|are|can|cannot|could|did|do|does|had|has|have|is|may|might|must|should|was|were|will|would|[\p{L}]{4,}(?:ed|en|es|s))\b/iu;
+const CAUSAL_GROUNDING_STOP_WORDS = new Set(
+  'account and cause caused causes causing explain explained explains explaining not or prevent prevented prevents preventing produce produced produces producing stop stopped stops stopping support supports prove proves establish establishes identify identifies record records show shows tie ties'.split(
+    ' ',
+  ),
+);
+const GENERIC_EPISTEMIC_GROUNDING_STOP_WORDS = new Set(
+  'available current public evidence clue entry mark record result test trace cannot could does have identify know learn name prove settle show support still yet who whose'.split(
+    ' ',
+  ),
+);
 
 function oneLine(value) {
   return String(value || '')
@@ -93,7 +119,7 @@ function developmentLeadVisible(value) {
 
 function directlySuppliesRequestedEntry(surface, learnerText) {
   return (
-    LEARNER_REQUESTS_ENTRY_PATTERN.test(oneLine(learnerText)) &&
+    tutorStubLearnerRequestsWritableEntry(learnerText) &&
     DIRECT_REQUESTED_ENTRY_PATTERN.test(oneLine(surface))
   );
 }
@@ -106,11 +132,216 @@ function publicTokenSet(value) {
   );
 }
 
+function canonicalPublicStatusQualifier(value) {
+  const token = String(value || '')
+    .toLowerCase()
+    .replace(/[’']/gu, "'");
+  if (
+    [
+      'cannot',
+      'hardly',
+      'neither',
+      'never',
+      'no',
+      'nobody',
+      'none',
+      'nor',
+      'not',
+      'nothing',
+      'nowhere',
+      'scarcely',
+      'without',
+    ].includes(token)
+  ) {
+    return token === 'without' ? 'without' : 'negation';
+  }
+  if (token.endsWith("n't")) return 'negation';
+  if (/^(?:alleged(?:ly)?|apparently|appears?|reported(?:ly)?)$/u.test(token)) {
+    return 'reported_or_apparent';
+  }
+  if (['perhaps', 'possible', 'possibly'].includes(token)) return 'possible';
+  if (token === 'probably') return 'probable';
+  if (token === 'likely' || token === 'unlikely') return token;
+  if (token === 'seem' || token === 'seems') return 'seem';
+  if (token === 'suggest' || token === 'suggests') return 'suggest';
+  return token;
+}
+
+function publicStatusQualifiers(value = '') {
+  return new Set(
+    [...oneLine(value).matchAll(PUBLIC_STATUS_QUALIFIER_PATTERN)].map((match) =>
+      canonicalPublicStatusQualifier(match[0]),
+    ),
+  );
+}
+
+function publicStatusClauses(value = '') {
+  const coarse = oneLine(value)
+    .split(PUBLIC_STATUS_CLAUSE_BOUNDARY_PATTERN)
+    .map((clause) => clause.trim())
+    .filter(Boolean);
+  return coarse.flatMap((clause) => {
+    const parts = clause.split(/\s+(?:and|or)\s+/iu);
+    if (
+      parts.length <= 1 ||
+      !parts.every((part) => PUBLIC_STATUS_CLAUSE_PREDICATE_PATTERN.test(part))
+    ) {
+      return [clause];
+    }
+    return parts.map((part) => part.trim()).filter(Boolean);
+  });
+}
+
+function publicStatusAnchorTokens(value = '') {
+  return new Set(
+    [...publicTokenSet(value)].filter((token) => publicStatusQualifiers(token).size === 0),
+  );
+}
+
+function publicStatusQualifierPreservation({ quotedLine = '', publicSurface = '' } = {}) {
+  const quotedClauses = publicStatusClauses(quotedLine);
+  const publicClauses = publicStatusClauses(publicSurface);
+  const clauseMatches = quotedClauses.map((quotedClause) => {
+    const quotedTokens = publicStatusAnchorTokens(quotedClause);
+    let best = null;
+    for (const publicClause of publicClauses) {
+      const publicTokens = publicStatusAnchorTokens(publicClause);
+      const matched = [...quotedTokens].filter((token) => publicTokens.has(token));
+      const relevanceThreshold = Math.min(2, quotedTokens.size, publicTokens.size);
+      if (relevanceThreshold <= 0 || matched.length < relevanceThreshold) continue;
+      const score = matched.length / Math.max(1, quotedTokens.size);
+      if (!best || score > best.score) {
+        best = { publicClause, matched, score };
+      }
+    }
+    const quotedQualifiers = publicStatusQualifiers(quotedClause);
+    const requiredQualifiers = best ? publicStatusQualifiers(best.publicClause) : new Set();
+    return {
+      quoted_clause: quotedClause,
+      public_clause: best?.publicClause || null,
+      matched_tokens: best?.matched || [],
+      required_qualifiers: [...requiredQualifiers],
+      quoted_qualifiers: [...quotedQualifiers],
+      missing_qualifiers: [...requiredQualifiers].filter(
+        (qualifier) => !quotedQualifiers.has(qualifier),
+      ),
+      added_qualifiers: [...quotedQualifiers].filter(
+        (qualifier) => !requiredQualifiers.has(qualifier),
+      ),
+    };
+  });
+  const requiredQualifiers = new Set(clauseMatches.flatMap((row) => row.required_qualifiers));
+  const quotedQualifiers = new Set(clauseMatches.flatMap((row) => row.quoted_qualifiers));
+  const missingQualifiers = [...new Set(clauseMatches.flatMap((row) => row.missing_qualifiers))];
+  const addedQualifiers = [...new Set(clauseMatches.flatMap((row) => row.added_qualifiers))];
+  const allClausesMatched = clauseMatches.every((row) => Boolean(row.public_clause));
+  return {
+    ok: allClausesMatched && missingQualifiers.length === 0 && addedQualifiers.length === 0,
+    relevant_clauses: clauseMatches.map((row) => row.public_clause).filter(Boolean),
+    clause_matches: clauseMatches,
+    all_clauses_matched: allClausesMatched,
+    required_qualifiers: [...requiredQualifiers],
+    quoted_qualifiers: [...quotedQualifiers],
+    missing_qualifiers: missingQualifiers,
+    added_qualifiers: addedQualifiers,
+  };
+}
+
+function committedPublicSurfaces(firstDraftContract = null) {
+  return Array.isArray(firstDraftContract?.evidence?.committed_public_surfaces)
+    ? firstDraftContract.evidence.committed_public_surfaces.map(oneLine).filter(Boolean)
+    : [];
+}
+
+function genericLimitPublicSurfaces(firstDraftContract = null) {
+  const caseQuestion = oneLine(
+    firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question,
+  );
+  return [...new Set([...committedPublicSurfaces(firstDraftContract), caseQuestion].filter(Boolean))];
+}
+
+function causalGroundingToken(value = '') {
+  let token = String(value || '')
+    .toLowerCase()
+    .replace(/[’']s$/u, '')
+    .replace(/[’']/gu, '');
+  if (/^brown(?:ed|out)?$/u.test(token)) return 'brown';
+  if (/^visitors?$/u.test(token)) return 'visit';
+  if (/^(?:coins?|shillings?)$/u.test(token)) return 'coin';
+  if (token.length > 5 && /(?:ing|ed|es|s)$/u.test(token)) {
+    token = token.replace(/(?:ing|ed|es|s)$/u, '');
+  }
+  return token;
+}
+
+function causalGroundingTokens(value = '') {
+  return new Set(
+    [...publicTokenSet(value)]
+      .map(causalGroundingToken)
+      .filter((token) => token.length >= 2 && !CAUSAL_GROUNDING_STOP_WORDS.has(token)),
+  );
+}
+
+function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, causal = false } = {}) {
+  const surfaces = committedPublicSurfaces(firstDraftContract);
+  const assertion = causal
+    ? quotedLine
+    : oneLine(quotedLine).split(/\b(?:but|however|though|yet)\b/iu)[0];
+  const required = causalGroundingTokens(assertion);
+  const publicTokens = causalGroundingTokens(surfaces.join(' '));
+  const matched = [...required].filter((token) => publicTokens.has(token));
+  const coverage = required.size ? matched.length / required.size : 0;
+  const negativeCausal = REQUESTED_ENTRY_NEGATIVE_CAUSAL_PATTERN.test(quotedLine);
+  const causalRelationSupported =
+    !causal ||
+    (!negativeCausal
+      ? surfaces.some((surface) => REQUESTED_ENTRY_CAUSAL_CLAIM_PATTERN.test(surface))
+      : PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN.test(surfaces.join(' ')));
+  return {
+    recognized:
+      surfaces.length > 0 &&
+      required.size >= (causal ? 3 : 2) &&
+      coverage === 1 &&
+      causalRelationSupported,
+    required_tokens: [...required],
+    matched_tokens: matched,
+    material_coverage: Number(coverage.toFixed(3)),
+    causal_relation_required: causal,
+    causal_relation_supported: causalRelationSupported,
+  };
+}
+
+function groundedGenericEpistemicLimit({
+  quotedLine = '',
+  learnerText = '',
+  firstDraftContract = null,
+} = {}) {
+  const materialTerms = [...causalGroundingTokens(quotedLine)]
+    .filter((token) => !GENERIC_EPISTEMIC_GROUNDING_STOP_WORDS.has(token));
+  const publicTerms = causalGroundingTokens([
+    learnerText,
+    ...genericLimitPublicSurfaces(firstDraftContract),
+  ].join(' '));
+  const matchedTerms = materialTerms.filter((token) => publicTerms.has(token));
+  return {
+    recognized: matchedTerms.length === materialTerms.length,
+    material_terms: materialTerms,
+    matched_terms: matchedTerms,
+    material_coverage: materialTerms.length
+      ? Number((matchedTerms.length / materialTerms.length).toFixed(3))
+      : 1,
+  };
+}
+
 function substantiveLearnerEcho(uptake, learnerText) {
   const uptakeSurface = oneLine(uptake).toLowerCase().replace(/[.!?]+$/gu, '');
-  const learnerSurface = oneLine(learnerText).toLowerCase().replace(/[.!?]+$/gu, '');
+  const fullLearnerSurface = oneLine(learnerText).toLowerCase().replace(/[.!?]+$/gu, '');
+  const learnerSurface = tutorStubLearnerRequestsWritableEntry(fullLearnerSurface)
+    ? fullLearnerSurface.replace(/^[\s\S]*?\babout\s+/iu, '')
+    : fullLearnerSurface;
   const learnerTokens = publicTokenSet(learnerSurface);
-  if (learnerTokens.size < 6) return false;
+  const minimumLearnerTokens = tutorStubLearnerRequestsWritableEntry(fullLearnerSurface) ? 3 : 6;
+  if (learnerTokens.size < minimumLearnerTokens) return false;
   if (learnerSurface.length >= 30 && uptakeSurface.includes(learnerSurface)) return true;
   const uptakeTokens = publicTokenSet(uptakeSurface);
   const overlap = [...learnerTokens].filter((token) => uptakeTokens.has(token)).length;
@@ -133,6 +364,44 @@ function comparableRequestedEntrySurface(value = '') {
     .trim();
 }
 
+function licensedPublicStatusRecognition(quotedLine = '', firstDraftContract = null) {
+  const quotedTokens = publicTokenSet(quotedLine);
+  if (quotedTokens.size < 3) {
+    return {
+      recognized: false,
+      matchedSurface: null,
+      coverage: 0,
+      qualifierPreservation: null,
+    };
+  }
+  const surfaces = committedPublicSurfaces(firstDraftContract);
+  let best = {
+    recognized: false,
+    matchedSurface: null,
+    coverage: 0,
+    qualifierPreservation: null,
+  };
+  for (const surface of surfaces) {
+    const publicTokens = publicTokenSet(surface);
+    const matched = [...quotedTokens].filter((token) => publicTokens.has(token));
+    const coverage = matched.length / quotedTokens.size;
+    const qualifierPreservation = publicStatusQualifierPreservation({
+      quotedLine,
+      publicSurface: surface,
+    });
+    const recognized = matched.length >= 3 && coverage === 1 && qualifierPreservation.ok;
+    if (coverage > best.coverage || (coverage === best.coverage && recognized && !best.recognized)) {
+      best = {
+        recognized,
+        matchedSurface: oneLine(surface),
+        coverage: Number(coverage.toFixed(3)),
+        qualifierPreservation,
+      };
+    }
+  }
+  return best;
+}
+
 function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', firstDraftContract = null } = {}) {
   const surface = oneLine(uptake);
   const quotedLine = requestedEntryQuotedLine(surface);
@@ -144,14 +413,45 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
     !REQUESTED_ENTRY_QUESTION_LEAD_PATTERN.test(lineWithoutTerminalPeriod);
   const oneDeclarativeQuotedLine =
     nonQuestion && quotedLine.endsWith('.') && !/[.!?]/u.test(quotedLine.slice(0, -1));
+  const publicStatus = oneDeclarativeQuotedLine
+    ? licensedPublicStatusRecognition(lineWithoutTerminalPeriod, firstDraftContract)
+    : { recognized: false, matchedSurface: null, coverage: 0 };
+  const limitPatternMatched =
+    oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
+  const causalClaim =
+    limitPatternMatched && REQUESTED_ENTRY_CAUSAL_CLAIM_PATTERN.test(lineWithoutTerminalPeriod);
+  const materialGrounding = limitPatternMatched
+    ? groundedLimitMaterial({
+        quotedLine: lineWithoutTerminalPeriod,
+        firstDraftContract,
+        causal: causalClaim,
+      })
+    : null;
+  const genericEpistemicLimit =
+    limitPatternMatched &&
+    !causalClaim &&
+    GENERIC_EPISTEMIC_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
+  const genericEpistemicGrounding = genericEpistemicLimit
+    ? groundedGenericEpistemicLimit({
+        quotedLine: lineWithoutTerminalPeriod,
+        learnerText,
+        firstDraftContract,
+      })
+    : null;
+  const limitLicensed =
+    limitPatternMatched &&
+    (
+      publicStatus.recognized ||
+      materialGrounding?.recognized === true ||
+      genericEpistemicGrounding?.recognized === true
+    );
   const prerequisites = {
     contract_schema_matches: firstDraftContract?.schema === TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
     writable_entry_requested: firstDraftContract?.opening?.writable_entry_requested === true,
-    learner_requests_wording: LEARNER_REQUESTS_ENTRY_PATTERN.test(oneLine(learnerText)),
+    learner_requests_wording: tutorStubLearnerRequestsWritableEntry(learnerText),
     exact_write_envelope: exactWriteEnvelope,
     one_declarative_quoted_line: oneDeclarativeQuotedLine,
-    licensed_epistemic_or_evidentiary_limit:
-      oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod),
+    licensed_epistemic_or_evidentiary_limit: limitLicensed || publicStatus.recognized,
     non_question: nonQuestion,
     non_meta: exactWriteEnvelope && !REQUESTED_ENTRY_META_PATTERN.test(quotedLine),
     not_exact_learner_surface:
@@ -162,6 +462,16 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
     schema: TUTOR_STUB_REQUESTED_ENTRY_ANSWER_RECOGNITION_SCHEMA,
     recognized: Object.values(prerequisites).every(Boolean),
     prerequisites,
+    license: {
+      mode: publicStatus.recognized ? 'committed_public_status' : limitLicensed ? 'evidentiary_limit' : null,
+      matched_public_surface: publicStatus.matchedSurface,
+      material_coverage: publicStatus.coverage,
+      qualifier_preservation: publicStatus.qualifierPreservation,
+      limit_pattern_matched: limitPatternMatched,
+      generic_epistemic_limit: genericEpistemicLimit,
+      generic_epistemic_grounding: genericEpistemicGrounding,
+      material_grounding: materialGrounding,
+    },
   };
 }
 
@@ -173,6 +483,7 @@ function learnerMove(classification = null) {
     discourse_move: turn.discourse_move || null,
     evidence_use: turn.evidence_use || null,
     epistemic_stance: turn.epistemic_stance || null,
+    affect: turn.affect || null,
     pedagogical_need: oneLine(turn.pedagogical_need) || null,
   };
 }
@@ -211,6 +522,7 @@ export function buildTutorStubResponseCompositionFrame({
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
   conversationalCompletion = null,
+  publicFocusMapping = null,
   recentTutorTexts = [],
 } = {}) {
   const configuration = registerSelection?.response_configuration || registerSelection || {};
@@ -238,6 +550,7 @@ export function buildTutorStubResponseCompositionFrame({
     selected_action_family: actionFamily,
     action_target: actionTarget,
     conversational_completion: completion,
+    public_focus_mapping: publicFocusMapping ? structuredClone(publicFocusMapping) : null,
     due_evidence_surfaces: (dramaticReleaseFrame?.entries || [])
       .map((entry) => oneLine(entry?.surface))
       .filter(Boolean),
@@ -606,6 +919,19 @@ export function auditTutorStubResponseComposition({
   };
 }
 
+export function deterministicTutorStubWritableEntryUptake({ firstDraftContract = null } = {}) {
+  const question = oneLine(
+    firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question,
+  )
+    .replace(/[?]+$/gu, '')
+    .trim();
+  if (/^(?:who|whose|what|which|where|when|why|how)\b/iu.test(question)) {
+    const subordinate = question.charAt(0).toLowerCase() + question.slice(1);
+    return `Write: “The public evidence does not yet establish ${subordinate}.”`;
+  }
+  return 'Write: “The available public evidence does not yet settle the case.”';
+}
+
 export function deterministicTutorStubLearnerUptake({
   learnerText = '',
   classification = null,
@@ -853,9 +1179,16 @@ export function deterministicTutorStubLearnerUptake({
     /\?/u.test(learnerText) &&
     /\b(?:can|could|may|shall|should|would)\s+(?:i|we)\b[^?]{0,70}\b(?:assay|begin|behold|compare|examine|inspect|look at|see|start|test|weigh)\b/iu.test(text)
   ) {
+    const publicObject = text.match(
+      /\b(?:visitor badge log|badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
+    )?.[0];
     return fresh(
-      'Yes—begin with that public examination; it can establish what the exhibit shows without naming a hand.',
-      'Yes—that is a sound first test, provided we record its result without turning it into a verdict.',
+      publicObject
+        ? `Yes—begin with the ${publicObject}; it can establish what that public exhibit shows without naming a hand.`
+        : 'Yes—begin with that public examination; it can establish what the exhibit shows without naming a hand.',
+      publicObject
+        ? `Yes—the ${publicObject} is a sound first check, provided we record its result without turning it into a verdict.`
+        : 'Yes—that is a sound first test, provided we record its result without turning it into a verdict.',
     );
   }
   if (
@@ -1191,6 +1524,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   support = null,
   world = null,
   learnerText = '',
+  turnProgressionContract = null,
 } = {}) {
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
   const part = oneLine(
@@ -1211,7 +1545,12 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       ? null
       : configuredFallbackPerformance({ part, object, tactic }),
     configuredFallbackStance(stance),
-    configuredFallbackHandoff({ support, actionFamily }),
+    deterministicTutorStubTurnProgressionHandoff({
+      contract: turnProgressionContract,
+      support,
+      defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
+      publicObject: object,
+    }),
   ]
     .filter(Boolean)
     .join(' ');

@@ -8,12 +8,14 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
+const EXACT_DUE_SOURCE =
+  '“I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master\'s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell\'s hand.”';
 const SAFE_REPAIR =
-  'You’re right to ask what the public evidence licenses us to write. I tap the mint-yard register at its exact limit; “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
+  `Write: “The public evidence does not yet establish who struck the coins.” I call for Marrick’s ready verdict; I tap the mint-yard register at its exact limit; ${EXACT_DUE_SOURCE} What does that establish—and no more?`;
 const DUPLICATE_CLUE_DRAFT =
   "Write: “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day.” I tap the mint-yard register; “I can attest that the town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.” What does that establish?";
 const COMPLEMENTARY_WRITE_REPAIR =
-  'Write: “The public record identifies who handles the crucible, but it does not yet identify who struck the coins.” I tap the mint-yard register; “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
+  `Write: “The public evidence does not yet establish whose hand struck the false shillings passed at the Marrick fair.” I call for Marrick’s ready verdict; I tap the mint-yard register; ${EXACT_DUE_SOURCE} What does that establish—and no more?`;
 const META_THEATRICAL_DRAFT =
   "You’re right to ask what the public evidence licenses us to write. I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: what does this new clue support?";
 const FLAT_CHARACTER_DRAFT =
@@ -23,9 +25,9 @@ const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
 const TERSE_UPTAKE_BROKEN_DEVELOPMENT = 'Exactly. The next clue appears without a source or exhibit.';
 const SINGLE_PLAIN_RECOVERY = SAFE_REPAIR;
 const PLAIN_STYLE_DRAFT =
-  'Fair. I’ll keep this direct. “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that public entry establish?';
+  `Fair—I’ll keep this direct and speak to you as an equal. I call for Marrick’s ready verdict; ${EXACT_DUE_SOURCE} What does that public entry establish?`;
 const HOST_PART_ONLY_RECOVERY =
-  'You’re right to ask what the public record supports, because that is the question here. I hold the mint-yard register before us: “I have my finger on the line: Verrell alone draws the mint-yard crucible.” What follows from this line?';
+  `Write: “The public record does not yet establish who struck the coins.” I call for Marrick’s ready verdict; I hold the mint-yard register before us; ${EXACT_DUE_SOURCE} What follows from this line?`;
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -160,6 +162,13 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(accounting.profile, 'diligent');
   assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.originalCandidate.candidate.text, UNSAFE_DRAFT);
+  assert.equal(accounting.originalCandidate.audits.liveTurnProgressionAudit.ok, false);
+  assert.equal(accounting.originalCandidate.audits.liveSourceActionAlignmentAudit.ok, false);
+  assert.ok(
+    accounting.originalCandidate.audits.deliveryDecision.hardIssues.some(
+      (issue) => issue.guard === 'live_turn_progression_v1',
+    ),
+  );
   assert.equal(accounting.attempts.length, 2);
   assert.equal(accounting.repairsApplied.length, 1);
   assert.equal(accounting.repairsApplied[0].kind, 'model_plain_recovery');
@@ -177,10 +186,23 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   const repairCandidate = accounting.attempts[1].candidate.text;
   assert.equal(repairCandidate, SAFE_REPAIR);
   assert.equal(accounting.attempts[1].repairedSpans.length, 1);
+  assert.equal(accounting.attempts[1].audits.liveTurnProgressionAudit.ok, true);
+  assert.equal(accounting.attempts[1].audits.liveSourceActionAlignmentAudit.ok, true);
   assertExactRepairSpan(accounting.attempts[1].repairedSpans[0], UNSAFE_DRAFT, SAFE_REPAIR);
   assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.equal(accounting.finalDelivery.auditOk, true);
+  const liveProgressionEvents = events.filter((row) => row.type === 'tutor_live_turn_progression_audit');
+  const liveSourceEvents = events.filter((row) => row.type === 'tutor_live_source_action_alignment_audit');
+  assert.deepEqual(liveProgressionEvents.map((row) => row.ok), [false, true]);
+  assert.deepEqual(liveSourceEvents.map((row) => row.ok), [false, true]);
+  assert.ok(liveProgressionEvents.every((row) => row.scope === 'whole_response_terminal_boundary'));
+  assert.ok(
+    liveSourceEvents.every(
+      (row) => row.scope === 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
+    ),
+  );
+  assert.ok([...liveProgressionEvents, ...liveSourceEvents].every((row) => row.slotOwnershipInferred === false));
 
   assert.deepEqual(turn.tutorGuardAccounting, accounting);
   assert.equal(turn.tutor, SAFE_REPAIR);
@@ -227,6 +249,9 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(accounting.finalDelivery.deterministicFallback, true);
   assert.equal(accounting.finalDelivery.auditOk, true);
   assert.equal(accounting.attempts[2].repairedSpans.length, 1);
+  assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.ok, true);
+  assert.equal(accounting.attempts[2].audits.liveSourceActionAlignmentAudit.ok, true);
+  assert.equal(accounting.attempts[2].audits.deliveryDecision.ok, true);
   assertExactRepairSpan(accounting.attempts[2].repairedSpans[0], UNSAFE_DRAFT, fallbackText);
 
   assert.deepEqual(turn.tutorGuardAccounting, accounting);
@@ -242,21 +267,27 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.doesNotMatch(stdout, /leak-guard/u);
 });
 
-test('a dramatic fallback preserves safe learner uptake and replaces only development', () => {
+test('a dramatic fallback replaces non-answering uptake with a licensed writable entry', () => {
   const { events } = runGuardFixture('preserve-uptake');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
   const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
 
   assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
   assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
-  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\. /u);
+  assert.match(
+    accounting.finalDelivery.candidate.text,
+    /^Write: “The public evidence does not yet establish whose hand struck the false shillings passed at the Marrick fair\.” /u,
+  );
   assert.doesNotMatch(
     accounting.finalDelivery.candidate.text,
     /another piece of information|role-play|Back to (?:us|the case)/iu,
   );
   assert.doesNotMatch(accounting.finalDelivery.candidate.text, /That gives us a concrete contribution/u);
   assert.equal(turn.responseComposition.audit.ok, true);
-  assert.equal(turn.responseComposition.uptake, 'You’re right to separate suspicion from proof.');
+  assert.equal(
+    turn.responseComposition.uptake,
+    'Write: “The public evidence does not yet establish whose hand struck the false shillings passed at the Marrick fair.”',
+  );
   assert.match(turn.responseComposition.development, /mint-yard crucible/iu);
   assert.equal(turn.responseComposition.frame.uptake.action_family, null);
 });
@@ -287,7 +318,11 @@ test('meta-theatrical clue narration is rejected and repaired into direct dieget
   assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.doesNotMatch(turn.tutor, /role-play|I(?:'|’)ll be|Back to (?:us|the case)/iu);
-  assert.match(turn.tutor, /I tap the mint-yard register[\s\S]*“I have my finger on the exact line/u);
+  assert.match(
+    turn.tutor,
+    /I call for Marrick’s ready verdict; I tap the mint-yard register at its exact limit/u,
+  );
+  assert.equal(turn.tutor.split(EXACT_DUE_SOURCE).length - 1, 1);
   assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
 });
 

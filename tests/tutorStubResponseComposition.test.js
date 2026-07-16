@@ -30,6 +30,20 @@ test('fallback composition includes a supplied uptake exactly once', () => {
   );
 });
 
+test('deterministic uptake retains the named public object in a learner examination request', () => {
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText: 'Can we start with the badge log?',
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        discourse_move: 'question',
+      },
+    },
+  });
+  assert.match(uptake, /badge log/iu);
+  assert.doesNotMatch(uptake, /that public examination/iu);
+});
+
 test('answer-seeking fallback uptake names the requested entry instead of using a generic transition', () => {
   const learnerText = 'What should I write next about why the extra travel time makes the loaves cold?';
   const uptake = deterministicTutorStubLearnerUptake({
@@ -81,6 +95,359 @@ test('a leading Write directive is uptake only when the learner asked for an ent
     ),
     true,
   );
+});
+
+test('a put-in-the-minutes wording request receives typed Write uptake without licensing an ordinary echo', () => {
+  const learnerText = 'What should I put in the minutes about the chargers being dark during the stocktake?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks how to record the dark-charger stocktake result.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const direct = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract: {
+      ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+      evidence: {
+        committed_public_surfaces: [
+          'During the stocktake the chargers stayed dark while the 18:40 brownout happened regardless.',
+        ],
+      },
+    },
+    text: 'Write: “The dark chargers did not prevent the 18:40 brownout.” The stocktake now rules out that timing claim.',
+  });
+  assert.equal(direct.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(direct.issues.some((issue) => issue.type === 'missing_learner_uptake'), false);
+  assert.equal(direct.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+
+  const ordinaryEcho = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    text: 'The chargers were dark during the stocktake. The stocktake now rules out that timing claim.',
+  });
+  assert.equal(ordinaryEcho.requestedEntryAnswerRecognition.recognized, false);
+  assert.equal(ordinaryEcho.issues.some((issue) => issue.type === 'verbatim_learner_echo'), true);
+});
+
+test('a requested Write line may restate a licensed committed public status but not an unsupported status', () => {
+  const learnerText = 'What should I write next about the bolted frost shutter?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what to record about the bolted frost shutter.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: {
+      committed_public_surfaces: [
+        'High on the cliff face, the frost shutter over Piper’s Gullet is still bolted fast.',
+      ],
+    },
+  };
+  const licensed = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract,
+    text: 'Write: “The frost shutter over Piper’s Gullet is still bolted.” We can leave the route open.',
+  });
+  assert.equal(licensed.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(licensed.requestedEntryAnswerRecognition.license.mode, 'committed_public_status');
+  assert.equal(licensed.requestedEntryAnswerRecognition.license.material_coverage, 1);
+  assert.equal(licensed.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+
+  const unsupported = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract,
+    text: 'Write: “The frost shutter over Piper’s Gullet is painted blue.” We can leave the route open.',
+  });
+  assert.equal(unsupported.requestedEntryAnswerRecognition.recognized, false);
+  assert.equal(unsupported.requestedEntryAnswerRecognition.license.mode, null);
+
+  const extraClaim = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract,
+    text:
+      'Write: “The frost shutter over Piper’s Gullet is still bolted and murdered a climber.” We can leave the route open.',
+  });
+  assert.equal(extraClaim.requestedEntryAnswerRecognition.recognized, false);
+  assert.equal(extraClaim.requestedEntryAnswerRecognition.license.mode, null);
+});
+
+test('committed public status recognition preserves local negation and modality without requiring a full sentence', () => {
+  const learnerText = 'What should I put in the minutes about the visitor code?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what to record about the visitor code.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: {
+      committed_public_surfaces: [
+        'No visitor code opened the kitchen; the lobby badge was issued at noon.',
+        'The maintenance code may have opened the loading bay after noon.',
+        'Nothing connected the visitor entry to the kitchen, and the desk log was signed at noon.',
+      ],
+    },
+  };
+  const audit = (line) =>
+    auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We leave the wider case open.`,
+    }).requestedEntryAnswerRecognition;
+
+  const reversedNegation = audit('Visitor code opened the kitchen.');
+  assert.equal(reversedNegation.recognized, false);
+  assert.deepEqual(
+    reversedNegation.license.qualifier_preservation.missing_qualifiers,
+    ['negation'],
+  );
+
+  const faithfulNegative = audit('No visitor code opened the kitchen.');
+  assert.equal(faithfulNegative.recognized, true);
+  assert.equal(faithfulNegative.license.mode, 'committed_public_status');
+
+  const independentPositiveClause = audit('The lobby badge was issued at noon.');
+  assert.equal(independentPositiveClause.recognized, true);
+  assert.deepEqual(
+    independentPositiveClause.license.qualifier_preservation.required_qualifiers,
+    [],
+  );
+
+  const deletedModality = audit('The maintenance code opened the loading bay after noon.');
+  assert.equal(deletedModality.recognized, false);
+  assert.deepEqual(deletedModality.license.qualifier_preservation.missing_qualifiers, ['may']);
+
+  const faithfulModal = audit('The maintenance code may have opened the loading bay.');
+  assert.equal(faithfulModal.recognized, true);
+
+  const deletedNegativePronoun = audit(
+    'The visitor entry connected the kitchen, and the desk log was signed at noon.',
+  );
+  assert.equal(deletedNegativePronoun.recognized, false);
+  assert.deepEqual(
+    deletedNegativePronoun.license.qualifier_preservation.missing_qualifiers,
+    ['negation'],
+  );
+
+  const positiveStatusContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: {
+      committed_public_surfaces: [
+        'The visitor code opened the kitchen.',
+        'The lobby badge was issued at noon.',
+      ],
+    },
+  };
+  const auditPositiveStatus = (line) =>
+    auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract: positiveStatusContract,
+      text: `Write: “${line}” We leave the wider case open.`,
+    }).requestedEntryAnswerRecognition;
+
+  const addedNegation = auditPositiveStatus('No visitor code opened the kitchen.');
+  assert.equal(addedNegation.recognized, false);
+  assert.deepEqual(
+    addedNegation.license.qualifier_preservation.added_qualifiers,
+    ['negation'],
+  );
+
+  const addedOnly = auditPositiveStatus('Only the lobby badge was issued at noon.');
+  assert.equal(addedOnly.recognized, false);
+  assert.deepEqual(addedOnly.license.qualifier_preservation.added_qualifiers, ['only']);
+
+  const faithfulPositive = auditPositiveStatus('The visitor code opened the kitchen.');
+  assert.equal(faithfulPositive.recognized, true);
+});
+
+test('typed status safeguards do not block a multi-premise evidentiary-limit entry', () => {
+  const learnerText = 'What should I write about the badge and the ledger?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks how to record the badge and ledger together.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const result = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract: {
+      ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+      evidence: {
+        committed_public_surfaces: [
+          'The visitor badge was issued at noon.',
+          'The lost-property ledger records the lunchbox at 12:14.',
+        ],
+      },
+    },
+    text:
+      'Write: “The badge and ledger support a visit but do not prove who entered the kitchen.” We keep the wider finding open.',
+  });
+
+  assert.equal(result.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(result.requestedEntryAnswerRecognition.license.mode, 'evidentiary_limit');
+});
+
+test('generic evidentiary-limit wording cannot invent an exculpatory causal status', () => {
+  const learnerText = 'What should I put in the minutes about Dario?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what the minutes can say about Dario.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: { committed_public_surfaces: ['Dario was in the building.'] },
+  };
+  for (const line of ['Dario did not cause the theft.', 'Dario could not cause the fire.']) {
+    const recognition = auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We leave the finding open.`,
+    }).requestedEntryAnswerRecognition;
+    assert.equal(recognition.recognized, false, line);
+    assert.equal(recognition.license.limit_pattern_matched, true, line);
+    assert.equal(recognition.license.material_grounding.recognized, false, line);
+  }
+});
+
+test('a generic epistemic limit cannot invent an entity outside the public turn', () => {
+  const learnerText = 'What should I put in the minutes about Dario?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what the minutes can say about Dario.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: { committed_public_surfaces: ['Dario was in the building.'] },
+  };
+  for (const line of [
+    'The current evidence does not identify Dracula.',
+    'We cannot yet identify Dracula.',
+  ]) {
+    const recognition = auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We leave the finding open.`,
+    }).requestedEntryAnswerRecognition;
+    assert.equal(recognition.recognized, false, line);
+    assert.equal(recognition.license.generic_epistemic_limit, true, line);
+    assert.deepEqual(recognition.license.generic_epistemic_grounding.material_terms, ['dracula']);
+    assert.equal(recognition.license.generic_epistemic_grounding.material_coverage, 0);
+  }
+});
+
+test('a generic epistemic limit may answer from the public case question before evidence is committed', () => {
+  const learnerText = 'What should I write in the trial-book?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what the trial-book can say now.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: { committed_public_surfaces: [] },
+    performance: {
+      obligation_contract: {
+        public_context: {
+          world: { question: 'Whose hand struck the false shillings passed at the Marrick fair?' },
+        },
+      },
+    },
+  };
+  const recognize = (line) =>
+    auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We keep the trial-book open for the next public clue.`,
+    }).requestedEntryAnswerRecognition;
+
+  const publicLimit = recognize('The public evidence does not yet establish who struck the coins.');
+  assert.equal(publicLimit.recognized, true);
+  assert.equal(publicLimit.license.mode, 'evidentiary_limit');
+  assert.deepEqual(publicLimit.license.generic_epistemic_grounding.material_terms, ['struck', 'coin']);
+  assert.equal(publicLimit.license.generic_epistemic_grounding.material_coverage, 1);
+
+  const inventedEntity = recognize('The public evidence does not yet establish whether Dracula struck the coins.');
+  assert.equal(inventedEntity.recognized, false);
+  assert.equal(inventedEntity.license.generic_epistemic_grounding.material_coverage < 1, true);
+});
+
+test('a grounded negative-causal limit may combine committed subject, event, and timing status', () => {
+  const learnerText = 'What should I put in the minutes about the chargers?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what the minutes can say about the chargers.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const recognition = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract: {
+      ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+      evidence: {
+        committed_public_surfaces: [
+          'The depot chargers stood dark throughout the stocktake.',
+          'Tallow Street browned out at 18:40 regardless.',
+        ],
+      },
+    },
+    text:
+      'Write: “The dark chargers did not prevent Tallow Street’s 18:40 brownout.” We leave the failed supply open.',
+  }).requestedEntryAnswerRecognition;
+
+  assert.equal(recognition.recognized, true);
+  assert.equal(recognition.license.mode, 'evidentiary_limit');
+  assert.equal(recognition.license.material_grounding.material_coverage, 1);
+  assert.equal(recognition.license.material_grounding.causal_relation_supported, true);
+});
+
+test('qualifiers are preserved by proposition rather than borrowed across conjuncts', () => {
+  const learnerText = 'What should I put in the minutes about the two access codes?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks what to record about the access codes.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: {
+      committed_public_surfaces: [
+        'No visitor code opened the kitchen and no staff badge opened the loading bay.',
+      ],
+    },
+  };
+  const recognize = (line) =>
+    auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We keep both access questions open.`,
+    }).requestedEntryAnswerRecognition;
+
+  assert.equal(
+    recognize('No visitor code opened the kitchen and no staff badge opened the loading bay.').recognized,
+    true,
+  );
+  for (const line of [
+    'No visitor code opened the kitchen and the staff badge opened the loading bay.',
+    'The visitor code opened the kitchen and no staff badge opened the loading bay.',
+  ]) {
+    const result = recognize(line);
+    assert.equal(result.recognized, false, line);
+    assert.deepEqual(result.license.qualifier_preservation.missing_qualifiers, ['negation'], line);
+  }
 });
 
 test('matching language inside a scene action is not mistaken for learner acknowledgement', () => {

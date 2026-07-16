@@ -657,10 +657,36 @@ test('the deterministic release fallback performs the complete handoff', () => {
 
   assert.match(text, /^Yes—the badge establishes access, not guilt\. /u);
   assert.match(text, /“(?:I|My)\b/u);
-  assert.match(text, /exact line|exact limit|line that matters|limit of what/u);
+  assert.match(text, /without carrying its claim beyond the evidence/u);
+  assert.match(text, /I attest: The lift notice authorizes Wrenfold to clear appliances/u);
   assert.match(text, /ask me to unpack/u);
   assert.doesNotMatch(text, /role-play|I’ll be|another piece of information|Back to us/iu);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('the deterministic release fallback preserves an authored carrier article', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_crew',
+        surface: 'WF-11 was issued to the outside crew.',
+        presentation: {
+          mode: 'enacted_role',
+          role: 'front-desk clerk reading a signed visitor badge log',
+        },
+      },
+    ],
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    responseConfiguration: { engagement_stance: 'plain', actorial_host_part: 'examiner' },
+    variationKey: 'article-preservation',
+  });
+
+  assert.equal(
+    text,
+    'I call for a signed visitor badge log; I examine the visitor badge log; “I read from the record: WF-11 was issued to the outside crew.” What does that show?',
+  );
 });
 
 test('the deterministic release fallback does not repeat the resolved source question', () => {
@@ -685,7 +711,7 @@ test('the deterministic release fallback does not repeat the resolved source que
   assert.match(text, /\?/u);
 });
 
-test('the deterministic release fallback grounds Marrick action in the crucible rather than an abstract assay line', () => {
+test('the deterministic release fallback grounds Marrick action while preserving the exact authored source', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
       {
@@ -710,7 +736,7 @@ test('the deterministic release fallback grounds Marrick action in the crucible 
   assert.match(text, /I examine the crucible without carrying its claim beyond the evidence/u);
   assert.match(text, /“(?:I|My)\b/u);
   assert.match(text, /Verrell alone draws the mint-yard crucible/u);
-  assert.doesNotMatch(text, /town has its founder ready/iu);
+  assert.match(text, /town has its founder ready/iu);
   assert.doesNotMatch(text, /tap the assay|test its line|my crucible records/iu);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
@@ -738,7 +764,7 @@ test('a presented Marrick assay is handled through its physical cupel with clean
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
 
-test('Marrick founder testimony is voiced in first person rather than narrated', () => {
+test('Marrick founder testimony uses a first-person reporting lead without rewriting the authored source', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
       {
@@ -756,8 +782,7 @@ test('Marrick founder testimony is voiced in first person rather than narrated',
     variationKey: 'marrick:founder',
   });
 
-  assert.match(text, /“[^”]*I know that dross by its lead-sweat/iu);
-  assert.doesNotMatch(text, /The founder's man knows/iu);
+  assert.match(text, /“I identify this: The founder's man knows that dross by its lead-sweat/iu);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
 
@@ -810,8 +835,7 @@ test('a Marrick graver clue uses the graver as the fallback scene object', () =>
   });
 
   assert.match(text, /I examine the graver and go straight to the live line/u);
-  assert.doesNotMatch(text, /:\s+And Verrell/iu);
-  assert.match(text, /:\s+Verrell engraves/iu);
+  assert.match(text, /:\s+And Verrell engraves/iu);
   assert.doesNotMatch(text, /examine the account/u);
 });
 

@@ -10,6 +10,16 @@ import {
   tutorStubPerformanceObligationContractPrompt,
 } from './tutorStubPerformanceObligationContract.js';
 import { compileTutorStubCompositePartOwnership } from './tutorStubCompositePartOwnership.js';
+import {
+  renderTutorStubDueSource,
+  tutorStubDueSourceActionInstruction,
+  TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA,
+} from './tutorStubDueSourceRenderer.js';
+import {
+  compileTutorStubTurnProgressionContract,
+  tutorStubLearnerRequestsWritableEntry,
+  TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+} from './tutorStubTurnProgressionContract.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 export const TUTOR_STUB_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.host-plan.v1';
@@ -106,28 +116,15 @@ function learnerMoveSurface({ learnerText = '', responseCompositionFrame = null 
   return oneLine(responseCompositionFrame?.learner_move?.summary || learnerText);
 }
 
-function learnerRequestsWritableEntry(value = '') {
-  return /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b/iu.test(
-    oneLine(value),
-  );
-}
-
-function sourceReportingLead(entry) {
-  const role = oneLine(entry?.role).toLowerCase();
-  if (/\b(?:watch|watchman|witness)\b/u.test(role)) return 'I saw or I can attest that';
-  if (/\b(?:book|clerk|inventory|keeper|ledger|log|reading|record)\b/u.test(role)) {
-    return 'I read in the record that';
-  }
-  if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role))
-    return 'I know or I can identify that';
-  return 'I can attest that';
-}
-
-function releaseCue(entry) {
-  const surface = oneLine(entry?.surface);
+function releaseCue(entry, index = 0) {
+  const rendered =
+    entry?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA
+      ? entry
+      : renderTutorStubDueSource(entry, index);
+  const surface = oneLine(rendered.surface);
   if (!surface) return null;
-  if (entry.mode === 'enacted_role') {
-    return `Copy exactly, marks included: “${sourceReportingLead(entry)} ${surface}” Keep SOURCE words inside; inherit no deed or ownership.`;
+  if (rendered.mode === 'enacted_role') {
+    return `Copy exactly, marks included: ${rendered.text} Keep SOURCE words inside; inherit no deed or ownership.`;
   }
   return `After PART, open, read, show, test, or place this public exhibit exactly once: ${surface}`;
 }
@@ -205,6 +202,22 @@ function enactmentInstruction({ partExecution, tactic, tacticExecution, closureR
   return `${partExecution} ${tacticExecution || TACTIC_EXECUTION_CUES.unadorned_report}`;
 }
 
+function questionOwnedTacticExecution({ tactic, tacticExecution, progression } = {}) {
+  const handoff = progression?.handoff_contract || {};
+  const delegated = handoff.question_allowed === false || handoff.question_owner === 'handoff';
+  if (!delegated) return tacticExecution;
+  const boundary = handoff.question_allowed
+    ? 'Ask no question here; HANDOFF owns it.'
+    : 'Ask no question here.';
+  if (tactic === 'rapid_handoff') {
+    return `Move straight from the named public object or line to one short declarative observation. ${boundary}`;
+  }
+  if (tactic === 'shared_scene_invitation') {
+    return `Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. ${boundary}`;
+  }
+  return `${tacticExecution || TACTIC_EXECUTION_CUES.unadorned_report} ${boundary}`;
+}
+
 function compactUptakeInstruction(contract) {
   const learnerMove = contract.learner_move ? `Carry forward this move: ${contract.learner_move}` : '';
   const accelerated = contract.development?.learner_acceleration_instruction
@@ -231,7 +244,14 @@ function compactPartInstruction(contract) {
     part === 'scene_partner'
       ? 'place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet'
       : COMPACT_PART_CUES[part] || 'perform one concrete public action or judgment';
-  return `As ${contract.performance?.actorial_part_label || 'the selected part'}, without naming the role, ${action}. ${prop}`;
+  const sourceAction = tutorStubDueSourceActionInstruction(contract.evidence?.sources || []);
+  return [
+    `As ${contract.performance?.actorial_part_label || 'the selected part'}, without naming the role, ${action}.`,
+    prop,
+    sourceAction,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 function compactSupportInstruction(level) {
@@ -247,22 +267,47 @@ function compactTacticInstruction(contract) {
     contract.performance?.obligation_contract?.tactic_applicability?.applicable === false
       ? 'Use the delivered boundary tactic, not the requested pressure tactic.'
       : '';
-  const tactic =
-    contract.performance?.tactic === 'shared_scene_invitation'
-      ? 'In a separate sentence, ask the turn’s one direct question. Address the learner as “you” and ask for their own reading of that same named public object; do not supply or command the reading, and do not repeat the placement action.'
-      : contract.performance?.tactic_execution;
+  const tactic = contract.performance?.tactic_execution;
   const sourceBoundary = contract.evidence?.active ? 'After SOURCE closes, make TACTIC a new unquoted sentence.' : '';
   return [sourceBoundary, tactic, support, transition].filter(Boolean).join(' ');
 }
 
 function compactStanceInstruction(stance) {
   const cues = {
-    brisk: 'Keep the handoff short and forward-moving.',
-    charismatic: 'Make the handoff a decisive named challenge through the selected public action.',
-    precise: 'Make the handoff discriminate one concrete claim or check.',
-    warm: 'Keep the handoff low-pressure and preserve learner choice.',
+    brisk: 'Keep it short and forward-moving.',
+    charismatic: 'Make it a decisive named challenge.',
+    precise: 'Make it distinguish one concrete claim.',
+    warm: 'Keep it low-pressure and preserve choice.',
   };
-  return cues[stance] || `Make the handoff visibly ${oneLine(stance) || 'precise'}.`;
+  return cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`;
+}
+
+function compactProgressionHandoffInstruction(contract) {
+  const progression = contract.progression;
+  const handoff = progression?.handoff_contract;
+  const focus = progression?.turn_focus_contract;
+  const settled = handoff?.prohibited_settled_surfaces?.length
+    ? 'Do not reopen the settled point.'
+    : '';
+  const bridge = focus?.sibling_relation_requires_explicit_bridge
+    ? 'Connect SOURCE to the learner’s requested relation.'
+    : '';
+  let action;
+  if (handoff?.question_allowed === false) {
+    action = contract.ending?.closure_required || contract.opening?.responsive_repair_required
+      ? compactActionInstruction(contract)
+      : 'State the current public limit through the selected action; ask no question.';
+  } else if (handoff?.question_required === false) {
+    action =
+      'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.';
+  } else if (contract.evidence?.active && contract.development?.action_family === 'stage_next_step') {
+    action = 'Ask one HANDOFF question about what SOURCE changes, supports, or rules out.';
+  } else {
+    action = `${compactActionInstruction(contract)} HANDOFF owns the one final question.`;
+  }
+  return [action, compactStanceInstruction(contract.performance?.engagement_stance), settled, bridge]
+    .filter(Boolean)
+    .join(' ');
 }
 
 function compactActionInstruction(contract) {
@@ -303,6 +348,7 @@ function buildHostPlan(contract) {
         required: true,
         exact: true,
         cues: [...(contract.evidence?.cues || [])],
+        sources: structuredClone(contract.evidence?.sources || []),
       }
     : null;
   const slots = [
@@ -336,8 +382,7 @@ function buildHostPlan(contract) {
       sentence_count: 1,
       closure: contract.ending?.closure_required === true,
       instruction: [
-        compactActionInstruction(contract),
-        compactStanceInstruction(contract.performance?.engagement_stance),
+        compactProgressionHandoffInstruction(contract),
         contract.ending?.clarification_invitation_required
           ? 'Also permit a direct question about one clue, connection, or term.'
           : '',
@@ -413,6 +458,12 @@ function hostPlanIssues(contract) {
   ) {
     issues.push('invalid_performance_obligation_contract');
   }
+  if (
+    contract?.progression?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA ||
+    contract.progression.complete !== true
+  ) {
+    issues.push('invalid_turn_progression_contract');
+  }
   return issues;
 }
 
@@ -432,6 +483,7 @@ export function buildTutorStubFirstDraftContract({
   responseConfiguration = null,
   responseCompositionFrame = null,
   dramaticReleaseFrame = null,
+  committedPublicEvidence = [],
   questionSupport = null,
   dialogueClosureFrame = null,
   performanceObligationContract = null,
@@ -444,12 +496,13 @@ export function buildTutorStubFirstDraftContract({
   const lexical = configuration.lexical_accessibility || 'standard';
   const scene = configuration.scene_immersion || 'grounded';
   const learnerMove = learnerMoveSurface({ learnerText, responseCompositionFrame });
-  const writableEntryRequested = learnerRequestsWritableEntry(learnerText);
+  const writableEntryRequested = tutorStubLearnerRequestsWritableEntry(learnerText);
   const learnerAdvance = responseCompositionFrame?.learner_dag?.learner_advance || null;
   const acceleratedLearnerInstruction = learnerAdvance?.accelerated
     ? `Credit all ${Number(learnerAdvance.supported_move_count || 0)} warranted moves the learner just made; do not ask for any of them again. Test or extend only the next unresolved edge.`
     : null;
-  const releaseCues = (dramaticReleaseFrame?.entries || []).map(releaseCue).filter(Boolean);
+  const renderedSources = (dramaticReleaseFrame?.entries || []).map(renderTutorStubDueSource);
+  const releaseCues = renderedSources.map(releaseCue).filter(Boolean);
   const writableEntryBeforeDueEvidence = writableEntryRequested && releaseCues.length > 0;
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
@@ -489,6 +542,23 @@ export function buildTutorStubFirstDraftContract({
     part === 'advocate' && actionFamily === 'stage_next_step'
       ? `${baseActionInstruction} Put that concrete operation in the final handoff after the separate “My case is” sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.`
       : baseActionInstruction;
+  const progression = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame,
+    dramaticReleaseFrame,
+    dialogueClosureFrame,
+    questionSupport,
+    actionFamily,
+    tactic,
+  });
+  const ownedTacticExecution = questionOwnedTacticExecution({
+    tactic,
+    tacticExecution,
+    progression,
+  });
+  if (ownedTacticExecution !== tacticExecution) {
+    compiledCompatibilityDecisions.push('question_ownership_recasts_tactic_as_declarative');
+  }
 
   const contract = {
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
@@ -532,12 +602,12 @@ export function buildTutorStubFirstDraftContract({
       tactic,
       tactic_label: configuration.actorial_performance?.label || null,
       tactic_instruction: oneLine(configuration.actorial_performance?.contract),
-      tactic_execution: tacticExecution,
+      tactic_execution: ownedTacticExecution,
       enactment_instruction: enactmentInstruction({
         part,
         partExecution,
         tactic,
-        tacticExecution,
+        tacticExecution: ownedTacticExecution,
         closureRequired: dialogueClosureFrame?.mandatory === true,
       }),
       prop_instruction:
@@ -549,6 +619,14 @@ export function buildTutorStubFirstDraftContract({
     evidence: {
       active: releaseCues.length > 0,
       cues: releaseCues,
+      sources: structuredClone(renderedSources),
+      committed_public_surfaces: [
+        ...new Set(
+          (Array.isArray(committedPublicEvidence) ? committedPublicEvidence : [])
+            .map((entry) => oneLine(typeof entry === 'string' ? entry : entry?.surface))
+            .filter(Boolean),
+        ),
+      ],
       exact_public_only: true,
     },
     ending: {
@@ -570,6 +648,7 @@ export function buildTutorStubFirstDraftContract({
       decisions: compiledCompatibilityDecisions,
       composite_axis_ownership: compositePartOwnership,
     },
+    progression,
   };
   contract.host_plan = buildHostPlan(contract);
   assertValidHostPlan(contract);
@@ -582,12 +661,13 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   const plan = contract.host_plan;
   const slotsById = new Map(plan.slots.map((slot) => [slot.id, slot]));
   const source = slotsById.get('source');
+  const writableUptake = contract.opening?.writable_entry_requested === true;
   const plainNovice =
     ['adult_novice', 'child'].includes(contract.language?.audience_register) &&
     ['plain', 'glossed_plain'].includes(contract.language?.lexical_accessibility);
   return [
     '[Tutor-only host plan]',
-    `Write one paragraph: four unlabeled, unquoted host sentences, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow UPTAKE > PART > ${source ? 'SOURCE > ' : ''}TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.`,
+    `Write one paragraph: four unlabeled${writableUptake ? ' host sentences (only Write: UPTAKE may quote)' : ', unquoted host sentences'}, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow UPTAKE > PART > ${source ? 'SOURCE > ' : ''}TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.`,
     `GLOBAL — Intelligent ${contract.language.audience_register.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per host sentence.${plainNovice ? ' Gloss their specialist term in UPTAKE.' : ''} Keep ${contract.language.scene_immersion.replace(/_/gu, ' ')} scene contact with public objects. Add no fact.`,
     `UPTAKE — ${slotsById.get('uptake').instruction}`,
     `PART — ${slotsById.get('part').instruction}`,

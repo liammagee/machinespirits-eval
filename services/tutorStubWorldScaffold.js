@@ -11,12 +11,75 @@ function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
 }
 
-function relevantRule(world, row) {
+function uniquePredicates(facts = []) {
+  return [...new Set((Array.isArray(facts) ? facts : []).map(predicateOf).filter(Boolean))];
+}
+
+function publicRelationMap({ evidence = null, rule = null } = {}) {
+  const evidencePredicate = predicateOf(evidence?.fact);
+  if (!evidencePredicate || !rule?.id) return null;
+  const authoredFocus = evidence?.public_focus || evidence?.presentation?.public_focus || rule?.public_focus || null;
+  const authoredRelationship = ['direct', 'sibling'].includes(authoredFocus?.relationship)
+    ? authoredFocus.relationship
+    : null;
+  return {
+    source: 'world_scaffold_rule',
+    rule_id: rule.id,
+    evidence_predicate: evidencePredicate,
+    premise_id: evidence?.premise || null,
+    input_predicates: uniquePredicates(rule.if),
+    conclusion_predicates: uniquePredicates(rule.then),
+    relationship: authoredRelationship,
+    authored_focus_surface: oneLine(authoredFocus?.surface || authoredFocus?.focus),
+  };
+}
+
+function authoredPublicFocus(row) {
+  return row?.public_focus || row?.presentation?.public_focus || null;
+}
+
+function ruleContainsPredicate(rule, predicate, side) {
+  return (rule?.[side] || []).some((fact) => predicateOf(fact) === predicate);
+}
+
+function relevantRuleResolution(world, row) {
   const predicate = predicateOf(row?.fact);
-  if (!predicate) return null;
-  return (world?.rules || []).find((rule) =>
-    [...(rule?.if || []), ...(rule?.then || [])].some((fact) => predicateOf(fact) === predicate),
-  );
+  const rules = Array.isArray(world?.rules) ? world.rules : [];
+  const explicitRuleId = oneLine(authoredPublicFocus(row)?.rule_id);
+  const inputMatches = predicate
+    ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'if'))
+    : [];
+  const outputMatches = predicate
+    ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'then'))
+    : [];
+  const candidateRules = [...new Map([...inputMatches, ...outputMatches].map((rule) => [rule.id, rule])).values()];
+  const explicitRule = explicitRuleId
+    ? candidateRules.find((rule) => oneLine(rule?.id) === explicitRuleId) || null
+    : null;
+  const rule = explicitRule ||
+    (inputMatches.length === 1 ? inputMatches[0] : null) ||
+    (inputMatches.length === 0 && outputMatches.length === 1 ? outputMatches[0] : null);
+  const strategy = explicitRule
+    ? 'explicit_public_focus_rule'
+    : inputMatches.length === 1
+      ? 'unique_input_predicate'
+      : inputMatches.length === 0 && outputMatches.length === 1
+        ? 'unique_output_predicate'
+        : 'unmapped';
+  return {
+    rule,
+    trace: {
+      predicate: predicate || null,
+      explicit_rule_id: explicitRuleId || null,
+      explicit_rule_valid: explicitRuleId ? Boolean(explicitRule) : null,
+      input_rule_ids: inputMatches.map((candidate) => candidate.id),
+      output_rule_ids: outputMatches.map((candidate) => candidate.id),
+      candidate_rule_ids: candidateRules.map((candidate) => candidate.id),
+      selected_rule_id: rule?.id || null,
+      strategy,
+      ambiguous: !rule && candidateRules.length > 1,
+    },
+  };
 }
 
 function concludesQuestion(world, rule) {
@@ -26,7 +89,8 @@ function concludesQuestion(world, rule) {
 
 export function buildTutorStubWorldScaffold({ world = null, evidence = null, conclusionReady = false } = {}) {
   const surface = oneLine(evidence?.surface || '');
-  const rule = relevantRule(world, evidence);
+  const ruleResolution = relevantRuleResolution(world, evidence);
+  const rule = ruleResolution.rule;
   const gloss = oneLine(rule?.gloss || '', 260);
   if (conclusionReady) {
     return {
@@ -39,6 +103,8 @@ export function buildTutorStubWorldScaffold({ world = null, evidence = null, con
         : 'Join only the clues already stated in the conversation.',
       joinReminder: 'Name the conclusion only if the stated clues satisfy the full public rule, then close naturally.',
       ruleId: rule?.id || null,
+      publicRelationMap: publicRelationMap({ evidence, rule }),
+      ruleResolution: ruleResolution.trace,
     };
   }
   if (!surface) {
@@ -50,6 +116,8 @@ export function buildTutorStubWorldScaffold({ world = null, evidence = null, con
       warrantFrame: 'Introduce or restate one actual clue before asking the learner to interpret it.',
       joinReminder: 'Leave the wider conclusion open until the conversation contains the clues its rule requires.',
       ruleId: null,
+      publicRelationMap: null,
+      ruleResolution: ruleResolution.trace,
     };
   }
   return {
@@ -64,5 +132,7 @@ export function buildTutorStubWorldScaffold({ world = null, evidence = null, con
       ? 'Do not name the final answer until the conversation contains every clue needed to answer the public question.'
       : `Keep what this clue tells us separate from what is still unknown about “${oneLine(world?.question || 'what happened', 150)}”.`,
     ruleId: rule?.id || null,
+    publicRelationMap: publicRelationMap({ evidence, rule }),
+    ruleResolution: ruleResolution.trace,
   };
 }

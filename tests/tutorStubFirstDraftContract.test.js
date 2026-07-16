@@ -67,7 +67,7 @@ test('compiles one ordered host plan with exact source between part and tactic',
   assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('HANDOFF —'));
   assert.equal(prompt.split(clue).length - 1, 1);
   assert.match(prompt, /Copy exactly, marks included/iu);
-  assert.match(prompt, /“I can attest that Verrell alone draws the mint-yard crucible\.”/u);
+  assert.match(prompt, /“I attest: Verrell alone draws the mint-yard crucible\.”/u);
   assert.match(prompt, /Keep SOURCE words inside/iu);
 });
 
@@ -95,7 +95,7 @@ test('assigns every delivered response axis to exactly its intended host slot', 
   );
 });
 
-test('separates scene-partner placement from the shared-reading tactic', () => {
+test('keeps a writable-entry scene invitation declarative after the uptake answers the learner', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next?',
     responseConfiguration: configuration({
@@ -118,17 +118,45 @@ test('separates scene-partner placement from the shared-reading tactic', () => {
   assert.match(part.instruction, /“you”, “we”, or “together”/u);
   assert.match(part.instruction, /solitary “I”[^.]*does not count/iu);
   assert.match(part.instruction, /do not ask a question yet/iu);
-  assert.match(tactic.instruction, /In a separate sentence/iu);
-  assert.match(tactic.instruction, /ask the turn’s one direct question/iu);
-  assert.match(tactic.instruction, /Address the learner as “you”/u);
-  assert.match(tactic.instruction, /ask for their own reading of that same named public object/iu);
-  assert.match(tactic.instruction, /do not supply or command the reading/iu);
-  assert.match(tactic.instruction, /do not repeat the placement action/iu);
+  assert.match(tactic.instruction, /Invite shared attention[^.]*declaratively/iu);
+  assert.match(tactic.instruction, /invite shared attention/iu);
+  assert.match(tactic.instruction, /Ask no question/iu);
   assert.doesNotMatch(tactic.instruction, /make room beside/iu);
-  assert.doesNotMatch(tactic.instruction, /invite the learner’s reading/iu);
-  assert.match(structuredPrompt, /TACTIC — In a separate sentence, ask the turn’s one direct question/iu);
-  assert.match(structuredPrompt, /Address the learner as “you”/u);
-  assert.match(structuredPrompt, /do not supply or command the reading/iu);
+  assert.match(structuredPrompt, /TACTIC — Invite shared attention[^.]*declaratively/iu);
+  assert.match(structuredPrompt, /Ask no question/iu);
+  assert.equal(contract.progression.handoff_contract.question_allowed, false);
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  assert.match(prompt, /four unlabeled host sentences \(only Write: UPTAKE may quote\)/iu);
+  assert.doesNotMatch(prompt, /four unlabeled, unquoted host sentences/iu);
+  assert.ok(wordCount(prompt) <= 220, `expected writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
+});
+
+test('keeps an optional unresolved handoff optional in the compiled speaking prompt', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'The blue seal may belong to another packet.',
+    responseConfiguration: configuration({
+      action_family: 'clarify_distinction',
+      actorial_performance: {
+        id: 'unadorned_report',
+        label: 'unadorned report',
+        contract: 'State the live public distinction directly.',
+      },
+    }),
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner keeps ownership of the blue seal open.' },
+      conversational_completion: { resolved: false },
+      scene_action_budget: { saturated: false },
+    },
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const handoff = contract.host_plan.slots.find((slot) => slot.id === 'handoff');
+
+  assert.equal(contract.progression.handoff_contract.mode, 'new_unresolved_check');
+  assert.equal(contract.progression.handoff_contract.question_allowed, true);
+  assert.equal(contract.progression.handoff_contract.question_required, false);
+  assert.match(handoff.instruction, /may ask one final question/iu);
+  assert.match(handoff.instruction, /otherwise end declaratively/iu);
+  assert.doesNotMatch(handoff.instruction, /owns the one final question/iu);
 });
 
 test('renders a compact prompt and removes the competing legacy prose sections', () => {
@@ -241,8 +269,39 @@ test('a due role source carries contrary evidence once before a separate counter
   assert.match(prompt, /After SOURCE closes, name that ready judgment/iu);
   assert.match(prompt, /Do not repeat SOURCE or quote TARGET in full/iu);
   assert.match(prompt, /After SOURCE closes, make TACTIC a new unquoted sentence/iu);
+  assert.match(
+    contract.host_plan.slots.find((slot) => slot.id === 'part').instruction,
+    /Anchor the due source entrance in its own referent \(the book\)/u,
+  );
+  assert.equal(contract.evidence.sources[0].action_referents.primary.label, 'the book');
   assert.ok(prompt.indexOf('SOURCE —') < prompt.indexOf('TACTIC —'));
   assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('HANDOFF —'));
+});
+
+test('due-source alignment remains possible for a declarative advocate part', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What can we safely claim?',
+    responseConfiguration: configuration({
+      actorial_part: 'advocate',
+      actorial_part_label: 'advocate for the live case',
+    }),
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [
+        {
+          mode: 'enacted_role',
+          role: 'archive clerk reading the transfer log',
+          surface: 'The transfer log records one sealed parcel at noon.',
+        },
+      ],
+    },
+  });
+  const part = contract.host_plan.slots.find((slot) => slot.id === 'part').instruction;
+
+  assert.match(part, /^As advocate for the live case/iu);
+  assert.match(part, /transfer log/u);
+  assert.match(part, /declarative part may name that referent without handling it/iu);
+  assert.doesNotMatch(part, /must (?:open|handle|touch) the transfer log/iu);
 });
 
 test('uses the delivered safe tactic after typed counterpressure is inapplicable', () => {
@@ -300,6 +359,86 @@ test('mandatory closure owns the handoff and forbids a further question', () => 
   assert.equal(handoff.closure, true);
   assert.match(handoff.instruction, /close the inquiry; ask no question/iu);
   assert.doesNotMatch(tutorStubFirstDraftContractPrompt(contract), /Ask what the clue changes/iu);
+});
+
+test('closure and accountable shared-scene turns never reintroduce a tactic question', () => {
+  for (const input of [
+    {
+      learnerText: 'The measured result settles the comparison.',
+      responseConfiguration: configuration({
+        action_family: 'close_inquiry',
+        actorial_part: 'scene_partner',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared scene', contract: 'Share attention.' },
+      }),
+      dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
+    },
+    {
+      learnerText: 'Can you answer what the measurement means?',
+      responseConfiguration: configuration({
+        action_family: 'answer_accountably',
+        actorial_part: 'scene_partner',
+        actorial_performance: { id: 'shared_scene_invitation', label: 'shared scene', contract: 'Share attention.' },
+      }),
+      dialogueClosureFrame: { mandatory: false },
+    },
+  ]) {
+    const contract = buildTutorStubFirstDraftContract({
+      ...input,
+      dramaticReleaseFrame: { active: false, entries: [] },
+    });
+    const tactic = contract.host_plan.slots.find((slot) => slot.id === 'tactic');
+    assert.equal(contract.progression.handoff_contract.question_allowed, false);
+    assert.match(tactic.instruction, /declarative/iu);
+    assert.match(tactic.instruction, /Ask no question/iu);
+  }
+});
+
+test('rapid handoff is declarative when direct answer, closure, or writable uptake owns the turn', () => {
+  const fixtures = [
+    {
+      learnerText: 'Can you answer what the visitor code means?',
+      responseConfiguration: configuration({ action_family: 'answer_accountably' }),
+      questionSupport: { responsiveRepairRequired: true },
+      expectedMode: 'direct_answer',
+    },
+    {
+      learnerText: 'The evidence settles the finding.',
+      responseConfiguration: configuration({ action_family: 'close_inquiry' }),
+      dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
+      expectedMode: 'closure',
+    },
+    {
+      learnerText: 'What should I put in the minutes about the visitor code?',
+      responseConfiguration: configuration({ action_family: 'stage_next_step' }),
+      expectedMode: 'declarative_missing_support',
+    },
+  ];
+
+  for (const fixture of fixtures) {
+    fixture.responseConfiguration.actorial_performance = {
+      id: 'rapid_handoff',
+      label: 'rapid handoff',
+      contract: 'Move directly to the shortest useful next move.',
+    };
+    const contract = buildTutorStubFirstDraftContract({
+      ...fixture,
+      responseCompositionFrame: {
+        learner_move: { summary: 'The learner keeps the visitor code in view.' },
+        scene_action_budget: { saturated: false },
+      },
+      dramaticReleaseFrame: { active: false, entries: [] },
+    });
+    const tactic = contract.host_plan.slots.find((slot) => slot.id === 'tactic');
+    const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+    assert.equal(contract.progression.handoff_contract.mode, fixture.expectedMode);
+    assert.equal(contract.progression.handoff_contract.question_allowed, false);
+    assert.ok(contract.compatibility.decisions.includes('question_ownership_recasts_tactic_as_declarative'));
+    assert.match(contract.performance.tactic_execution, /one short declarative observation/iu);
+    assert.match(tactic.instruction, /Ask no question here/iu);
+    assert.doesNotMatch(tactic.instruction, /shortest useful concrete question/iu);
+    assert.doesNotMatch(prompt, /TACTIC —[^\n]*(?:ending with|shortest useful concrete question)/iu);
+  }
 });
 
 test('fails closed when a supplied typed public obligation contract is incomplete', () => {

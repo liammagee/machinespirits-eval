@@ -1,3 +1,9 @@
+import {
+  compileTutorStubDueSourceActionReferents,
+  renderTutorStubDueSource,
+} from './tutorStubDueSourceRenderer.js';
+import { deterministicTutorStubTurnProgressionHandoff } from './tutorStubTurnProgressionContract.js';
+
 export const TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA = 'machinespirits.tutor-stub.dramatic-release.v1';
 
 const ROLE_TOKEN_STOP_WORDS = new Set(
@@ -140,7 +146,7 @@ export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
     .filter((row) => oneLine(row?.surface))
     .map((row) => {
       const presentation = releasePresentation(row);
-      return {
+      const entry = {
         premise: row.premise || null,
         fact: Array.isArray(row.fact) ? [...row.fact] : null,
         via: row.via || null,
@@ -148,7 +154,11 @@ export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
         mode: presentation.mode,
         role: presentation.role || defaultRoleForSurface(row.surface),
         cue: presentation.cue,
+        action_referents:
+          row.action_referents ?? row.presentation?.action_referents ?? null,
       };
+      entry.action_referents = compileTutorStubDueSourceActionReferents(entry);
+      return entry;
     });
   return {
     schema: TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA,
@@ -657,35 +667,35 @@ function stanceInflection(stance) {
   }[stance];
 }
 
-function spokenSourceSurface(surface) {
-  // Authored clue prose may continue a curriculum paragraph with a connective
-  // such as "And". Once voiced as a fresh witness statement, that connective
-  // becomes an audible splice. Some clues also begin with narrative casting
-  // ("The town has its founder ready:"); that belongs to the director, not in
-  // the source's mouth. Preserve the evidence after that narrow setup frame.
-  return oneLine(surface)
-    .replace(/^(?:and|but|so|then)\s+/iu, '')
-    .replace(/^the founder[’']s man knows\b/iu, 'I know')
-    .replace(
-      /^(?:the town has (?:its|the) [^:]{0,60} ready|the (?:record|report) (?:says|shows)|the [^:]{1,45} reports?)\s*:\s*/iu,
-      '',
-    );
-}
-
 function inflectedHost(part, object, stance) {
   return [hostEntrance(part, object), stanceInflection(stance)].filter(Boolean).join(' ');
 }
 
-function renderEnactedEntry(entry, { stance, hostPart, variationKey, index }) {
-  const object = sceneObject(entry, 'account');
-  const entrances = ROLE_VOICE_ENTRANCES[stance](object);
-  const entrance = entrances[stableVariantIndex(`${variationKey}:${index}:entrance`, entrances.length)];
-  return `${inflectedHost(hostPart, object, stance)}; “${entrance} ${spokenSourceSurface(entry.surface)}”`;
+function sourceCarrierEntrance(entry) {
+  const primary = entry?.action_referents?.primary;
+  const label = oneLine(primary?.alignment_required === false ? '' : primary?.label);
+  if (!label) return '';
+  const alreadyDetermined = /^(?:a|an|the)\b/iu.test(label);
+  const possessiveOrProper = /(?:[’']s\b)|^[\p{Lu}\d]/u.test(label);
+  const article = alreadyDetermined || possessiveOrProper ? '' : 'the ';
+  return `I call for ${article}${label}`;
 }
 
-function renderExhibitEntry(entry, { stance, hostPart }) {
+function renderEnactedEntry(entry, { stance, hostPart, index }) {
+  const object = sceneObject(entry, 'account');
+  const source = renderTutorStubDueSource(entry, index);
+  return [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance), source.text]
+    .filter(Boolean)
+    .join('; ');
+}
+
+function renderExhibitEntry(entry, { stance, hostPart, index }) {
   const object = sceneObject(entry);
-  return `${inflectedHost(hostPart, object, stance)}: “${entry.surface}”`;
+  const source = renderTutorStubDueSource(entry, index);
+  const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance)]
+    .filter(Boolean)
+    .join('; ');
+  return `${host}: ${source.text}`;
 }
 
 export function deterministicTutorStubDramaticReleaseFallback({
@@ -695,6 +705,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   responseConfiguration = null,
   variationKey = '',
   avoidQuestion = '',
+  turnProgressionContract = null,
 } = {}) {
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
@@ -714,8 +725,13 @@ export function deterministicTutorStubDramaticReleaseFallback({
   const development = [
     directRepair,
     ...rendered,
-    fallbackQuestion({ stance, variationKey, avoidQuestion }),
-    clarification,
+    deterministicTutorStubTurnProgressionHandoff({
+      contract: turnProgressionContract,
+      support,
+      defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
+      publicObject: sceneObject(frame.entries[0]),
+    }),
+    turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]
     .filter(Boolean)
     .join(' ');

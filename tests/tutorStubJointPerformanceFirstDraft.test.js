@@ -71,15 +71,23 @@ function advocateConfiguration(overrides = {}) {
   });
 }
 
-function firstDraftContract({ responseConfiguration = configuration(), dramaticReleaseFrame = null } = {}) {
+function firstDraftContract({
+  learnerText = 'What should I write next about the lead-sweat?',
+  responseConfiguration = configuration(),
+  responseCompositionFrame = null,
+  dramaticReleaseFrame = null,
+  dialogueClosureFrame = null,
+} = {}) {
   return buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next about the lead-sweat?',
+    learnerText,
     responseConfiguration,
-    responseCompositionFrame: {
-      learner_move: { summary: 'The learner asks how to record the lead-sweat clue.' },
-      scene_action_budget: { saturated: false },
-    },
+    responseCompositionFrame:
+      responseCompositionFrame || {
+        learner_move: { summary: 'The learner asks how to record the lead-sweat clue.' },
+        scene_action_budget: { saturated: false },
+      },
     dramaticReleaseFrame: dramaticReleaseFrame || { active: false, entries: [] },
+    dialogueClosureFrame,
   });
 }
 
@@ -100,7 +108,14 @@ function validRaw(overrides = {}) {
   return JSON.stringify(merged);
 }
 
-test('v2 prompt makes part, tactic, and stance one joint beat while keeping handoff action-only', () => {
+function wordCount(value) {
+  return String(value || '')
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean).length;
+}
+
+test('v2 prompt keeps a writable-entry shared scene declarative after direct uptake', () => {
   const contract = firstDraftContract();
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
   const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
@@ -116,12 +131,62 @@ test('v2 prompt makes part, tactic, and stance one joint beat while keeping hand
   );
   assert.match(prompt, /SOURCE between performance\.entry and performance\.response/u);
   assert.match(prompt, /JOINT PERFORMANCE —/u);
-  assert.match(prompt, /PERFORMANCE RESPONSE CONTRACT — Ask one open what\/how\/which question/u);
-  assert.match(prompt, /HANDOFF ACTION — Name the next available public check/u);
+  assert.match(prompt, /PERFORMANCE RESPONSE CONTRACT — Invite shared attention declaratively/u);
+  assert.match(prompt, /Ask no question here/iu);
+  assert.match(prompt, /HANDOFF ACTION — State the current public limit/iu);
+  assert.ok(wordCount(prompt) <= 350, `expected at most 350 V2 prompt words, received ${wordCount(prompt)}`);
   assert.equal(plan.slots.performance.compatibility_instruction, null);
   assert.doesNotMatch(prompt, /PERFORMANCE COMPATIBILITY —/u);
   assert.doesNotMatch(plan.slots.handoff.instruction, /low-pressure|preserve learner choice/iu);
   assert.doesNotMatch(prompt, /"part"\s*:|"tactic"\s*:/u);
+});
+
+test('shared-scene progression delegates the only allowed question to handoff and preserves legacy audit behavior', () => {
+  const contract = firstDraftContract({
+    learnerText: 'What does the blue seal establish about the packet?',
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks what the blue seal establishes.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+      scene_action_budget: { saturated: false },
+    },
+  });
+  assert.equal(contract.progression.handoff_contract.question_allowed, true);
+  assert.equal(contract.progression.handoff_contract.question_owner, 'handoff');
+  const plan = buildTutorStubJointPerformanceHostPlan(contract);
+  assert.equal(plan.slots.performance.response_contract.type, 'declarative_shared_attention');
+
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      validRaw({
+        uptake: 'Your question keeps the blue seal tied to the packet.',
+        performance: {
+          entry: 'Together, we hold the blue seal beside the packet.',
+          response: 'We keep its narrow reading between us.',
+        },
+        handoff: 'What does the blue seal establish about the packet?',
+      }),
+    ),
+  });
+  const delegated = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: configuration(),
+    progressionContract: contract.progression,
+  });
+  assert.equal(delegated.responseObligation.ok, true, JSON.stringify(delegated.responseObligation));
+
+  const legacy = auditTutorStubJointPerformanceOwnership({
+    composition: composeTutorStubJointPerformanceFirstDraft({
+      structured: parseTutorStubJointPerformanceFirstDraft(validRaw()),
+    }),
+    candidate: composeTutorStubJointPerformanceFirstDraft({
+      structured: parseTutorStubJointPerformanceFirstDraft(validRaw()),
+    }).text,
+    configuration: configuration(),
+  });
+  assert.equal(legacy.responseObligation.ok, true, JSON.stringify(legacy.responseObligation));
+  assert.equal(legacy.responseObligation.requirements.some((row) => row.id === 'terminal_direct_question'), true);
 });
 
 test('v2 prompt drafts below the hard slot limit while the parser retains the exact hard boundary', () => {
@@ -167,6 +232,11 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
   assert.match(plan.slots.performance.compatibility_instruction, /Keep PERFORMANCE declarative/iu);
   assert.match(plan.slots.handoff.instruction, /relevant concrete way to test, resist, or break that case/iu);
+  assert.equal(
+    plan.slots.handoff.instruction.split('Make HANDOFF the relevant concrete way to test, resist, or break that case')
+      .length - 1,
+    1,
+  );
   assert.deepEqual(plan.delegated_axis_prerequisites.actorial_part, ['handoff']);
   assert.match(prompt, /PERFORMANCE COMPATIBILITY —/u);
 
@@ -588,7 +658,7 @@ test('v2 composition inserts exact host-owned SOURCE between joint performance s
     composition.spans.map((span) => span.owner),
     ['model', 'model', 'host', 'model', 'model'],
   );
-  assert.match(composition.text, /touchstone\. “I read in the record that The ledger records/u);
+  assert.match(composition.text, /touchstone\. “I read from the record: The ledger records/u);
   assert.equal(composition.text.split(surface).length - 1, 1);
   assert.equal(composition.sources[0].surface, surface);
   for (const span of composition.spans) {
@@ -739,7 +809,14 @@ test('source-dependent counterpressure uses verified SOURCE as context without a
     structured,
     dramaticReleaseFrame: {
       active: true,
-      entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface: contrary }],
+      entries: [
+        {
+          mode: 'enacted_role',
+          role: 'leat-keeper reading the charcoal book',
+          action_referents: [{ label: 'leat-keeper’s book' }],
+          surface: contrary,
+        },
+      ],
     },
   });
   const audit = auditTutorStubJointPerformanceOwnership({
@@ -829,7 +906,14 @@ test('I4 judgment-falters recognition is gated by the complete public counterpre
       dramaticReleaseFrame: includeSource
         ? {
             active: true,
-            entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface: contrary }],
+            entries: [
+              {
+                mode: 'enacted_role',
+                role: 'leat-keeper reading the charcoal book',
+                action_referents: [{ label: 'leat-keeper’s book' }],
+                surface: contrary,
+              },
+            ],
           }
         : { active: false, entries: [] },
     });
@@ -936,7 +1020,14 @@ test('I7 exact I6 judgment-meets-evidence event is typed, joint-owned, and contr
       dramaticReleaseFrame: includeSource
         ? {
             active: true,
-            entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface: contrary }],
+            entries: [
+              {
+                mode: 'enacted_role',
+                role: 'leat-keeper reading the charcoal book',
+                action_referents: [{ label: 'leat-keeper’s book' }],
+                surface: contrary,
+              },
+            ],
           }
         : { active: false, entries: [] },
     });
@@ -1138,6 +1229,55 @@ test('joint ownership failure remains a hard delivery failure', () => {
   assert.equal(combined.deliveryDecision.ok, false);
   assert.match(combined.hardFailureClusters.join('\n'), /jointPerformanceAudit:axis_not_realized_in_owner/iu);
   assert.equal(combined.performanceAdjudicationEligibility.eligible, false);
+});
+
+test('turn progression failure is a separate hard delivery gate after joint ownership passes', () => {
+  const selectedConfiguration = advocateConfiguration();
+  const contract = firstDraftContract({ responseConfiguration: selectedConfiguration });
+  assert.equal(contract.progression.handoff_contract.question_allowed, false);
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      validRaw({
+        performance: {
+          entry: 'My case is a possible die-cutter, but not yet a coiner.',
+          response: 'The metal keeps that distinction within the public evidence.',
+        },
+        handoff: 'What can test this metal case?',
+      }),
+    ),
+  });
+  const joint = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    progressionContract: contract.progression,
+  });
+  assert.equal(joint.ok, true, JSON.stringify(joint.issues));
+
+  const combined = applyTutorStubJointPerformanceOwnershipAudit({
+    audit: {
+      ok: true,
+      failureClusters: [],
+      hardFailureClusters: [],
+      deliveryDecision: { ok: true, hardIssues: [] },
+      audits: {},
+      performanceAdjudicationEligibility: { eligible: true },
+    },
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    progressionContract: contract.progression,
+  });
+
+  assert.equal(combined.audits.jointPerformanceAudit.ok, true);
+  assert.equal(combined.audits.turnProgressionAudit.ok, false);
+  assert.equal(combined.ok, false);
+  assert.equal(combined.deliveryDecision.ok, false);
+  assert.match(
+    combined.hardFailureClusters.join('\n'),
+    /turnProgressionAudit:question_forbidden_by_handoff_contract/iu,
+  );
+  assert.equal(combined.performanceAdjudicationEligibility.reason, 'turn_progression_failed');
 });
 
 test('v1 parser and prompt remain separate and unchanged by the v2 path', () => {

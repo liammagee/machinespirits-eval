@@ -10,6 +10,14 @@ import {
 } from './tutorStubResponseConfiguration.js';
 import { tutorStubGuardIssueRows } from './tutorStubGuardDisposition.js';
 import { tutorStubGuardDeliveryDecision } from './tutorStubGuardRecovery.js';
+import {
+  auditTutorStubDueSourceActionAlignment,
+  renderTutorStubDueSource,
+} from './tutorStubDueSourceRenderer.js';
+import {
+  auditTutorStubTurnProgression,
+  TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+} from './tutorStubTurnProgressionContract.js';
 
 export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA =
   'machinespirits.tutor-stub.joint-performance-host-plan.v2';
@@ -87,31 +95,6 @@ function substantialSourceOverlap(slotText, surface) {
   };
 }
 
-function strictSourceSurface(entry, index) {
-  const surface = String(entry?.surface || '').trim();
-  if (!surface) throw new Error(`joint performance source invalid: missing_surface:${index}`);
-  if (/\r|\n/u.test(surface)) throw new Error(`joint performance source invalid: multiline_surface:${index}`);
-  return surface;
-}
-
-function sourceReportingLead(entry) {
-  const role = oneLine(entry?.role).toLowerCase();
-  if (/\b(?:watch|watchman|witness)\b/u.test(role)) return 'I saw or I can attest that';
-  if (/\b(?:book|clerk|inventory|keeper|ledger|log|reading|record)\b/u.test(role)) {
-    return 'I read in the record that';
-  }
-  if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role)) {
-    return 'I know or I can identify that';
-  }
-  return 'I can attest that';
-}
-
-function renderSource(entry, index) {
-  const surface = strictSourceSurface(entry, index);
-  const text = entry?.mode === 'enacted_role' ? `“${sourceReportingLead(entry)} ${surface}”` : surface;
-  return { id: `source_${index + 1}`, surface, text };
-}
-
 function v1HostSlots(contract) {
   const slots = Array.isArray(contract?.host_plan?.slots) ? contract.host_plan.slots : [];
   const byId = new Map(slots.map((slot) => [slot?.id, slot]));
@@ -129,12 +112,12 @@ function v1HostSlots(contract) {
 
 function stanceHandoffInstruction(stance) {
   const cues = {
-    brisk: 'Keep the handoff short and forward-moving.',
-    charismatic: 'Make the handoff a decisive named challenge through the selected public action.',
-    precise: 'Make the handoff discriminate one concrete claim or check.',
-    warm: 'Keep the handoff low-pressure and preserve learner choice.',
+    brisk: 'Keep it short and forward-moving.',
+    charismatic: 'Make it a decisive named challenge.',
+    precise: 'Make it distinguish one concrete claim.',
+    warm: 'Keep it low-pressure and preserve choice.',
   };
-  return cues[stance] || `Make the handoff visibly ${oneLine(stance) || 'precise'}.`;
+  return cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`;
 }
 
 function actionOnlyHandoffInstruction(contract, handoffInstruction) {
@@ -182,6 +165,13 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
   const slots = v1HostSlots(contract);
   const source = slots.get('source');
   const sharedSceneInvitation = contract?.performance?.tactic === 'shared_scene_invitation';
+  const progression = contract?.progression;
+  if (
+    progression?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA ||
+    progression.complete !== true
+  ) {
+    throw new Error('joint performance contract invalid: missing_turn_progression_contract');
+  }
   const compatibility = jointPerformanceCompatibility(contract, oneLine(slots.get('part').instruction));
   const stanceContract = getJointPerformanceStanceContract(contract?.performance?.engagement_stance);
   return {
@@ -209,12 +199,19 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         stance_instruction_source: stanceContract.source,
         semantic_instruction: oneLine(slots.get('tactic').semantic_instruction),
         response_contract: sharedSceneInvitation
-          ? {
-              type: 'open_learner_owned_question',
-              terminal_question: true,
-              explicit_learner_or_shared_address: true,
-              supplied_or_commanded_reading: false,
-            }
+          ? progression.handoff_contract?.question_owner === 'performance_response'
+            ? {
+                type: 'open_learner_owned_question',
+                terminal_question: true,
+                explicit_learner_or_shared_address: true,
+                supplied_or_commanded_reading: false,
+              }
+            : {
+                type: 'declarative_shared_attention',
+                terminal_question: false,
+                explicit_learner_or_shared_address: true,
+                question_owner: progression.handoff_contract?.question_owner || null,
+              }
           : null,
         joint_instruction: [
           `Treat entry and response as one ${oneLine(contract?.performance?.actorial_part_label) || 'public part'} performance beat.`,
@@ -240,6 +237,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
       decisions: compatibility.decisions,
       composite_axis_ownership: compatibility.compositePartOwnership,
     },
+    progression: clone(progression),
     axis_ownership: {
       audience_register: ['uptake', 'performance', 'handoff'],
       lexical_accessibility: ['uptake', 'performance', 'handoff'],
@@ -273,6 +271,7 @@ export function tutorStubJointPerformanceFirstDraftPrompt(contract = null) {
     `Draft each sentence at most ${draftingWordCeiling} words, leaving room below the hard ${wordTarget}-word limit. Count every sentence’s words before emitting JSON. Use one voice, common ${oneLine(contract?.language?.lexical_accessibility) || 'plain'} words, and one relation per sentence.${plainNovice ? ' Gloss the learner’s specialist term in uptake.' : ''}`,
     'Do not copy, paraphrase, introduce, label, or quote SOURCE. The host inserts SOURCE between performance.entry and performance.response. Only uptake may contain quotation marks when its instruction explicitly requires Write: wording.',
     `UPTAKE — ${plan.slots.uptake.instruction}`,
+    `TURN FOCUS — ${plan.progression.turn_focus_contract.instruction}`,
     `PERFORMANCE ENTRY — ${plan.slots.performance.entry_instruction}`,
     `PERFORMANCE RESPONSE — ${plan.slots.performance.response_instruction}`,
     plan.slots.performance.compatibility_instruction
@@ -281,8 +280,10 @@ export function tutorStubJointPerformanceFirstDraftPrompt(contract = null) {
     plan.slots.performance.semantic_instruction
       ? `PERFORMANCE SEMANTICS — ${plan.slots.performance.semantic_instruction}`
       : null,
-    plan.slots.performance.response_contract
+    plan.slots.performance.response_contract?.type === 'open_learner_owned_question'
       ? 'PERFORMANCE RESPONSE CONTRACT — Ask one open what/how/which question addressed to the learner or shared inquiry. Do not command a reading or ask for agreement with a supplied reading.'
+      : plan.slots.performance.response_contract?.type === 'declarative_shared_attention'
+        ? 'PERFORMANCE RESPONSE CONTRACT — Invite shared attention declaratively with you, we, our, or together. Ask no question here; HANDOFF owns the terminal move.'
       : null,
     `JOINT PERFORMANCE — ${plan.slots.performance.joint_instruction}`,
     `HANDOFF ACTION — ${plan.slots.handoff.instruction}`,
@@ -447,17 +448,28 @@ function modelSlotValues(structured) {
   };
 }
 
-function jointPerformanceResponseObligation(configuration, response) {
+function jointPerformanceResponseObligation(configuration, response, progressionContract = null) {
   const tactic = configuration?.actorial_performance?.id || null;
   if (tactic !== 'shared_scene_invitation') {
     return { active: false, tactic, ok: true, requirements: [] };
   }
   const text = String(response || '');
+  const declarativeSharedAttention = Boolean(
+    progressionContract &&
+      (progressionContract.handoff_contract?.question_allowed === false ||
+        progressionContract.handoff_contract?.question_owner === 'handoff'),
+  );
   const terminalQuestion = /\?(?:[”"'’])?$/u.test(text);
   const learnerAddress = /\b(?:you|your|we|our)\b/iu.test(text);
   const oneQuestion = (text.match(/\?/gu) || []).length === 1;
   const openInterrogative = /^(?:what|how|which)\b/iu.test(text.trimStart());
-  const requirements = [
+  const requirements = declarativeSharedAttention
+    ? [
+        { id: 'declarative_shared_attention', ok: !text.includes('?') },
+        { id: 'explicit_learner_or_shared_address', ok: learnerAddress },
+        { id: 'question_delegated_to_handoff', ok: !text.includes('?') },
+      ]
+    : [
     { id: 'terminal_direct_question', ok: terminalQuestion && oneQuestion },
     { id: 'explicit_learner_address', ok: learnerAddress },
     { id: 'open_interrogative_not_supplied_agreement', ok: openInterrogative },
@@ -465,14 +477,15 @@ function jointPerformanceResponseObligation(configuration, response) {
       id: 'learner_owned_not_supplied_or_commanded',
       ok: terminalQuestion && oneQuestion && learnerAddress && openInterrogative,
     },
-  ];
+      ];
   return {
     active: true,
     tactic,
     ok: requirements.every((row) => row.ok),
     requirements,
-    reason:
-      'shared-scene response must be one direct question addressed to the learner, not a supplied or commanded reading',
+    reason: declarativeSharedAttention
+      ? 'shared-scene response must invite attention declaratively because the final handoff owns the only question'
+      : 'shared-scene response must be one direct question addressed to the learner, not a supplied or commanded reading',
   };
 }
 
@@ -488,7 +501,7 @@ export function composeTutorStubJointPerformanceFirstDraft({ structured = null, 
   if (dramaticReleaseFrame?.active && !entries.length) {
     throw new Error('joint performance source invalid: active_frame_has_no_entries');
   }
-  const sources = entries.map(renderSource);
+  const sources = entries.map(renderTutorStubDueSource);
   const modelValues = modelSlotValues(structured);
   for (const source of sources) {
     for (const [id, value] of Object.entries(modelValues)) {
@@ -630,6 +643,7 @@ export function auditTutorStubJointPerformanceOwnership({
   configuration = null,
   world = null,
   performanceObligationContract = null,
+  progressionContract = null,
 } = {}) {
   const issues = compositionIntegrityIssues(composition, candidate);
   if (composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA) {
@@ -666,6 +680,11 @@ export function auditTutorStubJointPerformanceOwnership({
     configuration,
     world,
   });
+  const sourceActionAlignment = auditTutorStubDueSourceActionAlignment({
+    text: spans.get('performance_entry').text,
+    sources: composition.sources,
+  });
+  issues.push(...sourceActionAlignment.issues);
   const compositePartOwnershipContract = compileTutorStubCompositePartOwnership({
     actorialPart: configuration.actorial_part,
     actorialPartLabel: configuration.actorial_part_label,
@@ -696,6 +715,7 @@ export function auditTutorStubJointPerformanceOwnership({
   const responseObligation = jointPerformanceResponseObligation(
     configuration,
     spans.get('performance_response').text,
+    progressionContract,
   );
   const axes = {
     actorial_part: {
@@ -728,6 +748,15 @@ export function auditTutorStubJointPerformanceOwnership({
       selected: configuration.action_family,
       visible: handoffAudit?.axes?.action_family?.visible === true,
     },
+    ...(sourceActionAlignment.active
+      ? {
+          source_action_alignment: {
+            owner: 'performance_entry',
+            selected: true,
+            visible: sourceActionAlignment.ok,
+          },
+        }
+      : {}),
   };
   if (compositePartOwnership.active && !compositePartOwnership.ok) {
     for (const requirement of compositePartOwnership.requirements.filter((row) => !row.ok)) {
@@ -773,6 +802,7 @@ export function auditTutorStubJointPerformanceOwnership({
       handoff: ['handoff'],
     },
     responseObligation,
+    sourceActionAlignment,
     compositePartOwnership,
     performanceText,
     spanAudits: { performance: performanceAudit, handoff: handoffAudit },
@@ -940,6 +970,7 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
   configuration = null,
   world = null,
   performanceObligationContract = null,
+  progressionContract = null,
 } = {}) {
   if (!audit) throw new Error('joint performance ownership requires the whole-response audit');
   const jointAudit = auditTutorStubJointPerformanceOwnership({
@@ -948,7 +979,17 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     configuration,
     world,
     performanceObligationContract,
+    progressionContract,
   });
+  const turnProgressionAudit = progressionContract
+    ? auditTutorStubTurnProgression({ contract: progressionContract, composition })
+    : {
+        schema: 'machinespirits.tutor-stub.turn-progression-audit.v1',
+        active: false,
+        ok: true,
+        issues: [],
+        reason: 'legacy_call_without_progression_contract',
+      };
   const recognized = applyDeterministicCompositePartRecognition(
     audit,
     jointAudit.compositePartOwnership,
@@ -959,24 +1000,43 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     (issue) => `jointPerformanceAudit:${issue.type}${issue.axis ? `:${issue.axis}` : ''}`,
   );
   const hardIssues = jointAudit.issues.map((issue) => ({ guard: 'jointPerformanceAudit', ...issue }));
+  const progressionClusters = turnProgressionAudit.issues.map(
+    (issue) => `turnProgressionAudit:${issue.type}${issue.owner ? `:${Array.isArray(issue.owner) ? issue.owner.join('+') : issue.owner}` : ''}`,
+  );
+  const progressionHardIssues = turnProgressionAudit.issues.map((issue) => ({
+    guard: 'turnProgressionAudit',
+    ...issue,
+  }));
   return {
     ...baseAudit,
-    ok: baseAudit.ok === true && jointAudit.ok,
-    failureClusters: [...(baseAudit.failureClusters || []), ...clusters],
-    hardFailureClusters: [...(baseAudit.hardFailureClusters || []), ...clusters],
+    ok: baseAudit.ok === true && jointAudit.ok && turnProgressionAudit.ok,
+    failureClusters: [...(baseAudit.failureClusters || []), ...clusters, ...progressionClusters],
+    hardFailureClusters: [...(baseAudit.hardFailureClusters || []), ...clusters, ...progressionClusters],
     deliveryDecision: {
       ...(baseAudit.deliveryDecision || {}),
-      ok: baseAudit.deliveryDecision?.ok === true && jointAudit.ok,
-      hardIssues: [...(baseAudit.deliveryDecision?.hardIssues || []), ...hardIssues],
+      ok: baseAudit.deliveryDecision?.ok === true && jointAudit.ok && turnProgressionAudit.ok,
+      hardIssues: [
+        ...(baseAudit.deliveryDecision?.hardIssues || []),
+        ...hardIssues,
+        ...progressionHardIssues,
+      ],
     },
-    audits: { ...(baseAudit.audits || {}), jointPerformanceAudit: jointAudit },
+    audits: {
+      ...(baseAudit.audits || {}),
+      jointPerformanceAudit: jointAudit,
+      turnProgressionAudit,
+    },
     deterministicCompositePartRecognition: {
       applied: recognized.applied,
       reason: recognized.reason,
     },
     deterministicJointPerformanceRecognition: jointRecognized.report,
-    performanceAdjudicationEligibility: jointAudit.ok
+    performanceAdjudicationEligibility: jointAudit.ok && turnProgressionAudit.ok
       ? baseAudit.performanceAdjudicationEligibility
-      : { eligible: false, reason: 'joint_performance_ownership_failed', blockingIssues: clusters },
+      : {
+          eligible: false,
+          reason: turnProgressionAudit.ok ? 'joint_performance_ownership_failed' : 'turn_progression_failed',
+          blockingIssues: [...clusters, ...progressionClusters],
+        },
   };
 }

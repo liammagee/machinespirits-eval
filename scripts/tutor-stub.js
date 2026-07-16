@@ -165,6 +165,7 @@ import {
   composeTutorStubFallbackWithUptake,
   deterministicTutorStubConfiguredContinuationFallback,
   deterministicTutorStubLearnerUptake,
+  deterministicTutorStubWritableEntryUptake,
   formatTutorStubResponseComposition,
   tutorStubLearnerSelectedToolMarkPath,
 } from '../services/tutorStubResponseComposition.js';
@@ -172,6 +173,8 @@ import {
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
+import { auditTutorStubLiveTurnProgressionV1 } from '../services/tutorStubTurnProgressionContract.js';
+import { auditTutorStubLiveSourceActionAlignmentV1 } from '../services/tutorStubLiveFirstDraftAudit.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
 import { resolveTutorStubPublicCounterpressure } from '../services/tutorStubCounterpressure.js';
 import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
@@ -1879,6 +1882,8 @@ function tutorResponseRecoveryPrompt({
   responseConfigurationAudit = null,
   responseConfiguration = null,
   responseCompositionAudit = null,
+  liveTurnProgressionAudit = null,
+  liveSourceActionAlignmentAudit = null,
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
@@ -1928,6 +1933,14 @@ function tutorResponseRecoveryPrompt({
   const dramaticReleaseIssues = hardFor('dramatic_release', dramaticReleaseAudit?.issues);
   const actorialRealizationIssues = hardFor('actorial_realization', actorialRealizationAudit?.issues);
   const responseCompositionIssues = hardFor('response_composition', responseCompositionAudit?.issues);
+  const liveTurnProgressionIssues = hardFor(
+    'live_turn_progression_v1',
+    liveTurnProgressionAudit?.issues,
+  );
+  const liveSourceActionAlignmentIssues = hardFor(
+    'live_source_action_alignment_v1',
+    liveSourceActionAlignmentAudit?.issues,
+  );
   const repetitionIssues = hardFor('repetition', repetitionAudit?.issues);
   const closureIssues = hardFor('dialogue_closure', closureAudit?.issues);
   const leakRows = rows('leak', leakIssues, { includeReason: false });
@@ -1941,6 +1954,11 @@ function tutorResponseRecoveryPrompt({
         .map(([axis]) => axis)
     : [];
   const responseCompositionRows = rows('response_composition', responseCompositionIssues);
+  const liveTurnProgressionRows = rows('live_turn_progression_v1', liveTurnProgressionIssues);
+  const liveSourceActionAlignmentRows = rows(
+    'live_source_action_alignment_v1',
+    liveSourceActionAlignmentIssues,
+  );
   const repetitionRows = rows('repetition', repetitionIssues);
   const closureRows = rows('dialogue_closure', closureIssues);
   const recoveryTransition = responseConfiguration?.recovery_transition || null;
@@ -1961,6 +1979,12 @@ function tutorResponseRecoveryPrompt({
     scaffoldRows ? 'Accept the learner’s completed local move; do not ask it again in new words.' : null,
     questionSupportRows
       ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
+      : null,
+    liveTurnProgressionRows
+      ? 'Answer the learner substantively first. Keep any permitted question single and terminal, and make its final sentence name the typed public focus.'
+      : null,
+    liveSourceActionAlignmentRows
+      ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'
       : null,
     questionSupportIssues.some((issue) => issue.type === 'missing_clarification_invitation')
       ? 'Make it explicit that the learner may ask you to unpack a word or connection.'
@@ -10199,6 +10223,7 @@ async function callTutor({
         dramaticReleaseFrame,
         dialogueClosureFrame,
         conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
+        publicFocusMapping: humanDiscourseFrame?.scaffoldState?.branch?.publicRelationMap || null,
         recentTutorTexts,
       });
   const firstDraftContract = passthrough
@@ -10208,6 +10233,7 @@ async function callTutor({
         responseConfiguration: speakingResponseConfiguration,
         responseCompositionFrame,
         dramaticReleaseFrame,
+        committedPublicEvidence,
         questionSupport: humanDiscourseFrame?.questionSupport || null,
         dialogueClosureFrame,
         performanceObligationContract,
@@ -10629,6 +10655,36 @@ async function callTutor({
     response.responseComposition = responseCompositionAudit.segments || null;
     response.responseCompositionFrame = responseCompositionFrame;
     response.responseCompositionAudit = responseCompositionAudit;
+    const liveTurnProgressionAudit = firstDraftContract?.progression?.complete === true
+      ? auditTutorStubLiveTurnProgressionV1({
+          contract: firstDraftContract.progression,
+          text: response.text,
+          responseComposition: responseCompositionAudit,
+          authoredSourceTexts: (firstDraftContract.evidence?.sources || []).map(
+            (source) => source?.text,
+          ),
+        })
+      : {
+          schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
+          active: false,
+          ok: true,
+          scope: 'whole_response_terminal_boundary',
+          slot_ownership_inferred: false,
+          issues: [],
+        };
+    const liveSourceActionAlignmentAudit = firstDraftContract
+      ? auditTutorStubLiveSourceActionAlignmentV1({
+          text: response.text,
+          firstDraftContract,
+        })
+      : {
+          schema: 'machinespirits.tutor-stub.live-source-action-alignment-audit.v1',
+          active: false,
+          ok: true,
+          scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
+          slot_ownership_inferred: false,
+          issues: [],
+        };
     const leakAudit = leakGuardEnabled
       ? auditTutorResponseLeak({
           text: response.text,
@@ -10760,6 +10816,32 @@ async function callTutor({
         segments: responseCompositionAudit.segments,
       });
     }
+    if (firstDraftContract) {
+      appendTraceEvent(trace, {
+        type: 'tutor_live_turn_progression_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: liveTurnProgressionAudit.ok,
+        active: liveTurnProgressionAudit.active,
+        scope: liveTurnProgressionAudit.scope,
+        slotOwnershipInferred: liveTurnProgressionAudit.slot_ownership_inferred,
+        issues: liveTurnProgressionAudit.issues,
+        audit: liveTurnProgressionAudit,
+      });
+      appendTraceEvent(trace, {
+        type: 'tutor_live_source_action_alignment_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: liveSourceActionAlignmentAudit.ok,
+        active: liveSourceActionAlignmentAudit.active,
+        scope: liveSourceActionAlignmentAudit.scope,
+        slotOwnershipInferred: liveSourceActionAlignmentAudit.slot_ownership_inferred,
+        issues: liveSourceActionAlignmentAudit.issues,
+        audit: liveSourceActionAlignmentAudit,
+      });
+    }
     if (repetitionGuardEnabled) {
       appendTraceEvent(trace, {
         type: 'tutor_repetition_audit',
@@ -10793,6 +10875,8 @@ async function callTutor({
         releaseDeliveryAudit.ok &&
         actorialRealizationAudit.ok &&
         responseCompositionAudit.ok &&
+        liveTurnProgressionAudit.ok &&
+        liveSourceActionAlignmentAudit.ok &&
         repetitionAudit.ok &&
         closureAudit.ok,
       leakAudit,
@@ -10803,6 +10887,8 @@ async function callTutor({
       actorialRealizationAudit,
       responseConfigurationAudit,
       responseCompositionAudit,
+      liveTurnProgressionAudit,
+      liveSourceActionAlignmentAudit,
       repetitionAudit,
       closureAudit,
     };
@@ -10896,6 +10982,8 @@ async function callTutor({
     response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
     response.releaseDeliveryAudit = audits.releaseDeliveryAudit;
     response.actorialRealizationAudit = audits.actorialRealizationAudit;
+    response.liveTurnProgressionAudit = audits.liveTurnProgressionAudit;
+    response.liveSourceActionAlignmentAudit = audits.liveSourceActionAlignmentAudit;
     response.repetitionAudit = audits.repetitionAudit;
     response.closureAudit = audits.closureAudit;
     response.deliveryDecision = audits.deliveryDecision || null;
@@ -11112,6 +11200,8 @@ async function callTutor({
       responseConfigurationAudit: audits.responseConfigurationAudit,
       responseConfiguration: simplifiedRecoveryConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
+      liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
+      liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
@@ -11128,6 +11218,8 @@ async function callTutor({
       responseConfigurationAudit: audits.responseConfigurationAudit,
       responseConfiguration: simplifiedRecoveryConfiguration,
       responseCompositionAudit: audits.responseCompositionAudit,
+      liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
+      liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
@@ -11554,9 +11646,14 @@ async function callTutor({
       recentTutorTexts,
       world,
     });
-    const fallbackUptake = fallbackRequiresSpecificUptake
+    const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
+    const fallbackUptake =
+      firstDraftContract?.opening?.writable_entry_requested === true &&
+      !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
+        ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
+        : candidateFallbackUptake;
     const baseFallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
           responseConfiguration: simplifiedRecoveryConfiguration,
@@ -11569,6 +11666,7 @@ async function callTutor({
             responseConfiguration: simplifiedRecoveryConfiguration,
             variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
             avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
+            turnProgressionContract: firstDraftContract?.progression || null,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
@@ -11579,6 +11677,7 @@ async function callTutor({
                 support: humanDiscourseFrame?.questionSupport || null,
                 world,
                 learnerText,
+                turnProgressionContract: firstDraftContract?.progression || null,
               })
             : actorialRealizationGuardEnabled
               ? deterministicTutorStubConfiguredContinuationFallback({
@@ -11587,6 +11686,7 @@ async function callTutor({
                   support: humanDiscourseFrame?.questionSupport || null,
                   world,
                   learnerText,
+                  turnProgressionContract: firstDraftContract?.progression || null,
                 })
               : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackText = dramaticReleaseGuardEnabled
@@ -11708,6 +11808,8 @@ async function callTutor({
       dramaticReleaseIssues: audits.dramaticReleaseAudit.issues,
       actorialRealizationIssues: audits.actorialRealizationAudit.issues,
       responseCompositionIssues: audits.responseCompositionAudit.issues,
+      liveTurnProgressionIssues: audits.liveTurnProgressionAudit.issues,
+      liveSourceActionAlignmentIssues: audits.liveSourceActionAlignmentAudit.issues,
       repetitionIssues: audits.repetitionAudit.issues,
       closureIssues: audits.closureAudit.issues,
       text: fallbackText,

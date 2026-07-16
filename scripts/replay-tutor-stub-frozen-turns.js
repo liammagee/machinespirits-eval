@@ -160,6 +160,7 @@ function auditOriginalCandidate({
       configuration: bundle.speakingResponseConfiguration || bundle.selectedResponseConfiguration,
       world,
       performanceObligationContract: bundle.performanceObligationContract,
+      progressionContract: bundle.firstDraftContract?.progression || null,
     });
   }
   return applyTutorStubStructuredSlotOwnershipAudit({

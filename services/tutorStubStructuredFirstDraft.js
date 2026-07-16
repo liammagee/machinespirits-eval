@@ -1,4 +1,8 @@
 import { auditTutorStubResponseConfiguration } from './tutorStubResponseConfiguration.js';
+import {
+  auditTutorStubDueSourceActionAlignment,
+  renderTutorStubDueSource,
+} from './tutorStubDueSourceRenderer.js';
 
 export const TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA =
   'machinespirits.tutor-stub.structured-first-draft.v1';
@@ -50,33 +54,6 @@ function sentenceCount(value) {
 
 function wordCount(value) {
   return (String(value || '').match(/[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu) || []).length;
-}
-
-function strictSourceSurface(entry, index) {
-  const surface = String(entry?.surface || '').trim();
-  if (!surface) throw new Error(`structured source invalid: missing_surface:${index}`);
-  if (/\r|\n/u.test(surface)) throw new Error(`structured source invalid: multiline_surface:${index}`);
-  return surface;
-}
-
-function sourceReportingLead(entry) {
-  const role = oneLine(entry?.role).toLowerCase();
-  if (/\b(?:watch|watchman|witness)\b/u.test(role)) return 'I saw or I can attest that';
-  if (/\b(?:book|clerk|inventory|keeper|ledger|log|reading|record)\b/u.test(role)) {
-    return 'I read in the record that';
-  }
-  if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role)) {
-    return 'I know or I can identify that';
-  }
-  return 'I can attest that';
-}
-
-function renderSource(entry, index) {
-  const surface = strictSourceSurface(entry, index);
-  if (entry?.mode === 'enacted_role') {
-    return { surface, text: `“${sourceReportingLead(entry)} ${surface}”` };
-  }
-  return { surface, text: surface };
 }
 
 function exactOccurrences(text, needle) {
@@ -178,6 +155,30 @@ function structuredCompositionIntegrityIssues(composition, candidate = null) {
       span: null,
       reason: 'joining saved spans does not exactly reconstruct the composed candidate',
     });
+  }
+  const sources = Array.isArray(composition.sources) ? composition.sources : [];
+  const sourceSpans = spans.filter((span) => span?.kind === 'source');
+  if (sources.length !== sourceSpans.length) {
+    issues.push({
+      type: 'invalid_source_provenance',
+      reason: 'source provenance count does not match source spans',
+    });
+  }
+  for (let index = 0; index < sources.length; index += 1) {
+    const source = sources[index];
+    const span = sourceSpans[index];
+    if (
+      source?.id !== span?.id ||
+      source?.text !== span?.text ||
+      !source?.surface ||
+      exactOccurrences(text, source.surface) !== 1
+    ) {
+      issues.push({
+        type: 'invalid_source_provenance',
+        source: source?.id || null,
+        reason: 'host source provenance is not bound exactly once to its saved span and candidate',
+      });
+    }
   }
   return issues;
 }
@@ -301,7 +302,7 @@ export function composeTutorStubStructuredFirstDraft({ structured = null, dramat
   if (dramaticReleaseFrame?.active && !entries.length) {
     throw new Error('structured source invalid: active_frame_has_no_entries');
   }
-  const sources = entries.map(renderSource);
+  const sources = entries.map(renderTutorStubDueSource);
   for (const { surface } of sources) {
     for (const key of STRUCTURED_KEYS) {
       if (structured.slots[key].includes(surface)) {
@@ -319,7 +320,7 @@ export function composeTutorStubStructuredFirstDraft({ structured = null, dramat
   const ordered = [
     { id: 'uptake', kind: 'host', text: structured.slots.uptake },
     { id: 'part', kind: 'host', text: structured.slots.part },
-    ...sources.map((source, index) => ({ id: `source_${index + 1}`, kind: 'source', text: source.text })),
+    ...sources.map((source) => ({ id: source.id, kind: 'source', text: source.text })),
     { id: 'tactic', kind: 'host', text: structured.slots.tactic },
     { id: 'handoff', kind: 'host', text: structured.slots.handoff },
   ];
@@ -340,6 +341,7 @@ export function composeTutorStubStructuredFirstDraft({ structured = null, dramat
     text,
     slots: clone(structured.slots),
     spans,
+    sources: clone(sources),
     sourceCount: sources.length,
   };
 }
@@ -385,6 +387,11 @@ export function auditTutorStubStructuredSlotOwnership({
     configuration,
     world,
   });
+  const sourceActionAlignment = auditTutorStubDueSourceActionAlignment({
+    text: spans.get('part').text,
+    sources: composition.sources,
+  });
+  issues.push(...sourceActionAlignment.issues);
   const tacticAudit = auditTutorStubResponseConfiguration({
     text: spans.get('tactic').text,
     configuration,
@@ -421,6 +428,15 @@ export function auditTutorStubStructuredSlotOwnership({
       selected: configuration.engagement_stance,
       visible: handoffAudit?.axes?.engagement_stance?.visible === true,
     },
+    ...(sourceActionAlignment.active
+      ? {
+          source_action_alignment: {
+            owner: 'part',
+            selected: true,
+            visible: sourceActionAlignment.ok,
+          },
+        }
+      : {}),
   };
   for (const [axis, row] of Object.entries(axes)) {
     if (!row.visible) {
@@ -438,6 +454,7 @@ export function auditTutorStubStructuredSlotOwnership({
     active: true,
     issues,
     axes,
+    sourceActionAlignment,
     spanAudits: { part: partAudit, tactic: tacticAudit, handoff: handoffAudit },
   };
 }

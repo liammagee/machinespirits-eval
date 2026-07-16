@@ -16,11 +16,13 @@ import {
   formatTutorStubResponseComposition,
 } from './tutorStubResponseComposition.js';
 import { auditTutorStubResponseConfiguration } from './tutorStubResponseConfiguration.js';
+import { auditTutorStubLiveSourceActionAlignmentV1 } from './tutorStubLiveFirstDraftAudit.js';
 import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   tutorStubAnswerNameIsPublic,
 } from './tutorStubResponseGuard.js';
+import { auditTutorStubLiveTurnProgressionV1 } from './tutorStubTurnProgressionContract.js';
 import {
   tutorStubAnswerConclusionAsserted,
   tutorStubSecretConclusionWordPatterns,
@@ -463,7 +465,11 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
   if (!latestRequest || latestRequest.role !== 'user' || !FIRST_DRAFT_BLOCK.test(latestRequest.content)) {
     throw new Error(`frozen turn ${bundle.turn} request has no replaceable first-draft contract`);
   }
-  const publicEvidence = (bundle.publicPremiseIds || [])
+  const duePremiseIds = new Set(bundle.duePremiseIds || []);
+  const committedPublicPremiseIds = (bundle.publicPremiseIds || []).filter(
+    (premiseId) => !duePremiseIds.has(premiseId),
+  );
+  const committedPublicEvidence = committedPublicPremiseIds
     .map((premiseId) => world?.premiseById?.get?.(premiseId))
     .filter(Boolean);
   const dueEvidence = (bundle.duePremiseIds || [])
@@ -471,9 +477,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     .filter(Boolean);
   const publicCounterpressure = resolveTutorStubPublicCounterpressure({
     world,
-    publicEvidence: (bundle.publicPremiseIds || []).filter(
-      (premiseId) => !(bundle.duePremiseIds || []).includes(premiseId),
-    ),
+    publicEvidence: committedPublicPremiseIds,
     dueEvidence: bundle.duePremiseIds || [],
   });
   const performanceObligationContract = compileTutorStubPerformanceObligationContract({
@@ -494,7 +498,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
       learner_move: bundle.learnerText,
       pressure_target: publicCounterpressure?.pressureTarget || null,
       contrary_evidence: publicCounterpressure ? [publicCounterpressure.contraryEvidence] : [],
-      public_evidence: publicEvidence,
+      public_evidence: committedPublicEvidence,
       due_evidence: dueEvidence,
     },
   });
@@ -515,6 +519,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     responseConfiguration: speakingResponseConfiguration,
     responseCompositionFrame: bundle.frames?.responseComposition,
     dramaticReleaseFrame: bundle.frames?.dramaticRelease,
+    committedPublicEvidence,
     questionSupport: bundle.frames?.questionSupport,
     dialogueClosureFrame: bundle.frames?.dialogueClosure,
     performanceObligationContract,
@@ -562,6 +567,36 @@ export function auditTutorStubFrozenCandidate({
       firstDraftContract: bundle.firstDraftContract,
     });
   }
+  const liveTurnProgressionAudit = bundle.firstDraftContract?.progression?.complete === true
+    ? auditTutorStubLiveTurnProgressionV1({
+        contract: bundle.firstDraftContract.progression,
+        text: auditedText,
+        responseComposition: responseCompositionAudit,
+        authoredSourceTexts: (bundle.firstDraftContract.evidence?.sources || []).map(
+          (source) => source?.text,
+        ),
+      })
+    : {
+        schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
+        active: false,
+        ok: true,
+        scope: 'whole_response_terminal_boundary',
+        slot_ownership_inferred: false,
+        issues: [],
+      };
+  const liveSourceActionAlignmentAudit = bundle.firstDraftContract
+    ? auditTutorStubLiveSourceActionAlignmentV1({
+        text: auditedText,
+        firstDraftContract: bundle.firstDraftContract,
+      })
+    : {
+        schema: 'machinespirits.tutor-stub.live-source-action-alignment-audit.v1',
+        active: false,
+        ok: true,
+        scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
+        slot_ownership_inferred: false,
+        issues: [],
+      };
   const leakAudit = guards.leak
     ? auditTutorStubFrozenLeak({
         text: auditedText,
@@ -617,6 +652,8 @@ export function auditTutorStubFrozenCandidate({
     },
     responseConfigurationAudit,
     responseCompositionAudit,
+    liveTurnProgressionAudit,
+    liveSourceActionAlignmentAudit,
     repetitionAudit,
     closureAudit,
     releaseDeliveryAudit,

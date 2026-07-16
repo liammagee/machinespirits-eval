@@ -47,6 +47,20 @@ const RULES = Object.freeze([
     rationale: 'A due clue must be present before its release transaction can commit.',
   }),
   rule({
+    guard: 'live_turn_progression_v1',
+    type: '*',
+    category: 'conversational_integrity',
+    rationale:
+      'The plain live response must answer the learner, respect terminal question ownership, and keep its typed public focus.',
+  }),
+  rule({
+    guard: 'live_source_action_alignment_v1',
+    type: '*',
+    category: 'dramatic_realization',
+    rationale:
+      'Each exact due source must appear once, with any required carrier visible in its nearest pre-source live host entrance.',
+  }),
+  rule({
     guard: 'release_delivery',
     type: 'release_delivery_audit_failed',
     category: 'clue_transaction_integrity',
@@ -350,6 +364,8 @@ export function tutorStubGuardIssueRows(audits = null) {
     ...auditIssueRows('dramatic_release', source.dramaticReleaseAudit),
     ...auditIssueRows('actorial_realization', source.actorialRealizationAudit),
     ...auditIssueRows('response_composition', source.responseCompositionAudit),
+    ...auditIssueRows('live_turn_progression_v1', source.liveTurnProgressionAudit),
+    ...auditIssueRows('live_source_action_alignment_v1', source.liveSourceActionAlignmentAudit),
     ...auditIssueRows('repetition', source.repetitionAudit),
     ...auditIssueRows('dialogue_closure', source.closureAudit),
   ];

@@ -145,7 +145,7 @@ function counterpressureFixture() {
   const structured = (overrides = {}) =>
     parseTutorStubStructuredFirstDraft(
       validRaw({
-        part: 'I open the leat-keeper’s book beside the shilling.',
+        part: 'I open the charcoal book beside the shilling.',
         tactic: 'Verrell’s mint-yard claim now falters under this book.',
         handoff: 'Now, does this book place the blank in Edony’s hand?',
         ...overrides,
@@ -274,7 +274,7 @@ test('deterministic composition inserts an enacted source between PART and TACTI
     composition.spans.map((span) => span.id),
     ['uptake', 'part', 'source_1', 'tactic', 'handoff'],
   );
-  assert.match(composition.text, /I open the visitor ledger beside you\. “I read in the record that Visitor code/u);
+  assert.match(composition.text, /I open the visitor ledger beside you\. “I read from the record: Visitor code/u);
   assert.doesNotMatch(composition.text, /front-desk clerk/u);
   assert.equal(composition.text.split(surface).length - 1, 1);
   for (const span of composition.spans) {

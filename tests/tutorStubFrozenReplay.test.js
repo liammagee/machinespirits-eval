@@ -17,8 +17,10 @@ import {
   tutorStubPerformanceAdjudicationUserPrompt,
 } from '../services/tutorStubPerformanceAdjudication.js';
 import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
+import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { buildTutorStubResponseCompositionFrame } from '../services/tutorStubResponseComposition.js';
+import { TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA } from '../services/tutorStubTurnProgressionContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
@@ -42,6 +44,61 @@ function worldForId(worldId) {
     .filter((world) => world.id === worldId);
   assert.equal(matches.length, 1, `expected one world for ${worldId}`);
   return matches[0];
+}
+
+function frozenParityBundle({ learnerText, progression, sources = [] }) {
+  return {
+    guards: { responseComposition: true },
+    learnerText,
+    firstDraftContract: {
+      schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
+      opening: { writable_entry_requested: false },
+      evidence: { sources },
+      progression,
+    },
+    frames: {
+      responseComposition: buildTutorStubResponseCompositionFrame({
+        learnerText,
+        classification: { turn: { summary: learnerText } },
+        registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+      }),
+    },
+    duePremiseIds: [],
+    publicPremiseIds: [],
+    priorTurns: [],
+    priorTutorTexts: [],
+    turn: 2,
+  };
+}
+
+function frozenProgressionContract({ questionAllowed, questionRequired = questionAllowed } = {}) {
+  return {
+    schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+    complete: true,
+    learner_uptake: {
+      required: true,
+      mode: 'direct_response',
+      learner_surface: 'The badge log leaves Dario possible but unproved.',
+      accepted_meaning: null,
+      focus_terms: ['badge', 'log', 'dario', 'unprove'],
+    },
+    turn_focus_contract: {
+      primary_surface: 'the visitor badge log',
+      primary_terms: ['visitor', 'badge', 'log'],
+      due_terms: [],
+      sibling_relation_requires_explicit_bridge: false,
+    },
+    handoff_contract: {
+      mode: questionAllowed ? 'new_unresolved_check' : 'declarative_current_limit',
+      question_allowed: questionAllowed,
+      question_required: questionRequired,
+      question_owner: questionAllowed ? 'handoff' : null,
+      terminal_if_question: questionAllowed,
+      required_target_surfaces: ['the visitor badge log'],
+      required_target_terms: ['visitor', 'badge', 'log'],
+      prohibited_settled_surfaces: [],
+    },
+  };
 }
 
 test('frozen replay fixtures retain the exact public prefix and original speaker configuration', () => {
@@ -112,6 +169,90 @@ test('frozen screens can refresh an already-current typed host plan', () => {
   assert.equal(prompt.split('[Tutor-only host plan]').length - 1, 1);
   assert.equal(prompt.split('[End tutor-only host plan]').length - 1, 1);
   assert.doesNotMatch(prompt, /Tutor-only first-draft performance contract/u);
+});
+
+test('model-free frozen replay enforces live V1 question ownership and terminal placement', () => {
+  const learnerText = 'The badge log leaves Dario possible but unproved.';
+  const world = { premiseById: new Map(), premises: [], releaseSchedule: [], rules: [], background: [] };
+  const cases = [
+    {
+      name: 'forbidden question',
+      progression: frozenProgressionContract({ questionAllowed: false }),
+      text:
+        'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change?',
+      cluster: 'live_turn_progression_v1:question_forbidden_by_handoff_contract',
+    },
+    {
+      name: 'nonterminal question',
+      progression: frozenProgressionContract({ questionAllowed: true }),
+      text:
+        'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change? We can wait.',
+      cluster: 'live_turn_progression_v1:handoff_question_not_terminal',
+    },
+  ];
+
+  for (const fixture of cases) {
+    const audit = auditTutorStubFrozenCandidate({
+      bundle: frozenParityBundle({ learnerText, progression: fixture.progression }),
+      world,
+      text: fixture.text,
+      candidateKind: 'original_candidate',
+    });
+    assert.equal(audit.ok, false, fixture.name);
+    assert.equal(audit.audits.liveTurnProgressionAudit.ok, false, fixture.name);
+    assert.ok(audit.hardFailureClusters.includes(fixture.cluster), fixture.name);
+    assert.ok(
+      audit.deliveryDecision.hardIssues.some(
+        (issue) => issue.guard === 'live_turn_progression_v1',
+      ),
+      fixture.name,
+    );
+  }
+});
+
+test('model-free frozen replay enforces exact due SOURCE and its nearest host carrier', () => {
+  const learnerText = 'The badge log leaves Dario possible but unproved.';
+  const progression = frozenProgressionContract({ questionAllowed: true });
+  const source = renderTutorStubDueSource({
+    premise: 'p_crew',
+    mode: 'enacted_role',
+    role: 'front-desk clerk reading the visitor badge log',
+    surface: 'WF-11 was issued to the outside crew.',
+  });
+  const bundle = frozenParityBundle({ learnerText, progression, sources: [source] });
+  const world = { premiseById: new Map(), premises: [], releaseSchedule: [], rules: [], background: [] };
+  const cases = [
+    {
+      name: 'misaligned source carrier',
+      text:
+        `Right—the badge log leaves Dario possible but unproved. I set the kettle beside us. ${source.text} What does the visitor badge log change?`,
+      cluster: 'live_source_action_alignment_v1:due_source_action_referent_missing',
+    },
+    {
+      name: 'paraphrased source',
+      text:
+        'Right—the badge log leaves Dario possible but unproved. I open the visitor badge log. “I report this: WF-11 was issued to the outside crew.” What does the visitor badge log change?',
+      cluster: 'live_source_action_alignment_v1:due_source_exact_occurrence_count',
+    },
+  ];
+
+  for (const fixture of cases) {
+    const audit = auditTutorStubFrozenCandidate({
+      bundle,
+      world,
+      text: fixture.text,
+      candidateKind: 'original_candidate',
+    });
+    assert.equal(audit.ok, false, fixture.name);
+    assert.equal(audit.audits.liveSourceActionAlignmentAudit.ok, false, fixture.name);
+    assert.ok(audit.hardFailureClusters.includes(fixture.cluster), fixture.name);
+    assert.ok(
+      audit.deliveryDecision.hardIssues.some(
+        (issue) => issue.guard === 'live_source_action_alignment_v1',
+      ),
+      fixture.name,
+    );
+  }
 });
 
 test('frozen counterpressure never binds the learner Write question as its public target', () => {
@@ -220,6 +361,17 @@ test('frozen refresh preserves an authored public counterpressure pair without e
 
   assert.equal(refreshed.performanceObligationContract.tactic_applicability.applicable, true);
   assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'dramatic_counterpressure');
+  assert.deepEqual(refreshed.firstDraftContract.evidence.committed_public_surfaces, [
+    world.premiseById.get('m_caster').surface,
+    world.premiseById.get('p_alloy').surface,
+    world.premiseById.get('p_crucible').surface,
+  ]);
+  assert.equal(
+    refreshed.firstDraftContract.evidence.committed_public_surfaces.includes(
+      world.premiseById.get('p_caster').surface,
+    ),
+    false,
+  );
   assert.equal(
     refreshed.performanceObligationContract.pressure_pair.target_span,
     world.premiseById.get('m_caster').surface,
@@ -228,23 +380,61 @@ test('frozen refresh preserves an authored public counterpressure pair without e
   assert.doesNotMatch(content, /\bm_caster\b|\bp_caster\b/u);
 });
 
-test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {
+test('model-free corpus applies current deterministic audits and makes live-parity reclassifications explicit', () => {
   const improvements = [];
   const corrections = [];
+  const contractMigrations = [];
+  const liveParityReclassifications = [];
+  const recognitionImprovementsMaskedByLiveParity = [];
+  const recordLiveParityReclassification = ({ testCase, candidate, audit }) => {
+    const unexpectedClusters = audit.hardFailureClusters.filter(
+      (cluster) =>
+        !cluster.startsWith('live_turn_progression_v1:') &&
+        !cluster.startsWith('live_source_action_alignment_v1:'),
+    );
+    assert.deepEqual(
+      unexpectedClusters,
+      [],
+      `${testCase.id} ${candidate.kind} changed outside the newly enforced live-parity audits`,
+    );
+    liveParityReclassifications.push({
+      id: testCase.id,
+      kind: candidate.kind,
+      clusters: audit.hardFailureClusters,
+    });
+  };
   for (const fixturePath of FIXTURE_PATHS) {
     const fixture = readFixture(fixturePath);
     for (const testCase of fixture.cases) {
       const world = worldForId(testCase.worldId);
+      const refreshedBundle = refreshTutorStubFrozenFirstDraftRequest({ bundle: testCase.bundle, world });
+      assert.deepEqual(refreshedBundle.priorTurns, testCase.bundle.priorTurns);
+      assert.deepEqual(refreshedBundle.publicPremiseIds, testCase.bundle.publicPremiseIds);
+      if (
+        testCase.bundle.firstDraftContract?.opening?.writable_entry_requested !== true &&
+        refreshedBundle.firstDraftContract.opening.writable_entry_requested === true
+      ) {
+        contractMigrations.push(testCase.id);
+      }
       for (const candidate of testCase.candidates) {
         const audit = auditTutorStubFrozenCandidate({
-          bundle: testCase.bundle,
+          bundle: refreshedBundle,
           world,
           text: candidate.text,
           deliveryConfiguration: candidate.deliveryConfiguration,
           candidateKind: candidate.kind,
         });
         if (typeof candidate.expectedCurrentAuditOk === 'boolean') {
-          assert.equal(audit.ok, candidate.expectedCurrentAuditOk, `${testCase.id} expected correction did not hold`);
+          if (candidate.expectedCurrentAuditOk === true && !audit.ok) {
+            recordLiveParityReclassification({ testCase, candidate, audit });
+            recognitionImprovementsMaskedByLiveParity.push(`${testCase.id}:${candidate.kind}`);
+          } else {
+            assert.equal(
+              audit.ok,
+              candidate.expectedCurrentAuditOk,
+              `${testCase.id} expected correction did not hold`,
+            );
+          }
           for (const cluster of candidate.expectedFailureClusters || []) {
             assert.ok(
               audit.hardFailureClusters.includes(cluster),
@@ -252,12 +442,20 @@ test('model-free corpus re-audits every saved candidate without regressing accep
             );
           }
           corrections.push(`${testCase.id}:${candidate.expectationReason || candidate.kind}`);
-        } else if (candidate.recordedAuditOk) {
-          assert.equal(
-            audit.ok,
-            true,
-            `${testCase.id} ${candidate.kind} regressed: ${audit.hardFailureClusters.join(', ')}`,
-          );
+        } else if (candidate.recordedAuditOk && !audit.ok) {
+          recordLiveParityReclassification({ testCase, candidate, audit });
+        } else if (
+          !candidate.recordedAuditOk &&
+          !audit.ok &&
+          audit.hardFailureClusters.length > 0 &&
+          audit.hardFailureClusters.every(
+            (cluster) =>
+              cluster.startsWith('live_turn_progression_v1:') ||
+              cluster.startsWith('live_source_action_alignment_v1:'),
+          )
+        ) {
+          recordLiveParityReclassification({ testCase, candidate, audit });
+          recognitionImprovementsMaskedByLiveParity.push(`${testCase.id}:${candidate.kind}`);
         } else if (audit.ok) {
           improvements.push(`${testCase.id}:${candidate.kind}`);
         }
@@ -265,12 +463,34 @@ test('model-free corpus re-audits every saved candidate without regressing accep
     }
   }
   assert.ok(
-    improvements.length > 0,
-    'the corpus should identify audit-recognition improvements without calling them generation',
+    improvements.length + recognitionImprovementsMaskedByLiveParity.length > 0,
+    'the corpus should identify audit-recognition improvements separately from stricter live-parity failures',
   );
   assert.ok(
-    improvements.some((row) => row.startsWith('2026-07-16T05-50-54-528Z:')),
+    [...improvements, ...recognitionImprovementsMaskedByLiveParity].some((row) =>
+      row.startsWith('2026-07-16T05-50-54-528Z:'),
+    ),
     'at least one recognition improvement should come from the Greyfen corpus',
+  );
+  assert.ok(
+    contractMigrations.includes('2026-07-16T04-44-58-444Z:t003'),
+    'Skyway t003 must migrate its legacy saved contract to current writable-entry recognition',
+  );
+  assert.ok(
+    contractMigrations.includes('2026-07-16T07-03-36-147Z:t005'),
+    'Tallow t005 must migrate the exact put-in-the-minutes request without changing its public prefix',
+  );
+  assert.ok(
+    liveParityReclassifications.some((row) =>
+      row.clusters.some((cluster) => cluster.startsWith('live_turn_progression_v1:')),
+    ),
+    'the historical corpus must retain at least one explicit live turn-progression reclassification',
+  );
+  assert.ok(
+    liveParityReclassifications.some((row) =>
+      row.clusters.some((cluster) => cluster.startsWith('live_source_action_alignment_v1:')),
+    ),
+    'the historical corpus must retain at least one explicit live source-alignment reclassification',
   );
   assert.deepEqual(corrections, [
     '2026-07-16T07-03-36-147Z:t001:known_v20_false_acceptance_duplicate_due_clue',

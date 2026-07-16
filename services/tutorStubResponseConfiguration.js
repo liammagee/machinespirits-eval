@@ -711,6 +711,53 @@ function sentenceBudgetVisible(actualAverage, authoredMaximum) {
   return Number(actualAverage) <= maximum + tolerance;
 }
 
+/**
+ * Measure a public surface against the same sentence-density budgets used by
+ * the response-configuration audit. This is intentionally narrower than the
+ * full lexical audit: callers can use it for immutable authored SOURCE spans
+ * without letting surrounding adaptive-host prose conceal an over-dense clue.
+ */
+export function measureTutorStubSurfaceSentenceAccessibility({
+  text = '',
+  audienceRegister = null,
+  lexicalAccessibility = null,
+} = {}) {
+  const words = responseWords(text);
+  const sentences = responseSentences(text);
+  const sentenceWordCounts = sentences.map((sentence) => responseWords(sentence).length);
+  const averageSentenceWords = Number(
+    (words.length / Math.max(1, sentences.length)).toFixed(2),
+  );
+  const audienceDefinition = getAudienceRegisterDefinitions()[audienceRegister] || {};
+  const lexicalDefinition = getLexicalAccessibilityDefinitions()[lexicalAccessibility] || {};
+  const audienceMaximum = Number(audienceDefinition.max_average_sentence_words);
+  const lexicalMaximum = Number(lexicalDefinition.max_average_sentence_words);
+  const audienceVisible = sentenceBudgetVisible(averageSentenceWords, audienceMaximum);
+  const lexicalVisible = sentenceBudgetVisible(averageSentenceWords, lexicalMaximum);
+  return {
+    text: oneLine(text),
+    wordCount: words.length,
+    sentenceCount: sentences.length,
+    sentenceWordCounts,
+    averageSentenceWords,
+    maxSentenceWords: Math.max(0, ...sentenceWordCounts),
+    audienceRegister,
+    audienceMaximum: Number.isFinite(audienceMaximum) ? audienceMaximum : null,
+    lexicalAccessibility,
+    lexicalMaximum: Number.isFinite(lexicalMaximum) ? lexicalMaximum : null,
+    measurementTolerance: 0.1,
+    audienceVisible,
+    lexicalVisible,
+    ok:
+      words.length > 0 &&
+      sentences.length > 0 &&
+      Number.isFinite(audienceMaximum) &&
+      Number.isFinite(lexicalMaximum) &&
+      audienceVisible &&
+      lexicalVisible,
+  };
+}
+
 function normalizedTerm(value) {
   return oneLine(value)
     .toLowerCase()
