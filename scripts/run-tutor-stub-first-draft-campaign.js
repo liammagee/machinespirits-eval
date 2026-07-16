@@ -13,6 +13,7 @@ import {
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftIterationStopping,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
@@ -464,7 +465,14 @@ async function main() {
     iteration,
   });
   const validation = validationReport(plan, loaded);
-  const validationPath = writeJson(path.join(plan.artifactRoot, 'campaign-validation.json'), validation);
+  const validationPath = writeJson(
+    tutorStubFirstDraftCampaignValidationArtifactPath({
+      artifactRoot: plan.artifactRoot,
+      mode,
+      iteration,
+    }),
+    validation,
+  );
   console.log(`campaign validation: ${validationPath}`);
   if (mode === 'validate') return;
   let result;

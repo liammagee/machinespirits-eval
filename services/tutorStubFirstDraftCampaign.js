@@ -38,6 +38,23 @@ function absolute(root, value) {
   return path.isAbsolute(normalized) ? normalized : path.join(root, normalized);
 }
 
+export function tutorStubFirstDraftCampaignValidationArtifactPath({
+  artifactRoot,
+  mode,
+  iteration = 1,
+} = {}) {
+  const root = requiredString(artifactRoot, 'campaign artifact root');
+  const normalizedMode = requiredString(mode, 'campaign mode').toLowerCase();
+  if (!['validate', 'development', 'acceptance'].includes(normalizedMode)) {
+    throw new Error(`unsupported campaign mode for validation artifact: ${normalizedMode}`);
+  }
+  if (normalizedMode === 'development') {
+    const workingIteration = integer(iteration, 'working iteration', { minimum: 1 });
+    return path.join(root, `iteration-${workingIteration}`, 'campaign-validation.json');
+  }
+  return path.join(root, 'campaign-validation.json');
+}
+
 function workingScreen(config) {
   return config?.schema === 'machinespirits.tutor-stub.first-draft-working-screen.v1';
 }

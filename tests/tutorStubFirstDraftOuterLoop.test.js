@@ -166,6 +166,7 @@ test('V27 preserves the exact iteration-1 result and predeclares only a speaking
     assert.deepEqual(observation, manifest.current.working_history[0]);
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json');
     assert.equal(observation.run_head, '7fc926a2801f947da056b573a499933dccc71968');
+    assert.equal(observation.provenance.campaign_validation_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json');
     assert.equal(observation.provenance.campaign_validation_sha256, 'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07');
     assert.equal(observation.provenance.result_sha256, '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435');
     assert.deepEqual(

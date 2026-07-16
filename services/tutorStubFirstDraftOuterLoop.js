@@ -54,7 +54,7 @@ const REQUIRED_REVIEW_RESPONSIBILITIES = Object.freeze([
 const V27_ITERATION_1_RESULT = Object.freeze({
   artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json',
   runHead: '7fc926a2801f947da056b573a499933dccc71968',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/campaign-validation.json',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json',
   campaignValidationSha256: 'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07',
   resultSha256: '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435',
   turns: Object.freeze([

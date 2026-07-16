@@ -8,6 +8,7 @@ import {
   assessTutorStubAcceptanceCell,
   expandTutorStubFirstDraftCampaign,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftGatePossibility,
   tutorStubFirstDraftIterationStopping,
   tutorStubStrictOriginalCandidateAccepted,
@@ -118,6 +119,34 @@ function acceptanceGateConfig(turns = 10) {
     },
   };
 }
+
+test('development validation artifacts are immutable per iteration while dry validation remains at campaign root', () => {
+  const artifactRoot = path.join('/tmp', 'first-draft-validation-path');
+  assert.equal(
+    tutorStubFirstDraftCampaignValidationArtifactPath({
+      artifactRoot,
+      mode: 'development',
+      iteration: 2,
+    }),
+    path.join(artifactRoot, 'iteration-2', 'campaign-validation.json'),
+  );
+  assert.equal(
+    tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'validate', iteration: 2 }),
+    path.join(artifactRoot, 'campaign-validation.json'),
+  );
+  assert.equal(
+    tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'acceptance', iteration: 2 }),
+    path.join(artifactRoot, 'campaign-validation.json'),
+  );
+  assert.throws(
+    () => tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'development', iteration: 0 }),
+    /working iteration must be an integer >= 1/u,
+  );
+  assert.throws(
+    () => tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'unknown', iteration: 1 }),
+    /unsupported campaign mode/u,
+  );
+});
 
 test('campaign validation expands one original-only command per frozen turn without model calls', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-campaign-'));
