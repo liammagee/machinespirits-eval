@@ -10666,6 +10666,7 @@ async function callTutor({
           configuration: auditConfiguration,
           world,
           composition: response.responseComposition,
+          performanceObligationContract,
         })
       : null;
     const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {

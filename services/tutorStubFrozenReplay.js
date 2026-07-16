@@ -589,6 +589,7 @@ export function auditTutorStubFrozenCandidate({
           deliveryConfiguration || bundle.speakingResponseConfiguration || bundle.selectedResponseConfiguration,
         world,
         composition: responseCompositionAudit.segments,
+        performanceObligationContract: bundle.performanceObligationContract,
       })
     : null;
   const repetitionAudit = guards.repetition

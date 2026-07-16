@@ -185,19 +185,29 @@ test('a possessive evidence object is not mistaken for a role-label stage direct
       },
     ],
   });
-  const evidenceObject =
-    'I open the leat-keeper’s charcoal book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?';
-  const trueRoleLabel =
-    'The leat-keeper opens the charcoal book: “I record that the forge was shut and only Edony cast blanks there.” What does that change?';
+  const evidenceObjects = [
+    'I open the leat-keeper’s charcoal book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+    'I open the leat-keeper’s book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+    'I mark the leat-keeper\'s ledger. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+  ];
+  const trueRoleLabels = [
+    'The leat-keeper opens the charcoal book: “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+    'Leat-keeper: “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+  ];
 
-  assert.equal(tutorStubRoleStageDirectionVisible({ text: evidenceObject, frame }), false);
-  assert.equal(auditTutorStubDramaticReleaseResponse({ text: evidenceObject, frame }).ok, true);
-  assert.equal(tutorStubRoleStageDirectionVisible({ text: trueRoleLabel, frame }), true);
-  assert.ok(
-    auditTutorStubDramaticReleaseResponse({ text: trueRoleLabel, frame }).issues.some(
-      (issue) => issue.type === 'role_label_stage_direction',
-    ),
-  );
+  for (const evidenceObject of evidenceObjects) {
+    assert.equal(tutorStubRoleStageDirectionVisible({ text: evidenceObject, frame }), false, evidenceObject);
+    assert.equal(auditTutorStubDramaticReleaseResponse({ text: evidenceObject, frame }).ok, true, evidenceObject);
+  }
+  for (const trueRoleLabel of trueRoleLabels) {
+    assert.equal(tutorStubRoleStageDirectionVisible({ text: trueRoleLabel, frame }), true, trueRoleLabel);
+    assert.ok(
+      auditTutorStubDramaticReleaseResponse({ text: trueRoleLabel, frame }).issues.some(
+        (issue) => issue.type === 'role_label_stage_direction',
+      ),
+      trueRoleLabel,
+    );
+  }
 });
 
 test('an exact authored source left unquoted is not a role label but still fails enactment', () => {

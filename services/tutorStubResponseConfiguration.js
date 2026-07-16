@@ -10,6 +10,7 @@ import {
   tutorStubFirstPersonRoleVoiceVisible,
   tutorStubRoleStageDirectionVisible,
 } from './tutorStubDramaticRelease.js';
+import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPerformanceObligationContract.js';
 
 const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
@@ -1108,7 +1109,89 @@ export function tutorStubActorialHostSurface(configuration, text) {
     .trim();
 }
 
-function actorialPerformanceVisible(configuration, text, metrics) {
+const COUNTERPRESSURE_OBLIGATION_IDS = Object.freeze([
+  'public_pressure_target',
+  'contrary_evidence',
+  'visible_action',
+  'learner_handoff',
+]);
+
+function contractAnchor(contract, id) {
+  return (contract?.anchors || []).find((entry) => entry.id === id) || null;
+}
+
+function normalizedContentTokens(value) {
+  return new Set(
+    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []).map((token) =>
+      token.replace(/[’]/gu, "'"),
+    ),
+  );
+}
+
+function anchorOverlapCount(text, anchor) {
+  const textTokens = normalizedContentTokens(text);
+  return (anchor?.content_tokens || []).filter((token) =>
+    textTokens.has(String(token || '').toLowerCase().replace(/[’]/gu, "'")),
+  ).length;
+}
+
+function declaredPublicJudgmentFalterVisible({
+  text,
+  fullText,
+  contract,
+  actorialPartVisible: selectedPartVisible,
+}) {
+  if (
+    contract?.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA ||
+    contract?.complete !== true ||
+    contract?.selection?.actorial_performance?.id !== 'dramatic_counterpressure' ||
+    selectedPartVisible !== true
+  ) {
+    return false;
+  }
+  const obligationIds = (contract.obligations || []).map((entry) => entry.id);
+  if (
+    obligationIds.length !== COUNTERPRESSURE_OBLIGATION_IDS.length ||
+    COUNTERPRESSURE_OBLIGATION_IDS.some((id) => !obligationIds.includes(id))
+  ) {
+    return false;
+  }
+  const targetAnchor = contractAnchor(contract, 'pressure_target');
+  const contraryAnchor = contractAnchor(contract, 'contrary_evidence');
+  const handoffAnchor = contractAnchor(contract, 'learner_handoff');
+  const contrarySurface = oneLine(contract.pressure_pair?.contrary_evidence_span);
+  if (!contrarySurface || !oneLine(fullText).includes(contrarySurface)) return false;
+
+  const judgmentSentence = responseSentences(text).find(
+    (sentence) =>
+      /\b(?:accusation|answer|assumption|case|charge|claim|cry|expectation|route|shortcut|story|verdict)\b[^.!?]{0,55}\bfalter(?:s|ed)?\b/iu.test(
+        sentence,
+      ) && anchorOverlapCount(sentence, targetAnchor) >= Math.min(2, targetAnchor?.content_tokens?.length || 2),
+  );
+  if (!judgmentSentence) return false;
+
+  // In structured composition the learner handoff is owned by HANDOFF, not
+  // TACTIC.  It may satisfy this prerequisite from the already-composed public
+  // response, while the judgment/falter cue above remains strictly local to
+  // the audited TACTIC span.
+  const terminalSentence = responseSentences(fullText).at(-1) || '';
+  return (
+    terminalSentence.trimEnd().endsWith('?') &&
+    anchorOverlapCount(terminalSentence, handoffAnchor) > 0 &&
+    anchorOverlapCount(fullText, contraryAnchor) > 0
+  );
+}
+
+function actorialPerformanceVisible(
+  configuration,
+  text,
+  metrics,
+  {
+    performanceObligationContract = null,
+    actorialPartVisible: selectedPartVisible = false,
+    fullText = text,
+  } = {},
+) {
   const tactic = configuration.actorial_performance?.id;
   if (!tactic) return true;
   if (tactic === 'unadorned_report') {
@@ -1278,6 +1361,12 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\bmy case is\b[^.!?]{0,150}\bbreak it if\b[^.!?]{0,100}/iu.test(text) &&
       /\b(?:accusation|clutter|devlin|dirty|easy|messy|shelf|sloppiness|suspicion|verdict)\b/iu.test(text) &&
       metrics.concreteSceneTermCount > 0;
+    const declaredPublicJudgmentFalters = declaredPublicJudgmentFalterVisible({
+      text,
+      fullText,
+      contract: performanceObligationContract,
+      actorialPartVisible: selectedPartVisible,
+    });
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -1302,7 +1391,8 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       concreteSuspicionCannotExplainEvidence ||
       falsifiableCaseDisplacesReadyStory ||
       accountableBreakableCountercase ||
-      keepsPublicShameOutsideTheInquiry
+      keepsPublicShameOutsideTheInquiry ||
+      declaredPublicJudgmentFalters
     );
   }
   if (tactic === 'exposed_mismatch')
@@ -1338,6 +1428,8 @@ export function auditTutorStubResponseConfiguration({
   configuration,
   world = null,
   composition = null,
+  performanceObligationContract = null,
+  performanceAuditContext = null,
 } = {}) {
   if (!configuration) return null;
   const words = responseWords(text);
@@ -1395,7 +1487,26 @@ export function auditTutorStubResponseConfiguration({
   const scenePass =
     !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
   const actorialPartPass = actorialPartVisible(configuration, performanceText, metrics);
-  const actorialPerformancePass = actorialPerformanceVisible(configuration, performanceText, performanceMetrics);
+  const contextualFullText = String(performanceAuditContext?.fullComposedPublicText || '');
+  const contextualTextContainsAuditedSpan =
+    contextualFullText.length > 0 && contextualFullText.includes(String(text || ''));
+  // Structured slot audits may prove PART separately and insert SOURCE outside
+  // TACTIC.  Those facts are prerequisites only: the tactic recognizer still
+  // receives the isolated tactic text, so target and performance cues cannot
+  // bleed in from another slot.
+  const performancePrerequisitePartVisible = performanceAuditContext
+    ? performanceAuditContext.verifiedPartVisible === true && contextualTextContainsAuditedSpan
+    : actorialPartPass;
+  const performancePrerequisiteFullText = performanceAuditContext
+    ? contextualTextContainsAuditedSpan
+      ? contextualFullText
+      : String(text || '')
+    : String(text || '');
+  const actorialPerformancePass = actorialPerformanceVisible(configuration, performanceText, performanceMetrics, {
+    performanceObligationContract,
+    actorialPartVisible: performancePrerequisitePartVisible,
+    fullText: performancePrerequisiteFullText,
+  });
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,

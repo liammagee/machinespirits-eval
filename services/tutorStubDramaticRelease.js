@@ -213,6 +213,8 @@ const RETURN_PATTERN =
 const ROLE_ACTION_PATTERN =
   /\b(?:attesting|describing|giving|holding|identifying|opening|presenting|reading|reporting|showing|testifying|unfolding|voicing|witnessing)\b/iu;
 const ROLE_OBJECT_TOKEN_STOP_WORDS = new Set('a an her his its our the their this those your'.split(' '));
+const ROLE_POSSESSIVE_EVIDENCE_OBJECT_SOURCE =
+  'account|archive|assay|badge|book|card|chart|coin|crucible|cupel|entry|exhibit|file|journal|ledger|log|notebook|notice|record|register|report|sample|sheet|shilling|slate|statement|swab|testimony|tool|touchstone';
 
 function roleIdentity(entry) {
   return oneLine(entry?.role).split(ROLE_ACTION_PATTERN)[0].trim();
@@ -263,7 +265,19 @@ export function tutorStubRoleStageDirectionVisible({ text = '', frame = null } =
             ' ',
           )
         : withoutAuthoredEvidence;
-      return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(stageDirectionSurface);
+      // A source role can possess a public record or exhibit without entering
+      // the response as a narrated character.  "I open the clerk's log" is
+      // an object action; "the clerk opens the log" and "clerk:" are still
+      // third-person stage directions.  Keep this exemption lexical and
+      // bounded to evidence objects so it cannot hide an actual role entrance.
+      const withoutPossessiveEvidenceObject = stageDirectionSurface.replace(
+        new RegExp(
+          `\\b(?:the\\s+)?${pattern}[’']s\\s+(?:the\\s+)?(?:${ROLE_POSSESSIVE_EVIDENCE_OBJECT_SOURCE})\\b`,
+          'giu',
+        ),
+        ' ',
+      );
+      return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(withoutPossessiveEvidenceObject);
     });
 }
 

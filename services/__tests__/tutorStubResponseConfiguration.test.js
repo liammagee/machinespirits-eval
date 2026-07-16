@@ -19,6 +19,7 @@ import {
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
 } from '../tutorStubDramaticRelease.js';
+import { compileTutorStubPerformanceObligationContract } from '../tutorStubPerformanceObligationContract.js';
 
 function learnerDag({ bottleneck = 'release_or_pacing_gap', coverage = 0.3 } = {}) {
   return {
@@ -2809,6 +2810,98 @@ test('ready-judgment counterpressure is recognized independently of word order',
     const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
     assert.equal(audit.axes.actorial_part.performance_visible, false, text);
   }
+});
+
+test('falter realizes only a declared public counterpressure with evidence, action, and handoff', () => {
+  const world = {
+    title: 'The Light Shillings',
+    setting: 'The leat-keeper’s charcoal book lies beside the Marrick shilling and Verrell’s mint-yard record.',
+    question: 'Whose hand struck the false shillings?',
+    premiseById: new Map(),
+  };
+  const target =
+    'The town has its founder ready: Verrell alone draws the mint-yard crucible, and the town says all metal is cast by Verrell’s hand.';
+  const contrary =
+    'The leat-keeper’s book records that Edony alone drew the weir crucible and signed for its charcoal.';
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial-book',
+    actorial_part_selection: { authored_role: 'leat-keeper reading the charcoal book' },
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const contract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: configuration,
+    publicWorld: {
+      visibility: 'public',
+      title: world.title,
+      setting: world.setting,
+      question: world.question,
+      ledger_term: 'trial-book',
+      public_objects: ['charcoal book', 'shilling'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'What should I write next?',
+      pressure_target: target,
+      contrary_evidence: [contrary],
+      public_evidence: [{ surface: target }],
+      due_evidence: [{ surface: contrary }],
+    },
+  });
+  const candidate = (judgment) =>
+    `I open the leat-keeper’s book beside the shilling. “I read in the record that ${contrary}” Verrell’s mint-yard ${judgment} under this book; what does it place in Edony’s hand?`;
+
+  for (const judgment of ['claim can falter', 'claim now falters', 'claim already faltered']) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: candidate(judgment),
+      configuration,
+      world,
+      performanceObligationContract: contract,
+    });
+    assert.equal(audit.axes.actorial_part.part_visible, true, judgment);
+    assert.equal(audit.axes.actorial_part.performance_visible, true, judgment);
+    assert.equal(audit.transcript_visible, true, judgment);
+  }
+
+  const missingContract = auditTutorStubResponseConfiguration({
+    text: candidate('claim now falters'),
+    configuration,
+    world,
+  });
+  assert.equal(missingContract.axes.actorial_part.performance_visible, false);
+
+  const missingContrary = auditTutorStubResponseConfiguration({
+    text: 'I open the leat-keeper’s book beside the shilling. Verrell’s mint-yard claim now falters; what does this book place in Edony’s hand?',
+    configuration,
+    world,
+    performanceObligationContract: contract,
+  });
+  assert.equal(missingContrary.axes.actorial_part.performance_visible, false);
+
+  const missingAction = auditTutorStubResponseConfiguration({
+    text: `“I read in the record that ${contrary}” Verrell’s mint-yard claim now falters; what does this book place in Edony’s hand?`,
+    configuration,
+    world,
+    performanceObligationContract: contract,
+  });
+  assert.equal(missingAction.axes.actorial_part.part_visible, false);
+  assert.equal(missingAction.axes.actorial_part.performance_visible, false);
+
+  const missingHandoff = auditTutorStubResponseConfiguration({
+    text: `I open the leat-keeper’s book beside the shilling. “I read in the record that ${contrary}” Verrell’s mint-yard claim now falters.`,
+    configuration,
+    world,
+    performanceObligationContract: contract,
+  });
+  assert.equal(missingHandoff.axes.actorial_part.performance_visible, false);
 });
 
 test('an accountable case that names how it could fail realizes advocate counterpressure', () => {
