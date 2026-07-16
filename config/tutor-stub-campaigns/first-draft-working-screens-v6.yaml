@@ -97,24 +97,24 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    Iteration 4 makes no speaking-prompt change. It preserves iteration 2's
+    Iteration 5 makes no speaking-prompt change. It preserves iteration 2's
     three-word drafting cushion, compiled v2 axis ownership, exact model shape,
     joint performance beat, and ban on copying, paraphrasing, labelling, or
     quoting SOURCE.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged in iteration 4 and outside this
+    repair and fallback behavior is unchanged in iteration 5 and outside this
     explicit v2 frozen screen.
   audit_recognition_only: >-
-    Iteration 4 makes no audit-recognition change. It preserves iteration 3's
-    typed composite-part contract, requirement ownership, host SOURCE
-    exclusion, and relevance reporting exactly.
+    Iteration 5 changes only contract-gated deterministic recognition of a
+    declared public judgment faltering under contrary evidence. It requires
+    the complete dramatic-counterpressure contract, visible selected part,
+    local pressure-target overlap, exact host SOURCE, and anchored terminal
+    handoff before the linked tactic and charismatic stance can be visible.
   transport_only: >-
-    Iteration 4 changes only model-envelope transport canonicalization. It
-    trims whitespace outside each decoded model-owned slot string, preserves
-    the raw model output for traceability, changes no internal whitespace or
-    semantic content, and reports the normalization separately from repair,
-    rewrite, fallback, semantic recognition, and configuration realization.
+    Iteration 5 makes no transport change. It preserves iteration 4's
+    outer-slot whitespace canonicalization and separate transport reporting
+    exactly.
   iteration_2:
     status: predeclared
     bounded_change_owner: speaking_prompt
@@ -221,6 +221,70 @@ change_log:
         response_configuration_audit: true
         source_ownership_audit: true
         strict_delivery_gates: true
+  iteration_5:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - actorialRealizationAudit:missing_selected_performance_tactic
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
+      - jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - typed_public_judgment_falter_recognition
+    phrase_level_recognition_changes: []
+    typed_public_judgment_falter_recognition:
+      construction: declared_public_judgment_under_counterpressure
+      performance_contract:
+        schema: machinespirits.tutor-stub.performance-obligation-contract.v1
+        complete: true
+        selected_tactic: dramatic_counterpressure
+      selected_part_visibility:
+        field: axes.actorial_part.part_visible
+        required: true
+      local_pressure_target_overlap:
+        segment: performance_response
+        anchor_id: pressure_target
+        minimum_content_tokens: 2
+      exact_contrary_source:
+        owner: host
+        surface_match: exact
+        required_in_full_composition: true
+        excluded_from_performance_spans: true
+      terminal_handoff:
+        segment: handoff
+        anchor_id: learner_handoff
+        minimum_content_tokens: 1
+        terminal_question: true
+      judgment_construction:
+        subject_category: declared_public_judgment
+        category_extension: [judgment, judgement]
+        predicate_family: falter
+      recognized_outputs:
+        actorial_performance: dramatic_counterpressure
+        engagement_stance: charismatic
+      charismatic_visibility_reuse:
+        source: successful_typed_public_judgment_falter_event
+        require_selected_stance: charismatic
+        require_selected_tactic: dramatic_counterpressure
+        independent_lexical_shortcut: false
+      reporting:
+        field: publicJudgmentFalterRecognition
+        require_contract_prerequisite_results: true
+        require_anchor_overlap_count: true
+        require_excluded_source_span_ids: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        strict_delivery_gates: true
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
@@ -239,7 +303,9 @@ claim_boundary: >-
   and every other required response axis on all four frozen prefixes. Every due
   host SOURCE must occur exactly once, including turns with multiple sources,
   while all whole-response safety, uptake, delivery, repair, and fallback gates
-  remain clean. Iteration 4 may canonicalize only outer whitespace on decoded
-  model-owned slot strings; it may not change generation, recovery, semantic
-  recognition, safety, source ownership, configuration realization, or any
-  strict gate. It is reusable development evidence, not held-out acceptance.
+  remain clean. Iteration 5 may recognize only the typed, contract-complete
+  public-judgment-falter construction and reuse that successful typed event for
+  its linked charismatic stance. It may not change generation, recovery,
+  transport, semantic adjudication, safety, source ownership, configuration
+  realization, or any strict gate. It is reusable development evidence, not
+  held-out acceptance.
