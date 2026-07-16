@@ -33,6 +33,24 @@ current:
       - { id: marrick_answer_seeking_confirmation, seed: 20261304 }
     execution: complete_all_cells_with_maximum_three_live_jobs
     aggregate_gate: at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
+  pre_model_attempts:
+    - working_iteration: 1
+      attempted_head: 04e56f1a
+      status: pre_model_compatibility_failure
+      phase: refresh_frozen_first_draft_request
+      error: frozen turn 4 request has no replaceable first-draft contract
+      model_calls: 0
+      semantic_adjudicator_calls: 0
+      candidates: 0
+      results: 0
+      stopping_count_changed: false
+      development_seed: 20261300
+      seed_disposition: unconsumed_retryable_pre_model_failure
+      config_sha256: 7b2c45b65836be95334846807c712133fee3edc4428f99edad02302670fdf417
+      validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/attempts/iteration-1-pre-model-failure-validation.json
+      validation_sha256: 866237cb0c490c486f13416752d7bfbb5941757de83aeef5da1826f05e76d83e
+      correction_head: 8ecced40
+      retry: same_iteration_and_development_seed
   architectural_reset_from:
     version: 24
     terminal_state: stagnated
