@@ -44,7 +44,7 @@ test('outer-loop manifest validates the V26 architectural reset without predecla
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 26);
     assert.equal(validation.currentState, 'working_predeclared');
-    assert.equal(validation.workingIteration, 2);
+    assert.equal(validation.workingIteration, 3);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.acceptancePredeclared, false);
     assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
@@ -66,7 +66,7 @@ test('outer-loop status exposes only declared next states and makes no model cal
     const { manifest } = fixture(tmp);
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
-    assert.equal(status.workingIteration, 2);
+    assert.equal(status.workingIteration, 3);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
     assert.deepEqual(status.developmentSeeds, [
       {
@@ -104,25 +104,25 @@ test('outer-loop status exposes only declared next states and makes no model cal
   }
 });
 
-test('outer-loop records the exact V26 iteration-1 result and bounds iteration 2 without activating V27', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v26-i1-'));
+test('outer-loop records the exact V26 iteration-2 result and bounds unchanged final-frontier iteration 3 without activating V27', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v26-i2-'));
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.last_observation;
     assert.equal(observation.version, 26);
-    assert.equal(observation.working_iteration, 1);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/working-screen-result.json');
+    assert.equal(observation.working_iteration, 2);
+    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/working-screen-result.json');
     assert.equal(observation.development_seed, 20261400);
     assert.equal(observation.seed_disposition, 'consumed_development_reusable');
     assert.equal(
         observation.run_head,
-        'd131a1a51e5e324f383a592efea9753fc2449e30',
+        '96ec8014e21494ea9f0ef53bd3186fe5a9aebf26',
     );
-    assert.equal(observation.provenance.working_screen_config_sha256, '88be0c6371adbb1e2512eef448da67284e546c70d58f8ccff78421e581d8d176');
+    assert.equal(observation.provenance.working_screen_config_sha256, '6a51bffaf217c2068dcdee3d7b4a86ebdbd89cd75d114bd1198398538745c396');
     assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, '5997ace4ce072728aec25385a95d38dffb5af3f8c707d4dd444afc83461f5665');
-    assert.equal(observation.provenance.turn_artifact_sha256, '2009a2f9a3b74ff3ec0c1060a96cd79c9e9aa3118214739cef12490cb8b114a0');
-    assert.equal(observation.provenance.result_sha256, '581498119dc9e3b0c37e237d59d196e0acb21f9015156865964db1706cdd9be6');
+    assert.equal(observation.provenance.campaign_validation_sha256, '84323d75ba01b6493b4a3a9ed17d66b3ec0aadda6b85c313381d62e929c3ba2d');
+    assert.equal(observation.provenance.turn_artifact_sha256, '04649872530e65491626edae65bc5480df853c65b15e6e5540a6a3e303865e2d');
+    assert.equal(observation.provenance.result_sha256, '0965b7699aa0782a0fb0181a01028fc49f524960b11ddeb63589ad457592f20d');
     assert.deepEqual(observation.completed_turns, [4]);
     assert.deepEqual(observation.unstarted_turns, [5, 6, 9]);
     assert.equal(observation.strict_originals_accepted, 0);
@@ -130,14 +130,20 @@ test('outer-loop records the exact V26 iteration-1 result and bounds iteration 2
     assert.equal(observation.structured_slot_ownership_passes, 0);
     assert.equal(observation.exact_source_occurrence_passes, 1);
     assert.equal(observation.mean_configuration_realization, 1);
-    assert.equal(observation.mean_original_latency_ms, 11845);
-    assert.deepEqual(observation.token_usage, { input: 15740, output: 244, total: 15984 });
-    assert.equal(observation.comparison.consecutive_without_improvement, 0);
-    assert.match(observation.iteration_2_authority.speaking_change, /direct question.*learner/isu);
-    assert.equal(observation.iteration_2_authority.recovery_change, 'none');
-    assert.match(observation.iteration_2_authority.audit_recognition_change, /bounded collective-modal warm HANDOFF/iu);
+    assert.equal(observation.mean_original_latency_ms, 9721);
+    assert.deepEqual(observation.token_usage, { input: 15793, output: 268, total: 16061 });
+    assert.equal(observation.comparison.measurable_improvement, false);
+    assert.equal(observation.comparison.consecutive_without_improvement, 1);
+    assert.equal(observation.iteration_3_authority.attempt, 'final_frontier_attempt');
+    assert.equal(observation.iteration_3_authority.speaking_change, 'none');
+    assert.equal(observation.iteration_3_authority.recovery_change, 'none');
+    assert.equal(observation.iteration_3_authority.audit_recognition_change, 'none');
+    assert.match(observation.iteration_3_authority.controller_change, /Any failed gate.*terminates V26/isu);
+    assert.equal(manifest.current.working_history.length, 2);
+    assert.equal(manifest.current.working_history[1].working_iteration, 2);
+    assert.equal(manifest.current.working_history[1].measurable_improvement, false);
     assert.equal(manifest.current.campaign_version, 26);
-    assert.equal(manifest.current.working_iteration, 2);
+    assert.equal(manifest.current.working_iteration, 3);
     assert.equal(manifest.current.acceptance_config, null);
     assert.equal(JSON.stringify(manifest).includes('20261500'), false);
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
@@ -238,6 +244,37 @@ test('outer-loop validator keeps the V5 reset screen at four strict originals an
   }
 });
 
+test('outer-loop validator requires unchanged iteration 3 to be a fail-closed final-frontier attempt', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-final-frontier-'));
+  try {
+    for (const mutate of [
+      (manifest, screen) => {
+        screen.stopping.final_frontier_attempt_iteration = 4;
+      },
+      (manifest, screen) => {
+        screen.stopping.stop_if_final_frontier_attempt_fails = false;
+      },
+      (manifest) => {
+        manifest.current.last_observation.iteration_3_authority.speaking_change = 'another prompt change';
+      },
+      (manifest) => {
+        manifest.current.last_observation.iteration_3_authority.audit_recognition_change =
+          'another recognition change';
+      },
+    ]) {
+      const { manifest, screen, screenPath } = fixture(tmp);
+      mutate(manifest, screen);
+      fs.writeFileSync(screenPath, YAML.stringify(screen));
+      assert.throws(
+        () => validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }),
+        /final-frontier|failed final-frontier|speaking change|audit-recognition change/iu,
+      );
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('outer-loop validator fails closed when a structured working screen omits or disables any structured gate', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-structured-gates-'));
   try {
@@ -284,4 +321,9 @@ test('tracked V5 screen applies the V26 structured host plan to the four Marrick
   assert.match(screen.change_log.speaking_prompt, /direct question.*learner/isu);
   assert.match(screen.change_log.audit_recognition_only, /bounded.*warm HANDOFF/isu);
   assert.match(screen.change_log.recovery_only, /unchanged/iu);
+  assert.match(screen.change_log.speaking_prompt, /Iteration 3 makes no speaking-prompt change/iu);
+  assert.match(screen.change_log.audit_recognition_only, /Iteration 3 makes no audit-recognition change/iu);
+  assert.match(screen.change_log.recovery_only, /Iteration 3 makes no recovery change/iu);
+  assert.equal(screen.stopping.final_frontier_attempt_iteration, 3);
+  assert.equal(screen.stopping.stop_if_final_frontier_attempt_fails, true);
 });

@@ -15,7 +15,7 @@ current:
   campaign_version: 26
   label: V26
   state: working_predeclared
-  working_iteration: 2
+  working_iteration: 3
   working_screen_id: first-draft-working-screens-v5
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v5.yaml
   acceptance_config: null
@@ -53,22 +53,33 @@ current:
       structured_slot_ownership_passes: 0
       exact_source_occurrence_passes: 1
       measurable_improvement: false
+    - version: 26
+      working_iteration: 2
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/working-screen-result.json
+      completed_turns: [4]
+      unstarted_turns: [5, 6, 9]
+      strict_originals_accepted: 0
+      mean_configuration_realization: 1.0
+      structured_outputs_valid: 1
+      structured_slot_ownership_passes: 0
+      exact_source_occurrence_passes: 1
+      measurable_improvement: false
   last_observation:
     version: 26
-    working_iteration: 1
+    working_iteration: 2
     status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/working-screen-result.json
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/working-screen-result.json
     development_seed: 20261400
     seed_disposition: consumed_development_reusable
-    run_head: d131a1a51e5e324f383a592efea9753fc2449e30
+    run_head: 96ec8014e21494ea9f0ef53bd3186fe5a9aebf26
     provenance:
-      working_screen_config_sha256: 88be0c6371adbb1e2512eef448da67284e546c70d58f8ccff78421e581d8d176
+      working_screen_config_sha256: 6a51bffaf217c2068dcdee3d7b4a86ebdbd89cd75d114bd1198398538745c396
       source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
       campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/campaign-validation.json
-      campaign_validation_sha256: 5997ace4ce072728aec25385a95d38dffb5af3f8c707d4dd444afc83461f5665
-      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/marrick_v26_structured_composition/turn-4.json
-      turn_artifact_sha256: 2009a2f9a3b74ff3ec0c1060a96cd79c9e9aa3118214739cef12490cb8b114a0
-      result_sha256: 581498119dc9e3b0c37e237d59d196e0acb21f9015156865964db1706cdd9be6
+      campaign_validation_sha256: 84323d75ba01b6493b4a3a9ed17d66b3ec0aadda6b85c313381d62e929c3ba2d
+      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/marrick_v26_structured_composition/turn-4.json
+      turn_artifact_sha256: 04649872530e65491626edae65bc5480df853c65b15e6e5540a6a3e303865e2d
+      result_sha256: 0965b7699aa0782a0fb0181a01028fc49f524960b11ddeb63589ad457592f20d
     completed_turns: [4]
     unstarted_turns: [5, 6, 9]
     strict_originals_accepted: 0
@@ -84,33 +95,34 @@ current:
     structured_slot_ownership_passes: 0
     exact_source_occurrence_passes: 1
     mean_configuration_realization: 1.0
-    mean_original_latency_ms: 11845
-    token_usage: { input: 15740, output: 244, total: 15984 }
+    mean_original_latency_ms: 9721
+    token_usage: { input: 15793, output: 268, total: 16061 }
     failed_axes:
       - turn_4_tactic_actorial_performance_shared_scene_invitation
       - turn_4_handoff_engagement_stance_warm
     comparison:
       measurable_improvement: false
-      consecutive_without_improvement: 0
-      reason: first_measured_iteration_baseline
+      consecutive_without_improvement: 1
+      reason: no_improvement
       interpretation: >-
-        The structured envelope, whole-response realization, and inactive
-        SOURCE count passed. The first draw failed only because the selected
-        shared-scene invitation and warm stance were not visible inside their
-        declared owning spans, so turns 5, 6, and 9 were not called.
-    iteration_2_authority:
-      speaking_change: >-
-        For a shared-scene invitation, require TACTIC to be one direct question
-        addressed to the learner about the named public object. A declarative
-        command or transition does not discharge the learner-owned invitation.
+        Iteration 2 again passed the structured envelope, whole-response
+        realization, and inactive SOURCE count. Its direct learner-owned
+        question and optional concrete handoff still failed the declared
+        owning-span recognizers, leaving strict acceptance and configuration
+        realization unchanged from iteration 1. Turns 5, 6, and 9 were not
+        called.
+    iteration_3_authority:
+      attempt: final_frontier_attempt
+      speaking_change: none
       recovery_change: none
-      audit_recognition_change: >-
-        Recognize a bounded collective-modal warm HANDOFF only when “we may”,
-        “we can”, or “we could” carries a concrete next public
-        action or exhibit. Bare modal language and generic transitions remain
-        insufficient.
-      controller_change: none
+      audit_recognition_change: none
+      controller_change: >-
+        Require the complete four-turn working-screen pass. Any failed gate in
+        iteration 3 terminates V26 as a failed predeclared final-frontier
+        attempt, even if a partial metric improves.
       gate: four_of_four_strict_structured_originals_with_full_owner_realization_exact_sources_and_zero_safety_uptake_or_recovery_failures
+      on_pass: proceed_to_predeclared_cross_world_development_confirmation
+      on_failure: retire_v26_for_stagnation_and_advance_to_v27_without_reserving_a_v27_seed_yet
   architectural_reset_from:
     version: 25
     terminal_state: stagnated

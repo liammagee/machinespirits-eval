@@ -92,10 +92,12 @@ change_log:
     generation only for a shared-scene invitation: TACTIC must be one direct
     question addressed to the learner about the named public object. A
     declarative command or transition is not a learner-owned invitation.
+    Iteration 3 makes no speaking-prompt change and is the unchanged final
+    frontier attempt.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
     repair and fallback behavior is unchanged outside this explicit structured
-    frozen-screen mode.
+    frozen-screen mode. Iteration 3 makes no recovery change.
   audit_recognition_only: >-
     Separate generic recognition corrections distinguish a possessive source
     object from a role-label stage direction and recognize a public judgment
@@ -106,11 +108,14 @@ change_log:
     recognition rule for warm HANDOFF: a collective modal (“we may”, “we can”,
     or “we could”) counts when it carries a concrete next public
     action or exhibit; bare modal language and generic transitions do not.
+    Iteration 3 makes no audit-recognition change.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
   stop_campaign_when_required_cell_fails: true
   maximum_consecutive_iterations_without_improvement: 2
+  final_frontier_attempt_iteration: 3
+  stop_if_final_frontier_attempt_fails: true
 
 planned_cross_world_confirmation:
   required_after_primary_pass: true

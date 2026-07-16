@@ -220,6 +220,15 @@ function validateWorkingScreen(manifest, { root }) {
   expect(config.gates_per_cell?.maximum_safety_failures, 0, 'working screen safety failures');
   expect(config.gates_per_cell?.maximum_fallbacks, 0, 'working screen fallbacks');
   expect(config.gates_per_cell?.require_transcript_specific_uptake, true, 'working screen uptake gate');
+  const finalFrontierAttemptIteration = config.stopping?.final_frontier_attempt_iteration;
+  if (finalFrontierAttemptIteration != null) {
+    integer(finalFrontierAttemptIteration, 'final-frontier attempt iteration', { minimum: 1 });
+    expect(
+      config.stopping?.stop_if_final_frontier_attempt_fails,
+      true,
+      'failed final-frontier attempt stop',
+    );
+  }
   if (config.matrix.length !== 1) throw new Error('working screen must contain exactly one focused cell');
 
   const cell = config.matrix[0];
@@ -235,6 +244,10 @@ function validateWorkingScreen(manifest, { root }) {
     cell: cell.id,
     turns: cell.turns.map(Number),
     developmentSeed: Number(cell.development_seed),
+    finalFrontierAttemptIteration:
+      finalFrontierAttemptIteration == null ? null : Number(finalFrontierAttemptIteration),
+    stopIfFinalFrontierAttemptFails:
+      config.stopping?.stop_if_final_frontier_attempt_fails === true,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -279,6 +292,28 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   const roles = validateReviewRoles(manifest);
   const seeds = validateSeedLedger(manifest);
   const workingScreen = validateWorkingScreen(manifest, { root });
+
+  const iterationAuthority =
+    manifest.current?.last_observation?.[`iteration_${workingIteration}_authority`];
+  if (iterationAuthority?.attempt === 'final_frontier_attempt') {
+    expect(
+      workingScreen.finalFrontierAttemptIteration,
+      workingIteration,
+      'working-screen final-frontier attempt iteration',
+    );
+    expect(
+      workingScreen.stopIfFinalFrontierAttemptFails,
+      true,
+      'working-screen failed final-frontier stop',
+    );
+    expect(iterationAuthority.speaking_change, 'none', 'final-frontier speaking change');
+    expect(iterationAuthority.recovery_change, 'none', 'final-frontier recovery change');
+    expect(
+      iterationAuthority.audit_recognition_change,
+      'none',
+      'final-frontier audit-recognition change',
+    );
+  }
 
   expect(manifest.stop_policy?.stagnation?.maximum_consecutive_iterations_without_improvement, 2, 'stagnation limit');
   expect(manifest.stop_policy?.stagnation?.terminal_state, 'stagnated', 'stagnation terminal state');
