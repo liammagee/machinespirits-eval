@@ -134,7 +134,12 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     assert.match(tutorRequest.input, /Speaking-tutor evidence contract/u);
     assert.match(tutorRequest.input, /Tutor-only first-draft performance contract/u);
     assert.match(tutorRequest.input, /one compact paragraph in one continuous voice/u);
-    assert.match(tutorRequest.input, /OPEN —[\s\S]*ACT \+ ENACT —[\s\S]*ENTRY —[\s\S]*END —/u);
+    assert.match(tutorRequest.input, /OPEN —[\s\S]*DEVELOP —[\s\S]*END —/u);
+    assert.equal((tutorRequest.input.match(/^DEVELOP —/gmu) || []).length, 1);
+    assert.doesNotMatch(
+      tutorRequest.input,
+      /^ACT \+ ENACT —|^ENTRY —|^RETURN —|\[Tutor-only typed performance obligations\]/mu,
+    );
     assert.ok(
       tutorRequest.input.lastIndexOf('[Tutor-only first-draft performance contract]') >
         tutorRequest.input.lastIndexOf('[Tutor-only learner classifier]'),

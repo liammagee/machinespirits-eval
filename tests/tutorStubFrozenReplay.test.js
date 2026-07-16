@@ -189,6 +189,20 @@ test('V22 public-prefix provenance clears the false handwriting leak but still c
   assert.equal(current.safetyFailure, false);
   assert.equal(current.audits.leakAudit.ok, true);
 
+  const ordinarySceneAction = auditTutorStubFrozenLeak({
+    text: 'I hold the damp leaf beside its untested ink strokes; these materials may date the work, but do not establish authorship.',
+    world,
+    tutorTurn: testCase.turn,
+    learnerText: testCase.bundle.learnerText,
+    priorTurns: testCase.bundle.priorTurns,
+    publicPremiseIds: testCase.bundle.publicPremiseIds,
+  });
+  assert.equal(
+    ordinarySceneAction.ok,
+    true,
+    'a grammatical preposition plus one generic material word cannot reveal a private attribution',
+  );
+
   const unsafe = auditTutorStubFrozenLeak({
     text: 'Set beside her ledger entries, the draft strokes are Liane’s own hand.',
     world,

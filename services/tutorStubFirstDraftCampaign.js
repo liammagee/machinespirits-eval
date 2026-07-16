@@ -372,6 +372,11 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const minimumConfigurationRealization = Number(
     config.gates_per_cell.minimum_mean_configuration_realization || 0,
   );
+  const configurationRealizationEnforcement =
+    config.gates_per_cell.configuration_realization_enforcement === 'report_only'
+      ? 'report_only'
+      : 'gate';
+  const configurationRealizationIsGate = configurationRealizationEnforcement === 'gate';
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
   const failureCounts = new Map();
   for (const row of results) {
@@ -393,6 +398,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const configurationMaximumPossibleMean =
     (configurationRealizationTotal + Math.max(0, requiredTurns - results.length)) / requiredTurns;
   const configurationPossibility = {
+    enforcement: configurationRealizationEnforcement,
     observedTotal: configurationRealizationTotal,
     completed: results.length,
     remaining: Math.max(0, requiredTurns - results.length),
@@ -407,11 +413,14 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     ...originalPossibility,
     originalAcceptance: originalPossibility,
     configurationRealization: configurationPossibility,
-    possible: originalPossibility.possible && configurationPossibility.possible,
+    possible:
+      originalPossibility.possible &&
+      (!configurationRealizationIsGate || configurationPossibility.possible),
   };
   const gates = {
     originalsAccepted: results.length === requiredTurns && accepted >= requiredAccepted,
-    configurationRealization: configurationPossibility.passed,
+    configurationRealization:
+      !configurationRealizationIsGate || configurationPossibility.passed,
     safety: safetyFailures <= Number(config.gates_per_cell.maximum_safety_failures || 0),
     fallbacks: true,
     transcriptSpecificUptake:
@@ -436,6 +445,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     safetyFailures,
     transcriptSpecificUptakeFailures,
     meanConfigurationRealization,
+    configurationRealizationEnforcement,
     meanOriginalLatencyMs: originalLatencies.length
       ? originalLatencies.reduce((sum, latency) => sum + latency, 0) / originalLatencies.length
       : null,

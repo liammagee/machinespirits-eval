@@ -171,6 +171,42 @@ test('working screen cannot pass when full configuration realization becomes mat
   }
 });
 
+test('working screen can report aggregate non-actorial realization without making it a delivery-development veto', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-configuration-report-'));
+  try {
+    const config = workingConfig(tmp);
+    config.gates_per_cell.configuration_realization_enforcement = 'report_only';
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
+    const reports = [2, 3, 7, 10].map((turn, index) => ({
+      results: [
+        {
+          turn,
+          latencyMs: 100,
+          audit: {
+            ok: true,
+            safetyFailure: false,
+            hardFailureClusters: [],
+            audits: {
+              responseCompositionAudit: { ok: true },
+              actorialRealizationAudit: { ok: true },
+              responseConfigurationAudit: { realization_rate: index === 3 ? 0.5 : 1 },
+            },
+          },
+        },
+      ],
+    }));
+    const summary = summarizeTutorStubWorkingScreen({ cell: plan.cells[0], reports, config });
+    assert.equal(summary.meanConfigurationRealization, 0.875);
+    assert.equal(summary.configurationRealizationEnforcement, 'report_only');
+    assert.equal(summary.possibility.configurationRealization.passed, false);
+    assert.equal(summary.possibility.possible, true);
+    assert.equal(summary.gates.configurationRealization, true);
+    assert.equal(summary.status, 'pass');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('working screen clusters every rejected original including unresolved advisory performance misses', () => {
   const reports = [
     {

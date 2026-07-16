@@ -7,6 +7,8 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
+import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 
 function configuration(overrides = {}) {
   return {
@@ -137,6 +139,53 @@ test('recent prop saturation compiles character work without another stock exhib
   assert.ok(contract.compatibility.decisions.includes('recent_prop_saturation_prefers_spoken_character_work'));
   assert.match(prompt, /introduce no new prop/iu);
   assert.match(prompt, /Still perform the host-and-tactic beat once/iu);
+});
+
+test('direction-only support with no new evidence recasts a rapid handoff as a declarative boundary', () => {
+  const responseConfiguration = configuration({
+    engagement_stance: 'brisk',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: {
+      id: 'rapid_handoff',
+      label: 'rapid evidence handoff',
+      contract: 'Move the evidence straight to the learner and ask the shortest useful question.',
+    },
+  });
+  const questionSupport = {
+    answerability: 'direction_only_until_evidence_is_public',
+    tutorInstruction: 'Do not ask the learner to invent unseen evidence.',
+  };
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'Does the style make Vess possible without proving authorship?',
+    responseConfiguration,
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner treats style as suggestive but not conclusive.' },
+    },
+    dramaticReleaseFrame: { active: false, entries: [] },
+    questionSupport,
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.ok(
+    contract.compatibility.decisions.includes(
+      'direction_only_recasts_rapid_handoff_as_declarative_boundary',
+    ),
+  );
+  assert.match(prompt, /No new evidence is available in this reply/iu);
+  assert.match(prompt, /State the direction of the missing support yourself and end declaratively/iu);
+  assert.doesNotMatch(prompt, /Put the next available public evidence/iu);
+  assert.doesNotMatch(prompt, /ending with the shortest useful concrete question/iu);
+
+  const response =
+    'That is the safe entry. I trace the suspensions on the damp leaf: style supports Vess, but does not establish authorship. Next we test the leaf itself rather than guess at unseen evidence.';
+  assert.equal(auditTutorStubQuestionSupportResponse({ text: response, support: questionSupport }).ok, true);
+  const realization = auditTutorStubResponseConfiguration({
+    text: response,
+    configuration: responseConfiguration,
+  });
+  assert.equal(realization.axes.actorial_part.part_visible, true);
+  assert.equal(realization.axes.actorial_part.performance_visible, true);
 });
 
 test('a saturated shared-scene turn still receives one executable host-and-tactic beat', () => {

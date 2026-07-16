@@ -221,10 +221,20 @@ export function buildTutorStubFirstDraftContract({
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
   const tactic = configuration.actorial_performance?.id || null;
+  const directionOnlyWithoutNewEvidence =
+    questionSupport?.answerability === 'direction_only_until_evidence_is_public' &&
+    releaseCues.length === 0;
   const partExecution =
     PART_CUES[part] ||
     'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
-  const tacticExecution = TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
+  const tacticExecution =
+    directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
+      ? 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.'
+      : TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
+  const actionInstruction =
+    directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
+      ? 'No new evidence is available in this reply. Restage one already-public clue, state what it supports, and name only the direction of the missing support. Do not ask the learner what unseen evidence would prove the case.'
+      : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
 
   return {
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
@@ -242,7 +252,7 @@ export function buildTutorStubFirstDraftContract({
     },
     development: {
       action_family: actionFamily,
-      instruction: [acceleratedLearnerInstruction, ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction]
+      instruction: [acceleratedLearnerInstruction, actionInstruction]
         .filter(Boolean)
         .join(' '),
       learner_acceleration_instruction: acceleratedLearnerInstruction,
@@ -314,7 +324,11 @@ export function buildTutorStubFirstDraftContract({
         dramaticReleaseFrame,
         questionSupport,
         dialogueClosureFrame,
-      }),
+      }).concat(
+        directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
+          ? ['direction_only_recasts_rapid_handoff_as_declarative_boundary']
+          : [],
+      ),
     },
   };
 }

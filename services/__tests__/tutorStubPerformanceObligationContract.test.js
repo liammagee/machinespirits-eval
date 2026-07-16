@@ -134,7 +134,7 @@ test('accepts a concrete declarative learner handoff instead of forcing every tu
     ...publicContext(),
   });
   const candidate =
-    'I set the visitor ledger under the lamp. The easy verdict against Mira fails here: the custody log puts the key with Oren. We need to test the custody log next.';
+    'I set the visitor ledger under the lamp. The easy verdict against Mira fails here: the custody log puts the key with Oren. We need to test the visitor ledger next.';
   const audit = validateTutorStubPerformanceEvidence({
     contract,
     candidate,
@@ -142,10 +142,21 @@ test('accepts a concrete declarative learner handoff instead of forcing every tu
       span(candidate, 'visible_action', 'I set the visitor ledger under the lamp.'),
       span(candidate, 'public_pressure_target', 'The easy verdict against Mira fails here'),
       span(candidate, 'contrary_evidence', 'the custody log puts the key with Oren.'),
-      span(candidate, 'learner_handoff', 'We need to test the custody log next.'),
+      span(candidate, 'learner_handoff', 'We need to test the visitor ledger next.'),
     ],
   });
   assert.equal(audit.pass, true);
+  assert.deepEqual(
+    contract.anchors.find((entry) => entry.id === 'contrary_evidence').surfaces,
+    ['The custody log puts the key with Oren.'],
+    'counterpressure remains pinned to the exact selected contrary evidence',
+  );
+  assert.ok(
+    contract.anchors.find((entry) => entry.id === 'learner_handoff').surfaces.includes(
+      'The visitor ledger names Mira at the desk.',
+    ),
+    'the handoff may use a different declared public exhibit',
+  );
 });
 
 test('accepts exact, independent public-grounded spans for all four counterpressure obligations', () => {

@@ -1670,6 +1670,7 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'because',
   'built',
   'before',
+  'beside',
   'bench',
   'blank',
   'blanks',

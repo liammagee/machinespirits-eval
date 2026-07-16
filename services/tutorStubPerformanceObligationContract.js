@@ -208,17 +208,18 @@ export function compileTutorStubPerformanceObligationContract({
     : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
   const terminal = configuration.action_family === 'close_inquiry' || configuration.actorial_part === 'foreperson';
-  const evidenceSurfaces = pressurePair
+  const allEvidenceSurfaces = uniqueStrings([
+    ...turn.contrary_evidence,
+    ...turn.due_evidence.map((entry) => entry.surface),
+    ...turn.public_evidence.map((entry) => entry.surface),
+  ]);
+  const contraryEvidenceSurfaces = pressurePair
     ? [pressurePair.contrary_evidence_span]
-    : uniqueStrings([
-        ...turn.contrary_evidence,
-        ...turn.due_evidence.map((entry) => entry.surface),
-        ...turn.public_evidence.map((entry) => entry.surface),
-      ]);
+    : allEvidenceSurfaces;
   const sceneReferences = uniqueStrings([
     ...world.public_objects,
     world.ledger_term,
-    ...evidenceSurfaces,
+    ...allEvidenceSurfaces,
   ]);
   const pressureSurfaces = pressurePair
     ? [pressurePair.target_span]
@@ -226,14 +227,14 @@ export function compileTutorStubPerformanceObligationContract({
         (surface) => !questionShaped(surface),
       );
   const handoffSurfaces = uniqueStrings([
-    ...evidenceSurfaces,
+    ...allEvidenceSurfaces,
     ...pressureSurfaces,
     world.question,
   ]);
-  const findingSurfaces = uniqueStrings([turn.public_finding, world.question, ...evidenceSurfaces]);
+  const findingSurfaces = uniqueStrings([turn.public_finding, world.question, ...allEvidenceSurfaces]);
   const anchors = [
     anchor('pressure_target', pressureSurfaces),
-    anchor('contrary_evidence', evidenceSurfaces),
+    anchor('contrary_evidence', contraryEvidenceSurfaces),
     anchor('scene_reference', sceneReferences),
     anchor('learner_handoff', handoffSurfaces),
     anchor('public_finding', findingSurfaces),

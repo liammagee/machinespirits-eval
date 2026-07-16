@@ -329,18 +329,29 @@ function issueRows(guard, issues) {
   return (Array.isArray(issues) ? issues : []).map((issue) => ({ ...issue, guard }));
 }
 
+function auditIssueRows(guard, audit, findingsKey = 'issues') {
+  const rows = issueRows(guard, audit?.[findingsKey]);
+  if (audit?.ok === false && rows.length === 0) {
+    rows.push({
+      guard,
+      type: 'audit_failed_without_findings',
+    });
+  }
+  return rows;
+}
+
 /** Build one immutable view of deterministic audit findings for disposition. */
 export function tutorStubGuardIssueRows(audits = null) {
   const source = audits || {};
   const rows = [
-    ...issueRows('leak', source.leakAudit?.leaks),
-    ...issueRows('human_scaffold', source.scaffoldAudit?.issues),
-    ...issueRows('question_support', source.questionSupportAudit?.issues),
-    ...issueRows('dramatic_release', source.dramaticReleaseAudit?.issues),
-    ...issueRows('actorial_realization', source.actorialRealizationAudit?.issues),
-    ...issueRows('response_composition', source.responseCompositionAudit?.issues),
-    ...issueRows('repetition', source.repetitionAudit?.issues),
-    ...issueRows('dialogue_closure', source.closureAudit?.issues),
+    ...auditIssueRows('leak', source.leakAudit, 'leaks'),
+    ...auditIssueRows('human_scaffold', source.scaffoldAudit),
+    ...auditIssueRows('question_support', source.questionSupportAudit),
+    ...auditIssueRows('dramatic_release', source.dramaticReleaseAudit),
+    ...auditIssueRows('actorial_realization', source.actorialRealizationAudit),
+    ...auditIssueRows('response_composition', source.responseCompositionAudit),
+    ...auditIssueRows('repetition', source.repetitionAudit),
+    ...auditIssueRows('dialogue_closure', source.closureAudit),
   ];
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
     if (axis === 'actorial_part' || audit?.visible !== false) continue;

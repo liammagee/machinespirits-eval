@@ -111,6 +111,29 @@ test('unknown and malformed findings fail closed under every boundary policy', (
   assert.equal(unknownActorial.dispositions[0].effectiveDisposition, 'hard');
 });
 
+test('a failed guard envelope without findings fails closed under every boundary policy', () => {
+  const malformedAudits = [
+    ['leakAudit', 'leak', 'leaks'],
+    ['scaffoldAudit', 'human_scaffold', 'issues'],
+    ['questionSupportAudit', 'question_support', 'issues'],
+    ['dramaticReleaseAudit', 'dramatic_release', 'issues'],
+    ['actorialRealizationAudit', 'actorial_realization', 'issues'],
+    ['responseCompositionAudit', 'response_composition', 'issues'],
+    ['repetitionAudit', 'repetition', 'issues'],
+    ['closureAudit', 'dialogue_closure', 'issues'],
+  ];
+  for (const [auditKey, guard, findingsKey] of malformedAudits) {
+    const audits = { [auditKey]: { ok: false, [findingsKey]: [] } };
+    const rows = tutorStubGuardIssueRows(audits);
+    assert.deepEqual(rows, [{ guard, type: 'audit_failed_without_findings' }], auditKey);
+    for (const boundaryPolicy of Object.values(TUTOR_STUB_GUARD_BOUNDARY_POLICIES)) {
+      const decision = decideTutorStubGuardDelivery(rows, { boundaryPolicy });
+      assert.equal(decision.ok, false, `${auditKey}:${boundaryPolicy}`);
+      assert.equal(decision.dispositions[0].effectiveDisposition, 'hard');
+    }
+  }
+});
+
 test('deterministic audits remain immutable and disposition provenance is recorded separately', () => {
   const audits = {
     leakAudit: { ok: true, leaks: [] },
