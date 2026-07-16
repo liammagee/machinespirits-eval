@@ -6,23 +6,85 @@ purpose: >-
   reusable frozen-prefix development from immutable held-out acceptance,
   records who may interpret or change each layer, and makes success,
   stagnation, infrastructure blocking, version retirement, and seed freshness
-  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 without a
+  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 -> V28 without a
   fixed upper bound until held-out acceptance passes. A stagnated development
   version is preserved and triggers an architectural reset in Vn+1 rather
   than terminating the broader programme.
 
 current:
-  campaign_version: 27
-  label: V27
+  campaign_version: 28
+  label: V28
   state: working_predeclared
-  working_iteration: 8
-  working_screen_id: first-draft-working-screens-v7
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml
-  primary_working_screen_id: first-draft-working-screens-v6
-  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v6.yaml
+  working_iteration: 1
+  working_screen_id: first-draft-working-screens-v8
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml
+  primary_working_screen_id: first-draft-working-screens-v8
+  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml
   acceptance_config: null
-  required_confirmation_after_primary_pass:
-    status: predeclared
+  active_working_history: []
+  active_last_observation: null
+  working_history_scope: preserved_v27_primary_history_read_only
+  version_advance_from:
+    version: 27
+    terminal_state: development_confirmation_failed
+    kind: non_held_out_cross_world_confirmation
+    authorized_by: versioning.tuning_after_observation_retires_entire_version
+    final_iteration: 8
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json
+    run_head: 4af6269edc45fef95962026a3b3e7a7ac5a694a9
+    provenance:
+      working_screen_config_sha256: 3258a41e4e6324b299b9c529529d99b9aa7e417e874c15f26d6a8c451dab99bf
+      source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/campaign-validation.json
+      campaign_validation_sha256: ed8bc3b4fae525e489883e0b32e11b8159194d9b6a13f332967acdcc8bc7c9c3
+      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/tallow_answer_seeking/turn-5.json
+      turn_artifact_sha256: 5a5bc1c05a39ad306ecfe6e8db23e8ab549dc2e93462deba0c920479d6ce8a93
+      result_sha256: 05783cc988308539b05a6934dfbf7654dba79dc7513bb04b1efdcbfb1539e355
+    hard_cell: tallow_answer_seeking
+    completed_draws: 1
+    strict_originals_accepted: 0
+    original_candidate_acceptance_rate: 0
+    mean_configuration_realization: 0.833
+    maximum_possible_originals_accepted: 3
+    maximum_possible_configuration_realization: 0.95825
+    final_safety_failures: 0
+    transcript_specific_uptake_failures: 1
+    mechanical_repairs: 0
+    model_rewrites: 0
+    deterministic_fallbacks: 0
+    semantic_adjudicator_calls: 0
+    semantic_recognition_corrections: 0
+    transport_normalized_outputs: 0
+    transport_normalization_count: 0
+    joint_performance_model_outputs: 1
+    valid_joint_performance_outputs: 1
+    joint_performance_ownership_passes: 0
+    joint_performance_ownership_failures: 1
+    exact_host_source_occurrence_passes: 1
+    exact_host_source_occurrence_failures: 0
+    mean_original_latency_ms: 7978
+    mean_total_tutor_latency_ms: 7978
+    token_usage: { input: 15840, output: 136, total: 15976 }
+    dominant_failure_clusters:
+      - { cluster: actorialRealizationAudit:missing_selected_actorial_part, count: 1 }
+      - { cluster: jointPerformanceAudit:axis_not_realized_in_owner:actorial_part, count: 1 }
+      - { cluster: jointPerformanceAudit:composite_part_requirement_failed:actorial_part, count: 1 }
+      - { cluster: responseCompositionAudit:missing_learner_uptake, count: 1 }
+    seed_dispositions:
+      - { seed: 20261500, status: consumed_development_retired_on_version_advance }
+      - { seed: 20261600, status: consumed_development_retired_on_version_advance }
+      - { seed: 20261601, status: retired_unstarted_due_to_version_advance }
+      - { seed: 20261602, status: retired_unstarted_due_to_version_advance }
+      - { seed: 20261603, status: retired_unstarted_due_to_version_advance }
+    next_version_reason: >-
+      V27's primary Marrick screen passed, but the first Tallow confirmation
+      draw failed uptake and joint actorial ownership. V28 makes the four
+      already-declared structural debts explicit typed contracts while leaving
+      recovery, transport, and safety unchanged. V28 also makes its audit
+      regime explicit: deterministic-only per draw, with structural activation,
+      source-mode, source-action, and source-accessibility gates.
+  prior_version_confirmation:
+    status: failed_and_retired_on_v28_advance
     screen_id: first-draft-working-screens-v7
     config: config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml
     purpose: >-
@@ -30,10 +92,17 @@ current:
       affective-resistant, premature-closure, and diligent profiles must each
       pass 4/4 strict original joint-performance draws at full configuration
       realization before any V27 held-out matrix exists.
-    seed_status: reusable_non_held_out_development
+    seed_status: mixed_consumed_and_retired_non_held_out_development
     seeds: [20261600, 20261601, 20261602, 20261603]
     hard_cell: tallow_answer_seeking
     maximum_concurrent_remaining_cells: 3
+    attempted_cells: [tallow_answer_seeking]
+    unstarted_cells:
+      - ravensmark_affective_resistant
+      - larkspur_premature_closure
+      - foxtrot_diligent
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json
+    result_sha256: 05783cc988308539b05a6934dfbf7654dba79dc7513bb04b1efdcbfb1539e355
     open_qualitative_debt:
       status: open_debt
       source: V28_structural_audit_of_v27_iteration_7
@@ -46,7 +115,7 @@ current:
         Confirmation is diagnostic development evidence only. Even a complete
         mechanical pass cannot terminate the outer loop or establish final
         acceptance; V28 must address these debts before held-out predeclaration.
-  pre_model_attempts:
+  prior_version_pre_model_attempts:
     - version: 27
       working_iteration: 3
       status: infrastructure_preflight_failed_before_model
@@ -65,7 +134,7 @@ current:
         Keep the typed-composite fixture in the focused calibration test and
         remove only its incompatible duplicate invocation from the generic
         model-free replay list.
-  working_history:
+  prior_version_working_history:
     - version: 27
       working_iteration: 1
       status: fail
@@ -598,7 +667,7 @@ current:
         consecutive_without_improvement: 0
         stop: false
         reason: improved
-  last_observation:
+  prior_version_last_primary_observation:
     version: 27
     working_iteration: 7
     status: pass
@@ -683,7 +752,7 @@ current:
       consecutive_without_improvement: 0
       stop: false
       reason: improved
-  architectural_reset_from:
+  v27_architectural_reset_from:
     version: 26
     terminal_state: stagnated
     kind: frozen_prefix_development
@@ -757,8 +826,8 @@ current:
       stopping_reason: predeclared_final_frontier_attempt_failed
       reset_to: V25_compact_typed_host_plan
 versioning:
-  current: 27
-  next: 28
+  current: 28
+  next: 29
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -990,27 +1059,28 @@ seed_ledger:
     - { version: 26, seed: 20261402, status: retired_unstarted_due_to_stagnation }
     - { version: 26, seed: 20261403, status: retired_unstarted_due_to_stagnation }
     - { version: 26, seed: 20261404, status: retired_unstarted_due_to_stagnation }
+    - { version: 27, seed: 20261500, status: consumed_development_retired_on_version_advance }
+    - { version: 27, seed: 20261600, status: consumed_development_retired_on_version_advance }
+    - { version: 27, seed: 20261601, status: retired_unstarted_due_to_version_advance }
+    - { version: 27, seed: 20261602, status: retired_unstarted_due_to_version_advance }
+    - { version: 27, seed: 20261603, status: retired_unstarted_due_to_version_advance }
   development:
-    - seed: 20261500
-      status: reusable_non_held_out_development
-      cell: marrick_v27_joint_performance
-      screen: first-draft-working-screens-v6
-    - seed: 20261600
+    - seed: 20261800
       status: reusable_non_held_out_development
       cell: tallow_answer_seeking
-      screen: first-draft-working-screens-v7
-    - seed: 20261601
+      screen: first-draft-working-screens-v8
+    - seed: 20261801
       status: reusable_non_held_out_development
       cell: ravensmark_affective_resistant
-      screen: first-draft-working-screens-v7
-    - seed: 20261602
+      screen: first-draft-working-screens-v8
+    - seed: 20261802
       status: reusable_non_held_out_development
       cell: larkspur_premature_closure
-      screen: first-draft-working-screens-v7
-    - seed: 20261603
+      screen: first-draft-working-screens-v8
+    - seed: 20261803
       status: reusable_non_held_out_development
       cell: foxtrot_diligent
-      screen: first-draft-working-screens-v7
+      screen: first-draft-working-screens-v8
   held_out:
     status: not_predeclared
     entries: []
@@ -1052,13 +1122,21 @@ claim_boundary: >-
   a licensed requested-entry answer plus a same-sentence public judgment
   meeting contrary evidence. Iteration 7 changed only those two deterministic
   recognitions and passed 4/4 at full configuration realization with no safety,
-  recovery, semantic, or transport intervention. The required next stage is a
-  non-held-out confirmation over four exact uncontaminated non-Marrick prefixes
-  and four profiles, with four draws per prefix. A qualitative audit of the I7
-  trajectory still found four structural debts: the host source renderer, the
-  handoff contract and cross-slot progression, a typed due-source action
-  referent, and a typed turn-focus relation. They remain explicitly open even
-  if confirmation passes every mechanical gate. Confirmation therefore cannot
-  terminate the loop or establish final acceptance; V28 must address this debt
-  before held-out predeclaration. V28+ remain available if a development or
-  held-out version fails.
+  recovery, semantic, or transport intervention. V27's first non-Marrick
+  confirmation draw then failed safely at Tallow: 0/1 originals, 0.833
+  realization, one uptake failure, and one joint actorial-ownership failure.
+  The hard-cell-first gate stopped the other three cells before any call.
+  V28 now targets the four structural debts identified before that run: the
+  host source renderer, handoff contract and cross-slot progression, typed
+  due-source action referent, and typed turn-focus relation. Its four exact
+  frozen prefixes use fresh 202618xx development labels; 202617xx remains
+  absent and unreserved. Each cell must visibly activate only the structural
+  targets its frozen prefix actually supports; source turns additionally gate
+  renderer mode and the selected lexical-accessibility axis, while the one
+  enacted-role source gates its required action referent. V28 is explicitly
+  deterministic-only, so semantic-review calls must remain zero. Its final
+  development preflight also requires and records a clean committed worktree;
+  existing iteration artifacts are immutable. A V28 working
+  pass is reusable development evidence
+  only and permits, but does not itself constitute, fresh held-out
+  predeclaration. V29+ remain available if development or acceptance fails.

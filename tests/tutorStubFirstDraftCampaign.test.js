@@ -6,7 +6,11 @@ import test from 'node:test';
 
 import {
   acquireTutorStubFirstDraftCellClaim,
+  applyTutorStubFirstDraftDevelopmentRuntimePreflight,
   assessTutorStubAcceptanceCell,
+  assertTutorStubFirstDraftDevelopmentIterationVacant,
+  buildTutorStubFirstDraftCampaignValidationReport,
+  buildTutorStubFirstDraftPreflightFailureResult,
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
   releaseTutorStubFirstDraftCellClaim,
@@ -16,15 +20,22 @@ import {
   tutorStubFirstDraftGatePossibility,
   tutorStubFirstDraftInterruptedCellResult,
   tutorStubFirstDraftIterationStopping,
+  tutorStubSourceSurfaceAccessibilityReady,
   tutorStubFirstDraftUnexpectedIterationArtifacts,
   tutorStubStrictOriginalCandidateAccepted,
   validateTutorStubFirstDraftCampaign,
+  writeTutorStubFirstDraftJsonExclusive,
 } from '../services/tutorStubFirstDraftCampaign.js';
 import {
   TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from '../services/tutorStubJointPerformanceFirstDraft.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
+import {
+  extractTutorStubFrozenTurn,
+  refreshTutorStubFrozenFirstDraftRequest,
+} from '../services/tutorStubFrozenReplay.js';
 
 function workingConfig(tmp) {
   const trace = path.join(tmp, 'source.jsonl');
@@ -345,6 +356,363 @@ test('V7 draw inventory binds every row and report to the exact frozen target', 
   assert.equal(rejected.drawInventory.ok, false);
 });
 
+test('V8 expands the structural working panel hard-cell first with fresh development labels', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
+  const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
+  const plan = expandTutorStubFirstDraftCampaign({ config: loaded.config, root: repoRoot, iteration: 1 });
+  assert.equal(plan.maxConcurrency, 3);
+  assert.equal(plan.preflightReady, false);
+  assert.equal(plan.preflightBlockers.length, 1);
+  assert.equal(plan.preflightBlockers[0].type, 'source_surface_accessibility');
+  assert.equal(plan.preflightBlockers[0].cellId, 'ravensmark_affective_resistant');
+  assert.equal(plan.preflightBlockers[0].sources[0].sentenceCount, 1);
+  assert.equal(plan.preflightBlockers[0].sources[0].averageSentenceWords, 36);
+  assert.equal(plan.preflightBlockers[0].sources[0].audienceMaximum, 23);
+  assert.equal(plan.preflightBlockers[0].sources[0].lexicalMaximum, 23);
+  assert.deepEqual(plan.cells.map((cell) => ({
+    id: cell.id,
+    priority: cell.priority,
+    seed: cell.seed,
+    turns: cell.turns,
+  })), [
+    { id: 'tallow_answer_seeking', priority: 1, seed: 20261800, turns: [5] },
+    { id: 'ravensmark_affective_resistant', priority: 2, seed: 20261801, turns: [5] },
+    { id: 'larkspur_premature_closure', priority: 3, seed: 20261802, turns: [2] },
+    { id: 'foxtrot_diligent', priority: 4, seed: 20261803, turns: [4] },
+  ]);
+  for (const cell of plan.cells) {
+    assert.equal(cell.commands.length, 1);
+    const argv = cell.commands[0].argv;
+    assert.equal(argv.includes('--original-only'), true);
+    assert.equal(argv.includes('--joint-performance-generation'), true);
+    assert.equal(argv.includes('--semantic-adjudication'), false);
+    assert.equal(argv.includes('--stop-on-first-rejection'), true);
+    assert.equal(argv[argv.indexOf('--draws') + 1], '4');
+    assert.equal(argv[argv.indexOf('--concurrency') + 1], '1');
+    assert.deepEqual(
+      cell.structural_targets,
+      loaded.config.matrix.find((entry) => entry.id === cell.id).structural_targets,
+    );
+    assert.deepEqual(
+      cell.structural_activation,
+      loaded.config.matrix.find((entry) => entry.id === cell.id).structural_activation,
+    );
+  }
+  assert.equal(loaded.config.fixed_configuration.adjudication_policy, 'deterministic_only');
+  assert.equal(loaded.config.gates_per_cell.require_deterministic_only_audit, true);
+  assert.equal(loaded.config.gates_per_cell.maximum_semantic_adjudicator_calls, 0);
+  assert.equal(loaded.config.execution.require_clean_worktree, true);
+  assert.deepEqual(loaded.config.matrix.map((cell) => ({
+    id: cell.id,
+    targets: cell.structural_targets,
+    sourceModes: cell.structural_activation?.deterministic_host_source_renderer?.expected_modes || [],
+  })), [
+    {
+      id: 'tallow_answer_seeking',
+      targets: [
+        'handoff_contract_and_cross_slot_progression',
+        'typed_turn_focus_relation',
+        'shared_writable_request_classifier',
+      ],
+      sourceModes: [],
+    },
+    {
+      id: 'ravensmark_affective_resistant',
+      targets: ['deterministic_host_source_renderer', 'typed_turn_focus_relation'],
+      sourceModes: ['presented_exhibit'],
+    },
+    {
+      id: 'larkspur_premature_closure',
+      targets: [
+        'deterministic_host_source_renderer',
+        'typed_due_source_action_referent',
+        'handoff_contract_and_cross_slot_progression',
+        'typed_turn_focus_relation',
+      ],
+      sourceModes: ['enacted_role'],
+    },
+    {
+      id: 'foxtrot_diligent',
+      targets: [
+        'deterministic_host_source_renderer',
+        'handoff_contract_and_cross_slot_progression',
+        'typed_turn_focus_relation',
+      ],
+      sourceModes: ['presented_exhibit'],
+    },
+  ]);
+});
+
+test('V8 reports a valid predeclaration separately from its failed deterministic preflight', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(
+    repoRoot,
+    'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml',
+  );
+  const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
+  const plan = expandTutorStubFirstDraftCampaign({
+    config: loaded.config,
+    root: repoRoot,
+    iteration: 1,
+  });
+  const frozen = {
+    gitHead: 'committed-head',
+    configPath,
+    configSha256: 'config-hash',
+    cleanWorktreeRequired: true,
+    worktreeClean: true,
+    worktree: { required: true, checked: true, clean: true, status: 'clean', changeCount: 0 },
+  };
+  const validation = buildTutorStubFirstDraftCampaignValidationReport({
+    plan,
+    config: loaded.config,
+    configPath,
+    frozen,
+  });
+  assert.equal(validation.valid, true);
+  assert.equal(validation.preflightReady, false);
+  assert.equal(validation.preflightBlockers.length, 1);
+  assert.equal(validation.preflightBlockers[0].cellId, 'ravensmark_affective_resistant');
+  assert.deepEqual(validation.frozen, frozen);
+  assert.equal(validation.cells[0].targetBundle.request_model, 'gpt-5.6-terra');
+  assert.equal(validation.cells[0].targetBundle.request_effort, 'low');
+  assert.match(validation.cells[0].outputDir, /first-draft-working-screens-v8\/iteration-1/u);
+
+  const result = buildTutorStubFirstDraftPreflightFailureResult({
+    plan,
+    config: loaded.config,
+    configPath,
+    iteration: 1,
+    frozen,
+    validationArtifactPath: path.join(plan.iterationRoot, 'campaign-validation.json'),
+  });
+  assert.equal(result.heldOut, false);
+  assert.equal(result.iteration, 1);
+  assert.equal(result.workingIteration, 1);
+  assert.equal(result.modelCalls, 0);
+  assert.equal(result.frozen.worktreeClean, true);
+  assert.equal(result.cells.length, 4);
+  for (const cell of result.cells) {
+    assert.equal(cell.seedDisposition, 'unconsumed_development_preflight_failure');
+    assert.equal(cell.completedTurns, 0);
+    assert.deepEqual(cell.unstartedTurns, cell.turns);
+    assert.ok(cell.sourceTraceSha256);
+    assert.ok(cell.outputDir);
+    assert.equal(cell.commands.length, 1);
+    assert.equal(cell.commands[0].argv.includes('--original-only'), true);
+    assert.equal(cell.requestModel, 'gpt-5.6-terra');
+    assert.equal(cell.requestEffort, 'low');
+    assert.deepEqual(
+      cell.structuralTargets,
+      loaded.config.matrix.find((entry) => entry.id === cell.id).structural_targets,
+    );
+  }
+});
+
+test('source accessibility readiness requires the exact expected source inventory', () => {
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady([], 1), false);
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: true }], 2), false);
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: false }], 1), false);
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: true }], 1), true);
+});
+
+test('a required dirty worktree becomes a recorded zero-call preflight blocker', () => {
+  const plan = {
+    valid: true,
+    preflightReady: true,
+    preflightBlockers: [],
+    cells: [],
+  };
+  const frozen = {
+    cleanWorktreeRequired: true,
+    worktreeClean: false,
+    worktree: { required: true, checked: true, clean: false, status: 'dirty', changeCount: 2 },
+  };
+  const blocked = applyTutorStubFirstDraftDevelopmentRuntimePreflight({ plan, frozen });
+  assert.equal(blocked.valid, true);
+  assert.equal(blocked.preflightReady, false);
+  assert.deepEqual(blocked.preflightBlockers, [
+    {
+      type: 'unclean_worktree',
+      reason: 'development campaign requires a clean committed worktree',
+      worktree: frozen.worktree,
+    },
+  ]);
+});
+
+test('V8 validation fails closed if its clean-worktree requirement is removed', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(
+    repoRoot,
+    'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml',
+  );
+  const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
+  const drift = structuredClone(loaded.config);
+  drift.execution.require_clean_worktree = false;
+  assert.throws(
+    () => validateTutorStubFirstDraftCampaign({ config: drift, root: repoRoot }),
+    /must require a clean worktree/u,
+  );
+});
+
+test('V8 activation preflight recompiles the legacy frozen request before checking typed contracts', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
+  const config = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot }).config;
+  const tallow = config.matrix.find((cell) => cell.id === 'tallow_answer_seeking');
+  const rawEvents = fs
+    .readFileSync(tallow.source_trace, 'utf8')
+    .split(/\r?\n/u)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const legacyCall = rawEvents.find(
+    (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && Number(event.turn) === 5,
+  );
+  const legacyRequest = legacyCall.request.messages.at(-1).content;
+  assert.doesNotMatch(legacyRequest, /writable_entry|turn-progression-contract/iu);
+
+  const extracted = extractTutorStubFrozenTurn({ tracePath: tallow.source_trace, turn: 5 });
+  const world = loadWorld(path.join(repoRoot, 'config/drama-derivation/world-025-tallow-street.yaml'));
+  const refreshed = refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world });
+  assert.equal(refreshed.firstDraftContract.progression.complete, true);
+  assert.equal(refreshed.firstDraftContract.progression.learner_uptake.mode, 'writable_entry');
+  assert.equal(refreshed.firstDraftContract.progression.handoff_contract.question_allowed, false);
+  assert.match(refreshed.request.messages.at(-1).content, /Begin exactly “Write:”/iu);
+});
+
+test('working summary gates declared structural activation and deterministic-only adjudication per draw', () => {
+  const config = {
+    fixed_configuration: { joint_performance_generation: true, adjudication_policy: 'deterministic_only' },
+    gates_per_cell: {
+      required_turns: 1,
+      required_originals_accepted: 1,
+      required_draws_per_prefix: 1,
+      minimum_mean_configuration_realization: 1,
+      maximum_safety_failures: 0,
+      maximum_fallbacks: 0,
+      maximum_semantic_adjudicator_calls: 0,
+      maximum_semantic_adjudicator_errors: 0,
+      require_source_surface_accessibility: true,
+      require_structural_target_activation: true,
+      require_deterministic_only_audit: true,
+    },
+  };
+  const cell = {
+    id: 'source-turn', world: 'world', learnerProfile: 'diligent', seed: 1, turns: [2],
+    structural_targets: [
+      'deterministic_host_source_renderer',
+      'typed_due_source_action_referent',
+      'handoff_contract_and_cross_slot_progression',
+      'typed_turn_focus_relation',
+    ],
+    structural_activation: {
+      deterministic_host_source_renderer: {
+        required: true,
+        expected_modes: ['enacted_role'],
+        require_lexical_accessibility_axis: true,
+      },
+      typed_due_source_action_referent: { required: true },
+      handoff_contract_and_cross_slot_progression: { required: true },
+      typed_turn_focus_relation: { required: true },
+    },
+  };
+  const source = { id: 'source_1', mode: 'enacted_role', surface: 'A public clue.', text: '“A public clue.”' };
+  const bundle = {
+    turn: 2,
+    selectedResponseConfiguration: {
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+    },
+    frames: { dramaticRelease: { active: true, entries: [{ mode: 'enacted_role', surface: source.surface }] } },
+    firstDraftContract: {
+      progression: {
+        complete: true,
+        handoff_contract: { mode: 'question_on_due_source', required_target_terms: ['public', 'clue'] },
+      },
+    },
+  };
+  const result = {
+    turn: 2, draw: 1, latencyMs: 10,
+    semanticAdjudication: { called: false, adjudication: null, error: null },
+    jointPerformanceGeneration: {
+      ok: true,
+      composition: {
+        text: 'Uptake. Performance. “A public clue.” Response. What changed?',
+        sourceCount: 1,
+        sources: [source],
+        spans: [{ id: 'source_1', kind: 'source', owner: 'host', text: source.text }],
+      },
+    },
+    audit: {
+      ok: true, safetyFailure: false, failureClusters: [],
+      audits: {
+        actorialRealizationAudit: { ok: true },
+        responseCompositionAudit: { ok: true },
+        responseConfigurationAudit: {
+          realization_rate: 1,
+          axes: { lexical_accessibility: { selected: 'standard', visible: true } },
+        },
+        jointPerformanceAudit: {
+          ok: true,
+          axes: { source_action_alignment: { visible: true } },
+          sourceActionAlignment: {
+            active: true, ok: true,
+            sources: [{ required: [{ kind: 'role_carrier', label: 'public log' }] }],
+          },
+        },
+        turnProgressionAudit: {
+          active: true, ok: true,
+          learner_uptake: { mode: 'direct_response', visible: true },
+          handoff: { target_coverage: { count: 2, coverage: 1 } },
+        },
+      },
+    },
+  };
+  const passing = summarizeTutorStubWorkingScreen({
+    cell,
+    reports: [{ bundles: [bundle], results: [result] }],
+    config,
+  });
+  assert.equal(passing.gates.structuralTargetActivation, true);
+  assert.equal(passing.gates.deterministicOnlyAudit, true);
+  assert.equal(passing.gates.sourceSurfaceAccessibility, true);
+  assert.equal(passing.sourceSurfaceAccessibilities[0].sources[0].sentenceCount, 1);
+  assert.equal(passing.sourceSurfaceAccessibilities[0].sources[0].averageSentenceWords, 3);
+  assert.equal(passing.status, 'pass');
+  const drift = structuredClone(result);
+  drift.jointPerformanceGeneration.composition.sources[0].mode = 'presented_exhibit';
+  drift.semanticAdjudication = { called: true, adjudication: { recognized: true }, error: null };
+  const rejected = summarizeTutorStubWorkingScreen({
+    cell,
+    reports: [{ bundles: [bundle], results: [drift] }],
+    config,
+  });
+  assert.equal(rejected.gates.structuralTargetActivation, false);
+  assert.equal(rejected.gates.deterministicOnlyAudit, false);
+  assert.equal(rejected.gates.semanticAdjudicatorCalls, false);
+  assert.equal(rejected.status, 'fail');
+
+  const denseSurface =
+    'This authored public clue uses one deliberately overlong sentence with many extra ordinary words so its forced source span exceeds both selected readability budgets without help from the surrounding host prose.';
+  const denseBundle = structuredClone(bundle);
+  denseBundle.frames.dramaticRelease.entries[0].surface = denseSurface;
+  const denseResult = structuredClone(result);
+  denseResult.jointPerformanceGeneration.composition.text = `Uptake. ${denseSurface} What changed?`;
+  denseResult.jointPerformanceGeneration.composition.sources[0].surface = denseSurface;
+  denseResult.jointPerformanceGeneration.composition.sources[0].text = denseSurface;
+  denseResult.jointPerformanceGeneration.composition.spans[0].text = denseSurface;
+  const dense = summarizeTutorStubWorkingScreen({
+    cell,
+    reports: [{ bundles: [denseBundle], results: [denseResult] }],
+    config,
+  });
+  assert.equal(dense.gates.sourceSurfaceAccessibility, false);
+  assert.equal(dense.sourceSurfaceAccessibilityFailures, 1);
+  assert.equal(dense.sourceSurfaceAccessibilities[0].sources[0].lexicalVisible, false);
+  assert.equal(dense.status, 'fail');
+});
+
 test('working summary reports and hard-gates every declared intervention maximum', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-intervention-gates-'));
   try {
@@ -499,6 +867,50 @@ test('development validation artifacts are immutable per iteration while dry val
     ]),
     ['marrick_v27_joint_performance', 'working-screen-result.json'],
   );
+});
+
+test('development validation and result artifacts refuse silent overwrite', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-immutable-artifacts-'));
+  try {
+    const iterationRoot = path.join(tmp, 'iteration-1');
+    assert.deepEqual(
+      assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot),
+      { vacant: true, existing: [] },
+    );
+    const validationPath = path.join(iterationRoot, 'campaign-validation.json');
+    const resultPath = path.join(iterationRoot, 'working-screen-result.json');
+    writeTutorStubFirstDraftJsonExclusive(validationPath, { version: 1 });
+    assert.throws(
+      () => writeTutorStubFirstDraftJsonExclusive(validationPath, { version: 2 }),
+      /refusing to overwrite existing campaign artifact/u,
+    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(validationPath, 'utf8')), { version: 1 });
+    assert.throws(
+      () => assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot),
+      /immutable artifacts.*campaign-validation\.json/iu,
+    );
+
+    writeTutorStubFirstDraftJsonExclusive(resultPath, { version: 1 });
+    assert.throws(
+      () => writeTutorStubFirstDraftJsonExclusive(resultPath, { version: 2 }),
+      /refusing to overwrite existing campaign artifact/u,
+    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(resultPath, 'utf8')), { version: 1 });
+    const archiveRoot = `${iterationRoot}-archived-zero-call`;
+    fs.renameSync(iterationRoot, archiveRoot);
+    assert.deepEqual(
+      assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot),
+      { vacant: true, existing: [] },
+    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(archiveRoot, 'campaign-validation.json'), 'utf8')), {
+      version: 1,
+    });
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(archiveRoot, 'working-screen-result.json'), 'utf8')), {
+      version: 1,
+    });
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('campaign validation expands one original-only command per frozen turn without model calls', () => {

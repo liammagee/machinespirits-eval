@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 import YAML from 'yaml';
 
@@ -9,9 +10,15 @@ import {
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from './tutorStubJointPerformanceFirstDraft.js';
-import { extractTutorStubFrozenTurn } from './tutorStubFrozenReplay.js';
+import { loadWorld } from './dramaticDerivation/world.js';
+import {
+  extractTutorStubFrozenTurn,
+  refreshTutorStubFrozenFirstDraftRequest,
+} from './tutorStubFrozenReplay.js';
+import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubResponseConfiguration.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
+const CAMPAIGN_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export function acquireTutorStubFirstDraftCellClaim({
   outputDir,
@@ -149,6 +156,54 @@ function priorTutorDeliverySources(tracePath, targetTurn) {
   return rows;
 }
 
+function worldForFrozenBundle(root, worldId) {
+  const requestedWorldDir = path.join(root, 'config', 'drama-derivation');
+  const worldDir = fs.existsSync(requestedWorldDir)
+    ? requestedWorldDir
+    : path.join(CAMPAIGN_REPO_ROOT, 'config', 'drama-derivation');
+  const candidates = fs
+    .readdirSync(worldDir)
+    .filter((name) => /^world-.*\.yaml$/u.test(name))
+    .map((name) => path.join(worldDir, name));
+  const matches = candidates.filter((file) => loadWorld(file).id === worldId);
+  if (matches.length !== 1) {
+    throw new Error(`expected exactly one world file for ${worldId}, found ${matches.length}`);
+  }
+  return loadWorld(matches[0]);
+}
+
+function refreshedCampaignBundle({ root, trace, turn }) {
+  const extracted = extractTutorStubFrozenTurn({ tracePath: trace, turn });
+  return refreshTutorStubFrozenFirstDraftRequest({
+    bundle: extracted,
+    world: worldForFrozenBundle(root, extracted.worldId),
+  });
+}
+
+function sourceSurfaceAccessibilityMetrics(bundle) {
+  const configuration =
+    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const sources = bundle?.firstDraftContract?.evidence?.sources || [];
+  return sources.map((source) => ({
+    id: source?.id || null,
+    mode: source?.mode || null,
+    ...measureTutorStubSurfaceSentenceAccessibility({
+      text: source?.text || source?.surface || '',
+      audienceRegister: configuration.audience_register || null,
+      lexicalAccessibility: configuration.lexical_accessibility || null,
+    }),
+  }));
+}
+
+export function tutorStubSourceSurfaceAccessibilityReady(metrics = [], expectedCount = 0) {
+  const expected = integer(expectedCount, 'expected source accessibility count');
+  return (
+    Array.isArray(metrics) &&
+    metrics.length === expected &&
+    metrics.every((metric) => metric?.ok === true)
+  );
+}
+
 export function tutorStubFirstDraftCampaignValidationArtifactPath({
   artifactRoot,
   mode,
@@ -168,6 +223,35 @@ export function tutorStubFirstDraftCampaignValidationArtifactPath({
 
 export function tutorStubFirstDraftUnexpectedIterationArtifacts(entries = []) {
   return entries.filter((entry) => String(entry || '') !== 'campaign-validation.json');
+}
+
+export function assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot) {
+  const root = requiredString(iterationRoot, 'development iteration root');
+  if (!fs.existsSync(root)) return { vacant: true, existing: [] };
+  const existing = fs.readdirSync(root).sort();
+  if (existing.length) {
+    throw new Error(
+      `development iteration already has immutable artifacts at ${root}: ${existing.join(', ')}`,
+    );
+  }
+  return { vacant: true, existing: [] };
+}
+
+export function writeTutorStubFirstDraftJsonExclusive(filePath, value) {
+  const target = requiredString(filePath, 'campaign artifact path');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  try {
+    fs.writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`, {
+      encoding: 'utf8',
+      flag: 'wx',
+    });
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(`refusing to overwrite existing campaign artifact: ${target}`);
+    }
+    throw error;
+  }
+  return target;
 }
 
 function workingScreen(config) {
@@ -225,6 +309,8 @@ function validateWorkingScreen(config, { root }) {
     }
   }
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
+  const structuralPreflight = [];
+  const preflightBlockers = [];
   if (!cells.length) throw new Error('working screen matrix is empty');
   const ids = new Set();
   const seeds = new Set();
@@ -255,9 +341,47 @@ function validateWorkingScreen(config, { root }) {
     ['maximum_mechanical_repairs', 'maximum mechanical repairs'],
     ['maximum_model_rewrites', 'maximum model rewrites'],
     ['maximum_semantic_recognition_corrections', 'maximum semantic recognition corrections'],
+    ['maximum_semantic_adjudicator_calls', 'maximum semantic adjudicator calls'],
+    ['maximum_semantic_adjudicator_errors', 'maximum semantic adjudicator errors'],
     ['maximum_transport_normalizations', 'maximum transport normalizations'],
   ]) {
     if (config.gates_per_cell?.[field] != null) integer(config.gates_per_cell[field], label);
+  }
+  const adjudicationPolicy = config.fixed_configuration?.adjudication_policy || null;
+  if (adjudicationPolicy) {
+    if (!['deterministic_only', 'semantic_every_draw'].includes(adjudicationPolicy)) {
+      throw new Error('working-screen adjudication policy must be deterministic_only or semantic_every_draw');
+    }
+    if (adjudicationPolicy === 'deterministic_only') {
+      if (config.fixed_configuration?.semantic_adjudication === true) {
+        throw new Error('deterministic-only working screen cannot enable semantic adjudication');
+      }
+      if (config.gates_per_cell?.require_deterministic_only_audit !== true) {
+        throw new Error('deterministic-only working screen must gate deterministic-only audit');
+      }
+      if (Number(config.gates_per_cell?.maximum_semantic_adjudicator_calls) !== 0) {
+        throw new Error('deterministic-only working screen must allow zero semantic adjudicator calls');
+      }
+    } else {
+      if (config.fixed_configuration?.semantic_adjudication !== true) {
+        throw new Error('semantic-every-draw working screen must enable semantic adjudication');
+      }
+      if (config.gates_per_cell?.require_successful_semantic_adjudication_per_draw !== true) {
+        throw new Error('semantic-every-draw working screen must gate successful adjudication per draw');
+      }
+    }
+  }
+  if (
+    config.gates_per_cell?.require_structural_target_activation === true &&
+    config.execution?.require_exact_target_bundle_binding !== true
+  ) {
+    throw new Error('structural working screen must require exact target bundle binding');
+  }
+  if (
+    config.gates_per_cell?.require_structural_target_activation === true &&
+    config.gates_per_cell?.require_source_surface_accessibility !== true
+  ) {
+    throw new Error('structural working screen must gate source-surface accessibility');
   }
   for (const cell of cells) {
     const id = requiredString(cell.id, 'cell id');
@@ -268,6 +392,22 @@ function validateWorkingScreen(config, { root }) {
     seeds.add(seed);
     if (cell.seed_status !== 'reusable_non_held_out_development') {
       throw new Error(`${id} must label its seed reusable_non_held_out_development`);
+    }
+    const structuralTargets = cell.structural_targets || [];
+    if (config.gates_per_cell?.require_structural_target_activation === true) {
+      if (!structuralTargets.length) {
+        throw new Error(`${id} must declare at least one structural target`);
+      }
+      const declaredActivations = Object.keys(cell.structural_activation || {});
+      if (
+        declaredActivations.length !== structuralTargets.length ||
+        declaredActivations.some((target) => !structuralTargets.includes(target)) ||
+        structuralTargets.some(
+          (target) => cell.structural_activation?.[target]?.required !== true,
+        )
+      ) {
+        throw new Error(`${id} structural activation declarations must exactly cover its required targets`);
+      }
     }
     const trace = absolute(root, cell.source_trace);
     if (!fs.existsSync(trace)) throw new Error(`${id} source trace is missing: ${trace}`);
@@ -294,7 +434,7 @@ function validateWorkingScreen(config, { root }) {
         throw new Error(`${id} frozen prefix contains a prior non-original tutor delivery`);
       }
       if (config.execution?.require_exact_target_bundle_binding === true) {
-        const bundle = extractTutorStubFrozenTurn({ tracePath: trace, turn: targetTurn });
+        const bundle = refreshedCampaignBundle({ root, trace, turn: targetTurn });
         const binding = cell.prefix_integrity.target_bundle || {};
         for (const [field, actual, expected] of [
           ['turn_id', bundle.turnId, binding.turn_id],
@@ -306,6 +446,102 @@ function validateWorkingScreen(config, { root }) {
           if (actual !== expected) {
             throw new Error(`${id} target bundle ${field} does not match the frozen trace`);
           }
+        }
+        const activation = cell.structural_activation || {};
+        const targets = new Set(structuralTargets);
+        const release = bundle.frames?.dramaticRelease || null;
+        const releaseEntries = release?.active === true && Array.isArray(release.entries)
+          ? release.entries
+          : [];
+        const sourceModes = releaseEntries.map((entry) => entry?.mode || 'presented_exhibit');
+        const progression = bundle.firstDraftContract?.progression || null;
+        const sourceAccessibility = sourceSurfaceAccessibilityMetrics(bundle);
+        const sourceAccessibilityReady = tutorStubSourceSurfaceAccessibilityReady(
+          sourceAccessibility,
+          releaseEntries.length,
+        );
+        if (targets.has('deterministic_host_source_renderer')) {
+          if (!releaseEntries.length) {
+            throw new Error(`${id} declares source rendering but its frozen turn has no active due source`);
+          }
+          const expectedModes = activation.deterministic_host_source_renderer?.expected_modes || [];
+          if (
+            !expectedModes.length ||
+            sourceModes.some((mode) => !expectedModes.includes(mode))
+          ) {
+            throw new Error(`${id} source renderer modes do not match its structural activation declaration`);
+          }
+          if (
+            activation.deterministic_host_source_renderer?.require_lexical_accessibility_axis === true &&
+            !bundle.selectedResponseConfiguration?.lexical_accessibility
+          ) {
+            throw new Error(`${id} source accessibility gate has no selected lexical-accessibility axis`);
+          }
+          if (
+            activation.deterministic_host_source_renderer?.require_lexical_accessibility_axis === true &&
+            !bundle.selectedResponseConfiguration?.audience_register
+          ) {
+            throw new Error(`${id} source accessibility gate has no selected audience-register axis`);
+          }
+        }
+        if (targets.has('typed_due_source_action_referent')) {
+          const requiredReferent = (bundle.firstDraftContract?.evidence?.sources || []).some(
+            (source) => source?.action_referents?.required === true,
+          );
+          if (!requiredReferent) {
+            throw new Error(`${id} declares due-source action alignment but no source has a required action referent`);
+          }
+        }
+        if (
+          targets.has('handoff_contract_and_cross_slot_progression') &&
+          (progression?.complete !== true || !progression?.handoff_contract?.mode)
+        ) {
+          throw new Error(`${id} declares handoff progression but its typed progression contract is inactive`);
+        }
+        if (
+          targets.has('typed_turn_focus_relation') &&
+          !(progression?.handoff_contract?.required_target_terms || []).length
+        ) {
+          throw new Error(`${id} declares turn focus but its typed target relation is empty`);
+        }
+        if (
+          targets.has('shared_writable_request_classifier') &&
+          progression?.learner_uptake?.mode !== 'writable_entry'
+        ) {
+          throw new Error(`${id} declares writable-request classification but the typed learner mode is not writable_entry`);
+        }
+        if (
+          releaseEntries.length > 0 &&
+          config.gates_per_cell?.require_structural_target_activation === true
+        ) {
+          if (!targets.has('deterministic_host_source_renderer')) {
+            throw new Error(`${id} has a due source but does not declare the source renderer target`);
+          }
+          if (
+            config.gates_per_cell?.require_source_surface_accessibility === true &&
+            !sourceAccessibilityReady
+          ) {
+            const summary = sourceAccessibility
+              .map(
+                (metric) =>
+                  `${metric.id || 'source'}=${metric.averageSentenceWords} words/sentence ` +
+                  `(audience<=${metric.audienceMaximum}, lexical<=${metric.lexicalMaximum})`,
+              )
+              .join(', ');
+            preflightBlockers.push({
+              type: 'source_surface_accessibility',
+              cellId: id,
+              turn: targetTurn,
+              reason: `${id} due source fails its selected accessibility budgets: ${summary}`,
+              sources: sourceAccessibility,
+            });
+          }
+          structuralPreflight.push({
+            cellId: id,
+            turn: targetTurn,
+            sourceSurfaceAccessibility: sourceAccessibility,
+            ok: sourceAccessibilityReady,
+          });
         }
       }
     }
@@ -348,10 +584,20 @@ function validateWorkingScreen(config, { root }) {
       if (execution[field] !== true) throw new Error(`${label} must be enabled`);
     }
     if (
-      config.id === 'first-draft-working-screens-v7' &&
-      execution.require_exact_target_bundle_binding !== true
+      execution.require_clean_worktree != null &&
+      typeof execution.require_clean_worktree !== 'boolean'
     ) {
-      throw new Error('V7 development confirmation must require exact target bundle binding');
+      throw new Error('development clean-worktree requirement must be boolean');
+    }
+    if (
+      ['first-draft-working-screens-v7', 'first-draft-working-screens-v8'].includes(config.id) &&
+      execution.require_exact_target_bundle_binding !== true
+    ) throw new Error(`${config.id} must require exact target bundle binding`);
+    if (
+      config.id === 'first-draft-working-screens-v8' &&
+      execution.require_clean_worktree !== true
+    ) {
+      throw new Error('first-draft-working-screens-v8 must require a clean worktree');
     }
   }
   return {
@@ -361,6 +607,9 @@ function validateWorkingScreen(config, { root }) {
     requiredPrefixes,
     drawsPerPrefix,
     maxConcurrency,
+    preflightReady: preflightBlockers.length === 0,
+    preflightBlockers,
+    structuralPreflight,
   };
 }
 
@@ -583,6 +832,8 @@ export function expandTutorStubFirstDraftCampaign({ config, root = process.cwd()
           sourceTrace: absolute(root, cell.source_trace),
           sourceTraceSha256: cell.source_trace_sha256 || null,
           targetBundle: cell.prefix_integrity?.target_bundle || null,
+          structural_targets: [...(cell.structural_targets || [])],
+          structural_activation: structuredClone(cell.structural_activation || {}),
           outputDir,
           turns: cell.turns.map(Number),
           commands: cell.turns.map((turn) => ({
@@ -609,6 +860,141 @@ export function expandTutorStubFirstDraftCampaign({ config, root = process.cwd()
         argv: autoEvalCommand({ root, config, cell, outputDir }),
       };
     }),
+  };
+}
+
+export function buildTutorStubFirstDraftCampaignValidationReport({
+  plan,
+  config,
+  configPath,
+  frozen = null,
+} = {}) {
+  const jointPerformanceGeneration = config?.fixed_configuration?.joint_performance_generation === true;
+  return {
+    schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
+    generatedAt: new Date().toISOString(),
+    configPath,
+    campaignId: config?.id || null,
+    kind: plan?.kind || null,
+    // A preflight blocker does not invalidate an otherwise well-formed,
+    // faithfully expanded predeclaration. Keep the two states independent.
+    valid: plan?.valid === true,
+    preflightReady: plan?.preflightReady !== false,
+    preflightBlockers: plan?.preflightBlockers || [],
+    structuralPreflight: plan?.structuralPreflight || [],
+    oneCampaignLevelExpansion: true,
+    makesModelCalls: false,
+    frozen,
+    maxConcurrency: plan?.maxConcurrency,
+    generationMode: jointPerformanceGeneration
+      ? 'joint_performance_v2'
+      : config?.fixed_configuration?.structured_generation === true
+        ? 'structured_v1'
+        : 'plain',
+    ...(jointPerformanceGeneration
+      ? {
+          jointPerformanceSchema: config.fixed_configuration.joint_performance_schema,
+          jointPerformanceCompositionSchema:
+            config.fixed_configuration.joint_performance_composition_schema,
+          jointPerformanceAuditSchema: config.fixed_configuration.joint_performance_audit_schema,
+        }
+      : {}),
+    cells: (plan?.cells || []).map((cell) => ({
+      id: cell.id,
+      priority: cell.priority,
+      seed: cell.seed,
+      seedStatus: cell.seedStatus,
+      world: cell.world,
+      learnerProfile: cell.learnerProfile,
+      sourceTrace: cell.sourceTrace || null,
+      sourceTraceSha256: cell.sourceTraceSha256 || null,
+      targetBundle: cell.targetBundle || null,
+      outputDir: cell.outputDir,
+      turns: cell.turns || null,
+      structuralTargets: cell.structural_targets || [],
+      structuralActivation: structuredClone(cell.structural_activation || {}),
+      commands: cell.commands
+        ? cell.commands.map((command) => ({
+            turn: command.turn,
+            outputPath: command.outputPath,
+            argv: command.argv,
+          }))
+        : [{ argv: cell.argv }],
+    })),
+  };
+}
+
+export function applyTutorStubFirstDraftDevelopmentRuntimePreflight({ plan, frozen } = {}) {
+  const blockers = [...(plan?.preflightBlockers || [])];
+  if (frozen?.cleanWorktreeRequired === true && frozen?.worktreeClean !== true) {
+    blockers.push({
+      type: 'unclean_worktree',
+      reason: 'development campaign requires a clean committed worktree',
+      worktree: frozen.worktree || null,
+    });
+  }
+  return {
+    ...plan,
+    preflightReady: plan?.preflightReady !== false && blockers.length === 0,
+    preflightBlockers: blockers,
+  };
+}
+
+export function buildTutorStubFirstDraftPreflightFailureResult({
+  plan,
+  config,
+  configPath,
+  iteration,
+  frozen,
+  validationArtifactPath = null,
+} = {}) {
+  const workingIteration = integer(iteration, 'working iteration', { minimum: 1 });
+  return {
+    schema: 'machinespirits.tutor-stub.first-draft-working-screen-result.v1',
+    generatedAt: new Date().toISOString(),
+    campaignId: config?.id || null,
+    heldOut: false,
+    iteration: workingIteration,
+    workingIteration,
+    status: 'preflight_failed',
+    frozen: {
+      ...(frozen || {}),
+      configPath,
+    },
+    validationArtifactPath,
+    makesModelCalls: false,
+    modelCalls: 0,
+    preflightReady: false,
+    preflightBlockers: plan?.preflightBlockers || [],
+    structuralPreflight: plan?.structuralPreflight || [],
+    changeControl: structuredClone(config?.change_control || null),
+    cells: (plan?.cells || []).map((cell) => ({
+      id: cell.id,
+      priority: cell.priority,
+      world: cell.world,
+      learnerProfile: cell.learnerProfile,
+      seed: cell.seed,
+      seedStatus: cell.seedStatus,
+      sourceTrace: cell.sourceTrace,
+      sourceTraceSha256: cell.sourceTraceSha256,
+      targetBundle: structuredClone(cell.targetBundle || null),
+      requestModel: cell.targetBundle?.request_model || null,
+      requestEffort: cell.targetBundle?.request_effort || null,
+      outputDir: cell.outputDir,
+      turns: [...(cell.turns || [])],
+      unstartedTurns: [...(cell.turns || [])],
+      structuralTargets: [...(cell.structural_targets || [])],
+      structuralActivation: structuredClone(cell.structural_activation || {}),
+      commands: (cell.commands || []).map((command) => ({
+        turn: command.turn,
+        outputPath: command.outputPath,
+        argv: command.argv,
+      })),
+      seedDisposition: 'unconsumed_development_preflight_failure',
+      completedTurns: 0,
+      status: 'unstarted_after_preflight_failure',
+    })),
+    claimBoundary: config?.claim_boundary || null,
   };
 }
 
@@ -642,6 +1028,7 @@ export function tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config } = {
       execution.stop_cell_when_gate_mathematically_impossible !== false,
     preserveUnstartedSeedsAsUnconsumed:
       execution.preserve_unstarted_seeds_as_unconsumed === true,
+    requireCleanWorktree: execution.require_clean_worktree === true,
   };
 }
 
@@ -716,6 +1103,119 @@ function hostSourceOccurrenceMetric({ row, bundle, generationField = 'structured
         hostOwnedSourceSpanCount === expectedOccurrenceCount) &&
       actualOccurrenceCount === expectedOccurrenceCount,
   };
+}
+
+function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'structuredGeneration' }) {
+  const release = bundle?.frames?.dramaticRelease || null;
+  const expectedSourceCount = release?.active === true && Array.isArray(release.entries)
+    ? release.entries.length
+    : 0;
+  const composition = row?.[generationField]?.composition || null;
+  const sources = Array.isArray(composition?.sources) ? composition.sources : [];
+  const configuration =
+    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const metrics = sources.map((source) => ({
+    id: source?.id || null,
+    mode: source?.mode || null,
+    ...measureTutorStubSurfaceSentenceAccessibility({
+      text: source?.text || source?.surface || '',
+      audienceRegister: configuration.audience_register || null,
+      lexicalAccessibility: configuration.lexical_accessibility || null,
+    }),
+  }));
+  const sourceBearing = expectedSourceCount > 0;
+  return {
+    turn: Number(row?.turn),
+    draw: Number(row?.draw ?? 1),
+    sourceBearing,
+    expectedSourceCount,
+    actualSourceCount: sources.length,
+    audienceRegister: configuration.audience_register || null,
+    lexicalAccessibility: configuration.lexical_accessibility || null,
+    sources: metrics,
+    ok:
+      composition !== null &&
+      sources.length === expectedSourceCount &&
+      (!sourceBearing || metrics.every((metric) => metric.ok === true)),
+  };
+}
+
+function structuralActivationMetric({ target, row, bundle, declaration = {}, generationField }) {
+  const composition = row?.[generationField]?.composition || null;
+  const release = bundle?.frames?.dramaticRelease || null;
+  const releaseEntries = release?.active === true && Array.isArray(release.entries)
+    ? release.entries
+    : [];
+  const sources = Array.isArray(composition?.sources) ? composition.sources : [];
+  const progression = bundle?.firstDraftContract?.progression || null;
+  const progressionAudit = row?.audit?.audits?.turnProgressionAudit || null;
+  const ownershipAudit = row?.audit?.audits?.jointPerformanceAudit || null;
+  if (target === 'deterministic_host_source_renderer') {
+    const expectedModes = declaration?.expected_modes || [];
+    const actualModes = sources.map((source) => source?.mode || null);
+    const active = releaseEntries.length > 0 && sources.length === releaseEntries.length;
+    const modeMatched =
+      expectedModes.length > 0 &&
+      actualModes.length === releaseEntries.length &&
+      actualModes.every((mode) => expectedModes.includes(mode));
+    const sourceAccessibilityRequired = declaration?.require_lexical_accessibility_axis === true;
+    const sourceAccessibility = sourceSurfaceAccessibilityMetric({
+      row,
+      bundle,
+      generationField,
+    });
+    const sourceAccessibilityVisible =
+      !sourceAccessibilityRequired || sourceAccessibility.ok === true;
+    return {
+      target,
+      active,
+      visible: active && modeMatched && sourceAccessibilityVisible,
+      expectedModes,
+      actualModes,
+      sourceAccessibilityRequired,
+      sourceAccessibility,
+      sourceAccessibilityVisible,
+    };
+  }
+  if (target === 'typed_due_source_action_referent') {
+    const alignment = ownershipAudit?.sourceActionAlignment || null;
+    const axis = ownershipAudit?.axes?.source_action_alignment || null;
+    return {
+      target,
+      active: alignment?.active === true,
+      visible: alignment?.active === true && alignment?.ok === true && axis?.visible === true,
+      requiredReferents: (alignment?.sources || []).flatMap((source) => source?.required || []),
+    };
+  }
+  if (target === 'handoff_contract_and_cross_slot_progression') {
+    return {
+      target,
+      active: progression?.complete === true && Boolean(progression?.handoff_contract?.mode) && progressionAudit?.active === true,
+      visible: progressionAudit?.ok === true,
+      mode: progression?.handoff_contract?.mode || null,
+    };
+  }
+  if (target === 'typed_turn_focus_relation') {
+    const terms = progression?.handoff_contract?.required_target_terms || [];
+    return {
+      target,
+      active: terms.length > 0 && progressionAudit?.active === true,
+      visible: progressionAudit?.ok === true && progressionAudit?.handoff?.target_coverage?.count > 0,
+      requiredTerms: terms,
+      targetCoverage: progressionAudit?.handoff?.target_coverage || null,
+    };
+  }
+  if (target === 'shared_writable_request_classifier') {
+    return {
+      target,
+      active:
+        progression?.learner_uptake?.mode === 'writable_entry' &&
+        progressionAudit?.learner_uptake?.mode === 'writable_entry',
+      visible: progressionAudit?.learner_uptake?.visible === true,
+      mode: progressionAudit?.learner_uptake?.mode || null,
+    };
+  }
+  return { target, active: false, visible: false, unsupported: true };
 }
 
 export function tutorStubFirstDraftIterationStopping({
@@ -888,6 +1388,12 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       : 'gate';
   const configurationRealizationIsGate = configurationRealizationEnforcement === 'gate';
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
+  const successfulAdjudicationRows = results.filter(
+    (row) =>
+      row.semanticAdjudication?.called === true &&
+      !row.semanticAdjudication?.error &&
+      row.semanticAdjudication?.adjudication,
+  );
   const structuredGenerationEnabled = config.fixed_configuration?.structured_generation === true;
   const jointPerformanceGenerationEnabled =
     config.fixed_configuration?.joint_performance_generation === true;
@@ -910,6 +1416,12 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     hostSourceOccurrenceMetric({ ...entry, generationField }),
   );
   const exactSourceOccurrencePasses = structuredSourceOccurrences.filter((metric) => metric.ok).length;
+  const sourceSurfaceAccessibilities = resultEntries.map((entry) =>
+    sourceSurfaceAccessibilityMetric({ ...entry, generationField }),
+  );
+  const sourceSurfaceAccessibilityPasses = sourceSurfaceAccessibilities.filter(
+    (metric) => metric.ok,
+  ).length;
   const transportNormalizations = resultEntries.flatMap(({ row }) =>
     (row?.[generationField]?.parsed?.transport_normalizations || []).map((normalization) => ({
       turn: row.turn,
@@ -932,6 +1444,29 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     'transportNormalizationCount',
     transportNormalizations.length,
   );
+  const structuralTargets = cell.structural_targets || [];
+  const structuralTargetActivations = structuralTargets.map((target) => ({
+    target,
+    draws: resultEntries.map(({ row, bundle }) => ({
+      turn: Number(row?.turn),
+      draw: Number(row?.draw ?? 1),
+      ...structuralActivationMetric({
+        target,
+        row,
+        bundle,
+        declaration: cell.structural_activation?.[target] || {},
+        generationField,
+      }),
+    })),
+  })).map((entry) => ({
+    ...entry,
+    activeDraws: entry.draws.filter((draw) => draw.active).length,
+    visibleDraws: entry.draws.filter((draw) => draw.visible).length,
+    ok:
+      entry.draws.length === results.length &&
+      entry.draws.length > 0 &&
+      entry.draws.every((draw) => draw.active && draw.visible),
+  }));
   const failureCounts = new Map();
   for (const row of results) {
     // Original-only screening rejects a candidate when semantic recognition
@@ -985,6 +1520,21 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       deterministicFallbacks <= Number(config.gates_per_cell.maximum_fallbacks ?? 0),
     semanticRecognitionCorrections:
       semanticCorrections <= Number(config.gates_per_cell.maximum_semantic_recognition_corrections ?? 0),
+    semanticAdjudicatorCalls:
+      adjudicationRows.length <= Number(
+        config.gates_per_cell.maximum_semantic_adjudicator_calls ?? Number.MAX_SAFE_INTEGER,
+      ),
+    semanticAdjudicatorErrors:
+      results.filter((row) => row.semanticAdjudication?.error).length <= Number(
+        config.gates_per_cell.maximum_semantic_adjudicator_errors ?? Number.MAX_SAFE_INTEGER,
+      ),
+    successfulSemanticAdjudicationPerDraw:
+      config.gates_per_cell.require_successful_semantic_adjudication_per_draw !== true ||
+      successfulAdjudicationRows.length === results.length,
+    deterministicOnlyAudit:
+      config.gates_per_cell.require_deterministic_only_audit !== true ||
+      (adjudicationRows.length === 0 &&
+        results.every((row) => row.semanticAdjudication?.called !== true && !row.semanticAdjudication?.adjudication)),
     transportNormalizations:
       reportedTransportNormalizationCount <= Number(config.gates_per_cell.maximum_transport_normalizations ?? 0),
     transcriptSpecificUptake:
@@ -1007,6 +1557,13 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     exactHostSourceOccurrences:
       config.gates_per_cell.require_exact_host_source_occurrences !== true ||
       (jointPerformanceGenerationEnabled && exactSourceOccurrencePasses === results.length),
+    sourceSurfaceAccessibility:
+      config.gates_per_cell.require_source_surface_accessibility !== true ||
+      (typedGenerationEnabled && sourceSurfaceAccessibilityPasses === results.length),
+    structuralTargetActivation:
+      config.gates_per_cell.require_structural_target_activation !== true ||
+      (structuralTargetActivations.length === structuralTargets.length &&
+        structuralTargetActivations.every((target) => target.ok)),
   };
   return {
     id: cell.id,
@@ -1020,6 +1577,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     deterministicOriginalCandidatesAccepted: deterministicAccepted,
     semanticRecognitionCorrections: semanticCorrections,
     semanticAdjudicatorCalls: adjudicationRows.length,
+    successfulSemanticAdjudications: successfulAdjudicationRows.length,
     semanticAdjudicatorErrors: results.filter((row) => row.semanticAdjudication?.error).length,
     mechanicalRepairs,
     modelRewrites,
@@ -1060,6 +1618,16 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       ? results.length - exactSourceOccurrencePasses
       : 0,
     hostSourceOccurrences: typedGenerationEnabled ? structuredSourceOccurrences : [],
+    sourceSurfaceAccessibilityPasses: typedGenerationEnabled
+      ? sourceSurfaceAccessibilityPasses
+      : 0,
+    sourceSurfaceAccessibilityFailures: typedGenerationEnabled
+      ? results.length - sourceSurfaceAccessibilityPasses
+      : 0,
+    sourceSurfaceAccessibilities: typedGenerationEnabled
+      ? sourceSurfaceAccessibilities
+      : [],
+    structuralTargetActivations,
     meanConfigurationRealization,
     configurationRealizationEnforcement,
     meanOriginalLatencyMs: originalLatencies.length

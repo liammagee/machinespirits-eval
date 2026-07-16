@@ -10,7 +10,11 @@ import { parseArgs } from 'node:util';
 
 import {
   acquireTutorStubFirstDraftCellClaim,
+  applyTutorStubFirstDraftDevelopmentRuntimePreflight,
   assessTutorStubAcceptanceCell,
+  assertTutorStubFirstDraftDevelopmentIterationVacant,
+  buildTutorStubFirstDraftCampaignValidationReport,
+  buildTutorStubFirstDraftPreflightFailureResult,
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
   releaseTutorStubFirstDraftCellClaim,
@@ -20,6 +24,7 @@ import {
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftIterationStopping,
   tutorStubFirstDraftUnexpectedIterationArtifacts,
+  writeTutorStubFirstDraftJsonExclusive,
 } from '../services/tutorStubFirstDraftCampaign.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -82,43 +87,21 @@ async function mapLimit(items, limit, fn) {
   return output;
 }
 
-function validationReport(plan, loaded) {
-  const jointPerformanceGeneration =
-    loaded.config.fixed_configuration?.joint_performance_generation === true;
-  return {
-    schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
-    generatedAt: new Date().toISOString(),
+function writeDevelopmentPreflightFailure(plan, loaded, iteration, frozen, validationArtifactPath) {
+  const result = buildTutorStubFirstDraftPreflightFailureResult({
+    plan,
+    config: loaded.config,
     configPath: loaded.configPath,
-    campaignId: loaded.config.id,
-    kind: plan.kind,
-    valid: true,
-    oneCampaignLevelExpansion: true,
-    makesModelCalls: false,
-    maxConcurrency: plan.maxConcurrency,
-    generationMode: jointPerformanceGeneration ? 'joint_performance_v2' :
-      loaded.config.fixed_configuration?.structured_generation === true ? 'structured_v1' : 'plain',
-    ...(jointPerformanceGeneration
-      ? {
-          jointPerformanceSchema:
-            loaded.config.fixed_configuration.joint_performance_schema,
-          jointPerformanceCompositionSchema:
-            loaded.config.fixed_configuration.joint_performance_composition_schema,
-          jointPerformanceAuditSchema:
-            loaded.config.fixed_configuration.joint_performance_audit_schema,
-        }
-      : {}),
-    cells: plan.cells.map((cell) => ({
-      id: cell.id,
-      priority: cell.priority,
-      seed: cell.seed,
-      seedStatus: cell.seedStatus,
-      world: cell.world,
-      learnerProfile: cell.learnerProfile,
-      commands: cell.commands
-        ? cell.commands.map((command) => ({ turn: command.turn, argv: command.argv }))
-        : [{ argv: cell.argv }],
-    })),
-  };
+    iteration,
+    frozen,
+    validationArtifactPath,
+  });
+  const resultPath = writeTutorStubFirstDraftJsonExclusive(
+    path.join(plan.iterationRoot, 'working-screen-result.json'),
+    result,
+  );
+  console.log(`development preflight failed without model calls: ${resultPath}`);
+  return result;
 }
 
 function sha256File(filePath) {
@@ -129,6 +112,55 @@ function gitHead() {
   const result = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
   if (result.status !== 0) throw new Error(`could not resolve git HEAD: ${result.stderr}`);
   return result.stdout.trim();
+}
+
+function gitWorktreeState({ required = false } = {}) {
+  const result = spawnSync(
+    'git',
+    ['status', '--porcelain=v1', '--untracked-files=all'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  const porcelain = result.status === 0 ? String(result.stdout || '') : '';
+  const changeCount = porcelain.split(/\r?\n/u).filter(Boolean).length;
+  const clean = result.status === 0 && changeCount === 0;
+  return {
+    required,
+    checked: true,
+    clean,
+    status: clean ? 'clean' : result.status === 0 ? 'dirty' : 'unavailable',
+    changeCount,
+    porcelainSha256: createHash('sha256').update(porcelain).digest('hex'),
+    error: result.status === 0 ? null : String(result.stderr || 'git status failed').trim(),
+  };
+}
+
+function freezeDevelopmentState(loaded) {
+  const cleanWorktreeRequired = loaded.config.execution?.require_clean_worktree === true;
+  const worktree = gitWorktreeState({ required: cleanWorktreeRequired });
+  return {
+    gitHead: gitHead(),
+    configPath: loaded.configPath,
+    configSha256: sha256File(loaded.configPath),
+    cleanWorktreeRequired,
+    worktreeClean: worktree.clean,
+    worktree,
+  };
+}
+
+function assertFrozenDevelopmentState(frozen, loaded, cell = null) {
+  if (!frozen) throw new Error('development campaign has no frozen provenance state');
+  const currentHead = gitHead();
+  const currentConfigHash = sha256File(loaded.configPath);
+  if (currentHead !== frozen.gitHead || currentConfigHash !== frozen.configSha256) {
+    throw new Error('development state changed after campaign start; stop rather than mix code or configuration');
+  }
+  const currentWorktree = gitWorktreeState({ required: frozen.cleanWorktreeRequired === true });
+  if (frozen.cleanWorktreeRequired === true && currentWorktree.clean !== true) {
+    throw new Error('development worktree became dirty after campaign start');
+  }
+  if (cell?.sourceTraceSha256 && sha256File(cell.sourceTrace) !== cell.sourceTraceSha256) {
+    throw new Error(`${cell.id} source trace changed after campaign start`);
+  }
 }
 
 function assertFrozenAcceptanceState(frozen) {
@@ -205,9 +237,10 @@ function replayWorkingStoppingHistory({ artifactRoot, throughIteration, maximum 
   return previous;
 }
 
-async function runDevelopment(plan, loaded, iteration) {
+async function runDevelopment(plan, loaded, iteration, frozen) {
   const config = loaded.config;
   const configSha256 = sha256File(loaded.configPath);
+  assertFrozenDevelopmentState(frozen, loaded);
   const maximumConsecutiveWithoutImprovement =
     config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
   const previousMetrics = replayWorkingStoppingHistory({
@@ -231,6 +264,7 @@ async function runDevelopment(plan, loaded, iteration) {
     }
   }
   async function runCell(cell, { stopWhenImpossible = true } = {}) {
+    assertFrozenDevelopmentState(frozen, loaded, cell);
     if (fs.existsSync(cell.outputDir) && fs.readdirSync(cell.outputDir).length) {
       throw new Error(`${cell.id} already has artifacts; refusing to duplicate a development cell`);
     }
@@ -255,7 +289,9 @@ async function runDevelopment(plan, loaded, iteration) {
       }
       const reports = [];
       for (const command of cell.commands) {
+        assertFrozenDevelopmentState(frozen, loaded, cell);
         await runCommand(command.argv, { label: `${cell.id} frozen turn ${command.turn}` });
+        assertFrozenDevelopmentState(frozen, loaded, cell);
         reports.push(readJson(command.outputPath));
         const interim = summarizeTutorStubWorkingScreen({ cell, reports, config });
         console.log(
@@ -289,6 +325,7 @@ async function runDevelopment(plan, loaded, iteration) {
   if (config.execution) {
     const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
     await runWorkingPreflight(config, execution.hardCell.id);
+    assertFrozenDevelopmentState(frozen, loaded, execution.hardCell);
     const hardResult = await runCellCaptured(execution.hardCell, {
       stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
     });
@@ -346,8 +383,10 @@ async function runDevelopment(plan, loaded, iteration) {
     schema: 'machinespirits.tutor-stub.first-draft-working-screen-result.v1',
     generatedAt: new Date().toISOString(),
     campaignId: config.id,
-    iteration,
     heldOut: false,
+    iteration,
+    workingIteration: iteration,
+    frozen,
     status,
     completeAllCells: args['complete-all-cells'],
     changes: config.change_log,
@@ -408,7 +447,10 @@ async function runDevelopment(plan, loaded, iteration) {
       Number(config.stopping?.final_frontier_attempt_iteration) === iteration &&
       config.stopping?.stop_if_final_frontier_attempt_fails === true,
   });
-  const resultPath = writeJson(path.join(plan.iterationRoot, 'working-screen-result.json'), result);
+  const resultPath = writeTutorStubFirstDraftJsonExclusive(
+    path.join(plan.iterationRoot, 'working-screen-result.json'),
+    result,
+  );
   console.log(`working screen ${status}: ${resultPath}`);
   return result;
 }
@@ -549,26 +591,57 @@ async function main() {
   const iteration = Number(args.iteration);
   if (!Number.isInteger(iteration) || iteration < 1) throw new Error('--iteration must be a positive integer');
   const loaded = loadTutorStubFirstDraftCampaign(args.config, { root: ROOT });
-  const plan = expandTutorStubFirstDraftCampaign({
+  let plan = expandTutorStubFirstDraftCampaign({
     config: loaded.config,
     root: ROOT,
     iteration,
   });
-  const validation = validationReport(plan, loaded);
-  const validationPath = writeJson(
-    tutorStubFirstDraftCampaignValidationArtifactPath({
+  const developmentFrozen = plan.kind === 'working_screen'
+    ? freezeDevelopmentState(loaded)
+    : null;
+  if (developmentFrozen) {
+    plan = applyTutorStubFirstDraftDevelopmentRuntimePreflight({
+      plan,
+      frozen: developmentFrozen,
+    });
+  }
+  if (mode === 'development') {
+    assertTutorStubFirstDraftDevelopmentIterationVacant(plan.iterationRoot);
+  }
+  const validationArtifactPath = tutorStubFirstDraftCampaignValidationArtifactPath({
       artifactRoot: plan.artifactRoot,
       mode,
       iteration,
-    }),
+    });
+  const validation = buildTutorStubFirstDraftCampaignValidationReport({
+    plan,
+    config: loaded.config,
+    configPath: loaded.configPath,
+    frozen: developmentFrozen,
+  });
+  const validationPath = (
+    mode === 'development' ? writeTutorStubFirstDraftJsonExclusive : writeJson
+  )(
+    validationArtifactPath,
     validation,
   );
   console.log(`campaign validation: ${validationPath}`);
-  if (mode === 'validate') return;
+  if (mode === 'validate') {
+    if (plan.preflightReady === false) process.exitCode = 1;
+    return;
+  }
   let result;
   if (mode === 'development') {
     if (plan.kind !== 'working_screen') throw new Error('development mode requires a working-screen config');
-    result = await runDevelopment(plan, loaded, iteration);
+    result = plan.preflightReady === false
+      ? writeDevelopmentPreflightFailure(
+          plan,
+          loaded,
+          iteration,
+          developmentFrozen,
+          validationPath,
+        )
+      : await runDevelopment(plan, loaded, iteration, developmentFrozen);
   } else {
     if (plan.kind !== 'acceptance') throw new Error('acceptance mode requires a held-out generalization config');
     result = await runAcceptance(plan, loaded.config, loaded);
