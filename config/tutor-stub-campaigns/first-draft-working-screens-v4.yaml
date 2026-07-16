@@ -1,0 +1,99 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens-v4
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V25 architectural-reset screen after V24 stagnated. It reuses the four
+  frozen Marrick public prefixes but replaces the diluted prose contract with
+  a typed host-slot plan. One fresh development draw must preserve plain adult
+  language, scene immersion, action, part, tactic, and stance on every turn.
+  This is development evidence only and cannot certify generalization.
+
+fixed_configuration:
+  original_only: true
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_recompiled_first_draft_contract
+  effort_source: exact_saved_request
+  max_live_model_jobs: 1
+  semantic_adjudication: true
+  semantic_adjudication_scope: eligible_actorial_recognition_only
+  adjudicator_model_source: saved_analysis_model
+  adjudicator_effort: low
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+    services/__tests__/tutorStubCounterpressure.test.js
+    tests/tutorStubFirstDraftCampaign.test.js
+    tests/tutorStubFirstDraftOuterLoop.test.js
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+matrix:
+  - id: marrick_v25_typed_host_plan
+    priority: 1
+    world: world_005_marrick
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
+    turns: [4, 5, 6, 9]
+    development_seed: 20261300
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v25_predeclaration
+    target_failures:
+      - host_slot_ownership
+      - plain_lexical_accessibility
+      - adult_novice_audience
+      - selected_action_family
+      - selected_engagement_stance
+      - selected_actorial_part_and_tactic
+
+gates_per_cell:
+  required_originals_accepted: 4
+  required_turns: 4
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_fallbacks: 0
+  require_transcript_specific_uptake: true
+
+change_log:
+  speaking_prompt: >-
+    V25 replaces the competing FORM, OPEN, DEVELOP, END, VOICE, and SCENE
+    prose with one typed host plan: uptake, selected-part action, optional exact
+    public source, selected tactic, and action-plus-stance handoff. Every
+    delivered axis has one owner and each host sentence has one job.
+  recovery_only: >-
+    Recovery remains disabled in original-only screening. Strict end-to-end
+    repair and fallback behavior is unchanged outside this screen.
+  audit_recognition_only: >-
+    A model-free evidentiary-boundary correction recognizes a public evidence
+    bearer proving one property but not another. It is reported separately and
+    does not count as generation improvement.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_cell_fails: true
+  maximum_consecutive_iterations_without_improvement: 2
+
+claim_boundary: >-
+  Passing means one fresh original tutor draw realizes all six selected
+  response axes on each of four previously difficult frozen prefixes with no
+  safety, uptake, repair, or fallback failure. It is reusable development
+  evidence, not held-out acceptance.

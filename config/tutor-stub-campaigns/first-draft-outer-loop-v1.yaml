@@ -6,25 +6,41 @@ purpose: >-
   reusable frozen-prefix development from immutable held-out acceptance,
   records who may interpret or change each layer, and makes success,
   stagnation, infrastructure blocking, version retirement, and seed freshness
-  explicit. It begins at V24 but does not yet predeclare a V24 acceptance
-  matrix or any V24 held-out seed.
+  explicit. It began at V24 and advances V24 -> V25 -> V26 without a fixed
+  upper bound until held-out acceptance passes. A stagnated development
+  version is preserved and triggers an architectural reset in Vn+1 rather
+  than terminating the broader programme.
 
 current:
-  campaign_version: 24
-  label: V24
+  campaign_version: 25
+  label: V25
   state: working_predeclared
-  working_iteration: 6
-  working_screen_id: first-draft-working-screens-v3
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v3.yaml
+  working_iteration: 1
+  working_screen_id: first-draft-working-screens-v4
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v4.yaml
   acceptance_config: null
-  last_observation:
+  required_confirmation_after_primary_pass:
+    status: planned_not_runnable
+    screen_id: first-draft-working-screens-v5
+    purpose: >-
+      A complete four-world development panel must confirm the typed host plan
+      before any V25 held-out matrix is predeclared. The focused Marrick pass
+      alone cannot establish cross-world robustness.
+    cells:
+      - { id: nocturne_answer_seeking, seed: 20261301 }
+      - { id: skyway_answer_seeking, seed: 20261302 }
+      - { id: greyfen_answer_seeking, seed: 20261303 }
+      - { id: marrick_answer_seeking_confirmation, seed: 20261304 }
+    execution: complete_all_cells_with_maximum_three_live_jobs
+    aggregate_gate: at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
+  architectural_reset_from:
     version: 24
-    working_iteration: 5
+    terminal_state: stagnated
     kind: frozen_prefix_development
-    status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-5/working-screen-result.json
+    final_iteration: 6
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-6/working-screen-result.json
     development_seed: 20261200
-    seed_disposition: consumed_development_reusable
+    seed_disposition: consumed_development_retired_after_stagnation
     completed_turns: [4, 5]
     unstarted_turns: [6, 9]
     strict_originals_accepted: 1
@@ -32,54 +48,25 @@ current:
     fallbacks: 0
     uptake_failures: 0
     semantic_recognition_corrections: 0
-    mean_configuration_realization: 0.9165
-    maximum_possible_mean_configuration_realization: 0.95825
-    failed_gate: minimum_mean_configuration_realization
+    mean_configuration_realization: 0.8335
+    maximum_possible_mean_configuration_realization: 0.91675
+    stopping_reason: predeclared_final_frontier_attempt_failed
+    consecutive_without_improvement: 2
     failed_axes:
       - turn_5_actorial_performance_evidentiary_boundary
-    comparison:
-      immediate_baseline: V24 working iteration 4
-      comparable_completion: false
-      baseline_completed_turns: 3
-      current_completed_turns: 2
-      current_originals: 1/2
-      current_mean_configuration_realization: 0.9165
-      measurable_improvement: false
-      configuration_realization_improved: false
-      consecutive_without_improvement: 1
-      stop: false
-      best_so_far_baseline: V24 working iteration 2
-      best_so_far_prefix_mean_configuration_realization: 1.0
-      best_so_far_prefix_improved: false
-      interpretation: >-
-        Iteration 5 is the first no-improvement result after iteration 4. Turn
-        5 places the evidentiary limit only in the learner-facing Write entry;
-        the adaptive host never performs the selected tactic after the exact
-        source quotation. This is a genuine generation miss, not recognition.
-    iteration_6_authority:
-      bounded_change_owner: primary_agent
-      speaking_change: >-
-        Reserve explicit unquoted host beats for the selected part and tactic.
-        The uptake and authored source cannot satisfy the tactic; when exact
-        evidence is due, the tactic sentence follows its quotation. Require
-        charismatic force to intensify rather than replace the part action.
-      recovery_change: none
-      audit_recognition_change: none
-      controller_change: none
-      frontier_gate:
-        best_so_far_iteration: 2
-        best_vector: {4: 1.0, 5: 1.0, 6: 1.0, 9: 0.667}
-        required_iteration_6_vector: {4: 1.0, 5: 1.0, 6: 1.0, 9: 1.0}
-        require_four_originals: true
-        on_failure: stagnated
-        rationale: >-
-          Iterations 3–5 shuffled misses without improving the full four-turn
-          frontier. Iteration 6 is the predeclared final no-regression attempt;
-          a shorter clean prefix cannot reset the no-progress count.
+    model_free_reaudit: >-
+      A generic support-versus-limit correction clears the hard tactic audit
+      on the saved candidate without a model call. This is one audit-recognition
+      correction only; charismatic stance remains genuinely absent and V24
+      remains stagnated.
+    reset_reason: >-
+      The 778-word prose contract assigned part, tactic, action, stance, and
+      handoff across competing instructions. V25 replaces it with a compact
+      typed slot plan in which every delivered axis has exactly one owner.
 
 versioning:
-  current: 24
-  next: 25
+  current: 25
+  next: 26
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -87,12 +74,12 @@ versioning:
   acceptance_version_immutable_after_first_paid_call: true
   tuning_after_observation_retires_entire_version: true
   examples:
-    - from: 24
-      to: 25
     - from: 25
       to: 26
     - from: 26
       to: 27
+    - from: 27
+      to: 28
   rule: >-
     After any held-out candidate or result is observed, code, prompt, audit, or
     campaign changes retire that entire version. Advance exactly one version,
@@ -134,9 +121,9 @@ state_machine:
       outcome: success
       meaning: Every predeclared strict and first-draft gate passed without between-cell changes.
     stagnated:
-      terminal_scope: loop
+      terminal_scope: version
       outcome: no_progress
-      meaning: Two consecutive working iterations produced no measurable improvement.
+      meaning: Two consecutive working iterations produced no measurable improvement; preserve this version and reset the architecture in Vn+1.
     blocked_infrastructure:
       terminal_scope: loop
       outcome: infrastructure
@@ -196,6 +183,10 @@ state_machine:
       to: working_predeclared
       when: The failure is converted into a reusable screen and the next version has no held-out calls or seeds yet.
       version_action: increment_by_one
+    - from: stagnated
+      to: working_predeclared
+      when: The failed version is preserved and Vn+1 predeclares a fresh development seed plus a materially different architecture.
+      version_action: increment_by_one
 
 inner_review_roles:
   - id: loop_observer
@@ -243,6 +234,8 @@ stop_policy:
       - all seeds and artifacts are accounted for
   stagnation:
     terminal_state: stagnated
+    terminal_scope: version
+    next_action: Preserve the failed version, increment once, and predeclare a materially different working architecture with a fresh development seed.
     maximum_consecutive_iterations_without_improvement: 2
     measurable_improvement_order:
       - higher strict original acceptance rate
@@ -271,6 +264,11 @@ seed_rules:
   same_seed_retry_only_before_any_candidate_or_result: true
   tuning_retires_active_unstarted_and_reserve_seeds: true
   fresh_acceptance_seeds_predeclared_before_paid_calls: true
+  development_seed_semantics: >-
+    Frozen replay records development_seed as a fresh draw-batch provenance
+    label; the Codex bridge does not expose deterministic sampling seeds. Fresh
+    evidence comes from a new model call against the frozen prefix, not from
+    deterministic randomization.
   seed_freshness_sources:
     - config/tutor-stub-campaigns/*.yaml
     - /Users/lmagee/Dev/.tutor-stub-auto-eval/**
@@ -289,11 +287,16 @@ seed_ledger:
     - { version: 23, seed: 20261125, status: retired_reserve_due_to_tuning }
     - { version: 23, seed: 20261126, status: retired_reserve_due_to_tuning }
     - { version: 23, seed: 20261127, status: retired_reserve_due_to_tuning }
+    - { version: 24, seed: 20261200, status: consumed_development_retired_after_stagnation }
   development:
-    - seed: 20261200
+    - seed: 20261300
       status: reusable_non_held_out_development
-      cell: marrick_v23_configuration_misses
-      screen: first-draft-working-screens-v3
+      cell: marrick_v25_typed_host_plan
+      screen: first-draft-working-screens-v4
+    - { seed: 20261301, status: reusable_non_held_out_development, cell: nocturne_answer_seeking, screen: first-draft-working-screens-v5 }
+    - { seed: 20261302, status: reusable_non_held_out_development, cell: skyway_answer_seeking, screen: first-draft-working-screens-v5 }
+    - { seed: 20261303, status: reusable_non_held_out_development, cell: greyfen_answer_seeking, screen: first-draft-working-screens-v5 }
+    - { seed: 20261304, status: reusable_non_held_out_development, cell: marrick_answer_seeking_confirmation, screen: first-draft-working-screens-v5 }
   held_out:
     status: not_predeclared
     entries: []
@@ -319,4 +322,5 @@ claim_boundary: >-
   This manifest governs process integrity. A working-screen pass is reusable
   development evidence, not held-out evidence. Only an unchanged, fully
   predeclared acceptance version that passes every strict gate may terminate in
-  accepted; V24 has not yet been predeclared for acceptance.
+  accepted. V24 stagnated before acceptance; V25 has not yet been predeclared
+  for acceptance, and V26+ remain available if a held-out version fails.
