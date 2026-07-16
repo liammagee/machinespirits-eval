@@ -14,16 +14,56 @@ purpose: >-
 current:
   campaign_version: 30
   label: V30
-  state: working_predeclared
+  state: awaiting_working_screen
   working_iteration: 1
   working_screen_id: first-draft-working-screens-v10
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v10.yaml
   primary_working_screen_id: first-draft-working-screens-v10
   primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v10.yaml
   acceptance_config: null
-  active_working_history: []
-  active_last_observation: null
-  working_history_scope: preserved_v27_primary_history_with_v28_and_v29_zero_call_preflights
+  active_working_history:
+    - &v30_preflight_observation
+      version: 30
+      working_iteration: 1
+      status: development_preflight_failed
+      kind: deterministic_zero_call_transient_focused_test_preflight
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v10/iteration-1/working-screen-result.json
+      run_head: c6aa265eebd255c7eb41377cb2a6c01b75a6fa6f
+      provenance:
+        working_screen_config_sha256: 649821ca63257c7514def5ded78cc2eb86ef031b825e59acff22ecc7b88ab419
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v10/iteration-1/campaign-validation.json
+        campaign_validation_sha256: 9659bc19cb0ebd244d4945999768dc92afd7860de93c005d003d6c184cadb606
+        result_sha256: 57cd95cd572766c8319c4a0bf8df4723b96c523083e85416ba55d9341a4bc52c
+        clean_worktree: true
+      structural_preflight_ready: true
+      deterministic_execution_preflight_passed: false
+      model_calls: 0
+      candidates_generated: 0
+      completed_candidates: 0
+      completed_turns: 0
+      final_safety_failures: 0
+      focused_test_observation:
+        first_run: { passed: 536, total: 537, exit_code: 1 }
+        immediate_identical_rerun: { passed: 537, total: 537, exit_code: 0 }
+        classification: unclassified_transient_focused_test_failure
+        rerun_artifact: null
+        evidence_gap: >-
+          The serialized command-failure envelope preserves the command and
+          exit status but not the subtest output, so the exact failed subtest
+          cannot be identified from the durable artifact.
+      seed_dispositions:
+        - { seed: 20262000, status: retired_unconsumed_after_preflight_failure }
+        - { seed: 20262001, status: retired_unconsumed_after_preflight_failure }
+        - { seed: 20262002, status: retired_unconsumed_after_preflight_failure }
+        - { seed: 20262003, status: retired_unconsumed_after_preflight_failure }
+      terminal_action:
+        v31_status: not_predeclared
+        generation_claim: none
+        reason: >-
+          No tutor candidate or model call occurred. Retire V30's development
+          labels rather than treating the passing rerun as campaign evidence.
+  active_last_observation: *v30_preflight_observation
+  working_history_scope: preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights
   version_advance_from:
     version: 29
     terminal_state: development_preflight_failed
@@ -1159,19 +1199,19 @@ seed_ledger:
     - { version: 29, seed: 20261903, status: retired_unconsumed_after_preflight_failure }
   development:
     - seed: 20262000
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_after_preflight_failure
       cell: tallow_answer_seeking
       screen: first-draft-working-screens-v10
     - seed: 20262001
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_after_preflight_failure
       cell: ravensmark_affective_resistant
       screen: first-draft-working-screens-v10
     - seed: 20262002
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_after_preflight_failure
       cell: larkspur_premature_closure
       screen: first-draft-working-screens-v10
     - seed: 20262003
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_after_preflight_failure
       cell: foxtrot_diligent
       screen: first-draft-working-screens-v10
   held_out:
@@ -1237,7 +1277,10 @@ claim_boundary: >-
   audit remains hard; all four 202619xx labels are retired unconsumed. V30 keeps
   the V29 speaking prompt and gates unchanged, repairs only deterministic
   recovery and preflight result serialization, and records that saved rejection
-  as an audit-recognition correction rather than generation progress. A V30
-  working pass is reusable development evidence only and permits, but does not
-  itself constitute, fresh held-out predeclaration. V31+ remain available if
-  development or acceptance fails.
+  as an audit-recognition correction rather than generation progress. V30 then
+  stopped before every model call when its focused-test preflight reported
+  536/537 tests passing. An immediate identical rerun passed 537/537, but the
+  serialized failure envelope did not preserve the failed subtest output. The
+  failure is therefore recorded conservatively as transient and unclassified,
+  not as generation evidence. All four 202620xx labels are retired unconsumed,
+  and no V31 screen or seed has yet been predeclared. V31+ remain available.

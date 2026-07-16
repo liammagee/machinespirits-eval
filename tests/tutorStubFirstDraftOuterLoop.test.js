@@ -45,6 +45,7 @@ function fixture(tmp) {
   manifest.current.primary_working_screen_config = primaryScreenPath;
   manifest.current.campaign_version = 27;
   manifest.current.label = 'V27';
+  manifest.current.state = 'working_predeclared';
   manifest.current.working_iteration = 8;
   manifest.current.working_screen_id = 'first-draft-working-screens-v7';
   manifest.current.primary_working_screen_id = 'first-draft-working-screens-v6';
@@ -82,8 +83,11 @@ function v28Fixture(tmp) {
   manifest.current.primary_working_screen_config = screenPath;
   manifest.current.campaign_version = 28;
   manifest.current.label = 'V28';
+  manifest.current.state = 'working_predeclared';
   manifest.current.working_screen_id = 'first-draft-working-screens-v8';
   manifest.current.primary_working_screen_id = 'first-draft-working-screens-v8';
+  manifest.current.active_working_history = [];
+  manifest.current.active_last_observation = null;
   manifest.current.working_history_scope = 'preserved_v27_primary_history_read_only';
   manifest.current.version_advance_from = manifest.current.v28_version_advance_from;
   manifest.versioning.current = 28;
@@ -112,8 +116,11 @@ function v29Fixture(tmp) {
   manifest.current.primary_working_screen_config = screenPath;
   manifest.current.campaign_version = 29;
   manifest.current.label = 'V29';
+  manifest.current.state = 'working_predeclared';
   manifest.current.working_screen_id = 'first-draft-working-screens-v9';
   manifest.current.primary_working_screen_id = 'first-draft-working-screens-v9';
+  manifest.current.active_working_history = [];
+  manifest.current.active_last_observation = null;
   manifest.current.working_history_scope = 'preserved_v27_primary_history_and_v28_preflight_read_only';
   manifest.current.version_advance_from = manifest.current.v29_version_advance_from;
   manifest.versioning.current = 29;
@@ -511,14 +518,14 @@ test('V29 validator fails closed on V28 provenance, fresh seed, or accessibility
   }
 });
 
-test('outer-loop advances V29 zero-call evidence into the predeclared V30 recovery screen', () => {
+test('outer-loop preserves V30 as a zero-call preflight failure awaiting the next screen', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v30-'));
   try {
     const { manifest } = v30Fixture(tmp);
     const validation = validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 30);
-    assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.currentState, 'awaiting_working_screen');
     assert.equal(validation.workingIteration, 1);
     assert.equal(validation.workingScreen.id, 'first-draft-working-screens-v10');
     assert.equal(validation.workingScreen.v30RecoveryIntegrationScreen, true);
@@ -537,6 +544,28 @@ test('outer-loop advances V29 zero-call evidence into the predeclared V30 recove
       heldOut: 0,
       reserve: 0,
     });
+
+    const observation = manifest.current.active_last_observation;
+    assert.equal(observation.status, 'development_preflight_failed');
+    assert.equal(observation.model_calls, 0);
+    assert.equal(observation.candidates_generated, 0);
+    assert.equal(observation.completed_turns, 0);
+    assert.deepEqual(observation.focused_test_observation.first_run, {
+      passed: 536, total: 537, exit_code: 1,
+    });
+    assert.deepEqual(observation.focused_test_observation.immediate_identical_rerun, {
+      passed: 537, total: 537, exit_code: 0,
+    });
+    assert.equal(observation.focused_test_observation.rerun_artifact, null);
+    assert.match(observation.focused_test_observation.evidence_gap, /subtest output/iu);
+    assert.equal(observation.terminal_action.v31_status, 'not_predeclared');
+    assert.deepEqual(observation.seed_dispositions, [
+      { seed: 20262000, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262001, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262002, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262003, status: 'retired_unconsumed_after_preflight_failure' },
+    ]);
+    assert.deepEqual(manifest.current.active_working_history, [observation]);
 
     const advance = manifest.current.version_advance_from;
     assert.equal(advance.version, 29);
@@ -599,6 +628,13 @@ test('V30 validator fails closed on V29 provenance, fresh seed, or recovery chan
       name: 'V30 development seed',
       mutate: ({ manifest }) => { manifest.seed_ledger.development[0].seed = 20262009; },
       pattern: /absent from the outer-loop ledger|V30 development seed ledger/iu,
+    },
+    {
+      name: 'V30 preflight result hash',
+      mutate: ({ manifest }) => {
+        manifest.current.active_last_observation.provenance.result_sha256 = 'drift';
+      },
+      pattern: /result hash/iu,
     },
     {
       name: 'speaking-prompt drift',
