@@ -252,13 +252,17 @@ export function tutorStubRoleStageDirectionVisible({ text = '', frame = null } =
     .some((entry) => {
       const pattern = roleIdentityPattern(entry);
       if (!pattern) return false;
+      const authoredSurface = oneLine(entry.surface);
+      const withoutAuthoredEvidence = authoredSurface
+        ? unquotedResponse.split(authoredSurface).join(' ')
+        : unquotedResponse;
       const evidenceObjectPattern = roleEvidenceObjectPattern(entry);
       const stageDirectionSurface = evidenceObjectPattern
-        ? unquotedResponse.replace(
+        ? withoutAuthoredEvidence.replace(
             new RegExp(`\\b(?:the\\s+)?${pattern}[’']s\\s+(?:the\\s+)?${evidenceObjectPattern}\\b`, 'giu'),
             ' ',
           )
-        : unquotedResponse;
+        : withoutAuthoredEvidence;
       return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(stageDirectionSurface);
     });
 }
@@ -281,6 +285,31 @@ function quotedRoleSpeech(text = '') {
   return [...response.matchAll(/“([^”]{0,1200})”/gu), ...response.matchAll(/"([^"\n]{0,1200})"/gu)]
     .map((match) => oneLine(match[1]))
     .filter((quote) => /\b(?:i|my|our|we)\b/iu.test(quote));
+}
+
+const ROLE_SPEECH_GROUNDING_STOP_WORDS = new Set(
+  'about after again before book clue evidence exact from have into just only other record source than that their then there these they this those through under were what when where which while with would write'.split(
+    ' ',
+  ),
+);
+
+function quotedRoleEvidenceVisible(response, frame) {
+  const quotes = quotedRoleSpeech(response);
+  return (frame?.entries || [])
+    .filter((entry) => entry.mode === 'enacted_role')
+    .some((entry) => {
+      const evidenceTokens = new Set(
+        factTermWords(entry.surface).filter(
+          (token) => token.length >= 4 && !ROLE_SPEECH_GROUNDING_STOP_WORDS.has(token),
+        ),
+      );
+      if (!evidenceTokens.size) return false;
+      const requiredMatches = Math.min(3, evidenceTokens.size);
+      return quotes.some((quote) => {
+        const quoteTokens = new Set(factTermWords(quote));
+        return [...evidenceTokens].filter((token) => quoteTokens.has(token)).length >= requiredMatches;
+      });
+    });
 }
 
 function entrySourcePerspectiveDrift(entry, response) {
@@ -319,7 +348,7 @@ export function tutorStubSourcePerspectiveDriftVisible({ text = '', frame = null
 function directEnactmentVisible(response, frame) {
   if (META_ROLEPLAY_PATTERN.test(response)) return false;
   if (tutorStubRoleStageDirectionVisible({ text: response, frame })) return false;
-  return tutorStubFirstPersonRoleVoiceVisible(response);
+  return quotedRoleEvidenceVisible(response, frame);
 }
 
 function frameEvidenceTokens(frame) {

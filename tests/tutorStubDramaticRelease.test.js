@@ -200,6 +200,29 @@ test('a possessive evidence object is not mistaken for a role-label stage direct
   );
 });
 
+test('an exact authored source left unquoted is not a role label but still fails enactment', () => {
+  const surface = "The leat-keeper's book is exact. Since the forge was shut, one hand alone drew the weir crucible.";
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_caster',
+        via: 'director',
+        surface,
+        presentation: { mode: 'enacted_role', role: 'leat-keeper reading the charcoal book' },
+      },
+    ],
+  });
+  const text = `Write: “We have not yet named the caster.” I read in the record that ${surface} What does this change?`;
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(tutorStubRoleStageDirectionVisible({ text, frame }), false);
+  assert.equal(audit.roleStageDirection, false);
+  assert.equal(audit.firstPersonRoleVoice, true);
+  assert.equal(audit.enactmentVisible, false);
+  assert.ok(audit.issues.some((issue) => issue.type === 'missing_in_scene_enactment'));
+  assert.ok(!audit.issues.some((issue) => issue.type === 'role_label_stage_direction'));
+});
+
 test('announcing role-play fails even when the clue and return question are present', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
