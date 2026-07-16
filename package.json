@@ -35,6 +35,7 @@
     "tutor:stub:character-loop": "node scripts/run-tutor-stub-character-adaptation-loop.js",
     "tutor:stub:first-draft-replay": "node scripts/replay-tutor-stub-frozen-turns.js",
     "tutor:stub:first-draft-campaign": "node scripts/run-tutor-stub-first-draft-campaign.js",
+    "tutor:stub:trajectory-shadow": "node scripts/build-tutor-stub-trajectory-shadow.js",
     "tutor:stub:step4": "node scripts/run-step4-point-of-action-gate.js",
     "tutor:stub:qa": "node scripts/run-tutor-stub-qa-matrix.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
