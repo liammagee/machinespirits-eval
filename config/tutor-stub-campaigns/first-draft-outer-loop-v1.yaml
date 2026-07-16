@@ -15,18 +15,37 @@ current:
   campaign_version: 27
   label: V27
   state: working_predeclared
-  working_iteration: 7
-  working_screen_id: first-draft-working-screens-v6
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v6.yaml
+  working_iteration: 8
+  working_screen_id: first-draft-working-screens-v7
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml
+  primary_working_screen_id: first-draft-working-screens-v6
+  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v6.yaml
   acceptance_config: null
   required_confirmation_after_primary_pass:
-    status: planned_not_predeclared
+    status: predeclared
     screen_id: first-draft-working-screens-v7
+    config: config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml
     purpose: >-
-      A separately predeclared cross-world development panel must confirm v2
-      joint-performance generation before any V27 held-out matrix exists. No
-      confirmation seed is reserved by this focused Marrick predeclaration.
-    seed_status: not_reserved
+      Four uncontaminated non-Marrick frozen prefixes spanning answer-seeking,
+      affective-resistant, premature-closure, and diligent profiles must each
+      pass 4/4 strict original joint-performance draws at full configuration
+      realization before any V27 held-out matrix exists.
+    seed_status: reusable_non_held_out_development
+    seeds: [20261600, 20261601, 20261602, 20261603]
+    hard_cell: tallow_answer_seeking
+    maximum_concurrent_remaining_cells: 3
+    open_qualitative_debt:
+      status: open_debt
+      source: V28_structural_audit_of_v27_iteration_7
+      items:
+        - host_source_renderer
+        - handoff_contract_and_cross_slot_progression
+        - typed_due_source_action_referent
+        - typed_turn_focus_relation
+      consequence: >-
+        Confirmation is diagnostic development evidence only. Even a complete
+        mechanical pass cannot terminate the outer loop or establish final
+        acceptance; V28 must address these debts before held-out predeclaration.
   pre_model_attempts:
     - version: 27
       working_iteration: 3
@@ -495,45 +514,129 @@ current:
         consecutive_without_improvement: 0
         stop: false
         reason: improved
+    - version: 27
+      working_iteration: 7
+      status: pass
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json
+      development_seed: 20261500
+      seed_disposition: reusable_non_held_out_development
+      run_head: 20f9cb414a6ef0a225f7e0c0f22674ddffd812f7
+      run_head_provenance: launch_head_confirmed
+      run_head_artifact_embedded: false
+      provenance:
+        working_screen_config_sha256: ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e
+        source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/campaign-validation.json
+        campaign_validation_sha256: 083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee
+        result_sha256: d4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6
+        turn_artifacts:
+          - turn: 4
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-4.json
+            sha256: 0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29
+          - turn: 5
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-5.json
+            sha256: b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a
+          - turn: 6
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-6.json
+            sha256: b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24
+          - turn: 9
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-9.json
+            sha256: c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30
+      completed_turns: [4, 5, 6, 9]
+      unstarted_turns: []
+      original_candidates_accepted: 4
+      original_candidates_completed: 4
+      original_candidate_acceptance_rate: 1
+      mean_configuration_realization: 1
+      maximum_possible_originals_accepted: 4
+      maximum_possible_configuration_realization: 1
+      final_safety_failures: 0
+      transcript_specific_uptake_failures: 0
+      mechanical_repairs: 0
+      model_rewrites: 0
+      deterministic_fallbacks: 0
+      semantic_adjudicator_calls: 0
+      semantic_adjudicator_errors: 0
+      semantic_recognition_corrections: 0
+      transport_normalized_outputs: 0
+      transport_normalization_count: 0
+      transport_normalizations: []
+      joint_performance_model_outputs: 4
+      valid_joint_performance_outputs: 4
+      joint_performance_output_failures: 0
+      joint_performance_ownership_passes: 4
+      joint_performance_ownership_failures: 0
+      exact_host_source_occurrence_passes: 4
+      exact_host_source_occurrence_failures: 0
+      mean_original_latency_ms: 8157
+      mean_total_tutor_latency_ms: 8157
+      per_turn_latency_and_tokens:
+        - { turn: 4, latency_ms: 9268, input_tokens: 17715, output_tokens: 273, total_tokens: 17988 }
+        - { turn: 5, latency_ms: 7369, input_tokens: 18001, output_tokens: 210, total_tokens: 18211 }
+        - { turn: 6, latency_ms: 7475, input_tokens: 16180, output_tokens: 223, total_tokens: 16403 }
+        - { turn: 9, latency_ms: 8516, input_tokens: 16806, output_tokens: 276, total_tokens: 17082 }
+      token_usage: { input: 68702, output: 982, total: 69684 }
+      dominant_failure_clusters: []
+      comparison:
+        comparison_available: true
+        compared_to_iteration: 6
+        comparable_completion: true
+        measurable_improvement: true
+        configuration_realization_improved: true
+        original_candidates_accepted_delta: 1
+        original_candidate_acceptance_rate_delta: 0.25
+        mean_configuration_realization_delta: 0.04175
+        valid_joint_performance_outputs_delta: 0
+        joint_performance_output_failures_delta: 0
+        joint_performance_ownership_passes_delta: 1
+        joint_performance_ownership_failures_delta: -1
+        exact_host_source_occurrence_passes_delta: 0
+        exact_host_source_occurrence_failures_delta: 0
+        mean_original_latency_ms_delta: -847.75
+        semantic_recognition_corrections: 0
+        transport_normalization_count: 0
+        consecutive_without_improvement: 0
+        stop: false
+        reason: improved
   last_observation:
     version: 27
-    working_iteration: 6
-    status: fail
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json
+    working_iteration: 7
+    status: pass
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json
     development_seed: 20261500
     seed_disposition: reusable_non_held_out_development
-    run_head: 1e6ae86ee407ea06258cfc9d013e2eaec5d8bf3a
-    run_head_provenance: launch_log_confirmed
+    run_head: 20f9cb414a6ef0a225f7e0c0f22674ddffd812f7
+    run_head_provenance: launch_head_confirmed
     run_head_artifact_embedded: false
     provenance:
-      working_screen_config_sha256: bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928
+      working_screen_config_sha256: ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e
       source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
-      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/campaign-validation.json
-      campaign_validation_sha256: 8f4b6aed9dced0bde19b9b4200937b56623a9aa9f62365d54e21ea75f934abbf
-      result_sha256: d5fb716abac48df6eba0a2561513d05f954e994108e5074eca3a4781d2d24a3d
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/campaign-validation.json
+      campaign_validation_sha256: 083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee
+      result_sha256: d4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6
       turn_artifacts:
         - turn: 4
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-4.json
-          sha256: fa3aa342375afd87ecc3be64e78283bc826800bfc3e7b645c1fca8eee2d27087
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-4.json
+          sha256: 0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29
         - turn: 5
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-5.json
-          sha256: 19f82a57250fe47d8c9cb861fbc2331927b54c19a44c980d2593e78bad8f1c4d
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-5.json
+          sha256: b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a
         - turn: 6
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-6.json
-          sha256: 97fdeb6d9856b75ea80e006d9969d790b3434aaf21b090ead9aaa848c767e6eb
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-6.json
+          sha256: b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24
         - turn: 9
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-9.json
-          sha256: 841b6a2ab228de92f0e70bd78469c2d2bf9918564d9c77828813706d50cd0510
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-9.json
+          sha256: c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30
     completed_turns: [4, 5, 6, 9]
     unstarted_turns: []
-    original_candidates_accepted: 3
+    original_candidates_accepted: 4
     original_candidates_completed: 4
-    original_candidate_acceptance_rate: 0.75
-    mean_configuration_realization: 0.95825
-    maximum_possible_originals_accepted: 3
-    maximum_possible_configuration_realization: 0.95825
+    original_candidate_acceptance_rate: 1
+    mean_configuration_realization: 1
+    maximum_possible_originals_accepted: 4
+    maximum_possible_configuration_realization: 1
     final_safety_failures: 0
-    transcript_specific_uptake_failures: 1
+    transcript_specific_uptake_failures: 0
     mechanical_repairs: 0
     model_rewrites: 0
     deterministic_fallbacks: 0
@@ -546,43 +649,35 @@ current:
     joint_performance_model_outputs: 4
     valid_joint_performance_outputs: 4
     joint_performance_output_failures: 0
-    joint_performance_ownership_passes: 3
-    joint_performance_ownership_failures: 1
+    joint_performance_ownership_passes: 4
+    joint_performance_ownership_failures: 0
     exact_host_source_occurrence_passes: 4
     exact_host_source_occurrence_failures: 0
-    mean_original_latency_ms: 9004.75
-    mean_total_tutor_latency_ms: 9004.75
+    mean_original_latency_ms: 8157
+    mean_total_tutor_latency_ms: 8157
     per_turn_latency_and_tokens:
-      - { turn: 4, latency_ms: 8885, input_tokens: 15904, output_tokens: 252, total_tokens: 16156 }
-      - { turn: 5, latency_ms: 9952, input_tokens: 15978, output_tokens: 353, total_tokens: 16331 }
-      - { turn: 6, latency_ms: 8302, input_tokens: 18199, output_tokens: 226, total_tokens: 18425 }
-      - { turn: 9, latency_ms: 8880, input_tokens: 16808, output_tokens: 285, total_tokens: 17093 }
-    token_usage: { input: 66889, output: 1116, total: 68005 }
-    dominant_failure_clusters:
-      - cluster: actorialRealizationAudit:missing_selected_performance_tactic
-        count: 1
-      - cluster: jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
-        count: 1
-      - cluster: jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
-        count: 1
-      - cluster: responseCompositionAudit:verbatim_learner_echo
-        count: 1
+      - { turn: 4, latency_ms: 9268, input_tokens: 17715, output_tokens: 273, total_tokens: 17988 }
+      - { turn: 5, latency_ms: 7369, input_tokens: 18001, output_tokens: 210, total_tokens: 18211 }
+      - { turn: 6, latency_ms: 7475, input_tokens: 16180, output_tokens: 223, total_tokens: 16403 }
+      - { turn: 9, latency_ms: 8516, input_tokens: 16806, output_tokens: 276, total_tokens: 17082 }
+    token_usage: { input: 68702, output: 982, total: 69684 }
+    dominant_failure_clusters: []
     comparison:
       comparison_available: true
-      compared_to_iteration: 5
+      compared_to_iteration: 6
       comparable_completion: true
       measurable_improvement: true
-      configuration_realization_improved: false
-      original_candidates_accepted_delta: 3
-      original_candidate_acceptance_rate_delta: 0.75
-      mean_configuration_realization_delta: -0.04175
-      valid_joint_performance_outputs_delta: 3
+      configuration_realization_improved: true
+      original_candidates_accepted_delta: 1
+      original_candidate_acceptance_rate_delta: 0.25
+      mean_configuration_realization_delta: 0.04175
+      valid_joint_performance_outputs_delta: 0
       joint_performance_output_failures_delta: 0
-      joint_performance_ownership_passes_delta: 3
-      joint_performance_ownership_failures_delta: 0
-      exact_host_source_occurrence_passes_delta: 3
+      joint_performance_ownership_passes_delta: 1
+      joint_performance_ownership_failures_delta: -1
+      exact_host_source_occurrence_passes_delta: 0
       exact_host_source_occurrence_failures_delta: 0
-      mean_original_latency_ms_delta: 882.75
+      mean_original_latency_ms_delta: -847.75
       semantic_recognition_corrections: 0
       transport_normalization_count: 0
       consecutive_without_improvement: 0
@@ -900,6 +995,22 @@ seed_ledger:
       status: reusable_non_held_out_development
       cell: marrick_v27_joint_performance
       screen: first-draft-working-screens-v6
+    - seed: 20261600
+      status: reusable_non_held_out_development
+      cell: tallow_answer_seeking
+      screen: first-draft-working-screens-v7
+    - seed: 20261601
+      status: reusable_non_held_out_development
+      cell: ravensmark_affective_resistant
+      screen: first-draft-working-screens-v7
+    - seed: 20261602
+      status: reusable_non_held_out_development
+      cell: larkspur_premature_closure
+      screen: first-draft-working-screens-v7
+    - seed: 20261603
+      status: reusable_non_held_out_development
+      cell: foxtrot_diligent
+      screen: first-draft-working-screens-v7
   held_out:
     status: not_predeclared
     entries: []
@@ -939,6 +1050,15 @@ claim_boundary: >-
   safely reached 3/4 originals at 0.95825 configuration realization. Its sole
   failed turn contained three adjudicated typed-recognition false negatives:
   a licensed requested-entry answer plus a same-sentence public judgment
-  meeting contrary evidence. Iteration 7 changes only those two deterministic
-  recognitions against the same reusable development prefixes and label. V28+
-  remain available if a development or held-out version fails.
+  meeting contrary evidence. Iteration 7 changed only those two deterministic
+  recognitions and passed 4/4 at full configuration realization with no safety,
+  recovery, semantic, or transport intervention. The required next stage is a
+  non-held-out confirmation over four exact uncontaminated non-Marrick prefixes
+  and four profiles, with four draws per prefix. A qualitative audit of the I7
+  trajectory still found four structural debts: the host source renderer, the
+  handoff contract and cross-slot progression, a typed due-source action
+  referent, and a typed turn-focus relation. They remain explicitly open even
+  if confirmation passes every mechanical gate. Confirmation therefore cannot
+  terminate the loop or establish final acceptance; V28 must address this debt
+  before held-out predeclaration. V28+ remain available if a development or
+  held-out version fails.

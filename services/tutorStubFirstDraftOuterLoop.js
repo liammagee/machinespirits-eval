@@ -51,6 +51,17 @@ const REQUIRED_REVIEW_RESPONSIBILITIES = Object.freeze([
   'record_provenance',
 ]);
 
+const V27_OPEN_QUALITATIVE_DEBT = Object.freeze({
+  status: 'open_debt',
+  source: 'V28_structural_audit_of_v27_iteration_7',
+  items: Object.freeze([
+    'host_source_renderer',
+    'handoff_contract_and_cross_slot_progression',
+    'typed_due_source_action_referent',
+    'typed_turn_focus_relation',
+  ]),
+});
+
 const V27_ITERATION_1_RESULT = Object.freeze({
   artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json',
   runHead: '7fc926a2801f947da056b573a499933dccc71968',
@@ -197,6 +208,38 @@ const V27_ITERATION_6_RESULT = Object.freeze({
       turn: 9,
       path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-9.json',
       sha256: '841b6a2ab228de92f0e70bd78469c2d2bf9918564d9c77828813706d50cd0510',
+    }),
+  ]),
+});
+
+const V27_ITERATION_7_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json',
+  runHead: '20f9cb414a6ef0a225f7e0c0f22674ddffd812f7',
+  configSha256: 'ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e',
+  sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/campaign-validation.json',
+  campaignValidationSha256: '083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee',
+  resultSha256: 'd4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6',
+  turns: Object.freeze([
+    Object.freeze({
+      turn: 4,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-4.json',
+      sha256: '0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29',
+    }),
+    Object.freeze({
+      turn: 5,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-5.json',
+      sha256: 'b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a',
+    }),
+    Object.freeze({
+      turn: 6,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-6.json',
+      sha256: 'b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24',
+    }),
+    Object.freeze({
+      turn: 9,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/marrick_v27_joint_performance/turn-9.json',
+      sha256: 'c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30',
     }),
   ]),
 });
@@ -816,6 +859,77 @@ function validateV27Iteration6Observation(observation, label) {
   }, `${label} comparison`);
 }
 
+function validateV27Iteration7Observation(observation, label) {
+  expect(observation?.version, 27, `${label} version`);
+  expect(observation?.working_iteration, 7, `${label} working iteration`);
+  expect(observation?.status, 'pass', `${label} status`);
+  expect(observation?.result_artifact, V27_ITERATION_7_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.development_seed, 20261500, `${label} development seed`);
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
+  expect(observation?.run_head, V27_ITERATION_7_RESULT.runHead, `${label} run HEAD`);
+  expect(observation?.run_head_provenance, 'launch_head_confirmed', `${label} run HEAD provenance`);
+  expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
+  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_7_RESULT.configSha256, `${label} config hash`);
+  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_7_RESULT.sourceTraceSha256, `${label} source trace hash`);
+  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_7_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
+  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_7_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_7_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_7_RESULT.turns, `${label} turn provenance`);
+  expectJson(observation?.completed_turns, [4, 5, 6, 9], `${label} completed turns`);
+  expectJson(observation?.unstarted_turns, [], `${label} unstarted turns`);
+  expect(observation?.original_candidates_accepted, 4, `${label} accepted originals`);
+  expect(observation?.original_candidates_completed, 4, `${label} completed originals`);
+  expect(observation?.original_candidate_acceptance_rate, 1, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 1, `${label} configuration realization`);
+  expect(observation?.maximum_possible_originals_accepted, 4, `${label} maximum accepted`);
+  expect(observation?.maximum_possible_configuration_realization, 1, `${label} maximum configuration realization`);
+  for (const field of [
+    'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
+    'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
+    'transport_normalized_outputs', 'transport_normalization_count',
+    'joint_performance_output_failures', 'joint_performance_ownership_failures',
+    'exact_host_source_occurrence_failures',
+  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
+  expect(observation?.joint_performance_model_outputs, 4, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 4, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_ownership_passes, 4, `${label} ownership passes`);
+  expect(observation?.exact_host_source_occurrence_passes, 4, `${label} host source passes`);
+  expect(observation?.mean_original_latency_ms, 8157, `${label} mean original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 8157, `${label} mean total latency`);
+  expectJson(observation?.per_turn_latency_and_tokens, [
+    { turn: 4, latency_ms: 9268, input_tokens: 17715, output_tokens: 273, total_tokens: 17988 },
+    { turn: 5, latency_ms: 7369, input_tokens: 18001, output_tokens: 210, total_tokens: 18211 },
+    { turn: 6, latency_ms: 7475, input_tokens: 16180, output_tokens: 223, total_tokens: 16403 },
+    { turn: 9, latency_ms: 8516, input_tokens: 16806, output_tokens: 276, total_tokens: 17082 },
+  ], `${label} per-turn latency and tokens`);
+  expectJson(observation?.token_usage, { input: 68702, output: 982, total: 69684 }, `${label} token usage`);
+  expectJson(observation?.dominant_failure_clusters, [], `${label} dominant failure clusters`);
+  expectJson(observation?.comparison, {
+    comparison_available: true,
+    compared_to_iteration: 6,
+    comparable_completion: true,
+    measurable_improvement: true,
+    configuration_realization_improved: true,
+    original_candidates_accepted_delta: 1,
+    original_candidate_acceptance_rate_delta: 0.25,
+    mean_configuration_realization_delta: 0.04175,
+    valid_joint_performance_outputs_delta: 0,
+    joint_performance_output_failures_delta: 0,
+    joint_performance_ownership_passes_delta: 1,
+    joint_performance_ownership_failures_delta: -1,
+    exact_host_source_occurrence_passes_delta: 0,
+    exact_host_source_occurrence_failures_delta: 0,
+    mean_original_latency_ms_delta: -847.75,
+    semantic_recognition_corrections: 0,
+    transport_normalization_count: 0,
+    consecutive_without_improvement: 0,
+    stop: false,
+    reason: 'improved',
+  }, `${label} comparison`);
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -955,11 +1069,13 @@ function validateWorkingScreen(manifest, { root }) {
   if (validation.kind !== 'working_screen') throw new Error('outer loop working config is not a working screen');
 
   const config = loaded.config;
+  const confirmation = config.id === 'first-draft-working-screens-v7';
   expect(config.id, manifest.current?.working_screen_id, 'working screen id');
   expect(config.held_out, false, 'working screen held-out flag');
   expect(config.fixed_configuration?.original_only, true, 'working screen original-only mode');
-  expect(config.fixed_configuration?.draws_per_turn, 1, 'working screen draws per turn');
+  expect(config.fixed_configuration?.draws_per_turn, confirmation ? 4 : 1, 'working screen draws per turn');
   expect(config.fixed_configuration?.concurrency, 1, 'working screen concurrency');
+  expect(config.fixed_configuration?.max_live_model_jobs, confirmation ? 3 : 1, 'working screen maximum live jobs');
   if (config.fixed_configuration?.structured_generation === true) {
     expect(config.gates_per_cell?.require_structured_output, true, 'structured output gate');
     expect(config.gates_per_cell?.require_structured_slot_ownership, true, 'structured slot ownership gate');
@@ -987,6 +1103,14 @@ function validateWorkingScreen(manifest, { root }) {
   expect(config.gates_per_cell?.minimum_mean_configuration_realization, 1, 'working screen configuration realization');
   expect(config.gates_per_cell?.configuration_realization_enforcement, 'gate', 'configuration realization enforcement');
   expect(config.gates_per_cell?.maximum_safety_failures, 0, 'working screen safety failures');
+  if (confirmation) {
+    for (const field of [
+      'maximum_mechanical_repairs', 'maximum_model_rewrites',
+      'maximum_semantic_recognition_corrections', 'maximum_transport_normalizations',
+    ]) expect(config.gates_per_cell?.[field], 0, `confirmation ${field}`);
+    expect(config.gates_per_cell?.required_prefixes, 1, 'confirmation required prefixes');
+    expect(config.gates_per_cell?.required_draws_per_prefix, 4, 'confirmation draws per prefix');
+  }
   expect(config.gates_per_cell?.maximum_fallbacks, 0, 'working screen fallbacks');
   expect(config.gates_per_cell?.require_transcript_specific_uptake, true, 'working screen uptake gate');
   const finalFrontierAttemptIteration = config.stopping?.final_frontier_attempt_iteration;
@@ -998,14 +1122,27 @@ function validateWorkingScreen(manifest, { root }) {
       'failed final-frontier attempt stop',
     );
   }
-  if (config.matrix.length !== 1) throw new Error('working screen must contain exactly one focused cell');
+  if (config.matrix.length !== (confirmation ? 4 : 1)) {
+    throw new Error(`working screen must contain exactly ${confirmation ? 4 : 1} cell(s)`);
+  }
 
+  for (const cell of config.matrix) {
+    const ledgerEntry = (manifest.seed_ledger?.development || []).find(
+      (entry) => Number(entry.seed) === Number(cell.development_seed),
+    );
+    if (!ledgerEntry) throw new Error(`working seed ${cell.development_seed} is absent from the outer-loop ledger`);
+    expect(ledgerEntry.cell, cell.id, `working seed ${cell.development_seed} cell binding`);
+    expect(ledgerEntry.screen, config.id, `working seed ${cell.development_seed} screen binding`);
+  }
   const cell = config.matrix[0];
-  const ledgerEntry = (manifest.seed_ledger?.development || []).find(
-    (entry) => Number(entry.seed) === Number(cell.development_seed),
-  );
-  if (!ledgerEntry) throw new Error(`working seed ${cell.development_seed} is absent from the outer-loop ledger`);
-  expect(ledgerEntry.cell, cell.id, `working seed ${cell.development_seed} cell binding`);
+  let changeConfig = config;
+  if (confirmation) {
+    const primaryPath = absolute(root, manifest.current?.primary_working_screen_config);
+    if (!fs.existsSync(primaryPath)) throw new Error(`primary working screen config is missing: ${primaryPath}`);
+    const primary = loadTutorStubFirstDraftCampaign(primaryPath, { root }).config;
+    expect(primary.id, manifest.current?.primary_working_screen_id, 'primary working screen id');
+    changeConfig = primary;
+  }
 
   return {
     configPath,
@@ -1013,6 +1150,16 @@ function validateWorkingScreen(manifest, { root }) {
     cell: cell.id,
     turns: cell.turns.map(Number),
     developmentSeed: Number(cell.development_seed),
+    cells: config.matrix.map((entry) => ({
+      id: entry.id,
+      priority: Number(entry.priority),
+      world: entry.world,
+      learnerProfile: entry.learner_profile,
+      turns: entry.turns.map(Number),
+      developmentSeed: Number(entry.development_seed),
+      sourceTraceSha256: entry.source_trace_sha256 || null,
+    })),
+    confirmation,
     finalFrontierAttemptIteration:
       finalFrontierAttemptIteration == null ? null : Number(finalFrontierAttemptIteration),
     stopIfFinalFrontierAttemptFails:
@@ -1025,12 +1172,15 @@ function validateWorkingScreen(manifest, { root }) {
       config.fixed_configuration?.joint_performance_composition_schema || null,
     jointPerformanceAuditSchema:
       config.fixed_configuration?.joint_performance_audit_schema || null,
-    iteration2Change: config.change_log?.iteration_2 || null,
-    iteration3Change: config.change_log?.iteration_3 || null,
-    iteration4Change: config.change_log?.iteration_4 || null,
-    iteration5Change: config.change_log?.iteration_5 || null,
-    iteration6Change: config.change_log?.iteration_6 || null,
-    iteration7Change: config.change_log?.iteration_7 || null,
+    iteration2Change: changeConfig.change_log?.iteration_2 || null,
+    iteration3Change: changeConfig.change_log?.iteration_3 || null,
+    iteration4Change: changeConfig.change_log?.iteration_4 || null,
+    iteration5Change: changeConfig.change_log?.iteration_5 || null,
+    iteration6Change: changeConfig.change_log?.iteration_6 || null,
+    iteration7Change: changeConfig.change_log?.iteration_7 || null,
+    execution: config.execution || null,
+    changeControl: config.change_control || null,
+    openQualitativeDebt: config.open_qualitative_debt || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -1118,10 +1268,10 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
   if (currentVersion === 27) {
     expect(state.currentState, 'working_predeclared', 'V27 current state');
-    expect(workingIteration, 7, 'V27 working iteration');
+    expect(workingIteration, 8, 'V27 working iteration');
     const workingHistory = manifest.current?.working_history || [];
-    if (workingHistory.length !== 6) {
-      throw new Error('V27 working history must preserve exactly iterations 1 through 6 before iteration 7');
+    if (workingHistory.length !== 7) {
+      throw new Error('V27 working history must preserve exactly iterations 1 through 7 before confirmation');
     }
     validateV27Iteration1Observation(workingHistory[0], 'V27 working history iteration 1');
     validateV27Iteration2Observation(workingHistory[1], 'V27 working history iteration 2');
@@ -1129,10 +1279,11 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     validateV27Iteration4Observation(workingHistory[3], 'V27 working history iteration 4');
     validateV27Iteration5Observation(workingHistory[4], 'V27 working history iteration 5');
     validateV27Iteration6Observation(workingHistory[5], 'V27 working history iteration 6');
-    validateV27Iteration6Observation(manifest.current?.last_observation, 'V27 last observation');
+    validateV27Iteration7Observation(workingHistory[6], 'V27 working history iteration 7');
+    validateV27Iteration7Observation(manifest.current?.last_observation, 'V27 last observation');
     expectJson(
       manifest.current?.last_observation,
-      workingHistory[5],
+      workingHistory[6],
       'V27 last observation and working history',
     );
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
@@ -1149,12 +1300,12 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     );
     expect(
       manifest.current?.required_confirmation_after_primary_pass?.status,
-      'planned_not_predeclared',
+      'predeclared',
       'V27 confirmation status',
     );
     expect(
       manifest.current?.required_confirmation_after_primary_pass?.seed_status,
-      'not_reserved',
+      'reusable_non_held_out_development',
       'V27 confirmation seed status',
     );
     expect(workingScreen.jointPerformanceGeneration, true, 'V27 joint-performance generation');
@@ -1629,14 +1780,107 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       },
       'V27 iteration 7 typed audit-recognition change',
     );
-    if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
-      throw new Error('V27 must predeclare only development seed 20261500');
-    }
-    expect(
-      seeds.development[0]?.status,
-      'reusable_non_held_out_development',
-      'V27 development seed status',
+    expect(workingScreen.confirmation, true, 'V27 cross-world confirmation screen');
+    expectJson(workingScreen.cells, [
+      {
+        id: 'tallow_answer_seeking',
+        priority: 1,
+        world: 'world_025_tallow_street',
+        learnerProfile: 'answer_seeking',
+        turns: [5],
+        developmentSeed: 20261600,
+        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+      },
+      {
+        id: 'ravensmark_affective_resistant',
+        priority: 2,
+        world: 'world_009_ravensmark',
+        learnerProfile: 'affective_resistant',
+        turns: [5],
+        developmentSeed: 20261601,
+        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+      },
+      {
+        id: 'larkspur_premature_closure',
+        priority: 3,
+        world: 'world_028_larkspur_fridge',
+        learnerProfile: 'premature_closure',
+        turns: [2],
+        developmentSeed: 20261602,
+        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+      },
+      {
+        id: 'foxtrot_diligent',
+        priority: 4,
+        world: 'world_022_foxtrot_jukebox',
+        learnerProfile: 'diligent',
+        turns: [4],
+        developmentSeed: 20261603,
+        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+      },
+    ], 'V27 confirmation cells');
+    expectJson(workingScreen.execution, {
+      hardest_cell_first: true,
+      hard_cell: 'tallow_answer_seeking',
+      hard_cell_must_pass_before_remaining: true,
+      remaining_cells_execution: 'concurrent',
+      maximum_concurrent_remaining_cells: 3,
+      one_job_per_cell: true,
+      forbid_duplicate_active_or_completed_cells: true,
+      complete_all_cells_after_hard_cell_passes: true,
+      stop_cell_when_gate_mathematically_impossible: true,
+      preserve_unstarted_seeds_as_unconsumed: true,
+      require_exact_target_bundle_binding: true,
+    }, 'V27 confirmation execution');
+    expectJson(workingScreen.changeControl, {
+      implementation_change_from_v27_iteration_7: 'none',
+      speaking_changes: [],
+      audit_recognition_changes: [],
+      recovery_changes: [],
+      transport_changes: [],
+      safety_changes: [],
+      semantic_adjudication_changes: [],
+      gate_changes: [],
+    }, 'V27 confirmation change control');
+    expectJson(
+      {
+        status: workingScreen.openQualitativeDebt?.status,
+        source: workingScreen.openQualitativeDebt?.source,
+        items: workingScreen.openQualitativeDebt?.items,
+      },
+      V27_OPEN_QUALITATIVE_DEBT,
+      'V27 confirmation open qualitative debt',
     );
+    expectJson(
+      {
+        status: manifest.current?.required_confirmation_after_primary_pass?.open_qualitative_debt?.status,
+        source: manifest.current?.required_confirmation_after_primary_pass?.open_qualitative_debt?.source,
+        items: manifest.current?.required_confirmation_after_primary_pass?.open_qualitative_debt?.items,
+      },
+      V27_OPEN_QUALITATIVE_DEBT,
+      'V27 outer-loop open qualitative debt',
+    );
+    expectJson(
+      manifest.current?.required_confirmation_after_primary_pass?.seeds,
+      [20261600, 20261601, 20261602, 20261603],
+      'V27 confirmation seeds',
+    );
+    expect(
+      manifest.current?.required_confirmation_after_primary_pass?.hard_cell,
+      'tallow_answer_seeking',
+      'V27 confirmation hard cell',
+    );
+    if (seeds.development.length !== 5) {
+      throw new Error('V27 must preserve the primary development seed plus four confirmation seeds');
+    }
+    expectJson(
+      seeds.development.map((entry) => Number(entry.seed)),
+      [20261500, 20261600, 20261601, 20261602, 20261603],
+      'V27 development seed ledger',
+    );
+    for (const entry of seeds.development) {
+      expect(entry.status, 'reusable_non_held_out_development', `V27 development seed ${entry.seed} status`);
+    }
     const retiredV26Statuses = new Map([
       [20261400, 'consumed_development_retired_after_stagnation'],
       [20261401, 'retired_unstarted_due_to_stagnation'],

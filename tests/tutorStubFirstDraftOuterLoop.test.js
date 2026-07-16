@@ -19,7 +19,8 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MANIFEST_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-outer-loop-v1.yaml');
-const SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v6.yaml');
+const PRIMARY_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v6.yaml');
+const SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v7.yaml');
 
 function loadYaml(filePath) {
   return YAML.parse(fs.readFileSync(filePath, 'utf8'));
@@ -28,20 +29,21 @@ function loadYaml(filePath) {
 function fixture(tmp) {
   const manifest = loadYaml(MANIFEST_PATH);
   const screen = loadYaml(SCREEN_PATH);
-  const trace = path.join(tmp, 'v23-source.jsonl');
+  const primaryScreen = loadYaml(PRIMARY_SCREEN_PATH);
   const auditFixture = path.join(tmp, 'audit-fixture.json');
-  fs.writeFileSync(trace, '{}\n');
   fs.writeFileSync(auditFixture, '{}\n');
-  screen.matrix[0].source_trace = trace;
   screen.preflight.model_free_fixtures = [auditFixture];
   screen.artifacts.root = path.join(tmp, 'artifacts');
   const screenPath = path.join(tmp, 'working-screen.yaml');
+  const primaryScreenPath = path.join(tmp, 'primary-working-screen.yaml');
   fs.writeFileSync(screenPath, YAML.stringify(screen));
+  fs.writeFileSync(primaryScreenPath, YAML.stringify(primaryScreen));
   manifest.current.working_screen_config = screenPath;
-  return { manifest, screen, screenPath };
+  manifest.current.primary_working_screen_config = primaryScreenPath;
+  return { manifest, screen, screenPath, primaryScreen, primaryScreenPath };
 }
 
-test('outer-loop manifest validates the predeclared V27 iteration-7 joint-performance screen', () => {
+test('outer-loop manifest validates the predeclared V27 cross-world confirmation screen', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-loop-'));
   try {
     const { manifest } = fixture(tmp);
@@ -49,12 +51,12 @@ test('outer-loop manifest validates the predeclared V27 iteration-7 joint-perfor
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 27);
     assert.equal(validation.currentState, 'working_predeclared');
-    assert.equal(validation.workingIteration, 7);
+    assert.equal(validation.workingIteration, 8);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.outcome, 'pending');
     assert.equal(validation.acceptancePredeclared, false);
-    assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
-    assert.equal(validation.workingScreen.developmentSeed, 20261500);
+    assert.deepEqual(validation.workingScreen.turns, [5]);
+    assert.equal(validation.workingScreen.developmentSeed, 20261600);
     assert.equal(validation.workingScreen.jointPerformanceGeneration, true);
     assert.equal(
       validation.workingScreen.jointPerformanceSchema,
@@ -70,7 +72,7 @@ test('outer-loop manifest validates the predeclared V27 iteration-7 joint-perfor
     );
     assert.deepEqual(validation.seedCounts, {
       historical: 19,
-      development: 1,
+      development: 5,
       heldOut: 0,
       reserve: 0,
     });
@@ -86,14 +88,10 @@ test('outer-loop status exposes only the predeclared V27 working transition and 
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
     assert.equal(status.label, 'V27');
-    assert.equal(status.workingIteration, 7);
+    assert.equal(status.workingIteration, 8);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
-    assert.deepEqual(status.developmentSeeds, [
-      {
-        seed: 20261500,
-        cell: 'marrick_v27_joint_performance',
-        status: 'reusable_non_held_out_development',
-      },
+    assert.deepEqual(status.developmentSeeds.map(({ seed }) => seed), [
+      20261500, 20261600, 20261601, 20261602, 20261603,
     ]);
     assert.deepEqual(
       status.next.map((transition) => transition.state),
@@ -147,11 +145,11 @@ test('V27 preserves exact V26 terminal provenance and retires all V26 labels', (
       [20261404, 'retired_unstarted_due_to_stagnation'],
     ]);
     assert.equal(manifest.current.last_observation.version, 27);
-    assert.equal(manifest.current.last_observation.working_iteration, 6);
-    assert.equal(manifest.current.working_history.length, 6);
+    assert.equal(manifest.current.last_observation.working_iteration, 7);
+    assert.equal(manifest.current.working_history.length, 7);
     assert.equal(manifest.current.acceptance_config, null);
-    assert.equal(manifest.current.required_confirmation_after_primary_pass.seed_status, 'not_reserved');
-    assert.equal(JSON.stringify(manifest).includes('20261600'), false);
+    assert.equal(manifest.current.required_confirmation_after_primary_pass.seed_status, 'reusable_non_held_out_development');
+    assert.equal(JSON.stringify(manifest).includes('20261600'), true);
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -161,7 +159,7 @@ test('V27 preserves exact V26 terminal provenance and retires all V26 labels', (
 test('V27 preserves the exact iteration-1 result and iteration-2 speaking-prompt change', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     const observation = manifest.current.working_history[0];
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json');
     assert.equal(observation.run_head, '7fc926a2801f947da056b573a499933dccc71968');
@@ -245,7 +243,7 @@ test('V27 preserves the exact improved iteration-2 result before iteration 3', (
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[1];
-    assert.equal(manifest.current.last_observation.working_iteration, 6);
+    assert.equal(manifest.current.last_observation.working_iteration, 7);
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json');
     assert.equal(observation.run_head, 'bec13717719be76891bf5ece0c1ae94375cdea9a');
     assert.equal(observation.run_head_provenance, 'launch_log_timeline_confirmed');
@@ -314,7 +312,7 @@ test('V27 preserves the exact improved iteration-2 result before iteration 3', (
 test('V27 preserves the iteration-3 typed composite-part audit-recognition predeclaration', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i3-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     assert.deepEqual(screen.change_log.iteration_3, {
       status: 'predeclared',
       bounded_change_owner: 'audit_recognition',
@@ -370,7 +368,7 @@ test('V27 preserves the exact failed iteration-3 result and provenance before it
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[2];
-    assert.equal(manifest.current.last_observation.working_iteration, 6);
+    assert.equal(manifest.current.last_observation.working_iteration, 7);
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json');
     assert.equal(observation.run_head, 'f0df994d1912c3c8b6d6f1b9960b5ef05962f1a6');
     assert.equal(observation.run_head_provenance, 'launch_log_confirmed');
@@ -436,7 +434,7 @@ test('V27 preserves the exact failed iteration-3 result and provenance before it
 test('V27 preserves the iteration-4 transport-only outer-whitespace predeclaration', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i4-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     assert.deepEqual(screen.change_log.iteration_4, {
       status: 'predeclared',
       bounded_change_owner: 'transport',
@@ -488,7 +486,7 @@ test('V27 preserves the exact iteration-4 result and provenance before iteration
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[3];
-    assert.equal(manifest.current.last_observation.working_iteration, 6);
+    assert.equal(manifest.current.last_observation.working_iteration, 7);
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json');
     assert.equal(observation.run_head, 'd048ec273e3a4a4618f51b7b0c999d20542ea14f');
     assert.equal(observation.run_head_provenance, 'launch_log_confirmed');
@@ -581,7 +579,7 @@ test('V27 preserves the exact iteration-4 result and provenance before iteration
 test('V27 iteration 5 predeclares only typed public-judgment-falter recognition', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i5-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     assert.equal(screen.change_log.iteration_5.bounded_change_owner, 'audit_recognition');
     assert.deepEqual(screen.change_log.iteration_5.target_failure_clusters, [
       'actorialRealizationAudit:missing_selected_performance_tactic',
@@ -681,7 +679,7 @@ test('V27 preserves the exact iteration-5 result and provenance in history', () 
 test('V27 iteration 6 predeclares only world-general terminal-s scene morphology', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i6-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     const iteration = screen.change_log.iteration_6;
     assert.equal(iteration.bounded_change_owner, 'audit_recognition');
     assert.deepEqual(iteration.target_failure_clusters, [
@@ -718,7 +716,7 @@ test('V27 preserves the exact iteration-6 result and provenance before iteration
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[5];
-    assert.deepEqual(manifest.current.last_observation, observation);
+    assert.equal(manifest.current.last_observation.working_iteration, 7);
     assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json');
     assert.equal(observation.run_head, '1e6ae86ee407ea06258cfc9d013e2eaec5d8bf3a');
     assert.equal(observation.provenance.working_screen_config_sha256, 'bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928');
@@ -772,10 +770,75 @@ test('V27 preserves the exact iteration-6 result and provenance before iteration
   }
 });
 
+test('V27 preserves the exact iteration-7 passing result and provenance before confirmation', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i7-result-'));
+  try {
+    const { manifest } = fixture(tmp);
+    const observation = manifest.current.working_history[6];
+    assert.deepEqual(manifest.current.last_observation, observation);
+    assert.equal(observation.status, 'pass');
+    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json');
+    assert.equal(observation.run_head, '20f9cb414a6ef0a225f7e0c0f22674ddffd812f7');
+    assert.equal(observation.provenance.working_screen_config_sha256, 'ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e');
+    assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
+    assert.equal(observation.provenance.campaign_validation_sha256, '083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee');
+    assert.equal(observation.provenance.result_sha256, 'd4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6');
+    assert.deepEqual(observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })), [
+      { turn: 4, sha256: '0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29' },
+      { turn: 5, sha256: 'b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a' },
+      { turn: 6, sha256: 'b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24' },
+      { turn: 9, sha256: 'c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30' },
+    ]);
+    assert.deepEqual(observation.completed_turns, [4, 5, 6, 9]);
+    assert.deepEqual(observation.unstarted_turns, []);
+    assert.equal(observation.original_candidates_accepted, 4);
+    assert.equal(observation.original_candidate_acceptance_rate, 1);
+    assert.equal(observation.mean_configuration_realization, 1);
+    assert.equal(observation.valid_joint_performance_outputs, 4);
+    assert.equal(observation.joint_performance_ownership_passes, 4);
+    assert.equal(observation.exact_host_source_occurrence_passes, 4);
+    for (const field of [
+      'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
+      'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
+      'semantic_adjudicator_errors', 'semantic_recognition_corrections',
+      'transport_normalized_outputs', 'transport_normalization_count',
+    ]) assert.equal(observation[field], 0, field);
+    assert.equal(observation.mean_original_latency_ms, 8157);
+    assert.equal(observation.mean_total_tutor_latency_ms, 8157);
+    assert.deepEqual(observation.token_usage, { input: 68702, output: 982, total: 69684 });
+    assert.deepEqual(observation.dominant_failure_clusters, []);
+    assert.deepEqual(observation.comparison, {
+      comparison_available: true,
+      compared_to_iteration: 6,
+      comparable_completion: true,
+      measurable_improvement: true,
+      configuration_realization_improved: true,
+      original_candidates_accepted_delta: 1,
+      original_candidate_acceptance_rate_delta: 0.25,
+      mean_configuration_realization_delta: 0.04175,
+      valid_joint_performance_outputs_delta: 0,
+      joint_performance_output_failures_delta: 0,
+      joint_performance_ownership_passes_delta: 1,
+      joint_performance_ownership_failures_delta: -1,
+      exact_host_source_occurrence_passes_delta: 0,
+      exact_host_source_occurrence_failures_delta: 0,
+      mean_original_latency_ms_delta: -847.75,
+      semantic_recognition_corrections: 0,
+      transport_normalization_count: 0,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'improved',
+    });
+    assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('V27 iteration 7 predeclares only the two adjudicated typed recognitions', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i7-'));
   try {
-    const { manifest, screen } = fixture(tmp);
+    const { manifest, primaryScreen: screen } = fixture(tmp);
     const iteration = screen.change_log.iteration_7;
     assert.equal(iteration.bounded_change_owner, 'audit_recognition');
     assert.deepEqual(iteration.target_failure_clusters, [
@@ -834,47 +897,44 @@ test('V27 iteration 7 predeclares only the two adjudicated typed recognitions', 
   }
 });
 
-test('outer-loop validator fails closed on V27 history, iteration-6 evidence, or iteration-7 scope drift', () => {
+test('outer-loop validator fails closed on V27 result, confirmation, or open-debt drift', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-drift-'));
   try {
     const mutations = [
-      ({ manifest }) => { manifest.current.working_iteration = 6; },
+      ({ manifest }) => { manifest.current.working_iteration = 7; },
       ({ manifest }) => { manifest.current.working_history = []; },
       ({ manifest }) => { manifest.current.last_observation.provenance.result_sha256 = 'wrong'; },
       ({ manifest }) => { manifest.current.last_observation.run_head_provenance = 'artifact_embedded'; },
       ({ manifest }) => { manifest.current.last_observation.unstarted_turns = [9]; },
-      ({ manifest }) => { manifest.current.last_observation.original_candidates_accepted = 1; },
+      ({ manifest }) => { manifest.current.last_observation.original_candidates_accepted = 3; },
       ({ manifest }) => { manifest.current.last_observation.mean_configuration_realization = 0.9; },
       ({ manifest }) => { manifest.current.last_observation.final_safety_failures = 1; },
-      ({ manifest }) => { manifest.current.last_observation.dominant_failure_clusters[0].cluster = 'other'; },
+      ({ manifest }) => { manifest.current.last_observation.dominant_failure_clusters.push({ cluster: 'other', count: 1 }); },
       ({ manifest }) => { manifest.current.last_observation.comparison.stop = true; },
       ({ manifest }) => { manifest.seed_ledger.development[0].status = 'consumed_and_not_reusable'; },
-      ({ screen }) => { screen.change_log.iteration_7.speaking_changes = ['changed']; },
-      ({ screen }) => { screen.change_log.iteration_7.recovery_changes = ['changed']; },
-      ({ screen }) => { screen.change_log.iteration_7.transport_changes = ['changed']; },
-      ({ screen }) => { screen.change_log.iteration_7.semantic_adjudication_changes = ['changed']; },
-      ({ screen }) => { screen.change_log.iteration_7.target_failure_clusters.push('unrelated'); },
-      ({ screen }) => { screen.change_log.iteration_7.phrase_level_recognition_changes = ['widen_regex']; },
-      ({ screen }) => { screen.change_log.iteration_7.requested_entry_answer_recognition.request_contract.explicit_writable_entry_request = false; },
-      ({ screen }) => { screen.change_log.iteration_7.requested_entry_answer_recognition.candidate_contract.form = 'any'; },
-      ({ screen }) => { screen.change_log.iteration_7.requested_entry_answer_recognition.candidate_contract.question_forbidden = false; },
-      ({ screen }) => { screen.change_log.iteration_7.requested_entry_answer_recognition.ordinary_echo_behavior.remains_hard_failure = false; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.same_owned_sentence.required = false; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.local_pressure_target_overlap.minimum_content_tokens = 1; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.contrary_anchor_overlap.minimum_content_tokens = 1; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.exact_contrary_source.surface_match = 'fuzzy'; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.terminal_handoff.terminal_question = false; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.charismatic_visibility_reuse.independent_lexical_shortcut = true; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.unchanged_contracts.safety_audits = false; },
-      ({ screen }) => { screen.change_log.iteration_7.public_judgment_meets_contrary_evidence_recognition.unchanged_contracts.strict_delivery_gates = false; },
+      ({ primaryScreen }) => { primaryScreen.change_log.iteration_7.speaking_changes = ['changed']; },
+      ({ primaryScreen }) => { primaryScreen.change_log.iteration_7.requested_entry_answer_recognition.candidate_contract.form = 'any'; },
+      ({ screen }) => { screen.fixed_configuration.draws_per_turn = 3; },
+      ({ screen }) => { screen.matrix[0].source_trace_sha256 = 'wrong'; },
+      ({ screen }) => { screen.matrix[0].prefix_integrity.verified_prior_turns = [1, 2, 3]; },
+      ({ screen }) => { screen.matrix[0].prefix_integrity.target_bundle.request_model = 'wrong'; },
+      ({ screen }) => { screen.execution.hard_cell = 'foxtrot_diligent'; },
+      ({ screen }) => { screen.execution.maximum_concurrent_remaining_cells = 4; },
+      ({ screen }) => { screen.execution.forbid_duplicate_active_or_completed_cells = false; },
+      ({ screen }) => { screen.change_control.speaking_changes = ['changed']; },
+      ({ screen }) => { screen.gates_per_cell.minimum_mean_configuration_realization = 0.9; },
+      ({ screen }) => { screen.gates_per_cell.maximum_mechanical_repairs = 1; },
+      ({ screen }) => { screen.open_qualitative_debt.status = 'resolved'; },
+      ({ manifest }) => { manifest.current.required_confirmation_after_primary_pass.open_qualitative_debt.items.pop(); },
     ];
     for (const mutate of mutations) {
       const item = fixture(tmp);
       mutate(item);
       fs.writeFileSync(item.screenPath, YAML.stringify(item.screen));
+      fs.writeFileSync(item.primaryScreenPath, YAML.stringify(item.primaryScreen));
       assert.throws(
         () => validateTutorStubFirstDraftOuterLoop({ manifest: item.manifest, root: tmp }),
-        /V27|working iteration|working history|last working observation|last observation|development seed|transport|recovery|audit-recognition|semantic|contract/iu,
+        /V27|working iteration|working history|last working observation|last observation|development seed|trace|prefix|target bundle|draw|execution|hard cell|concurren|duplicate|change control|configuration|repair|qualitative debt|contract/iu,
       );
     }
   } finally {
@@ -913,7 +973,7 @@ test('outer-loop validator rejects held-out seeds before acceptance predeclarati
   }
 });
 
-test('outer-loop validator binds only fresh V27 development label 20261500', () => {
+test('outer-loop validator binds the primary and four fresh confirmation development seeds', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-development-seed-'));
   try {
     const { manifest } = fixture(tmp);
@@ -925,13 +985,14 @@ test('outer-loop validator binds only fresh V27 development label 20261500', () 
 
     const duplicate = fixture(tmp);
     duplicate.manifest.seed_ledger.development.push({
-      seed: 20261501,
+      seed: 20261604,
       status: 'reusable_non_held_out_development',
       cell: 'another',
+      screen: 'first-draft-working-screens-v7',
     });
     assert.throws(
       () => validateTutorStubFirstDraftOuterLoop({ manifest: duplicate.manifest, root: tmp }),
-      /V27 must predeclare only development seed 20261500/u,
+      /V27 must preserve the primary development seed plus four confirmation seeds/u,
     );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -1014,7 +1075,7 @@ test('outer-loop validator preserves the V26-to-V27 architectural transition', (
 });
 
 test('tracked V6 screen applies the V27 joint-performance plan to four Marrick turns', () => {
-  const screen = loadYaml(SCREEN_PATH);
+  const screen = loadYaml(PRIMARY_SCREEN_PATH);
   assert.equal(screen.id, 'first-draft-working-screens-v6');
   assert.equal(screen.held_out, false);
   assert.equal(screen.fixed_configuration.original_only, true);
@@ -1140,5 +1201,72 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.deepEqual(screen.change_log.iteration_7.audit_recognition_changes, [
     'requested_entry_answer_recognition',
     'public_judgment_meets_contrary_evidence_recognition',
+  ]);
+});
+
+test('tracked V7 screen predeclares exact uncontaminated cross-world confirmation', () => {
+  const screen = loadYaml(SCREEN_PATH);
+  assert.equal(screen.id, 'first-draft-working-screens-v7');
+  assert.equal(screen.held_out, false);
+  assert.equal(screen.fixed_configuration.original_only, true);
+  assert.equal(screen.fixed_configuration.draws_per_turn, 4);
+  assert.equal(screen.fixed_configuration.max_live_model_jobs, 3);
+  assert.deepEqual(screen.matrix.map((cell) => ({
+    id: cell.id,
+    turns: cell.turns,
+    seed: cell.development_seed,
+    trace: cell.source_trace_sha256,
+    prior: cell.prefix_integrity.verified_prior_turns,
+  })), [
+    { id: 'tallow_answer_seeking', turns: [5], seed: 20261600, trace: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d', prior: [1, 2, 3, 4] },
+    { id: 'ravensmark_affective_resistant', turns: [5], seed: 20261601, trace: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92', prior: [1, 2, 3, 4] },
+    { id: 'larkspur_premature_closure', turns: [2], seed: 20261602, trace: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820', prior: [1] },
+    { id: 'foxtrot_diligent', turns: [4], seed: 20261603, trace: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da', prior: [1, 2, 3] },
+  ]);
+  assert.deepEqual(screen.execution, {
+    hardest_cell_first: true,
+    hard_cell: 'tallow_answer_seeking',
+    hard_cell_must_pass_before_remaining: true,
+    remaining_cells_execution: 'concurrent',
+    maximum_concurrent_remaining_cells: 3,
+    one_job_per_cell: true,
+    forbid_duplicate_active_or_completed_cells: true,
+    complete_all_cells_after_hard_cell_passes: true,
+    stop_cell_when_gate_mathematically_impossible: true,
+    preserve_unstarted_seeds_as_unconsumed: true,
+    require_exact_target_bundle_binding: true,
+  });
+  assert.equal(screen.gates_per_cell.required_originals_accepted, 4);
+  assert.equal(screen.gates_per_cell.required_prefixes, 1);
+  assert.equal(screen.gates_per_cell.required_draws_per_prefix, 4);
+  assert.equal(screen.gates_per_cell.minimum_mean_configuration_realization, 1);
+  for (const field of [
+    'maximum_safety_failures', 'maximum_mechanical_repairs', 'maximum_model_rewrites',
+    'maximum_fallbacks', 'maximum_semantic_recognition_corrections',
+    'maximum_transport_normalizations',
+  ]) assert.equal(screen.gates_per_cell[field], 0, field);
+  assert.deepEqual(screen.change_control, {
+    implementation_change_from_v27_iteration_7: 'none',
+    speaking_changes: [],
+    audit_recognition_changes: [],
+    recovery_changes: [],
+    transport_changes: [],
+    safety_changes: [],
+    semantic_adjudication_changes: [],
+    gate_changes: [],
+  });
+  assert.deepEqual(screen.open_qualitative_debt.items, [
+    'host_source_renderer',
+    'handoff_contract_and_cross_slot_progression',
+    'typed_due_source_action_referent',
+    'typed_turn_focus_relation',
+  ]);
+  assert.equal(screen.open_qualitative_debt.status, 'open_debt');
+  assert.match(screen.open_qualitative_debt.consequence, /cannot terminate.*final acceptance/isu);
+  assert.deepEqual(screen.matrix.map((cell) => cell.prefix_integrity.target_bundle), [
+    { turn_id: '2026-07-16T07-03-36-147Z:t005', world: 'world_025_tallow_street', learner_profile: 'answer_seeking', request_model: 'gpt-5.6-terra', request_effort: 'low' },
+    { turn_id: '2026-07-16T04-44-58-444Z:t005', world: 'world_009_ravensmark', learner_profile: 'affective_resistant', request_model: 'gpt-5.6-terra', request_effort: 'low' },
+    { turn_id: '2026-07-16T05-50-54-527Z:t002', world: 'world_028_larkspur_fridge', learner_profile: 'premature_closure', request_model: 'gpt-5.6-terra', request_effort: 'low' },
+    { turn_id: '2026-07-16T05-56-49-920Z:t004', world: 'world_022_foxtrot_jukebox', learner_profile: 'diligent', request_model: 'gpt-5.6-terra', request_effort: 'low' },
   ]);
 });
