@@ -880,6 +880,203 @@ test('I4 judgment-falters recognition is gated by the complete public counterpre
   }
 });
 
+test('I7 exact I6 judgment-meets-evidence event is typed, joint-owned, and contract-gated', () => {
+  const target =
+    "The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.";
+  const contrary =
+    "The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out.";
+  const responseConfiguration = configuration({
+    engagement_stance: 'charismatic',
+    action_family: 'stage_next_step',
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial-book',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+      contract: 'Press public evidence against the room’s ready judgment.',
+    },
+  });
+  const world = {
+    title: 'The Light Shillings',
+    setting: 'The leat-keeper’s book lies beside the Marrick shillings and Verrell’s mint-yard record.',
+    question: 'Whose hand struck the false shillings?',
+    premiseById: new Map(),
+  };
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    publicWorld: {
+      visibility: 'public',
+      title: world.title,
+      setting: world.setting,
+      question: world.question,
+      ledger_term: 'trial-book',
+      public_objects: ['leat-keeper’s book', 'shillings'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'Who cast the blanks?',
+      pressure_target: target,
+      contrary_evidence: [contrary],
+      public_evidence: [{ surface: target }],
+      due_evidence: [{ surface: contrary }],
+    },
+  });
+  const exactRaw =
+    '{"uptake":"Write: “We have not yet learned whose hand cast blanks at the weir-forge.”","performance":{"entry":"I open the leat-keeper’s book and leave the caster’s line unfilled.","response":"Verrell’s ready claim fails against Edony’s solitary forge record."},"handoff":"What does this record now support about the hand that cast these blanks?"}';
+  const exactSlots = JSON.parse(exactRaw);
+  const auditFor = ({
+    raw = exactRaw,
+    includeSource = true,
+    contract = performanceObligationContract,
+    reconcileLegacy = false,
+  } = {}) => {
+    const structured = parseTutorStubJointPerformanceFirstDraft(raw);
+    const composition = composeTutorStubJointPerformanceFirstDraft({
+      structured,
+      dramaticReleaseFrame: includeSource
+        ? {
+            active: true,
+            entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface: contrary }],
+          }
+        : { active: false, entries: [] },
+    });
+    const ownershipAudit = auditTutorStubJointPerformanceOwnership({
+      composition,
+      candidate: composition.text,
+      configuration: responseConfiguration,
+      world,
+      performanceObligationContract: contract,
+    });
+    if (!reconcileLegacy) return ownershipAudit;
+    return applyTutorStubJointPerformanceOwnershipAudit({
+      audit: {
+        ok: true,
+        safetyFailure: false,
+        failureClusters: ['actorialRealizationAudit:missing_selected_performance_tactic'],
+        hardFailureClusters: [],
+        advisoryFailureClusters: ['actorial_realization:missing_selected_performance_tactic'],
+        reportOnlyFailureClusters: [],
+        shadowAdvisoryFailureClusters: [],
+        deliveryDecision: { ok: true, hardIssues: [], advisoryIssues: [] },
+        audits: {
+          actorialRealizationAudit: {
+            schema: 'machinespirits.tutor-stub.actorial-realization-audit.v1',
+            ok: false,
+            issues: [
+              {
+                type: 'missing_selected_performance_tactic',
+                reason: 'legacy whole-response audit did not see the owned tactic across SOURCE',
+              },
+            ],
+          },
+        },
+        performanceAdjudicationEligibility: { eligible: true, reason: 'unsupported_performance_tactic' },
+      },
+      composition,
+      candidate: composition.text,
+      configuration: responseConfiguration,
+      world,
+      performanceObligationContract: contract,
+    });
+  };
+  const rawWith = (overrides = {}) =>
+    JSON.stringify({
+      ...exactSlots,
+      ...overrides,
+      performance: { ...exactSlots.performance, ...(overrides.performance || {}) },
+    });
+
+  const exact = auditFor();
+  const recognition = exact.spanAudits.performance.publicJudgmentMeetsContraryEvidenceRecognition;
+  assert.equal(performanceObligationContract.complete, true);
+  assert.equal(exact.axes.actorial_performance.visible, true, JSON.stringify(exact.issues));
+  assert.equal(exact.axes.engagement_stance.visible, true, JSON.stringify(exact.issues));
+  assert.equal(exact.ok, true, JSON.stringify(exact.issues));
+  assert.equal(recognition.construction, 'declared_public_judgment_meets_contrary_evidence');
+  assert.equal(recognition.recognized, true);
+  assert.equal(recognition.same_owned_sentence, exactSlots.performance.response);
+  assert.ok(recognition.anchor_overlap_count.pressure_target >= 2);
+  assert.ok(recognition.anchor_overlap_count.contrary_evidence >= 2);
+  assert.ok(recognition.anchor_overlap_count.learner_handoff >= 1);
+  assert.deepEqual(recognition.excluded_source_span_ids, ['source_1']);
+  assert.equal(exact.spanAudits.performance.publicJudgmentFalterRecognition.recognized, false);
+
+  const reconciled = auditFor({ reconcileLegacy: true });
+  assert.equal(reconciled.ok, true, JSON.stringify(reconciled.failureClusters));
+  assert.equal(reconciled.audits.actorialRealizationAudit.ok, true);
+  assert.deepEqual(reconciled.audits.actorialRealizationAudit.issues, []);
+  assert.equal(reconciled.deterministicJointPerformanceRecognition.applied, true);
+  assert.equal(
+    reconciled.deterministicJointPerformanceRecognition.legacyWholeResponseActorialRealizationAudit.ok,
+    false,
+  );
+  assert.deepEqual(reconciled.performanceAdjudicationEligibility, {
+    eligible: false,
+    reason: 'deterministic_joint_performance_ownership_passed',
+  });
+
+  const wrongTacticContract = structuredClone(performanceObligationContract);
+  wrongTacticContract.selection.actorial_performance.id = 'measured_testimony';
+  const negatives = [
+    [
+      'pressure target',
+      auditFor({
+        raw: rawWith({
+          performance: { response: 'This claim fails against Edony’s solitary forge record.' },
+        }),
+      }),
+      'pressure_target_overlap_at_least_two',
+    ],
+    [
+      'contrary evidence',
+      auditFor({
+        raw: rawWith({
+          performance: { response: 'Verrell’s ready claim fails against this new account.' },
+        }),
+      }),
+      'contrary_evidence_overlap_at_least_two',
+    ],
+    ['host SOURCE', auditFor({ includeSource: false }), 'exact_contrary_source_present'],
+    [
+      'learner handoff',
+      auditFor({ raw: rawWith({ handoff: 'What should we consider next?' }) }),
+      null,
+    ],
+    ['selected tactic', auditFor({ contract: wrongTacticContract }), 'selected_tactic_matches'],
+    [
+      'selected part',
+      auditFor({
+        raw: rawWith({
+          performance: { entry: 'I wait beside the book while the rain falls.' },
+        }),
+      }),
+      'selected_part_visible',
+    ],
+  ];
+  for (const [label, audit, failedPrerequisite] of negatives) {
+    const result = audit.spanAudits.performance.publicJudgmentMeetsContraryEvidenceRecognition;
+    assert.equal(result.recognized, false, label);
+    if (failedPrerequisite) assert.equal(result.prerequisites[failedPrerequisite], false, label);
+    if (label === 'learner handoff') assert.equal(result.anchor_overlap_count.learner_handoff, 0, label);
+    assert.equal(audit.axes.actorial_performance.visible, false, label);
+    assert.equal(audit.axes.engagement_stance.visible, false, label);
+  }
+
+  const failedAxisCannotRescue = auditFor({
+    raw: rawWith({
+      performance: { response: 'This claim fails against Edony’s solitary forge record.' },
+    }),
+    reconcileLegacy: true,
+  });
+  assert.equal(failedAxisCannotRescue.audits.jointPerformanceAudit.ok, false);
+  assert.equal(failedAxisCannotRescue.audits.actorialRealizationAudit.ok, false);
+  assert.equal(failedAxisCannotRescue.deterministicJointPerformanceRecognition.applied, false);
+  assert.match(
+    failedAxisCannotRescue.hardFailureClusters.join('\n'),
+    /jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance/iu,
+  );
+});
+
 test('joint audit fails closed on candidate, span owner, slot, and source provenance drift', () => {
   const surface = 'The ledger records code WF-11 for the outside crew at noon.';
   const composition = composeTutorStubJointPerformanceFirstDraft({

@@ -548,6 +548,7 @@ export function auditTutorStubFrozenCandidate({
         text,
         frame: bundle.frames?.responseComposition,
         learnerText,
+        firstDraftContract: bundle.firstDraftContract,
       })
     : { ok: true, active: false, issues: [], segments: null };
   let auditedText = String(text || '').trim();
@@ -558,6 +559,7 @@ export function auditTutorStubFrozenCandidate({
       text: auditedText,
       frame: bundle.frames?.responseComposition,
       learnerText,
+      firstDraftContract: bundle.firstDraftContract,
     });
   }
   const leakAudit = guards.leak

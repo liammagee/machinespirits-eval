@@ -10613,6 +10613,7 @@ async function callTutor({
           text: response.text,
           frame: responseCompositionFrame,
           learnerText,
+          firstDraftContract,
         })
       : { ok: true, active: false, issues: [], segments: null };
     const composedText = formatTutorStubResponseComposition(responseCompositionAudit);
@@ -10622,6 +10623,7 @@ async function callTutor({
         text: response.text,
         frame: responseCompositionFrame,
         learnerText,
+        firstDraftContract,
       });
     }
     response.responseComposition = responseCompositionAudit.segments || null;
@@ -10856,6 +10858,7 @@ async function callTutor({
       text: candidate,
       frame: responseCompositionFrame,
       learnerText,
+      firstDraftContract,
     });
     return baseAudit.ok ? formatTutorStubResponseComposition(baseAudit) || candidate : candidate;
   }

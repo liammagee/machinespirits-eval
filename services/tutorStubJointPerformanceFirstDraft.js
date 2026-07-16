@@ -856,6 +856,83 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
   return { audit: source, applied: true, reason: source.deterministicCompositePartRecognition.reason };
 }
 
+const JOINT_PERFORMANCE_OWNED_AXES = Object.freeze([
+  'actorial_part',
+  'actorial_performance',
+  'engagement_stance',
+  'scene_immersion',
+  'action_family',
+]);
+
+function applyDeterministicJointPerformanceRecognition(audit, jointAudit) {
+  const source = clone(audit);
+  const legacyActorialAudit = clone(source?.audits?.actorialRealizationAudit || null);
+  const report = {
+    schema: 'machinespirits.tutor-stub.deterministic-joint-performance-recognition.v1',
+    applied: false,
+    reason: null,
+    legacyWholeResponseActorialRealizationAudit: legacyActorialAudit,
+    jointAuditSchema: jointAudit?.schema || null,
+    jointAxes: clone(jointAudit?.axes || null),
+  };
+  const jointAxesVisible = JOINT_PERFORMANCE_OWNED_AXES.every(
+    (axis) => jointAudit?.axes?.[axis]?.visible === true,
+  );
+  if (jointAudit?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA || jointAudit.ok !== true || !jointAxesVisible) {
+    report.reason = 'joint_performance_ownership_not_satisfied';
+    return { audit: source, applied: false, reason: report.reason, report };
+  }
+  const issues = Array.isArray(legacyActorialAudit?.issues) ? legacyActorialAudit.issues : [];
+  if (legacyActorialAudit?.ok !== false || issues.length === 0) {
+    report.reason = 'legacy_actorial_realization_already_passed';
+    return { audit: source, applied: false, reason: report.reason, report };
+  }
+  if (issues.some((issue) => issue?.type !== 'missing_selected_performance_tactic')) {
+    report.reason = 'legacy_actorial_failure_not_an_isolated_tactic_miss';
+    return { audit: source, applied: false, reason: report.reason, report };
+  }
+
+  const typedOwnershipProof = {
+    schema: TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
+    ok: true,
+    owned_axes: Object.fromEntries(
+      JOINT_PERFORMANCE_OWNED_AXES.map((axis) => [axis, clone(jointAudit.axes[axis])]),
+    ),
+  };
+  source.audits.actorialRealizationAudit = {
+    ...(legacyActorialAudit || {}),
+    ok: true,
+    issues: [],
+    deterministic_joint_performance_ownership: typedOwnershipProof,
+  };
+  const issueRows = tutorStubGuardIssueRows(source.audits);
+  const deliveryDecision = tutorStubGuardDeliveryDecision(issueRows);
+  source.deliveryDecision = deliveryDecision;
+  source.ok = deliveryDecision.ok;
+  source.failureClusters = failureClustersFromAudits(source.audits);
+  source.hardFailureClusters = deliveryDecision.hardIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.reportOnlyFailureClusters = deliveryDecision.reportOnlyIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.shadowAdvisoryFailureClusters = deliveryDecision.shadow.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.performanceAdjudicationEligibility = {
+    eligible: false,
+    reason: 'deterministic_joint_performance_ownership_passed',
+  };
+  report.applied = true;
+  report.reason = 'isolated_tactic_miss_satisfied_by_typed_joint_ownership';
+  report.typedOwnershipProof = typedOwnershipProof;
+  source.deterministicJointPerformanceRecognition = report;
+  return { audit: source, applied: true, reason: report.reason, report };
+}
+
 export function applyTutorStubJointPerformanceOwnershipAudit({
   audit = null,
   composition = null,
@@ -876,7 +953,8 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     audit,
     jointAudit.compositePartOwnership,
   );
-  const baseAudit = recognized.audit;
+  const jointRecognized = applyDeterministicJointPerformanceRecognition(recognized.audit, jointAudit);
+  const baseAudit = jointRecognized.audit;
   const clusters = jointAudit.issues.map(
     (issue) => `jointPerformanceAudit:${issue.type}${issue.axis ? `:${issue.axis}` : ''}`,
   );
@@ -896,6 +974,7 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
       applied: recognized.applied,
       reason: recognized.reason,
     },
+    deterministicJointPerformanceRecognition: jointRecognized.report,
     performanceAdjudicationEligibility: jointAudit.ok
       ? baseAudit.performanceAdjudicationEligibility
       : { eligible: false, reason: 'joint_performance_ownership_failed', blockingIssues: clusters },

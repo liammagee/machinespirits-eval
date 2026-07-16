@@ -11,7 +11,13 @@ import {
   tutorStubLearnerSelectedToolMarkPath,
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
+import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
+
+const WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT = Object.freeze({
+  schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
+  opening: Object.freeze({ writable_entry_requested: true }),
+});
 
 test('fallback composition includes a supplied uptake exactly once', () => {
   const uptake = 'I tap the trial-book shut on that line: fair.';
@@ -536,6 +542,106 @@ test('a generic prefix does not make a verbatim learner echo acceptable uptake',
 
   assert.equal(audit.ok, false);
   assert.ok(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'));
+});
+
+test('an explicitly requested Write entry may answer with one licensed evidentiary limit', () => {
+  const learnerText = 'What should I write next about whose hand cast the blanks at the weir-forge?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks for exact wording for the next supported entry.',
+        discourse_move: 'answer_seeking',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    text: 'Write: “We have not yet learned whose hand cast blanks at the weir-forge.” I leave the caster’s line open in the forge book.',
+    frame,
+    learnerText,
+    firstDraftContract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+  });
+
+  assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+  assert.equal(audit.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(
+    Object.values(audit.requestedEntryAnswerRecognition.prerequisites).every(Boolean),
+    true,
+  );
+});
+
+test('requested-entry recognition does not forgive questions, meta text, unrequested entries, or claim echoes', () => {
+  const learnerText = 'What should I write next about whose hand cast the blanks at the weir-forge?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks for exact wording for the next supported entry.',
+        discourse_move: 'answer_seeking',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const cases = [
+    {
+      name: 'interrogative restatement',
+      text: 'Write: “What should I write next about whose hand cast the blanks at the weir-forge?” I wait beside the book.',
+      learnerText,
+      contract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    },
+    {
+      name: 'meta restatement',
+      text: 'Write: “The learner asks what should I write next about whose hand cast blanks at the weir-forge.” I wait beside the book.',
+      learnerText,
+      contract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    },
+    {
+      name: 'unlicensed claim echo',
+      text: 'Write: “We should write next about whose hand cast blanks at the weir-forge.” I wait beside the book.',
+      learnerText,
+      contract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    },
+    {
+      name: 'unrequested Write entry',
+      text: 'Write: “We have not yet learned whose hand cast blanks at the weir-forge.” I wait beside the book.',
+      learnerText: 'We should determine whose hand cast the blanks at the weir-forge.',
+      contract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+      expectedEcho: false,
+    },
+    {
+      name: 'missing typed contract',
+      text: 'Write: “We have not yet learned whose hand cast blanks at the weir-forge.” I wait beside the book.',
+      learnerText,
+      contract: null,
+    },
+  ];
+
+  for (const row of cases) {
+    const audit = auditTutorStubResponseComposition({
+      text: row.text,
+      frame,
+      learnerText: row.learnerText,
+      firstDraftContract: row.contract,
+    });
+    assert.equal(audit.requestedEntryAnswerRecognition.recognized, false, row.name);
+    if (row.expectedEcho !== false) {
+      assert.equal(
+        audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+        true,
+        row.name,
+      );
+    } else {
+      assert.equal(audit.ok, false, row.name);
+      assert.equal(
+        audit.issues.some((issue) =>
+          ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
+        ),
+        true,
+        row.name,
+      );
+    }
+  }
 });
 
 test('a short necessary acknowledgement may reuse the learner’s public terms', () => {

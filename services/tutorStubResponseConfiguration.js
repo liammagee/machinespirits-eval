@@ -844,6 +844,7 @@ function stanceVisible(
     actorialPartVisible: selectedPartVisible = false,
     fullText = text,
     publicJudgmentFalterRecognition = null,
+    publicJudgmentMeetsContraryEvidenceRecognition = null,
   } = {},
 ) {
   const lower = text.toLowerCase();
@@ -883,6 +884,7 @@ function stanceVisible(
       /\b(?:break|but|yet|choose|risk|refuse|test|stake|stop|now|outrun|outruns|outrun the|easy verdict|old suspicion)\b/iu.test(
         text,
       ) ||
+      publicJudgmentMeetsContraryEvidenceRecognition?.recognized === true ||
       (publicJudgmentFalterRecognition?.recognized ??
         declaredPublicJudgmentFalterVisible({
           text,
@@ -1250,8 +1252,9 @@ function anchorOverlapCount(text, anchor) {
   ).length;
 }
 
-function auditDeclaredPublicJudgmentFalter({
+function auditPublicJudgmentCounterpressureEvents({
   text,
+  ownedPerformanceResponseText = text,
   fullText,
   contract,
   actorialPartVisible: selectedPartVisible,
@@ -1271,12 +1274,18 @@ function auditDeclaredPublicJudgmentFalter({
   const handoffAnchor = contractAnchor(contract, 'learner_handoff');
   const contrarySurface = oneLine(contract?.pressure_pair?.contrary_evidence_span);
   const exactContrarySourcePresent = Boolean(contrarySurface && oneLine(fullText).includes(contrarySurface));
+  const exactContrarySourceExcluded = Boolean(
+    contrarySurface && excludedSourceSpanIds.length > 0 && !oneLine(text).includes(contrarySurface),
+  );
 
-  const judgmentSentence = responseSentences(text).find(
+  const falterSentence = responseSentences(text).find(
     (sentence) =>
       /\b(?:accusation|answer|assumption|case|charge|claim|cry|expectation|judg(?:e)?ment|route|shortcut|story|verdict)\b[^.!?]{0,55}\bfalter(?:s|ed)?\b/iu.test(
         sentence,
       ) && anchorOverlapCount(sentence, targetAnchor) >= Math.min(2, targetAnchor?.content_tokens?.length || 2),
+  );
+  const meetsContrarySentence = responseSentences(ownedPerformanceResponseText).find((sentence) =>
+    /\b(?:claim|judg(?:e)?ment)\b[^.!?]{0,55}\bfails\s+against\b/iu.test(sentence),
   );
 
   // In structured composition the learner handoff is owned by HANDOFF, not
@@ -1284,33 +1293,73 @@ function auditDeclaredPublicJudgmentFalter({
   // response, while the judgment/falter cue above remains strictly local to
   // the audited TACTIC span.
   const terminalSentence = responseSentences(fullText).at(-1) || '';
-  const pressureTargetOverlapCount = judgmentSentence ? anchorOverlapCount(judgmentSentence, targetAnchor) : 0;
+  const falterPressureTargetOverlapCount = falterSentence ? anchorOverlapCount(falterSentence, targetAnchor) : 0;
+  const meetsPressureTargetOverlapCount = meetsContrarySentence
+    ? anchorOverlapCount(meetsContrarySentence, targetAnchor)
+    : 0;
+  const meetsContraryEvidenceOverlapCount = meetsContrarySentence
+    ? anchorOverlapCount(meetsContrarySentence, contraryAnchor)
+    : 0;
   const handoffOverlapCount = anchorOverlapCount(terminalSentence, handoffAnchor);
   const contraryEvidenceOverlapCount = anchorOverlapCount(fullText, contraryAnchor);
   const terminalHandoffQuestion = terminalSentence.trimEnd().endsWith('?');
-  const prerequisites = {
+  const commonPrerequisites = {
     contract_schema_matches: contractSchemaMatches,
     contract_complete: contractComplete,
     selected_tactic_matches: selectedTacticMatches,
     selected_part_visible: selectedPartVisible === true,
     obligations_complete: obligationsComplete,
     exact_contrary_source_present: exactContrarySourcePresent,
-    declared_judgment_falter_visible: Boolean(judgmentSentence),
     terminal_handoff_question: terminalHandoffQuestion,
   };
-  const recognized =
-    Object.values(prerequisites).every(Boolean) && handoffOverlapCount > 0 && contraryEvidenceOverlapCount > 0;
-  return {
-    schema: 'machinespirits.tutor-stub.public-judgment-falter-recognition.v1',
-    recognized,
-    prerequisites,
-    anchor_overlap_count: {
-      pressure_target: pressureTargetOverlapCount,
-      contrary_evidence: contraryEvidenceOverlapCount,
-      learner_handoff: handoffOverlapCount,
-    },
-    excluded_source_span_ids: [...excludedSourceSpanIds],
+  const falterPrerequisites = {
+    ...commonPrerequisites,
+    declared_judgment_falter_visible: Boolean(falterSentence),
   };
+  const falterRecognized =
+    Object.values(falterPrerequisites).every(Boolean) &&
+    handoffOverlapCount > 0 &&
+    contraryEvidenceOverlapCount > 0;
+  const meetsContraryPrerequisites = {
+    ...commonPrerequisites,
+    exact_contrary_source_excluded: exactContrarySourceExcluded,
+    same_owned_sentence: Boolean(meetsContrarySentence),
+    pressure_target_overlap_at_least_two: meetsPressureTargetOverlapCount >= 2,
+    contrary_evidence_overlap_at_least_two: meetsContraryEvidenceOverlapCount >= 2,
+  };
+  const meetsContraryRecognized =
+    Object.values(meetsContraryPrerequisites).every(Boolean) && handoffOverlapCount > 0;
+  const excludedSourceSpanIdsResult = [...excludedSourceSpanIds];
+  return {
+    publicJudgmentFalterRecognition: {
+      schema: 'machinespirits.tutor-stub.public-judgment-falter-recognition.v1',
+      recognized: falterRecognized,
+      prerequisites: falterPrerequisites,
+      anchor_overlap_count: {
+        pressure_target: falterPressureTargetOverlapCount,
+        contrary_evidence: contraryEvidenceOverlapCount,
+        learner_handoff: handoffOverlapCount,
+      },
+      excluded_source_span_ids: excludedSourceSpanIdsResult,
+    },
+    publicJudgmentMeetsContraryEvidenceRecognition: {
+      schema: 'machinespirits.tutor-stub.public-judgment-meets-contrary-evidence-recognition.v1',
+      construction: 'declared_public_judgment_meets_contrary_evidence',
+      recognized: meetsContraryRecognized,
+      prerequisites: meetsContraryPrerequisites,
+      same_owned_sentence: meetsContrarySentence || null,
+      anchor_overlap_count: {
+        pressure_target: meetsPressureTargetOverlapCount,
+        contrary_evidence: meetsContraryEvidenceOverlapCount,
+        learner_handoff: handoffOverlapCount,
+      },
+      excluded_source_span_ids: excludedSourceSpanIdsResult,
+    },
+  };
+}
+
+function auditDeclaredPublicJudgmentFalter(options) {
+  return auditPublicJudgmentCounterpressureEvents(options).publicJudgmentFalterRecognition;
 }
 
 function declaredPublicJudgmentFalterVisible(options) {
@@ -1326,6 +1375,7 @@ function actorialPerformanceVisible(
     actorialPartVisible: selectedPartVisible = false,
     fullText = text,
     publicJudgmentFalterRecognition = null,
+    publicJudgmentMeetsContraryEvidenceRecognition = null,
   } = {},
 ) {
   const tactic = configuration.actorial_performance?.id;
@@ -1505,6 +1555,8 @@ function actorialPerformanceVisible(
         contract: performanceObligationContract,
         actorialPartVisible: selectedPartVisible,
       });
+    const declaredPublicJudgmentMeetsContraryEvidence =
+      publicJudgmentMeetsContraryEvidenceRecognition?.recognized === true;
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -1530,7 +1582,8 @@ function actorialPerformanceVisible(
       falsifiableCaseDisplacesReadyStory ||
       accountableBreakableCountercase ||
       keepsPublicShameOutsideTheInquiry ||
-      declaredPublicJudgmentFalters
+      declaredPublicJudgmentFalters ||
+      declaredPublicJudgmentMeetsContraryEvidence
     );
   }
   if (tactic === 'exposed_mismatch')
@@ -1656,22 +1709,29 @@ export function auditTutorStubResponseConfiguration({
       ? contextualFullText
       : String(text || '')
     : String(text || '');
-  const publicJudgmentFalterRecognition = ['dramatic_counterpressure'].includes(
-    performanceObligationContract?.selection?.actorial_performance?.id,
-  )
-    ? auditDeclaredPublicJudgmentFalter({
+  const publicJudgmentCounterpressureEvents = performanceObligationContract
+    ? auditPublicJudgmentCounterpressureEvents({
         text: performanceText,
+        ownedPerformanceResponseText: contextualAuditedSpanTexts?.at(-1) || performanceText,
         fullText: performancePrerequisiteFullText,
         contract: performanceObligationContract,
         actorialPartVisible: performancePrerequisitePartVisible,
         excludedSourceSpanIds: performanceAuditContext?.excludedSourceSpanIds || [],
       })
     : null;
+  const publicJudgmentFalterRecognition = ['dramatic_counterpressure'].includes(
+    performanceObligationContract?.selection?.actorial_performance?.id,
+  )
+    ? publicJudgmentCounterpressureEvents?.publicJudgmentFalterRecognition || null
+    : null;
+  const publicJudgmentMeetsContraryEvidenceRecognition =
+    publicJudgmentCounterpressureEvents?.publicJudgmentMeetsContraryEvidenceRecognition || null;
   const actorialPerformancePass = actorialPerformanceVisible(configuration, performanceText, performanceMetrics, {
     performanceObligationContract,
     actorialPartVisible: performancePrerequisitePartVisible,
     fullText: performancePrerequisiteFullText,
     publicJudgmentFalterRecognition,
+    publicJudgmentMeetsContraryEvidenceRecognition,
   });
   const axes = {
     engagement_stance: {
@@ -1681,6 +1741,7 @@ export function auditTutorStubResponseConfiguration({
         actorialPartVisible: performancePrerequisitePartVisible,
         fullText: performancePrerequisiteFullText,
         publicJudgmentFalterRecognition,
+        publicJudgmentMeetsContraryEvidenceRecognition,
       }),
     },
     action_family: {
@@ -1770,6 +1831,7 @@ export function auditTutorStubResponseConfiguration({
     },
     sceneLexiconMorphologyRecognition: sceneLexicon.morphologyRecognition,
     publicJudgmentFalterRecognition,
+    publicJudgmentMeetsContraryEvidenceRecognition,
     transcript_visible: visibleAxes >= 5 && axes.actorial_part.visible && !metrics.fourthWallBreak,
     limitations:
       'Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference.',

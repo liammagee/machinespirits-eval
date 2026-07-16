@@ -1,8 +1,11 @@
 import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
+import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from './tutorStubFirstDraftContract.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.response-composition-audit.v1';
+export const TUTOR_STUB_REQUESTED_ENTRY_ANSWER_RECOGNITION_SCHEMA =
+  'machinespirits.tutor-stub.requested-entry-answer-recognition.v1';
 
 const ACKNOWLEDGEMENT_PATTERN =
   /^(?:yes|right|exactly|precisely|just so|fair|good|correct|almost|too fast|not so fast|not quite|no\b|thou hast it\b|i (?:hear|see|agree|understand)|you(?:[’']re| are)|that(?:[’']s| is)|your\b)/iu;
@@ -18,6 +21,12 @@ const LEARNER_REQUESTS_ENTRY_PATTERN =
   /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b/iu;
 const DIRECT_REQUESTED_ENTRY_PATTERN =
   /^(?:enter|record|say|write)(?:\s+(?:this|that|the following))?\s*[:—-]|^(?:the )?(?:entry|line|sentence|wording)(?:\s+to\s+(?:enter|record|say|write))?\s+(?:is|would be|should be)\b/iu;
+const REQUESTED_ENTRY_META_PATTERN =
+  /\b(?:the tutor|the learner|the prompt|the model|the policy|the dag|this dialogue|the instructions?|you asked me|i was asked|what i should write|what should i write)\b/iu;
+const REQUESTED_ENTRY_QUESTION_LEAD_PATTERN =
+  /^(?:what|which|who|whose|where|when|why|how|should|could|can|do|does|did|is|are|was|were|have|has|had)\b/iu;
+const REQUESTED_ENTRY_LIMIT_PATTERN =
+  /\b(?:(?:can(?:not|[’']t)|could(?: not|n[’']t)|do(?:es)? not|don[’']t|doesn[’']t|have not|haven[’']t|has not|hasn[’']t|had not|hadn[’']t|is not|isn[’']t|are not|aren[’']t|was not|wasn[’']t|were not|weren[’']t)\b[^.!?]{0,70}\b(?:yet|establish(?:ed)?|identif(?:ied|y)|know|known|learn(?:ed|t)?|name(?:d)?|prov(?:e|ed|en)|settle(?:d)?|show(?:n)?|support(?:ed)?|trace(?:d)?)\b|not yet\b|still\s+(?:absent|missing|open|unknown|unproved|unshown)|remains?\s+(?:absent|missing|open|unknown|unproved|unshown)|(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:establishes?|identif(?:y|ies)|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,90}\b(?:but not|does not|doesn[’']t|not|only|rather than|without)\b)\b/iu;
 const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
   /\b(?:leave|keep)\b[^.!?]{0,35}\b(?:entry|line|record)\b[^.!?]{0,20}\b(?:blank|open|unentered|unwritten)\b|\b(?:do not|don[’']t|will not|won[’']t)\b[^.!?]{0,25}\b(?:enter|record|write)\b/iu;
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
@@ -108,6 +117,52 @@ function substantiveLearnerEcho(uptake, learnerText) {
   const learnerCoverage = overlap / learnerTokens.size;
   const addedTokens = [...uptakeTokens].filter((token) => !learnerTokens.has(token)).length;
   return learnerCoverage >= 0.85 && addedTokens <= 4;
+}
+
+function requestedEntryQuotedLine(value = '') {
+  const match = oneLine(value).match(/^Write:\s*(?:“([^“”]+)”|"([^"]+)")$/u);
+  return match ? match[1] || match[2] || '' : '';
+}
+
+function comparableRequestedEntrySurface(value = '') {
+  return oneLine(value)
+    .toLowerCase()
+    .replace(/[“”"'’]/gu, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', firstDraftContract = null } = {}) {
+  const surface = oneLine(uptake);
+  const quotedLine = requestedEntryQuotedLine(surface);
+  const lineWithoutTerminalPeriod = quotedLine.replace(/\.$/u, '').trim();
+  const exactWriteEnvelope = Boolean(quotedLine);
+  const nonQuestion =
+    exactWriteEnvelope &&
+    !/[?]/u.test(quotedLine) &&
+    !REQUESTED_ENTRY_QUESTION_LEAD_PATTERN.test(lineWithoutTerminalPeriod);
+  const oneDeclarativeQuotedLine =
+    nonQuestion && quotedLine.endsWith('.') && !/[.!?]/u.test(quotedLine.slice(0, -1));
+  const prerequisites = {
+    contract_schema_matches: firstDraftContract?.schema === TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
+    writable_entry_requested: firstDraftContract?.opening?.writable_entry_requested === true,
+    learner_requests_wording: LEARNER_REQUESTS_ENTRY_PATTERN.test(oneLine(learnerText)),
+    exact_write_envelope: exactWriteEnvelope,
+    one_declarative_quoted_line: oneDeclarativeQuotedLine,
+    licensed_epistemic_or_evidentiary_limit:
+      oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod),
+    non_question: nonQuestion,
+    non_meta: exactWriteEnvelope && !REQUESTED_ENTRY_META_PATTERN.test(quotedLine),
+    not_exact_learner_surface:
+      exactWriteEnvelope &&
+      comparableRequestedEntrySurface(lineWithoutTerminalPeriod) !== comparableRequestedEntrySurface(learnerText),
+  };
+  return {
+    schema: TUTOR_STUB_REQUESTED_ENTRY_ANSWER_RECOGNITION_SCHEMA,
+    recognized: Object.values(prerequisites).every(Boolean),
+    prerequisites,
+  };
 }
 
 function learnerMove(classification = null) {
@@ -414,7 +469,12 @@ function fusedOpeningRespondsToLearner(uptake, frame, minimumOverlap = 3) {
   return overlap >= minimumOverlap;
 }
 
-export function auditTutorStubResponseComposition({ text = '', frame = null, learnerText = '' } = {}) {
+export function auditTutorStubResponseComposition({
+  text = '',
+  frame = null,
+  learnerText = '',
+  firstDraftContract = null,
+} = {}) {
   if (!frame?.active) {
     return {
       schema: TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA,
@@ -422,6 +482,7 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
       active: false,
       issues: [],
       segments: { uptake: '', development: '', method: 'inactive', formatted: oneLine(text) },
+      requestedEntryAnswerRecognition: null,
     };
   }
   const enrichedFrame = { ...frame, learner_text: learnerText };
@@ -458,6 +519,11 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
       };
     }
   }
+  const requestedEntryAnswerRecognition = auditRequestedEntryAnswerRecognition({
+    uptake: segments.uptake,
+    learnerText,
+    firstDraftContract,
+  });
   const issues = [];
   if (!segments.uptake) {
     issues.push({
@@ -470,7 +536,11 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
       reason: 'opens with a generic transition rather than visibly taking up the learner’s contribution',
     });
   }
-  if (segments.uptake && substantiveLearnerEcho(segments.uptake, learnerText)) {
+  if (
+    segments.uptake &&
+    substantiveLearnerEcho(segments.uptake, learnerText) &&
+    !requestedEntryAnswerRecognition.recognized
+  ) {
     issues.push({
       type: 'verbatim_learner_echo',
       reason: 'repeats the learner’s substantive wording instead of crediting or developing it concisely',
@@ -530,6 +600,7 @@ export function auditTutorStubResponseComposition({ text = '', frame = null, lea
     development_kind: frame.development?.kind || null,
     expected_dag_move: frame.development?.expected_dag_move || null,
     conversational_completion: completionAudit,
+    requestedEntryAnswerRecognition,
     issues,
     segments,
   };

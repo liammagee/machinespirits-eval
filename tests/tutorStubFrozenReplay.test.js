@@ -17,6 +17,8 @@ import {
   tutorStubPerformanceAdjudicationUserPrompt,
 } from '../services/tutorStubPerformanceAdjudication.js';
 import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
+import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
+import { buildTutorStubResponseCompositionFrame } from '../services/tutorStubResponseComposition.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
@@ -404,4 +406,44 @@ test('original-only frozen audit still rejects concealed future evidence', () =>
   assert.equal(audit.ok, false);
   assert.equal(audit.safetyFailure, true);
   assert.ok(audit.hardFailureClusters.some((cluster) => cluster.startsWith('leak:')));
+});
+
+test('frozen replay carries the typed writable-entry contract into response-composition recognition', () => {
+  const learnerText = 'What should I write next about whose hand cast the blanks at the weir-forge?';
+  const responseComposition = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: {
+      turn: {
+        summary: 'Asks for exact wording for the next supported entry.',
+        discourse_move: 'answer_seeking',
+      },
+    },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const audit = auditTutorStubFrozenCandidate({
+    bundle: {
+      guards: { responseComposition: true },
+      learnerText,
+      firstDraftContract: {
+        schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
+        opening: { writable_entry_requested: true },
+      },
+      frames: { responseComposition },
+      duePremiseIds: [],
+      publicPremiseIds: [],
+      priorTurns: [],
+      priorTutorTexts: [],
+      turn: 9,
+    },
+    world: { premiseById: new Map(), premises: [] },
+    text: 'Write: “We have not yet learned whose hand cast blanks at the weir-forge.” I leave the caster’s line open in the forge book.',
+    candidateKind: 'original_candidate',
+  });
+
+  assert.equal(audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(
+    audit.audits.responseCompositionAudit.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
+  );
+  assert.equal(audit.ok, true);
 });
