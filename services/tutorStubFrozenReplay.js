@@ -39,6 +39,8 @@ import {
   applyTutorStubPerformanceAdjudication,
   tutorStubPerformanceAdjudicationEligibility,
 } from './tutorStubPerformanceAdjudication.js';
+import { aggregateTokenUsage, tokenUsageFields } from './tokenUsage.js';
+import { summarizeTutorStubPromptSizeReports } from './tutorStubPromptSizeReport.js';
 
 export const TUTOR_STUB_FROZEN_REPLAY_SCHEMA = 'machinespirits.tutor-stub.frozen-replay.v1';
 export const TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.first-draft-regression-fixture.v1';
@@ -807,6 +809,10 @@ export function extractTutorStubRegressionFixture({ tracePath, turns = null } = 
 
 export function summarizeTutorStubFrozenReplay(results = []) {
   const rows = Array.isArray(results) ? results : [];
+  const tokenUsage = aggregateTokenUsage(rows);
+  const promptSize = summarizeTutorStubPromptSizeReports(
+    rows.map((row) => row.promptSizeReport).filter(Boolean),
+  );
   const strictOriginalAccepted = (audit) => audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = rows.filter((row) => strictOriginalAccepted(row.audit)).length;
   const deterministicAccepted = rows.filter((row) =>
@@ -851,6 +857,9 @@ export function summarizeTutorStubFrozenReplay(results = []) {
           0,
         ) / rows.length
       : null,
+    tokenUsage: tokenUsageFields(tokenUsage),
+    tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+    promptSize,
     mechanicalRepairs: 0,
     modelRewrites: 0,
     deterministicFallbacks: 0,

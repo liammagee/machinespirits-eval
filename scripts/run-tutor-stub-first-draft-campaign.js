@@ -10,6 +10,8 @@ import { parseArgs } from 'node:util';
 
 import {
   acquireTutorStubFirstDraftCellClaim,
+  aggregateTutorStubFirstDraftCampaignPromptSize,
+  aggregateTutorStubFirstDraftCampaignTokenUsage,
   applyTutorStubFirstDraftDevelopmentRuntimePreflight,
   assessTutorStubAcceptanceCell,
   assertTutorStubFirstDraftDevelopmentIterationVacant,
@@ -787,6 +789,8 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
   }
   const status =
     cellResults.length === plan.cells.length && cellResults.every((cell) => cell.status === 'pass') ? 'pass' : 'fail';
+  const tokenUsage = aggregateTutorStubFirstDraftCampaignTokenUsage(cellResults);
+  const promptSize = aggregateTutorStubFirstDraftCampaignPromptSize(cellResults);
   const result = {
     schema: 'machinespirits.tutor-stub.first-draft-working-screen-result.v1',
     generatedAt: new Date().toISOString(),
@@ -840,6 +844,9 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
       })),
     ),
     finalSafetyFailures: cellResults.reduce((sum, cell) => sum + Number(cell.safetyFailures || 0), 0),
+    tokenUsage: tokenUsage.tokenUsage,
+    tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+    promptSize,
     cells: cellResults,
     claimBoundary: config.claim_boundary,
   };

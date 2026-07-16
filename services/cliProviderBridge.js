@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { recordExternalApiCall } from './apiPayloadCapture.js';
+import { normalizeTokenUsage } from './tokenUsage.js';
 
 function positiveIntEnv(name, fallback) {
   const raw = process.env[name];
@@ -125,34 +126,13 @@ export function codexFinalMessageFromEvents(events = []) {
   return '';
 }
 
-function firstFiniteUsageValue(usage, keys) {
-  for (const key of keys) {
-    if (usage?.[key] === null || usage?.[key] === undefined) continue;
-    const value = Number(usage[key]);
-    if (Number.isFinite(value) && value >= 0) return value;
-  }
-  return null;
-}
-
 export function codexUsageFromEvents(events = []) {
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index] || {};
     const usage = event.usage || event.metrics?.usage || null;
     if (!usage || typeof usage !== 'object') continue;
-    const inputTokens = firstFiniteUsageValue(usage, ['input_tokens', 'inputTokens', 'prompt_tokens']);
-    const outputTokens = firstFiniteUsageValue(usage, ['output_tokens', 'outputTokens', 'completion_tokens']);
-    if (inputTokens === null && outputTokens === null) continue;
-    const cachedInputTokens = firstFiniteUsageValue(usage, ['cached_input_tokens', 'cachedInputTokens']);
-    const reasoningOutputTokens = firstFiniteUsageValue(usage, ['reasoning_output_tokens', 'reasoningOutputTokens']);
-    const normalizedInput = inputTokens ?? 0;
-    const normalizedOutput = outputTokens ?? 0;
-    return {
-      inputTokens: normalizedInput,
-      outputTokens: normalizedOutput,
-      totalTokens: normalizedInput + normalizedOutput,
-      cachedInputTokens: cachedInputTokens ?? 0,
-      reasoningOutputTokens: reasoningOutputTokens ?? 0,
-    };
+    const normalized = normalizeTokenUsage(usage);
+    if (normalized.tokenUsageAvailable) return normalized;
   }
   return null;
 }
@@ -165,6 +145,24 @@ function buildCliUserText(userPrompt, messageHistory) {
   }
   userText += `Latest message:\n${userPrompt}`;
   return userText;
+}
+
+export function buildCodexCliPromptText({
+  systemPrompt = '',
+  userPrompt = '',
+  messageHistory = [],
+  structuredOutput = false,
+} = {}) {
+  const prompt = [
+    'System prompt for this role:',
+    systemPrompt,
+    '',
+    'User input for this turn:',
+    buildCliUserText(userPrompt, messageHistory),
+  ].join('\n');
+  return structuredOutput
+    ? `${prompt}\n\nThis is a no-tools structured-output call. Do not run commands, inspect files, browse, call tools, or take any action beyond returning the requested JSON object.`
+    : prompt;
 }
 
 function abortError(role) {
@@ -306,9 +304,7 @@ async function callClaudeCli({
           provider: 'claude-code',
           effort: effectiveEffort || null,
           latencyMs: Date.now() - start,
-          inputTokens: 0,
-          outputTokens: 0,
-          tokenUsageAvailable: false,
+          ...normalizeTokenUsage(null),
           cost: 0,
           structuredOutput: Boolean(schema),
           structuredEventAudit: {
@@ -351,13 +347,12 @@ async function callCodexCli({
   const schema = normalizedOutputSchema(outputSchema);
   const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
   if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
-  const prompt = [
-    'System prompt for this role:',
+  const prompt = buildCodexCliPromptText({
     systemPrompt,
-    '',
-    'User input for this turn:',
-    buildCliUserText(userPrompt, messageHistory),
-  ].join('\n');
+    userPrompt,
+    messageHistory,
+    structuredOutput: Boolean(schema),
+  });
 
   try {
     return await new Promise((resolve, reject) => {
@@ -444,11 +439,7 @@ async function callCodexCli({
           effort: effectiveEffort || null,
           reasoningEffort: effectiveEffort || null,
           latencyMs: Date.now() - start,
-          inputTokens: tokenUsage?.inputTokens ?? 0,
-          outputTokens: tokenUsage?.outputTokens ?? 0,
-          cachedInputTokens: tokenUsage?.cachedInputTokens ?? 0,
-          reasoningOutputTokens: tokenUsage?.reasoningOutputTokens ?? 0,
-          tokenUsageAvailable: Boolean(tokenUsage),
+          ...(tokenUsage || normalizeTokenUsage(null)),
           cost: 0,
           streamedEvents: parsedStream.events.length,
           streamEventTypeCounts: Object.fromEntries(
@@ -476,11 +467,7 @@ async function callCodexCli({
           modelIndependentlyAttested: false,
         });
       });
-      child.stdin.write(
-        schema
-          ? `${prompt}\n\nThis is a no-tools structured-output call. Do not run commands, inspect files, browse, call tools, or take any action beyond returning the requested JSON object.`
-          : prompt,
-      );
+      child.stdin.write(prompt);
       child.stdin.end();
     });
   } finally {

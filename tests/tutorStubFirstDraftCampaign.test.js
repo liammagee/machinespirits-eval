@@ -10,6 +10,8 @@ import YAML from 'yaml';
 
 import {
   acquireTutorStubFirstDraftCellClaim,
+  aggregateTutorStubFirstDraftCampaignPromptSize,
+  aggregateTutorStubFirstDraftCampaignTokenUsage,
   applyTutorStubFirstDraftDevelopmentRuntimePreflight,
   assessTutorStubAcceptanceCell,
   assertTutorStubFirstDraftDevelopmentIterationVacant,
@@ -31,6 +33,7 @@ import {
   validateTutorStubFirstDraftCampaign,
   writeTutorStubFirstDraftJsonExclusive,
 } from '../services/tutorStubFirstDraftCampaign.js';
+
 import {
   TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
@@ -52,6 +55,77 @@ import {
   tutorStubFirstDraftHardCellBlocksRemaining,
   validateTutorStubFirstDraftPreflightCertificate,
 } from '../services/tutorStubFirstDraftPreflightCertificate.js';
+
+test('campaign token aggregation excludes unstarted cells and never treats missing usage as zero', () => {
+  const complete = aggregateTutorStubFirstDraftCampaignTokenUsage([
+    {
+      completedTurns: 1,
+      tokenUsageAvailable: true,
+      tokenUsage: {
+        inputTokens: 100,
+        cachedInputTokens: 40,
+        uncachedInputTokens: 60,
+        outputTokens: 10,
+        reasoningOutputTokens: 2,
+        totalTokens: 110,
+      },
+    },
+    {
+      completedTurns: 1,
+      tokenUsageAvailable: true,
+      tokenUsage: {
+        inputTokens: 120,
+        cachedInputTokens: 50,
+        uncachedInputTokens: 70,
+        outputTokens: 12,
+        reasoningOutputTokens: 3,
+        totalTokens: 132,
+      },
+    },
+    { completedTurns: 0, tokenUsageAvailable: false, tokenUsage: null },
+  ]);
+  assert.equal(complete.tokenUsageAvailable, true);
+  assert.deepEqual(complete.tokenUsage, {
+    inputTokens: 220,
+    cachedInputTokens: 90,
+    uncachedInputTokens: 130,
+    outputTokens: 22,
+    reasoningOutputTokens: 5,
+    totalTokens: 242,
+  });
+
+  const missing = aggregateTutorStubFirstDraftCampaignTokenUsage([
+    { completedTurns: 1, tokenUsageAvailable: false, tokenUsage: null },
+  ]);
+  assert.equal(missing.tokenUsageAvailable, false);
+  assert.deepEqual(missing.tokenUsage, {
+    inputTokens: null,
+    cachedInputTokens: null,
+    uncachedInputTokens: null,
+    outputTokens: null,
+    reasoningOutputTokens: null,
+    totalTokens: null,
+  });
+});
+
+test('campaign prompt-size aggregation carries per-call authored and residual measurements', () => {
+  const report = (authored, observed) => ({
+    schema: 'machinespirits.tutor-stub.prompt-size-report.v1',
+    tokenizer: { id: 'fixture' },
+    authoredTotal: { estimatedTokens: authored },
+    observedProviderInput: { tokens: observed },
+    inferredResidual: { tokens: observed - authored },
+  });
+  const summary = aggregateTutorStubFirstDraftCampaignPromptSize([
+    { promptSizeReports: [report(10, 100)] },
+    { promptSizeReports: [report(12, 120)] },
+    { completedTurns: 0 },
+  ]);
+  assert.equal(summary.calls, 2);
+  assert.equal(summary.totalAuthoredEstimatedTokens, 22);
+  assert.equal(summary.totalObservedProviderInputTokens, 220);
+  assert.equal(summary.totalInferredResidualTokens, 198);
+});
 
 function certificateFixture(tmp, overrides = {}) {
   for (const [fileName, content] of [
@@ -820,6 +894,15 @@ test('four-draw confirmation requires the exact unique turn and draw inventory',
         turn,
         draw,
         latencyMs: 10,
+        usage: {
+          inputTokens: 100,
+          cachedInputTokens: 25,
+          uncachedInputTokens: 75,
+          outputTokens: 10,
+          reasoningOutputTokens: 2,
+          totalTokens: 110,
+        },
+        tokenUsageAvailable: true,
         audit: {
           ok: true,
           safetyFailure: false,
@@ -840,6 +923,30 @@ test('four-draw confirmation requires the exact unique turn and draw inventory',
     });
     assert.equal(complete.drawInventory.ok, true);
     assert.equal(complete.gates.drawInventory, true);
+    assert.equal(complete.tokenUsageAvailable, true);
+    assert.deepEqual(complete.tokenUsage, {
+      inputTokens: 400,
+      cachedInputTokens: 100,
+      uncachedInputTokens: 300,
+      outputTokens: 40,
+      reasoningOutputTokens: 8,
+      totalTokens: 440,
+    });
+
+    const partialUsageReport = report([1, 2, 3, 4].map((draw) => ({ draw })));
+    partialUsageReport.results[1].usage.cachedInputTokens = null;
+    partialUsageReport.results[1].usage.uncachedInputTokens = null;
+    partialUsageReport.results[1].usage.reasoningOutputTokens = null;
+    const partialUsage = summarizeTutorStubWorkingScreen({
+      cell,
+      reports: [partialUsageReport],
+      config,
+    });
+    assert.equal(partialUsage.tokenUsageAvailable, true);
+    assert.equal(partialUsage.tokenUsage.cachedInputTokens, null);
+    assert.equal(partialUsage.tokenUsage.uncachedInputTokens, null);
+    assert.equal(partialUsage.tokenUsage.reasoningOutputTokens, null);
+    assert.equal(partialUsage.tokenUsage.totalTokens, 440);
 
     const duplicate = summarizeTutorStubWorkingScreen({
       cell,

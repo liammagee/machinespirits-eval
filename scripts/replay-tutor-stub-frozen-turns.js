@@ -10,6 +10,9 @@ import { parseArgs } from 'node:util';
 import { call as callAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider } from '../services/cliProviderBridge.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { resolveTutorStubDevelopmentDirectModel } from '../services/tutorStubDevelopmentSpeakerTransport.js';
+import { normalizeTokenUsage, tokenUsageFields } from '../services/tokenUsage.js';
+import { buildTutorStubPromptSizeReportForRequest } from '../services/tutorStubPromptSizeReport.js';
 import {
   auditTutorStubFrozenCandidate,
   extractTutorStubFrozenTurn,
@@ -61,6 +64,7 @@ const { values: args } = parseArgs({
     'audit-fixture': { type: 'string' },
     'adjudicate-report': { type: 'string' },
     'development-seed': { type: 'string', default: '' },
+    'development-direct-model': { type: 'string', default: '' },
     'original-only': { type: 'boolean', default: false },
     'stop-on-first-rejection': { type: 'boolean', default: false },
     'structured-generation': { type: 'boolean', default: false },
@@ -81,6 +85,7 @@ function usage() {
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --joint-performance-generation --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --joint-performance-generation --source-accessibility-policy direct_or_compensated_v1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --stop-on-first-rejection --concurrency 1 --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --development-seed 123 --development-direct-model openai.standard --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
   node scripts/replay-tutor-stub-frozen-turns.js --adjudicate-report original-screen.json --reuse-adjudication --out reaudited.json
@@ -92,7 +97,11 @@ inside the JSON artifact and is never printed as public tutor speech.
 
 --stop-on-first-rejection is a predeclared, sequential original-only screen. It
 atomically checkpoints --out before generation and after every completed draw,
-then closes admission at the first strict rejection.`;
+then closes admission at the first strict rejection.
+
+--development-direct-model is a tool-free, cross-model prompt-screening path.
+It requires a non-held-out development seed, is recorded as non-equivalent,
+and never counts as Codex CLI or held-out acceptance.`;
 }
 
 function structuredGenerationFailureAudit(error, { jointPerformance = false } = {}) {
@@ -281,7 +290,7 @@ function worldForBundle(bundle) {
   return loadWorld(worldPathForId(bundle.worldId));
 }
 
-async function generateOriginal(bundle) {
+async function generateOriginal(bundle, { directDevelopmentModel = null } = {}) {
   const request = bundle.request || {};
   const messages = request.messages || [];
   const latest = messages.at(-1);
@@ -289,7 +298,7 @@ async function generateOriginal(bundle) {
   const history = messages.slice(0, -1);
   const started = Date.now();
   let result;
-  if (isCliProvider(request.provider)) {
+  if (!directDevelopmentModel && isCliProvider(request.provider)) {
     result = await callAIWithCliBridge(
       { provider: request.provider, model: request.model },
       request.systemPrompt,
@@ -297,23 +306,31 @@ async function generateOriginal(bundle) {
       'tutor_stub_tutor_frozen_screen',
       { messageHistory: history, effort: request.effort || request.config?.cliEffort || null },
     );
+    const tokenUsage = normalizeTokenUsage(result, { available: result.tokenUsageAvailable });
+    const promptSizeReport = buildTutorStubPromptSizeReportForRequest({
+      callId: `${bundle.turnId || `turn-${bundle.turn}`}:original`,
+      provider: result.provider || request.provider,
+      model: result.model || request.model,
+      request,
+      usage: result,
+    });
     return {
       text: result.text || '',
       provider: result.provider || request.provider,
       model: result.model || request.model,
       effort: result.effort || result.reasoningEffort || request.effort || null,
       latencyMs: Number(result.latencyMs || Date.now() - started),
-      usage: {
-        inputTokens: Number(result.inputTokens || 0),
-        outputTokens: Number(result.outputTokens || 0),
-        totalTokens: Number(result.inputTokens || 0) + Number(result.outputTokens || 0),
-      },
-      tokenUsageAvailable: result.tokenUsageAvailable === true,
+      usage: tokenUsageFields(tokenUsage),
+      tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+      promptSizeReport,
     };
   }
+  const effectiveRequest = directDevelopmentModel
+    ? { ...request, provider: directDevelopmentModel.provider, model: directDevelopmentModel.model }
+    : request;
   result = await callAI({
-    provider: request.provider,
-    model: request.model,
+    provider: effectiveRequest.provider,
+    model: effectiveRequest.model,
     systemPrompt: request.systemPrompt,
     messages,
     preset: 'socratic',
@@ -322,14 +339,42 @@ async function generateOriginal(bundle) {
       maxTokens: Number(request.config?.maxTokens ?? 4096),
     },
   });
-  return {
-    text: result.content || '',
+  const tokenUsage = normalizeTokenUsage(result.usage);
+  const promptSizeReport = buildTutorStubPromptSizeReportForRequest({
+    callId: `${bundle.turnId || `turn-${bundle.turn}`}:original`,
     provider: result.provider || request.provider,
     model: result.model || request.model,
+    request,
+    usage: result.usage,
+  });
+  return {
+    text: result.content || '',
+    provider: result.provider || effectiveRequest.provider,
+    model: result.model || effectiveRequest.model,
     effort: request.effort || null,
     latencyMs: Number(result.latencyMs || Date.now() - started),
-    usage: result.usage || null,
-    tokenUsageAvailable: Boolean(result.usage),
+    usage: tokenUsageFields(tokenUsage),
+    tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+    promptSizeReport,
+    transport: directDevelopmentModel
+      ? {
+          kind: 'direct_provider_development_non_equivalent',
+          acceptanceEligible: false,
+          equivalentToFrozenModelTransport: false,
+          frozenProvider: request.provider,
+          frozenModel: request.model,
+          effectiveProvider: effectiveRequest.provider,
+          effectiveModel: effectiveRequest.model,
+        }
+      : {
+          kind: 'direct_provider_frozen_request',
+          acceptanceEligible: false,
+          equivalentToFrozenModelTransport: true,
+          frozenProvider: request.provider,
+          frozenModel: request.model,
+          effectiveProvider: effectiveRequest.provider,
+          effectiveModel: effectiveRequest.model,
+        },
   };
 }
 
@@ -388,11 +433,7 @@ async function adjudicateOriginal({ bundle, candidate, deterministicAudit }) {
       );
       raw = result.text || '';
       responseModel = `${result.provider || selected.provider}.${result.model || selected.model}`;
-      usage = {
-        inputTokens: Number(result.inputTokens || 0),
-        outputTokens: Number(result.outputTokens || 0),
-        totalTokens: Number(result.inputTokens || 0) + Number(result.outputTokens || 0),
-      };
+      usage = normalizeTokenUsage(result, { available: result.tokenUsageAvailable });
     } else {
       const result = await callAI({
         provider: selected.provider,
@@ -404,7 +445,7 @@ async function adjudicateOriginal({ bundle, candidate, deterministicAudit }) {
       });
       raw = result.content || '';
       responseModel = `${result.provider || selected.provider}.${result.model || selected.model}`;
-      usage = result.usage || null;
+      usage = normalizeTokenUsage(result.usage);
     }
     const adjudication = parseTutorStubPerformanceAdjudication({
       raw,
@@ -419,7 +460,8 @@ async function adjudicateOriginal({ bundle, candidate, deterministicAudit }) {
       model: responseModel,
       effort,
       latencyMs: Date.now() - started,
-      usage,
+      usage: tokenUsageFields(usage),
+      tokenUsageAvailable: usage.tokenUsageAvailable,
       error: null,
       promptAudit,
       candidateSurface: 'adaptive_host_public_text',
@@ -635,6 +677,10 @@ async function main() {
   if (!args['original-only']) {
     throw new Error('live frozen replay requires --original-only so recovery and continuation cannot run');
   }
+  const directDevelopmentModel = resolveTutorStubDevelopmentDirectModel({
+    modelRef: args['development-direct-model'],
+    developmentSeed: args['development-seed'],
+  });
   const draws = positiveInt(args.draws, '--draws', { max: 20 });
   const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
   const bundles = turns.map((turn) => {
@@ -649,7 +695,7 @@ async function main() {
   });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
   const runJob = async ({ bundle, draw }) => {
-    const generated = await generateOriginal(bundle);
+    const generated = await generateOriginal(bundle, { directDevelopmentModel });
     const world = worldForBundle(bundle);
     let candidate = generated.text;
     let structuredResult = null;
@@ -712,6 +758,12 @@ async function main() {
         latencyMs: generated.latencyMs,
         usage: generated.usage,
         tokenUsageAvailable: generated.tokenUsageAvailable,
+        promptSizeReport: generated.promptSizeReport,
+        transport: generated.transport || {
+          kind: 'codex_cli_model_specific',
+          acceptanceEligible: true,
+          equivalentToFrozenModelTransport: true,
+        },
         candidate: null,
         candidateProvenance: {
           kind: jointPerformanceGeneration
@@ -769,6 +821,12 @@ async function main() {
       latencyMs: generated.latencyMs,
       usage: generated.usage,
       tokenUsageAvailable: generated.tokenUsageAvailable,
+      promptSizeReport: generated.promptSizeReport,
+      transport: generated.transport || {
+        kind: 'codex_cli_model_specific',
+        acceptanceEligible: true,
+        equivalentToFrozenModelTransport: true,
+      },
       candidate,
       sourceAccessibility:
         audit.audits?.sourceAccessibilityAudit || structuredResult?.composition?.sourceAccessibilityAudit || null,
@@ -790,7 +848,9 @@ async function main() {
   };
   const reportBase = {
     schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
-    mode: jointPerformanceGeneration
+    mode: directDevelopmentModel
+      ? 'original_only_direct_provider_development_screen_non_equivalent'
+      : jointPerformanceGeneration
       ? 'original_only_joint_performance_screen'
       : structuredGeneration
         ? 'original_only_structured_screen'
@@ -810,6 +870,21 @@ async function main() {
     drawsPerTurn: draws,
     concurrency,
     developmentSeed: args['development-seed'] || null,
+    speakerTransport: directDevelopmentModel
+      ? {
+          kind: 'direct_provider_development_non_equivalent',
+          requestedModelRef: args['development-direct-model'],
+          provider: directDevelopmentModel.provider,
+          model: directDevelopmentModel.model,
+          acceptanceEligible: false,
+          consumesHeldOutOrAcceptanceSeed: false,
+        }
+      : {
+          kind: 'frozen_model_transport',
+          provider: bundles[0]?.request?.provider || null,
+          model: bundles[0]?.request?.model || null,
+          acceptanceEligible: true,
+        },
     sourceAccessibilityPolicy,
     semanticAdjudication: Boolean(args['semantic-adjudication']),
     adjudicatorModelOverride: args['adjudicator-model'] || null,
@@ -824,6 +899,7 @@ async function main() {
       dialogueContinued: false,
       unsafeCandidatePubliclyExposed: false,
       runtimeDialoguePathChanged: false,
+      directProviderScreenCountsAsCodexCliAcceptance: false,
       ...(structuredGeneration ? { deterministicStructuredCompositionInvoked: true } : {}),
       ...(jointPerformanceGeneration ? { deterministicJointPerformanceCompositionInvoked: true } : {}),
     },

@@ -9,6 +9,7 @@ import {
   auditTutorStubFrozenLeak,
   auditTutorStubFrozenCandidate,
   refreshTutorStubFrozenFirstDraftRequest,
+  summarizeTutorStubFrozenReplay,
   TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
   TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA,
 } from '../services/tutorStubFrozenReplay.js';
@@ -30,6 +31,78 @@ const FIXTURE_PATHS = [
   path.join(FIXTURE_DIR, 'tallow-answer-seeking-v20.json'),
   path.join(FIXTURE_DIR, 'nocturne-answer-seeking-v22.json'),
 ];
+
+test('frozen replay summary totals complete token usage and preserves missing fields as null', () => {
+  const summary = summarizeTutorStubFrozenReplay([
+    {
+      latencyMs: 10,
+      usage: {
+        inputTokens: 100,
+        cachedInputTokens: 40,
+        uncachedInputTokens: 60,
+        outputTokens: 10,
+        reasoningOutputTokens: 3,
+        totalTokens: 110,
+      },
+      tokenUsageAvailable: true,
+      promptSizeReport: {
+        schema: 'machinespirits.tutor-stub.prompt-size-report.v1',
+        tokenizer: { id: 'fixture' },
+        authoredTotal: { estimatedTokens: 10 },
+        observedProviderInput: { tokens: 100 },
+        inferredResidual: { tokens: 90 },
+      },
+    },
+    {
+      latencyMs: 20,
+      usage: {
+        inputTokens: 120,
+        cachedInputTokens: null,
+        uncachedInputTokens: null,
+        outputTokens: 12,
+        reasoningOutputTokens: null,
+        totalTokens: 132,
+      },
+      tokenUsageAvailable: true,
+      promptSizeReport: {
+        schema: 'machinespirits.tutor-stub.prompt-size-report.v1',
+        tokenizer: { id: 'fixture' },
+        authoredTotal: { estimatedTokens: 12 },
+        observedProviderInput: { tokens: 120 },
+        inferredResidual: { tokens: 108 },
+      },
+    },
+  ]);
+
+  assert.equal(summary.tokenUsageAvailable, true);
+  assert.deepEqual(summary.tokenUsage, {
+    inputTokens: 220,
+    cachedInputTokens: null,
+    uncachedInputTokens: null,
+    outputTokens: 22,
+    reasoningOutputTokens: null,
+    totalTokens: 242,
+  });
+  assert.equal(summary.promptSize.calls, 2);
+  assert.equal(summary.promptSize.totalAuthoredEstimatedTokens, 22);
+  assert.equal(summary.promptSize.totalObservedProviderInputTokens, 220);
+  assert.equal(summary.promptSize.totalInferredResidualTokens, 198);
+
+  const unavailable = summarizeTutorStubFrozenReplay([
+    { latencyMs: 10, usage: null, tokenUsageAvailable: false },
+  ]);
+  assert.equal(unavailable.tokenUsageAvailable, false);
+  assert.deepEqual(unavailable.tokenUsage, {
+    inputTokens: null,
+    cachedInputTokens: null,
+    uncachedInputTokens: null,
+    outputTokens: null,
+    reasoningOutputTokens: null,
+    totalTokens: null,
+  });
+  assert.equal(unavailable.promptSize.calls, 0);
+  assert.equal(unavailable.promptSize.totalObservedProviderInputTokens, null);
+});
 
 function readFixture(fixturePath) {
   return JSON.parse(fs.readFileSync(fixturePath, 'utf8'));

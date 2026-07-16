@@ -21,9 +21,32 @@ import {
   TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA,
   auditTutorStubSourceAccessibilityCompensation,
 } from './tutorStubSourceAccessibilityContract.js';
+import { aggregateTokenUsage, tokenUsageFields } from './tokenUsage.js';
+import { summarizeTutorStubPromptSizeReports } from './tutorStubPromptSizeReport.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
 const CAMPAIGN_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+export function aggregateTutorStubFirstDraftCampaignTokenUsage(cells = []) {
+  const completed = (Array.isArray(cells) ? cells : [])
+    .filter((cell) => Number(cell?.completedTurns || 0) > 0)
+    .map((cell) => ({
+      usage: cell.tokenUsage,
+      tokenUsageAvailable: cell.tokenUsageAvailable,
+    }));
+  const tokenUsage = aggregateTokenUsage(completed);
+  return {
+    tokenUsage: tokenUsageFields(tokenUsage),
+    tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+  };
+}
+
+export function aggregateTutorStubFirstDraftCampaignPromptSize(cells = []) {
+  const reports = (Array.isArray(cells) ? cells : []).flatMap((cell) =>
+    Array.isArray(cell?.promptSizeReports) ? cell.promptSizeReports : [],
+  );
+  return summarizeTutorStubPromptSizeReports(reports);
+}
 
 export function acquireTutorStubFirstDraftCellClaim({
   outputDir,
@@ -1689,6 +1712,9 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     }));
   });
   const results = resultEntries.map((entry) => entry.row);
+  const tokenUsage = aggregateTokenUsage(results);
+  const promptSizeReports = results.map((row) => row.promptSizeReport).filter(Boolean);
+  const promptSize = summarizeTutorStubPromptSizeReports(promptSizeReports);
   const drawsPerPrefix = Number(
     config.gates_per_cell.required_draws_per_prefix ?? config.fixed_configuration?.draws_per_turn ?? 1,
   );
@@ -2029,6 +2055,10 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
           0,
         ) / originalLatencies.length
       : null,
+    tokenUsage: tokenUsageFields(tokenUsage),
+    tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
+    promptSize,
+    promptSizeReports,
     meanSemanticAdjudicationLatencyMs: adjudicationRows.length
       ? adjudicationRows.reduce(
           (sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0),

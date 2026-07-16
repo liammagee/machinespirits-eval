@@ -174,12 +174,31 @@ describe('cliProviderBridge', () => {
 
     assert.deepEqual(usage, {
       inputTokens: 23394,
-      outputTokens: 5,
-      totalTokens: 23399,
       cachedInputTokens: 5888,
+      uncachedInputTokens: 17506,
+      outputTokens: 5,
       reasoningOutputTokens: 0,
+      totalTokens: 23399,
+      tokenUsageAvailable: true,
     });
     assert.equal(codexUsageFromEvents([{ type: 'turn.completed' }]), null);
+  });
+
+  it('preserves partial Codex usage as null instead of inventing zeroes', () => {
+    assert.deepEqual(
+      codexUsageFromEvents([
+        { type: 'turn.completed', usage: { input_tokens: 120, reasoning_output_tokens: 4 } },
+      ]),
+      {
+        inputTokens: 120,
+        cachedInputTokens: null,
+        uncachedInputTokens: null,
+        outputTokens: null,
+        reasoningOutputTokens: 4,
+        totalTokens: null,
+        tokenUsageAvailable: true,
+      },
+    );
   });
 
   it('rejects a pre-aborted Codex call without launching it', async () => {
@@ -230,6 +249,12 @@ describe('cliProviderBridge', () => {
     assert.equal(result.modelAttestationBasis, 'explicit_cli_model_argument_accepted_bridge_echo');
     assert.equal(result.modelIndependentlyAttested, false);
     assert.equal(result.tokenUsageAvailable, false);
+    assert.equal(result.inputTokens, null);
+    assert.equal(result.cachedInputTokens, null);
+    assert.equal(result.uncachedInputTokens, null);
+    assert.equal(result.outputTokens, null);
+    assert.equal(result.reasoningOutputTokens, null);
+    assert.equal(result.totalTokens, null);
   });
 
   it('returns real Codex CLI token usage when the JSON stream reports it', async () => {
@@ -252,7 +277,9 @@ describe('cliProviderBridge', () => {
     assert.equal(result.inputTokens, 120);
     assert.equal(result.outputTokens, 9);
     assert.equal(result.cachedInputTokens, 40);
+    assert.equal(result.uncachedInputTokens, 80);
     assert.equal(result.reasoningOutputTokens, 3);
+    assert.equal(result.totalTokens, 129);
     assert.equal(result.tokenUsageAvailable, true);
   });
 
@@ -306,5 +333,11 @@ describe('cliProviderBridge', () => {
     assert.equal(calls[0].options.env.ANTHROPIC_API_KEY, undefined);
     assert.equal(result.structuredOutput, true);
     assert.equal(result.tokenUsageAvailable, false);
+    assert.equal(result.inputTokens, null);
+    assert.equal(result.cachedInputTokens, null);
+    assert.equal(result.uncachedInputTokens, null);
+    assert.equal(result.outputTokens, null);
+    assert.equal(result.reasoningOutputTokens, null);
+    assert.equal(result.totalTokens, null);
   });
 });
