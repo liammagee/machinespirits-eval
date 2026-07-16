@@ -1137,7 +1137,7 @@ function contractAnchor(contract, id) {
 function normalizedContentTokens(value) {
   return new Set(
     (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []).map((token) =>
-      token.replace(/[’]/gu, "'"),
+      token.replace(/[’]/gu, "'").replace(/'s$/u, ''),
     ),
   );
 }
@@ -1145,7 +1145,7 @@ function normalizedContentTokens(value) {
 function anchorOverlapCount(text, anchor) {
   const textTokens = normalizedContentTokens(text);
   return (anchor?.content_tokens || []).filter((token) =>
-    textTokens.has(String(token || '').toLowerCase().replace(/[’]/gu, "'")),
+    textTokens.has(String(token || '').toLowerCase().replace(/[’]/gu, "'").replace(/'s$/u, '')),
   ).length;
 }
 
@@ -1502,12 +1502,27 @@ export function auditTutorStubResponseConfiguration({
     !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
   const actorialPartPass = actorialPartVisible(configuration, performanceText, metrics);
   const contextualFullText = String(performanceAuditContext?.fullComposedPublicText || '');
-  const contextualTextContainsAuditedSpan =
+  const contextualAuditedSpanTexts = Array.isArray(performanceAuditContext?.auditedSpanTexts)
+    ? performanceAuditContext.auditedSpanTexts.map((span) => String(span || ''))
+    : null;
+  let contextualTextContainsAuditedSpan =
     contextualFullText.length > 0 && contextualFullText.includes(String(text || ''));
-  // Structured slot audits may prove PART separately and insert SOURCE outside
-  // TACTIC.  Those facts are prerequisites only: the tactic recognizer still
-  // receives the isolated tactic text, so target and performance cues cannot
-  // bleed in from another slot.
+  if (contextualAuditedSpanTexts?.length) {
+    let cursor = 0;
+    const orderedAndBound =
+      contextualAuditedSpanTexts.every((span) => {
+        if (!span) return false;
+        const index = contextualFullText.indexOf(span, cursor);
+        if (index < 0) return false;
+        cursor = index + span.length;
+        return true;
+      }) && contextualAuditedSpanTexts.join(' ') === String(text || '');
+    contextualTextContainsAuditedSpan = contextualFullText.length > 0 && orderedAndBound;
+  }
+  // Structured audits may prove a public part separately or audit an ordered
+  // pair of model-owned performance spans around a host-owned SOURCE. Those
+  // facts are prerequisites only: the tactic recognizer still receives only
+  // the bound audited text, so SOURCE language cannot impersonate performance.
   const performancePrerequisitePartVisible = performanceAuditContext
     ? performanceAuditContext.verifiedPartVisible === true && contextualTextContainsAuditedSpan
     : actorialPartPass;

@@ -52,7 +52,7 @@ function contentTokens(value) {
       oneLine(value)
         .toLocaleLowerCase('en')
         .match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu)
-        ?.map((token) => token.replace(/[’]/gu, "'"))
+        ?.map((token) => token.replace(/[’]/gu, "'").replace(/'s$/u, ''))
         .filter((token) => token.length >= 2 && !FUNCTION_WORDS.has(token)) || [],
     ),
   ];
