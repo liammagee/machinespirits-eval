@@ -149,6 +149,19 @@ handoff. Its partial trace is at
 `/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-realization/strict-working-i35`.
 It is diagnostic evidence, not an acceptance run.
 
-Current status: implementation and focused verification complete; fresh
-held-out generalization matrix still pending. Do not tune against or claim
-acceptance from the interrupted i35 trajectory.
+Strict i36 subsequently passed the complete working prerequisite with 6/10
+original candidates accepted, four model rewrites, no fallback, no delivery
+failure, and every existing strict gate intact.
+
+Fresh held-out V18 then completed under the frozen configuration recorded in
+`config/tutor-stub-campaigns/first-draft-generalization-v18.yaml`. It failed
+acceptance: two of four cells passed, aggregate original-candidate acceptance
+was 18/32 (56.25%) against the 70% gate, and the Skyway answer-seeking cell
+accepted only 2/7 originals before terminal recovery failure. The aggregate
+model-rewrite rate (9/32) and total fallback count (2) remained within their
+matrix ceilings, but all-four-cell strict completion did not.
+
+The full result and failure clusters are recorded in
+`notes/status/2026-07-16-first-draft-generalization-v18.md`. V18 is preserved as
+failed acceptance evidence. Any implementation change retires its four seeds;
+the next acceptance matrix must be predeclared afresh.
