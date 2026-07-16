@@ -40,7 +40,7 @@ export const TUTOR_STUB_FROZEN_REPLAY_SCHEMA = 'machinespirits.tutor-stub.frozen
 export const TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.first-draft-regression-fixture.v1';
 
 const FIRST_DRAFT_BLOCK =
-  /\[Tutor-only first-draft performance contract\][\s\S]*?\[End tutor-only first-draft performance contract\]/u;
+  /(?:\[Tutor-only first-draft performance contract\][\s\S]*?\[End tutor-only first-draft performance contract\]|\[Tutor-only host plan\][\s\S]*?\[End tutor-only host plan\])/u;
 const PRIVATE_TOKEN_STOPWORDS = new Set([
   'about',
   'above',

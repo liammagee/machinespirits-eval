@@ -97,6 +97,21 @@ test('frozen screens recompile the current single-development contract without c
   assert.equal(semanticPromptAudit.ok, true);
 });
 
+test('frozen screens can refresh an already-current typed host plan', () => {
+  const fixture = readFixture(FIXTURE_PATHS[0]);
+  const original = fixture.cases[0].bundle;
+  const world = worldForId(original.worldId);
+  const firstRefresh = refreshTutorStubFrozenFirstDraftRequest({ bundle: original, world });
+  const secondRefresh = refreshTutorStubFrozenFirstDraftRequest({ bundle: firstRefresh, world });
+  const prompt = secondRefresh.request.messages.at(-1).content;
+
+  assert.deepEqual(secondRefresh.priorTurns, original.priorTurns);
+  assert.deepEqual(secondRefresh.publicPremiseIds, original.publicPremiseIds);
+  assert.equal(prompt.split('[Tutor-only host plan]').length - 1, 1);
+  assert.equal(prompt.split('[End tutor-only host plan]').length - 1, 1);
+  assert.doesNotMatch(prompt, /Tutor-only first-draft performance contract/u);
+});
+
 test('frozen counterpressure never binds the learner Write question as its public target', () => {
   const fixture = readFixture(FIXTURE_PATHS[0]);
   const source = fixture.cases.find(
