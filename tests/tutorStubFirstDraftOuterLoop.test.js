@@ -1274,14 +1274,16 @@ test('V32 validator fails closed on provenance, staging, one-draw gates, or seed
   }
 });
 
-test('outer-loop advances V32 evidence into the predeclared V33 staged diagnostic', () => {
+test('outer-loop preserves terminal V33 hard-cell evidence and stops at the causal-role architectural blocker', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v33-'));
   try {
     const { manifest } = v33Fixture(tmp);
     const validation = validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 33);
-    assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.currentState, 'stagnated');
+    assert.equal(validation.terminalScope, 'version');
+    assert.equal(validation.outcome, 'no_progress');
     assert.equal(validation.acceptancePredeclared, false);
     assert.equal(validation.workingScreen.id, 'first-draft-diagnostic-screens-v13');
     assert.equal(validation.workingScreen.v33DiagnosticScreen, true);
@@ -1297,13 +1299,44 @@ test('outer-loop advances V32 evidence into the predeclared V33 staged diagnosti
       heldOut: 0,
       reserve: 0,
     });
-    assert.deepEqual(manifest.current.active_working_history, []);
-    assert.equal(manifest.current.active_last_observation, null);
+    assert.equal(manifest.current.active_working_history.length, 1);
+    assert.equal(manifest.current.active_last_observation.version, 33);
+    assert.equal(manifest.current.active_last_observation.strict_originals_accepted, 0);
+    assert.equal(manifest.current.active_last_observation.mean_configuration_realization, 1);
+    assert.equal(manifest.current.active_last_observation.final_safety_failures, 0);
+    assert.equal(manifest.current.active_last_observation.model, 'codex.gpt-5.6-terra');
+    assert.equal(manifest.current.active_last_observation.effort, 'low');
+    assert.deepEqual(manifest.current.active_last_observation.token_usage, {
+      input: 16246,
+      output: 517,
+      total: 16763,
+    });
+    assert.deepEqual(manifest.current.active_last_observation.dominant_failure_clusters, [
+      {
+        cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance',
+        count: 1,
+      },
+    ]);
+    assert.equal(manifest.current.active_last_observation.qualitative_review.status, 'unanimous_fail');
+    assert.equal(manifest.current.active_last_observation.qualitative_review.passing_ratings, 0);
+    assert.equal(manifest.current.active_last_observation.comparison.consecutive_without_improvement, 2);
+    assert.equal(manifest.current.active_last_observation.comparison.stop, true);
+    assert.equal(
+      manifest.current.active_last_observation.terminal_action.next_action,
+      'redesign_speaking_contract_not_prompt_churn',
+    );
     assert.equal(manifest.current.version_advance_from.version, 32);
     assert.equal(manifest.current.version_advance_from.strict_originals_accepted, 1);
     assert.equal(manifest.current.version_advance_from.comparison.measurable_improvement, true);
     assert.equal(manifest.current.version_advance_from.comparison.consecutive_without_improvement, 0);
     assert.equal(manifest.current.version_advance_from.terminal_action.v33_status, 'strict_confirmation_prohibited');
+    assert.deepEqual(
+      manifest.seed_ledger.development.map(({ seed, status }) => ({ seed, status })),
+      [
+        { seed: 20262300, status: 'consumed_development_failed_retired' },
+        { seed: 20262301, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+      ],
+    );
     assert.deepEqual(
       manifest.seed_ledger.historical
         .filter((entry) => Number(entry.version) === 32)
@@ -1315,6 +1348,7 @@ test('outer-loop advances V32 evidence into the predeclared V33 staged diagnosti
     );
     assert.deepEqual(manifest.seed_ledger.held_out.entries, []);
     assert.deepEqual(manifest.seed_ledger.reserve.entries, []);
+    assert.equal(manifest.current.acceptance_config, null);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -1382,6 +1416,23 @@ test('V33 preserves V32 frozen inputs and adds only separated speaking, recognit
 
 test('V33 validator fails closed on result provenance, fresh seeds, change separation, or qualitative-review weakening', () => {
   const cases = [
+    {
+      name: 'V33 result provenance',
+      mutate: ({ manifest }) => { manifest.current.v33_working_observation.provenance.result_sha256 = 'drift'; },
+      pattern: /V33 (?:result history|working observation) result hash/iu,
+    },
+    {
+      name: 'V33 qualitative result provenance',
+      mutate: ({ manifest }) => { manifest.current.v33_working_observation.provenance.qualitative_review_sha256 = 'drift'; },
+      pattern: /V33 (?:result history|working observation) qualitative review hash/iu,
+    },
+    {
+      name: 'architectural stop weakened',
+      mutate: ({ manifest }) => {
+        manifest.current.v33_working_observation.comparison.consecutive_without_improvement = 1;
+      },
+      pattern: /V33 (?:result history|working observation) comparison/iu,
+    },
     {
       name: 'V32 result provenance',
       mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },

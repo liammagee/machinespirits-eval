@@ -316,6 +316,24 @@ const V32_ITERATION_1_RESULT = Object.freeze({
   ]),
 });
 
+const V33_ITERATION_1_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/working-screen-result.json',
+  runHead: '45cb13a7f397cbbaecaa0e6ffa609fe764237a9e',
+  configSha256: 'e7d76b1707e6514b30ef8d5c3bc0fec9797df1eba673de2159bf3223d70cd440',
+  worktreePorcelainSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/campaign-validation.json',
+  campaignValidationSha256: '71bca35b6824c13666ffde5f8240acd4e46a98e7994b194af292bcd4dff43402',
+  preflightExecutionArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight-execution.json',
+  preflightExecutionSha256: '98049ad5bdd5fd06c0b07b989118928c5903f1ff084a4658b69ef8cff1a9eb08',
+  turnArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/tallow_answer_seeking_diagnostic_1/turn-5.json',
+  turnArtifactSha256: '32ce9c0180eb3f6af63bd1711b6e8c5934a9054028f57ac4b6497fd39cbece55',
+  qualitativeReviewArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/qualitative-causal-fidelity-review.json',
+  qualitativeReviewSha256: '589f945f17be184973532a011c11a70771e844c51abc4406f70921ae6bee3787',
+  resultSha256: 'e74a28d04a582a18a3fc8eddcdb2bb1db8bbc0a0f85d44a9a392972fbc093c9e',
+  certificateKey: 'f0ba6472cf8ee2c9ea685a72a54118b9b8a7d6c318b6d04bafe657045113aea0',
+  certificateSha256: 'e0a61a18d302a791dc690cd7b5dec42cd7185b464b8d0637c4a043c1a0d97588',
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -1648,6 +1666,234 @@ function validateV32Iteration1Observation(observation, label) {
   );
 }
 
+function validateV33Iteration1Observation(observation, label) {
+  expect(observation?.version, 33, `${label} version`);
+  expect(observation?.working_iteration, 1, `${label} working iteration`);
+  expect(
+    observation?.status,
+    'development_diagnostic_failed_architectural_blocker',
+    `${label} status`,
+  );
+  expect(
+    observation?.kind,
+    'non_held_out_hard_cell_first_draft_failure',
+    `${label} kind`,
+  );
+  expect(observation?.result_artifact, V33_ITERATION_1_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.run_head, V33_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V33_ITERATION_1_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.worktree_porcelain_sha256,
+    V33_ITERATION_1_RESULT.worktreePorcelainSha256,
+    `${label} worktree hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V33_ITERATION_1_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V33_ITERATION_1_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
+  expect(
+    observation?.provenance?.preflight_execution_artifact,
+    V33_ITERATION_1_RESULT.preflightExecutionArtifact,
+    `${label} preflight execution artifact`,
+  );
+  expect(
+    observation?.provenance?.preflight_execution_sha256,
+    V33_ITERATION_1_RESULT.preflightExecutionSha256,
+    `${label} preflight execution hash`,
+  );
+  expectJson(observation?.provenance?.preflight_certificate, {
+    disposition: 'executed',
+    key: V33_ITERATION_1_RESULT.certificateKey,
+    path: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/${V33_ITERATION_1_RESULT.certificateKey}.json`,
+    certificate_sha256: V33_ITERATION_1_RESULT.certificateSha256,
+    status: 'pass',
+    reusable: true,
+    observed_head: V33_ITERATION_1_RESULT.runHead,
+    result_boundary_disposition: 'frozen_run_evidence_not_reused_after_result_record_changes',
+  }, `${label} preflight certificate`);
+  expectJson(observation?.provenance?.turn_artifact, {
+    cell: 'tallow_answer_seeking_diagnostic_1',
+    turn: 5,
+    path: V33_ITERATION_1_RESULT.turnArtifact,
+    sha256: V33_ITERATION_1_RESULT.turnArtifactSha256,
+  }, `${label} turn artifact`);
+  expect(
+    observation?.provenance?.qualitative_review_artifact,
+    V33_ITERATION_1_RESULT.qualitativeReviewArtifact,
+    `${label} qualitative review artifact`,
+  );
+  expect(
+    observation?.provenance?.qualitative_review_sha256,
+    V33_ITERATION_1_RESULT.qualitativeReviewSha256,
+    `${label} qualitative review hash`,
+  );
+  expect(
+    observation?.provenance?.result_sha256,
+    V33_ITERATION_1_RESULT.resultSha256,
+    `${label} result hash`,
+  );
+  expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
+  expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
+  expect(
+    observation?.deterministic_execution_preflight_passed,
+    true,
+    `${label} deterministic preflight`,
+  );
+  expect(
+    observation?.preflight_observation?.execution,
+    'passed_once_without_retry',
+    `${label} preflight execution mode`,
+  );
+  expect(observation?.preflight_observation?.commands, 9, `${label} preflight commands`);
+  expect(observation?.preflight_observation?.model_calls, 0, `${label} preflight model calls`);
+  expect(observation?.preflight_observation?.elapsed_ms, 48405, `${label} preflight elapsed time`);
+  expectJson(observation?.preflight_observation?.suites, [
+    {
+      id: 'audit_contracts', passed: 438, total: 438,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
+      sha256: '1011f1978aaa1ecaed810b4fbaeac14532d7043f9e4a07016f58276bf89814ec',
+    },
+    {
+      id: 'interactive_modes', passed: 24, total: 24,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
+      sha256: '9deaf0b5559e1490804864a1736dc33fefcbb8e83ac8c160cd7eef50e47c65ba',
+    },
+    {
+      id: 'adaptive_evidence', passed: 4, total: 4,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
+      sha256: 'fea0a2e09c0f6b032dd53c7e26faab6f35bc4856c16074ec9475b5547f062325',
+    },
+    {
+      id: 'campaign_orchestration', passed: 52, total: 52,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
+      sha256: 'd941bec11092fb13774d25b692b9dc8926cf9b171a67c8ca1bcce4c388499685',
+    },
+  ], `${label} focused preflight suites`);
+  expect(
+    observation?.preflight_observation?.model_free_fixtures_passed,
+    4,
+    `${label} model-free fixtures`,
+  );
+  for (const field of [
+    'model_calls', 'candidates_generated', 'completed_candidates',
+    'completed_turns', 'completed_draws',
+  ]) expect(observation?.[field], 1, `${label} ${field}`);
+  expect(observation?.hard_cell, 'tallow_answer_seeking_diagnostic_1', `${label} hard cell`);
+  expect(observation?.hard_cell_turn, 5, `${label} hard-cell turn`);
+  expectJson(
+    observation?.attempted_cells,
+    ['tallow_answer_seeking_diagnostic_1'],
+    `${label} attempted cells`,
+  );
+  expectJson(
+    observation?.unstarted_cells,
+    ['tallow_answer_seeking_diagnostic_2'],
+    `${label} unstarted cells`,
+  );
+  expect(observation?.strict_originals_accepted, 0, `${label} strict originals`);
+  expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 1, `${label} realization`);
+  for (const field of [
+    'final_safety_failures', 'transcript_specific_uptake_failures',
+    'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
+    'semantic_adjudicator_calls', 'semantic_adjudicator_errors',
+    'semantic_recognition_corrections', 'transport_normalized_outputs',
+    'transport_normalization_count', 'joint_performance_ownership_passes',
+    'source_surface_accessibility_failures',
+  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  for (const field of [
+    'joint_performance_model_outputs', 'valid_joint_performance_outputs',
+    'joint_performance_ownership_failures', 'source_surface_accessibility_passes',
+  ]) expect(observation?.[field], 1, `${label} ${field}`);
+  expect(observation?.mean_original_latency_ms, 13451, `${label} original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 13451, `${label} total tutor latency`);
+  expect(observation?.model, 'codex.gpt-5.6-terra', `${label} model`);
+  expect(observation?.effort, 'low', `${label} effort`);
+  expectJson(
+    observation?.token_usage,
+    { input: 16246, output: 517, total: 16763 },
+    `${label} token usage`,
+  );
+  expectJson(observation?.dominant_failure_clusters, [
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
+  ], `${label} failure clusters`);
+  expect(
+    observation?.qualitative_review?.exact_write_sentence,
+    '“The dark chargers did not prevent Tallow Street browning out at 18:40.”',
+    `${label} qualitative sentence`,
+  );
+  expectJson({
+    status: observation?.qualitative_review?.status,
+    passing_ratings: observation?.qualitative_review?.passing_ratings,
+    total_ratings: observation?.qualitative_review?.total_ratings,
+    required_passing_ratings: observation?.qualitative_review?.required_passing_ratings,
+    verdict: observation?.qualitative_review?.verdict,
+  }, {
+    status: 'unanimous_fail',
+    passing_ratings: 0,
+    total_ratings: 2,
+    required_passing_ratings: 2,
+    verdict: 'fail',
+  }, `${label} qualitative verdict`);
+  if (!/did not prevent.*reverses or misdirects/isu.test(
+    observation?.qualitative_review?.reason || '',
+  )) throw new Error(`${label} must preserve the blinded causal-fidelity failure`);
+  expectJson(observation?.comparison, {
+    comparison_available: true,
+    compared_to_version: 32,
+    comparison_scope: 'causal_role_fidelity_blocker',
+    comparable_prefix: true,
+    comparable_completion: false,
+    measurable_improvement: false,
+    configuration_realization_delta: 0,
+    final_safety_failures_delta: 0,
+    deterministic_fallbacks_delta: 0,
+    shared_failure_cluster: 'causal_role_inversion_in_writable_entry',
+    prior_evidence: '“The dark chargers did not stop Tallow Street’s brownout.”',
+    current_evidence: '“The dark chargers did not prevent Tallow Street browning out at 18:40.”',
+    consecutive_without_improvement: 2,
+    stop: true,
+    reason: 'architectural_blocker_same_causal_role_inversion_cluster',
+  }, `${label} comparison`);
+  expectJson(observation?.seed_dispositions, [
+    {
+      seed: 20262300,
+      artifact_status: 'consumed_development',
+      final_status: 'consumed_development_failed_retired',
+    },
+    {
+      seed: 20262301,
+      artifact_status: 'unconsumed',
+      final_status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+    },
+  ], `${label} seed dispositions`);
+  expect(
+    observation?.terminal_action?.v34_status,
+    'not_predeclared_prohibited_pending_architectural_redesign',
+    `${label} V34 status`,
+  );
+  expect(
+    observation?.terminal_action?.automatic_version_advancement,
+    'stopped',
+    `${label} automatic version advancement`,
+  );
+  expect(
+    observation?.terminal_action?.next_action,
+    'redesign_speaking_contract_not_prompt_churn',
+    `${label} next action`,
+  );
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -2040,7 +2286,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'consecutive working iterations without improvement',
     );
   }
-  if (state.currentState === 'stagnated') {
+  if (state.currentState === 'stagnated' && currentVersion !== 33) {
     expect(manifest.current?.last_observation?.version, currentVersion, 'terminal observation version');
     expect(
       manifest.current?.last_observation?.working_iteration,
@@ -3668,10 +3914,45 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   }
 
   if (currentVersion === 33) {
-    expect(state.currentState, 'working_predeclared', 'V33 current state');
+    expect(state.currentState, 'stagnated', 'V33 current state');
     expect(workingIteration, 1, 'V33 working iteration');
-    expectJson(manifest.current?.active_working_history || [], [], 'V33 active working history');
-    expect(manifest.current?.active_last_observation, null, 'V33 active last observation');
+    const v33History = manifest.current?.v33_result_history || [];
+    if (v33History.length !== 1) {
+      throw new Error('V33 must preserve exactly one hard-cell diagnostic result');
+    }
+    validateV33Iteration1Observation(v33History[0], 'V33 result history');
+    validateV33Iteration1Observation(
+      manifest.current?.v33_working_observation,
+      'V33 working observation',
+    );
+    const activeHistory = manifest.current?.active_working_history || [];
+    if (activeHistory.length !== 1) {
+      throw new Error('V33 active working history must preserve exactly its hard-cell result');
+    }
+    validateV33Iteration1Observation(activeHistory[0], 'V33 active working history');
+    validateV33Iteration1Observation(
+      manifest.current?.active_last_observation,
+      'V33 active last observation',
+    );
+    validateV33Iteration1Observation(
+      manifest.current?.last_observation,
+      'V33 last observation',
+    );
+    expectJson(
+      manifest.current?.v33_working_observation,
+      v33History[0],
+      'V33 working observation and result history',
+    );
+    expectJson(
+      manifest.current?.active_last_observation,
+      v33History[0],
+      'V33 active last observation and result history',
+    );
+    expectJson(
+      manifest.current?.last_observation,
+      v33History[0],
+      'V33 last observation and result history',
+    );
     expect(
       manifest.current?.working_screen_config,
       'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml',
@@ -3684,7 +3965,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     );
     expect(
       manifest.current?.working_history_scope,
-      'preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_predeclaration',
+      'preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_architectural_blocker',
       'V33 inherited working-history scope',
     );
     const v32History = manifest.current?.v32_result_history || [];
@@ -3875,8 +4156,8 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
       })),
       [
-        { seed: 20262300, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v13' },
-        { seed: 20262301, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v13' },
+        { seed: 20262300, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v13' },
+        { seed: 20262301, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v13' },
       ],
       'V33 development seed ledger',
     );
@@ -3898,10 +4179,15 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     if (allSeeds.some((seed) => seed >= 20262400 && seed <= 20262499)) {
       throw new Error('V33 must leave 202624xx absent and unreserved');
     }
+    expect(
+      manifest.current?.acceptance_config,
+      null,
+      'V33 acceptance config must remain unpredeclared',
+    );
   }
 
 
-  if (state.currentState === 'stagnated') {
+  if (state.currentState === 'stagnated' && currentVersion !== 33) {
     expect(
       workingScreen.finalFrontierAttemptIteration,
       workingIteration,

@@ -15,13 +15,162 @@ purpose: >-
 current:
   campaign_version: 33
   label: V33
-  state: working_predeclared
+  state: stagnated
   working_iteration: 1
   working_screen_id: first-draft-diagnostic-screens-v13
   working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml
   primary_working_screen_id: first-draft-diagnostic-screens-v13
   primary_working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml
   acceptance_config: null
+  v33_result_history:
+    - &v33_working_observation
+      version: 33
+      working_iteration: 1
+      status: development_diagnostic_failed_architectural_blocker
+      kind: non_held_out_hard_cell_first_draft_failure
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/working-screen-result.json
+      run_head: 45cb13a7f397cbbaecaa0e6ffa609fe764237a9e
+      provenance:
+        working_screen_config_sha256: e7d76b1707e6514b30ef8d5c3bc0fec9797df1eba673de2159bf3223d70cd440
+        worktree_porcelain_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/campaign-validation.json
+        campaign_validation_sha256: 71bca35b6824c13666ffde5f8240acd4e46a98e7994b194af292bcd4dff43402
+        preflight_execution_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight-execution.json
+        preflight_execution_sha256: 98049ad5bdd5fd06c0b07b989118928c5903f1ff084a4658b69ef8cff1a9eb08
+        preflight_certificate:
+          disposition: executed
+          key: f0ba6472cf8ee2c9ea685a72a54118b9b8a7d6c318b6d04bafe657045113aea0
+          path: /Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/f0ba6472cf8ee2c9ea685a72a54118b9b8a7d6c318b6d04bafe657045113aea0.json
+          certificate_sha256: e0a61a18d302a791dc690cd7b5dec42cd7185b464b8d0637c4a043c1a0d97588
+          status: pass
+          reusable: true
+          observed_head: 45cb13a7f397cbbaecaa0e6ffa609fe764237a9e
+          result_boundary_disposition: frozen_run_evidence_not_reused_after_result_record_changes
+        turn_artifact:
+          cell: tallow_answer_seeking_diagnostic_1
+          turn: 5
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/tallow_answer_seeking_diagnostic_1/turn-5.json
+          sha256: 32ce9c0180eb3f6af63bd1711b6e8c5934a9054028f57ac4b6497fd39cbece55
+        qualitative_review_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/qualitative-causal-fidelity-review.json
+        qualitative_review_sha256: 589f945f17be184973532a011c11a70771e844c51abc4406f70921ae6bee3787
+        result_sha256: e74a28d04a582a18a3fc8eddcdb2bb1db8bbc0a0f85d44a9a392972fbc093c9e
+        clean_worktree: true
+      structural_preflight_ready: true
+      deterministic_execution_preflight_passed: true
+      preflight_observation:
+        execution: passed_once_without_retry
+        commands: 9
+        model_calls: 0
+        elapsed_ms: 48405
+        suites:
+          - id: audit_contracts
+            passed: 438
+            total: 438
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/02-focused-audit_contracts.stdout.log
+            sha256: 1011f1978aaa1ecaed810b4fbaeac14532d7043f9e4a07016f58276bf89814ec
+          - id: interactive_modes
+            passed: 24
+            total: 24
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/03-focused-interactive_modes.stdout.log
+            sha256: 9deaf0b5559e1490804864a1736dc33fefcbb8e83ac8c160cd7eef50e47c65ba
+          - id: adaptive_evidence
+            passed: 4
+            total: 4
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log
+            sha256: fea0a2e09c0f6b032dd53c7e26faab6f35bc4856c16074ec9475b5547f062325
+          - id: campaign_orchestration
+            passed: 52
+            total: 52
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log
+            sha256: d941bec11092fb13774d25b692b9dc8926cf9b171a67c8ca1bcce4c388499685
+        model_free_fixtures_passed: 4
+      model_calls: 1
+      candidates_generated: 1
+      completed_candidates: 1
+      completed_turns: 1
+      hard_cell: tallow_answer_seeking_diagnostic_1
+      hard_cell_turn: 5
+      attempted_cells: [tallow_answer_seeking_diagnostic_1]
+      unstarted_cells: [tallow_answer_seeking_diagnostic_2]
+      completed_draws: 1
+      strict_originals_accepted: 0
+      original_candidate_acceptance_rate: 0.0
+      mean_configuration_realization: 1.0
+      final_safety_failures: 0
+      transcript_specific_uptake_failures: 0
+      mechanical_repairs: 0
+      model_rewrites: 0
+      deterministic_fallbacks: 0
+      semantic_adjudicator_calls: 0
+      semantic_adjudicator_errors: 0
+      semantic_recognition_corrections: 0
+      transport_normalized_outputs: 0
+      transport_normalization_count: 0
+      joint_performance_model_outputs: 1
+      valid_joint_performance_outputs: 1
+      joint_performance_ownership_passes: 0
+      joint_performance_ownership_failures: 1
+      source_surface_accessibility_passes: 1
+      source_surface_accessibility_failures: 0
+      mean_original_latency_ms: 13451
+      mean_total_tutor_latency_ms: 13451
+      model: codex.gpt-5.6-terra
+      effort: low
+      token_usage: { input: 16246, output: 517, total: 16763 }
+      candidate: >-
+        Write: “The dark chargers did not prevent Tallow Street browning out
+        at 18:40.” My case is the chargers caused the brownout, but darkness
+        weakens that claim. During stocktake, chargers were dark, yet Tallow
+        Street browned out; this identifies no cause. Now, compare dark
+        chargers with the 18:40 brownout; the depot motion is not yet supported.
+      dominant_failure_clusters:
+        - { cluster: jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance, count: 1 }
+      qualitative_review:
+        id: minutes_entry_public_causal_fidelity_v1
+        status: unanimous_fail
+        exact_write_sentence: “The dark chargers did not prevent Tallow Street browning out at 18:40.”
+        passing_ratings: 0
+        total_ratings: 2
+        required_passing_ratings: 2
+        verdict: fail
+        reason: >-
+          Both independent blinded reviewers found that “did not prevent”
+          reverses or misdirects the public causal relation. The evidence shows
+          that the brownout continued while chargers were dark, weakening the
+          claim that charger current caused it.
+      comparison:
+        comparison_available: true
+        compared_to_version: 32
+        comparison_scope: causal_role_fidelity_blocker
+        comparable_prefix: true
+        comparable_completion: false
+        measurable_improvement: false
+        configuration_realization_delta: 0.0
+        final_safety_failures_delta: 0
+        deterministic_fallbacks_delta: 0
+        shared_failure_cluster: causal_role_inversion_in_writable_entry
+        prior_evidence: “The dark chargers did not stop Tallow Street’s brownout.”
+        current_evidence: “The dark chargers did not prevent Tallow Street browning out at 18:40.”
+        consecutive_without_improvement: 2
+        stop: true
+        reason: architectural_blocker_same_causal_role_inversion_cluster
+      seed_dispositions:
+        - seed: 20262300
+          artifact_status: consumed_development
+          final_status: consumed_development_failed_retired
+        - seed: 20262301
+          artifact_status: unconsumed
+          final_status: retired_unconsumed_unstarted_after_hard_cell_failure
+      terminal_action:
+        v34_status: not_predeclared_prohibited_pending_architectural_redesign
+        automatic_version_advancement: stopped
+        generation_claim: failed_non_held_out_development_evidence
+        next_action: redesign_speaking_contract_not_prompt_churn
+        reason: >-
+          V32 and V33 retained the same causal-role inversion in the learner's
+          writable sentence across two consecutive model-backed versions.
+          Preserve the evidence and redesign the speaking contract before any
+          V34 predeclaration or model call.
   v32_result_history:
     - &v32_working_observation
       version: 32
@@ -188,9 +337,11 @@ current:
           two-of-two diagnostic gate. A strict four-cell/four-draw confirmation
           therefore remains prohibited; any correction belongs to a separately
           predeclared later version with fresh development labels.
-  active_working_history: []
-  active_last_observation: null
-  working_history_scope: preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_predeclaration
+  active_working_history: [*v33_working_observation]
+  active_last_observation: *v33_working_observation
+  last_observation: *v33_working_observation
+  working_history_scope: preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_architectural_blocker
+  v33_working_observation: *v33_working_observation
   v32_working_observation: *v32_working_observation
   version_advance_from: *v32_working_observation
   v31_version_advance_record: &v31_working_observation
@@ -1497,11 +1648,11 @@ seed_ledger:
     - { version: 32, seed: 20262201, status: consumed_development_failed_retired }
   development:
     - seed: 20262300
-      status: reusable_non_held_out_development
+      status: consumed_development_failed_retired
       cell: tallow_answer_seeking_diagnostic_1
       screen: first-draft-diagnostic-screens-v13
     - seed: 20262301
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_unstarted_after_hard_cell_failure
       cell: tallow_answer_seeking_diagnostic_2
       screen: first-draft-diagnostic-screens-v13
   held_out:
@@ -1605,9 +1756,19 @@ claim_boundary: >-
   audit recognition only to split hyphenated focus compounds. Commit d0cd2c12
   scopes reusable preflight certificates to selected tests and their actual
   dependencies. Recovery, safety, delivery, and automatic gates remain
-  unchanged. V33 also predeclares two independent blinded qualitative ratings
+  unchanged. V33 also predeclared two independent blinded qualitative ratings
   for every generated Write: minutes entry. Two automatic strict passes are
-  necessary but insufficient: both ratings on both draws must also confirm
-  preservation of the public causal relation and polarity before V34 may predeclare strict
-  four-cell/four-draw confirmation. V33 predeclares neither that confirmation
-  nor any held-out or reserve seed.
+  necessary but insufficient: both ratings on both draws also had to confirm
+  preservation of the public causal relation and polarity before V34 could
+  predeclare strict four-cell/four-draw confirmation. The first, hardest V33
+  draw was safe and realized the six-axis configuration at 1.0, but failed
+  strict joint ownership on
+  `jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance`.
+  Both blinded reviewers also rejected “The dark chargers did not prevent
+  Tallow Street browning out at 18:40” because it changes cause into
+  prevention. Diagnostic 2 therefore remained unstarted and unconsumed. V32's
+  “did not stop” and V33's “did not prevent” are two consecutive model-backed
+  versions without measurable improvement on the same causal-role-inversion
+  cluster. Automatic advancement stops at this architectural blocker: redesign
+  the speaking contract rather than continuing prompt churn. V34 remains
+  unpredeclared, with no development, held-out, or reserve seed.
