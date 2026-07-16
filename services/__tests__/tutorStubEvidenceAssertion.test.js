@@ -33,6 +33,25 @@ test('allows a positive match when the public evidence already states it', () =>
   assert.equal(audit.ok, true);
 });
 
+test('allows a public single-die finding to be carried forward with tie language', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The shared notch ties these coins to one damaged die.',
+    permittedText:
+      'The shared notch shows all twelve were struck from one same damaged die; it still does not show whose graver made it.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
+test('does not let a public single-die finding license an unrelated exhibit match', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The shilling’s alloy matches the crucible leavings.',
+    permittedText: 'The shared notch shows all twelve shillings were struck from one damaged die.',
+  });
+
+  assert.equal(audit.ok, false);
+});
+
 test('allows questions, requirements, conditions, and explicit non-matches', () => {
   for (const text of [
     'Which streak must match the crucible leavings?',
@@ -95,6 +114,15 @@ test('ignores an explicit tool-custody boundary that is not an exhibit match', (
   assert.equal(
     auditTutorStubEvidenceAssertions({
       text: 'You have kept the graver tied to its owner without pretending it has marked this coin.',
+    }).ok,
+    true,
+  );
+});
+
+test('ignores a released burin-to-hand custody attribution', () => {
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'This ties that burin to Edony’s hand, though the striking remains open.',
     }).ok,
     true,
   );

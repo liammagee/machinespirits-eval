@@ -50,6 +50,20 @@ function openingSentence(value) {
   return oneLine(value).match(/^.*?[.!?](?=\s|$)/u)?.[0] || oneLine(value);
 }
 
+function repeatedSentenceWithinResponse(value) {
+  const sentences = (oneLine(value).match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [])
+    .map((sentence) => oneLine(sentence))
+    .filter((sentence) => words(sentence).length >= 6);
+  for (let left = 0; left < sentences.length; left += 1) {
+    for (let right = left + 1; right < sentences.length; right += 1) {
+      if (normalizedText(sentences[left]) === normalizedText(sentences[right])) {
+        return { sentence: sentences[right], firstIndex: left, repeatedIndex: right };
+      }
+    }
+  }
+  return null;
+}
+
 export function tutorStubAnswerNameIsPublic({ answerTerm = '', publicText = '' } = {}) {
   // World constants use compact symbolic spelling (for example
   // `larkinUnit`) while their public surfaces use ordinary words (`Larkin
@@ -76,6 +90,7 @@ function similarity(left, right) {
 export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts = [], threshold = 0.82 } = {}) {
   const candidate = normalizedText(text);
   if (!candidate) return { ok: true, issues: [], maxSimilarity: 0 };
+  const internalRepeat = repeatedSentenceWithinResponse(text);
   const comparisons = (Array.isArray(recentTutorTexts) ? recentTutorTexts : [])
     .slice(-10)
     .map((previous, index, rows) => ({
@@ -102,7 +117,18 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
       (left, right) =>
         Number(right.openingExact) - Number(left.openingExact) || right.openingSimilarity - left.openingSimilarity,
     );
-  const issues = repeated.length
+  const issues = internalRepeat
+    ? [
+        {
+          type: 'repeated_tutor_sentence',
+          reason: 'repeats a substantial sentence inside the same tutor reply',
+          similarity: 1,
+          repeatedText: internalRepeat.sentence,
+          firstSentenceIndex: internalRepeat.firstIndex,
+          repeatedSentenceIndex: internalRepeat.repeatedIndex,
+        },
+      ]
+    : repeated.length
     ? [
         {
           type: 'repeated_tutor_response',
@@ -129,7 +155,9 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
     schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA,
     ok: issues.length === 0,
     issues,
-    maxSimilarity: comparisons.reduce((max, row) => Math.max(max, row.similarity), 0),
+    maxSimilarity: internalRepeat
+      ? 1
+      : comparisons.reduce((max, row) => Math.max(max, row.similarity), 0),
   };
 }
 

@@ -126,6 +126,27 @@ test('speaker prompt recovery discards contaminated advisory and preserves the p
   );
 });
 
+test('speaker prompt recovery can rebuild from the compiled first-draft contract without restoring detailed surfaces', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const recovered = recoverTutorStubSpeakerPrompt({
+    world,
+    tutorTurn: 1,
+    baseSystemPrompt: 'Respond only from the public exchange.',
+    continuityPrompt: 'Continue from the complete public dialogue.',
+    publicEvidencePrompt: 'The crucible licence is public now.',
+    firstDraftContractPrompt:
+      '[Tutor-only first-draft performance contract]\nOPEN — answer the learner.\nACT — read the public licence.\nEND — ask what it establishes.',
+    learnerPrompt: 'Learner says: The licence is not the same as proof of striking.',
+  });
+
+  assert.equal(recovered.applied, true);
+  assert.equal(recovered.includedSurfaces.firstDraftContract, true);
+  assert.equal(recovered.includedSurfaces.responseComposition, false);
+  assert.equal(recovered.includedSurfaces.dramaticRelease, false);
+  assert.equal(recovered.includedSurfaces.responseConfiguration, false);
+  assert.match(recovered.userPrompt, /first-draft performance contract/u);
+});
+
 test('speaker prompt recovery sanitizes a contaminated retained surface before its fail-closed audit', () => {
   const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
   const future = world.releaseSchedule.find((row) => row.turn > 1);

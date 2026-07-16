@@ -1776,6 +1776,46 @@ claims:
       - "Run: node --test tests/superego-guard.test.js to verify count. Tests are dynamically generated — source has ~15 it() definitions that expand to ~111 at runtime."
     tags: [s7, testing, verified]
 
+  - id: paper2.s7.tutor_stub_v17.strict_delivery
+    description: "The predeclared four-cell V17 tutor-stub matrix passed every strict delivery gate."
+    source_keys:
+      - "stat|0|V17 four-cell strict delivery pass"
+    statement:
+      pattern: "All four passed every predeclared strict gate"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "notes/status/2026-07-16-character-generalization-v17.md"
+      pattern: "V17 passed every predeclared strict gate in all four cells"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "If the frozen V17 status no longer reports a four-cell strict pass, remove or narrow §7.4.5 and its §8.5 scope note."
+    tags: [s7, apparatus, tutor-stub, pilot, verified]
+
+  - id: paper2.s7.tutor_stub_v17.proof_coverage_boundary
+    description: "V17 delivery safety did not imply uniform proof completion; proof-path coverage ranged from 0.200 to 1.000."
+    source_keys:
+      - "stat|0|V17 proof coverage 0.200-1.000"
+    statement:
+      pattern: "Proof-path coverage was 1\\.000, 1\\.000, 0\\.667, and 0\\.200"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "notes/status/2026-07-16-character-generalization-v17.md"
+      pattern: "\\| (?:Foxtrot / false memory|AI syllabus / fast|Sealhouse / slow|Hethel resistant / low agency) \\|"
+      min_matches: 4
+    assertion:
+      op: gte
+      expected: 4
+    remediation:
+      - "If the V17 result rows change, update the §7.4.5 coverage sequence and preserve the safety-versus-outcome distinction."
+    tags: [s7, apparatus, tutor-stub, proof-coverage, pilot]
+
   # ── Section 8: Limitations (mostly theoretical — few machine-checkable) ──
 
   - id: paper2.s8.cross_judge.correlation_range

@@ -130,6 +130,29 @@ test('a sole actorial-part miss receives a public-only host cue between uptake a
   assert.doesNotMatch(result.text, /Reyner|future|hidden|premise/iu);
 });
 
+test('actorial host repair does not duplicate a fused opening carried in development', () => {
+  const opening =
+    'I clear a space beside Edony’s charcoal entries: they place the crucible under her hand, yet leave the striking untouched.';
+  const result = repairTutorStubMissingActorialPart({
+    text: `${opening} “I saw Verrell at the forge.” What does that add?`,
+    deliveryDecision: {
+      hardIssues: [{ guard: 'actorial_realization', type: 'missing_selected_actorial_part' }],
+    },
+    responseConfiguration: { actorial_part: 'scene_partner' },
+    responseComposition: {
+      uptake: opening,
+      development: `${opening} “I saw Verrell at the forge.” What does that add?`,
+    },
+  });
+
+  assert.equal(result.changed, true);
+  assert.equal((result.text.match(/I clear a space beside Edony/gu) || []).length, 1);
+  assert.equal(
+    result.text,
+    `${opening} I make room beside the public record for you. “I saw Verrell at the forge.” What does that add?`,
+  );
+});
+
 test('actorial host repair does not run alongside any safety or content failure', () => {
   const result = repairTutorStubMissingActorialPart({
     text: 'A lodge account is read aloud.',

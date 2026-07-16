@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SAFE_TUTOR_RESPONSE =
-  "You’re right: owning a graver is suspicion, not tested evidence. “I have my finger on the crucible licence: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell’s hand.” What does that support without yet proving?";
+  "You’re right: owning a graver is suspicion, not tested evidence. I examine the crucible; “Here is what I can attest: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.” What changes now?";
 const UNSAFE_TUTOR_RESPONSE = 'Edony struck the false shillings with the worn burin.';
 const PROOF_SKIPPER_RESPONSE = "The graver on Verrell's bench settles it: Verrell struck the shillings.";
 const GENERIC_LEARNER_RESPONSE = 'I need more evidence before making a claim.';
@@ -132,16 +132,19 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
 
     assert.ok(tutorRequest, 'expected one speaking-tutor model request');
     assert.match(tutorRequest.input, /Speaking-tutor evidence contract/u);
-    assert.match(tutorRequest.input, /Tutor-only response composition/u);
-    assert.match(tutorRequest.input, /one atomic assistant turn as one continuous public performance/u);
+    assert.match(tutorRequest.input, /Tutor-only first-draft performance contract/u);
+    assert.match(tutorRequest.input, /one compact paragraph in one continuous voice/u);
+    assert.match(tutorRequest.input, /OPEN —[\s\S]*ACT —[\s\S]*PART —[\s\S]*END —/u);
+    assert.doesNotMatch(tutorRequest.input, /Tutor-only response configuration/u);
     assert.match(tutorRequest.input, /Learner says:\s*The town suspects Verrell/u);
     assert.doesNotMatch(
       tutorRequest.input,
       /The false shillings were struck by Edony|The old founder's tools were never sold off|p_holder|R1_blank|meltedAt\(/u,
     );
-    assert.equal(turn.tutor, SAFE_TUTOR_RESPONSE);
+    assert.match(turn.tutor, /You’re right: owning a graver is suspicion, not tested evidence/u);
     assert.equal((turn.tutor.match(/\?/gu) || []).length, 1);
-    assert.match(turn.tutor, /“I have my finger on the crucible licence/u);
+    assert.match(turn.tutor, /Verrell alone draws the mint-yard crucible/u);
+    assert.match(turn.tutor, /[“"][^”"]*(?:I can attest|I have my finger|Here is what I can attest)/u);
     assert.doesNotMatch(turn.tutor, /another piece of information|role-play|I(?:'|’)ll be/iu);
     assert.doesNotMatch(turn.tutor, /Edony|p_holder|R1_blank|meltedAt\(/u);
     assert.equal(turn.tutorResponseRepaired, false);
@@ -153,7 +156,7 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     assert.equal(turn.responseComposition.audit.ok, true);
     assert.equal(turn.responseComposition.atomicAssistantTurn, true);
     assert.equal(turn.responseComposition.uptake, 'You’re right: owning a graver is suspicion, not tested evidence.');
-    assert.match(turn.responseComposition.development, /“I have my finger on the crucible licence/u);
+    assert.match(turn.responseComposition.development, /Verrell alone draws the mint-yard crucible/u);
     assert.equal(turn.tutorGuardAccounting.guards.responseComposition, true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

@@ -1193,7 +1193,7 @@ test('deterministic uptake keeps a learner-proposed die test visible while anoth
 
   assert.equal(
     uptake,
-    'That is the right tool-mark test; I’ll keep it in view while the next public evidence enters.',
+    'That is the right tool-mark test; keep the shared flaw before us.',
   );
 });
 
@@ -1801,6 +1801,6 @@ test('a learner-selected maker-mark test must be carried forward before another 
       classification: { turn: { request_type: 'stepwise_support_request' } },
       actionFamily: 'stage_next_step',
     }),
-    'That is the right tool-mark test; I’ll keep it in view while the next public evidence enters.',
+    'That is the right tool-mark test; keep the shared flaw before us.',
   );
 });

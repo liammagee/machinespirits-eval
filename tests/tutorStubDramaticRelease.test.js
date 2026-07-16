@@ -7,6 +7,7 @@ import {
   deterministicTutorStubDramaticReleaseFallback,
   tutorStubFirstPersonRoleVoiceVisible,
   tutorStubRoleStageDirectionVisible,
+  tutorStubSourcePerspectiveDriftVisible,
   tutorStubDramaticReleasePrompt,
 } from '../services/tutorStubDramaticRelease.js';
 
@@ -29,8 +30,9 @@ test('director evidence becomes an enacted in-scene release', () => {
   assert.match(prompt, /Make its arrival audible or visible inside the scene/u);
   assert.match(prompt, /Enact it from inside this role: watchman/u);
   assert.match(prompt, /Never say “let’s role-play/u);
-  assert.match(prompt, /begin the source quotation itself with I, My, We, or Our/u);
-  assert.match(prompt, /Do not write “as the assayer\/officer\/clerk speaks or says/u);
+  assert.match(prompt, /begin the source quotation itself with a first-person reporting act/u);
+  assert.match(prompt, /First person belongs to that reporting act only/u);
+  assert.match(prompt, /write “as the assayer\/officer\/clerk speaks or says/u);
   assert.doesNotMatch(prompt, /p_watch/u);
 
   const performed = auditTutorStubDramaticReleaseResponse({
@@ -67,6 +69,50 @@ test('a role label and stage direction do not count as speaking in character', (
   assert.ok(audit.issues.some((issue) => issue.type === 'missing_in_scene_enactment'));
 });
 
+test('narrating a source entrance before quoted speech still exposes the role label', () => {
+  const watchFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_watch',
+        via: 'director',
+        surface: 'Verrell was seen at the forge after dark.',
+        presentation: { mode: 'enacted_role', role: 'watchman giving his account' },
+      },
+    ],
+  });
+  const sinkerFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_tool',
+        via: 'director',
+        surface: 'The square bite belongs to a worn burin.',
+        presentation: { mode: 'enacted_role', role: 'die-sinker identifying the tool mark' },
+      },
+    ],
+  });
+
+  assert.equal(
+    tutorStubRoleStageDirectionVisible({
+      frame: watchFrame,
+      text: 'I set down the shilling as the watchman steps forward: “I saw Verrell after dark.” What changes?',
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubRoleStageDirectionVisible({
+      frame: sinkerFrame,
+      text: 'I bring the glass over the mark and the die-sinker says, “I know this bite.” What changes?',
+    }),
+    true,
+  );
+  assert.ok(
+    auditTutorStubDramaticReleaseResponse({
+      frame: sinkerFrame,
+      text: 'I bring the glass over the mark and the die-sinker says, “I know this bite.” What changes?',
+    }).issues.some((issue) => issue.type === 'role_label_stage_direction'),
+  );
+});
+
 test('announcing role-play fails even when the clue and return question are present', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
@@ -86,6 +132,74 @@ test('announcing role-play fails even when the clue and return question are pres
   assert.equal(audit.ok, false);
   assert.equal(audit.metaRoleplayAnnouncement, true);
   assert.ok(audit.issues.some((issue) => issue.type === 'meta_dramatic_announcement'));
+});
+
+test('an enacted assayer may report Verrell’s act but must not inherit it', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_caster',
+        fact: ['soleCasterAt', 'mintCrucible', 'verrell'],
+        via: 'director',
+        surface: 'Verrell alone draws the mint-yard crucible.',
+        presentation: { mode: 'enacted_role', role: 'town assayer' },
+      },
+    ],
+  });
+  const drifted =
+    'I open the assay book. “I alone draw the mint-yard crucible.” What does that establish?';
+  const preserved =
+    'I open the assay book. “I can attest that Verrell alone draws the mint-yard crucible.” What does that establish?';
+
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: drifted, frame }), true);
+  assert.ok(
+    auditTutorStubDramaticReleaseResponse({ text: drifted, frame }).issues.some(
+      (issue) => issue.type === 'source_perspective_drift',
+    ),
+  );
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: preserved, frame }), false);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text: preserved, frame }).ok, true);
+});
+
+test('an enacted guild officer must preserve Verrell’s ownership of the graver', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_graver',
+        fact: ['soleHolderOf', 'broadGraver', 'verrell'],
+        via: 'director',
+        surface: 'The broad graver on Verrell’s bench is his alone.',
+        presentation: { mode: 'enacted_role', role: 'guild officer' },
+      },
+    ],
+  });
+  const drifted = 'I open the guild book. “My broad graver is mine alone.” What changes?';
+  const preserved =
+    'I open the guild book. “I attest that the broad graver belongs to Verrell alone.” What changes?';
+
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: drifted, frame }), true);
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: preserved, frame }), false);
+});
+
+test('an enacted estate clerk must not turn the founder’s widow into the clerk’s widow', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_holder',
+        fact: ['soleHolderOf', 'wornBurin', 'edony'],
+        via: 'director',
+        surface: 'The founder’s inventory leaves the worn burin to his widow, Edony.',
+        presentation: { mode: 'enacted_role', role: 'estate clerk reading the founder’s inventory' },
+      },
+    ],
+  });
+  const drifted =
+    'I open the inventory. “I read that the worn burin was left to my widow, Edony.” What follows?';
+  const preserved =
+    'I open the inventory. “I read that the worn burin was left to the founder’s widow, Edony.” What follows?';
+
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: drifted, frame }), true);
+  assert.equal(tutorStubSourcePerspectiveDriftVisible({ text: preserved, frame }), false);
 });
 
 test('an opaque clue dump fails the dramatic release check', () => {
@@ -604,7 +718,10 @@ test('a source physically rubbing and holding an exhibit is a visible entrance b
 
   assert.equal(audit.entranceVisible, true);
   assert.equal(audit.exhibitHandoffVisible, true);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_in_scene_enactment']);
+  assert.deepEqual(audit.issues.map((issue) => issue.type), [
+    'role_label_stage_direction',
+    'missing_in_scene_enactment',
+  ]);
 });
 
 test('a where question visibly returns the released exhibit to the inquiry', () => {

@@ -111,6 +111,12 @@ Key choices and defaults:
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
 - Debug turn ids: automatic `turn id > <run-id>:tNNN` lines appear only in persistent technical debug mode. `/id` (aliases `/turn-id`, `/debug-id`) always prints the last completed or in-progress id plus the exact JSONL trace path and copies that complete diagnostic block to the system clipboard for pasting into Codex. Clipboard failure is non-fatal and leaves the printed block available for manual selection.
+- Live release notes: `/release-notes` rebuilds a 24-hour tutor-stub change view
+  from Git on each invocation; `/release-notes <hours>` accepts 1-168. It groups
+  product commits by their expected dialogue, recovery, dramatic-delivery, or
+  CLI effect and separates verification-only commits. It is available in normal
+  and passthrough modes, never enters public message history, and reprises the
+  latest tutor utterance before returning to the scene.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
 Codex ChatGPT-account route rejects those. Use `codex.gpt-5.6-terra` for the
@@ -333,8 +339,11 @@ Useful variants:
   enabled (`0` is the recommended reliable-memory default), and clue release
   speed. Enter accepts the repository default. Explicit command-line overrides
   always win. Returning, resumed, and `--no-opening` sessions skip completed
-  setup steps, so normal startup proceeds directly into the scene. The opening
-  tutor text is then buffered until
+  setup steps, so normal startup proceeds directly into the scene. A returning
+  saved scenario realizes its audited public opening locally and prints it
+  immediately, without waiting for a speaking-model call or mixed prefetch;
+  answer, clue, analysis, and tutor prefetch then warm in the background.
+  First-run opening text is buffered until
   that first notice and card are ready. The card is printed, then the selected
   scenario's director block is printed once as the final visible prelude
   immediately before the first tutor line. This makes the stage directions and

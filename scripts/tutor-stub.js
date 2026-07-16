@@ -167,6 +167,10 @@ import {
   tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
 import {
+  buildTutorStubFirstDraftContract,
+  tutorStubFirstDraftContractPrompt,
+} from '../services/tutorStubFirstDraftContract.js';
+import {
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
@@ -246,6 +250,10 @@ import {
   copyTutorStubTextToClipboard,
   formatTutorStubDebugClipboardText,
 } from '../services/tutorStubClipboard.js';
+import {
+  loadTutorStubReleaseNotes,
+  normalizeTutorStubReleaseNotesHours,
+} from '../services/tutorStubReleaseNotes.js';
 import {
   clearTutorStubTurnFeedbackRating,
   clearTutorStubTurnFeedbackTarget,
@@ -519,6 +527,7 @@ const SLASH_COMMANDS = [
   '/tune',
   '/settings',
   '/status',
+  '/release-notes',
   '/debug',
   '/mode',
   '/learner',
@@ -547,6 +556,7 @@ const PASSTHROUGH_SLASH_COMMANDS = [
   '/motion',
   '/settings',
   '/status',
+  '/release-notes',
   '/transcript',
   '/html',
   '/voice',
@@ -568,6 +578,7 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/theme',
   '/motion',
   '/status',
+  '/release-notes',
   '/debug',
   '/settings',
   '/transcript',
@@ -1003,6 +1014,8 @@ Interactive commands:
   /settings release-speed [n]
                          adjust or set clue-release speed (0.5-2)
   /settings forget       stop using the saved defaults after this session
+  /release-notes [hours]
+                         show recent tutor-stub changes and their expected effects
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
   /profile               show the active suggested-learner profile
@@ -2251,6 +2264,19 @@ function exactTutorRepairSpans(originalText, repairedText) {
 
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
   const text = String(response?.text || '');
+  const generation = {
+    callId: response?.guardCallId || null,
+    role: response?.guardRole || null,
+    latencyMs: Number(response?.latencyMs || 0),
+    usage: response?.usage ? jsonClone(response.usage) : null,
+    tokenUsageAvailable: response?.tokenUsageAvailable ?? null,
+    ...(response?.recoveryBatch
+      ? {
+          candidateKind: response.recoveryCandidateKind || kind,
+          ...response.recoveryBatch,
+        }
+      : {}),
+  };
   return {
     kind,
     attempt,
@@ -2264,12 +2290,7 @@ function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, rep
     },
     audits,
     auditOk: audits?.deliveryOk ?? audits?.ok ?? null,
-    generation: response?.recoveryBatch
-      ? {
-          candidateKind: response.recoveryCandidateKind || kind,
-          ...response.recoveryBatch,
-        }
-      : null,
+    generation,
     guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
     repairedSpans,
   };
@@ -2287,6 +2308,37 @@ function buildTutorGuardAccounting({
   outcome,
 }) {
   const finalText = String(response?.text || '');
+  const generationCalls = [
+    ...new Map(
+      (attempts || [])
+        .map((attemptRow) => attemptRow?.generation)
+        .filter((generation) => generation?.callId)
+        .map((generation) => [generation.callId, generation]),
+    ).values(),
+  ];
+  const totalUsage = generationCalls.reduce(
+    (totals, generation) => {
+      const usage = generation.usage || {};
+      totals.inputTokens += Number(usage.inputTokens || 0);
+      totals.outputTokens += Number(usage.outputTokens || 0);
+      totals.totalTokens += Number(
+        usage.totalTokens || Number(usage.inputTokens || 0) + Number(usage.outputTokens || 0),
+      );
+      totals.cost += Number(usage.cost || 0);
+      return totals;
+    },
+    { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+  );
+  const generation = {
+    modelCallCount: generationCalls.length,
+    originalCandidateLatencyMs: Number(generationCalls[0]?.latencyMs || 0),
+    recoveryLatencyMs: generationCalls.slice(1).reduce((sum, call) => sum + Number(call.latencyMs || 0), 0),
+    totalModelLatencyMs: generationCalls.reduce((sum, call) => sum + Number(call.latencyMs || 0), 0),
+    tokenUsageAvailable:
+      generationCalls.length > 0 && generationCalls.every((call) => call.tokenUsageAvailable === true),
+    usage: totalUsage,
+    calls: generationCalls,
+  };
   return jsonClone({
     schema: TUTOR_GUARD_ACCOUNTING_SCHEMA,
     turn: tutorTurn,
@@ -2297,6 +2349,7 @@ function buildTutorGuardAccounting({
     originalCandidate: attempts[0] || null,
     attempts,
     repairsApplied,
+    generation,
     finalDelivery: {
       source: finalSource,
       provider: response?.provider || null,
@@ -2340,6 +2393,12 @@ function attachTutorGuardAccounting({
     outcome,
   });
   response.guardAccounting = accounting;
+  response.finalCandidateLatencyMs = Number(response.latencyMs || 0);
+  if (accounting.generation?.modelCallCount) {
+    response.latencyMs = accounting.generation.totalModelLatencyMs;
+    response.usage = accounting.generation.usage;
+    response.tokenUsageAvailable = accounting.generation.tokenUsageAvailable;
+  }
   appendTraceEvent(trace, {
     type: 'tutor_response_guard_accounting',
     role,
@@ -2349,7 +2408,14 @@ function attachTutorGuardAccounting({
   return response;
 }
 
-async function buildTutorOpening(state, { signal = null } = {}) {
+async function buildTutorOpening(
+  state,
+  {
+    signal = null,
+    realizer = state.openingRealizer,
+    deterministicSource = 'world_grounded_deterministic',
+  } = {},
+) {
   const world = state.world;
   if (!world) {
     const text = [
@@ -2395,9 +2461,9 @@ async function buildTutorOpening(state, { signal = null } = {}) {
   let modelResponse = null;
   let generationError = null;
 
-  if (!candidate && state.openingRealizer === 'deterministic') {
+  if (!candidate && realizer === 'deterministic') {
     candidate = deterministicTutorStubOpening(frame);
-    source = 'world_grounded_deterministic';
+    source = deterministicSource;
   }
 
   if (!candidate) {
@@ -7481,7 +7547,10 @@ function compactAuditRows(rows = [], limit = 3) {
   return visible.length ? visible.map((row) => `- ${row}`).join('\n') : '- none';
 }
 
-function humanDiscourseTutorContext(frame) {
+function humanDiscourseTutorContext(
+  frame,
+  { includeQuestionSupport = true, includeDefaultResponseShape = true } = {},
+) {
   if (!frame || frame.mode === 'strict_dag') return '';
   const scaffold = frame.scaffoldState || {};
   const branch = scaffold.branch || {};
@@ -7549,20 +7618,24 @@ function humanDiscourseTutorContext(frame) {
         ])}`
       : null,
     promptRule,
-    questionSupport
+    includeQuestionSupport && questionSupport
       ? `Question support: ${questionSupport.answerability}; modality ${questionSupport.modality}. ${questionSupport.reason}`
       : null,
-    questionSupport?.tutorInstruction ? `Authoritative question rule: ${questionSupport.tutorInstruction}` : null,
+    includeQuestionSupport && questionSupport?.tutorInstruction
+      ? `Authoritative question rule: ${questionSupport.tutorInstruction}`
+      : null,
     "Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner's compressed inference rather than forcing them to spell out every link.",
     'When the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.',
-    questionSupport?.answerability === 'direction_only_until_evidence_is_public'
+    includeQuestionSupport && questionSupport?.answerability === 'direction_only_until_evidence_is_public'
       ? 'This epistemic-affordance rule overrides the local question, response action, and expected DAG move if any of them would ask the learner to supply unseen information.'
       : null,
     generousInference.applied
       ? 'The immediately preceding local question is closed for learner-facing purposes. Do not paraphrase it into another question, ask for a name, ask what it licenses, or request a public-record restatement. The strict learner-DAG may remain incomplete as an audit; that incompleteness must not control this spoken turn.'
       : null,
     'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
-    'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.',
+    includeDefaultResponseShape
+      ? 'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.'
+      : null,
     'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
     '[End tutor-only human discourse scaffold]',
   ]
@@ -7873,7 +7946,7 @@ function printInteractiveHelp(state = null) {
     console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
     console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
     console.log(`${C.cyan}  model${C.reset}      /settings model [provider.alias]`);
-    console.log(`${C.cyan}  inspect${C.reset}    /status · /transcript [no-open] · /voice · /director · /id`);
+    console.log(`${C.cyan}  inspect${C.reset}    /status · /release-notes · /transcript [no-open] · /voice · /director · /id`);
     console.log(`${C.cyan}  appearance${C.reset} /theme · /motion`);
     console.log(`${C.cyan}  setup${C.reset}      /scenario · /reset`);
     console.log(`${C.cyan}  finish${C.reset}     /quit`);
@@ -7891,7 +7964,7 @@ function printInteractiveHelp(state = null) {
     `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
   );
   console.log(
-    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /director · /transcript [no-open] · /voice · /id`,
+    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
   );
   console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
   console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
@@ -7919,6 +7992,39 @@ function printInteractiveHelp(state = null) {
     `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
   );
   console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
+}
+
+function printTutorStubReleaseNotes(hoursArg = '') {
+  const hours = normalizeTutorStubReleaseNotesHours(hoursArg);
+  const notes = loadTutorStubReleaseNotes({ cwd: ROOT, hours });
+  const through = notes.through?.shortHash ? ` · through ${notes.through.shortHash}` : '';
+  console.log(
+    `${C.brightCyan}${C.bold}release notes >${C.reset} last ${notes.hours} hours${through} · ${notes.relevantCommitCount} relevant ${notes.relevantCommitCount === 1 ? 'commit' : 'commits'}`,
+  );
+
+  if (!notes.groups.length) {
+    console.log(`${C.dim}  no tutor-stub commits landed in this window${C.reset}\n`);
+    return notes;
+  }
+
+  for (const group of notes.groups) {
+    console.log(
+      `\n${C.accent}${C.bold}${group.title}${C.reset}${C.dim} · ${group.commits.length} ${group.commits.length === 1 ? 'commit' : 'commits'}${C.reset}`,
+    );
+    console.log(`${C.dim}  effect >${C.reset} ${group.effect}`);
+    console.log(`${C.dim}  look for >${C.reset} ${group.lookFor}`);
+    const visibleLimit = group.id === 'validation' ? 4 : 6;
+    for (const commit of group.commits.slice(0, visibleLimit)) {
+      console.log(`${C.dim}    ${commit.shortHash} ·${C.reset} ${commit.subject}`);
+    }
+    if (group.commits.length > visibleLimit) {
+      console.log(`${C.dim}    + ${group.commits.length - visibleLimit} earlier commits in this window${C.reset}`);
+    }
+  }
+  console.log(
+    `\n${C.dim}  This view is rebuilt from Git each time, so newly committed changes enter automatically. Verification commits are separated from changes that directly affect an exchange.${C.reset}\n`,
+  );
+  return notes;
 }
 
 function registerTemperatureApplies(policy) {
@@ -9705,21 +9811,34 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     dialogue_closure: { issues: 0, guardedSpans: 0 },
   };
   let repairActions = 0;
+  let originalCandidateAcceptedTurns = 0;
+  let mechanicalRepairTurns = 0;
   let modelRepairTurns = 0;
   let deterministicFallbackTurns = 0;
   let guardTriggeredTurns = 0;
   let guardedSpans = 0;
   let repairedSpans = 0;
   let finalDeliveryAuditFailures = 0;
+  let totalTutorGenerationLatencyMs = 0;
+  let totalOriginalCandidateLatencyMs = 0;
   for (const row of rows) {
     outcomes[row.outcome || 'unknown'] = (outcomes[row.outcome || 'unknown'] || 0) + 1;
     const delivery = row.finalDelivery?.source || 'unknown';
     deliveries[delivery] = (deliveries[delivery] || 0) + 1;
+    if (delivery === 'original_candidate') originalCandidateAcceptedTurns += 1;
+    if (
+      delivery !== 'original_candidate' &&
+      (row.repairsApplied || []).some((repair) => String(repair.kind || '').startsWith('mechanical_'))
+    ) {
+      mechanicalRepairTurns += 1;
+    }
     if (row.attempts?.[0]?.guardedSpans?.length) guardTriggeredTurns += 1;
     if (row.repairsApplied?.some((repair) => repair.kind === 'model_rewrite')) modelRepairTurns += 1;
     if (delivery === 'deterministic_fallback') deterministicFallbackTurns += 1;
     repairActions += row.repairsApplied?.length || 0;
     if (row.finalDelivery?.auditOk === false) finalDeliveryAuditFailures += 1;
+    totalTutorGenerationLatencyMs += Number(row.generation?.totalModelLatencyMs || 0);
+    totalOriginalCandidateLatencyMs += Number(row.generation?.originalCandidateLatencyMs || 0);
     for (const attempt of row.attempts || []) {
       guardedSpans += attempt.guardedSpans?.length || 0;
       repairedSpans += attempt.repairedSpans?.length || 0;
@@ -9737,6 +9856,9 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     turns: turns.length,
     accountedTurns: rows.length,
     guardEnabledTurns: rows.filter((row) => row.guards?.enabled).length,
+    originalCandidateAcceptedTurns,
+    originalCandidateAcceptanceRate: rows.length ? originalCandidateAcceptedTurns / rows.length : null,
+    mechanicalRepairTurns,
     guardTriggeredTurns,
     modelRepairTurns,
     deterministicFallbackTurns,
@@ -9744,6 +9866,10 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     guardedSpans,
     repairedSpans,
     finalDeliveryAuditFailures,
+    totalTutorGenerationLatencyMs,
+    meanTutorGenerationLatencyMs: rows.length ? totalTutorGenerationLatencyMs / rows.length : null,
+    totalOriginalCandidateLatencyMs,
+    meanOriginalCandidateLatencyMs: rows.length ? totalOriginalCandidateLatencyMs / rows.length : null,
     outcomes,
     deliveries,
     guards,
@@ -9894,11 +10020,13 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     );
   }
   console.log(
-    `${C.dim}  response checks: recorded ${guardAccounting.accountedTurns}/${guardAccounting.turns}; revisions ${
-      guardAccounting.guardTriggeredTurns
-    }; model rewrites ${guardAccounting.modelRepairTurns}; safe fallbacks ${
-      guardAccounting.deterministicFallbackTurns
-    }; final check failures ${guardAccounting.finalDeliveryAuditFailures}${C.reset}`,
+    `${C.dim}  response checks: first drafts accepted ${guardAccounting.originalCandidateAcceptedTurns}/${
+      guardAccounting.accountedTurns
+    }; mechanical repairs ${guardAccounting.mechanicalRepairTurns}; model rewrites ${
+      guardAccounting.modelRepairTurns
+    }; safe fallbacks ${guardAccounting.deterministicFallbackTurns}; final check failures ${
+      guardAccounting.finalDeliveryAuditFailures
+    }; mean tutor generation ${Math.round(guardAccounting.meanTutorGenerationLatencyMs || 0)}ms${C.reset}`,
   );
   console.log(`${C.dim}  sticking points seen: ${bottleneckCounts}${C.reset}`);
   if (payload.humanDiscourse.config?.scaffoldActive) {
@@ -10010,7 +10138,6 @@ async function callTutor({
   trace = null,
   stream = null,
   cliEffort = null,
-  multipleChoice = false,
   roleBase = 'tutor_stub_tutor',
   learnerMessages = null,
   tutorFeedback = null,
@@ -10056,6 +10183,12 @@ async function callTutor({
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
   const dramaticReleaseAdvisory = passthrough ? null : tutorStubDramaticReleasePrompt(dramaticReleaseFrame);
   const humanDiscourseAdvisory = passthrough ? null : humanDiscourseTutorContext(humanDiscourseFrame);
+  const firstDraftHumanDiscourseAdvisory = passthrough
+    ? null
+    : humanDiscourseTutorContext(humanDiscourseFrame, {
+        includeQuestionSupport: false,
+        includeDefaultResponseShape: false,
+      });
   const dialogueClosureAdvisory = passthrough ? null : dialogueClosureTutorContext(dialogueClosureFrame);
   const responseCompositionFrame = passthrough
     ? { active: false }
@@ -10072,6 +10205,19 @@ async function callTutor({
   const responseCompositionAdvisory = passthrough
     ? null
     : tutorStubResponseCompositionPrompt(responseCompositionFrame);
+  const firstDraftContract = passthrough
+    ? null
+    : buildTutorStubFirstDraftContract({
+        learnerText,
+        responseConfiguration,
+        responseCompositionFrame,
+        dramaticReleaseFrame,
+        questionSupport: humanDiscourseFrame?.questionSupport || null,
+        dialogueClosureFrame,
+      });
+  const firstDraftContractAdvisory = passthrough
+    ? null
+    : tutorStubFirstDraftContractPrompt(firstDraftContract);
   const comprehensionAdvisory = passthrough
     ? null
     : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
@@ -10081,22 +10227,11 @@ async function callTutor({
   const tutorFeedbackAdvisory = passthrough
     ? null
     : tutorStubTurnFeedbackPrompt(tutorFeedback, { adaptationPlan: feedbackAdaptationPlan });
-  const responseConfigurationAdvisory = passthrough
-    ? null
-    : responseConfigurationContext(registerSelection, {
-        multipleChoice,
-        humanDiscourseFrame,
-        dialogueClosureFrame,
-        world: state?.world || null,
-      });
-  const safeResponseConfigurationAdvisory = sanitizeTutorStubSpeakerAdvisory({
-    world: dag ? world : null,
-    tutorTurn,
-    text: responseConfigurationAdvisory,
-  });
-  const effectiveSystemPrompt = safeResponseConfigurationAdvisory
-    ? `${systemPrompt}\n\n${safeResponseConfigurationAdvisory}`
-    : systemPrompt;
+  // The original speaking attempt receives one compiled performance contract.
+  // Keep the detailed configuration/composition/release surfaces for audited
+  // recovery, where a failed axis must be named precisely, instead of making
+  // the first draft reconcile the same requirements several times.
+  const effectiveSystemPrompt = systemPrompt;
   const learnerMessageCount = Array.isArray(learnerMessages) ? learnerMessages.length : 1;
   const learnerPrompt = passthrough
     ? learnerText
@@ -10106,12 +10241,10 @@ async function callTutor({
   const speakerAdvisoryParts = [
     tutorMemory,
     dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-    responseCompositionAdvisory,
-    dramaticReleaseAdvisory,
+    firstDraftContractAdvisory,
     advisory,
     learnerDagAdvisory,
-    humanDiscourseAdvisory,
-    dialogueClosureAdvisory,
+    firstDraftHumanDiscourseAdvisory,
     comprehensionAdvisory,
     coachAdvisory,
     pointOfActionAdvisory,
@@ -10124,7 +10257,6 @@ async function callTutor({
   const userPrompt = promptParts.join('\n\n');
   const machineAdvisoryParts = [
     ...speakerAdvisoryParts,
-    safeResponseConfigurationAdvisory,
   ].filter(Boolean);
   let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
   let effectiveSpeakerUserPrompt = userPrompt;
@@ -10155,11 +10287,7 @@ async function callTutor({
       baseSystemPrompt: systemPrompt,
       continuityPrompt: tutorMemory,
       publicEvidencePrompt: dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      responseCompositionPrompt: responseCompositionAdvisory,
-      dramaticReleasePrompt: dramaticReleaseAdvisory,
-      responseConfigurationPrompt: tutorStubResponseConfigurationPrompt(
-        registerSelection?.response_configuration || registerSelection,
-      ),
+      firstDraftContractPrompt: firstDraftContractAdvisory,
       learnerPrompt,
       messageHistory: context,
     });
@@ -10233,6 +10361,7 @@ async function callTutor({
       ? 'buffered'
       : 'live'
     : 'none';
+  let tutorModelCallSequence = 0;
 
   async function invokeTutorAttempt({
     attemptUserPrompt,
@@ -10376,6 +10505,8 @@ async function callTutor({
         replayedUserMessageCount: messageContext.userMessageCount,
         replayedAssistantMessageCount: messageContext.assistantMessageCount,
         contextActivatedBy: messageContext.activatedBy,
+        firstDraftContractSchema: firstDraftContract?.schema || null,
+        firstDraftCompatibilityDecisions: firstDraftContract?.compatibility?.decisions || [],
         passthrough,
         promptAudit,
         speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
@@ -10453,6 +10584,9 @@ async function callTutor({
       };
     }
 
+    response.guardCallId = `${tutorTurn}:${++tutorModelCallSequence}`;
+    response.guardRole = role;
+    response.firstDraftContract = firstDraftContract ? jsonClone(firstDraftContract) : null;
     response.promptSnapshot = {
       systemPrompt: attemptSystemPrompt,
       userPrompt: effectiveAttemptUserPrompt,
@@ -10462,6 +10596,7 @@ async function callTutor({
       config: request.config,
       promptAudit,
       speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
+      firstDraftContract: response.firstDraftContract,
     };
     appendTraceEvent(trace, {
       type: 'model_call',
@@ -10768,6 +10903,15 @@ async function callTutor({
         error: recoveryBatch.error,
       },
     };
+  }
+
+  if (firstDraftContract) {
+    appendTraceEvent(trace, {
+      type: 'tutor_first_draft_contract',
+      turn: tutorTurn,
+      contract: firstDraftContract,
+      publicTranscriptChanged: false,
+    });
   }
 
   try {
@@ -13077,6 +13221,7 @@ async function runOneTurn(
     registerSelection,
     responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
     responseConfigurationAudit,
+    firstDraftContract: jsonClone(response.firstDraftContract || null),
     feedbackAdaptationPlan,
     feedbackAdaptationAudit,
     feedbackObservation,
@@ -13995,23 +14140,6 @@ async function main() {
           }))
       : [],
   });
-  const openingConfig = {
-    enabled: openingEnabled,
-    printedByDefault: Boolean(openingEnabled && !firstMessage),
-    schema: openingFramePreview.schema,
-    realization:
-      openingFramePreview.realization === 'authored_world_opening'
-        ? openingFramePreview.realization
-        : openingRealizer === 'model'
-          ? 'speaking_tutor_model'
-          : 'world_grounded_deterministic',
-    speakingModelRef:
-      openingFramePreview.realization !== 'authored_world_opening' && openingRealizer === 'model' ? args.model : null,
-    authoredTextAvailable: Boolean(openingFramePreview.authoredText),
-    requirements: TUTOR_STUB_OPENING_REQUIREMENTS,
-    safetyAudit: true,
-    fallback: 'world_grounded_safe_fallback',
-  };
   const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
   const dialogueClosureConfig = createTutorStubDialogueClosureLifecycle({
     enabled: Boolean(
@@ -14061,6 +14189,45 @@ async function main() {
       initialDropoutPromptEnabled ||
       initialReleaseSpeedPromptEnabled),
   );
+  const instantExistingScenarioOpening = Boolean(
+    interactiveSessionEnabled &&
+      openingEnabled &&
+      !firstMessage &&
+      !args['resume-last'] &&
+      rememberedScenarioAvailable &&
+      rememberedDialogueSettingsAvailable &&
+      !initialMixedLearnerSetupEnabled,
+  );
+  const startupOpeningRealizer =
+    openingFramePreview.realization === 'authored_world_opening'
+      ? 'authored_world_opening'
+      : instantExistingScenarioOpening
+        ? 'deterministic'
+        : openingRealizer;
+  const openingConfig = {
+    enabled: openingEnabled,
+    printedByDefault: Boolean(openingEnabled && !firstMessage),
+    schema: openingFramePreview.schema,
+    realization:
+      startupOpeningRealizer === 'authored_world_opening'
+        ? startupOpeningRealizer
+        : startupOpeningRealizer === 'model'
+          ? 'speaking_tutor_model'
+          : instantExistingScenarioOpening
+            ? 'remembered_scenario_instant_opening'
+            : 'world_grounded_deterministic',
+    speakingModelRef: startupOpeningRealizer === 'model' ? args.model : null,
+    authoredTextAvailable: Boolean(openingFramePreview.authoredText),
+    requirements: TUTOR_STUB_OPENING_REQUIREMENTS,
+    safetyAudit: true,
+    fallback: 'world_grounded_safe_fallback',
+    startup: {
+      mode: instantExistingScenarioOpening ? 'instant_existing_scenario' : 'normal',
+      restoredScenario: rememberedScenarioAvailable,
+      blocksOnOpeningModel: startupOpeningRealizer === 'model',
+      blocksOnMixedPrefetch: Boolean(mixedLearnerEnabled && !instantExistingScenarioOpening),
+    },
+  };
   const initialScenarioPickerConfig = {
     enabled: initialScenarioPickerEnabled,
     defaultScenarioId: launchWorldBundle?.world?.id || null,
@@ -19049,9 +19216,16 @@ async function main() {
     return true;
   }
 
-  async function emitOpeningPrompt(reason = 'start', { display = true, signal = null } = {}) {
+  async function emitOpeningPrompt(
+    reason = 'start',
+    { display = true, signal = null, realizer = null, deterministicSource = null } = {},
+  ) {
     if (!openingEnabled || state.history.length) return null;
-    const openingRealization = await buildTutorOpening(state, { signal });
+    const openingRealization = await buildTutorOpening(state, {
+      signal,
+      ...(realizer ? { realizer } : {}),
+      ...(deterministicSource ? { deterministicSource } : {}),
+    });
     const opening = openingRealization.text;
     state.openingRealization = openingRealization;
     state.history.push({ role: 'assistant', content: opening });
@@ -20687,6 +20861,47 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (command === '/release-notes') {
+      clearStatusLine();
+      try {
+        const releaseNotes = printTutorStubReleaseNotes(commandArg);
+        appendTraceEvent(state.trace, {
+          type: 'release_notes_popup',
+          duringTurn,
+          hours: releaseNotes.hours,
+          generatedAt: releaseNotes.generatedAt,
+          windowStart: releaseNotes.windowStart,
+          relevantCommitCount: releaseNotes.relevantCommitCount,
+          through: releaseNotes.through
+            ? {
+                hash: releaseNotes.through.hash,
+                shortHash: releaseNotes.through.shortHash,
+                subject: releaseNotes.through.subject,
+              }
+            : null,
+          groups: releaseNotes.groups.map((group) => ({
+            id: group.id,
+            title: group.title,
+            commitCount: group.commits.length,
+          })),
+          publicTranscriptChanged: false,
+        });
+        if (duringTurn) {
+          console.log(`${C.dim}tutor is still thinking; release notes reflect the latest completed Git state${C.reset}\n`);
+        }
+      } catch (error) {
+        console.log(`${C.red}release notes error:${C.reset} ${error.message}\n`);
+        appendTraceEvent(state.trace, {
+          type: 'release_notes_error',
+          duringTurn,
+          argument: commandArg,
+          error: error.message,
+          publicTranscriptChanged: false,
+        });
+      }
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/debug') {
       clearStatusLine();
       const parts = commandArg.toLowerCase().split(/\s+/u).filter(Boolean);
@@ -21563,8 +21778,12 @@ async function main() {
     resolveInteractive();
   });
 
-  const deferOpeningForMixedPrelude = mixedLearner.enabled;
-  const opening = await emitOpeningPrompt('start', { display: !deferOpeningForMixedPrelude });
+  const deferOpeningForMixedPrelude = Boolean(mixedLearner.enabled && !instantExistingScenarioOpening);
+  const opening = await emitOpeningPrompt('start', {
+    display: !deferOpeningForMixedPrelude,
+    realizer: instantExistingScenarioOpening ? 'deterministic' : null,
+    deterministicSource: instantExistingScenarioOpening ? 'remembered_scenario_instant_opening' : null,
+  });
   if (opening) {
     const openingPrefetch = startMixedLearnerPrefetch('opening', {
       refreshPrompt: !deferOpeningForMixedPrelude,

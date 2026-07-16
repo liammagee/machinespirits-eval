@@ -279,7 +279,32 @@ export function assessCharacterAdaptationReport(summary, { mode = summary.config
     turns,
     clueReleaseTurns,
     finalDeliveryAuditFailures: sum(rows, (row) => row.guardAccounting?.finalDeliveryAuditFailures),
+    originalCandidateAcceptedTurns: sum(rows, (row) => row.guardAccounting?.originalCandidateAcceptedTurns),
+    originalCandidateAcceptanceRate: turns
+      ? Number(
+          (
+            sum(rows, (row) => row.guardAccounting?.originalCandidateAcceptedTurns) / turns
+          ).toFixed(3),
+        )
+      : null,
+    mechanicalRepairTurns: sum(rows, (row) => row.guardAccounting?.mechanicalRepairTurns),
+    modelRepairTurns: sum(rows, (row) => row.guardAccounting?.modelRepairTurns),
     deterministicFallbackTurns: sum(rows, (row) => row.guardAccounting?.deterministicFallbackTurns),
+    totalTutorGenerationLatencyMs: sum(rows, (row) => row.guardAccounting?.totalTutorGenerationLatencyMs),
+    meanTutorGenerationLatencyMs: turns
+      ? Number(
+          (
+            sum(rows, (row) => row.guardAccounting?.totalTutorGenerationLatencyMs) / turns
+          ).toFixed(1),
+        )
+      : null,
+    meanOriginalCandidateLatencyMs: turns
+      ? Number(
+          (
+            sum(rows, (row) => row.guardAccounting?.totalOriginalCandidateLatencyMs) / turns
+          ).toFixed(1),
+        )
+      : null,
     errorCount: Number(summary.aggregates?.errorCount || 0) + sum(rows, (row) => row.errorCount),
     metaPerformanceTurns: sum(rows, (row) => row.characterAdaptation?.metaPerformanceTurns),
     roleStageDirectionTurns: sum(rows, (row) => row.characterAdaptation?.roleStageDirectionTurns),

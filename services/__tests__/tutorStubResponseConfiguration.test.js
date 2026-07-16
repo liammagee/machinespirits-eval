@@ -1991,6 +1991,76 @@ test('steadying the assay weights keeps a concise plain release visibly unadorne
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('rubbing a shilling on the touchstone is a plain unadorned exhibit report', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'The metal must point to that crucible before Verrell matters.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const text =
+    'Just so; the crucible matters only after the metal points there. I rub the shilling on the touchstone beside the cupel: it is newly struck poor dross, not clipped sterling. What does that show about how it was made?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('leaving the accused old shame outside the guild-hall realizes dramatic counterpressure', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'The coin must speak before Verrell’s crucible matters.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'Aye—the false coins must speak for themselves before the crucible can touch this charge. I scrape one on the touchstone and lift the cupel: these are newly struck poor dross. So let Verrell’s old shame wait outside the guild-hall: what kind of work do we seek?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('still needing blank and die states a visible evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'The worn burin cut this die.',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial-book',
+    actorial_part_selection: { ...base.actorial_part_selection, authored_role: 'estate clerk' },
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    'I enter that cleanly: the nicked die came from the worn burin. I open the founder’s inventory. “I kept the worn burin in Edony’s hand.” The striking itself still needs both blank and die. What does the entry support?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
 test('holding back the verdict while separating casting from striking realizes skepticism', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',

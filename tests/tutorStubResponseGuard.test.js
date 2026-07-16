@@ -199,6 +199,19 @@ test('the repetition guard rejects an exact stock opener nine tutor turns later'
   assert.ok(audit.issues.some((issue) => issue.type === 'repeated_tutor_opening'));
 });
 
+test('the repetition guard rejects a substantial sentence repeated inside one reply', () => {
+  const repeated =
+    'I clear a space beside Edony’s charcoal entries: they place the crucible under her hand, yet leave the striking untouched.';
+  const audit = auditTutorStubRepetitionResponse({
+    text: `${repeated} I make room beside the record for you. ${repeated} What does the watch add?`,
+    recentTutorTexts: [],
+  });
+
+  assert.equal(audit.ok, false);
+  assert.equal(audit.maxSimilarity, 1);
+  assert.deepEqual(audit.issues.map((issue) => issue.type), ['repeated_tutor_sentence']);
+});
+
 test('world scaffolds derive their language from Larkspur rules rather than Marrick vocabulary', () => {
   const permit = world.premiseById.get('p_permit');
   const scaffold = buildTutorStubWorldScaffold({

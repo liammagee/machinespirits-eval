@@ -60,6 +60,7 @@ export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
       const presentation = releasePresentation(row);
       return {
         premise: row.premise || null,
+        fact: Array.isArray(row.fact) ? [...row.fact] : null,
         via: row.via || null,
         surface: oneLine(row.surface),
         mode: presentation.mode,
@@ -102,10 +103,10 @@ export function tutorStubDramaticReleasePrompt(frame = null) {
     'A new piece of public information enters in the development part of this reply. Make its arrival audible or visible inside the scene instead of explaining the tutoring machinery.',
     'Fold three short movements into the same continuous reply and voice:',
     '1. Entrance: let a character, object, interruption, gesture, or spoken line bring the new information into the scene. Do not announce that you are giving “another piece of information” or “bringing in another clue.”',
-    '2. Performance: for an enacted role, speak its evidence in first person inside quotation marks. After the tutor-host entrance, begin the source quotation itself with I, My, We, or Our. Do not write “as the assayer/officer/clerk speaks or says,” prefix the speech with the role name, or insert a third-person stage direction. For an exhibit, handle it directly in the existing tutor voice. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or otherwise describe the acting from outside it.',
+    '2. Performance: for an enacted role, speak its evidence inside quotation marks. After the tutor-host entrance, begin the source quotation itself with a first-person reporting act such as “I saw,” “I read,” “I know,” or “I attest.” First person belongs to that reporting act only: preserve every named actor, owner, family relation, and possession in the supplied evidence. Never print the source role outside the quotation, write “as the assayer/officer/clerk speaks or says,” prefix the speech with the role name, or insert a third-person stage direction. For an exhibit, handle it directly in the existing tutor voice. Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or otherwise describe the acting from outside it.',
     '3. Handoff: keep the learner in that same continuous performance with one light interpretive question about what the clue changes, supports, or rules out. Do not say “back to us” or “back to the case.”',
     ...beats,
-    'Do not add facts beyond the supplied clue. You may change person and phrasing for natural speech, but preserve its exact evidentiary content and uncertainty.',
+    'Do not add facts beyond the supplied clue. You may change only the reporting frame and ordinary phrasing for natural speech; never move a named person’s deed, custody, relationship, or possession onto the reporting source.',
     'Do not mention a release schedule, turn number, director, harness, prompt, DAG, premise id, or hidden evidence.',
     '[End tutor-only dramatic clue release]',
   ].join('\n');
@@ -129,7 +130,7 @@ const RETURN_PATTERN =
 
 function roleIdentity(entry) {
   return oneLine(entry?.role).split(
-    /\b(?:reading|holding|opening|showing|presenting|voicing|reporting|testifying|unfolding|describing|giving)\b/iu,
+    /\b(?:attesting|describing|giving|holding|identifying|opening|presenting|reading|reporting|showing|testifying|unfolding|voicing|witnessing)\b/iu,
   )[0].trim();
 }
 
@@ -147,14 +148,13 @@ function roleIdentityPattern(entry) {
 
 export function tutorStubRoleStageDirectionVisible({ text = '', frame = null } = {}) {
   const response = oneLine(text);
+  const unquotedResponse = response.replace(/“[^”]*”/gu, ' ').replace(/"[^"\n]*"/gu, ' ');
   return (frame?.entries || [])
     .filter((entry) => entry.mode === 'enacted_role')
     .some((entry) => {
       const pattern = roleIdentityPattern(entry);
       if (!pattern) return false;
-      return new RegExp(`(?:^|[.!?]\\s+)(?:the\\s+)?${pattern}\\b[^.!?]{0,140}(?::|—)`, 'iu').test(
-        response,
-      );
+      return new RegExp(`\\b(?:the\\s+)?${pattern}\\b`, 'iu').test(unquotedResponse);
     });
 }
 
@@ -163,6 +163,59 @@ export function tutorStubFirstPersonRoleVoiceVisible(text = '') {
   return /(?:“[^”]{0,900}\b(?:i|we|my|our)\b[^”]{0,900}”|"[^"]{0,900}\b(?:i|we|my|our)\b[^"]{0,900}")/iu.test(
     response,
   );
+}
+
+function factTermWords(value) {
+  return oneLine(value)
+    .replace(/([a-z\d])([A-Z])/gu, '$1 $2')
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+}
+
+function quotedRoleSpeech(text = '') {
+  const response = String(text || '');
+  return [
+    ...(response.matchAll(/“([^”]{0,1200})”/gu)),
+    ...(response.matchAll(/"([^"\n]{0,1200})"/gu)),
+  ]
+    .map((match) => oneLine(match[1]))
+    .filter((quote) => /\b(?:i|my|our|we)\b/iu.test(quote));
+}
+
+function entrySourcePerspectiveDrift(entry, response) {
+  const fact = Array.isArray(entry?.fact) ? entry.fact : [];
+  const predicate = oneLine(fact[0]);
+  if (!['soleCasterAt', 'soleHolderOf'].includes(predicate)) return false;
+  const actorWords = factTermWords(fact.at(-1));
+  const role = oneLine(entry?.role).toLowerCase();
+  if (actorWords.length && actorWords.every((word) => role.includes(word))) return false;
+  const objectWords = factTermWords(fact[1]);
+  const objectHead = objectWords.at(-1);
+  const objectPattern = objectHead
+    ? new RegExp(`\\b${objectHead.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\b`, 'iu')
+    : null;
+  return quotedRoleSpeech(response).some((quote) => {
+    const selfSoleAction =
+      /\bi\s+alone\s+(?:cast|draw|drew|handle|handled|hold|held|keep|kept|own|owned|use|used|work|worked)\b/iu.test(
+        quote,
+      );
+    const reassignedRelation = /\bmy\s+(?:hand|keeping|possession|widow)\b/iu.test(quote);
+    const selfOwnedObject =
+      objectPattern &&
+      (new RegExp(`\\bmy\\b[^.!?;]{0,35}${objectPattern.source}`, 'iu').test(quote) ||
+        new RegExp(`${objectPattern.source}[^.!?;]{0,24}\\b(?:is|remains?|was|were)\\s+mine\\b`, 'iu').test(
+          quote,
+        ));
+    return selfSoleAction || reassignedRelation || selfOwnedObject;
+  });
+}
+
+export function tutorStubSourcePerspectiveDriftVisible({ text = '', frame = null } = {}) {
+  const response = oneLine(text);
+  return (frame?.entries || [])
+    .filter((entry) => entry.mode === 'enacted_role')
+    .some((entry) => entrySourcePerspectiveDrift(entry, response));
 }
 
 function directEnactmentVisible(response, frame) {
@@ -226,6 +279,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
   const metaRoleplayAnnouncement = META_ROLEPLAY_PATTERN.test(response);
   const metaReleaseAnnouncement = META_RELEASE_PATTERN.test(response);
   const roleStageDirection = tutorStubRoleStageDirectionVisible({ text: response, frame });
+  const sourcePerspectiveDrift = tutorStubSourcePerspectiveDriftVisible({ text: response, frame });
   const firstPersonRoleVoice = tutorStubFirstPersonRoleVoiceVisible(response);
   const enactmentVisible = directEnactmentVisible(response, frame);
   const exhibitHandoffVisible = dynamicExhibitActionVisible(response, frame);
@@ -243,6 +297,12 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
     issues.push({
       type: 'role_label_stage_direction',
       reason: 'introduces the clue with a role label or stage direction instead of speaking from inside the role',
+    });
+  }
+  if (sourcePerspectiveDrift) {
+    issues.push({
+      type: 'source_perspective_drift',
+      reason: 'moves a named actor’s deed, custody, or possession onto the reporting source’s first person',
     });
   }
   if (!entranceVisible) {
@@ -281,6 +341,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
     metaRoleplayAnnouncement,
     metaReleaseAnnouncement,
     roleStageDirection,
+    sourcePerspectiveDrift,
     firstPersonRoleVoice,
     issues,
   };

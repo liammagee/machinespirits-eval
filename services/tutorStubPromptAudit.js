@@ -252,6 +252,7 @@ export function recoverTutorStubSpeakerPrompt({
   baseSystemPrompt = '',
   continuityPrompt = '',
   publicEvidencePrompt = '',
+  firstDraftContractPrompt = '',
   responseCompositionPrompt = '',
   dramaticReleasePrompt = '',
   responseConfigurationPrompt = '',
@@ -261,6 +262,7 @@ export function recoverTutorStubSpeakerPrompt({
   const advisoryParts = [
     continuityPrompt,
     publicEvidencePrompt,
+    firstDraftContractPrompt,
     responseCompositionPrompt,
     dramaticReleasePrompt,
     responseConfigurationPrompt,
@@ -294,6 +296,7 @@ export function recoverTutorStubSpeakerPrompt({
     includedSurfaces: {
       continuity: Boolean(continuityPrompt),
       publicEvidence: Boolean(publicEvidencePrompt),
+      firstDraftContract: Boolean(firstDraftContractPrompt),
       responseComposition: Boolean(responseCompositionPrompt),
       dramaticRelease: Boolean(dramaticReleasePrompt),
       responseConfiguration: Boolean(responseConfigurationPrompt),

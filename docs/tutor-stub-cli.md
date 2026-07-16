@@ -37,6 +37,34 @@ The keyboard `/settings` panel includes live theme and motion previews. Escape
 restores the active appearance and discards the preview; choosing
 `Done — apply and return` saves it with the other interactive defaults.
 
+## Live release notes
+
+Use `/release-notes` to see meaningful tutor-stub changes committed during the
+preceding 24 hours. The command reads Git at invocation time, groups relevant
+commits by their expected effect on dialogue, recovery, dramatic delivery, or
+CLI experience, and keeps test/documentation commits in a separate verification
+group. Each group says both what changed and what should be visible in an
+exchange. Use `/release-notes <hours>` for a different window from 1 to 168
+hours.
+
+The command is available in normal and passthrough modes, does not alter public
+message history, and repeats the latest tutor utterance when it returns to the
+scene. Newly committed changes appear automatically; uncommitted work does not.
+
+## Returning to a saved scenario
+
+When an interactive session restores a saved scenario and its dialogue
+settings, the opening tutor prompt is available immediately. The CLI builds the
+same audited, public-only opening from the saved world's authored frame without
+waiting for a speaking-model call. In mixed mode it prints that opening first
+and warms the learner answer, clue, analysis, and tutor prefetch in the
+background.
+
+First-time initialization is unchanged: scenario/profile/settings selection
+finishes before the richer model-realized opening and its first mixed-learner
+prelude are displayed. Explicit `--resume-last` also remains distinct: it
+restores the existing public transcript rather than creating another opening.
+
 ## Terminal compatibility
 
 Color and motion activate only where the terminal supports them. Piped output,

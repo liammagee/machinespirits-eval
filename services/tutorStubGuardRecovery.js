@@ -32,13 +32,7 @@ function recoverySentences(value) {
   return String(value || '').trim().match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [];
 }
 
-/**
- * Recompose a safe uptake with a model-authored development without repeating
- * a near-identical acknowledgement that the recovery model placed at the
- * front of its development. Only overlapping leading sentences are removed;
- * the first genuinely new sentence and everything after it are preserved.
- */
-export function composeTutorStubGuardUptakeDevelopment({ uptake = '', development = '' } = {}) {
+function recoveryDevelopmentWithoutRepeatedUptake(uptake, development) {
   const safeUptake = candidateText(uptake);
   const sentences = recoverySentences(development).map((sentence) => sentence.trim()).filter(Boolean);
   while (
@@ -48,7 +42,19 @@ export function composeTutorStubGuardUptakeDevelopment({ uptake = '', developmen
   ) {
     sentences.shift();
   }
-  return [safeUptake, sentences.join(' ').trim()].filter(Boolean).join(' ');
+  return sentences.join(' ').replace(/\s+([”"])/gu, '$1').trim();
+}
+
+/**
+ * Recompose a safe uptake with a model-authored development without repeating
+ * a near-identical acknowledgement that the recovery model placed at the
+ * front of its development. Only overlapping leading sentences are removed;
+ * the first genuinely new sentence and everything after it are preserved.
+ */
+export function composeTutorStubGuardUptakeDevelopment({ uptake = '', development = '' } = {}) {
+  const safeUptake = candidateText(uptake);
+  const distinctDevelopment = recoveryDevelopmentWithoutRepeatedUptake(safeUptake, development);
+  return [safeUptake, distinctDevelopment].filter(Boolean).join(' ');
 }
 
 /** Append the clarification affordance only when it is the sole hard failure. */
@@ -134,7 +140,8 @@ export function repairTutorStubMissingActorialPart({
     foreperson: 'I enter the supported finding in the open record.',
   }[part];
   if (!cue) return { changed: false, text: source, cue: null };
-  const repaired = [uptake, cue, development].filter(Boolean).join(' ').trim();
+  const distinctDevelopment = recoveryDevelopmentWithoutRepeatedUptake(uptake, development);
+  const repaired = [uptake, cue, distinctDevelopment].filter(Boolean).join(' ').trim();
   return {
     changed: repaired !== source,
     text: repaired,

@@ -816,8 +816,8 @@ export function deterministicTutorStubLearnerUptake({
   }
   if (requestType === 'stepwise_support_request' && proposesToolMarkTest) {
     return fresh(
-      'That is the right tool-mark test; I’ll keep it in view while the next public evidence enters.',
-      'Your proposed die test stays open while this new evidence settles a different part of the coin’s making.',
+      'That is the right tool-mark test; keep the shared flaw before us.',
+      'Your proposed die test stays open on the trial-table.',
     );
   }
   if (
@@ -934,8 +934,8 @@ export function deterministicTutorStubLearnerUptake({
   if (requestType === 'stepwise_support_request') {
     if (proposesToolMarkTest) {
       return fresh(
-        'That is the right tool-mark test; I’ll keep it in view while the next public evidence enters.',
-        'Your proposed die test stays open while this new evidence settles a different part of the coin’s making.',
+        'That is the right tool-mark test; keep the shared flaw before us.',
+        'Your proposed die test stays open on the trial-table.',
       );
     }
     if (/\b(?:but|cannot|can[’']t|missing|must|no|not|only|until|yet)\b/iu.test(text)) {

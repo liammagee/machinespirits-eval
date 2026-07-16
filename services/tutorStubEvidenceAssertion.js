@@ -28,11 +28,13 @@ const NON_ASSERTIVE_PATTERN =
 const PERSON_ATTRIBUTION_PATTERN =
   /\b(?:hand|holder|name|owner|person)\b[^.!?;]{0,24}\b(?:is|remains?|was)\s+(?:already\s+|now\s+)?tied to\b|\btie(?:s|d)?\b[^.!?;]{0,24}\b(?:her|him|person|them)\b[^.!?;]{0,12}\bto\b/iu;
 const CUSTODY_ATTRIBUTION_PATTERN =
-  /\b(?:graver|tool)\b[^.!?;]{0,42}\btied to (?:its )?(?:holder|owner)\b/iu;
+  /\b(?:burin|graver|tool)\b[^.!?;]{0,55}\btied to\b[^.!?;]{0,35}\b(?:custody|hand|holder|keeping|owner|possession)\b|\btie(?:s|d)?\b[^.!?;]{0,35}\b(?:burin|graver|tool)\b[^.!?;]{0,20}\bto\b[^.!?;]{0,35}\b(?:custody|hand|holder|keeping|owner|possession)\b/iu;
 const TOOL_FUNCTION_ATTRIBUTION_PATTERN =
   /\b(?:graver|tool)\b[^.!?;]{0,42}\btied to\b[^.!?;]{0,24}\b(?:cutting|die-cutting|engraving|graving)\b/iu;
 const RECORD_HANDLING_ATTRIBUTION_PATTERN =
   /\b(?:entry|job number|ledger|log|record)\b[^.!?;]{0,90}\btie(?:s|d)?\b[^.!?;]{0,55}\bto\b[^.!?;]{0,55}\b(?:access|custody|handled|handling|possession)\b/iu;
+const SINGLE_DIE_RELATION_PATTERN =
+  /\b(?:coins?|shillings?|twelve|them|all)\b[^.!?;]{0,100}\b(?:one|same|single)\b[^.!?;]{0,35}\bdie\b|\b(?:one|same|single)\b[^.!?;]{0,35}\bdie\b[^.!?;]{0,100}\b(?:coins?|shillings?|twelve|them|all)\b/iu;
 
 function oneLine(value) {
   return String(value || '')
@@ -82,6 +84,9 @@ function assertedCorrespondence(value) {
 function publiclySupported(candidate, publicClauses) {
   const candidateTokens = evidenceTokens(candidate);
   return publicClauses.some((clause) => {
+    if (SINGLE_DIE_RELATION_PATTERN.test(candidate) && SINGLE_DIE_RELATION_PATTERN.test(clause)) {
+      return true;
+    }
     if (!CORRESPONDENCE_PATTERN.test(clause)) return false;
     const publicTokens = evidenceTokens(clause);
     return [...candidateTokens].some((token) => publicTokens.has(token));

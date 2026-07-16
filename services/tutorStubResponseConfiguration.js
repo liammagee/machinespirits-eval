@@ -1058,7 +1058,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     const plainlyHandledExhibit =
       metrics.wordCount <= 85 &&
       metrics.questionCount <= 1 &&
-      /\bi\b[^.!?]{0,45}\b(?:check|examine|hold|lift|open|read|show|steady|turn)\b/iu.test(text) &&
+      /\bi\b[^.!?]{0,45}\b(?:check|draw|examine|hold|lift|open|read|rub|scrape|set|show|steady|test|turn|weigh)\b/iu.test(text) &&
       !/\b(?:as if|behold|destiny|fate|ghost|haunt|thunder|whisper)\b/iu.test(text);
     return (metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100) || plainlyHandledExhibit;
   }
@@ -1066,7 +1066,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     return (
       /\b(?:beyond|exact|establish|licensed|line that matters|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
       /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
-      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
+      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bstill needs?\b[^.!?]{0,70}\b(?:blank|die|evidence|hand|link|mark|proof|tool)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
     );
   }
   if (tactic === 'rapid_handoff') {
@@ -1140,6 +1140,10 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\bi\s+refuse\b[^.!?]{0,35}\b(?:easy|obvious|quick|ready)?\s*(?:accusation|answer|case|charge|claim|story|verdict)\b/iu.test(
         text,
       );
+    const keepsPublicShameOutsideTheInquiry =
+      /\b(?:keep|leave|let)\b[^.!?]{0,55}\b(?:anger|dislike|reputation|shame|suspicion)\b[^.!?]{0,55}\b(?:outside|out of)\b[^.!?]{0,35}\b(?:assay|case|charge|guild[- ]hall|inquiry|record|trial[- ]book|verdict)\b/iu.test(
+        text,
+      );
     const materialEvidenceOutweighsReadyStory =
       /\b(?:coin|evidence|mark|metal|record|result|swab|touchstone)\b[^.!?]{0,35}\b(?:bites?|cuts?|weighs?)\b[^.!?]{0,20}\b(?:harder than|through)\b[^.!?]{0,35}\b(?:crowd|hall|room|town|warden)(?:[’']s)?\b[^.!?]{0,20}\b(?:answer|case|claim|story|tale|verdict)\b/iu.test(
         text,
@@ -1183,7 +1187,8 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       publicEyesMeetEvidentiaryChallenge ||
       publicSceneRushesPastEvidence ||
       publicSuspicionOutrunsMaterial ||
-      publicVerdictMeetsBreakableCase
+      publicVerdictMeetsBreakableCase ||
+      keepsPublicShameOutsideTheInquiry
     );
   }
   if (tactic === 'exposed_mismatch') return /\b(?:apparently|as if|not exactly|small irony|conveniently)\b/iu.test(text);

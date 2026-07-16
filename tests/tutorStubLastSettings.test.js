@@ -55,6 +55,26 @@ function tutorStubDryRun(settingsFile, extraArgs = []) {
   return JSON.parse(result.stdout);
 }
 
+function installOpeningCallSentinel(directory, logPath) {
+  const fakeCodex = path.join(directory, 'codex');
+  fs.writeFileSync(
+    fakeCodex,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  fs.appendFileSync(process.env.OPENING_CALL_SENTINEL_LOG, input);
+  process.exitCode = 17;
+});
+`,
+    'utf8',
+  );
+  fs.chmodSync(fakeCodex, 0o755);
+  return logPath;
+}
+
 test('remembered tutor-stub settings round-trip atomically and can be forgotten', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-last-settings-'));
   const filePath = path.join(directory, 'nested', 'last-settings.json');
@@ -110,6 +130,14 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.voice.voice, 'cedar');
     assert.equal(restored.presentation.theme, 'ember');
     assert.equal(restored.presentation.motion, 'full');
+    assert.equal(restored.opening.realization, 'remembered_scenario_instant_opening');
+    assert.equal(restored.opening.speakingModelRef, null);
+    assert.deepEqual(restored.opening.startup, {
+      mode: 'instant_existing_scenario',
+      restoredScenario: true,
+      blocksOnOpeningModel: false,
+      blocksOnMixedPrefetch: false,
+    });
     assert.equal(restored.rememberedSettings.status, 'loaded');
     assert.deepEqual(restored.rememberedSettings.appliedFields, [
       'scenario',
@@ -218,6 +246,49 @@ test('legacy saved controls request only the missing scenario and learner profil
     assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.enabled, false);
     assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.enabled, false);
     assert.equal(config.mixedLearner.startupPrompts.clueReleaseSpeed.enabled, false);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('a restored scenario prints its opening without waiting for a model call', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-instant-opening-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  const sentinelLog = path.join(directory, 'opening-model-call.log');
+  try {
+    installOpeningCallSentinel(directory, sentinelLog);
+    writeTutorStubLastSettings(
+      filePath,
+      sampleSettings({ scenarioId: 'world_006_hethel', learnerProfileId: 'answer_seeking' }),
+    );
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/quit\n',
+        timeout: 5_000,
+        env: {
+          ...process.env,
+          PATH: `${directory}${path.delimiter}${process.env.PATH || ''}`,
+          TUTOR_STUB_REMEMBER_SETTINGS: '1',
+          TUTOR_STUB_SETTINGS_FILE: filePath,
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+          OPENING_CALL_SENTINEL_LOG: sentinelLog,
+        },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.match(result.stdout, /scenario: world_006_hethel/u);
+    assert.match(result.stdout, /tutor >[\s\S]*Whose hand felled the Hethel bridge span/u);
+    assert.equal(fs.existsSync(sentinelLog), false, 'the restored opening must not invoke the speaking model');
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
@@ -418,6 +489,8 @@ test(
   async () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-returning-settings-'));
     const filePath = path.join(directory, 'last-settings.json');
+    const sentinelLog = path.join(directory, 'model-calls.log');
+    installOpeningCallSentinel(directory, sentinelLog);
     writeTutorStubLastSettings(
       filePath,
       sampleSettings({ scenarioId: 'world_006_hethel', learnerProfileId: 'answer_seeking' }),
@@ -444,10 +517,11 @@ test(
           name: 'xterm-color',
           env: {
             ...process.env,
+            PATH: `${directory}${path.delimiter}${process.env.PATH || ''}`,
             TERM: 'xterm-color',
             TUTOR_STUB_SETTINGS_FILE: filePath,
             TUTOR_STUB_SUMMARY_OPEN: '0',
-            TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+            OPENING_CALL_SENTINEL_LOG: sentinelLog,
           },
         },
       );
@@ -458,7 +532,7 @@ test(
         }, 8_000);
         terminal.onData((chunk) => {
           output += chunk;
-          if (!requestedExit && output.includes('LEARNER') && output.includes('mode')) {
+          if (!requestedExit && output.includes('tutor >')) {
             requestedExit = true;
             setTimeout(() => terminal.write('/quit\r'), 50);
           }
@@ -474,6 +548,10 @@ test(
       assert.doesNotMatch(output, /Pick a scenario/u);
       assert.doesNotMatch(output, /Pick a learner profile/u);
       assert.doesNotMatch(output, /Tune the dialogue/u);
+      assert.match(output, /tutor >[\s\S]*Whose hand felled the Hethel bridge span/u);
+      if (fs.existsSync(sentinelLog)) {
+        assert.doesNotMatch(fs.readFileSync(sentinelLog, 'utf8'), /# Public-safe opening frame/u);
+      }
     } finally {
       fs.rmSync(directory, { recursive: true, force: true });
     }

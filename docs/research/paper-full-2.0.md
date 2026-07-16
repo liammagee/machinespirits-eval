@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.213"
+version: "3.0.214"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3177,6 +3177,14 @@ The rubric evolved through four versions (v1.0 → v2.0 → v2.1 → v2.2, detai
 
 The test suite (54 files across `tests/` and `services/__tests__/`) covers not just system functionality but analytical correctness: provenance tests (44/44 passing) verify every scored row has a traceable path from cell config through dialogue execution to judge evaluation; superego guard tests (111 tests) verify single-agent cells cannot produce superego traces; ANOVA tests verify statistical computations match reference implementations. The suite makes the analysis *reproducible in a testable sense* --- not just "you can run our code" but "our code produces expected output on known inputs, and here are the tests that prove it."
 
+#### 7.4.5 Diagnostic Collection and Strict Delivery Verification
+
+The tutor-stub character-adaptation loop adds a second form of analytical provenance: it separates **diagnostic collection** from **strict verification**. Diagnostic mode attempts the complete declared trajectory even after a candidate response fails. It never delivers that candidate: the turn's clue-release transaction is rolled back, the last valid public state is restored, and a mechanically public-safe quarantine continuation permits later turns to be observed. The report retains the original, repair, and fallback candidates and their audit failures, marks the first quarantined turn, distinguishes evidence collected before and after trajectory contamination, and clusters repeated failures by root cause. Strict mode uses the same response boundary but remains fail-fast. This division prevents a safety failure from disappearing merely because the run stopped at its first occurrence, while also preventing a diagnostic continuation from being mistaken for acceptable learner-facing behavior. <!-- [VERIFIED: services/tutorStubDiagnosticCollection.js; scripts/run-tutor-stub-character-adaptation-loop.js] -->
+
+The resulting V17 acceptance matrix was declared before model calls and held code, models, policy, effort, temperature, release speed, and ten-turn horizon fixed across four previously unseen scenario/profile pairings: Foxtrot/false-memory, an AI-syllabus curriculum/fast-learner, Sealhouse/slow-learner, and resistant Hethel/low-agency. All four passed every predeclared strict gate. Each recorded zero final-delivery audit failures, errors, quarantines, meta-performance turns, role-stage-direction turns, source replacements, and duplicate clue deliveries; host-part visibility was 1.000 in every cell; mean response-configuration realization ranged from 0.916 to 1.000; and deterministic fallback use was 0, 0, 1, and 1 turns, within the declared cap. Residual first-draft failures remained --- especially performance-tactic visibility, actorial-part visibility, learner uptake, and clarification invitations --- but were repaired or replaced before delivery. This is therefore evidence that the response boundary and host-part repair transfer across these four simulated pairings, including a non-detective curriculum and a previously unused resistant scenario; it is not a population-wide character-adaptation result. <!-- [PILOT: config/tutor-stub-campaigns/character-generalization-v17.yaml; notes/status/2026-07-16-character-generalization-v17.md] -->
+
+The same matrix shows why delivery verification must remain distinct from pedagogical outcome measurement. Proof-path coverage was 1.000, 1.000, 0.667, and 0.200 respectively; only the Foxtrot run reached grounded closure before the horizon, while the other three stopped at the ten-turn cap. Slow and low-agency profiles were deliberately constructed to retard or delegate progress, so low coverage is not itself a failed delivery gate. Conversely, a perfectly safe, visibly characterized response is not thereby an effective lesson. The matrix validates a delivery boundary under simulated stress; it does not validate proof completion, learning gain, human experience, or deployment readiness. <!-- [PILOT: notes/status/2026-07-16-character-generalization-v17.md; file-based acceptance evidence, not DB-scored learning outcomes] -->
+
 ### 7.5 The Reflexive Structure
 
 The parallel between the architecture's error correction mechanism and the research methodology's error correction process is the paper's deepest structural observation.
@@ -3496,6 +3504,8 @@ A related concern is whether the paper conflates *engineered architecture* with 
 ### 8.5 Single-System Study
 
 All findings come from a single architectural implementation (the ego/superego tutoring system with recognition-enhanced prompts). The two supported mechanisms are identified through this specific architecture's observability. Other architectures---chain-of-thought reasoning, debate-based systems, recursive self-improvement---might implement recognition-like behaviors through different internal processes. The mechanism model may not transfer to architectures that lack explicit ego-superego separation or that do not log internal deliberation.
+
+The V17 tutor-stub matrix in §7.4.5 is narrower than even this main-harness scope. It is a four-cell engineering acceptance test over simulated learners, fixed models, strict response audits, and a ten-turn horizon. Its zero delivered failures establish that unsafe or poorly realized candidates were intercepted in those trajectories; they do not establish that the first drafts were reliable, that all dialogues completed their proof path, that the selected character improved learning, or that the same boundary transfers to human learners and untested model stacks. Because candidate repairs contribute to the passing verdict, future claims about generation quality should report first-draft acceptance separately from final-delivery safety rather than allowing repair success to erase dependence on the repair layer. <!-- [PILOT: V17 character-generalization acceptance matrix; scope limitation] -->
 
 ### 8.6 Rubric Evolution
 
@@ -4398,6 +4408,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.214** (2026-07-16)
+
+:   **Character-delivery acceptance recorded as apparatus evidence (§7.4.5; scoped in §8.5).** Added the diagnostic-collection/strict-verification distinction: diagnostic runs preserve rejected original, repair, and fallback candidates while rolling back failed clue-release transactions and continuing only through a public-safe quarantine response; strict runs retain fail-fast delivery gates. Reported the predeclared V17 four-cell matrix (Foxtrot/false-memory, AI-syllabus/fast, Sealhouse/slow, resistant Hethel/low-agency): all four passed every strict gate, with zero final-delivery audit failures, errors, quarantines, meta-performance turns, role-stage-direction turns, source replacements, or duplicate clue deliveries; host visibility 1.000 throughout; mean configuration realization 0.916--1.000; and two total deterministic fallback turns. Preserved the key negative boundary: proof-path coverage ranged 0.200--1.000 and only one dialogue grounded before the horizon, so this is simulated engineering evidence for safe delivery and host-part realization, not proof completion, population-wide character adaptation, human learning, or deployment readiness. Added two provable-discourse checks against the frozen status report. No abstract, core mechanism, DB, rubric, or headline-N changes.
 
 **v3.0.213** (2026-07-14)
 

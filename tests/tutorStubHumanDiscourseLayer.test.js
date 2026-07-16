@@ -534,7 +534,7 @@ test(
           terminal.write('/settings\r');
         } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
           selectedTemperature = true;
-          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
+          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
         } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
@@ -625,7 +625,7 @@ test(
           terminal.write('/settings\r');
         } else if (!selectedTemperature && plain.includes('Settings · choose what to change')) {
           selectedTemperature = true;
-          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
+          terminal.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B\r');
         } else if (!adjustedTemperature && plain.includes('range 0.05–3')) {
           adjustedTemperature = true;
           terminal.write('\x1b[C\r');
@@ -980,7 +980,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/id\n/clarify cupel\n/quit\n',
+      input: '/help\n/release-notes\n/id\n/clarify cupel\n/quit\n',
       env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
     },
   );
@@ -991,6 +991,10 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/explain \[phrase\]/u);
   assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /\/transcript \[no-open\]/u);
+  assert.match(result.stdout, /\/release-notes/u);
+  assert.match(result.stdout, /release notes > last 24 hours/u);
+  assert.match(result.stdout, /effect >/u);
+  assert.match(result.stdout, /look for >/u);
   assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, settings, and Replay JS views/u);
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
@@ -1015,7 +1019,7 @@ test('detour slash commands reprise the latest tutor utterance before returning 
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/status\n/id\n/quit\n',
+      input: '/help\n/status\n/release-notes\n/id\n/quit\n',
       env: {
         ...process.env,
         TUTOR_STUB_CLIPBOARD: '0',
@@ -1026,7 +1030,7 @@ test('detour slash commands reprise the latest tutor utterance before returning 
   );
 
   assert.equal(result.status, 0, result.stderr);
-  assert.equal((result.stdout.match(/tutor ↻ >/gu) || []).length, 3);
+  assert.equal((result.stdout.match(/tutor ↻ >/gu) || []).length, 4);
   assert.match(result.stdout, /tutor ↻ >.*autumn fair at Marrick passed in light shillings/gu);
   assert.doesNotMatch(result.stdout, /Keep the case question in view/gu);
 });

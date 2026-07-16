@@ -1814,6 +1814,17 @@ function summarizeTrace(
     return sum + (event.turnRecord?.tutorLeakAudit?.ok === false ? 1 : 0);
   }, 0);
   const guardRows = turnRecords.map((turn) => turn.tutorGuardAccounting).filter(Boolean);
+  const originalCandidateAcceptedTurns = guardRows.filter(
+    (row) => row.finalDelivery?.source === 'original_candidate',
+  ).length;
+  const totalTutorGenerationLatencyMs = guardRows.reduce(
+    (sum, row) => sum + Number(row.generation?.totalModelLatencyMs || 0),
+    0,
+  );
+  const totalOriginalCandidateLatencyMs = guardRows.reduce(
+    (sum, row) => sum + Number(row.generation?.originalCandidateLatencyMs || 0),
+    0,
+  );
   const guardAccounting = {
     schema: 'machinespirits.tutor-stub.guard-accounting-summary.v1',
     turns: turnRecords.length,
@@ -1824,12 +1835,25 @@ function summarizeTrace(
         (row.attempts || []).some((attempt) => attempt.auditOk === false),
     ).length,
     guardedSpanCount: guardRows.reduce((sum, row) => sum + Number(row.originalCandidate?.guardedSpans?.length || 0), 0),
+    originalCandidateAcceptedTurns,
+    originalCandidateAcceptanceRate: guardRows.length
+      ? Number((originalCandidateAcceptedTurns / guardRows.length).toFixed(4))
+      : null,
+    mechanicalRepairTurns: guardRows.filter(
+      (row) =>
+        row.finalDelivery?.source !== 'original_candidate' &&
+        (row.repairsApplied || []).some((repair) => String(repair.kind || '').startsWith('mechanical_')),
+    ).length,
     modelRepairTurns: guardRows.filter((row) =>
       (row.repairsApplied || []).some((repair) => repair.kind === 'model_rewrite'),
     ).length,
     repairActionCount: guardRows.reduce((sum, row) => sum + Number(row.repairsApplied?.length || 0), 0),
     deterministicFallbackTurns: guardRows.filter((row) => row.finalDelivery?.deterministicFallback === true).length,
     finalDeliveryAuditFailures: guardRows.filter((row) => row.finalDelivery?.auditOk === false).length,
+    totalTutorGenerationLatencyMs,
+    meanTutorGenerationLatencyMs: guardRows.length ? totalTutorGenerationLatencyMs / guardRows.length : null,
+    totalOriginalCandidateLatencyMs,
+    meanOriginalCandidateLatencyMs: guardRows.length ? totalOriginalCandidateLatencyMs / guardRows.length : null,
   };
   const fixedHorizon = summarizeTutorStubFixedHorizon(turnRecords, { primaryHorizon });
   const groundedClosure = Boolean(
@@ -2031,6 +2055,14 @@ function summarizeRows(rows) {
       ),
       leakCount: okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
       guardTriggeredTurns: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0), 0),
+      originalCandidateAcceptedTurns: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
+        0,
+      ),
+      mechanicalRepairTurns: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.mechanicalRepairTurns || 0),
+        0,
+      ),
       modelRepairTurns: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0),
       deterministicFallbackTurns: okRows.reduce(
         (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
@@ -2039,6 +2071,10 @@ function summarizeRows(rows) {
       guardedSpanCount: okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.guardedSpanCount || 0), 0),
       finalDeliveryAuditFailures: okRows.reduce(
         (sum, row) => sum + Number(row.guardAccounting?.finalDeliveryAuditFailures || 0),
+        0,
+      ),
+      totalTutorGenerationLatencyMs: okRows.reduce(
+        (sum, row) => sum + Number(row.guardAccounting?.totalTutorGenerationLatencyMs || 0),
         0,
       ),
       errorCount: okRows.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
@@ -2075,6 +2111,14 @@ function summarizeRows(rows) {
     ),
     leakCount: scored.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
     guardTriggeredTurns: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.guardTriggeredTurns || 0), 0),
+    originalCandidateAcceptedTurns: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
+      0,
+    ),
+    mechanicalRepairTurns: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.mechanicalRepairTurns || 0),
+      0,
+    ),
     modelRepairTurns: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0),
     deterministicFallbackTurns: scored.reduce(
       (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
@@ -2083,6 +2127,10 @@ function summarizeRows(rows) {
     guardedSpanCount: scored.reduce((sum, row) => sum + Number(row.guardAccounting?.guardedSpanCount || 0), 0),
     finalDeliveryAuditFailures: scored.reduce(
       (sum, row) => sum + Number(row.guardAccounting?.finalDeliveryAuditFailures || 0),
+      0,
+    ),
+    totalTutorGenerationLatencyMs: scored.reduce(
+      (sum, row) => sum + Number(row.guardAccounting?.totalTutorGenerationLatencyMs || 0),
       0,
     ),
     errorCount: scored.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
@@ -4620,8 +4668,20 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
     0,
   );
   const modelRepairTurns = okRows.reduce((sum, row) => sum + Number(row.guardAccounting?.modelRepairTurns || 0), 0);
+  const originalCandidateAcceptedTurns = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.originalCandidateAcceptedTurns || 0),
+    0,
+  );
+  const mechanicalRepairTurns = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.mechanicalRepairTurns || 0),
+    0,
+  );
   const deterministicFallbackTurns = okRows.reduce(
     (sum, row) => sum + Number(row.guardAccounting?.deterministicFallbackTurns || 0),
+    0,
+  );
+  const totalTutorGenerationLatencyMs = okRows.reduce(
+    (sum, row) => sum + Number(row.guardAccounting?.totalTutorGenerationLatencyMs || 0),
     0,
   );
   const positiveTransitions = rewards.filter((score) => score > 0.005).length;
@@ -4640,8 +4700,17 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       riskReduction,
       leakCount,
       guardTriggeredTurns,
+      originalCandidateAcceptedTurns,
+      originalCandidateAcceptanceRate: guardTurns
+        ? roundField(originalCandidateAcceptedTurns / guardTurns)
+        : null,
+      mechanicalRepairTurns,
       modelRepairTurns,
       deterministicFallbackTurns,
+      totalTutorGenerationLatencyMs,
+      meanTutorGenerationLatencyMs: guardTurns
+        ? roundField(totalTutorGenerationLatencyMs / guardTurns)
+        : null,
       guardExposureRate: guardTurns ? roundField(guardTriggeredTurns / guardTurns) : null,
       repairRate: guardTurns ? roundField(modelRepairTurns / guardTurns) : null,
       deterministicFallbackRate: guardTurns ? roundField(deterministicFallbackTurns / guardTurns) : null,

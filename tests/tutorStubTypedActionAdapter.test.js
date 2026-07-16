@@ -286,7 +286,10 @@ test('opt-in runtime decides before output with separate axes and complete selec
     const turn = turns[index];
     assert.ok(decisionEvent.seq < tutorCall.seq, `turn ${index + 1} decision must precede tutor model call`);
     assert.equal(decisionEvent.phase, 'before_tutor_output');
-    assert.match(tutorCall.request.systemPrompt, /Tutor-only typed pedagogical action/u);
+    assert.doesNotMatch(tutorCall.request.systemPrompt, /Tutor-only typed pedagogical action/u);
+    const firstDraftPrompt = tutorCall.request.messages.at(-1)?.content || '';
+    assert.match(firstDraftPrompt, /Tutor-only first-draft performance contract/u);
+    assert.match(firstDraftPrompt, /SUPPORT — Supply strong concrete support now/u);
     assert.deepEqual(turn.typedActionDecision, decision);
 
     assert.equal(turn.responseConfiguration.action_family, decision.chosen_action.move_family);

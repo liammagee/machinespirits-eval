@@ -161,6 +161,9 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(accounting.attempts.length, 2);
   assert.equal(accounting.repairsApplied.length, 1);
   assert.equal(accounting.repairsApplied[0].kind, 'model_rewrite');
+  assert.equal(accounting.generation.modelCallCount, 2);
+  assert.ok(accounting.generation.originalCandidateLatencyMs >= 0);
+  assert.ok(accounting.generation.totalModelLatencyMs >= accounting.generation.originalCandidateLatencyMs);
 
   const edonySpan = accounting.originalCandidate.guardedSpans.find(
     (span) => span.issueType === 'concealed_answer_name' && span.text === 'Edony',
@@ -184,6 +187,8 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(closeout.guardAccounting.accountedTurns, 1);
   assert.equal(closeout.guardAccounting.modelRepairTurns, 1);
   assert.equal(closeout.guardAccounting.deterministicFallbackTurns, 0);
+  assert.equal(closeout.guardAccounting.originalCandidateAcceptedTurns, 0);
+  assert.equal(closeout.guardAccounting.meanTutorGenerationLatencyMs, turn.latencyMs);
   assert.deepEqual(closeout.guardAccounting.byPolicyProfile[0].policy, 'dynamic');
   assert.deepEqual(closeout.guardAccounting.byPolicyProfile[0].profile, 'diligent');
   assert.match(stdout, /response revised/u);
@@ -205,6 +210,7 @@ test('tutor guard accounting records the failed repair and final deterministic f
     accounting.repairsApplied.map((repair) => repair.kind),
     ['model_rewrite', 'deterministic_fallback'],
   );
+  assert.equal(accounting.generation.modelCallCount, 2, 'deterministic fallback adds no third model call');
   assert.equal(accounting.attempts[1].candidate.text, UNSAFE_DRAFT);
   assert.equal(accounting.attempts[1].guardedSpans.length > 0, true);
   assert.equal(accounting.attempts[1].repairedSpans.length, 0);
