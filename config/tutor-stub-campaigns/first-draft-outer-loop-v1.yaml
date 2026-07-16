@@ -7,22 +7,22 @@ purpose: >-
   records who may interpret or change each layer, and makes success,
   stagnation, infrastructure blocking, version retirement, and seed freshness
   explicit. It began at V24 and has advanced V24 -> V25 -> V26 -> V27 -> V28
-  -> V29 -> V30 -> V31 -> V32. V33+ remain conditional possibilities, not
+  -> V29 -> V30 -> V31 -> V32 -> V33. V34+ remain conditional possibilities, not
   predeclared versions, under an open upper bound until held-out acceptance
   passes. A stagnated development version is preserved and triggers an
   architectural reset in Vn+1 rather than terminating the broader programme.
 
 current:
-  campaign_version: 32
-  label: V32
-  state: retired_after_working_failure
+  campaign_version: 33
+  label: V33
+  state: working_predeclared
   working_iteration: 1
-  working_screen_id: first-draft-diagnostic-screens-v12
-  working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml
-  primary_working_screen_id: first-draft-diagnostic-screens-v12
-  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml
+  working_screen_id: first-draft-diagnostic-screens-v13
+  working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml
+  primary_working_screen_id: first-draft-diagnostic-screens-v13
+  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml
   acceptance_config: null
-  active_working_history:
+  v32_result_history:
     - &v32_working_observation
       version: 32
       working_iteration: 1
@@ -188,9 +188,12 @@ current:
           two-of-two diagnostic gate. A strict four-cell/four-draw confirmation
           therefore remains prohibited; any correction belongs to a separately
           predeclared later version with fresh development labels.
-  active_last_observation: *v32_working_observation
-  working_history_scope: preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_and_v32_staged_diagnostic_failure
-  version_advance_from: &v31_working_observation
+  active_working_history: []
+  active_last_observation: null
+  working_history_scope: preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_predeclaration
+  v32_working_observation: *v32_working_observation
+  version_advance_from: *v32_working_observation
+  v31_version_advance_record: &v31_working_observation
     version: 31
     working_iteration: 1
     status: development_hard_cell_failed
@@ -1214,8 +1217,8 @@ current:
       stopping_reason: predeclared_final_frontier_attempt_failed
       reset_to: V25_compact_typed_host_plan
 versioning:
-  current: 32
-  next: 33
+  current: 33
+  next: 34
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -1235,6 +1238,8 @@ versioning:
       to: 31
     - from: 31
       to: 32
+    - from: 32
+      to: 33
   rule: >-
     After any held-out candidate or result is observed, code, prompt, audit, or
     campaign changes retire that entire version. Advance exactly one version,
@@ -1488,15 +1493,17 @@ seed_ledger:
     - { version: 31, seed: 20262101, status: retired_unconsumed_unstarted_after_hard_cell_failure }
     - { version: 31, seed: 20262102, status: retired_unconsumed_unstarted_after_hard_cell_failure }
     - { version: 31, seed: 20262103, status: retired_unconsumed_unstarted_after_hard_cell_failure }
+    - { version: 32, seed: 20262200, status: consumed_development_passed_but_campaign_failed_retired }
+    - { version: 32, seed: 20262201, status: consumed_development_failed_retired }
   development:
-    - seed: 20262200
-      status: consumed_development_passed_but_campaign_failed_retired
+    - seed: 20262300
+      status: reusable_non_held_out_development
       cell: tallow_answer_seeking_diagnostic_1
-      screen: first-draft-diagnostic-screens-v12
-    - seed: 20262201
-      status: consumed_development_failed_retired
+      screen: first-draft-diagnostic-screens-v13
+    - seed: 20262301
+      status: reusable_non_held_out_development
       cell: tallow_answer_seeking_diagnostic_2
-      screen: first-draft-diagnostic-screens-v12
+      screen: first-draft-diagnostic-screens-v13
   held_out:
     status: not_predeclared
     entries: []
@@ -1591,4 +1598,16 @@ claim_boundary: >-
   not the cause of the strict failure. Both 202622xx labels are consumed and
   retired. No strict four-cell/four-draw screen or held-out matrix is
   predeclared, and strict confirmation remains prohibited after the failed
-  two-of-two diagnostic gate.
+  two-of-two diagnostic gate. V33 advances exactly one version with fresh
+  202623xx development labels and the same frozen Tallow turn-5 bundle. The
+  implementation committed at bb42573c changes speaking only to preserve the
+  public actors, causal relation, and polarity in writable entries, and changes
+  audit recognition only to split hyphenated focus compounds. Commit d0cd2c12
+  scopes reusable preflight certificates to selected tests and their actual
+  dependencies. Recovery, safety, delivery, and automatic gates remain
+  unchanged. V33 also predeclares two independent blinded qualitative ratings
+  for every generated Write: minutes entry. Two automatic strict passes are
+  necessary but insufficient: both ratings on both draws must also confirm
+  preservation of the public causal relation and polarity before V34 may predeclare strict
+  four-cell/four-draw confirmation. V33 predeclares neither that confirmation
+  nor any held-out or reserve seed.

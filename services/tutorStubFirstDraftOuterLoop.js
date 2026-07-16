@@ -1812,6 +1812,8 @@ function validateWorkingScreen(manifest, { root }) {
   const v30RecoveryIntegrationScreen = config.id === 'first-draft-working-screens-v10';
   const v31PreflightDiagnosticsScreen = config.id === 'first-draft-working-screens-v11';
   const v32DiagnosticScreen = config.id === 'first-draft-diagnostic-screens-v12';
+  const v33DiagnosticScreen = config.id === 'first-draft-diagnostic-screens-v13';
+  const stagedDiagnosticScreen = v32DiagnosticScreen || v33DiagnosticScreen;
   expect(config.id, manifest.current?.working_screen_id, 'working screen id');
   expect(config.held_out, false, 'working screen held-out flag');
   expect(config.fixed_configuration?.original_only, true, 'working screen original-only mode');
@@ -1840,16 +1842,16 @@ function validateWorkingScreen(manifest, { root }) {
       'exact host source occurrences gate',
     );
   }
-  expect(config.gates_per_cell?.required_turns, v32DiagnosticScreen ? 1 : 4, 'working screen required turns');
+  expect(config.gates_per_cell?.required_turns, stagedDiagnosticScreen ? 1 : 4, 'working screen required turns');
   expect(
     config.gates_per_cell?.required_originals_accepted,
-    v32DiagnosticScreen ? 1 : 4,
+    stagedDiagnosticScreen ? 1 : 4,
     'working screen required originals',
   );
   expect(config.gates_per_cell?.minimum_mean_configuration_realization, 1, 'working screen configuration realization');
   expect(config.gates_per_cell?.configuration_realization_enforcement, 'gate', 'configuration realization enforcement');
   expect(config.gates_per_cell?.maximum_safety_failures, 0, 'working screen safety failures');
-  if (confirmation || v32DiagnosticScreen) {
+  if (confirmation || stagedDiagnosticScreen) {
     for (const field of [
       'maximum_mechanical_repairs', 'maximum_model_rewrites',
       'maximum_semantic_recognition_corrections', 'maximum_transport_normalizations',
@@ -1857,16 +1859,18 @@ function validateWorkingScreen(manifest, { root }) {
     expect(config.gates_per_cell?.required_prefixes, 1, 'confirmation required prefixes');
     expect(
       config.gates_per_cell?.required_draws_per_prefix,
-      v32DiagnosticScreen ? 1 : 4,
+      stagedDiagnosticScreen ? 1 : 4,
       'confirmation draws per prefix',
     );
   }
   if (
     v28StructuralScreen || v29SourceAccessibilityScreen ||
-    v30RecoveryIntegrationScreen || v31PreflightDiagnosticsScreen || v32DiagnosticScreen
+    v30RecoveryIntegrationScreen || v31PreflightDiagnosticsScreen || stagedDiagnosticScreen
   ) {
-    const label = v32DiagnosticScreen
-      ? 'V32'
+    const label = v33DiagnosticScreen
+      ? 'V33'
+      : v32DiagnosticScreen
+        ? 'V32'
       : v31PreflightDiagnosticsScreen
         ? 'V31'
         : v30RecoveryIntegrationScreen
@@ -1902,7 +1906,7 @@ function validateWorkingScreen(manifest, { root }) {
       'failed final-frontier attempt stop',
     );
   }
-  const requiredCellCount = v32DiagnosticScreen ? 2 : confirmation ? 4 : 1;
+  const requiredCellCount = stagedDiagnosticScreen ? 2 : confirmation ? 4 : 1;
   if (config.matrix.length !== requiredCellCount) {
     throw new Error(`working screen must contain exactly ${requiredCellCount} cell(s)`);
   }
@@ -1979,6 +1983,8 @@ function validateWorkingScreen(manifest, { root }) {
     v30RecoveryIntegrationScreen,
     v31PreflightDiagnosticsScreen,
     v32DiagnosticScreen,
+    v33DiagnosticScreen,
+    qualitativeReview: config.qualitative_review || null,
     sourceAccessibilityPolicy:
       config.fixed_configuration?.source_accessibility_policy || 'direct_only',
     gates: {
@@ -3658,6 +3664,239 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       .map((entry) => Number(entry.seed));
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V32 must leave 202617xx absent and unreserved');
+    }
+  }
+
+  if (currentVersion === 33) {
+    expect(state.currentState, 'working_predeclared', 'V33 current state');
+    expect(workingIteration, 1, 'V33 working iteration');
+    expectJson(manifest.current?.active_working_history || [], [], 'V33 active working history');
+    expect(manifest.current?.active_last_observation, null, 'V33 active last observation');
+    expect(
+      manifest.current?.working_screen_config,
+      'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml',
+      'V33 diagnostic config path',
+    );
+    expect(
+      manifest.current?.primary_working_screen_config,
+      'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml',
+      'V33 primary diagnostic config path',
+    );
+    expect(
+      manifest.current?.working_history_scope,
+      'preserved_v27_primary_history_with_v28_v29_v30_preflights_v31_hard_cell_failure_v32_staged_diagnostic_failure_and_v33_predeclaration',
+      'V33 inherited working-history scope',
+    );
+    const v32History = manifest.current?.v32_result_history || [];
+    if (v32History.length !== 1) {
+      throw new Error('V33 must preserve exactly one V32 staged diagnostic result');
+    }
+    validateV32Iteration1Observation(v32History[0], 'V33 V32 result history');
+    validateV32Iteration1Observation(
+      manifest.current?.v32_working_observation,
+      'V33 preserved V32 working observation',
+    );
+    validateV32Iteration1Observation(manifest.current?.version_advance_from, 'V33 version advance');
+    expectJson(
+      manifest.current?.v32_working_observation,
+      v32History[0],
+      'V33 V32 observation and result history',
+    );
+    expectJson(
+      manifest.current?.version_advance_from,
+      v32History[0],
+      'V33 V32 observation and version advance',
+    );
+    validateV31Iteration1Observation(
+      manifest.current?.v31_version_advance_record,
+      'V33 preserved V31 result record',
+    );
+    validateV31Iteration1Observation(
+      manifest.current?.v31_working_observation,
+      'V33 preserved V31 working observation',
+    );
+    expectJson(
+      manifest.current?.v31_working_observation,
+      manifest.current?.v31_version_advance_record,
+      'V33 V31 preserved records',
+    );
+
+    expect(workingScreen.id, 'first-draft-diagnostic-screens-v13', 'V33 screen id');
+    expect(workingScreen.confirmation, false, 'V33 is not the strict multi-cell screen');
+    expect(workingScreen.v33DiagnosticScreen, true, 'V33 diagnostic screen flag');
+    expect(workingScreen.jointPerformanceGeneration, true, 'V33 joint-performance generation');
+    expect(
+      workingScreen.sourceAccessibilityPolicy,
+      'direct_or_compensated_v1',
+      'V33 source-accessibility policy',
+    );
+    expectJson(workingScreen.cells, [
+      {
+        id: 'tallow_answer_seeking_diagnostic_1', priority: 1, world: 'world_025_tallow_street',
+        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262300,
+        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+      },
+      {
+        id: 'tallow_answer_seeking_diagnostic_2', priority: 2, world: 'world_025_tallow_street',
+        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262301,
+        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+      },
+    ], 'V33 working cells');
+    expectJson(workingScreen.targetBundles, [
+      {
+        id: 'tallow_answer_seeking_diagnostic_1',
+        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+        targetTurn: 5,
+        targetBundle: {
+          turn_id: '2026-07-16T07-03-36-147Z:t005',
+          world: 'world_025_tallow_street', learner_profile: 'answer_seeking',
+          request_model: 'gpt-5.6-terra', request_effort: 'low',
+        },
+      },
+      {
+        id: 'tallow_answer_seeking_diagnostic_2',
+        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+        targetTurn: 5,
+        targetBundle: {
+          turn_id: '2026-07-16T07-03-36-147Z:t005',
+          world: 'world_025_tallow_street', learner_profile: 'answer_seeking',
+          request_model: 'gpt-5.6-terra', request_effort: 'low',
+        },
+      },
+    ], 'V33 exact diagnostic target bundles');
+    expectJson(workingScreen.execution, {
+      hardest_cell_first: true,
+      hard_cell: 'tallow_answer_seeking_diagnostic_1',
+      hard_cell_must_pass_before_remaining: true,
+      mandatory_stage_dependency: true,
+      remaining_cells_execution: 'concurrent',
+      maximum_concurrent_remaining_cells: 1,
+      one_job_per_cell: true,
+      forbid_duplicate_active_or_completed_cells: true,
+      complete_all_cells_after_hard_cell_passes: true,
+      stop_cell_when_gate_mathematically_impossible: true,
+      preserve_unstarted_seeds_as_unconsumed: true,
+      require_exact_target_bundle_binding: true,
+      require_clean_worktree: true,
+    }, 'V33 execution');
+    expectJson(workingScreen.changeControl, {
+      implementation_commits: {
+        speaking_and_audit: 'bb42573c26dcab54eca7776cd09ec7140205bfc5',
+        preflight_certificate_scoping: 'd0cd2c12982d7d04538a1a2f0068085b8041d272',
+      },
+      implementation_change_from_v32_failure:
+        'writable_entry_causal_fidelity_and_hyphen_focus_recognition_v1',
+      speaking_prompt_changes: [
+        'require_writable_entry_to_preserve_public_actors_relation_and_polarity',
+        'forbid_writable_entry_from_reversing_public_cause_or_evidentiary_force',
+      ],
+      deterministic_host_changes: [],
+      audit_recognition_changes: [
+        'split_hyphenated_focus_compounds_into_constituent_terms_before_turn_focus_matching',
+      ],
+      recovery_changes: [],
+      preflight_orchestration_changes: [
+        'scope_certificate_dependencies_to_selected_tests_recursive_local_imports_and_literal_resources',
+        'exclude_unselected_governance_tests_from_certificate_invalidation',
+      ],
+      transport_changes: [],
+      safety_changes: [],
+      gate_changes: [],
+      delivery_audit_changes: [],
+    }, 'V33 change control');
+    expectJson(workingScreen.qualitativeReview, {
+      id: 'minutes_entry_public_causal_fidelity_v1',
+      status: 'predeclared_required_per_draw',
+      scope: 'every_completed_original_draw',
+      subject: 'model_owned_uptake_minutes_entry_after_write_prefix',
+      review_execution: 'external_post_generation_subagent_or_human_review',
+      reviewers_per_draw: 2,
+      independence: 'separate_contexts_without_cross_review_visibility',
+      automatic: false,
+      campaign_repair_call: false,
+      campaign_adjudication_call: false,
+      blinded_review_packet: {
+        includes_only: [
+          'exact_learner_request',
+          'public_evidence_window',
+          'exact_write_minutes_entry_sentence',
+        ],
+        blind_to: [
+          'deterministic_audit_outcome',
+          'development_seed',
+          'other_candidate',
+          'other_reviewer_verdict_or_rationale',
+        ],
+      },
+      verdicts: ['pass', 'fail'],
+      pass_requires_all: [
+        'preserves_public_actors',
+        'preserves_public_causal_relation',
+        'preserves_public_polarity',
+        'does_not_reverse_cause_or_evidentiary_force',
+      ],
+      evidence_required: [
+        'exact_minutes_entry_text',
+        'public_record_relation_and_polarity',
+        'brief_independent_verdict_rationale',
+      ],
+      aggregation: {
+        required_passing_ratings: 2,
+        required_total_ratings: 2,
+        disagreement_outcome: 'fail',
+      },
+      storage: {
+        separate_from_automatic_status: true,
+        preserve_each_blinded_rating: true,
+      },
+      advancement: {
+        strict_automatic_pass_alone_sufficient: false,
+        require_two_recorded_passing_ratings_per_completed_draw: true,
+        diagnostic_2_still_requires_diagnostic_1_automatic_pass: true,
+        v34_confirmation_requires_both_automatic_and_qualitative_passes: true,
+      },
+    }, 'V33 qualitative review');
+    expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V33 adjudication policy');
+    expectJson(workingScreen.structuralDebtTargets, {
+      status: 'active_v33_target',
+      source: 'V32_recognition_false_negative_and_separate_causal_wording_debt',
+      items: [
+        'hyphenated_turn_focus_recognition',
+        'writable_entry_public_causal_relation_and_polarity',
+      ],
+      consequence: workingScreen.structuralDebtTargets?.consequence,
+    }, 'V33 structural debt target');
+    if (!/Both diagnostics.*qualitative.*V34/isu.test(
+      workingScreen.structuralDebtTargets?.consequence || '',
+    )) throw new Error('V33 structural debt consequence must preserve the combined V34 boundary');
+
+    expectJson(
+      seeds.development.map((entry) => ({
+        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+      })),
+      [
+        { seed: 20262300, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v13' },
+        { seed: 20262301, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v13' },
+      ],
+      'V33 development seed ledger',
+    );
+    expectJson(seeds.heldOut, [], 'V33 held-out seeds');
+    expectJson(seeds.reserves, [], 'V33 reserve seeds');
+    expectJson(
+      [20262200, 20262201].map((seed) => {
+        const entry = seeds.historical.find((candidate) => Number(candidate.seed) === seed);
+        return { seed, status: entry?.status, version: Number(entry?.version) };
+      }),
+      [
+        { seed: 20262200, status: 'consumed_development_passed_but_campaign_failed_retired', version: 32 },
+        { seed: 20262201, status: 'consumed_development_failed_retired', version: 32 },
+      ],
+      'V33 historical V32 seed dispositions',
+    );
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
+      .map((entry) => Number(entry.seed));
+    if (allSeeds.some((seed) => seed >= 20262400 && seed <= 20262499)) {
+      throw new Error('V33 must leave 202624xx absent and unreserved');
     }
   }
 
