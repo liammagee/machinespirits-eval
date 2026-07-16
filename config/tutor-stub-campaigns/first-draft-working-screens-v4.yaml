@@ -78,7 +78,10 @@ change_log:
     V25 replaces the competing FORM, OPEN, DEVELOP, END, VOICE, and SCENE
     prose with one typed host plan: uptake, selected-part action, optional exact
     public source, selected tactic, and action-plus-stance handoff. Every
-    delivered axis has one owner and each host sentence has one job.
+    delivered axis has one owner and each host sentence has one job. Iteration
+    2 separates the scene-partner's shared placement from the tactic's later
+    invitation to read that object, so the model cannot collapse two duplicate
+    make-room instructions into one solitary action.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
     repair and fallback behavior is unchanged outside this screen.

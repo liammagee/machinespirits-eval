@@ -15,7 +15,7 @@ current:
   campaign_version: 25
   label: V25
   state: working_predeclared
-  working_iteration: 1
+  working_iteration: 2
   working_screen_id: first-draft-working-screens-v4
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v4.yaml
   acceptance_config: null
@@ -51,6 +51,41 @@ current:
       validation_sha256: 866237cb0c490c486f13416752d7bfbb5941757de83aeef5da1826f05e76d83e
       correction_head: 8ecced40
       retry: same_iteration_and_development_seed
+  last_observation:
+    version: 25
+    working_iteration: 1
+    status: failed_gate_mathematically_impossible
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v4/iteration-1/working-screen-result.json
+    development_seed: 20261300
+    seed_disposition: consumed_development_reusable
+    completed_turns: [4]
+    unstarted_turns: [5, 6, 9]
+    strict_originals_accepted: 0
+    final_safety_failures: 0
+    fallbacks: 0
+    semantic_recognition_corrections: 0
+    mean_configuration_realization: 0.833
+    maximum_possible_mean_configuration_realization: 0.95825
+    failed_axes: [turn_4_actorial_part_scene_partner]
+    comparison:
+      measurable_improvement: false
+      consecutive_without_improvement: 0
+      baseline: V24_best_turn_4
+      interpretation: >-
+        A genuine generation miss and a regression from the V24 best turn-4
+        frontier. The candidate merged duplicated PART and TACTIC jobs into a
+        solitary object action. This is V25's first measured iteration, so it
+        authorizes one bounded slot-separation correction without advancing
+        the stagnation count.
+    iteration_2_authority:
+      speaking_change: >-
+        Make scene-partner PART place both speakers at a public object, then
+        make shared-scene TACTIC invite the learner's reading in a separate
+        sentence without repeating the placement.
+      recovery_change: none
+      audit_recognition_change: none
+      controller_change: none
+      gate: turn_4_must_recover_to_six_of_six_then_complete_all_four_turns
   architectural_reset_from:
     version: 24
     terminal_state: stagnated

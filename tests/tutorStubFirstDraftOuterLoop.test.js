@@ -44,7 +44,7 @@ test('outer-loop manifest validates the V25 architectural reset without predecla
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 25);
     assert.equal(validation.currentState, 'working_predeclared');
-    assert.equal(validation.workingIteration, 1);
+    assert.equal(validation.workingIteration, 2);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.acceptancePredeclared, false);
     assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
@@ -66,7 +66,7 @@ test('outer-loop status exposes only declared next states and makes no model cal
     const { manifest } = fixture(tmp);
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
-    assert.equal(status.workingIteration, 1);
+    assert.equal(status.workingIteration, 2);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
     assert.deepEqual(status.developmentSeeds, [
       {
