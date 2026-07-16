@@ -76,6 +76,33 @@ const V27_ITERATION_1_RESULT = Object.freeze({
   ]),
 });
 
+const V27_ITERATION_2_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json',
+  runHead: 'bec13717719be76891bf5ece0c1ae94375cdea9a',
+  configSha256: '4b71da924e17639a800012ed45f7682a1942eac25356bc7d9450715cc2638ea5',
+  sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/campaign-validation.json',
+  campaignValidationSha256: '7eb96da004326ac21dc0844d23fbf95bb8209bde221e297f47870437946b842d',
+  resultSha256: 'a5788cc7cd8aa68d1e540611b457f04d1590f1e3b5f5692663b7a04da186a4fb',
+  turns: Object.freeze([
+    Object.freeze({
+      turn: 4,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/marrick_v27_joint_performance/turn-4.json',
+      sha256: '1a9eb462a3d638e867d190fecc1ec2cedda434421196ebe896a389f2b6dcdc56',
+    }),
+    Object.freeze({
+      turn: 5,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/marrick_v27_joint_performance/turn-5.json',
+      sha256: 'c3e88048f0e0de30035c148c88b20a14ed9580afeb0b0dc9670fb0aac9f8042d',
+    }),
+    Object.freeze({
+      turn: 6,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/marrick_v27_joint_performance/turn-6.json',
+      sha256: '7257019859d7e62596672f651e34dea63d9d7889e69e3530ece092d60c9465ec',
+    }),
+  ]),
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -188,6 +215,130 @@ function validateV27Iteration1Observation(observation, label) {
   expect(observation?.comparison?.consecutive_without_improvement, 0, `${label} stagnation count`);
   expect(observation?.comparison?.stop, false, `${label} stop decision`);
   expect(observation?.comparison?.reason, 'first_measured_iteration', `${label} stop reason`);
+}
+
+function validateV27Iteration2Observation(observation, label) {
+  expect(observation?.version, 27, `${label} version`);
+  expect(observation?.working_iteration, 2, `${label} working iteration`);
+  expect(observation?.status, 'fail', `${label} status`);
+  expect(observation?.result_artifact, V27_ITERATION_2_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.development_seed, 20261500, `${label} development seed`);
+  expect(
+    observation?.seed_disposition,
+    'reusable_non_held_out_development',
+    `${label} seed disposition`,
+  );
+  expect(observation?.run_head, V27_ITERATION_2_RESULT.runHead, `${label} run HEAD`);
+  expect(
+    observation?.run_head_provenance,
+    'launch_log_timeline_confirmed',
+    `${label} run HEAD provenance`,
+  );
+  expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_2_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.source_trace_sha256,
+    V27_ITERATION_2_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_2_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_2_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
+  expect(
+    observation?.provenance?.result_sha256,
+    V27_ITERATION_2_RESULT.resultSha256,
+    `${label} result hash`,
+  );
+  expectJson(
+    observation?.provenance?.turn_artifacts,
+    V27_ITERATION_2_RESULT.turns,
+    `${label} turn provenance`,
+  );
+  expectJson(observation?.completed_turns, [4, 5, 6], `${label} completed turns`);
+  expectJson(observation?.unstarted_turns, [9], `${label} unstarted turns`);
+  expect(observation?.original_candidates_accepted, 2, `${label} accepted originals`);
+  expect(observation?.original_candidates_completed, 3, `${label} completed originals`);
+  expect(
+    observation?.original_candidate_acceptance_rate,
+    0.6666666666666666,
+    `${label} acceptance rate`,
+  );
+  expect(
+    observation?.mean_configuration_realization,
+    0.9443333333333334,
+    `${label} configuration realization`,
+  );
+  expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
+  expect(
+    observation?.maximum_possible_configuration_realization,
+    0.95825,
+    `${label} maximum configuration realization`,
+  );
+  for (const field of [
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+  ]) {
+    expect(observation?.[field], 0, `${label} ${field}`);
+  }
+  expect(observation?.joint_performance_model_outputs, 3, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 3, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_output_failures, 0, `${label} joint output failures`);
+  expect(observation?.joint_performance_ownership_passes, 2, `${label} ownership passes`);
+  expect(observation?.joint_performance_ownership_failures, 1, `${label} ownership failures`);
+  expect(observation?.exact_host_source_occurrence_passes, 3, `${label} host source passes`);
+  expect(observation?.exact_host_source_occurrence_failures, 0, `${label} host source failures`);
+  expect(observation?.mean_original_latency_ms, 8973.666666666666, `${label} mean original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 8973.666666666666, `${label} mean total latency`);
+  expectJson(observation?.token_usage, { input: 50101, output: 724, total: 50825 }, `${label} token usage`);
+  expectJson(
+    observation?.dominant_failure_clusters,
+    [
+      { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
+    ],
+    `${label} dominant failure clusters`,
+  );
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_iteration: 1,
+      comparable_completion: true,
+      measurable_improvement: true,
+      configuration_realization_improved: true,
+      original_candidates_accepted_delta: 0,
+      original_candidate_acceptance_rate_delta: 0,
+      mean_configuration_realization_delta: 0.27766666666666673,
+      valid_joint_performance_outputs_delta: 1,
+      joint_performance_output_failures_delta: -1,
+      joint_performance_ownership_passes_delta: 0,
+      joint_performance_ownership_failures_delta: 0,
+      exact_host_source_occurrence_passes_delta: 1,
+      exact_host_source_occurrence_failures_delta: -1,
+      mean_original_latency_ms_delta: 830,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'improved',
+    },
+    `${label} comparison`,
+  );
 }
 
 function validateStateMachine(manifest) {
@@ -400,6 +551,7 @@ function validateWorkingScreen(manifest, { root }) {
     jointPerformanceAuditSchema:
       config.fixed_configuration?.joint_performance_audit_schema || null,
     iteration2Change: config.change_log?.iteration_2 || null,
+    iteration3Change: config.change_log?.iteration_3 || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -487,16 +639,17 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
   if (currentVersion === 27) {
     expect(state.currentState, 'working_predeclared', 'V27 current state');
-    expect(workingIteration, 2, 'V27 working iteration');
+    expect(workingIteration, 3, 'V27 working iteration');
     const workingHistory = manifest.current?.working_history || [];
-    if (workingHistory.length !== 1) {
-      throw new Error('V27 working history must preserve exactly iteration 1 before iteration 2');
+    if (workingHistory.length !== 2) {
+      throw new Error('V27 working history must preserve exactly iterations 1 and 2 before iteration 3');
     }
     validateV27Iteration1Observation(workingHistory[0], 'V27 working history iteration 1');
-    validateV27Iteration1Observation(manifest.current?.last_observation, 'V27 last observation');
+    validateV27Iteration2Observation(workingHistory[1], 'V27 working history iteration 2');
+    validateV27Iteration2Observation(manifest.current?.last_observation, 'V27 last observation');
     expectJson(
       manifest.current?.last_observation,
-      workingHistory[0],
+      workingHistory[1],
       'V27 last observation and working history',
     );
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
@@ -587,6 +740,82 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'none',
       'V27 iteration 2 audit-recognition change',
     );
+    expect(workingScreen.iteration3Change?.status, 'predeclared', 'V27 iteration 3 change status');
+    expect(
+      workingScreen.iteration3Change?.bounded_change_owner,
+      'audit_recognition',
+      'V27 iteration 3 bounded change owner',
+    );
+    expectJson(
+      workingScreen.iteration3Change?.target_failure_clusters,
+      [
+        'actorialRealizationAudit:missing_selected_actorial_part',
+        'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part',
+      ],
+      'V27 iteration 3 target clusters',
+    );
+    expectJson(workingScreen.iteration3Change?.speaking_changes, [], 'V27 iteration 3 speaking changes');
+    expectJson(workingScreen.iteration3Change?.recovery_changes, [], 'V27 iteration 3 recovery changes');
+    expectJson(
+      workingScreen.iteration3Change?.audit_recognition_changes,
+      ['typed_composite_part_ownership'],
+      'V27 iteration 3 audit-recognition changes',
+    );
+    expectJson(
+      workingScreen.iteration3Change?.phrase_level_recognition_changes,
+      [],
+      'V27 iteration 3 phrase-level recognition changes',
+    );
+    const composite = workingScreen.iteration3Change?.typed_composite_part_ownership || {};
+    expect(composite.joint_audit_field, 'compositePartOwnership', 'V27 iteration 3 joint audit field');
+    expect(composite.mode, 'delegated_complement', 'V27 iteration 3 composite mode');
+    expect(
+      composite.contract_schema_constant,
+      'TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA',
+      'V27 iteration 3 composite contract schema',
+    );
+    expect(
+      composite.audit_schema_constant,
+      'TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_AUDIT_SCHEMA',
+      'V27 iteration 3 composite audit schema',
+    );
+    const expectedRequirements = {
+      performance_initiation: { owner: 'performance', slots: ['performance_entry'], required: true },
+      performance_action_absent: {
+        owner: 'performance',
+        slots: ['performance_entry', 'performance_response'],
+        required: true,
+      },
+      handoff_relevant_delegated_complement: { owner: 'handoff', slots: ['handoff'], required: true },
+      handoff_selected_action: { owner: 'handoff', slots: ['handoff'], required: true },
+    };
+    expectJson(composite.requirements, expectedRequirements, 'V27 iteration 3 composite requirements');
+    expect(
+      composite.excluded_span_reporting?.field,
+      'excluded_span_ids',
+      'V27 iteration 3 excluded-span report field',
+    );
+    expect(
+      composite.excluded_span_reporting?.require_host_source_excluded,
+      true,
+      'V27 iteration 3 host source exclusion',
+    );
+    expect(
+      composite.excluded_span_reporting?.source_owner,
+      'host',
+      'V27 iteration 3 source owner',
+    );
+    expect(
+      composite.linkage_reporting?.field,
+      'linkage.shared_content_tokens',
+      'V27 iteration 3 linkage report field',
+    );
+    expect(
+      composite.linkage_reporting?.require_nonempty,
+      true,
+      'V27 iteration 3 relevant complement linkage',
+    );
+    expect(composite.delivery_gates_changed, false, 'V27 iteration 3 delivery gate change');
     if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
       throw new Error('V27 must predeclare only development seed 20261500');
     }

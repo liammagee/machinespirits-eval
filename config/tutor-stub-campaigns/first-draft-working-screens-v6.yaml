@@ -35,6 +35,7 @@ preflight:
     tests/tutorStubStructuredFirstDraft.test.js
     tests/tutorStubJointPerformanceFirstDraft.test.js
     tests/tutorStubV27JointPerformanceCalibration.test.js
+    tests/tutorStubTypedCompositeAdvocateCalibration.test.js
     tests/tutorStubResponseComposition.test.js
     tests/tutorStubV21PerformanceCalibrationFixture.test.js
     tests/tutorStubV25RecognitionFixture.test.js
@@ -49,6 +50,7 @@ preflight:
     - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
     - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
     - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+    - tests/fixtures/tutor-stub-typed-composite-advocate.json
 
 artifacts:
   root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6
@@ -96,22 +98,20 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    Iteration 2 makes one speaking-prompt-only change with two generic parts.
-    First, it uses a three-word drafting cushion so every model-owned field
-    finishes comfortably inside its hard target. Second, compiled v2 axis
-    ownership keeps advocate testability in PERFORMANCE.response, makes the
-    PERFORMANCE stance contract action-neutral but stance-distinct, and gives
-    HANDOFF alone the concrete check or move. The v2 field contract, joint
-    performance beat, and ban on copying, paraphrasing, labelling, or quoting
-    SOURCE are unchanged.
+    Iteration 3 makes no speaking-prompt change. It preserves iteration 2's
+    three-word drafting cushion, compiled v2 axis ownership, exact model shape,
+    joint performance beat, and ban on copying, paraphrasing, labelling, or
+    quoting SOURCE.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged in iteration 2 and outside this
+    repair and fallback behavior is unchanged in iteration 3 and outside this
     explicit v2 frozen screen.
   audit_recognition_only: >-
-    No deterministic audit or phrase-level recognition rule changes in V27
-    iteration 2. Deterministic v2 composition and joint-span auditing remain
-    exactly as measured in iteration 1.
+    Iteration 3 changes only deterministic audit recognition. It reports a
+    typed composite part when PERFORMANCE initiates the selected part without
+    taking the concrete action, HANDOFF supplies both a relevant delegated
+    complement and the selected action, and host SOURCE spans remain excluded.
+    It adds no phrase-level recognition and changes no delivery gate.
   iteration_2:
     status: predeclared
     bounded_change_owner: speaking_prompt
@@ -138,6 +138,47 @@ change_log:
         - concrete_check_or_move
     recovery_change: none
     audit_recognition_change: none
+  iteration_3:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - actorialRealizationAudit:missing_selected_actorial_part
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_part
+    speaking_changes: []
+    recovery_changes: []
+    audit_recognition_changes:
+      - typed_composite_part_ownership
+    phrase_level_recognition_changes: []
+    typed_composite_part_ownership:
+      joint_audit_field: compositePartOwnership
+      mode: delegated_complement
+      contract_schema_constant: TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA
+      audit_schema_constant: TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_AUDIT_SCHEMA
+      requirements:
+        performance_initiation:
+          owner: performance
+          slots: [performance_entry]
+          required: true
+        performance_action_absent:
+          owner: performance
+          slots: [performance_entry, performance_response]
+          required: true
+        handoff_relevant_delegated_complement:
+          owner: handoff
+          slots: [handoff]
+          required: true
+        handoff_selected_action:
+          owner: handoff
+          slots: [handoff]
+          required: true
+      excluded_span_reporting:
+        field: excluded_span_ids
+        require_host_source_excluded: true
+        source_owner: host
+      linkage_reporting:
+        field: linkage.shared_content_tokens
+        require_nonempty: true
+      delivery_gates_changed: false
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
@@ -156,4 +197,6 @@ claim_boundary: >-
   and every other required response axis on all four frozen prefixes. Every due
   host SOURCE must occur exactly once, including turns with multiple sources,
   while all whole-response safety, uptake, delivery, repair, and fallback gates
-  remain clean. It is reusable development evidence, not held-out acceptance.
+  remain clean. Iteration 3 may correct only typed composite-part recognition;
+  it may not change generation, recovery, safety, source ownership, or any
+  strict gate. It is reusable development evidence, not held-out acceptance.
