@@ -64,12 +64,39 @@ function commandLine(argv) {
   return argv.map((part) => JSON.stringify(part)).join(' ');
 }
 
-async function runCommand(argv, { label = 'command' } = {}) {
+function commandFailureError({ argv, label, preflightKind, exitCode = null, signal = null, cause = null }) {
+  const reason = cause
+    ? `could not start: ${cause.message}`
+    : signal
+      ? `terminated by signal ${signal}`
+      : `exited with status ${exitCode}`;
+  const error = new Error(`${label} ${reason}`);
+  if (preflightKind) {
+    error.tutorStubPreflightCommandFailure = {
+      schema: 'machinespirits.tutor-stub.first-draft-preflight-command-failure.v1',
+      kind: preflightKind,
+      label,
+      argv: [...argv],
+      command: commandLine(argv),
+      exitCode,
+      signal,
+      reason,
+      spawnErrorCode: cause?.code || null,
+    };
+  }
+  return error;
+}
+
+async function runCommand(argv, { label = 'command', preflightKind = null } = {}) {
   console.log(`${label}: ${commandLine(argv)}`);
   await new Promise((resolve, reject) => {
     const child = spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: 'inherit' });
-    child.on('error', reject);
-    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`${label} exited with status ${code}`))));
+    child.on('error', (cause) => reject(commandFailureError({ argv, label, preflightKind, cause })));
+    child.on('exit', (code, signal) => (
+      code === 0
+        ? resolve()
+        : reject(commandFailureError({ argv, label, preflightKind, exitCode: code, signal }))
+    ));
   });
 }
 
@@ -87,7 +114,14 @@ async function mapLimit(items, limit, fn) {
   return output;
 }
 
-function writeDevelopmentPreflightFailure(plan, loaded, iteration, frozen, validationArtifactPath) {
+function writeDevelopmentPreflightFailure(
+  plan,
+  loaded,
+  iteration,
+  frozen,
+  validationArtifactPath,
+  commandFailure = null,
+) {
   const result = buildTutorStubFirstDraftPreflightFailureResult({
     plan,
     config: loaded.config,
@@ -95,6 +129,7 @@ function writeDevelopmentPreflightFailure(plan, loaded, iteration, frozen, valid
     iteration,
     frozen,
     validationArtifactPath,
+    commandFailure,
   });
   const resultPath = writeTutorStubFirstDraftJsonExclusive(
     path.join(plan.iterationRoot, 'working-screen-result.json'),
@@ -180,8 +215,14 @@ async function runWorkingPreflight(config, cellId) {
   if (!worldQuality || !focusedTests) {
     throw new Error('working preflight must declare world_quality and focused_tests commands');
   }
-  await runCommand(['/bin/sh', '-lc', worldQuality], { label: `${cellId} world quality` });
-  await runCommand(['/bin/sh', '-lc', focusedTests], { label: `${cellId} focused tests` });
+  await runCommand(['/bin/sh', '-lc', worldQuality], {
+    label: `${cellId} world quality`,
+    preflightKind: 'world_quality',
+  });
+  await runCommand(['/bin/sh', '-lc', focusedTests], {
+    label: `${cellId} focused tests`,
+    preflightKind: 'focused_tests',
+  });
   for (const fixture of config.preflight?.model_free_fixtures || []) {
     await runCommand(
       [
@@ -190,7 +231,10 @@ async function runWorkingPreflight(config, cellId) {
         '--audit-fixture',
         path.isAbsolute(fixture) ? fixture : path.join(ROOT, fixture),
       ],
-      { label: `${cellId} model-free fixture` },
+      {
+        label: `${cellId} model-free fixture`,
+        preflightKind: 'model_free_fixture',
+      },
     );
   }
 }
@@ -633,15 +677,31 @@ async function main() {
   let result;
   if (mode === 'development') {
     if (plan.kind !== 'working_screen') throw new Error('development mode requires a working-screen config');
-    result = plan.preflightReady === false
-      ? writeDevelopmentPreflightFailure(
+    if (plan.preflightReady === false) {
+      result = writeDevelopmentPreflightFailure(
           plan,
           loaded,
           iteration,
           developmentFrozen,
           validationPath,
-        )
-      : await runDevelopment(plan, loaded, iteration, developmentFrozen);
+        );
+    } else {
+      try {
+        result = await runDevelopment(plan, loaded, iteration, developmentFrozen);
+      } catch (error) {
+        if (error?.tutorStubPreflightCommandFailure) {
+          writeDevelopmentPreflightFailure(
+            plan,
+            loaded,
+            iteration,
+            developmentFrozen,
+            validationPath,
+            error.tutorStubPreflightCommandFailure,
+          );
+        }
+        throw error;
+      }
+    }
   } else {
     if (plan.kind !== 'acceptance') throw new Error('acceptance mode requires a held-out generalization config');
     result = await runAcceptance(plan, loaded.config, loaded);

@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+
+import YAML from 'yaml';
 
 import {
   acquireTutorStubFirstDraftCellClaim,
@@ -495,6 +498,11 @@ test('V8 reports a valid predeclaration separately from its failed deterministic
   assert.equal(result.iteration, 1);
   assert.equal(result.workingIteration, 1);
   assert.equal(result.modelCalls, 0);
+  assert.equal(result.candidates, 0);
+  assert.equal(result.completedCandidates, 0);
+  assert.equal(result.commandFailure, null);
+  assert.deepEqual(result.seedInventory.retired, []);
+  assert.equal(result.seedInventory.unconsumed.length, 4);
   assert.equal(result.frozen.worktreeClean, true);
   assert.equal(result.cells.length, 4);
   for (const cell of result.cells) {
@@ -511,6 +519,154 @@ test('V8 reports a valid predeclaration separately from its failed deterministic
       cell.structuralTargets,
       loaded.config.matrix.find((entry) => entry.id === cell.id).structural_targets,
     );
+  }
+
+  const retired = buildTutorStubFirstDraftPreflightFailureResult({
+    plan,
+    config: {
+      ...loaded.config,
+      execution: {
+        ...loaded.config.execution,
+        preserve_unstarted_seeds_as_unconsumed: false,
+      },
+    },
+    configPath,
+    iteration: 1,
+    frozen,
+  });
+  assert.deepEqual(retired.seedInventory.unconsumed, []);
+  assert.equal(retired.seedInventory.retired.length, 4);
+  assert.ok(retired.cells.every(
+    (cell) => cell.seedDisposition === 'retired_development_preflight_failure',
+  ));
+});
+
+test('deterministic preflight command failures preserve validation, exact failure, and zero-call seed state', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const sourceConfigPath = path.join(
+    repoRoot,
+    'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+  );
+  const sourceConfig = loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config;
+  const cases = [
+    {
+      kind: 'world_quality',
+      exitCode: 7,
+      configure(preflight) {
+        preflight.world_quality = `${process.execPath} -e 'process.exit(7)'`;
+        preflight.focused_tests = 'true';
+      },
+    },
+    {
+      kind: 'focused_tests',
+      exitCode: 8,
+      configure(preflight) {
+        preflight.world_quality = 'true';
+        preflight.focused_tests = `${process.execPath} -e 'process.exit(8)'`;
+      },
+    },
+    {
+      kind: 'model_free_fixture',
+      exitCode: 1,
+      configure(preflight, root) {
+        const invalidFixture = path.join(root, 'invalid-fixture.json');
+        fs.writeFileSync(invalidFixture, '{ invalid json\n');
+        preflight.world_quality = 'true';
+        preflight.focused_tests = 'true';
+        preflight.model_free_fixtures = [invalidFixture];
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), `first-draft-preflight-${testCase.kind}-`));
+    try {
+      const binDir = path.join(root, 'bin');
+      const artifactRoot = path.join(root, 'artifacts');
+      const configPath = path.join(root, 'campaign.yaml');
+      fs.mkdirSync(binDir, { recursive: true });
+      const fakeGit = path.join(binDir, 'git');
+      fs.writeFileSync(
+        fakeGit,
+        '#!/bin/sh\nif [ "$1" = "rev-parse" ]; then echo test-head; exit 0; fi\nif [ "$1" = "status" ]; then exit 0; fi\nexit 2\n',
+      );
+      fs.chmodSync(fakeGit, 0o755);
+
+      const config = structuredClone(sourceConfig);
+      config.artifacts.root = artifactRoot;
+      testCase.configure(config.preflight, root);
+      fs.writeFileSync(configPath, YAML.stringify(config));
+
+      const execution = spawnSync(
+        process.execPath,
+        [
+          'scripts/run-tutor-stub-first-draft-campaign.js',
+          '--config',
+          configPath,
+          '--mode',
+          'development',
+          '--iteration',
+          '1',
+        ],
+        {
+          cwd: repoRoot,
+          encoding: 'utf8',
+          env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` },
+        },
+      );
+
+      assert.equal(execution.status, 1, `${testCase.kind}: ${execution.stderr}`);
+      assert.match(execution.stderr, new RegExp(`exited with status ${testCase.exitCode}`, 'u'));
+      const iterationRoot = path.join(artifactRoot, 'iteration-1');
+      const validationPath = path.join(iterationRoot, 'campaign-validation.json');
+      const resultPath = path.join(iterationRoot, 'working-screen-result.json');
+      assert.equal(fs.existsSync(validationPath), true);
+      assert.equal(fs.existsSync(resultPath), true);
+      const validation = JSON.parse(fs.readFileSync(validationPath, 'utf8'));
+      assert.equal(validation.valid, true);
+      assert.equal(validation.preflightReady, true);
+      assert.equal(validation.makesModelCalls, false);
+      const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+      assert.equal(result.status, 'preflight_failed');
+      assert.equal(result.commandFailure.kind, testCase.kind);
+      assert.equal(result.commandFailure.exitCode, testCase.exitCode);
+      assert.equal(
+        result.commandFailure.label,
+        `tallow_answer_seeking ${
+          testCase.kind === 'world_quality'
+            ? 'world quality'
+            : testCase.kind === 'focused_tests'
+              ? 'focused tests'
+              : 'model-free fixture'
+        }`,
+      );
+      assert.equal(
+        result.commandFailure.command,
+        result.commandFailure.argv.map((part) => JSON.stringify(part)).join(' '),
+      );
+      assert.equal(result.commandFailure.reason, `exited with status ${testCase.exitCode}`);
+      assert.equal(result.commandFailure.signal, null);
+      assert.equal(result.commandFailure.spawnErrorCode, null);
+      assert.deepEqual(
+        result.commandFailure.argv.slice(0, 2),
+        testCase.kind === 'model_free_fixture'
+          ? [process.execPath, 'scripts/replay-tutor-stub-frozen-turns.js']
+          : ['/bin/sh', '-lc'],
+      );
+      assert.equal(result.makesModelCalls, false);
+      assert.equal(result.modelCalls, 0);
+      assert.equal(result.candidates, 0);
+      assert.equal(result.completedCandidates, 0);
+      assert.equal(result.completedTurns, 0);
+      assert.deepEqual(result.seedInventory.retired, []);
+      assert.equal(result.seedInventory.unconsumed.length, result.cells.length);
+      assert.ok(result.cells.every(
+        (cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure',
+      ));
+      assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   }
 });
 
