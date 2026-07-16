@@ -336,6 +336,43 @@ test('development stopping gate halts only after two consecutive non-improving i
   assert.equal(improved.consecutiveWithoutImprovement, 0);
 });
 
+test('development stopping counts configuration realization improvement without conflating semantic corrections', () => {
+  const previous = {
+    completedTurns: 1,
+    originalCandidatesAccepted: 1,
+    meanConfigurationRealization: 0.667,
+    semanticRecognitionCorrections: 0,
+    stopping: { consecutiveWithoutImprovement: 1 },
+  };
+  const configurationImproved = tutorStubFirstDraftIterationStopping({
+    current: {
+      completedTurns: 1,
+      originalCandidatesAccepted: 1,
+      meanConfigurationRealization: 0.833,
+      semanticRecognitionCorrections: 0,
+    },
+    previous,
+  });
+  assert.equal(configurationImproved.measurableImprovement, true);
+  assert.equal(configurationImproved.configurationRealizationImproved, true);
+  assert.equal(configurationImproved.consecutiveWithoutImprovement, 0);
+
+  const recognitionOnly = tutorStubFirstDraftIterationStopping({
+    current: {
+      completedTurns: 1,
+      originalCandidatesAccepted: 1,
+      meanConfigurationRealization: 0.667,
+      semanticRecognitionCorrections: 1,
+    },
+    previous,
+  });
+  assert.equal(recognitionOnly.measurableImprovement, false);
+  assert.equal(recognitionOnly.configurationRealizationImproved, false);
+  assert.equal(recognitionOnly.semanticRecognitionCorrections, 1);
+  assert.equal(recognitionOnly.consecutiveWithoutImprovement, 2);
+  assert.equal(recognitionOnly.stop, true);
+});
+
 test('acceptance assessment keeps original, repair, fallback, safety, and latency separate', () => {
   const report = {
     rows: [

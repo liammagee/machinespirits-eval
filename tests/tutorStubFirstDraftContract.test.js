@@ -191,12 +191,16 @@ test('plain adult-novice form is executable before uptake without duplicating a 
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
   assert.ok(prompt.indexOf('FORM —') < prompt.indexOf('OPEN —'));
-  assert.match(prompt, /separate host sentences for learner uptake, performed development, and the final handoff/iu);
-  assert.match(prompt, /one evidence relation in each sentence/iu);
-  assert.match(prompt, /every host sentence at or below 17 words/iu);
+  assert.match(prompt, /Use 3–4 short host sentences whenever OPEN, DEVELOP, and END are active/iu);
+  assert.match(prompt, /Sentence 1 carries uptake[\s\S]*Sentence 2 performs the scene action/iu);
+  assert.match(prompt, /Sentence 3 states one evidentiary limit or one concrete next check/iu);
+  assert.match(prompt, /Never join these beats with a colon, semicolon, dash, or “but”/iu);
+  assert.match(prompt, /split every host sentence above 17 words/iu);
+  assert.match(prompt, /Translate the learner’s named specialist term into common words in the uptake/iu);
+  assert.match(prompt, /do not introduce another specialist term without a local gloss/iu);
   assert.match(prompt, /Presume adult intelligence but no domain fluency/iu);
   assert.match(prompt, /Prefer common words, short sentences, and one relation at a time/iu);
-  assert.match(prompt, /DEVELOP — In a fresh host sentence after the uptake/iu);
+  assert.match(prompt, /DEVELOP — In fresh host sentences after the uptake/iu);
   assert.equal((prompt.match(/17 words/gu) || []).length, 1);
   assert.doesNotMatch(prompt, /LANGUAGE —|Keep average sentences/iu);
 });

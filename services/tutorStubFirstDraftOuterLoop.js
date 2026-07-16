@@ -241,6 +241,22 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   const id = requiredString(manifest.id, 'outer-loop id');
   const currentVersion = validateVersioning(manifest);
   const state = validateStateMachine(manifest);
+  const workingIteration = integer(manifest.current?.working_iteration, 'working iteration', { minimum: 1 });
+  if (state.currentState === 'working_predeclared' && workingIteration > 1) {
+    expect(manifest.current?.last_observation?.version, currentVersion, 'last working observation version');
+    expect(
+      manifest.current?.last_observation?.working_iteration,
+      workingIteration - 1,
+      'last working observation iteration',
+    );
+    if (typeof manifest.current?.last_observation?.comparison?.measurable_improvement !== 'boolean') {
+      throw new Error('last working observation must record whether improvement was measurable');
+    }
+    integer(
+      manifest.current?.last_observation?.comparison?.consecutive_without_improvement,
+      'consecutive working iterations without improvement',
+    );
+  }
   const roles = validateReviewRoles(manifest);
   const seeds = validateSeedLedger(manifest);
   const workingScreen = validateWorkingScreen(manifest, { root });
@@ -258,6 +274,13 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     'retired_after_acceptance_failure',
     'acceptance-failure state',
   );
+  if (
+    !(manifest.stop_policy?.stagnation?.measurable_improvement_order || []).includes(
+      'higher mean configuration realization',
+    )
+  ) {
+    throw new Error('stagnation policy must count higher mean configuration realization as improvement');
+  }
 
   return {
     schema: TUTOR_STUB_FIRST_DRAFT_OUTER_LOOP_SCHEMA,
@@ -265,6 +288,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     valid: true,
     currentVersion,
     currentState: state.currentState,
+    workingIteration,
     terminalScope: state.states[state.currentState].terminal_scope,
     outcome: state.states[state.currentState].outcome,
     acceptancePredeclared: Boolean(manifest.current.acceptance_config),

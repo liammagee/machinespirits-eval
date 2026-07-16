@@ -13,24 +13,42 @@ current:
   campaign_version: 24
   label: V24
   state: working_predeclared
-  working_iteration: 1
+  working_iteration: 2
   working_screen_id: first-draft-working-screens-v3
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v3.yaml
   acceptance_config: null
   last_observation:
-    version: 23
-    status: failed
-    result_note: notes/status/2026-07-17-first-draft-generalization-v23.md
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/campaign-result.json
-    hard_cell_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
-    strict_originals_accepted: 8
-    turns: 10
-    mean_configuration_realization: 0.833
+    version: 24
+    working_iteration: 1
+    kind: frozen_prefix_development
+    status: failed_gate_mathematically_impossible
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3/iteration-1/working-screen-result.json
+    development_seed: 20261200
+    seed_disposition: consumed_development_reusable
+    completed_turns: [4]
+    unstarted_turns: [5, 6, 9]
+    strict_originals_accepted: 1
+    final_safety_failures: 0
+    fallbacks: 0
+    uptake_failures: 0
+    semantic_recognition_corrections: 0
+    mean_configuration_realization: 0.667
+    maximum_possible_mean_configuration_realization: 0.91675
     failed_gate: minimum_mean_configuration_realization
-    dominant_target_axes:
-      - plain_lexical_accessibility
+    failed_axes:
       - adult_novice_audience
-      - selected_actorial_tactic
+      - plain_lexical_accessibility
+    comparison:
+      baseline: V23 Marrick answer-seeking turn 4
+      baseline_mean_configuration_realization: 0.667
+      baseline_failed_axes:
+        - adult_novice_audience
+        - plain_lexical_accessibility
+      measurable_improvement: false
+      consecutive_without_improvement: 1
+      interpretation: >-
+        Iteration 1 reproduced the same two V23 turn-4 configuration misses.
+        It is the first no-improvement observation, not terminal stagnation.
 
 versioning:
   current: 24
@@ -202,6 +220,7 @@ stop_policy:
     measurable_improvement_order:
       - higher strict original acceptance rate
       - higher strict original count at equal completed turns
+      - higher mean configuration realization
       - fewer final safety failures
       - fewer deterministic fallbacks
     note: Audit-recognition corrections are reported separately and do not count as generation improvement.

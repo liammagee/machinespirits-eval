@@ -223,6 +223,10 @@ async function runDevelopment(plan, config, iteration) {
     completeAllCells: args['complete-all-cells'],
     changes: config.change_log,
     originalAcceptance: cellResults.reduce((sum, cell) => sum + Number(cell.originalCandidatesAccepted || 0), 0),
+    semanticRecognitionCorrections: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.semanticRecognitionCorrections || 0),
+      0,
+    ),
     mechanicalRepairs: 0,
     modelRewrites: 0,
     deterministicFallbacks: 0,
@@ -230,19 +234,36 @@ async function runDevelopment(plan, config, iteration) {
     cells: cellResults,
     claimBoundary: config.claim_boundary,
   };
+  const completedTurns = cellResults.reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0);
+  const configurationRealizationTotal = cellResults.reduce(
+    (sum, cell) => sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
+    0,
+  );
   const currentMetrics = {
-    completedTurns: cellResults.reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0),
+    completedTurns,
     originalCandidatesAccepted: result.originalAcceptance,
+    meanConfigurationRealization: completedTurns ? configurationRealizationTotal / completedTurns : null,
+    semanticRecognitionCorrections: result.semanticRecognitionCorrections,
     safetyFailures: result.finalSafetyFailures,
     deterministicFallbacks: result.deterministicFallbacks,
   };
+  const previousCompletedTurns = previousResult
+    ? (previousResult.cells || []).reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0)
+    : 0;
+  const previousConfigurationRealizationTotal = previousResult
+    ? (previousResult.cells || []).reduce(
+        (sum, cell) => sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
+        0,
+      )
+    : 0;
   const previousMetrics = previousResult
     ? {
-        completedTurns: (previousResult.cells || []).reduce(
-          (sum, cell) => sum + Number(cell.completedTurns || 0),
-          0,
-        ),
+        completedTurns: previousCompletedTurns,
         originalCandidatesAccepted: Number(previousResult.originalAcceptance || 0),
+        meanConfigurationRealization: previousCompletedTurns
+          ? previousConfigurationRealizationTotal / previousCompletedTurns
+          : null,
+        semanticRecognitionCorrections: Number(previousResult.semanticRecognitionCorrections || 0),
         safetyFailures: Number(previousResult.finalSafetyFailures || 0),
         deterministicFallbacks: Number(previousResult.deterministicFallbacks || 0),
         stopping: previousResult.stopping || null,

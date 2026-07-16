@@ -324,17 +324,20 @@ export function buildTutorStubFirstDraftContract({
 export function tutorStubFirstDraftContractPrompt(contract = null) {
   if (!contract) return '';
   const releaseRows = contract.evidence?.cues || [];
+  const plainNovice =
+    ['adult_novice', 'child'].includes(contract.language?.audience_register) &&
+    ['plain', 'glossed_plain'].includes(contract.language?.lexical_accessibility);
   const semanticPerformanceInstruction = tutorStubPerformanceObligationContractPrompt(
     contract.performance?.obligation_contract,
   );
   return [
     '[Tutor-only first-draft performance contract]',
     'Write one compact paragraph in one continuous voice. Perform these instructions in order:',
-    `FORM — ${contract.language.audience_instruction} ${contract.language.lexical_instruction} Use separate host sentences for learner uptake, performed development, and the final handoff. Put one evidence relation in each sentence. Keep every host sentence at or below ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words; the “Write:” sentence counts. An exact supplied clue quotation may retain its wording.`,
+    `FORM — ${contract.language.audience_instruction} ${contract.language.lexical_instruction} Use 3–4 short host sentences whenever OPEN, DEVELOP, and END are active. Sentence 1 carries uptake and any requested “Write:” entry. Sentence 2 performs the scene action and states at most one current-clue meaning. Sentence 3 states one evidentiary limit or one concrete next check. Use sentence 4 only for the learner handoff or clarification permission. Never join these beats with a colon, semicolon, dash, or “but”. Count words before answering and split every host sentence above ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words.${plainNovice ? ' Translate the learner’s named specialist term into common words in the uptake; do not introduce another specialist term without a local gloss.' : ''} An exact supplied clue quotation may retain its wording.`,
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `DEVELOP — In a fresh host sentence after the uptake, ${contract.development.instruction} Perform one mandatory development beat as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction} Do not substitute generic prop handling for the selected part or tactic.${semanticPerformanceInstruction ? `\n${semanticPerformanceInstruction}` : ''}`,
+    `DEVELOP — In fresh host sentences after the uptake, ${contract.development.instruction} Perform one mandatory development beat as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction} Do not substitute generic prop handling for the selected part or tactic.${semanticPerformanceInstruction ? `\n${semanticPerformanceInstruction}` : ''}`,
     contract.development.support_instruction ? `SUPPORT — ${contract.development.support_instruction}` : null,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     releaseRows.length

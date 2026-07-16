@@ -44,6 +44,7 @@ test('outer-loop manifest validates V24 without predeclaring held-out acceptance
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 24);
     assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.workingIteration, 2);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.acceptancePredeclared, false);
     assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
@@ -65,6 +66,7 @@ test('outer-loop status exposes only declared next states and makes no model cal
     const { manifest } = fixture(tmp);
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
+    assert.equal(status.workingIteration, 2);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
     assert.deepEqual(status.developmentSeeds, [
       {
@@ -77,6 +79,27 @@ test('outer-loop status exposes only declared next states and makes no model cal
       status.next.map((transition) => transition.state),
       ['working_running'],
     );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('outer-loop iteration 2 records the first V23-relative no-improvement observation', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-observation-'));
+  try {
+    const { manifest } = fixture(tmp);
+    const observation = manifest.current.last_observation;
+    assert.equal(observation.version, 24);
+    assert.equal(observation.working_iteration, 1);
+    assert.equal(observation.mean_configuration_realization, 0.667);
+    assert.equal(observation.maximum_possible_mean_configuration_realization, 0.91675);
+    assert.equal(observation.comparison.baseline_mean_configuration_realization, 0.667);
+    assert.equal(observation.comparison.measurable_improvement, false);
+    assert.equal(observation.comparison.consecutive_without_improvement, 1);
+    assert.deepEqual(observation.unstarted_turns, [5, 6, 9]);
+    assert.equal(manifest.seed_ledger.held_out.entries.length, 0);
+    assert.equal(manifest.seed_ledger.reserve.entries.length, 0);
+    assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

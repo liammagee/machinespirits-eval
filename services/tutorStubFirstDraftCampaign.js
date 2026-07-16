@@ -360,9 +360,16 @@ export function tutorStubFirstDraftIterationStopping({
   const previousAccepted = Number(previous?.originalCandidatesAccepted || 0);
   const currentRate = currentCompleted ? currentAccepted / currentCompleted : 0;
   const previousRate = previousCompleted ? previousAccepted / previousCompleted : 0;
+  const currentConfigurationRealization = Number(current?.meanConfigurationRealization);
+  const previousConfigurationRealization = Number(previous?.meanConfigurationRealization);
+  const configurationRealizationImproved =
+    Number.isFinite(currentConfigurationRealization) &&
+    Number.isFinite(previousConfigurationRealization) &&
+    currentConfigurationRealization > previousConfigurationRealization;
   const improved =
     currentRate > previousRate ||
     (currentRate === previousRate && currentAccepted > previousAccepted) ||
+    configurationRealizationImproved ||
     Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0) ||
     Number(current?.deterministicFallbacks || 0) < Number(previous?.deterministicFallbacks || 0);
   const consecutive = improved
@@ -370,6 +377,8 @@ export function tutorStubFirstDraftIterationStopping({
     : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
   return {
     measurableImprovement: improved,
+    configurationRealizationImproved,
+    semanticRecognitionCorrections: Number(current?.semanticRecognitionCorrections || 0),
     consecutiveWithoutImprovement: consecutive,
     maximumConsecutiveWithoutImprovement: maximum,
     stop: consecutive >= maximum,
