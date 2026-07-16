@@ -22,6 +22,7 @@ const MANIFEST_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-d
 const PRIMARY_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v6.yaml');
 const SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v7.yaml');
 const V28_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v8.yaml');
+const V29_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v9.yaml');
 
 function loadYaml(filePath) {
   return YAML.parse(fs.readFileSync(filePath, 'utf8'));
@@ -56,7 +57,7 @@ function fixture(tmp) {
   manifest.versioning.current = 27;
   manifest.versioning.next = 28;
   manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) !== 27);
+    .filter((entry) => Number(entry.version) < 27);
   manifest.seed_ledger.development = [
     { seed: 20261500, status: 'reusable_non_held_out_development', cell: 'marrick_v27_joint_performance', screen: 'first-draft-working-screens-v6' },
     { seed: 20261600, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v7' },
@@ -75,6 +76,36 @@ function v28Fixture(tmp) {
   screen.preflight.model_free_fixtures = [auditFixture];
   screen.artifacts.root = path.join(tmp, 'artifacts');
   const screenPath = path.join(tmp, 'v28-working-screen.yaml');
+  fs.writeFileSync(screenPath, YAML.stringify(screen));
+  manifest.current.working_screen_config = screenPath;
+  manifest.current.primary_working_screen_config = screenPath;
+  manifest.current.campaign_version = 28;
+  manifest.current.label = 'V28';
+  manifest.current.working_screen_id = 'first-draft-working-screens-v8';
+  manifest.current.primary_working_screen_id = 'first-draft-working-screens-v8';
+  manifest.current.working_history_scope = 'preserved_v27_primary_history_read_only';
+  manifest.current.version_advance_from = manifest.current.v28_version_advance_from;
+  manifest.versioning.current = 28;
+  manifest.versioning.next = 29;
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical
+    .filter((entry) => Number(entry.version) < 28);
+  manifest.seed_ledger.development = [
+    { seed: 20261800, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v8' },
+    { seed: 20261801, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v8' },
+    { seed: 20261802, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v8' },
+    { seed: 20261803, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v8' },
+  ];
+  return { manifest, screen, screenPath };
+}
+
+function v29Fixture(tmp) {
+  const manifest = loadYaml(MANIFEST_PATH);
+  const screen = loadYaml(V29_SCREEN_PATH);
+  const auditFixture = path.join(tmp, 'audit-fixture.json');
+  fs.writeFileSync(auditFixture, '{}\n');
+  screen.preflight.model_free_fixtures = [auditFixture];
+  screen.artifacts.root = path.join(tmp, 'artifacts');
+  const screenPath = path.join(tmp, 'v29-working-screen.yaml');
   fs.writeFileSync(screenPath, YAML.stringify(screen));
   manifest.current.working_screen_config = screenPath;
   manifest.current.primary_working_screen_config = screenPath;
@@ -316,6 +347,127 @@ test('V28 validator fails closed on result, seed, or structural change-control d
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v28-drift-'));
     try {
       const state = v28Fixture(tmp);
+      entry.mutate(state);
+      assert.throws(
+        () => validateTutorStubFirstDraftOuterLoop({ manifest: state.manifest, root: tmp }),
+        entry.pattern,
+        entry.name,
+      );
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  }
+});
+
+test('outer-loop advances V28 zero-call evidence into the predeclared V29 accessibility screen', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v29-'));
+  try {
+    const { manifest } = v29Fixture(tmp);
+    const validation = validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
+    assert.equal(validation.valid, true);
+    assert.equal(validation.currentVersion, 29);
+    assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.workingIteration, 1);
+    assert.equal(validation.workingScreen.id, 'first-draft-working-screens-v9');
+    assert.equal(validation.workingScreen.v29SourceAccessibilityScreen, true);
+    assert.equal(
+      validation.workingScreen.sourceAccessibilityPolicy,
+      'direct_or_compensated_v1',
+    );
+    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+      id, developmentSeed,
+    })), [
+      { id: 'tallow_answer_seeking', developmentSeed: 20261900 },
+      { id: 'ravensmark_affective_resistant', developmentSeed: 20261901 },
+      { id: 'larkspur_premature_closure', developmentSeed: 20261902 },
+      { id: 'foxtrot_diligent', developmentSeed: 20261903 },
+    ]);
+    assert.deepEqual(validation.seedCounts, {
+      historical: 28,
+      development: 4,
+      heldOut: 0,
+      reserve: 0,
+    });
+
+    const advance = manifest.current.version_advance_from;
+    assert.equal(advance.version, 28);
+    assert.equal(advance.model_calls, 0);
+    assert.equal(advance.candidates_generated, 0);
+    assert.equal(advance.preflight_ready, false);
+    assert.equal(advance.blocker.cell, 'ravensmark_affective_resistant');
+    assert.equal(advance.blocker.source_words, 36);
+    assert.deepEqual(advance.seed_dispositions, [
+      { seed: 20261800, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261801, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261802, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261803, status: 'retired_unconsumed_after_preflight_failure' },
+    ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('V29 change control is additive, typed, and preserves every strict delivery boundary', () => {
+  const screen = loadYaml(V29_SCREEN_PATH);
+  assert.equal(screen.fixed_configuration.source_accessibility_policy, 'direct_or_compensated_v1');
+  assert.equal(
+    screen.fixed_configuration.source_accessibility_schema,
+    'machinespirits.tutor-stub.source-accessibility-contract.v1',
+  );
+  assert.deepEqual(screen.change_control.deterministic_host_changes, []);
+  assert.deepEqual(screen.change_control.audit_recognition_changes, []);
+  assert.deepEqual(screen.change_control.transport_changes, []);
+  assert.deepEqual(screen.change_control.safety_changes, []);
+  assert.deepEqual(screen.change_control.recovery_changes, [
+    'compensation_aware_v1_recovery_and_fallback',
+  ]);
+  assert.equal(screen.gates_per_cell.require_source_surface_accessibility, true);
+  assert.equal(screen.gates_per_cell.require_structural_target_activation, true);
+  assert.equal(screen.gates_per_cell.maximum_safety_failures, 0);
+  assert.equal(screen.gates_per_cell.maximum_fallbacks, 0);
+  assert.equal(screen.gates_per_cell.maximum_semantic_adjudicator_calls, 0);
+  assert.match(screen.preflight.focused_tests, /tutorStubSourceAccessibilityContract\.test\.js/u);
+  const ravensmark = screen.matrix.find((cell) => cell.id === 'ravensmark_affective_resistant');
+  assert.deepEqual(ravensmark.structural_activation.source_accessibility_compensation, {
+    required: true,
+    expected_effective_mode: 'compensated',
+    expected_owner: 'performance_response',
+  });
+});
+
+test('V29 validator fails closed on V28 provenance, fresh seed, or accessibility-policy drift', () => {
+  const cases = [
+    {
+      name: 'V28 result hash',
+      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },
+      pattern: /result hash/iu,
+    },
+    {
+      name: 'V28 unconsumed retirement',
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.historical.find((entry) => entry.seed === 20261801).status =
+          'consumed_development_retired_on_version_advance';
+      },
+      pattern: /V28 seed 20261801/iu,
+    },
+    {
+      name: 'V29 development seed',
+      mutate: ({ manifest }) => { manifest.seed_ledger.development[0].seed = 20261909; },
+      pattern: /absent from the outer-loop ledger|V29 development seed ledger/iu,
+    },
+    {
+      name: 'direct-only regression',
+      mutate: ({ screen, screenPath }) => {
+        screen.fixed_configuration.source_accessibility_policy = 'direct_only';
+        fs.writeFileSync(screenPath, YAML.stringify(screen));
+      },
+      pattern: /V9 must use direct_or_compensated_v1|source-accessibility policy/iu,
+    },
+  ];
+  for (const entry of cases) {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v29-drift-'));
+    try {
+      const state = v29Fixture(tmp);
       entry.mutate(state);
       assert.throws(
         () => validateTutorStubFirstDraftOuterLoop({ manifest: state.manifest, root: tmp }),

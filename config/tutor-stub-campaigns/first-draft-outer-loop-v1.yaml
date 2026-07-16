@@ -6,25 +6,64 @@ purpose: >-
   reusable frozen-prefix development from immutable held-out acceptance,
   records who may interpret or change each layer, and makes success,
   stagnation, infrastructure blocking, version retirement, and seed freshness
-  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 -> V28 without a
+  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 -> V28 -> V29 without a
   fixed upper bound until held-out acceptance passes. A stagnated development
   version is preserved and triggers an architectural reset in Vn+1 rather
   than terminating the broader programme.
 
 current:
-  campaign_version: 28
-  label: V28
+  campaign_version: 29
+  label: V29
   state: working_predeclared
   working_iteration: 1
-  working_screen_id: first-draft-working-screens-v8
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml
-  primary_working_screen_id: first-draft-working-screens-v8
-  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml
+  working_screen_id: first-draft-working-screens-v9
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml
+  primary_working_screen_id: first-draft-working-screens-v9
+  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml
   acceptance_config: null
   active_working_history: []
   active_last_observation: null
-  working_history_scope: preserved_v27_primary_history_read_only
+  working_history_scope: preserved_v27_primary_history_and_v28_preflight_read_only
   version_advance_from:
+    version: 28
+    terminal_state: development_preflight_failed
+    kind: deterministic_zero_call_source_accessibility_preflight
+    authorized_by: versioning.tuning_after_observation_retires_entire_version
+    final_iteration: 1
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/working-screen-result.json
+    run_head: 223984b981d8413fc9409cd31c2ccf8739889314
+    provenance:
+      working_screen_config_sha256: ce299510188de85ca8e9820863654d8954cf20130a24d432cc0ba9e5bea016b2
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/campaign-validation.json
+      campaign_validation_sha256: cb41c1f8f6c5babb26c26668bc92fd8f867da6892178f0860b91487aebfa2058
+      result_sha256: f6394fc4462f1577a0d9b47d232cd2992c5f39551edd9aedc6d494d1a1bbf65d
+      clean_worktree: true
+    model_calls: 0
+    candidates_generated: 0
+    preflight_ready: false
+    blocker:
+      cell: ravensmark_affective_resistant
+      turn: 5
+      kind: source_surface_accessibility
+      source_words: 36
+      audience_word_limit: 23
+      lexical_word_limit: 23
+      detail: >-
+        The exact authored SOURCE is intentionally preserved, but its single
+        sentence exceeds both selected audience and lexical budgets. V28's
+        direct-only contract therefore fails closed before any model call.
+    seed_dispositions:
+      - { seed: 20261800, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261801, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261802, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261803, status: retired_unconsumed_after_preflight_failure }
+    next_version_reason: >-
+      V29 preserves exact SOURCE bytes and all V28 safety and progression
+      gates, but adds a typed direct-or-compensated accessibility contract.
+      One inaccessible single SOURCE may be followed immediately by a short,
+      public-fact-only restatement owned by the speaking tutor; dense or
+      multi-SOURCE material still fails closed.
+  v28_version_advance_from:
     version: 27
     terminal_state: development_confirmation_failed
     kind: non_held_out_cross_world_confirmation
@@ -826,8 +865,8 @@ current:
       stopping_reason: predeclared_final_frontier_attempt_failed
       reset_to: V25_compact_typed_host_plan
 versioning:
-  current: 28
-  next: 29
+  current: 29
+  next: 30
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -841,6 +880,8 @@ versioning:
       to: 28
     - from: 28
       to: 29
+    - from: 29
+      to: 30
   rule: >-
     After any held-out candidate or result is observed, code, prompt, audit, or
     campaign changes retire that entire version. Advance exactly one version,
@@ -1064,23 +1105,27 @@ seed_ledger:
     - { version: 27, seed: 20261601, status: retired_unstarted_due_to_version_advance }
     - { version: 27, seed: 20261602, status: retired_unstarted_due_to_version_advance }
     - { version: 27, seed: 20261603, status: retired_unstarted_due_to_version_advance }
+    - { version: 28, seed: 20261800, status: retired_unconsumed_after_preflight_failure }
+    - { version: 28, seed: 20261801, status: retired_unconsumed_after_preflight_failure }
+    - { version: 28, seed: 20261802, status: retired_unconsumed_after_preflight_failure }
+    - { version: 28, seed: 20261803, status: retired_unconsumed_after_preflight_failure }
   development:
-    - seed: 20261800
+    - seed: 20261900
       status: reusable_non_held_out_development
       cell: tallow_answer_seeking
-      screen: first-draft-working-screens-v8
-    - seed: 20261801
+      screen: first-draft-working-screens-v9
+    - seed: 20261901
       status: reusable_non_held_out_development
       cell: ravensmark_affective_resistant
-      screen: first-draft-working-screens-v8
-    - seed: 20261802
+      screen: first-draft-working-screens-v9
+    - seed: 20261902
       status: reusable_non_held_out_development
       cell: larkspur_premature_closure
-      screen: first-draft-working-screens-v8
-    - seed: 20261803
+      screen: first-draft-working-screens-v9
+    - seed: 20261903
       status: reusable_non_held_out_development
       cell: foxtrot_diligent
-      screen: first-draft-working-screens-v8
+      screen: first-draft-working-screens-v9
   held_out:
     status: not_predeclared
     entries: []
@@ -1126,17 +1171,18 @@ claim_boundary: >-
   confirmation draw then failed safely at Tallow: 0/1 originals, 0.833
   realization, one uptake failure, and one joint actorial-ownership failure.
   The hard-cell-first gate stopped the other three cells before any call.
-  V28 now targets the four structural debts identified before that run: the
-  host source renderer, handoff contract and cross-slot progression, typed
-  due-source action referent, and typed turn-focus relation. Its four exact
-  frozen prefixes use fresh 202618xx development labels; 202617xx remains
-  absent and unreserved. Each cell must visibly activate only the structural
-  targets its frozen prefix actually supports; source turns additionally gate
-  renderer mode and the selected lexical-accessibility axis, while the one
-  enacted-role source gates its required action referent. V28 is explicitly
-  deterministic-only, so semantic-review calls must remain zero. Its final
-  development preflight also requires and records a clean committed worktree;
-  existing iteration artifacts are immutable. A V28 working
-  pass is reusable development evidence
-  only and permits, but does not itself constitute, fresh held-out
-  predeclaration. V29+ remain available if development or acceptance fails.
+  V28 targeted the four structural debts identified before that run: the host
+  source renderer, handoff contract and cross-slot progression, typed due-source
+  action referent, and typed turn-focus relation. Its clean committed preflight
+  stopped before all model calls because Ravensmark's exact 36-word SOURCE
+  exceeded both selected 23-word accessibility budgets. All four 202618xx
+  labels were therefore retired explicitly as unconsumed. V29 preserves those
+  exact prefixes and every V28 safety, source, progression, structural, and
+  deterministic-only gate under fresh 202619xx development labels. It adds one
+  opt-in typed compensation path: a single inaccessible SOURCE may be followed
+  immediately by one short declarative explanation made only from public source
+  material. Exact SOURCE bytes, order, occurrence, and ownership do not change;
+  direct sources remain direct, while multi-source or structurally dense cases
+  fail closed. A V29 working pass is reusable development evidence only and
+  permits, but does not itself constitute, fresh held-out predeclaration. V30+
+  remain available if development or acceptance fails.

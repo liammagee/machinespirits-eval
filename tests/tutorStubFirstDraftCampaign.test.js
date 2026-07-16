@@ -36,6 +36,10 @@ import {
   extractTutorStubFrozenTurn,
   refreshTutorStubFrozenFirstDraftRequest,
 } from '../services/tutorStubFrozenReplay.js';
+import {
+  auditTutorStubSourceAccessibilityCompensation,
+  compileTutorStubSourceAccessibilityContract,
+} from '../services/tutorStubSourceAccessibilityContract.js';
 
 function workingConfig(tmp) {
   const trace = path.join(tmp, 'source.jsonl');
@@ -510,11 +514,107 @@ test('V8 reports a valid predeclaration separately from its failed deterministic
   }
 });
 
+test('V9 preflight makes the dense Ravensmark source effectively accessible without changing direct controls', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const configPath = path.join(
+    repoRoot,
+    'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+  );
+  const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
+  const plan = expandTutorStubFirstDraftCampaign({
+    config: loaded.config,
+    root: repoRoot,
+    iteration: 1,
+  });
+
+  assert.equal(plan.valid, true);
+  assert.equal(plan.preflightReady, true);
+  assert.deepEqual(plan.preflightBlockers, []);
+  const ravensmark = plan.structuralPreflight.find(
+    (entry) => entry.cellId === 'ravensmark_affective_resistant',
+  );
+  assert.equal(ravensmark.directAccessible, false);
+  assert.equal(ravensmark.compensationRequired, true);
+  assert.equal(ravensmark.compensationContractReady, true);
+  assert.equal(ravensmark.compensationVisible, null);
+  assert.equal(ravensmark.effectiveMode, 'compensated');
+  assert.equal(ravensmark.owner, 'performance_response');
+  assert.equal(ravensmark.ok, true);
+  for (const id of ['larkspur_premature_closure', 'foxtrot_diligent']) {
+    const direct = plan.structuralPreflight.find((entry) => entry.cellId === id);
+    assert.equal(direct.directAccessible, true);
+    assert.equal(direct.compensationRequired, false);
+    assert.equal(direct.compensationContractReady, false);
+    assert.equal(direct.compensationVisible, null);
+    assert.equal(direct.effectiveMode, 'direct');
+    assert.equal(direct.ok, true);
+  }
+  for (const cell of plan.cells) {
+    assert.deepEqual(
+      cell.commands[0].argv.slice(
+        cell.commands[0].argv.indexOf('--source-accessibility-policy'),
+        cell.commands[0].argv.indexOf('--source-accessibility-policy') + 2,
+      ),
+      ['--source-accessibility-policy', 'direct_or_compensated_v1'],
+    );
+  }
+
+  const schemaDrift = structuredClone(loaded.config);
+  schemaDrift.fixed_configuration.source_accessibility_schema =
+    'machinespirits.tutor-stub.source-accessibility-contract.v0';
+  assert.throws(
+    () =>
+      expandTutorStubFirstDraftCampaign({
+        config: schemaDrift,
+        root: repoRoot,
+        iteration: 1,
+      }),
+    /source accessibility schema does not match the runtime contract/u,
+  );
+});
+
 test('source accessibility readiness requires the exact expected source inventory', () => {
   assert.equal(tutorStubSourceSurfaceAccessibilityReady([], 1), false);
   assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: true }], 2), false);
   assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: false }], 1), false);
   assert.equal(tutorStubSourceSurfaceAccessibilityReady([{ ok: true }], 1), true);
+});
+
+test('campaign accessibility readiness accepts one ready compensation but fails closed on dense multi-source input', () => {
+  const dense =
+    'The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven wing after the coffer left town.';
+  const configuration = {
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    source_accessibility_owner: 'performance_response',
+  };
+  const one = compileTutorStubSourceAccessibilityContract({
+    sources: [{ id: 'source_1', text: dense }],
+    configuration,
+    policy: 'direct_or_compensated_v1',
+  });
+  assert.equal(
+    tutorStubSourceSurfaceAccessibilityReady(one.source_accessibility, 1, one),
+    true,
+  );
+
+  const multiple = compileTutorStubSourceAccessibilityContract({
+    sources: [
+      { id: 'source_1', text: dense },
+      { id: 'source_2', text: `${dense} Again.` },
+    ],
+    configuration,
+    policy: 'direct_or_compensated_v1',
+  });
+  assert.equal(multiple.effective_mode, 'blocked');
+  assert.equal(
+    tutorStubSourceSurfaceAccessibilityReady(
+      multiple.source_accessibility,
+      2,
+      multiple,
+    ),
+    false,
+  );
 });
 
 test('a required dirty worktree becomes a recorded zero-call preflight blocker', () => {
@@ -618,6 +718,42 @@ test('working summary gates declared structural activation and deterministic-onl
     },
   };
   const source = { id: 'source_1', mode: 'enacted_role', surface: 'A public clue.', text: '“A public clue.”' };
+  const directAccessibilityContract = compileTutorStubSourceAccessibilityContract({
+    sources: [source],
+    configuration: {
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      source_accessibility_owner: 'performance_response',
+    },
+    policy: 'direct_or_compensated_v1',
+  });
+  const directCandidate = 'Uptake. Performance. “A public clue.” Response. What changed?';
+  const directSourceStart = directCandidate.indexOf(source.text);
+  const directResponseText = 'Response.';
+  const directResponseStart = directCandidate.indexOf(directResponseText);
+  const directSourceSpan = {
+    id: 'source_1',
+    kind: 'source',
+    owner: 'host',
+    text: source.text,
+    start: directSourceStart,
+    end: directSourceStart + source.text.length,
+  };
+  const directResponseSpan = {
+    id: 'performance_response',
+    kind: 'host',
+    owner: 'model',
+    text: directResponseText,
+    start: directResponseStart,
+    end: directResponseStart + directResponseText.length,
+  };
+  const directAccessibilityAudit = auditTutorStubSourceAccessibilityCompensation({
+    contract: directAccessibilityContract,
+    text: directCandidate,
+    owner: null,
+    sourceSpan: directSourceSpan,
+    compensationSpan: directResponseSpan,
+  });
   const bundle = {
     turn: 2,
     selectedResponseConfiguration: {
@@ -626,6 +762,7 @@ test('working summary gates declared structural activation and deterministic-onl
     },
     frames: { dramaticRelease: { active: true, entries: [{ mode: 'enacted_role', surface: source.surface }] } },
     firstDraftContract: {
+      evidence: { source_accessibility: directAccessibilityContract },
       progression: {
         complete: true,
         handoff_contract: { mode: 'question_on_due_source', required_target_terms: ['public', 'clue'] },
@@ -638,10 +775,12 @@ test('working summary gates declared structural activation and deterministic-onl
     jointPerformanceGeneration: {
       ok: true,
       composition: {
-        text: 'Uptake. Performance. “A public clue.” Response. What changed?',
+        text: directCandidate,
         sourceCount: 1,
         sources: [source],
-        spans: [{ id: 'source_1', kind: 'source', owner: 'host', text: source.text }],
+        spans: [directSourceSpan, directResponseSpan],
+        sourceAccessibilityContract: directAccessibilityContract,
+        sourceAccessibilityAudit: directAccessibilityAudit,
       },
     },
     audit: {
@@ -661,6 +800,7 @@ test('working summary gates declared structural activation and deterministic-onl
             sources: [{ required: [{ kind: 'role_carrier', label: 'public log' }] }],
           },
         },
+        sourceAccessibilityAudit: directAccessibilityAudit,
         turnProgressionAudit: {
           active: true, ok: true,
           learner_uptake: { mode: 'direct_response', visible: true },
@@ -677,6 +817,8 @@ test('working summary gates declared structural activation and deterministic-onl
   assert.equal(passing.gates.structuralTargetActivation, true);
   assert.equal(passing.gates.deterministicOnlyAudit, true);
   assert.equal(passing.gates.sourceSurfaceAccessibility, true);
+  assert.equal(passing.sourceSurfaceAccessibilities[0].candidateAuditRequired, true);
+  assert.equal(passing.sourceSurfaceAccessibilities[0].candidateAuditPassed, true);
   assert.equal(passing.sourceSurfaceAccessibilities[0].sources[0].sentenceCount, 1);
   assert.equal(passing.sourceSurfaceAccessibilities[0].sources[0].averageSentenceWords, 3);
   assert.equal(passing.status, 'pass');
@@ -711,6 +853,199 @@ test('working summary gates declared structural activation and deterministic-onl
   assert.equal(dense.sourceSurfaceAccessibilityFailures, 1);
   assert.equal(dense.sourceSurfaceAccessibilities[0].sources[0].lexicalVisible, false);
   assert.equal(dense.status, 'fail');
+});
+
+test('working summary requires the generated compensation owner to clear the candidate audit', () => {
+  const sourceText =
+    "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
+  const compensationText =
+    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const configuration = {
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    source_accessibility_owner: 'performance_response',
+  };
+  const contract = compileTutorStubSourceAccessibilityContract({
+    sources: [{ id: 'source_1', mode: 'presented_exhibit', text: sourceText }],
+    configuration,
+    policy: 'direct_or_compensated_v1',
+  });
+  const candidate = `I hear the delay. I open the register. ${sourceText} ${compensationText} Compare the chip next.`;
+  const sourceStart = candidate.indexOf(sourceText);
+  const compensationStart = candidate.indexOf(compensationText);
+  const sourceSpan = {
+    id: 'source_1',
+    kind: 'source',
+    owner: 'host',
+    text: sourceText,
+    start: sourceStart,
+    end: sourceStart + sourceText.length,
+  };
+  const compensationSpan = {
+    id: 'performance_response',
+    kind: 'host',
+    owner: 'model',
+    text: compensationText,
+    start: compensationStart,
+    end: compensationStart + compensationText.length,
+  };
+  const accessibilityAudit = auditTutorStubSourceAccessibilityCompensation({
+    contract,
+    text: candidate,
+    owner: 'performance_response',
+    sourceSpan,
+    compensationSpan,
+  });
+  assert.equal(accessibilityAudit.ok, true, accessibilityAudit.issues.join(', '));
+  const bundle = {
+    turn: 5,
+    selectedResponseConfiguration: configuration,
+    frames: {
+      dramaticRelease: {
+        active: true,
+        entries: [{ mode: 'presented_exhibit', surface: sourceText }],
+      },
+    },
+    firstDraftContract: {
+      evidence: { source_accessibility: contract },
+      progression: { complete: true, handoff_contract: { required_target_terms: [] } },
+    },
+  };
+  const result = {
+    turn: 5,
+    draw: 1,
+    latencyMs: 10,
+    semanticAdjudication: { called: false, adjudication: null, error: null },
+    jointPerformanceGeneration: {
+      ok: true,
+      composition: {
+        text: candidate,
+        sourceCount: 1,
+        sources: [{ id: 'source_1', mode: 'presented_exhibit', text: sourceText }],
+        spans: [sourceSpan, compensationSpan],
+        sourceAccessibilityContract: contract,
+        sourceAccessibilityAudit: accessibilityAudit,
+      },
+    },
+    audit: {
+      ok: true,
+      safetyFailure: false,
+      failureClusters: [],
+      audits: {
+        actorialRealizationAudit: { ok: true },
+        responseCompositionAudit: { ok: true },
+        responseConfigurationAudit: { realization_rate: 1 },
+        sourceAccessibilityAudit: accessibilityAudit,
+      },
+    },
+  };
+  const config = {
+    fixed_configuration: {
+      joint_performance_generation: true,
+      adjudication_policy: 'deterministic_only',
+      source_accessibility_policy: 'direct_or_compensated_v1',
+    },
+    gates_per_cell: {
+      required_turns: 1,
+      required_originals_accepted: 1,
+      required_draws_per_prefix: 1,
+      minimum_mean_configuration_realization: 1,
+      maximum_safety_failures: 0,
+      maximum_fallbacks: 0,
+      maximum_semantic_adjudicator_calls: 0,
+      maximum_semantic_adjudicator_errors: 0,
+      require_source_surface_accessibility: true,
+      require_structural_target_activation: true,
+      require_deterministic_only_audit: true,
+    },
+  };
+  const cell = {
+    id: 'compensated-source',
+    world: 'world',
+    learnerProfile: 'affective_resistant',
+    seed: 1,
+    turns: [5],
+    structural_targets: ['source_accessibility_compensation'],
+    structural_activation: {
+      source_accessibility_compensation: {
+        required: true,
+        expected_effective_mode: 'compensated',
+        expected_owner: 'performance_response',
+      },
+    },
+  };
+  const passing = summarizeTutorStubWorkingScreen({
+    cell,
+    reports: [{ bundles: [bundle], results: [result] }],
+    config,
+  });
+  const metric = passing.sourceSurfaceAccessibilities[0];
+  assert.equal(metric.directAccessible, false);
+  assert.equal(metric.compensationRequired, true);
+  assert.equal(metric.compensationContractReady, true);
+  assert.equal(metric.compensationVisible, true);
+  assert.equal(metric.effectiveMode, 'compensated');
+  assert.equal(metric.candidateAuditPassed, true);
+  assert.equal(passing.gates.sourceSurfaceAccessibility, true);
+  assert.equal(passing.gates.structuralTargetActivation, true);
+  assert.equal(passing.status, 'pass');
+
+  const summarizeMutation = (mutated) =>
+    summarizeTutorStubWorkingScreen({
+      cell,
+      reports: [{ bundles: [bundle], results: [mutated] }],
+      config,
+    });
+  const hidden = structuredClone(result);
+  hidden.audit.audits.sourceAccessibilityAudit.visible = false;
+  hidden.audit.audits.sourceAccessibilityAudit.ok = false;
+  const rejected = summarizeMutation(hidden);
+  assert.equal(rejected.sourceSurfaceAccessibilities[0].compensationVisible, true);
+  assert.equal(rejected.sourceSurfaceAccessibilities[0].rowRecordedAuditConsistent, false);
+  assert.equal(rejected.sourceSurfaceAccessibilities[0].candidateAuditPassed, false);
+  assert.equal(rejected.gates.sourceSurfaceAccessibility, false);
+  assert.equal(rejected.gates.structuralTargetActivation, false);
+  assert.equal(rejected.status, 'fail');
+
+  const minimal = structuredClone(result);
+  const minimalAudit = {
+    schema: accessibilityAudit.schema,
+    ok: true,
+    visible: true,
+    effective_mode: 'compensated',
+    owner: 'performance_response',
+  };
+  minimal.audit.audits.sourceAccessibilityAudit = structuredClone(minimalAudit);
+  minimal.jointPerformanceGeneration.composition.sourceAccessibilityAudit =
+    structuredClone(minimalAudit);
+  const minimalRejected = summarizeMutation(minimal);
+  assert.equal(minimalRejected.sourceSurfaceAccessibilities[0].rowRecordedAuditSchemaValid, true);
+  assert.equal(minimalRejected.sourceSurfaceAccessibilities[0].recordedAuditsConsistent, false);
+  assert.equal(minimalRejected.gates.sourceSurfaceAccessibility, false);
+
+  const stale = structuredClone(result);
+  stale.audit.audits.sourceAccessibilityAudit.word_count = 1;
+  stale.jointPerformanceGeneration.composition.sourceAccessibilityAudit.word_count = 1;
+  const staleRejected = summarizeMutation(stale);
+  assert.equal(staleRejected.sourceSurfaceAccessibilities[0].recordedAuditsConsistent, false);
+  assert.equal(staleRejected.gates.sourceSurfaceAccessibility, false);
+
+  const contractTamper = structuredClone(result);
+  contractTamper.jointPerformanceGeneration.composition.sourceAccessibilityContract
+    .compensation.max_words += 1;
+  const contractRejected = summarizeMutation(contractTamper);
+  assert.equal(
+    contractRejected.sourceSurfaceAccessibilities[0].compositionContractConsistent,
+    false,
+  );
+  assert.equal(contractRejected.gates.sourceSurfaceAccessibility, false);
+
+  const spanTamper = structuredClone(result);
+  spanTamper.jointPerformanceGeneration.composition.spans[0].end -= 1;
+  const spanRejected = summarizeMutation(spanTamper);
+  assert.equal(spanRejected.sourceSurfaceAccessibilities[0].canonicalAuditSpans.ok, false);
+  assert.equal(spanRejected.sourceSurfaceAccessibilities[0].candidateAuditPassed, false);
+  assert.equal(spanRejected.gates.sourceSurfaceAccessibility, false);
 });
 
 test('working summary reports and hard-gates every declared intervention maximum', () => {

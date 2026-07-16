@@ -16,6 +16,11 @@ import {
   refreshTutorStubFrozenFirstDraftRequest,
 } from './tutorStubFrozenReplay.js';
 import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubResponseConfiguration.js';
+import {
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA,
+  auditTutorStubSourceAccessibilityCompensation,
+} from './tutorStubSourceAccessibilityContract.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
 const CAMPAIGN_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -172,12 +177,23 @@ function worldForFrozenBundle(root, worldId) {
   return loadWorld(matches[0]);
 }
 
-function refreshedCampaignBundle({ root, trace, turn }) {
+function refreshedCampaignBundle({ root, trace, turn, sourceAccessibilityPolicy = 'direct_only' }) {
   const extracted = extractTutorStubFrozenTurn({ tracePath: trace, turn });
   return refreshTutorStubFrozenFirstDraftRequest({
     bundle: extracted,
     world: worldForFrozenBundle(root, extracted.worldId),
+    sourceAccessibilityPolicy,
   });
+}
+
+function sourceAccessibilityContract(bundle, composition = null) {
+  const contract =
+    bundle?.firstDraftContract?.evidence?.source_accessibility ||
+    composition?.sourceAccessibilityContract ||
+    null;
+  return contract?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA
+    ? contract
+    : null;
 }
 
 function sourceSurfaceAccessibilityMetrics(bundle) {
@@ -195,13 +211,30 @@ function sourceSurfaceAccessibilityMetrics(bundle) {
   }));
 }
 
-export function tutorStubSourceSurfaceAccessibilityReady(metrics = [], expectedCount = 0) {
+export function tutorStubSourceSurfaceAccessibilityReady(
+  metrics = [],
+  expectedCount = 0,
+  contract = null,
+) {
   const expected = integer(expectedCount, 'expected source accessibility count');
-  return (
+  const exactInventory =
     Array.isArray(metrics) &&
     metrics.length === expected &&
-    metrics.every((metric) => metric?.ok === true)
-  );
+    (!contract || Number(contract.source_count) === expected);
+  if (!exactInventory) return false;
+  if (!contract) return metrics.every((metric) => metric?.ok === true);
+  if (contract.effective_mode === 'direct') {
+    return contract.ok === true &&
+      contract.direct_accessible === true &&
+      metrics.every((metric) => metric?.ok === true);
+  }
+  if (contract.effective_mode === 'compensated') {
+    return contract.ok === true &&
+      contract.direct_accessible === false &&
+      contract.compensation_required === true &&
+      contract.compensation_contract_ready === true;
+  }
+  return false;
 }
 
 export function tutorStubFirstDraftCampaignValidationArtifactPath({
@@ -309,6 +342,31 @@ function validateWorkingScreen(config, { root }) {
     }
   }
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
+  const sourceAccessibilityPolicy =
+    config.fixed_configuration?.source_accessibility_policy || 'direct_only';
+  if (!['direct_only', 'direct_or_compensated_v1'].includes(sourceAccessibilityPolicy)) {
+    throw new Error(`unsupported source accessibility policy ${sourceAccessibilityPolicy}`);
+  }
+  if (
+    config.id === 'first-draft-working-screens-v9' &&
+    sourceAccessibilityPolicy !== 'direct_or_compensated_v1'
+  ) {
+    throw new Error('first-draft-working-screens-v9 must use direct_or_compensated_v1');
+  }
+  const declaredSourceAccessibilitySchema =
+    config.fixed_configuration?.source_accessibility_schema || null;
+  if (
+    declaredSourceAccessibilitySchema !== null &&
+    declaredSourceAccessibilitySchema !== TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA
+  ) {
+    throw new Error('source accessibility schema does not match the runtime contract');
+  }
+  if (
+    config.id === 'first-draft-working-screens-v9' &&
+    declaredSourceAccessibilitySchema !== TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA
+  ) {
+    throw new Error('first-draft-working-screens-v9 must declare the source accessibility schema');
+  }
   const structuralPreflight = [];
   const preflightBlockers = [];
   if (!cells.length) throw new Error('working screen matrix is empty');
@@ -434,7 +492,12 @@ function validateWorkingScreen(config, { root }) {
         throw new Error(`${id} frozen prefix contains a prior non-original tutor delivery`);
       }
       if (config.execution?.require_exact_target_bundle_binding === true) {
-        const bundle = refreshedCampaignBundle({ root, trace, turn: targetTurn });
+        const bundle = refreshedCampaignBundle({
+          root,
+          trace,
+          turn: targetTurn,
+          sourceAccessibilityPolicy,
+        });
         const binding = cell.prefix_integrity.target_bundle || {};
         for (const [field, actual, expected] of [
           ['turn_id', bundle.turnId, binding.turn_id],
@@ -456,9 +519,11 @@ function validateWorkingScreen(config, { root }) {
         const sourceModes = releaseEntries.map((entry) => entry?.mode || 'presented_exhibit');
         const progression = bundle.firstDraftContract?.progression || null;
         const sourceAccessibility = sourceSurfaceAccessibilityMetrics(bundle);
+        const accessibilityContract = sourceAccessibilityContract(bundle);
         const sourceAccessibilityReady = tutorStubSourceSurfaceAccessibilityReady(
           sourceAccessibility,
           releaseEntries.length,
+          accessibilityContract,
         );
         if (targets.has('deterministic_host_source_renderer')) {
           if (!releaseEntries.length) {
@@ -510,6 +575,27 @@ function validateWorkingScreen(config, { root }) {
         ) {
           throw new Error(`${id} declares writable-request classification but the typed learner mode is not writable_entry`);
         }
+        if (targets.has('source_accessibility_compensation')) {
+          const declaration = activation.source_accessibility_compensation || {};
+          if (
+            accessibilityContract?.compensation_required !== true ||
+            accessibilityContract?.compensation_contract_ready !== true
+          ) {
+            throw new Error(`${id} declares source accessibility compensation but its typed contract is not ready`);
+          }
+          if (
+            declaration.expected_effective_mode &&
+            accessibilityContract.effective_mode !== declaration.expected_effective_mode
+          ) {
+            throw new Error(`${id} source accessibility effective mode does not match its declaration`);
+          }
+          if (
+            declaration.expected_owner &&
+            accessibilityContract.owner !== declaration.expected_owner
+          ) {
+            throw new Error(`${id} source accessibility owner does not match its declaration`);
+          }
+        }
         if (
           releaseEntries.length > 0 &&
           config.gates_per_cell?.require_structural_target_activation === true
@@ -534,12 +620,34 @@ function validateWorkingScreen(config, { root }) {
               turn: targetTurn,
               reason: `${id} due source fails its selected accessibility budgets: ${summary}`,
               sources: sourceAccessibility,
+              directAccessible: accessibilityContract?.direct_accessible ?? false,
+              compensationRequired: accessibilityContract?.compensation_required ?? false,
+              compensationContractReady:
+                accessibilityContract?.compensation_contract_ready ?? false,
+              compensationVisible: null,
+              effectiveMode: accessibilityContract?.effective_mode || 'blocked',
+              contractIssues: [...(accessibilityContract?.issues || [])],
             });
           }
           structuralPreflight.push({
             cellId: id,
             turn: targetTurn,
             sourceSurfaceAccessibility: sourceAccessibility,
+            directAccessible:
+              accessibilityContract?.direct_accessible ??
+              sourceAccessibility.every((metric) => metric?.ok === true),
+            compensationRequired:
+              accessibilityContract?.compensation_required ?? false,
+            compensationContractReady:
+              accessibilityContract?.compensation_contract_ready ?? false,
+            // No candidate exists during preflight. Visibility is deliberately
+            // unknown until the generated owner span clears the strict audit.
+            compensationVisible: null,
+            effectiveMode:
+              accessibilityContract?.effective_mode ||
+              (sourceAccessibilityReady ? 'direct' : 'blocked'),
+            owner: accessibilityContract?.owner || null,
+            contractIssues: [...(accessibilityContract?.issues || [])],
             ok: sourceAccessibilityReady,
           });
         }
@@ -590,14 +698,14 @@ function validateWorkingScreen(config, { root }) {
       throw new Error('development clean-worktree requirement must be boolean');
     }
     if (
-      ['first-draft-working-screens-v7', 'first-draft-working-screens-v8'].includes(config.id) &&
+      ['first-draft-working-screens-v7', 'first-draft-working-screens-v8', 'first-draft-working-screens-v9'].includes(config.id) &&
       execution.require_exact_target_bundle_binding !== true
     ) throw new Error(`${config.id} must require exact target bundle binding`);
     if (
-      config.id === 'first-draft-working-screens-v8' &&
+      ['first-draft-working-screens-v8', 'first-draft-working-screens-v9'].includes(config.id) &&
       execution.require_clean_worktree !== true
     ) {
-      throw new Error('first-draft-working-screens-v8 must require a clean worktree');
+      throw new Error(`${config.id} must require a clean worktree`);
     }
   }
   return {
@@ -716,6 +824,14 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
   }
   if (config.fixed_configuration?.joint_performance_generation === true) {
     command.splice(command.length - 2, 0, '--joint-performance-generation');
+  }
+  if (config.fixed_configuration?.source_accessibility_policy) {
+    command.splice(
+      command.length - 2,
+      0,
+      '--source-accessibility-policy',
+      String(config.fixed_configuration.source_accessibility_policy),
+    );
   }
   if (
     config.execution?.stop_cell_when_gate_mathematically_impossible === true &&
@@ -1105,6 +1221,70 @@ function hostSourceOccurrenceMetric({ row, bundle, generationField = 'structured
   };
 }
 
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, child]) => [key, canonicalJson(child)]),
+    );
+  }
+  return value;
+}
+
+function exactlyEqualJson(left, right) {
+  return JSON.stringify(canonicalJson(left)) === JSON.stringify(canonicalJson(right));
+}
+
+function canonicalSourceAccessibilityAudit({ contract, composition }) {
+  if (!contract || !composition) return null;
+  const spans = Array.isArray(composition.spans) ? composition.spans : [];
+  const sourceSpans = spans.filter((span) => span?.kind === 'source');
+  const compensationSpan = spans.find((span) => span?.id === 'performance_response') || null;
+  return auditTutorStubSourceAccessibilityCompensation({
+    contract,
+    text: composition.text || '',
+    owner: contract.owner || null,
+    sourceSpan: sourceSpans.length === 1 ? sourceSpans[0] : null,
+    compensationSpan,
+  });
+}
+
+function exactAccessibilityAuditSpans({ contract, composition }) {
+  const text = String(composition?.text || '');
+  const spans = Array.isArray(composition?.spans) ? composition.spans : [];
+  const sourceSpans = spans.filter((span) => span?.kind === 'source');
+  const expectedSources = Array.isArray(contract?.sources) ? contract.sources : [];
+  const performanceResponse = spans.find((span) => span?.id === 'performance_response') || null;
+  const exactSpan = (span) =>
+    Number.isInteger(span?.start) &&
+    Number.isInteger(span?.end) &&
+    span.start >= 0 &&
+    span.end > span.start &&
+    span.end <= text.length &&
+    text.slice(span.start, span.end) === span.text;
+  const sourceSpansExact =
+    sourceSpans.length === expectedSources.length &&
+    sourceSpans.every(
+      (span, index) =>
+        span.owner === 'host' &&
+        exactSpan(span) &&
+        span.text === expectedSources[index]?.text,
+    );
+  const performanceResponseExact =
+    performanceResponse?.kind === 'host' &&
+    performanceResponse?.owner === 'model' &&
+    exactSpan(performanceResponse);
+  return {
+    ok: sourceSpansExact && performanceResponseExact,
+    sourceSpansExact,
+    performanceResponseExact,
+    sourceSpanCount: sourceSpans.length,
+    expectedSourceSpanCount: expectedSources.length,
+  };
+}
+
 function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'structuredGeneration' }) {
   const release = bundle?.frames?.dramaticRelease || null;
   const expectedSourceCount = release?.active === true && Array.isArray(release.entries)
@@ -1114,6 +1294,11 @@ function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'stru
   const sources = Array.isArray(composition?.sources) ? composition.sources : [];
   const configuration =
     bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const contract = sourceAccessibilityContract(bundle, composition);
+  const rowRecordedAudit = row?.audit?.audits?.sourceAccessibilityAudit || null;
+  const compositionRecordedAudit = composition?.sourceAccessibilityAudit || null;
+  const canonicalAudit = canonicalSourceAccessibilityAudit({ contract, composition });
+  const canonicalAuditSpans = exactAccessibilityAuditSpans({ contract, composition });
   const metrics = sources.map((source) => ({
     id: source?.id || null,
     mode: source?.mode || null,
@@ -1124,6 +1309,66 @@ function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'stru
     }),
   }));
   const sourceBearing = expectedSourceCount > 0;
+  const exactInventory =
+    composition !== null &&
+    sources.length === expectedSourceCount &&
+    (!contract || Number(contract.source_count) === expectedSourceCount);
+  const directAccessible =
+    contract?.direct_accessible ?? metrics.every((metric) => metric.ok === true);
+  const compensationRequired = contract?.compensation_required === true;
+  const compensationContractReady = contract?.compensation_contract_ready === true;
+  const effectiveMode =
+    canonicalAudit?.effective_mode ||
+    contract?.effective_mode ||
+    (directAccessible ? 'direct' : 'blocked');
+  const contractOwner = contract?.owner || null;
+  const auditOwner = canonicalAudit?.owner || null;
+  const candidateAuditRequired = sourceBearing && Boolean(contract);
+  const canonicalAuditSchemaValid =
+    canonicalAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
+  const rowRecordedAuditSchemaValid =
+    rowRecordedAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
+  const compositionRecordedAuditSchemaValid =
+    compositionRecordedAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
+  const rowRecordedAuditConsistent =
+    canonicalAuditSchemaValid && exactlyEqualJson(rowRecordedAudit, canonicalAudit);
+  const compositionRecordedAuditConsistent =
+    canonicalAuditSchemaValid && exactlyEqualJson(compositionRecordedAudit, canonicalAudit);
+  const recordedAuditsConsistent =
+    rowRecordedAuditConsistent &&
+    compositionRecordedAuditConsistent &&
+    exactlyEqualJson(rowRecordedAudit, compositionRecordedAudit);
+  const immutableContract = bundle?.firstDraftContract?.evidence?.source_accessibility || null;
+  const compositionContractConsistent =
+    !candidateAuditRequired ||
+    (immutableContract?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA &&
+      exactlyEqualJson(composition?.sourceAccessibilityContract, immutableContract));
+  const candidateAuditPassed =
+    !candidateAuditRequired ||
+    (canonicalAuditSchemaValid &&
+      canonicalAuditSpans.ok === true &&
+      rowRecordedAuditSchemaValid &&
+      compositionRecordedAuditSchemaValid &&
+      recordedAuditsConsistent &&
+      compositionContractConsistent &&
+      canonicalAudit?.ok === true &&
+      canonicalAudit?.visible === true &&
+      canonicalAudit?.effective_mode === contract?.effective_mode &&
+      (!compensationRequired || canonicalAudit?.owner === contractOwner));
+  const compensationVisible = compensationRequired
+    ? canonicalAudit?.ok === true &&
+      canonicalAudit?.visible === true &&
+      canonicalAudit?.effective_mode === 'compensated' &&
+      auditOwner === contractOwner
+    : null;
+  const effectiveAccessibility = contract
+    ? contract.ok === true &&
+      (contract.effective_mode === 'direct'
+        ? directAccessible === true && metrics.every((metric) => metric.ok === true)
+        : contract.effective_mode === 'compensated'
+          ? compensationContractReady && compensationVisible === true
+          : false)
+    : !sourceBearing || metrics.every((metric) => metric.ok === true);
   return {
     turn: Number(row?.turn),
     draw: Number(row?.draw ?? 1),
@@ -1133,10 +1378,29 @@ function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'stru
     audienceRegister: configuration.audience_register || null,
     lexicalAccessibility: configuration.lexical_accessibility || null,
     sources: metrics,
-    ok:
-      composition !== null &&
-      sources.length === expectedSourceCount &&
-      (!sourceBearing || metrics.every((metric) => metric.ok === true)),
+    policy: contract?.policy || 'direct_only',
+    directAccessible,
+    compensationRequired,
+    compensationContractReady,
+    compensationVisible,
+    effectiveMode,
+    contractOwner,
+    candidateAuditOwner: auditOwner,
+    candidateAuditRequired,
+    candidateAuditPassed,
+    canonicalAudit,
+    canonicalAuditSpans,
+    canonicalAuditSchemaValid,
+    rowRecordedAudit,
+    rowRecordedAuditSchemaValid,
+    rowRecordedAuditConsistent,
+    compositionRecordedAudit,
+    compositionRecordedAuditSchemaValid,
+    compositionRecordedAuditConsistent,
+    recordedAuditsConsistent,
+    compositionContractConsistent,
+    contractIssues: [...(contract?.issues || [])],
+    ok: exactInventory && (!sourceBearing || (effectiveAccessibility && candidateAuditPassed)),
   };
 }
 
@@ -1185,6 +1449,36 @@ function structuralActivationMetric({ target, row, bundle, declaration = {}, gen
       active: alignment?.active === true,
       visible: alignment?.active === true && alignment?.ok === true && axis?.visible === true,
       requiredReferents: (alignment?.sources || []).flatMap((source) => source?.required || []),
+    };
+  }
+  if (target === 'source_accessibility_compensation') {
+    const metric = sourceSurfaceAccessibilityMetric({ row, bundle, generationField });
+    const expectedMode = declaration?.expected_effective_mode || 'compensated';
+    const expectedOwner = declaration?.expected_owner || 'performance_response';
+    const modeMatched = metric.effectiveMode === expectedMode;
+    const ownerMatched =
+      metric.contractOwner === expectedOwner && metric.candidateAuditOwner === expectedOwner;
+    return {
+      target,
+      active:
+        metric.sourceBearing === true &&
+        metric.compensationRequired === true &&
+        metric.compensationContractReady === true,
+      visible:
+        metric.ok === true &&
+        metric.compensationVisible === true &&
+        modeMatched &&
+        ownerMatched,
+      expectedMode,
+      effectiveMode: metric.effectiveMode,
+      expectedOwner,
+      contractOwner: metric.contractOwner,
+      candidateAuditOwner: metric.candidateAuditOwner,
+      directAccessible: metric.directAccessible,
+      compensationRequired: metric.compensationRequired,
+      compensationContractReady: metric.compensationContractReady,
+      compensationVisible: metric.compensationVisible,
+      sourceAccessibility: metric,
     };
   }
   if (target === 'handoff_contract_and_cross_slot_progression') {
