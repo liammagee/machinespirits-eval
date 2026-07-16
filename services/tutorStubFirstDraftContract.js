@@ -9,6 +9,7 @@ import {
   TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA,
   tutorStubPerformanceObligationContractPrompt,
 } from './tutorStubPerformanceObligationContract.js';
+import { compileTutorStubCompositePartOwnership } from './tutorStubCompositePartOwnership.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 export const TUTOR_STUB_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.host-plan.v1';
@@ -456,6 +457,22 @@ export function buildTutorStubFirstDraftContract({
   const sentenceBudget = Math.max(8, Number(configuration.surface_budgets?.max_average_sentence_words || 24));
   const directionOnlyWithoutNewEvidence =
     questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;
+  const compiledCompatibilityDecisions = compatibilityDecisions({
+    responseConfiguration: configuration,
+    responseCompositionFrame,
+    dramaticReleaseFrame,
+    questionSupport,
+    dialogueClosureFrame,
+  }).concat(
+    directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
+      ? ['direction_only_recasts_rapid_handoff_as_declarative_boundary']
+      : [],
+  );
+  const compositePartOwnership = compileTutorStubCompositePartOwnership({
+    actorialPart: part,
+    actorialPartLabel: configuration.actorial_part_label,
+    actionFamily,
+  });
   const partExecution =
     PART_CUES[part] ||
     'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
@@ -550,17 +567,8 @@ export function buildTutorStubFirstDraftContract({
       host_sentence_word_target: sentenceBudget,
     },
     compatibility: {
-      decisions: compatibilityDecisions({
-        responseConfiguration: configuration,
-        responseCompositionFrame,
-        dramaticReleaseFrame,
-        questionSupport,
-        dialogueClosureFrame,
-      }).concat(
-        directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
-          ? ['direction_only_recasts_rapid_handoff_as_declarative_boundary']
-          : [],
-      ),
+      decisions: compiledCompatibilityDecisions,
+      composite_axis_ownership: compositePartOwnership,
     },
   };
   contract.host_plan = buildHostPlan(contract);

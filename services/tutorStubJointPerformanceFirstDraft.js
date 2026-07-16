@@ -1,8 +1,15 @@
 import { getJointPerformanceStanceContract } from './engagementRegisterRegistry.js';
 import {
+  auditTutorStubCompositePartOwnership,
+  compileTutorStubCompositePartOwnership,
+  TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA,
+} from './tutorStubCompositePartOwnership.js';
+import {
   auditTutorStubResponseConfiguration,
   tutorStubResponseConfigurationPrompt,
 } from './tutorStubResponseConfiguration.js';
+import { tutorStubGuardIssueRows } from './tutorStubGuardDisposition.js';
+import { tutorStubGuardDeliveryDecision } from './tutorStubGuardRecovery.js';
 
 export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA =
   'machinespirits.tutor-stub.joint-performance-host-plan.v2';
@@ -147,13 +154,26 @@ function jointPerformanceCompatibility(contract, entryInstruction) {
     'advocate_case_delegates_concrete_test_to_final_handoff',
   );
   if (!advocateDelegation) {
-    return { decisions, entryInstruction, performanceResponseInstruction: null };
+    return {
+      decisions,
+      entryInstruction,
+      performanceResponseInstruction: null,
+      handoffDelegatedComplementInstruction: null,
+      compositePartOwnership: null,
+    };
+  }
+  const compositePartOwnership = contract?.compatibility?.composite_axis_ownership;
+  if (compositePartOwnership?.schema !== TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA) {
+    throw new Error('joint performance contract invalid: missing_composite_part_ownership');
   }
   return {
     decisions,
-    entryInstruction: `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, begin “My case is” and state the strongest licensed public case and its limit around one already-public object. Leave only the concrete next action for HANDOFF; keep what could break or resist the case for PERFORMANCE.response.`,
-    performanceResponseInstruction:
-      'Make the advocate’s case answerable here: name what would break, resist, or count against it. Do not put the concrete next action here; HANDOFF owns that action.',
+    entryInstruction: `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, ${oneLine(compositePartOwnership.prompt.performance_initiation)}`,
+    performanceResponseInstruction: oneLine(compositePartOwnership.prompt.performance_action_boundary),
+    handoffDelegatedComplementInstruction: oneLine(
+      compositePartOwnership.prompt.handoff_delegated_complement,
+    ),
+    compositePartOwnership: clone(compositePartOwnership),
   };
 }
 
@@ -207,10 +227,18 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         ? { active: true, owner: 'host', placement: 'between_performance_entry_and_response' }
         : { active: false, owner: 'host', placement: 'between_performance_entry_and_response' },
       handoff: {
-        instruction: actionOnlyHandoffInstruction(contract, oneLine(slots.get('handoff').instruction)),
+        instruction: [
+          actionOnlyHandoffInstruction(contract, oneLine(slots.get('handoff').instruction)),
+          compatibility.handoffDelegatedComplementInstruction,
+        ]
+          .filter(Boolean)
+          .join(' '),
       },
     },
-    compatibility: { decisions: compatibility.decisions },
+    compatibility: {
+      decisions: compatibility.decisions,
+      composite_axis_ownership: compatibility.compositePartOwnership,
+    },
     axis_ownership: {
       audience_register: ['uptake', 'performance', 'handoff'],
       lexical_accessibility: ['uptake', 'performance', 'handoff'],
@@ -221,6 +249,9 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
       public_evidence: source ? ['source'] : [],
       action_family: ['handoff'],
     },
+    delegated_axis_prerequisites: compatibility.compositePartOwnership
+      ? { actorial_part: ['handoff'] }
+      : {},
   };
 }
 
@@ -596,6 +627,23 @@ export function auditTutorStubJointPerformanceOwnership({
     configuration,
     world,
   });
+  const handoffAudit = auditTutorStubResponseConfiguration({
+    text: spans.get('handoff').text,
+    configuration,
+    world,
+  });
+  const compositePartOwnershipContract = compileTutorStubCompositePartOwnership({
+    actorialPart: configuration.actorial_part,
+    actorialPartLabel: configuration.actorial_part_label,
+    actionFamily: configuration.action_family,
+  });
+  const compositePartOwnership = auditTutorStubCompositePartOwnership({
+    contract: compositePartOwnershipContract,
+    composition,
+    selectedActionVisible: handoffAudit?.axes?.action_family?.visible === true,
+  });
+  const compositeInitiationVisible =
+    compositePartOwnership.requirements.find((row) => row.id === 'performance_initiation')?.ok === true;
   const performanceAudit = auditTutorStubResponseConfiguration({
     text: performanceText,
     configuration,
@@ -603,14 +651,10 @@ export function auditTutorStubJointPerformanceOwnership({
     performanceObligationContract,
     performanceAuditContext: {
       fullComposedPublicText: composition.text,
-      verifiedPartVisible: preliminaryPerformanceAudit?.axes?.actorial_part?.part_visible === true,
+      verifiedPartVisible:
+        preliminaryPerformanceAudit?.axes?.actorial_part?.part_visible === true || compositeInitiationVisible,
       auditedSpanTexts: [spans.get('performance_entry').text, spans.get('performance_response').text],
     },
-  });
-  const handoffAudit = auditTutorStubResponseConfiguration({
-    text: spans.get('handoff').text,
-    configuration,
-    world,
   });
   const responseObligation = jointPerformanceResponseObligation(
     configuration,
@@ -618,9 +662,13 @@ export function auditTutorStubJointPerformanceOwnership({
   );
   const axes = {
     actorial_part: {
-      owner: 'performance',
+      owner: compositePartOwnership.active ? 'composite' : 'performance',
+      initiation_owner: 'performance',
+      delegated_complement_owner: compositePartOwnership.active ? 'handoff' : null,
       selected: configuration.actorial_part,
-      visible: performanceAudit?.axes?.actorial_part?.part_visible === true,
+      visible: compositePartOwnership.active
+        ? compositePartOwnership.ok
+        : performanceAudit?.axes?.actorial_part?.part_visible === true,
     },
     actorial_performance: {
       owner: 'performance',
@@ -644,6 +692,17 @@ export function auditTutorStubJointPerformanceOwnership({
       visible: handoffAudit?.axes?.action_family?.visible === true,
     },
   };
+  if (compositePartOwnership.active && !compositePartOwnership.ok) {
+    for (const requirement of compositePartOwnership.requirements.filter((row) => !row.ok)) {
+      issues.push({
+        type: 'composite_part_requirement_failed',
+        axis: 'actorial_part',
+        owner: requirement.owner,
+        requirement: requirement.id,
+        reason: requirement.reason,
+      });
+    }
+  }
   if (!responseObligation.ok) {
     issues.push({
       type: 'performance_response_obligation_failed',
@@ -677,9 +736,87 @@ export function auditTutorStubJointPerformanceOwnership({
       handoff: ['handoff'],
     },
     responseObligation,
+    compositePartOwnership,
     performanceText,
     spanAudits: { performance: performanceAudit, handoff: handoffAudit },
   };
+}
+
+function failureClustersFromAudits(audits) {
+  return Object.entries(audits || {}).flatMap(([guard, audit]) => {
+    if (!audit || audit.ok !== false) return [];
+    const issues = audit.leaks || audit.issues || [];
+    if (issues.length) return issues.map((issue) => `${guard}:${issue.type || 'failed'}`);
+    if (audit.missingPremises?.length) return [`${guard}:missing_due_evidence`];
+    return [`${guard}:failed`];
+  });
+}
+
+function applyDeterministicCompositePartRecognition(audit, compositePartOwnership) {
+  const source = clone(audit);
+  if (compositePartOwnership?.active !== true || compositePartOwnership.ok !== true) {
+    return { audit: source, applied: false, reason: 'composite_part_ownership_not_satisfied' };
+  }
+  const responseAudit = source?.audits?.responseConfigurationAudit;
+  const actorialAudit = source?.audits?.actorialRealizationAudit;
+  const issues = Array.isArray(actorialAudit?.issues) ? actorialAudit.issues : [];
+  if (!responseAudit?.axes?.actorial_part || issues.length === 0) {
+    return { audit: source, applied: false, reason: 'deterministic_part_already_visible' };
+  }
+  if (
+    issues.some((issue) => issue?.type !== 'missing_selected_actorial_part') ||
+    responseAudit.axes.actorial_part.performance_visible !== true
+  ) {
+    return { audit: source, applied: false, reason: 'not_an_isolated_part_recognition_miss' };
+  }
+  responseAudit.axes.actorial_part.part_visible = true;
+  responseAudit.axes.actorial_part.visible = true;
+  responseAudit.axes.actorial_part.evaluated_segment = 'typed_composite_performance_and_handoff';
+  responseAudit.actorial_realization = {
+    ...(responseAudit.actorial_realization || {}),
+    ok: true,
+    issues: [],
+    deterministic_composite_part_ownership: clone(compositePartOwnership),
+  };
+  const visibleAxisCount = Object.values(responseAudit.axes).filter((axis) => axis.visible === true).length;
+  responseAudit.visible_axis_count = visibleAxisCount;
+  responseAudit.realization_rate = Number(
+    (visibleAxisCount / Math.max(1, responseAudit.axis_count || Object.keys(responseAudit.axes).length)).toFixed(3),
+  );
+  responseAudit.transcript_visible =
+    visibleAxisCount >= 5 && responseAudit.metrics?.fourthWallBreak !== true;
+  responseAudit.visible_signature = String(responseAudit.visible_signature || '').replace(
+    /\|part:not_visible\|/u,
+    `|part:${responseAudit.axes.actorial_part.selected}|`,
+  );
+  source.audits.responseConfigurationAudit = responseAudit;
+  source.audits.actorialRealizationAudit = clone(responseAudit.actorial_realization);
+  const issueRows = tutorStubGuardIssueRows(source.audits);
+  const deliveryDecision = tutorStubGuardDeliveryDecision(issueRows);
+  source.deliveryDecision = deliveryDecision;
+  source.ok = deliveryDecision.ok;
+  source.failureClusters = failureClustersFromAudits(source.audits);
+  source.hardFailureClusters = deliveryDecision.hardIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.reportOnlyFailureClusters = deliveryDecision.reportOnlyIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.shadowAdvisoryFailureClusters = deliveryDecision.shadow.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.performanceAdjudicationEligibility = {
+    eligible: false,
+    reason: 'deterministic_composite_part_ownership_passed',
+  };
+  source.deterministicCompositePartRecognition = {
+    applied: true,
+    reason: 'isolated_part_miss_satisfied_by_typed_composite_contract',
+  };
+  return { audit: source, applied: true, reason: source.deterministicCompositePartRecognition.reason };
 }
 
 export function applyTutorStubJointPerformanceOwnershipAudit({
@@ -698,23 +835,32 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     world,
     performanceObligationContract,
   });
+  const recognized = applyDeterministicCompositePartRecognition(
+    audit,
+    jointAudit.compositePartOwnership,
+  );
+  const baseAudit = recognized.audit;
   const clusters = jointAudit.issues.map(
     (issue) => `jointPerformanceAudit:${issue.type}${issue.axis ? `:${issue.axis}` : ''}`,
   );
   const hardIssues = jointAudit.issues.map((issue) => ({ guard: 'jointPerformanceAudit', ...issue }));
   return {
-    ...audit,
-    ok: audit.ok === true && jointAudit.ok,
-    failureClusters: [...(audit.failureClusters || []), ...clusters],
-    hardFailureClusters: [...(audit.hardFailureClusters || []), ...clusters],
+    ...baseAudit,
+    ok: baseAudit.ok === true && jointAudit.ok,
+    failureClusters: [...(baseAudit.failureClusters || []), ...clusters],
+    hardFailureClusters: [...(baseAudit.hardFailureClusters || []), ...clusters],
     deliveryDecision: {
-      ...(audit.deliveryDecision || {}),
-      ok: audit.deliveryDecision?.ok === true && jointAudit.ok,
-      hardIssues: [...(audit.deliveryDecision?.hardIssues || []), ...hardIssues],
+      ...(baseAudit.deliveryDecision || {}),
+      ok: baseAudit.deliveryDecision?.ok === true && jointAudit.ok,
+      hardIssues: [...(baseAudit.deliveryDecision?.hardIssues || []), ...hardIssues],
     },
-    audits: { ...(audit.audits || {}), jointPerformanceAudit: jointAudit },
+    audits: { ...(baseAudit.audits || {}), jointPerformanceAudit: jointAudit },
+    deterministicCompositePartRecognition: {
+      applied: recognized.applied,
+      reason: recognized.reason,
+    },
     performanceAdjudicationEligibility: jointAudit.ok
-      ? audit.performanceAdjudicationEligibility
+      ? baseAudit.performanceAdjudicationEligibility
       : { eligible: false, reason: 'joint_performance_ownership_failed', blockingIssues: clusters },
   };
 }

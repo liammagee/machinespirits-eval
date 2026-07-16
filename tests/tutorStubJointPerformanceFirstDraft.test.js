@@ -27,7 +27,10 @@ import {
   tutorStubStructuredFirstDraftPrompt,
 } from '../services/tutorStubStructuredFirstDraft.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
-import { tutorStubResponseConfigurationPrompt } from '../services/tutorStubResponseConfiguration.js';
+import {
+  auditTutorStubResponseConfiguration,
+  tutorStubResponseConfigurationPrompt,
+} from '../services/tutorStubResponseConfiguration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPLAY_SCRIPT = path.join(ROOT, 'scripts', 'replay-tutor-stub-frozen-turns.js');
@@ -51,6 +54,21 @@ function configuration(overrides = {}) {
     unresolved_terms: [],
     ...overrides,
   };
+}
+
+function advocateConfiguration(overrides = {}) {
+  return configuration({
+    engagement_stance: 'precise',
+    scene_immersion: 'minimal',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: {
+      id: 'unadorned_report',
+      label: 'unadorned report',
+      contract: 'State the live public case directly and accountably.',
+    },
+    ...overrides,
+  });
 }
 
 function firstDraftContract({ responseConfiguration = configuration(), dramaticReleaseFrame = null } = {}) {
@@ -134,18 +152,8 @@ test('v2 prompt drafts below the hard slot limit while the parser retains the ex
 });
 
 test('v2 compiles declared advocate delegation into a breakable performance and action-only handoff', () => {
-  const advocateConfiguration = configuration({
-    engagement_stance: 'precise',
-    scene_immersion: 'minimal',
-    actorial_part: 'advocate',
-    actorial_part_label: 'advocate for the live case',
-    actorial_performance: {
-      id: 'unadorned_report',
-      label: 'unadorned report',
-      contract: 'State the live public case directly and accountably.',
-    },
-  });
-  const contract = firstDraftContract({ responseConfiguration: advocateConfiguration });
+  const selectedConfiguration = advocateConfiguration();
+  const contract = firstDraftContract({ responseConfiguration: selectedConfiguration });
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
   const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
 
@@ -154,13 +162,12 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
       'advocate_case_delegates_concrete_test_to_final_handoff',
     ),
   );
-  assert.match(plan.slots.performance.entry_instruction, /leave only the concrete next action for HANDOFF/iu);
-  assert.match(plan.slots.performance.entry_instruction, /what could break or resist the case for PERFORMANCE\.response/iu);
-  assert.match(plan.slots.performance.entry_instruction, /strongest licensed public case and its limit/iu);
-  assert.match(plan.slots.performance.entry_instruction, /one already-public object/iu);
+  assert.equal(contract.compatibility.composite_axis_ownership.mode, 'delegated_complement');
+  assert.match(plan.slots.performance.entry_instruction, /strongest licensed public case with a concrete limit/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
-  assert.match(plan.slots.performance.compatibility_instruction, /name what would break, resist, or count against it/iu);
-  assert.match(plan.slots.performance.compatibility_instruction, /HANDOFF owns that action/iu);
+  assert.match(plan.slots.performance.compatibility_instruction, /Keep PERFORMANCE declarative/iu);
+  assert.match(plan.slots.handoff.instruction, /relevant concrete way to test, resist, or break that case/iu);
+  assert.deepEqual(plan.delegated_axis_prerequisites.actorial_part, ['handoff']);
   assert.match(prompt, /PERFORMANCE COMPATIBILITY —/u);
 
   const composition = composeTutorStubJointPerformanceFirstDraft({
@@ -179,7 +186,7 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
   const audit = auditTutorStubJointPerformanceOwnership({
     composition,
     candidate: composition.text,
-    configuration: advocateConfiguration,
+    configuration: selectedConfiguration,
     world: {
       title: 'The Recalled Edition',
       setting: 'A ledger and call log lie open on the archive desk.',
@@ -194,6 +201,223 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
   assert.equal(audit.axes.engagement_stance.visible, true);
   assert.equal(audit.axes.action_family.owner, 'handoff');
   assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.compositePartOwnership.ok, true);
+  assert.deepEqual(
+    audit.compositePartOwnership.requirements.map((row) => [row.id, row.owner, row.ok]),
+    [
+      ['performance_initiation', 'performance', true],
+      ['performance_action_absent', 'performance', true],
+      ['handoff_relevant_delegated_complement', 'handoff', true],
+      ['handoff_selected_action', 'handoff', true],
+    ],
+  );
+});
+
+test('typed advocate ownership accepts a generic relational operation and reports exact subrequirements', () => {
+  const selectedConfiguration = advocateConfiguration();
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake: 'That keeps the attribution open.',
+        performance: {
+          entry: 'My case is a possible die-cutter, but not yet a coiner.',
+          response: 'The metal keeps that distinction within the public evidence.',
+        },
+        handoff: 'Set the shilling by the touchstone and ask what its metal can tell us.',
+      }),
+      { maxWordsPerSlot: 18 },
+    ),
+  });
+  const audit = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    world: {
+      title: 'A public assay',
+      setting: 'A metal shilling and touchstone rest on the bench.',
+      question: 'What does the public assay establish?',
+      premiseById: new Map(),
+    },
+  });
+
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.axes.actorial_part.owner, 'composite');
+  assert.equal(audit.axes.actorial_part.initiation_owner, 'performance');
+  assert.equal(audit.axes.actorial_part.delegated_complement_owner, 'handoff');
+  assert.deepEqual(audit.compositePartOwnership.linkage.shared_content_tokens, ['metal']);
+  assert.equal(audit.compositePartOwnership.requirements.every((row) => row.ok), true);
+  assert.deepEqual(audit.compositePartOwnership.excluded_span_ids, []);
+});
+
+test('typed composite ownership repairs one deterministic part miss without semantic adjudication', () => {
+  const selectedConfiguration = advocateConfiguration();
+  const world = {
+    title: 'A public assay',
+    setting: 'A metal shilling and touchstone rest on the bench.',
+    question: 'What does the public assay establish?',
+    premiseById: new Map(),
+  };
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake: 'That keeps the attribution open.',
+        performance: {
+          entry: 'My case is a possible die-cutter, but not yet a coiner.',
+          response: 'The metal keeps that distinction within the public evidence.',
+        },
+        handoff: 'Set the shilling by the touchstone and ask what its metal can tell us.',
+      }),
+    ),
+  });
+  const responseAudit = auditTutorStubResponseConfiguration({
+    text: composition.text,
+    configuration: selectedConfiguration,
+    world,
+  });
+  assert.equal(responseAudit.axes.actorial_part.part_visible, false);
+  assert.equal(responseAudit.axes.actorial_part.performance_visible, true);
+  assert.deepEqual(
+    responseAudit.actorial_realization.issues.map((issue) => issue.type),
+    ['missing_selected_actorial_part'],
+  );
+  const passingAudit = { ok: true, issues: [] };
+  const baseAudit = {
+    ok: false,
+    safetyFailure: false,
+    failureClusters: ['actorialRealizationAudit:missing_selected_actorial_part'],
+    hardFailureClusters: ['actorial_realization:missing_selected_actorial_part'],
+    advisoryFailureClusters: [],
+    reportOnlyFailureClusters: [],
+    shadowAdvisoryFailureClusters: [],
+    deliveryDecision: {
+      ok: false,
+      hardIssues: [{ guard: 'actorial_realization', type: 'missing_selected_actorial_part' }],
+      advisoryIssues: [],
+      reportOnlyIssues: [],
+      shadow: { advisoryIssues: [] },
+    },
+    audits: {
+      leakAudit: passingAudit,
+      scaffoldAudit: passingAudit,
+      questionSupportAudit: passingAudit,
+      dramaticReleaseAudit: passingAudit,
+      actorialRealizationAudit: responseAudit.actorial_realization,
+      responseConfigurationAudit: responseAudit,
+      responseCompositionAudit: passingAudit,
+      repetitionAudit: passingAudit,
+      closureAudit: passingAudit,
+      releaseDeliveryAudit: passingAudit,
+    },
+    performanceAdjudicationEligibility: { eligible: false, reason: 'unsupported_performance_tactic' },
+  };
+  const combined = applyTutorStubJointPerformanceOwnershipAudit({
+    audit: baseAudit,
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    world,
+  });
+
+  assert.equal(combined.ok, true, JSON.stringify(combined.failureClusters));
+  assert.equal(combined.deterministicCompositePartRecognition.applied, true);
+  assert.equal(combined.audits.actorialRealizationAudit.ok, true);
+  assert.deepEqual(combined.audits.actorialRealizationAudit.issues, []);
+  assert.deepEqual(combined.performanceAdjudicationEligibility, {
+    eligible: false,
+    reason: 'deterministic_composite_part_ownership_passed',
+  });
+  assert.equal(combined.performanceAdjudication, undefined);
+});
+
+test('typed advocate ownership rejects missing initiation, unrelated handoff, SOURCE rescue, and PERFORMANCE action', () => {
+  const selectedConfiguration = advocateConfiguration();
+  const world = {
+    title: 'A public archive',
+    setting: 'A ledger, call log, sample, and balance rest on the archive table.',
+    question: 'What does the public record establish?',
+    premiseById: new Map(),
+  };
+  const cases = [
+    {
+      id: 'handoff_only',
+      performance: {
+        entry: 'The ledger leaves the attribution unproved.',
+        response: 'The ledger remains within its recorded limit.',
+      },
+      handoff: 'Next, check the ledger against the call log.',
+      failed: 'performance_initiation',
+    },
+    {
+      id: 'unrelated_handoff',
+      performance: {
+        entry: 'My case is bounded by the ledger, not yet by custody.',
+        response: 'That ledger supports attribution only within the archive.',
+      },
+      handoff: 'Next, weigh the sample on the balance.',
+      failed: 'handoff_relevant_delegated_complement',
+    },
+    {
+      id: 'performance_action',
+      performance: {
+        entry: 'My case is bounded by the ledger, not yet by custody.',
+        response: 'Next, check the ledger against the call log.',
+      },
+      handoff: 'Now, compare that ledger with the call log.',
+      failed: 'performance_action_absent',
+    },
+  ];
+  for (const row of cases) {
+    const composition = composeTutorStubJointPerformanceFirstDraft({
+      structured: parseTutorStubJointPerformanceFirstDraft(
+        JSON.stringify({
+          uptake: 'That leaves the attribution open.',
+          performance: row.performance,
+          handoff: row.handoff,
+        }),
+      ),
+    });
+    const audit = auditTutorStubJointPerformanceOwnership({
+      composition,
+      candidate: composition.text,
+      configuration: selectedConfiguration,
+      world,
+    });
+    assert.equal(audit.ok, false, row.id);
+    assert.equal(
+      audit.compositePartOwnership.requirements.find((requirement) => requirement.id === row.failed)?.ok,
+      false,
+      row.id,
+    );
+  }
+
+  const sourceComposition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake: 'That leaves the attribution open.',
+        performance: {
+          entry: 'The ledger remains bounded by its recorded line.',
+          response: 'The ledger leaves custody unproved.',
+        },
+        handoff: 'Next, check the ledger against the call log.',
+      }),
+    ),
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ mode: 'presented_exhibit', surface: 'My case is bounded by the ledger, not yet by custody.' }],
+    },
+  });
+  const sourceAudit = auditTutorStubJointPerformanceOwnership({
+    composition: sourceComposition,
+    candidate: sourceComposition.text,
+    configuration: selectedConfiguration,
+    world,
+  });
+  assert.equal(sourceAudit.ok, false);
+  assert.equal(
+    sourceAudit.compositePartOwnership.requirements.find((row) => row.id === 'performance_initiation').ok,
+    false,
+  );
+  assert.deepEqual(sourceAudit.compositePartOwnership.excluded_span_ids, ['source_1']);
 });
 
 test('v2 compiles precise and charismatic stance as action-neutral performance contracts', () => {

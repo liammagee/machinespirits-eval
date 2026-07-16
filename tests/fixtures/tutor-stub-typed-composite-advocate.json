@@ -1,0 +1,173 @@
+{
+  "schema": "machinespirits.tutor-stub.typed-composite-advocate-fixture.v1",
+  "world": {
+    "title": "The Recalled Edition",
+    "setting": "The archive ledger, revision log, final paragraph, and window latch lie in public view on the archive desk.",
+    "question": "Who inserted the false quote?",
+    "public_objects": [
+      "archive ledger",
+      "revision log",
+      "final paragraph",
+      "window latch"
+    ]
+  },
+  "public_turn": {
+    "visibility": "public",
+    "learner_move": "What should I write next about Crane and the false quote?",
+    "public_evidence": [
+      {
+        "surface": "The archive ledger lists Crane as the reporter, but does not record who inserted the false quote."
+      },
+      {
+        "surface": "The revision log and final paragraph are available for comparison."
+      }
+    ],
+    "due_evidence": []
+  },
+  "cases": [
+    {
+      "id": "generic_positive",
+      "kind": "positive",
+      "uptake": "That distinction keeps the accusation open.",
+      "entry": "My case is that the ledger makes Crane the reporter, not yet the inserter.",
+      "response": "The entry proves authorship only; it does not establish who added the quote.",
+      "handoff": "Next, compare the ledger's quote entry with the final paragraph.",
+      "expected": {
+        "audit_ok": true,
+        "actorial_part_visible": true,
+        "action_family_visible": true,
+        "composite_requirements": {
+          "performance_initiation": true,
+          "performance_action_absent": true,
+          "handoff_relevant_delegated_complement": true,
+          "handoff_selected_action": true
+        }
+      }
+    },
+    {
+      "id": "saved_v27_i2_turn_6",
+      "kind": "positive",
+      "world": {
+        "title": "The Light Shillings",
+        "setting": "Verrell's graver, the shilling, and the touchstone are public in the Marrick assay room.",
+        "question": "Whose hand struck the false shillings?",
+        "public_objects": [
+          "graver",
+          "shilling",
+          "touchstone",
+          "crucible"
+        ]
+      },
+      "public_turn": {
+        "visibility": "public",
+        "learner_move": "What should I write next about Verrell's graver and the shilling's metal?",
+        "public_evidence": [
+          {
+            "surface": "Verrell alone holds the broad graver on his bench."
+          },
+          {
+            "surface": "The shilling's poor metal remains untraced to a crucible."
+          }
+        ],
+        "due_evidence": []
+      },
+      "uptake": "Write: Verrell's graver may matter to a die, but not yet to this shilling's metal.",
+      "entry": "My case is that Verrell's graver makes him a possible die-cutter, not yet a coiner.",
+      "response": "That support concerns the graver only; it does not establish whose crucible supplied the metal.",
+      "handoff": "Set the shilling by the touchstone and ask what its metal can tell us.",
+      "expected": {
+        "audit_ok": true,
+        "actorial_part_visible": true,
+        "action_family_visible": true,
+        "composite_requirements": {
+          "performance_initiation": true,
+          "performance_action_absent": true,
+          "handoff_relevant_delegated_complement": true,
+          "handoff_selected_action": true
+        }
+      }
+    },
+    {
+      "id": "handoff_only_advocacy",
+      "kind": "negative",
+      "uptake": "That distinction keeps the accusation open.",
+      "entry": "I open the archive ledger beside the final paragraph.",
+      "response": "The entry proves authorship only; it does not establish who added the quote.",
+      "handoff": "Test my case by comparing the ledger's quote entry with the final paragraph.",
+      "expected": {
+        "audit_ok": false,
+        "actorial_part_visible": false,
+        "action_family_visible": true,
+        "composite_requirements": {
+          "performance_initiation": false,
+          "performance_action_absent": true,
+          "handoff_relevant_delegated_complement": true,
+          "handoff_selected_action": true
+        }
+      }
+    },
+    {
+      "id": "unrelated_handoff",
+      "kind": "negative",
+      "uptake": "That distinction keeps the accusation open.",
+      "entry": "My case is that the ledger makes Crane the reporter, not yet the inserter.",
+      "response": "The entry proves authorship only; it does not establish who added the quote.",
+      "handoff": "Next, inspect the window latch beside the archive desk.",
+      "expected": {
+        "audit_ok": false,
+        "actorial_part_visible": false,
+        "action_family_visible": true,
+        "composite_requirements": {
+          "performance_initiation": true,
+          "performance_action_absent": true,
+          "handoff_relevant_delegated_complement": false,
+          "handoff_selected_action": true
+        }
+      }
+    },
+    {
+      "id": "source_only_advocacy",
+      "kind": "negative",
+      "source": {
+        "mode": "presented_exhibit",
+        "role": "archive memorandum",
+        "surface": "My case is that the ledger makes Crane the reporter, not yet the inserter."
+      },
+      "uptake": "That distinction keeps the accusation open.",
+      "entry": "I open the archive ledger beside the final paragraph.",
+      "response": "The entry proves authorship only; it does not establish who added the quote.",
+      "handoff": "Next, compare the ledger's quote entry with the final paragraph.",
+      "expected": {
+        "audit_ok": false,
+        "actorial_part_visible": false,
+        "action_family_visible": true,
+        "excluded_source_count": 1,
+        "composite_requirements": {
+          "performance_initiation": false,
+          "performance_action_absent": true,
+          "handoff_relevant_delegated_complement": true,
+          "handoff_selected_action": true
+        }
+      }
+    },
+    {
+      "id": "performance_issued_action",
+      "kind": "negative",
+      "uptake": "That distinction keeps the accusation open.",
+      "entry": "My case is that the ledger makes Crane the reporter, not yet the inserter.",
+      "response": "Compare the ledger's quote entry with the final paragraph to test my case.",
+      "handoff": "The ledger and final paragraph remain open on the archive desk.",
+      "expected": {
+        "audit_ok": false,
+        "actorial_part_visible": false,
+        "action_family_visible": false,
+        "composite_requirements": {
+          "performance_initiation": true,
+          "performance_action_absent": false,
+          "handoff_relevant_delegated_complement": false,
+          "handoff_selected_action": false
+        }
+      }
+    }
+  ]
+}
