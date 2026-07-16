@@ -70,6 +70,11 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
     'Put direct pressure on the claim rather than the learner and name the public test that could answer it.',
 });
 
+const STANCE_EXECUTION_CUES = Object.freeze({
+  charismatic:
+    'Make the final handoff a named challenge to one public claim or object. Use one decisive public action such as test, refuse, risk, or stop; do not rely on boundary words such as only or not to carry the stance. If a requested pressure tactic was downgraded, sharpen the delivered boundary without inventing contrary evidence.',
+});
+
 function oneLine(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
@@ -225,6 +230,7 @@ export function buildTutorStubFirstDraftContract({
     directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
       ? 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.'
       : TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
+  const stanceExecution = STANCE_EXECUTION_CUES[stance] || null;
   const actionInstruction =
     directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
       ? 'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence.'
@@ -260,6 +266,7 @@ export function buildTutorStubFirstDraftContract({
     performance: {
       engagement_stance: stance,
       stance_instruction: oneLine(getEngagementStanceDefinition(stance)?.stance_contract),
+      stance_execution: stanceExecution,
       actorial_part: part,
       actorial_part_label: configuration.actorial_part_label || part.replace(/_/gu, ' '),
       part_instruction: definitionContract(
@@ -348,7 +355,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     contract.ending.clarification_invitation_required
       ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining. Make this a separate direct permission statement; do not hide it inside an option list or another exercise.'
       : null,
-    `VOICE — ${contract.performance.stance_instruction}`,
+    `VOICE — ${contract.performance.stance_instruction}${contract.performance.stance_execution ? ` Execute the stance independently of the tactic: ${contract.performance.stance_execution}` : ''}`,
     `SCENE — ${contract.language.scene_instruction}`,
     'Do not mention roles, role-play, teaching strategy, configuration, analysis, proof machinery, hidden evidence, or future evidence. Do not split uptake and development into separate voices, headings, paragraphs, or asides.',
     '[End tutor-only first-draft performance contract]',

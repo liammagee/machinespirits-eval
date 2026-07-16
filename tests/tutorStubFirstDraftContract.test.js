@@ -72,6 +72,20 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   assert.doesNotMatch(prompt, /release schedule|premise id|rule id|concealed answer/iu);
 });
 
+test('charismatic stance remains executable when counterpressure is replaced by a safe boundary', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration({ engagement_stance: 'charismatic' }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.match(prompt, /Execute the stance independently of the tactic/iu);
+  assert.match(prompt, /final handoff a named challenge to one public claim or object/iu);
+  assert.match(prompt, /test, refuse, risk, or stop/iu);
+  assert.match(prompt, /without inventing contrary evidence/iu);
+});
+
 test('an enacted source is compiled as direct speech rather than a printable role direction', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What does the entry show?',

@@ -69,19 +69,16 @@ gates_per_cell:
 
 change_log:
   speaking_prompt: >-
-    Iteration 3 preserves the prompt wording but restores an exact authored
-    public counterpressure pair to both live and frozen compilation. The
-    speaking model can now enact the selected dramatic collision instead of
-    receiving a fail-closed evidentiary-boundary substitute.
+    Iteration 4 makes charismatic stance execution independent of the selected
+    tactic. When counterpressure is safely downgraded, the delivered boundary
+    must still end in a decisive challenge to a named public claim or object,
+    without inventing contrary evidence.
   recovery_only: >-
     Recovery is disabled in original-only screening. Strict end-to-end repair
     and fallback behavior remains unchanged outside this development screen.
   audit_recognition_only: >-
-    The deterministic audit now recognizes evidence-grounded support/exclusion
-    contrasts such as marking a caster rather than a striker, while rejecting
-    mere prop preferences. Saved-candidate corrections remain separate from
-    generation improvement. Safety, public-boundary, uptake, and non-actorial
-    failures cannot be relabelled.
+    No audit recognition change is made in iteration 4. The prior general
+    support/exclusion correction remains active and separately accounted.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

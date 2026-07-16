@@ -362,22 +362,31 @@ export function tutorStubFirstDraftIterationStopping({
   const previousRate = previousCompleted ? previousAccepted / previousCompleted : 0;
   const currentConfigurationRealization = Number(current?.meanConfigurationRealization);
   const previousConfigurationRealization = Number(previous?.meanConfigurationRealization);
+  const comparableCompletion = currentCompleted >= previousCompleted;
   const configurationRealizationImproved =
+    comparableCompletion &&
     Number.isFinite(currentConfigurationRealization) &&
     Number.isFinite(previousConfigurationRealization) &&
     currentConfigurationRealization > previousConfigurationRealization;
+  const comparableAcceptanceRateImproved =
+    currentCompleted === previousCompleted && currentRate > previousRate;
+  const comparableAcceptedCountImproved =
+    comparableCompletion && currentAccepted > previousAccepted;
   const improved =
-    currentRate > previousRate ||
-    (currentRate === previousRate && currentAccepted > previousAccepted) ||
+    comparableAcceptanceRateImproved ||
+    comparableAcceptedCountImproved ||
     configurationRealizationImproved ||
-    Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0) ||
-    Number(current?.deterministicFallbacks || 0) < Number(previous?.deterministicFallbacks || 0);
+    (comparableCompletion &&
+      Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0)) ||
+    (comparableCompletion &&
+      Number(current?.deterministicFallbacks || 0) < Number(previous?.deterministicFallbacks || 0));
   const consecutive = improved
     ? 0
     : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
   return {
     measurableImprovement: improved,
     configurationRealizationImproved,
+    comparableCompletion,
     semanticRecognitionCorrections: Number(current?.semanticRecognitionCorrections || 0),
     consecutiveWithoutImprovement: consecutive,
     maximumConsecutiveWithoutImprovement: maximum,

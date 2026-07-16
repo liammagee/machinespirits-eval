@@ -373,6 +373,32 @@ test('development stopping counts configuration realization improvement without 
   assert.equal(recognitionOnly.stop, true);
 });
 
+test('development stopping does not reward an early-stopped survivor rate', () => {
+  const previous = {
+    completedTurns: 4,
+    originalCandidatesAccepted: 3,
+    meanConfigurationRealization: 0.91675,
+    safetyFailures: 0,
+    deterministicFallbacks: 0,
+    stopping: { consecutiveWithoutImprovement: 0 },
+  };
+  const current = tutorStubFirstDraftIterationStopping({
+    current: {
+      completedTurns: 2,
+      originalCandidatesAccepted: 2,
+      meanConfigurationRealization: 0.9165,
+      safetyFailures: 0,
+      deterministicFallbacks: 0,
+    },
+    previous,
+  });
+
+  assert.equal(current.comparableCompletion, false);
+  assert.equal(current.measurableImprovement, false);
+  assert.equal(current.consecutiveWithoutImprovement, 1);
+  assert.equal(current.stop, false);
+});
+
 test('acceptance assessment keeps original, repair, fallback, safety, and latency separate', () => {
   const report = {
     rows: [

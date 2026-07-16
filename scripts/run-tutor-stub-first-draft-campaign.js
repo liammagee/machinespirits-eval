@@ -157,16 +157,55 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-async function runDevelopment(plan, config, iteration) {
-  const previousResultPath = path.join(
-    plan.artifactRoot,
-    `iteration-${iteration - 1}`,
-    'working-screen-result.json',
+function workingResultMetrics(result) {
+  const completedTurns = (result?.cells || []).reduce(
+    (sum, cell) => sum + Number(cell.completedTurns || 0),
+    0,
   );
-  const previousResult = iteration > 1 && fs.existsSync(previousResultPath) ? readJson(previousResultPath) : null;
-  if (previousResult?.stopping?.stop === true) {
+  const configurationRealizationTotal = (result?.cells || []).reduce(
+    (sum, cell) =>
+      sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
+    0,
+  );
+  return {
+    completedTurns,
+    originalCandidatesAccepted: Number(result?.originalAcceptance || 0),
+    meanConfigurationRealization: completedTurns
+      ? configurationRealizationTotal / completedTurns
+      : null,
+    semanticRecognitionCorrections: Number(result?.semanticRecognitionCorrections || 0),
+    safetyFailures: Number(result?.finalSafetyFailures || 0),
+    deterministicFallbacks: Number(result?.deterministicFallbacks || 0),
+  };
+}
+
+function replayWorkingStoppingHistory({ artifactRoot, throughIteration, maximum }) {
+  let previous = null;
+  for (let index = 1; index <= throughIteration; index += 1) {
+    const resultPath = path.join(artifactRoot, `iteration-${index}`, 'working-screen-result.json');
+    if (!fs.existsSync(resultPath)) break;
+    const current = workingResultMetrics(readJson(resultPath));
+    current.stopping = tutorStubFirstDraftIterationStopping({
+      current,
+      previous,
+      maximumConsecutiveWithoutImprovement: maximum,
+    });
+    previous = current;
+  }
+  return previous;
+}
+
+async function runDevelopment(plan, config, iteration) {
+  const maximumConsecutiveWithoutImprovement =
+    config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
+  const previousMetrics = replayWorkingStoppingHistory({
+    artifactRoot: plan.artifactRoot,
+    throughIteration: iteration - 1,
+    maximum: maximumConsecutiveWithoutImprovement,
+  });
+  if (previousMetrics?.stopping?.stop === true) {
     throw new Error(
-      `development loop already stopped after ${previousResult.stopping.consecutiveWithoutImprovement} consecutive iterations without measurable improvement`,
+      `development loop already stopped after ${previousMetrics.stopping.consecutiveWithoutImprovement} consecutive iterations without measurable improvement`,
     );
   }
   if (fs.existsSync(plan.iterationRoot)) {
@@ -247,33 +286,10 @@ async function runDevelopment(plan, config, iteration) {
     safetyFailures: result.finalSafetyFailures,
     deterministicFallbacks: result.deterministicFallbacks,
   };
-  const previousCompletedTurns = previousResult
-    ? (previousResult.cells || []).reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0)
-    : 0;
-  const previousConfigurationRealizationTotal = previousResult
-    ? (previousResult.cells || []).reduce(
-        (sum, cell) => sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
-        0,
-      )
-    : 0;
-  const previousMetrics = previousResult
-    ? {
-        completedTurns: previousCompletedTurns,
-        originalCandidatesAccepted: Number(previousResult.originalAcceptance || 0),
-        meanConfigurationRealization: previousCompletedTurns
-          ? previousConfigurationRealizationTotal / previousCompletedTurns
-          : null,
-        semanticRecognitionCorrections: Number(previousResult.semanticRecognitionCorrections || 0),
-        safetyFailures: Number(previousResult.finalSafetyFailures || 0),
-        deterministicFallbacks: Number(previousResult.deterministicFallbacks || 0),
-        stopping: previousResult.stopping || null,
-      }
-    : null;
   result.stopping = tutorStubFirstDraftIterationStopping({
     current: currentMetrics,
     previous: previousMetrics,
-    maximumConsecutiveWithoutImprovement:
-      config.stopping?.maximum_consecutive_iterations_without_improvement || 2,
+    maximumConsecutiveWithoutImprovement,
   });
   const resultPath = writeJson(path.join(plan.iterationRoot, 'working-screen-result.json'), result);
   console.log(`working screen ${status}: ${resultPath}`);
