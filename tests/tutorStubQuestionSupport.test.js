@@ -116,6 +116,27 @@ test('a natural concrete choice and an offer to clarify satisfy bounded support'
   );
 });
 
+test('learner-facing ask-plus-meaning options are clarification invitations', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'stage_then_bounded_choice',
+    clarificationInvitationRequired: true,
+  };
+  for (const text of [
+    'You could write that G17 was present there, or ask what “resident strain” means. What changes?',
+    'You may unpack whichever connection is unclear, or choose the swab. Which do you want?',
+    'You could ask which term needs explaining, or read the quarantine entry. Which first?',
+  ]) {
+    assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true, text);
+  }
+  for (const text of [
+    'The report asks what resident strain means. What changes?',
+    'Or ask who contaminated Corvat. What changes?',
+  ]) {
+    assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, false, text);
+  }
+});
+
 test('a natural what-or contrast counts as a bounded directional choice', () => {
   const support = {
     guardRequired: true,

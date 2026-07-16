@@ -2594,6 +2594,46 @@ test('a concrete fingerprint that the messy shelf cannot explain realizes dramat
   assert.equal(audit.axes.actorial_part.performance_visible, true);
 });
 
+test('ready-judgment counterpressure is recognized independently of word order', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The Corvat flasks sit beside Devlin’s shelf and the Larkin sequencing report.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the lab notebook',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const positives = [
+    'I open the sequencing report beside the cracked incubator. That exact strain match breaks the ready accusation against Devlin’s shelf.',
+    'I mark G17 in the lab notebook. The easy shelf story buckles under the sequencing result.',
+    'I set the swab beside the report. Can the obvious accusation survive this exact match?',
+  ];
+  const negatives = [
+    'I open the sequencing report beside the cracked incubator. The ready accusation still stands.',
+    'I open the sequencing report beside the cracked incubator. The result breaks the seal.',
+  ];
+
+  for (const text of positives) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+    assert.equal(audit.axes.actorial_part.performance_visible, true, text);
+  }
+  for (const text of negatives) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+    assert.equal(audit.axes.actorial_part.performance_visible, false, text);
+  }
+});
+
 test('an accountable case that names how it could fail realizes advocate counterpressure', () => {
   const world = {
     title: 'The Contamination in the Greyfen Lab',

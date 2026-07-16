@@ -76,8 +76,12 @@ function validateWorkingScreen(config, { root }) {
 function validateAcceptance(config) {
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
   if (!cells.length) throw new Error('acceptance matrix is empty');
+  if (config.first_draft_gates?.require_all_four_cells === true && cells.length !== 4) {
+    throw new Error('acceptance matrix must declare exactly four cells');
+  }
   const ids = new Set();
   const seeds = new Set();
+  const priorities = new Set();
   for (const cell of cells) {
     const id = requiredString(cell.id, 'cell id');
     if (ids.has(id)) throw new Error(`duplicate cell id ${id}`);
@@ -85,9 +89,23 @@ function validateAcceptance(config) {
     const seed = integer(cell.seed, `${id} seed`, { minimum: 1 });
     if (seeds.has(seed)) throw new Error(`duplicate held-out seed ${seed}`);
     seeds.add(seed);
+    if (cell.priority !== undefined && cell.priority !== null) {
+      const priority = integer(cell.priority, `${id} priority`, { minimum: 1 });
+      if (priorities.has(priority)) throw new Error(`duplicate acceptance priority ${priority}`);
+      priorities.add(priority);
+    }
     requiredString(cell.world, `${id} world`);
     requiredString(cell.learner_profile, `${id} learner profile`);
   }
+  if (config.change_control?.hardest_cell_first === true) {
+    const hardest = cells.find((cell) => Number(cell.priority) === 1) || (priorities.size === 0 ? cells[0] : null);
+    if (!hardest) throw new Error('hardest-cell-first acceptance requires a priority 1 cell');
+    if (hardest.learner_profile !== 'answer_seeking') {
+      throw new Error('priority 1 must exercise the answer_seeking hard profile');
+    }
+  }
+  requiredString(config.fixed_configuration?.register_palette, 'fixed register palette');
+  integer(config.fixed_configuration?.safety_turns, 'fixed safety turns', { minimum: 1 });
   const maxConcurrency = integer(config.change_control?.maximum_concurrent_cells ?? 3, 'maximum concurrent cells', {
     minimum: 1,
   });
@@ -160,6 +178,8 @@ function autoEvalCommand({ root, config, cell, outputDir }) {
     String(fixed.dag_mode),
     '--register-temperature',
     String(fixed.register_temperature),
+    '--register-palette',
+    String(fixed.register_palette),
     '--register-overlay-threshold',
     String(fixed.register_overlay_threshold),
     '--dag-fact-dropout',
@@ -174,6 +194,8 @@ function autoEvalCommand({ root, config, cell, outputDir }) {
     String(fixed.max_tokens),
     '--history-turns',
     String(fixed.history_turns),
+    '--safety-turns',
+    String(fixed.safety_turns),
     '--trace-dir',
     outputDir,
     '--keep-going',

@@ -208,6 +208,9 @@ function invitesClarification(source) {
       source,
     ) ||
     /\byou (?:can|may) (?:also )?ask\b/iu.test(source) ||
+    /\b(?:you (?:can|could|may)|or)\b[^.!?]{0,45}\b(?:ask|clarif\w*|unpack\w*)\b[^.!?]{0,80}\b(?:clue|connection|means?|meaning|term|word|unclear)\b/iu.test(
+      source,
+    ) ||
     /\b(?:which|what)\b.{0,50}\b(?:clue|record|term|word|part|connection|distinction)\b.{0,55}\b(?:clarif\w*|unclear|explain\w*|unpack\w*|revisit\w*|examine\w*|start|first)\b/isu.test(
       source,
     ) ||

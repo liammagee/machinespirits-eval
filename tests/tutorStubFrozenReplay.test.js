@@ -16,6 +16,7 @@ const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft
 const FIXTURE_PATHS = [
   path.join(FIXTURE_DIR, 'greyfen-answer-seeking-v19.json'),
   path.join(FIXTURE_DIR, 'skyway-answer-seeking-v18.json'),
+  path.join(FIXTURE_DIR, 'tallow-answer-seeking-v20.json'),
 ];
 
 function readFixture(fixturePath) {
@@ -37,7 +38,7 @@ test('frozen replay fixtures retain the exact public prefix and original speaker
   for (const fixturePath of FIXTURE_PATHS) {
     const fixture = readFixture(fixturePath);
     assert.equal(fixture.schema, TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA);
-    assert.equal(fixture.cases.length, 4);
+    assert.ok(fixture.cases.length >= 3);
     for (const testCase of fixture.cases) {
       const bundle = testCase.bundle;
       assert.equal(bundle.schema, TUTOR_STUB_FROZEN_REPLAY_SCHEMA);
@@ -62,6 +63,7 @@ test('frozen replay fixtures retain the exact public prefix and original speaker
 
 test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {
   const improvements = [];
+  const corrections = [];
   for (const fixturePath of FIXTURE_PATHS) {
     const fixture = readFixture(fixturePath);
     for (const testCase of fixture.cases) {
@@ -74,7 +76,16 @@ test('model-free corpus re-audits every saved candidate without regressing accep
           deliveryConfiguration: candidate.deliveryConfiguration,
           candidateKind: candidate.kind,
         });
-        if (candidate.recordedAuditOk) {
+        if (typeof candidate.expectedCurrentAuditOk === 'boolean') {
+          assert.equal(audit.ok, candidate.expectedCurrentAuditOk, `${testCase.id} expected correction did not hold`);
+          for (const cluster of candidate.expectedFailureClusters || []) {
+            assert.ok(
+              audit.hardFailureClusters.includes(cluster),
+              `${testCase.id} expected correction missing ${cluster}`,
+            );
+          }
+          corrections.push(`${testCase.id}:${candidate.expectationReason || candidate.kind}`);
+        } else if (candidate.recordedAuditOk) {
           assert.equal(
             audit.ok,
             true,
@@ -90,6 +101,25 @@ test('model-free corpus re-audits every saved candidate without regressing accep
   assert.ok(
     improvements.some((row) => row.startsWith('2026-07-16T05-50-54-528Z:')),
     'at least one recognition improvement should come from the Greyfen corpus',
+  );
+  assert.deepEqual(corrections, [
+    '2026-07-16T07-03-36-147Z:t001:known_v20_false_acceptance_duplicate_due_clue',
+  ]);
+});
+
+test('the V20 fixture preserves the uncontaminated duplicate and records no invented fallback', () => {
+  const fixture = readFixture(FIXTURE_PATHS[2]);
+  const first = fixture.cases.find((row) => row.turn === 1);
+  const later = fixture.cases.filter((row) => row.turn > 1);
+
+  assert.ok(first);
+  assert.equal(first.candidates.length, 1);
+  assert.equal(first.candidates[0].recordedAuditOk, true);
+  assert.equal(first.candidates[0].expectedCurrentAuditOk, false);
+  assert.ok(later.length > 0, 'later cases remain useful but follow the contaminated first turn');
+  assert.equal(
+    fixture.cases.flatMap((row) => row.candidates).filter((row) => row.kind === 'deterministic_fallback').length,
+    0,
   );
 });
 

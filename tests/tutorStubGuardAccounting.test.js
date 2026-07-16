@@ -10,6 +10,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
 const SAFE_REPAIR =
   'You’re right to ask what the public evidence licenses us to write. I tap the mint-yard register at its exact limit; “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
+const DUPLICATE_CLUE_DRAFT =
+  "Write: “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day.” I tap the mint-yard register; “I can attest that the town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.” What does that establish?";
+const COMPLEMENTARY_WRITE_REPAIR =
+  'Write: “The public record identifies who handles the crucible, but it does not yet identify who struck the coins.” I tap the mint-yard register; “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that establish—and no more?';
 const META_THEATRICAL_DRAFT =
   "You’re right to ask what the public evidence licenses us to write. I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: what does this new clue support?";
 const FLAT_CHARACTER_DRAFT =
@@ -69,6 +73,10 @@ process.stdin.on('end', () => {
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
     : process.env.TUTOR_GUARD_FAKE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
+    : process.env.TUTOR_GUARD_FAKE_MODE === 'duplicate-repair' && repaired
+      ? ${JSON.stringify(COMPLEMENTARY_WRITE_REPAIR)}
+    : process.env.TUTOR_GUARD_FAKE_MODE === 'duplicate-repair'
+      ? ${JSON.stringify(DUPLICATE_CLUE_DRAFT)}
     : ['repair', 'meta-repair', 'tactic-repair'].includes(process.env.TUTOR_GUARD_FAKE_MODE) && repaired
       ? ${JSON.stringify(SAFE_REPAIR)}
       : process.env.TUTOR_GUARD_FAKE_MODE === 'meta-repair'
@@ -290,6 +298,30 @@ test('meta-theatrical clue narration is rejected and repaired into direct dieget
   assert.doesNotMatch(turn.tutor, /role-play|I(?:'|’)ll be|Back to (?:us|the case)/iu);
   assert.match(turn.tutor, /I tap the mint-yard register[\s\S]*“I have my finger on the exact line/u);
   assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
+});
+
+test('a duplicated due clue is rejected before delivery and repaired into a complementary Write entry', () => {
+  const { events } = runGuardFixture('duplicate-repair');
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+
+  assert.equal(accounting.originalCandidate.candidate.text, DUPLICATE_CLUE_DRAFT);
+  assert.equal(accounting.originalCandidate.audits.dramaticReleaseAudit.ok, false);
+  assert.ok(
+    accounting.originalCandidate.audits.dramaticReleaseAudit.issues.some(
+      (issue) => issue.type === 'duplicate_clue_delivery',
+    ),
+  );
+  assert.ok(
+    accounting.originalCandidate.guardedSpans.some(
+      (span) => span.guard === 'dramatic_release' && span.issueType === 'duplicate_clue_delivery',
+    ),
+  );
+  assert.equal(accounting.outcome, 'guarded_policy_repair_accepted');
+  assert.equal(accounting.finalDelivery.candidate.text, COMPLEMENTARY_WRITE_REPAIR);
+  assert.equal(accounting.finalDelivery.auditOk, true);
+  assert.equal(turn.tutor, COMPLEMENTARY_WRITE_REPAIR);
+  assert.equal(turn.tutorDramaticReleaseAudit.clueDeliveryMultiplicity.ok, true);
 });
 
 test('a flat named character is rewritten until the selected stance tactic is visible', () => {

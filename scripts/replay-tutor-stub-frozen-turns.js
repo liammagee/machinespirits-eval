@@ -164,6 +164,14 @@ function auditFixture(fixture) {
         deliveryConfiguration: candidate.deliveryConfiguration,
         candidateKind: candidate.kind,
       });
+      const hasExpectedCorrection = typeof candidate.expectedCurrentAuditOk === 'boolean';
+      const expectedClusters = Array.isArray(candidate.expectedFailureClusters)
+        ? candidate.expectedFailureClusters
+        : [];
+      const recognitionCorrectionConfirmed =
+        hasExpectedCorrection &&
+        currentAudit.ok === candidate.expectedCurrentAuditOk &&
+        expectedClusters.every((cluster) => currentAudit.hardFailureClusters.includes(cluster));
       results.push({
         caseId: testCase.id,
         turn: testCase.turn,
@@ -174,7 +182,13 @@ function auditFixture(fixture) {
         recordedAuditOk: candidate.recordedAuditOk,
         currentAuditOk: currentAudit.ok,
         recognitionImproved: candidate.recordedAuditOk === false && currentAudit.ok === true,
-        recognitionRegressed: candidate.recordedAuditOk === true && currentAudit.ok === false,
+        recognitionCorrectionExpected: hasExpectedCorrection,
+        recognitionCorrectionConfirmed,
+        expectationReason: candidate.expectationReason || null,
+        recognitionRegressed:
+          candidate.recordedAuditOk === true &&
+          currentAudit.ok === false &&
+          !recognitionCorrectionConfirmed,
         safetyFailure: currentAudit.safetyFailure,
         recordedFailureClusters: candidate.recordedFailureClusters,
         currentFailureClusters: currentAudit.hardFailureClusters,
@@ -189,6 +203,10 @@ function auditFixture(fixture) {
     cases: fixture.cases?.length || 0,
     candidates: results.length,
     auditRecognitionImprovements: results.filter((row) => row.recognitionImproved).length,
+    auditRecognitionCorrections: results.filter((row) => row.recognitionCorrectionConfirmed).length,
+    auditRecognitionCorrectionMismatches: results.filter(
+      (row) => row.recognitionCorrectionExpected && !row.recognitionCorrectionConfirmed,
+    ).length,
     auditRecognitionRegressions: results.filter((row) => row.recognitionRegressed).length,
     safetyFailures: results.filter((row) => row.safetyFailure).length,
     results,
@@ -205,9 +223,11 @@ async function main() {
     const report = auditFixture(fixture);
     if (args.out) writeJson(args.out, report);
     console.log(
-      `model-free audit: ${report.candidates} candidates; ${report.auditRecognitionImprovements} recognition improvements; ${report.auditRecognitionRegressions} regressions; ${report.safetyFailures} safety failures`,
+      `model-free audit: ${report.candidates} candidates; ${report.auditRecognitionImprovements} recognition improvements; ${report.auditRecognitionCorrections} expected corrections; ${report.auditRecognitionRegressions} regressions; ${report.safetyFailures} safety failures`,
     );
-    if (report.auditRecognitionRegressions > 0) process.exitCode = 1;
+    if (report.auditRecognitionRegressions > 0 || report.auditRecognitionCorrectionMismatches > 0) {
+      process.exitCode = 1;
+    }
     return;
   }
   if (!args.trace) throw new Error('--trace is required');

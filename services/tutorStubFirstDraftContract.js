@@ -215,6 +215,7 @@ export function buildTutorStubFirstDraftContract({
     ? `Credit all ${Number(learnerAdvance.supported_move_count || 0)} warranted moves the learner just made; do not ask for any of them again. Test or extend only the next unresolved edge.`
     : null;
   const releaseCues = (dramaticReleaseFrame?.entries || []).map(releaseCue).filter(Boolean);
+  const writableEntryBeforeDueEvidence = writableEntryRequested && releaseCues.length > 0;
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
   const tactic = configuration.actorial_performance?.id || null;
@@ -228,11 +229,14 @@ export function buildTutorStubFirstDraftContract({
     learner_move: learnerMove,
     opening: {
       instruction:
-        writableEntryRequested
+        writableEntryBeforeDueEvidence
+          ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
+          : writableEntryRequested
           ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
           : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
       writable_entry_requested: writableEntryRequested,
+      complementary_to_due_evidence: writableEntryBeforeDueEvidence,
     },
     development: {
       action_family: actionFamily,
@@ -325,6 +329,9 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
       : null,
     `ENTRY — ${contract.performance.prop_instruction}`,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
+    releaseRows.length
+      ? 'SINGLE DELIVERY — State each due clue exactly once. Do not preview or paraphrase it in the Write entry, opening, or closing summary.'
+      : null,
     ...releaseRows.map((row) => `- ${row}`),
     `END — ${contract.ending.instruction}`,
     contract.evidence?.active

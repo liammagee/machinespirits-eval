@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  auditTutorStubClueDeliveryMultiplicity,
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
@@ -10,6 +11,67 @@ import {
   tutorStubSourcePerspectiveDriftVisible,
   tutorStubDramaticReleasePrompt,
 } from '../services/tutorStubDramaticRelease.js';
+
+test('duplicate due-clue wording is rejected before it can be delivered', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_new',
+        via: 'director',
+        surface:
+          'The depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in.',
+        presentation: { mode: 'enacted_role', role: 'depot engineer' },
+      },
+    ],
+  });
+  const text =
+    'Write: “The depot’s new chargers are a plausible suspect because they draw their heaviest evening current when vans return.” I open the depot sheet. “I can attest that the depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in.” What does that change?';
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame });
+
+  assert.equal(audit.ok, false);
+  assert.equal(audit.clueDeliveryMultiplicity.ok, false);
+  const issue = audit.issues.find((row) => row.type === 'duplicate_clue_delivery');
+  assert.ok(issue);
+  assert.equal(issue.premise, 'p_new');
+  assert.equal(issue.bearingSentenceCount, 2);
+  assert.equal(issue.matches.length, 2);
+});
+
+test('one delivery of each sentence in a multi-sentence clue remains valid', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_well',
+        via: 'tutor',
+        surface:
+          'The school well is no spring. It fills by a stone lead from the disused font-house on the church slope.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'I open the survey book: “The school well is no spring. It fills by a stone lead from the disused font-house on the church slope.” What does that add?';
+
+  assert.equal(auditTutorStubClueDeliveryMultiplicity({ text, frame }).ok, true);
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
+});
+
+test('the multiplicity guard ignores a restated old clue when a different clue is due', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_due',
+        via: 'tutor',
+        surface: 'The version history records a post-filing insertion.',
+        presentation: { mode: 'presented_exhibit' },
+      },
+    ],
+  });
+  const text =
+    'The badge log still places Dario in the kitchen. I pull the version history onto the screen: it records a post-filing insertion. What changed?';
+
+  assert.equal(auditTutorStubClueDeliveryMultiplicity({ text, frame }).ok, true);
+});
 
 test('director evidence becomes an enacted in-scene release', () => {
   const frame = buildTutorStubDramaticReleaseFrame({

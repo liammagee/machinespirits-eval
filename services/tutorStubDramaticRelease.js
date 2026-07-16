@@ -5,11 +5,89 @@ const ROLE_TOKEN_STOP_WORDS = new Set(
     ' ',
   ),
 );
+const CLUE_TOKEN_STOP_WORDS = new Set(
+  'about after again also and are because before being between could does from had has have her him his into its just more not one only other our out over same she should some than that the their them then there these they this those through too under very was were what when where which while who will with would your'.split(
+    ' ',
+  ),
+);
 
 function oneLine(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
     .trim();
+}
+
+function clueContentTokens(value) {
+  return new Set(
+    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+      .map((token) => token.replace(/[’']/gu, ''))
+      .filter((token) => !CLUE_TOKEN_STOP_WORDS.has(token)),
+  );
+}
+
+function sentenceRows(value) {
+  return oneLine(value)
+    .split(/(?<=[.!?])\s+|(?<=[.!?][”"'’])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function clueBearingSentenceMatches(text, surface) {
+  const responseSentences = sentenceRows(text);
+  const clueSentences = sentenceRows(surface);
+  if (!responseSentences.length || !clueSentences.length) return [];
+  // An authored clue may itself contain several sentences. Detect repeated
+  // delivery of any one source sentence, rather than mistaking the clue's own
+  // second sentence for a duplicate of its first.
+  return clueSentences
+    .map((clueSentence) => {
+      const clueTokens = clueContentTokens(clueSentence);
+      if (!clueTokens.size) return [];
+      const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
+      return responseSentences.filter((sentence) => {
+        const sentenceTokens = clueContentTokens(sentence);
+        let overlap = 0;
+        for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
+        return overlap >= threshold;
+      });
+    })
+    .sort((left, right) => right.length - left.length)[0] || [];
+}
+
+/**
+ * Detect repeated delivery of evidence due in this response only. A later
+ * turn may legitimately recall an already-public clue; this guard is scoped
+ * to the active release frame so it cannot reject that ordinary restatement.
+ */
+export function auditTutorStubClueDeliveryMultiplicity({ text = '', frame = null } = {}) {
+  if (!frame?.active) {
+    return { ok: true, active: false, issues: [], repeatedEntries: [] };
+  }
+  const repeatedEntries = (frame.entries || [])
+    .map((entry) => {
+      const matches = clueBearingSentenceMatches(text, entry.surface);
+      return {
+        premise: entry.premise || null,
+        surface: oneLine(entry.surface),
+        bearingSentenceCount: matches.length,
+        matches,
+      };
+    })
+    .filter((entry) => entry.bearingSentenceCount > 1);
+  const issues = repeatedEntries.map((entry) => ({
+    type: 'duplicate_clue_delivery',
+    reason: 'states the same newly released clue in more than one tutor sentence',
+    premise: entry.premise,
+    surface: entry.surface,
+    bearingSentenceCount: entry.bearingSentenceCount,
+    matches: entry.matches,
+  }));
+  return {
+    ok: issues.length === 0,
+    active: true,
+    issues,
+    repeatedEntries,
+  };
 }
 
 function inferredPresentationMode(row = {}) {
@@ -273,6 +351,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
       enactmentVisible: false,
       exhibitHandoffVisible: false,
       returnVisible: false,
+      clueDeliveryMultiplicity: { ok: true, active: false, issues: [], repeatedEntries: [] },
       issues: [],
     };
   }
@@ -287,7 +366,9 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
   const entranceVisible = enactmentVisible || exhibitHandoffVisible;
   const handoffVisible = entranceVisible;
   const returnVisible = RETURN_PATTERN.test(response);
+  const clueDeliveryMultiplicity = auditTutorStubClueDeliveryMultiplicity({ text: response, frame });
   const issues = [];
+  issues.push(...clueDeliveryMultiplicity.issues);
   if (metaRoleplayAnnouncement || metaReleaseAnnouncement) {
     issues.push({
       type: 'meta_dramatic_announcement',
@@ -344,6 +425,7 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
     roleStageDirection,
     sourcePerspectiveDrift,
     firstPersonRoleVoice,
+    clueDeliveryMultiplicity,
     issues,
   };
 }

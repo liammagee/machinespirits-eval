@@ -261,3 +261,26 @@ test('a request for the next written entry must be answered before the dramatic 
   assert.match(prompt, /only then perform the selected development beat/iu);
   assert.match(prompt, /use the verb “breaks”/u);
 });
+
+test('a Write entry complements rather than duplicates evidence due in the same reply', () => {
+  const clue =
+    'The depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in.';
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next about the chargers?',
+    responseConfiguration: configuration(),
+    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
+    dramaticReleaseFrame: {
+      active: true,
+      requiresEnactment: true,
+      entries: [{ mode: 'enacted_role', role: 'depot engineer', surface: clue }],
+    },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.equal(contract.opening.writable_entry_requested, true);
+  assert.equal(contract.opening.complementary_to_due_evidence, true);
+  assert.match(prompt, /pre-turn public status or evidentiary limit/iu);
+  assert.match(prompt, /do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW/iu);
+  assert.match(prompt, /SINGLE DELIVERY — State each due clue exactly once/iu);
+  assert.equal(prompt.split(clue).length - 1, 1);
+});

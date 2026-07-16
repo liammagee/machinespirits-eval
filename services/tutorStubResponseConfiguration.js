@@ -1109,6 +1109,18 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\b(?:easy|expected|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:accusation|answer|assumption|case|charge|claim|cry|crossing|expectation|guilty|murmur|route|shortcut|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)|\b(?:accusation|answer|assumption|case|charge|claim|crossing|cry|expectation|murmur|route|shortcut|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b|\b(?:against|before)\b[^.!?]{0,30}\b(?:easy|expected|obvious|ready)\b[^.!?]{0,25}\b(?:charge|claim|crossing|route|shortcut|story|verdict)\b/iu.test(
         text,
       );
+    const readyJudgmentUnderCounterpressure =
+      metrics.concreteSceneTermCount > 0 &&
+      responseSentences(text).some(
+        (sentence) =>
+          /\b(?:easy|expected|obvious|quick|ready)\b/iu.test(sentence) &&
+          /\b(?:accusation|answer|assumption|case|charge|claim|crossing|expectation|route|shortcut|story|verdict)\b/iu.test(
+            sentence,
+          ) &&
+          /\b(?:breaks?|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b/iu.test(
+            sentence,
+          ),
+      );
     const challengesTheRoomDirectly =
       /\b(?:face|hear|look|mark|see)\b[^.!?]{0,30}\b(?:crowd|hall|room|town|warden|witnesses?)\b/iu.test(text);
     const evidenceOutweighsReputation =
@@ -1199,6 +1211,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
+      readyJudgmentUnderCounterpressure ||
       challengesTheRoomDirectly ||
       evidenceOutweighsReputation ||
       publicPressureMeetsContraryEvidence ||

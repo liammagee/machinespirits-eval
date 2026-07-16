@@ -182,3 +182,60 @@ test('acceptance assessment keeps original, repair, fallback, safety, and latenc
   assert.equal(assessment.observed.meanOriginalLatencyMs, 100);
   assert.equal(assessment.observed.meanTotalTutorLatencyMs, 125);
 });
+
+test('acceptance expansion freezes explicit palette and safety-turn controls', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-acceptance-'));
+  try {
+    const config = {
+      schema: 'machinespirits.tutor-stub.first-draft-generalization-plan.v1',
+      id: 'acceptance-test',
+      fixed_configuration: {
+        mode: 'strict',
+        turns: 10,
+        safety_turns: 80,
+        policy: 'continuous_dynamical_system',
+        register_palette: 'all',
+        dag_mode: 'defeasible_human_scaffold',
+        register_temperature: 0.15,
+        register_overlay_threshold: 0.7,
+        dag_fact_dropout: 0,
+        dag_fact_dropout_seed: 1,
+        release_speed: 1,
+        tutor_model: 'codex.gpt-5.6-terra',
+        analysis_model: 'codex.gpt-5.6-sol',
+        learner_model: 'codex.gpt-5.6-terra',
+        cli_effort: 'low',
+        max_tokens: 4096,
+        history_turns: 4,
+      },
+      artifacts: { live_root: path.join(tmp, 'live') },
+      matrix: [
+        ['hard', 1, 'answer_seeking', 91001],
+        ['second', 2, 'diligent', 91002],
+        ['third', 3, 'premature_closure', 91003],
+        ['fourth', 4, 'low_trust_skeptic', 91004],
+      ].map(([id, priority, learner_profile, seed]) => ({
+        id,
+        priority,
+        world: `world_${id}`,
+        learner_profile,
+        seed,
+      })),
+      first_draft_gates: { require_all_four_cells: true },
+      change_control: { maximum_concurrent_cells: 3, hardest_cell_first: true },
+    };
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp });
+    const hard = plan.cells[0].argv;
+
+    assert.deepEqual(hard.slice(hard.indexOf('--register-palette'), hard.indexOf('--register-palette') + 2), [
+      '--register-palette',
+      'all',
+    ]);
+    assert.deepEqual(hard.slice(hard.indexOf('--safety-turns'), hard.indexOf('--safety-turns') + 2), [
+      '--safety-turns',
+      '80',
+    ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
