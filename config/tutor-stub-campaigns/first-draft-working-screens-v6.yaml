@@ -96,19 +96,48 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    The model now returns exactly uptake, performance.entry,
-    performance.response, and handoff. It is told explicitly that ENTRY and
-    RESPONSE form one performance beat; it must not copy, paraphrase, label, or
-    quote SOURCE.
+    Iteration 2 makes one speaking-prompt-only change with two generic parts.
+    First, it uses a three-word drafting cushion so every model-owned field
+    finishes comfortably inside its hard target. Second, compiled v2 axis
+    ownership keeps advocate testability in PERFORMANCE.response, makes the
+    PERFORMANCE stance contract action-neutral but stance-distinct, and gives
+    HANDOFF alone the concrete check or move. The v2 field contract, joint
+    performance beat, and ban on copying, paraphrasing, labelling, or quoting
+    SOURCE are unchanged.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged outside this explicit v2 frozen
-    screen.
+    repair and fallback behavior is unchanged in iteration 2 and outside this
+    explicit v2 frozen screen.
   audit_recognition_only: >-
-    No phrase-level recognition rule changes in V27 iteration 1. The change is
-    architectural ownership: deterministic v2 composition and joint-span
-    auditing replace the invalid requirement that TACTIC alone realize a
-    performance established jointly by PART and TACTIC.
+    No deterministic audit or phrase-level recognition rule changes in V27
+    iteration 2. Deterministic v2 composition and joint-span auditing remain
+    exactly as measured in iteration 1.
+  iteration_2:
+    status: predeclared
+    bounded_change_owner: speaking_prompt
+    target_failure_clusters:
+      - jointPerformanceGenerationAudit:slot_exceeds_word_target
+      - jointPerformanceGenerationPrompt:v2_axis_ownership_conflict
+    speaking_changes:
+      - three_word_drafting_cushion
+      - compiled_v2_axis_ownership_compatibility
+    compiled_v2_axis_ownership_compatibility:
+      registry_field: joint_performance_stance_contract
+      loader: getJointPerformanceStanceContract
+      host_plan_instruction_field: slots.performance.stance_instruction
+      host_plan_source_field: slots.performance.stance_instruction_source
+      permitted_instruction_sources:
+        - stance_definition
+        - safe_fallback
+      performance_response_owns:
+        - advocate_testability
+        - action_neutral_stance_distinction
+      performance_forbids:
+        - concrete_check_or_move
+      handoff_owns:
+        - concrete_check_or_move
+    recovery_change: none
+    audit_recognition_change: none
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

@@ -15,7 +15,7 @@ current:
   campaign_version: 27
   label: V27
   state: working_predeclared
-  working_iteration: 1
+  working_iteration: 2
   working_screen_id: first-draft-working-screens-v6
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v6.yaml
   acceptance_config: null
@@ -28,8 +28,126 @@ current:
       confirmation seed is reserved by this focused Marrick predeclaration.
     seed_status: not_reserved
   pre_model_attempts: []
-  working_history: []
-  last_observation: null
+  working_history:
+    - version: 27
+      working_iteration: 1
+      status: fail
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json
+      development_seed: 20261500
+      seed_disposition: reusable_non_held_out_development
+      run_head: 7fc926a2801f947da056b573a499933dccc71968
+      provenance:
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/campaign-validation.json
+        campaign_validation_sha256: a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07
+        result_sha256: 970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435
+        turn_artifacts:
+          - turn: 4
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-4.json
+            sha256: 7b18f4e9ecfeb05e95cac828d99d8f76acccbb6773421602980c2b6ba4c1e828
+          - turn: 5
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-5.json
+            sha256: 2947ff1d15e921ad228ba7fbbcbaa6b936252d59c2a1766054d8326cfb50bf9f
+          - turn: 6
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-6.json
+            sha256: 3a5c1d8b57c9110f2bad39a5e78b2031ac8b108b2287315d418ae1bb6898d1b9
+      completed_turns: [4, 5, 6]
+      unstarted_turns: [9]
+      original_candidates_accepted: 2
+      original_candidates_completed: 3
+      original_candidate_acceptance_rate: 0.6666667
+      mean_configuration_realization: 0.6666667
+      final_safety_failures: 0
+      transcript_specific_uptake_failures: 0
+      mechanical_repairs: 0
+      model_rewrites: 0
+      deterministic_fallbacks: 0
+      semantic_adjudicator_calls: 0
+      semantic_recognition_corrections: 0
+      joint_performance_model_outputs: 3
+      valid_joint_performance_outputs: 2
+      joint_performance_output_failures: 1
+      joint_performance_ownership_passes: 2
+      joint_performance_ownership_failures: 1
+      exact_host_source_occurrence_passes: 2
+      exact_host_source_occurrence_failures: 1
+      mean_original_latency_ms: 8143.6667
+      mean_total_tutor_latency_ms: 8143.6667
+      dominant_failure_clusters:
+        - cluster: jointPerformanceGenerationAudit:slot_exceeds_word_target
+          count: 1
+          evidence: observed_hard_failure
+        - cluster: jointPerformanceGenerationPrompt:v2_axis_ownership_conflict
+          count: 2
+          evidence: post_audit_counterfactual_contract_review
+          manifestations:
+            - advocate_testability_delegated_to_handoff
+            - stance_contract_assigns_concrete_check_to_performance
+      comparison:
+        comparison_available: false
+        measurable_improvement: null
+        consecutive_without_improvement: 0
+        stop: false
+        reason: first_measured_iteration
+  last_observation:
+    version: 27
+    working_iteration: 1
+    status: fail
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json
+    development_seed: 20261500
+    seed_disposition: reusable_non_held_out_development
+    run_head: 7fc926a2801f947da056b573a499933dccc71968
+    provenance:
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/campaign-validation.json
+      campaign_validation_sha256: a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07
+      result_sha256: 970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435
+      turn_artifacts:
+        - turn: 4
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-4.json
+          sha256: 7b18f4e9ecfeb05e95cac828d99d8f76acccbb6773421602980c2b6ba4c1e828
+        - turn: 5
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-5.json
+          sha256: 2947ff1d15e921ad228ba7fbbcbaa6b936252d59c2a1766054d8326cfb50bf9f
+        - turn: 6
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/marrick_v27_joint_performance/turn-6.json
+          sha256: 3a5c1d8b57c9110f2bad39a5e78b2031ac8b108b2287315d418ae1bb6898d1b9
+    completed_turns: [4, 5, 6]
+    unstarted_turns: [9]
+    original_candidates_accepted: 2
+    original_candidates_completed: 3
+    original_candidate_acceptance_rate: 0.6666667
+    mean_configuration_realization: 0.6666667
+    final_safety_failures: 0
+    transcript_specific_uptake_failures: 0
+    mechanical_repairs: 0
+    model_rewrites: 0
+    deterministic_fallbacks: 0
+    semantic_adjudicator_calls: 0
+    semantic_recognition_corrections: 0
+    joint_performance_model_outputs: 3
+    valid_joint_performance_outputs: 2
+    joint_performance_output_failures: 1
+    joint_performance_ownership_passes: 2
+    joint_performance_ownership_failures: 1
+    exact_host_source_occurrence_passes: 2
+    exact_host_source_occurrence_failures: 1
+    mean_original_latency_ms: 8143.6667
+    mean_total_tutor_latency_ms: 8143.6667
+    dominant_failure_clusters:
+      - cluster: jointPerformanceGenerationAudit:slot_exceeds_word_target
+        count: 1
+        evidence: observed_hard_failure
+      - cluster: jointPerformanceGenerationPrompt:v2_axis_ownership_conflict
+        count: 2
+        evidence: post_audit_counterfactual_contract_review
+        manifestations:
+          - advocate_testability_delegated_to_handoff
+          - stance_contract_assigns_concrete_check_to_performance
+    comparison:
+      comparison_available: false
+      measurable_improvement: null
+      consecutive_without_improvement: 0
+      stop: false
+      reason: first_measured_iteration
   architectural_reset_from:
     version: 26
     terminal_state: stagnated
@@ -367,6 +485,7 @@ claim_boundary: >-
   This manifest governs process integrity. A working-screen pass is reusable
   development evidence, not held-out evidence. Only an unchanged, fully
   predeclared acceptance version that passes every strict gate may terminate in
-  accepted. V24, V25, and V26 stagnated before acceptance. V27 iteration 1 is
-  reusable frozen-prefix development only; V28+ remain available if a
+  accepted. V24, V25, and V26 stagnated before acceptance. V27 iteration 1 was
+  a safe 2/3 first measurement; iteration 2 is predeclared against the same
+  reusable development prefixes and label. V28+ remain available if a
   development or held-out version fails.

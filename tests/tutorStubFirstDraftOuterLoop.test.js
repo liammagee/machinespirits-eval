@@ -41,7 +41,7 @@ function fixture(tmp) {
   return { manifest, screen, screenPath };
 }
 
-test('outer-loop manifest validates the V27 joint-performance reset without predeclaring acceptance', () => {
+test('outer-loop manifest validates the predeclared V27 iteration-2 joint-performance screen', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-loop-'));
   try {
     const { manifest } = fixture(tmp);
@@ -49,7 +49,7 @@ test('outer-loop manifest validates the V27 joint-performance reset without pred
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 27);
     assert.equal(validation.currentState, 'working_predeclared');
-    assert.equal(validation.workingIteration, 1);
+    assert.equal(validation.workingIteration, 2);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.outcome, 'pending');
     assert.equal(validation.acceptancePredeclared, false);
@@ -86,7 +86,7 @@ test('outer-loop status exposes only the predeclared V27 working transition and 
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
     assert.equal(status.label, 'V27');
-    assert.equal(status.workingIteration, 1);
+    assert.equal(status.workingIteration, 2);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
     assert.deepEqual(status.developmentSeeds, [
       {
@@ -146,12 +146,132 @@ test('V27 preserves exact V26 terminal provenance and retires all V26 labels', (
       [20261403, 'retired_unstarted_due_to_stagnation'],
       [20261404, 'retired_unstarted_due_to_stagnation'],
     ]);
-    assert.equal(manifest.current.last_observation, null);
-    assert.deepEqual(manifest.current.working_history, []);
+    assert.equal(manifest.current.last_observation.version, 27);
+    assert.equal(manifest.current.last_observation.working_iteration, 1);
+    assert.equal(manifest.current.working_history.length, 1);
     assert.equal(manifest.current.acceptance_config, null);
     assert.equal(manifest.current.required_confirmation_after_primary_pass.seed_status, 'not_reserved');
     assert.equal(JSON.stringify(manifest).includes('20261600'), false);
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('V27 preserves the exact iteration-1 result and predeclares only a speaking-prompt change', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-'));
+  try {
+    const { manifest, screen } = fixture(tmp);
+    const observation = manifest.current.last_observation;
+    assert.deepEqual(observation, manifest.current.working_history[0]);
+    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json');
+    assert.equal(observation.run_head, '7fc926a2801f947da056b573a499933dccc71968');
+    assert.equal(observation.provenance.campaign_validation_sha256, 'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07');
+    assert.equal(observation.provenance.result_sha256, '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435');
+    assert.deepEqual(
+      observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
+      [
+        { turn: 4, sha256: '7b18f4e9ecfeb05e95cac828d99d8f76acccbb6773421602980c2b6ba4c1e828' },
+        { turn: 5, sha256: '2947ff1d15e921ad228ba7fbbcbaa6b936252d59c2a1766054d8326cfb50bf9f' },
+        { turn: 6, sha256: '3a5c1d8b57c9110f2bad39a5e78b2031ac8b108b2287315d418ae1bb6898d1b9' },
+      ],
+    );
+    assert.deepEqual(observation.completed_turns, [4, 5, 6]);
+    assert.deepEqual(observation.unstarted_turns, [9]);
+    assert.equal(observation.original_candidates_accepted, 2);
+    assert.equal(observation.original_candidates_completed, 3);
+    assert.equal(observation.original_candidate_acceptance_rate, 0.6666667);
+    assert.equal(observation.mean_configuration_realization, 0.6666667);
+    assert.equal(observation.final_safety_failures, 0);
+    assert.equal(observation.mechanical_repairs, 0);
+    assert.equal(observation.model_rewrites, 0);
+    assert.equal(observation.deterministic_fallbacks, 0);
+    assert.equal(observation.semantic_recognition_corrections, 0);
+    assert.equal(observation.mean_original_latency_ms, 8143.6667);
+    assert.deepEqual(observation.dominant_failure_clusters, [
+      {
+        cluster: 'jointPerformanceGenerationAudit:slot_exceeds_word_target',
+        count: 1,
+        evidence: 'observed_hard_failure',
+      },
+      {
+        cluster: 'jointPerformanceGenerationPrompt:v2_axis_ownership_conflict',
+        count: 2,
+        evidence: 'post_audit_counterfactual_contract_review',
+        manifestations: [
+          'advocate_testability_delegated_to_handoff',
+          'stance_contract_assigns_concrete_check_to_performance',
+        ],
+      },
+    ]);
+    assert.deepEqual(observation.comparison, {
+      comparison_available: false,
+      measurable_improvement: null,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'first_measured_iteration',
+    });
+    assert.equal(manifest.seed_ledger.development[0].seed, 20261500);
+    assert.equal(manifest.seed_ledger.development[0].status, 'reusable_non_held_out_development');
+    assert.deepEqual(screen.change_log.iteration_2, {
+      status: 'predeclared',
+      bounded_change_owner: 'speaking_prompt',
+      target_failure_clusters: [
+        'jointPerformanceGenerationAudit:slot_exceeds_word_target',
+        'jointPerformanceGenerationPrompt:v2_axis_ownership_conflict',
+      ],
+      speaking_changes: ['three_word_drafting_cushion', 'compiled_v2_axis_ownership_compatibility'],
+      compiled_v2_axis_ownership_compatibility: {
+        registry_field: 'joint_performance_stance_contract',
+        loader: 'getJointPerformanceStanceContract',
+        host_plan_instruction_field: 'slots.performance.stance_instruction',
+        host_plan_source_field: 'slots.performance.stance_instruction_source',
+        permitted_instruction_sources: ['stance_definition', 'safe_fallback'],
+        performance_response_owns: ['advocate_testability', 'action_neutral_stance_distinction'],
+        performance_forbids: ['concrete_check_or_move'],
+        handoff_owns: ['concrete_check_or_move'],
+      },
+      recovery_change: 'none',
+      audit_recognition_change: 'none',
+    });
+    assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('outer-loop validator fails closed on V27 iteration-1 provenance, metrics, or iteration-2 scope drift', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-drift-'));
+  try {
+    const mutations = [
+      ({ manifest }) => { manifest.current.working_iteration = 1; },
+      ({ manifest }) => { manifest.current.working_history = []; },
+      ({ manifest }) => { manifest.current.last_observation.provenance.result_sha256 = 'wrong'; },
+      ({ manifest }) => { manifest.current.last_observation.unstarted_turns = []; },
+      ({ manifest }) => { manifest.current.last_observation.original_candidates_accepted = 3; },
+      ({ manifest }) => { manifest.current.last_observation.mean_configuration_realization = 1; },
+      ({ manifest }) => { manifest.current.last_observation.final_safety_failures = 1; },
+      ({ manifest }) => { manifest.current.last_observation.dominant_failure_clusters[0].cluster = 'other'; },
+      ({ manifest }) => { manifest.current.last_observation.comparison.stop = true; },
+      ({ manifest }) => { manifest.seed_ledger.development[0].status = 'consumed_and_not_reusable'; },
+      ({ screen }) => { screen.change_log.iteration_2.speaking_changes = ['unbounded_prompt_rewrite']; },
+      ({ screen }) => { screen.change_log.iteration_2.compiled_v2_axis_ownership_compatibility.loader = 'raw_stance_contract'; },
+      ({ screen }) => { screen.change_log.iteration_2.compiled_v2_axis_ownership_compatibility.host_plan_instruction_field = 'slots.performance.raw_stance_contract'; },
+      ({ screen }) => { screen.change_log.iteration_2.compiled_v2_axis_ownership_compatibility.permitted_instruction_sources = ['raw']; },
+      ({ screen }) => { screen.change_log.iteration_2.compiled_v2_axis_ownership_compatibility.performance_forbids = []; },
+      ({ screen }) => { screen.change_log.iteration_2.compiled_v2_axis_ownership_compatibility.handoff_owns = []; },
+      ({ screen }) => { screen.change_log.iteration_2.recovery_change = 'changed'; },
+      ({ screen }) => { screen.change_log.iteration_2.audit_recognition_change = 'changed'; },
+    ];
+    for (const mutate of mutations) {
+      const item = fixture(tmp);
+      mutate(item);
+      fs.writeFileSync(item.screenPath, YAML.stringify(item.screen));
+      assert.throws(
+        () => validateTutorStubFirstDraftOuterLoop({ manifest: item.manifest, root: tmp }),
+        /V27|working iteration|working history|last observation|development seed|conservative|recovery|audit-recognition/iu,
+      );
+    }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -314,6 +434,29 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.match(screen.preflight.focused_tests, /tutorStubJointPerformanceFirstDraft\.test\.js/u);
   assert.match(screen.preflight.focused_tests, /tutorStubV27JointPerformanceCalibration\.test\.js/u);
   assert.match(screen.change_log.structured_contract, /PERFORMANCE object.*ENTRY and RESPONSE/isu);
+  assert.match(screen.change_log.speaking_prompt, /speaking-prompt-only.*three-word drafting cushion/isu);
+  assert.match(screen.change_log.speaking_prompt, /testability in PERFORMANCE\.response.*action-neutral but stance-distinct.*HANDOFF alone the concrete check or move/isu);
   assert.match(screen.change_log.recovery_only, /unchanged/iu);
-  assert.match(screen.change_log.audit_recognition_only, /No phrase-level recognition rule changes/iu);
+  assert.match(screen.change_log.audit_recognition_only, /No deterministic audit or phrase-level recognition rule changes/iu);
+  assert.deepEqual(screen.change_log.iteration_2, {
+    status: 'predeclared',
+    bounded_change_owner: 'speaking_prompt',
+    target_failure_clusters: [
+      'jointPerformanceGenerationAudit:slot_exceeds_word_target',
+      'jointPerformanceGenerationPrompt:v2_axis_ownership_conflict',
+  ],
+    speaking_changes: ['three_word_drafting_cushion', 'compiled_v2_axis_ownership_compatibility'],
+    compiled_v2_axis_ownership_compatibility: {
+      registry_field: 'joint_performance_stance_contract',
+      loader: 'getJointPerformanceStanceContract',
+      host_plan_instruction_field: 'slots.performance.stance_instruction',
+      host_plan_source_field: 'slots.performance.stance_instruction_source',
+      permitted_instruction_sources: ['stance_definition', 'safe_fallback'],
+      performance_response_owns: ['advocate_testability', 'action_neutral_stance_distinction'],
+      performance_forbids: ['concrete_check_or_move'],
+      handoff_owns: ['concrete_check_or_move'],
+    },
+    recovery_change: 'none',
+    audit_recognition_change: 'none',
+  });
 });
