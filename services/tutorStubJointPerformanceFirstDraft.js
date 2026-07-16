@@ -688,6 +688,9 @@ export function auditTutorStubJointPerformanceOwnership({
       verifiedPartVisible:
         preliminaryPerformanceAudit?.axes?.actorial_part?.part_visible === true || compositeInitiationVisible,
       auditedSpanTexts: [spans.get('performance_entry').text, spans.get('performance_response').text],
+      excludedSourceSpanIds: (composition.spans || [])
+        .filter((span) => span?.owner === 'host')
+        .map((span) => span.id),
     },
   });
   const responseObligation = jointPerformanceResponseObligation(

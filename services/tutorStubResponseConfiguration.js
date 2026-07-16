@@ -756,7 +756,17 @@ function worldLexicon(world) {
     .map(([word]) => word);
 }
 
-function stanceVisible(stance, text, metrics) {
+function stanceVisible(
+  stance,
+  text,
+  metrics,
+  {
+    performanceObligationContract = null,
+    actorialPartVisible: selectedPartVisible = false,
+    fullText = text,
+    publicJudgmentFalterRecognition = null,
+  } = {},
+) {
   const lower = text.toLowerCase();
   const definition = getEngagementStanceDefinition(stance) || {};
   if (['ironic', 'sarcastic', 'face_threat'].includes(stance)) {
@@ -789,10 +799,20 @@ function stanceVisible(stance, text, metrics) {
   }
   if (stance === 'witnessing')
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
-  if (stance === 'charismatic')
-    return /\b(?:break|but|yet|choose|risk|refuse|test|stake|stop|now|outrun|outruns|outrun the|easy verdict|old suspicion)\b/iu.test(
-      text,
+  if (stance === 'charismatic') {
+    return (
+      /\b(?:break|but|yet|choose|risk|refuse|test|stake|stop|now|outrun|outruns|outrun the|easy verdict|old suspicion)\b/iu.test(
+        text,
+      ) ||
+      (publicJudgmentFalterRecognition?.recognized ??
+        declaredPublicJudgmentFalterVisible({
+          text,
+          fullText,
+          contract: performanceObligationContract,
+          actorialPartVisible: selectedPartVisible,
+        }))
     );
+  }
   return true;
 }
 
@@ -1151,51 +1171,71 @@ function anchorOverlapCount(text, anchor) {
   ).length;
 }
 
-function declaredPublicJudgmentFalterVisible({
+function auditDeclaredPublicJudgmentFalter({
   text,
   fullText,
   contract,
   actorialPartVisible: selectedPartVisible,
+  excludedSourceSpanIds = [],
 }) {
-  if (
-    contract?.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA ||
-    contract?.complete !== true ||
-    contract?.selection?.actorial_performance?.id !== 'dramatic_counterpressure' ||
-    selectedPartVisible !== true
-  ) {
-    return false;
-  }
-  const obligationIds = (contract.obligations || []).map((entry) => entry.id);
-  if (
+  const contractSchemaMatches = contract?.schema === TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA;
+  const contractComplete = contract?.complete === true;
+  const selectedTacticMatches = contract?.selection?.actorial_performance?.id === 'dramatic_counterpressure';
+  const obligationIds = (contract?.obligations || []).map((entry) => entry.id);
+  const obligationsComplete =
     obligationIds.length !== COUNTERPRESSURE_OBLIGATION_IDS.length ||
     COUNTERPRESSURE_OBLIGATION_IDS.some((id) => !obligationIds.includes(id))
-  ) {
-    return false;
-  }
+      ? false
+      : true;
   const targetAnchor = contractAnchor(contract, 'pressure_target');
   const contraryAnchor = contractAnchor(contract, 'contrary_evidence');
   const handoffAnchor = contractAnchor(contract, 'learner_handoff');
-  const contrarySurface = oneLine(contract.pressure_pair?.contrary_evidence_span);
-  if (!contrarySurface || !oneLine(fullText).includes(contrarySurface)) return false;
+  const contrarySurface = oneLine(contract?.pressure_pair?.contrary_evidence_span);
+  const exactContrarySourcePresent = Boolean(contrarySurface && oneLine(fullText).includes(contrarySurface));
 
   const judgmentSentence = responseSentences(text).find(
     (sentence) =>
-      /\b(?:accusation|answer|assumption|case|charge|claim|cry|expectation|route|shortcut|story|verdict)\b[^.!?]{0,55}\bfalter(?:s|ed)?\b/iu.test(
+      /\b(?:accusation|answer|assumption|case|charge|claim|cry|expectation|judg(?:e)?ment|route|shortcut|story|verdict)\b[^.!?]{0,55}\bfalter(?:s|ed)?\b/iu.test(
         sentence,
       ) && anchorOverlapCount(sentence, targetAnchor) >= Math.min(2, targetAnchor?.content_tokens?.length || 2),
   );
-  if (!judgmentSentence) return false;
 
   // In structured composition the learner handoff is owned by HANDOFF, not
   // TACTIC.  It may satisfy this prerequisite from the already-composed public
   // response, while the judgment/falter cue above remains strictly local to
   // the audited TACTIC span.
   const terminalSentence = responseSentences(fullText).at(-1) || '';
-  return (
-    terminalSentence.trimEnd().endsWith('?') &&
-    anchorOverlapCount(terminalSentence, handoffAnchor) > 0 &&
-    anchorOverlapCount(fullText, contraryAnchor) > 0
-  );
+  const pressureTargetOverlapCount = judgmentSentence ? anchorOverlapCount(judgmentSentence, targetAnchor) : 0;
+  const handoffOverlapCount = anchorOverlapCount(terminalSentence, handoffAnchor);
+  const contraryEvidenceOverlapCount = anchorOverlapCount(fullText, contraryAnchor);
+  const terminalHandoffQuestion = terminalSentence.trimEnd().endsWith('?');
+  const prerequisites = {
+    contract_schema_matches: contractSchemaMatches,
+    contract_complete: contractComplete,
+    selected_tactic_matches: selectedTacticMatches,
+    selected_part_visible: selectedPartVisible === true,
+    obligations_complete: obligationsComplete,
+    exact_contrary_source_present: exactContrarySourcePresent,
+    declared_judgment_falter_visible: Boolean(judgmentSentence),
+    terminal_handoff_question: terminalHandoffQuestion,
+  };
+  const recognized =
+    Object.values(prerequisites).every(Boolean) && handoffOverlapCount > 0 && contraryEvidenceOverlapCount > 0;
+  return {
+    schema: 'machinespirits.tutor-stub.public-judgment-falter-recognition.v1',
+    recognized,
+    prerequisites,
+    anchor_overlap_count: {
+      pressure_target: pressureTargetOverlapCount,
+      contrary_evidence: contraryEvidenceOverlapCount,
+      learner_handoff: handoffOverlapCount,
+    },
+    excluded_source_span_ids: [...excludedSourceSpanIds],
+  };
+}
+
+function declaredPublicJudgmentFalterVisible(options) {
+  return auditDeclaredPublicJudgmentFalter(options).recognized;
 }
 
 function actorialPerformanceVisible(
@@ -1206,6 +1246,7 @@ function actorialPerformanceVisible(
     performanceObligationContract = null,
     actorialPartVisible: selectedPartVisible = false,
     fullText = text,
+    publicJudgmentFalterRecognition = null,
   } = {},
 ) {
   const tactic = configuration.actorial_performance?.id;
@@ -1377,12 +1418,14 @@ function actorialPerformanceVisible(
       /\bmy case is\b[^.!?]{0,150}\bbreak it if\b[^.!?]{0,100}/iu.test(text) &&
       /\b(?:accusation|clutter|devlin|dirty|easy|messy|shelf|sloppiness|suspicion|verdict)\b/iu.test(text) &&
       metrics.concreteSceneTermCount > 0;
-    const declaredPublicJudgmentFalters = declaredPublicJudgmentFalterVisible({
-      text,
-      fullText,
-      contract: performanceObligationContract,
-      actorialPartVisible: selectedPartVisible,
-    });
+    const declaredPublicJudgmentFalters =
+      publicJudgmentFalterRecognition?.recognized ??
+      declaredPublicJudgmentFalterVisible({
+        text,
+        fullText,
+        contract: performanceObligationContract,
+        actorialPartVisible: selectedPartVisible,
+      });
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -1533,15 +1576,32 @@ export function auditTutorStubResponseConfiguration({
       ? contextualFullText
       : String(text || '')
     : String(text || '');
+  const publicJudgmentFalterRecognition = ['dramatic_counterpressure'].includes(
+    performanceObligationContract?.selection?.actorial_performance?.id,
+  )
+    ? auditDeclaredPublicJudgmentFalter({
+        text: performanceText,
+        fullText: performancePrerequisiteFullText,
+        contract: performanceObligationContract,
+        actorialPartVisible: performancePrerequisitePartVisible,
+        excludedSourceSpanIds: performanceAuditContext?.excludedSourceSpanIds || [],
+      })
+    : null;
   const actorialPerformancePass = actorialPerformanceVisible(configuration, performanceText, performanceMetrics, {
     performanceObligationContract,
     actorialPartVisible: performancePrerequisitePartVisible,
     fullText: performancePrerequisiteFullText,
+    publicJudgmentFalterRecognition,
   });
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
-      visible: stanceVisible(configuration.engagement_stance, performanceText, performanceMetrics),
+      visible: stanceVisible(configuration.engagement_stance, performanceText, performanceMetrics, {
+        performanceObligationContract,
+        actorialPartVisible: performancePrerequisitePartVisible,
+        fullText: performancePrerequisiteFullText,
+        publicJudgmentFalterRecognition,
+      }),
     },
     action_family: {
       selected: configuration.action_family,
@@ -1628,6 +1688,7 @@ export function auditTutorStubResponseConfiguration({
       ok: actorialIssues.length === 0,
       issues: actorialIssues,
     },
+    publicJudgmentFalterRecognition,
     transcript_visible: visibleAxes >= 5 && axes.actorial_part.visible && !metrics.fourthWallBreak,
     limitations:
       'Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference.',

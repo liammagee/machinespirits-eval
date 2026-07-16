@@ -769,6 +769,117 @@ test('source-dependent counterpressure uses verified SOURCE as context without a
   assert.ok(reorderedAudit.issues.some((issue) => issue.type === 'invalid_span_reconstruction'));
 });
 
+test('I4 judgment-falters recognition is gated by the complete public counterpressure contract', () => {
+  const target =
+    "The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.";
+  const contrary =
+    "The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out.";
+  const responseConfiguration = configuration({
+    engagement_stance: 'charismatic',
+    action_family: 'stage_next_step',
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial-book',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+      contract: 'Press public evidence against the room’s ready judgment.',
+    },
+  });
+  const world = {
+    title: 'The Light Shillings',
+    setting: 'The leat-keeper’s book lies beside the Marrick shillings and Verrell’s mint-yard record.',
+    question: 'Whose hand struck the false shillings?',
+    premiseById: new Map(),
+  };
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    publicWorld: {
+      visibility: 'public',
+      title: world.title,
+      setting: world.setting,
+      question: world.question,
+      ledger_term: 'trial-book',
+      public_objects: ['leat-keeper’s book', 'shillings'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'Who cast the blanks?',
+      pressure_target: target,
+      contrary_evidence: [contrary],
+      public_evidence: [{ surface: target }],
+      due_evidence: [{ surface: contrary }],
+    },
+  });
+  const exactResponse =
+    'Verrell’s ready judgment falters: the weir record points away from his mint-yard crucible.';
+  const exactHandoff = 'What does this record support about the hand that cast these blanks?';
+  const auditFor = ({ response = exactResponse, handoff = exactHandoff, includeSource = true } = {}) => {
+    const structured = parseTutorStubJointPerformanceFirstDraft(
+      validRaw({
+        uptake: 'Write: “The caster of the weir-forge blanks is not yet named.”',
+        performance: {
+          entry: 'I open the leat-keeper’s book, leaving the caster’s name unproved.',
+          response,
+        },
+        handoff,
+      }),
+    );
+    const composition = composeTutorStubJointPerformanceFirstDraft({
+      structured,
+      dramaticReleaseFrame: includeSource
+        ? {
+            active: true,
+            entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface: contrary }],
+          }
+        : { active: false, entries: [] },
+    });
+    return auditTutorStubJointPerformanceOwnership({
+      composition,
+      candidate: composition.text,
+      configuration: responseConfiguration,
+      world,
+      performanceObligationContract,
+    });
+  };
+
+  const exact = auditFor();
+  assert.equal(performanceObligationContract.complete, true);
+  assert.equal(exact.axes.actorial_performance.visible, true, JSON.stringify(exact.issues));
+  assert.equal(exact.axes.engagement_stance.visible, true, JSON.stringify(exact.issues));
+  assert.equal(exact.ok, true, JSON.stringify(exact.issues));
+  assert.equal(exact.spanAudits.performance.publicJudgmentFalterRecognition.recognized, true);
+  const overlaps = exact.spanAudits.performance.publicJudgmentFalterRecognition.anchor_overlap_count;
+  assert.ok(overlaps.pressure_target >= 2);
+  assert.ok(overlaps.contrary_evidence > 0);
+  assert.ok(overlaps.learner_handoff > 0);
+  assert.deepEqual(exact.spanAudits.performance.publicJudgmentFalterRecognition.excluded_source_span_ids, [
+    'source_1',
+  ]);
+
+  const britishSpelling = auditFor({
+    response: 'Verrell’s ready judgement falters: the weir record points away from his mint-yard crucible.',
+  });
+  assert.equal(britishSpelling.axes.actorial_performance.visible, true, JSON.stringify(britishSpelling.issues));
+  assert.equal(britishSpelling.axes.engagement_stance.visible, true, JSON.stringify(britishSpelling.issues));
+
+  const negatives = [
+    ['missing exact SOURCE', auditFor({ includeSource: false })],
+    ['missing learner-handoff anchor', auditFor({ handoff: 'What should we inspect next?' })],
+    [
+      'unrelated judgment',
+      auditFor({
+        response: 'Mira’s ready judgment falters: the chapel record points away from her garden gate.',
+      }),
+    ],
+  ];
+  for (const [label, audit] of negatives) {
+    assert.equal(audit.axes.actorial_performance.visible, false, label);
+    assert.equal(audit.axes.engagement_stance.visible, false, label);
+    assert.equal(audit.ok, false, label);
+    assert.equal(audit.spanAudits.performance.publicJudgmentFalterRecognition.recognized, false, label);
+  }
+});
+
 test('joint audit fails closed on candidate, span owner, slot, and source provenance drift', () => {
   const surface = 'The ledger records code WF-11 for the outside crew at noon.';
   const composition = composeTutorStubJointPerformanceFirstDraft({
