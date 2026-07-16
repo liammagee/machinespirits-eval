@@ -103,6 +103,23 @@ const V27_ITERATION_2_RESULT = Object.freeze({
   ]),
 });
 
+const V27_ITERATION_3_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json',
+  runHead: 'f0df994d1912c3c8b6d6f1b9960b5ef05962f1a6',
+  configSha256: 'eac765695c4e10a971cdf9ec95d4e83dd20ea48fdc281487541147e98f996568',
+  sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/campaign-validation.json',
+  campaignValidationSha256: 'd758f789c558e687d60cd97272658f580a1e4bc07d02e07b4592690b1cd77b7d',
+  resultSha256: '743a31ae5779930b02e488c6092069fc3a1872ac462af6acee8512f1abd43888',
+  turns: Object.freeze([
+    Object.freeze({
+      turn: 4,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/marrick_v27_joint_performance/turn-4.json',
+      sha256: '675d6a7794253e4c16b28ba0ec69625fef5ee26d790aac88496b4ca15422351f',
+    }),
+  ]),
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -341,6 +358,106 @@ function validateV27Iteration2Observation(observation, label) {
   );
 }
 
+function validateV27Iteration3Observation(observation, label) {
+  expect(observation?.version, 27, `${label} version`);
+  expect(observation?.working_iteration, 3, `${label} working iteration`);
+  expect(observation?.status, 'fail', `${label} status`);
+  expect(observation?.result_artifact, V27_ITERATION_3_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.development_seed, 20261500, `${label} development seed`);
+  expect(
+    observation?.seed_disposition,
+    'reusable_non_held_out_development',
+    `${label} seed disposition`,
+  );
+  expect(observation?.run_head, V27_ITERATION_3_RESULT.runHead, `${label} run HEAD`);
+  expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
+  expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_3_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.source_trace_sha256,
+    V27_ITERATION_3_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_3_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_3_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
+  expect(
+    observation?.provenance?.result_sha256,
+    V27_ITERATION_3_RESULT.resultSha256,
+    `${label} result hash`,
+  );
+  expectJson(
+    observation?.provenance?.turn_artifacts,
+    V27_ITERATION_3_RESULT.turns,
+    `${label} turn provenance`,
+  );
+  expectJson(observation?.completed_turns, [4], `${label} completed turns`);
+  expectJson(observation?.unstarted_turns, [5, 6, 9], `${label} unstarted turns`);
+  expect(observation?.original_candidates_accepted, 0, `${label} accepted originals`);
+  expect(observation?.original_candidates_completed, 1, `${label} completed originals`);
+  expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 0, `${label} configuration realization`);
+  expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
+  expect(
+    observation?.maximum_possible_configuration_realization,
+    0.75,
+    `${label} maximum configuration realization`,
+  );
+  for (const field of [
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+  ]) {
+    expect(observation?.[field], 0, `${label} ${field}`);
+  }
+  expect(observation?.joint_performance_model_outputs, 1, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 0, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_output_failures, 1, `${label} joint output failures`);
+  expect(observation?.joint_performance_ownership_passes, 0, `${label} ownership passes`);
+  expect(observation?.joint_performance_ownership_failures, 1, `${label} ownership failures`);
+  expect(observation?.exact_host_source_occurrence_passes, 0, `${label} host source passes`);
+  expect(observation?.exact_host_source_occurrence_failures, 1, `${label} host source failures`);
+  expect(observation?.mean_original_latency_ms, 9932, `${label} mean original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 9932, `${label} mean total latency`);
+  expectJson(observation?.token_usage, { input: 15906, output: 281, total: 16187 }, `${label} token usage`);
+  expectJson(
+    observation?.dominant_failure_clusters,
+    [{ cluster: 'jointPerformanceGenerationAudit:slot_has_outer_whitespace', count: 1 }],
+    `${label} dominant failure clusters`,
+  );
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_iteration: 2,
+      comparable_completion: false,
+      measurable_improvement: false,
+      configuration_realization_improved: false,
+      semantic_recognition_corrections: 0,
+      consecutive_without_improvement: 1,
+      stop: false,
+      reason: 'no_improvement',
+    },
+    `${label} comparison`,
+  );
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -552,6 +669,7 @@ function validateWorkingScreen(manifest, { root }) {
       config.fixed_configuration?.joint_performance_audit_schema || null,
     iteration2Change: config.change_log?.iteration_2 || null,
     iteration3Change: config.change_log?.iteration_3 || null,
+    iteration4Change: config.change_log?.iteration_4 || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -639,17 +757,18 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
   if (currentVersion === 27) {
     expect(state.currentState, 'working_predeclared', 'V27 current state');
-    expect(workingIteration, 3, 'V27 working iteration');
+    expect(workingIteration, 4, 'V27 working iteration');
     const workingHistory = manifest.current?.working_history || [];
-    if (workingHistory.length !== 2) {
-      throw new Error('V27 working history must preserve exactly iterations 1 and 2 before iteration 3');
+    if (workingHistory.length !== 3) {
+      throw new Error('V27 working history must preserve exactly iterations 1, 2, and 3 before iteration 4');
     }
     validateV27Iteration1Observation(workingHistory[0], 'V27 working history iteration 1');
     validateV27Iteration2Observation(workingHistory[1], 'V27 working history iteration 2');
-    validateV27Iteration2Observation(manifest.current?.last_observation, 'V27 last observation');
+    validateV27Iteration3Observation(workingHistory[2], 'V27 working history iteration 3');
+    validateV27Iteration3Observation(manifest.current?.last_observation, 'V27 last observation');
     expectJson(
       manifest.current?.last_observation,
-      workingHistory[1],
+      workingHistory[2],
       'V27 last observation and working history',
     );
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
@@ -816,6 +935,75 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'V27 iteration 3 relevant complement linkage',
     );
     expect(composite.delivery_gates_changed, false, 'V27 iteration 3 delivery gate change');
+    expect(workingScreen.iteration4Change?.status, 'predeclared', 'V27 iteration 4 change status');
+    expect(
+      workingScreen.iteration4Change?.bounded_change_owner,
+      'transport',
+      'V27 iteration 4 bounded change owner',
+    );
+    expectJson(
+      workingScreen.iteration4Change?.target_failure_clusters,
+      ['jointPerformanceGenerationAudit:slot_has_outer_whitespace'],
+      'V27 iteration 4 target clusters',
+    );
+    expectJson(workingScreen.iteration4Change?.speaking_changes, [], 'V27 iteration 4 speaking changes');
+    expectJson(workingScreen.iteration4Change?.recovery_changes, [], 'V27 iteration 4 recovery changes');
+    expectJson(
+      workingScreen.iteration4Change?.audit_recognition_changes,
+      [],
+      'V27 iteration 4 audit-recognition changes',
+    );
+    expectJson(
+      workingScreen.iteration4Change?.transport_changes,
+      ['trim_outer_slot_whitespace'],
+      'V27 iteration 4 transport changes',
+    );
+    const transport = workingScreen.iteration4Change?.outer_slot_whitespace_canonicalization || {};
+    expect(transport.input_scope, 'decoded_model_owned_slot_strings', 'V27 iteration 4 transport input');
+    expectJson(
+      transport.slot_ids,
+      ['uptake', 'performance.entry', 'performance.response', 'handoff'],
+      'V27 iteration 4 transport slots',
+    );
+    expect(transport.operation, 'trim_outer_whitespace_only', 'V27 iteration 4 transport operation');
+    expect(transport.preserve_internal_whitespace, true, 'V27 iteration 4 internal whitespace');
+    expect(transport.preserve_semantic_content, true, 'V27 iteration 4 semantic content');
+    expect(transport.preserve_raw_model_output, true, 'V27 iteration 4 raw output');
+    expect(transport.preserve_original_candidate_provenance, true, 'V27 iteration 4 candidate provenance');
+    expect(transport.reporting?.field, 'transportCanonicalization', 'V27 iteration 4 report field');
+    expect(transport.reporting?.applied_field, 'applied', 'V27 iteration 4 applied report');
+    expect(
+      transport.reporting?.canonicalized_slot_ids_field,
+      'canonicalized_slot_ids',
+      'V27 iteration 4 slot report',
+    );
+    expect(
+      transport.reporting?.classification,
+      'transport_canonicalization',
+      'V27 iteration 4 report classification',
+    );
+    expectJson(
+      transport.reporting?.separate_from,
+      [
+        'mechanical_repair',
+        'model_rewrite',
+        'deterministic_fallback',
+        'semantic_recognition_correction',
+        'configuration_realization',
+      ],
+      'V27 iteration 4 separate accounting',
+    );
+    expectJson(
+      transport.unchanged_contracts,
+      {
+        safety_audits: true,
+        semantic_audits: true,
+        response_configuration_audit: true,
+        source_ownership_audit: true,
+        strict_delivery_gates: true,
+      },
+      'V27 iteration 4 unchanged contracts',
+    );
     if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
       throw new Error('V27 must predeclare only development seed 20261500');
     }

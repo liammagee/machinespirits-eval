@@ -97,20 +97,24 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    Iteration 3 makes no speaking-prompt change. It preserves iteration 2's
+    Iteration 4 makes no speaking-prompt change. It preserves iteration 2's
     three-word drafting cushion, compiled v2 axis ownership, exact model shape,
     joint performance beat, and ban on copying, paraphrasing, labelling, or
     quoting SOURCE.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged in iteration 3 and outside this
+    repair and fallback behavior is unchanged in iteration 4 and outside this
     explicit v2 frozen screen.
   audit_recognition_only: >-
-    Iteration 3 changes only deterministic audit recognition. It reports a
-    typed composite part when PERFORMANCE initiates the selected part without
-    taking the concrete action, HANDOFF supplies both a relevant delegated
-    complement and the selected action, and host SOURCE spans remain excluded.
-    It adds no phrase-level recognition and changes no delivery gate.
+    Iteration 4 makes no audit-recognition change. It preserves iteration 3's
+    typed composite-part contract, requirement ownership, host SOURCE
+    exclusion, and relevance reporting exactly.
+  transport_only: >-
+    Iteration 4 changes only model-envelope transport canonicalization. It
+    trims whitespace outside each decoded model-owned slot string, preserves
+    the raw model output for traceability, changes no internal whitespace or
+    semantic content, and reports the normalization separately from repair,
+    rewrite, fallback, semantic recognition, and configuration realization.
   iteration_2:
     status: predeclared
     bounded_change_owner: speaking_prompt
@@ -178,6 +182,45 @@ change_log:
         field: linkage.shared_content_tokens
         require_nonempty: true
       delivery_gates_changed: false
+  iteration_4:
+    status: predeclared
+    bounded_change_owner: transport
+    target_failure_clusters:
+      - jointPerformanceGenerationAudit:slot_has_outer_whitespace
+    speaking_changes: []
+    recovery_changes: []
+    audit_recognition_changes: []
+    transport_changes:
+      - trim_outer_slot_whitespace
+    outer_slot_whitespace_canonicalization:
+      input_scope: decoded_model_owned_slot_strings
+      slot_ids:
+        - uptake
+        - performance.entry
+        - performance.response
+        - handoff
+      operation: trim_outer_whitespace_only
+      preserve_internal_whitespace: true
+      preserve_semantic_content: true
+      preserve_raw_model_output: true
+      preserve_original_candidate_provenance: true
+      reporting:
+        field: transportCanonicalization
+        applied_field: applied
+        canonicalized_slot_ids_field: canonicalized_slot_ids
+        classification: transport_canonicalization
+        separate_from:
+          - mechanical_repair
+          - model_rewrite
+          - deterministic_fallback
+          - semantic_recognition_correction
+          - configuration_realization
+      unchanged_contracts:
+        safety_audits: true
+        semantic_audits: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        strict_delivery_gates: true
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
@@ -196,6 +239,7 @@ claim_boundary: >-
   and every other required response axis on all four frozen prefixes. Every due
   host SOURCE must occur exactly once, including turns with multiple sources,
   while all whole-response safety, uptake, delivery, repair, and fallback gates
-  remain clean. Iteration 3 may correct only typed composite-part recognition;
-  it may not change generation, recovery, safety, source ownership, or any
+  remain clean. Iteration 4 may canonicalize only outer whitespace on decoded
+  model-owned slot strings; it may not change generation, recovery, semantic
+  recognition, safety, source ownership, configuration realization, or any
   strict gate. It is reusable development evidence, not held-out acceptance.
