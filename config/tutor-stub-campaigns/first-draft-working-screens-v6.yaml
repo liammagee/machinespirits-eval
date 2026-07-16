@@ -50,7 +50,6 @@ preflight:
     - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
     - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
     - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
-    - tests/fixtures/tutor-stub-typed-composite-advocate.json
 
 artifacts:
   root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6

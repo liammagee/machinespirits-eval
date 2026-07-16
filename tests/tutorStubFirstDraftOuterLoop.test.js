@@ -564,10 +564,11 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.match(screen.preflight.focused_tests, /tutorStubJointPerformanceFirstDraft\.test\.js/u);
   assert.match(screen.preflight.focused_tests, /tutorStubV27JointPerformanceCalibration\.test\.js/u);
   assert.match(screen.preflight.focused_tests, /tutorStubTypedCompositeAdvocateCalibration\.test\.js/u);
-  assert.ok(
+  assert.equal(
     screen.preflight.model_free_fixtures.includes(
       'tests/fixtures/tutor-stub-typed-composite-advocate.json',
     ),
+    false,
   );
   assert.match(screen.change_log.structured_contract, /PERFORMANCE object.*ENTRY and RESPONSE/isu);
   assert.match(screen.change_log.speaking_prompt, /Iteration 3 makes no speaking-prompt change/iu);

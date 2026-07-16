@@ -27,7 +27,25 @@ current:
       joint-performance generation before any V27 held-out matrix exists. No
       confirmation seed is reserved by this focused Marrick predeclaration.
     seed_status: not_reserved
-  pre_model_attempts: []
+  pre_model_attempts:
+    - version: 27
+      working_iteration: 3
+      status: infrastructure_preflight_failed_before_model
+      failure: incompatible_model_free_fixture_schema
+      detail: >-
+        The campaign-neutral typed-composite calibration fixture was already
+        exercised by its focused unit test but was also passed to the older
+        generic replay-fixture runner, which correctly rejected its distinct
+        schema before any tutor request began.
+      model_calls: 0
+      candidates_generated: 0
+      seed_disposition: reusable_no_candidate_or_result
+      validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/campaign-validation.json
+      validation_sha256: e1cd3b887bb237ee8e2a15b64b197a6528db74669fea7c098187251ae585e448
+      remediation: >-
+        Keep the typed-composite fixture in the focused calibration test and
+        remove only its incompatible duplicate invocation from the generic
+        model-free replay list.
   working_history:
     - version: 27
       working_iteration: 1
