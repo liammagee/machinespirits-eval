@@ -16,13 +16,20 @@ model rewrites, no fallback, and every strict delivery gate passing.
 
 ## Results
 
-| Cell | Turns | Result | Original accepted | Mechanical repair | Model rewrite | Fallback | Mean tutor generation |
-| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| Greyfen / answer seeking | 10 | fail; turn cap, no coverage | 0/10 | 2 | 6 | 2 | 19,584 ms |
-| Larkspur / premature closure | 5 | fail; grounded closure, first-draft floor | 2/5 | 1 | 2 | 0 | 11,635 ms |
-| Gazette / affective resistant | 9 | pass; grounded closure | 7/9 | 0 | 2 | 0 | 8,380 ms |
-| Foxtrot / diligent | 5 | pass; grounded closure | 4/5 | 1 | 0 | 0 | 6,232 ms |
-| **Total** | **29** | **2/4 cells passed** | **13/29 (44.83%)** | **4** | **10 (34.48%)** | **2** | **12,434 ms** |
+| Cell | Turns | Result | Original accepted | Mechanical final | Model-rewrite final | Fallback | Safety failure | Mean original | Mean total tutor |
+| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Greyfen / answer seeking | 10 | fail; turn cap, no coverage | 0/10 | 2 | 6 | 2 | 0 | 7,026 ms | 19,584 ms |
+| Larkspur / premature closure | 5 | fail; grounded closure, first-draft floor | 2/5 | 1 | 2 | 0 | 0 | 8,486 ms | 11,635 ms |
+| Gazette / affective resistant | 9 | pass; grounded closure | 7/9 | 0 | 2 | 0 | 0 | 6,336 ms | 8,380 ms |
+| Foxtrot / diligent | 5 | pass; grounded closure | 4/5 | 1 | 0 | 0 | 0 | 6,232 ms | 6,232 ms |
+| **Total** | **29** | **2/4 cells passed** | **13/29 (44.83%)** | **4** | **10 (34.48%)** | **2** | **0** | **6,927 ms** | **12,434 ms** |
+
+The mutually exclusive `Mechanical final`, `Model-rewrite final`, and
+`Fallback` columns report what was ultimately delivered. Repair-attempt
+accounting is necessarily overlapping: mechanical repair was attempted on five
+turns and a model rewrite on fourteen turns, including attempts later superseded
+by another safe delivery source. This distinction is preserved in every trace's
+`tutorGuardAccounting` envelope.
 
 The matrix passed complete-turn accounting, the aggregate deterministic
 fallback ceiling, and every final-delivery safety check. It failed:
