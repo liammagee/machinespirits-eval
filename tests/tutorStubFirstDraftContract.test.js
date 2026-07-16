@@ -54,12 +54,12 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
   ]);
   assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
   assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
-  assert.match(prompt, /PART — Work as keeper of the trial-book/iu);
+  assert.match(prompt, /ENACT — Work as keeper of the trial-book/iu);
   assert.match(
     prompt,
-    /HOST BEAT — In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
+    /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu,
   );
-  assert.match(prompt, /TACTIC —[\s\S]*exact line and the limit/iu);
+  assert.match(prompt, /state the exact support and its limit[\s\S]*“only,” “not yet,” or “does not establish[.”]*”/iu);
   assert.match(prompt, /Source to inhabit silently: mint warden/iu);
   assert.match(prompt, /reporting lead: I can attest that/iu);
   assert.match(prompt, /First person belongs only to the source’s act of seeing, reading, knowing, or attesting/iu);
@@ -133,5 +133,59 @@ test('recent prop saturation compiles character work without another stock exhib
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
   assert.ok(contract.compatibility.decisions.includes('recent_prop_saturation_prefers_spoken_character_work'));
-  assert.match(prompt, /direct judgment, address, rhythm, and word choice/iu);
+  assert.match(prompt, /introduce no new prop/iu);
+  assert.match(prompt, /Still perform the host-and-tactic beat once/iu);
+});
+
+test('a saturated shared-scene turn still receives one executable host-and-tactic beat', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration({
+      engagement_stance: 'warm',
+      actorial_part: 'scene_partner',
+      actorial_part_label: 'fellow investigator',
+      actorial_performance: {
+        id: 'shared_scene_invitation',
+        label: 'shared-scene invitation',
+        contract: 'Make physical room for the learner beside the exhibit.',
+      },
+    }),
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks for the next supported line.' },
+      scene_action_budget: { saturated: true },
+    },
+    dramaticReleaseFrame: { active: false, entries: [], requiresExhibitHandoff: false },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.match(prompt, /ENACT — Work as fellow investigator/iu);
+  assert.match(prompt, /make concrete room beside the named public evidence/iu);
+  assert.match(prompt, /Make room beside a named public object for the learner/iu);
+  assert.match(prompt, /introduce no new prop/iu);
+  assert.doesNotMatch(prompt, /instead of another prop gesture/iu);
+});
+
+test('mandatory closure recasts a shared-scene invitation as a joint terminal finding', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'The record now names the culprit.',
+    responseConfiguration: configuration({
+      engagement_stance: 'warm',
+      action_family: 'close_inquiry',
+      actorial_part: 'foreperson',
+      actorial_part_label: 'keeper of the final finding',
+      actorial_performance: {
+        id: 'shared_scene_invitation',
+        label: 'shared-scene invitation',
+        contract: 'Make room for the learner beside the record.',
+      },
+    }),
+    responseCompositionFrame: { learner_move: { summary: 'The learner states the final finding.' } },
+    dramaticReleaseFrame: { active: false, entries: [] },
+    dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.ok(contract.compatibility.decisions.includes('closure_recasts_invitation_as_joint_finding'));
+  assert.match(prompt, /Credit the learner inside the joint finding with “together,” then close the record/iu);
+  assert.match(prompt, /END — Explicitly close the inquiry and ask no question/iu);
 });

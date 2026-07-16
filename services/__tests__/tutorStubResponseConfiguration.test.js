@@ -205,6 +205,19 @@ test('the selected stance and adaptive host remain distinct from an authored clu
   assert.match(tutorStubResponseConfigurationPrompt(brisk), /Forbidden meta-frames/u);
 });
 
+test('a warm foreperson receives a closure-compatible tactic instead of an open invitation', () => {
+  const performance = selectTutorStubActorialPerformance({
+    engagementStance: 'warm',
+    actorialPart: 'foreperson',
+  });
+
+  assert.equal(performance.engagement_stance, 'warm');
+  assert.equal(performance.actorial_part, 'foreperson');
+  assert.equal(performance.id, 'evidentiary_boundary');
+  assert.equal(performance.displaced_tactic, 'shared_scene_invitation');
+  assert.equal(performance.selection_method, 'closure_compatible_stance_realization_contract');
+});
+
 test('an authored clue source does not length-penalize the adaptive host register', () => {
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'brisk',

@@ -53,6 +53,27 @@ const PART_CUES = Object.freeze({
     'In the unquoted host voice, gather the public supports, state the licensed finding, and close the record without opening another branch.',
 });
 
+const TACTIC_EXECUTION_CUES = Object.freeze({
+  unadorned_report:
+    'Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.',
+  evidentiary_boundary:
+    'In that action, state the exact support and its limit with concrete boundary words such as “only,” “not yet,” or “does not establish.”',
+  rapid_handoff:
+    'Move straight from the named public object or line to the learner, ending with the shortest useful concrete question.',
+  shared_scene_invitation:
+    'Make room beside a named public object for the learner and invite their reading in the same sentence or the next.',
+  measured_testimony:
+    'Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.',
+  dramatic_counterpressure:
+    'Press the named public object against the room’s easy verdict, show where that verdict breaks, and hand the exact test to the learner.',
+  exposed_mismatch:
+    'Let the named public object expose the mismatch through the action itself rather than explaining the irony.',
+  dry_counterexample:
+    'Use the named public object as a dry counterexample, then leave one concrete repair path.',
+  adversarial_pressure:
+    'Put direct pressure on the claim rather than the learner and name the public test that could answer it.',
+});
+
 function oneLine(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
@@ -144,7 +165,20 @@ function compatibilityDecisions({
   ) {
     decisions.push('closure_instruction_overrides_nonclosing_action_wording');
   }
+  if (
+    dialogueClosureFrame?.mandatory &&
+    responseConfiguration?.actorial_performance?.id === 'shared_scene_invitation'
+  ) {
+    decisions.push('closure_recasts_invitation_as_joint_finding');
+  }
   return decisions;
+}
+
+function enactmentInstruction({ partExecution, tactic, tacticExecution, closureRequired = false } = {}) {
+  if (closureRequired && tactic === 'shared_scene_invitation') {
+    return `${partExecution} Credit the learner inside the joint finding with “together,” then close the record; do not invite another reading or ask a question.`;
+  }
+  return `${partExecution} ${tacticExecution || TACTIC_EXECUTION_CUES.unadorned_report}`;
 }
 
 /**
@@ -176,6 +210,11 @@ export function buildTutorStubFirstDraftContract({
   const releaseCues = (dramaticReleaseFrame?.entries || []).map(releaseCue).filter(Boolean);
   const saturated = responseCompositionFrame?.scene_action_budget?.saturated === true;
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
+  const tactic = configuration.actorial_performance?.id || null;
+  const partExecution =
+    PART_CUES[part] ||
+    'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
+  const tacticExecution = TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
 
   return {
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
@@ -213,15 +252,21 @@ export function buildTutorStubFirstDraftContract({
         part,
         'Act directly inside the public scene and return the next observation to the learner.',
       ),
-      part_execution:
-        PART_CUES[part] ||
-        'In the unquoted host voice, make the selected part concrete through one public action or judgment.',
-      tactic: configuration.actorial_performance?.id || null,
+      part_execution: partExecution,
+      tactic,
       tactic_label: configuration.actorial_performance?.label || null,
       tactic_instruction: oneLine(configuration.actorial_performance?.contract),
+      tactic_execution: tacticExecution,
+      enactment_instruction: enactmentInstruction({
+        part,
+        partExecution,
+        tactic,
+        tacticExecution,
+        closureRequired: dialogueClosureFrame?.mandatory === true,
+      }),
       prop_instruction:
         saturated && !requiresExhibit
-          ? 'Recent turns already handled scene props repeatedly. Show the character through direct judgment, address, rhythm, and word choice instead of another prop gesture.'
+          ? 'Use already-named public evidence and introduce no new prop. Still perform the host-and-tactic beat once through direct judgment, address, rhythm, or a small action on that existing evidence.'
           : 'Enter through concrete first-person action or direct speech; never announce or label the part.',
     },
     evidence: {
@@ -268,12 +313,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
       : null,
-    `PART — Work as ${contract.performance.actorial_part_label}: ${contract.performance.part_instruction}`,
-    `HOST BEAT — ${contract.performance.part_execution}`,
-    contract.performance.tactic_instruction
-      ? `TACTIC — Make this choice visible in the actual wording and action: ${contract.performance.tactic_instruction}`
-      : null,
-    `ENTRANCE — ${contract.performance.prop_instruction}`,
+    `ENACT — Work as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction}`,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     ...releaseRows.map((row) => `- ${row}`),
     `END — ${contract.ending.instruction}`,

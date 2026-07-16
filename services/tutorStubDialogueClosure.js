@@ -197,7 +197,24 @@ export function tutorStubClosureAcknowledgement(text) {
   return CLOSURE_ACKNOWLEDGEMENT_PATTERN.test(String(text || '').trim());
 }
 
-export function deterministicTutorStubClosureResponse(frame, { acknowledgement = false } = {}) {
+export function deterministicTutorStubClosureResponse(
+  frame,
+  { acknowledgement = false, responseConfiguration = null } = {},
+) {
+  const tactic = responseConfiguration?.actorial_performance?.id || null;
+  const performedClose = {
+    shared_scene_invitation:
+      'We have reached the supported finding together. I close the public record here; this inquiry is complete.',
+    evidentiary_boundary:
+      'The public evidence establishes this finding, and no more. I close the public record; this inquiry is complete.',
+    rapid_handoff: 'The public evidence settles the finding. I close the record here; the inquiry is complete.',
+    measured_testimony:
+      'Let the finding stand exactly as the public evidence bears it. I close the record; this inquiry is complete.',
+    dramatic_counterpressure:
+      'The room’s easy verdict has broken against the public evidence. I close the record; this inquiry is complete.',
+    unadorned_report: 'The public evidence supports the finding. I close the record here; this inquiry is complete.',
+  }[tactic];
+  if (performedClose) return performedClose;
   if (frame?.phase === 'final_checkin_response' || acknowledgement || !frame?.allowCheckIn) {
     return 'Then we can close the book here. The verdict stands on the public evidence, and this inquiry is complete.';
   }

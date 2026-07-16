@@ -1,5 +1,137 @@
 export const TUTOR_STUB_GUARD_RECOVERY_SCHEMA = 'machinespirits.tutor-stub.guard-recovery.v1';
 
+const SIMPLIFIED_RECOVERY_PARTS = Object.freeze({
+  scene_partner: {
+    label: 'fellow investigator',
+    contract: 'Work beside the learner through one concrete shared action on already-public evidence.',
+  },
+  examiner: {
+    label: 'evidence examiner',
+    contract: 'Inspect, compare, test, or point to one named public exhibit directly.',
+  },
+  record_keeper: {
+    label: 'record keeper',
+    contract: 'Open, read, mark, or close one named public record and keep its limit explicit.',
+  },
+  foreperson: {
+    label: 'keeper of the final finding',
+    contract: 'State the supported finding, close the public record, and ask no further question.',
+  },
+});
+
+function responseConfigurationSignature(configuration = null) {
+  return [
+    configuration?.engagement_stance,
+    configuration?.action_family,
+    configuration?.audience_register,
+    configuration?.lexical_accessibility,
+    configuration?.scene_immersion,
+    configuration?.actorial_part,
+    configuration?.actorial_performance?.id,
+  ]
+    .filter(Boolean)
+    .join('|');
+}
+
+function simplifiedRecoveryPart(configuration = null, { closureRequired = false } = {}) {
+  if (closureRequired || configuration?.action_family === 'close_inquiry') return 'foreperson';
+  if (['receive_vulnerability', 'reanchor_lived_stake'].includes(configuration?.action_family)) {
+    return 'scene_partner';
+  }
+  if (['compress_sayback', 'reanchor_public_evidence'].includes(configuration?.action_family)) {
+    return 'record_keeper';
+  }
+  if (configuration?.actorial_part === 'record_keeper') return 'record_keeper';
+  return 'examiner';
+}
+
+/**
+ * Derive a complete alternative recovery configuration rather than asking a
+ * candidate to ignore axes that the strict auditor still requires. Safety,
+ * evidence, action, question support, and closure remain unchanged; only the
+ * realization strategy becomes deliberately plain, grounded, and unadorned.
+ */
+export function buildTutorStubSimplifiedRecoveryConfiguration(
+  responseConfiguration = null,
+  { closureRequired = false } = {},
+) {
+  const source = responseConfiguration || {};
+  const part = simplifiedRecoveryPart(source, { closureRequired });
+  const definition = SIMPLIFIED_RECOVERY_PARTS[part];
+  const selectedSignature = responseConfigurationSignature(source);
+  const configuration = {
+    ...structuredClone(source),
+    engagement_stance: 'plain',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'grounded',
+    actorial_part: part,
+    actorial_part_label: definition.label,
+    actorial_host_part: part,
+    actorial_host_part_label: definition.label,
+    actorial_part_selection: {
+      ...(structuredClone(source.actorial_part_selection || {})),
+      id: part,
+      label: definition.label,
+      contract: definition.contract,
+      selection_method: 'simplified_recovery_configuration',
+      recovery_override: true,
+    },
+    actorial_performance: {
+      id: 'unadorned_report',
+      label: 'unadorned report',
+      contract: 'Use one direct action or spoken line, ordinary words, and no theatrical preface.',
+      engagement_stance: 'plain',
+      actorial_part: part,
+      selection_method: 'simplified_recovery_configuration',
+    },
+    surface_budgets: {
+      ...(structuredClone(source.surface_budgets || {})),
+      max_average_sentence_words: Math.min(
+        18,
+        Number(source.surface_budgets?.max_average_sentence_words || 18),
+      ),
+    },
+  };
+  configuration.recovery_transition = {
+    schema: 'machinespirits.tutor-stub.response-configuration-transition.v1',
+    strategy: 'plain_grounded_unadorned',
+    selected_signature: selectedSignature,
+    delivered_signature: responseConfigurationSignature(configuration),
+  };
+  return configuration;
+}
+
+export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstDraftContract = null } = {}) {
+  const part = configuration?.actorial_part || 'examiner';
+  const partCue = {
+    scene_partner: 'Use one short first-person shared action beside a named public object and make room for the learner.',
+    examiner: 'Use one short first-person action that holds, compares, tests, or points to a named public exhibit.',
+    record_keeper: 'Use one short first-person action that opens, reads, marks, or closes a named public record.',
+    foreperson: 'State the supported finding, close the named public record, and ask no question.',
+  }[part];
+  const evidence = firstDraftContract?.evidence?.cues || [];
+  return [
+    '[Tutor-only minimal recovery contract]',
+    'Write a genuinely different replacement in two to four short sentences. Do not reuse the policy repair’s opening or sentence shape.',
+    firstDraftContract?.learner_move
+      ? `OPEN — Directly answer or credit this move without echoing it: ${firstDraftContract.learner_move}`
+      : 'OPEN — Directly answer or credit the learner’s concrete move without generic praise.',
+    firstDraftContract?.development?.instruction
+      ? `ACT — ${firstDraftContract.development.instruction}`
+      : null,
+    `ENACT — ${partCue} Keep it direct and unadorned.`,
+    evidence.length ? 'PUBLIC EVIDENCE — deliver each supplied line once and add nothing beyond it:' : null,
+    ...evidence.map((row) => `- ${row}`),
+    firstDraftContract?.ending?.instruction
+      ? `END — ${firstDraftContract.ending.instruction}`
+      : 'END — Use at most one concrete, answerable question.',
+    'Use ordinary words, one relation per sentence, one continuous public voice, and no role label or stage direction.',
+    '[End tutor-only minimal recovery contract]',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 const RECOVERY_TOKEN_STOPWORDS = new Set(
   'about after again before could does from have into only that their there these this what when where which with would'.split(
     ' ',

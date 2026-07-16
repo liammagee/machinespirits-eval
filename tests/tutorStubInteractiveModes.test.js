@@ -773,7 +773,7 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
         'world_005_marrick',
       ],
       initialInput: 'The assay still confuses me.\n',
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('1 new clue'),
     });
 
     assert.match(result.plain, /learning summary >/u);
@@ -785,7 +785,7 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
     assert.match(html, /Whose hand struck the false shillings/u);
     assert.match(html, /You chose to end the session here/u);
     assert.match(html, /The assay still confuses me/u);
-    assert.match(html, /Take the crucible as a fingerprint/u);
+    assert.match(html, /Verrell alone draws the mint-yard crucible/u);
 
     const events = fs
       .readdirSync(tmp)
@@ -1162,7 +1162,7 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
         'world_005_marrick',
       ],
       initialInput: `/coach ${guidance}\n/learner\nThe assay still confuses me.\n`,
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('1 new clue'),
     });
 
     assert.match(result.plain, /coach queued > Use a concrete analogy/u);
@@ -1209,7 +1209,7 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
         'world_005_marrick',
       ],
       initialInput: `/coach ${futureClue}\n/learner\nThe assay still confuses me.\n`,
-      stopWhen: (plain) => plain.includes('Take the crucible as a fingerprint'),
+      stopWhen: (plain) => plain.includes('1 new clue'),
     });
 
     assert.doesNotMatch(result.plain, /Speaking-tutor prompt crossed the private-planner boundary/u);
@@ -1262,7 +1262,7 @@ test('auto mode plays both roles from the current transcript and returns after a
 
     assert.match(result.plain, /AUTO mode · 1 turn · profile diligent/u);
     assert.match(result.plain, /A Diligent Learner \(auto\) > I would compare the metal residues first\./u);
-    assert.match(result.plain, /Take the crucible as a fingerprint/u);
+    assert.match(result.plain, /Verrell alone draws the mint-yard crucible/u);
     assert.match(result.plain, /automation paused > auto turn cap/u);
     assert.match(result.plain, /session status > LEARNER · turn 2/u);
   } finally {

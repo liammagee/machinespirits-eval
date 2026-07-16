@@ -540,6 +540,20 @@ export function deterministicTutorStubLearnerUptake({
   const fresh = (...candidates) =>
     candidates.find((candidate) => !recent.some((previous) => previous.startsWith(oneLine(candidate).toLowerCase()))) ||
     candidates[0];
+  const requestedEntry = oneLine(learnerText).match(
+    /\bwhat should i (?:write|record|enter|say) next(?:\s+about\s+(.+?))?[?!.]*$/iu,
+  );
+  if (requestedEntry) {
+    const topic = oneLine(requestedEntry[1] || '').replace(/^why\s+/iu, 'how ');
+    return fresh(
+      topic
+        ? `You are asking for the next supported line about ${topic}; I’ll supply that connection directly.`
+        : 'You are asking for the next supported line; I’ll supply it directly from the public evidence.',
+      topic
+        ? `You want the next entry about ${topic}; I’ll keep it to one supported connection.`
+        : 'You want the next entry, so I’ll keep it to one supported public connection.',
+    );
+  }
   const proposesToolMarkTest =
     /\b(?:compare|examine|find|inspect|look for|match(?:es|ed|ing)?|seek|trace)\b[^.!?]{0,70}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\btest\b[^.!?]{0,20}\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b|\b(?:die|flaw|graver|maker[’']s mark|maker mark|tool-mark|tool mark)\b[^.!?]{0,50}\b(?:compare|examine|find|inspect|match(?:es|ed|ing)?|test|trace)\b/iu.test(
       text,
@@ -975,6 +989,17 @@ export function deterministicTutorStubLearnerUptake({
     return fresh(
       'Your proposed move sets our next public check.',
       'We will test what you proposed against the next public evidence.',
+    );
+  }
+  if (
+    !/\?/u.test(learnerText) &&
+    requestType !== 'conceptual_clarity_request' &&
+    !/\b(?:cannot|can[’']t|does not|doesn[’']t|missing|no|not|unproved|unshown|yet)\b/iu.test(text) &&
+    ['evidence_adoption', 'inference', 'metacognitive_reflection'].includes(discourseMove)
+  ) {
+    return fresh(
+      'That conclusion now follows from the public evidence; I will carry only that supported finding.',
+      'The public record now supports that finding, with no stronger claim added.',
     );
   }
   if (requestType === 'authority_refusal_or_status_challenge' || actionFamily === 'answer_accountably') {

@@ -24,6 +24,38 @@ test('fallback composition includes a supplied uptake exactly once', () => {
   );
 });
 
+test('answer-seeking fallback uptake names the requested entry instead of using a generic transition', () => {
+  const learnerText = 'What should I write next about why the extra travel time makes the loaves cold?';
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    classification: { turn: { discourse_move: 'answer_seeking', request_type: 'answer_seeking_or_overreach' } },
+  });
+  const audit = auditTutorStubResponseComposition({
+    text: `${uptake} The launch log shows the loaves leave warm, so the longer trip gives them time to cool.`,
+    learnerText,
+    frame: buildTutorStubResponseCompositionFrame({
+      learnerText,
+      classification: { turn: { summary: 'Asks for the next causal entry.', discourse_move: 'answer_seeking' } },
+      registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+    }),
+  });
+
+  assert.match(uptake, /next supported line about how the extra travel time makes the loaves cold/iu);
+  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+});
+
+test('supported terminal inference receives a non-echoing deterministic acknowledgement', () => {
+  const learnerText = 'The record names bramblewasp as running the sock-puppet brigade.';
+  const uptake = deterministicTutorStubLearnerUptake({
+    learnerText,
+    classification: { turn: { discourse_move: 'inference', request_type: 'off_task_or_mixed' } },
+  });
+
+  assert.match(uptake, /conclusion now follows from the public evidence/iu);
+  assert.doesNotMatch(uptake, /bramblewasp|sock-puppet brigade/iu);
+});
+
 test('the Gazette completion frame rejects an elegant restatement loop and accepts new pressure', () => {
   const learnerText = 'Crane is a possible culprit, but not proven guilty.';
   const dueEvidence =

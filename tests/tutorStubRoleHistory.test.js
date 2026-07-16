@@ -105,7 +105,9 @@ test('automated learner replays the full public dialogue with learner-relative n
       /autumn fair booths are down/u,
     );
     assert.equal(secondLearnerCall.request.messageHistory[1].content, 'I would compare the metal residues first.');
-    assert.match(secondLearnerCall.request.messageHistory[2].content, /Which public mark would connect/u);
+    const firstTutorTurn = traceEvents(tmp).find((event) => event.type === 'turn_complete')?.turnRecord?.tutor;
+    assert.ok(firstTutorTurn, 'expected the first delivered tutor turn in the trace');
+    assert.equal(secondLearnerCall.request.messageHistory[2].content, firstTutorTurn);
     assert.equal(secondLearnerCall.request.messages.at(-1).role, 'user');
     assert.match(secondLearnerCall.request.messages.at(-1).content, /Write learner turn 2/u);
 
@@ -116,8 +118,9 @@ test('automated learner replays the full public dialogue with learner-relative n
     const secondLearnerCliCall = cliCalls.find((call) => call.includes('Write learner turn 2'));
     assert.match(
       secondLearnerCliCall,
-      /Conversation so far:\nuser: The autumn fair booths are down[\s\S]*assistant: I would compare the metal residues first\.[\s\S]*user: Yes—that gives us a concrete comparison\.[\s\S]*Which public mark would connect/u,
+      /Conversation so far:\nuser: The autumn fair booths are down[\s\S]*assistant: I would compare the metal residues first\./u,
     );
+    assert.ok(secondLearnerCliCall.includes(`user: ${firstTutorTurn}`));
     assert.match(secondLearnerCliCall, /Latest message:\n/u);
 
     const openingEvent = traceEvents(tmp).find((event) => event.type === 'tutor_opening');

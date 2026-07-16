@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
@@ -12,6 +13,7 @@ import {
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
+  tutorStubSimplifiedRecoveryPrompt,
 } from '../tutorStubGuardRecovery.js';
 
 test('guard uptake recomposition removes overlapping recovery acknowledgements', () => {
@@ -331,4 +333,57 @@ test('policy recovery may miss only the optional tactic after visibly performing
     ),
     false,
   );
+});
+
+test('strict plain recovery uses a complete simpler configuration instead of omitting required axes', () => {
+  const selected = {
+    engagement_stance: 'charismatic',
+    action_family: 'stage_next_step',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'immersive',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_part_selection: { id: 'advocate', label: 'advocate for the live case' },
+    actorial_performance: { id: 'dramatic_counterpressure' },
+    surface_budgets: { max_average_sentence_words: 17 },
+  };
+  const recovery = buildTutorStubSimplifiedRecoveryConfiguration(selected);
+
+  assert.equal(recovery.engagement_stance, 'plain');
+  assert.equal(recovery.scene_immersion, 'grounded');
+  assert.equal(recovery.actorial_part, 'examiner');
+  assert.equal(recovery.actorial_performance.id, 'unadorned_report');
+  assert.notEqual(
+    recovery.recovery_transition.selected_signature,
+    recovery.recovery_transition.delivered_signature,
+  );
+  assert.equal(recovery.recovery_transition.strategy, 'plain_grounded_unadorned');
+});
+
+test('minimal recovery contract preserves action, public evidence, and terminal closure', () => {
+  const configuration = buildTutorStubSimplifiedRecoveryConfiguration(
+    {
+      action_family: 'close_inquiry',
+      audience_register: 'adult_novice',
+      surface_budgets: { max_average_sentence_words: 17 },
+    },
+    { closureRequired: true },
+  );
+  const prompt = tutorStubSimplifiedRecoveryPrompt({
+    configuration,
+    firstDraftContract: {
+      learner_move: 'The learner states the supported final finding.',
+      development: { instruction: 'State the licensed finding and close.' },
+      evidence: { cues: ['Read the already-public audit once.'] },
+      ending: { instruction: 'Explicitly close the inquiry and ask no question.' },
+    },
+  });
+
+  assert.equal(configuration.actorial_part, 'foreperson');
+  assert.match(prompt, /genuinely different replacement/iu);
+  assert.match(prompt, /Directly answer or credit this move without echoing/iu);
+  assert.match(prompt, /Read the already-public audit once/iu);
+  assert.match(prompt, /close the named public record, and ask no question/iu);
+  assert.match(prompt, /Explicitly close the inquiry and ask no question/iu);
 });

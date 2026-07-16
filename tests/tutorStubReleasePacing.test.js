@@ -370,15 +370,13 @@ process.stdin.on('end', () => {
     assert.equal(turn.dramaticRelease.frame.active, true);
     assert.equal(turn.dramaticRelease.frame.requiresExhibitHandoff, true);
     assert.equal(turn.tutorDramaticReleaseAudit.ok, true);
-    assert.match(
-      turn.tutor,
-      /I (?:turn the record straight to|open the record at|enter the record[^.!?]{0,80}go straight to|mark the record[^.!?]{0,80}go straight to) the live line/u,
-    );
+    assert.match(turn.tutor, /I mark the live line in the open record/u);
+    assert.equal(turn.responseConfigurationTransition?.strategy, 'plain_grounded_unadorned');
     assert.doesNotMatch(turn.tutor, /role-play|another piece of information|back to (?:us|the case)/iu);
     const prompts = fs.readFileSync(promptLog, 'utf8');
     assert.match(prompts, /The archive names Marin as the founder's child/u);
-    assert.match(prompts, /\[Tutor-only dramatic clue release\]/u);
-    assert.match(prompts, /Make its arrival audible or visible inside the scene/u);
+    assert.match(prompts, /\[Tutor-only first-draft performance contract\]/u);
+    assert.match(prompts, /PUBLIC EVIDENCE DUE NOW/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

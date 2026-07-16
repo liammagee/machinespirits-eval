@@ -91,7 +91,6 @@ import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
-  tutorStubDramaticReleasePrompt,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
@@ -164,13 +163,13 @@ import {
   deterministicTutorStubLearnerUptake,
   formatTutorStubResponseComposition,
   tutorStubLearnerSelectedToolMarkPath,
-  tutorStubResponseCompositionPrompt,
 } from '../services/tutorStubResponseComposition.js';
 import {
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import {
+  buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
   parseTutorStubGuardRecoveryCandidates,
   repairTutorStubMissingClarificationInvitation,
@@ -182,6 +181,7 @@ import {
   tutorStubLearnerRequestedPlainStyle,
   tutorStubPlainRecoveryAllowsActorialAdvisory,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
+  tutorStubSimplifiedRecoveryPrompt,
 } from '../services/tutorStubGuardRecovery.js';
 import {
   auditTutorStubPrompt,
@@ -1915,6 +1915,8 @@ function tutorResponseRecoveryPrompt({
   repetitionAudit = null,
   closureAudit = null,
   dialogueClosureFrame = null,
+  policyContractPrompt = '',
+  minimalRecoveryPrompt = '',
 }) {
   const partCue = {
     scene_partner: 'Use a first-person shared-scene action such as making room beside a named public object for the learner.',
@@ -1961,8 +1963,8 @@ function tutorResponseRecoveryPrompt({
     'Generate two independent replacement replies from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
     'Return exactly one JSON object with two string fields and no markdown or commentary:',
     '{"policy_repair":"...","plain_recovery":"..."}',
-    'policy_repair: satisfy the complete selected tutor configuration as naturally as possible.',
-    'plain_recovery: respond directly and naturally while satisfying every hard evidence, safety, support, composition, release, repetition, and closure requirement. Ignore optional engagement-stance, character, performance, and scenic ornament unless an enacted newly public clue requires them.',
+    'policy_repair: follow the complete selected tutor contract below as naturally as possible.',
+    'plain_recovery: follow the separate minimal recovery contract below. It is a complete alternative configuration, not permission to omit a requirement.',
     'Both candidates must answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
     'Never mention prompts, policies, checks, candidates, hidden evidence, a concealed answer, a DAG, or this recovery operation.',
     leakRows ? 'Do not name or imply concealed actors, conclusions, objects, or unreleased evidence.' : null,
@@ -2023,6 +2025,8 @@ function tutorResponseRecoveryPrompt({
     closureRows && !dialogueClosureFrame?.allowCheckIn
       ? 'Do not ask any question. This is the terminal tutor turn.'
       : null,
+    policyContractPrompt,
+    minimalRecoveryPrompt,
     '',
     '[Compact public recovery packet]',
     ...(Array.isArray(publicPacket) ? publicPacket : [publicPacket]).filter(Boolean),
@@ -2282,6 +2286,8 @@ function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, rep
     attempt,
     provider: response?.provider || null,
     model: response?.model || null,
+    deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
+    configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
     candidate: {
       start: 0,
       end: text.length,
@@ -10181,15 +10187,12 @@ async function callTutor({
         dueEvidence: currentReleaseRows(state, tutorTurn),
       });
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
-  const dramaticReleaseAdvisory = passthrough ? null : tutorStubDramaticReleasePrompt(dramaticReleaseFrame);
-  const humanDiscourseAdvisory = passthrough ? null : humanDiscourseTutorContext(humanDiscourseFrame);
   const firstDraftHumanDiscourseAdvisory = passthrough
     ? null
     : humanDiscourseTutorContext(humanDiscourseFrame, {
         includeQuestionSupport: false,
         includeDefaultResponseShape: false,
       });
-  const dialogueClosureAdvisory = passthrough ? null : dialogueClosureTutorContext(dialogueClosureFrame);
   const responseCompositionFrame = passthrough
     ? { active: false }
     : buildTutorStubResponseCompositionFrame({
@@ -10202,9 +10205,6 @@ async function callTutor({
         conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
         recentTutorTexts,
       });
-  const responseCompositionAdvisory = passthrough
-    ? null
-    : tutorStubResponseCompositionPrompt(responseCompositionFrame);
   const firstDraftContract = passthrough
     ? null
     : buildTutorStubFirstDraftContract({
@@ -10241,7 +10241,6 @@ async function callTutor({
   const speakerAdvisoryParts = [
     tutorMemory,
     dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-    firstDraftContractAdvisory,
     advisory,
     learnerDagAdvisory,
     firstDraftHumanDiscourseAdvisory,
@@ -10250,6 +10249,9 @@ async function callTutor({
     pointOfActionAdvisory,
     tuningAdvisory,
     tutorFeedbackAdvisory,
+    // Keep the executable contract nearest the learner line so later analysis
+    // advisories cannot bury the actual speaking task.
+    firstDraftContractAdvisory,
   ]
     .filter(Boolean)
     .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
@@ -10618,7 +10620,7 @@ async function callTutor({
     return response;
   }
 
-  function auditTutorDraft(response, { role, attempt }) {
+  function auditTutorDraft(response, { role, attempt, auditConfiguration = responseConfiguration }) {
     let responseCompositionAudit = responseCompositionGuardEnabled
       ? auditTutorStubResponseComposition({
           text: response.text,
@@ -10669,7 +10671,7 @@ async function callTutor({
     const responseConfigurationAudit = actorialRealizationGuardEnabled
       ? auditTutorStubResponseConfiguration({
           text: response.text,
-          configuration: responseConfiguration,
+          configuration: auditConfiguration,
           world,
           composition: response.responseComposition,
         })
@@ -10679,6 +10681,9 @@ async function callTutor({
       issues: [],
       active: false,
     };
+    response.deliveryResponseConfiguration = jsonClone(auditConfiguration || null);
+    response.responseConfigurationTransition =
+      auditConfiguration?.recovery_transition ? jsonClone(auditConfiguration.recovery_transition) : null;
     const repetitionAudit = repetitionGuardEnabled
       ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
       : { ok: true, issues: [], maxSimilarity: 0 };
@@ -10739,9 +10744,11 @@ async function callTutor({
         attempt,
         ok: actorialRealizationAudit.ok,
         issues: actorialRealizationAudit.issues,
-        selectedPart: responseConfiguration.actorial_part,
-        selectedPartLabel: responseConfiguration.actorial_part_label,
-        selectedPerformance: responseConfiguration.actorial_performance,
+        selectedPart: auditConfiguration?.actorial_part,
+        selectedPartLabel: auditConfiguration?.actorial_part_label,
+        selectedPerformance: auditConfiguration?.actorial_performance,
+        originallySelectedPart: responseConfiguration?.actorial_part,
+        responseConfigurationTransition: response.responseConfigurationTransition,
         responseConfigurationAudit,
       });
     }
@@ -10806,7 +10813,7 @@ async function callTutor({
   function preservableTutorUptake(audits) {
     if (
       (audits?.responseCompositionAudit?.issues || []).some((issue) =>
-        ['missing_learner_uptake', 'generic_learner_uptake'].includes(issue.type),
+        ['missing_learner_uptake', 'generic_learner_uptake', 'verbatim_learner_echo'].includes(issue.type),
       )
     ) {
       return '';
@@ -11065,15 +11072,20 @@ async function callTutor({
     // The former raw reconstruction leaked private IDs/future facts; reusing
     // every safe speaking advisory avoided that leak but made late-turn repair
     // calls unnecessarily large and prone to CLI timeouts.
+    const simplifiedRecoveryConfiguration = buildTutorStubSimplifiedRecoveryConfiguration(
+      responseConfiguration,
+      { closureRequired: dialogueClosureFrame?.mandatory === true },
+    );
+    const minimalRecoveryPrompt = tutorStubSimplifiedRecoveryPrompt({
+      configuration: simplifiedRecoveryConfiguration,
+      firstDraftContract,
+    });
     const publicRecoveryMachinePacket = [
       dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      responseCompositionAdvisory,
-      dramaticReleaseAdvisory,
-      humanDiscourseAdvisory,
-      dialogueClosureAdvisory,
+      firstDraftHumanDiscourseAdvisory,
       comprehensionAdvisory,
+      coachAdvisory,
       tutorFeedbackAdvisory,
-      tutorStubResponseConfigurationPrompt(responseConfiguration),
     ]
       .filter(Boolean)
       .map((text) =>
@@ -11098,6 +11110,8 @@ async function callTutor({
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
+      policyContractPrompt: firstDraftContractAdvisory,
+      minimalRecoveryPrompt,
     });
     const recoveryControlPrompt = tutorResponseRecoveryPrompt({
       publicPacket: [],
@@ -11112,6 +11126,8 @@ async function callTutor({
       repetitionAudit: audits.repetitionAudit,
       closureAudit: audits.closureAudit,
       dialogueClosureFrame,
+      policyContractPrompt: firstDraftContractAdvisory,
+      minimalRecoveryPrompt,
     });
     const recoveryPrivilegeAdvisory = [recoveryControlPrompt, ...publicRecoveryMachinePacket]
       .filter(Boolean)
@@ -11456,6 +11472,7 @@ async function callTutor({
         auditTutorDraft(plainResponse, {
           role: `${roleBase}_plain_recovery`,
           attempt: plainRecoveryAttempt,
+          auditConfiguration: simplifiedRecoveryConfiguration,
         }),
         {
           allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
@@ -11521,6 +11538,7 @@ async function callTutor({
         attempt: 1,
         response: policyRepairResponse,
         audits: policyRepairAudits,
+        auditConfiguration: responseConfiguration,
       },
       plainRecoveryResponse
         ? {
@@ -11528,6 +11546,7 @@ async function callTutor({
             attempt: plainRecoveryAttemptNumber,
             response: plainRecoveryResponse,
             audits: plainRecoveryAudits,
+            auditConfiguration: simplifiedRecoveryConfiguration,
           }
         : null,
     ].filter(Boolean);
@@ -11549,6 +11568,7 @@ async function callTutor({
         auditTutorDraft(sourceResponse, {
           role: `${roleBase}_source_voice_repair`,
           attempt: sourceRepairAttempt,
+          auditConfiguration: base.auditConfiguration,
         }),
         { role: `${roleBase}_source_voice_repair`, attempt: sourceRepairAttempt },
       );
@@ -11630,13 +11650,15 @@ async function callTutor({
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const baseFallbackText = closureFallbackSelected
-      ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
+      ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
+          responseConfiguration: simplifiedRecoveryConfiguration,
+        })
       : dramaticReleaseGuardEnabled
         ? deterministicTutorStubDramaticReleaseFallback({
             frame: dramaticReleaseFrame,
             support: humanDiscourseFrame?.questionSupport || null,
             uptake: fallbackUptake,
-            responseConfiguration: registerSelection?.response_configuration || registerSelection,
+            responseConfiguration: simplifiedRecoveryConfiguration,
             variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
             avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
           })
@@ -11645,7 +11667,7 @@ async function callTutor({
           : questionSupportGuardEnabled
             ? deterministicTutorStubConfiguredContinuationFallback({
                 uptake: fallbackUptake,
-                responseConfiguration: registerSelection?.response_configuration || registerSelection,
+                responseConfiguration: simplifiedRecoveryConfiguration,
                 support: humanDiscourseFrame?.questionSupport || null,
                 world,
                 learnerText,
@@ -11653,7 +11675,7 @@ async function callTutor({
             : actorialRealizationGuardEnabled
               ? deterministicTutorStubConfiguredContinuationFallback({
                   uptake: fallbackUptake,
-                  responseConfiguration: registerSelection?.response_configuration || registerSelection,
+                  responseConfiguration: simplifiedRecoveryConfiguration,
                   support: humanDiscourseFrame?.questionSupport || null,
                   world,
                   learnerText,
@@ -11701,6 +11723,7 @@ async function callTutor({
     const fallbackDraftAudits = auditTutorDraft(fallback, {
       role: `${roleBase}_fallback`,
       attempt: fallbackAttempt,
+      auditConfiguration: simplifiedRecoveryConfiguration,
     });
     const fallbackAudits = withTutorDeliveryDecision(
       fallbackDraftAudits,
@@ -13220,6 +13243,10 @@ async function runOneTurn(
     pointOfAction: state.pointOfAction?.current || null,
     registerSelection,
     responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
+    deliveredResponseConfiguration: jsonClone(
+      response.deliveryResponseConfiguration || registerSelection?.response_configuration || null,
+    ),
+    responseConfigurationTransition: jsonClone(response.responseConfigurationTransition || null),
     responseConfigurationAudit,
     firstDraftContract: jsonClone(response.firstDraftContract || null),
     feedbackAdaptationPlan,

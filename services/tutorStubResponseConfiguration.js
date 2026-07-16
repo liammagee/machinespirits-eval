@@ -326,12 +326,22 @@ const ACTORIAL_PERFORMANCE_BY_STANCE = {
 };
 
 export function selectTutorStubActorialPerformance({ engagementStance = 'precise', actorialPart = null } = {}) {
-  const tactic = ACTORIAL_PERFORMANCE_BY_STANCE[engagementStance] || ACTORIAL_PERFORMANCE_BY_STANCE.precise;
+  const stanceTactic =
+    ACTORIAL_PERFORMANCE_BY_STANCE[engagementStance] || ACTORIAL_PERFORMANCE_BY_STANCE.precise;
+  // A foreperson is selected only for terminal work. Invitation tactics such
+  // as warm/shared-scene otherwise conflict with the hard requirement to
+  // close without asking for another turn. Keep the stance for voice, but use
+  // the closure-compatible evidentiary boundary as the performed tactic.
+  const tactic = actorialPart === 'foreperson' ? ACTORIAL_PERFORMANCE_BY_STANCE.precise : stanceTactic;
   return {
     ...tactic,
     engagement_stance: engagementStance,
     actorial_part: actorialPart,
-    selection_method: 'stance_realization_contract',
+    selection_method:
+      actorialPart === 'foreperson'
+        ? 'closure_compatible_stance_realization_contract'
+        : 'stance_realization_contract',
+    displaced_tactic: actorialPart === 'foreperson' ? stanceTactic.id : null,
     forbidden_meta_frames: [
       'let us role-play',
       'I will be the role',

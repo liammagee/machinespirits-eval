@@ -139,4 +139,20 @@ describe('tutor-stub dialogue closure', () => {
       /inquiry is complete/u,
     );
   });
+
+  it('realizes a closure-compatible selected performance without reopening the case', () => {
+    const response = deterministicTutorStubClosureResponse(
+      { phase: 'grounded_closing_invitation', allowCheckIn: false },
+      {
+        responseConfiguration: {
+          actorial_part: 'foreperson',
+          actorial_performance: { id: 'evidentiary_boundary' },
+        },
+      },
+    );
+
+    assert.match(response, /establishes this finding, and no more/iu);
+    assert.match(response, /close the public record/iu);
+    assert.doesNotMatch(response, /\?/u);
+  });
 });
