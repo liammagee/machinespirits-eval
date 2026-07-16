@@ -11,6 +11,7 @@ import {
   tutorStubSourcePerspectiveDriftVisible,
   tutorStubDramaticReleasePrompt,
 } from '../services/tutorStubDramaticRelease.js';
+import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from '../services/tutorStubSourceAccessibilityContract.js';
 
 test('duplicate due-clue wording is rejected before it can be delivered', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
@@ -35,6 +36,74 @@ test('duplicate due-clue wording is rejected before it can be delivered', () => 
   assert.equal(issue.premise, 'p_new');
   assert.equal(issue.bearingSentenceCount, 2);
   assert.equal(issue.matches.length, 2);
+});
+
+test('duplicate-clue guard exempts one exact passing compensation span and no other overlap', () => {
+  const surface =
+    "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
+  const compensation =
+    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_seal',
+        surface,
+        presentation: { mode: 'presented_exhibit', role: 'night notary reading the private-seal register' },
+      },
+    ],
+  });
+  const prefix = 'I open the private-seal register. ';
+  const text = `${prefix}${surface} ${compensation} What does the chipped seal change?`;
+  const compensationStart = text.indexOf(compensation);
+  const sourceAccessibilityAudit = {
+    source_accessibility: {
+      schema: TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
+      ok: true,
+      effective_mode: 'compensated',
+      spans: {
+        compensation: {
+          start: compensationStart,
+          end: compensationStart + compensation.length,
+          text: compensation,
+        },
+      },
+    },
+    passing_compensation_spans: [
+      {
+        start: compensationStart,
+        end: compensationStart + compensation.length,
+        text: compensation,
+        exact: true,
+        ok: true,
+      },
+    ],
+  };
+  const passing = auditTutorStubClueDeliveryMultiplicity({
+    text,
+    frame,
+    sourceAccessibilityAudit,
+  });
+  assert.equal(passing.ok, true, JSON.stringify(passing.issues));
+  assert.deepEqual(passing.exemptedPassingCompensations, [compensation]);
+  const rawSharedAudit = auditTutorStubClueDeliveryMultiplicity({
+    text,
+    frame,
+    sourceAccessibilityAudit: sourceAccessibilityAudit.source_accessibility,
+  });
+  assert.equal(rawSharedAudit.ok, true, JSON.stringify(rawSharedAudit.issues));
+  assert.deepEqual(rawSharedAudit.exemptedPassingCompensations, [compensation]);
+
+  const duplicatedText = `${prefix}${surface} ${compensation} ${compensation} What changes?`;
+  const duplicated = auditTutorStubClueDeliveryMultiplicity({
+    text: duplicatedText,
+    frame,
+    sourceAccessibilityAudit,
+  });
+  assert.equal(duplicated.ok, false);
+  assert.equal(duplicated.repeatedEntries[0].bearingSentenceCount, 2);
+
+  const unaudited = auditTutorStubClueDeliveryMultiplicity({ text, frame });
+  assert.equal(unaudited.ok, false, 'lexical overlap alone never earns the exemption');
 });
 
 test('one delivery of each sentence in a multi-sentence clue remains valid', () => {

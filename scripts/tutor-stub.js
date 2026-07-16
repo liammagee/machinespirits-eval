@@ -174,7 +174,10 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { auditTutorStubLiveTurnProgressionV1 } from '../services/tutorStubTurnProgressionContract.js';
-import { auditTutorStubLiveSourceActionAlignmentV1 } from '../services/tutorStubLiveFirstDraftAudit.js';
+import {
+  auditTutorStubLiveSourceActionAlignmentV1,
+  tutorStubLiveResponseConfigurationSurface,
+} from '../services/tutorStubLiveFirstDraftAudit.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
 import { resolveTutorStubPublicCounterpressure } from '../services/tutorStubCounterpressure.js';
 import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
@@ -1985,6 +1988,12 @@ function tutorResponseRecoveryPrompt({
       : null,
     liveSourceActionAlignmentRows
       ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'
+      : null,
+    liveSourceActionAlignmentIssues.some((issue) =>
+      String(issue.type || '').startsWith('compensation_') ||
+      ['direct_source_inaccessible', 'source_qualifier_not_preserved'].includes(issue.type),
+    )
+      ? 'After the exact SOURCE, make the very next complete sentence its one unquoted declarative accessibility sentence. Keep SOURCE words in order, preserve no/not/only/may, add only a/an/the, and stay within the stated word limit.'
       : null,
     questionSupportIssues.some((issue) => issue.type === 'missing_clarification_invitation')
       ? 'Make it explicit that the learner may ask you to unpack a word or connection.'
@@ -10237,6 +10246,9 @@ async function callTutor({
         questionSupport: humanDiscourseFrame?.questionSupport || null,
         dialogueClosureFrame,
         performanceObligationContract,
+        sourceAccessibilityPolicy:
+          speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
+        sourceAccessibilityOwner: 'post_source_sentence',
       });
   const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
   const comprehensionAdvisory = passthrough
@@ -10711,6 +10723,7 @@ async function callTutor({
       ? auditTutorStubDramaticReleaseResponse({
           text: response.text,
           frame: dramaticReleaseFrame,
+          sourceAccessibilityAudit: liveSourceActionAlignmentAudit,
         })
       : { ok: true, active: false, issues: [] };
     const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
@@ -10718,15 +10731,26 @@ async function callTutor({
       world,
       premiseIds: dramaticReleaseFrame.entries.map((entry) => entry.premise).filter(Boolean),
     });
+    const liveConfigurationSurface = tutorStubLiveResponseConfigurationSurface({
+      text: response.text,
+      liveSourceActionAlignmentAudit,
+    });
     const responseConfigurationAudit = actorialRealizationGuardEnabled
       ? auditTutorStubResponseConfiguration({
-          text: response.text,
+          text: liveConfigurationSurface.text,
           configuration: auditConfiguration,
           world,
           composition: response.responseComposition,
           performanceObligationContract,
         })
       : null;
+    if (responseConfigurationAudit) {
+      responseConfigurationAudit.live_source_axis_ownership = {
+        active: liveConfigurationSurface.active,
+        reason: liveConfigurationSurface.reason,
+        excluded_spans: liveConfigurationSurface.excluded_spans,
+      };
+    }
     const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
       ok: true,
       issues: [],
@@ -10839,6 +10863,12 @@ async function callTutor({
         scope: liveSourceActionAlignmentAudit.scope,
         slotOwnershipInferred: liveSourceActionAlignmentAudit.slot_ownership_inferred,
         issues: liveSourceActionAlignmentAudit.issues,
+        directAccessible: liveSourceActionAlignmentAudit.direct_accessible,
+        compensationRequired: liveSourceActionAlignmentAudit.compensation_required,
+        compensationContractReady: liveSourceActionAlignmentAudit.compensation_contract_ready,
+        compensationVisible: liveSourceActionAlignmentAudit.compensation_visible,
+        effectiveMode: liveSourceActionAlignmentAudit.effective_mode,
+        sourceAccessibility: liveSourceActionAlignmentAudit.source_accessibility,
         audit: liveSourceActionAlignmentAudit,
       });
     }
@@ -11667,6 +11697,8 @@ async function callTutor({
             variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
             avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
             turnProgressionContract: firstDraftContract?.progression || null,
+            sourceAccessibilityContract:
+              firstDraftContract?.evidence?.source_accessibility || null,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
@@ -13308,6 +13340,17 @@ async function runOneTurn(
     tutorHumanScaffoldAudit: response.scaffoldAudit || null,
     tutorQuestionSupportAudit: response.questionSupportAudit || null,
     tutorDramaticReleaseAudit: response.dramaticReleaseAudit || null,
+    tutorLiveSourceActionAlignmentAudit: response.liveSourceActionAlignmentAudit || null,
+    tutorSourceAccessibility: response.liveSourceActionAlignmentAudit
+      ? {
+          directAccessible: response.liveSourceActionAlignmentAudit.direct_accessible,
+          compensationRequired: response.liveSourceActionAlignmentAudit.compensation_required,
+          compensationContractReady:
+            response.liveSourceActionAlignmentAudit.compensation_contract_ready,
+          compensationVisible: response.liveSourceActionAlignmentAudit.compensation_visible,
+          effectiveMode: response.liveSourceActionAlignmentAudit.effective_mode,
+        }
+      : null,
     tutorRepetitionAudit: response.repetitionAudit || null,
     tutorDialogueClosureAudit: response.closureAudit || null,
     tutorResponseRepaired: Boolean(response.repaired),

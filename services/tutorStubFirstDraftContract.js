@@ -20,6 +20,10 @@ import {
   tutorStubLearnerRequestsWritableEntry,
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
 } from './tutorStubTurnProgressionContract.js';
+import {
+  compileTutorStubSourceAccessibilityContract,
+  tutorStubSourceAccessibilityInstruction,
+} from './tutorStubSourceAccessibilityContract.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 export const TUTOR_STUB_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.host-plan.v1';
@@ -261,6 +265,19 @@ function compactSupportInstruction(level) {
   return '';
 }
 
+function compactSourceAccessibilityInstruction(contract = null) {
+  // Use the canonical renderer as the readiness boundary; the V1 host plan
+  // then carries the same contract in a shorter surface so the source itself
+  // does not push the speaking prompt beyond its fixed budget.
+  if (!tutorStubSourceAccessibilityInstruction(contract)) return '';
+  const row = contract.compensation;
+  return [
+    `Immediately after SOURCE, write one unquoted statement of at most ${row.max_words} words.`,
+    `Reuse at least ${row.min_material_source_tokens} material SOURCE words in order and one source-specific anchor.`,
+    'Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.',
+  ].join(' ');
+}
+
 function compactTacticInstruction(contract) {
   const support = compactSupportInstruction(contract.development?.support_level);
   const transition =
@@ -487,6 +504,8 @@ export function buildTutorStubFirstDraftContract({
   questionSupport = null,
   dialogueClosureFrame = null,
   performanceObligationContract = null,
+  sourceAccessibilityPolicy = 'direct_only',
+  sourceAccessibilityOwner = 'performance_response',
 } = {}) {
   const configuration = responseConfiguration || {};
   const stance = configuration.engagement_stance || 'precise';
@@ -508,6 +527,14 @@ export function buildTutorStubFirstDraftContract({
   const requiresExhibit = dramaticReleaseFrame?.requiresExhibitHandoff === true;
   const tactic = configuration.actorial_performance?.id || 'unadorned_report';
   const sentenceBudget = Math.max(8, Number(configuration.surface_budgets?.max_average_sentence_words || 24));
+  const sourceAccessibility = compileTutorStubSourceAccessibilityContract({
+    sources: renderedSources,
+    configuration: {
+      ...configuration,
+      source_accessibility_owner: sourceAccessibilityOwner,
+    },
+    policy: sourceAccessibilityPolicy,
+  });
   const directionOnlyWithoutNewEvidence =
     questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;
   const compiledCompatibilityDecisions = compatibilityDecisions({
@@ -628,6 +655,7 @@ export function buildTutorStubFirstDraftContract({
         ),
       ],
       exact_public_only: true,
+      source_accessibility: sourceAccessibility,
     },
     ending: {
       instruction: endingCue({ questionSupport, dramaticReleaseFrame, dialogueClosureFrame }),
@@ -661,10 +689,28 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   const plan = contract.host_plan;
   const slotsById = new Map(plan.slots.map((slot) => [slot.id, slot]));
   const source = slotsById.get('source');
+  const sourceAccessibility = contract.evidence?.source_accessibility || null;
+  const liveCompensation =
+    sourceAccessibility?.effective_mode === 'compensated' &&
+    sourceAccessibility?.owner === 'post_source_sentence';
   const writableUptake = contract.opening?.writable_entry_requested === true;
   const plainNovice =
     ['adult_novice', 'child'].includes(contract.language?.audience_register) &&
     ['plain', 'glossed_plain'].includes(contract.language?.lexical_accessibility);
+  if (liveCompensation) {
+    return [
+      '[Tutor-only host plan]',
+      `Four unlabeled host sentences, at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words each: UPTAKE > PART > SOURCE > TACTIC > HANDOFF. Keep SOURCE exact and separate.`,
+      `VOICE — ${contract.language.audience_register.replace(/_/gu, ' ')}, ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} words, ${contract.language.scene_immersion.replace(/_/gu, ' ')} public objects; one relation each.`,
+      `UPTAKE — ${slotsById.get('uptake').instruction}`,
+      `PART — ${slotsById.get('part').instruction}`,
+      `SOURCE — ${source.cues.join(' ')}`,
+      `TACTIC — ${compactSourceAccessibilityInstruction(sourceAccessibility)}`,
+      `HANDOFF — ${slotsById.get('handoff').instruction}`,
+      'One voice; add no fact; never announce roles, plans, or hidden evidence.',
+      '[End tutor-only host plan]',
+    ].join('\n');
+  }
   return [
     '[Tutor-only host plan]',
     `Write one paragraph: four unlabeled${writableUptake ? ' host sentences (only Write: UPTAKE may quote)' : ', unquoted host sentences'}, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow UPTAKE > PART > ${source ? 'SOURCE > ' : ''}TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.`,

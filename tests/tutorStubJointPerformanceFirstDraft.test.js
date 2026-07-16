@@ -27,6 +27,7 @@ import {
   tutorStubStructuredFirstDraftPrompt,
 } from '../services/tutorStubStructuredFirstDraft.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { auditTutorStubFrozenCandidate } from '../services/tutorStubFrozenReplay.js';
 import {
   auditTutorStubResponseConfiguration,
   tutorStubResponseConfigurationPrompt,
@@ -77,6 +78,7 @@ function firstDraftContract({
   responseCompositionFrame = null,
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
+  sourceAccessibilityPolicy = 'direct_only',
 } = {}) {
   return buildTutorStubFirstDraftContract({
     learnerText,
@@ -88,6 +90,7 @@ function firstDraftContract({
       },
     dramaticReleaseFrame: dramaticReleaseFrame || { active: false, entries: [] },
     dialogueClosureFrame,
+    sourceAccessibilityPolicy,
   });
 }
 
@@ -684,6 +687,200 @@ test('v2 composition rejects exact SOURCE copying and substantial SOURCE paraphr
     () => composeTutorStubJointPerformanceFirstDraft({ structured: paraphrase, dramaticReleaseFrame: frame }),
     /source_content_repeated_in_model_slot:uptake/u,
   );
+});
+
+test('opt-in V29 compensation keeps exact SOURCE host-owned and reserves performance response for audited accessibility', () => {
+  const surface =
+    "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
+  const compensation =
+    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const contract = firstDraftContract({
+    learnerText: 'That register sentence is hard to follow.',
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ mode: 'presented_exhibit', surface }],
+    },
+    sourceAccessibilityPolicy: 'direct_or_compensated_v1',
+  });
+  const plan = buildTutorStubJointPerformanceHostPlan(contract);
+  const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
+
+  assert.equal(contract.evidence.source_accessibility.effective_mode, 'compensated');
+  assert.equal(contract.evidence.source_accessibility.owner, 'performance_response');
+  assert.deepEqual(plan.axis_ownership.actorial_part, ['performance_entry']);
+  assert.deepEqual(plan.axis_ownership.actorial_performance, ['performance_entry']);
+  assert.deepEqual(plan.axis_ownership.engagement_stance, ['performance_entry']);
+  assert.deepEqual(plan.axis_ownership.source_accessibility, ['performance_response']);
+  assert.match(prompt, /PERFORMANCE RESPONSE — \[Tutor-only SOURCE accessibility contract\]/u);
+  assert.doesNotMatch(prompt, /JOINT PERFORMANCE —/u);
+  assert.ok(wordCount(prompt) <= 350, `expected at most 350 V2 prompt words, received ${wordCount(prompt)}`);
+
+  const structured = parseTutorStubJointPerformanceFirstDraft(
+    validRaw({
+      uptake: 'That sentence packs several events together, so I will separate its usable thread.',
+      performance: {
+        entry: 'Together, we pause beside the open book before reading.',
+        response: compensation,
+      },
+      handoff: 'The register now gives us one concrete link to test.',
+    }),
+  );
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured,
+    dramaticReleaseFrame: contract.evidence.active
+      ? { active: true, entries: [{ mode: 'presented_exhibit', surface }] }
+      : null,
+    sourceAccessibility: contract.evidence.source_accessibility,
+  });
+
+  assert.equal(composition.sourceAccessibilityAudit.ok, true, JSON.stringify(composition.sourceAccessibilityAudit));
+  assert.equal(composition.sourceAccessibilityAudit.visible, true);
+  assert.deepEqual(
+    composition.spans.map((span) => span.id),
+    ['uptake', 'performance_entry', 'source_1', 'performance_response', 'handoff'],
+  );
+  assert.equal(composition.text.split(surface).length - 1, 1);
+  assert.equal(composition.spans[3].text, compensation);
+  const ownership = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: configuration(),
+    progressionContract: contract.progression,
+    sourceAccessibility: contract.evidence.source_accessibility,
+  });
+  assert.equal(ownership.sourceAccessibilityAudit.ok, true);
+  assert.equal(ownership.axes.source_accessibility.owner, 'performance_response');
+  assert.equal(ownership.axes.source_accessibility.visible, true);
+  assert.equal(ownership.performanceText, composition.spans[1].text);
+  assert.deepEqual(ownership.boundaries.performance, ['performance_entry']);
+
+  const invalid = parseTutorStubJointPerformanceFirstDraft(
+    validRaw({ performance: { response: 'This means the clue is easier to understand.' } }),
+  );
+  assert.throws(
+    () =>
+      composeTutorStubJointPerformanceFirstDraft({
+        structured: invalid,
+        dramaticReleaseFrame: { active: true, entries: [{ mode: 'presented_exhibit', surface }] },
+        sourceAccessibility: contract.evidence.source_accessibility,
+      }),
+    /source_accessibility_compensation_failed/iu,
+  );
+});
+
+test('frozen V2 compensated candidate is accepted without V1 owner inference or duplicate-clue rejection', () => {
+  const surface =
+    "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
+  const compensation =
+    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const selectedConfiguration = configuration({ scene_immersion: 'grounded' });
+  const dramaticReleaseFrame = {
+    active: true,
+    requiresExhibitHandoff: true,
+    entries: [{ mode: 'presented_exhibit', surface }],
+  };
+  const contract = firstDraftContract({
+    learnerText: "I can't follow Elian's register entry about the dusk-seal.",
+    responseConfiguration: selectedConfiguration,
+    dramaticReleaseFrame,
+    sourceAccessibilityPolicy: 'direct_or_compensated_v1',
+  });
+  const structured = parseTutorStubJointPerformanceFirstDraft(
+    validRaw({
+      uptake: 'You are right that the dusk-seal sentence is hard to follow, so we will separate it.',
+      performance: {
+        entry: 'Together, we open the book between us and make room for your reading.',
+        response: compensation,
+      },
+      handoff: 'What careful public test should we use next about the dusk-seal, register, and Elian?',
+    }),
+  );
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured,
+    dramaticReleaseFrame,
+    sourceAccessibility: contract.evidence.source_accessibility,
+  });
+  const world = {
+    title: 'The Raven Seal',
+    setting: 'The private-seal register lies open on the quay desk.',
+    question: 'Who used the dusk-seal?',
+    premiseById: new Map(),
+    premises: [],
+    releaseSchedule: [],
+    rules: [],
+    background: [],
+  };
+  const frozenBundle = {
+    guards: { dramaticRelease: true },
+    learnerText: "I can't follow Elian's register entry about the dusk-seal.",
+    firstDraftContract: contract,
+    selectedResponseConfiguration: selectedConfiguration,
+    frames: {
+      dramaticRelease: dramaticReleaseFrame,
+      responseComposition: null,
+      generousInference: null,
+      questionSupport: null,
+      dialogueClosure: null,
+    },
+    duePremiseIds: [],
+    publicPremiseIds: [],
+    priorTurns: [],
+    priorTutorTexts: [],
+    turn: 5,
+  };
+  const baseAudit = auditTutorStubFrozenCandidate({
+    bundle: frozenBundle,
+    world,
+    text: composition.text,
+    jointPerformanceComposition: composition,
+  });
+
+  assert.equal(baseAudit.ok, true, JSON.stringify(baseAudit.failureClusters));
+  assert.equal(baseAudit.audits.liveTurnProgressionAudit.active, false);
+  assert.equal(
+    baseAudit.audits.liveTurnProgressionAudit.reason,
+    'typed_joint_performance_audit_owns_progression',
+  );
+  assert.equal(baseAudit.audits.liveSourceActionAlignmentAudit.active, false);
+  assert.equal(
+    baseAudit.audits.liveSourceActionAlignmentAudit.reason,
+    'typed_joint_performance_audit_owns_source_and_compensation',
+  );
+  assert.equal(baseAudit.audits.dramaticReleaseAudit.clueDeliveryMultiplicity.ok, true);
+  assert.deepEqual(
+    baseAudit.audits.dramaticReleaseAudit.clueDeliveryMultiplicity.exemptedPassingCompensations,
+    [compensation],
+  );
+  const schemaOnlyAudit = auditTutorStubFrozenCandidate({
+    bundle: frozenBundle,
+    world,
+    text: composition.text,
+    jointPerformanceComposition: {
+      schema: TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+    },
+  });
+  assert.equal(schemaOnlyAudit.audits.liveTurnProgressionAudit.active, true);
+  assert.equal(schemaOnlyAudit.audits.liveSourceActionAlignmentAudit.active, true);
+
+  const finalAudit = applyTutorStubJointPerformanceOwnershipAudit({
+    audit: baseAudit,
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    world,
+    progressionContract: contract.progression,
+    sourceAccessibility: contract.evidence.source_accessibility,
+  });
+  assert.equal(
+    finalAudit.ok,
+    true,
+    JSON.stringify({
+      hardFailureClusters: finalAudit.hardFailureClusters,
+      progression: finalAudit.audits.turnProgressionAudit,
+    }),
+  );
+  assert.equal(finalAudit.audits.sourceAccessibilityAudit.ok, true);
+  assert.equal(finalAudit.audits.turnProgressionAudit.ok, true);
 });
 
 test('joint audit accepts the exact V26 I2 construction without widening recognition', () => {
@@ -1301,6 +1498,7 @@ test('CLI exposes the explicit v2 flag and rejects simultaneous v1/v2 generation
   const help = spawnSync(process.execPath, [REPLAY_SCRIPT, '--help'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(help.status, 0, help.stderr);
   assert.match(help.stdout, /--joint-performance-generation/u);
+  assert.match(help.stdout, /--source-accessibility-policy direct_or_compensated_v1/u);
 
   const conflicting = spawnSync(
     process.execPath,
@@ -1309,4 +1507,12 @@ test('CLI exposes the explicit v2 flag and rejects simultaneous v1/v2 generation
   );
   assert.notEqual(conflicting.status, 0);
   assert.match(conflicting.stderr, /mutually exclusive/u);
+
+  const compensationWithoutV2 = spawnSync(
+    process.execPath,
+    [REPLAY_SCRIPT, '--source-accessibility-policy', 'direct_or_compensated_v1'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(compensationWithoutV2.status, 0);
+  assert.match(compensationWithoutV2.stderr, /requires --joint-performance-generation/u);
 });

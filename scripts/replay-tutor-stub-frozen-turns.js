@@ -65,6 +65,7 @@ const { values: args } = parseArgs({
     'stop-on-first-rejection': { type: 'boolean', default: false },
     'structured-generation': { type: 'boolean', default: false },
     'joint-performance-generation': { type: 'boolean', default: false },
+    'source-accessibility-policy': { type: 'string', default: 'direct_only' },
     'semantic-adjudication': { type: 'boolean', default: false },
     'adjudicator-model': { type: 'string' },
     'adjudicator-effort': { type: 'string' },
@@ -78,6 +79,7 @@ function usage() {
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --semantic-adjudication --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --structured-generation --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --joint-performance-generation --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --joint-performance-generation --source-accessibility-policy direct_or_compensated_v1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --stop-on-first-rejection --concurrency 1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
@@ -150,6 +152,7 @@ function auditOriginalCandidate({
     text: candidate,
     candidateKind: 'original_candidate',
     performanceAdjudication,
+    jointPerformanceComposition: jointPerformance ? composition : null,
   });
   if (!composition) return wholeResponseAudit;
   if (jointPerformance) {
@@ -161,6 +164,7 @@ function auditOriginalCandidate({
       world,
       performanceObligationContract: bundle.performanceObligationContract,
       progressionContract: bundle.firstDraftContract?.progression || null,
+      sourceAccessibility: bundle.firstDraftContract?.evidence?.source_accessibility || null,
     });
   }
   return applyTutorStubStructuredSlotOwnershipAudit({
@@ -186,6 +190,17 @@ function summarizeScreenResults(results = []) {
       ...normalization,
     })),
   );
+  const sourceAccessibilityRows = jointRows.map((row) =>
+    row.audit?.audits?.sourceAccessibilityAudit ||
+    row.jointPerformanceGeneration?.composition?.sourceAccessibilityAudit ||
+    row.sourceAccessibility ||
+    null,
+  );
+  const sourceAccessibilityModes = sourceAccessibilityRows.reduce((counts, audit) => {
+    const mode = audit?.effective_mode || 'unreported';
+    counts[mode] = Number(counts[mode] || 0) + 1;
+    return counts;
+  }, {});
   return {
     ...summary,
     ...(structuredRows.length
@@ -210,6 +225,9 @@ function summarizeScreenResults(results = []) {
           ).length,
           transportNormalizationCount: transportNormalizations.length,
           transportNormalizations,
+          sourceAccessibilityModes,
+          sourceAccessibilityVisible: sourceAccessibilityRows.filter((audit) => audit?.visible === true).length,
+          sourceAccessibilityFailures: sourceAccessibilityRows.filter((audit) => audit?.ok === false).length,
         }
       : {}),
   };
@@ -501,8 +519,15 @@ async function main() {
   }
   const structuredGeneration = Boolean(args['structured-generation']);
   const jointPerformanceGeneration = Boolean(args['joint-performance-generation']);
+  const sourceAccessibilityPolicy = String(args['source-accessibility-policy'] || 'direct_only');
+  if (!['direct_only', 'direct_or_compensated_v1'].includes(sourceAccessibilityPolicy)) {
+    throw new Error('--source-accessibility-policy must be direct_only or direct_or_compensated_v1');
+  }
   if (structuredGeneration && jointPerformanceGeneration) {
     throw new Error('--structured-generation and --joint-performance-generation are mutually exclusive');
+  }
+  if (sourceAccessibilityPolicy !== 'direct_only' && !jointPerformanceGeneration) {
+    throw new Error('--source-accessibility-policy direct_or_compensated_v1 requires --joint-performance-generation');
   }
   if (args['audit-fixture']) {
     const fixture = JSON.parse(fs.readFileSync(path.resolve(args['audit-fixture']), 'utf8'));
@@ -614,7 +639,11 @@ async function main() {
   const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
   const bundles = turns.map((turn) => {
     const extracted = extractTutorStubFrozenTurn({ tracePath, turn });
-    const refreshed = refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world: worldForBundle(extracted) });
+    const refreshed = refreshTutorStubFrozenFirstDraftRequest({
+      bundle: extracted,
+      world: worldForBundle(extracted),
+      sourceAccessibilityPolicy,
+    });
     if (jointPerformanceGeneration) return replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
     return structuredGeneration ? replaceTutorStubFrozenRequestWithStructuredPrompt(refreshed) : refreshed;
   });
@@ -641,6 +670,9 @@ async function main() {
         const composition = compose({
           structured: parsed,
           dramaticReleaseFrame: bundle.frames?.dramaticRelease,
+          ...(jointPerformanceGeneration
+            ? { sourceAccessibility: bundle.firstDraftContract?.evidence?.source_accessibility || null }
+            : {}),
         });
         candidate = composition.text;
         structuredResult = {
@@ -738,6 +770,8 @@ async function main() {
       usage: generated.usage,
       tokenUsageAvailable: generated.tokenUsageAvailable,
       candidate,
+      sourceAccessibility:
+        audit.audits?.sourceAccessibilityAudit || structuredResult?.composition?.sourceAccessibilityAudit || null,
       ...(jointPerformanceGeneration
         ? {
             candidateProvenance: { kind: 'joint_performance_original_composition', recoveryStage: false },
@@ -776,6 +810,7 @@ async function main() {
     drawsPerTurn: draws,
     concurrency,
     developmentSeed: args['development-seed'] || null,
+    sourceAccessibilityPolicy,
     semanticAdjudication: Boolean(args['semantic-adjudication']),
     adjudicatorModelOverride: args['adjudicator-model'] || null,
     adjudicatorEffortOverride: args['adjudicator-effort'] || null,

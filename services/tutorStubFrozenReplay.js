@@ -5,6 +5,8 @@ import { auditTutorStubDialogueClosureResponse } from './tutorStubDialogueClosur
 import { auditTutorStubDramaticReleaseResponse } from './tutorStubDramaticRelease.js';
 import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from './tutorStubEvidenceAssertion.js';
 import { buildTutorStubFirstDraftContract, tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
+import { TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA } from './tutorStubJointPerformanceFirstDraft.js';
+import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
 import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
@@ -457,7 +459,11 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
  * prefix. This lets development screens exercise the current generation
  * prompt without rerunning the learner, classifier, DAG, or prior dialogue.
  */
-export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) {
+export function refreshTutorStubFrozenFirstDraftRequest({
+  bundle,
+  world,
+  sourceAccessibilityPolicy = null,
+} = {}) {
   if (!bundle || !world) throw new Error('frozen request refresh requires bundle and world');
   const refreshed = clone(bundle);
   const messages = refreshed.request?.messages || [];
@@ -523,6 +529,8 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     questionSupport: bundle.frames?.questionSupport,
     dialogueClosureFrame: bundle.frames?.dialogueClosure,
     performanceObligationContract,
+    sourceAccessibilityPolicy:
+      sourceAccessibilityPolicy || bundle.sourceAccessibilityPolicy || 'direct_only',
   });
   latestRequest.content = latestRequest.content.replace(
     FIRST_DRAFT_BLOCK,
@@ -532,8 +540,46 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
   refreshed.publicCounterpressure = publicCounterpressure;
   refreshed.performanceObligationContract = performanceObligationContract;
   refreshed.speakingResponseConfiguration = speakingResponseConfiguration;
+  refreshed.sourceAccessibilityPolicy = firstDraftContract.evidence?.source_accessibility?.policy || 'direct_only';
   refreshed.request.messages = messages;
   return refreshed;
+}
+
+function validTutorStubFrozenJointBoundary(composition, candidateText) {
+  if (
+    composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA ||
+    composition?.sourceAccessibilityAudit?.schema !==
+      TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA ||
+    composition?.text !== candidateText ||
+    !Array.isArray(composition?.spans)
+  ) {
+    return false;
+  }
+  const ids = composition.spans.map((span) => span?.id);
+  if (
+    ids[0] !== 'uptake' ||
+    ids[1] !== 'performance_entry' ||
+    ids.at(-2) !== 'performance_response' ||
+    ids.at(-1) !== 'handoff'
+  ) {
+    return false;
+  }
+  let expectedStart = 0;
+  for (const span of composition.spans) {
+    if (
+      typeof span?.text !== 'string' ||
+      !span.text ||
+      !Number.isInteger(span.start) ||
+      !Number.isInteger(span.end) ||
+      span.start !== expectedStart ||
+      span.end !== span.start + span.text.length ||
+      candidateText.slice(span.start, span.end) !== span.text
+    ) {
+      return false;
+    }
+    expectedStart = span.end + 1;
+  }
+  return composition.spans.map((span) => span.text).join(' ') === candidateText;
 }
 
 export function auditTutorStubFrozenCandidate({
@@ -544,6 +590,7 @@ export function auditTutorStubFrozenCandidate({
   candidateKind = 'original_candidate',
   performanceAdjudication = null,
   boundaryPolicy = 'strict',
+  jointPerformanceComposition = null,
 } = {}) {
   if (!bundle || !world) throw new Error('frozen candidate audit requires bundle and world');
   const guards = bundle.guards || {};
@@ -567,7 +614,11 @@ export function auditTutorStubFrozenCandidate({
       firstDraftContract: bundle.firstDraftContract,
     });
   }
-  const liveTurnProgressionAudit = bundle.firstDraftContract?.progression?.complete === true
+  const typedJointBoundary = validTutorStubFrozenJointBoundary(
+    jointPerformanceComposition,
+    auditedText,
+  );
+  const liveTurnProgressionAudit = !typedJointBoundary && bundle.firstDraftContract?.progression?.complete === true
     ? auditTutorStubLiveTurnProgressionV1({
         contract: bundle.firstDraftContract.progression,
         text: auditedText,
@@ -582,9 +633,12 @@ export function auditTutorStubFrozenCandidate({
         ok: true,
         scope: 'whole_response_terminal_boundary',
         slot_ownership_inferred: false,
+        reason: typedJointBoundary
+          ? 'typed_joint_performance_audit_owns_progression'
+          : 'turn_progression_contract_inactive',
         issues: [],
       };
-  const liveSourceActionAlignmentAudit = bundle.firstDraftContract
+  const liveSourceActionAlignmentAudit = !typedJointBoundary && bundle.firstDraftContract
     ? auditTutorStubLiveSourceActionAlignmentV1({
         text: auditedText,
         firstDraftContract: bundle.firstDraftContract,
@@ -595,6 +649,9 @@ export function auditTutorStubFrozenCandidate({
         ok: true,
         scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
         slot_ownership_inferred: false,
+        reason: typedJointBoundary
+          ? 'typed_joint_performance_audit_owns_source_and_compensation'
+          : 'first_draft_contract_inactive',
         issues: [],
       };
   const leakAudit = guards.leak
@@ -617,7 +674,11 @@ export function auditTutorStubFrozenCandidate({
     ? auditTutorStubQuestionSupportResponse({ text: auditedText, support: bundle.frames?.questionSupport })
     : { ok: true, issues: [] };
   const dramaticReleaseAudit = guards.dramaticRelease
-    ? auditTutorStubDramaticReleaseResponse({ text: auditedText, frame: bundle.frames?.dramaticRelease })
+    ? auditTutorStubDramaticReleaseResponse({
+        text: auditedText,
+        frame: bundle.frames?.dramaticRelease,
+        sourceAccessibilityAudit: jointPerformanceComposition?.sourceAccessibilityAudit || null,
+      })
     : { ok: true, active: false, issues: [] };
   const responseConfigurationAudit = guards.actorialRealization
     ? auditTutorStubResponseConfiguration({

@@ -71,6 +71,47 @@ test('compiles one ordered host plan with exact source between part and tactic',
   assert.match(prompt, /Keep SOURCE words inside/iu);
 });
 
+test('live V29 source compensation replaces tactic instructions within the fixed V1 prompt budget', () => {
+  const surface =
+    "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'I cannot follow that.',
+    responseConfiguration: configuration({
+      engagement_stance: 'warm',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'grounded',
+      actorial_part: 'examiner',
+      actorial_part_label: 'examiner',
+      actorial_performance: {
+        id: 'unadorned_report',
+        label: 'unadorned report',
+        contract: 'State it directly.',
+      },
+      surface_budgets: { max_average_sentence_words: 23 },
+    }),
+    responseCompositionFrame: {
+      learner_move: { summary: 'Learner cannot follow the source.' },
+      scene_action_budget: { saturated: false },
+    },
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ mode: 'presented_exhibit', surface }],
+    },
+    sourceAccessibilityPolicy: 'direct_or_compensated_v1',
+    sourceAccessibilityOwner: 'post_source_sentence',
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.equal(contract.evidence.source_accessibility.effective_mode, 'compensated');
+  assert.equal(contract.evidence.source_accessibility.owner, 'post_source_sentence');
+  assert.match(prompt, /TACTIC — Immediately after SOURCE/u);
+  assert.match(prompt, /Reuse at least 4 material SOURCE words in order/u);
+  assert.doesNotMatch(prompt, /TACTIC — After SOURCE closes/u);
+  assert.doesNotMatch(prompt, /TARGET —|COUNTERPRESSURE PAIR —/u);
+  assert.ok(wordCount(prompt) <= 220, `expected at most 220 V1 prompt words, received ${wordCount(prompt)}`);
+});
+
 test('assigns every delivered response axis to exactly its intended host slot', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write?',

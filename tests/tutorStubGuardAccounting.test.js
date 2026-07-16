@@ -202,6 +202,9 @@ test('tutor guard accounting preserves the original candidate and exact accepted
       (row) => row.scope === 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
     ),
   );
+  assert.ok(liveSourceEvents.every((row) => row.compensationRequired === false));
+  assert.ok(liveSourceEvents.every((row) => typeof row.directAccessible === 'boolean'));
+  assert.ok(liveSourceEvents.every((row) => typeof row.compensationVisible === 'boolean'));
   assert.ok([...liveProgressionEvents, ...liveSourceEvents].every((row) => row.slotOwnershipInferred === false));
 
   assert.deepEqual(turn.tutorGuardAccounting, accounting);

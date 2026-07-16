@@ -1,4 +1,5 @@
 import { auditTutorStubDueSourceActionAlignment } from './tutorStubDueSourceRenderer.js';
+import { auditTutorStubSourceAccessibilityCompensation } from './tutorStubSourceAccessibilityContract.js';
 
 export const TUTOR_STUB_LIVE_SOURCE_ACTION_ALIGNMENT_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.live-source-action-alignment-audit.v1';
@@ -55,6 +56,75 @@ function nearestPreSourceHostBoundary(text, sourceStart, precedingSourceEnd = 0)
     end: boundaryEnd,
     text: text.slice(boundaryStart, boundaryEnd).replace(/\s+/gu, ' ').trim(),
   };
+}
+
+function firstCompleteSentenceAfterSource(text, sourceEnd) {
+  const tail = text.slice(sourceEnd);
+  const leadingWhitespace = tail.search(/\S/u);
+  if (leadingWhitespace < 0) return null;
+  const available = tail.slice(leadingWhitespace);
+  const first = [...sentenceSegmenter.segment(available)].find((segment) => /\S/u.test(segment.segment));
+  if (!first) return null;
+  const trimmed = first.segment.trim();
+  if (!trimmed) return null;
+  const withinSegment = first.segment.indexOf(trimmed);
+  const start = sourceEnd + leadingWhitespace + first.index + withinSegment;
+  return {
+    start,
+    end: start + trimmed.length,
+    text: text.slice(start, start + trimmed.length),
+  };
+}
+
+function sourceAccessibilityAudit({ responseText, firstDraftContract, occurrenceRows }) {
+  const contract = firstDraftContract?.evidence?.source_accessibility || null;
+  if (!contract) {
+    return {
+      active: false,
+      ok: true,
+      visible: true,
+      effective_mode: 'direct',
+      owner: null,
+      issues: [],
+      checks: { compensation_required: false },
+      spans: { source: null, compensation: null },
+    };
+  }
+  // V28 direct-only accessibility is a structural campaign preflight, not a
+  // new live delivery veto. Preserve that behavior exactly. V29's opt-in
+  // policy activates the post-SOURCE compensation boundary and hard audit.
+  if (contract.policy !== 'direct_or_compensated_v1') {
+    return {
+      active: false,
+      ok: true,
+      visible: contract.direct_accessible === true,
+      effective_mode: contract.effective_mode || 'direct',
+      owner: null,
+      policy: contract.policy || 'direct_only',
+      issues: [],
+      checks: {
+        compensation_required: false,
+        direct_only_structural_preflight_preserved: true,
+      },
+      spans: { source: null, compensation: null },
+    };
+  }
+  const expectedSourceId = contract?.compensation?.source_id || contract?.sources?.[0]?.id || null;
+  const occurrence =
+    occurrenceRows.find((row) => row.source === expectedSourceId && row.exact_once) ||
+    occurrenceRows.find((row) => row.exact_once) ||
+    null;
+  const sourceSpan = occurrence?.spans?.[0] || null;
+  const compensationSpan = sourceSpan
+    ? firstCompleteSentenceAfterSource(responseText, sourceSpan.end)
+    : null;
+  return auditTutorStubSourceAccessibilityCompensation({
+    contract,
+    text: responseText,
+    owner: 'post_source_sentence',
+    sourceSpan,
+    compensationSpan,
+  });
 }
 
 /**
@@ -133,12 +203,35 @@ export function auditTutorStubLiveSourceActionAlignmentV1({
       reason: 'the live response must contain the exact host-rendered source once',
     }));
   const boundaryIssues = boundaries.flatMap((boundary) => boundary.issues);
-  const issues = [...occurrenceIssues, ...boundaryIssues];
+  const accessibility = sourceAccessibilityAudit({
+    responseText,
+    firstDraftContract,
+    occurrenceRows,
+  });
+  const accessibilityIssues = (accessibility.issues || []).map((type) => ({
+    type,
+    reason: 'the opt-in source accessibility sentence did not satisfy its extractive public contract',
+    effective_mode: accessibility.effective_mode,
+    owner: accessibility.owner,
+  }));
+  const issues = [...occurrenceIssues, ...boundaryIssues, ...accessibilityIssues];
+  const passingCompensationSpans =
+    accessibility.ok && accessibility.effective_mode === 'compensated' && accessibility.spans?.compensation
+      ? [
+          {
+            ...accessibility.spans.compensation,
+            source: contractSourceId(firstDraftContract),
+            exact: true,
+            ok: true,
+          },
+        ]
+      : [];
   return {
     schema: TUTOR_STUB_LIVE_SOURCE_ACTION_ALIGNMENT_AUDIT_SCHEMA,
     active: sources.length > 0,
     ok: issues.length === 0,
     scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
+    source_accessibility_scope: 'first_complete_sentence_immediately_after_exact_source',
     slot_ownership_inferred: false,
     expected_source_count: sources.length,
     exact_source_occurrence_passes: occurrenceRows.filter((row) => row.exact_once).length,
@@ -150,6 +243,81 @@ export function auditTutorStubLiveSourceActionAlignmentV1({
       .map((row) => row.source),
     audited_host_text: hostWithoutExactSources(responseText, occurrenceRows),
     sources: boundaries.flatMap((boundary) => boundary.sources),
+    source_accessibility: accessibility,
+    direct_accessible:
+      firstDraftContract?.evidence?.source_accessibility?.direct_accessible ?? true,
+    compensation_required:
+      firstDraftContract?.evidence?.source_accessibility?.compensation_required === true,
+    compensation_contract_ready:
+      firstDraftContract?.evidence?.source_accessibility?.compensation_contract_ready === true,
+    compensation_visible: accessibility.visible === true,
+    effective_mode: accessibility.effective_mode || 'direct',
+    passing_compensation_spans: passingCompensationSpans,
     issues,
+  };
+}
+
+function contractSourceId(firstDraftContract) {
+  const accessibility = firstDraftContract?.evidence?.source_accessibility;
+  return accessibility?.compensation?.source_id || accessibility?.sources?.[0]?.id || null;
+}
+
+/**
+ * Restrict live configuration realization to host-owned language when the
+ * opt-in compensation contract is active. Exact SOURCE is public context and
+ * the passing compensation sentence improves accessibility; neither owns the
+ * selected part, tactic, or stance. Replacing spans with spaces preserves the
+ * surrounding sentence boundaries without exposing their tokens to the
+ * realization recognizers.
+ */
+export function tutorStubLiveResponseConfigurationSurface({
+  text = '',
+  liveSourceActionAlignmentAudit = null,
+} = {}) {
+  const responseText = String(text || '');
+  if (liveSourceActionAlignmentAudit?.compensation_required !== true) {
+    return {
+      active: false,
+      text: responseText,
+      excluded_spans: [],
+      reason: 'ordinary_direct_only_behavior_preserved',
+    };
+  }
+  const sourceSpans = (liveSourceActionAlignmentAudit.source_occurrences || [])
+    .filter((row) => row?.exact_once === true && row?.spans?.length === 1)
+    .map((row) => ({
+      ...row.spans[0],
+      kind: 'exact_source',
+      source: row.source || null,
+    }));
+  const compensationSpans = (liveSourceActionAlignmentAudit.passing_compensation_spans || [])
+    .filter((span) => span?.ok === true && span?.exact === true)
+    .map((span) => ({ ...span, kind: 'passing_compensation' }));
+  const excludedSpans = [...sourceSpans, ...compensationSpans]
+    .filter(
+      (span) =>
+        Number.isInteger(span.start) &&
+        Number.isInteger(span.end) &&
+        span.start >= 0 &&
+        span.end > span.start &&
+        span.end <= responseText.length,
+    )
+    .sort((left, right) => right.start - left.start);
+  let hostText = responseText;
+  for (const span of excludedSpans) {
+    hostText = `${hostText.slice(0, span.start)}${' '.repeat(span.end - span.start)}${hostText.slice(span.end)}`;
+  }
+  return {
+    active: true,
+    text: hostText,
+    excluded_spans: excludedSpans.reverse().map((span) => ({
+      kind: span.kind,
+      source: span.source || null,
+      start: span.start,
+      end: span.end,
+      text: responseText.slice(span.start, span.end),
+      offset_encoding: 'utf16_code_units',
+    })),
+    reason: 'typed_live_host_axes_exclude_exact_source_and_passing_compensation',
   };
 }

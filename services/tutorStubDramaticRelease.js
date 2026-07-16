@@ -3,6 +3,7 @@ import {
   renderTutorStubDueSource,
 } from './tutorStubDueSourceRenderer.js';
 import { deterministicTutorStubTurnProgressionHandoff } from './tutorStubTurnProgressionContract.js';
+import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 
 export const TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA = 'machinespirits.tutor-stub.dramatic-release.v1';
 
@@ -40,10 +41,59 @@ function sentenceRows(value) {
     .filter(Boolean);
 }
 
-function clueBearingSentenceMatches(text, surface) {
+function exactPassingCompensationTexts(sourceAccessibilityAudit = null) {
+  const canonical =
+    sourceAccessibilityAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA
+      ? sourceAccessibilityAudit
+      : sourceAccessibilityAudit?.source_accessibility;
+  if (
+    canonical?.schema !== TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA ||
+    canonical.ok !== true ||
+    canonical.effective_mode !== 'compensated' ||
+    !canonical.spans?.compensation
+  ) {
+    return [];
+  }
+  const canonicalSpan = canonical.spans.compensation;
+  const declaredSpans = Array.isArray(sourceAccessibilityAudit?.passing_compensation_spans)
+    ? sourceAccessibilityAudit.passing_compensation_spans
+    : Array.isArray(sourceAccessibilityAudit?.spans?.passing_compensations)
+      ? sourceAccessibilityAudit.spans.passing_compensations
+      : [
+          {
+            ...canonicalSpan,
+            exact: true,
+            ok: true,
+          },
+        ];
+  const spans = declaredSpans;
+  return spans
+    .filter(
+      (span) =>
+        span?.ok === true &&
+        span?.exact === true &&
+        span.start === canonicalSpan.start &&
+        span.end === canonicalSpan.end &&
+        oneLine(span.text) === oneLine(canonicalSpan.text),
+    )
+    .map((span) => oneLine(span.text))
+    .filter(Boolean);
+}
+
+function clueBearingSentenceMatches(text, surface, { exemptExactTexts = [] } = {}) {
   const responseSentences = sentenceRows(text);
   const clueSentences = sentenceRows(surface);
   if (!responseSentences.length || !clueSentences.length) return [];
+  const remainingExemptions = [...exemptExactTexts];
+  const candidateSentences = responseSentences.filter((sentence) => {
+    const exactIndex = remainingExemptions.indexOf(sentence);
+    if (exactIndex < 0) return true;
+    // Only the exact passing compensation sentence is exempt. Consuming one
+    // occurrence prevents a duplicate copy of that sentence from inheriting
+    // the exemption merely because its words overlap the clue.
+    remainingExemptions.splice(exactIndex, 1);
+    return false;
+  });
   // An authored clue may itself contain several sentences. Detect repeated
   // delivery of any one source sentence, rather than mistaking the clue's own
   // second sentence for a duplicate of its first.
@@ -53,7 +103,7 @@ function clueBearingSentenceMatches(text, surface) {
         const clueTokens = clueContentTokens(clueSentence);
         if (!clueTokens.size) return [];
         const threshold = Math.max(3, Math.ceil(clueTokens.size * 0.45));
-        return responseSentences.filter((sentence) => {
+        return candidateSentences.filter((sentence) => {
           const sentenceTokens = clueContentTokens(sentence);
           let overlap = 0;
           for (const token of clueTokens) if (sentenceTokens.has(token)) overlap += 1;
@@ -69,13 +119,18 @@ function clueBearingSentenceMatches(text, surface) {
  * turn may legitimately recall an already-public clue; this guard is scoped
  * to the active release frame so it cannot reject that ordinary restatement.
  */
-export function auditTutorStubClueDeliveryMultiplicity({ text = '', frame = null } = {}) {
+export function auditTutorStubClueDeliveryMultiplicity({
+  text = '',
+  frame = null,
+  sourceAccessibilityAudit = null,
+} = {}) {
   if (!frame?.active) {
     return { ok: true, active: false, issues: [], repeatedEntries: [] };
   }
+  const exemptExactTexts = exactPassingCompensationTexts(sourceAccessibilityAudit);
   const repeatedEntries = (frame.entries || [])
     .map((entry) => {
-      const matches = clueBearingSentenceMatches(text, entry.surface);
+      const matches = clueBearingSentenceMatches(text, entry.surface, { exemptExactTexts });
       return {
         premise: entry.premise || null,
         surface: oneLine(entry.surface),
@@ -97,6 +152,7 @@ export function auditTutorStubClueDeliveryMultiplicity({ text = '', frame = null
     active: true,
     issues,
     repeatedEntries,
+    exemptedPassingCompensations: exemptExactTexts,
   };
 }
 
@@ -416,7 +472,11 @@ function dynamicExhibitActionVisible(response, frame) {
   });
 }
 
-export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null } = {}) {
+export function auditTutorStubDramaticReleaseResponse({
+  text = '',
+  frame = null,
+  sourceAccessibilityAudit = null,
+} = {}) {
   if (!frame?.active) {
     return {
       schema: TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA,
@@ -441,7 +501,11 @@ export function auditTutorStubDramaticReleaseResponse({ text = '', frame = null 
   const entranceVisible = enactmentVisible || exhibitHandoffVisible;
   const handoffVisible = entranceVisible;
   const returnVisible = RETURN_PATTERN.test(response);
-  const clueDeliveryMultiplicity = auditTutorStubClueDeliveryMultiplicity({ text: response, frame });
+  const clueDeliveryMultiplicity = auditTutorStubClueDeliveryMultiplicity({
+    text: response,
+    frame,
+    sourceAccessibilityAudit,
+  });
   const issues = [];
   issues.push(...clueDeliveryMultiplicity.issues);
   if (metaRoleplayAnnouncement || metaReleaseAnnouncement) {
@@ -681,21 +745,68 @@ function sourceCarrierEntrance(entry) {
   return `I call for ${article}${label}`;
 }
 
-function renderEnactedEntry(entry, { stance, hostPart, index }) {
-  const object = sceneObject(entry, 'account');
-  const source = renderTutorStubDueSource(entry, index);
-  return [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance), source.text]
-    .filter(Boolean)
-    .join('; ');
+function compensationWordCount(value) {
+  return oneLine(value).match(/[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu)?.length || 0;
 }
 
-function renderExhibitEntry(entry, { stance, hostPart, index }) {
+/**
+ * Produce a conservative extractive candidate for deterministic recovery.
+ * This helper grants no delivery privilege: the live source-accessibility
+ * audit must still accept the exact post-SOURCE sentence before it can be
+ * shown. Prefer the authored clause after a colon and remove only a bounded
+ * comma-delimited appositive; otherwise use the shortest complete authored
+ * clause that fits the frozen budget.
+ */
+export function deterministicTutorStubSourceAccessibilityCompensation(contract = null) {
+  if (
+    contract?.effective_mode !== 'compensated' ||
+    contract?.compensation_contract_ready !== true ||
+    contract?.compensation?.owner !== 'post_source_sentence'
+  ) {
+    return '';
+  }
+  const maximum = Number(contract.compensation.max_words || 0);
+  let authored = oneLine(contract.compensation.source_text)
+    .replace(/^[“"]|[”"]$/gu, '')
+    .trim();
+  const reportingPrefix = authored.match(/^I\b[^:]{0,100}:\s*(.+)$/iu);
+  if (reportingPrefix) authored = reportingPrefix[1].trim();
+  const candidates = [];
+  const colonTail = authored.match(/:\s*([^:]+)$/u)?.[1]?.trim();
+  if (colonTail) candidates.push(colonTail);
+  candidates.push(authored);
+  for (const candidate of [...candidates]) {
+    const withoutAppositive = candidate.replace(
+      /^([^,]{1,48}),\s*[^,]{1,120},\s*/u,
+      '$1 ',
+    );
+    if (withoutAppositive !== candidate) candidates.unshift(withoutAppositive);
+  }
+  const complete = candidates
+    .map((candidate) => candidate.trim().replace(/[;,:\s]+$/u, '').replace(/[!?]+$/u, '.'))
+    .map((candidate) => (/[.]$/u.test(candidate) ? candidate : `${candidate}.`))
+    .filter((candidate) => compensationWordCount(candidate) >= 4)
+    .filter((candidate) => !maximum || compensationWordCount(candidate) <= maximum)
+    .sort((left, right) => compensationWordCount(left) - compensationWordCount(right));
+  return complete[0] || '';
+}
+
+function renderEnactedEntry(entry, { stance, hostPart, index, compensation = '' }) {
+  const object = sceneObject(entry, 'account');
+  const source = renderTutorStubDueSource(entry, index);
+  const entrance = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance), source.text]
+    .filter(Boolean)
+    .join('; ');
+  return [entrance, compensation].filter(Boolean).join(' ');
+}
+
+function renderExhibitEntry(entry, { stance, hostPart, index, compensation = '' }) {
   const object = sceneObject(entry);
   const source = renderTutorStubDueSource(entry, index);
   const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance)]
     .filter(Boolean)
     .join('; ');
-  return `${host}: ${source.text}`;
+  return [`${host}: ${source.text}`, compensation].filter(Boolean).join(' ');
 }
 
 export function deterministicTutorStubDramaticReleaseFallback({
@@ -706,14 +817,37 @@ export function deterministicTutorStubDramaticReleaseFallback({
   variationKey = '',
   avoidQuestion = '',
   turnProgressionContract = null,
+  sourceAccessibilityContract = null,
 } = {}) {
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
   const hostPart = fallbackHostPart(responseConfiguration);
+  const compensation = deterministicTutorStubSourceAccessibilityCompensation(
+    sourceAccessibilityContract,
+  );
+  const compensationSourceId = sourceAccessibilityContract?.compensation?.source_id || null;
   const rendered = frame.entries.map((entry, index) =>
     entry.mode === 'enacted_role'
-      ? renderEnactedEntry(entry, { stance, hostPart, variationKey, index })
-      : renderExhibitEntry(entry, { stance, hostPart, variationKey, index }),
+      ? renderEnactedEntry(entry, {
+          stance,
+          hostPart,
+          variationKey,
+          index,
+          compensation:
+            !compensationSourceId || compensationSourceId === `source_${index + 1}`
+              ? compensation
+              : '',
+        })
+      : renderExhibitEntry(entry, {
+          stance,
+          hostPart,
+          variationKey,
+          index,
+          compensation:
+            !compensationSourceId || compensationSourceId === `source_${index + 1}`
+              ? compensation
+              : '',
+        }),
   );
   const clarification = support?.clarificationInvitationRequired
     ? 'You can also ask me to unpack any word or connection in it.'

@@ -58,7 +58,7 @@ const RULES = Object.freeze([
     type: '*',
     category: 'dramatic_realization',
     rationale:
-      'Each exact due source must appear once, with any required carrier visible in its nearest pre-source live host entrance.',
+      'Each exact due source must appear once, with its pre-source carrier and any opt-in post-source accessibility sentence visible at their typed live boundaries.',
   }),
   rule({
     guard: 'release_delivery',

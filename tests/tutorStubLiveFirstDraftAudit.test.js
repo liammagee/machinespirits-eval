@@ -7,7 +7,12 @@ import {
   compileTutorStubTurnProgressionContract,
 } from '../services/tutorStubTurnProgressionContract.js';
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
-import { auditTutorStubLiveSourceActionAlignmentV1 } from '../services/tutorStubLiveFirstDraftAudit.js';
+import {
+  auditTutorStubLiveSourceActionAlignmentV1,
+  tutorStubLiveResponseConfigurationSurface,
+} from '../services/tutorStubLiveFirstDraftAudit.js';
+import { compileTutorStubSourceAccessibilityContract } from '../services/tutorStubSourceAccessibilityContract.js';
+import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 import {
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
@@ -388,6 +393,146 @@ test('live V1 rejects a paraphrased or duplicated host-rendered source', () => {
   );
 });
 
+test('live V1 binds opt-in compensation only to the first complete sentence after exact SOURCE', () => {
+  const source = renderTutorStubDueSource({
+    premise: 'p_seal',
+    mode: 'presented_exhibit',
+    role: 'night notary reading the private-seal register',
+    surface:
+      "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.",
+  });
+  const sourceAccessibility = compileTutorStubSourceAccessibilityContract({
+    sources: [source],
+    configuration: {
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      source_accessibility_owner: 'post_source_sentence',
+    },
+    policy: 'direct_or_compensated_v1',
+  });
+  assert.equal(sourceAccessibility.effective_mode, 'compensated');
+  const contract = {
+    evidence: {
+      sources: [source],
+      source_accessibility: sourceAccessibility,
+    },
+  };
+  const compensation =
+    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const passing = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `I open the private-seal register. ${source.text} ${compensation} What does the chipped seal show?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(passing.ok, true, JSON.stringify(passing.issues));
+  assert.equal(passing.effective_mode, 'compensated');
+  assert.equal(passing.compensation_visible, true);
+  assert.equal(passing.passing_compensation_spans.length, 1);
+  assert.equal(passing.passing_compensation_spans[0].text, compensation);
+
+  const intervening = auditTutorStubLiveSourceActionAlignmentV1({
+    text:
+      `I open the private-seal register. ${source.text} ` +
+      `I turn the page. ${compensation} What does the chipped seal show?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(intervening.ok, false);
+  assert.ok(intervening.issues.some((issue) => issue.type === 'compensation_not_ordered_source_subsequence'));
+  assert.equal(intervening.compensation_visible, false);
+});
+
+test('live V1 compensation cannot rescue weak host part, tactic, or stance realization', () => {
+  const source = renderTutorStubDueSource({
+    premise: 'p_seal',
+    mode: 'presented_exhibit',
+    role: 'night notary reading the private-seal register',
+    surface:
+      'I examine only the private-seal register entry naming Elian during the lower-quay curfew, after the dusk-seal returned chipped and before the coffer left town under the morning watch.',
+  });
+  const sourceAccessibility = compileTutorStubSourceAccessibilityContract({
+    sources: [source],
+    configuration: {
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      source_accessibility_owner: 'post_source_sentence',
+    },
+    policy: 'direct_or_compensated_v1',
+  });
+  assert.equal(sourceAccessibility.effective_mode, 'compensated');
+  const compensation = 'I examine only the private-seal register entry naming Elian.';
+  const firstDraftContract = {
+    evidence: { sources: [source], source_accessibility: sourceAccessibility },
+  };
+  const configuration = {
+    engagement_stance: 'precise',
+    action_family: 'ground_in_material',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'grounded',
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const world = {
+    setting: 'The private-seal register and chipped dusk-seal lie on the quay desk.',
+    question: 'Who drew the dusk-seal?',
+  };
+  const weakText =
+    `I hear you. The private-seal register lies open. ${source.text} ` +
+    `${compensation} What does the entry show?`;
+  const weakLiveAudit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: weakText,
+    firstDraftContract,
+  });
+  assert.equal(weakLiveAudit.ok, true, JSON.stringify(weakLiveAudit.issues));
+  const unpartitioned = auditTutorStubResponseConfiguration({
+    text: weakText,
+    configuration,
+    world,
+  });
+  assert.equal(unpartitioned.axes.actorial_part.part_visible, true);
+  assert.equal(unpartitioned.axes.actorial_part.performance_visible, true);
+  assert.equal(unpartitioned.axes.engagement_stance.visible, true);
+
+  const weakHostSurface = tutorStubLiveResponseConfigurationSurface({
+    text: weakText,
+    liveSourceActionAlignmentAudit: weakLiveAudit,
+  });
+  assert.equal(weakHostSurface.active, true);
+  assert.deepEqual(
+    weakHostSurface.excluded_spans.map((span) => span.kind),
+    ['exact_source', 'passing_compensation'],
+  );
+  const partitionedWeak = auditTutorStubResponseConfiguration({
+    text: weakHostSurface.text,
+    configuration,
+    world,
+  });
+  assert.equal(partitionedWeak.axes.actorial_part.part_visible, false);
+  assert.equal(partitionedWeak.axes.actorial_part.performance_visible, false);
+  assert.equal(partitionedWeak.axes.engagement_stance.visible, false);
+
+  const strongText =
+    `I hear you. I examine only the private-seal register, not the whole case. ${source.text} ` +
+    `${compensation} What does the entry show?`;
+  const strongLiveAudit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: strongText,
+    firstDraftContract,
+  });
+  assert.equal(strongLiveAudit.ok, true, JSON.stringify(strongLiveAudit.issues));
+  const strongHostSurface = tutorStubLiveResponseConfigurationSurface({
+    text: strongText,
+    liveSourceActionAlignmentAudit: strongLiveAudit,
+  });
+  const partitionedStrong = auditTutorStubResponseConfiguration({
+    text: strongHostSurface.text,
+    configuration,
+    world,
+  });
+  assert.equal(partitionedStrong.axes.actorial_part.part_visible, true);
+  assert.equal(partitionedStrong.axes.actorial_part.performance_visible, true);
+  assert.equal(partitionedStrong.axes.engagement_stance.visible, true);
+});
+
 test('an authored source cannot satisfy its own live host carrier audit', () => {
   const source = renderTutorStubDueSource({
     premise: 'p_crew',
@@ -460,4 +605,53 @@ test('the deterministic live fallback consumes the same exact due-source rendere
     firstDraftContract: { evidence: { sources: [source] } },
   });
   assert.equal(alignment.ok, true, JSON.stringify(alignment.issues));
+});
+
+test('deterministic live fallback places an audited extractive compensation immediately after dense SOURCE', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_seal',
+        surface:
+          "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.",
+        presentation: {
+          mode: 'presented_exhibit',
+          role: 'night notary reading the private-seal register',
+        },
+      },
+    ],
+  });
+  const source = renderTutorStubDueSource(frame.entries[0], 0);
+  const sourceAccessibility = compileTutorStubSourceAccessibilityContract({
+    sources: [source],
+    configuration: {
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      source_accessibility_owner: 'post_source_sentence',
+    },
+    policy: 'direct_or_compensated_v1',
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake: 'You are right to ask for one concrete record.',
+    responseConfiguration: {
+      engagement_stance: 'precise',
+      actorial_part: 'record_keeper',
+    },
+    sourceAccessibilityContract: sourceAccessibility,
+    variationKey: 'live-v1-compensated-source',
+  });
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text,
+    firstDraftContract: {
+      evidence: { sources: [source], source_accessibility: sourceAccessibility },
+    },
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.compensation_visible, true);
+  assert.equal(audit.passing_compensation_spans.length, 1);
+  assert.match(
+    audit.passing_compensation_spans[0].text,
+    /^Elian drew it for curfew warrants/u,
+  );
 });
