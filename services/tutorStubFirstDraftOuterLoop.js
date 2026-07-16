@@ -152,6 +152,23 @@ const V27_ITERATION_4_RESULT = Object.freeze({
   ]),
 });
 
+const V27_ITERATION_5_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json',
+  runHead: '965a5708d5acc37a79e51b9f5c813b32336106d2',
+  configSha256: '236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f',
+  sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/campaign-validation.json',
+  campaignValidationSha256: 'a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd',
+  resultSha256: '5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709',
+  turns: Object.freeze([
+    Object.freeze({
+      turn: 4,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/marrick_v27_joint_performance/turn-4.json',
+      sha256: 'c3a444ac33a7cb2ae5e13cf06edbeca350e21be2ce9e3b186e3d9002d007c67b',
+    }),
+  ]),
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -618,6 +635,77 @@ function validateV27Iteration4Observation(observation, label) {
   );
 }
 
+function validateV27Iteration5Observation(observation, label) {
+  expect(observation?.version, 27, `${label} version`);
+  expect(observation?.working_iteration, 5, `${label} working iteration`);
+  expect(observation?.status, 'fail', `${label} status`);
+  expect(observation?.result_artifact, V27_ITERATION_5_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.development_seed, 20261500, `${label} development seed`);
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
+  expect(observation?.run_head, V27_ITERATION_5_RESULT.runHead, `${label} run HEAD`);
+  expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
+  expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
+  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_5_RESULT.configSha256, `${label} config hash`);
+  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_5_RESULT.sourceTraceSha256, `${label} source trace hash`);
+  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_5_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
+  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_5_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_5_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_5_RESULT.turns, `${label} turn provenance`);
+  expectJson(observation?.completed_turns, [4], `${label} completed turns`);
+  expectJson(observation?.unstarted_turns, [5, 6, 9], `${label} unstarted turns`);
+  expect(observation?.original_candidates_accepted, 0, `${label} accepted originals`);
+  expect(observation?.original_candidates_completed, 1, `${label} completed originals`);
+  expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 1, `${label} configuration realization`);
+  expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
+  expect(observation?.maximum_possible_configuration_realization, 1, `${label} maximum configuration realization`);
+  for (const field of [
+    'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
+    'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
+    'transport_normalized_outputs', 'transport_normalization_count',
+  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
+  expect(observation?.joint_performance_model_outputs, 1, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 1, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_output_failures, 0, `${label} joint output failures`);
+  expect(observation?.joint_performance_ownership_passes, 0, `${label} ownership passes`);
+  expect(observation?.joint_performance_ownership_failures, 1, `${label} ownership failures`);
+  expect(observation?.exact_host_source_occurrence_passes, 1, `${label} host source passes`);
+  expect(observation?.exact_host_source_occurrence_failures, 0, `${label} host source failures`);
+  expect(observation?.mean_original_latency_ms, 8122, `${label} mean original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 8122, `${label} mean total latency`);
+  expectJson(observation?.per_turn_latency_and_tokens, [
+    { turn: 4, latency_ms: 8122, input_tokens: 17717, output_tokens: 149, total_tokens: 17866 },
+  ], `${label} per-turn latency and tokens`);
+  expectJson(observation?.token_usage, { input: 17717, output: 149, total: 17866 }, `${label} token usage`);
+  expectJson(observation?.dominant_failure_clusters, [
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion', count: 1 },
+  ], `${label} dominant failure clusters`);
+  expectJson(observation?.comparison, {
+    comparison_available: true,
+    compared_to_iteration: 4,
+    comparable_completion: false,
+    measurable_improvement: false,
+    configuration_realization_improved: false,
+    original_candidates_accepted_delta: -3,
+    original_candidate_acceptance_rate_delta: -0.75,
+    mean_configuration_realization_delta: 0.08325,
+    valid_joint_performance_outputs_delta: -3,
+    joint_performance_output_failures_delta: 0,
+    joint_performance_ownership_passes_delta: -3,
+    joint_performance_ownership_failures_delta: 0,
+    exact_host_source_occurrence_passes_delta: -3,
+    exact_host_source_occurrence_failures_delta: 0,
+    mean_original_latency_ms_delta: -2885.25,
+    semantic_recognition_corrections: 0,
+    transport_normalization_count: 0,
+    consecutive_without_improvement: 1,
+    stop: false,
+    reason: 'no_improvement',
+  }, `${label} comparison`);
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -831,6 +919,7 @@ function validateWorkingScreen(manifest, { root }) {
     iteration3Change: config.change_log?.iteration_3 || null,
     iteration4Change: config.change_log?.iteration_4 || null,
     iteration5Change: config.change_log?.iteration_5 || null,
+    iteration6Change: config.change_log?.iteration_6 || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -918,19 +1007,20 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
   if (currentVersion === 27) {
     expect(state.currentState, 'working_predeclared', 'V27 current state');
-    expect(workingIteration, 5, 'V27 working iteration');
+    expect(workingIteration, 6, 'V27 working iteration');
     const workingHistory = manifest.current?.working_history || [];
-    if (workingHistory.length !== 4) {
-      throw new Error('V27 working history must preserve exactly iterations 1, 2, 3, and 4 before iteration 5');
+    if (workingHistory.length !== 5) {
+      throw new Error('V27 working history must preserve exactly iterations 1 through 5 before iteration 6');
     }
     validateV27Iteration1Observation(workingHistory[0], 'V27 working history iteration 1');
     validateV27Iteration2Observation(workingHistory[1], 'V27 working history iteration 2');
     validateV27Iteration3Observation(workingHistory[2], 'V27 working history iteration 3');
     validateV27Iteration4Observation(workingHistory[3], 'V27 working history iteration 4');
-    validateV27Iteration4Observation(manifest.current?.last_observation, 'V27 last observation');
+    validateV27Iteration5Observation(workingHistory[4], 'V27 working history iteration 5');
+    validateV27Iteration5Observation(manifest.current?.last_observation, 'V27 last observation');
     expectJson(
       manifest.current?.last_observation,
-      workingHistory[3],
+      workingHistory[4],
       'V27 last observation and working history',
     );
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
@@ -1245,6 +1335,66 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         },
       },
       'V27 iteration 5 audit-recognition change',
+    );
+    expectJson(
+      workingScreen.iteration6Change,
+      {
+        status: 'predeclared',
+        bounded_change_owner: 'audit_recognition',
+        target_failure_clusters: ['jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion'],
+        speaking_changes: [],
+        recovery_changes: [],
+        transport_changes: [],
+        semantic_adjudication_changes: [],
+        audit_recognition_changes: ['world_general_scene_lexicon_number_morphology'],
+        phrase_level_recognition_changes: [],
+        world_general_scene_lexicon_number_morphology: {
+          axis: 'scene_immersion',
+          lexicon_source: 'public_world_surfaces',
+          audited_segment: 'performance',
+          token_match: {
+            mode: 'exact_or_regular_terminal_s_number_pair',
+            full_token_boundary_required: true,
+            casefold_before_match: true,
+            bidirectional: true,
+            minimum_singular_length: 4,
+            require_one_exact_public_world_term: true,
+            allowed_inflection: { suffix: 's', operation: 'add_or_remove_once' },
+            forbidden_expansions: {
+              fuzzy_edit_distance: true,
+              substring_match: true,
+              derivational_stemming: true,
+              synonym_expansion: true,
+              terminal_es_rule: true,
+              terminal_ies_rule: true,
+            },
+          },
+          counting: {
+            count_morphological_family_once: true,
+            minimum_scene_terms_changed: false,
+          },
+          reporting: {
+            field: 'sceneLexiconMorphologyRecognition',
+            require_world_term: true,
+            require_candidate_term: true,
+            require_canonical_singular: true,
+            require_rule_id: true,
+          },
+          unchanged_contracts: {
+            generation: true,
+            recovery: true,
+            transport: true,
+            safety_audits: true,
+            semantic_adjudication: true,
+            response_configuration_audit: true,
+            source_ownership_audit: true,
+            configuration_realization: true,
+            scene_immersion_threshold: true,
+            strict_delivery_gates: true,
+          },
+        },
+      },
+      'V27 iteration 6 scene-lexicon morphology change',
     );
     if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
       throw new Error('V27 must predeclare only development seed 20261500');

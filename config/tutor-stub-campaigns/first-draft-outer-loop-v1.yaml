@@ -15,7 +15,7 @@ current:
   campaign_version: 27
   label: V27
   state: working_predeclared
-  working_iteration: 5
+  working_iteration: 6
   working_screen_id: first-draft-working-screens-v6
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v6.yaml
   acceptance_config: null
@@ -329,43 +329,108 @@ current:
         consecutive_without_improvement: 0
         stop: false
         reason: improved
+    - version: 27
+      working_iteration: 5
+      status: fail
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json
+      development_seed: 20261500
+      seed_disposition: reusable_non_held_out_development
+      run_head: 965a5708d5acc37a79e51b9f5c813b32336106d2
+      run_head_provenance: launch_log_confirmed
+      run_head_artifact_embedded: false
+      provenance:
+        working_screen_config_sha256: 236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f
+        source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/campaign-validation.json
+        campaign_validation_sha256: a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd
+        result_sha256: 5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709
+        turn_artifacts:
+          - turn: 4
+            path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/marrick_v27_joint_performance/turn-4.json
+            sha256: c3a444ac33a7cb2ae5e13cf06edbeca350e21be2ce9e3b186e3d9002d007c67b
+      completed_turns: [4]
+      unstarted_turns: [5, 6, 9]
+      original_candidates_accepted: 0
+      original_candidates_completed: 1
+      original_candidate_acceptance_rate: 0
+      mean_configuration_realization: 1
+      maximum_possible_originals_accepted: 3
+      maximum_possible_configuration_realization: 1
+      final_safety_failures: 0
+      transcript_specific_uptake_failures: 0
+      mechanical_repairs: 0
+      model_rewrites: 0
+      deterministic_fallbacks: 0
+      semantic_adjudicator_calls: 0
+      semantic_adjudicator_errors: 0
+      semantic_recognition_corrections: 0
+      transport_normalized_outputs: 0
+      transport_normalization_count: 0
+      transport_normalizations: []
+      joint_performance_model_outputs: 1
+      valid_joint_performance_outputs: 1
+      joint_performance_output_failures: 0
+      joint_performance_ownership_passes: 0
+      joint_performance_ownership_failures: 1
+      exact_host_source_occurrence_passes: 1
+      exact_host_source_occurrence_failures: 0
+      mean_original_latency_ms: 8122
+      mean_total_tutor_latency_ms: 8122
+      per_turn_latency_and_tokens:
+        - { turn: 4, latency_ms: 8122, input_tokens: 17717, output_tokens: 149, total_tokens: 17866 }
+      token_usage: { input: 17717, output: 149, total: 17866 }
+      dominant_failure_clusters:
+        - cluster: jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion
+          count: 1
+      comparison:
+        comparison_available: true
+        compared_to_iteration: 4
+        comparable_completion: false
+        measurable_improvement: false
+        configuration_realization_improved: false
+        original_candidates_accepted_delta: -3
+        original_candidate_acceptance_rate_delta: -0.75
+        mean_configuration_realization_delta: 0.08325
+        valid_joint_performance_outputs_delta: -3
+        joint_performance_output_failures_delta: 0
+        joint_performance_ownership_passes_delta: -3
+        joint_performance_ownership_failures_delta: 0
+        exact_host_source_occurrence_passes_delta: -3
+        exact_host_source_occurrence_failures_delta: 0
+        mean_original_latency_ms_delta: -2885.25
+        semantic_recognition_corrections: 0
+        transport_normalization_count: 0
+        consecutive_without_improvement: 1
+        stop: false
+        reason: no_improvement
   last_observation:
     version: 27
-    working_iteration: 4
+    working_iteration: 5
     status: fail
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json
     development_seed: 20261500
     seed_disposition: reusable_non_held_out_development
-    run_head: d048ec273e3a4a4618f51b7b0c999d20542ea14f
+    run_head: 965a5708d5acc37a79e51b9f5c813b32336106d2
     run_head_provenance: launch_log_confirmed
     run_head_artifact_embedded: false
     provenance:
-      working_screen_config_sha256: 287169e63d296f311e422933e94af582057716f04f9a8a3ed20a1f7686e5cc38
+      working_screen_config_sha256: 236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f
       source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
-      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/campaign-validation.json
-      campaign_validation_sha256: 7d36c45d8c3c4a2afc849658674de57c30632f5c282bf1e7621b1582b14a2bcd
-      result_sha256: c90dd4a8e785988f7b1d10b888ca9f6a158acc057f6d9f1b853865568ebe1169
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/campaign-validation.json
+      campaign_validation_sha256: a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd
+      result_sha256: 5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709
       turn_artifacts:
         - turn: 4
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/marrick_v27_joint_performance/turn-4.json
-          sha256: 469ae92726049f9669754f1f05ff34a26d79d2f995e1429b08138c40dfc461aa
-        - turn: 5
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/marrick_v27_joint_performance/turn-5.json
-          sha256: b00e043b931efdedaf1c466e76d8888a2fdf29b70e38036f09478fd489339043
-        - turn: 6
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/marrick_v27_joint_performance/turn-6.json
-          sha256: 32fd864d79e18eea5d2cb75ab4ee788192852c8126336a617ab2909e1e8110ee
-        - turn: 9
-          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/marrick_v27_joint_performance/turn-9.json
-          sha256: 8d804c6cf7c1d458bf97032e76788c57aaa969d18b0f2745cd7ffa5c1cf1b974
-    completed_turns: [4, 5, 6, 9]
-    unstarted_turns: []
-    original_candidates_accepted: 3
-    original_candidates_completed: 4
-    original_candidate_acceptance_rate: 0.75
-    mean_configuration_realization: 0.91675
+          path: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/marrick_v27_joint_performance/turn-4.json
+          sha256: c3a444ac33a7cb2ae5e13cf06edbeca350e21be2ce9e3b186e3d9002d007c67b
+    completed_turns: [4]
+    unstarted_turns: [5, 6, 9]
+    original_candidates_accepted: 0
+    original_candidates_completed: 1
+    original_candidate_acceptance_rate: 0
+    mean_configuration_realization: 1
     maximum_possible_originals_accepted: 3
-    maximum_possible_configuration_realization: 0.91675
+    maximum_possible_configuration_realization: 1
     final_safety_failures: 0
     transcript_specific_uptake_failures: 0
     mechanical_repairs: 0
@@ -377,49 +442,42 @@ current:
     transport_normalized_outputs: 0
     transport_normalization_count: 0
     transport_normalizations: []
-    joint_performance_model_outputs: 4
-    valid_joint_performance_outputs: 4
+    joint_performance_model_outputs: 1
+    valid_joint_performance_outputs: 1
     joint_performance_output_failures: 0
-    joint_performance_ownership_passes: 3
+    joint_performance_ownership_passes: 0
     joint_performance_ownership_failures: 1
-    exact_host_source_occurrence_passes: 4
+    exact_host_source_occurrence_passes: 1
     exact_host_source_occurrence_failures: 0
-    mean_original_latency_ms: 11007.25
-    mean_total_tutor_latency_ms: 11007.25
+    mean_original_latency_ms: 8122
+    mean_total_tutor_latency_ms: 8122
     per_turn_latency_and_tokens:
-      - { turn: 4, latency_ms: 10435, input_tokens: 17715, output_tokens: 317, total_tokens: 18032 }
-      - { turn: 5, latency_ms: 9377, input_tokens: 15980, output_tokens: 285, total_tokens: 16265 }
-      - { turn: 6, latency_ms: 11111, input_tokens: 17987, output_tokens: 374, total_tokens: 18361 }
-      - { turn: 9, latency_ms: 13106, input_tokens: 18827, output_tokens: 246, total_tokens: 19073 }
-    token_usage: { input: 70509, output: 1222, total: 71731 }
+      - { turn: 4, latency_ms: 8122, input_tokens: 17717, output_tokens: 149, total_tokens: 17866 }
+    token_usage: { input: 17717, output: 149, total: 17866 }
     dominant_failure_clusters:
-      - cluster: actorialRealizationAudit:missing_selected_performance_tactic
-        count: 1
-      - cluster: jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
-        count: 1
-      - cluster: jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
+      - cluster: jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion
         count: 1
     comparison:
       comparison_available: true
-      compared_to_iteration: 3
-      comparable_completion: true
-      measurable_improvement: true
-      configuration_realization_improved: true
-      original_candidates_accepted_delta: 3
-      original_candidate_acceptance_rate_delta: 0.75
-      mean_configuration_realization_delta: 0.91675
-      valid_joint_performance_outputs_delta: 4
-      joint_performance_output_failures_delta: -1
-      joint_performance_ownership_passes_delta: 3
+      compared_to_iteration: 4
+      comparable_completion: false
+      measurable_improvement: false
+      configuration_realization_improved: false
+      original_candidates_accepted_delta: -3
+      original_candidate_acceptance_rate_delta: -0.75
+      mean_configuration_realization_delta: 0.08325
+      valid_joint_performance_outputs_delta: -3
+      joint_performance_output_failures_delta: 0
+      joint_performance_ownership_passes_delta: -3
       joint_performance_ownership_failures_delta: 0
-      exact_host_source_occurrence_passes_delta: 4
-      exact_host_source_occurrence_failures_delta: -1
-      mean_original_latency_ms_delta: 1075.25
+      exact_host_source_occurrence_passes_delta: -3
+      exact_host_source_occurrence_failures_delta: 0
+      mean_original_latency_ms_delta: -2885.25
       semantic_recognition_corrections: 0
       transport_normalization_count: 0
-      consecutive_without_improvement: 0
+      consecutive_without_improvement: 1
       stop: false
-      reason: improved
+      reason: no_improvement
   architectural_reset_from:
     version: 26
     terminal_state: stagnated
@@ -765,5 +823,8 @@ claim_boundary: >-
   exercised. Iteration 4 completed all four prefixes safely at 3/4 originals
   and 0.91675 configuration realization, leaving one contract-complete public
   judgment-falter construction unrecognized. Iteration 5 changes only that
-  typed recognition against the same reusable development prefixes and label.
-  V28+ remain available if a development or held-out version fails.
+  typed recognition but stopped on a scene-immersion false negative where the
+  public world supplied “shillings” and PERFORMANCE used “shilling.” Iteration
+  6 changes only world-general regular terminal-s number recognition against
+  the same reusable development prefixes and label. V28+ remain available if
+  a development or held-out version fails.

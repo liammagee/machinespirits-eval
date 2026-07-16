@@ -97,22 +97,21 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    Iteration 5 makes no speaking-prompt change. It preserves iteration 2's
+    Iteration 6 makes no speaking-prompt change. It preserves iteration 2's
     three-word drafting cushion, compiled v2 axis ownership, exact model shape,
     joint performance beat, and ban on copying, paraphrasing, labelling, or
     quoting SOURCE.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged in iteration 5 and outside this
+    repair and fallback behavior is unchanged in iteration 6 and outside this
     explicit v2 frozen screen.
   audit_recognition_only: >-
-    Iteration 5 changes only contract-gated deterministic recognition of a
-    declared public judgment faltering under contrary evidence. It requires
-    the complete dramatic-counterpressure contract, visible selected part,
-    local pressure-target overlap, exact host SOURCE, and anchored terminal
-    handoff before the linked tactic and charismatic stance can be visible.
+    Iteration 6 changes only world-general scene-lexicon recognition for a
+    regular terminal-s singular/plural pair. It preserves full-token matching,
+    public-world provenance, and the existing scene-term threshold while
+    recognizing the same public object across grammatical number.
   transport_only: >-
-    Iteration 5 makes no transport change. It preserves iteration 4's
+    Iteration 6 makes no transport change. It preserves iteration 4's
     outer-slot whitespace canonicalization and separate transport reporting
     exactly.
   iteration_2:
@@ -285,6 +284,59 @@ change_log:
         source_ownership_audit: true
         configuration_realization: true
         strict_delivery_gates: true
+  iteration_6:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - world_general_scene_lexicon_number_morphology
+    phrase_level_recognition_changes: []
+    world_general_scene_lexicon_number_morphology:
+      axis: scene_immersion
+      lexicon_source: public_world_surfaces
+      audited_segment: performance
+      token_match:
+        mode: exact_or_regular_terminal_s_number_pair
+        full_token_boundary_required: true
+        casefold_before_match: true
+        bidirectional: true
+        minimum_singular_length: 4
+        require_one_exact_public_world_term: true
+        allowed_inflection:
+          suffix: s
+          operation: add_or_remove_once
+        forbidden_expansions:
+          fuzzy_edit_distance: true
+          substring_match: true
+          derivational_stemming: true
+          synonym_expansion: true
+          terminal_es_rule: true
+          terminal_ies_rule: true
+      counting:
+        count_morphological_family_once: true
+        minimum_scene_terms_changed: false
+      reporting:
+        field: sceneLexiconMorphologyRecognition
+        require_world_term: true
+        require_candidate_term: true
+        require_canonical_singular: true
+        require_rule_id: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        scene_immersion_threshold: true
+        strict_delivery_gates: true
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
@@ -303,9 +355,8 @@ claim_boundary: >-
   and every other required response axis on all four frozen prefixes. Every due
   host SOURCE must occur exactly once, including turns with multiple sources,
   while all whole-response safety, uptake, delivery, repair, and fallback gates
-  remain clean. Iteration 5 may recognize only the typed, contract-complete
-  public-judgment-falter construction and reuse that successful typed event for
-  its linked charismatic stance. It may not change generation, recovery,
-  transport, semantic adjudication, safety, source ownership, configuration
-  realization, or any strict gate. It is reusable development evidence, not
-  held-out acceptance.
+  remain clean. Iteration 6 may treat only a full-token regular terminal-s
+  singular/plural pair as one public-world scene term. It may not change the
+  scene-term threshold, generation, recovery, transport, semantic adjudication,
+  safety, source ownership, configuration realization, or any strict gate. It
+  is reusable development evidence, not held-out acceptance.
