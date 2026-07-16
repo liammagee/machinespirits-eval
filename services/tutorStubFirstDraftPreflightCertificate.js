@@ -86,19 +86,72 @@ function defaultWorldCompilerFiles(root) {
   ];
 }
 
-function focusedTestDependencyFiles(root, focusedTestSuites) {
-  const files = [
-    ...walkFiles(root, 'tests', (filePath) => /\.(?:js|json)$/u.test(filePath)),
-    ...walkFiles(root, 'prompts', () => true),
+function localImportSpecifiers(source) {
+  const patterns = [
+    /\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]/gu,
+    /\bimport\(\s*['"]([^'"]+)['"]\s*\)/gu,
+    /\brequire\(\s*['"]([^'"]+)['"]\s*\)/gu,
   ];
+  return [...new Set(patterns.flatMap((pattern) =>
+    [...source.matchAll(pattern)].map((match) => match[1])))]
+    .filter((specifier) => specifier.startsWith('.'));
+}
+
+function resolveLocalImport(importer, specifier) {
+  const base = path.resolve(path.dirname(importer), specifier);
+  const candidates = [base, `${base}.js`, `${base}.json`, path.join(base, 'index.js')];
+  return candidates.find((candidate) =>
+    fs.existsSync(candidate) && fs.statSync(candidate).isFile()) || null;
+}
+
+function literalResourceCandidates(root, importer, source) {
   const campaignDirectory = path.join(root, 'config', 'tutor-stub-campaigns');
-  for (const testFile of focusedTestSuites.flatMap((suite) => suite.testFiles)) {
-    const absolute = path.isAbsolute(testFile) ? testFile : path.join(root, testFile);
-    if (!fs.existsSync(absolute)) continue;
+  const resources = [];
+  const quoted = [...source.matchAll(/['"]([^'"\n]+\.(?:json|md|txt|ya?ml))['"]/giu)]
+    .map((match) => match[1]);
+  for (const value of quoted) {
+    const candidates = [];
+    if (path.isAbsolute(value)) candidates.push(value);
+    else if (value.startsWith('.')) candidates.push(path.resolve(path.dirname(importer), value));
+    else {
+      candidates.push(path.join(root, value));
+      candidates.push(path.join(path.dirname(importer), value));
+      if (/^first-draft-[a-z0-9-]+\.ya?ml$/iu.test(value)) {
+        candidates.push(path.join(campaignDirectory, value));
+      }
+    }
+    const resolved = candidates.find((candidate) =>
+      fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+    if (resolved) resources.push(resolved);
+  }
+  return resources;
+}
+
+function focusedTestDependencyFiles(root, focusedTestSuites) {
+  const selected = new Set(
+    focusedTestSuites
+      .flatMap((suite) => suite.testFiles)
+      .map((filePath) => path.resolve(root, filePath)),
+  );
+  const files = [];
+  const visited = new Set();
+  const queue = [...selected];
+  const campaignDirectory = path.join(root, 'config', 'tutor-stub-campaigns');
+  while (queue.length) {
+    const absolute = queue.shift();
+    if (visited.has(absolute) || !fs.existsSync(absolute)) continue;
+    visited.add(absolute);
     const source = fs.readFileSync(absolute, 'utf8');
+    files.push(...literalResourceCandidates(root, absolute, source));
     for (const match of source.matchAll(/first-draft-[a-z0-9-]+\.yaml/giu)) {
       const candidate = path.join(campaignDirectory, match[0]);
       if (fs.existsSync(candidate)) files.push(candidate);
+    }
+    for (const specifier of localImportSpecifiers(source)) {
+      const dependency = resolveLocalImport(absolute, specifier);
+      if (!dependency || !dependency.startsWith(`${path.resolve(root)}${path.sep}`)) continue;
+      if (!selected.has(dependency)) files.push(dependency);
+      if (/\.(?:c|m)?js$/u.test(dependency)) queue.push(dependency);
     }
   }
   return files;
@@ -157,6 +210,12 @@ export function buildTutorStubFirstDraftPreflightBoundary({
       id: suite.id,
       testFiles: [...suite.testFiles],
     })),
+    testDependencyPolicy: {
+      selectedTestsOnly: true,
+      recursiveLocalImports: true,
+      literalReferencedResources: true,
+      unselectedTestsExcluded: true,
+    },
     testFiles: fileInventory(root, testFiles),
     testDependencies: fileInventory(root, focusedTestDependencyFiles(root, focusedTestSuites)),
     fixtureFiles: fileInventory(root, fixtureFiles),

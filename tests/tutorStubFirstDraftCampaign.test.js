@@ -80,7 +80,13 @@ function certificateFixture(tmp, overrides = {}) {
   ];
   const commands = overrides.commands || [
     { id: 'world-quality', kind: 'world_quality', suiteId: null, tap: false, argv: ['node', 'compiler.js'] },
-    { id: 'focused-focused', kind: 'focused_test_suite', suiteId: 'focused', tap: true, argv: ['node', '--test', 'focused.test.js'] },
+    ...focusedTestSuites.map((suite) => ({
+      id: `focused-${suite.id}`,
+      kind: 'focused_test_suite',
+      suiteId: suite.id,
+      tap: true,
+      argv: ['node', '--test', ...suite.testFiles],
+    })),
   ];
   const built = buildTutorStubFirstDraftPreflightBoundary({
     root: tmp,
@@ -167,9 +173,19 @@ test('preflight certificate key binds deterministic content but not campaign boo
       implementationHead: 'head-b',
       config: {
         id: 'campaign-b',
+        purpose: 'changed purpose',
         artifacts: { root: '/elsewhere/results' },
         notes: 'different note',
-        matrix: [{ id: 'different-cell', seed: 999 }],
+        change_log: { speaking_prompt: 'bookkeeping only' },
+        execution: { hard_cell: 'different-cell', maximum_concurrent_remaining_cells: 1 },
+        stopping: { maximum_consecutive_iterations_without_improvement: 9 },
+        matrix: [{
+          id: 'different-cell',
+          seed: 999,
+          development_seed: 1000,
+          source_trace: '/different/result/trace.jsonl',
+          source_trace_sha256: 'metadata-only-hash',
+        }],
       },
     });
     assert.equal(metadataOnly.key, baseline.key);
@@ -187,16 +203,146 @@ test('preflight certificate key binds deterministic content but not campaign boo
     });
     assert.notEqual(runtime.key, baseline.key);
 
+    const preflightChanged = certificateFixture(tmp, {
+      config: {
+        preflight: {
+          world_quality: 'node compiler.js --changed',
+          focused_test_suites: [{ id: 'focused', test_files: ['focused.test.js'] }],
+          model_free_fixtures: ['fixture.json'],
+        },
+      },
+    });
+    assert.notEqual(preflightChanged.key, baseline.key);
+
     fs.writeFileSync(path.join(tmp, 'engagementRegisterRegistry.js'), 'export const version = 2;\n');
     const source = certificateFixture(tmp);
     assert.notEqual(source.key, baseline.key);
 
     fs.writeFileSync(path.join(tmp, 'engagementRegisterRegistry.js'), 'export const version = 1;\n');
+    fs.writeFileSync(path.join(tmp, 'focused.test.js'), '// selected test changed\n');
+    const selectedTestContent = certificateFixture(tmp);
+    assert.notEqual(selectedTestContent.key, baseline.key);
+
+    fs.writeFileSync(path.join(tmp, 'focused.test.js'), '// focused test\n');
     fs.writeFileSync(path.join(tmp, 'focused-b.test.js'), '// second test\n');
     const inventory = certificateFixture(tmp, {
       focusedTestSuites: [{ id: 'focused', testFiles: ['focused.test.js', 'focused-b.test.js'] }],
     });
     assert.notEqual(inventory.key, baseline.key);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('unselected governance tests cannot invalidate a focused preflight certificate', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-selection-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'tests'), { recursive: true });
+    const focusedPath = path.join(tmp, 'tests', 'focused.test.js');
+    const outerPath = path.join(tmp, 'tests', 'tutorStubFirstDraftOuterLoop.test.js');
+    fs.writeFileSync(focusedPath, '// selected\n');
+    fs.writeFileSync(outerPath, '// outer governance v1\n');
+    const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
+    const baseline = certificateFixture(tmp, { focusedTestSuites });
+    assert.equal(
+      baseline.boundary.testDependencies.some((row) =>
+        row.path.endsWith('tutorStubFirstDraftOuterLoop.test.js')),
+      false,
+    );
+
+    fs.writeFileSync(outerPath, '// outer governance v2\n');
+    const unselectedChange = certificateFixture(tmp, { focusedTestSuites });
+    assert.equal(unselectedChange.key, baseline.key);
+
+    const selectedSuites = [{
+      id: 'focused',
+      testFiles: [
+        'tests/focused.test.js',
+        'tests/tutorStubFirstDraftOuterLoop.test.js',
+      ],
+    }];
+    const selected = certificateFixture(tmp, { focusedTestSuites: selectedSuites });
+    fs.writeFileSync(outerPath, '// outer governance v3\n');
+    const selectedChange = certificateFixture(tmp, { focusedTestSuites: selectedSuites });
+    assert.notEqual(selectedChange.key, selected.key);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('selected tests bind their recursive local import closure', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-imports-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'tests'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmp, 'tests', 'focused.test.js'),
+      "import './focused-helper.js';\n// selected\n",
+    );
+    const helperPath = path.join(tmp, 'tests', 'focused-helper.js');
+    fs.writeFileSync(helperPath, 'export const helper = 1;\n');
+    const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
+    const baseline = certificateFixture(tmp, { focusedTestSuites });
+    assert.ok(
+      baseline.boundary.testDependencies.some((row) => row.path === 'tests/focused-helper.js'),
+    );
+    fs.writeFileSync(helperPath, 'export const helper = 2;\n');
+    const changed = certificateFixture(tmp, { focusedTestSuites });
+    assert.notEqual(changed.key, baseline.key);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('selected tests bind literal campaign config, prompt, and fixture resources', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-resources-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'tests', 'fixtures'), { recursive: true });
+    fs.mkdirSync(path.join(tmp, 'prompts'), { recursive: true });
+    fs.mkdirSync(path.join(tmp, 'config', 'tutor-stub-campaigns'), { recursive: true });
+    const testPath = path.join(tmp, 'tests', 'focused.test.js');
+    const configPath = path.join(
+      tmp,
+      'config',
+      'tutor-stub-campaigns',
+      'first-draft-working-screens-v9.yaml',
+    );
+    const promptPath = path.join(tmp, 'prompts', 'focused.md');
+    const resourcePath = path.join(tmp, 'tests', 'fixtures', 'focused.json');
+    fs.writeFileSync(
+      testPath,
+      [
+        "const campaign = 'first-draft-working-screens-v9.yaml';",
+        "const prompt = 'prompts/focused.md';",
+        "const fixture = 'tests/fixtures/focused.json';",
+        'void campaign; void prompt; void fixture;',
+        '',
+      ].join('\n'),
+    );
+    fs.writeFileSync(configPath, 'schema: v1\n');
+    fs.writeFileSync(promptPath, 'prompt v1\n');
+    fs.writeFileSync(resourcePath, '{"version":1}\n');
+    const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
+    const baseline = certificateFixture(tmp, { focusedTestSuites });
+    assert.deepEqual(
+      baseline.boundary.testDependencies.map((row) => row.path).sort(),
+      [
+        'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+        'prompts/focused.md',
+        'tests/fixtures/focused.json',
+      ],
+    );
+
+    for (const [filePath, content] of [
+      [configPath, 'schema: v2\n'],
+      [promptPath, 'prompt v2\n'],
+      [resourcePath, '{"version":2}\n'],
+    ]) {
+      const original = fs.readFileSync(filePath, 'utf8');
+      fs.writeFileSync(filePath, content);
+      const changed = certificateFixture(tmp, { focusedTestSuites });
+      assert.notEqual(changed.key, baseline.key, filePath);
+      fs.writeFileSync(filePath, original);
+    }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
