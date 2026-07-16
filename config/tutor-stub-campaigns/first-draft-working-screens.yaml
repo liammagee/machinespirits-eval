@@ -34,7 +34,7 @@ artifacts:
 
 matrix:
   - id: greyfen_answer_seeking
-    priority: 1
+    priority: 2
     world: world_023_greyfen_lab
     learner_profile: answer_seeking
     source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/greyfen_answer_seeking/2026-07-16T05-50-54-528Z.jsonl
@@ -43,7 +43,7 @@ matrix:
     seed_status: reusable_non_held_out_development
 
   - id: skyway_answer_seeking
-    priority: 2
+    priority: 1
     world: world_026_skyway_bakery
     learner_profile: answer_seeking
     source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/skyway_answer_seeking/2026-07-16T04-44-58-444Z.jsonl
@@ -60,17 +60,16 @@ gates_per_cell:
 
 change_log:
   speaking_prompt: >-
-    Treat the selected action and character enactment as one mandatory beat,
-    answer the learner's concrete request in the opening, and realize the
-    selected part through a named public object rather than a role label.
+    When the learner asks what to write, require one complete public sentence
+    beginning with "Write:" before the selected dramatic beat. Require
+    counterpressure to say explicitly that the named contrary evidence breaks
+    the easy accusation, expected shortcut, or ready answer.
   recovery_only: >-
     Give answer-seeking repairs a direct-answer instruction and keep their
     alternate realization strategy separate from the first speaking draw.
   audit_recognition_only: >-
-    Narrow answer-line uptake recognition, recognize same-strain scientific
-    correspondences, ordinary clarification invitations, record closure, and
-    concrete exhibit actions without weakening leak or unreleased-evidence
-    checks.
+    Unchanged in this iteration. All safety, evidence, composition, and
+    dramatic-realization gates remain unchanged.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

@@ -2566,6 +2566,120 @@ test('displacing a ready scene story with a concrete record realizes dramatic co
   assert.equal(audit.axes.actorial_part.performance_visible, true);
 });
 
+test('a concrete fingerprint that the messy shelf cannot explain realizes dramatic counterpressure', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The Corvat flasks sit beside Devlin’s shelf and the Larkin sequencing report.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the lab notebook',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'Write: sequencing found G17 in the ruined Corvat flasks. I open the report beside Larkin’s quarantine record and mark the match; Devlin’s clutter cannot explain that fingerprint. What does this match change?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('an accountable case that names how it could fail realizes advocate counterpressure', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The Larkin report lies beside Devlin’s messy shelf labels.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  for (const text of [
+    'I argue the retired Larkin unit matters more than Devlin’s messy shelf: a dirty label is not a contaminant. My case fails if the unit was properly sealed.',
+    'My case is that G17 was inside Larkin and Corvat stayed there overnight; Devlin’s messy shelf cannot explain that chain. My case fails if the flasks were not kept in Larkin.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+    assert.equal(audit.axes.actorial_part.part_visible, true, text);
+    assert.equal(audit.axes.actorial_part.performance_visible, true, text);
+  }
+});
+
+test('the explicit accountable breakable case shape realizes advocate counterpressure', () => {
+  const world = {
+    title: 'The Contamination in the Greyfen Lab',
+    setting: 'The Larkin report lies beside Devlin’s shelf labels.',
+    question: 'What ruined the Corvat line?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'My case is that Larkin matters more than Devlin’s messy shelf; break it if the incubator seal was intact.';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a wind chart breaking the expected shortcut realizes examiner counterpressure', () => {
+  const world = {
+    title: 'The Skyway Bakery',
+    setting: 'The bolted frost shutter and wind chart lie beside the glider route.',
+    question: 'Why did the bread arrive cold?',
+    premiseById: new Map(),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    learnerText: 'What should I write next about the gliders?',
+    classification: classification({ requestType: 'answer_seeking_or_overreach' }),
+    tutorLearnerDag: learnerDag(),
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'dramatic_counterpressure', label: 'dramatic counterpressure' },
+  };
+  const text =
+    'I press the wind chart beside the bolted shutter: its long spiral breaks the expected direct crossing. What does that longer route change for the bread?';
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
 test('a directly handled concise exhibit remains an unadorned report despite one long sentence', () => {
   const world = {
     title: 'The Contamination in the Greyfen Lab',

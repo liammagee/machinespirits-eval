@@ -281,6 +281,24 @@ test('pulling a named version history presents it, but pulling the room together
   assert.equal(figurative.exhibitHandoffVisible, false);
 });
 
+test('an imperative grounded in the clue can return the release to the learner', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_g17',
+        via: 'tutor',
+        surface: 'The Larkin swab identifies resident G17.',
+      },
+    ],
+  });
+  const audit = auditTutorStubDramaticReleaseResponse({
+    frame,
+    text: 'I place the Larkin swab beside the incident log: it identifies resident G17. Choose the swab or the log and say what that changes.',
+  });
+
+  assert.equal(audit.returnVisible, true);
+});
+
 test('peering into a lock ward is a visible exhibit examination', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

@@ -126,7 +126,7 @@ const EXHIBIT_FRAME_TOKEN_STOP_WORDS = new Set(
   ),
 );
 const RETURN_PATTERN =
-  /\b(?:what|which|where|how|who|whose|does|do|can|could|will|would|is|are|has|have|should|your call)\b[^?]*\?/iu;
+  /\b(?:what|which|where|how|who|whose|does|do|can|could|will|would|is|are|has|have|should|your call)\b[^?]*\?|\b(?:choose|name|say|show|tell)\b[^.!?]{0,100}\b(?:change|changes|changed|mean|means|support|supports|rule out|rules out)\b/iu;
 
 function roleIdentity(entry) {
   return oneLine(entry?.role).split(

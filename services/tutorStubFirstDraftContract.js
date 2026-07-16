@@ -38,7 +38,7 @@ const ACTION_CUES = Object.freeze({
 
 const PART_CUES = Object.freeze({
   scene_partner:
-    'In the unquoted host voice, make concrete room beside the named public evidence and return the next observation to the learner.',
+    'In the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner.',
   examiner:
     'In the unquoted host voice, visibly inspect, compare, test, weigh, or point to a named public exhibit.',
   record_keeper:
@@ -46,7 +46,7 @@ const PART_CUES = Object.freeze({
   authored_source:
     'Enter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner.',
   advocate:
-    'In the unquoted host voice, make the strongest presently licensed case in first person and give the learner a concrete way to test or break it.',
+    'In the unquoted host voice, use one compact accountable sentence shaped “My case is [licensed claim]; break it if [concrete public observation].” Replace both brackets with scene facts and do not explain the sentence shape.',
   skeptic:
     'In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.',
   foreperson:
@@ -65,7 +65,7 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
   measured_testimony:
     'Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.',
   dramatic_counterpressure:
-    'Press the named public object against the room’s easy verdict, show where that verdict breaks, and hand the exact test to the learner.',
+    'Name the easy accusation, expected shortcut, or ready answer, then use the verb “breaks” to say how the named contrary evidence breaks it. For an advocate, keep that collision inside the accountable case. Do not merely say one clue matters more.',
   exposed_mismatch:
     'Let the named public object expose the mismatch through the action itself rather than explaining the irony.',
   dry_counterexample:
@@ -86,6 +86,12 @@ function definitionContract(definitions, key, fallback = '') {
 
 function learnerMoveSurface({ learnerText = '', responseCompositionFrame = null } = {}) {
   return oneLine(responseCompositionFrame?.learner_move?.summary || learnerText);
+}
+
+function learnerRequestsWritableEntry(value = '') {
+  return /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b/iu.test(
+    oneLine(value),
+  );
 }
 
 function sourceReportingLead(entry) {
@@ -203,6 +209,7 @@ export function buildTutorStubFirstDraftContract({
   const lexical = configuration.lexical_accessibility || 'standard';
   const scene = configuration.scene_immersion || 'grounded';
   const learnerMove = learnerMoveSurface({ learnerText, responseCompositionFrame });
+  const writableEntryRequested = learnerRequestsWritableEntry(learnerText);
   const learnerAdvance = responseCompositionFrame?.learner_dag?.learner_advance || null;
   const acceleratedLearnerInstruction = learnerAdvance?.accelerated
     ? `Credit all ${Number(learnerAdvance.supported_move_count || 0)} warranted moves the learner just made; do not ask for any of them again. Test or extend only the next unresolved edge.`
@@ -221,8 +228,11 @@ export function buildTutorStubFirstDraftContract({
     learner_move: learnerMove,
     opening: {
       instruction:
-        'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
+        writableEntryRequested
+          ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
+          : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
+      writable_entry_requested: writableEntryRequested,
     },
     development: {
       action_family: actionFamily,
@@ -309,7 +319,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `ACT + ENACT — ${contract.development.instruction} Perform that development as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} The action and character obligation are one beat, not two optional tasks.`,
+    `ACT + ENACT — ${contract.development.instruction} This is one mandatory development beat, not style advice: perform it as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} Do not substitute generic prop handling for the selected part or tactic.`,
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
       : null,
@@ -317,6 +327,9 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     ...releaseRows.map((row) => `- ${row}`),
     `END — ${contract.ending.instruction}`,
+    contract.evidence?.active
+      ? 'RETURN — End the clue performance with one direct learner-facing question about what the named clue changes, supports, or rules out. The final inquiry sentence must contain a question mark.'
+      : null,
     contract.ending.clarification_invitation_required
       ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining.'
       : null,

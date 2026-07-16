@@ -936,6 +936,9 @@ function actorialPartVisible(configuration, text, metrics) {
     const offersLiveCaseToBreak =
       /\b(?:break|challenge|test)\s+(?:my|our|the)\s+(?:case|charge|claim)\b/iu.test(text) &&
       /\b(?:but|evidence|not yet|still|unless|until)\b/iu.test(text);
+    const offersFalsifiableCase =
+      /\bmy case\b[^.!?]{0,35}\b(?:breaks?|fails?)\b[^.!?]{0,24}\b(?:if|unless)\b/iu.test(text) &&
+      metrics.concreteSceneTermCount > 0;
     const putsCaseAgainstPublicVerdictToTest =
       /\bmy case\b[^.!?]{0,70}\bagainst\b[^.!?]{0,45}\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,30}\b(?:accusation|case|charge|claim|verdict)\b[^.!?]{0,45}\bis this\b/iu.test(
         text,
@@ -958,6 +961,7 @@ function actorialPartVisible(configuration, text, metrics) {
       statesSupportedFindingForTesting ||
       makesCaseForSupportedCause ||
       offersLiveCaseToBreak ||
+      offersFalsifiableCase ||
       putsCaseAgainstPublicVerdictToTest
     );
   }
@@ -1102,7 +1106,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     const forcefulExhibitAction =
       /\b(?:block|challenge|confront|plant|press|push|slap|snap|strike|unsettle)\b/iu.test(text);
     const contestedPublicJudgment =
-      /\b(?:easy|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:accusation|answer|assumption|case|charge|claim|cry|guilty|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)|\b(?:accusation|answer|assumption|case|charge|claim|cry|murmur|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b|\b(?:against|before)\b[^.!?]{0,30}\b(?:easy|obvious|ready)\b[^.!?]{0,25}\b(?:charge|claim|story|verdict)\b/iu.test(
+      /\b(?:easy|expected|obvious|quick|ready|room(?:[’']s)?)\b[^.!?]{0,55}\b(?:accusation|answer|assumption|case|charge|claim|cry|crossing|expectation|guilty|murmur|route|shortcut|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)|\b(?:accusation|answer|assumption|case|charge|claim|crossing|cry|expectation|murmur|route|shortcut|story|verdict)\b[^.!?]{0,45}\b(?:break|buckl(?:e|es|ed|ing)|challenge|lose|lost|miss(?:ed)? (?:its )?mark|survive|unsettle)\b|\b(?:against|before)\b[^.!?]{0,30}\b(?:easy|expected|obvious|ready)\b[^.!?]{0,25}\b(?:charge|claim|crossing|route|shortcut|story|verdict)\b/iu.test(
         text,
       );
     const challengesTheRoomDirectly =
@@ -1178,6 +1182,20 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       /\bmy case\b[^.!?]{0,70}\bagainst\b[^.!?]{0,45}\b(?:crowd|hall|room|town|warden|witnesses?)(?:[’']s)?\b[^.!?]{0,30}\b(?:accusation|case|charge|claim|verdict)\b[\s\S]{0,150}\bbreak it\b/iu.test(
         text,
       );
+    const concreteSuspicionCannotExplainEvidence =
+      /\b(?:clutter|mess|reputation|shelf|sloppiness|suspicion)\b[^.!?]{0,50}\b(?:cannot|can[’']t|does not|doesn[’']t)\b[^.!?]{0,35}\b(?:account for|explain|overrule)\b[^.!?]{0,45}\b(?:fingerprint|g17|match|record|result|strain|swab|typing)\b/iu.test(
+        text,
+      );
+    const falsifiableCaseDisplacesReadyStory =
+      /\bmy case\b[^.!?]{0,35}\b(?:breaks?|fails?)\b[^.!?]{0,24}\b(?:if|unless)\b/iu.test(text) &&
+      /\b(?:devlin|clutter|dirty|messy|shelf|sloppiness|suspicion)\b[^.!?]{0,90}\b(?:cannot|can[’']t|does not|doesn[’']t|is not|isn[’']t|not a)\b/iu.test(
+        text,
+      ) &&
+      metrics.concreteSceneTermCount > 0;
+    const accountableBreakableCountercase =
+      /\bmy case is\b[^.!?]{0,150}\bbreak it if\b[^.!?]{0,100}/iu.test(text) &&
+      /\b(?:accusation|clutter|devlin|dirty|easy|messy|shelf|sloppiness|suspicion|verdict)\b/iu.test(text) &&
+      metrics.concreteSceneTermCount > 0;
     return (
       forcefulExhibitAction ||
       contestedPublicJudgment ||
@@ -1198,6 +1216,9 @@ function actorialPerformanceVisible(configuration, text, metrics) {
       publicSceneRushesPastEvidence ||
       publicSuspicionOutrunsMaterial ||
       publicVerdictMeetsBreakableCase ||
+      concreteSuspicionCannotExplainEvidence ||
+      falsifiableCaseDisplacesReadyStory ||
+      accountableBreakableCountercase ||
       keepsPublicShameOutsideTheInquiry
     );
   }
