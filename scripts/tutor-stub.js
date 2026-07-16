@@ -173,6 +173,7 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
 import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
@@ -2123,25 +2124,6 @@ function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEviden
   return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
 }
 
-function tutorGuardIssueRows(audits) {
-  return [
-    ...(audits?.leakAudit?.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
-    ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
-    ...(audits?.questionSupportAudit?.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
-    ...(audits?.dramaticReleaseAudit?.issues || []).map((issue) => ({ guard: 'dramatic_release', ...issue })),
-    ...(audits?.actorialRealizationAudit?.issues || []).map((issue) => ({
-      guard: 'actorial_realization',
-      ...issue,
-    })),
-    ...(audits?.responseCompositionAudit?.issues || []).map((issue) => ({
-      guard: 'response_composition',
-      ...issue,
-    })),
-    ...(audits?.repetitionAudit?.issues || []).map((issue) => ({ guard: 'repetition', ...issue })),
-    ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
-  ];
-}
-
 function literalTutorGuardSpans(text, needle, issue) {
   const source = String(text || '');
   const target = String(needle || '').trim();
@@ -2184,7 +2166,7 @@ function tutorQuestionSpans(text, issue) {
 function tutorGuardedSpans(text, audits) {
   const source = String(text || '');
   const spans = [];
-  for (const issue of tutorGuardIssueRows(audits)) {
+  for (const issue of tutorStubGuardIssueRows(audits)) {
     const needles = [...(issue.matches || []), issue.responseQuestion].filter(Boolean);
     let issueSpans = needles.flatMap((needle) => literalTutorGuardSpans(source, needle, issue));
     if (
@@ -9849,7 +9831,7 @@ function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } 
     for (const attempt of row.attempts || []) {
       guardedSpans += attempt.guardedSpans?.length || 0;
       repairedSpans += attempt.repairedSpans?.length || 0;
-      for (const issue of tutorGuardIssueRows(attempt.audits)) {
+      for (const issue of tutorStubGuardIssueRows(attempt.audits)) {
         const bucket = guards[issue.guard] || (guards[issue.guard] = { issues: 0, guardedSpans: 0 });
         bucket.issues += 1;
       }
@@ -10699,6 +10681,11 @@ async function callTutor({
           frame: dramaticReleaseFrame,
         })
       : { ok: true, active: false, issues: [] };
+    const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
+      text: response.text,
+      world,
+      premiseIds: dramaticReleaseFrame.entries.map((entry) => entry.premise).filter(Boolean),
+    });
     const responseConfigurationAudit = actorialRealizationGuardEnabled
       ? auditTutorStubResponseConfiguration({
           text: response.text,
@@ -10825,6 +10812,7 @@ async function callTutor({
         scaffoldAudit.ok &&
         questionSupportAudit.ok &&
         dramaticReleaseAudit.ok &&
+        releaseDeliveryAudit.ok &&
         actorialRealizationAudit.ok &&
         responseCompositionAudit.ok &&
         repetitionAudit.ok &&
@@ -10833,6 +10821,7 @@ async function callTutor({
       scaffoldAudit,
       questionSupportAudit,
       dramaticReleaseAudit,
+      releaseDeliveryAudit,
       actorialRealizationAudit,
       responseConfigurationAudit,
       responseCompositionAudit,
@@ -10895,7 +10884,7 @@ async function callTutor({
     audits,
     { allowActorialAdvisory = false, advisoryReason = null, role, attempt } = {},
   ) {
-    const deliveryDecision = tutorStubGuardDeliveryDecision(tutorGuardIssueRows(audits), {
+    const deliveryDecision = tutorStubGuardDeliveryDecision(tutorStubGuardIssueRows(audits), {
       allowActorialAdvisory,
     });
     const result = {
@@ -10922,6 +10911,7 @@ async function callTutor({
     response.scaffoldAudit = audits.scaffoldAudit;
     response.questionSupportAudit = audits.questionSupportAudit;
     response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
+    response.releaseDeliveryAudit = audits.releaseDeliveryAudit;
     response.actorialRealizationAudit = audits.actorialRealizationAudit;
     response.repetitionAudit = audits.repetitionAudit;
     response.closureAudit = audits.closureAudit;
@@ -11051,7 +11041,7 @@ async function callTutor({
         kind: 'mechanical_actorial_part_repair',
         fromAttempt: 0,
         toAttempt: hostPartAttempt,
-        triggeredBy: tutorGuardIssueRows(audits),
+        triggeredBy: tutorStubGuardIssueRows(audits),
         guardedSpans: attempts[0].guardedSpans,
         repairedSpans: hostPartRepairSpans,
         cue: hostPartRepair.cue,
@@ -11087,7 +11077,7 @@ async function callTutor({
       }
     }
 
-    const firstRepairTriggers = tutorGuardIssueRows(audits);
+    const firstRepairTriggers = tutorStubGuardIssueRows(audits);
     const firstPreservedUptake = preservableTutorUptake(audits);
     const firstRepairUptake =
       firstPreservedUptake ||
@@ -11383,7 +11373,7 @@ async function callTutor({
         kind: 'mechanical_clarification_invitation',
         fromAttempt: 1,
         toAttempt: clarificationAttempt,
-        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: clarificationRepairSpans,
       });
@@ -11453,7 +11443,7 @@ async function callTutor({
         kind: 'mechanical_unanswerable_open_recall_removal',
         fromAttempt: 1,
         toAttempt: openRecallAttempt,
-        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: openRecallRepairSpans,
       });
@@ -11533,7 +11523,7 @@ async function callTutor({
         kind: 'model_plain_recovery',
         fromAttempt: 1,
         toAttempt: plainRecoveryAttempt,
-        triggeredBy: tutorGuardIssueRows(policyRepairAudits),
+        triggeredBy: tutorStubGuardIssueRows(policyRepairAudits),
         guardedSpans: attempts[1].guardedSpans,
         repairedSpans: plainRepairSpans,
         generatedInSameModelCall: true,
@@ -11617,7 +11607,7 @@ async function callTutor({
         kind: 'mechanical_source_voice_repair',
         fromAttempt: base.attempt,
         toAttempt: sourceRepairAttempt,
-        triggeredBy: tutorGuardIssueRows(base.audits),
+        triggeredBy: tutorStubGuardIssueRows(base.audits),
         guardedSpans: attempts.find((attempt) => attempt.attempt === base.attempt)?.guardedSpans || [],
         repairedSpans: sourceRepairSpans,
         replacements: mechanical.replacements,
@@ -11784,12 +11774,12 @@ async function callTutor({
       kind: 'deterministic_fallback',
       fromAttempt: priorAttempt.attempt,
       toAttempt: fallbackAttempt,
-      triggeredBy: tutorGuardIssueRows(audits),
+      triggeredBy: tutorStubGuardIssueRows(audits),
       guardedSpans: priorAttempt.guardedSpans,
       repairedSpans: fallbackRepairSpans,
     });
     if (!fallbackAudits.deliveryOk) {
-      const rejectedIssues = tutorGuardIssueRows(fallbackAudits);
+      const rejectedIssues = tutorStubGuardIssueRows(fallbackAudits);
       const exhaustedAccounting = buildTutorGuardAccounting({
         response: fallback,
         state,
@@ -13101,11 +13091,13 @@ async function runOneTurn(
   const dueReleaseRows = currentReleaseRows(state, tutorTurn);
   const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({ dueEvidence: dueReleaseRows });
   const duePremiseIds = dueReleaseRows.map((row) => row?.premise).filter(Boolean);
-  const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
-    text: response.text,
-    world: state.world,
-    premiseIds: duePremiseIds,
-  });
+  const releaseDeliveryAudit =
+    response.releaseDeliveryAudit ||
+    auditTutorStubReleaseDelivery({
+      text: response.text,
+      world: state.world,
+      premiseIds: duePremiseIds,
+    });
   response.releaseDeliveryAudit = releaseDeliveryAudit;
   if (duePremiseIds.length) {
     appendTraceEvent(state.trace, {

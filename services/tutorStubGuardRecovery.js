@@ -1,3 +1,5 @@
+import { decideTutorStubGuardDelivery } from './tutorStubGuardDisposition.js';
+
 export const TUTOR_STUB_GUARD_RECOVERY_SCHEMA = 'machinespirits.tutor-stub.guard-recovery.v1';
 
 const SIMPLIFIED_RECOVERY_PARTS = Object.freeze({
@@ -449,18 +451,6 @@ export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
   );
 }
 
-export function tutorStubGuardDeliveryDecision(issueRows = [], { allowActorialAdvisory = false } = {}) {
-  const issues = Array.isArray(issueRows) ? issueRows : [];
-  const advisoryIssues = allowActorialAdvisory
-    ? issues.filter((issue) => issue?.guard === 'actorial_realization')
-    : [];
-  const advisorySet = new Set(advisoryIssues);
-  const hardIssues = issues.filter((issue) => !advisorySet.has(issue));
-  return {
-    schema: 'machinespirits.tutor-stub.guard-delivery-decision.v1',
-    ok: hardIssues.length === 0,
-    allowActorialAdvisory: Boolean(allowActorialAdvisory),
-    hardIssues,
-    advisoryIssues,
-  };
+export function tutorStubGuardDeliveryDecision(issueRows = [], options = {}) {
+  return decideTutorStubGuardDelivery(issueRows, options);
 }

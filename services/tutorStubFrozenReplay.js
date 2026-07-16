@@ -29,6 +29,7 @@ import {
   tutorStubGuardDeliveryDecision,
   tutorStubPolicyRecoveryAllowsPerformanceAdvisory,
 } from './tutorStubGuardRecovery.js';
+import { tutorStubGuardIssueRows } from './tutorStubGuardDisposition.js';
 import {
   applyTutorStubPerformanceAdjudication,
   tutorStubPerformanceAdjudicationEligibility,
@@ -522,6 +523,7 @@ export function auditTutorStubFrozenCandidate({
   deliveryConfiguration = null,
   candidateKind = 'original_candidate',
   performanceAdjudication = null,
+  boundaryPolicy = 'strict',
 } = {}) {
   if (!bundle || !world) throw new Error('frozen candidate audit requires bundle and world');
   const guards = bundle.guards || {};
@@ -614,23 +616,17 @@ export function auditTutorStubFrozenCandidate({
     audits = applied.audits;
   }
   const actorialRealizationAudit = audits.actorialRealizationAudit;
-  const issueRows = [
-    ...(leakAudit.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
-    ...(scaffoldAudit.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
-    ...(questionSupportAudit.issues || []).map((issue) => ({ guard: 'question_support', ...issue })),
-    ...(dramaticReleaseAudit.issues || []).map((issue) => ({ guard: 'dramatic_release', ...issue })),
-    ...(actorialRealizationAudit.issues || []).map((issue) => ({ guard: 'actorial_realization', ...issue })),
-    ...(responseCompositionAudit.issues || []).map((issue) => ({ guard: 'response_composition', ...issue })),
-    ...(repetitionAudit.issues || []).map((issue) => ({ guard: 'repetition', ...issue })),
-    ...(closureAudit.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
-  ];
+  const issueRows = tutorStubGuardIssueRows(audits);
   const allowActorialAdvisory =
     candidateKind === 'policy_repair_candidate'
       ? tutorStubPolicyRecoveryAllowsPerformanceAdvisory(actorialRealizationAudit, responseConfigurationAudit)
       : ['original_candidate', 'deterministic_fallback'].includes(candidateKind)
         ? tutorStubActorialPerformanceMayBeAdvisory(actorialRealizationAudit, responseConfigurationAudit)
         : false;
-  const deliveryDecision = tutorStubGuardDeliveryDecision(issueRows, { allowActorialAdvisory });
+  const deliveryDecision = tutorStubGuardDeliveryDecision(issueRows, {
+    allowActorialAdvisory,
+    boundaryPolicy,
+  });
   const failureClusters = Object.entries(audits).flatMap(([guard, audit]) => {
     if (!audit || audit.ok !== false) return [];
     const issues = audit.leaks || audit.issues || [];
@@ -647,6 +643,12 @@ export function auditTutorStubFrozenCandidate({
     failureClusters,
     hardFailureClusters: deliveryDecision.hardIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`),
     advisoryFailureClusters: deliveryDecision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`),
+    reportOnlyFailureClusters: deliveryDecision.reportOnlyIssues.map(
+      (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+    ),
+    shadowAdvisoryFailureClusters: deliveryDecision.shadow.advisoryIssues.map(
+      (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+    ),
     deliveryDecision,
     audits,
     performanceAdjudicationEligibility,

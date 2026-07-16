@@ -169,6 +169,40 @@ test('V22 public-prefix provenance clears the false handwriting leak but still c
   assert.ok(unsafe.leaks.some((leak) => leak.type === 'unreleased_premise_content'));
 });
 
+test('V19 provenance replay distinguishes a due strain match from the same match before release', () => {
+  const fixture = readFixture(FIXTURE_PATHS[0]);
+  const testCase = fixture.cases.find((row) => row.turn === 7);
+  const world = worldForId(testCase.worldId);
+  const original = testCase.candidates.find((candidate) => candidate.kind === 'original_candidate');
+  const current = auditTutorStubFrozenCandidate({
+    bundle: testCase.bundle,
+    world,
+    text: original.text,
+    deliveryConfiguration: original.deliveryConfiguration,
+    candidateKind: original.kind,
+  });
+  assert.equal(current.safetyFailure, false);
+  assert.equal(current.audits.leakAudit.ok, true);
+
+  const beforeRelease = auditTutorStubFrozenLeak({
+    text: 'The ruined Corvat flasks contained G17, exactly matching the strain found in Larkin.',
+    world,
+    tutorTurn: 6,
+    learnerText: testCase.bundle.learnerText,
+    priorTurns: testCase.bundle.priorTurns.filter((turn) => Number(turn.turn) < 6),
+    publicPremiseIds: testCase.bundle.publicPremiseIds.filter((premise) => premise !== 'p_strain'),
+  });
+  assert.equal(beforeRelease.ok, false);
+  assert.ok(
+    beforeRelease.leaks.some(
+      (leak) =>
+        leak.type === 'unreleased_premise_content' ||
+        leak.type === 'unsupported_correspondence' ||
+        leak.type === 'private_final_conclusion',
+    ),
+  );
+});
+
 test('V22 configuration calibration recognizes the concrete next check without forgiving dense language', () => {
   const fixture = readFixture(FIXTURE_PATHS[3]);
   const expected = new Map([
