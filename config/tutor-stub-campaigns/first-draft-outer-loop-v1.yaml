@@ -6,25 +6,69 @@ purpose: >-
   reusable frozen-prefix development from immutable held-out acceptance,
   records who may interpret or change each layer, and makes success,
   stagnation, infrastructure blocking, version retirement, and seed freshness
-  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 -> V28 -> V29 without a
+  explicit. It began at V24 and advances V24 -> V25 -> V26 -> V27 -> V28 -> V29 -> V30 without a
   fixed upper bound until held-out acceptance passes. A stagnated development
   version is preserved and triggers an architectural reset in Vn+1 rather
   than terminating the broader programme.
 
 current:
-  campaign_version: 29
-  label: V29
+  campaign_version: 30
+  label: V30
   state: working_predeclared
   working_iteration: 1
-  working_screen_id: first-draft-working-screens-v9
-  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml
-  primary_working_screen_id: first-draft-working-screens-v9
-  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml
+  working_screen_id: first-draft-working-screens-v10
+  working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v10.yaml
+  primary_working_screen_id: first-draft-working-screens-v10
+  primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v10.yaml
   acceptance_config: null
   active_working_history: []
   active_last_observation: null
-  working_history_scope: preserved_v27_primary_history_and_v28_preflight_read_only
+  working_history_scope: preserved_v27_primary_history_with_v28_and_v29_zero_call_preflights
   version_advance_from:
+    version: 29
+    terminal_state: development_preflight_failed
+    kind: deterministic_zero_call_model_free_regression
+    authorized_by: versioning.tuning_after_observation_retires_entire_version
+    final_iteration: 1
+    result_artifact: null
+    run_head: bfa0b4857a229ddab6a6ba733ba214850c23468b
+    provenance:
+      working_screen_config_sha256: 06d0c19ac59eaaabcdf2d5e4cba3c46d3e1fa49d28a485f7c41ced782f7ff7c9
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/campaign-validation.json
+      campaign_validation_sha256: 5380f46ce14329222268ee48856f353717e20ecd51947bccab6e8fabd5e55c9c
+      model_free_audit_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/model-free-skyway-audit.json
+      model_free_audit_sha256: 361dd6c0579492f411a18ad49ca975fc6a096b576213f0fe3710f84d54e464b5
+      clean_worktree: true
+      missing_result_envelope: true
+    model_calls: 0
+    candidates_generated: 0
+    structural_preflight_ready: true
+    deterministic_execution_preflight_passed: false
+    blocker:
+      fixture: tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+      case_id: 2026-07-16T04-44-58-444Z:t003
+      candidate_kind: deterministic_fallback
+      attempt: 4
+      kind: expected_hard_audit_correction_not_yet_declared
+      failure_cluster: response_composition:verbatim_learner_echo
+      safety_failures: 0
+      detail: >-
+        A deterministic fallback accepted in the source trace is now correctly
+        rejected for repeating the learner's requested Write line verbatim. A
+        clean V28 checkout gives the same result; V29 accessibility code did
+        not cause it. The audit stays hard.
+    seed_dispositions:
+      - { seed: 20261900, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261901, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261902, status: retired_unconsumed_after_preflight_failure }
+      - { seed: 20261903, status: retired_unconsumed_after_preflight_failure }
+    next_version_reason: >-
+      V30 keeps V29's speaking prompt, source compensation, and all strict
+      gates unchanged. It repairs deterministic recovery against the typed
+      learner-uptake and terminal-handoff contract, records the saved rejection
+      as an expected audit correction, and serializes command-level preflight
+      failures as complete zero-call results.
+  v29_version_advance_from:
     version: 28
     terminal_state: development_preflight_failed
     kind: deterministic_zero_call_source_accessibility_preflight
@@ -865,8 +909,8 @@ current:
       stopping_reason: predeclared_final_frontier_attempt_failed
       reset_to: V25_compact_typed_host_plan
 versioning:
-  current: 29
-  next: 30
+  current: 30
+  next: 31
   increment: 1
   unbounded: true
   label_template: V{n}
@@ -1109,23 +1153,27 @@ seed_ledger:
     - { version: 28, seed: 20261801, status: retired_unconsumed_after_preflight_failure }
     - { version: 28, seed: 20261802, status: retired_unconsumed_after_preflight_failure }
     - { version: 28, seed: 20261803, status: retired_unconsumed_after_preflight_failure }
+    - { version: 29, seed: 20261900, status: retired_unconsumed_after_preflight_failure }
+    - { version: 29, seed: 20261901, status: retired_unconsumed_after_preflight_failure }
+    - { version: 29, seed: 20261902, status: retired_unconsumed_after_preflight_failure }
+    - { version: 29, seed: 20261903, status: retired_unconsumed_after_preflight_failure }
   development:
-    - seed: 20261900
+    - seed: 20262000
       status: reusable_non_held_out_development
       cell: tallow_answer_seeking
-      screen: first-draft-working-screens-v9
-    - seed: 20261901
+      screen: first-draft-working-screens-v10
+    - seed: 20262001
       status: reusable_non_held_out_development
       cell: ravensmark_affective_resistant
-      screen: first-draft-working-screens-v9
-    - seed: 20261902
+      screen: first-draft-working-screens-v10
+    - seed: 20262002
       status: reusable_non_held_out_development
       cell: larkspur_premature_closure
-      screen: first-draft-working-screens-v9
-    - seed: 20261903
+      screen: first-draft-working-screens-v10
+    - seed: 20262003
       status: reusable_non_held_out_development
       cell: foxtrot_diligent
-      screen: first-draft-working-screens-v9
+      screen: first-draft-working-screens-v10
   held_out:
     status: not_predeclared
     entries: []
@@ -1176,13 +1224,20 @@ claim_boundary: >-
   action referent, and typed turn-focus relation. Its clean committed preflight
   stopped before all model calls because Ravensmark's exact 36-word SOURCE
   exceeded both selected 23-word accessibility budgets. All four 202618xx
-  labels were therefore retired explicitly as unconsumed. V29 preserves those
+  labels were therefore retired explicitly as unconsumed. V29 preserved those
   exact prefixes and every V28 safety, source, progression, structural, and
   deterministic-only gate under fresh 202619xx development labels. It adds one
   opt-in typed compensation path: a single inaccessible SOURCE may be followed
   immediately by one short declarative explanation made only from public source
   material. Exact SOURCE bytes, order, occurrence, and ownership do not change;
   direct sources remain direct, while multi-source or structurally dense cases
-  fail closed. A V29 working pass is reusable development evidence only and
-  permits, but does not itself constitute, fresh held-out predeclaration. V30+
-  remain available if development or acceptance fails.
+  fail closed. V29 then stopped before all model calls when its model-free
+  corpus surfaced one previously accepted deterministic fallback that the new
+  typed progression audit correctly rejects for verbatim learner echo. The
+  audit remains hard; all four 202619xx labels are retired unconsumed. V30 keeps
+  the V29 speaking prompt and gates unchanged, repairs only deterministic
+  recovery and preflight result serialization, and records that saved rejection
+  as an audit-recognition correction rather than generation progress. A V30
+  working pass is reusable development evidence only and permits, but does not
+  itself constitute, fresh held-out predeclaration. V31+ remain available if
+  development or acceptance fails.

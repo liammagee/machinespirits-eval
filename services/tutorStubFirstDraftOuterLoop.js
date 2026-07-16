@@ -265,6 +265,15 @@ const V28_ITERATION_1_PREFLIGHT = Object.freeze({
   resultSha256: 'f6394fc4462f1577a0d9b47d232cd2992c5f39551edd9aedc6d494d1a1bbf65d',
 });
 
+const V29_ITERATION_1_PREFLIGHT = Object.freeze({
+  runHead: 'bfa0b4857a229ddab6a6ba733ba214850c23468b',
+  configSha256: '06d0c19ac59eaaabcdf2d5e4cba3c46d3e1fa49d28a485f7c41ced782f7ff7c9',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/campaign-validation.json',
+  campaignValidationSha256: '5380f46ce14329222268ee48856f353717e20ecd51947bccab6e8fabd5e55c9c',
+  modelFreeAuditArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/model-free-skyway-audit.json',
+  modelFreeAuditSha256: '361dd6c0579492f411a18ad49ca975fc6a096b576213f0fe3710f84d54e464b5',
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -1067,6 +1076,67 @@ function validateV28Iteration1Advance(advance, label) {
   ], `${label} seed dispositions`);
 }
 
+function validateV29Iteration1Advance(advance, label) {
+  expect(advance?.version, 29, `${label} version`);
+  expect(advance?.terminal_state, 'development_preflight_failed', `${label} terminal state`);
+  expect(advance?.kind, 'deterministic_zero_call_model_free_regression', `${label} kind`);
+  expect(
+    advance?.authorized_by,
+    'versioning.tuning_after_observation_retires_entire_version',
+    `${label} version authority`,
+  );
+  expect(advance?.final_iteration, 1, `${label} final iteration`);
+  expect(advance?.result_artifact, null, `${label} missing result artifact`);
+  expect(advance?.run_head, V29_ITERATION_1_PREFLIGHT.runHead, `${label} run HEAD`);
+  expect(
+    advance?.provenance?.working_screen_config_sha256,
+    V29_ITERATION_1_PREFLIGHT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    advance?.provenance?.campaign_validation_artifact,
+    V29_ITERATION_1_PREFLIGHT.campaignValidationArtifact,
+    `${label} validation artifact`,
+  );
+  expect(
+    advance?.provenance?.campaign_validation_sha256,
+    V29_ITERATION_1_PREFLIGHT.campaignValidationSha256,
+    `${label} validation hash`,
+  );
+  expect(
+    advance?.provenance?.model_free_audit_artifact,
+    V29_ITERATION_1_PREFLIGHT.modelFreeAuditArtifact,
+    `${label} model-free artifact`,
+  );
+  expect(
+    advance?.provenance?.model_free_audit_sha256,
+    V29_ITERATION_1_PREFLIGHT.modelFreeAuditSha256,
+    `${label} model-free hash`,
+  );
+  expect(advance?.provenance?.clean_worktree, true, `${label} clean worktree`);
+  expect(advance?.provenance?.missing_result_envelope, true, `${label} missing result envelope`);
+  expect(advance?.model_calls, 0, `${label} model calls`);
+  expect(advance?.candidates_generated, 0, `${label} candidates generated`);
+  expect(advance?.structural_preflight_ready, true, `${label} structural readiness`);
+  expect(advance?.deterministic_execution_preflight_passed, false, `${label} execution preflight`);
+  expectJson(advance?.blocker, {
+    fixture: 'tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json',
+    case_id: '2026-07-16T04-44-58-444Z:t003',
+    candidate_kind: 'deterministic_fallback',
+    attempt: 4,
+    kind: 'expected_hard_audit_correction_not_yet_declared',
+    failure_cluster: 'response_composition:verbatim_learner_echo',
+    safety_failures: 0,
+    detail: advance?.blocker?.detail,
+  }, `${label} blocker`);
+  expectJson(advance?.seed_dispositions, [
+    { seed: 20261900, status: 'retired_unconsumed_after_preflight_failure' },
+    { seed: 20261901, status: 'retired_unconsumed_after_preflight_failure' },
+    { seed: 20261902, status: 'retired_unconsumed_after_preflight_failure' },
+    { seed: 20261903, status: 'retired_unconsumed_after_preflight_failure' },
+  ], `${label} seed dispositions`);
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -1210,10 +1280,12 @@ function validateWorkingScreen(manifest, { root }) {
     'first-draft-working-screens-v7',
     'first-draft-working-screens-v8',
     'first-draft-working-screens-v9',
+    'first-draft-working-screens-v10',
   ]
     .includes(config.id);
   const v28StructuralScreen = config.id === 'first-draft-working-screens-v8';
   const v29SourceAccessibilityScreen = config.id === 'first-draft-working-screens-v9';
+  const v30RecoveryIntegrationScreen = config.id === 'first-draft-working-screens-v10';
   expect(config.id, manifest.current?.working_screen_id, 'working screen id');
   expect(config.held_out, false, 'working screen held-out flag');
   expect(config.fixed_configuration?.original_only, true, 'working screen original-only mode');
@@ -1255,8 +1327,8 @@ function validateWorkingScreen(manifest, { root }) {
     expect(config.gates_per_cell?.required_prefixes, 1, 'confirmation required prefixes');
     expect(config.gates_per_cell?.required_draws_per_prefix, 4, 'confirmation draws per prefix');
   }
-  if (v28StructuralScreen || v29SourceAccessibilityScreen) {
-    const label = v29SourceAccessibilityScreen ? 'V29' : 'V28';
+  if (v28StructuralScreen || v29SourceAccessibilityScreen || v30RecoveryIntegrationScreen) {
+    const label = v30RecoveryIntegrationScreen ? 'V30' : v29SourceAccessibilityScreen ? 'V29' : 'V28';
     expect(config.fixed_configuration?.adjudication_policy, 'deterministic_only', `${label} adjudication policy`);
     expect(config.fixed_configuration?.semantic_adjudication, false, `${label} semantic adjudication disabled`);
     expect(config.gates_per_cell?.maximum_semantic_adjudicator_calls, 0, `${label} semantic calls`);
@@ -1352,6 +1424,7 @@ function validateWorkingScreen(manifest, { root }) {
     structuralPreflight: validation.structuralPreflight || [],
     v28StructuralScreen,
     v29SourceAccessibilityScreen,
+    v30RecoveryIntegrationScreen,
     sourceAccessibilityPolicy:
       config.fixed_configuration?.source_accessibility_policy || 'direct_only',
     gates: {
@@ -2396,6 +2469,160 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       throw new Error('V29 must leave 202617xx absent and unreserved');
     }
   }
+
+  if (currentVersion === 30) {
+    expect(state.currentState, 'working_predeclared', 'V30 current state');
+    expect(workingIteration, 1, 'V30 working iteration');
+    expectJson(manifest.current?.active_working_history, [], 'V30 active working history');
+    expect(manifest.current?.active_last_observation, null, 'V30 active last observation');
+    expect(
+      manifest.current?.working_history_scope,
+      'preserved_v27_primary_history_with_v28_and_v29_zero_call_preflights',
+      'V30 inherited working-history scope',
+    );
+    const inheritedHistory = manifest.current?.prior_version_working_history || [];
+    if (inheritedHistory.length !== 7) {
+      throw new Error('V30 must preserve exactly seven V27 primary observations');
+    }
+    validateV27Iteration1Observation(inheritedHistory[0], 'V30 inherited V27 iteration 1');
+    validateV27Iteration2Observation(inheritedHistory[1], 'V30 inherited V27 iteration 2');
+    validateV27Iteration3Observation(inheritedHistory[2], 'V30 inherited V27 iteration 3');
+    validateV27Iteration4Observation(inheritedHistory[3], 'V30 inherited V27 iteration 4');
+    validateV27Iteration5Observation(inheritedHistory[4], 'V30 inherited V27 iteration 5');
+    validateV27Iteration6Observation(inheritedHistory[5], 'V30 inherited V27 iteration 6');
+    validateV27Iteration7Observation(inheritedHistory[6], 'V30 inherited V27 iteration 7');
+    validateV27Iteration7Observation(
+      manifest.current?.prior_version_last_primary_observation,
+      'V30 inherited V27 primary last observation',
+    );
+    validateV27Iteration8Advance(
+      manifest.current?.v28_version_advance_from,
+      'V30 inherited V27 confirmation advance',
+    );
+    validateV28Iteration1Advance(
+      manifest.current?.v29_version_advance_from,
+      'V30 inherited V28 preflight advance',
+    );
+    validateV29Iteration1Advance(manifest.current?.version_advance_from, 'V30 version advance');
+
+    expect(workingScreen.id, 'first-draft-working-screens-v10', 'V30 screen id');
+    expect(workingScreen.confirmation, true, 'V30 strict multi-cell screen');
+    expect(workingScreen.v30RecoveryIntegrationScreen, true, 'V30 recovery screen flag');
+    expect(workingScreen.jointPerformanceGeneration, true, 'V30 joint-performance generation');
+    expect(
+      workingScreen.sourceAccessibilityPolicy,
+      'direct_or_compensated_v1',
+      'V30 source-accessibility policy',
+    );
+    expectJson(workingScreen.cells, [
+      {
+        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
+        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262000,
+        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+      },
+      {
+        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
+        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20262001,
+        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+      },
+      {
+        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
+        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20262002,
+        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+      },
+      {
+        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
+        learnerProfile: 'diligent', turns: [4], developmentSeed: 20262003,
+        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+      },
+    ], 'V30 working cells');
+    expectJson(workingScreen.execution, {
+      hardest_cell_first: true,
+      hard_cell: 'tallow_answer_seeking',
+      hard_cell_must_pass_before_remaining: true,
+      remaining_cells_execution: 'concurrent',
+      maximum_concurrent_remaining_cells: 3,
+      one_job_per_cell: true,
+      forbid_duplicate_active_or_completed_cells: true,
+      complete_all_cells_after_hard_cell_passes: true,
+      stop_cell_when_gate_mathematically_impossible: true,
+      preserve_unstarted_seeds_as_unconsumed: true,
+      require_exact_target_bundle_binding: true,
+      require_clean_worktree: true,
+    }, 'V30 execution');
+    expectJson(workingScreen.changeControl, {
+      implementation_change_from_v29_preflight: 'typed_progression_aware_recovery_and_preflight_serialization_v1',
+      speaking_prompt_changes: [],
+      deterministic_host_changes: [],
+      audit_recognition_changes: [
+        'skyway_saved_fallback_verbatim_echo_recorded_as_expected_correction',
+      ],
+      recovery_changes: [
+        'reject_uptake_already_failed_by_live_progression',
+        'progression_aware_deterministic_uptake',
+        'ordinary_fallback_uses_typed_terminal_handoff',
+        'deterministic_preflight_failure_writes_zero_call_result',
+      ],
+      transport_changes: [],
+      safety_changes: [],
+      gate_changes: [],
+      delivery_audit_changes: [],
+    }, 'V30 change control');
+    expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V30 adjudication policy');
+    expectJson(workingScreen.structuralDebtTargets, {
+      status: 'active_v30_target',
+      source: 'V29_model_free_zero_call_preflight_failure',
+      items: [
+        'deterministic_fallback_progression_contract',
+        'complete_preflight_failure_provenance',
+      ],
+      consequence: workingScreen.structuralDebtTargets?.consequence,
+    }, 'V30 structural debt target');
+    if (!/pass permits.*held-out predeclaration/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
+      throw new Error('V30 structural debt consequence must preserve the development-only boundary');
+    }
+    for (const requiredTest of [
+      'tests/tutorStubSourceAccessibilityContract.test.js',
+      'tests/tutorStubTurnProgressionContract.test.js',
+      'tests/tutorStubInteractiveModes.test.js',
+      'tests/adaptiveRunEvidencePackage.test.js',
+      'tests/tutorStubFirstDraftCampaign.test.js',
+    ]) {
+      if (!String(workingScreen.preflight?.focused_tests || '').includes(requiredTest)) {
+        throw new Error(`V30 preflight must include ${requiredTest}`);
+      }
+    }
+    expectJson(
+      workingScreen.preflight?.structural_regression_fixtures,
+      ['tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json'],
+      'V30 structural regression fixture',
+    );
+
+    expectJson(
+      seeds.development.map((entry) => ({
+        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+      })),
+      [
+        { seed: 20262000, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v10' },
+        { seed: 20262001, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v10' },
+        { seed: 20262002, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v10' },
+        { seed: 20262003, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v10' },
+      ],
+      'V30 development seed ledger',
+    );
+    for (const seed of [20261800, 20261801, 20261802, 20261803, 20261900, 20261901, 20261902, 20261903]) {
+      const retired = seeds.historical.find((entry) => Number(entry.seed) === seed);
+      if (!retired || retired.status !== 'retired_unconsumed_after_preflight_failure') {
+        throw new Error(`V30 history must preserve zero-call seed ${seed} as unconsumed and retired`);
+      }
+    }
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
+      .map((entry) => Number(entry.seed));
+    if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
+      throw new Error('V30 must leave 202617xx absent and unreserved');
+    }
+  }
+
 
   if (state.currentState === 'stagnated') {
     expect(
