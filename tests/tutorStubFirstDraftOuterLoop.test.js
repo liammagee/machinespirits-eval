@@ -44,7 +44,7 @@ test('outer-loop manifest validates V24 without predeclaring held-out acceptance
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 24);
     assert.equal(validation.currentState, 'working_predeclared');
-    assert.equal(validation.workingIteration, 4);
+    assert.equal(validation.workingIteration, 5);
     assert.equal(validation.terminalScope, 'none');
     assert.equal(validation.acceptancePredeclared, false);
     assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
@@ -66,7 +66,7 @@ test('outer-loop status exposes only declared next states and makes no model cal
     const { manifest } = fixture(tmp);
     const status = summarizeTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(status.makesModelCalls, false);
-    assert.equal(status.workingIteration, 4);
+    assert.equal(status.workingIteration, 5);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
     assert.deepEqual(status.developmentSeeds, [
       {
@@ -84,22 +84,23 @@ test('outer-loop status exposes only declared next states and makes no model cal
   }
 });
 
-test('outer-loop iteration 4 records the corrected common-prefix comparison for iteration 3', () => {
+test('outer-loop iteration 5 records both local improvement and the best prior common prefix', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-observation-'));
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.last_observation;
     assert.equal(observation.version, 24);
-    assert.equal(observation.working_iteration, 3);
-    assert.equal(observation.mean_configuration_realization, 0.9165);
-    assert.equal(observation.comparison.baseline_same_prefix_mean_configuration_realization, 1);
-    assert.equal(observation.comparison.measurable_improvement, false);
-    assert.equal(observation.comparison.consecutive_without_improvement, 1);
-    assert.deepEqual(observation.unstarted_turns, [6, 9]);
+    assert.equal(observation.working_iteration, 4);
+    assert.equal(observation.mean_configuration_realization, 0.9443333333333334);
+    assert.equal(observation.comparison.best_so_far_prefix_mean_configuration_realization, 1);
+    assert.equal(observation.comparison.best_so_far_prefix_improved, false);
+    assert.equal(observation.comparison.measurable_improvement, true);
+    assert.equal(observation.comparison.consecutive_without_improvement, 0);
+    assert.deepEqual(observation.unstarted_turns, [9]);
     assert.equal(observation.failed_gate, 'minimum_mean_configuration_realization');
-    assert.deepEqual(observation.failed_axes, ['engagement_stance_charismatic']);
-    assert.match(observation.iteration_4_authority.speaking_change, /charismatic stance execution independent/iu);
-    assert.equal(observation.iteration_4_authority.audit_recognition_change, 'none');
+    assert.deepEqual(observation.failed_axes, ['turn_6_action_family_stage_next_step']);
+    assert.match(observation.iteration_5_authority.speaking_change, /semicolon template/iu);
+    assert.equal(observation.iteration_5_authority.audit_recognition_change, 'none');
     assert.equal(manifest.seed_ledger.held_out.entries.length, 0);
     assert.equal(manifest.seed_ledger.reserve.entries.length, 0);
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);

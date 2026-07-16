@@ -43,7 +43,7 @@ const PART_CUES = Object.freeze({
   authored_source:
     'Enter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner.',
   advocate:
-    'In the unquoted host voice, use one compact accountable sentence shaped “My case is [licensed claim]; break it if [concrete public observation].” Replace both brackets with scene facts and do not explain the sentence shape.',
+    'In one short unquoted host sentence beginning “My case is”, state the strongest licensed claim and its concrete limit. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.',
   skeptic:
     'In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.',
   foreperson:
@@ -177,6 +177,12 @@ function compatibilityDecisions({
   ) {
     decisions.push('closure_recasts_invitation_as_joint_finding');
   }
+  if (
+    responseConfiguration?.actorial_part === 'advocate' &&
+    responseConfiguration?.action_family === 'stage_next_step'
+  ) {
+    decisions.push('advocate_case_delegates_concrete_test_to_final_handoff');
+  }
   return decisions;
 }
 
@@ -231,10 +237,14 @@ export function buildTutorStubFirstDraftContract({
       ? 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.'
       : TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
   const stanceExecution = STANCE_EXECUTION_CUES[stance] || null;
-  const actionInstruction =
+  const baseActionInstruction =
     directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
       ? 'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence.'
       : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
+  const actionInstruction =
+    part === 'advocate' && actionFamily === 'stage_next_step'
+      ? `${baseActionInstruction} Put that concrete operation in the final handoff after the separate “My case is” sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.`
+      : baseActionInstruction;
 
   return {
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,

@@ -3262,6 +3262,32 @@ test('stating what the record still needs visibly stages the next step', () => {
   assert.equal(audit.axes.action_family.visible, true);
 });
 
+test('a next-step operation acts on public objects rather than asking for unspecified evidence', () => {
+  const configuration = {
+    ...buildTutorStubResponseConfiguration({
+      engagementStance: 'plain',
+      learnerText: 'What should we do next?',
+      classification: classification(),
+      tutorLearnerDag: learnerDag(),
+      world: testWorld(),
+    }),
+    action_family: 'stage_next_step',
+  };
+  const concrete = auditTutorStubResponseConfiguration({
+    text: 'Next, compare the tool mark with the custody log.',
+    configuration,
+    world: testWorld(),
+  });
+  const unspecified = auditTutorStubResponseConfiguration({
+    text: 'Break the claim by asking what evidence would tie the tool to its user.',
+    configuration,
+    world: testWorld(),
+  });
+
+  assert.equal(concrete.axes.action_family.visible, true);
+  assert.equal(unspecified.axes.action_family.visible, false);
+});
+
 test('opening a version history visibly performs the record-keeper part', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',

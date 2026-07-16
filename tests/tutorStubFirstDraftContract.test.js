@@ -272,7 +272,7 @@ test('mandatory closure recasts a shared-scene invitation as a joint terminal fi
   assert.match(prompt, /END — Explicitly close the inquiry and ask no question/iu);
 });
 
-test('advocate counterpressure receives one accountable breakable public sentence shape', () => {
+test('advocate counterpressure composes a separate case sentence and concrete next operation', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next?',
     responseConfiguration: configuration({
@@ -290,8 +290,12 @@ test('advocate counterpressure receives one accountable breakable public sentenc
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.match(prompt, /My case is \[licensed claim\]; break it if \[concrete public observation\]/u);
-  assert.match(prompt, /Replace both brackets with scene facts/iu);
+  assert.match(prompt, /one short unquoted host sentence beginning “My case is”/u);
+  assert.match(prompt, /Do not append a semicolon-shaped test/iu);
+  assert.match(prompt, /Put that concrete operation in the final handoff/iu);
+  assert.match(prompt, /Do not turn the handoff into a request for the learner to name unspecified evidence/iu);
+  assert.ok(contract.compatibility.decisions.includes('advocate_case_delegates_concrete_test_to_final_handoff'));
+  assert.doesNotMatch(prompt, /My case is \[licensed claim\]; break it if/iu);
 });
 
 test('scene-partner work receives a concrete shared-placement sentence', () => {
