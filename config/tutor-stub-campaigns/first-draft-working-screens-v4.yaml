@@ -92,14 +92,34 @@ change_log:
     A model-free evidentiary-boundary correction recognizes a public evidence
     bearer proving one property but not another. Iteration 3 also excludes an
     exact authored clue from role-label detection while requiring quoted role
-    speech to overlap substantive clue terms. The saved turn remains rejected;
-    these corrections are reported separately and do not count as generation
-    improvement.
+    speech to overlap substantive clue terms. Iteration 4 recognizes an
+    accountable advocate handoff phrased as what a named public exhibit still
+    needs to show or establish, provided the response also states a first-person
+    case and an explicit evidentiary boundary. These corrections are reported
+    separately and do not count as generation improvement.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
   stop_campaign_when_required_cell_fails: true
   maximum_consecutive_iterations_without_improvement: 2
+  final_frontier_attempt_iteration: 4
+  stop_if_final_frontier_attempt_fails: true
+  final_frontier_to_beat:
+    source: V25_iteration_2
+    strict_originals_accepted: 3
+    completed_turns: 4
+    configuration_vector: [1, 1, 1, 0.667]
+  final_frontier_attempt_gate:
+    strict_originals_accepted: 4
+    completed_turns: 4
+    configuration_vector: [1, 1, 1, 1]
+    mean_configuration_realization: 1.0
+    maximum_safety_failures: 0
+    maximum_uptake_failures: 0
+    maximum_fallbacks: 0
+    maximum_repairs: 0
+    maximum_model_rewrites: 0
+    maximum_semantic_recognition_corrections: 0
 
 claim_boundary: >-
   Passing means one fresh original tutor draw realizes all six selected
