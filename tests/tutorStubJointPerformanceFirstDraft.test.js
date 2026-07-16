@@ -529,6 +529,45 @@ test('v2 parser accepts only the exact nested envelope and one sentence per mode
   );
 });
 
+test('v2 parser canonicalizes only I3 outer transport whitespace and preserves the raw draw', () => {
+  const raw = '{"uptake":"Write: “The lead-sweat shows these newly struck shillings are debased, not clipped.”","performance":{"entry":"Together, we hold the shilling against the touchstone’s dark streak.","response":"What does that streak tell you about the coin’s metal? "},"handoff":"Next, compare the shilling’s alloy with crucible leavings."}';
+  const parsed = parseTutorStubJointPerformanceFirstDraft(raw);
+  const composition = composeTutorStubJointPerformanceFirstDraft({ structured: parsed });
+
+  assert.equal(parsed.raw, raw);
+  assert.deepEqual(parsed.transport_normalizations, [
+    { slot: 'performance.response', type: 'trim_outer_whitespace', count: 1 },
+  ]);
+  assert.equal(parsed.slots.performance.response, 'What does that streak tell you about the coin’s metal?');
+  assert.equal(
+    composition.text,
+    'Write: “The lead-sweat shows these newly struck shillings are debased, not clipped.” Together, we hold the shilling against the touchstone’s dark streak. What does that streak tell you about the coin’s metal? Next, compare the shilling’s alloy with crucible leavings.',
+  );
+});
+
+test('v2 transport canonicalization does not admit blank, multiline, bad-punctuation, or over-limit slots', () => {
+  assert.throws(
+    () => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: '   ' })),
+    /slot_is_empty:handoff/u,
+  );
+  assert.throws(
+    () => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: 'First line.\nSecond line.' })),
+    /slot_is_multiline:handoff/u,
+  );
+  assert.throws(
+    () => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: 'Still no terminal punctuation   ' })),
+    /slot_needs_terminal_punctuation:handoff/u,
+  );
+  assert.throws(
+    () =>
+      parseTutorStubJointPerformanceFirstDraft(
+        validRaw({ handoff: 'One two three four five six.' }),
+        { maxWordsPerSlot: 5 },
+      ),
+    /slot_exceeds_word_target:handoff:6>5/u,
+  );
+});
+
 test('v2 composition inserts exact host-owned SOURCE between joint performance spans', () => {
   const surface = 'The ledger records code WF-11 for the outside crew at noon.';
   const structured = parseTutorStubJointPerformanceFirstDraft(validRaw());

@@ -165,6 +165,14 @@ function summarizeScreenResults(results = []) {
   const structuredRows = results.filter((row) => row.structuredGeneration);
   const jointRows = results.filter((row) => row.jointPerformanceGeneration);
   if (!structuredRows.length && !jointRows.length) return summary;
+  const transportNormalizations = jointRows.flatMap((row) =>
+    (row.jointPerformanceGeneration?.parsed?.transport_normalizations || []).map((normalization) => ({
+      turn: row.turn,
+      turnId: row.turnId || null,
+      draw: row.draw || null,
+      ...normalization,
+    })),
+  );
   return {
     ...summary,
     ...(structuredRows.length
@@ -185,6 +193,11 @@ function summarizeScreenResults(results = []) {
           ).length,
           jointPerformanceCompositionsClassifiedAsRepair: 0,
           jointPerformanceCompositionsClassifiedAsFallback: 0,
+          transportNormalizedOutputs: jointRows.filter(
+            (row) => row.jointPerformanceGeneration?.parsed?.transport_normalizations?.length > 0,
+          ).length,
+          transportNormalizationCount: transportNormalizations.length,
+          transportNormalizations,
         }
       : {}),
   };

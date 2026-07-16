@@ -295,6 +295,20 @@ async function runDevelopment(plan, config, iteration) {
     mechanicalRepairs: 0,
     modelRewrites: 0,
     deterministicFallbacks: 0,
+    transportNormalizedOutputs: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.transportNormalizedOutputs || 0),
+      0,
+    ),
+    transportNormalizationCount: cellResults.reduce(
+      (sum, cell) => sum + Number(cell.transportNormalizationCount || 0),
+      0,
+    ),
+    transportNormalizations: cellResults.flatMap((cell) =>
+      (cell.transportNormalizations || []).map((normalization) => ({
+        cellId: cell.id,
+        ...normalization,
+      })),
+    ),
     finalSafetyFailures: cellResults.reduce((sum, cell) => sum + Number(cell.safetyFailures || 0), 0),
     cells: cellResults,
     claimBoundary: config.claim_boundary,

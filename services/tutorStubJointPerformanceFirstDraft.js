@@ -29,6 +29,7 @@ const RESPONSE_CONFIGURATION_BLOCK =
 const SLOT_LABEL_PATTERN = /^(?:uptake|performance(?:\s+(?:entry|response))?|entry|response|source|handoff)\s*(?::|—|-)/iu;
 const NON_UPTAKE_QUOTE_PATTERN = /[“”"]/u;
 const SENTENCE_TERMINATOR_PATTERN = /[.!?](?:[”"'’])?$/u;
+const OUTER_HORIZONTAL_WHITESPACE_PATTERN = /^[\p{Zs}\t\f\v]+|[\p{Zs}\t\f\v]+$/gu;
 const SOURCE_FINGERPRINT_STOP_WORDS = new Set(
   'about after again also and are because before being book clue could does evidence from had has have into its just ledger more not only other public record source than that the their them then there these they this those through under very was were what when where which while with would your'.split(
     ' ',
@@ -351,7 +352,6 @@ function validateSentence(value, id, { maxWordsPerSlot = null, allowQuotation = 
   const wordLimit = Number(maxWordsPerSlot);
   const enforceWordLimit = Number.isFinite(wordLimit) && wordLimit > 0;
   if (typeof value !== 'string') return [`slot_must_be_string:${id}`];
-  if (value !== value.trim()) issues.push(`slot_has_outer_whitespace:${id}`);
   if (!value.trim()) issues.push(`slot_is_empty:${id}`);
   if (/\r|\n/u.test(value)) issues.push(`slot_is_multiline:${id}`);
   if (value && sentenceCount(value) !== 1) issues.push(`slot_must_be_one_sentence:${id}`);
@@ -364,8 +364,19 @@ function validateSentence(value, id, { maxWordsPerSlot = null, allowQuotation = 
   return issues;
 }
 
+function normalizeTransportSlot(value, slot, normalizations) {
+  if (typeof value !== 'string') return value;
+  const normalized = value.replace(OUTER_HORIZONTAL_WHITESPACE_PATTERN, '');
+  const count = value.length - normalized.length;
+  if (count > 0) {
+    normalizations.push({ slot, type: 'trim_outer_whitespace', count });
+  }
+  return normalized;
+}
+
 export function parseTutorStubJointPerformanceFirstDraft(text = '', { maxWordsPerSlot = null } = {}) {
-  const raw = String(text || '').trim();
+  const rawOutput = String(text || '');
+  const raw = rawOutput.trim();
   let value;
   try {
     value = JSON.parse(raw);
@@ -373,6 +384,8 @@ export function parseTutorStubJointPerformanceFirstDraft(text = '', { maxWordsPe
     throw new Error(`joint performance first draft invalid: invalid_json:${error.message}`);
   }
   const issues = [];
+  const transportNormalizations = [];
+  let normalized = value;
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     issues.push('root_must_be_object');
   } else {
@@ -388,18 +401,39 @@ export function parseTutorStubJointPerformanceFirstDraft(text = '', { maxWordsPe
         issues.push(`performance_keys_must_be_exact_and_ordered:${performanceKeys.join(',') || 'none'}`);
       }
     }
-    issues.push(...validateSentence(value.uptake, 'uptake', { maxWordsPerSlot, allowQuotation: true }));
-    issues.push(...validateSentence(value.performance?.entry, 'performance.entry', { maxWordsPerSlot }));
-    issues.push(...validateSentence(value.performance?.response, 'performance.response', { maxWordsPerSlot }));
-    issues.push(...validateSentence(value.handoff, 'handoff', { maxWordsPerSlot }));
+    normalized = {
+      uptake: normalizeTransportSlot(value.uptake, 'uptake', transportNormalizations),
+      performance:
+        value.performance && typeof value.performance === 'object' && !Array.isArray(value.performance)
+          ? {
+              entry: normalizeTransportSlot(
+                value.performance.entry,
+                'performance.entry',
+                transportNormalizations,
+              ),
+              response: normalizeTransportSlot(
+                value.performance.response,
+                'performance.response',
+                transportNormalizations,
+              ),
+            }
+          : value.performance,
+      handoff: normalizeTransportSlot(value.handoff, 'handoff', transportNormalizations),
+    };
+    issues.push(...validateSentence(normalized.uptake, 'uptake', { maxWordsPerSlot, allowQuotation: true }));
+    issues.push(...validateSentence(normalized.performance?.entry, 'performance.entry', { maxWordsPerSlot }));
+    issues.push(...validateSentence(normalized.performance?.response, 'performance.response', { maxWordsPerSlot }));
+    issues.push(...validateSentence(normalized.handoff, 'handoff', { maxWordsPerSlot }));
   }
   if (issues.length) throw new Error(`joint performance first draft invalid: ${issues.join(', ')}`);
   return {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
+    raw: rawOutput,
+    transport_normalizations: transportNormalizations,
     slots: {
-      uptake: value.uptake,
-      performance: { entry: value.performance.entry, response: value.performance.response },
-      handoff: value.handoff,
+      uptake: normalized.uptake,
+      performance: { entry: normalized.performance.entry, response: normalized.performance.response },
+      handoff: normalized.handoff,
     },
   };
 }

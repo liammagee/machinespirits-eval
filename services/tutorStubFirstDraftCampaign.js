@@ -597,6 +597,17 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     hostSourceOccurrenceMetric({ ...entry, generationField }),
   );
   const exactSourceOccurrencePasses = structuredSourceOccurrences.filter((metric) => metric.ok).length;
+  const transportNormalizations = resultEntries.flatMap(({ row }) =>
+    (row?.[generationField]?.parsed?.transport_normalizations || []).map((normalization) => ({
+      turn: row.turn,
+      turnId: row.turnId || null,
+      draw: row.draw || null,
+      ...normalization,
+    })),
+  );
+  const transportNormalizedOutputs = results.filter(
+    (row) => row?.[generationField]?.parsed?.transport_normalizations?.length > 0,
+  ).length;
   const failureCounts = new Map();
   for (const row of results) {
     // Original-only screening rejects a candidate when semantic recognition
@@ -679,6 +690,9 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     mechanicalRepairs: 0,
     modelRewrites: 0,
     deterministicFallbacks: 0,
+    transportNormalizedOutputs,
+    transportNormalizationCount: transportNormalizations.length,
+    transportNormalizations,
     safetyFailures,
     transcriptSpecificUptakeFailures,
     structuredModelOutputs: structuredGenerationEnabled ? results.length : 0,

@@ -297,6 +297,11 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
           latencyMs: 100,
           jointPerformanceGeneration: {
             ok: true,
+            parsed: {
+              transport_normalizations: index === 0
+                ? [{ slot: 'performance.response', type: 'trim_outer_whitespace', count: 1 }]
+                : [],
+            },
             composition: {
               text: `We enter the scene. ${sourceText} What do you see?`.replace(/\s+/gu, ' ').trim(),
               sourceCount: entries.length,
@@ -320,6 +325,18 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
 
     const passing = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
     assert.equal(passing.validJointPerformanceOutputs, 4);
+    assert.equal(passing.transportNormalizedOutputs, 1);
+    assert.equal(passing.transportNormalizationCount, 1);
+    assert.deepEqual(passing.transportNormalizations, [
+      {
+        turn: 2,
+        turnId: 'run:t2',
+        draw: null,
+        slot: 'performance.response',
+        type: 'trim_outer_whitespace',
+        count: 1,
+      },
+    ]);
     assert.equal(passing.jointPerformanceOwnershipPasses, 4);
     assert.equal(passing.exactHostSourceOccurrencePasses, 4);
     assert.deepEqual(
