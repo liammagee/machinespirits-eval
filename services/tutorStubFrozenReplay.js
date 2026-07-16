@@ -5,6 +5,7 @@ import { auditTutorStubDialogueClosureResponse } from './tutorStubDialogueClosur
 import { auditTutorStubDramaticReleaseResponse } from './tutorStubDramaticRelease.js';
 import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from './tutorStubEvidenceAssertion.js';
 import { buildTutorStubFirstDraftContract, tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
+import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
 import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
@@ -468,6 +469,13 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
   const dueEvidence = (bundle.duePremiseIds || [])
     .map((premiseId) => world?.premiseById?.get?.(premiseId))
     .filter(Boolean);
+  const publicCounterpressure = resolveTutorStubPublicCounterpressure({
+    world,
+    publicEvidence: (bundle.publicPremiseIds || []).filter(
+      (premiseId) => !(bundle.duePremiseIds || []).includes(premiseId),
+    ),
+    dueEvidence: bundle.duePremiseIds || [],
+  });
   const performanceObligationContract = compileTutorStubPerformanceObligationContract({
     responseConfiguration: bundle.selectedResponseConfiguration,
     publicWorld: {
@@ -484,6 +492,8 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     publicTurn: {
       visibility: 'public',
       learner_move: bundle.learnerText,
+      pressure_target: publicCounterpressure?.pressureTarget || null,
+      contrary_evidence: publicCounterpressure ? [publicCounterpressure.contraryEvidence] : [],
       public_evidence: publicEvidence,
       due_evidence: dueEvidence,
     },
@@ -514,6 +524,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     tutorStubFirstDraftContractPrompt(firstDraftContract),
   );
   refreshed.firstDraftContract = firstDraftContract;
+  refreshed.publicCounterpressure = publicCounterpressure;
   refreshed.performanceObligationContract = performanceObligationContract;
   refreshed.speakingResponseConfiguration = speakingResponseConfiguration;
   refreshed.request.messages = messages;

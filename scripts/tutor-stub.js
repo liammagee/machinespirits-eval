@@ -173,6 +173,7 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { resolveTutorStubPublicCounterpressure } from '../services/tutorStubCounterpressure.js';
 import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
 import {
   buildTutorStubSimplifiedRecoveryConfiguration,
@@ -10139,6 +10140,13 @@ async function callTutor({
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
   const committedPublicEvidence = passthrough ? [] : committedReleaseRows(state, tutorTurn);
   const duePublicEvidence = passthrough ? [] : currentReleaseRows(state, tutorTurn);
+  const publicCounterpressure = passthrough
+    ? null
+    : resolveTutorStubPublicCounterpressure({
+        world,
+        publicEvidence: committedPublicEvidence,
+        dueEvidence: duePublicEvidence,
+      });
   const performanceObligationContract = passthrough
     ? null
     : compileTutorStubPerformanceObligationContract({
@@ -10157,6 +10165,8 @@ async function callTutor({
         publicTurn: {
           visibility: 'public',
           learner_move: learnerText,
+          pressure_target: publicCounterpressure?.pressureTarget || null,
+          contrary_evidence: publicCounterpressure ? [publicCounterpressure.contraryEvidence] : [],
           public_evidence: committedPublicEvidence,
           due_evidence: duePublicEvidence,
         },

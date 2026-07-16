@@ -69,18 +69,19 @@ gates_per_cell:
 
 change_log:
   speaking_prompt: >-
-    This screen declares no prompt improvement by itself. It freezes the four
-    V23 configuration misses so each later iteration can identify one bounded
-    speaking-prompt change and measure it against exactly the same public
-    states.
+    Iteration 3 preserves the prompt wording but restores an exact authored
+    public counterpressure pair to both live and frozen compilation. The
+    speaking model can now enact the selected dramatic collision instead of
+    receiving a fail-closed evidentiary-boundary substitute.
   recovery_only: >-
     Recovery is disabled in original-only screening. Strict end-to-end repair
     and fallback behavior remains unchanged outside this development screen.
   audit_recognition_only: >-
-    Eligible actorial-recognition misses may receive semantic adjudication, but
-    every correction is reported separately from generation improvement.
-    Safety, public-boundary, uptake, and non-actorial configuration failures
-    remain deterministic and cannot be relabelled.
+    The deterministic audit now recognizes evidence-grounded support/exclusion
+    contrasts such as marking a caster rather than a striker, while rejecting
+    mere prop preferences. Saved-candidate corrections remain separate from
+    generation improvement. Safety, public-boundary, uptake, and non-actorial
+    failures cannot be relabelled.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

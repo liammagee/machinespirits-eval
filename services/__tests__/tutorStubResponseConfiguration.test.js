@@ -1233,6 +1233,46 @@ test('an explicit support-versus-unshown contrast realizes an evidentiary bounda
   assert.equal(audit.axes.actorial_part.visible, true);
 });
 
+test('an evidence-grounded category contrast realizes a boundary without a magic phrase', () => {
+  const audit = auditTutorStubResponseConfiguration({
+    text: "I open the charcoal book. I enter Edony's name beside the blank, marking its caster rather than the coin's striker. What does that change?",
+    configuration: {
+      engagement_stance: 'precise',
+      action_family: 'stage_next_step',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'immersive',
+      actorial_part: 'record_keeper',
+      actorial_part_label: 'keeper of the trial-book',
+      actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+      surface_budgets: { max_average_sentence_words: 18 },
+    },
+    world: { setting: 'The charcoal book lies beside the coin blank in the guild-hall.' },
+  });
+
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a mere preference between two props is not an evidentiary boundary', () => {
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'I use the trial-book rather than the ledger. What do you see?',
+    configuration: {
+      engagement_stance: 'precise',
+      action_family: 'stage_next_step',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'immersive',
+      actorial_part: 'record_keeper',
+      actorial_part_label: 'keeper of the trial-book',
+      actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+      surface_budgets: { max_average_sentence_words: 18 },
+    },
+    world: { setting: 'The trial-book and ledger lie open in the guild-hall.' },
+  });
+
+  assert.equal(audit.axes.actorial_part.performance_visible, false);
+});
+
 test('a what-is-known versus what-must-still-show contrast realizes an evidentiary boundary', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',

@@ -148,6 +148,68 @@ test('frozen refresh never promotes prior tutor prose or a due clue into counter
   assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'evidentiary_boundary');
 });
 
+test('frozen refresh preserves an authored public counterpressure pair without exposing premise ids', () => {
+  const world = worldForId('world_005_marrick');
+  const bundle = {
+    turn: 9,
+    learnerText: 'What should I write next about whose hand cast the blanks?',
+    publicPremiseIds: ['m_caster', 'p_alloy', 'p_crucible', 'p_caster'],
+    duePremiseIds: ['p_caster'],
+    selectedResponseConfiguration: {
+      engagement_stance: 'charismatic',
+      action_family: 'stage_next_step',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'immersive',
+      actorial_part: 'record_keeper',
+      actorial_part_label: 'keeper of the trial-book',
+      actorial_performance: {
+        id: 'dramatic_counterpressure',
+        label: 'dramatic counterpressure',
+        contract: 'Challenge the ready public verdict with contrary public evidence.',
+      },
+      surface_budgets: { max_average_sentence_words: 17 },
+    },
+    frames: {
+      responseComposition: null,
+      dramaticRelease: {
+        active: true,
+        requiresEnactment: true,
+        entries: [
+          {
+            premise: 'p_caster',
+            mode: 'enacted_role',
+            role: 'leat-keeper reading the charcoal book',
+            surface: world.premiseById.get('p_caster').surface,
+          },
+        ],
+      },
+      questionSupport: null,
+      dialogueClosure: null,
+    },
+    request: {
+      messages: [
+        {
+          role: 'user',
+          content:
+            '[Tutor-only first-draft performance contract]\nold contract\n[End tutor-only first-draft performance contract]',
+        },
+      ],
+    },
+  };
+  const refreshed = refreshTutorStubFrozenFirstDraftRequest({ bundle, world });
+  const content = refreshed.request.messages.at(-1).content;
+
+  assert.equal(refreshed.performanceObligationContract.tactic_applicability.applicable, true);
+  assert.equal(refreshed.speakingResponseConfiguration.actorial_performance.id, 'dramatic_counterpressure');
+  assert.equal(
+    refreshed.performanceObligationContract.pressure_pair.target_span,
+    world.premiseById.get('m_caster').surface,
+  );
+  assert.match(content, /COUNTERPRESSURE PAIR/u);
+  assert.doesNotMatch(content, /\bm_caster\b|\bp_caster\b/u);
+});
+
 test('model-free corpus re-audits every saved candidate without regressing accepted deliveries', () => {
   const improvements = [];
   const corrections = [];

@@ -255,7 +255,12 @@ release_schedule:
   - turn: 10
     premise: p_caster
     via: director
-    presentation: { mode: enacted_role, role: leat-keeper reading the charcoal book }
+    presentation:
+      mode: enacted_role
+      role: leat-keeper reading the charcoal book
+      counterpressure:
+        pressure_premise: m_caster
+        contrary_premise: p_caster
   - turn: 12
     premise: m_caught
     via: director

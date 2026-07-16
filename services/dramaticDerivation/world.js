@@ -73,6 +73,22 @@ export function validateWorld(raw, source = '<inline>') {
           fail(`release presentation ${field} must be a non-empty string when supplied`);
         }
       }
+      if (entry.presentation.counterpressure !== undefined) {
+        const relation = entry.presentation.counterpressure;
+        if (!relation || typeof relation !== 'object' || Array.isArray(relation)) {
+          fail('release presentation counterpressure must be an object when supplied');
+        }
+        for (const field of ['pressure_premise', 'contrary_premise']) {
+          const premiseId = String(relation[field] || '').trim();
+          if (!premiseId) fail(`release presentation counterpressure ${field} is required`);
+          if (!premiseById.has(premiseId)) {
+            fail(`release presentation counterpressure ${field} references unknown premise "${premiseId}"`);
+          }
+        }
+        if (relation.contrary_premise !== entry.premise) {
+          fail('release presentation counterpressure contrary_premise must be the premise released by that entry');
+        }
+      }
     }
   }
   const proofPaths = raw.proof_paths || [];

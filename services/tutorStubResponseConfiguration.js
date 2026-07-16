@@ -1094,7 +1094,23 @@ function actorialPerformanceVisible(configuration, text, metrics) {
     return (metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100) || plainlyHandledExhibit;
   }
   if (tactic === 'evidentiary_boundary') {
+    const evidenceGroundedCategoryContrast = responseSentences(text).some((sentence) => {
+      const evidenceSubjectContrast =
+        /\b(?:book|clue|entry|evidence|finding|ledger|log|mark|record|test)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|mark(?:s|ed)?|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,80}\brather than\b/iu.test(
+          sentence,
+        );
+      const performedClassificationContrast =
+        /\b(?:i|we)\b[^.!?]{0,80}\b(?:enter|mark|record|write)\b[^.!?]{0,100}\b(?:as|marking|identifying|showing|supporting|tying)\b[^.!?]{0,80}\brather than\b/iu.test(
+          sentence,
+        );
+      const explicitCategoryExclusion =
+        /\b(?:enter|mark|record|write)\b[^.!?]{0,80}\b(?:as|for|under)\b[^.!?]{0,70},?\s+not\b[^.!?]{0,70}\b(?:as|for|under)\b/iu.test(
+          sentence,
+        );
+      return evidenceSubjectContrast || performedClassificationContrast || explicitCategoryExclusion;
+    });
     return (
+      evidenceGroundedCategoryContrast ||
       /\b(?:beyond|exact|establish|licensed|line that matters|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(text) ||
       /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
       /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bstill needs?\b[^.!?]{0,70}\b(?:blank|die|evidence|hand|link|mark|proof|tool)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(text)
