@@ -3868,7 +3868,13 @@
             }
           },
           "recordedAuditOk": true,
-          "recordedFailureClusters": []
+          "recordedFailureClusters": [],
+          "expectedCurrentAuditOk": false,
+          "expectedFailureClusters": [
+            "response_composition:verbatim_learner_echo"
+          ],
+          "expectationAuditScope": "recorded_bundle",
+          "expectationReason": "current_audit_correctly_rejects_verbatim_learner_echo_in_saved_fallback"
         }
       ]
     },

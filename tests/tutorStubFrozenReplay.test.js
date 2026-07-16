@@ -425,23 +425,44 @@ test('model-free corpus applies current deterministic audits and makes live-pari
           candidateKind: candidate.kind,
         });
         if (typeof candidate.expectedCurrentAuditOk === 'boolean') {
-          if (candidate.expectedCurrentAuditOk === true && !audit.ok) {
+          const expectationAudit =
+            candidate.expectationAuditScope === 'recorded_bundle'
+              ? auditTutorStubFrozenCandidate({
+                  bundle: testCase.bundle,
+                  world,
+                  text: candidate.text,
+                  deliveryConfiguration: candidate.deliveryConfiguration,
+                  candidateKind: candidate.kind,
+                })
+              : audit;
+          if (candidate.expectedCurrentAuditOk === true && !expectationAudit.ok) {
             recordLiveParityReclassification({ testCase, candidate, audit });
             recognitionImprovementsMaskedByLiveParity.push(`${testCase.id}:${candidate.kind}`);
           } else {
             assert.equal(
-              audit.ok,
+              expectationAudit.ok,
               candidate.expectedCurrentAuditOk,
               `${testCase.id} expected correction did not hold`,
             );
           }
           for (const cluster of candidate.expectedFailureClusters || []) {
             assert.ok(
-              audit.hardFailureClusters.includes(cluster),
+              expectationAudit.hardFailureClusters.includes(cluster),
               `${testCase.id} expected correction missing ${cluster}`,
             );
           }
           corrections.push(`${testCase.id}:${candidate.expectationReason || candidate.kind}`);
+          if (
+            candidate.expectationAuditScope === 'recorded_bundle' &&
+            !audit.ok &&
+            audit.hardFailureClusters.every(
+              (cluster) =>
+                cluster.startsWith('live_turn_progression_v1:') ||
+                cluster.startsWith('live_source_action_alignment_v1:'),
+            )
+          ) {
+            recordLiveParityReclassification({ testCase, candidate, audit });
+          }
         } else if (candidate.recordedAuditOk && !audit.ok) {
           recordLiveParityReclassification({ testCase, candidate, audit });
         } else if (
@@ -493,6 +514,7 @@ test('model-free corpus applies current deterministic audits and makes live-pari
     'the historical corpus must retain at least one explicit live source-alignment reclassification',
   );
   assert.deepEqual(corrections, [
+    '2026-07-16T04-44-58-444Z:t003:current_audit_correctly_rejects_verbatim_learner_echo_in_saved_fallback',
     '2026-07-16T07-03-36-147Z:t001:known_v20_false_acceptance_duplicate_due_clue',
     '2026-07-16T09-34-06-063Z:t004:full_public_prefix_proves_beside_and_corrections_are_already_public',
     '2026-07-16T09-34-06-063Z:t004:full_public_prefix_proves_beside_and_corrections_are_already_public',
