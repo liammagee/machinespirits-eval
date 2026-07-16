@@ -97,21 +97,22 @@ change_log:
     due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
     once, and excludes all SOURCE spans from performance recognition.
   speaking_prompt: >-
-    Iteration 6 makes no speaking-prompt change. It preserves iteration 2's
+    Iteration 7 makes no speaking-prompt change. It preserves iteration 2's
     three-word drafting cushion, compiled v2 axis ownership, exact model shape,
     joint performance beat, and ban on copying, paraphrasing, labelling, or
     quoting SOURCE.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
-    repair and fallback behavior is unchanged in iteration 6 and outside this
+    repair and fallback behavior is unchanged in iteration 7 and outside this
     explicit v2 frozen screen.
   audit_recognition_only: >-
-    Iteration 6 changes only world-general scene-lexicon recognition for a
-    regular terminal-s singular/plural pair. It preserves full-token matching,
-    public-world provenance, and the existing scene-term threshold while
-    recognizing the same public object across grammatical number.
+    Iteration 7 changes only two typed deterministic recognitions confirmed by
+    adjudication: a licensed declarative Write entry that answers an explicit
+    writable-entry request, and a public judgment that meets contrary evidence
+    in the same owned sentence. Ordinary echoes and untyped stance or tactic
+    language remain hard failures.
   transport_only: >-
-    Iteration 6 makes no transport change. It preserves iteration 4's
+    Iteration 7 makes no transport change. It preserves iteration 4's
     outer-slot whitespace canonicalization and separate transport reporting
     exactly.
   iteration_2:
@@ -337,6 +338,103 @@ change_log:
         configuration_realization: true
         scene_immersion_threshold: true
         strict_delivery_gates: true
+  iteration_7:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - responseCompositionAudit:verbatim_learner_echo
+      - actorialRealizationAudit:missing_selected_performance_tactic
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
+      - jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - requested_entry_answer_recognition
+      - public_judgment_meets_contrary_evidence_recognition
+    phrase_level_recognition_changes: []
+    requested_entry_answer_recognition:
+      construction: licensed_requested_writable_entry_answer
+      audit: responseCompositionAudit
+      failure: verbatim_learner_echo
+      request_contract:
+        source: frozen_turn_public_contract
+        explicit_writable_entry_request: true
+        permitted_prefix: "Write:"
+        answer_scope: licensed_pre_turn_limit
+      candidate_contract:
+        owner: uptake
+        form: declarative
+        question_forbidden: true
+        meta_commentary_forbidden: true
+        must_answer_requested_entry: true
+      ordinary_echo_behavior:
+        remains_hard_failure: true
+        question_recast_without_contract_fails: true
+        copied_or_paraphrased_learner_language_without_answer_fails: true
+      reporting:
+        field: requestedEntryAnswerRecognition
+        require_request_contract: true
+        require_candidate_form: true
+        require_answer_scope: true
+    public_judgment_meets_contrary_evidence_recognition:
+      construction: declared_public_judgment_meets_contrary_evidence
+      performance_contract:
+        schema: machinespirits.tutor-stub.performance-obligation-contract.v1
+        complete: true
+        selected_tactic: dramatic_counterpressure
+      selected_part_visibility:
+        field: axes.actorial_part.part_visible
+        required: true
+      same_owned_sentence:
+        segment: performance_response
+        required: true
+        judgment_nouns: [claim, judgment, judgement]
+        opposition_predicates: [fails against]
+      local_pressure_target_overlap:
+        segment: performance_response
+        anchor_id: pressure_target
+        minimum_content_tokens: 2
+      contrary_anchor_overlap:
+        segment: performance_response
+        anchor_id: contrary_evidence
+        minimum_content_tokens: 2
+      exact_contrary_source:
+        owner: host
+        surface_match: exact
+        required_in_full_composition: true
+        excluded_from_performance_spans: true
+      terminal_handoff:
+        segment: handoff
+        anchor_id: learner_handoff
+        minimum_content_tokens: 1
+        terminal_question: true
+      recognized_outputs:
+        actorial_performance: dramatic_counterpressure
+        engagement_stance: charismatic
+      charismatic_visibility_reuse:
+        source: successful_public_judgment_meets_contrary_evidence_event
+        require_selected_stance: charismatic
+        require_selected_tactic: dramatic_counterpressure
+        independent_lexical_shortcut: false
+      reporting:
+        field: publicJudgmentMeetsContraryEvidenceRecognition
+        require_contract_prerequisite_results: true
+        require_same_sentence_result: true
+        require_pressure_overlap_count: true
+        require_contrary_overlap_count: true
+        require_excluded_source_span_ids: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        strict_delivery_gates: true
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true
@@ -355,8 +453,9 @@ claim_boundary: >-
   and every other required response axis on all four frozen prefixes. Every due
   host SOURCE must occur exactly once, including turns with multiple sources,
   while all whole-response safety, uptake, delivery, repair, and fallback gates
-  remain clean. Iteration 6 may treat only a full-token regular terminal-s
-  singular/plural pair as one public-world scene term. It may not change the
-  scene-term threshold, generation, recovery, transport, semantic adjudication,
+  remain clean. Iteration 7 may recognize only a licensed declarative answer to
+  an explicit writable-entry request and a contract-complete same-sentence
+  public judgment meeting contrary evidence. It may not weaken ordinary echo
+  rejection or change generation, recovery, transport, semantic adjudication,
   safety, source ownership, configuration realization, or any strict gate. It
   is reusable development evidence, not held-out acceptance.

@@ -169,6 +169,38 @@ const V27_ITERATION_5_RESULT = Object.freeze({
   ]),
 });
 
+const V27_ITERATION_6_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json',
+  runHead: '1e6ae86ee407ea06258cfc9d013e2eaec5d8bf3a',
+  configSha256: 'bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928',
+  sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/campaign-validation.json',
+  campaignValidationSha256: '8f4b6aed9dced0bde19b9b4200937b56623a9aa9f62365d54e21ea75f934abbf',
+  resultSha256: 'd5fb716abac48df6eba0a2561513d05f954e994108e5074eca3a4781d2d24a3d',
+  turns: Object.freeze([
+    Object.freeze({
+      turn: 4,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-4.json',
+      sha256: 'fa3aa342375afd87ecc3be64e78283bc826800bfc3e7b645c1fca8eee2d27087',
+    }),
+    Object.freeze({
+      turn: 5,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-5.json',
+      sha256: '19f82a57250fe47d8c9cb861fbc2331927b54c19a44c980d2593e78bad8f1c4d',
+    }),
+    Object.freeze({
+      turn: 6,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-6.json',
+      sha256: '97fdeb6d9856b75ea80e006d9969d790b3434aaf21b090ead9aaa848c767e6eb',
+    }),
+    Object.freeze({
+      turn: 9,
+      path: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/marrick_v27_joint_performance/turn-9.json',
+      sha256: '841b6a2ab228de92f0e70bd78469c2d2bf9918564d9c77828813706d50cd0510',
+    }),
+  ]),
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -706,6 +738,84 @@ function validateV27Iteration5Observation(observation, label) {
   }, `${label} comparison`);
 }
 
+function validateV27Iteration6Observation(observation, label) {
+  expect(observation?.version, 27, `${label} version`);
+  expect(observation?.working_iteration, 6, `${label} working iteration`);
+  expect(observation?.status, 'fail', `${label} status`);
+  expect(observation?.result_artifact, V27_ITERATION_6_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.development_seed, 20261500, `${label} development seed`);
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
+  expect(observation?.run_head, V27_ITERATION_6_RESULT.runHead, `${label} run HEAD`);
+  expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
+  expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
+  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_6_RESULT.configSha256, `${label} config hash`);
+  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_6_RESULT.sourceTraceSha256, `${label} source trace hash`);
+  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_6_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
+  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_6_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_6_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_6_RESULT.turns, `${label} turn provenance`);
+  expectJson(observation?.completed_turns, [4, 5, 6, 9], `${label} completed turns`);
+  expectJson(observation?.unstarted_turns, [], `${label} unstarted turns`);
+  expect(observation?.original_candidates_accepted, 3, `${label} accepted originals`);
+  expect(observation?.original_candidates_completed, 4, `${label} completed originals`);
+  expect(observation?.original_candidate_acceptance_rate, 0.75, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 0.95825, `${label} configuration realization`);
+  expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
+  expect(observation?.maximum_possible_configuration_realization, 0.95825, `${label} maximum configuration realization`);
+  for (const field of [
+    'final_safety_failures', 'mechanical_repairs', 'model_rewrites',
+    'deterministic_fallbacks', 'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
+    'transport_normalized_outputs', 'transport_normalization_count',
+  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  expect(observation?.transcript_specific_uptake_failures, 1, `${label} uptake failures`);
+  expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
+  expect(observation?.joint_performance_model_outputs, 4, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 4, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_output_failures, 0, `${label} joint output failures`);
+  expect(observation?.joint_performance_ownership_passes, 3, `${label} ownership passes`);
+  expect(observation?.joint_performance_ownership_failures, 1, `${label} ownership failures`);
+  expect(observation?.exact_host_source_occurrence_passes, 4, `${label} host source passes`);
+  expect(observation?.exact_host_source_occurrence_failures, 0, `${label} host source failures`);
+  expect(observation?.mean_original_latency_ms, 9004.75, `${label} mean original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 9004.75, `${label} mean total latency`);
+  expectJson(observation?.per_turn_latency_and_tokens, [
+    { turn: 4, latency_ms: 8885, input_tokens: 15904, output_tokens: 252, total_tokens: 16156 },
+    { turn: 5, latency_ms: 9952, input_tokens: 15978, output_tokens: 353, total_tokens: 16331 },
+    { turn: 6, latency_ms: 8302, input_tokens: 18199, output_tokens: 226, total_tokens: 18425 },
+    { turn: 9, latency_ms: 8880, input_tokens: 16808, output_tokens: 285, total_tokens: 17093 },
+  ], `${label} per-turn latency and tokens`);
+  expectJson(observation?.token_usage, { input: 66889, output: 1116, total: 68005 }, `${label} token usage`);
+  expectJson(observation?.dominant_failure_clusters, [
+    { cluster: 'actorialRealizationAudit:missing_selected_performance_tactic', count: 1 },
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance', count: 1 },
+    { cluster: 'responseCompositionAudit:verbatim_learner_echo', count: 1 },
+  ], `${label} dominant failure clusters`);
+  expectJson(observation?.comparison, {
+    comparison_available: true,
+    compared_to_iteration: 5,
+    comparable_completion: true,
+    measurable_improvement: true,
+    configuration_realization_improved: false,
+    original_candidates_accepted_delta: 3,
+    original_candidate_acceptance_rate_delta: 0.75,
+    mean_configuration_realization_delta: -0.04175,
+    valid_joint_performance_outputs_delta: 3,
+    joint_performance_output_failures_delta: 0,
+    joint_performance_ownership_passes_delta: 3,
+    joint_performance_ownership_failures_delta: 0,
+    exact_host_source_occurrence_passes_delta: 3,
+    exact_host_source_occurrence_failures_delta: 0,
+    mean_original_latency_ms_delta: 882.75,
+    semantic_recognition_corrections: 0,
+    transport_normalization_count: 0,
+    consecutive_without_improvement: 0,
+    stop: false,
+    reason: 'improved',
+  }, `${label} comparison`);
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -920,6 +1030,7 @@ function validateWorkingScreen(manifest, { root }) {
     iteration4Change: config.change_log?.iteration_4 || null,
     iteration5Change: config.change_log?.iteration_5 || null,
     iteration6Change: config.change_log?.iteration_6 || null,
+    iteration7Change: config.change_log?.iteration_7 || null,
     gates: {
       requiredOriginalsAccepted: 4,
       requiredTurns: 4,
@@ -1007,20 +1118,21 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
   if (currentVersion === 27) {
     expect(state.currentState, 'working_predeclared', 'V27 current state');
-    expect(workingIteration, 6, 'V27 working iteration');
+    expect(workingIteration, 7, 'V27 working iteration');
     const workingHistory = manifest.current?.working_history || [];
-    if (workingHistory.length !== 5) {
-      throw new Error('V27 working history must preserve exactly iterations 1 through 5 before iteration 6');
+    if (workingHistory.length !== 6) {
+      throw new Error('V27 working history must preserve exactly iterations 1 through 6 before iteration 7');
     }
     validateV27Iteration1Observation(workingHistory[0], 'V27 working history iteration 1');
     validateV27Iteration2Observation(workingHistory[1], 'V27 working history iteration 2');
     validateV27Iteration3Observation(workingHistory[2], 'V27 working history iteration 3');
     validateV27Iteration4Observation(workingHistory[3], 'V27 working history iteration 4');
     validateV27Iteration5Observation(workingHistory[4], 'V27 working history iteration 5');
-    validateV27Iteration5Observation(manifest.current?.last_observation, 'V27 last observation');
+    validateV27Iteration6Observation(workingHistory[5], 'V27 working history iteration 6');
+    validateV27Iteration6Observation(manifest.current?.last_observation, 'V27 last observation');
     expectJson(
       manifest.current?.last_observation,
-      workingHistory[4],
+      workingHistory[5],
       'V27 last observation and working history',
     );
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
@@ -1395,6 +1507,127 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         },
       },
       'V27 iteration 6 scene-lexicon morphology change',
+    );
+    expectJson(
+      workingScreen.iteration7Change,
+      {
+        status: 'predeclared',
+        bounded_change_owner: 'audit_recognition',
+        target_failure_clusters: [
+          'responseCompositionAudit:verbatim_learner_echo',
+          'actorialRealizationAudit:missing_selected_performance_tactic',
+          'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance',
+          'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance',
+        ],
+        speaking_changes: [],
+        recovery_changes: [],
+        transport_changes: [],
+        semantic_adjudication_changes: [],
+        audit_recognition_changes: [
+          'requested_entry_answer_recognition',
+          'public_judgment_meets_contrary_evidence_recognition',
+        ],
+        phrase_level_recognition_changes: [],
+        requested_entry_answer_recognition: {
+          construction: 'licensed_requested_writable_entry_answer',
+          audit: 'responseCompositionAudit',
+          failure: 'verbatim_learner_echo',
+          request_contract: {
+            source: 'frozen_turn_public_contract',
+            explicit_writable_entry_request: true,
+            permitted_prefix: 'Write:',
+            answer_scope: 'licensed_pre_turn_limit',
+          },
+          candidate_contract: {
+            owner: 'uptake',
+            form: 'declarative',
+            question_forbidden: true,
+            meta_commentary_forbidden: true,
+            must_answer_requested_entry: true,
+          },
+          ordinary_echo_behavior: {
+            remains_hard_failure: true,
+            question_recast_without_contract_fails: true,
+            copied_or_paraphrased_learner_language_without_answer_fails: true,
+          },
+          reporting: {
+            field: 'requestedEntryAnswerRecognition',
+            require_request_contract: true,
+            require_candidate_form: true,
+            require_answer_scope: true,
+          },
+        },
+        public_judgment_meets_contrary_evidence_recognition: {
+          construction: 'declared_public_judgment_meets_contrary_evidence',
+          performance_contract: {
+            schema: 'machinespirits.tutor-stub.performance-obligation-contract.v1',
+            complete: true,
+            selected_tactic: 'dramatic_counterpressure',
+          },
+          selected_part_visibility: {
+            field: 'axes.actorial_part.part_visible',
+            required: true,
+          },
+          same_owned_sentence: {
+            segment: 'performance_response',
+            required: true,
+            judgment_nouns: ['claim', 'judgment', 'judgement'],
+            opposition_predicates: ['fails against'],
+          },
+          local_pressure_target_overlap: {
+            segment: 'performance_response',
+            anchor_id: 'pressure_target',
+            minimum_content_tokens: 2,
+          },
+          contrary_anchor_overlap: {
+            segment: 'performance_response',
+            anchor_id: 'contrary_evidence',
+            minimum_content_tokens: 2,
+          },
+          exact_contrary_source: {
+            owner: 'host',
+            surface_match: 'exact',
+            required_in_full_composition: true,
+            excluded_from_performance_spans: true,
+          },
+          terminal_handoff: {
+            segment: 'handoff',
+            anchor_id: 'learner_handoff',
+            minimum_content_tokens: 1,
+            terminal_question: true,
+          },
+          recognized_outputs: {
+            actorial_performance: 'dramatic_counterpressure',
+            engagement_stance: 'charismatic',
+          },
+          charismatic_visibility_reuse: {
+            source: 'successful_public_judgment_meets_contrary_evidence_event',
+            require_selected_stance: 'charismatic',
+            require_selected_tactic: 'dramatic_counterpressure',
+            independent_lexical_shortcut: false,
+          },
+          reporting: {
+            field: 'publicJudgmentMeetsContraryEvidenceRecognition',
+            require_contract_prerequisite_results: true,
+            require_same_sentence_result: true,
+            require_pressure_overlap_count: true,
+            require_contrary_overlap_count: true,
+            require_excluded_source_span_ids: true,
+          },
+          unchanged_contracts: {
+            generation: true,
+            recovery: true,
+            transport: true,
+            safety_audits: true,
+            semantic_adjudication: true,
+            response_configuration_audit: true,
+            source_ownership_audit: true,
+            configuration_realization: true,
+            strict_delivery_gates: true,
+          },
+        },
+      },
+      'V27 iteration 7 typed audit-recognition change',
     );
     if (seeds.development.length !== 1 || Number(seeds.development[0]?.seed) !== 20261500) {
       throw new Error('V27 must predeclare only development seed 20261500');
