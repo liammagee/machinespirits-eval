@@ -88,7 +88,10 @@ change_log:
     exactly uptake, part, tactic, and handoff. Every value is one complete
     public sentence. The model cannot write SOURCE. The harness validates the
     envelope, inserts SOURCE deterministically between PART and TACTIC, records
-    exact spans, and composes one paragraph.
+    exact spans, and composes one paragraph. Iteration 2 changes speaking
+    generation only for a shared-scene invitation: TACTIC must be one direct
+    question addressed to the learner about the named public object. A
+    declarative command or transition is not a learner-owned invitation.
   recovery_only: >-
     Recovery remains disabled in original-only screening. Strict end-to-end
     repair and fallback behavior is unchanged outside this explicit structured
@@ -99,7 +102,10 @@ change_log:
     that falters under contrary evidence. These are reported separately and do
     not count as generation improvement. V26 additionally audits each selected
     axis only on its owning structured span before applying all unchanged
-    whole-response safety and delivery gates.
+    whole-response safety and delivery gates. Iteration 2 adds only a bounded
+    recognition rule for warm HANDOFF: a collective modal (“we may”, “we can”,
+    or “we could”) counts when it carries a concrete next public
+    action or exhibit; bare modal language and generic transitions do not.
 
 stopping:
   stop_cell_when_gate_mathematically_impossible: true

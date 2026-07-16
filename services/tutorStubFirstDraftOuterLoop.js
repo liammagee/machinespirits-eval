@@ -174,8 +174,14 @@ function validateSeedLedger(manifest) {
     seen.add(seed);
     requiredString(entry.status, `seed ${seed} status`);
   }
+  const developmentStatuses = new Set([
+    'reusable_non_held_out_development',
+    'consumed_development_reusable',
+  ]);
   for (const entry of development) {
-    expect(entry.status, 'reusable_non_held_out_development', `development seed ${entry.seed} status`);
+    if (!developmentStatuses.has(entry.status)) {
+      throw new Error(`development seed ${entry.seed} has unsupported status ${entry.status}`);
+    }
   }
 
   if (manifest.current?.state === 'working_predeclared') {

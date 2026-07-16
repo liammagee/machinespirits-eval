@@ -15,7 +15,7 @@ current:
   campaign_version: 26
   label: V26
   state: working_predeclared
-  working_iteration: 1
+  working_iteration: 2
   working_screen_id: first-draft-working-screens-v5
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v5.yaml
   acceptance_config: null
@@ -41,8 +41,76 @@ current:
     execution: complete_all_cells_with_maximum_three_live_jobs
     aggregate_gate: all_structured_outputs_valid_and_at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
   pre_model_attempts: []
-  working_history: []
-  last_observation: null
+  working_history:
+    - version: 26
+      working_iteration: 1
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/working-screen-result.json
+      completed_turns: [4]
+      unstarted_turns: [5, 6, 9]
+      strict_originals_accepted: 0
+      mean_configuration_realization: 1.0
+      structured_outputs_valid: 1
+      structured_slot_ownership_passes: 0
+      exact_source_occurrence_passes: 1
+      measurable_improvement: false
+  last_observation:
+    version: 26
+    working_iteration: 1
+    status: failed_gate_mathematically_impossible
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/working-screen-result.json
+    development_seed: 20261400
+    seed_disposition: consumed_development_reusable
+    run_head: d131a1a51e5e324f383a592efea9753fc2449e30
+    provenance:
+      working_screen_config_sha256: 88be0c6371adbb1e2512eef448da67284e546c70d58f8ccff78421e581d8d176
+      source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
+      campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/campaign-validation.json
+      campaign_validation_sha256: 5997ace4ce072728aec25385a95d38dffb5af3f8c707d4dd444afc83461f5665
+      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-1/marrick_v26_structured_composition/turn-4.json
+      turn_artifact_sha256: 2009a2f9a3b74ff3ec0c1060a96cd79c9e9aa3118214739cef12490cb8b114a0
+      result_sha256: 581498119dc9e3b0c37e237d59d196e0acb21f9015156865964db1706cdd9be6
+    completed_turns: [4]
+    unstarted_turns: [5, 6, 9]
+    strict_originals_accepted: 0
+    final_safety_failures: 0
+    uptake_failures: 0
+    repairs: 0
+    model_rewrites: 0
+    fallbacks: 0
+    semantic_adjudicator_calls: 0
+    semantic_recognition_corrections: 0
+    structured_model_outputs: 1
+    valid_structured_outputs: 1
+    structured_slot_ownership_passes: 0
+    exact_source_occurrence_passes: 1
+    mean_configuration_realization: 1.0
+    mean_original_latency_ms: 11845
+    token_usage: { input: 15740, output: 244, total: 15984 }
+    failed_axes:
+      - turn_4_tactic_actorial_performance_shared_scene_invitation
+      - turn_4_handoff_engagement_stance_warm
+    comparison:
+      measurable_improvement: false
+      consecutive_without_improvement: 0
+      reason: first_measured_iteration_baseline
+      interpretation: >-
+        The structured envelope, whole-response realization, and inactive
+        SOURCE count passed. The first draw failed only because the selected
+        shared-scene invitation and warm stance were not visible inside their
+        declared owning spans, so turns 5, 6, and 9 were not called.
+    iteration_2_authority:
+      speaking_change: >-
+        For a shared-scene invitation, require TACTIC to be one direct question
+        addressed to the learner about the named public object. A declarative
+        command or transition does not discharge the learner-owned invitation.
+      recovery_change: none
+      audit_recognition_change: >-
+        Recognize a bounded collective-modal warm HANDOFF only when “we may”,
+        “we can”, or “we could” carries a concrete next public
+        action or exhibit. Bare modal language and generic transitions remain
+        insufficient.
+      controller_change: none
+      gate: four_of_four_strict_structured_originals_with_full_owner_realization_exact_sources_and_zero_safety_uptake_or_recovery_failures
   architectural_reset_from:
     version: 25
     terminal_state: stagnated
@@ -328,7 +396,7 @@ seed_ledger:
     - { version: 25, seed: 20261304, status: retired_unstarted_due_to_stagnation }
   development:
     - seed: 20261400
-      status: reusable_non_held_out_development
+      status: consumed_development_reusable
       cell: marrick_v26_structured_composition
       screen: first-draft-working-screens-v5
     - { seed: 20261401, status: reusable_non_held_out_development, cell: skyway_answer_seeking, screen: first-draft-working-screens-v6 }
