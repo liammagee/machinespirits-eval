@@ -248,7 +248,7 @@ function compactTacticInstruction(contract) {
       : '';
   const tactic =
     contract.performance?.tactic === 'shared_scene_invitation'
-      ? 'In a separate sentence, invite the learner’s reading of that same object; do not repeat the placement action.'
+      ? 'In a separate sentence, ask the turn’s one direct question. Address the learner as “you” and ask for their own reading of that same named public object; do not supply or command the reading, and do not repeat the placement action.'
       : contract.performance?.tactic_execution;
   const sourceBoundary = contract.evidence?.active ? 'After SOURCE closes, make TACTIC a new unquoted sentence.' : '';
   return [sourceBoundary, tactic, support, transition].filter(Boolean).join(' ');

@@ -8,6 +8,7 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { tutorStubStructuredFirstDraftPrompt } from '../services/tutorStubStructuredFirstDraft.js';
 
 function configuration(overrides = {}) {
   return {
@@ -111,15 +112,23 @@ test('separates scene-partner placement from the shared-reading tactic', () => {
   });
   const part = contract.host_plan.slots.find((slot) => slot.id === 'part');
   const tactic = contract.host_plan.slots.find((slot) => slot.id === 'tactic');
+  const structuredPrompt = tutorStubStructuredFirstDraftPrompt(contract);
 
   assert.match(part.instruction, /place both speakers/iu);
   assert.match(part.instruction, /“you”, “we”, or “together”/u);
   assert.match(part.instruction, /solitary “I”[^.]*does not count/iu);
   assert.match(part.instruction, /do not ask a question yet/iu);
   assert.match(tactic.instruction, /In a separate sentence/iu);
-  assert.match(tactic.instruction, /invite the learner’s reading of that same object/iu);
+  assert.match(tactic.instruction, /ask the turn’s one direct question/iu);
+  assert.match(tactic.instruction, /Address the learner as “you”/u);
+  assert.match(tactic.instruction, /ask for their own reading of that same named public object/iu);
+  assert.match(tactic.instruction, /do not supply or command the reading/iu);
   assert.match(tactic.instruction, /do not repeat the placement action/iu);
   assert.doesNotMatch(tactic.instruction, /make room beside/iu);
+  assert.doesNotMatch(tactic.instruction, /invite the learner’s reading/iu);
+  assert.match(structuredPrompt, /TACTIC — In a separate sentence, ask the turn’s one direct question/iu);
+  assert.match(structuredPrompt, /Address the learner as “you”/u);
+  assert.match(structuredPrompt, /do not supply or command the reading/iu);
 });
 
 test('renders a compact prompt and removes the competing legacy prose sections', () => {
