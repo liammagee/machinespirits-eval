@@ -14,13 +14,13 @@ purpose: >-
 current:
   campaign_version: 26
   label: V26
-  state: working_predeclared
+  state: stagnated
   working_iteration: 3
   working_screen_id: first-draft-working-screens-v5
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v5.yaml
   acceptance_config: null
   required_confirmation_after_primary_pass:
-    status: planned_not_runnable
+    status: retired_unstarted_due_to_stagnation
     screen_id: first-draft-working-screens-v6
     purpose: >-
       A complete cross-world development panel must confirm structured
@@ -40,6 +40,7 @@ current:
       - { id: marrick_answer_seeking_confirmation, seed: 20261404 }
     execution: complete_all_cells_with_maximum_three_live_jobs
     aggregate_gate: all_structured_outputs_valid_and_at_least_14_of_16_strict_originals_with_zero_safety_uptake_or_fallback_failures
+    retired_reason: V26 failed its predeclared iteration-3 final-frontier attempt before confirmation.
   pre_model_attempts: []
   working_history:
     - version: 26
@@ -64,22 +65,33 @@ current:
       structured_slot_ownership_passes: 0
       exact_source_occurrence_passes: 1
       measurable_improvement: false
+    - version: 26
+      working_iteration: 3
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/working-screen-result.json
+      completed_turns: [4]
+      unstarted_turns: [5, 6, 9]
+      strict_originals_accepted: 0
+      mean_configuration_realization: 1.0
+      structured_outputs_valid: 1
+      structured_slot_ownership_passes: 0
+      exact_source_occurrence_passes: 1
+      measurable_improvement: false
   last_observation:
     version: 26
-    working_iteration: 2
-    status: failed_gate_mathematically_impossible
-    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/working-screen-result.json
+    working_iteration: 3
+    status: stagnated
+    result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/working-screen-result.json
     development_seed: 20261400
-    seed_disposition: consumed_development_reusable
-    run_head: 96ec8014e21494ea9f0ef53bd3186fe5a9aebf26
+    seed_disposition: consumed_development_retired_after_stagnation
+    run_head: 6f41a8d602539d7811342a218d8213a49e737146
     provenance:
-      working_screen_config_sha256: 6a51bffaf217c2068dcdee3d7b4a86ebdbd89cd75d114bd1198398538745c396
+      working_screen_config_sha256: 35193154149780818e5aa684dc980c2d6f017166928bd123134c7fc8d7fd4802
       source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
       campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/campaign-validation.json
-      campaign_validation_sha256: 84323d75ba01b6493b4a3a9ed17d66b3ec0aadda6b85c313381d62e929c3ba2d
-      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/marrick_v26_structured_composition/turn-4.json
-      turn_artifact_sha256: 04649872530e65491626edae65bc5480df853c65b15e6e5540a6a3e303865e2d
-      result_sha256: 0965b7699aa0782a0fb0181a01028fc49f524960b11ddeb63589ad457592f20d
+      campaign_validation_sha256: 60d2288e07e5b48170fd719a94d26dabba8556a1e112ef63cd273c5953801891
+      turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/marrick_v26_structured_composition/turn-4.json
+      turn_artifact_sha256: 69f8a539863ff40b6f86a0f76a3244045fd1d51d28ec824efa6f385459f0fc1a
+      result_sha256: 2643b16921017de46573bd4d92ae08dc8a7e7303b07ff094dc798a239b61e1ae
     completed_turns: [4]
     unstarted_turns: [5, 6, 9]
     strict_originals_accepted: 0
@@ -95,34 +107,33 @@ current:
     structured_slot_ownership_passes: 0
     exact_source_occurrence_passes: 1
     mean_configuration_realization: 1.0
-    mean_original_latency_ms: 9721
-    token_usage: { input: 15793, output: 268, total: 16061 }
+    mean_original_latency_ms: 8930
+    token_usage: { input: 17578, output: 246, total: 17824 }
     failed_axes:
       - turn_4_tactic_actorial_performance_shared_scene_invitation
-      - turn_4_handoff_engagement_stance_warm
     comparison:
       measurable_improvement: false
-      consecutive_without_improvement: 1
-      reason: no_improvement
+      consecutive_without_improvement: 2
+      maximum_consecutive_without_improvement: 2
+      stop: true
+      reason: predeclared_final_frontier_attempt_failed
       interpretation: >-
-        Iteration 2 again passed the structured envelope, whole-response
-        realization, and inactive SOURCE count. Its direct learner-owned
-        question and optional concrete handoff still failed the declared
-        owning-span recognizers, leaving strict acceptance and configuration
-        realization unchanged from iteration 1. Turns 5, 6, and 9 were not
-        called.
-    iteration_3_authority:
-      attempt: final_frontier_attempt
+        Iteration 3 made no speaking, recovery, or audit-recognition change.
+        The warm handoff passed, but the direct learner-owned question again
+        failed the shared-scene-invitation owning-span recognizer. Strict
+        acceptance remained 0/1 completed turns, so the 4/4 gate became
+        impossible and the predeclared final-frontier attempt terminated V26.
+    final_frontier_attempt:
       speaking_change: none
       recovery_change: none
       audit_recognition_change: none
-      controller_change: >-
-        Require the complete four-turn working-screen pass. Any failed gate in
-        iteration 3 terminates V26 as a failed predeclared final-frontier
-        attempt, even if a partial metric improves.
-      gate: four_of_four_strict_structured_originals_with_full_owner_realization_exact_sources_and_zero_safety_uptake_or_recovery_failures
-      on_pass: proceed_to_predeclared_cross_world_development_confirmation
-      on_failure: retire_v26_for_stagnation_and_advance_to_v27_without_reserving_a_v27_seed_yet
+      required_gate: four_of_four_strict_structured_originals_with_full_owner_realization_exact_sources_and_zero_safety_uptake_or_recovery_failures
+      outcome: failed
+    terminal_action:
+      state: stagnated
+      terminal_scope: version
+      retired_unstarted_confirmation_seeds: [20261401, 20261402, 20261403, 20261404]
+      v27_status: not_activated_or_predeclared
   architectural_reset_from:
     version: 25
     terminal_state: stagnated
@@ -408,13 +419,13 @@ seed_ledger:
     - { version: 25, seed: 20261304, status: retired_unstarted_due_to_stagnation }
   development:
     - seed: 20261400
-      status: consumed_development_reusable
+      status: consumed_development_retired_after_stagnation
       cell: marrick_v26_structured_composition
       screen: first-draft-working-screens-v5
-    - { seed: 20261401, status: reusable_non_held_out_development, cell: skyway_answer_seeking, screen: first-draft-working-screens-v6 }
-    - { seed: 20261402, status: reusable_non_held_out_development, cell: nocturne_answer_seeking, screen: first-draft-working-screens-v6 }
-    - { seed: 20261403, status: reusable_non_held_out_development, cell: greyfen_answer_seeking, screen: first-draft-working-screens-v6 }
-    - { seed: 20261404, status: reusable_non_held_out_development, cell: marrick_answer_seeking_confirmation, screen: first-draft-working-screens-v6 }
+    - { seed: 20261401, status: retired_unstarted_due_to_stagnation, cell: skyway_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261402, status: retired_unstarted_due_to_stagnation, cell: nocturne_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261403, status: retired_unstarted_due_to_stagnation, cell: greyfen_answer_seeking, screen: first-draft-working-screens-v6 }
+    - { seed: 20261404, status: retired_unstarted_due_to_stagnation, cell: marrick_answer_seeking_confirmation, screen: first-draft-working-screens-v6 }
   held_out:
     status: not_predeclared
     entries: []

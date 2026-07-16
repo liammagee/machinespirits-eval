@@ -177,6 +177,8 @@ function validateSeedLedger(manifest) {
   const developmentStatuses = new Set([
     'reusable_non_held_out_development',
     'consumed_development_reusable',
+    'consumed_development_retired_after_stagnation',
+    'retired_unstarted_due_to_stagnation',
   ]);
   for (const entry of development) {
     if (!developmentStatuses.has(entry.status)) {
@@ -184,12 +186,20 @@ function validateSeedLedger(manifest) {
     }
   }
 
-  if (manifest.current?.state === 'working_predeclared') {
+  if (['working_predeclared', 'stagnated'].includes(manifest.current?.state)) {
     expect(manifest.current?.acceptance_config, null, 'acceptance config before working-screen pass');
     expect(ledger.held_out?.status, 'not_predeclared', 'held-out seed status before working-screen pass');
     expect(ledger.reserve?.status, 'not_predeclared', 'reserve seed status before working-screen pass');
     if (heldOut.length || reserves.length) {
       throw new Error('held-out and reserve seeds must remain empty until acceptance is predeclared');
+    }
+  }
+  if (manifest.current?.state === 'stagnated') {
+    const reusable = development.filter((entry) =>
+      ['reusable_non_held_out_development', 'consumed_development_reusable'].includes(entry.status),
+    );
+    if (reusable.length) {
+      throw new Error('stagnated version must retire every development and confirmation seed');
     }
   }
   return { development, historical, heldOut, reserves };
@@ -289,9 +299,72 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'consecutive working iterations without improvement',
     );
   }
+  if (state.currentState === 'stagnated') {
+    expect(manifest.current?.last_observation?.version, currentVersion, 'terminal observation version');
+    expect(
+      manifest.current?.last_observation?.working_iteration,
+      workingIteration,
+      'terminal observation iteration',
+    );
+    expect(manifest.current?.last_observation?.status, 'stagnated', 'terminal observation status');
+    expect(
+      manifest.current?.last_observation?.comparison?.consecutive_without_improvement,
+      2,
+      'terminal consecutive iterations without improvement',
+    );
+    expect(manifest.current?.last_observation?.comparison?.stop, true, 'terminal stop decision');
+    expect(
+      manifest.current?.last_observation?.comparison?.reason,
+      'predeclared_final_frontier_attempt_failed',
+      'terminal stopping reason',
+    );
+    expect(
+      manifest.current?.last_observation?.terminal_action?.v27_status,
+      'not_activated_or_predeclared',
+      'V27 activation status',
+    );
+    expect(
+      manifest.current?.required_confirmation_after_primary_pass?.status,
+      'retired_unstarted_due_to_stagnation',
+      'cross-world confirmation status',
+    );
+  }
   const roles = validateReviewRoles(manifest);
   const seeds = validateSeedLedger(manifest);
   const workingScreen = validateWorkingScreen(manifest, { root });
+
+  if (state.currentState === 'stagnated') {
+    expect(
+      workingScreen.finalFrontierAttemptIteration,
+      workingIteration,
+      'terminal final-frontier attempt iteration',
+    );
+    expect(
+      workingScreen.stopIfFinalFrontierAttemptFails,
+      true,
+      'terminal failed final-frontier stop',
+    );
+    expect(
+      manifest.current?.last_observation?.final_frontier_attempt?.outcome,
+      'failed',
+      'terminal final-frontier outcome',
+    );
+    expect(
+      manifest.current?.last_observation?.final_frontier_attempt?.speaking_change,
+      'none',
+      'terminal final-frontier speaking change',
+    );
+    expect(
+      manifest.current?.last_observation?.final_frontier_attempt?.recovery_change,
+      'none',
+      'terminal final-frontier recovery change',
+    );
+    expect(
+      manifest.current?.last_observation?.final_frontier_attempt?.audit_recognition_change,
+      'none',
+      'terminal final-frontier audit-recognition change',
+    );
+  }
 
   const iterationAuthority =
     manifest.current?.last_observation?.[`iteration_${workingIteration}_authority`];

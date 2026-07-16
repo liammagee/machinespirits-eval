@@ -36,16 +36,17 @@ function fixture(tmp) {
   return { manifest, screen, screenPath };
 }
 
-test('outer-loop manifest validates the V26 architectural reset without predeclaring acceptance', () => {
+test('outer-loop manifest validates terminal V26 stagnation without predeclaring acceptance or V27', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-loop-'));
   try {
     const { manifest } = fixture(tmp);
     const validation = validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 26);
-    assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.currentState, 'stagnated');
     assert.equal(validation.workingIteration, 3);
-    assert.equal(validation.terminalScope, 'none');
+    assert.equal(validation.terminalScope, 'version');
+    assert.equal(validation.outcome, 'no_progress');
     assert.equal(validation.acceptancePredeclared, false);
     assert.deepEqual(validation.workingScreen.turns, [4, 5, 6, 9]);
     assert.equal(validation.workingScreen.developmentSeed, 20261400);
@@ -72,57 +73,58 @@ test('outer-loop status exposes only declared next states and makes no model cal
       {
         seed: 20261400,
         cell: 'marrick_v26_structured_composition',
-        status: 'consumed_development_reusable',
+        status: 'consumed_development_retired_after_stagnation',
       },
       {
         seed: 20261401,
         cell: 'skyway_answer_seeking',
-        status: 'reusable_non_held_out_development',
+        status: 'retired_unstarted_due_to_stagnation',
       },
       {
         seed: 20261402,
         cell: 'nocturne_answer_seeking',
-        status: 'reusable_non_held_out_development',
+        status: 'retired_unstarted_due_to_stagnation',
       },
       {
         seed: 20261403,
         cell: 'greyfen_answer_seeking',
-        status: 'reusable_non_held_out_development',
+        status: 'retired_unstarted_due_to_stagnation',
       },
       {
         seed: 20261404,
         cell: 'marrick_answer_seeking_confirmation',
-        status: 'reusable_non_held_out_development',
+        status: 'retired_unstarted_due_to_stagnation',
       },
     ]);
     assert.deepEqual(
       status.next.map((transition) => transition.state),
-      ['working_running'],
+      ['working_predeclared'],
     );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
 
-test('outer-loop records the exact V26 iteration-2 result and bounds unchanged final-frontier iteration 3 without activating V27', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v26-i2-'));
+test('outer-loop records the exact V26 iteration-3 terminal result without activating V27', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v26-i3-'));
   try {
     const { manifest } = fixture(tmp);
     const observation = manifest.current.last_observation;
     assert.equal(observation.version, 26);
-    assert.equal(observation.working_iteration, 2);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-2/working-screen-result.json');
+    assert.equal(observation.working_iteration, 3);
+    assert.equal(observation.status, 'stagnated');
+    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/working-screen-result.json');
     assert.equal(observation.development_seed, 20261400);
-    assert.equal(observation.seed_disposition, 'consumed_development_reusable');
+    assert.equal(observation.seed_disposition, 'consumed_development_retired_after_stagnation');
     assert.equal(
         observation.run_head,
-        '96ec8014e21494ea9f0ef53bd3186fe5a9aebf26',
+        '6f41a8d602539d7811342a218d8213a49e737146',
     );
-    assert.equal(observation.provenance.working_screen_config_sha256, '6a51bffaf217c2068dcdee3d7b4a86ebdbd89cd75d114bd1198398538745c396');
+    assert.equal(observation.provenance.working_screen_config_sha256, '35193154149780818e5aa684dc980c2d6f017166928bd123134c7fc8d7fd4802');
     assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, '84323d75ba01b6493b4a3a9ed17d66b3ec0aadda6b85c313381d62e929c3ba2d');
-    assert.equal(observation.provenance.turn_artifact_sha256, '04649872530e65491626edae65bc5480df853c65b15e6e5540a6a3e303865e2d');
-    assert.equal(observation.provenance.result_sha256, '0965b7699aa0782a0fb0181a01028fc49f524960b11ddeb63589ad457592f20d');
+    assert.equal(observation.provenance.campaign_validation_sha256, '60d2288e07e5b48170fd719a94d26dabba8556a1e112ef63cd273c5953801891');
+    assert.equal(observation.provenance.turn_artifact_sha256, '69f8a539863ff40b6f86a0f76a3244045fd1d51d28ec824efa6f385459f0fc1a');
+    assert.equal(observation.provenance.result_sha256, '2643b16921017de46573bd4d92ae08dc8a7e7303b07ff094dc798a239b61e1ae');
     assert.deepEqual(observation.completed_turns, [4]);
     assert.deepEqual(observation.unstarted_turns, [5, 6, 9]);
     assert.equal(observation.strict_originals_accepted, 0);
@@ -130,19 +132,24 @@ test('outer-loop records the exact V26 iteration-2 result and bounds unchanged f
     assert.equal(observation.structured_slot_ownership_passes, 0);
     assert.equal(observation.exact_source_occurrence_passes, 1);
     assert.equal(observation.mean_configuration_realization, 1);
-    assert.equal(observation.mean_original_latency_ms, 9721);
-    assert.deepEqual(observation.token_usage, { input: 15793, output: 268, total: 16061 });
+    assert.equal(observation.mean_original_latency_ms, 8930);
+    assert.deepEqual(observation.token_usage, { input: 17578, output: 246, total: 17824 });
     assert.equal(observation.comparison.measurable_improvement, false);
-    assert.equal(observation.comparison.consecutive_without_improvement, 1);
-    assert.equal(observation.iteration_3_authority.attempt, 'final_frontier_attempt');
-    assert.equal(observation.iteration_3_authority.speaking_change, 'none');
-    assert.equal(observation.iteration_3_authority.recovery_change, 'none');
-    assert.equal(observation.iteration_3_authority.audit_recognition_change, 'none');
-    assert.match(observation.iteration_3_authority.controller_change, /Any failed gate.*terminates V26/isu);
-    assert.equal(manifest.current.working_history.length, 2);
-    assert.equal(manifest.current.working_history[1].working_iteration, 2);
-    assert.equal(manifest.current.working_history[1].measurable_improvement, false);
+    assert.equal(observation.comparison.consecutive_without_improvement, 2);
+    assert.equal(observation.comparison.stop, true);
+    assert.equal(observation.comparison.reason, 'predeclared_final_frontier_attempt_failed');
+    assert.equal(observation.final_frontier_attempt.outcome, 'failed');
+    assert.equal(observation.final_frontier_attempt.speaking_change, 'none');
+    assert.equal(observation.final_frontier_attempt.recovery_change, 'none');
+    assert.equal(observation.final_frontier_attempt.audit_recognition_change, 'none');
+    assert.equal(observation.terminal_action.state, 'stagnated');
+    assert.equal(observation.terminal_action.v27_status, 'not_activated_or_predeclared');
+    assert.deepEqual(observation.terminal_action.retired_unstarted_confirmation_seeds, [20261401, 20261402, 20261403, 20261404]);
+    assert.equal(manifest.current.working_history.length, 3);
+    assert.equal(manifest.current.working_history[2].working_iteration, 3);
+    assert.equal(manifest.current.working_history[2].measurable_improvement, false);
     assert.equal(manifest.current.campaign_version, 26);
+    assert.equal(manifest.current.state, 'stagnated');
     assert.equal(manifest.current.working_iteration, 3);
     assert.equal(manifest.current.acceptance_config, null);
     assert.equal(JSON.stringify(manifest).includes('20261500'), false);
@@ -208,7 +215,7 @@ test('outer-loop validator rejects held-out seeds before the acceptance predecla
   }
 });
 
-test('outer-loop validator accepts only reusable development seed states', () => {
+test('outer-loop validator accepts only declared active or retired development seed states', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-development-seed-'));
   try {
     const { manifest } = fixture(tmp);
@@ -244,8 +251,8 @@ test('outer-loop validator keeps the V5 reset screen at four strict originals an
   }
 });
 
-test('outer-loop validator requires unchanged iteration 3 to be a fail-closed final-frontier attempt', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-final-frontier-'));
+test('outer-loop validator requires terminal V26 evidence and retired development seeds', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-stagnated-'));
   try {
     for (const mutate of [
       (manifest, screen) => {
@@ -255,11 +262,16 @@ test('outer-loop validator requires unchanged iteration 3 to be a fail-closed fi
         screen.stopping.stop_if_final_frontier_attempt_fails = false;
       },
       (manifest) => {
-        manifest.current.last_observation.iteration_3_authority.speaking_change = 'another prompt change';
+        manifest.current.last_observation.comparison.consecutive_without_improvement = 1;
       },
       (manifest) => {
-        manifest.current.last_observation.iteration_3_authority.audit_recognition_change =
-          'another recognition change';
+        manifest.current.last_observation.comparison.stop = false;
+      },
+      (manifest) => {
+        manifest.current.last_observation.terminal_action.v27_status = 'active';
+      },
+      (manifest) => {
+        manifest.seed_ledger.development[1].status = 'reusable_non_held_out_development';
       },
     ]) {
       const { manifest, screen, screenPath } = fixture(tmp);
@@ -267,7 +279,7 @@ test('outer-loop validator requires unchanged iteration 3 to be a fail-closed fi
       fs.writeFileSync(screenPath, YAML.stringify(screen));
       assert.throws(
         () => validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }),
-        /final-frontier|failed final-frontier|speaking change|audit-recognition change/iu,
+        /terminal|final-frontier|V27 activation|retire every development/iu,
       );
     }
   } finally {
