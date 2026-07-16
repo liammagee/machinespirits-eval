@@ -1,0 +1,148 @@
+schema: machinespirits.tutor-stub.first-draft-generalization-plan.v1
+id: first-draft-generalization-v19
+created: 2026-07-16
+
+purpose: >-
+  Fresh held-out acceptance matrix for the revised first-draft enactment
+  contract and genuinely distinct plain recovery configuration. It tests
+  whether higher original-candidate acceptance and lower fallback dependence
+  transfer beyond the Marrick/affectively-resistant working trajectory without
+  weakening any strict delivery gate.
+
+code_under_test:
+  branch: preconscious
+  commit: 9a1bfa8f
+  implementation_plan: notes/2026-07-16-first-draft-realization-plan.md
+  required_strict_working_check: >-
+    Strict Marrick/affectively-resistant seed 20260714 passed at
+    /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-realization/strict-working-i37-live
+    with 8/10 original candidates accepted, two model rewrites, no deterministic
+    fallback, no final-delivery failure, and every existing strict gate passing.
+
+comparison_evidence:
+  v18_held_out_result:
+    cells_passing: 2/4
+    original_candidates_accepted: 18/32
+    original_candidate_acceptance_rate: 0.5625
+    model_rewrite_turns: 9
+    deterministic_fallback_turns: 2
+    result_note: notes/status/2026-07-16-first-draft-generalization-v18.md
+  v19_strict_working_result:
+    run: strict-working-i37-live
+    original_candidate_acceptance_rate: 0.8
+    model_rewrite_turns: 2
+    deterministic_fallback_turns: 0
+    final_delivery_audit_failures: 0
+    mean_tutor_generation_ms: 8685
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  safety_turns: 80
+  policy: continuous_dynamical_system
+  register_palette: all
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  register_overlay_threshold: 0.7
+  dag_fact_dropout: 0
+  dag_fact_dropout_seed: 1
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+artifacts:
+  dry_run_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-dry-run
+  live_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live
+  separate_directory_per_cell: true
+
+matrix:
+  - id: greyfen_answer_seeking
+    world: world_023_greyfen_lab
+    learner_profile: answer_seeking
+    seed: 20260920
+    rationale: >-
+      Tests direct-answer uptake, scientific exhibit handling, and the new
+      non-echoing recovery strategy in a lab world/profile pairing absent from
+      every prior generalization matrix.
+
+  - id: larkspur_premature_closure
+    world: world_028_larkspur_fridge
+    learner_profile: premature_closure
+    seed: 20260921
+    rationale: >-
+      Tests bounded correction, contemporary language, and terminal closure
+      when a learner repeatedly tries to settle a mundane case too early.
+
+  - id: gazette_affective_resistant
+    world: world_027_gazette_recall
+    learner_profile: affective_resistant
+    seed: 20260922
+    rationale: >-
+      Tests responsive first sentences, pressure modulation, and visible
+      character work in an archival reporting world distinct from Marrick.
+
+  - id: foxtrot_diligent
+    world: world_022_foxtrot_jukebox
+    learner_profile: diligent
+    seed: 20260923
+    rationale: >-
+      Tests ordinary learner uptake and first-draft enactment in a production
+      technical world without relying on a stress profile to trigger adaptation.
+
+strict_delivery_gates_per_cell:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  quarantine_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+first_draft_gates:
+  minimum_accounted_turn_rate: 1
+  minimum_aggregate_original_candidate_acceptance_rate: 0.7
+  minimum_cell_original_candidate_acceptance_rate: 0.5
+  maximum_aggregate_model_rewrite_rate: 0.3
+  maximum_model_rewrite_turns_per_cell: 4
+  maximum_total_deterministic_fallback_turns: 2
+  require_all_four_cells: true
+
+measurement_notes:
+  latency: >-
+    Record original-candidate and whole tutor-generation latency for every
+    cell, but do not use wall-clock latency as an acceptance gate while up to
+    three model-backed cells contend concurrently.
+  repair_language: >-
+    Original acceptance, mechanical repair, policy repair, simplified plain
+    recovery, and deterministic fallback remain separate counts. A passing
+    final-delivery audit may not be relabelled as first-draft success.
+  configuration_transition: >-
+    Every recovery candidate and delivered turn must retain the selected and
+    delivered configuration signatures so a simpler recovery is not scored as
+    realization of the original character tactic.
+
+change_control:
+  maximum_concurrent_cells: 3
+  one_job_per_cell: true
+  tune_between_cells: false
+  modify_code_between_cells: false
+  complete_all_cells_before_interpretation: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+  reserve_seeds: [20260930, 20260931, 20260932, 20260933]
+
+claim_boundary: >-
+  Passing supports transfer of the revised first-draft and recovery design
+  across these four simulated world/profile pairings under one fixed Codex
+  model stack. It does not establish population-wide generalization, human
+  learning benefit, a model-independent effect, or contention-free latency.
