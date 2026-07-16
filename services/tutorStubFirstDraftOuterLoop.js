@@ -1210,6 +1210,10 @@ function validateV30Iteration1PreflightObservation(observation, label) {
   expect(observation?.terminal_action?.generation_claim, 'none', `${label} generation claim`);
 }
 
+function validateV30Iteration1Advance(advance, label) {
+  validateV30Iteration1PreflightObservation(advance, label);
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -1355,11 +1359,13 @@ function validateWorkingScreen(manifest, { root }) {
     'first-draft-working-screens-v8',
     'first-draft-working-screens-v9',
     'first-draft-working-screens-v10',
+    'first-draft-working-screens-v11',
   ]
     .includes(config.id);
   const v28StructuralScreen = config.id === 'first-draft-working-screens-v8';
   const v29SourceAccessibilityScreen = config.id === 'first-draft-working-screens-v9';
   const v30RecoveryIntegrationScreen = config.id === 'first-draft-working-screens-v10';
+  const v31PreflightDiagnosticsScreen = config.id === 'first-draft-working-screens-v11';
   expect(config.id, manifest.current?.working_screen_id, 'working screen id');
   expect(config.held_out, false, 'working screen held-out flag');
   expect(config.fixed_configuration?.original_only, true, 'working screen original-only mode');
@@ -1401,8 +1407,17 @@ function validateWorkingScreen(manifest, { root }) {
     expect(config.gates_per_cell?.required_prefixes, 1, 'confirmation required prefixes');
     expect(config.gates_per_cell?.required_draws_per_prefix, 4, 'confirmation draws per prefix');
   }
-  if (v28StructuralScreen || v29SourceAccessibilityScreen || v30RecoveryIntegrationScreen) {
-    const label = v30RecoveryIntegrationScreen ? 'V30' : v29SourceAccessibilityScreen ? 'V29' : 'V28';
+  if (
+    v28StructuralScreen || v29SourceAccessibilityScreen ||
+    v30RecoveryIntegrationScreen || v31PreflightDiagnosticsScreen
+  ) {
+    const label = v31PreflightDiagnosticsScreen
+      ? 'V31'
+      : v30RecoveryIntegrationScreen
+        ? 'V30'
+        : v29SourceAccessibilityScreen
+          ? 'V29'
+          : 'V28';
     expect(config.fixed_configuration?.adjudication_policy, 'deterministic_only', `${label} adjudication policy`);
     expect(config.fixed_configuration?.semantic_adjudication, false, `${label} semantic adjudication disabled`);
     expect(config.gates_per_cell?.maximum_semantic_adjudicator_calls, 0, `${label} semantic calls`);
@@ -1499,6 +1514,7 @@ function validateWorkingScreen(manifest, { root }) {
     v28StructuralScreen,
     v29SourceAccessibilityScreen,
     v30RecoveryIntegrationScreen,
+    v31PreflightDiagnosticsScreen,
     sourceAccessibilityPolicy:
       config.fixed_configuration?.source_accessibility_policy || 'direct_only',
     gates: {
@@ -2706,6 +2722,203 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       .map((entry) => Number(entry.seed));
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V30 must leave 202617xx absent and unreserved');
+    }
+  }
+
+  if (currentVersion === 31) {
+    expect(state.currentState, 'working_predeclared', 'V31 current state');
+    expect(workingIteration, 1, 'V31 working iteration');
+    expectJson(manifest.current?.active_working_history, [], 'V31 active working history');
+    expect(manifest.current?.active_last_observation, null, 'V31 active last observation');
+    expect(
+      manifest.current?.working_history_scope,
+      'preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights',
+      'V31 inherited working-history scope',
+    );
+    const inheritedHistory = manifest.current?.prior_version_working_history || [];
+    if (inheritedHistory.length !== 7) {
+      throw new Error('V31 must preserve exactly seven V27 primary observations');
+    }
+    validateV27Iteration1Observation(inheritedHistory[0], 'V31 inherited V27 iteration 1');
+    validateV27Iteration2Observation(inheritedHistory[1], 'V31 inherited V27 iteration 2');
+    validateV27Iteration3Observation(inheritedHistory[2], 'V31 inherited V27 iteration 3');
+    validateV27Iteration4Observation(inheritedHistory[3], 'V31 inherited V27 iteration 4');
+    validateV27Iteration5Observation(inheritedHistory[4], 'V31 inherited V27 iteration 5');
+    validateV27Iteration6Observation(inheritedHistory[5], 'V31 inherited V27 iteration 6');
+    validateV27Iteration7Observation(inheritedHistory[6], 'V31 inherited V27 iteration 7');
+    validateV27Iteration7Observation(
+      manifest.current?.prior_version_last_primary_observation,
+      'V31 inherited V27 primary last observation',
+    );
+    validateV27Iteration8Advance(
+      manifest.current?.v28_version_advance_from,
+      'V31 inherited V27 confirmation advance',
+    );
+    validateV28Iteration1Advance(
+      manifest.current?.v29_version_advance_from,
+      'V31 inherited V28 preflight advance',
+    );
+    validateV29Iteration1Advance(
+      manifest.current?.v30_version_advance_from,
+      'V31 inherited V29 preflight advance',
+    );
+    validateV30Iteration1Advance(manifest.current?.version_advance_from, 'V31 version advance');
+    validateV30Iteration1Advance(
+      manifest.current?.v30_preflight_observation,
+      'V31 preserved V30 preflight observation',
+    );
+    expectJson(
+      manifest.current?.v30_preflight_observation,
+      manifest.current?.version_advance_from,
+      'V31 V30 observation and version advance',
+    );
+
+    expect(workingScreen.id, 'first-draft-working-screens-v11', 'V31 screen id');
+    expect(workingScreen.confirmation, true, 'V31 strict multi-cell screen');
+    expect(workingScreen.v31PreflightDiagnosticsScreen, true, 'V31 diagnostics screen flag');
+    expect(workingScreen.jointPerformanceGeneration, true, 'V31 joint-performance generation');
+    expect(
+      workingScreen.sourceAccessibilityPolicy,
+      'direct_or_compensated_v1',
+      'V31 source-accessibility policy',
+    );
+    expectJson(workingScreen.cells, [
+      {
+        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
+        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262100,
+        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+      },
+      {
+        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
+        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20262101,
+        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+      },
+      {
+        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
+        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20262102,
+        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+      },
+      {
+        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
+        learnerProfile: 'diligent', turns: [4], developmentSeed: 20262103,
+        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+      },
+    ], 'V31 working cells');
+    expectJson(workingScreen.execution, {
+      hardest_cell_first: true,
+      hard_cell: 'tallow_answer_seeking',
+      hard_cell_must_pass_before_remaining: true,
+      remaining_cells_execution: 'concurrent',
+      maximum_concurrent_remaining_cells: 3,
+      one_job_per_cell: true,
+      forbid_duplicate_active_or_completed_cells: true,
+      complete_all_cells_after_hard_cell_passes: true,
+      stop_cell_when_gate_mathematically_impossible: true,
+      preserve_unstarted_seeds_as_unconsumed: true,
+      require_exact_target_bundle_binding: true,
+      require_clean_worktree: true,
+    }, 'V31 execution');
+    expectJson(workingScreen.changeControl, {
+      implementation_change_from_v30_preflight:
+        'suite_scoped_preflight_execution_and_diagnostics_v1',
+      speaking_prompt_changes: [],
+      deterministic_host_changes: [],
+      audit_recognition_changes: [],
+      recovery_changes: [],
+      preflight_orchestration_changes: [
+        'split_unchanged_focused_test_inventory_into_four_named_suites',
+        'preserve_suite_command_stdout_stderr_and_failed_subtest_diagnostics',
+      ],
+      transport_changes: [],
+      safety_changes: [],
+      gate_changes: [],
+      delivery_audit_changes: [],
+    }, 'V31 change control');
+    expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V31 adjudication policy');
+    expectJson(workingScreen.structuralDebtTargets, {
+      status: 'active_v31_target',
+      source: 'V30_deterministic_zero_call_transient_focused_test_preflight',
+      items: [
+        'suite_scoped_preflight_execution',
+        'durable_failed_subtest_diagnostics',
+      ],
+      consequence: workingScreen.structuralDebtTargets?.consequence,
+    }, 'V31 structural debt target');
+    if (!/pass permits.*held-out predeclaration/isu.test(
+      workingScreen.structuralDebtTargets?.consequence || '',
+    )) {
+      throw new Error('V31 structural debt consequence must preserve the development-only boundary');
+    }
+    expectJson(workingScreen.preflight?.focused_test_suites, [
+      {
+        id: 'audit_contracts',
+        test_files: [
+          'tests/tutorStubPromptAudit.test.js',
+          'tests/derivationWorldQuality.test.js',
+          'tests/tutorStubFrozenReplay.test.js',
+          'tests/tutorStubFrozenReplayCheckpoint.test.js',
+          'tests/tutorStubFirstDraftContract.test.js',
+          'tests/tutorStubStructuredFirstDraft.test.js',
+          'tests/tutorStubJointPerformanceFirstDraft.test.js',
+          'tests/tutorStubV27JointPerformanceCalibration.test.js',
+          'tests/tutorStubTypedCompositeAdvocateCalibration.test.js',
+          'tests/tutorStubResponseComposition.test.js',
+          'tests/tutorStubDueSourceRenderer.test.js',
+          'tests/tutorStubSourceAccessibilityContract.test.js',
+          'tests/tutorStubLiveFirstDraftAudit.test.js',
+          'tests/tutorStubTurnProgressionContract.test.js',
+          'tests/tutorStubWorldScaffold.test.js',
+          'tests/tutorStubV27ConfirmationRegression.test.js',
+          'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
+          'tests/tutorStubV25RecognitionFixture.test.js',
+          'services/__tests__/tutorStubPerformanceObligationContract.test.js',
+          'services/__tests__/tutorStubPerformanceAdjudication.test.js',
+          'services/__tests__/tutorStubResponseConfiguration.test.js',
+          'services/__tests__/tutorStubCounterpressure.test.js',
+        ],
+      },
+      { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
+      { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
+      {
+        id: 'campaign_orchestration',
+        test_files: [
+          'tests/tutorStubFirstDraftCampaign.test.js',
+          'tests/tutorStubFirstDraftOuterLoop.test.js',
+        ],
+      },
+    ], 'V31 focused-test suites');
+    expectJson(
+      workingScreen.preflight?.structural_regression_fixtures,
+      ['tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json'],
+      'V31 structural regression fixture',
+    );
+
+    expectJson(
+      seeds.development.map((entry) => ({
+        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+      })),
+      [
+        { seed: 20262100, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262101, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262102, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262103, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v11' },
+      ],
+      'V31 development seed ledger',
+    );
+    for (const seed of [
+      20261800, 20261801, 20261802, 20261803,
+      20261900, 20261901, 20261902, 20261903,
+      20262000, 20262001, 20262002, 20262003,
+    ]) {
+      const retired = seeds.historical.find((entry) => Number(entry.seed) === seed);
+      if (!retired || retired.status !== 'retired_unconsumed_after_preflight_failure') {
+        throw new Error(`V31 history must preserve zero-call seed ${seed} as unconsumed and retired`);
+      }
+    }
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
+      .map((entry) => Number(entry.seed));
+    if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
+      throw new Error('V31 must leave 202617xx absent and unreserved');
     }
   }
 

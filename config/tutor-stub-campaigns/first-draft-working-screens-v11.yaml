@@ -1,0 +1,331 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens-v11
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V31 development screen after V30 stopped before every model call on one
+  transient, unclassified focused-test preflight failure. This panel reuses the
+  same four exact, uncontaminated public prefixes, saved models, efforts, draws,
+  and strict gates with fresh non-held-out labels. It changes only deterministic
+  preflight orchestration and diagnostics: the byte-identical legacy focused-test
+  inventory is also partitioned into four named suites whose output is preserved.
+  Speaking, recovery, audit-recognition, delivery, transport, and safety behavior
+  remain unchanged from V30. It cannot certify held-out acceptance.
+
+fixed_configuration:
+  original_only: true
+  joint_performance_generation: true
+  joint_performance_schema: machinespirits.tutor-stub.structured-first-draft.v2
+  joint_performance_composition_schema: machinespirits.tutor-stub.structured-first-draft-composition.v2
+  joint_performance_audit_schema: machinespirits.tutor-stub.structured-first-draft-joint-performance-audit.v2
+  source_accessibility_policy: direct_or_compensated_v1
+  source_accessibility_schema: machinespirits.tutor-stub.source-accessibility-contract.v1
+  draws_per_turn: 4
+  concurrency: 1
+  tutor_model_source: saved_request_with_v29_accessibility_compensation_unchanged
+  effort_source: exact_saved_request
+  max_live_model_jobs: 3
+  semantic_adjudication: false
+  adjudication_policy: deterministic_only
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFrozenReplayCheckpoint.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubStructuredFirstDraft.test.js
+    tests/tutorStubJointPerformanceFirstDraft.test.js
+    tests/tutorStubV27JointPerformanceCalibration.test.js
+    tests/tutorStubTypedCompositeAdvocateCalibration.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubDueSourceRenderer.test.js
+    tests/tutorStubSourceAccessibilityContract.test.js
+    tests/tutorStubLiveFirstDraftAudit.test.js
+    tests/tutorStubTurnProgressionContract.test.js
+    tests/tutorStubInteractiveModes.test.js
+    tests/adaptiveRunEvidencePackage.test.js
+    tests/tutorStubWorldScaffold.test.js
+    tests/tutorStubV27ConfirmationRegression.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    tests/tutorStubV25RecognitionFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+    services/__tests__/tutorStubCounterpressure.test.js
+    tests/tutorStubFirstDraftCampaign.test.js
+    tests/tutorStubFirstDraftOuterLoop.test.js
+  focused_test_suites:
+    - id: audit_contracts
+      test_files:
+        - tests/tutorStubPromptAudit.test.js
+        - tests/derivationWorldQuality.test.js
+        - tests/tutorStubFrozenReplay.test.js
+        - tests/tutorStubFrozenReplayCheckpoint.test.js
+        - tests/tutorStubFirstDraftContract.test.js
+        - tests/tutorStubStructuredFirstDraft.test.js
+        - tests/tutorStubJointPerformanceFirstDraft.test.js
+        - tests/tutorStubV27JointPerformanceCalibration.test.js
+        - tests/tutorStubTypedCompositeAdvocateCalibration.test.js
+        - tests/tutorStubResponseComposition.test.js
+        - tests/tutorStubDueSourceRenderer.test.js
+        - tests/tutorStubSourceAccessibilityContract.test.js
+        - tests/tutorStubLiveFirstDraftAudit.test.js
+        - tests/tutorStubTurnProgressionContract.test.js
+        - tests/tutorStubWorldScaffold.test.js
+        - tests/tutorStubV27ConfirmationRegression.test.js
+        - tests/tutorStubV21PerformanceCalibrationFixture.test.js
+        - tests/tutorStubV25RecognitionFixture.test.js
+        - services/__tests__/tutorStubPerformanceObligationContract.test.js
+        - services/__tests__/tutorStubPerformanceAdjudication.test.js
+        - services/__tests__/tutorStubResponseConfiguration.test.js
+        - services/__tests__/tutorStubCounterpressure.test.js
+    - id: interactive_modes
+      test_files:
+        - tests/tutorStubInteractiveModes.test.js
+    - id: adaptive_evidence
+      test_files:
+        - tests/adaptiveRunEvidencePackage.test.js
+    - id: campaign_orchestration
+      test_files:
+        - tests/tutorStubFirstDraftCampaign.test.js
+        - tests/tutorStubFirstDraftOuterLoop.test.js
+  structural_regression_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+execution:
+  hardest_cell_first: true
+  hard_cell: tallow_answer_seeking
+  hard_cell_must_pass_before_remaining: true
+  remaining_cells_execution: concurrent
+  maximum_concurrent_remaining_cells: 3
+  one_job_per_cell: true
+  forbid_duplicate_active_or_completed_cells: true
+  complete_all_cells_after_hard_cell_passes: true
+  stop_cell_when_gate_mathematically_impossible: true
+  preserve_unstarted_seeds_as_unconsumed: true
+  require_exact_target_bundle_binding: true
+  require_clean_worktree: true
+
+matrix:
+  - id: tallow_answer_seeking
+    priority: 1
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl
+    source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+    turns: [5]
+    development_seed: 20262100
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v31_predeclaration
+    prefix_integrity:
+      target_turn: 5
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3, 4]
+      target_bundle:
+        turn_id: 2026-07-16T07-03-36-147Z:t005
+        world: world_025_tallow_street
+        learner_profile: answer_seeking
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+      - shared_writable_request_classifier
+    structural_activation:
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+      shared_writable_request_classifier: { required: true }
+    rationale: >-
+      Hard answer-seeking cell: exact writable uptake and a non-redundant typed
+      handoff must survive the unchanged V29 speaking prompt after the recovery
+      integration is made contract-aware.
+
+  - id: ravensmark_affective_resistant
+    priority: 2
+    world: world_009_ravensmark
+    learner_profile: affective_resistant
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/ravensmark_affective_resistant/2026-07-16T04-44-58-444Z.jsonl
+    source_trace_sha256: f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92
+    turns: [5]
+    development_seed: 20262101
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v31_predeclaration
+    prefix_integrity:
+      target_turn: 5
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3, 4]
+      target_bundle:
+        turn_id: 2026-07-16T04-44-58-444Z:t005
+        world: world_009_ravensmark
+        learner_profile: affective_resistant
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - deterministic_host_source_renderer
+      - source_accessibility_compensation
+      - typed_turn_focus_relation
+    structural_activation:
+      deterministic_host_source_renderer:
+        required: true
+        expected_modes: [presented_exhibit]
+        require_lexical_accessibility_axis: true
+      source_accessibility_compensation:
+        required: true
+        expected_effective_mode: compensated
+        expected_owner: performance_response
+      typed_turn_focus_relation: { required: true }
+    rationale: >-
+      Exact V28 blocker: preserve the 36-word SOURCE byte for byte and exactly
+      once, then realize one short, adjacent, source-grounded explanation in
+      PERFORMANCE RESPONSE without inventing or reordering content.
+
+  - id: larkspur_premature_closure
+    priority: 3
+    world: world_028_larkspur_fridge
+    learner_profile: premature_closure
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/larkspur_premature_closure/2026-07-16T05-50-54-527Z.jsonl
+    source_trace_sha256: 307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820
+    turns: [2]
+    development_seed: 20262102
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v31_predeclaration
+    prefix_integrity:
+      target_turn: 2
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1]
+      target_bundle:
+        turn_id: 2026-07-16T05-50-54-527Z:t002
+        world: world_028_larkspur_fridge
+        learner_profile: premature_closure
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - deterministic_host_source_renderer
+      - typed_due_source_action_referent
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+    structural_activation:
+      deterministic_host_source_renderer:
+        required: true
+        expected_modes: [enacted_role]
+        require_lexical_accessibility_axis: true
+      typed_due_source_action_referent: { required: true }
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+    rationale: >-
+      Direct-accessibility control: the existing colon-safe enacted source and
+      source-action referent must remain intact under the opt-in policy.
+
+  - id: foxtrot_diligent
+    priority: 4
+    world: world_022_foxtrot_jukebox
+    learner_profile: diligent
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/foxtrot_diligent/2026-07-16T05-56-49-920Z.jsonl
+    source_trace_sha256: cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da
+    turns: [4]
+    development_seed: 20262103
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v31_predeclaration
+    prefix_integrity:
+      target_turn: 4
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3]
+      target_bundle:
+        turn_id: 2026-07-16T05-56-49-920Z:t004
+        world: world_022_foxtrot_jukebox
+        learner_profile: diligent
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - deterministic_host_source_renderer
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+    structural_activation:
+      deterministic_host_source_renderer:
+        required: true
+        expected_modes: [presented_exhibit]
+        require_lexical_accessibility_axis: true
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+    rationale: >-
+      Direct-accessibility ordinary-profile control: the radio fingerprint,
+      settled access, and one next relation must remain visible.
+
+gates_per_cell:
+  required_originals_accepted: 4
+  required_turns: 4
+  required_prefixes: 1
+  required_draws_per_prefix: 4
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_mechanical_repairs: 0
+  maximum_model_rewrites: 0
+  maximum_fallbacks: 0
+  maximum_semantic_recognition_corrections: 0
+  maximum_semantic_adjudicator_calls: 0
+  maximum_semantic_adjudicator_errors: 0
+  maximum_transport_normalizations: 0
+  require_transcript_specific_uptake: true
+  require_joint_performance_output: true
+  require_joint_performance_ownership: true
+  require_exact_host_source_occurrences: true
+  require_source_surface_accessibility: true
+  require_structural_target_activation: true
+  require_deterministic_only_audit: true
+  require_successful_semantic_adjudication_per_draw: false
+
+change_control:
+  implementation_change_from_v30_preflight: suite_scoped_preflight_execution_and_diagnostics_v1
+  speaking_prompt_changes: []
+  deterministic_host_changes: []
+  audit_recognition_changes: []
+  recovery_changes: []
+  preflight_orchestration_changes:
+    - split_unchanged_focused_test_inventory_into_four_named_suites
+    - preserve_suite_command_stdout_stderr_and_failed_subtest_diagnostics
+  transport_changes: []
+  safety_changes: []
+  gate_changes: []
+  delivery_audit_changes: []
+
+structural_debt_targets:
+  status: active_v31_target
+  source: V30_deterministic_zero_call_transient_focused_test_preflight
+  items:
+    - suite_scoped_preflight_execution
+    - durable_failed_subtest_diagnostics
+  consequence: >-
+    Every file in V30's exact focused-test inventory must still run, now through
+    four named suites. Any suite failure must preserve enough command and
+    subtest output to identify the root cause without an evidentially ambiguous
+    rerun. A pass permits fresh held-out predeclaration; it is not itself
+    acceptance and consumes no held-out seed.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_hard_cell_fails: true
+  complete_all_cells_after_hard_cell_passes: true
+
+claim_boundary: >-
+  Passing requires 4/4 strict original joint-performance candidates and 1.0
+  mean configuration realization in every one of four exact non-Marrick
+  frozen cells, with zero safety failures, repairs, rewrites, fallbacks,
+  semantic adjudicator calls or recognition corrections, and transport
+  normalizations. Exact SOURCE bytes and ownership remain unchanged. The one
+  dense Ravensmark source additionally requires an adjacent, declarative,
+  source-grounded compensation in PERFORMANCE RESPONSE; direct sources must
+  remain direct. The result is reusable V31 development evidence only. It does
+  not reserve or consume any held-out seed and cannot terminate the outer loop.
