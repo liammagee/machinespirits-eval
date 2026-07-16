@@ -80,8 +80,9 @@ test('frozen screens recompile the current single-development contract without c
   assert.deepEqual(refreshed.priorTurns, original.priorTurns);
   assert.deepEqual(refreshed.publicPremiseIds, original.publicPremiseIds);
   assert.equal(refreshed.performanceObligationContract.complete, true);
-  assert.match(refreshed.request.messages.at(-1).content, /DEVELOP —/u);
-  assert.doesNotMatch(refreshed.request.messages.at(-1).content, /ACT \+ ENACT|ENTRY —|RETURN —/u);
+  assert.match(refreshed.request.messages.at(-1).content, /\[Tutor-only host plan\]/u);
+  assert.match(refreshed.request.messages.at(-1).content, /UPTAKE —[\s\S]*PART —[\s\S]*TACTIC —[\s\S]*HANDOFF —/u);
+  assert.doesNotMatch(refreshed.request.messages.at(-1).content, /FORM —|OPEN —|DEVELOP —|END —|VOICE —/u);
   assert.deepEqual(refreshed.speakingResponseConfiguration, original.selectedResponseConfiguration);
   assert.doesNotMatch(refreshed.request.messages.at(-1).content, /use the verb “breaks”/u);
   const semanticPromptAudit = auditTutorStubPrompt({

@@ -1096,7 +1096,7 @@ function actorialPerformanceVisible(configuration, text, metrics) {
   if (tactic === 'evidentiary_boundary') {
     const evidenceGroundedCategoryContrast = responseSentences(text).some((sentence) => {
       const evidenceSubjectContrast =
-        /\b(?:book|clue|entry|evidence|finding|ledger|log|mark|record|test)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|mark(?:s|ed)?|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,80}\brather than\b/iu.test(
+        /\b(?:book|clue|entry|evidence|finding|ledger|log|mark|reading|record|result|sample|test|trace)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|mark(?:s|ed)?|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,80}(?:\brather than\b|,\s*not\b)/iu.test(
           sentence,
         );
       const performedClassificationContrast =

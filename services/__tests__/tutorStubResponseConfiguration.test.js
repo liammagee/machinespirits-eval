@@ -1233,6 +1233,78 @@ test('an explicit support-versus-unshown contrast realizes an evidentiary bounda
   assert.equal(audit.axes.actorial_part.visible, true);
 });
 
+test('a handled trace proving one property but not its source realizes an evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'What does the sample settle?',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'I press the grey trace beside the sample cup; it proves poor metal, not its melting place.',
+    configuration,
+    world: { setting: 'The grey trace and sample cup lie on the assay table.' },
+  });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a ledger showing one category but not another realizes an evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'What does the ledger settle?',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'keeper of the trial-book',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'I open the custody ledger. The ledger shows access, not possession.',
+    configuration,
+    world: { setting: 'The custody ledger lies open on the trial table.' },
+  });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('a prop preference using comma-not is not an evidentiary boundary', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'Which assay prop should we use?',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'examiner',
+    actorial_part_label: 'evidence examiner',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+
+  for (const text of [
+    'I press the trace, not the balance.',
+    'I prefer the touchstone, not the cupel.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+    assert.equal(audit.axes.actorial_part.performance_visible, false, text);
+  }
+});
+
 test('an evidence-grounded category contrast realizes a boundary without a magic phrase', () => {
   const audit = auditTutorStubResponseConfiguration({
     text: "I open the charcoal book. I enter Edony's name beside the blank, marking its caster rather than the coin's striker. What does that change?",

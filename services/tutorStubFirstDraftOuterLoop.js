@@ -16,7 +16,7 @@ const REQUIRED_STATES = Object.freeze({
   hard_cell_running: { terminalScope: 'none', outcome: 'pending' },
   remaining_cells_running: { terminalScope: 'none', outcome: 'pending' },
   accepted: { terminalScope: 'loop', outcome: 'success' },
-  stagnated: { terminalScope: 'loop', outcome: 'no_progress' },
+  stagnated: { terminalScope: 'version', outcome: 'no_progress' },
   blocked_infrastructure: { terminalScope: 'loop', outcome: 'infrastructure' },
   retired_after_acceptance_failure: { terminalScope: 'version', outcome: 'acceptance_failure' },
 });
@@ -38,6 +38,7 @@ const REQUIRED_TRANSITIONS = Object.freeze([
   ['remaining_cells_running', 'retired_after_acceptance_failure'],
   ['remaining_cells_running', 'blocked_infrastructure'],
   ['retired_after_acceptance_failure', 'working_predeclared'],
+  ['stagnated', 'working_predeclared'],
 ]);
 
 const REQUIRED_REVIEW_RESPONSIBILITIES = Object.freeze([
@@ -104,6 +105,10 @@ function validateStateMachine(manifest) {
     (transition) => transition.from === 'retired_after_acceptance_failure' && transition.to === 'working_predeclared',
   );
   expect(advance?.version_action, 'increment_by_one', 'retired-version transition action');
+  const reset = transitions.find(
+    (transition) => transition.from === 'stagnated' && transition.to === 'working_predeclared',
+  );
+  expect(reset?.version_action, 'increment_by_one', 'stagnated-version transition action');
 
   return { states, transitions, currentState };
 }
@@ -178,7 +183,7 @@ function validateSeedLedger(manifest) {
     expect(ledger.held_out?.status, 'not_predeclared', 'held-out seed status before working-screen pass');
     expect(ledger.reserve?.status, 'not_predeclared', 'reserve seed status before working-screen pass');
     if (heldOut.length || reserves.length) {
-      throw new Error('V24 held-out and reserve seeds must remain empty until acceptance is predeclared');
+      throw new Error('held-out and reserve seeds must remain empty until acceptance is predeclared');
     }
   }
   return { development, historical, heldOut, reserves };
@@ -204,7 +209,7 @@ function validateWorkingScreen(manifest, { root }) {
   expect(config.gates_per_cell?.maximum_safety_failures, 0, 'working screen safety failures');
   expect(config.gates_per_cell?.maximum_fallbacks, 0, 'working screen fallbacks');
   expect(config.gates_per_cell?.require_transcript_specific_uptake, true, 'working screen uptake gate');
-  if (config.matrix.length !== 1) throw new Error('V3 working screen must contain exactly one focused cell');
+  if (config.matrix.length !== 1) throw new Error('working screen must contain exactly one focused cell');
 
   const cell = config.matrix[0];
   const ledgerEntry = (manifest.seed_ledger?.development || []).find(

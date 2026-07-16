@@ -3,12 +3,11 @@ import test from 'node:test';
 
 import {
   TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
+  TUTOR_STUB_HOST_PLAN_SCHEMA,
   buildTutorStubFirstDraftContract,
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
-import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
-import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 
 function configuration(overrides = {}) {
   return {
@@ -22,15 +21,21 @@ function configuration(overrides = {}) {
     actorial_performance: {
       id: 'evidentiary_boundary',
       label: 'evidentiary boundary',
-      contract:
-        'Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.',
+      contract: 'State the exact support and limit.',
     },
     surface_budgets: { max_average_sentence_words: 18 },
     ...overrides,
   };
 }
 
-test('the first-draft contract compiles uptake, character, tactic, public clue, and ending once in performance order', () => {
+function wordCount(value) {
+  return String(value || '')
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean).length;
+}
+
+test('compiles one ordered host plan with exact source between part and tactic', () => {
   const clue = 'Verrell alone draws the mint-yard crucible.';
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'His tools make him suspicious, but they do not prove he struck the coins.',
@@ -42,289 +47,75 @@ test('the first-draft contract compiles uptake, character, tactic, public clue, 
     dramaticReleaseFrame: {
       active: true,
       requiresEnactment: true,
-      requiresExhibitHandoff: false,
       entries: [{ mode: 'enacted_role', role: 'mint warden', surface: clue }],
-    },
-    questionSupport: {
-      tutorInstruction: 'State the due evidence first, then ask what it changes.',
     },
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
   assert.equal(contract.schema, TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA);
-  assert.deepEqual(contract.compatibility.decisions, [
-    'due_public_evidence_replaces_generic_development',
-    'authored_source_is_nested_inside_host_part',
-  ]);
-  assert.match(prompt, /OPEN[\s\S]*learner separates suspicion from proof/iu);
-  assert.match(prompt, /Paraphrase its concrete claim or concern rather than echoing/iu);
-  assert.match(prompt, /DEVELOP —[\s\S]*Perform one mandatory development beat as keeper of the trial-book/iu);
-  assert.match(prompt, /In the unquoted host voice, open, read, mark, enter, or close a named public record/iu);
-  assert.match(prompt, /state the exact support and its limit[\s\S]*“only,” “not yet,” or “does not establish[.”]*”/iu);
-  assert.match(prompt, /Source to inhabit silently: mint warden/iu);
-  assert.match(prompt, /reporting lead like “I can attest that”/iu);
-  assert.match(prompt, /First person may report the evidence/iu);
-  assert.match(prompt, /must not inherit any named person’s deed, ownership, or relationship/iu);
-  assert.match(prompt, /Never print the source name outside that quotation/iu);
-  assert.match(prompt, /When an exact clue quotation is due, put this tactic sentence immediately after it/iu);
+  assert.equal(contract.host_plan.schema, TUTOR_STUB_HOST_PLAN_SCHEMA);
+  assert.deepEqual(contract.host_plan.ordered_slot_ids, ['uptake', 'part', 'source', 'tactic', 'handoff']);
+  assert.equal(contract.host_plan.host_sentence_count, 4);
+  assert.deepEqual(
+    contract.host_plan.slots.filter((slot) => slot.kind === 'host').map((slot) => slot.id),
+    ['uptake', 'part', 'tactic', 'handoff'],
+  );
+  assert.ok(prompt.indexOf('UPTAKE —') < prompt.indexOf('PART —'));
+  assert.ok(prompt.indexOf('PART —') < prompt.indexOf('SOURCE —'));
+  assert.ok(prompt.indexOf('SOURCE —') < prompt.indexOf('TACTIC —'));
+  assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('HANDOFF —'));
   assert.equal(prompt.split(clue).length - 1, 1);
-  assert.match(prompt, /END — State the due evidence first, then ask what it changes/iu);
-  assert.doesNotMatch(prompt, /\n(?:ACT|ENACT|ENTRY|PROP|RETURN) —/u);
-  assert.doesNotMatch(prompt, /release schedule|premise id|rule id|concealed answer/iu);
+  assert.match(prompt, /silently inhabit mint warden/iu);
+  assert.match(prompt, /Quote “I can attest that”/u);
+  assert.match(prompt, /Print no source label; inherit no named deed or ownership/iu);
 });
 
-test('charismatic stance remains executable when counterpressure is replaced by a safe boundary', () => {
+test('assigns every delivered response axis to exactly its intended host slot', () => {
   const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next?',
+    learnerText: 'What should I write?',
     responseConfiguration: configuration({ engagement_stance: 'charismatic' }),
     dramaticReleaseFrame: { active: false, entries: [] },
   });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.match(prompt, /Execute the stance independently of the tactic/iu);
-  assert.match(prompt, /final handoff a named challenge to one public claim or object/iu);
-  assert.match(prompt, /intensify that same action rather than replacing it with a stance-only verb/iu);
-  assert.match(prompt, /decisive public action compatible with the selected part/iu);
-  assert.match(prompt, /without inventing contrary evidence/iu);
-});
-
-test('an enacted source is compiled as direct speech rather than a printable role direction', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What does the entry show?',
-    responseConfiguration: configuration(),
-    dramaticReleaseFrame: {
-      active: true,
-      requiresEnactment: true,
-      entries: [
-        {
-          mode: 'enacted_role',
-          role: 'estate clerk reading the founder’s inventory',
-          surface: 'The old founder’s tools were never sold off; the inventory leaves them to Edony alone.',
-        },
-      ],
-    },
+  assert.deepEqual(contract.host_plan.ordered_slot_ids, ['uptake', 'part', 'tactic', 'handoff']);
+  assert.deepEqual(contract.host_plan.axis_ownership, {
+    audience_register: ['uptake', 'part', 'tactic', 'handoff'],
+    lexical_accessibility: ['uptake', 'part', 'tactic', 'handoff'],
+    scene_immersion: ['part'],
+    actorial_part: ['part'],
+    actorial_performance: ['tactic'],
+    public_evidence: [],
+    action_family: ['handoff'],
+    engagement_stance: ['handoff'],
   });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.match(prompt, /Source to inhabit silently: estate clerk reading the founder’s inventory/iu);
-  assert.match(prompt, /reporting lead like “I read in the record that”/iu);
-  assert.match(prompt, /Never print the source name outside that quotation/iu);
-  assert.equal(
-    prompt.split('The old founder’s tools were never sold off; the inventory leaves them to Edony alone.').length - 1,
-    1,
+  assert.match(
+    contract.host_plan.slots.find((slot) => slot.id === 'handoff').instruction,
+    /decisive named challenge/iu,
   );
 });
 
-test('mandatory closure deterministically overrides generic continuation and question-support wording', () => {
+test('renders a compact prompt and removes the competing legacy prose sections', () => {
+  const clue = 'Verrell alone draws the mint-yard crucible.';
   const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'So the evidence establishes the finding.',
-    responseConfiguration: configuration({ action_family: 'clarify_distinction' }),
-    responseCompositionFrame: { learner_move: { summary: 'The learner states the supported conclusion.' } },
-    dramaticReleaseFrame: { active: false, entries: [] },
-    questionSupport: {
-      tutorInstruction: 'Ask what the clue changes.',
-      clarificationInvitationRequired: true,
-    },
-    dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.ok(contract.compatibility.decisions.includes('closure_overrides_generic_continuation'));
-  assert.ok(contract.compatibility.decisions.includes('closure_suppresses_question_support_prompt'));
-  assert.ok(contract.compatibility.decisions.includes('closure_instruction_overrides_nonclosing_action_wording'));
-  assert.match(prompt, /END — Explicitly close the inquiry and ask no question/iu);
-  assert.doesNotMatch(prompt, /END — Ask what the clue changes/iu);
-});
-
-test('recent prop saturation compiles character work without another stock exhibit gesture', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'I am not convinced.',
-    responseConfiguration: configuration({ actorial_part: 'skeptic', actorial_part_label: 'skeptical examiner' }),
-    responseCompositionFrame: {
-      learner_move: { summary: 'The learner remains unconvinced.' },
-      scene_action_budget: { saturated: true },
-    },
-    dramaticReleaseFrame: { active: false, entries: [], requiresExhibitHandoff: false },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.ok(contract.compatibility.decisions.includes('recent_prop_saturation_prefers_spoken_character_work'));
-  assert.match(prompt, /introduce no new prop/iu);
-  assert.match(prompt, /Still perform the host-and-tactic beat once/iu);
-});
-
-test('direction-only support with no new evidence recasts a rapid handoff as a declarative boundary', () => {
-  const responseConfiguration = configuration({
-    engagement_stance: 'brisk',
-    actorial_part: 'examiner',
-    actorial_part_label: 'evidence examiner',
-    actorial_performance: {
-      id: 'rapid_handoff',
-      label: 'rapid evidence handoff',
-      contract: 'Move the evidence straight to the learner and ask the shortest useful question.',
+    learnerText: 'His tools make him suspicious, but they do not prove he struck the coins.',
+    responseConfiguration: configuration(),
+    responseCompositionFrame: { learner_move: { summary: 'The learner separates suspicion from proof.' } },
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ mode: 'enacted_role', role: 'mint warden', surface: clue }],
     },
   });
-  const questionSupport = {
-    answerability: 'direction_only_until_evidence_is_public',
-    tutorInstruction: 'Do not ask the learner to invent unseen evidence.',
-  };
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'Does the style make Vess possible without proving authorship?',
-    responseConfiguration,
-    responseCompositionFrame: {
-      learner_move: { summary: 'The learner treats style as suggestive but not conclusive.' },
-    },
-    dramaticReleaseFrame: { active: false, entries: [] },
-    questionSupport,
-  });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const instructionWords = wordCount(prompt.replace(clue, ''));
 
-  assert.ok(contract.compatibility.decisions.includes('direction_only_recasts_rapid_handoff_as_declarative_boundary'));
-  assert.match(prompt, /No new evidence is available in this reply/iu);
-  assert.match(prompt, /next public check with a concrete verb such as test, check, compare, or trace/iu);
-  assert.match(prompt, /State the direction of the missing support yourself and end declaratively/iu);
-  assert.doesNotMatch(prompt, /Put the next available public evidence/iu);
-  assert.doesNotMatch(prompt, /ending with the shortest useful concrete question/iu);
-
-  const response =
-    'That is the safe entry. I trace the suspensions on the damp leaf: style supports Vess, but does not establish authorship. Next we test the leaf itself rather than guess at unseen evidence.';
-  assert.equal(auditTutorStubQuestionSupportResponse({ text: response, support: questionSupport }).ok, true);
-  const realization = auditTutorStubResponseConfiguration({
-    text: response,
-    configuration: responseConfiguration,
-  });
-  assert.equal(realization.axes.actorial_part.part_visible, true);
-  assert.equal(realization.axes.actorial_part.performance_visible, true);
+  assert.ok(instructionWords >= 150, `expected at least 150 instruction words, received ${instructionWords}`);
+  assert.ok(instructionWords <= 220, `expected at most 220 instruction words, received ${instructionWords}`);
+  assert.doesNotMatch(prompt, /\b(?:FORM|OPEN|DEVELOP|END|VOICE) —/u);
+  assert.match(prompt, /four unlabeled, unquoted host sentences/iu);
+  assert.match(prompt, /SOURCE is a separate quotation/iu);
 });
 
-test('plain adult-novice form is executable before uptake without duplicating a late language budget', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next about the shilling?',
-    responseConfiguration: configuration({ surface_budgets: { max_average_sentence_words: 17 } }),
-    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
-    dramaticReleaseFrame: { active: false, entries: [] },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.ok(prompt.indexOf('FORM —') < prompt.indexOf('OPEN —'));
-  assert.match(prompt, /Use 3–4 short host sentences whenever OPEN, DEVELOP, and END are active/iu);
-  assert.match(prompt, /Sentence 1 carries uptake[\s\S]*Sentence 2 performs the selected part/iu);
-  assert.match(prompt, /Sentence 3 must perform the selected tactic in unquoted host voice/iu);
-  assert.match(prompt, /neither the opening uptake nor an authored clue quotation counts as tactic realization/iu);
-  assert.match(prompt, /if the selected tactic already carries the handoff, do not duplicate it/iu);
-  assert.match(prompt, /Never join these beats with a colon, semicolon, dash, or “but”/iu);
-  assert.match(prompt, /split every host sentence above 17 words/iu);
-  assert.match(prompt, /Translate the learner’s named specialist term into common words in the uptake/iu);
-  assert.match(prompt, /do not introduce another specialist term without a local gloss/iu);
-  assert.match(prompt, /Presume adult intelligence but no domain fluency/iu);
-  assert.match(prompt, /Prefer common words, short sentences, and one relation at a time/iu);
-  assert.match(prompt, /DEVELOP — In fresh host sentences after the uptake/iu);
-  assert.equal((prompt.match(/17 words/gu) || []).length, 1);
-  assert.doesNotMatch(prompt, /LANGUAGE —|Keep average sentences/iu);
-});
-
-test('a saturated shared-scene turn still receives one executable host-and-tactic beat', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next?',
-    responseConfiguration: configuration({
-      engagement_stance: 'warm',
-      actorial_part: 'scene_partner',
-      actorial_part_label: 'fellow investigator',
-      actorial_performance: {
-        id: 'shared_scene_invitation',
-        label: 'shared-scene invitation',
-        contract: 'Make physical room for the learner beside the exhibit.',
-      },
-    }),
-    responseCompositionFrame: {
-      learner_move: { summary: 'The learner asks for the next supported line.' },
-      scene_action_budget: { saturated: true },
-    },
-    dramaticReleaseFrame: { active: false, entries: [], requiresExhibitHandoff: false },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.match(prompt, /DEVELOP —[\s\S]*Perform one mandatory development beat as fellow investigator/iu);
-  assert.match(prompt, /I make room for you beside \[named public object\]/u);
-  assert.match(prompt, /Make room beside a named public object for the learner/iu);
-  assert.match(prompt, /introduce no new prop/iu);
-  assert.doesNotMatch(prompt, /instead of another prop gesture/iu);
-});
-
-test('mandatory closure recasts a shared-scene invitation as a joint terminal finding', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'The record now names the culprit.',
-    responseConfiguration: configuration({
-      engagement_stance: 'warm',
-      action_family: 'close_inquiry',
-      actorial_part: 'foreperson',
-      actorial_part_label: 'keeper of the final finding',
-      actorial_performance: {
-        id: 'shared_scene_invitation',
-        label: 'shared-scene invitation',
-        contract: 'Make room for the learner beside the record.',
-      },
-    }),
-    responseCompositionFrame: { learner_move: { summary: 'The learner states the final finding.' } },
-    dramaticReleaseFrame: { active: false, entries: [] },
-    dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.ok(contract.compatibility.decisions.includes('closure_recasts_invitation_as_joint_finding'));
-  assert.match(prompt, /Credit the learner inside the joint finding with “together,” then close the record/iu);
-  assert.match(prompt, /END — Explicitly close the inquiry and ask no question/iu);
-});
-
-test('advocate counterpressure composes a separate case sentence and concrete next operation', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next?',
-    responseConfiguration: configuration({
-      engagement_stance: 'charismatic',
-      actorial_part: 'advocate',
-      actorial_part_label: 'advocate for the live case',
-      actorial_performance: {
-        id: 'dramatic_counterpressure',
-        label: 'dramatic counterpressure',
-        contract: 'Challenge the easy verdict with contrary evidence.',
-      },
-    }),
-    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
-    dramaticReleaseFrame: { active: false, entries: [] },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.match(prompt, /one short unquoted host sentence beginning “My case is”/u);
-  assert.match(prompt, /Do not append a semicolon-shaped test/iu);
-  assert.match(prompt, /Put that concrete operation in the final handoff/iu);
-  assert.match(prompt, /Do not turn the handoff into a request for the learner to name unspecified evidence/iu);
-  assert.ok(contract.compatibility.decisions.includes('advocate_case_delegates_concrete_test_to_final_handoff'));
-  assert.doesNotMatch(prompt, /My case is \[licensed claim\]; break it if/iu);
-});
-
-test('scene-partner work receives a concrete shared-placement sentence', () => {
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next?',
-    responseConfiguration: configuration({
-      engagement_stance: 'warm',
-      actorial_part: 'scene_partner',
-      actorial_part_label: 'fellow investigator',
-      actorial_performance: {
-        id: 'shared_scene_invitation',
-        label: 'shared-scene invitation',
-        contract: 'Make room beside the evidence.',
-      },
-    }),
-    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
-    dramaticReleaseFrame: { active: false, entries: [] },
-  });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
-
-  assert.match(prompt, /I make room for you beside \[named public object\]/u);
-  assert.match(prompt, /bracket replaced by a scene object/iu);
-});
-
-test('a request for the next written entry must be answered before the dramatic beat', () => {
+test('keeps a complete typed counterpressure pair inside the tactic slot only', () => {
   const responseConfiguration = configuration({
     engagement_stance: 'charismatic',
     actorial_part: 'examiner',
@@ -332,10 +123,10 @@ test('a request for the next written entry must be answered before the dramatic 
     actorial_performance: {
       id: 'dramatic_counterpressure',
       label: 'dramatic counterpressure',
-      contract: 'Break the easy answer with the route evidence.',
+      contract: 'Challenge the easy verdict with contrary evidence.',
     },
   });
-  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+  const obligation = compileTutorStubPerformanceObligationContract({
     responseConfiguration,
     publicWorld: {
       visibility: 'public',
@@ -353,42 +144,107 @@ test('a request for the next written entry must be answered before the dramatic 
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next about the gliders?',
     responseConfiguration,
-    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
     dramaticReleaseFrame: { active: false, entries: [] },
-    performanceObligationContract,
+    performanceObligationContract: obligation,
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.equal(contract.opening.writable_entry_requested, true);
-  assert.match(prompt, /Begin exactly with “Write:”/u);
-  assert.match(prompt, /only then perform the selected development beat/iu);
-  assert.match(prompt, /COUNTERPRESSURE PAIR/u);
-  assert.match(prompt, /TARGET — The easy answer sends every glider by the direct route\./u);
-  assert.match(prompt, /CONTRARY EVIDENCE — The route board closes the direct crossing\./u);
+  assert.equal(obligation.complete, true);
+  assert.match(contract.host_plan.slots.find((slot) => slot.id === 'tactic').semantic_instruction, /TARGET —/u);
+  assert.ok(prompt.indexOf('TACTIC —') < prompt.indexOf('COUNTERPRESSURE PAIR —'));
+  assert.ok(prompt.indexOf('COUNTERPRESSURE PAIR —') < prompt.indexOf('HANDOFF —'));
   assert.equal(prompt.split('The easy answer sends every glider by the direct route.').length - 1, 1);
   assert.equal(prompt.split('The route board closes the direct crossing.').length - 1, 1);
-  assert.doesNotMatch(prompt, /use the verb “breaks”/u);
 });
 
-test('a Write entry complements rather than duplicates evidence due in the same reply', () => {
-  const clue =
-    'The depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in.';
-  const contract = buildTutorStubFirstDraftContract({
-    learnerText: 'What should I write next about the chargers?',
-    responseConfiguration: configuration(),
-    responseCompositionFrame: { learner_move: { summary: 'The learner asks for the next entry.' } },
-    dramaticReleaseFrame: {
-      active: true,
-      requiresEnactment: true,
-      entries: [{ mode: 'enacted_role', role: 'depot engineer', surface: clue }],
+test('uses the delivered safe tactic after typed counterpressure is inapplicable', () => {
+  const requested = configuration({
+    engagement_stance: 'charismatic',
+    actorial_performance: {
+      id: 'dramatic_counterpressure',
+      label: 'dramatic counterpressure',
+      contract: 'Challenge the easy verdict with contrary evidence.',
     },
   });
-  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const obligation = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: requested,
+    publicWorld: {
+      visibility: 'public',
+      setting: 'The trial-book rests beside the crucible.',
+      question: 'Who struck the coins?',
+      public_objects: ['trial-book', 'crucible'],
+    },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'What should I write?',
+      public_evidence: [{ surface: 'The trial-book names the crucible.' }],
+    },
+  });
+  const delivered = {
+    ...requested,
+    actorial_performance: obligation.selection.actorial_performance,
+    speaking_transition: obligation.selection.speaking_transition,
+  };
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write?',
+    responseConfiguration: delivered,
+    dramaticReleaseFrame: { active: false, entries: [] },
+    performanceObligationContract: obligation,
+  });
+  const tactic = contract.host_plan.slots.find((slot) => slot.id === 'tactic');
 
-  assert.equal(contract.opening.writable_entry_requested, true);
-  assert.equal(contract.opening.complementary_to_due_evidence, true);
-  assert.match(prompt, /pre-turn public status or evidentiary limit/iu);
-  assert.match(prompt, /do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW/iu);
-  assert.match(prompt, /SINGLE DELIVERY — State each due clue exactly once/iu);
-  assert.equal(prompt.split(clue).length - 1, 1);
+  assert.equal(obligation.tactic_applicability.applicable, false);
+  assert.equal(contract.performance.tactic, 'evidentiary_boundary');
+  assert.match(tactic.instruction, /delivered boundary tactic/iu);
+  assert.doesNotMatch(tactic.instruction, /Make the already-public shortcut/iu);
+});
+
+test('mandatory closure owns the handoff and forbids a further question', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'So the evidence establishes the finding.',
+    responseConfiguration: configuration({ action_family: 'clarify_distinction' }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+    questionSupport: { tutorInstruction: 'Ask what the clue changes.' },
+    dialogueClosureFrame: { mandatory: true, allowCheckIn: false },
+  });
+  const handoff = contract.host_plan.slots.find((slot) => slot.id === 'handoff');
+
+  assert.equal(handoff.closure, true);
+  assert.match(handoff.instruction, /close the inquiry; ask no question/iu);
+  assert.doesNotMatch(tutorStubFirstDraftContractPrompt(contract), /Ask what the clue changes/iu);
+});
+
+test('fails closed when a supplied typed public obligation contract is incomplete', () => {
+  const incomplete = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: configuration(),
+    publicWorld: { visibility: 'private', public_objects: [] },
+    publicTurn: { visibility: 'public', learner_move: 'What should I write?' },
+  });
+
+  assert.equal(incomplete.complete, false);
+  assert.throws(
+    () =>
+      buildTutorStubFirstDraftContract({
+        learnerText: 'What should I write?',
+        responseConfiguration: configuration(),
+        dramaticReleaseFrame: { active: false, entries: [] },
+        performanceObligationContract: incomplete,
+      }),
+    /host plan invalid: invalid_performance_obligation_contract/iu,
+  );
+});
+
+test('renderer fails closed if required slot ordering or ownership is corrupted', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'I am not convinced.',
+    responseConfiguration: configuration(),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const wrongOrder = structuredClone(contract);
+  wrongOrder.host_plan.ordered_slot_ids = ['uptake', 'tactic', 'part', 'handoff'];
+  assert.throws(() => tutorStubFirstDraftContractPrompt(wrongOrder), /invalid_slot_order/iu);
+
+  const missingOwner = structuredClone(contract);
+  missingOwner.host_plan.axis_ownership.actorial_part = [];
+  assert.throws(() => tutorStubFirstDraftContractPrompt(missingOwner), /unowned_delivered_axis:actorial_part/iu);
 });
