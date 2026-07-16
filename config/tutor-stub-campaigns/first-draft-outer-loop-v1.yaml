@@ -14,16 +14,113 @@ purpose: >-
 current:
   campaign_version: 31
   label: V31
-  state: working_predeclared
+  state: awaiting_working_screen
   working_iteration: 1
   working_screen_id: first-draft-working-screens-v11
   working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v11.yaml
   primary_working_screen_id: first-draft-working-screens-v11
   primary_working_screen_config: config/tutor-stub-campaigns/first-draft-working-screens-v11.yaml
   acceptance_config: null
-  active_working_history: []
-  active_last_observation: null
-  working_history_scope: preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights
+  active_working_history:
+    - &v31_working_observation
+      version: 31
+      working_iteration: 1
+      status: development_hard_cell_failed
+      kind: non_held_out_hard_cell_first_draft_failure
+      result_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/working-screen-result.json
+      run_head: 959775961e500dd847fc43f47f86ba60fd9fff82
+      provenance:
+        working_screen_config_sha256: bae7c07b462a2cf11ba498f4d1001d9eff6490d106539edfe96db842616b8841
+        campaign_validation_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/campaign-validation.json
+        campaign_validation_sha256: 55e06a77985e2b8f72d973b6d59f503e627b712bd987a98bfe9e1d80331a0f57
+        preflight_execution_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight-execution.json
+        preflight_execution_sha256: a6c936df8593d191943d6c6a4d74b7ede4ba43255172ef53a8e0e1fdfc85f41c
+        turn_artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/tallow_answer_seeking/turn-5.json
+        turn_artifact_sha256: b0c6d9444bc022a94cc4272398c2e051898fad17838dca11516c10d6d316c8a4
+        result_sha256: cf0bba78e8ddd209ff59a1a0accf021b4d19776ad6dda7a3d6422a1aee8d1a9a
+        clean_worktree: true
+      structural_preflight_ready: true
+      deterministic_execution_preflight_passed: true
+      preflight_observation:
+        execution: passed_once_without_retry
+        commands: 9
+        model_calls: 0
+        suites:
+          - id: audit_contracts
+            passed: 434
+            total: 434
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/02-focused-audit_contracts.stdout.log
+            sha256: 86f4a203c0487afc45ed2dbdb5d99ca0d51e2e5acc7fe9451b12ea6b986abf4f
+          - id: interactive_modes
+            passed: 24
+            total: 24
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/03-focused-interactive_modes.stdout.log
+            sha256: 6629246bf354b43fbddb476daabdaa0451aa788e77401c494490fbada342bd6e
+          - id: adaptive_evidence
+            passed: 4
+            total: 4
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log
+            sha256: 1041cd9beab2c9b00a976e0d6cc0d94c42d154967817ba6d0efcd4f46747a96a
+          - id: campaign_orchestration
+            passed: 81
+            total: 81
+            artifact: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log
+            sha256: eaaeefa647a76580b1faae0447433065319d55d6d26817618209ab711e5b0c07
+        model_free_fixtures_passed: 4
+      model_calls: 1
+      candidates_generated: 1
+      completed_candidates: 1
+      completed_turns: 1
+      hard_cell: tallow_answer_seeking
+      hard_cell_turn: 5
+      completed_draws: 1
+      strict_originals_accepted: 0
+      original_candidate_acceptance_rate: 0
+      mean_configuration_realization: 0.667
+      maximum_possible_originals_accepted: 3
+      maximum_possible_configuration_realization: 0.91675
+      final_safety_failures: 0
+      transcript_specific_uptake_failures: 0
+      mechanical_repairs: 0
+      model_rewrites: 0
+      deterministic_fallbacks: 0
+      semantic_adjudicator_calls: 0
+      semantic_recognition_corrections: 0
+      transport_normalized_outputs: 0
+      transport_normalization_count: 0
+      joint_performance_model_outputs: 1
+      valid_joint_performance_outputs: 1
+      joint_performance_ownership_passes: 0
+      joint_performance_ownership_failures: 1
+      source_surface_accessibility_passes: 1
+      source_surface_accessibility_failures: 0
+      mean_original_latency_ms: 9787
+      mean_total_tutor_latency_ms: 9787
+      token_usage: { input: 17903, output: 247, total: 18150 }
+      dominant_failure_clusters:
+        - { cluster: jointPerformanceAudit:composite_part_requirement_failed:actorial_part, count: 3 }
+        - { cluster: actorialRealizationAudit:missing_selected_actorial_part, count: 1 }
+        - { cluster: jointPerformanceAudit:axis_not_realized_in_owner:action_family, count: 1 }
+        - { cluster: jointPerformanceAudit:axis_not_realized_in_owner:actorial_part, count: 1 }
+      attempted_cells: [tallow_answer_seeking]
+      unstarted_cells:
+        - ravensmark_affective_resistant
+        - larkspur_premature_closure
+        - foxtrot_diligent
+      seed_dispositions:
+        - { seed: 20262100, status: consumed_development_failed_retired }
+        - { seed: 20262101, status: retired_unconsumed_unstarted_after_hard_cell_failure }
+        - { seed: 20262102, status: retired_unconsumed_unstarted_after_hard_cell_failure }
+        - { seed: 20262103, status: retired_unconsumed_unstarted_after_hard_cell_failure }
+      terminal_action:
+        v32_status: not_predeclared
+        generation_claim: failed_non_held_out_working_evidence
+        reason: >-
+          The first hard-cell draw was safe but failed strict joint ownership
+          and full configuration realization. The 4/4 original gate became
+          mathematically impossible, so the remaining cells were not started.
+  active_last_observation: *v31_working_observation
+  working_history_scope: preserved_v27_primary_history_with_v28_v29_v30_preflights_and_v31_hard_cell_failure
   version_advance_from: &v30_preflight_observation
     version: 30
     working_iteration: 1
@@ -1206,19 +1303,19 @@ seed_ledger:
     - { version: 30, seed: 20262003, status: retired_unconsumed_after_preflight_failure }
   development:
     - seed: 20262100
-      status: reusable_non_held_out_development
+      status: consumed_development_failed_retired
       cell: tallow_answer_seeking
       screen: first-draft-working-screens-v11
     - seed: 20262101
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_unstarted_after_hard_cell_failure
       cell: ravensmark_affective_resistant
       screen: first-draft-working-screens-v11
     - seed: 20262102
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_unstarted_after_hard_cell_failure
       cell: larkspur_premature_closure
       screen: first-draft-working-screens-v11
     - seed: 20262103
-      status: reusable_non_held_out_development
+      status: retired_unconsumed_unstarted_after_hard_cell_failure
       cell: foxtrot_diligent
       screen: first-draft-working-screens-v11
   held_out:
@@ -1290,10 +1387,15 @@ claim_boundary: >-
   serialized failure envelope did not preserve the failed subtest output. The
   failure is therefore recorded conservatively as transient and unclassified,
   not as generation evidence. All four 202620xx labels are retired unconsumed.
-  V31 reuses the exact V30 prefixes, saved models, efforts, draws, speaking,
+  V31 reused the exact V30 prefixes, saved models, efforts, draws, speaking,
   recovery, audit, delivery, safety, and strict gates with fresh 202621xx
-  development labels. Its only change partitions the byte-identical focused
-  test inventory into four named suites and preserves suite output so any
-  future preflight failure is attributable without an ambiguous rerun. V31 is
-  predeclared working evidence only; V32+ remain available until held-out
-  acceptance passes.
+  development labels. Its only implementation change partitioned the
+  byte-identical focused-test inventory into four named suites and preserved
+  suite output. All four suites and all four model-free fixtures passed once,
+  without retry. The first hard Tallow draw was safe but failed strict joint
+  actorial and handoff ownership: 0/1 originals and 0.667 configuration
+  realization. The 4/4 gate was then mathematically impossible, so the other
+  three cells were not started. Seed 20262100 is consumed and retired; the
+  other three V31 labels are retired unconsumed. V31 is failed non-held-out
+  working evidence only. No V32 screen, config, or seed is predeclared here;
+  V32+ remain available until held-out acceptance passes.

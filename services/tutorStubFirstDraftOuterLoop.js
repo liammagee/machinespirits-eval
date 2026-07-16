@@ -274,6 +274,19 @@ const V29_ITERATION_1_PREFLIGHT = Object.freeze({
   modelFreeAuditSha256: '361dd6c0579492f411a18ad49ca975fc6a096b576213f0fe3710f84d54e464b5',
 });
 
+const V31_ITERATION_1_RESULT = Object.freeze({
+  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/working-screen-result.json',
+  runHead: '959775961e500dd847fc43f47f86ba60fd9fff82',
+  configSha256: 'bae7c07b462a2cf11ba498f4d1001d9eff6490d106539edfe96db842616b8841',
+  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/campaign-validation.json',
+  campaignValidationSha256: '55e06a77985e2b8f72d973b6d59f503e627b712bd987a98bfe9e1d80331a0f57',
+  preflightExecutionArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight-execution.json',
+  preflightExecutionSha256: 'a6c936df8593d191943d6c6a4d74b7ede4ba43255172ef53a8e0e1fdfc85f41c',
+  turnArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/tallow_answer_seeking/turn-5.json',
+  turnArtifactSha256: 'b0c6d9444bc022a94cc4272398c2e051898fad17838dca11516c10d6d316c8a4',
+  resultSha256: 'cf0bba78e8ddd209ff59a1a0accf021b4d19776ad6dda7a3d6422a1aee8d1a9a',
+});
+
 function requiredString(value, label) {
   const normalized = String(value || '').trim();
   if (!normalized) throw new Error(`${label} is required`);
@@ -1214,6 +1227,166 @@ function validateV30Iteration1Advance(advance, label) {
   validateV30Iteration1PreflightObservation(advance, label);
 }
 
+function validateV31Iteration1Observation(observation, label) {
+  expect(observation?.version, 31, `${label} version`);
+  expect(observation?.working_iteration, 1, `${label} working iteration`);
+  expect(observation?.status, 'development_hard_cell_failed', `${label} status`);
+  expect(
+    observation?.kind,
+    'non_held_out_hard_cell_first_draft_failure',
+    `${label} kind`,
+  );
+  expect(observation?.result_artifact, V31_ITERATION_1_RESULT.artifact, `${label} result artifact`);
+  expect(observation?.run_head, V31_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V31_ITERATION_1_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V31_ITERATION_1_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V31_ITERATION_1_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
+  expect(
+    observation?.provenance?.preflight_execution_artifact,
+    V31_ITERATION_1_RESULT.preflightExecutionArtifact,
+    `${label} preflight execution artifact`,
+  );
+  expect(
+    observation?.provenance?.preflight_execution_sha256,
+    V31_ITERATION_1_RESULT.preflightExecutionSha256,
+    `${label} preflight execution hash`,
+  );
+  expect(
+    observation?.provenance?.turn_artifact,
+    V31_ITERATION_1_RESULT.turnArtifact,
+    `${label} turn artifact`,
+  );
+  expect(
+    observation?.provenance?.turn_artifact_sha256,
+    V31_ITERATION_1_RESULT.turnArtifactSha256,
+    `${label} turn artifact hash`,
+  );
+  expect(
+    observation?.provenance?.result_sha256,
+    V31_ITERATION_1_RESULT.resultSha256,
+    `${label} result hash`,
+  );
+  expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
+  expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
+  expect(
+    observation?.deterministic_execution_preflight_passed,
+    true,
+    `${label} deterministic preflight`,
+  );
+  expect(
+    observation?.preflight_observation?.execution,
+    'passed_once_without_retry',
+    `${label} preflight execution mode`,
+  );
+  expect(observation?.preflight_observation?.commands, 9, `${label} preflight commands`);
+  expect(observation?.preflight_observation?.model_calls, 0, `${label} preflight model calls`);
+  expectJson(observation?.preflight_observation?.suites, [
+    {
+      id: 'audit_contracts',
+      passed: 434,
+      total: 434,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
+      sha256: '86f4a203c0487afc45ed2dbdb5d99ca0d51e2e5acc7fe9451b12ea6b986abf4f',
+    },
+    {
+      id: 'interactive_modes',
+      passed: 24,
+      total: 24,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
+      sha256: '6629246bf354b43fbddb476daabdaa0451aa788e77401c494490fbada342bd6e',
+    },
+    {
+      id: 'adaptive_evidence',
+      passed: 4,
+      total: 4,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
+      sha256: '1041cd9beab2c9b00a976e0d6cc0d94c42d154967817ba6d0efcd4f46747a96a',
+    },
+    {
+      id: 'campaign_orchestration',
+      passed: 81,
+      total: 81,
+      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
+      sha256: 'eaaeefa647a76580b1faae0447433065319d55d6d26817618209ab711e5b0c07',
+    },
+  ], `${label} focused preflight suites`);
+  expect(
+    observation?.preflight_observation?.model_free_fixtures_passed,
+    4,
+    `${label} model-free fixtures`,
+  );
+  for (const field of ['model_calls', 'candidates_generated', 'completed_candidates', 'completed_turns']) {
+    expect(observation?.[field], 1, `${label} ${field}`);
+  }
+  expect(observation?.hard_cell, 'tallow_answer_seeking', `${label} hard cell`);
+  expect(observation?.hard_cell_turn, 5, `${label} hard-cell turn`);
+  expect(observation?.completed_draws, 1, `${label} completed draws`);
+  expect(observation?.strict_originals_accepted, 0, `${label} strict originals`);
+  expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 0.667, `${label} realization`);
+  expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum originals`);
+  expect(
+    observation?.maximum_possible_configuration_realization,
+    0.91675,
+    `${label} maximum realization`,
+  );
+  for (const field of [
+    'final_safety_failures', 'transcript_specific_uptake_failures',
+    'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
+    'semantic_adjudicator_calls', 'semantic_recognition_corrections',
+    'transport_normalized_outputs', 'transport_normalization_count',
+  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  expect(observation?.joint_performance_model_outputs, 1, `${label} joint outputs`);
+  expect(observation?.valid_joint_performance_outputs, 1, `${label} valid joint outputs`);
+  expect(observation?.joint_performance_ownership_passes, 0, `${label} ownership passes`);
+  expect(observation?.joint_performance_ownership_failures, 1, `${label} ownership failures`);
+  expect(observation?.source_surface_accessibility_passes, 1, `${label} accessibility passes`);
+  expect(observation?.source_surface_accessibility_failures, 0, `${label} accessibility failures`);
+  expect(observation?.mean_original_latency_ms, 9787, `${label} original latency`);
+  expect(observation?.mean_total_tutor_latency_ms, 9787, `${label} total tutor latency`);
+  expectJson(
+    observation?.token_usage,
+    { input: 17903, output: 247, total: 18150 },
+    `${label} token usage`,
+  );
+  expectJson(observation?.dominant_failure_clusters, [
+    { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 3 },
+    { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:action_family', count: 1 },
+    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
+  ], `${label} failure clusters`);
+  expectJson(observation?.attempted_cells, ['tallow_answer_seeking'], `${label} attempted cells`);
+  expectJson(observation?.unstarted_cells, [
+    'ravensmark_affective_resistant',
+    'larkspur_premature_closure',
+    'foxtrot_diligent',
+  ], `${label} unstarted cells`);
+  expectJson(observation?.seed_dispositions, [
+    { seed: 20262100, status: 'consumed_development_failed_retired' },
+    { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+    { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+    { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+  ], `${label} seed dispositions`);
+  expect(observation?.terminal_action?.v32_status, 'not_predeclared', `${label} V32 status`);
+  expect(
+    observation?.terminal_action?.generation_claim,
+    'failed_non_held_out_working_evidence',
+    `${label} generation claim`,
+  );
+}
+
 function validateStateMachine(manifest) {
   const states = manifest.state_machine?.states || {};
   for (const [id, requirement] of Object.entries(REQUIRED_STATES)) {
@@ -1318,7 +1491,9 @@ function validateSeedLedger(manifest) {
     'reusable_non_held_out_development',
     'consumed_development_reusable',
     'consumed_development_retired_after_stagnation',
+    'consumed_development_failed_retired',
     'retired_unstarted_due_to_stagnation',
+    'retired_unconsumed_unstarted_after_hard_cell_failure',
     'retired_unconsumed_after_preflight_failure',
   ]);
   for (const entry of development) {
@@ -2726,13 +2901,25 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   }
 
   if (currentVersion === 31) {
-    expect(state.currentState, 'working_predeclared', 'V31 current state');
+    expect(state.currentState, 'awaiting_working_screen', 'V31 current state');
     expect(workingIteration, 1, 'V31 working iteration');
-    expectJson(manifest.current?.active_working_history, [], 'V31 active working history');
-    expect(manifest.current?.active_last_observation, null, 'V31 active last observation');
+    const activeHistory = manifest.current?.active_working_history || [];
+    if (activeHistory.length !== 1) {
+      throw new Error('V31 active working history must preserve exactly its hard-cell failure');
+    }
+    validateV31Iteration1Observation(activeHistory[0], 'V31 active working history');
+    validateV31Iteration1Observation(
+      manifest.current?.active_last_observation,
+      'V31 active last observation',
+    );
+    expectJson(
+      manifest.current?.active_last_observation,
+      activeHistory[0],
+      'V31 active last observation and history',
+    );
     expect(
       manifest.current?.working_history_scope,
-      'preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights',
+      'preserved_v27_primary_history_with_v28_v29_v30_preflights_and_v31_hard_cell_failure',
       'V31 inherited working-history scope',
     );
     const inheritedHistory = manifest.current?.prior_version_working_history || [];
@@ -2898,10 +3085,10 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
       })),
       [
-        { seed: 20262100, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262101, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262102, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262103, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262100, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v11' },
+        { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v11' },
       ],
       'V31 development seed ledger',
     );
