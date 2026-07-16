@@ -1,4 +1,8 @@
-import { auditTutorStubResponseConfiguration } from './tutorStubResponseConfiguration.js';
+import { getJointPerformanceStanceContract } from './engagementRegisterRegistry.js';
+import {
+  auditTutorStubResponseConfiguration,
+  tutorStubResponseConfigurationPrompt,
+} from './tutorStubResponseConfiguration.js';
 
 export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA =
   'machinespirits.tutor-stub.joint-performance-host-plan.v2';
@@ -13,6 +17,8 @@ const TOP_LEVEL_KEYS = Object.freeze(['uptake', 'performance', 'handoff']);
 const PERFORMANCE_KEYS = Object.freeze(['entry', 'response']);
 const MODEL_SPAN_IDS = Object.freeze(['uptake', 'performance_entry', 'performance_response', 'handoff']);
 const HOST_PLAN_BLOCK = /\[Tutor-only host plan\][\s\S]*?\[End tutor-only host plan\]/u;
+const RESPONSE_CONFIGURATION_BLOCK =
+  /\[Tutor-only response configuration\][\s\S]*?\[End tutor-only response configuration\]/u;
 const SLOT_LABEL_PATTERN = /^(?:uptake|performance(?:\s+(?:entry|response))?|entry|response|source|handoff)\s*(?::|—|-)/iu;
 const NON_UPTAKE_QUOTE_PATTERN = /[“”"]/u;
 const SENTENCE_TERMINATOR_PATTERN = /[.!?](?:[”"'’])?$/u;
@@ -133,10 +139,30 @@ function actionOnlyHandoffInstruction(contract, handoffInstruction) {
   return actionInstruction;
 }
 
+function jointPerformanceCompatibility(contract, entryInstruction) {
+  const decisions = Array.isArray(contract?.compatibility?.decisions)
+    ? [...contract.compatibility.decisions]
+    : [];
+  const advocateDelegation = decisions.includes(
+    'advocate_case_delegates_concrete_test_to_final_handoff',
+  );
+  if (!advocateDelegation) {
+    return { decisions, entryInstruction, performanceResponseInstruction: null };
+  }
+  return {
+    decisions,
+    entryInstruction: `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, begin “My case is” and state the strongest licensed public case and its limit around one already-public object. Leave only the concrete next action for HANDOFF; keep what could break or resist the case for PERFORMANCE.response.`,
+    performanceResponseInstruction:
+      'Make the advocate’s case answerable here: name what would break, resist, or count against it. Do not put the concrete next action here; HANDOFF owns that action.',
+  };
+}
+
 export function buildTutorStubJointPerformanceHostPlan(contract = null) {
   const slots = v1HostSlots(contract);
   const source = slots.get('source');
   const sharedSceneInvitation = contract?.performance?.tactic === 'shared_scene_invitation';
+  const compatibility = jointPerformanceCompatibility(contract, oneLine(slots.get('part').instruction));
+  const stanceContract = getJointPerformanceStanceContract(contract?.performance?.engagement_stance);
   return {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA,
     host_sentence_count: 4,
@@ -155,8 +181,11 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
     slots: {
       uptake: { instruction: oneLine(slots.get('uptake').instruction) },
       performance: {
-        entry_instruction: oneLine(slots.get('part').instruction),
+        entry_instruction: compatibility.entryInstruction,
         response_instruction: oneLine(slots.get('tactic').instruction),
+        compatibility_instruction: compatibility.performanceResponseInstruction,
+        stance_instruction: oneLine(stanceContract.contract),
+        stance_instruction_source: stanceContract.source,
         semantic_instruction: oneLine(slots.get('tactic').semantic_instruction),
         response_contract: sharedSceneInvitation
           ? {
@@ -169,7 +198,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         joint_instruction: [
           `Treat entry and response as one ${oneLine(contract?.performance?.actorial_part_label) || 'public part'} performance beat.`,
           `Across them, make the ${oneLine(contract?.performance?.tactic_label) || 'selected tactic'} and ${oneLine(contract?.performance?.engagement_stance) || 'selected'} stance visible.`,
-          oneLine(contract?.performance?.stance_instruction),
+          oneLine(stanceContract.contract),
         ]
           .filter(Boolean)
           .join(' '),
@@ -181,6 +210,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         instruction: actionOnlyHandoffInstruction(contract, oneLine(slots.get('handoff').instruction)),
       },
     },
+    compatibility: { decisions: compatibility.decisions },
     axis_ownership: {
       audience_register: ['uptake', 'performance', 'handoff'],
       lexical_accessibility: ['uptake', 'performance', 'handoff'],
@@ -199,6 +229,7 @@ export function tutorStubJointPerformanceFirstDraftPrompt(contract = null) {
   const wordTarget = Number(
     contract?.language?.host_sentence_word_target || contract?.language?.max_average_sentence_words || 24,
   );
+  const draftingWordCeiling = Math.min(wordTarget, Math.max(8, wordTarget - 3));
   const plainNovice =
     ['adult_novice', 'child'].includes(contract?.language?.audience_register) &&
     ['plain', 'glossed_plain'].includes(contract?.language?.lexical_accessibility);
@@ -207,11 +238,14 @@ export function tutorStubJointPerformanceFirstDraftPrompt(contract = null) {
     'Return exactly one JSON object and nothing else:',
     '{"uptake":"...","performance":{"entry":"...","response":"..."},"handoff":"..."}',
     'Use exactly those keys in that order. Every string must be one complete public sentence on one line, with terminal punctuation and valid JSON escaping.',
-    `Keep each sentence at most ${wordTarget} words. Use one voice, common ${oneLine(contract?.language?.lexical_accessibility) || 'plain'} words, and one relation per sentence.${plainNovice ? ' Gloss the learner’s specialist term in uptake.' : ''}`,
+    `Draft each sentence at most ${draftingWordCeiling} words, leaving room below the hard ${wordTarget}-word limit. Count every sentence’s words before emitting JSON. Use one voice, common ${oneLine(contract?.language?.lexical_accessibility) || 'plain'} words, and one relation per sentence.${plainNovice ? ' Gloss the learner’s specialist term in uptake.' : ''}`,
     'Do not copy, paraphrase, introduce, label, or quote SOURCE. The host inserts SOURCE between performance.entry and performance.response. Only uptake may contain quotation marks when its instruction explicitly requires Write: wording.',
     `UPTAKE — ${plan.slots.uptake.instruction}`,
     `PERFORMANCE ENTRY — ${plan.slots.performance.entry_instruction}`,
     `PERFORMANCE RESPONSE — ${plan.slots.performance.response_instruction}`,
+    plan.slots.performance.compatibility_instruction
+      ? `PERFORMANCE COMPATIBILITY — ${plan.slots.performance.compatibility_instruction}`
+      : null,
     plan.slots.performance.semantic_instruction
       ? `PERFORMANCE SEMANTICS — ${plan.slots.performance.semantic_instruction}`
       : null,
@@ -243,10 +277,32 @@ export function replaceTutorStubFrozenRequestWithJointPerformancePrompt(bundle =
     throw new Error(`joint performance frozen request requires exactly one host plan block; found ${matches.length}`);
   }
   const hostPlan = buildTutorStubJointPerformanceHostPlan(refreshed.firstDraftContract);
-  latest.content = content.replace(
+  let updatedContent = content.replace(
     HOST_PLAN_BLOCK,
     tutorStubJointPerformanceFirstDraftPrompt(refreshed.firstDraftContract),
   );
+  const responseConfigurationMatches = updatedContent.match(
+    new RegExp(RESPONSE_CONFIGURATION_BLOCK.source, 'gu'),
+  ) || [];
+  if (responseConfigurationMatches.length > 1) {
+    throw new Error(
+      `joint performance frozen request requires at most one response configuration block; found ${responseConfigurationMatches.length}`,
+    );
+  }
+  if (responseConfigurationMatches.length === 1) {
+    const configuration =
+      refreshed.speakingResponseConfiguration || refreshed.selectedResponseConfiguration;
+    if (!configuration) {
+      throw new Error('joint performance frozen request cannot rebuild response configuration');
+    }
+    updatedContent = updatedContent.replace(
+      RESPONSE_CONFIGURATION_BLOCK,
+      tutorStubResponseConfigurationPrompt(configuration, {
+        stanceContractOverride: hostPlan.slots.performance.stance_instruction,
+      }),
+    );
+  }
+  latest.content = updatedContent;
   refreshed.request.messages = messages;
   refreshed.jointPerformanceFirstDraft = {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,

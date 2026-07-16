@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
 import {
+  getEngagementStanceDefinitions,
+  getJointPerformanceStanceContract,
+} from '../services/engagementRegisterRegistry.js';
+import {
   applyTutorStubJointPerformanceOwnershipAudit,
   auditTutorStubJointPerformanceOwnership,
   buildTutorStubJointPerformanceHostPlan,
@@ -23,6 +27,7 @@ import {
   tutorStubStructuredFirstDraftPrompt,
 } from '../services/tutorStubStructuredFirstDraft.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { tutorStubResponseConfigurationPrompt } from '../services/tutorStubResponseConfiguration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPLAY_SCRIPT = path.join(ROOT, 'scripts', 'replay-tutor-stub-frozen-turns.js');
@@ -95,13 +100,144 @@ test('v2 prompt makes part, tactic, and stance one joint beat while keeping hand
   assert.match(prompt, /JOINT PERFORMANCE —/u);
   assert.match(prompt, /PERFORMANCE RESPONSE CONTRACT — Ask one open what\/how\/which question/u);
   assert.match(prompt, /HANDOFF ACTION — Name the next available public check/u);
+  assert.equal(plan.slots.performance.compatibility_instruction, null);
+  assert.doesNotMatch(prompt, /PERFORMANCE COMPATIBILITY —/u);
   assert.doesNotMatch(plan.slots.handoff.instruction, /low-pressure|preserve learner choice/iu);
   assert.doesNotMatch(prompt, /"part"\s*:|"tactic"\s*:/u);
 });
 
-test('v2 frozen replacement changes only the final host-plan block and records explicit schemas', () => {
+test('v2 prompt drafts below the hard slot limit while the parser retains the exact hard boundary', () => {
+  const contract = firstDraftContract();
+  contract.language.host_sentence_word_target = 17;
+  const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
+  const seventeenWordEntry =
+    'Together we hold the marked shilling beside the touchstone while the balance waits on the assay bench.';
+  const eighteenWordEntry =
+    'Together we hold the marked shilling beside the touchstone while the balance waits on the assay bench nearby.';
+
+  assert.match(prompt, /Draft each sentence at most 14 words, leaving room below the hard 17-word limit/iu);
+  assert.match(prompt, /Count every sentence’s words before emitting JSON/iu);
+  assert.doesNotThrow(() =>
+    parseTutorStubJointPerformanceFirstDraft(
+      validRaw({ performance: { entry: seventeenWordEntry } }),
+      { maxWordsPerSlot: 17 },
+    ),
+  );
+  assert.throws(
+    () =>
+      parseTutorStubJointPerformanceFirstDraft(
+        validRaw({ performance: { entry: eighteenWordEntry } }),
+        { maxWordsPerSlot: 17 },
+      ),
+    /slot_exceeds_word_target:performance\.entry:18>17/u,
+  );
+});
+
+test('v2 compiles declared advocate delegation into a breakable performance and action-only handoff', () => {
+  const advocateConfiguration = configuration({
+    engagement_stance: 'precise',
+    scene_immersion: 'minimal',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: {
+      id: 'unadorned_report',
+      label: 'unadorned report',
+      contract: 'State the live public case directly and accountably.',
+    },
+  });
+  const contract = firstDraftContract({ responseConfiguration: advocateConfiguration });
+  const plan = buildTutorStubJointPerformanceHostPlan(contract);
+  const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
+
+  assert.ok(
+    contract.compatibility.decisions.includes(
+      'advocate_case_delegates_concrete_test_to_final_handoff',
+    ),
+  );
+  assert.match(plan.slots.performance.entry_instruction, /leave only the concrete next action for HANDOFF/iu);
+  assert.match(plan.slots.performance.entry_instruction, /what could break or resist the case for PERFORMANCE\.response/iu);
+  assert.match(plan.slots.performance.entry_instruction, /strongest licensed public case and its limit/iu);
+  assert.match(plan.slots.performance.entry_instruction, /one already-public object/iu);
+  assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
+  assert.match(plan.slots.performance.compatibility_instruction, /name what would break, resist, or count against it/iu);
+  assert.match(plan.slots.performance.compatibility_instruction, /HANDOFF owns that action/iu);
+  assert.match(prompt, /PERFORMANCE COMPATIBILITY —/u);
+
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake: 'That limit keeps the accusation open.',
+        performance: {
+          entry: 'My case is that the ledger supports Crane, but does not settle the quote.',
+          response: 'My case breaks if the record cannot tie Crane to that quote.',
+        },
+        handoff: 'Next, check the ledger against the call log.',
+      }),
+      { maxWordsPerSlot: 18 },
+    ),
+  });
+  const audit = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: advocateConfiguration,
+    world: {
+      title: 'The Recalled Edition',
+      setting: 'A ledger and call log lie open on the archive desk.',
+      question: 'Who inserted the false quote?',
+      premiseById: new Map(),
+    },
+  });
+
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.axes.actorial_performance.visible, true);
+  assert.equal(audit.axes.engagement_stance.visible, true);
+  assert.equal(audit.axes.action_family.owner, 'handoff');
+  assert.equal(audit.axes.action_family.visible, true);
+});
+
+test('v2 compiles precise and charismatic stance as action-neutral performance contracts', () => {
+  const preciseContract = firstDraftContract({
+    responseConfiguration: configuration({ engagement_stance: 'precise' }),
+  });
+  const charismaticContract = firstDraftContract({
+    responseConfiguration: configuration({ engagement_stance: 'charismatic' }),
+  });
+  const precise = buildTutorStubJointPerformanceHostPlan(preciseContract).slots.performance;
+  const charismatic = buildTutorStubJointPerformanceHostPlan(charismaticContract).slots.performance;
+
+  assert.equal(precise.stance_instruction_source, 'stance_definition');
+  assert.match(precise.stance_instruction, /distinction or warrant cleanly on the current public material/iu);
+  assert.match(precise.stance_instruction, /expose what would count against it/iu);
+  assert.doesNotMatch(precise.stance_instruction, /ask for one check/iu);
+  assert.equal(charismatic.stance_instruction_source, 'stance_definition');
+  assert.match(charismatic.stance_instruction, /sharper contrast, consequence, or challenge/iu);
+  assert.match(charismatic.stance_instruction, /leaving refusal legible/iu);
+  assert.doesNotMatch(charismatic.stance_instruction, /curriculum-grounded move/iu);
+  assert.notEqual(precise.stance_instruction, charismatic.stance_instruction);
+  for (const performance of [precise, charismatic]) {
+    assert.match(performance.stance_instruction, /HANDOFF owns that action/iu);
+  }
+});
+
+test('every router stance declares a joint-performance contract and other stances fail safe', () => {
+  const definitions = getEngagementStanceDefinitions();
+  for (const [stance, definition] of Object.entries(definitions)) {
+    if (definition.router_selectable !== true) continue;
+    assert.ok(definition.joint_performance_contract?.trim(), stance);
+    assert.equal(getJointPerformanceStanceContract(stance).source, 'stance_definition', stance);
+  }
+  const fallback = getJointPerformanceStanceContract('ironic');
+  assert.equal(fallback.source, 'safe_fallback');
+  assert.match(fallback.contract, /sentence rhythm, contrast/iu);
+  assert.match(fallback.contract, /HANDOFF owns that action/iu);
+});
+
+test('v2 frozen replacement recompiles the stance and final host plan while recording explicit schemas', () => {
+  const responseConfiguration = configuration({ engagement_stance: 'precise' });
   const bundle = {
-    firstDraftContract: firstDraftContract(),
+    firstDraftContract: firstDraftContract({ responseConfiguration }),
+    selectedResponseConfiguration: responseConfiguration,
     request: {
       messages: [
         { role: 'assistant', content: 'Public opening.' },
@@ -109,6 +245,7 @@ test('v2 frozen replacement changes only the final host-plan block and records e
           role: 'user',
           content: [
             'Public learner turn.',
+            tutorStubResponseConfigurationPrompt(responseConfiguration),
             '[Tutor-only host plan]',
             'old v1 plan',
             '[End tutor-only host plan]',
@@ -126,6 +263,8 @@ test('v2 frozen replacement changes only the final host-plan block and records e
   assert.match(replaced.request.messages.at(-1).content, /\[Tutor-only joint-performance host plan\]/u);
   assert.match(replaced.request.messages.at(-1).content, /Public-safe suffix\.$/u);
   assert.doesNotMatch(replaced.request.messages.at(-1).content, /old v1 plan/u);
+  assert.match(replaced.request.messages.at(-1).content, /expose what would count against it/iu);
+  assert.doesNotMatch(replaced.request.messages.at(-1).content, /ask for one check/iu);
   assert.deepEqual(bundle, original);
   assert.equal(replaced.jointPerformanceFirstDraft.schema, TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA);
   assert.equal(replaced.jointPerformanceFirstDraft.source_owner, 'host');
@@ -442,6 +581,7 @@ test('v1 parser and prompt remain separate and unchanged by the v2 path', () => 
 
   assert.equal(v1.schema, TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA);
   assert.match(tutorStubStructuredFirstDraftPrompt(contract), /"part":"\.\.\.","tactic":"\.\.\."/u);
+  assert.match(tutorStubResponseConfigurationPrompt(configuration({ engagement_stance: 'precise' })), /ask for one check/iu);
   assert.throws(() => parseTutorStubJointPerformanceFirstDraft(v1Raw), /keys_must_be_exact_and_ordered/u);
   assert.throws(() => parseTutorStubStructuredFirstDraft(validRaw()), /keys_must_be_exact_and_ordered/u);
 });

@@ -626,7 +626,7 @@ function definitionContract(definitions, key, field = 'contract') {
   return oneLine(definitions?.[key]?.[field]);
 }
 
-export function tutorStubResponseConfigurationPrompt(configuration) {
+export function tutorStubResponseConfigurationPrompt(configuration, { stanceContractOverride = null } = {}) {
   if (!configuration) return '';
   const actionDefinitions = getActionFamilyDefinitions();
   const audienceDefinitions = getAudienceRegisterDefinitions();
@@ -634,7 +634,9 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
   const sceneDefinitions = getSceneImmersionDefinitions();
   const actorialDefinitions = getActorialPartDefinitions();
   const stance = configuration.engagement_stance;
-  const stanceContract = oneLine(getEngagementStanceDefinition(stance)?.stance_contract);
+  const stanceContract = oneLine(
+    stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract,
+  );
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
   return [
     '[Tutor-only response configuration]',

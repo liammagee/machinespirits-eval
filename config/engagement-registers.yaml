@@ -59,6 +59,14 @@ communicative_pragmatics:
       domain_apprentice: DomainApprenticeProfile
       informed_peer: InformedPeerProfile
 
+joint_performance_stance_contract:
+  fallback: |
+    Make the selected stance visible through sentence rhythm, contrast, and
+    treatment of the current public material without inventing a new task.
+  action_boundary: |
+    Do not request, offer, name, or direct a check, test, choice, move, or
+    action in PERFORMANCE; HANDOFF owns that action.
+
 engagement_stances:
   plain:
     valence: positive
@@ -69,6 +77,9 @@ engagement_stances:
     stance_contract: |
       Use ordinary language, short sentences, and one checkable line. Avoid
       ornate theory display, broad prefaces, and menu-like route catalogues.
+    joint_performance_contract: |
+      Use ordinary language and short sentences to make one checkable line
+      about the current public material reusable in the learner's own words.
     risk_flags: []
     rubric: null
 
@@ -81,6 +92,9 @@ engagement_stances:
     stance_contract: |
       State one distinction or warrant cleanly, expose what would count against
       it, and ask for one check. Do not smuggle in proof-path answers.
+    joint_performance_contract: |
+      State one distinction or warrant cleanly on the current public material
+      and expose what would count against it.
     risk_flags: []
     rubric: null
 
@@ -93,6 +107,9 @@ engagement_stances:
     stance_contract: |
       Move quickly: one sentence of orientation, one learner-owned next move,
       and no catalogue. Do not become brusque or answer-supplying.
+    joint_performance_contract: |
+      Give the current public material clipped orientation and forward pressure
+      without a catalogue, preface, or brusque answer-supplying.
     risk_flags: []
     rubric: null
 
@@ -105,6 +122,9 @@ engagement_stances:
     stance_contract: |
       Add one ordinary lived stake or invitation, then return immediately to a
       concrete check. Do not add a lecture paragraph or flattery.
+    joint_performance_contract: |
+      Give the current public material one ordinary lived stake or low-pressure
+      invitation without flattery, sentimentality, or a lecture.
     risk_flags:
       - flat_protocol
     rubric: null
@@ -120,6 +140,10 @@ engagement_stances:
       Receive vulnerability without flattery, absolution, intimacy capture, or
       spectacle. Then offer one concrete test, distinction, or next move that
       leaves the learner's judgment with the learner.
+    joint_performance_contract: |
+      Treat the current public material as shared testimony: receive
+      vulnerability without flattery, absolution, intimacy capture, or
+      spectacle, and preserve the learner's judgment.
     risk_flags:
       - over_challenge
     rubric: null
@@ -135,6 +159,9 @@ engagement_stances:
       Use sharper contrast, consequence, or challenge to interrupt boredom or
       performative compliance, but leave a concrete refusal path and one
       curriculum-grounded move.
+    joint_performance_contract: |
+      Put the current public material under sharper contrast, consequence, or
+      challenge while leaving refusal legible and avoiding status display.
     risk_flags:
       - over_challenge
       - status_display

@@ -137,6 +137,22 @@ export function getEngagementStanceDefinition(name) {
 
 export const getEngagementRegisterDefinition = getEngagementStanceDefinition;
 
+export function getJointPerformanceStanceContract(name) {
+  const registry = loadEngagementRegisterRegistry();
+  const definition = getEngagementStanceDefinition(name);
+  const settings = registry.joint_performance_stance_contract || {};
+  const authored = String(definition?.joint_performance_contract || '').trim();
+  const fallback = String(settings.fallback || '').trim();
+  const actionBoundary = String(settings.action_boundary || '').trim();
+  const contract = [authored || fallback, actionBoundary].filter(Boolean).join('\n');
+  if (!contract) throw new Error('Engagement register registry has no joint-performance stance contract');
+  return {
+    stance: definition?.canonical_register || String(name || '').trim() || null,
+    contract,
+    source: authored ? 'stance_definition' : 'safe_fallback',
+  };
+}
+
 export function getEngagementStancePragmatics(name) {
   const model = getCommunicativePragmatics();
   const defaults = model.register_realization || {};
