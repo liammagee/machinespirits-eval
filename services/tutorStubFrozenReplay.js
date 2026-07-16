@@ -487,7 +487,6 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
     publicTurn: {
       visibility: 'public',
       learner_move: bundle.learnerText,
-      pressure_target: bundle.learnerText,
       public_claims: [
         ...(bundle.priorTurns || []).slice(-2).flatMap((turn) => [turn.learner, turn.tutor]),
         bundle.learnerText,
@@ -496,9 +495,23 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
       due_evidence: dueEvidence,
     },
   });
+  const speakingResponseConfiguration =
+    performanceObligationContract.tactic_applicability?.applicable === false
+      ? {
+          ...clone(bundle.selectedResponseConfiguration || {}),
+          actorial_performance: clone(
+            performanceObligationContract.selection?.actorial_performance ||
+              bundle.selectedResponseConfiguration?.actorial_performance ||
+              {},
+          ),
+          speaking_transition: clone(
+            performanceObligationContract.selection?.speaking_transition || null,
+          ),
+        }
+      : clone(bundle.selectedResponseConfiguration);
   const firstDraftContract = buildTutorStubFirstDraftContract({
     learnerText: bundle.learnerText,
-    responseConfiguration: bundle.selectedResponseConfiguration,
+    responseConfiguration: speakingResponseConfiguration,
     responseCompositionFrame: bundle.frames?.responseComposition,
     dramaticReleaseFrame: bundle.frames?.dramaticRelease,
     questionSupport: bundle.frames?.questionSupport,
@@ -511,6 +524,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world } = {}) 
   );
   refreshed.firstDraftContract = firstDraftContract;
   refreshed.performanceObligationContract = performanceObligationContract;
+  refreshed.speakingResponseConfiguration = speakingResponseConfiguration;
   refreshed.request.messages = messages;
   return refreshed;
 }
@@ -568,7 +582,10 @@ export function auditTutorStubFrozenCandidate({
   const responseConfigurationAudit = guards.actorialRealization
     ? auditTutorStubResponseConfiguration({
         text: auditedText,
-        configuration: deliveryConfiguration || bundle.selectedResponseConfiguration,
+        configuration:
+          deliveryConfiguration ||
+          bundle.speakingResponseConfiguration ||
+          bundle.selectedResponseConfiguration,
         world,
         composition: responseCompositionAudit.segments,
       })
@@ -603,7 +620,10 @@ export function auditTutorStubFrozenCandidate({
   const performanceAdjudicationEligibility = tutorStubPerformanceAdjudicationEligibility({
     audits,
     contract: bundle.performanceObligationContract,
-    configuration: deliveryConfiguration || bundle.selectedResponseConfiguration,
+    configuration:
+      deliveryConfiguration ||
+      bundle.speakingResponseConfiguration ||
+      bundle.selectedResponseConfiguration,
   });
   if (performanceAdjudication) {
     const applied = applyTutorStubPerformanceAdjudication({

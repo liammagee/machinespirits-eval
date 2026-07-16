@@ -17,6 +17,13 @@ const EVIDENCE_TACTICS = new Set([
   ...PRESSURE_TACTICS,
 ]);
 
+const EVIDENTIARY_BOUNDARY_PERFORMANCE = Object.freeze({
+  id: 'evidentiary_boundary',
+  label: 'evidentiary boundary',
+  contract:
+    'State the exact support and its limit with concrete boundary words such as only, not yet, or does not establish.',
+});
+
 // These are language-level function words, not scenario vocabulary. All
 // scenario-bearing anchor terms are compiled from the explicitly public input.
 const FUNCTION_WORDS = new Set(
@@ -92,6 +99,48 @@ function sanitizePublicTurn(publicTurn) {
   };
 }
 
+function questionShaped(value) {
+  const text = oneLine(value);
+  if (!text) return true;
+  if (text.includes('?')) return true;
+  return /^(?:can|could|did|do|does|how|is|may|should|what|when|where|which|who|why|will|would)\b/iu.test(
+    text,
+  );
+}
+
+function exactCounterpressurePair(turn) {
+  const targetCandidates = uniqueStrings([
+    turn.pressure_target,
+    ...[...turn.public_claims].reverse(),
+    turn.learner_move,
+  ]);
+  const targetSpan = targetCandidates.find((surface) => !questionShaped(surface)) || null;
+  const contraryEvidenceSpan = uniqueStrings([
+    ...turn.contrary_evidence,
+    ...turn.due_evidence.map((entry) => entry.surface),
+    ...[...turn.public_evidence].reverse().map((entry) => entry.surface),
+  ])[0] || null;
+  if (!targetSpan || !contraryEvidenceSpan || targetSpan === contraryEvidenceSpan) return null;
+  return {
+    target_span: targetSpan,
+    contrary_evidence_span: contraryEvidenceSpan,
+  };
+}
+
+function counterpressureFallbackConfiguration(configuration, reason) {
+  return {
+    ...configuration,
+    actorial_performance: { ...EVIDENTIARY_BOUNDARY_PERFORMANCE },
+    speaking_transition: {
+      schema: 'machinespirits.tutor-stub.speaking-configuration-transition.v1',
+      reason,
+      requested_tactic: configuration.actorial_performance.id,
+      delivered_tactic: EVIDENTIARY_BOUNDARY_PERFORMANCE.id,
+      retained_actorial_part: configuration.actorial_part,
+    },
+  };
+}
+
 function sanitizeConfiguration(configuration) {
   return {
     action_family: oneLine(configuration?.action_family) || null,
@@ -146,26 +195,36 @@ export function compileTutorStubPerformanceObligationContract({
   publicWorld = null,
   publicTurn = null,
 } = {}) {
-  const configuration = sanitizeConfiguration(responseConfiguration || {});
+  const requestedConfiguration = sanitizeConfiguration(responseConfiguration || {});
   const world = sanitizePublicWorld(publicWorld || {});
   const turn = sanitizePublicTurn(publicTurn || {});
+  const requestedTactic = requestedConfiguration.actorial_performance.id || 'unadorned_report';
+  const pressurePair = PRESSURE_TACTICS.has(requestedTactic) ? exactCounterpressurePair(turn) : null;
+  const configuration = PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
+    ? counterpressureFallbackConfiguration(
+        requestedConfiguration,
+        'counterpressure_inapplicable_without_exact_public_target_and_contrary_evidence_pair',
+      )
+    : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
   const terminal = configuration.action_family === 'close_inquiry' || configuration.actorial_part === 'foreperson';
-  const evidenceSurfaces = uniqueStrings([
-    ...turn.contrary_evidence,
-    ...turn.due_evidence.map((entry) => entry.surface),
-    ...turn.public_evidence.map((entry) => entry.surface),
-  ]);
+  const evidenceSurfaces = pressurePair
+    ? [pressurePair.contrary_evidence_span]
+    : uniqueStrings([
+        ...turn.contrary_evidence,
+        ...turn.due_evidence.map((entry) => entry.surface),
+        ...turn.public_evidence.map((entry) => entry.surface),
+      ]);
   const sceneReferences = uniqueStrings([
     ...world.public_objects,
     world.ledger_term,
     ...evidenceSurfaces,
   ]);
-  const pressureSurfaces = uniqueStrings([
-    turn.pressure_target,
-    turn.learner_move,
-    ...turn.public_claims,
-  ]);
+  const pressureSurfaces = pressurePair
+    ? [pressurePair.target_span]
+    : uniqueStrings([turn.pressure_target, ...turn.public_claims, turn.learner_move]).filter(
+        (surface) => !questionShaped(surface),
+      );
   const handoffSurfaces = uniqueStrings([
     ...evidenceSurfaces,
     ...pressureSurfaces,
@@ -271,6 +330,18 @@ export function compileTutorStubPerformanceObligationContract({
     complete: compileIssues.length === 0,
     offset_units: 'utf16_code_units',
     selection: configuration,
+    requested_selection: requestedConfiguration,
+    tactic_applicability: {
+      requested_tactic: requestedTactic,
+      applied_tactic: tactic,
+      applicable: !PRESSURE_TACTICS.has(requestedTactic) || Boolean(pressurePair),
+      reason:
+        PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
+          ? 'missing_exact_public_counterpressure_pair'
+          : null,
+    },
+    pressure_pair: pressurePair,
+    delivery_configuration: configuration,
     public_context: { world, turn },
     anchors,
     obligations,
@@ -291,23 +362,14 @@ export function tutorStubPerformanceObligationContractPrompt(contract = null) {
   ) {
     return '';
   }
-  const lines = (contract.obligations || []).map(
-    (entry, index) => `${index + 1}. ${entry.description}`,
-  );
-  const counterpressure = contract.selection?.actorial_performance?.id === 'dramatic_counterpressure';
+  const pair = contract.pressure_pair;
+  if (!pair || !PRESSURE_TACTICS.has(contract.selection?.actorial_performance?.id)) return '';
   return [
-    '[Tutor-only typed performance obligations]',
-    'Compose one continuous reply that visibly performs every obligation below. Each beat must do its own job; do not merely announce the selected role or style.',
-    ...lines,
-    counterpressure
-      ? 'Counterpressure test: make the pressure target and contrary evidence visibly meet in the same sentence or adjacent sentences. Merely explaining the clue, or merely sounding forceful, does not perform the collision.'
-      : null,
-    'Prefer one short clause or sentence per obligation. A single clause may carry two obligations when the action itself puts the public claim under pressure.',
-    'Use only the public material supplied elsewhere in this turn contract, keep the dramatic action inside the reply, and make the final handoff concrete.',
-    '[End tutor-only typed performance obligations]',
-  ]
-    .filter(Boolean)
-    .join('\n');
+    'COUNTERPRESSURE PAIR — In this same development beat, put this exact already-public target against this exact public evidence:',
+    `TARGET — ${pair.target_span}`,
+    `CONTRARY EVIDENCE — ${pair.contrary_evidence_span}`,
+    'Make those two surfaces visibly meet in one sentence or adjacent sentences, then continue to the configured handoff. Do not merely explain the clue, sound forceful, or repeat either surface elsewhere.',
+  ].join('\n');
 }
 
 function spanIssue(type, evidence, reason, extra = {}) {

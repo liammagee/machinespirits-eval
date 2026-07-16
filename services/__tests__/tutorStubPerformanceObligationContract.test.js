@@ -87,11 +87,45 @@ test('compiles counterpressure into stable public-only compositional obligations
   const serialized = JSON.stringify(contract);
   assert.doesNotMatch(serialized, /concealed_answer|future_evidence|private planner material|p_private/u);
   const prompt = tutorStubPerformanceObligationContractPrompt(contract);
-  assert.match(prompt, /typed performance obligations/u);
-  assert.match(prompt, /make the pressure target and contrary evidence visibly meet/u);
-  assert.match(prompt, /Merely explaining the clue/u);
+  assert.deepEqual(contract.pressure_pair, {
+    target_span: 'the easy verdict against Mira',
+    contrary_evidence_span: 'The custody log puts the key with Oren.',
+  });
+  assert.match(prompt, /COUNTERPRESSURE PAIR/u);
+  assert.match(prompt, /Make those two surfaces visibly meet/u);
+  assert.match(prompt, /Do not merely explain the clue/u);
+  assert.equal(prompt.split('the easy verdict against Mira').length - 1, 1);
+  assert.equal(prompt.split('The custody log puts the key with Oren.').length - 1, 1);
   assert.doesNotMatch(prompt, /Public anchors:/u);
   assert.doesNotMatch(prompt, /concealed_answer|future_evidence|p_private/u);
+});
+
+test('question-shaped learner requests cannot become pressure targets and fall back to a boundary tactic', () => {
+  const contract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: counterpressureConfiguration(),
+    ...publicContext({
+      publicTurn: {
+        learner_move: 'What should I write next?',
+        pressure_target: 'What should I write next?',
+        public_claims: ['Which conclusion should I enter?'],
+        contrary_evidence: ['The custody log puts the key with Oren.'],
+      },
+    }),
+  });
+
+  assert.equal(contract.complete, true);
+  assert.equal(contract.pressure_pair, null);
+  assert.equal(contract.tactic_applicability.applicable, false);
+  assert.equal(contract.tactic_applicability.requested_tactic, 'dramatic_counterpressure');
+  assert.equal(contract.selection.actorial_performance.id, 'evidentiary_boundary');
+  assert.equal(contract.selection.actorial_part, 'advocate');
+  assert.equal(contract.selection.speaking_transition.retained_actorial_part, 'advocate');
+  assert.deepEqual(
+    contract.obligations.map((entry) => entry.id),
+    ['public_evidence', 'visible_action', 'learner_handoff'],
+  );
+  assert.equal(tutorStubPerformanceObligationContractPrompt(contract), '');
+  assert.doesNotMatch(JSON.stringify(contract.anchors), /What should I write next/u);
 });
 
 test('accepts a concrete declarative learner handoff instead of forcing every turn into a question', () => {

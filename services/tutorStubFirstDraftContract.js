@@ -322,27 +322,25 @@ export function buildTutorStubFirstDraftContract({
 export function tutorStubFirstDraftContractPrompt(contract = null) {
   if (!contract) return '';
   const releaseRows = contract.evidence?.cues || [];
+  const semanticPerformanceInstruction = tutorStubPerformanceObligationContractPrompt(
+    contract.performance?.obligation_contract,
+  );
   return [
     '[Tutor-only first-draft performance contract]',
     'Write one compact paragraph in one continuous voice. Perform these instructions in order:',
     contract.learner_move
       ? `OPEN — The first sentence must explicitly carry forward this learner move in concrete words, even if it also contains a scene action: ${contract.learner_move} ${contract.opening.instruction}`
       : `OPEN — ${contract.opening.instruction}`,
-    `ACT + ENACT — ${contract.development.instruction} This is one mandatory development beat, not style advice: perform it as ${contract.performance.actorial_part_label} without printing that label. ${contract.performance.enactment_instruction} Do not substitute generic prop handling for the selected part or tactic.`,
-    tutorStubPerformanceObligationContractPrompt(contract.performance?.obligation_contract),
+    `DEVELOP — ${contract.development.instruction} Perform one mandatory development beat as ${contract.performance.actorial_part_label} without printing that label: ${contract.performance.enactment_instruction} ${contract.performance.prop_instruction} Do not substitute generic prop handling for the selected part or tactic.${semanticPerformanceInstruction ? `\n${semanticPerformanceInstruction}` : ''}`,
     contract.development.support_instruction
       ? `SUPPORT — ${contract.development.support_instruction}`
       : null,
-    `ENTRY — ${contract.performance.prop_instruction}`,
     releaseRows.length ? 'PUBLIC EVIDENCE DUE NOW — perform every line below once and add no fact beyond it:' : null,
     releaseRows.length
       ? 'SINGLE DELIVERY — State each due clue exactly once. Do not preview or paraphrase it in the Write entry, opening, or closing summary.'
       : null,
     ...releaseRows.map((row) => `- ${row}`),
     `END — ${contract.ending.instruction}`,
-    contract.evidence?.active
-      ? 'RETURN — End the clue performance with one direct learner-facing question about what the named clue changes, supports, or rules out. The final inquiry sentence must contain a question mark.'
-      : null,
     contract.ending.clarification_invitation_required
       ? 'Because the learner signalled difficulty, explicitly say they may ask which clue, connection, or term needs explaining. Make this a separate direct permission statement; do not hide it inside an option list or another exercise.'
       : null,

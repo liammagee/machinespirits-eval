@@ -1845,7 +1845,9 @@ function summarizeTrace(
         (row.repairsApplied || []).some((repair) => String(repair.kind || '').startsWith('mechanical_')),
     ).length,
     modelRepairTurns: guardRows.filter((row) =>
-      (row.repairsApplied || []).some((repair) => repair.kind === 'model_rewrite'),
+      (row.repairsApplied || []).some((repair) =>
+        ['model_rewrite', 'model_plain_recovery'].includes(repair.kind),
+      ),
     ).length,
     repairActionCount: guardRows.reduce((sum, row) => sum + Number(row.repairsApplied?.length || 0), 0),
     deterministicFallbackTurns: guardRows.filter((row) => row.finalDelivery?.deterministicFallback === true).length,

@@ -61,6 +61,15 @@ test('known guard failures remain distinct from incomplete fixed-horizon safety'
   assert.equal(stoppedEarly.safetyStatus, 'safety_incomplete');
 });
 
+test('fixed-horizon accounting counts the distinct plain recovery as a model repair', () => {
+  const recovered = turn(1);
+  recovered.tutorGuardAccounting.repairsApplied = [{ kind: 'model_plain_recovery' }];
+  const summary = summarizeTutorStubFixedHorizon([recovered], { primaryHorizon: 1 });
+
+  assert.equal(summary.modelRepairTurns, 1);
+  assert.equal(summary.deterministicFallbackTurns, 0);
+});
+
 test('fixed-horizon aggregation counts failed and missing rows as worst-case outcomes', () => {
   const observed = summarizeTutorStubFixedHorizon([turn(1, { coverage: 0.6 })], { primaryHorizon: 1 });
   const aggregate = summarizeTutorStubFixedHorizonRows([

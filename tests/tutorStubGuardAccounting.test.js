@@ -21,18 +21,11 @@ const FLAT_CHARACTER_DRAFT =
 const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
   'You’re right to separate suspicion from proof. The next clue appears without a source or exhibit.';
 const TERSE_UPTAKE_BROKEN_DEVELOPMENT = 'Exactly. The next clue appears without a source or exhibit.';
-const PAIRED_RECOVERY = JSON.stringify({
-  policy_repair: UNSAFE_DRAFT,
-  plain_recovery: SAFE_REPAIR,
-});
+const SINGLE_PLAIN_RECOVERY = SAFE_REPAIR;
 const PLAIN_STYLE_DRAFT =
   'Fair. I’ll keep this direct. “I have my finger on the exact line: Verrell alone draws the mint-yard crucible.” What does that public entry establish?';
 const HOST_PART_ONLY_RECOVERY =
   'You’re right to ask what the public record supports, because that is the question here. I hold the mint-yard register before us: “I have my finger on the line: Verrell alone draws the mint-yard crucible.” What follows from this line?';
-const HOST_PART_ONLY_RECOVERY_BATCH = JSON.stringify({
-  policy_repair: HOST_PART_ONLY_RECOVERY,
-  plain_recovery: HOST_PART_ONLY_RECOVERY,
-});
 
 function readTraceEvents(traceDir) {
   const tracePath = fs
@@ -64,9 +57,9 @@ process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
   const response = process.env.TUTOR_GUARD_FAKE_MODE === 'performance-advisory' && repaired
-    ? ${JSON.stringify(HOST_PART_ONLY_RECOVERY_BATCH)}
+    ? ${JSON.stringify(HOST_PART_ONLY_RECOVERY)}
     : process.env.TUTOR_GUARD_FAKE_MODE === 'paired-plain' && repaired
-    ? ${JSON.stringify(PAIRED_RECOVERY)}
+    ? ${JSON.stringify(SINGLE_PLAIN_RECOVERY)}
     : process.env.TUTOR_GUARD_FAKE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
     : process.env.TUTOR_GUARD_FAKE_MODE === 'preserve-uptake'
@@ -164,11 +157,11 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(accounting.schema, 'machinespirits.tutor-stub.guard-accounting.v1');
   assert.equal(accounting.policy, 'dynamic');
   assert.equal(accounting.profile, 'diligent');
-  assert.equal(accounting.outcome, 'guarded_policy_repair_accepted');
+  assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.originalCandidate.candidate.text, UNSAFE_DRAFT);
   assert.equal(accounting.attempts.length, 2);
   assert.equal(accounting.repairsApplied.length, 1);
-  assert.equal(accounting.repairsApplied[0].kind, 'model_rewrite');
+  assert.equal(accounting.repairsApplied[0].kind, 'model_plain_recovery');
   assert.equal(accounting.generation.modelCallCount, 2);
   assert.ok(accounting.generation.originalCandidateLatencyMs >= 0);
   assert.ok(accounting.generation.totalModelLatencyMs >= accounting.generation.originalCandidateLatencyMs);
@@ -184,7 +177,7 @@ test('tutor guard accounting preserves the original candidate and exact accepted
   assert.equal(repairCandidate, SAFE_REPAIR);
   assert.equal(accounting.attempts[1].repairedSpans.length, 1);
   assertExactRepairSpan(accounting.attempts[1].repairedSpans[0], UNSAFE_DRAFT, SAFE_REPAIR);
-  assert.equal(accounting.finalDelivery.source, 'policy_repair_candidate');
+  assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.equal(accounting.finalDelivery.auditOk, true);
 
@@ -216,7 +209,7 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(accounting.attempts.length, 3);
   assert.deepEqual(
     accounting.repairsApplied.map((repair) => repair.kind),
-    ['model_rewrite', 'deterministic_fallback'],
+    ['model_plain_recovery', 'deterministic_fallback'],
   );
   assert.equal(accounting.generation.modelCallCount, 2, 'deterministic fallback adds no third model call');
   assert.equal(accounting.attempts[1].candidate.text, UNSAFE_DRAFT);
@@ -285,7 +278,7 @@ test('meta-theatrical clue narration is rejected and repaired into direct dieget
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
   const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
 
-  assert.equal(accounting.outcome, 'guarded_policy_repair_accepted');
+  assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.originalCandidate.candidate.text, META_THEATRICAL_DRAFT);
   assert.equal(
     accounting.originalCandidate.guardedSpans.some(
@@ -293,7 +286,7 @@ test('meta-theatrical clue narration is rejected and repaired into direct dieget
     ),
     true,
   );
-  assert.equal(accounting.finalDelivery.source, 'policy_repair_candidate');
+  assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.doesNotMatch(turn.tutor, /role-play|I(?:'|’)ll be|Back to (?:us|the case)/iu);
   assert.match(turn.tutor, /I tap the mint-yard register[\s\S]*“I have my finger on the exact line/u);
@@ -317,7 +310,7 @@ test('a duplicated due clue is rejected before delivery and repaired into a comp
       (span) => span.guard === 'dramatic_release' && span.issueType === 'duplicate_clue_delivery',
     ),
   );
-  assert.equal(accounting.outcome, 'guarded_policy_repair_accepted');
+  assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.finalDelivery.candidate.text, COMPLEMENTARY_WRITE_REPAIR);
   assert.equal(accounting.finalDelivery.auditOk, true);
   assert.equal(turn.tutor, COMPLEMENTARY_WRITE_REPAIR);
@@ -337,73 +330,73 @@ test('a flat named character is rewritten until the selected stance tactic is vi
     accounting.originalCandidate.audits.actorialRealizationAudit.issues.map((issue) => issue.type),
     ['missing_selected_actorial_part', 'missing_selected_performance_tactic'],
   );
-  assert.equal(accounting.outcome, 'guarded_policy_repair_accepted');
+  assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, true);
   assert.equal(actorAudits.length, 2);
   assert.equal(actorAudits[0].selectedPerformance.id, 'evidentiary_boundary');
 });
 
-test('a policy recovery keeps its visible host part when only the optional tactic misses', () => {
+test('simplified recovery uses its logged plain configuration rather than retrying the failed policy', () => {
   const { events, stdout } = runGuardFixture('performance-advisory');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
-  const advisory = events.find((row) => row.type === 'tutor_response_delivery_advisory');
 
-  assert.equal(
-    accounting.outcome,
-    'guarded_policy_repair_accepted',
-    JSON.stringify(accounting.attempts[1]?.audits),
-  );
-  assert.equal(accounting.finalDelivery.source, 'policy_repair_candidate');
+  assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
+  assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, HOST_PART_ONLY_RECOVERY);
   assert.equal(accounting.finalDelivery.deterministicFallback, false);
-  assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, false);
-  assert.deepEqual(
-    accounting.finalDelivery.audits.actorialRealizationAudit.issues.map((issue) => issue.type),
-    ['missing_selected_performance_tactic'],
-  );
+  assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, true);
   assert.equal(accounting.finalDelivery.audits.deliveryOk, true);
-  assert.equal(advisory.accepted, true);
-  assert.match(advisory.reason, /optional performance tactic/u);
+  assert.equal(accounting.finalDelivery.deliveryConfiguration.engagement_stance, 'plain');
+  assert.equal(accounting.finalDelivery.deliveryConfiguration.actorial_performance.id, 'unadorned_report');
+  assert.equal(
+    accounting.repairsApplied[0].recoveryTransition.strategy,
+    'plain_grounded_unadorned',
+  );
   assert.match(stdout, /response revised/u);
   assert.doesNotMatch(stdout, /safe fallback used/u);
 });
 
-test('one compact recovery call yields policy and plain candidates and can deliver the plain candidate', () => {
+test('one compact recovery call requests and audits exactly one plain candidate', () => {
   const { events, stdout } = runGuardFixture('paired-plain');
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
-  const candidateEvent = events.find((row) => row.type === 'tutor_response_recovery_candidates');
+  const candidateEvent = events.find((row) => row.type === 'tutor_response_recovery_candidate');
   const modelCalls = events.filter(
     (row) => row.type === 'model_call' && /^tutor_stub_tutor(?:$|_)/u.test(row.role || ''),
   );
 
-  assert.equal(modelCalls.length, 2, 'original plus one paired recovery model call');
+  assert.equal(modelCalls.length, 2, 'original plus one simplified recovery model call');
   const recoveryPrompt = modelCalls[1].request.messages.at(-1).content;
   assert.match(recoveryPrompt, /\[Compact public recovery packet\]/u);
+  assert.match(recoveryPrompt, /Generate one genuinely different, plain replacement/u);
+  assert.match(recoveryPrompt, /Return only the replacement tutor reply as ordinary text/u);
+  assert.match(recoveryPrompt, /plain_grounded_unadorned/u);
+  assert.doesNotMatch(recoveryPrompt, /policy_repair|plain_recovery|Return exactly one JSON object/u);
   assert.doesNotMatch(recoveryPrompt, new RegExp(UNSAFE_DRAFT.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+  const failureBlock = recoveryPrompt.slice(recoveryPrompt.indexOf('[Response-check failures]'));
+  assert.doesNotMatch(failureBlock, /actorial_realization/u);
+  assert.match(failureBlock, /leak:/u);
   assert.equal(candidateEvent.parse.ok, true);
-  assert.deepEqual(
-    candidateEvent.candidates.map((candidate) => candidate.kind),
-    ['policy_repair_candidate', 'plain_recovery_candidate'],
-  );
+  assert.equal(candidateEvent.parse.mode, 'single_plain_text');
+  assert.equal(candidateEvent.candidate.kind, 'plain_recovery_candidate');
+  assert.equal(candidateEvent.candidate.text, SAFE_REPAIR);
+  assert.equal(candidateEvent.recoveryTransition.strategy, 'plain_grounded_unadorned');
   assert.equal(accounting.outcome, 'guarded_plain_recovery_accepted');
-  assert.equal(accounting.attempts.length, 3);
+  assert.equal(accounting.attempts.length, 2);
   assert.deepEqual(
     accounting.attempts.map((attempt) => attempt.kind),
-    ['original_candidate', 'policy_repair_candidate', 'plain_recovery_candidate'],
+    ['original_candidate', 'plain_recovery_candidate'],
   );
-  assert.equal(accounting.attempts[1].candidate.text, UNSAFE_DRAFT);
-  assert.equal(accounting.attempts[1].audits.deliveryOk, false);
-  assert.equal(accounting.attempts[2].candidate.text, SAFE_REPAIR);
-  assert.equal(accounting.attempts[2].audits.deliveryOk, true);
+  assert.equal(accounting.attempts[1].candidate.text, SAFE_REPAIR);
+  assert.equal(accounting.attempts[1].audits.deliveryOk, true);
   assert.equal(accounting.finalDelivery.source, 'plain_recovery_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, SAFE_REPAIR);
   assert.equal(accounting.finalDelivery.deterministicFallback, false);
   assert.deepEqual(
     accounting.repairsApplied.map((repair) => repair.kind),
-    ['model_rewrite', 'model_plain_recovery'],
+    ['model_plain_recovery'],
   );
-  assert.equal(accounting.repairsApplied[1].generatedInSameModelCall, true);
+  assert.equal(accounting.repairsApplied[0].generatedInSameModelCall, false);
   assert.match(stdout, /response revised/u);
   assert.doesNotMatch(stdout, /safe fallback used/u);
 });
