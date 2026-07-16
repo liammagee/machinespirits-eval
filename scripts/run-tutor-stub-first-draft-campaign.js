@@ -19,6 +19,7 @@ import {
   loadTutorStubFirstDraftCampaign,
   releaseTutorStubFirstDraftCellClaim,
   summarizeTutorStubWorkingScreen,
+  tutorStubFirstDraftFocusedTestSuites,
   tutorStubFirstDraftInterruptedCellResult,
   tutorStubFirstDraftDevelopmentExecutionPlan,
   tutorStubFirstDraftCampaignValidationArtifactPath,
@@ -64,12 +65,21 @@ function commandLine(argv) {
   return argv.map((part) => JSON.stringify(part)).join(' ');
 }
 
-function commandFailureError({ argv, label, preflightKind, exitCode = null, signal = null, cause = null }) {
-  const reason = cause
+function commandFailureError({
+  argv,
+  label,
+  preflightKind,
+  exitCode = null,
+  signal = null,
+  cause = null,
+  execution = null,
+  reasonOverride = null,
+}) {
+  const reason = reasonOverride || (cause
     ? `could not start: ${cause.message}`
     : signal
       ? `terminated by signal ${signal}`
-      : `exited with status ${exitCode}`;
+      : `exited with status ${exitCode}`);
   const error = new Error(`${label} ${reason}`);
   if (preflightKind) {
     error.tutorStubPreflightCommandFailure = {
@@ -82,21 +92,140 @@ function commandFailureError({ argv, label, preflightKind, exitCode = null, sign
       signal,
       reason,
       spawnErrorCode: cause?.code || null,
+      execution: execution ? structuredClone(execution) : null,
     };
   }
   return error;
 }
 
-async function runCommand(argv, { label = 'command', preflightKind = null } = {}) {
+function parseTapSummary(stdout) {
+  const text = String(stdout || '');
+  const metric = (name) => {
+    const matches = [...text.matchAll(new RegExp(`^# ${name} (\\d+)$`, 'gmu'))];
+    return matches.length ? Number(matches.at(-1)[1]) : null;
+  };
+  const failureNames = [...new Set(
+    [...text.matchAll(/^\s*not ok \d+ - (.+)$/gmu)]
+      .map((match) => match[1].replace(/\s+#.*$/u, '').trim())
+      .filter(Boolean),
+  )];
+  const durationMatches = [...text.matchAll(/^# duration_ms ([0-9.]+)$/gmu)];
+  return {
+    tests: metric('tests'),
+    suites: metric('suites'),
+    pass: metric('pass'),
+    fail: metric('fail'),
+    cancelled: metric('cancelled'),
+    skipped: metric('skipped'),
+    todo: metric('todo'),
+    durationMs: durationMatches.length ? Number(durationMatches.at(-1)[1]) : null,
+    failureNames,
+  };
+}
+
+function preflightStreamArtifact(buffer, filePath) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, buffer, { flag: 'wx' });
+  return {
+    path: filePath,
+    bytes: buffer.byteLength,
+    sha256: createHash('sha256').update(buffer).digest('hex'),
+  };
+}
+
+function preflightArtifactStem(order, id) {
+  const safeId = String(id || 'command').replace(/[^a-z0-9_-]+/giu, '-').replace(/^-+|-+$/gu, '');
+  return `${String(order).padStart(2, '0')}-${safeId || 'command'}`;
+}
+
+async function runCommand(
+  argv,
+  { label = 'command', preflightKind = null, capture = null } = {},
+) {
   console.log(`${label}: ${commandLine(argv)}`);
-  await new Promise((resolve, reject) => {
-    const child = spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: 'inherit' });
-    child.on('error', (cause) => reject(commandFailureError({ argv, label, preflightKind, cause })));
-    child.on('exit', (code, signal) => (
-      code === 0
-        ? resolve()
-        : reject(commandFailureError({ argv, label, preflightKind, exitCode: code, signal }))
-    ));
+  const startedAt = new Date();
+  return new Promise((resolve, reject) => {
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    let spawnError = null;
+    const child = spawn(argv[0], argv.slice(1), {
+      cwd: ROOT,
+      stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    });
+    if (capture) {
+      child.stdout.on('data', (chunk) => {
+        const value = Buffer.from(chunk);
+        stdoutChunks.push(value);
+        process.stdout.write(value);
+      });
+      child.stderr.on('data', (chunk) => {
+        const value = Buffer.from(chunk);
+        stderrChunks.push(value);
+        process.stderr.write(value);
+      });
+    }
+    child.once('error', (cause) => {
+      spawnError = cause;
+    });
+    child.once('close', (code, signal) => {
+      const finishedAt = new Date();
+      let execution = null;
+      try {
+        if (capture) {
+          const stdout = Buffer.concat(stdoutChunks);
+          const stderr = Buffer.concat(stderrChunks);
+          const stem = preflightArtifactStem(capture.order, capture.id);
+          const stdoutArtifact = preflightStreamArtifact(
+            stdout,
+            path.join(capture.artifactDir, `${stem}.stdout.log`),
+          );
+          const stderrArtifact = preflightStreamArtifact(
+            stderr,
+            path.join(capture.artifactDir, `${stem}.stderr.log`),
+          );
+          execution = {
+            schema: 'machinespirits.tutor-stub.first-draft-preflight-command-execution.v1',
+            id: capture.id,
+            order: capture.order,
+            kind: preflightKind,
+            suiteId: capture.suiteId || null,
+            label,
+            argv: [...argv],
+            command: commandLine(argv),
+            attempt: 1,
+            retryPolicy: 'none',
+            startedAt: startedAt.toISOString(),
+            finishedAt: finishedAt.toISOString(),
+            elapsedMs: finishedAt.getTime() - startedAt.getTime(),
+            status: !spawnError && code === 0 ? 'pass' : 'fail',
+            exitCode: code,
+            signal,
+            spawnErrorCode: spawnError?.code || null,
+            stdout: stdoutArtifact,
+            stderr: stderrArtifact,
+            tap: capture.tap === true ? parseTapSummary(stdout.toString('utf8')) : null,
+            makesModelCalls: false,
+            modelCalls: 0,
+          };
+        }
+      } catch (artifactError) {
+        reject(artifactError);
+        return;
+      }
+      if (!spawnError && code === 0) {
+        resolve(execution);
+        return;
+      }
+      reject(commandFailureError({
+        argv,
+        label,
+        preflightKind,
+        exitCode: code,
+        signal,
+        cause: spawnError,
+        execution,
+      }));
+    });
   });
 }
 
@@ -208,35 +337,169 @@ function assertFrozenAcceptanceState(frozen) {
   }
 }
 
-async function runWorkingPreflight(config, cellId) {
+async function runWorkingPreflight(
+  config,
+  cellId,
+  iterationRoot,
+  { reportName = 'preflight-execution.json' } = {},
+) {
   console.log(`preflight before ${cellId}: focused deterministic gates and model-free corpus`);
   const worldQuality = String(config.preflight?.world_quality || '').trim();
   const focusedTests = String(config.preflight?.focused_tests || '').trim();
-  if (!worldQuality || !focusedTests) {
-    throw new Error('working preflight must declare world_quality and focused_tests commands');
+  const focusedTestSuites = tutorStubFirstDraftFocusedTestSuites(config, { root: ROOT });
+  if (!worldQuality || (!focusedTests && !focusedTestSuites.length)) {
+    throw new Error(
+      'working preflight must declare world_quality and focused_tests or focused_test_suites',
+    );
   }
-  await runCommand(['/bin/sh', '-lc', worldQuality], {
-    label: `${cellId} world quality`,
-    preflightKind: 'world_quality',
-  });
-  await runCommand(['/bin/sh', '-lc', focusedTests], {
-    label: `${cellId} focused tests`,
-    preflightKind: 'focused_tests',
-  });
-  for (const fixture of config.preflight?.model_free_fixtures || []) {
-    await runCommand(
-      [
+  const artifactDir = path.join(iterationRoot, 'preflight');
+  const reportPath = path.join(iterationRoot, reportName);
+  const commands = [
+    {
+      id: 'world-quality',
+      kind: 'world_quality',
+      label: `${cellId} world quality`,
+      argv: ['/bin/sh', '-lc', worldQuality],
+      tap: false,
+      suiteId: null,
+    },
+    ...(focusedTestSuites.length
+      ? focusedTestSuites.map((suite) => ({
+          id: `focused-${suite.id}`,
+          kind: 'focused_test_suite',
+          label: `${cellId} focused test suite ${suite.id}`,
+          argv: [
+            process.execPath,
+            '--test',
+            '--test-concurrency=1',
+            '--test-reporter=tap',
+            ...suite.testFiles,
+          ],
+          tap: true,
+          suiteId: suite.id,
+        }))
+      : [{
+          id: 'focused-tests-legacy',
+          kind: 'focused_tests',
+          label: `${cellId} focused tests`,
+          argv: ['/bin/sh', '-lc', focusedTests],
+          tap: true,
+          suiteId: null,
+        }]),
+    ...(config.preflight?.model_free_fixtures || []).map((fixture, index) => ({
+      id: `model-free-fixture-${index + 1}`,
+      kind: 'model_free_fixture',
+      label: `${cellId} model-free fixture`,
+      argv: [
         process.execPath,
         'scripts/replay-tutor-stub-frozen-turns.js',
         '--audit-fixture',
         path.isAbsolute(fixture) ? fixture : path.join(ROOT, fixture),
       ],
-      {
-        label: `${cellId} model-free fixture`,
-        preflightKind: 'model_free_fixture',
-      },
-    );
+      tap: false,
+      suiteId: null,
+    })),
+  ];
+  const executions = [];
+  const startedAt = new Date();
+  let failure = null;
+  try {
+    for (const [index, command] of commands.entries()) {
+      const execution = await runCommand(command.argv, {
+        label: command.label,
+        preflightKind: command.kind,
+        capture: {
+          artifactDir,
+          id: command.id,
+          order: index + 1,
+          tap: command.tap,
+          suiteId: command.suiteId,
+        },
+      });
+      if (
+        command.kind === 'focused_test_suite' &&
+        (
+          !Number.isInteger(execution?.tap?.tests) ||
+          execution.tap.tests < 1 ||
+          execution.tap.fail !== 0
+        )
+      ) {
+        const reason =
+          execution?.tap?.tests < 1
+            ? 'TAP reported zero tests'
+            : `TAP reported ${execution?.tap?.fail ?? 'unknown'} failing tests`;
+        const failedExecution = {
+          ...execution,
+          status: 'fail',
+          failureKind: 'tap_validation',
+          failureReason: reason,
+        };
+        throw commandFailureError({
+          argv: command.argv,
+          label: command.label,
+          preflightKind: command.kind,
+          exitCode: execution.exitCode,
+          signal: execution.signal,
+          execution: failedExecution,
+          reasonOverride: reason,
+        });
+      }
+      executions.push(execution);
+    }
+  } catch (error) {
+    failure = error;
+    if (error?.tutorStubPreflightCommandFailure?.execution) {
+      executions.push(error.tutorStubPreflightCommandFailure.execution);
+    }
   }
+  const finishedAt = new Date();
+  const report = {
+    schema: 'machinespirits.tutor-stub.first-draft-preflight-execution.v1',
+    generatedAt: finishedAt.toISOString(),
+    campaignId: config.id || null,
+    cellId,
+    status: failure ? 'fail' : 'pass',
+    startedAt: startedAt.toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    elapsedMs: finishedAt.getTime() - startedAt.getTime(),
+    executionPolicy: {
+      sequential: true,
+      attemptsPerCommand: 1,
+      retryPolicy: 'none',
+      testConcurrency: focusedTestSuites.length ? 1 : null,
+      testReporter: focusedTestSuites.length ? 'tap' : null,
+    },
+    makesModelCalls: false,
+    modelCalls: 0,
+    testInventory: {
+      suiteCount: focusedTestSuites.length,
+      fileCount: focusedTestSuites.reduce((sum, suite) => sum + suite.testFiles.length, 0),
+      suites: focusedTestSuites.map((suite) => ({
+        id: suite.id,
+        testFiles: [...suite.testFiles],
+      })),
+    },
+    commands: executions,
+    failedCommand: failure?.tutorStubPreflightCommandFailure
+      ? {
+          kind: failure.tutorStubPreflightCommandFailure.kind,
+          label: failure.tutorStubPreflightCommandFailure.label,
+          exitCode: failure.tutorStubPreflightCommandFailure.exitCode,
+          signal: failure.tutorStubPreflightCommandFailure.signal,
+          reason: failure.tutorStubPreflightCommandFailure.reason,
+          failureKind:
+            failure.tutorStubPreflightCommandFailure.execution?.failureKind || null,
+        }
+      : null,
+  };
+  writeTutorStubFirstDraftJsonExclusive(reportPath, report);
+  if (failure) {
+    if (failure.tutorStubPreflightCommandFailure) {
+      failure.tutorStubPreflightCommandFailure.preflightExecutionArtifactPath = reportPath;
+    }
+    throw failure;
+  }
+  return { report, reportPath };
 }
 
 function readJson(filePath) {
@@ -284,6 +547,7 @@ function replayWorkingStoppingHistory({ artifactRoot, throughIteration, maximum 
 async function runDevelopment(plan, loaded, iteration, frozen) {
   const config = loaded.config;
   const configSha256 = sha256File(loaded.configPath);
+  const preflightExecutionArtifactPaths = [];
   assertFrozenDevelopmentState(frozen, loaded);
   const maximumConsecutiveWithoutImprovement =
     config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
@@ -368,7 +632,12 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
   const cellResults = [];
   if (config.execution) {
     const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
-    await runWorkingPreflight(config, execution.hardCell.id);
+    const preflightExecution = await runWorkingPreflight(
+      config,
+      execution.hardCell.id,
+      plan.iterationRoot,
+    );
+    preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
     assertFrozenDevelopmentState(frozen, loaded, execution.hardCell);
     const hardResult = await runCellCaptured(execution.hardCell, {
       stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
@@ -415,7 +684,13 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
         });
         continue;
       }
-      await runWorkingPreflight(config, cell.id);
+      const preflightExecution = await runWorkingPreflight(
+        config,
+        cell.id,
+        plan.iterationRoot,
+        { reportName: `preflight-execution-${cell.id}.json` },
+      );
+      preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
       const summary = await runCellCaptured(cell);
       cellResults.push(summary);
       if (!args['complete-all-cells'] && summary.status !== 'pass') campaignStopped = true;
@@ -431,6 +706,11 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
     iteration,
     workingIteration: iteration,
     frozen,
+    preflightExecutionArtifactPath:
+      preflightExecutionArtifactPaths.length === 1
+        ? preflightExecutionArtifactPaths[0]
+        : null,
+    preflightExecutionArtifactPaths,
     status,
     completeAllCells: args['complete-all-cells'],
     changes: config.change_log,

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,6 +20,7 @@ import {
   releaseTutorStubFirstDraftCellClaim,
   summarizeTutorStubWorkingScreen,
   tutorStubFirstDraftDevelopmentExecutionPlan,
+  tutorStubFirstDraftFocusedTestSuites,
   tutorStubFirstDraftCampaignValidationArtifactPath,
   tutorStubFirstDraftGatePossibility,
   tutorStubFirstDraftInterruptedCellResult,
@@ -190,6 +192,73 @@ test('development confirmation runs one hard cell then three remaining cells wit
       assert.equal(cell.commands[0].argv.includes('--stop-on-first-rejection'), true);
       assert.match(cell.commands[0].outputPath, new RegExp(`${cell.id}/turn-${cell.turns[0]}\\.json$`, 'u'));
     }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('structured focused test suites preserve the complete legacy gate inventory', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-focused-suites-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'tests'), { recursive: true });
+    fs.mkdirSync(path.join(tmp, 'services', '__tests__'), { recursive: true });
+    fs.writeFileSync(path.join(tmp, 'tests', 'alpha.test.js'), '// alpha\n');
+    fs.writeFileSync(path.join(tmp, 'services', '__tests__', 'beta.test.js'), '// beta\n');
+    const config = workingConfig(tmp);
+    config.preflight.focused_tests =
+      'node --test tests/alpha.test.js services/__tests__/beta.test.js';
+    config.preflight.focused_test_suites = [
+      { id: 'contracts', test_files: ['tests/alpha.test.js'] },
+      { id: 'integration', test_files: ['services/__tests__/beta.test.js'] },
+    ];
+    assert.deepEqual(tutorStubFirstDraftFocusedTestSuites(config, { root: tmp }), [
+      { id: 'contracts', testFiles: ['tests/alpha.test.js'] },
+      { id: 'integration', testFiles: ['services/__tests__/beta.test.js'] },
+    ]);
+    const validation = validateTutorStubFirstDraftCampaign({ config, root: tmp });
+    assert.deepEqual(validation.focusedTestSuites, [
+      { id: 'contracts', testFiles: ['tests/alpha.test.js'] },
+      { id: 'integration', testFiles: ['services/__tests__/beta.test.js'] },
+    ]);
+
+    const shrunk = structuredClone(config);
+    shrunk.preflight.focused_test_suites = [
+      { id: 'contracts', test_files: ['tests/alpha.test.js'] },
+    ];
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: shrunk, root: tmp }),
+      /refusing to shrink or change the deterministic gate/u,
+    );
+
+    const duplicateId = structuredClone(config);
+    duplicateId.preflight.focused_test_suites[1].id = 'contracts';
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: duplicateId, root: tmp }),
+      /duplicate focused test suite id/u,
+    );
+
+    const duplicateFile = structuredClone(config);
+    duplicateFile.preflight.focused_test_suites[1].test_files = ['tests/alpha.test.js'];
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: duplicateFile, root: tmp }),
+      /duplicate focused test file across suites/u,
+    );
+
+    const absoluteFile = structuredClone(config);
+    absoluteFile.preflight.focused_test_suites[0].test_files = [
+      path.join(tmp, 'tests', 'alpha.test.js'),
+    ];
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: absoluteFile, root: tmp }),
+      /must be repo-relative/u,
+    );
+
+    const missingFile = structuredClone(config);
+    missingFile.preflight.focused_test_suites[0].test_files = ['tests/missing.test.js'];
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: missingFile, root: tmp }),
+      /focused test file is missing/u,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -620,8 +689,10 @@ test('deterministic preflight command failures preserve validation, exact failur
       const iterationRoot = path.join(artifactRoot, 'iteration-1');
       const validationPath = path.join(iterationRoot, 'campaign-validation.json');
       const resultPath = path.join(iterationRoot, 'working-screen-result.json');
+      const preflightExecutionPath = path.join(iterationRoot, 'preflight-execution.json');
       assert.equal(fs.existsSync(validationPath), true);
       assert.equal(fs.existsSync(resultPath), true);
+      assert.equal(fs.existsSync(preflightExecutionPath), true);
       const validation = JSON.parse(fs.readFileSync(validationPath, 'utf8'));
       assert.equal(validation.valid, true);
       assert.equal(validation.preflightReady, true);
@@ -647,6 +718,11 @@ test('deterministic preflight command failures preserve validation, exact failur
       assert.equal(result.commandFailure.reason, `exited with status ${testCase.exitCode}`);
       assert.equal(result.commandFailure.signal, null);
       assert.equal(result.commandFailure.spawnErrorCode, null);
+      assert.equal(result.preflightExecutionArtifactPath, preflightExecutionPath);
+      assert.equal(
+        result.commandFailure.preflightExecutionArtifactPath,
+        preflightExecutionPath,
+      );
       assert.deepEqual(
         result.commandFailure.argv.slice(0, 2),
         testCase.kind === 'model_free_fixture'
@@ -664,9 +740,244 @@ test('deterministic preflight command failures preserve validation, exact failur
         (cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure',
       ));
       assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
+      const preflightExecution = JSON.parse(
+        fs.readFileSync(preflightExecutionPath, 'utf8'),
+      );
+      assert.equal(preflightExecution.status, 'fail');
+      assert.equal(preflightExecution.executionPolicy.attemptsPerCommand, 1);
+      assert.equal(preflightExecution.executionPolicy.retryPolicy, 'none');
+      assert.equal(preflightExecution.makesModelCalls, false);
+      assert.equal(preflightExecution.modelCalls, 0);
+      assert.equal(
+        preflightExecution.commands.length,
+        testCase.kind === 'world_quality'
+          ? 1
+          : testCase.kind === 'focused_tests'
+            ? 2
+            : 3,
+      );
+      const failedExecution = preflightExecution.commands.at(-1);
+      assert.equal(failedExecution.status, 'fail');
+      assert.equal(failedExecution.attempt, 1);
+      assert.equal(failedExecution.retryPolicy, 'none');
+      assert.equal(failedExecution.exitCode, testCase.exitCode);
+      for (const streamName of ['stdout', 'stderr']) {
+        const artifact = failedExecution[streamName];
+        const bytes = fs.readFileSync(artifact.path);
+        assert.equal(artifact.bytes, bytes.byteLength);
+        assert.equal(
+          artifact.sha256,
+          createHash('sha256').update(bytes).digest('hex'),
+        );
+      }
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
+  }
+});
+
+test('structured focused suite failure is captured once and blocks every model call', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-preflight-'));
+  const testFile = path.join(
+    repoRoot,
+    'tests',
+    `generated-preflight-failure-${process.pid}-${Date.now()}.test.js`,
+  );
+  try {
+    const relativeTestFile = path.relative(repoRoot, testFile);
+    fs.writeFileSync(
+      testFile,
+      [
+        "import test from 'node:test';",
+        "test('captured deterministic failure sentinel', () => {",
+        "  throw new Error('captured deterministic failure body');",
+        '});',
+        '',
+      ].join('\n'),
+    );
+    const binDir = path.join(root, 'bin');
+    const artifactRoot = path.join(root, 'artifacts');
+    const configPath = path.join(root, 'campaign.yaml');
+    fs.mkdirSync(binDir, { recursive: true });
+    const fakeGit = path.join(binDir, 'git');
+    fs.writeFileSync(
+      fakeGit,
+      '#!/bin/sh\nif [ "$1" = "rev-parse" ]; then echo test-head; exit 0; fi\nif [ "$1" = "status" ]; then exit 0; fi\nexit 2\n',
+    );
+    fs.chmodSync(fakeGit, 0o755);
+    const sourceConfigPath = path.join(
+      repoRoot,
+      'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+    );
+    const config = structuredClone(
+      loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config,
+    );
+    config.artifacts.root = artifactRoot;
+    config.preflight.world_quality = 'true';
+    config.preflight.focused_tests = `node --test ${relativeTestFile}`;
+    config.preflight.focused_test_suites = [
+      { id: 'failure_capture', test_files: [relativeTestFile] },
+    ];
+    config.preflight.model_free_fixtures = [];
+    fs.writeFileSync(configPath, YAML.stringify(config));
+
+    const childEnv = {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+    };
+    delete childEnv.NODE_TEST_CONTEXT;
+    const execution = spawnSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-first-draft-campaign.js',
+        '--config',
+        configPath,
+        '--mode',
+        'development',
+        '--iteration',
+        '1',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        env: childEnv,
+      },
+    );
+
+    assert.equal(execution.status, 1, execution.stderr);
+    assert.match(
+      `${execution.stdout}\n${execution.stderr}`,
+      /captured deterministic failure sentinel/u,
+    );
+    const iterationRoot = path.join(artifactRoot, 'iteration-1');
+    const reportPath = path.join(iterationRoot, 'preflight-execution.json');
+    const resultPath = path.join(iterationRoot, 'working-screen-result.json');
+    const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+    assert.equal(report.status, 'fail');
+    assert.equal(report.modelCalls, 0);
+    assert.equal(report.testInventory.suiteCount, 1);
+    assert.equal(report.testInventory.fileCount, 1);
+    assert.deepEqual(report.testInventory.suites, [
+      { id: 'failure_capture', testFiles: [relativeTestFile] },
+    ]);
+    assert.equal(report.commands.length, 2);
+    const suiteExecution = report.commands[1];
+    assert.equal(suiteExecution.kind, 'focused_test_suite');
+    assert.equal(suiteExecution.suiteId, 'failure_capture');
+    assert.equal(suiteExecution.attempt, 1);
+    assert.equal(suiteExecution.retryPolicy, 'none');
+    assert.deepEqual(suiteExecution.argv.slice(0, 4), [
+      process.execPath,
+      '--test',
+      '--test-concurrency=1',
+      '--test-reporter=tap',
+    ]);
+    assert.equal(suiteExecution.tap.tests, 1);
+    assert.equal(suiteExecution.tap.pass, 0);
+    assert.equal(suiteExecution.tap.fail, 1);
+    assert.ok(
+      suiteExecution.tap.failureNames.includes('captured deterministic failure sentinel'),
+    );
+    assert.equal(result.status, 'preflight_failed');
+    assert.equal(result.modelCalls, 0);
+    assert.equal(result.candidates, 0);
+    assert.equal(result.commandFailure.kind, 'focused_test_suite');
+    assert.equal(result.preflightExecutionArtifactPath, reportPath);
+    assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
+    assert.ok(result.cells.every(
+      (cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure',
+    ));
+  } finally {
+    fs.rmSync(testFile, { force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('zero-test TAP is a failed captured suite and cannot unlock a replay', () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-zero-tap-'));
+  try {
+    const binDir = path.join(root, 'bin');
+    const artifactRoot = path.join(root, 'artifacts');
+    const configPath = path.join(root, 'campaign.yaml');
+    const invalidFixture = path.join(root, 'invalid-fixture.json');
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.writeFileSync(invalidFixture, '{ invalid json\n');
+    const fakeGit = path.join(binDir, 'git');
+    fs.writeFileSync(
+      fakeGit,
+      '#!/bin/sh\nif [ "$1" = "rev-parse" ]; then echo test-head; exit 0; fi\nif [ "$1" = "status" ]; then exit 0; fi\nexit 2\n',
+    );
+    fs.chmodSync(fakeGit, 0o755);
+    const sourceConfigPath = path.join(
+      repoRoot,
+      'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+    );
+    const config = structuredClone(
+      loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config,
+    );
+    config.artifacts.root = artifactRoot;
+    config.preflight.world_quality = 'true';
+    config.preflight.focused_tests = 'node --test tests/processUtils.test.js';
+    config.preflight.focused_test_suites = [
+      { id: 'zero_tap', test_files: ['tests/processUtils.test.js'] },
+    ];
+    // This is a safety barrier for the test itself: even if Node changes its
+    // recursive-test behavior, the campaign still stops before a replay.
+    config.preflight.model_free_fixtures = [invalidFixture];
+    fs.writeFileSync(configPath, YAML.stringify(config));
+
+    const execution = spawnSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-first-draft-campaign.js',
+        '--config',
+        configPath,
+        '--mode',
+        'development',
+        '--iteration',
+        '1',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+          NODE_TEST_CONTEXT: process.env.NODE_TEST_CONTEXT || 'child-v8',
+        },
+      },
+    );
+
+    assert.equal(execution.status, 1, execution.stderr);
+    assert.doesNotMatch(execution.stdout, /frozen turn/u);
+    const iterationRoot = path.join(artifactRoot, 'iteration-1');
+    const reportPath = path.join(iterationRoot, 'preflight-execution.json');
+    const resultPath = path.join(iterationRoot, 'working-screen-result.json');
+    const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+    assert.equal(report.status, 'fail');
+    assert.equal(report.modelCalls, 0);
+    assert.equal(report.commands.length, 2);
+    const suiteExecution = report.commands[1];
+    assert.equal(suiteExecution.kind, 'focused_test_suite');
+    assert.equal(suiteExecution.exitCode, 0);
+    assert.equal(suiteExecution.status, 'fail');
+    assert.equal(suiteExecution.failureKind, 'tap_validation');
+    assert.equal(suiteExecution.failureReason, 'TAP reported zero tests');
+    assert.equal(suiteExecution.tap.tests, null);
+    assert.equal(report.failedCommand.failureKind, 'tap_validation');
+    assert.equal(report.failedCommand.reason, 'TAP reported zero tests');
+    assert.equal(result.commandFailure.kind, 'focused_test_suite');
+    assert.equal(result.commandFailure.reason, 'TAP reported zero tests');
+    assert.equal(result.commandFailure.execution.status, 'fail');
+    assert.equal(result.modelCalls, 0);
+    assert.equal(result.candidates, 0);
+    assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 

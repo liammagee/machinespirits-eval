@@ -301,8 +301,76 @@ export function loadTutorStubFirstDraftCampaign(configPath, { root = process.cwd
   return { config, configPath: resolvedPath, root: path.resolve(root) };
 }
 
+function legacyFocusedTestInventory(command) {
+  const inventory = [];
+  const pattern = /(?:^|\s)((?:tests|services\/__tests__)\/[A-Za-z0-9._/-]+\.test\.js)(?=\s|$)/gu;
+  for (const match of String(command || '').matchAll(pattern)) inventory.push(match[1]);
+  return [...new Set(inventory)].sort();
+}
+
+export function tutorStubFirstDraftFocusedTestSuites(config, { root = process.cwd() } = {}) {
+  const declared = config?.preflight?.focused_test_suites;
+  if (declared == null) return [];
+  if (!Array.isArray(declared) || declared.length === 0) {
+    throw new Error('focused_test_suites must be a non-empty array');
+  }
+  const repoRoot = path.resolve(root);
+  const suiteIds = new Set();
+  const testFiles = new Set();
+  const suites = declared.map((suite, index) => {
+    if (!suite || typeof suite !== 'object' || Array.isArray(suite)) {
+      throw new Error(`focused test suite ${index + 1} must be an object`);
+    }
+    const id = requiredString(suite.id, `focused test suite ${index + 1} id`);
+    if (!/^[a-z0-9][a-z0-9_-]*$/u.test(id)) {
+      throw new Error(`focused test suite id must use lowercase letters, digits, underscores, or hyphens: ${id}`);
+    }
+    if (suiteIds.has(id)) throw new Error(`duplicate focused test suite id ${id}`);
+    suiteIds.add(id);
+    if (!Array.isArray(suite.test_files) || suite.test_files.length === 0) {
+      throw new Error(`${id} focused test suite must declare at least one test_file`);
+    }
+    const files = suite.test_files.map((value) => {
+      const declaredPath = requiredString(value, `${id} focused test file`);
+      if (path.isAbsolute(declaredPath)) {
+        throw new Error(`${id} focused test file must be repo-relative: ${declaredPath}`);
+      }
+      const normalized = path.normalize(declaredPath);
+      const resolved = path.resolve(repoRoot, normalized);
+      const relative = path.relative(repoRoot, resolved);
+      if (!relative || relative.startsWith(`..${path.sep}`) || relative === '..' || path.isAbsolute(relative)) {
+        throw new Error(`${id} focused test file escapes the repository: ${declaredPath}`);
+      }
+      if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+        throw new Error(`${id} focused test file is missing: ${declaredPath}`);
+      }
+      if (testFiles.has(normalized)) {
+        throw new Error(`duplicate focused test file across suites: ${normalized}`);
+      }
+      testFiles.add(normalized);
+      return normalized;
+    });
+    return { id, testFiles: files };
+  });
+  const legacyCommand = String(config?.preflight?.focused_tests || '').trim();
+  if (legacyCommand) {
+    const legacyInventory = legacyFocusedTestInventory(legacyCommand);
+    const structuredInventory = [...testFiles].sort();
+    if (
+      legacyInventory.length === 0 ||
+      JSON.stringify(legacyInventory) !== JSON.stringify(structuredInventory)
+    ) {
+      throw new Error(
+        'focused_test_suites inventory must exactly match legacy focused_tests; refusing to shrink or change the deterministic gate',
+      );
+    }
+  }
+  return suites;
+}
+
 function validateWorkingScreen(config, { root }) {
   if (config.held_out !== false) throw new Error('working screen must declare held_out: false');
+  const focusedTestSuites = tutorStubFirstDraftFocusedTestSuites(config, { root });
   if (
     config.fixed_configuration?.structured_generation === true &&
     config.fixed_configuration?.joint_performance_generation === true
@@ -718,6 +786,7 @@ function validateWorkingScreen(config, { root }) {
     preflightReady: preflightBlockers.length === 0,
     preflightBlockers,
     structuralPreflight,
+    focusedTestSuites,
   };
 }
 
@@ -998,6 +1067,7 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
     preflightReady: plan?.preflightReady !== false,
     preflightBlockers: plan?.preflightBlockers || [],
     structuralPreflight: plan?.structuralPreflight || [],
+    focusedTestSuites: structuredClone(plan?.focusedTestSuites || []),
     oneCampaignLevelExpansion: true,
     makesModelCalls: false,
     frozen,
@@ -1125,6 +1195,8 @@ export function buildTutorStubFirstDraftPreflightFailureResult({
     preflightReady: false,
     preflightBlockers: plan?.preflightBlockers || [],
     commandFailure: commandFailure ? structuredClone(commandFailure) : null,
+    preflightExecutionArtifactPath:
+      commandFailure?.preflightExecutionArtifactPath || null,
     structuralPreflight: plan?.structuralPreflight || [],
     changeControl: structuredClone(config?.change_control || null),
     seedInventory: {
