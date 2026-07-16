@@ -172,6 +172,7 @@ function jointPerformanceCompatibility(contract, entryInstruction) {
       entryInstruction,
       performanceResponseInstruction: null,
       handoffDelegatedComplementInstruction: null,
+      handoffDeclarativeOperationInstruction: null,
       compositePartOwnership: null,
     };
   }
@@ -179,13 +180,20 @@ function jointPerformanceCompatibility(contract, entryInstruction) {
   if (compositePartOwnership?.schema !== TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA) {
     throw new Error('joint performance contract invalid: missing_composite_part_ownership');
   }
+  const handoffDeclarativeOperationInstruction =
+    contract?.progression?.handoff_contract?.mode === 'declarative_missing_support' &&
+    contract.progression.handoff_contract.question_allowed === false &&
+    (contract.progression.handoff_contract.prohibited_settled_surfaces || []).length === 0
+      ? oneLine(compositePartOwnership.prompt.declarative_handoff_operation)
+      : null;
   return {
     decisions,
     entryInstruction: `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, ${oneLine(compositePartOwnership.prompt.performance_initiation)}`,
     performanceResponseInstruction: oneLine(compositePartOwnership.prompt.performance_action_boundary),
-    handoffDelegatedComplementInstruction: oneLine(
-      compositePartOwnership.prompt.handoff_delegated_complement,
-    ),
+    handoffDelegatedComplementInstruction: handoffDeclarativeOperationInstruction
+      ? null
+      : oneLine(compositePartOwnership.prompt.handoff_delegated_complement),
+    handoffDeclarativeOperationInstruction,
     compositePartOwnership: clone(compositePartOwnership),
   };
 }
@@ -291,6 +299,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         instruction: [
           actionOnlyHandoffInstruction(contract, oneLine(slots.get('handoff').instruction)),
           compatibility.handoffDelegatedComplementInstruction,
+          compatibility.handoffDeclarativeOperationInstruction,
         ]
           .filter(Boolean)
           .join(' '),

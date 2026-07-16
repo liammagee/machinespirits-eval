@@ -78,6 +78,7 @@ function firstDraftContract({
   responseCompositionFrame = null,
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
+  questionSupport = null,
   sourceAccessibilityPolicy = 'direct_only',
 } = {}) {
   return buildTutorStubFirstDraftContract({
@@ -90,6 +91,7 @@ function firstDraftContract({
       },
     dramaticReleaseFrame: dramaticReleaseFrame || { active: false, entries: [] },
     dialogueClosureFrame,
+    questionSupport,
     sourceAccessibilityPolicy,
   });
 }
@@ -219,7 +221,7 @@ test('v2 prompt drafts below the hard slot limit while the parser retains the ex
   );
 });
 
-test('v2 compiles declared advocate delegation into a breakable performance and action-only handoff', () => {
+test('v2 compiles declared advocate delegation into a bounded performance and action-only handoff', () => {
   const selectedConfiguration = advocateConfiguration();
   const contract = firstDraftContract({ responseConfiguration: selectedConfiguration });
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
@@ -231,15 +233,18 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
     ),
   );
   assert.equal(contract.compatibility.composite_axis_ownership.mode, 'delegated_complement');
-  assert.match(plan.slots.performance.entry_instruction, /strongest licensed public case with a concrete limit/iu);
+  assert.match(plan.slots.performance.entry_instruction, /state a concrete public proposition/iu);
+  assert.match(plan.slots.performance.entry_instruction, /not merely whether the case is strong, weak, or limited/iu);
+  assert.match(plan.slots.performance.entry_instruction, /same PERFORMANCE ENTRY/iu);
+  assert.match(plan.slots.performance.entry_instruction, /such as but, cannot, not yet, only, or does not establish/iu);
+  assert.match(plan.slots.performance.entry_instruction, /Do not defer the limit to PERFORMANCE RESPONSE/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
   assert.match(plan.slots.performance.compatibility_instruction, /Keep PERFORMANCE declarative/iu);
-  assert.match(plan.slots.handoff.instruction, /relevant concrete way to test, resist, or break that case/iu);
-  assert.equal(
-    plan.slots.handoff.instruction.split('Make HANDOFF the relevant concrete way to test, resist, or break that case')
-      .length - 1,
-    1,
-  );
+  assert.match(plan.slots.handoff.instruction, /Begin HANDOFF with “Next,” or “Now,”/iu);
+  assert.match(plan.slots.handoff.instruction, /test, check, compare, or trace/iu);
+  assert.match(plan.slots.handoff.instruction, /Reuse a public object named in PERFORMANCE/iu);
+  assert.match(plan.slots.handoff.instruction, /case, claim, or accusation “breaks” is not a next operation/iu);
+  assert.doesNotMatch(plan.slots.handoff.instruction, /test, resist, or break/iu);
   assert.deepEqual(plan.delegated_axis_prerequisites.actorial_part, ['handoff']);
   assert.match(prompt, /PERFORMANCE COMPATIBILITY —/u);
 
@@ -284,6 +289,125 @@ test('v2 compiles declared advocate delegation into a breakable performance and 
       ['handoff_selected_action', 'handoff', true],
     ],
   );
+});
+
+test('V32 speaking contract rejects the saved V31 static-break shape and preserves a compliant owner-local counterfactual', () => {
+  const selectedConfiguration = advocateConfiguration({ engagement_stance: 'charismatic' });
+  const contract = firstDraftContract({
+    learnerText: 'What should I put in the minutes about the chargers being dark during the stocktake?',
+    responseConfiguration: selectedConfiguration,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Asks for wording about the stocktake evidence.' },
+      scene_action_budget: { saturated: true },
+    },
+  });
+  assert.equal(contract.progression.handoff_contract.question_allowed, false);
+  const plan = buildTutorStubJointPerformanceHostPlan(contract);
+  const world = {
+    title: 'The Thursday Brownouts of Tallow Street',
+    setting: 'The meeting minutes, stocktake note, and pen chart lie on the hall table.',
+    question: 'What browns out Tallow Street every Thursday evening?',
+    premiseById: new Map(),
+  };
+  const auditSlots = (slots) => {
+    const composition = composeTutorStubJointPerformanceFirstDraft({
+      structured: parseTutorStubJointPerformanceFirstDraft(JSON.stringify(slots), {
+        maxWordsPerSlot: 18,
+      }),
+    });
+    return auditTutorStubJointPerformanceOwnership({
+      composition,
+      candidate: composition.text,
+      configuration: selectedConfiguration,
+      world,
+      progressionContract: contract.progression,
+      firstDraftContract: contract,
+      jointPerformanceHostPlan: plan,
+    });
+  };
+
+  const v31Failure = auditSlots({
+    uptake: 'Write: "The dark chargers did not cause that evening’s brownout."',
+    performance: {
+      entry: 'My case is weakened: the chargers were dark when the brownout arrived.',
+      response: 'The stocktake supports that, but it does not establish the actual source.',
+    },
+    handoff: 'The depot motion breaks against the dark chargers and the 18:40 brownout.',
+  });
+  assert.equal(v31Failure.ok, false);
+  assert.equal(
+    v31Failure.compositePartOwnership.requirements.find((row) => row.id === 'performance_initiation')?.ok,
+    false,
+  );
+  assert.equal(
+    v31Failure.compositePartOwnership.requirements.find(
+      (row) => row.id === 'handoff_relevant_delegated_complement',
+    )?.ok,
+    false,
+  );
+  assert.equal(
+    v31Failure.compositePartOwnership.requirements.find((row) => row.id === 'handoff_selected_action')?.ok,
+    false,
+  );
+
+  const compliant = auditSlots({
+    uptake: 'Write: "Dark chargers cannot explain the 18:40 brownout; its source remains elsewhere."',
+    performance: {
+      entry: 'My case is that dark chargers cannot explain a brownout that still happened.',
+      response: 'The stocktake supports that, but it does not establish which supply failed.',
+    },
+    handoff: 'Next, trace the 18:40 brownout through Tallow Street’s remaining supply.',
+  });
+  assert.equal(compliant.ok, true, JSON.stringify(compliant.issues));
+  assert.equal(compliant.axes.actorial_part.visible, true);
+  assert.equal(compliant.axes.action_family.visible, true);
+  assert.equal(compliant.compositePartOwnership.requirements.every((row) => row.ok), true);
+});
+
+test('V32 declarative operation wording stays out of closure, direct repair, settled completion, and non-advocate paths', () => {
+  const advocate = advocateConfiguration({ engagement_stance: 'charismatic' });
+  const closure = firstDraftContract({
+    responseConfiguration: advocate,
+    dialogueClosureFrame: { mandatory: true, allowCheckIn: false, phase: 'terminal' },
+  });
+  const directRepair = firstDraftContract({
+    responseConfiguration: advocate,
+    questionSupport: { responsiveRepairRequired: true },
+  });
+  const settled = firstDraftContract({
+    responseConfiguration: advocate,
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner accepts the timing result.' },
+      conversational_completion: {
+        resolved: true,
+        sourceTutorQuestion: 'What does the timing rule out?',
+        acceptedMeaning: 'The chargers cannot cause the first dip.',
+      },
+      scene_action_budget: { saturated: false },
+    },
+  });
+  const nonAdvocate = firstDraftContract({
+    responseConfiguration: configuration({ actorial_part: 'examiner' }),
+  });
+  const nonStage = firstDraftContract({
+    responseConfiguration: advocateConfiguration({ action_family: 'clarify_distinction' }),
+  });
+
+  assert.equal(closure.progression.handoff_contract.mode, 'closure');
+  assert.equal(directRepair.progression.handoff_contract.mode, 'direct_answer');
+  assert.equal(settled.progression.handoff_contract.mode, 'declarative_missing_support');
+  assert.ok(settled.progression.handoff_contract.prohibited_settled_surfaces.length > 0);
+  for (const contract of [closure, directRepair, settled, nonAdvocate, nonStage]) {
+    const instruction = buildTutorStubJointPerformanceHostPlan(contract).slots.handoff.instruction;
+    assert.doesNotMatch(instruction, /Begin HANDOFF with “Next,” or “Now,”/iu);
+  }
+  for (const contract of [closure, directRepair, settled]) {
+    const instruction = buildTutorStubJointPerformanceHostPlan(contract).slots.handoff.instruction;
+    assert.match(
+      instruction,
+      /Make HANDOFF the relevant concrete way to test, resist, or break that case/iu,
+    );
+  }
 });
 
 test('typed advocate ownership accepts a generic relational operation and reports exact subrequirements', () => {

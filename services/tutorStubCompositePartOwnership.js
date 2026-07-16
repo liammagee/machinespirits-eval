@@ -106,11 +106,13 @@ export function compileTutorStubCompositePartOwnership({
     excluded_owners: ['source'],
     prompt: {
       performance_initiation:
-        'Begin “My case is” and state the strongest licensed public case with a concrete limit.',
+        'Begin “My case is” and state a concrete public proposition, not merely whether the case is strong, weak, or limited. In this same PERFORMANCE ENTRY, make its limit explicit with public boundary language such as but, cannot, not yet, only, or does not establish. Do not defer the limit to PERFORMANCE RESPONSE.',
       performance_action_boundary:
         'Keep PERFORMANCE declarative: do not request, schedule, offer, or direct the next action.',
       handoff_delegated_complement:
         'Make HANDOFF the relevant concrete way to test, resist, or break that case, naming public material already named in PERFORMANCE.',
+      declarative_handoff_operation:
+        'Begin HANDOFF with “Next,” or “Now,” followed immediately by one concrete public operation: test, check, compare, or trace. Reuse a public object named in PERFORMANCE. A static statement that the case, claim, or accusation “breaks” is not a next operation.',
     },
   };
 }
