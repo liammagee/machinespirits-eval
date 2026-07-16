@@ -197,6 +197,8 @@ function v31Fixture(tmp) {
   manifest.current.primary_working_screen_id = 'first-draft-working-screens-v11';
   manifest.current.active_working_history = [manifest.current.v31_working_observation];
   manifest.current.active_last_observation = manifest.current.v31_working_observation;
+  manifest.current.working_history_scope =
+    'preserved_v27_primary_history_with_v28_v29_v30_preflights_and_v31_hard_cell_failure';
   manifest.current.version_advance_from = manifest.current.v31_version_advance_from;
   manifest.versioning.current = 31;
   manifest.versioning.next = 32;
@@ -982,14 +984,16 @@ test('V31 validator fails closed on V30 provenance, fresh seed, behavior, gate, 
   }
 });
 
-test('outer-loop predeclares V32 as two staged one-draw Tallow diagnostics', () => {
+test('outer-loop preserves V32 as a failed but measurably improved staged diagnostic', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v32-'));
   try {
     const { manifest, screen } = v32Fixture(tmp);
     const validation = validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp });
     assert.equal(validation.valid, true);
     assert.equal(validation.currentVersion, 32);
-    assert.equal(validation.currentState, 'working_predeclared');
+    assert.equal(validation.currentState, 'retired_after_working_failure');
+    assert.equal(validation.terminalScope, 'version');
+    assert.equal(validation.outcome, 'working_failure');
     assert.equal(validation.acceptancePredeclared, false);
     assert.equal(
       manifest.current.working_screen_config,
@@ -1063,8 +1067,52 @@ test('outer-loop predeclares V32 as two staged one-draw Tallow diagnostics', () 
       heldOut: 0,
       reserve: 0,
     });
-    assert.deepEqual(manifest.current.active_working_history, []);
-    assert.equal(manifest.current.active_last_observation, null);
+    const observation = manifest.current.active_last_observation;
+    assert.deepEqual(manifest.current.active_working_history, [observation]);
+    assert.equal(observation.status, 'development_diagnostic_failed_but_measurably_improved');
+    assert.equal(observation.model_calls, 2);
+    assert.equal(observation.completed_draws, 2);
+    assert.equal(observation.strict_originals_accepted, 1);
+    assert.equal(observation.original_candidate_acceptance_rate, 0.5);
+    assert.equal(observation.mean_configuration_realization, 1);
+    assert.equal(observation.final_safety_failures, 0);
+    assert.equal(observation.mechanical_repairs, 0);
+    assert.equal(observation.model_rewrites, 0);
+    assert.equal(observation.deterministic_fallbacks, 0);
+    assert.equal(observation.mean_original_latency_ms, 9242);
+    assert.deepEqual(observation.token_usage, { input: 32458, output: 611, total: 33069 });
+    assert.deepEqual(observation.dominant_failure_clusters, [
+      { cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 },
+    ]);
+    assert.equal(
+      observation.failure_interpretation.strict_failure,
+      'deterministic_turn_focus_recognition_false_negative',
+    );
+    assert.equal(observation.qualitative_wording_debt.id, 'did_not_stop_causal_wording');
+    assert.equal(observation.qualitative_wording_debt.strict_gate_effect, 'none');
+    assert.equal(observation.comparison.measurable_improvement, true);
+    assert.equal(observation.comparison.consecutive_without_improvement, 0);
+    assert.equal(observation.comparison.stop, false);
+    assert.equal(observation.terminal_action.v33_status, 'strict_confirmation_prohibited');
+    assert.deepEqual(observation.seed_dispositions, [
+      {
+        seed: 20262200,
+        artifact_status: 'consumed_development',
+        final_status: 'consumed_development_passed_but_campaign_failed_retired',
+      },
+      {
+        seed: 20262201,
+        artifact_status: 'consumed_development',
+        final_status: 'consumed_development_failed_retired',
+      },
+    ]);
+    assert.deepEqual(
+      manifest.seed_ledger.development.map(({ seed, status }) => ({ seed, status })),
+      [
+        { seed: 20262200, status: 'consumed_development_passed_but_campaign_failed_retired' },
+        { seed: 20262201, status: 'consumed_development_failed_retired' },
+      ],
+    );
     assert.equal(manifest.current.version_advance_from.version, 31);
     assert.equal(manifest.current.version_advance_from.model_calls, 1);
     assert.deepEqual(
