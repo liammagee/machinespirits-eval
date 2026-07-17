@@ -1,17 +1,19 @@
 # Shared AI Provider Configuration
 # Used by both tutor-agents.yaml and evaluation-rubric.yaml
 #
-# Model IDs are current as of February 2026. Update when new models release.
+# Model IDs are current as of July 2026 (Claude 5 family: Fable 5, Sonnet 5;
+# Opus 4.8; Haiku 4.5). Update when new models release.
 
 providers:
   anthropic:
     api_key_env: ANTHROPIC_API_KEY
     base_url: https://api.anthropic.com/v1/messages
-    default_model: claude-sonnet-4-5
+    default_model: claude-sonnet-5
     models:
       haiku: claude-haiku-4-5
-      sonnet: claude-sonnet-4-5
-      opus: claude-opus-4-6
+      sonnet: claude-sonnet-5
+      opus: claude-opus-4-8
+      fable: claude-fable-5
 
   # Spawns the local `claude` CLI as a subprocess and uses the user's Claude
   # Code subscription. No API key required; isConfigured is forced true via
@@ -20,17 +22,19 @@ providers:
   # Model aliases are pinned to explicit version IDs so the judge model
   # doesn't drift if the CLI's bare `sonnet` default changes in a future
   # release. The CLI accepts both bare aliases (`sonnet`) and explicit IDs
-  # (`claude-sonnet-4-6`); we send explicit IDs for reproducibility.
+  # (`claude-sonnet-5`); we send explicit IDs for reproducibility. The bare
+  # aliases track the current generation; the version-pinned aliases
+  # (`sonnet-5`, `opus-4-8`, `fable-5`) exist so archived runs stay resolvable.
   claude-code:
-    default_model: claude-sonnet-4-6
+    default_model: claude-sonnet-5
     models:
       haiku: claude-haiku-4-5
-      sonnet: claude-sonnet-4-6
-      opus: claude-opus-4-6
-      opus-4-8: claude-opus-4-8
-      sonnet-4-5: claude-sonnet-4-5
-      sonnet-4-6: claude-sonnet-4-6
+      sonnet: claude-sonnet-5
+      opus: claude-opus-4-8
+      fable: claude-fable-5
       sonnet-5: claude-sonnet-5
+      opus-4-8: claude-opus-4-8
+      fable-5: claude-fable-5
 
   # Spawns the local `codex` CLI as a subprocess and uses the user's Codex
   # login. No OpenRouter/OpenAI API key is required. Intended for high-powered
@@ -38,8 +42,15 @@ providers:
   codex:
     default_model: gpt-5.5
     models:
+      # The local Codex ChatGPT-account route rejects gpt-5-mini/mini and
+      # gpt-5.2-codex (probed 2026-07-12: "not supported when using Codex with
+      # a ChatGPT account"). GPT-5.6 needs a current Codex CLI (verified on
+      # 0.144.1); keep 5.5 as the default until the tutor/learner role
+      # comparison establishes a measured upgrade.
+      gpt-5.6-sol: gpt-5.6-sol
+      gpt-5.6-terra: gpt-5.6-terra
+      gpt-5.6-luna: gpt-5.6-luna
       gpt-5.5: gpt-5.5
-      gpt-5.2-codex: gpt-5.2-codex
 
   openai:
     api_key_env: OPENAI_API_KEY

@@ -4,6 +4,17 @@
 
 This plan turns the PLAN_4_0 field-theory note into an incremental runtime implementation. It is an implementation plan, not an empirical paper claim. Field reporting is instrumentation; field planning and enforcement are experimental controller work that must remain opt-in until evaluated under frozen protocols.
 
+Current implementation status:
+
+- Phases 1-2 are implemented as runtime field objects and dialogue-report artifacts.
+- Phase 3 is implemented as a registered pedagogical-script object model with the default `prediction_failure_repair_generalisation_transfer` script.
+- Phase 4 is implemented as deterministic candidate-move projection inside the field planner. LLM simulation remains deliberately out of scope until the deterministic baseline is evaluated.
+- Phase 5 is implemented as opt-in advisory/enforced field planning with stored candidate projections, selected moves, expected movement, observed movement, and non-leak audits.
+- Phase 6 is prospectively split in `PHASE_6_EVIDENCE_GATE_PLAN.md`: the
+  versioned non-acts Phase 6A protocol/evaluator is implemented but unrun in
+  real mode; the true acts-mode hidden+proofDebt comparison is Phase 6B and
+  remains blocked on a redaction-safe reconstructed-state adapter.
+
 ## Goal
 
 Bring the dramatic-derivation runtime closer to the Field Theory of Adaptive Pedagogical Interaction by making learner, tutor, discourse, and joint interaction fields first-class computational objects, then using those fields to support reports, trajectory projections, script-level planning, and gated conduct selection.
@@ -68,6 +79,8 @@ Promote scripts from labels into computational objects:
 
 The default script remains `prediction_failure_repair_generalisation_transfer`, but the runtime should be able to register more scripts without touching planner logic.
 
+Implemented in `services/dramaticDerivation/pedagogicalScripts.js`. Each interaction-field turn carries the active stage's preferred moves, anti-patterns, and expected movement into planner scoring.
+
 ## Phase 4: Trajectory Projection
 
 Before selecting an action, evaluate candidate moves against predicted field deltas:
@@ -81,11 +94,13 @@ current field
 
 Start with deterministic projections from existing conduct and didactic specs. Add LLM simulation only after deterministic projections provide a stable baseline.
 
+Implemented in `services/dramaticDerivation/fieldPlanner.js` as a deterministic candidate table over all conduct move families. Each candidate receives expected learner/tutor/discourse/joint deltas and a score before selection.
+
 ## Phase 5: Runtime Planning
 
 Keep field planning in three levels:
 
-- `--field-report`: report-only instrumentation.
+- `--field-report-context`: report-only instrumentation — the coupled-field summary enters the tutor context with no move recommendation and no conduct authority (the Phase 6 `field_report_only` placebo arm).
 - `--field-planner`: advisory selection of conduct family and didactic mode.
 - `--field-planner-enforce`: opt-in enforcement through existing conduct-policy machinery.
 
@@ -98,19 +113,34 @@ Planner choices must record:
 - observed post-turn movement
 - non-leak audit status
 
+Implemented in `result.fieldPlanner[*]` and surfaced in dialogue reports.
+
 ## Phase 6: Evaluation Gate
 
-No paper-level claim follows from implementation alone. Promotion requires a frozen held-out evaluation:
+No paper-level claim follows from implementation alone. The current planner is
+incompatible with acts mode, while the production hidden+proofDebt stack
+requires acts/superego/confront/repair. The corrected evaluation therefore has
+two gates.
 
-- baseline hidden+proofDebt or current best arm
+Phase 6A is a frozen non-acts feasibility comparison:
+
+- baseline hidden pacing
 - field-report only
 - field-planner advisory
 - field-planner enforce
 - fixed worlds and seeds
-- exact scorer and stop rules
+- versioned deterministic scorer and stop rules
 - proof reliability, release adherence, and field-movement metrics
 
-The first valid claim should be narrow: whether field planning improves a predeclared derivation-controller failure without harming proof reliability.
+Its first valid claim is narrow: whether field planning improves a predeclared
+non-acts derivation-controller failure without harming proof reliability. It
+does not compare with production hidden+proofDebt.
+
+Phase 6B preserves the production question. It cannot run until an acts-safe
+planner consumes only a validated public or tutor-reconstructed learner-state
+view and passes the concealment-boundary leak audit.
+
+See `PHASE_6_EVIDENCE_GATE_PLAN.md` for the frozen arms, world set, endpoints, safety gates, and decision rules.
 
 ## First Implementation Slice
 

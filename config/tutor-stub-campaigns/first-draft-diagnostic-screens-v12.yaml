@@ -1,0 +1,257 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-diagnostic-screens-v12
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V32 is a bounded two-stage diagnostic after V31's first hard Tallow draw was
+  safe but failed advocate initiation and stage-next-step handoff ownership.
+  Both stages reuse that exact frozen public prefix, saved tutor model and
+  effort. Each generates one original only and must pass every unchanged
+  deterministic safety, delivery, source, uptake, and ownership gate before
+  the next stage may start. The only implementation change is the speaking
+  realization committed at 10409158ce020860786ed47dc8f949611fc1b449.
+  Recovery, adjudication, normalization, and held-out work remain disabled.
+  A strict four-cell, four-draw screen is not predeclared in V32; it belongs to
+  V33 only if both diagnostics pass. Outer-loop governance tests run separately
+  at frozen config and result boundaries, so result-metadata-only commits can
+  reuse the speaking/compiler preflight certificate.
+
+fixed_configuration:
+  original_only: true
+  joint_performance_generation: true
+  joint_performance_schema: machinespirits.tutor-stub.structured-first-draft.v2
+  joint_performance_composition_schema: machinespirits.tutor-stub.structured-first-draft-composition.v2
+  joint_performance_audit_schema: machinespirits.tutor-stub.structured-first-draft-joint-performance-audit.v2
+  source_accessibility_policy: direct_or_compensated_v1
+  source_accessibility_schema: machinespirits.tutor-stub.source-accessibility-contract.v1
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_v29_accessibility_compensation_unchanged
+  effort_source: exact_saved_request
+  max_live_model_jobs: 1
+  semantic_adjudication: false
+  adjudication_policy: deterministic_only
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFrozenReplayCheckpoint.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubStructuredFirstDraft.test.js
+    tests/tutorStubJointPerformanceFirstDraft.test.js
+    tests/tutorStubV27JointPerformanceCalibration.test.js
+    tests/tutorStubTypedCompositeAdvocateCalibration.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubDueSourceRenderer.test.js
+    tests/tutorStubSourceAccessibilityContract.test.js
+    tests/tutorStubLiveFirstDraftAudit.test.js
+    tests/tutorStubTurnProgressionContract.test.js
+    tests/tutorStubInteractiveModes.test.js
+    tests/adaptiveRunEvidencePackage.test.js
+    tests/tutorStubWorldScaffold.test.js
+    tests/tutorStubV27ConfirmationRegression.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    tests/tutorStubV25RecognitionFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+    services/__tests__/tutorStubCounterpressure.test.js
+    tests/tutorStubFirstDraftCampaign.test.js
+  focused_test_suites:
+    - id: audit_contracts
+      test_files:
+        - tests/tutorStubPromptAudit.test.js
+        - tests/derivationWorldQuality.test.js
+        - tests/tutorStubFrozenReplay.test.js
+        - tests/tutorStubFrozenReplayCheckpoint.test.js
+        - tests/tutorStubFirstDraftContract.test.js
+        - tests/tutorStubStructuredFirstDraft.test.js
+        - tests/tutorStubJointPerformanceFirstDraft.test.js
+        - tests/tutorStubV27JointPerformanceCalibration.test.js
+        - tests/tutorStubTypedCompositeAdvocateCalibration.test.js
+        - tests/tutorStubResponseComposition.test.js
+        - tests/tutorStubDueSourceRenderer.test.js
+        - tests/tutorStubSourceAccessibilityContract.test.js
+        - tests/tutorStubLiveFirstDraftAudit.test.js
+        - tests/tutorStubTurnProgressionContract.test.js
+        - tests/tutorStubWorldScaffold.test.js
+        - tests/tutorStubV27ConfirmationRegression.test.js
+        - tests/tutorStubV21PerformanceCalibrationFixture.test.js
+        - tests/tutorStubV25RecognitionFixture.test.js
+        - services/__tests__/tutorStubPerformanceObligationContract.test.js
+        - services/__tests__/tutorStubPerformanceAdjudication.test.js
+        - services/__tests__/tutorStubResponseConfiguration.test.js
+        - services/__tests__/tutorStubCounterpressure.test.js
+    - id: interactive_modes
+      test_files:
+        - tests/tutorStubInteractiveModes.test.js
+    - id: adaptive_evidence
+      test_files:
+        - tests/adaptiveRunEvidencePackage.test.js
+    - id: campaign_orchestration
+      test_files:
+        - tests/tutorStubFirstDraftCampaign.test.js
+  structural_regression_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+execution:
+  hardest_cell_first: true
+  hard_cell: tallow_answer_seeking_diagnostic_1
+  hard_cell_must_pass_before_remaining: true
+  mandatory_stage_dependency: true
+  remaining_cells_execution: concurrent
+  maximum_concurrent_remaining_cells: 1
+  one_job_per_cell: true
+  forbid_duplicate_active_or_completed_cells: true
+  complete_all_cells_after_hard_cell_passes: true
+  stop_cell_when_gate_mathematically_impossible: true
+  preserve_unstarted_seeds_as_unconsumed: true
+  require_exact_target_bundle_binding: true
+  require_clean_worktree: true
+
+matrix:
+  - id: tallow_answer_seeking_diagnostic_1
+    priority: 1
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl
+    source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+    turns: [5]
+    development_seed: 20262200
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v32_predeclaration
+    prefix_integrity:
+      target_turn: 5
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3, 4]
+      target_bundle:
+        turn_id: 2026-07-16T07-03-36-147Z:t005
+        world: world_025_tallow_street
+        learner_profile: answer_seeking
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+      - shared_writable_request_classifier
+    structural_activation:
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+      shared_writable_request_classifier: { required: true }
+    rationale: >-
+      First one-draw diagnostic at the exact V31 failure boundary. The
+      requested Write line remains licensed while the advocate must initiate a
+      concrete public case with its limit and hand off one named next operation
+      on public evidence.
+
+  - id: tallow_answer_seeking_diagnostic_2
+    priority: 2
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl
+    source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+    turns: [5]
+    development_seed: 20262201
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v32_predeclaration
+    prefix_integrity:
+      target_turn: 5
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3, 4]
+      target_bundle:
+        turn_id: 2026-07-16T07-03-36-147Z:t005
+        world: world_025_tallow_street
+        learner_profile: answer_seeking
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets:
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+      - shared_writable_request_classifier
+    structural_activation:
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+      shared_writable_request_classifier: { required: true }
+    rationale: >-
+      Second independent one-draw diagnostic on the same frozen failure
+      boundary. It may launch only after diagnostic 1 passes every gate.
+
+gates_per_cell:
+  required_originals_accepted: 1
+  required_turns: 1
+  required_prefixes: 1
+  required_draws_per_prefix: 1
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_mechanical_repairs: 0
+  maximum_model_rewrites: 0
+  maximum_fallbacks: 0
+  maximum_semantic_recognition_corrections: 0
+  maximum_semantic_adjudicator_calls: 0
+  maximum_semantic_adjudicator_errors: 0
+  maximum_transport_normalizations: 0
+  require_transcript_specific_uptake: true
+  require_joint_performance_output: true
+  require_joint_performance_ownership: true
+  require_exact_host_source_occurrences: true
+  require_source_surface_accessibility: true
+  require_structural_target_activation: true
+  require_deterministic_only_audit: true
+  require_successful_semantic_adjudication_per_draw: false
+
+change_control:
+  implementation_commit: 10409158ce020860786ed47dc8f949611fc1b449
+  implementation_change_from_v31_working_failure: advocate_handoff_operationalization_v1
+  speaking_prompt_changes:
+    - require_advocate_performance_entry_to_state_concrete_public_proposition_and_limit_in_same_entry
+    - require_eligible_declarative_handoff_to_begin_next_or_now_and_name_concrete_operation_on_public_object
+  deterministic_host_changes: []
+  audit_recognition_changes: []
+  recovery_changes: []
+  preflight_orchestration_changes:
+    - run_outer_loop_governance_tests_separately_at_frozen_config_and_result_boundaries
+    - exclude_outer_loop_governance_tests_from_reusable_speaking_compiler_preflight_certificate
+  transport_changes: []
+  safety_changes: []
+  gate_changes: []
+  delivery_audit_changes: []
+
+structural_debt_targets:
+  status: active_v32_target
+  source: V31_safe_hard_cell_joint_ownership_failure
+  items:
+    - advocate_performance_initiation_as_concrete_public_proposition_with_same_entry_limit
+    - declarative_stage_next_step_handoff_as_concrete_operation_on_named_public_object
+  consequence: >-
+    Diagnostic 1 must pass 1/1 at full configuration realization before
+    diagnostic 2 starts; diagnostic 2 must then pass 1/1 under the same gates.
+    Only both passes permit predeclaration of a separate strict V33 four-cell,
+    four-draw screen. These are reusable development observations only.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_hard_cell_fails: true
+  complete_all_cells_after_hard_cell_passes: true
+
+claim_boundary: >-
+  V32 passes only when two staged, independent one-draw diagnostics on the
+  exact frozen Tallow prefix each deliver 1/1 strict originals at 1.0
+  configuration realization, with zero safety failures, repairs, rewrites,
+  fallbacks, adjudication, recognition correction, or normalization. Exact
+  public SOURCE bytes, uptake, and joint ownership remain hard gates. V32 is
+  diagnostic development evidence only: no strict four-cell/four-draw screen,
+  held-out matrix, or acceptance claim is predeclared. Those begin at V33 only
+  after both stages pass.

@@ -44,6 +44,7 @@ import path from 'node:path';
 import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { lookupRates } from '../adaptiveTutor/budgetTracker.js';
+import { CLAUDE_CLI_ISOLATION_ARGS } from '../cliProviderBridge.js';
 
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'gemini-flash';
@@ -201,7 +202,10 @@ function callCodexCli(system, user, model) {
  * API instead of the Max-plan quota window.
  */
 function callClaudeCli(system, user, model) {
-  const args = ['-p', '-', '--output-format', 'text', '--system-prompt', system];
+  // ensureCliWorkDir() already neutralizes the cwd; CLAUDE_CLI_ISOLATION_ARGS
+  // (--safe-mode etc.) additionally stops the CLI loading CLAUDE.md, skills,
+  // hooks, and MCP servers from user-level config.
+  const args = ['-p', '-', '--output-format', 'text', '--system-prompt', system, ...CLAUDE_CLI_ISOLATION_ARGS];
   if (model) args.push('--model', model);
   const env = { ...process.env };
   delete env.CLAUDE_CODE;

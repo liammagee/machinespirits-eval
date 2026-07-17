@@ -2,6 +2,13 @@ import { buildDynamicLearnerFieldFromResult } from './learnerField.js';
 import { buildDiscourseFieldFrame, DISCOURSE_FIELD_DIMENSIONS } from './discourseField.js';
 import { buildTutorFieldFrame, TUTOR_FIELD_DIMENSIONS } from './tutorField.js';
 import {
+  DEFAULT_PEDAGOGICAL_SCRIPT,
+  PEDAGOGICAL_SCRIPT_SCHEMA,
+  pedagogicalScriptStageIds,
+  pedagogicalScriptStageSpec,
+  resolvePedagogicalScript,
+} from './pedagogicalScripts.js';
+import {
   average,
   clamp01,
   distanceDelta,
@@ -13,9 +20,9 @@ import {
 } from './fieldUtils.js';
 
 export const INTERACTION_FIELD_SCHEMA = 'machinespirits.derivation.pedagogical-interaction-field.v1';
-export const PEDAGOGICAL_SCRIPT_SCHEMA = 'machinespirits.derivation.pedagogical-script.v1';
 
 export { DISCOURSE_FIELD_DIMENSIONS, TUTOR_FIELD_DIMENSIONS };
+export { DEFAULT_PEDAGOGICAL_SCRIPT, PEDAGOGICAL_SCRIPT_SCHEMA };
 
 export const JOINT_INTERACTION_FIELD_DIMENSIONS = Object.freeze([
   'couplingStrength',
@@ -25,12 +32,6 @@ export const JOINT_INTERACTION_FIELD_DIMENSIONS = Object.freeze([
   'interactionMomentum',
   'trajectoryRisk',
 ]);
-
-export const DEFAULT_PEDAGOGICAL_SCRIPT = Object.freeze({
-  schema: PEDAGOGICAL_SCRIPT_SCHEMA,
-  id: 'prediction_failure_repair_generalisation_transfer',
-  stages: Object.freeze(['prediction', 'failure', 'repair', 'generalisation', 'transfer']),
-});
 
 function linesByTurn(result = {}) {
   const map = new Map();
@@ -107,11 +108,11 @@ function scriptStage({ result, turn, previousTurn, learnerTurn, trajectory, rele
 }
 
 function stageIndex(stage, script = DEFAULT_PEDAGOGICAL_SCRIPT) {
-  const index = script.stages.indexOf(stage);
+  const index = pedagogicalScriptStageIds(script).indexOf(stage);
   return index === -1 ? 0 : index;
 }
 
-function jointDimensions({ learnerTurn, tutor, discourse, script, previousJoint }) {
+function jointDimensions({ learnerTurn, tutor, discourse, script, scriptSpec, previousJoint }) {
   const learnerDims = learnerTurn?.summary?.dimensions || {};
   const learnerSpeed = clamp01((learnerTurn?.summary?.meanSpeed || 0) / 1.5);
   const learnerProgress = average([learnerDims.mastery, learnerDims.evidenceGrounding]);
@@ -134,7 +135,7 @@ function jointDimensions({ learnerTurn, tutor, discourse, script, previousJoint 
     couplingStrength,
     pedagogicalAlignment: clamp01(1 - Math.abs(tutorConfidence - learnerProgress)),
     productiveTension,
-    scriptProgress: normalizeBy(script.index, DEFAULT_PEDAGOGICAL_SCRIPT.stages.length - 1),
+    scriptProgress: normalizeBy(script.index, pedagogicalScriptStageIds(scriptSpec).length - 1),
     interactionMomentum: average([
       learnerSpeed,
       tutor.dimensions.instructionalMomentum,
@@ -189,9 +190,10 @@ function summarizeTrajectory(turns) {
   };
 }
 
-export function buildPedagogicalInteractionField(world, result = {}, { learnerField = null } = {}) {
+export function buildPedagogicalInteractionField(world, result = {}, { learnerField = null, script = null } = {}) {
   const dynamicLearnerField =
     learnerField || result.dynamicLearnerField || buildDynamicLearnerFieldFromResult(world, result);
+  const scriptSpec = resolvePedagogicalScript(script || result.pedagogicalScript || world?.pedagogicalScript);
   const learnerByTurn = learnerTurnByTurn(dynamicLearnerField || {});
   const transcriptByTurn = linesByTurn(result);
   const releasesByTurn = rowsByTurn(result.ledger || []);
@@ -226,12 +228,18 @@ export function buildPedagogicalInteractionField(world, result = {}, { learnerFi
       previousDiscourse,
     });
     const stage = scriptStage({ result, turn, previousTurn, learnerTurn, trajectory, releasesByTurn });
+    const stageSpec = pedagogicalScriptStageSpec(scriptSpec, stage.stage);
     const script = {
       ...stage,
-      index: stageIndex(stage.stage),
-      progress: round3(normalizeBy(stageIndex(stage.stage), DEFAULT_PEDAGOGICAL_SCRIPT.stages.length - 1)),
+      index: stageIndex(stage.stage, scriptSpec),
+      progress: round3(
+        normalizeBy(stageIndex(stage.stage, scriptSpec), pedagogicalScriptStageIds(scriptSpec).length - 1),
+      ),
+      preferredMoves: stageSpec?.preferredMoves || [],
+      antiPatterns: stageSpec?.antiPatterns || [],
+      expectedFieldMovement: stageSpec?.expectedFieldMovement || {},
     };
-    const joint = jointDimensions({ learnerTurn, tutor, discourse, script, previousJoint });
+    const joint = jointDimensions({ learnerTurn, tutor, discourse, script, scriptSpec, previousJoint });
     joint.attractor = classifyJointAttractor(joint);
     joint.phase = script.stage;
     const row = {
@@ -261,7 +269,7 @@ export function buildPedagogicalInteractionField(world, result = {}, { learnerFi
     schema: INTERACTION_FIELD_SCHEMA,
     worldId: world?.id || result.worldId || null,
     source: dynamicLearnerField?.source || result.learnerDag?.source || 'unknown',
-    script: DEFAULT_PEDAGOGICAL_SCRIPT,
+    script: scriptSpec,
     turns: rows,
     final: rows.at(-1) || null,
     trajectory: summarizeTrajectory(rows),

@@ -1,0 +1,108 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens
+created: 2026-07-16
+held_out: false
+purpose: >-
+  Cheap development-only first-draft screening on frozen public prefixes from
+  three answer-seeking trajectories that defeated V18, V19, and V22. These seeds
+  are explicitly reusable development labels and can never certify held-out
+  generalization.
+
+fixed_configuration:
+  original_only: true
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_recompiled_first_draft_contract
+  effort_source: exact_saved_request
+  max_live_model_jobs: 3
+  semantic_adjudication: true
+  adjudicator_model_source: saved_analysis_model
+  adjudicator_effort: low
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+matrix:
+  - id: nocturne_answer_seeking
+    priority: 1
+    world: world_001_nocturne
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/2026-07-16T09-34-06-063Z.jsonl
+    turns: [2, 3, 5, 7]
+    development_seed: 20261003
+    seed_status: reusable_non_held_out_development
+
+  - id: greyfen_answer_seeking
+    priority: 3
+    world: world_023_greyfen_lab
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/greyfen_answer_seeking/2026-07-16T05-50-54-528Z.jsonl
+    turns: [2, 3, 7, 10]
+    development_seed: 20261001
+    seed_status: reusable_non_held_out_development
+
+  - id: skyway_answer_seeking
+    priority: 2
+    world: world_026_skyway_bakery
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/skyway_answer_seeking/2026-07-16T04-44-58-444Z.jsonl
+    turns: [3, 4, 6, 7]
+    development_seed: 20261002
+    seed_status: reusable_non_held_out_development
+
+gates_per_cell:
+  required_originals_accepted: 3
+  required_turns: 4
+  minimum_mean_configuration_realization: 0.9
+  maximum_safety_failures: 0
+  maximum_fallbacks: 0
+  require_transcript_specific_uptake: true
+
+change_log:
+  speaking_prompt: >-
+    Give uptake, performed development, and learner handoff separate short
+    sentences within one continuous reply. Preserve the Write-first response
+    for answer-seeking learners and make its sentence obey the selected
+    audience-language budget. When counterpressure is selected, identify an
+    already-public ready judgment rather than treating the learner's wording
+    request as the pressure target; put current evidence and its limit visibly
+    against that judgment.
+  recovery_only: >-
+    Give answer-seeking repairs a direct-answer instruction and keep their
+    alternate realization strategy separate from the first speaking draw.
+  audit_recognition_only: >-
+    Use the complete public transcript when deciding whether vocabulary is
+    already public. Recognize a falsifiable break-it-if condition or a concrete
+    search in a named public record as staging the next step. Keep dense
+    audience and lexical misses unchanged. Screen-only semantic correction
+    remains limited to an isolated character-tactic miss after every other
+    hard and configuration gate passes.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_cell_fails: true
+  maximum_consecutive_iterations_without_improvement: 2
+
+claim_boundary: >-
+  Passing says only that one fresh tutor draw works on at least three of four
+  frozen failed prefixes in each development screen. It is not held-out
+  evidence and cannot replace a fresh strict end-to-end held-out acceptance.

@@ -1,0 +1,385 @@
+schema: machinespirits.adaptive-state-benchmark-config.v2
+version: "2.1"
+status: s0_implemented_s1_live_observation_protocol_frozen
+claim_boundary: >-
+  This benchmark tests whether public learner-state representations predict
+  harness-owned next-turn events. It does not test tutor efficacy, human
+  learning, psychological validity, or deployment readiness.
+
+prediction_origin:
+  id: after_learner_observation_before_frozen_action
+  action_conditioning: identical_common_input_for_every_representation
+  forbidden_inputs:
+    - future_learner_state
+    - future_learner_text
+    - realized_target
+    - world_local_fact_id
+    - private_chain_of_thought
+
+realizer_contract:
+  schema: machinespirits.adaptive-state-learner-realizer.v2
+  version: "2.0"
+  system_instruction: >-
+    Realize exactly one learner turn from the supplied public transition
+    envelope. Do not invent, preview, or infer any future transition. Return
+    only the declared JSON object.
+  allowed_inputs:
+    - current_public_act_envelope
+    - prior_public_transcript
+    - current_action
+    - public_world_vocabulary
+  forbidden_inputs:
+    - future_latent_state
+    - future_target
+    - answer_key
+    - oracle_distribution
+  output_schema:
+    type: object
+    required: [learner_text, realized_public_event_ids]
+    additional_properties: false
+    properties:
+      learner_text: { type: string, min_length: 1 }
+      realized_public_event_ids:
+        type: array
+        items: { type: string }
+  calls: one_turn_per_call
+  contract_failure: technical_failure_no_semantic_reroll
+
+paid_execution_contract:
+  schema: machinespirits.adaptive-state-paid-execution-contract.v2.1
+  version: "2.1"
+  execution_order: serial_dialogues_and_turns
+  job_order: paired_latent_realizer_interleaved_counterbalanced
+  failure_policy: any_dialogue_failure_stops_stage
+  semantic_rerolls: 0
+  provider_canaries:
+    calls: 2
+    scope: one_per_language_realizer
+    included_in_scored_call_count: false
+    must_pass_before_matrix: true
+  analyzer_schema_canary:
+    calls: 1
+    scope: public_turn_analyzer_json_contract
+    included_in_scored_call_count: false
+    must_pass_before_matrix: true
+  technical_canaries:
+    total_calls: 3
+    roles: [codex_realizer, claude_realizer, public_turn_analyzer]
+    seeds: [910001, 910002, 910003]
+    claim_eligible: false
+  per_dialogue:
+    learner_realizer_calls: 7
+    public_turn_analyzer_calls: 7
+    scored_cli_process_dispatches: 14
+  public_turn_analyzer:
+    id: tutor_stub_public_learner_analysis_strict
+    sensor_profile: canonical_policy_invariant_no_memory_no_register
+    live_default_equivalence_claimed: false
+    deployment_claim_requires_integration_parity_bridge: true
+    model_ref: codex.gpt-5.6-terra
+    model_family: openai_gpt
+    expected_cli_model_label: codex/gpt-5.6-terra
+    model_attestation_basis: explicit_cli_argument_accepted
+    effort: low
+    timeout_ms: 300000
+    parse_mode: strict_benchmark
+    one_call_per_realized_turn: true
+    retries: 0
+    recovery_floor:
+      metric: exact_harness_event_family_recovery
+      overall_minimum: 0.80
+      each_generator_minimum: 0.65
+      each_realizer_minimum: 0.65
+      disagreements_relabel_or_exclude_rows: false
+  realizer_runtime:
+    codex_terra:
+      expected_cli_model_label: codex/gpt-5.6-terra
+      model_attestation_basis: explicit_cli_argument_accepted
+      effort: low
+      timeout_ms: 300000
+    claude_sonnet:
+      expected_cli_model_label: claude-code/claude-sonnet-4-6
+      model_attestation_basis: explicit_cli_argument_accepted
+      effort: low
+      timeout_ms: 180000
+  observation_contract:
+    every_realized_turn_analyzed: true
+    kernel_derived_classifier_forbidden: true
+    future_state_hidden_from_analyzer: true
+
+critical_path:
+  worlds:
+    - id: marrick
+      source: config/drama-derivation/world-005-marrick.yaml
+      geometry: and_join
+    - id: hethel
+      source: config/drama-derivation/world-006-hethel.yaml
+      geometry: linear_with_distractor
+    - id: ravensmark
+      source: config/drama-derivation/world-009-ravensmark.yaml
+      geometry: unary_dead_predicate_probe
+      # R1_scope converts a visible seal mark into the proof obligation named
+      # by the next rule. It remains in logical closure but is not itself a
+      # separately observable learner event.
+      structural_support_rule_ids:
+        - R1_scope
+  latent_generators:
+    - id: durable_state
+      family: a21_durable_state_transition_kernel_v2
+      source: services/adaptiveTutor/learnerKernels/durableStateKernel.js
+      contract: world_generalized_transition_kernel
+    - id: dag_dropout
+      family: dag_dropout_readoption_transition_kernel_v2
+      source: services/adaptiveTutor/learnerKernels/dropoutReadoptionKernel.js
+      contract: world_generalized_transition_kernel
+  language_realizers:
+    - id: codex_terra
+      model_ref: codex.gpt-5.6-terra
+      model_family: openai_gpt
+    - id: claude_sonnet
+      model_ref: claude-code.sonnet
+      model_family: anthropic_claude
+  deterministic_realizers:
+    - id: canonical_template
+      model_ref: deterministic.canonical_template
+      model_family: deterministic_template
+    - id: surface_paraphrase
+      model_ref: deterministic.surface_paraphrase
+      model_family: deterministic_paraphrase
+  action_schedule:
+    - diagnose_with_discriminating_question
+    - minimal_hint
+    - request_evidence
+    - request_evidence
+    - minimal_hint
+    - diagnose_with_discriminating_question
+  dialogue:
+    bootstrap_public_observations: 1
+    learner_turns: 7
+    scored_transitions: 6
+    one_realizer_call_per_turn: true
+    future_state_hidden_from_realizer: true
+
+representations:
+  nested_candidates:
+    - no_state
+    - lean_dag
+    - dag_trajectory
+    - field_trajectory
+  matched_controls:
+    - dag_scramble
+    - dag_stale
+    - field_scramble
+    - field_stale
+  upper_bound_only:
+    - oracle
+  selection_rule: simplest_adequate_rung
+  deferred:
+    - plan2_belief
+    - field_without_dynamics
+    - belief_without_affect
+    - belief_without_task_difficulty
+    - exact_evidence_id_shuffle
+
+targets:
+  co_primary:
+    - id: next_dag_event_family
+      labels: [retract, derive, adopt, none]
+      owner: transition_harness
+    - id: next_proof_trajectory
+      labels: [advance, regress, stall]
+      owner: world_normalized_proof_distance_and_debt_harness
+  descriptive_only:
+    - learner_owned_next_move
+    - dropout_repair
+    - targeted_feedback_uptake
+    - task_success_at_horizon
+
+analysis:
+  fixed_head: l2_multinomial_logistic
+  fixed_head_contract:
+    feature_encoding: training_fold_numeric_zscore_and_categorical_one_hot
+    categorical_vocabulary: training_fold_only
+    categorical_unknown_token: __unknown__
+    categorical_missing_token: __missing__
+    numeric_missing_indicators: true
+    regularization:
+      kind: l2
+      lambda: 1.0
+      scaling: lambda_over_training_rows
+    solver:
+      id: deterministic_batch_gradient_descent
+      learning_rate: 0.05
+      maximum_iterations: 2000
+      convergence_tolerance: 1.0e-5
+      convergence_criterion: absolute_objective_delta
+    probability_clip: 1.0e-12
+  state_blind_baseline_contract:
+    class_prior:
+      training_scope: each_training_fold_only
+      smoothing: symmetric_dirichlet
+      alpha: 1.0
+      label_set: frozen_target_labels
+      absent_class_behavior: alpha_smoothed_nonzero
+      test_frequency_access: false
+    uniform:
+      probability: one_over_frozen_label_count
+      label_set: frozen_target_labels
+  sensitivity_head: mixed_feature_knn
+  sensitivity_head_contract:
+    gate_eligible: false
+    neighbors: 7
+  split_lanes:
+    - id: world_transfer
+      method: leave_one_world_out
+      folds: 3
+      primary: true
+    - id: generator_transfer
+      method: leave_one_generator_out
+      folds: 2
+      primary: false
+    - id: realizer_transfer
+      method: leave_one_realizer_out
+      folds: 2
+      primary: false
+  uncertainty:
+    method: paired_cluster_bootstrap
+    cluster: groups.latent_pair_id
+    estimand: conditional_paired_prediction_loss
+    refit_within_bootstrap: false
+    world_inference_scope: three_fixed_authored_worlds
+    population_world_generalization_claim: false
+    iterations: 5000
+    seed: 20260711
+    confidence_level: 0.95
+    interval: two_sided_percentile
+    minimum_probability_of_improvement: 0.95
+  metrics:
+    primary: [multiclass_log_loss, multiclass_brier_score]
+    calibration: expected_calibration_error
+  calibration_contract:
+    method: equal_width_top_label_ece
+    bins: 10
+    empty_bins: exclude
+    minimum_predictions: 20
+  sample_size_contract:
+    method: preregistered_bounded_maximum
+    seeds_per_cell: 8
+    power_claim: false
+    selection_uses_pilot_effects: false
+    imprecision_interpretation: sensor_not_validated_under_bounded_design
+
+stages:
+  s0_contract:
+    paid: false
+    realizers: deterministic_realizers
+    seeds_per_cell: 2
+    stop_if:
+      - any_crossed_cell_missing
+      - either_primary_target_degenerate_within_a_generator
+      - leakage_or_replay_failure
+      - oracle_fails_to_beat_all_state_blind_baselines_on_both_primary_targets
+  s1_technical_pilot:
+    paid: true
+    realizers: language_realizers
+    seeds_per_cell: 2
+    confirmation_eligible: false
+    execution_order: serial_dialogues_and_turns
+    stop_if:
+      - any_dialogue_fails
+      - observed_model_differs_from_plan
+      - any_crossed_cell_missing
+      - realizer_changes_latent_target
+      - public_analyzer_event_family_recovery_below_floor
+      - oracle_fails_to_beat_all_state_blind_baselines_on_both_primary_targets
+      - control_sensitivity_fails
+  s2_confirmation:
+    paid: true
+    realizers: language_realizers
+    seeds_per_cell: 8
+    max_seeds_per_cell: 8
+    sample_size_basis: preregistered_bounded_maximum
+    power_claim: false
+    imprecision_interpretation: >-
+      Failure to clear the frozen interval and useful-effect gates means the
+      sensor was not validated under this bounded design; it is not evidence
+      that the true effect is null.
+
+minimum_useful_effects:
+  log_loss_nats: 0.05
+  brier_score: 0.02
+
+gate:
+  decision_contract:
+    report_schema: machinespirits.adaptive-state-precomputed-lane-report.v2
+    confirmation_stage: s2_confirmation
+    require_complete_crossed_matrix: true
+    delta_direction: baseline_loss_minus_candidate_loss
+    primary_lane: world_transfer
+    state_blind_baselines: [no_state, class_prior, uniform]
+    superiority:
+      confidence_interval_lower_strictly_greater_than: 0
+      probability_of_improvement_at_least: 0.95
+    practical_significance:
+      required_for: [candidate_over_no_state, incremental_richness]
+    noninferiority:
+      confidence_interval_lower_at_least_negative_margin: true
+    multiplicity:
+      method: closed_sequential_hierarchy
+      familywise_alpha: 0.05
+      co_primary_adequacy_rule: both_targets_required
+      promotion_order: [lean_dag, dag_trajectory, field_trajectory]
+    calibration:
+      oracle_max_ece: 0.10
+      candidate_max_ece: 0.20
+      minimum_predictions: 20
+    level_rules:
+      minimum_improving_worlds: 2
+      required_improving_generators: 2
+      required_improving_realizers: 2
+      point_improvement_requires_both_metrics_and_targets: true
+      transfer_noninferiority_requires_every_level: true
+    matched_controls:
+      dag_trajectory: [dag_stale]
+      field_trajectory: [field_stale]
+    descriptive_only_controls:
+      - id: dag_scramble
+        gate_eligible: false
+        reason: donor_linked_cross_cluster_dependence
+      - id: field_scramble
+        gate_eligible: false
+        reason: donor_linked_cross_cluster_dependence
+    richness:
+      minimum_superior_targets: 2
+      remaining_targets_must_be_noninferior: true
+      sequential: true
+  instrument:
+    - oracle_beats_no_state_class_prior_and_uniform_on_both_metrics_and_targets
+    - oracle_ece_at_most_0.10
+  candidate_adequacy:
+    - candidate_beats_no_state_class_prior_and_uniform_on_both_metrics_and_targets_in_world_lane
+    - candidate_ece_at_most_0.20
+    - rich_candidates_beat_matched_stale_controls
+    - matched_scramble_controls_are_descriptive_only
+    - point_improvement_in_at_least_two_of_three_worlds
+    - point_improvement_in_both_generators_and_both_realizers
+    - generator_and_realizer_transfer_noninferior
+  noninferiority_margins:
+    log_loss_nats: 0.02
+    brier_score: 0.01
+  incremental_rungs:
+    - dag_trajectory_over_lean_dag
+    - field_trajectory_over_dag_trajectory
+  valid_verdicts:
+    - invalid_instrument
+    - no_sensor
+    - lean_dag_only
+    - dag_trajectory
+    - field_trajectory
+
+complexity_cap:
+  no_policy_sweep: true
+  no_profile_sweep: true
+  no_judge_model_sweep: true
+  no_target_expansion_before_confirmation: true
+  maximum_confirmation_seeds_per_cell: 8

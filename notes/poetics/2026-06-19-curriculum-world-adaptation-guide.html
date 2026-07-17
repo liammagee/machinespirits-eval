@@ -28,6 +28,7 @@
       <a href="#world-compile">World compile</a>
       <a href="#runtime-hook">Runtime hook</a>
       <a href="#light-drama">Light drama</a>
+      <a href="#proof-dag-authoring">Proof DAG</a>
       <a href="#checks">Checks</a>
     </nav>
     <div class="rail__actions">
@@ -359,9 +360,53 @@ adaptive:
       </div>
     </section>
 
-    <section class="s" id="checks">
+    <section class="s" id="proof-dag-authoring">
       <div class="diag">
         <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Scenario authoring</p>
+          <h2 class="s__h">The builder hands off to a third graph when a module becomes a reasoning mystery.</h2>
+
+          <p>
+            Keep three graphs distinct. The <strong>curriculum prerequisite DAG</strong> orders modules. The
+            compiled <strong>world adaptation contract</strong> constrains tutor actions. A staged
+            <strong>scenario proof DAG</strong> connects public rules and released evidence to an answer. The
+            Curriculum Builder reports the first and compiles the second; it deliberately does not invent the third.
+          </p>
+
+          <div class="timeline">
+            <div><strong>1. Align the question</strong><span>The question, formal answer pattern, secret, and mirror must ask for the same semantic type.</span></div>
+            <div><strong>2. Audit each clue</strong><span>The learner-facing surface must warrant its exact formal fact; access, motive, or species identity cannot silently become action or attribution.</span></div>
+            <div><strong>3. Minimise the proof</strong><span>Every declared path breaks when any required premise is removed; corroboration, mirrors, controls, and alternate witnesses are labelled rather than treated as extra proof steps.</span></div>
+            <div><strong>4. Write public law</strong><span>Every rule has an ordinary-language domain gloss that explains why its premises license its conclusion.</span></div>
+            <div><strong>5. Set costume and status</strong><span>Contemporary/speculative worlds declare ecology, diction, ledger term, and summary; screen and smoke worlds declare non-production eligibility.</span></div>
+          </div>
+
+          <div class="spec-box">
+<pre><code># Full structural catalog gate; no model call or database access
+npm run derivation:quality
+
+# Detailed human authoring contract
+curriculum/SCENARIO-DAG-GUIDE.md</code></pre>
+          </div>
+
+          <p>
+            The static gate checks plot lint, rule glosses, minimal and complete proof paths, duplicate-fact
+            alternatives, non-progress evidence roles, mirror incompatibility, presentation, and eligibility. It
+            cannot certify scientific or legal truth: surface-to-fact alignment and domain entailment still require
+            human review.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Builder handoff</span> Every
+            <code>*.builder-report.md</code> now carries this gate and points to the authoring guide.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="checks">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">Acceptance checks</p>
           <h2 class="s__h">A curriculum-world-drama slice is only ready when these checks pass.</h2>
@@ -386,6 +431,10 @@ adaptive:
             <article class="ev-card" data-status="done" data-tags="drama">
               <h3>Light drama dry-run</h3>
               <p>The generated MVP drama spec can plan a one-drama dry-run with no writes and no LLM call.</p>
+            </article>
+            <article class="ev-card" data-status="done" data-tags="proof-dag">
+              <h3>Scenario proof quality</h3>
+              <p>Any derivation world passes <code>npm run derivation:quality</code> and its evidence-to-fact links receive human domain review.</p>
             </article>
             <article class="ev-card" data-status="pending" data-tags="adaptive">
               <h3>Adaptive smoke</h3>

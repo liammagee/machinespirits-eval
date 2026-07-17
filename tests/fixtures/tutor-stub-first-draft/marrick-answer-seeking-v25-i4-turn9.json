@@ -1,0 +1,43 @@
+{
+  "schema": "machinespirits.tutor-stub.first-draft-recognition-fixture.v1",
+  "source": "V25 working screen iteration 4, Marrick answer-seeking turn 9",
+  "known_structural_miss": "tactic_handoff_slot_fusion",
+  "candidate": "Write: “The blank’s caster at the weir-forge has not yet been shown.” I open the leat-keeper’s book beside the coin, leaving the striker unproved. “I read in the record that The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out.” Verrell’s mint-yard claim now falters; does this book place the blank in Edony’s hand?",
+  "due_evidence": {
+    "premise": "p_caster",
+    "via": "director",
+    "surface": "The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out.",
+    "presentation": {
+      "mode": "enacted_role",
+      "role": "leat-keeper reading the charcoal book"
+    }
+  },
+  "configuration": {
+    "engagement_stance": "charismatic",
+    "action_family": "stage_next_step",
+    "audience_register": "adult_novice",
+    "lexical_accessibility": "plain",
+    "scene_immersion": "immersive",
+    "actorial_part": "record_keeper",
+    "actorial_part_label": "keeper of the trial-book",
+    "actorial_part_selection": {
+      "authored_role": "leat-keeper reading the charcoal book"
+    },
+    "actorial_performance": {
+      "id": "dramatic_counterpressure",
+      "label": "dramatic counterpressure"
+    }
+  },
+  "world": {
+    "title": "The Light Shillings",
+    "setting": "The Marrick trial-book, leat-keeper's charcoal book, false shilling, touchstone, and weir crucible lie before the assay.",
+    "question": "Whose hand struck the false shillings passed at the Marrick fair?",
+    "ledger_term": "trial-book",
+    "public_objects": ["trial-book", "charcoal book", "shilling"]
+  },
+  "public_turn": {
+    "learner_move": "What should I write next about whose hand cast the blanks at the weir-forge?",
+    "pressure_target": "The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.",
+    "contrary_evidence": "The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out."
+  }
+}

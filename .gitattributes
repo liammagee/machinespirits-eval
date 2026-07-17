@@ -9,3 +9,6 @@
 *.md   text
 *.yaml text
 *.json text
+exports/register-confirmatory-evidence/sonnet5-n5-block-b/diligent-auto-eval.json filter=lfs diff=lfs merge=lfs -text
+exports/register-confirmatory-evidence/sonnet5-n5-block-b/false_memory-auto-eval.json filter=lfs diff=lfs merge=lfs -text
+exports/register-confirmatory-evidence/sonnet5-n5-block-b/proof_skipper-auto-eval.json filter=lfs diff=lfs merge=lfs -text

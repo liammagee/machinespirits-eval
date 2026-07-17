@@ -10,8 +10,9 @@
 //   • poetics-core.ttl   ⊃  lectures 1–4 : a proper SUPERSET. The Greek-poetics
 //     slices (forms, the six parts, plot architecture, hamartia/catharsis/wonder,
 //     the appeals/genres) are taught; layered on top is an OPERATIONAL drama-machine
-//     vocabulary (roles, characters, interior agencies, plot devices, adaptation
-//     moves, casting, critic panel) that the course deliberately does not teach.
+//     vocabulary (dramatic positions/roles, register realizations, characters,
+//     interior agencies, plot devices, adaptation moves, casting, critic panel)
+//     that the course deliberately does not teach.
 //
 // INVARIANT (the ontology→content direction, which is the mechanizable one):
 //   every owl:Class is EITHER taught in some lecture OR part of the operational
@@ -42,14 +43,14 @@ const COURSE_DIR = path.resolve(__dirname, '..', 'content-poetics-rhetoric', 'co
 // of rotting as a frozen name-list. See CLAUDE.md "Dramatic-form-not-mindreading":
 // these are staging classes, never taught as poetics content.
 const OPERATIONAL_ROOTS = new Set([
-  'DramaticRole', // + TutorRole, LearnerRole, DirectorRole, CriticRole
+  'DramaticPosition', // + DramaticRole, Tutor/Learner/Director/CriticRole, Audience, CriticPanel
+  'PragmaticElement', // + RegisterRealization, EngagementStance, AddresseeProfile, address/alignment classes
   'Character', //     + TutorCharacter, LearnerCharacter
   'InteriorAgency', //+ Ego, Superego, Id
   'PlotDevice', //    + ContinuationPolicy, TutorAdaptationPolicy, ReversalTrigger, WithheldKnowledgeDevice
   'AdaptationMove', //(moves themselves are ABox individuals, not owl:Class)
   'MoveRegister',
   'Caster', //        + HumanCaster, LLMCaster, MockCaster
-  'CriticPanel',
 ]);
 
 // Aliases: the exact lecture phrasing for classes whose camelCase name does not

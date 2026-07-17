@@ -2,7 +2,7 @@
   "mcpServers": {
     "evaluations-db": {
       "command": "npx",
-      "args": ["-y", "mcp-server-sqlite-npx", "data/evaluations.db"]
+      "args": ["-y", "mcp-server-sqlite-npx", "${HOME}/.machinespirits-data/evaluations.db"]
     }
   }
 }

@@ -1,0 +1,104 @@
+{
+  "schema": "machinespirits.tutor-stub.joint-performance-regression-fixture.v1",
+  "id": "tallow-answer-seeking-v27-i8-turn5-draw1",
+  "source_case_fixture": "tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json",
+  "source_case_id": "2026-07-16T07-03-36-147Z:t005",
+  "source_trace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl",
+  "source_trace_sha256": "5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d",
+  "screen_result": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json",
+  "screen_result_sha256": "05783cc988308539b05a6934dfbf7654dba79dc7513bb04b1efdcbfb1539e355",
+  "turn_artifact": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/tallow_answer_seeking/turn-5.json",
+  "turn_artifact_sha256": "5a5bc1c05a39ad306ecfe6e8db23e8ab549dc2e93462deba0c920479d6ce8a93",
+  "launch_head": "4af6269edc45fef95962026a3b3e7a7ac5a694a9",
+  "world_id": "world_025_tallow_street",
+  "learner_profile": "answer_seeking",
+  "turn": 5,
+  "draw": 1,
+  "development_seed": 20261600,
+  "model": "codex.gpt-5.6-terra",
+  "effort": "low",
+  "learner_text": "What should I put in the minutes about the chargers being dark during the stocktake?",
+  "joint_performance_raw": "{\"uptake\":\"Write: “The dark chargers did not prevent Tallow Street’s 18:40 brownout.”\",\"performance\":{\"entry\":\"My case is that dark chargers cannot cause a brownout already happening.\",\"response\":\"The stocktake supports that, but it does not establish what supply failed.\"},\"handoff\":\"What does the stocktake note do to the motion against the depot?\"}",
+  "candidate": "Write: “The dark chargers did not prevent Tallow Street’s 18:40 brownout.” My case is that dark chargers cannot cause a brownout already happening. The stocktake supports that, but it does not establish what supply failed. What does the stocktake note do to the motion against the depot?",
+  "candidate_provenance": {
+    "kind": "joint_performance_original_composition",
+    "recovery_stage": false
+  },
+  "generation": {
+    "latency_ms": 7978,
+    "input_tokens": 15840,
+    "output_tokens": 136,
+    "total_tokens": 15976,
+    "token_usage_available": true
+  },
+  "recorded_audit": {
+    "ok": false,
+    "safety_failure": false,
+    "configuration_realization": 0.833,
+    "semantic_adjudicator_called": false,
+    "hard_failure_clusters": [
+      "actorial_realization:missing_selected_actorial_part",
+      "response_composition:missing_learner_uptake",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part"
+    ],
+    "failure_clusters": [
+      "actorialRealizationAudit:missing_selected_actorial_part",
+      "responseCompositionAudit:missing_learner_uptake",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part"
+    ]
+  },
+  "post_v28_expected_audit": {
+    "ok": false,
+    "safety_failure": false,
+    "configuration_realization": 0.833,
+    "corrected_recorded_false_negative": "responseCompositionAudit:missing_learner_uptake",
+    "hard_failure_clusters": [
+      "actorial_realization:missing_selected_actorial_part",
+      "live_turn_progression_v1:question_forbidden_by_handoff_contract",
+      "live_turn_progression_v1:handoff_loses_turn_focus",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part",
+      "turnProgressionAudit:question_forbidden_by_handoff_contract:handoff",
+      "turnProgressionAudit:handoff_loses_turn_focus:handoff"
+    ],
+    "failure_clusters": [
+      "actorialRealizationAudit:missing_selected_actorial_part",
+      "liveTurnProgressionAudit:question_forbidden_by_handoff_contract",
+      "liveTurnProgressionAudit:handoff_loses_turn_focus",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part",
+      "turnProgressionAudit:question_forbidden_by_handoff_contract:handoff",
+      "turnProgressionAudit:handoff_loses_turn_focus:handoff"
+    ]
+  },
+  "post_canonical_audit_expected": {
+    "classification": "audit_recognition_correction_not_generation_improvement",
+    "ok": false,
+    "safety_failure": false,
+    "configuration_realization": 0.833,
+    "causal_relation_family": "prevention",
+    "causal_relation_supported": false,
+    "hard_failure_clusters": [
+      "actorial_realization:missing_selected_actorial_part",
+      "live_turn_progression_v1:learner_uptake_not_realized",
+      "live_turn_progression_v1:question_forbidden_by_handoff_contract",
+      "live_turn_progression_v1:handoff_loses_turn_focus",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part",
+      "turnProgressionAudit:question_forbidden_by_handoff_contract:handoff",
+      "turnProgressionAudit:handoff_loses_turn_focus:handoff"
+    ],
+    "failure_clusters": [
+      "actorialRealizationAudit:missing_selected_actorial_part",
+      "liveTurnProgressionAudit:learner_uptake_not_realized",
+      "liveTurnProgressionAudit:question_forbidden_by_handoff_contract",
+      "liveTurnProgressionAudit:handoff_loses_turn_focus",
+      "jointPerformanceAudit:composite_part_requirement_failed:actorial_part",
+      "jointPerformanceAudit:axis_not_realized_in_owner:actorial_part",
+      "turnProgressionAudit:question_forbidden_by_handoff_contract:handoff",
+      "turnProgressionAudit:handoff_loses_turn_focus:handoff"
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
+export { auditWorldQuality, auditWorldDirectory, WORLD_EVIDENCE_ROLES } from './worldQuality.js';
 export {
   normalizeLemmaConfig,
   buildLemmaDag,
@@ -285,9 +286,24 @@ export {
   PEDAGOGICAL_SCRIPT_SCHEMA,
   TUTOR_FIELD_DIMENSIONS,
 } from './interactionField.js';
+export {
+  listPedagogicalScripts,
+  pedagogicalScriptStageIds,
+  pedagogicalScriptStageSpec,
+  registerPedagogicalScript,
+  resolvePedagogicalScript,
+} from './pedagogicalScripts.js';
 export { buildTutorFieldFrame, TUTOR_FIELD_SCHEMA } from './tutorField.js';
 export { buildDiscourseFieldFrame, DISCOURSE_FIELD_SCHEMA } from './discourseField.js';
-export { FIELD_PLANNER_SCHEMA, selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
+export {
+  buildFieldReportContext,
+  FIELD_PLANNER_PROJECTION_SCHEMA,
+  FIELD_PLANNER_SCHEMA,
+  FIELD_REPORT_CONTEXT_SCHEMA,
+  projectFieldPlannerCandidates,
+  selectFieldPlannerMove,
+  summarizeFieldPlannerOutcome,
+} from './fieldPlanner.js';
 export {
   buildLearnerProxyDagMemory,
   buildTutorLearnerDagModel,

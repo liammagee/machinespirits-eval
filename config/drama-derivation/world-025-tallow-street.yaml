@@ -1,0 +1,291 @@
+# WORLD-025 — the CIVIC-MINUTES world (2026-07-12): contemporary community
+# infrastructure in the deadpan of council meeting minutes. Depth 3 with one
+# AND-join, six premises (four proof + one corroboration + one mirror fuel), S forced at turn 12,
+# cap 18 — a mid-weight world between world-022's cheerful floor and the
+# depth-4 tribunal of world-021. Contrast class: the roster's first
+# contemporary presentation family (everything else is medieval, sci-fi, or
+# guild-period costume).
+#
+# Costume: every Thursday evening Tallow Street browns out — amber
+# streetlamps, sulking dryers, the pub quiz machine rebooting on question
+# four. The residents' association has its motion drafted before apologies
+# are read: the depot at the end of the road installed six new EV chargers
+# this very month (the mirror — big, new, visible, and arriving the same
+# month as the dimming). The truth is a contingent particular in the Edony
+# pattern: GREBE-9, a pole transformer behind the launderette, wound in 1967,
+# flagged "renew" three winters running and deferred three winters running —
+# convicted by load curves, the maintenance ledger, and a standing switching
+# order from 1998 that nobody ever rescinded.
+#
+# Leak-guard design (per world-021/022's lessons): the answer constant
+# (grebeNine) is a rare particular absent from the setting text; premises
+# naming it release via DIRECTOR except the S-completing one (p_switch),
+# which the tutor releases on the entailment turn itself. Meaning lives in
+# PREDICATES (excluded from the fact-token audit); fact arguments are
+# setting-public names (tallowStreet, depotChargers, secretary, minuteBook)
+# or the rare particular. The mirror name (depotChargers) is unguarded and
+# freely discussable, as mirror candidates should be.
+#
+# Proof DAG (depth 3, one AND-join at R4):
+#   alpha (timing):  p_trace            --R1--> sagBornOffDepot(tallowStreet)
+#                    p_idle corroborates the same exclusion but is not proof-required
+#   beta (asset):    p_plate + p_gauge  --R2--> failingUnderLoad(grebeNine)
+#                    failingUnderLoad + p_switch --R3--> saggingSupplyOf(tallowStreet, grebeNine)
+#   join:            sagBornOffDepot + saggingSupplyOf --R4--> causesBrownout(tallowStreet, grebeNine)
+#   mirror (never completes):
+#     p_new --R0--> heavyNewcomer(depotChargers)
+#     heavyNewcomer + wiredThroughTallow(depotChargers) [NEVER RELEASED — false:
+#       the depot draws from its own feeder off the ring main] --R5-->
+#       causesBrownout(tallowStreet, depotChargers)
+
+id: world_025_tallow_street
+title: The Thursday Brownouts of Tallow Street
+discipline: "Distribution forensics (a mystery of tired iron)"
+
+question: "What browns out Tallow Street every Thursday evening?"
+question_pattern: [causesBrownout, tallowStreet, "?x"]
+
+setting: >-
+  Minutes of the Tallow Street Residents' Association, extraordinary meeting,
+  Thursday, the community hall. Every Thursday at twenty to seven, Tallow
+  Street browns out: the streetlamps go amber, the launderette's dryers sulk,
+  and the quiz machine at the Feathers reboots on question four. The
+  association has its verdict drafted before apologies are read — the depot
+  at the end of the road installed six new EV chargers this very month, big
+  and new and visible, and a motion to blame the depot chargers is tabled for
+  a show of hands. The distribution engineer, attending by invitation of the
+  chair, asks the meeting to hold the vote: findings from exhibits, exhibits
+  read into the minutes, and no motion carried against the newest thing on
+  the street for the offence of being new. You are the association's
+  secretary, sent to keep the minute-book.
+
+learner_voice: >-
+  The minutes secretary: precise with an agenda, mildly avenging about the
+  quiz machine, and ready to carry the motion against the depot tonight —
+  partly because the chargers arrived the same month the lamps went amber,
+  partly because the depot's planning application once doomed the street's
+  hanging baskets. Learning, exhibit by exhibit, that arriving the same month
+  is not the same wire.
+
+secret:
+  fact: [causesBrownout, tallowStreet, grebeNine]
+  surface: >-
+    Tallow Street is browned out by Grebe-9 — the pole transformer behind the
+    launderette, wound in 1967, flagged for renewal three winters running and
+    deferred three winters running. A standing switching order from 1998,
+    renewed by nobody, transfers the whole street onto Grebe-9's spur every
+    Thursday at half past six so the main feeder can rest — and every
+    Thursday evening the old machine runs a fever and lets the lamps go amber
+    while the depot's chargers, on their own feeder, charge on in perfect
+    innocence.
+
+mirror:
+  fact: [causesBrownout, tallowStreet, depotChargers]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R0_bulk
+    gloss: >-
+      The depot chargers are a heavy new evening load. That makes them a
+      plausible suspect, but says nothing yet about which feeder they use.
+    if:
+      - [drawsEveningLoad, depotChargers]
+    then:
+      - [heavyNewcomer, depotChargers]
+  - id: R1_offdepot
+    gloss: >-
+      If Tallow Street begins to sag before the depot chargers energise, the
+      chargers cannot be the source of that sag; the timing puts its origin
+      elsewhere.
+    if:
+      - [sagLeadsChargers, tallowStreet]
+    then:
+      - [sagBornOffDepot, tallowStreet]
+  - id: R2_strain
+    gloss: >-
+      A transformer repeatedly marked for renewal and running above its safe
+      temperature under the recurring load is failing under that load.
+    if:
+      - [flaggedForRenewal, "?x"]
+      - [runsHotOnThursdays, "?x"]
+    then:
+      - [failingUnderLoad, "?x"]
+  - id: R3_supply
+    gloss: >-
+      A failing transformer that feeds Tallow Street on Thursdays is the
+      street's sagging supply at the relevant time.
+    if:
+      - [failingUnderLoad, "?x"]
+      - [feedsOnThursdays, "?x", tallowStreet]
+    then:
+      - [saggingSupplyOf, tallowStreet, "?x"]
+  - id: R4_verdict
+    gloss: >-
+      When the sag is known to originate away from the depot and one failing
+      supply is carrying the street, that supply causes the brownout.
+    if:
+      - [sagBornOffDepot, tallowStreet]
+      - [saggingSupplyOf, tallowStreet, "?x"]
+    then:
+      - [causesBrownout, tallowStreet, "?x"]
+  # The meeting's inference, stated as law so its missing premise is public: a
+  # heavy newcomer browns the street out only if its current is actually drawn
+  # through Tallow Street's wires. That wiring fact is never released — it is
+  # false: the depot draws from its own feeder off the ring main, and its
+  # chargers never touch the street's spur.
+  - id: R5_depot
+    gloss: >-
+      A heavy newcomer could cause the street's brownout only if its current
+      actually ran through Tallow Street's feeder; size and timing alone are
+      not the same wire.
+    if:
+      - [heavyNewcomer, depotChargers]
+      - [wiredThroughTallow, depotChargers]
+    then:
+      - [causesBrownout, tallowStreet, depotChargers]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_new # mirror fuel: keeps the depot chargers a live candidate
+    evidence_role: mirror
+    fact: [drawsEveningLoad, depotChargers]
+    surface: >-
+      The depot's six new chargers draw their heaviest current in the
+      evening, when the vans come home to plug in. The meeting noted the
+      coincidence with satisfaction.
+  - id: p_trace
+    fact: [sagLeadsChargers, tallowStreet]
+    surface: >-
+      The recording ammeter's pen chart for Thursday last, tabled as exhibit
+      one: the streetlamps begin to dim at 18:40. The depot's chargers do not
+      energise until 19:05, when the last van docks. The dip leads its
+      suspect by twenty-five minutes.
+  - id: p_idle
+    evidence_role: corroboration
+    fact: [sagPersistsWhenIdle, tallowStreet]
+    causal_relation:
+      kind: inactive_candidate_with_persisting_outcome
+      family: production
+      subject: depot chargers
+      outcome: Tallow Street brownout
+    surface: >-
+      On the Thursday of the depot's annual stocktake the chargers stood dark
+      all evening, every van parked cold — and Tallow Street browned out at
+      18:40 regardless, to the minute.
+  - id: p_plate
+    fact: [flaggedForRenewal, grebeNine]
+    surface: >-
+      The maintenance ledger, produced under item nine: the pole transformer
+      behind the launderette — asset plate GREBE-9, wound in 1967 — has been
+      flagged "renew" three winters running, and the renewal deferred three
+      winters running for want of budget.
+  - id: p_gauge
+    fact: [runsHotOnThursdays, grebeNine]
+    surface: >-
+      The oil-temperature card pulled from GREBE-9's gauge: a tidy week of
+      low readings, then a fever every Thursday evening, climbing past the
+      red line at the very hour the lamps go amber.
+  - id: p_switch
+    fact: [feedsOnThursdays, grebeNine, tallowStreet]
+    surface: >-
+      The switch log, read into the minutes at last: a standing switching
+      order — written in 1998 and renewed by nobody — transfers Tallow Street
+      onto GREBE-9's spur every Thursday at 18:30 so the main feeder can rest
+      before the market-day peak. Every Thursday evening, the whole street
+      hangs on the old machine behind the launderette.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [keeperOf, secretary, minuteBook]
+
+incompatible:
+  - [[causesBrownout, tallowStreet, grebeNine], [causesBrownout, tallowStreet, depotChargers]]
+
+# One authored path through both evidence lines and the join.
+proof_paths:
+  - premises: [p_trace, p_plate, p_gauge, p_switch]
+
+# The plot: the motion first, then the clock that disagrees, the dark
+# Thursday, the deferred renewal, the Thursday fevers — and the standing
+# order last, closing the join.
+release_schedule:
+  - { turn: 2, premise: p_new, via: director }
+  - { turn: 3, premise: p_trace, via: tutor }
+  - { turn: 5, premise: p_idle, via: director }
+  - { turn: 7, premise: p_plate, via: director }
+  - { turn: 9, premise: p_gauge, via: director }
+  - { turn: 12, premise: p_switch, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Motion to Blame the Depot
+      turns: [1, 4]
+      intent: >-
+        The amber lamps and the drafted verdict: the chargers are big, new,
+        and arrived the very month the dimming began. Against the show of
+        hands, the first exhibit — the pen chart on which the dip leads the
+        chargers by twenty-five minutes. The learner should leave Act I still
+        backing the motion but holding a clock that a charger switched on at
+        19:05 cannot explain.
+    - act: II
+      title: The Deferred Renewal
+      turns: [5, 9]
+      intent: >-
+        The suspect exonerated by its own day off, and an old machine walked
+        into the minutes: the stocktake Thursday when the chargers stood dark
+        and the street browned out to the minute, the maintenance ledger's
+        three deferred renewals, the oil gauge's Thursday fevers. The learner
+        should end Act II holding two live candidates and noticing that one
+        of them has nothing on the table but size and novelty.
+    - act: III
+      title: The Standing Order
+      turns: [10, 18]
+      intent: >-
+        The join. The switch log's standing order from 1998 puts the whole
+        street on Grebe-9's spur every Thursday at 18:30, and the two
+        evidence lines meet: a sag born off the depot's feed, on a failing
+        machine that carries the street at exactly the fatal hour. The motion
+        against the chargers still waits, as it always will, for the one
+        wiring fact the exhibits cannot produce — and the minutes record,
+        with regret and some relief, that the newest thing on the street was
+        merely new.
+
+slope:
+  t_min: 11 # anti-reveal: S must not be derivable before turn 11
+  aporia_window: 5 # anti-aporia: progress required within any 5-turn window
+
+turn_cap: 18
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: depotChargers # opens mis-bound to the mirror (the drafted motion)
+      mirror_pull: high # same-month arrival + the hanging-baskets grudge
+    second_order:
+      from: engineer
+      as: right
+      authority: rational_legal # "findings from exhibits, exhibits read into the minutes"
+    disposition:
+      overreach: high # ready to carry the motion on a show of hands tonight
+      arc: softens # arriving the same month is not the same wire
+  tutor:
+    stance: >-
+      The distribution engineer: courteous to the chair, immune to
+      show-of-hands physics, and privately fond of the old iron on the poles.
+      Keeps the meeting orderly and the standard of proof above the level of
+      a grudge.
+
+# Authorial presentation metadata (NOT register): how the author costumes the
+# world for the scenario picker and the prose surfaces.
+presentation:
+  family: council-minutes
+  temporal_frame: contemporary
+  scene_ecology: "community-hall residents' meeting"
+  narrative_diction: "council minutes"
+  ledger_term: "meeting minutes"
+  summary: >-
+    A street that browns out every Thursday moves to blame the depot's new EV
+    chargers, until the exhibits convict an old transformer behind the
+    launderette.

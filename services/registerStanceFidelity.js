@@ -1,6 +1,6 @@
-import { getEngagementRegisterDefinition } from './engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, resolveEngagementRegister } from './engagementRegisterRegistry.js';
 
-const NEGATIVE_REGISTER_NAMES = new Set(['ironic_challenge', 'sarcastic_challenge', 'face_threat_challenge']);
+const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat']);
 
 const STANCE_FIDELITY_GATE_BY_LABEL = {
   faithful: {
@@ -34,7 +34,7 @@ const STANCE_FIDELITY_GATE_BY_LABEL = {
 };
 
 const REGISTER_MARKERS = {
-  ironic_challenge: [
+  ironic: [
     /\bas if\b/i,
     /\bapparently\b/i,
     /\bconvenient(?:ly)?\b/i,
@@ -44,7 +44,7 @@ const REGISTER_MARKERS = {
     /\bso the\b/i,
     /\ba little too\b/i,
   ],
-  sarcastic_challenge: [
+  sarcastic: [
     /\bapparently\b/i,
     /\bconvenient(?:ly)?\b/i,
     /\bwonderful\b/i,
@@ -55,7 +55,7 @@ const REGISTER_MARKERS = {
     /\bnice trick\b/i,
     /\bif .{0,80}\bthen apparently\b/i,
   ],
-  face_threat_challenge: [
+  face_threat: [
     /\bavoid(?:ing)?\b/i,
     /\bdodg(?:e|ing)\b/i,
     /\bhiding\b/i,
@@ -92,6 +92,10 @@ function normalize(value) {
 function findMatches(text, patterns) {
   const normalized = normalize(text);
   return patterns.map((pattern) => normalized.match(pattern)?.[0]).filter(Boolean);
+}
+
+function canonicalRegisterName(registerName) {
+  return resolveEngagementRegister(registerName, { fallback: null })?.register || String(registerName || '').trim();
 }
 
 function escapeRegExp(value) {
@@ -202,14 +206,15 @@ export function classifyRegisterStanceEvidence(stanceFidelity) {
 }
 
 export function applyNegativeRegisterScoreGuardrails({ registerName, scores, tutorMessage, postLearnerMessage = '' }) {
-  if (!NEGATIVE_REGISTER_NAMES.has(registerName)) {
+  const canonicalRegister = canonicalRegisterName(registerName);
+  if (!NEGATIVE_REGISTER_NAMES.has(canonicalRegister)) {
     return { scores, adjustments: [] };
   }
 
   const guarded = cloneScores(scores);
   const adjustments = [];
   const forbiddenFound = [
-    ...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)]),
+    ...new Set([...findForbiddenPhrases(canonicalRegister, tutorMessage), ...personAttackMatches(tutorMessage)]),
   ];
   const statusShameFound = statusShameMatches(tutorMessage);
   const appeasingUptakeFound = appeasingUptakeMatches(postLearnerMessage);
@@ -245,10 +250,12 @@ export function evaluateRegisterStanceFidelity({
   learnerMessage = '',
   postLearnerMessage = '',
 }) {
-  if (!NEGATIVE_REGISTER_NAMES.has(registerName)) {
+  const canonicalRegister = canonicalRegisterName(registerName);
+  if (!NEGATIVE_REGISTER_NAMES.has(canonicalRegister)) {
     return {
       applies: false,
-      registerName,
+      registerName: canonicalRegister,
+      requestedRegisterName: registerName,
       passed: true,
       label: 'not_negative_register',
       score: null,
@@ -260,14 +267,14 @@ export function evaluateRegisterStanceFidelity({
   }
 
   const markerHits = [
-    ...findPhraseMatches(tutorMessage, stanceFidelityCues(registerName)),
-    ...findMatches(tutorMessage, REGISTER_MARKERS[registerName] || []),
+    ...findPhraseMatches(tutorMessage, stanceFidelityCues(canonicalRegister)),
+    ...findMatches(tutorMessage, REGISTER_MARKERS[canonicalRegister] || []),
   ];
   const targetHits = findMatches(tutorMessage, TARGET_DISCIPLINE_PATTERNS);
   const nextMoveHits = findMatches(tutorMessage, NEXT_MOVE_PATTERNS);
   const repairHits = findMatches(`${tutorMessage}\n${postLearnerMessage}`, REPAIR_PATH_PATTERNS);
   const forbiddenFound = [
-    ...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)]),
+    ...new Set([...findForbiddenPhrases(canonicalRegister, tutorMessage), ...personAttackMatches(tutorMessage)]),
   ];
   const learnerResistanceVisible = /\b(?:bored|dead|frustrat|point|why|parrot|repeat|formula|memor)/i.test(
     normalize(learnerMessage),
@@ -295,7 +302,8 @@ export function evaluateRegisterStanceFidelity({
 
   const result = {
     applies: true,
-    registerName,
+    registerName: canonicalRegister,
+    requestedRegisterName: registerName,
     passed: label === 'faithful',
     label,
     score,

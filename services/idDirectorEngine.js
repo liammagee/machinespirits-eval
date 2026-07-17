@@ -27,7 +27,11 @@ import {
   isProviderConfigured,
 } from './cliProviderBridge.js';
 import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
-import { getEngagementRegisterDefinition } from './engagementRegisterRegistry.js';
+import {
+  getEngagementRegisterDefinition,
+  getRegisterOntologyVersion,
+  resolveEngagementRegister,
+} from './engagementRegisterRegistry.js';
 import {
   BLUEPRINT_CONTRACT_TRACE_ROLE,
   buildContractTracePayload,
@@ -93,25 +97,38 @@ const _deps = {
 function normalizeEngagementRegisterArm(value) {
   const arm = typeof value === 'string' ? value.trim() : '';
   if (!arm) return null;
-  return getEngagementRegisterDefinition(arm) ? arm : null;
+  return resolveEngagementRegister(arm)?.register || null;
 }
 
 function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
   if (!engagementState || !assignedRegisterArm) return engagementState;
-  const selectedRegister = engagementState.selected_register || engagementState.selected_mode;
-  if (selectedRegister !== 'charismatic_challenge') return engagementState;
-  const definition = getEngagementRegisterDefinition(assignedRegisterArm);
+  const selectedResolution = resolveEngagementRegister(
+    engagementState.selected_register || engagementState.selected_mode,
+  );
+  const selectedRegister =
+    selectedResolution?.register || engagementState.selected_register || engagementState.selected_mode;
+  if (selectedRegister !== 'charismatic') return engagementState;
+  const armResolution = resolveEngagementRegister(assignedRegisterArm);
+  const assignedRegister = armResolution?.register || assignedRegisterArm;
+  const definition = getEngagementRegisterDefinition(assignedRegister);
   if (!definition) return engagementState;
   const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
   const assignedReason =
-    `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
+    `${baseReason} Experiment arm assigns ${assignedRegister} under the same resistant precondition.`.trim();
   return {
     ...engagementState,
     router_selected_register: selectedRegister,
     router_selected_mode: engagementState.selected_mode || selectedRegister,
-    selected_register: assignedRegisterArm,
-    selected_mode: assignedRegisterArm,
-    assigned_register_arm: assignedRegisterArm,
+    legacy_router_selected_register:
+      engagementState.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      'charismatic_challenge',
+    selected_register: assignedRegister,
+    selected_mode: assignedRegister,
+    legacy_selected_register:
+      armResolution?.legacy_selected_register || engagementState.legacy_selected_register || null,
+    assigned_register_arm: assignedRegister,
+    legacy_assigned_register_arm: armResolution?.legacy_selected_register || null,
     register_assignment_source: 'experiment_arm',
     register_valence: definition.valence || null,
     router_selectable: definition.router_selectable === true,
@@ -121,11 +138,16 @@ function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
 }
 
 function buildRegisterStanceContract(engagementState) {
-  const registerName = engagementState?.selected_register || engagementState?.selected_mode;
+  const resolved = resolveEngagementRegister(engagementState?.selected_register || engagementState?.selected_mode);
+  const registerName = resolved?.register || engagementState?.selected_register || engagementState?.selected_mode;
   const definition = getEngagementRegisterDefinition(registerName);
   if (!registerName || !definition) return null;
   return {
+    register_ontology_version: getRegisterOntologyVersion(),
     selected_register: registerName,
+    legacy_selected_register: engagementState?.legacy_selected_register || resolved?.legacy_selected_register || null,
+    request_type: engagementState?.request_type || resolved?.request_type || null,
+    action_family: engagementState?.action_family || resolved?.action_family || null,
     valence: definition.valence || null,
     router_selectable: definition.router_selectable === true,
     simulated_only: definition.simulated_only === true,

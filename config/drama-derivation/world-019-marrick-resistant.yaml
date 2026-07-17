@@ -211,7 +211,10 @@ release_schedule:
   - { turn: 2, premise: m_caster, via: director }
   - { turn: 4, premise: p_alloy, via: tutor }
   - { turn: 6, premise: m_graver, via: director }
-  - { turn: 8, premise: p_crucible, via: tutor }
+  - turn: 8
+    premise: p_crucible
+    via: tutor
+    presentation: { mode: enacted_role, role: founder's man identifying the lead-sweat }
   - { turn: 10, premise: p_caster, via: director }
   - { turn: 12, premise: m_caught, via: director }
   - { turn: 14, premise: p_flaw, via: tutor }
@@ -296,3 +299,18 @@ motivation:
     temptation: high # the town's ready verdict (verrell) should tempt hard
     suspense: tight # hug the floor — the assay must not resolve early
     reversal: quiet # the inverted reversal is sober — recognition without spectacle
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: marrick
+  variant_of: world_005_marrick
+  temporal_frame: period
+  # Costume pinned deliberately (user directive 2026-07-12): the assay
+  # language is load-bearing for the marrick family — do not re-costume,
+  # re-dictionize, or modernize these worlds or author diction variants.
+  narrative_diction: medieval
+  ledger_term: trial-book
+  scene_ecology: "moneyer's assay"
+  summary: The Marrick assay holds its branching proof fixed while a publicly committed apprentice resists the evidence-led reversal.

@@ -1,0 +1,95 @@
+{
+  "schema": "machinespirits.tutor-stub.register-confirmatory-final-analysis-manifest.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "selection": {
+    "path": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-selection.json",
+    "sha256": "f058cc4df28b42cf3dcc888d4e1a1697938be933e13c72875ec1090919651f7a",
+    "bytes": 4923
+  },
+  "sourceArchives": {
+    "terra": {
+      "manifest": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-terra-n5-block-a.manifest.json",
+      "location": "~/.machinespirits-data/runs/tutor-stub/register-confirmatory-terra-n5-live-20260713.tar.gz",
+      "sha256": "c819763ee591c3d741b1fbbfac2fa2b0ebf2fa734c5e2f954468d42288400606",
+      "bytes": 129092490,
+      "archiveRoot": "register-confirmatory-terra-n5-live-2026-07-13"
+    },
+    "sonnet": {
+      "manifest": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-sonnet5-n5-block-b.manifest.json",
+      "location": "~/.machinespirits-data/runs/tutor-stub/register-confirmatory-sonnet5-n5-live-20260714.tar.gz",
+      "sha256": "8150d2182015e7a1e91b537a385f545ed532e84125167f379c68ca02ead3e665",
+      "bytes": 234149200,
+      "archiveRoot": "register-confirmatory-sonnet5-n5-live-2026-07-13"
+    }
+  },
+  "derivedArtifacts": [
+    {
+      "path": "exports/register-confirmatory-evidence/final/primary-endpoint-rows.json",
+      "sha256": "829ef1d91e308193f40d0412f251b259bad960b9f0cd9b48f0fa7d820733d7be",
+      "bytes": 314365
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/interaction-bootstrap.json",
+      "sha256": "9b7c006c4b98861148407dcef74e09add8df736d19c68eae274303dbd5dd7684",
+      "bytes": 15387
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/interaction-bootstrap.md",
+      "sha256": "c6f340d3b92173eb9a3b955f9233612e9c6a59bab72e358cc6ebbddeff92cd63",
+      "bytes": 2571
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/profile-discrimination.json",
+      "sha256": "66080667855102d87f8dd122b232a0dffb3aadc008d970f76b9d67762d78b444",
+      "bytes": 149913
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/profile-discrimination.md",
+      "sha256": "b4bf64e16de276f52dc107c384d4879e7c662bca3e130774b7ecc9d3f12b3816",
+      "bytes": 718
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/qa-matrix.json",
+      "sha256": "bc924f84931366c20d97814267ff8172b1449ed5d223ff7406a76709c1115d11",
+      "bytes": 12157
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/final/qa-matrix.md",
+      "sha256": "e152e8fd395898a2f4c94793c626b55c2bc7ef73ef33d73aea6e5216000370a0",
+      "bytes": 2115
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.json",
+      "sha256": "eaf299db9b71efea15d8c4e20788f36f718cdf1f2afb3838546351a8de42274a",
+      "bytes": 6397
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.md",
+      "sha256": "635c1e432a382987d10a14715076afec3d4d14baa967a2069579d873010b9ae5",
+      "bytes": 1203
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.json",
+      "sha256": "84e809b1397a86edd8ad15be3775bfdfb49371d3226378d31b122154da790c10",
+      "bytes": 14586
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.md",
+      "sha256": "7f0e6b4fafd70c459e4db68677222f8d1157301bfad4e4fa7add4d8159e31be8",
+      "bytes": 2500
+    }
+  ],
+  "verdict": {
+    "summary": "no family confirmation; no two-family claim; field selector closed on this evidence",
+    "familyConfirmations": {
+      "terra": false,
+      "sonnet": false
+    },
+    "twoFamilyConfirmation": false
+  },
+  "notes": [
+    "Default generation verifies both archive hashes and extracts only selected summaries and traces.",
+    "The Sonnet qa-matrix files replace the stale partial-run matrix.",
+    "No model calls are made."
+  ]
+}

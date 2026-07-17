@@ -1,0 +1,91 @@
+schema: machinespirits.adaptive-state-instrument-config.v2.4
+version: "2.4"
+status: prospectively_frozen_zero_call_diagnostic_and_directional
+frozen_at: "2026-07-13"
+protocol_doc: PLAN_4_0/2026-07-13-adaptive-state-decomposition-and-voi-protocol-v2.4.md
+parent_protocols:
+  - config/adaptive-state-instrument-v2.3.yaml
+  - config/adaptive-state-benchmark-v2.yaml
+claim_boundary: >-
+  Diagnostic decomposition of the v2.3 sensor stop plus a directional
+  active-sensing value-of-information screen. Zero model calls. Nothing in
+  this instrument can rescue or reinterpret a stopped row, name a sensor
+  winner, open policy optimization, authorize S2 or Phase 6B, or ground any
+  efficacy or human-learning claim.
+
+parent_outcomes:
+  s0_pass: adaptive-state-v2-s0-exact-channel-346e472a-v23
+  s1_stop: adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23
+  s1_decision: do_not_run_canonical_s2
+
+data_provenance:
+  fixed_schedule_arm:
+    source: packaged_archive_restore_only
+    manifest: config/adaptive-tutor-evidence/adaptive-state-v2-s0-exact-channel-346e472a-v23-06f76257057c.manifest.json
+    verify_before_read: true
+  pilot_comparator:
+    source: packaged_archive_restore_only
+    manifest: config/adaptive-tutor-evidence/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.manifest.json
+  generative_model: services/adaptiveTutor/learnerKernels
+  bootstrap:
+    clusters: latent_pair_id
+    resamples: 5000
+    seed: 20260713
+    refit_inside_resamples: false
+  new_run_label_prefix: adaptive-state-v24-
+
+part_1a_decomposition:
+  analyses: [schedule_floor, dimensionality_regularization, world_encoding, per_kernel_failure_modes]
+  regularization_grid_relative_to_pilot_l2: [0.25, 1, 4, 16, 64]
+  folds: leave_one_world_out
+  targets: [next_dag_event_family, next_proof_trajectory]
+  margins_pooled_log_loss_nats:
+    negligible_abs_delta: 0.02
+    useful_delta: 0.05
+    world_driver_delta: -0.10
+  classification_precedence: [data_starved, world_confounded, representation_carries_nothing]
+  ambiguity_default: representation_carries_nothing
+
+part_1b_voi:
+  filter: exact_bayes_over_kernel_latent_state
+  filter_fixed_point_check: filter_prior_at_true_state_reproduces_kernel_oracle
+  analyses:
+    - per_action_information_gain
+    - info_optimal_schedule_arm_generation
+    - channel_capacity_read_per_schedule
+    - lean_estimator_refit_on_voi_arm
+    - info_pedagogy_tradeoff_descriptive
+  voi_arm:
+    label: adaptive-state-v24-voi-schedule
+    dialogues: 24
+    matrix: same_as_s0
+    renderers: deterministic_only
+    action_choice: greedy_expected_entropy_reduction_ties_to_fixed_schedule
+  margins:
+    log_loss_nats: 0.05
+    brier: 0.02
+    action_information_floor_bits: 0.10
+    action_information_world_floor: 2
+    entropy_reduction_floor_bits_at_horizon: 0.10
+  verdicts:
+    - graduate_active_sensing_to_paid
+    - close_sensor_program_on_substrate
+    - inconclusive_data_starved
+  inconclusive_requires_1a_label: data_starved
+  sequencing: 1a_report_written_before_any_1b_inspection
+  graduate_authorizes: design_only_new_prospective_contract_required_for_any_paid_run
+
+prohibitions:
+  - no_model_calls
+  - no_stopped_row_rescue_or_reinterpretation
+  - no_s2
+  - no_policy_optimization
+  - no_phase_6b_work
+  - no_shadow_pilot
+  - no_efficacy_or_human_learning_claims
+  - no_prompt_or_world_edits
+
+outputs:
+  reports_dir: exports/adaptive-state-v24
+  results_note: PLAN_4_0/2026-07-13-adaptive-state-v24-results.md
+  workplan_card: tutor-stub-learner-state-validity

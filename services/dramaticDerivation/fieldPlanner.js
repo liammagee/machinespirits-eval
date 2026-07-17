@@ -1,7 +1,15 @@
-import { auditConductTutorView, conductMoveSpec, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import {
+  auditConductTutorView,
+  conductMoveSpec,
+  CONDUCT_MOVE_FAMILIES,
+  CONDUCT_POLICY_SCHEMA,
+  selectConductMove,
+} from './conductPolicy.js';
 import { auditDidacticModePublicInput, deriveDidacticOpportunityBudget, DIDACTIC_MODE_SCHEMA } from './didacticMode.js';
 
 export const FIELD_PLANNER_SCHEMA = 'machinespirits.derivation.field-planner.v1';
+export const FIELD_PLANNER_PROJECTION_SCHEMA = 'machinespirits.derivation.field-planner.projection.v1';
+export const FIELD_REPORT_CONTEXT_SCHEMA = 'machinespirits.derivation.field-report-context.v1';
 
 const DIDACTIC_BY_MOVE = Object.freeze({
   repair_dependency: 'slow_recap',
@@ -12,6 +20,17 @@ const DIDACTIC_BY_MOVE = Object.freeze({
   block_assertion: 'contrast_case',
   invite_final_assertion: 'minimal_presence',
   repair_recognition_rupture: 'minimal_presence',
+});
+
+const BASE_MOVE_PRIORS = Object.freeze({
+  repair_dependency: 0.05,
+  ask_diagnostic: 0.12,
+  ask_scope_test: 0.08,
+  consolidate_subproof: 0.28,
+  release_next_evidence: 0.1,
+  block_assertion: 0,
+  invite_final_assertion: 0.02,
+  repair_recognition_rupture: 0.05,
 });
 
 function clamp01(value) {
@@ -40,6 +59,18 @@ function premiseSurface(world, premiseId) {
 
 function compactDimensions(dimensions = {}) {
   return Object.fromEntries(Object.entries(dimensions).map(([key, value]) => [key, round3(value)]));
+}
+
+function compactDelta(delta = {}) {
+  return Object.fromEntries(
+    Object.entries(delta)
+      .filter(([, value]) => Number(value) !== 0)
+      .map(([key, value]) => [key, round3(value)]),
+  );
+}
+
+function roundBreakdown(parts = {}) {
+  return Object.fromEntries(Object.entries(parts).map(([key, value]) => [key, round3(value)]));
 }
 
 function finalLearnerSnapshot(learnerField = {}) {
@@ -139,11 +170,96 @@ function fieldMetrics(interactionField = {}, learnerField = {}) {
     attractors: { ...attractors },
     jointAttractor: final.joint?.attractor || null,
     scriptStage: final.script?.stage || null,
+    scriptPreferredMoves: final.script?.preferredMoves || [],
+    scriptAntiPatterns: final.script?.antiPatterns || [],
+    scriptExpectedFieldMovement: final.script?.expectedFieldMovement || {},
     learnerMeanSpeed: round3(final.learner?.meanSpeed || finalLearnerSnapshot(learnerField)?.summary?.meanSpeed || 0),
   };
 }
 
-function chooseMove({
+// Instrumentation placebo for the Phase 6 gate's `field_report_only` arm: the
+// same coupled-field summary the planner reads, projected into the tutor
+// context WITHOUT any candidate projection, move selection, or conduct
+// authority. This is what lets decision rule 2 ("improvement not reproduced by
+// field_report_only") actually bind — the arm differs from baseline by the
+// report block alone.
+export function buildFieldReportContext({ turn, interactionField, learnerField } = {}) {
+  const metrics = fieldMetrics(interactionField, learnerField);
+  const joint = metrics.joint || {};
+  const learner = metrics.learner || {};
+  const attractorText =
+    Object.entries(metrics.attractors || {})
+      .map(([name, count]) => `${name} x${count}`)
+      .join(', ') || 'none';
+  const view = {
+    turn,
+    scriptStage: metrics.scriptStage || null,
+    jointAttractor: metrics.jointAttractor || null,
+    joint,
+    learner,
+    attractorText,
+    learnerMeanSpeed: metrics.learnerMeanSpeed,
+  };
+  const nonLeakAudit = auditConductTutorView(view);
+  const dims = (pairs) =>
+    pairs
+      .filter(([, value]) => Number.isFinite(value))
+      .map(([label, value]) => `${label} ${round3(value)}`)
+      .join('; ');
+  const promptLines = [
+    `- script stage: ${view.scriptStage || 'unknown'}; joint attractor: ${view.jointAttractor || 'unknown'}`,
+    ...(dims([
+      ['coupling', joint.couplingStrength],
+      ['alignment', joint.pedagogicalAlignment],
+      ['tension', joint.productiveTension],
+      ['momentum', joint.interactionMomentum],
+      ['risk', joint.trajectoryRisk],
+    ])
+      ? [
+          `- joint field: ${dims([
+            ['coupling', joint.couplingStrength],
+            ['alignment', joint.pedagogicalAlignment],
+            ['tension', joint.productiveTension],
+            ['momentum', joint.interactionMomentum],
+            ['risk', joint.trajectoryRisk],
+          ])}`,
+        ]
+      : []),
+    ...(dims([
+      ['mastery', learner.mastery],
+      ['grounding', learner.evidenceGrounding],
+      ['confusion', learner.productiveConfusion],
+    ])
+      ? [
+          `- learner field: ${dims([
+            ['mastery', learner.mastery],
+            ['grounding', learner.evidenceGrounding],
+            ['confusion', learner.productiveConfusion],
+          ])}; mean speed ${round3(metrics.learnerMeanSpeed || 0)}`,
+        ]
+      : []),
+    `- learner attractors: ${attractorText}`,
+  ];
+  return {
+    schema: FIELD_REPORT_CONTEXT_SCHEMA,
+    active: true,
+    turn,
+    authority: 'runtime_instrumentation',
+    conductAuthority: false,
+    scriptStage: view.scriptStage,
+    jointAttractor: view.jointAttractor,
+    metrics: {
+      joint,
+      learner,
+      attractors: { ...(metrics.attractors || {}) },
+      learnerMeanSpeed: metrics.learnerMeanSpeed,
+    },
+    nonLeakAudit,
+    promptLines,
+  };
+}
+
+function plannerContext({
   turn,
   metrics,
   learnerField,
@@ -171,91 +287,304 @@ function chooseMove({
     proofDebt?.debts?.[0]?.target ||
     conductEntitlement?.proofDebt?.targetPremise ||
     null;
-
-  if (proofDebt?.active || conductEntitlement?.proofDebt?.active) {
-    return {
-      moveFamily: 'repair_dependency',
-      reasonCode: 'field_repair_dependency',
-      signal: 'stalled',
-      targetPremise: proofDebtTarget || heldGapTarget,
-      rationale: 'the live field shows a proof-critical dependency needs repair before advancing',
-      evidence: ['proof-debt signal is active', `trajectory risk ${round3(risk)}`],
-    };
-  }
-
-  if (canAssertFinal && grounding >= 0.5 && risk < 0.62) {
-    return {
-      moveFamily: 'invite_final_assertion',
-      reasonCode: 'field_final_assertion_available',
-      signal: 'ready_self_work',
-      targetPremise: null,
-      rationale: 'the public board can support closure and the learner field is sufficiently grounded',
-      evidence: [`learner grounding ${round3(grounding)}`, `trajectory risk ${round3(risk)}`],
-    };
-  }
-
-  if ((attractors.misconception_attractor || 0) > 0 || (risk >= 0.62 && (joint.pedagogicalAlignment || 0) < 0.5)) {
-    return {
-      moveFamily: (attractors.misconception_attractor || 0) > 0 ? 'ask_scope_test' : 'ask_diagnostic',
-      reasonCode: 'field_destabilize_misconception',
-      signal: 'misapplied',
-      targetPremise: heldGapTarget,
-      rationale: 'the learner field is pulled toward a high-risk or unsupported attractor',
-      evidence: [
-        `misconception attractors ${attractors.misconception_attractor || 0}`,
-        `trajectory risk ${round3(risk)}`,
-      ],
-    };
-  }
-
-  if (momentum < 0.2 && risk >= 0.5) {
-    return {
-      moveFamily: 'ask_diagnostic',
-      reasonCode: 'field_low_momentum_diagnostic',
-      signal: 'stalled',
-      targetPremise: heldGapTarget || releaseTarget,
-      rationale: 'field momentum is low while risk remains high, so the tutor should diagnose before advancing',
-      evidence: [`interaction momentum ${round3(momentum)}`, `trajectory risk ${round3(risk)}`],
-    };
-  }
-
-  if (currentReleaseDue && releaseTarget && risk < 0.58) {
-    return {
-      moveFamily: 'release_next_evidence',
-      reasonCode: 'field_release_due',
-      signal: 'purpose_gap',
-      targetPremise: releaseTarget,
-      rationale: 'the next scheduled exhibit is due and the coupled field is stable enough to advance',
-      evidence: [`scheduled release ${releaseTarget} is due`, `trajectory risk ${round3(risk)}`],
-    };
-  }
-
-  if (tension >= 0.42 && coupling >= 0.35) {
-    return {
-      moveFamily: 'consolidate_subproof',
-      reasonCode: 'field_productive_tension',
-      signal: 'echo_only',
-      targetPremise: heldGapTarget,
-      rationale: 'the learner is productively unsettled; consolidate the local subproof before adding load',
-      evidence: [`productive tension ${round3(tension)}`, `coupling strength ${round3(coupling)}`],
-    };
-  }
-
   return {
-    moveFamily: 'consolidate_subproof',
-    reasonCode: 'field_default_consolidate',
-    signal: grounding >= 0.45 ? 'echo_only' : 'stalled',
-    targetPremise: heldGapTarget || releaseTarget,
-    rationale: 'no release or final assertion is clearly licensed by the field, so hold attention on current support',
-    evidence: [`learner grounding ${round3(grounding)}`, `script stage ${metrics.scriptStage || 'unknown'}`],
+    learner,
+    joint,
+    attractors,
+    grounding,
+    risk,
+    momentum,
+    tension,
+    coupling,
+    currentReleaseDue,
+    releaseTarget,
+    heldGapTarget,
+    proofDebtActive: Boolean(proofDebt?.active || conductEntitlement?.proofDebt?.active),
+    proofDebtTarget,
+    canAssertFinal: Boolean(canAssertFinal),
+  };
+}
+
+function targetForMove(moveFamily, context) {
+  if (moveFamily === 'release_next_evidence') return context.releaseTarget || context.heldGapTarget;
+  if (moveFamily === 'repair_dependency') return context.proofDebtTarget || context.heldGapTarget;
+  if (moveFamily === 'invite_final_assertion' || moveFamily === 'block_assertion') return null;
+  return context.heldGapTarget || context.releaseTarget || null;
+}
+
+function projectedMovementForMove(moveFamily, context) {
+  const highRisk = context.risk >= 0.58;
+  const projection = {
+    repair_dependency: {
+      learner: { mastery: 0.05, evidenceGrounding: 0.12, uncertainty: -0.04 },
+      tutor: { diagnosticConfidence: 0.08, pedagogicalUncertainty: -0.12, strategyMomentum: 0.04 },
+      discourse: { explanatoryStructure: 0.08, commitmentStrength: 0.05, openQuestions: -0.04 },
+      joint: { pedagogicalAlignment: 0.1, trajectoryRisk: -0.14, scriptProgress: 0.04 },
+    },
+    ask_diagnostic: {
+      learner: { engagement: 0.04, productiveConfusion: 0.04, uncertainty: highRisk ? -0.02 : 0.03 },
+      tutor: { activeHypotheses: 0.1, diagnosticConfidence: 0.05, pedagogicalUncertainty: -0.04 },
+      discourse: { openQuestions: 0.06, dialogueActDensity: 0.05, explanatoryStructure: 0.03 },
+      joint: { couplingStrength: 0.03, trajectoryRisk: highRisk ? -0.07 : -0.02 },
+    },
+    ask_scope_test: {
+      learner: { misconceptionRisk: -0.14, productiveConfusion: 0.05, evidenceGrounding: 0.04 },
+      tutor: { diagnosticConfidence: 0.06, pedagogicalUncertainty: -0.08 },
+      discourse: { openQuestions: -0.04, explanatoryStructure: 0.06, commitmentStrength: 0.04 },
+      joint: { pedagogicalAlignment: 0.08, productiveTension: 0.04, trajectoryRisk: -0.15 },
+    },
+    consolidate_subproof: {
+      learner: { mastery: 0.08, evidenceGrounding: 0.09, uncertainty: -0.04 },
+      tutor: { diagnosticConfidence: 0.05, instructionalMomentum: 0.04 },
+      discourse: { sharedVocabulary: 0.04, explanatoryStructure: 0.07, commitmentStrength: 0.06 },
+      joint: { couplingStrength: 0.04, pedagogicalAlignment: 0.06, trajectoryRisk: -0.08 },
+    },
+    release_next_evidence: {
+      learner: { engagement: 0.04, uncertainty: highRisk ? 0.06 : 0.02 },
+      tutor: { instructionalMomentum: 0.1, strategyMomentum: 0.07 },
+      discourse: { conceptIntroduction: 0.14, openQuestions: 0.05, interactionRhythm: 0.06 },
+      joint: { interactionMomentum: 0.12, scriptProgress: 0.1, trajectoryRisk: highRisk ? 0.05 : -0.03 },
+    },
+    block_assertion: {
+      learner: { misconceptionRisk: -0.08, engagement: -0.03, uncertainty: 0.03 },
+      tutor: { diagnosticConfidence: 0.04, rapport: -0.04 },
+      discourse: { commitmentStrength: -0.02, openQuestions: 0.03 },
+      joint: { pedagogicalAlignment: 0.04, couplingStrength: -0.03, trajectoryRisk: -0.08 },
+    },
+    invite_final_assertion: {
+      learner: { mastery: 0.06, evidenceGrounding: 0.05, uncertainty: -0.08 },
+      tutor: { diagnosticConfidence: 0.08, instructionalMomentum: 0.02 },
+      discourse: { commitmentStrength: 0.13, openQuestions: -0.08 },
+      joint: { scriptProgress: 0.16, trajectoryRisk: context.canAssertFinal ? -0.1 : 0.16 },
+    },
+    repair_recognition_rupture: {
+      learner: { engagement: 0.08, uncertainty: -0.02 },
+      tutor: { rapport: 0.14, pedagogicalUncertainty: -0.04 },
+      discourse: { emotionalTone: 0.12, interactionRhythm: 0.05 },
+      joint: { couplingStrength: 0.13, interactionMomentum: 0.03, trajectoryRisk: -0.05 },
+    },
+  }[moveFamily];
+  return {
+    learner: compactDelta(projection?.learner),
+    tutor: compactDelta(projection?.tutor),
+    discourse: compactDelta(projection?.discourse),
+    joint: compactDelta(projection?.joint),
+  };
+}
+
+function scriptFit(moveFamily, didacticMode, metrics) {
+  const preferred = new Set(metrics.scriptPreferredMoves || []);
+  const antiPatterns = new Set(metrics.scriptAntiPatterns || []);
+  let fit = 0;
+  if (preferred.has(moveFamily) || preferred.has(didacticMode)) fit += 0.16;
+  if (antiPatterns.has(moveFamily) || antiPatterns.has(didacticMode)) fit -= 0.36;
+  return fit;
+}
+
+function scoreCandidate(moveFamily, didacticMode, context, metrics, expectedMovement) {
+  const misconception = (context.attractors.misconception_attractor || 0) > 0;
+  const riskReduction = -Number(expectedMovement.joint?.trajectoryRisk || 0);
+  const parts = {
+    prior: BASE_MOVE_PRIORS[moveFamily] ?? 0,
+    scriptFit: scriptFit(moveFamily, didacticMode, metrics),
+    riskReduction: riskReduction > 0 ? Math.min(0.22, riskReduction) : Math.max(-0.18, riskReduction),
+    proofFit: 0,
+    closureFit: 0,
+    releaseFit: 0,
+    misconceptionFit: 0,
+    momentumFit: 0,
+    recognitionFit: 0,
+  };
+
+  if (context.proofDebtActive) parts.proofFit = moveFamily === 'repair_dependency' ? 1.2 : -0.55;
+  if (context.canAssertFinal) {
+    const closureReady = context.grounding >= 0.5 && context.risk < 0.62;
+    parts.closureFit = moveFamily === 'invite_final_assertion' ? (closureReady ? 1 : 0.18) : -0.04;
+  } else if (moveFamily === 'invite_final_assertion') {
+    parts.closureFit = -0.85;
+  }
+
+  if (context.currentReleaseDue && context.releaseTarget) {
+    parts.releaseFit = moveFamily === 'release_next_evidence' ? 0.82 : -0.03;
+  } else if (moveFamily === 'release_next_evidence') {
+    parts.releaseFit = context.risk < 0.3 ? -0.08 : -0.28;
+  }
+
+  if (misconception) parts.misconceptionFit = moveFamily === 'ask_scope_test' ? 0.95 : -0.08;
+  else if (context.risk >= 0.62 && moveFamily === 'ask_diagnostic') parts.misconceptionFit = 0.45;
+
+  if (context.momentum < 0.2 && context.risk >= 0.5) {
+    parts.momentumFit = moveFamily === 'ask_diagnostic' ? 0.54 : moveFamily === 'release_next_evidence' ? -0.2 : 0;
+  }
+
+  if (context.tension >= 0.42 && context.coupling >= 0.35 && moveFamily === 'consolidate_subproof') {
+    parts.momentumFit += 0.32;
+  }
+
+  if (context.coupling < 0.25 && moveFamily === 'repair_recognition_rupture') {
+    parts.recognitionFit = 0.42;
+  }
+
+  if (moveFamily === 'block_assertion') parts.closureFit -= 0.25;
+
+  const score = Object.values(parts).reduce((sum, value) => sum + Number(value || 0), 0);
+  return { score: round3(score), scoreBreakdown: roundBreakdown(parts) };
+}
+
+function rationaleForCandidate(moveFamily, context, metrics) {
+  if (moveFamily === 'repair_dependency') return 'repair a proof-critical dependency before advancing';
+  if (moveFamily === 'invite_final_assertion') return 'invite closure only when the public board can support it';
+  if (moveFamily === 'release_next_evidence') return 'advance the evidence schedule when risk is stable enough';
+  if (moveFamily === 'ask_scope_test') return 'test the boundary of a risky or over-broad route';
+  if (moveFamily === 'ask_diagnostic') return 'diagnose the learner route before adding proof load';
+  if (moveFamily === 'repair_recognition_rupture') return 'restore coupling before resuming proof pressure';
+  if (moveFamily === 'block_assertion') return 'block unsupported closure and return to public support';
+  return `hold the ${metrics.scriptStage || 'current'} stage on owned support`;
+}
+
+function signalForCandidate(moveFamily, context) {
+  if (moveFamily === 'invite_final_assertion') return 'ready_self_work';
+  if (moveFamily === 'release_next_evidence') return 'purpose_gap';
+  if (moveFamily === 'ask_scope_test') return 'misapplied';
+  if (moveFamily === 'repair_dependency' || moveFamily === 'ask_diagnostic') return 'stalled';
+  if (moveFamily === 'repair_recognition_rupture') return 'overloaded';
+  return context.grounding >= 0.45 ? 'echo_only' : 'stalled';
+}
+
+function reasonCodeForCandidate(moveFamily, context) {
+  if (moveFamily === 'repair_dependency') return 'field_repair_dependency';
+  if (moveFamily === 'invite_final_assertion') return 'field_final_assertion_available';
+  if (moveFamily === 'release_next_evidence') return 'field_release_due';
+  if (moveFamily === 'ask_scope_test') return 'field_destabilize_misconception';
+  if (moveFamily === 'ask_diagnostic') {
+    return context.momentum < 0.2 && context.risk >= 0.5 ? 'field_low_momentum_diagnostic' : 'field_route_diagnostic';
+  }
+  if (moveFamily === 'repair_recognition_rupture') return 'field_repair_recognition_rupture';
+  if (moveFamily === 'block_assertion') return 'field_block_unsupported_assertion';
+  if (context.tension >= 0.42 && context.coupling >= 0.35) return 'field_productive_tension';
+  return 'field_default_consolidate';
+}
+
+function candidateProjection({ moveFamily, turn, metrics, context }) {
+  const didacticMode = DIDACTIC_BY_MOVE[moveFamily] || 'purpose_bridge';
+  const expectedMovement = projectedMovementForMove(moveFamily, context);
+  const { score, scoreBreakdown } = scoreCandidate(moveFamily, didacticMode, context, metrics, expectedMovement);
+  const spec = conductMoveSpec(moveFamily);
+  return {
+    moveFamily,
+    didacticMode,
+    reasonCode: reasonCodeForCandidate(moveFamily, context),
+    signal: signalForCandidate(moveFamily, context),
+    targetPremise: targetForMove(moveFamily, context),
+    rationale: rationaleForCandidate(moveFamily, context, metrics),
+    score,
+    scoreBreakdown,
+    expectedMovement,
+    expectedLocalUptake: spec.expectedUptake,
+    scriptFit: {
+      stage: metrics.scriptStage || null,
+      preferred:
+        (metrics.scriptPreferredMoves || []).includes(moveFamily) ||
+        (metrics.scriptPreferredMoves || []).includes(didacticMode),
+      antiPattern:
+        (metrics.scriptAntiPatterns || []).includes(moveFamily) ||
+        (metrics.scriptAntiPatterns || []).includes(didacticMode),
+    },
+    evidence: [
+      `candidate ${moveFamily}`,
+      `score ${round3(score)}`,
+      `trajectory risk ${round3(context.risk)}`,
+      `script stage ${metrics.scriptStage || 'unknown'}`,
+      ...(context.proofDebtActive ? ['proof-debt signal is active'] : []),
+      ...(context.currentReleaseDue && context.releaseTarget
+        ? [`scheduled release ${context.releaseTarget} is due`]
+        : []),
+    ],
+    sourceTriggerId: `t${turn}:field-planner:candidate:${moveFamily}`,
+  };
+}
+
+export function projectFieldPlannerCandidates({
+  turn,
+  metrics,
+  learnerField,
+  nextScheduledRelease,
+  canAssertFinal,
+  proofDebt,
+  conductEntitlement,
+} = {}) {
+  const context = plannerContext({
+    turn,
+    metrics,
+    learnerField,
+    nextScheduledRelease,
+    canAssertFinal,
+    proofDebt,
+    conductEntitlement,
+  });
+  const candidates = CONDUCT_MOVE_FAMILIES.map((moveFamily) =>
+    candidateProjection({ moveFamily, turn, metrics, context }),
+  ).sort((a, b) => b.score - a.score || String(a.moveFamily).localeCompare(String(b.moveFamily)));
+  const releaseDueCandidate =
+    context.currentReleaseDue && context.releaseTarget
+      ? candidates.find((candidate) => candidate.moveFamily === 'release_next_evidence')
+      : null;
+  return {
+    schema: FIELD_PLANNER_PROJECTION_SCHEMA,
+    turn,
+    context: {
+      grounding: round3(context.grounding),
+      risk: round3(context.risk),
+      momentum: round3(context.momentum),
+      tension: round3(context.tension),
+      coupling: round3(context.coupling),
+      proofDebtActive: context.proofDebtActive,
+      canAssertFinal: context.canAssertFinal,
+      currentReleaseDue: context.currentReleaseDue,
+      releaseTarget: context.releaseTarget,
+      heldGapTarget: context.heldGapTarget,
+      ...(releaseDueCandidate ? { selectionOverride: 'due_release_dominates_field_score' } : {}),
+    },
+    candidates,
+    selected: releaseDueCandidate || candidates[0] || null,
+  };
+}
+
+function chooseMove({
+  turn,
+  metrics,
+  learnerField,
+  nextScheduledRelease,
+  canAssertFinal,
+  proofDebt,
+  conductEntitlement,
+}) {
+  const projection = projectFieldPlannerCandidates({
+    turn,
+    metrics,
+    learnerField,
+    nextScheduledRelease,
+    canAssertFinal,
+    proofDebt,
+    conductEntitlement,
+  });
+  return {
+    choice: projection.selected,
+    projection,
   };
 }
 
 function promptLinesForPlan(plan) {
+  const alternatives = (plan.candidateMoves || [])
+    .filter((candidate) => candidate.moveFamily !== plan.selectedMoveFamily)
+    .slice(0, 2)
+    .map((candidate) => `${candidate.moveFamily} ${candidate.score}`)
+    .join(', ');
   return [
     `- script stage: ${plan.scriptStage || 'unknown'}; joint attractor: ${plan.jointAttractor || 'unknown'}`,
     `- conduct family: ${plan.selectedMoveFamily}; reason: ${plan.reasonCode}`,
     `- didactic mode: ${plan.didacticMode.recommendedMode}; signal: ${plan.didacticMode.learningSignal}`,
+    `- candidate projection: ${(plan.candidateMoves || []).length} move families considered${alternatives ? `; next alternatives ${alternatives}` : ''}`,
     ...(plan.targetPremise
       ? [`- target public object: ${plan.targetPremise}${plan.targetSurface ? ` (${plan.targetSurface})` : ''}`]
       : []),
@@ -274,7 +603,7 @@ export function selectFieldPlannerMove({
   conductEntitlement = null,
 } = {}) {
   const metrics = fieldMetrics(interactionField, learnerField);
-  const choice = chooseMove({
+  const { choice, projection } = chooseMove({
     turn,
     metrics,
     learnerField,
@@ -283,7 +612,7 @@ export function selectFieldPlannerMove({
     proofDebt,
     conductEntitlement,
   });
-  const mode = DIDACTIC_BY_MOVE[choice.moveFamily] || 'purpose_bridge';
+  const mode = choice.didacticMode || DIDACTIC_BY_MOVE[choice.moveFamily] || 'purpose_bridge';
   const targetSurface = premiseSurface(world, choice.targetPremise);
   const didacticMode = buildDidacticState({
     mode,
@@ -336,6 +665,28 @@ export function selectFieldPlannerMove({
     scriptStage: metrics.scriptStage,
     jointAttractor: metrics.jointAttractor,
     metrics,
+    projection: {
+      schema: projection.schema,
+      context: projection.context,
+      selected: {
+        moveFamily: choice.moveFamily,
+        score: choice.score,
+        scoreBreakdown: choice.scoreBreakdown,
+        expectedMovement: choice.expectedMovement,
+      },
+    },
+    candidateMoves: projection.candidates.map((candidate) => ({
+      moveFamily: candidate.moveFamily,
+      didacticMode: candidate.didacticMode,
+      reasonCode: candidate.reasonCode,
+      targetPremise: candidate.targetPremise || null,
+      score: candidate.score,
+      scoreBreakdown: candidate.scoreBreakdown,
+      expectedMovement: candidate.expectedMovement,
+      scriptFit: candidate.scriptFit,
+      expectedLocalUptake: candidate.expectedLocalUptake,
+    })),
+    expectedMovement: choice.expectedMovement,
     didacticMode,
     conductDecision: {
       ...conductDecision,
@@ -348,6 +699,7 @@ export function selectFieldPlannerMove({
           : choice.moveFamily === 'invite_final_assertion'
             ? 'learner asserts from public support'
             : 'learner field reduces risk, restores grounding, or clarifies the current object',
+      projectedFieldDeltas: choice.expectedMovement,
       compareAfter: 'post_learner_turn',
     },
   };
@@ -364,10 +716,27 @@ export function summarizeFieldPlannerOutcome(row = {}, outcome = {}) {
   const derivedCount = Number(outcome.derivedCount || 0);
   const asserted = outcome.asserted === true;
   const improved = distanceDelta > 0 || groundedDelta > 0 || adoptedCount > 0 || derivedCount > 0 || asserted;
+  const expected = row.expectedMovement || row.projection?.selected?.expectedMovement || null;
+  const observedMovement = {
+    proofDistance: round3(distanceDelta),
+    groundedPremises: groundedDelta,
+    adoptedFacts: adoptedCount,
+    derivedFacts: derivedCount,
+    assertedFinal: asserted,
+    forcedByPublicBoard: outcome.forced === true,
+  };
   return {
     ...outcome,
     distanceDelta: round3(distanceDelta),
     groundedDelta,
+    expectedMovement: expected,
+    observedMovement,
+    projectionAlignment:
+      row.selectedMoveFamily === 'invite_final_assertion' && asserted
+        ? 'matched'
+        : improved
+          ? 'directionally_matched'
+          : 'not_observed_yet',
     efficacy:
       row.selectedMoveFamily === 'invite_final_assertion' && asserted
         ? 'closure_realized'

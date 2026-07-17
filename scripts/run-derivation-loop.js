@@ -925,6 +925,15 @@ async function main() {
     console.error('--field-planner currently requires non-acts mode (acts redacts learner-store state from the tutor)');
     process.exit(1);
   }
+  // Instrumentation placebo (Phase 6 field_report_only arm): field summary as
+  // tutor context, no planner authority. Same non-acts constraint as the planner.
+  const fieldReportContext = flag('field-report-context');
+  if (fieldReportContext && acts) {
+    console.error(
+      '--field-report-context currently requires non-acts mode (acts redacts learner-store state from the tutor)',
+    );
+    process.exit(1);
+  }
   const castLayer = flag('cast-layer');
   const castReinvention = flag('cast-reinvention');
   const learnerDrift = flag('learner-drift');
@@ -1062,6 +1071,7 @@ async function main() {
       didacticMode,
       fieldPlanner,
       fieldPlannerEnforce,
+      fieldReportContext,
       castLayer,
       castReinvention,
       learnerDrift,
@@ -1237,6 +1247,9 @@ async function main() {
         : 'field   PLANNER ON — coupled learner/tutor/discourse field selects the tutor conduct family and didactic mode',
     );
   }
+  if (fieldReportContext) {
+    console.log('field   REPORT CONTEXT ON — coupled field summary enters the tutor context; no conduct authority');
+  }
   if (castLayer) {
     console.log(
       `cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public character/relation conduct advisory only`,
@@ -1312,6 +1325,7 @@ async function main() {
       didacticMode,
       fieldPlanner,
       fieldPlannerEnforce,
+      fieldReportContext,
       castLayer,
       castReinvention,
       ownershipTarget: world.ownershipTarget,
@@ -1417,6 +1431,7 @@ async function main() {
         tutorLearnerDag,
         fieldPlanner,
         fieldPlannerEnforce,
+        fieldReportContext,
         directorCadence,
         stagePrologue,
         publicRegister,
@@ -1519,6 +1534,7 @@ async function main() {
     didacticMode,
     fieldPlanner,
     fieldPlannerEnforce,
+    fieldReportContext,
     castLayer,
     castReinvention,
     learnerDrift,

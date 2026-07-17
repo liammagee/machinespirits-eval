@@ -1,0 +1,99 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v16
+created: 2026-07-15
+
+purpose: >-
+  Fresh acceptance matrix after v15 passed three cells and its Fengate
+  false-memory cell exposed two natural charismatic-counterpressure forms that
+  the surface auditor undercounted. This matrix tests the coordinated semantic
+  recognition repair only after strict working verification passed, using
+  unseen seeds, four pairings absent from every earlier matrix, and no Fengate
+  trajectory.
+
+code_under_test:
+  branch: preconscious
+  commit: 16246863
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i25-2026-07-15T23-13-05-374Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v15
+  affected_seeds: [20260870, 20260871, 20260872, 20260873]
+  reason: >-
+    The complete v15 matrix was inspected before public suspicion outrunning
+    material evidence and a breakable case against a crowd verdict were
+    recognized as charismatic counterpressure. Its trajectories are tuning
+    evidence and cannot be reused for acceptance.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: hethel_false_memory
+    world: world_006_hethel
+    learner_profile: false_memory
+    seed: 20260880
+    rationale: >-
+      Tests correction of invented evidence in a material water inquiry not
+      previously paired with the false-memory learner.
+
+  - id: ravensmark_fast
+    world: world_009_ravensmark
+    learner_profile: fast_learner
+    seed: 20260881
+    rationale: >-
+      Tests accelerated material-evidence handling in a period setting not
+      previously paired with the fast learner.
+
+  - id: tallow_slow
+    world: world_025_tallow_street
+    learner_profile: slow_learner
+    seed: 20260882
+    rationale: >-
+      Tests slower scaffolding and public choices in a civic inquiry not
+      previously paired with the slow learner.
+
+  - id: nocturne_low_agency
+    world: world_001_nocturne
+    learner_profile: low_agency
+    seed: 20260883
+    rationale: >-
+      Tests tutor-owned choices and counterpressure in a branching electrical
+      inquiry not previously paired with the low-agency learner.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four newly paired simulated
+  scenario/profile combinations and evidence modalities; it does not establish
+  population-wide generalization or human learning effectiveness.

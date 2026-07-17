@@ -85,6 +85,7 @@ rules:
 
 premises:
   - id: p_clause
+    evidence_role: orientation
     fact: [warrantRequires, gatePass, sealPress]
     surface: >-
       The old pass-law is read beside the wax: for a river-gate warrant, the operative
@@ -169,3 +170,14 @@ slope:
   aporia_window: 12
 
 turn_cap: 24
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: ravensmark
+  temporal_frame: period
+  scene_ecology: "borough seal inquiry"
+  narrative_diction: "medieval civic-clerk formal"
+  ledger_term: "warrant book"
+  summary: A seal impression, not the gate steward's apparent responsibility, identifies who signed the pass used in a coffer theft.

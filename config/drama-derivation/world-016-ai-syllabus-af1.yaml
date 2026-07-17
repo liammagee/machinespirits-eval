@@ -3,7 +3,7 @@ title: The Campus FAQ Machine
 
 discipline: "AI Foundations AF1: AI systems, tasks, and agents"
 
-question: "What kind of system should the campus FAQ triage tool be, on the evidence in the formulation card?"
+question: "What should the campus FAQ tool use as its first implementation baseline, on the evidence in the formulation card?"
 question_pattern: [bestApproach, campusFaq, "?x"]
 
 setting: >-
@@ -48,8 +48,9 @@ rules:
       - [ruleBaselineSufficient, "?system"]
   - id: R3_decision
     gloss: >-
-      If bad advice affects student records and staff retain the decision right,
-      model output is not the system decision.
+      Where wrong guidance can affect a student record, retained staff authority
+      matters: the tool may route or display approved guidance, but its output is
+      not the institutional decision.
     if:
       - [studentRecordImpact, "?system"]
       - [staffRetainDecisionRight, "?system"]
@@ -180,3 +181,14 @@ motivation:
     second_order: null
     disposition:
       withhold: lawful
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: ai-syllabus
+  temporal_frame: contemporary
+  scene_ecology: "AI Foundations problem-formulation workshop"
+  narrative_diction: "plain technical contemporary"
+  ledger_term: "formulation card"
+  summary: A first AI workshop tests whether a conversational FAQ tool actually needs a generative model or should begin with a rule-based baseline.

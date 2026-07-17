@@ -1,0 +1,207 @@
+schema: machinespirits.adaptive-state-benchmark-config.v1
+version: "1.0"
+status: engineering_ready_no_claim_run
+claim_boundary: >-
+  Synthetic instruments validate held-out next-event prediction only. They do
+  not estimate human learning, deployment efficacy, or psychological validity.
+fixed_horizon_turns: 16
+
+prediction_origin:
+  id: after_learner_observation_before_tutor_action
+  description: >-
+    Freeze learner text, public classifier output, learner-DAG update and public
+    discourse audits after learner turn t and before selecting or realizing the
+    tutor action whose consequence is observed at t+1.
+  forbidden_temporal_inputs:
+    - tutor_action_at_t
+    - tutor_text_at_t
+    - learner_text_at_t_plus_1
+    - dag_update_at_t_plus_1
+    - target_label
+  action_conditioning: separate_common_head_input
+
+public_feature_allowlist:
+  - learner_utterance
+  - public_classifier
+  - public_learner_dag
+  - public_human_discourse_audits
+  - frozen_task_metadata
+  - prior_public_observations
+forbidden_keys:
+  - hiddenLearnerState
+  - hidden_state
+  - actualMisconception
+  - answer_key
+  - expected_label
+  - private_profile
+  - profile_contract
+  - future
+
+task_metadata:
+  difficulty_scale: [0, 1]
+  discrimination_rule: positive_frozen_metadata_only
+  missing_policy: explicit_missing_indicator
+  warning: Proof distance must not be silently substituted for item difficulty.
+
+representations:
+  - id: lean
+    kind: baseline
+    fields:
+      - knowledge_component
+      - prerequisite_status
+      - learner_ability
+      - mastery
+      - item_difficulty
+      - item_discrimination
+      - confidence
+      - last_public_evidence
+      - last_public_evidence_id
+      - last_public_evidence_type
+      - last_public_evidence_source
+      - last_public_evidence_present
+  - id: plan2_belief
+    kind: candidate
+    source: services/adaptiveTutor/actionPolicy.js
+  - id: plan4_fields
+    kind: candidate_projection
+  - id: field_without_dynamics
+    kind: ablation
+  - id: belief_without_affect
+    kind: ablation
+  - id: belief_without_task_difficulty
+    kind: ablation
+  - id: state_scramble
+    kind: placebo
+    rule: aligned_probability_evidence_and_axis_rotation
+  - id: shuffled_evidence_ids
+    kind: placebo
+  - id: stale_state
+    kind: placebo
+    lag_turns: 1
+  - id: oracle
+    kind: upper_bound_only
+
+targets:
+  next_error_family:
+    source: next_public_dag_bottleneck_and_rejection_taxonomy
+    labels:
+      - release_or_pacing_gap
+      - inference_gap
+      - learner_integration_gap
+      - assertion_gap
+      - premature_assertion
+      - unsupported_assertion
+      - grounded_asserted_secret
+      - other
+  next_evidence_edge:
+    source: exact_next_accepted_adopt_derive_or_retract_fact_id
+    local_world_ids: true
+    broader_family_projection_required: true
+  dropout_repair:
+    source: exact_dag_fact_dropout_repair_or_readoption_event
+    labels: [repaired, not_repaired, not_applicable]
+  targeted_feedback_uptake:
+    source: predeclared_expected_fact_or_signal_after_action
+    labels: [uptake_observed, no_observed_uptake, inconclusive]
+  learner_owned_next_move:
+    source: next_public_agency_plus_independent_fact_update
+    labels: [owned, not_owned, inconclusive]
+  task_success_at_horizon:
+    source: fixed_horizon_grounded_closure_coverage_and_safety
+    labels: [success, not_success]
+  diagnostic_resolves_ambiguity:
+    source: independently_labeled_post_diagnostic_ambiguity
+    labels: [resolved, not_resolved, not_applicable]
+  later_independent_performance:
+    status: unavailable_until_authorized_human_pilot
+
+data_tiers:
+  formal_synthetic:
+    required_families:
+      - a21_durable_state_transition_kernel
+      - dag_fact_dropout_memory_instrument
+  independent_simulator:
+    minimum_families: 2
+    prompt_personas_count_as_independent: false
+  authentic_dialogue:
+    status: unavailable_pending_governance_and_authorized_data
+    double_coding_required: true
+
+splits:
+  method: leave_one_group_level_out
+  group_axes:
+    - world
+    - scenario_family
+    - latent_generator_family
+    - learner_source
+    - model_family
+  atomic_unit: dialogue_id
+  forbid_adjacent_turn_split: true
+  deterministic: true
+  calibration_evaluation: held_out_out_of_fold_fixed_head
+
+prediction_head:
+  family: capacity_matched_mixed_feature_knn
+  neighbors: 7
+  same_head_for_every_representation: true
+  action_input_common_to_every_representation: true
+  probability_clip: 1.0e-12
+  calibration_bins: 10
+
+metrics:
+  primary:
+    - multiclass_log_loss
+    - multiclass_brier_score
+  secondary:
+    - expected_calibration_error_with_bin_counts
+    - top_1_accuracy
+    - top_k_accuracy
+    - rare_class_precision_recall
+    - abstention_coverage_accuracy
+    - incremental_value_over_lean
+  uncertainty:
+    method: paired_group_bootstrap
+    unit: dialogue_or_world_group
+    iterations: 2000
+    seed: 20260711
+    confidence_level: 0.95
+    minimum_probability_of_improvement: 0.95
+    pass_rule: lower_percentile_bound_above_zero_for_log_loss_and_brier
+    claim_grade_minimums:
+      iterations: 2000
+      confidence_level: 0.95
+      minimum_probability_of_improvement: 0.95
+      group_key: dialogue_id
+  calibration:
+    evaluation: held_out_out_of_fold_fixed_head
+    max_expected_calibration_error: 0.20
+    minimum_predictions: 20
+
+gates:
+  pass:
+    - calibrated_non_oracle_representation
+    - improves_log_loss_and_brier_over_lean_with_paired_uncertainty
+    - survives_scramble_stale_and_shuffle_controls
+    - improves_on_at_least_two_worlds
+    - improves_across_at_least_two_latent_generator_families
+    - survives_held_out_learner_or_model_family
+  demote_fields:
+    - no_incremental_value_over_lean
+    - loses_to_aligned_scramble
+  stop:
+    - no_representation_clears_lean
+    - authentic_slice_reverses_synthetic_ordering
+  minimum_coverage:
+    worlds: 2
+    latent_generator_families: 2
+    model_families: 2
+  without_authentic_data_verdict: synthetic_instrument_only
+
+export_firewalls:
+  require_sealed_sources: true
+  reject_hash_drift: true
+  reject_duplicate_sample_ids: true
+  reject_hidden_key_leakage: true
+  reject_unknown_prediction_origin: true
+  reject_common_sample_support_drift: true
+  reject_group_split_leakage: true

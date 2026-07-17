@@ -339,7 +339,7 @@
         "southStack"
       ],
       "predicate": "atTowerThatNight",
-      "surface": "The oyster-watch will swear to it: a skiff lay tied at the Stack steps from dusk until the gale's height — Senna's skiff, by the patched brown lug, and a small light moving up the tower stair.",
+      "surface": "The oyster-watch will swear to it: Senna brought her skiff to the Stack steps at dusk — the patched brown lug they knew — tied it there herself, and climbed the tower stair carrying a small light. The skiff remained at the steps until the gale's height.",
       "role": "scheduled_proof_premise",
       "proofCritical": true,
       "proofPathIndexes": [
@@ -500,7 +500,7 @@
         "proof": null,
         "surface": [
           "The ferryman carried one passenger out before the gale closed the water, and one only: the keeper's ward, set down at the Stack landing with oil enough to be no errand of habit.",
-          "The oyster-watch will swear to it: a skiff lay tied at the Stack steps from dusk until the gale's height — Senna's skiff, by the patched brown lug, and a small light moving up the tower stair."
+          "The oyster-watch will swear to it: Senna brought her skiff to the Stack steps at dusk — the patched brown lug they knew — tied it there herself, and climbed the tower stair carrying a small light. The skiff remained at the steps until the gale's height."
         ]
       },
       {

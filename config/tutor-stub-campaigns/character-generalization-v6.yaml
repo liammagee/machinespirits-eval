@@ -1,0 +1,91 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v6
+created: 2026-07-15
+
+purpose: >-
+  Fresh post-fallback-repair breadth verification. This matrix tests whether
+  public learner uptake, actorial recovery, clue enactment, and bounded audit
+  repair transfer across contemporary physical, transactional, audio, and
+  custody evidence without Marrick-specific wording or deterministic fallback
+  dependence.
+
+code_under_test:
+  branch: preconscious
+  commit: d0da828763c93c8fecef8e20db6bdc0bb4177d1c
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i14-2026-07-15T16-18-03-237Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v5
+  affected_seeds: [20260770, 20260771, 20260772, 20260773]
+  reason: >-
+    The complete v5 matrix was inspected before ordinary exhibit actions,
+    natural host-part realization, public-token boundary handling, responsive
+    fallback uptake, and character-preserving recovery recomposition were
+    implemented. Its four trajectories are tuning evidence and cannot be
+    reused as acceptance evidence.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: tallow_false_memory
+    world: world_025_tallow_street
+    learner_profile: false_memory
+    seed: 20260780
+    rationale: Physical street evidence with a learner who imports plausible but absent details.
+
+  - id: skyway_fast
+    world: world_026_skyway_bakery
+    learner_profile: fast_learner
+    seed: 20260781
+    rationale: Transactional bakery evidence with accelerated multi-premise uptake.
+
+  - id: foxtrot_slow
+    world: world_022_foxtrot_jukebox
+    learner_profile: slow_learner
+    seed: 20260782
+    rationale: Audio and access evidence with deliberately narrow clue integration.
+
+  - id: larkspur_low_agency
+    world: world_028_larkspur_fridge
+    learner_profile: low_agency
+    seed: 20260783
+    rationale: Everyday custody evidence with a learner who delegates selection and wording.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four newly held-out scenario/profile
+  combinations and evidence modalities; it does not establish population-wide
+  generalization.

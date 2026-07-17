@@ -9,6 +9,7 @@ import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -352,25 +353,41 @@ function getTraceTurn(row, turnIndex) {
   return trace.find((entry) => Number(entry.turn) === Number(turnIndex)) || null;
 }
 
+function canonicalRegister(registerName) {
+  return resolveEngagementRegister(registerName)?.register || registerName || '';
+}
+
+function legacyRegisterKey(registerName) {
+  const canonical = canonicalRegister(registerName);
+  if (canonical === 'charismatic') return 'charismatic_challenge';
+  if (canonical === 'ironic') return 'ironic_challenge';
+  if (canonical === 'sarcastic') return 'sarcastic_challenge';
+  if (canonical === 'face_threat') return 'face_threat_challenge';
+  if (canonical === 'witnessing') return 'witnessing_restraint';
+  if (canonical === 'brisk') return 'scaffolding';
+  return null;
+}
+
 function getRegister(row, turnIndex) {
   const traceTurn = getTraceTurn(row, turnIndex);
-  return traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
+  const raw = traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
+  return canonicalRegister(raw);
 }
 
 function getRouterSelectedRegister(row, turnIndex) {
   const traceTurn = getTraceTurn(row, turnIndex);
-  return (
+  const raw =
     traceTurn?.engagementState?.router_selected_register ||
     traceTurn?.engagementState?.router_selected_mode ||
     traceTurn?.engagementState?.selected_register ||
     traceTurn?.engagementState?.selected_mode ||
-    'unrouted'
-  );
+    'unrouted';
+  return canonicalRegister(raw);
 }
 
 function getAssignedRegisterArm(row, turnIndex) {
   const traceTurn = getTraceTurn(row, turnIndex);
-  return traceTurn?.engagementState?.assigned_register_arm || '';
+  return canonicalRegister(traceTurn?.engagementState?.assigned_register_arm || '');
 }
 
 function getResistanceSignal(row, turnIndex) {
@@ -385,13 +402,15 @@ function getResistanceStrategy(row, turnIndex) {
 
 function getRegisterRubricScore(row, registerName, turnIndex) {
   const scores = parseJson(row.tutor_register_scores, {});
-  const slice = scores?.[registerName]?.[`turn_${turnIndex}`];
+  const legacy = legacyRegisterKey(registerName);
+  const slice = scores?.[registerName]?.[`turn_${turnIndex}`] || scores?.[legacy]?.[`turn_${turnIndex}`];
   return slice?.overall ?? null;
 }
 
 function getRegisterRubricDimensionScore(row, registerName, turnIndex, dimensionKey) {
   const scores = parseJson(row.tutor_register_scores, {});
-  const slice = scores?.[registerName]?.[`turn_${turnIndex}`];
+  const legacy = legacyRegisterKey(registerName);
+  const slice = scores?.[registerName]?.[`turn_${turnIndex}`] || scores?.[legacy]?.[`turn_${turnIndex}`];
   const entry = slice?.scores?.[dimensionKey];
   const score = typeof entry === 'number' ? entry : entry?.score;
   return typeof score === 'number' ? score : null;
@@ -512,8 +531,8 @@ function validateScenarios(scenarios, learnerAgents) {
       learnerMessage: targetGate.message || '',
       registerHistory: ['scaffolding'],
     });
-    if (routed.selected_register !== 'charismatic_challenge') {
-      errors.push(`${scenarioId} target gate expected charismatic_challenge, got ${routed.selected_register}`);
+    if (routed.selected_register !== 'charismatic') {
+      errors.push(`${scenarioId} target gate expected charismatic, got ${routed.selected_register}`);
     }
     if (routed.resistance_signal !== scenario.resistance_signal_target) {
       errors.push(
@@ -649,7 +668,7 @@ function analyzeRows(rows, scenarios) {
     const observedSignal = classifySignal(preLearner, targetSignal);
     const routerSignal = getResistanceSignal(row, resistanceTurn);
     const routerStrategy = getResistanceStrategy(row, resistanceTurn);
-    const routeHit = routerSelectedRegister === 'charismatic_challenge';
+    const routeHit = routerSelectedRegister === 'charismatic';
     const registerRubricScore = getRegisterRubricScore(row, tutorRegister, resistanceTurn);
     const stanceFidelity = evaluateRegisterStanceFidelity({
       registerName: tutorRegister,
@@ -692,11 +711,11 @@ function analyzeRows(rows, scenarios) {
                         : row.profile_name === GLM_COMPACT_ROUTER_PROFILE
                           ? 'router_glm_compact'
                           : row.profile_name === IRONIC_CHALLENGE_PROFILE
-                            ? 'ironic_challenge'
+                            ? 'ironic'
                             : row.profile_name === SARCASTIC_CHALLENGE_PROFILE
-                              ? 'sarcastic_challenge'
+                              ? 'sarcastic'
                               : row.profile_name === FACE_THREAT_CHALLENGE_PROFILE
-                                ? 'face_threat_challenge'
+                                ? 'face_threat'
                                 : row.profile_name === BLUEPRINT_KERNEL_PROFILE
                                   ? 'blueprint_kernel'
                                   : row.profile_name === BLUEPRINT_FULL_PROFILE

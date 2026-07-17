@@ -80,6 +80,7 @@ results/
 # Local compressed archives produced by scripts/package-poetics-run.js.
 # Commit the manifest in config/poetics-calibration/runs/, not the bulk bundle.
 artifacts/poetics-runs/
+artifacts/adaptive-tutor-runs/
 
 # Local Plan 2.0 reference package; keep the tracked closeout note instead.
 PLAN_2_0/genuine-adaptation-reference.zip
@@ -111,6 +112,9 @@ public/eval/generated/
 
 # Scratchpad
 scratchpad/
+.tutor-stub-traces/
+.tutor-stub-auto-eval/
+.tutor-stub-tuning/
 
 # Research working files (local only)
 liams-paper/

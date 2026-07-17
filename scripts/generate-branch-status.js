@@ -22,12 +22,11 @@
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import Database from 'better-sqlite3';
 import { fileURLToPath } from 'node:url';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const REPO = path.resolve(path.dirname(__filename), '..');
-const DB_PATH = path.join(REPO, 'data/evaluations.db');
 const PAPER_PATH = path.join(REPO, 'docs/research/paper-full-2.0.md');
 const DEFAULT_OUT =
   '/Users/lmagee/Dev/machinespirits/machinespirits-content-philosophy/articles/ai-tutor/branch-status.html';
@@ -64,7 +63,11 @@ const findLine = (re) => {
 const line512 = findLine(/^### 5\.12 /);
 const line68 = findLine(/^### 6\.8 /);
 
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly(REPO);
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 const adaptiveRows = db
   .prepare(
     `

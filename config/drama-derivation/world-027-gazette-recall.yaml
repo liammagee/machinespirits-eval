@@ -1,0 +1,371 @@
+# WORLD-027 — GAZETTE RECALL (2026-07-12): a RE-COSTUME VARIANT of
+# world-006-hethel. Same proof GEOMETRY — one LINEAR true spine (depth 5) plus
+# a fully derivable DECOY sub-chain to a DEAD predicate — with every surface
+# changed: a contemporary metro newsroom on deadline, newsroom-noir diction.
+# presentation.variant_of records the geometry source; do not edit world-006.
+#
+# The masthead recalled the morning edition: the seawall story's closing quote
+# was fabricated, and the newsroom's verdict is ready-made and DERIVABLE —
+# Crane, the stringer whose byline the story carries, who worked the sourcing
+# alone out of her own notebooks, and who already has two priors in the
+# corrections file. The desk derives that Crane ANSWERS FOR the story, and
+# reads answerability as guilt. The truth is a contingent particular in the
+# Edony/Oswin pattern: Quist, the night runner of the Pellam transcription
+# bureau, who has quietly "sweetened" flat quotes for years and spliced a
+# forged kicker into Crane's clean copy twenty minutes after she filed. Quist
+# does not exist outside this drama until the file's own marks — the revision
+# log's insertion and the doubled pilcrow that opens every Pellam transcript —
+# bring him on.
+#
+# Proof DAG (depth 5, ONE linear spine + a final join of cause and hand —
+# hethel's shape, re-costumed):
+#
+#   p_graf + p_diff  --R1--> corruptedThrough(seawallStory, spliceAfterFile)  [peripeteia]
+#   corruptedThrough + p_tag    --R2--> taintTracedBy(seawallStory, doublePilcrow)
+#   taintTracedBy + p_house     --R3--> spliceFrom(seawallStory, pellamBureau)
+#   spliceFrom + p_runner       --R4--> splicedInto(quist, seawallStory)
+#   splicedInto                 --R5--> plantedQuote(seawallStory, quist)
+#
+# The DECOY (a parallel, fully derivable dead-end — hethel's distractor seat):
+#
+#   m_byline + m_notes --R6--> filedUnder(seawallStory, crane)
+#   filedUnder + m_record --R7--> answersFor(seawallStory, crane)
+#
+# answersFor is NOT the question predicate (plantedQuote). No rule consumes
+# answersFor to make plantedQuote; the decoy is a complete derivation to a
+# DEAD predicate. And plantedQuote(seawallStory, crane) can NEVER be derived —
+# planting the quote needs the hand that PUSHED the spliced file after filing,
+# and the queue log records Quist making that push from Pellam; Crane owns the
+# byline and the priors, but no such post-filing push. The event that would
+# convict her is never released because it did not happen. plotLint enforces
+# the mirror non-entailment. The
+# peripeteia is the version diff: the story did not fail of sloppy stringing
+# (Crane's filed copy was clean) — the kicker entered AFTER the file left her
+# hands. Answerability dies as the question's answer the instant the cause is
+# read; the corrections file answers "who takes the correction," never
+# "whose hand."
+#
+# SURFACE DISCIPLINE: a premise's surface may carry colour but must not state
+# an unreleased FACT (the tainted graf names no cause; the doubled pilcrow is
+# seen in the revision log before the house that keys it is found).
+#
+# CONCEALMENT: quist, pellam (the Pellam bureau), and the pilcrow mark exist
+# only in premises/secret — never in setting, background, question, rules, or
+# learner voice. (crane, her notebooks, the kicker graf, and "splice after
+# filing" are PUBLIC — the desk's named stringer, the obvious sourcing, the
+# taint's seat, and the craft's name for the failure-mode, which the rules
+# speak openly.)
+
+id: world_027_gazette_recall
+title: The Recalled Edition
+
+discipline: "Newsroom post-mortem (an inquest on a retracted story)"
+
+question: "Whose hand planted the fabricated quote that sank the seawall story?"
+question_pattern: [plantedQuote, seawallStory, "?x"]
+
+setting: >-
+  The Gazette pulled its morning run at 4 a.m. — a full recall, trucks turned
+  around at the depot. The seawall story, page one, closed on a quote the
+  harbor commissioner never said. Retraction set, lawyers circling, and the
+  newsroom has its verdict before the coffee's poured: the story carries
+  Crane's byline, Crane worked her sourcing alone, and the corrections file
+  already holds two priors under her name. You are the junior fact-checker,
+  keeper of the corrections file, new enough to want the desk's respect and
+  quick to write the name the desk already says. The post-mortem runs on the
+  paper's rules of evidence, and nothing else.
+
+learner_voice: >-
+  The junior fact-checker: fast with the style guide and the archive login,
+  eager — too eager — to close the file on the stringer whose priors are
+  already logged; apt to call the reporting rotten before the copy has
+  finished telling how it went wrong. Respectful of the post-mortem, hungry
+  to be right, and learning, graf by graf, to let a retracted story say for
+  itself how the poison got in.
+
+secret:
+  fact: [plantedQuote, seawallStory, quist]
+  surface: >-
+    The fabricated quote was planted by Quist — the night runner of the
+    Pellam transcription bureau, who has sweetened flat quotes for years and
+    spliced a forged kicker into Crane's clean copy twenty minutes after she
+    filed; the doubled pilcrow in the graf's revision log is Pellam's house
+    tic, and the queue log records Quist pushing that Pellam file into the
+    story's slot after filing.
+
+mirror:
+  fact: [plantedQuote, seawallStory, crane]
+
+# The paper's public rules of evidence: known from the start; the facts are
+# not. Rules name no contingent individuals.
+rules:
+  - id: R1_cause
+    gloss: >-
+      A bad story tells its cause where it turned bad: if the taint's seat in
+      the copy is known, and that seat betrays one cause and one only, then
+      the story was corrupted through that cause.
+    if:
+      - [taintedAt, "?story", "?graf"]
+      - [betraysCause, "?graf", "?cause"]
+    then:
+      - [corruptedThrough, "?story", "?cause"]
+  - id: R2_mark
+    gloss: >-
+      A splice signs itself in the revision log: if a story was corrupted
+      through a splice after filing, and the spliced graf carries the mark of
+      the file that carried it in, then the taint is traced by that mark.
+    if:
+      - [corruptedThrough, "?story", spliceAfterFile]
+      - [spliceTagOf, "?story", "?mark"]
+    then:
+      - [taintTracedBy, "?story", "?mark"]
+  - id: R3_house
+    gloss: >-
+      A file-mark is a house's tic: if a taint is traced by a mark, and that
+      mark is the house style of one shop and one only, then the splice came
+      out of that shop.
+    if:
+      - [taintTracedBy, "?story", "?mark"]
+      - [markKeyedBy, "?mark", "?house"]
+    then:
+      - [spliceFrom, "?story", "?house"]
+  - id: R4_runner
+    gloss: >-
+      If a story's splice came from a shop and the queue log records one person
+      pushing a file from that shop into that story after filing, that person
+      spliced into the story. Role or access alone is not enough.
+    if:
+      - [spliceFrom, "?story", "?house"]
+      - [pushedFileInto, "?x", "?story", "?house"]
+    then:
+      - [splicedInto, "?x", "?story"]
+  - id: R5_planted
+    gloss: >-
+      In this inquiry, splicedInto already means a logged post-filing insertion
+      into the fabricated kicker. The person who made that insertion planted
+      the quote; the cause need not be proved a second time at the final step.
+    if:
+      - [splicedInto, "?x", "?story"]
+    then:
+      - [plantedQuote, "?story", "?x"]
+  # --- the decoy's rules: a complete derivation to a DEAD predicate ---
+  - id: R6_filed
+    gloss: >-
+      A byline files under its own sourcing: if one carries the byline on a
+      story, and the sourcing lives in that one's own notebooks, the story
+      was filed under that name.
+    if:
+      - [bylineOf, "?story", "?x"]
+      - [ownsNotes, "?x", "?notes"]
+    then:
+      - [filedUnder, "?story", "?x"]
+  - id: R7_answers
+    gloss: >-
+      A bylined name with priors answers for its story: if a story was filed
+      under a name, and that name holds priors in the corrections file, that
+      name answers for the story. (Answering is who TAKES the correction; it
+      is not the hand that put the poison in.)
+    if:
+      - [filedUnder, "?story", "?x"]
+      - [holdsPriors, "?x", correctionsFile]
+    then:
+      - [answersFor, "?story", "?x"]
+
+premises:
+  # --- the true spine: the seat of the taint ---
+  - id: p_graf
+    fact: [taintedAt, seawallStory, kickerGraf]
+    surface: >-
+      The archive settles where, not why: the fabrication is not in the lede,
+      not in the numbers, not in the commissioner's on-record hedging — it is
+      the kicker, the closing graf, the last quote in the piece, where a
+      story is least read twice before press. Where the poison sits is fixed;
+      how it got there is not yet asked.
+  - id: p_diff
+    fact: [betraysCause, kickerGraf, spliceAfterFile]
+    surface: >-
+      Pull the version history and the copy tells on itself: Crane's filed
+      draft, timestamped and archived, ends two grafs short — no kicker, no
+      commissioner quote. The graf enters in a later revision, after her file
+      left her hands. This story did not go bad in the reporting; it was cut
+      into after the filing. Clean copy, spliced late.
+  # --- the true spine: the mark ---
+  - id: p_tag
+    fact: [spliceTagOf, seawallStory, doublePilcrow]
+    surface: >-
+      The spliced graf did not come in naked — it carried its wrapper. The
+      revision log preserves the pasted block's formatting, and the graf
+      opens on a doubled pilcrow — two paragraph glyphs, back to back — a tic
+      no template in the building produces, repeated nowhere else in the copy.
+  - id: p_house
+    fact: [markKeyedBy, doublePilcrow, pellamBureau]
+    surface: >-
+      The wire chief knows that doubled pilcrow for a house tic, not a
+      keyboard slip: every transcript out of the Pellam bureau — the
+      overnight transcription shop above the old print floor — opens each
+      speaker turn on it, and no other shop the paper uses keys it. Whatever
+      block landed in that graf was cut from Pellam paper.
+  # --- the true spine: the hand ---
+  - id: p_runner
+    fact: [pushedFileInto, quist, seawallStory, pellamBureau]
+    surface: >-
+      The queue log settles the hand. Since the paper cut the overnight desk
+      to one, a single runner has pushed Pellam files into the copy queue:
+      Quist, who holds the bureau's queue key and signs its transfer log —
+      and who pushed a file into the seawall story's slot twenty minutes
+      after Crane filed, on a night no transcript was ordered.
+  # --- decoy fuel: what makes Crane the desk's DERIVABLE answer ---
+  - id: m_byline
+    fact: [bylineOf, seawallStory, crane]
+    surface: >-
+      The byline is no secret: the seawall story ran under Crane's name, her
+      slug, her page-one turn. The desk needs to read no further — the story
+      is Crane's copy, and so, it says, is its poison.
+  - id: m_notes
+    fact: [ownsNotes, crane, craneNotebooks]
+    surface: >-
+      And the sourcing was hers throughout: every quote in the piece traces
+      to Crane's own ring-bound notebooks — her shorthand, her call log, her
+      harbor contacts. No line went into that story she did not gather the
+      getting of.
+  - id: m_record
+    fact: [holdsPriors, crane, correctionsFile]
+    surface: >-
+      The corrections file holds two priors under Crane's name — a misdated
+      permit, a misattributed figure, both within the year. The desk reads
+      the file as a confession already written: her name is in the book
+      twice, and now her story is pulped on the depot floor.
+
+# Public setup; feeds no rule.
+background:
+  - [keeperOf, factChecker, correctionsFile]
+
+incompatible:
+  - [[plantedQuote, seawallStory, quist], [plantedQuote, seawallStory, crane]]
+  - [[pushedFileInto, quist, seawallStory, pellamBureau], [pushedFileInto, crane, seawallStory, pellamBureau]]
+
+# One authored path through the spine (hethel's convention: no twin-fact
+# spares — the proof afterward describes only the play that was staged).
+proof_paths:
+  - premises: [p_graf, p_diff, p_tag, p_house, p_runner]
+
+# The plot: the desk's DERIVABLE case swells (Crane's byline, her notebooks,
+# her priors — the learner can ground answersFor(crane) and feel finished),
+# and into that false rest the version diff comes up clean (the peripeteia):
+# the copy was spliced, not mis-reported, and answerability is shown beside
+# the question. The revision log's doubled pilcrow brands the splice to one
+# shop the desk never weighed; the queue log records the post-filing push. The
+# cause and the hand meet in a name no one said.
+# S first derivable at turn 20 (>= t_min 19), 6 turns before cap.
+release_schedule:
+  - turn: 2
+    premise: m_byline
+    via: director
+    presentation: { mode: enacted_role, role: copy-desk editor reading the byline }
+  - { turn: 4, premise: p_graf, via: tutor }
+  - turn: 6
+    premise: m_notes
+    via: director
+    presentation: { mode: enacted_role, role: archive clerk reading Crane's notebooks and call log }
+  - turn: 8
+    premise: m_record
+    via: director
+    presentation: { mode: enacted_role, role: corrections editor reading Crane's prior entries }
+  - { turn: 9, premise: p_diff, via: tutor }
+  - turn: 13
+    premise: p_tag
+    via: director
+    presentation: { mode: enacted_role, role: revision-log analyst showing the doubled pilcrow }
+  - { turn: 17, premise: p_house, via: tutor }
+  - turn: 20
+    premise: p_runner
+    via: director
+    presentation: { mode: enacted_role, role: queue clerk reading the transfer log }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Stringer's Story
+      turns: [1, 5]
+      intent: >-
+        The recall, and the desk's ready verdict: a story is its byline's
+        work, and the byline is named, slugged, and twice in the corrections
+        file. The post-mortem sharpens the charge; against the certainty, the
+        first hard fact — where the fabrication sits: the kicker, the closing
+        graf, a seat that names no cause. The learner should leave Act I
+        holding a stringer the desk has already convicted and a taint that
+        has not yet said how it got in.
+    - act: II
+      title: The Clean Draft
+      turns: [6, 11]
+      intent: >-
+        The decoy closes and the peripeteia turns it. The stringer's own
+        notebooks and her two priors land — the learner can now derive that
+        Crane ANSWERS FOR the story and may rest there, the file half-closed.
+        Then the version history is pulled: her filed draft ends two grafs
+        short, no kicker in it. Clean copy, cut into after it left her hands.
+        The answerability the learner just grounded is shown beside the
+        question — the corrections file answers who takes the correction,
+        never whose hand. The question transforms: not "was the reporting
+        rotten" but "whose hand spliced the graf."
+    - act: III
+      title: The Doubled Pilcrow
+      turns: [12, 17]
+      intent: >-
+        The spliced graf carried its wrapper: a doubled paragraph glyph at
+        the head of the pasted block, repeated nowhere else in the copy, and
+        that tic is one shop's house style — an overnight transcription
+        bureau the desk never weighed against the stringer. The learner
+        should end Act III holding a spliced story and a marked graf traced
+        to a shop, one conjunct short of a hand.
+    - act: IV
+      title: The Queue Log
+      turns: [18, 26]
+      intent: >-
+        The queue log records Quist pushing a Pellam file into the story's
+        slot twenty minutes after the filing, on a night no
+        transcript was ordered. From turn 20 the learner's own grounded facts
+        force the conclusion: the late splice and the hand that ran it meet
+        in a name the desk never said. The remaining turns are the
+        recognition scene — the learner brought to say whose hand planted the
+        quote, and to show why the stringer's priors, real as they are,
+        answer a different question.
+
+slope:
+  t_min: 19 # anti-reveal: S must not be derivable before turn 19
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 26
+
+presentation:
+  family: gazette
+  variant_of: world_006_hethel
+  temporal_frame: contemporary
+  scene_ecology: "metro daily newsroom at deadline"
+  narrative_diction: "newsroom noir"
+  ledger_term: "corrections file"
+  summary: >-
+    A recalled edition's fabricated quote is pinned on the stringer with
+    priors until the revision log traces the splice to a night runner nobody
+    named.
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: crane # opens mis-bound to the mirror (the desk's ready verdict)
+      mirror_pull: high # her priors are already in the learner's own file
+    second_order:
+      from: standardsEditor
+      as: right
+      authority: rational_legal # "the post-mortem runs on the paper's rules of evidence"
+    disposition:
+      overreach: high # apt to close the file before the copy has spoken
+      arc: softens # a byline answers for a story; it is not the hand in it
+  tutor:
+    stance: >-
+      The standards editor: dry, unhurried, twenty years of retractions
+      behind the desk lamp; patient with the fact-checker's speed, relentless
+      about the difference between who answers for a story and whose hand
+      went into the copy. Reads version histories before testimony, and keeps
+      the post-mortem terse and the standard high.

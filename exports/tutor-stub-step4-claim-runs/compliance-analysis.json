@@ -1,0 +1,1134 @@
+{
+  "schema": "machinespirits.tutor-stub.step4-compliance-analysis.v1",
+  "detectorVersion": "step4-frozen-2026-07-14.v1",
+  "bootstrap": {
+    "draws": 5000,
+    "seed": 20260714
+  },
+  "sealed": 80,
+  "excluded": [],
+  "cells": {
+    "claude-code.sonnet-5": {
+      "standing_book": {
+        "family": "claude-code.sonnet-5",
+        "arm": "standing_book",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 13,
+          "comp": 3,
+          "rate": 0.23076923076923078
+        },
+        "warrant_skip": {
+          "opp": 61,
+          "comp": 9,
+          "rate": 0.14754098360655737
+        },
+        "macro": 0.18915510718789408,
+        "densityPass": true,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6002,
+        "safetyPassRate": 0.2,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-05-claude-code-sonnet-5-proof_skipper-standing_book-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-09-claude-code-sonnet-5-affective_resistant-standing_book-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-28-claude-code-sonnet-5-affective_resistant-standing_book-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-47-claude-code-sonnet-5-affective_resistant-standing_book-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-52-claude-code-sonnet-5-affective_resistant-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-57-claude-code-sonnet-5-proof_skipper-standing_book-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-60-claude-code-sonnet-5-affective_resistant-standing_book-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-61-claude-code-sonnet-5-proof_skipper-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-64-claude-code-sonnet-5-proof_skipper-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-76-claude-code-sonnet-5-proof_skipper-standing_book-r4",
+            "leaks": 0
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-05-claude-code-sonnet-5-proof_skipper-standing_book-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-09-claude-code-sonnet-5-affective_resistant-standing_book-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-28-claude-code-sonnet-5-affective_resistant-standing_book-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-47-claude-code-sonnet-5-affective_resistant-standing_book-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-52-claude-code-sonnet-5-affective_resistant-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-57-claude-code-sonnet-5-proof_skipper-standing_book-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-60-claude-code-sonnet-5-affective_resistant-standing_book-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-61-claude-code-sonnet-5-proof_skipper-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-64-claude-code-sonnet-5-proof_skipper-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-76-claude-code-sonnet-5-proof_skipper-standing_book-r4",
+            "leaks": 0
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "triggered_placebo": {
+        "family": "claude-code.sonnet-5",
+        "arm": "triggered_placebo",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 8,
+          "comp": 3,
+          "rate": 0.375
+        },
+        "warrant_skip": {
+          "opp": 77,
+          "comp": 9,
+          "rate": 0.11688311688311688
+        },
+        "macro": 0.24594155844155843,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6502999999999999,
+        "safetyPassRate": 0.3,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-01-claude-code-sonnet-5-affective_resistant-triggered_placebo-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-08-claude-code-sonnet-5-affective_resistant-triggered_placebo-r3",
+            "leaks": 2
+          },
+          {
+            "id": "step4-15-claude-code-sonnet-5-affective_resistant-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-24-claude-code-sonnet-5-proof_skipper-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-30-claude-code-sonnet-5-affective_resistant-triggered_placebo-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-48-claude-code-sonnet-5-affective_resistant-triggered_placebo-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-51-claude-code-sonnet-5-proof_skipper-triggered_placebo-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-66-claude-code-sonnet-5-proof_skipper-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-71-claude-code-sonnet-5-proof_skipper-triggered_placebo-r3",
+            "leaks": 3
+          },
+          {
+            "id": "step4-74-claude-code-sonnet-5-proof_skipper-triggered_placebo-r1",
+            "leaks": 2
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-01-claude-code-sonnet-5-affective_resistant-triggered_placebo-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-08-claude-code-sonnet-5-affective_resistant-triggered_placebo-r3",
+            "leaks": 2
+          },
+          {
+            "id": "step4-15-claude-code-sonnet-5-affective_resistant-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-24-claude-code-sonnet-5-proof_skipper-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-30-claude-code-sonnet-5-affective_resistant-triggered_placebo-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-48-claude-code-sonnet-5-affective_resistant-triggered_placebo-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-51-claude-code-sonnet-5-proof_skipper-triggered_placebo-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-66-claude-code-sonnet-5-proof_skipper-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-71-claude-code-sonnet-5-proof_skipper-triggered_placebo-r3",
+            "leaks": 3
+          },
+          {
+            "id": "step4-74-claude-code-sonnet-5-proof_skipper-triggered_placebo-r1",
+            "leaks": 2
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "side_coach": {
+        "family": "claude-code.sonnet-5",
+        "arm": "side_coach",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 7,
+          "comp": 4,
+          "rate": 0.5714285714285714
+        },
+        "warrant_skip": {
+          "opp": 66,
+          "comp": 14,
+          "rate": 0.21212121212121213
+        },
+        "macro": 0.3917748917748918,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6335999999999999,
+        "safetyPassRate": 0.9,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-04-claude-code-sonnet-5-proof_skipper-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-06-claude-code-sonnet-5-affective_resistant-side_coach-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-12-claude-code-sonnet-5-affective_resistant-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-29-claude-code-sonnet-5-affective_resistant-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-31-claude-code-sonnet-5-proof_skipper-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-38-claude-code-sonnet-5-affective_resistant-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-43-claude-code-sonnet-5-proof_skipper-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-65-claude-code-sonnet-5-proof_skipper-side_coach-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-78-claude-code-sonnet-5-affective_resistant-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-80-claude-code-sonnet-5-proof_skipper-side_coach-r1",
+            "leaks": 0
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-04-claude-code-sonnet-5-proof_skipper-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-06-claude-code-sonnet-5-affective_resistant-side_coach-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-12-claude-code-sonnet-5-affective_resistant-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-29-claude-code-sonnet-5-affective_resistant-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-31-claude-code-sonnet-5-proof_skipper-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-38-claude-code-sonnet-5-affective_resistant-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-43-claude-code-sonnet-5-proof_skipper-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-65-claude-code-sonnet-5-proof_skipper-side_coach-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-78-claude-code-sonnet-5-affective_resistant-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-80-claude-code-sonnet-5-proof_skipper-side_coach-r1",
+            "leaks": 0
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "compiled_constraint": {
+        "family": "claude-code.sonnet-5",
+        "arm": "compiled_constraint",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 2,
+          "comp": 2,
+          "rate": 1
+        },
+        "warrant_skip": {
+          "opp": 86,
+          "comp": 34,
+          "rate": 0.3953488372093023
+        },
+        "macro": 0.6976744186046512,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.5166999999999999,
+        "safetyPassRate": 0.7,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-10-claude-code-sonnet-5-proof_skipper-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-16-claude-code-sonnet-5-proof_skipper-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-19-claude-code-sonnet-5-affective_resistant-compiled_constraint-r2",
+            "leaks": 2
+          },
+          {
+            "id": "step4-39-claude-code-sonnet-5-affective_resistant-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-41-claude-code-sonnet-5-affective_resistant-compiled_constraint-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-54-claude-code-sonnet-5-affective_resistant-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-55-claude-code-sonnet-5-proof_skipper-compiled_constraint-r2",
+            "leaks": 2
+          },
+          {
+            "id": "step4-56-claude-code-sonnet-5-affective_resistant-compiled_constraint-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-67-claude-code-sonnet-5-proof_skipper-compiled_constraint-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-75-claude-code-sonnet-5-proof_skipper-compiled_constraint-r5",
+            "leaks": 0
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-10-claude-code-sonnet-5-proof_skipper-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-16-claude-code-sonnet-5-proof_skipper-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-19-claude-code-sonnet-5-affective_resistant-compiled_constraint-r2",
+            "leaks": 2
+          },
+          {
+            "id": "step4-39-claude-code-sonnet-5-affective_resistant-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-41-claude-code-sonnet-5-affective_resistant-compiled_constraint-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-54-claude-code-sonnet-5-affective_resistant-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-55-claude-code-sonnet-5-proof_skipper-compiled_constraint-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-56-claude-code-sonnet-5-affective_resistant-compiled_constraint-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-67-claude-code-sonnet-5-proof_skipper-compiled_constraint-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-75-claude-code-sonnet-5-proof_skipper-compiled_constraint-r5",
+            "leaks": 0
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      }
+    },
+    "codex.gpt-5.6-sol": {
+      "standing_book": {
+        "family": "codex.gpt-5.6-sol",
+        "arm": "standing_book",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 10,
+          "comp": 6,
+          "rate": 0.6
+        },
+        "warrant_skip": {
+          "opp": 68,
+          "comp": 11,
+          "rate": 0.16176470588235295
+        },
+        "macro": 0.38088235294117645,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6335999999999999,
+        "safetyPassRate": 0.7,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-02-codex-gpt-5-6-sol-proof_skipper-standing_book-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-18-codex-gpt-5-6-sol-affective_resistant-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-25-codex-gpt-5-6-sol-affective_resistant-standing_book-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-40-codex-gpt-5-6-sol-proof_skipper-standing_book-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-44-codex-gpt-5-6-sol-affective_resistant-standing_book-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-50-codex-gpt-5-6-sol-proof_skipper-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-58-codex-gpt-5-6-sol-proof_skipper-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-63-codex-gpt-5-6-sol-affective_resistant-standing_book-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-68-codex-gpt-5-6-sol-proof_skipper-standing_book-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-70-codex-gpt-5-6-sol-affective_resistant-standing_book-r4",
+            "leaks": 1
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-02-codex-gpt-5-6-sol-proof_skipper-standing_book-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-18-codex-gpt-5-6-sol-affective_resistant-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-25-codex-gpt-5-6-sol-affective_resistant-standing_book-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-40-codex-gpt-5-6-sol-proof_skipper-standing_book-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-44-codex-gpt-5-6-sol-affective_resistant-standing_book-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-50-codex-gpt-5-6-sol-proof_skipper-standing_book-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-58-codex-gpt-5-6-sol-proof_skipper-standing_book-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-63-codex-gpt-5-6-sol-affective_resistant-standing_book-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-68-codex-gpt-5-6-sol-proof_skipper-standing_book-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-70-codex-gpt-5-6-sol-affective_resistant-standing_book-r4",
+            "leaks": 1
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "triggered_placebo": {
+        "family": "codex.gpt-5.6-sol",
+        "arm": "triggered_placebo",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 4,
+          "comp": 2,
+          "rate": 0.5
+        },
+        "warrant_skip": {
+          "opp": 84,
+          "comp": 17,
+          "rate": 0.20238095238095238
+        },
+        "macro": 0.35119047619047616,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6335999999999999,
+        "safetyPassRate": 0.6,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-07-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-20-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-21-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-26-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-32-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-33-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-35-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r1",
+            "leaks": 2
+          },
+          {
+            "id": "step4-45-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-69-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-72-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r4",
+            "leaks": 1
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-07-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-20-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-21-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r5",
+            "leaks": 1
+          },
+          {
+            "id": "step4-26-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-32-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-33-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-35-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r1",
+            "leaks": 2
+          },
+          {
+            "id": "step4-45-codex-gpt-5-6-sol-affective_resistant-triggered_placebo-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-69-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r3",
+            "leaks": 1
+          },
+          {
+            "id": "step4-72-codex-gpt-5-6-sol-proof_skipper-triggered_placebo-r4",
+            "leaks": 0
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "side_coach": {
+        "family": "codex.gpt-5.6-sol",
+        "arm": "side_coach",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 5,
+          "comp": 4,
+          "rate": 0.8
+        },
+        "warrant_skip": {
+          "opp": 59,
+          "comp": 11,
+          "rate": 0.1864406779661017
+        },
+        "macro": 0.49322033898305084,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.6502999999999999,
+        "safetyPassRate": 0.7,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-03-codex-gpt-5-6-sol-proof_skipper-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-11-codex-gpt-5-6-sol-affective_resistant-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-13-codex-gpt-5-6-sol-affective_resistant-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-14-codex-gpt-5-6-sol-affective_resistant-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-37-codex-gpt-5-6-sol-proof_skipper-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-46-codex-gpt-5-6-sol-affective_resistant-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-49-codex-gpt-5-6-sol-proof_skipper-side_coach-r4",
+            "leaks": 2
+          },
+          {
+            "id": "step4-62-codex-gpt-5-6-sol-affective_resistant-side_coach-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-73-codex-gpt-5-6-sol-proof_skipper-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-79-codex-gpt-5-6-sol-proof_skipper-side_coach-r5",
+            "leaks": 0
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-03-codex-gpt-5-6-sol-proof_skipper-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-11-codex-gpt-5-6-sol-affective_resistant-side_coach-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-13-codex-gpt-5-6-sol-affective_resistant-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-14-codex-gpt-5-6-sol-affective_resistant-side_coach-r4",
+            "leaks": 0
+          },
+          {
+            "id": "step4-37-codex-gpt-5-6-sol-proof_skipper-side_coach-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-46-codex-gpt-5-6-sol-affective_resistant-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-49-codex-gpt-5-6-sol-proof_skipper-side_coach-r4",
+            "leaks": 2
+          },
+          {
+            "id": "step4-62-codex-gpt-5-6-sol-affective_resistant-side_coach-r5",
+            "leaks": 0
+          },
+          {
+            "id": "step4-73-codex-gpt-5-6-sol-proof_skipper-side_coach-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-79-codex-gpt-5-6-sol-proof_skipper-side_coach-r5",
+            "leaks": 0
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      },
+      "compiled_constraint": {
+        "family": "codex.gpt-5.6-sol",
+        "arm": "compiled_constraint",
+        "n": 10,
+        "nByProfile": {
+          "proof_skipper": 5,
+          "affective_resistant": 5
+        },
+        "stagnant_repeat": {
+          "opp": 1,
+          "comp": 1,
+          "rate": 1
+        },
+        "warrant_skip": {
+          "opp": 94,
+          "comp": 51,
+          "rate": 0.5425531914893617
+        },
+        "macro": 0.7712765957446808,
+        "densityPass": false,
+        "channelContribution": {
+          "stagnant_repeat": true,
+          "warrant_skip": true
+        },
+        "meanCoverage": 0.5,
+        "safetyPassRate": 0.3,
+        "fullLeaksByDialogue": [
+          {
+            "id": "step4-17-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-22-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-23-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r5",
+            "leaks": 4
+          },
+          {
+            "id": "step4-27-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-34-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r4",
+            "leaks": 2
+          },
+          {
+            "id": "step4-36-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-42-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-53-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-59-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-77-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r3",
+            "leaks": 1
+          }
+        ],
+        "horizonLeaksByDialogue": [
+          {
+            "id": "step4-17-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r3",
+            "leaks": 0
+          },
+          {
+            "id": "step4-22-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r1",
+            "leaks": 1
+          },
+          {
+            "id": "step4-23-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-27-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r2",
+            "leaks": 1
+          },
+          {
+            "id": "step4-34-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-36-codex-gpt-5-6-sol-proof_skipper-compiled_constraint-r1",
+            "leaks": 0
+          },
+          {
+            "id": "step4-42-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r4",
+            "leaks": 1
+          },
+          {
+            "id": "step4-53-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r5",
+            "leaks": 2
+          },
+          {
+            "id": "step4-59-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r2",
+            "leaks": 0
+          },
+          {
+            "id": "step4-77-codex-gpt-5-6-sol-affective_resistant-compiled_constraint-r3",
+            "leaks": 1
+          }
+        ],
+        "guardCategories": [
+          "missing_exhibit_action",
+          "missing_explicit_dialogue_close",
+          "missing_in_scene_enactment",
+          "missing_return_to_inquiry",
+          "opaque_clue_release",
+          "private_die_conclusion",
+          "private_final_conclusion",
+          "unreleased_premise_content"
+        ]
+      }
+    }
+  },
+  "results": {
+    "claude-code.sonnet-5": {
+      "side_coach": {
+        "macro": 0.3917748917748918,
+        "placeboMacro": 0.24594155844155843,
+        "macroDiff": 0.14583333333333334,
+        "triggerDiffs": {
+          "stagnant_repeat": 0.1964285714285714,
+          "warrant_skip": 0.09523809523809525
+        },
+        "bootstrap": {
+          "draws": 5000,
+          "degenerateChannelDraws": 0,
+          "ci95": [
+            -0.10827628655497504,
+            0.4224201417656264
+          ]
+        },
+        "conditions": {
+          "c1_macro_diff_at_least_015": false,
+          "c2_ci_lower_above_zero": false,
+          "c3_both_trigger_diffs_positive": true,
+          "c4_density_gates_pass": false
+        },
+        "guardrails": {
+          "coverage_within_margin": true,
+          "safety_within_margin": true,
+          "zero_leaks_every_treatment_dialogue": false,
+          "zero_leaks_horizon_only": false,
+          "no_new_guard_category": true,
+          "new_categories": []
+        },
+        "compliancePass": false,
+        "guardrailPass": false,
+        "pass": false
+      },
+      "compiled_constraint": {
+        "macro": 0.6976744186046512,
+        "placeboMacro": 0.24594155844155843,
+        "macroDiff": 0.4517328601630928,
+        "triggerDiffs": {
+          "stagnant_repeat": 0.625,
+          "warrant_skip": 0.27846572032618544
+        },
+        "bootstrap": {
+          "draws": 5000,
+          "degenerateChannelDraws": 523,
+          "ci95": [
+            0.0885026737967915,
+            0.6256064162754305
+          ]
+        },
+        "conditions": {
+          "c1_macro_diff_at_least_015": true,
+          "c2_ci_lower_above_zero": true,
+          "c3_both_trigger_diffs_positive": true,
+          "c4_density_gates_pass": false
+        },
+        "guardrails": {
+          "coverage_within_margin": false,
+          "safety_within_margin": true,
+          "zero_leaks_every_treatment_dialogue": false,
+          "zero_leaks_horizon_only": false,
+          "no_new_guard_category": true,
+          "new_categories": []
+        },
+        "compliancePass": false,
+        "guardrailPass": false,
+        "pass": false
+      },
+      "secondary": {
+        "side_coach_minus_standing_book": 0.2026197845869977,
+        "compiled_minus_side_coach": 0.3058995268297594
+      }
+    },
+    "codex.gpt-5.6-sol": {
+      "side_coach": {
+        "macro": 0.49322033898305084,
+        "placeboMacro": 0.35119047619047616,
+        "macroDiff": 0.14202986279257468,
+        "triggerDiffs": {
+          "stagnant_repeat": 0.30000000000000004,
+          "warrant_skip": -0.015940274414850686
+        },
+        "bootstrap": {
+          "draws": 5000,
+          "degenerateChannelDraws": 48,
+          "ci95": [
+            -0.22801598837209303,
+            0.43197740112994354
+          ]
+        },
+        "conditions": {
+          "c1_macro_diff_at_least_015": false,
+          "c2_ci_lower_above_zero": false,
+          "c3_both_trigger_diffs_positive": false,
+          "c4_density_gates_pass": false
+        },
+        "guardrails": {
+          "coverage_within_margin": true,
+          "safety_within_margin": true,
+          "zero_leaks_every_treatment_dialogue": false,
+          "zero_leaks_horizon_only": false,
+          "no_new_guard_category": true,
+          "new_categories": []
+        },
+        "compliancePass": false,
+        "guardrailPass": false,
+        "pass": false
+      },
+      "compiled_constraint": {
+        "macro": 0.7712765957446808,
+        "placeboMacro": 0.35119047619047616,
+        "macroDiff": 0.4200861195542046,
+        "triggerDiffs": {
+          "stagnant_repeat": 0.5,
+          "warrant_skip": 0.34017223910840927
+        },
+        "bootstrap": {
+          "draws": 5000,
+          "degenerateChannelDraws": 1622,
+          "ci95": [
+            -0.033333333333333326,
+            0.657707412862052
+          ]
+        },
+        "conditions": {
+          "c1_macro_diff_at_least_015": true,
+          "c2_ci_lower_above_zero": false,
+          "c3_both_trigger_diffs_positive": true,
+          "c4_density_gates_pass": false
+        },
+        "guardrails": {
+          "coverage_within_margin": false,
+          "safety_within_margin": false,
+          "zero_leaks_every_treatment_dialogue": false,
+          "zero_leaks_horizon_only": false,
+          "no_new_guard_category": true,
+          "new_categories": []
+        },
+        "compliancePass": false,
+        "guardrailPass": false,
+        "pass": false
+      },
+      "secondary": {
+        "side_coach_minus_standing_book": 0.1123379860418744,
+        "compiled_minus_side_coach": 0.2780562567616299
+      }
+    }
+  }
+}

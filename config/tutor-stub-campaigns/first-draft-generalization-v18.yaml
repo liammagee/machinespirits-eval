@@ -1,0 +1,152 @@
+schema: machinespirits.tutor-stub.first-draft-generalization-plan.v1
+id: first-draft-generalization-v18
+created: 2026-07-16
+
+purpose: >-
+  Fresh held-out acceptance matrix for the compact first-draft tutor contract.
+  It tests whether the reduction in response revisions and deterministic
+  fallback dependence transfers beyond the Marrick/affectively-resistant
+  working trajectory, without weakening any existing strict delivery gate.
+
+code_under_test:
+  branch: preconscious
+  commit: 28bdb897
+  implementation_plan: notes/2026-07-16-first-draft-realization-plan.md
+  required_strict_working_check: >-
+    Complete a fresh strict Marrick/affectively-resistant run at seed 20260714
+    before consuming any held-out seed. It must pass the existing delivery
+    gates, accept at least half of original candidates, use at most four model
+    rewrites, and use at most one deterministic fallback.
+
+comparison_evidence:
+  pre_contract_baseline:
+    run: baseline-i27
+    original_candidate_acceptance_rate: 0.3
+    model_rewrite_turns: 5
+    deterministic_fallback_turns: 0
+    mean_tutor_generation_ms: 11728
+  best_working_result:
+    run: public-relation-i31
+    original_candidate_acceptance_rate: 0.8
+    model_rewrite_turns: 2
+    deterministic_fallback_turns: 0
+    mean_tutor_generation_ms: 10782
+  strict_working_range:
+    runs: [strict-working-i32, strict-working-i33, strict-working-i34]
+    original_candidate_acceptance_rate: [0.9, 0.7, 0.5]
+    note: >-
+      This range demonstrates material model variance. The held-out gate uses
+      both an aggregate target and a lower per-cell floor rather than claiming
+      that one ten-turn trajectory is a stable point estimate.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  safety_turns: 80
+  policy: continuous_dynamical_system
+  register_palette: all
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  register_overlay_threshold: 0.7
+  dag_fact_dropout: 0
+  dag_fact_dropout_seed: 1
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+artifacts:
+  dry_run_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-dry-run
+  live_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live
+  separate_directory_per_cell: true
+
+matrix:
+  - id: skyway_answer_seeking
+    world: world_026_skyway_bakery
+    learner_profile: answer_seeking
+    seed: 20260900
+    rationale: >-
+      Tests direct-answer uptake and bounded hinting in a plain contemporary
+      physical-evidence inquiry under a world/profile pairing absent from all
+      earlier character-generalization matrices.
+
+  - id: emberwick_contradiction_keeper
+    world: world_024_emberwick_forum
+    learner_profile: contradiction_keeper
+    seed: 20260901
+    rationale: >-
+      Tests whether one continuous tutor voice can acknowledge contradictory
+      learner commitments and still enact the next clue in online-community
+      diction without falling back to generic correction prose.
+
+  - id: ravensmark_affective_resistant
+    world: world_009_ravensmark
+    learner_profile: affective_resistant
+    seed: 20260902
+    rationale: >-
+      Tests learner-responsive openings, pressure modulation, and visible
+      character work in a period material-evidence setting distinct from the
+      Marrick working trajectory.
+
+  - id: hethel_dogmatic_premature_closure
+    world: world_011_hethel_resistant_dogmatic
+    learner_profile: premature_closure
+    seed: 20260903
+    rationale: >-
+      Tests whether the compact contract can resist both an authored dogmatic
+      examiner and a learner who closes early while preserving public evidence,
+      uptake, counterpressure, and host/source separation.
+
+strict_delivery_gates_per_cell:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  quarantine_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+first_draft_gates:
+  minimum_accounted_turn_rate: 1
+  minimum_aggregate_original_candidate_acceptance_rate: 0.7
+  minimum_cell_original_candidate_acceptance_rate: 0.5
+  maximum_aggregate_model_rewrite_rate: 0.3
+  maximum_model_rewrite_turns_per_cell: 4
+  maximum_total_deterministic_fallback_turns: 2
+  require_all_four_cells: true
+
+measurement_notes:
+  latency: >-
+    Record original-candidate and whole tutor-generation latency for every
+    cell, but do not use wall-clock latency as an acceptance gate while up to
+    three model-backed cells contend concurrently. Compare it descriptively
+    and use a later serial replay only if a clean latency claim is required.
+  repair_language: >-
+    Original acceptance, mechanical repair, model rewrite, and deterministic
+    fallback remain separate counts. A passing final-delivery audit may not be
+    relabelled as first-draft success.
+
+change_control:
+  maximum_concurrent_cells: 3
+  one_job_per_cell: true
+  tune_between_cells: false
+  modify_code_between_cells: false
+  complete_all_cells_before_interpretation: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+  reserve_seeds: [20260910, 20260911, 20260912, 20260913]
+
+claim_boundary: >-
+  Passing supports transfer of the compact first-draft contract across these
+  four simulated world/profile pairings under one fixed Codex model stack. It
+  does not establish population-wide generalization, human learning benefit,
+  a model-independent effect, or a contention-free latency improvement.

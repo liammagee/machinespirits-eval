@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 import Database from 'better-sqlite3';
 
+import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
@@ -148,10 +150,10 @@ function makeSlices(rows, cache) {
       const cached = cache.scores?.[`${row.run_id}:${row.id}:${turn}`];
       const dims = Object.fromEntries(TUTOR_DIMS.map((dim) => [dim, dimScore(tutorScores, turn, dim)]));
       const group = profileGroup(row.profile_name);
-      const expectedRegister =
-        group === 'router_register_family' ? (turn === 0 ? 'scaffolding' : 'charismatic_challenge') : 'unrouted';
-      const register =
+      const expectedRegister = group === 'router_register_family' ? (turn === 0 ? 'brisk' : 'charismatic') : 'unrouted';
+      const rawRegister =
         traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || 'unrouted';
+      const register = resolveEngagementRegister(rawRegister)?.register || rawRegister;
       return {
         rowId: row.id,
         runId: row.run_id,
@@ -359,9 +361,9 @@ function buildReport(data) {
   lines.push('## Short Answer');
   lines.push('');
   lines.push(
-    `- Process effect: ${claimSummary.processRegisterHit ? 'yes' : 'no'} - router rows selected \`scaffolding\` on pre turns (${pct(
+    `- Process effect: ${claimSummary.processRegisterHit ? 'yes' : 'no'} - router rows selected \`brisk\` on pre turns (${pct(
       claimSummary.routerPreRegisterHitRate,
-    )}) and \`charismatic_challenge\` on post turns (${pct(claimSummary.routerPostRegisterHitRate)}).`,
+    )}) and \`charismatic\` on post turns (${pct(claimSummary.routerPostRegisterHitRate)}).`,
   );
   lines.push(
     `- Charisma effect: no. Router post-slice charisma is ${fmt(
@@ -498,7 +500,7 @@ function buildReport(data) {
   lines.push('## Interpretation');
   lines.push('');
   lines.push(
-    'The register router visibly works as a process intervention: it turns the first response into scaffolding and the second into a challenge register on every router-family row in this slice. That is not the same as proving an outcome gain.',
+    'The register router visibly works as a process intervention: it turns the first response into brisk pacing and the second into a charismatic challenge register on every router-family row in this slice. That is not the same as proving an outcome gain.',
   );
   lines.push('');
   lines.push(

@@ -3,6 +3,8 @@ import {
   getResistanceSignalDefinitions,
   getResistanceStrategies,
   getRoutingPatternGroups,
+  getRegisterOntologyVersion,
+  resolveEngagementRegister,
 } from './engagementRegisterRegistry.js';
 
 const REGISTERS = Object.freeze(getEngagementRegisterNames({ includeArmAssigned: true }));
@@ -37,7 +39,10 @@ function firstMatch(text, patterns) {
 
 function normalizeRegisterHistory(registerHistory) {
   if (!Array.isArray(registerHistory)) return [];
-  return registerHistory.filter((register) => REGISTER_SET.has(register)).slice(-2);
+  return registerHistory
+    .map((register) => resolveEngagementRegister(register)?.register || null)
+    .filter((register) => register && REGISTER_SET.has(register))
+    .slice(-2);
 }
 
 function pushFlag(flags, condition, flag) {
@@ -93,7 +98,8 @@ export function extractEngagementRegisterHistory(traceLike) {
       entry?.engagement_state?.selected_mode ||
       entry?.state?.selected_register ||
       entry?.state?.selected_mode;
-    if (REGISTER_SET.has(mode)) modes.push(mode);
+    const resolvedMode = resolveEngagementRegister(mode)?.register || null;
+    if (resolvedMode && REGISTER_SET.has(resolvedMode)) modes.push(resolvedMode);
   }
   return modes.slice(-2);
 }
@@ -101,9 +107,32 @@ export function extractEngagementRegisterHistory(traceLike) {
 // Backward-compatible alias for existing id-director plumbing.
 export const extractEngagementModeHistory = extractEngagementRegisterHistory;
 
+function canonicalRequestType(signal) {
+  if (signal === 'instructional_register_exhausted' || signal === 'boredom_or_compliance_challenge') {
+    return 'resistance_or_low_agency';
+  }
+  return signal || 'off_task_or_mixed';
+}
+
+function legacyRegisterFor({ register, requestType, actionFamily }) {
+  if (register === 'ironic') return 'ironic_challenge';
+  if (register === 'sarcastic') return 'sarcastic_challenge';
+  if (register === 'face_threat') return 'face_threat_challenge';
+  if (register === 'witnessing') return 'witnessing_restraint';
+  if (register === 'charismatic') return 'charismatic_challenge';
+  if (actionFamily === 'stage_next_step') return 'scaffolding';
+  if (actionFamily === 'answer_accountably') return 'accountable_bid_authority';
+  if (actionFamily === 'compress_sayback') return 'plain_compression';
+  if (actionFamily === 'reanchor_lived_stake') return 'lived_stakes_reentry';
+  if (actionFamily === 'ground_in_material') return 'transfer_grounding';
+  if (requestType === 'conceptual_clarity_request') return 'clarity';
+  return null;
+}
+
 function routedRegister({
   learner_signal,
   selected_register,
+  action_family = null,
   register_reason,
   evidence_span,
   risk_flags,
@@ -112,10 +141,22 @@ function routedRegister({
   resistance_strategy = null,
   resistance_move = null,
 }) {
+  const requestType = canonicalRequestType(learner_signal);
+  const resolvedRegister = resolveEngagementRegister(selected_register, { fallback: 'precise' });
+  const canonicalRegister = resolvedRegister?.register || selected_register;
+  const resolvedActionFamily = action_family || resolvedRegister?.action_family || null;
+  const legacySelectedRegister =
+    resolvedRegister?.legacy_selected_register ||
+    legacyRegisterFor({ register: canonicalRegister, requestType, actionFamily: resolvedActionFamily });
   const routed = {
+    register_ontology_version: getRegisterOntologyVersion(),
+    request_type: requestType,
+    action_family: resolvedActionFamily,
+    reviewer_signal: register_reason,
     learner_signal,
-    selected_register,
-    selected_mode: selected_register,
+    selected_register: canonicalRegister,
+    selected_mode: canonicalRegister,
+    legacy_selected_register: legacySelectedRegister,
     register_reason,
     mode_reason: register_reason,
     evidence_span,
@@ -187,13 +228,14 @@ export function routeEngagementMode({
     'over_challenge',
   );
 
-  const priorInstructional = previousModes.includes('scaffolding') || previousModes.includes('clarity');
-  const priorPlain = previousModes.includes('plain_compression') || previousModes.includes('lived_stakes_reentry');
+  const priorPacing = previousModes.includes('brisk') || previousModes.includes('precise');
+  const priorPlain = previousModes.includes('plain') || previousModes.includes('warm');
   if (simplificationPatterns.some((pattern) => pattern.test(current)) && priorPlain) {
     pushFlag(riskFlags, true, 'flat_protocol');
     return routedRegister({
       learner_signal: 'plain_simplification_followup',
-      selected_register: 'lived_stakes_reentry',
+      selected_register: 'warm',
+      action_family: 'reanchor_lived_stake',
       register_reason:
         'The learner is asking for an even simpler check after a plain-language move, so the tutor should add one ordinary stake before returning to compact validation.',
       evidence_span: firstMatch(message, simplificationPatterns),
@@ -202,11 +244,12 @@ export function routeEngagementMode({
     });
   }
 
-  if (priorInstructional && hasResistanceSignal(current)) {
+  if (priorPacing && hasResistanceSignal(current)) {
     const resistance = detectResistanceSignal(message || history);
     return routedRegister({
       learner_signal: 'instructional_register_exhausted',
-      selected_register: 'charismatic_challenge',
+      selected_register: 'charismatic',
+      action_family: 'challenge_resistance',
       register_reason:
         'The learner first asked for instruction but now signals a resistant condition, so the tutor should switch from scaffolding to the resistance-specific challenge register.',
       evidence_span: resistance.evidence,
@@ -220,7 +263,8 @@ export function routeEngagementMode({
   if (vulnerabilityPatterns.some((pattern) => pattern.test(current))) {
     return routedRegister({
       learner_signal: 'vulnerability_or_moral_exposure',
-      selected_register: 'witnessing_restraint',
+      selected_register: 'witnessing',
+      action_family: 'receive_vulnerability',
       register_reason:
         'The learner is exposing moral or personal risk, so the tutor should receive the disclosure without absolution or status capture.',
       evidence_span: firstMatch(message, vulnerabilityPatterns),
@@ -232,7 +276,8 @@ export function routeEngagementMode({
   if (transferPatterns.some((pattern) => pattern.test(current)) || /\bcampus faq\b/i.test(curriculum)) {
     return routedRegister({
       learner_signal: 'transfer_demand_or_named_material',
-      selected_register: 'transfer_grounding',
+      selected_register: 'plain',
+      action_family: 'ground_in_material',
       register_reason:
         'The learner names a material, artifact, or curriculum object as the authority test, so the tutor must answer inside that material first.',
       evidence_span: firstMatch(message, transferPatterns),
@@ -244,7 +289,8 @@ export function routeEngagementMode({
   if (authorityPatterns.some((pattern) => pattern.test(current))) {
     return routedRegister({
       learner_signal: 'authority_refusal_or_status_challenge',
-      selected_register: 'accountable_bid_authority',
+      selected_register: 'precise',
+      action_family: 'answer_accountably',
       register_reason:
         'The learner is challenging the tutor as performance or status display, so the tutor should make one defeasible bid and expose its failure condition.',
       evidence_span: firstMatch(message, authorityPatterns),
@@ -259,7 +305,8 @@ export function routeEngagementMode({
   ) {
     return routedRegister({
       learner_signal: 'plain_language_request',
-      selected_register: 'plain_compression',
+      selected_register: 'plain',
+      action_family: 'compress_sayback',
       register_reason:
         'The learner is refusing elevated register, so the tutor should use say-back and check language without theory display.',
       evidence_span: firstMatch(message, [...plainPatterns, ...simplificationPatterns]),
@@ -271,7 +318,8 @@ export function routeEngagementMode({
   if (scaffoldingPatterns.some((pattern) => pattern.test(current))) {
     return routedRegister({
       learner_signal: 'stepwise_support_request',
-      selected_register: 'scaffolding',
+      selected_register: 'brisk',
+      action_family: 'stage_next_step',
       register_reason:
         'The learner asks for sequencing or a next step, so the tutor should break the task into a small learner-owned action.',
       evidence_span: firstMatch(message, scaffoldingPatterns),
@@ -284,9 +332,10 @@ export function routeEngagementMode({
     const resistance = detectResistanceSignal(message || history);
     return routedRegister({
       learner_signal: 'boredom_or_compliance_challenge',
-      selected_register: 'charismatic_challenge',
+      selected_register: 'charismatic',
+      action_family: 'challenge_resistance',
       register_reason:
-        'The learner signals low engagement or performative compliance, so the tutor should use sharper contrast while preserving a refusal path.',
+        'The public turn shows low engagement or performative compliance, so the reviewer selects sharper contrast while preserving a refusal path.',
       evidence_span: resistance.evidence,
       risk_flags: riskFlags,
       register_history: previousModes,
@@ -297,7 +346,8 @@ export function routeEngagementMode({
 
   return routedRegister({
     learner_signal: 'conceptual_clarity_request',
-    selected_register: 'clarity',
+    selected_register: 'precise',
+    action_family: 'clarify_distinction',
     register_reason:
       'No status, transfer, vulnerability, or register refusal dominates; the tutor should clarify one distinction and ask one check.',
     evidence_span: firstMatch(message, [/\bwhy\b/i, /\bwhat\b/i, /\bdon't understand\b/i, /\bpoint\b/i]),

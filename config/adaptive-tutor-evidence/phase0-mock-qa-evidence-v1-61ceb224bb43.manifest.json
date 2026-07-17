@@ -1,0 +1,36 @@
+{
+  "schema": "machinespirits.adaptive-tutor-evidence-manifest.v1",
+  "runId": "phase0-mock-qa-evidence-v1",
+  "createdAt": "2026-07-11T09:24:27.338Z",
+  "claimStatus": "methods",
+  "fixture": {
+    "kind": "local_fake_cli_orchestration_smoke",
+    "modelExecution": "No remote or real model was called; a temporary PATH-precedence codex shim emitted fixed responses while the normal CLI adapter recorded the frozen requested and resolved role labels.",
+    "claimBoundary": "This fixture verifies orchestration, model-role provenance wiring, seeded draws, semantic parent-child lineage, nested sealing, checksum-bound packaging, clean-room restore, and read-only report regeneration only. It is not model-quality, state-validity, policy-effect, learning, or provider-attestation evidence.",
+    "archiveAvailability": "The bulk archive is a local ignored file. The repository manifest is a checksum pointer and does not transport or publish that archive."
+  },
+  "source": {
+    "planSha256": "d6d796a9762ffa0ba0b5a8bb9ac0e8f63645aaff76e53c1f43fd8216d68f0afc",
+    "eventsSha256": "4a3c5c606541e332ec1694ca92bfe3fbc82ffe45324e31bf0a70bd5d9797833c",
+    "inventorySha256": "474f018e1dc2d93b37a7c146a9472ea819606c2c1daa15f07a39ff52afa5c6d8",
+    "sealSha256": "61ceb224bb43a1155ded1d96ae480d8c66defd8d9543d23cadec9f6468383eb1"
+  },
+  "archive": {
+    "path": "artifacts/adaptive-tutor-runs/phase0-mock-qa-evidence-v1-61ceb224bb43.jsonl.gz",
+    "availability": "local_file_pointer",
+    "format": "jsonl+gzip+base64-v1",
+    "sha256": "275bdbcac62280289c942b3e01bac7fcdb727ac3164d76b3eeb3e37205a3db5e",
+    "bytes": 236145,
+    "files": 15
+  },
+  "exclusions": [
+    "model outputs are archived, not regenerated",
+    "the manifest points to a local archive and does not transport or publish the archive itself",
+    "a successful replay proves job and draw determinism, not deterministic language-model generation",
+    "simulated learner outcomes do not estimate human learning effects"
+  ],
+  "verification": {
+    "source": "node scripts/verify-experiment-run.js --run-dir .tutor-stub-auto-eval/phase0-mock-qa-evidence-v1",
+    "restore": "node scripts/restore-adaptive-run.js --archive artifacts/adaptive-tutor-runs/phase0-mock-qa-evidence-v1-61ceb224bb43.jsonl.gz --manifest config/adaptive-tutor-evidence/phase0-mock-qa-evidence-v1-61ceb224bb43.manifest.json --out <fresh-dir>"
+  }
+}

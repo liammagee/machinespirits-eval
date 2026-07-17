@@ -50,7 +50,8 @@ export const DRAMA_PARAMETER_COMPONENTS = deepFreeze([
     id: 'audience',
     label: 'Audience',
     shortLabel: 'audience',
-    summary: 'Critic panel, consensus rule, scoring mode, blinding, rubric, and structure critic.',
+    summary:
+      'First-order non-speaking audience context, plus the critic panel that provides its current evaluative implementation.',
   },
   {
     id: 'runtime',
@@ -308,6 +309,11 @@ export const DRAMA_PARAMETER_FIELDS = deepFreeze([
   { path: 'cast.model', component: 'cast', surfaces: ['run', 'live'] },
 
   // audience
+  { path: 'audience.context', component: 'audience', surfaces: ['compose', 'spec'] },
+  { path: 'audience.context.description', component: 'audience', surfaces: ['compose', 'spec'] },
+  { path: 'audience.context.relation_to_speaker', component: 'audience', surfaces: ['spec'] },
+  { path: 'audience.context.relation_to_hearer', component: 'audience', surfaces: ['spec'] },
+  { path: 'audience.context.knowledge', component: 'audience', surfaces: ['spec'] },
   { path: 'audience.panel', component: 'audience', surfaces: ['compose', 'run'] },
   { path: 'audience.consensus', component: 'audience', surfaces: ['compose', 'run'] },
   { path: 'audience.grading', component: 'audience', surfaces: ['compose', 'run'] },
@@ -364,6 +370,14 @@ export const COMPOSER_BASE_VOCAB = deepFreeze({
   ],
   grading: ['graded', 'binary'],
   blinding: ['arm-blind', 'omniscient', 'fully-blind'],
+  positions: ['tutor', 'learner', 'director', 'audience'],
+  positionLabels: {
+    tutor: 'Tutor',
+    learner: 'Learner',
+    director: 'Scene author / director',
+    audience: 'Audience (non-enacted)',
+  },
+  nonEnactedPositions: ['audience'],
   roles: ['tutor', 'learner', 'director'],
   roleLabels: { tutor: 'Tutor', learner: 'Learner', director: 'Scene author / director' },
   movesByRole: {

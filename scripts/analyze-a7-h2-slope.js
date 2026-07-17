@@ -36,8 +36,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Database from 'better-sqlite3';
 import { regularizedBeta } from '../services/anovaStats.js';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -52,7 +52,7 @@ function getOption(name, fallback) {
 }
 
 const TS = getOption('ts', '1777173286');
-const DB_PATH = getOption('db', process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db'));
+const DB_OVERRIDE = getOption('db', null);
 const JSON_OUT = process.argv.includes('--json');
 
 // ── stats helpers ────────────────────────────────────────────────────────
@@ -104,7 +104,11 @@ function cohensD(a, b) {
 }
 
 // ── load the canonical 80 rows ─────────────────────────────────────────────
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath: DB_PATH, reason } = openEvaluationDbReadonly(ROOT, { explicitPath: DB_OVERRIDE });
+if (!db) {
+  console.log(describeMissingEvaluationDb(DB_PATH, reason));
+  process.exit(0);
+}
 const rows = db
   .prepare(
     `SELECT r.learner_id AS learner_id,

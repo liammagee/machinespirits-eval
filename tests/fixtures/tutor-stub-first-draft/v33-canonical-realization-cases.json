@@ -1,0 +1,296 @@
+{
+  "schema": "machinespirits.tutor-stub.actorial-realization-regression-fixture.v1",
+  "configuration": {
+    "engagement_stance": "charismatic",
+    "action_family": "stage_next_step",
+    "audience_register": "adult_novice",
+    "lexical_accessibility": "plain",
+    "scene_immersion": "immersive",
+    "actorial_part": "advocate",
+    "actorial_part_label": "advocate for the live case",
+    "actorial_part_selection": {},
+    "actorial_performance": {
+      "id": "evidentiary_boundary",
+      "label": "evidentiary boundary",
+      "contract": "State the strongest licensed case and make its public limit visible."
+    },
+    "unresolved_terms": []
+  },
+  "world": {
+    "title": "The Thursday Brownouts of Tallow Street",
+    "setting": "The council minutes, stocktake note, charger log, and 18:40 pen chart lie on the committee table.",
+    "question": "What browns out Tallow Street every Thursday evening?"
+  },
+  "cases": [
+    {
+      "id": "exact_v33_candidate",
+      "kind": "saved_v33_original",
+      "slots": {
+        "uptake": "Write: “The dark chargers did not prevent Tallow Street browning out at 18:40.”",
+        "performance": {
+          "entry": "My case is the chargers caused the brownout, but darkness weakens that claim.",
+          "response": "During stocktake, chargers were dark, yet Tallow Street browned out; this identifies no cause."
+        },
+        "handoff": "Now, compare dark chargers with the 18:40 brownout; the depot motion is not yet supported."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "bounded_claim_revision",
+        "joint_actorial_part_visible": true,
+        "writable_causal_fidelity": false
+      }
+    },
+    {
+      "id": "clear_positive_boundary",
+      "kind": "clear_positive",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "I set the stocktake note beside the 18:40 pen chart.",
+          "response": "The note supports dark chargers, but it does not establish the brownout’s cause."
+        },
+        "handoff": "Next, compare the dark chargers with the recorded brownout."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "explicit_epistemic_limit"
+      }
+    },
+    {
+      "id": "label_only_negative",
+      "kind": "labels_tactic_without_performing_it",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "I perform the selected evidentiary tactic for the committee.",
+          "response": "The council minutes remain on the table."
+        },
+        "handoff": "Next, compare the chargers with the pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null
+      }
+    },
+    {
+      "id": "boundary_in_wrong_slot",
+      "kind": "handoff_cannot_rescue_performance",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "I set the stocktake note beside the charger log.",
+          "response": "The chargers were dark while Tallow Street browned out."
+        },
+        "handoff": "Next, compare the records, because the depot claim is not yet supported."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null
+      }
+    },
+    {
+      "id": "declarative_boundary_without_actorial_enactment",
+      "kind": "tactic_without_selected_advocate_part",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "The stocktake note shows only that the chargers were dark.",
+          "response": "It does not establish the brownout’s cause."
+        },
+        "handoff": "Next, compare the stocktake note with the 18:40 pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "explicit_epistemic_limit",
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "properly_enacted_advocate_boundary",
+      "kind": "owned_advocate_case_and_limit",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "My case is that the chargers caused the brownout, but the stocktake weakens that claim.",
+          "response": "The dark chargers leave the brownout’s cause unidentified."
+        },
+        "handoff": "Next, compare the dark chargers with the 18:40 brownout."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "bounded_claim_revision",
+        "joint_actorial_part_visible": true
+      }
+    },
+    {
+      "id": "exact_compact_strict_negative_support",
+      "kind": "saved_compact_strict_original",
+      "slots": {
+        "uptake": "Write: The dark chargers during stocktake rule out the depot as the cause.",
+        "performance": {
+          "entry": "My case is the depot caused the brownout, but dark chargers cannot support it.",
+          "response": "The stocktake shows the chargers were dark, yet the street still browned out at 18:40."
+        },
+        "handoff": "Next, compare the dark chargers with the 18:40 pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "negative_evidentiary_support",
+        "joint_actorial_part_visible": true
+      }
+    },
+    {
+      "id": "explicit_cross_world_negative_support",
+      "kind": "explicit_evidence_to_claim_limit",
+      "slots": {
+        "uptake": "The sample gives us one public result.",
+        "performance": {
+          "entry": "My case is the vat was contaminated, but the sample cannot support that claim.",
+          "response": "The sample records salt without identifying when it entered."
+        },
+        "handoff": "Next, compare the sample with the cleaning record."
+      },
+      "expected": {
+        "tactic_visible_in_performance": true,
+        "boundary_construction": "negative_evidentiary_support",
+        "joint_actorial_part_visible": true
+      }
+    },
+    {
+      "id": "reversed_support_direction",
+      "kind": "claim_cannot_support_evidence_negative",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "My case cannot support the dark chargers.",
+          "response": "The stocktake and pen chart remain on the table."
+        },
+        "handoff": "Next, compare the dark chargers with the 18:40 pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "positive_support_is_not_boundary",
+      "kind": "positive_support_relation_negative",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "My case is the depot caused the brownout, and the stocktake supports it.",
+          "response": "The chargers were dark while the street browned out."
+        },
+        "handoff": "Next, compare the dark chargers with the 18:40 pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": true
+      }
+    },
+    {
+      "id": "unresolved_anaphor_is_not_boundary",
+      "kind": "unresolved_pronoun_negative",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "The dark chargers cannot support it.",
+          "response": "The stocktake and pen chart remain on the table."
+        },
+        "handoff": "Next, compare the dark chargers with the 18:40 pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "handoff_only_negative_support",
+      "kind": "negative_support_in_wrong_owner",
+      "slots": {
+        "uptake": "The stocktake gives us a direct comparison.",
+        "performance": {
+          "entry": "My case is the depot caused the brownout.",
+          "response": "The chargers were dark while the street browned out."
+        },
+        "handoff": "Next, compare the records because the stocktake cannot support that claim."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "only_prop_action_is_not_boundary",
+      "kind": "lexical_only_decoy_negative",
+      "slots": {
+        "uptake": "The note is already public.",
+        "performance": {
+          "entry": "I only place the note beside the chart.",
+          "response": "Both records remain on the table."
+        },
+        "handoff": "Next, compare the note with the chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "unrelated_negation_is_not_boundary",
+      "kind": "unrelated_did_not_negative",
+      "slots": {
+        "uptake": "The minutes are already public.",
+        "performance": {
+          "entry": "The chair did not sign the minutes.",
+          "response": "The chart remains beside them."
+        },
+        "handoff": "Next, compare the minutes with the chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "causal_prevention_is_not_evidentiary_boundary",
+      "kind": "causal_inversion_negative",
+      "slots": {
+        "uptake": "The stocktake is already public.",
+        "performance": {
+          "entry": "The dark chargers did not prevent the brownout.",
+          "response": "The stocktake and pen chart remain on the table."
+        },
+        "handoff": "Next, compare the stocktake with the pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    },
+    {
+      "id": "claim_weakens_evidence_reverses_boundary",
+      "kind": "reversed_revision_direction_negative",
+      "slots": {
+        "uptake": "The stocktake is already public.",
+        "performance": {
+          "entry": "The depot claim weakens the stocktake evidence.",
+          "response": "The pen chart remains beside it."
+        },
+        "handoff": "Next, compare the stocktake with the pen chart."
+      },
+      "expected": {
+        "tactic_visible_in_performance": false,
+        "boundary_construction": null,
+        "joint_actorial_part_visible": false
+      }
+    }
+  ]
+}

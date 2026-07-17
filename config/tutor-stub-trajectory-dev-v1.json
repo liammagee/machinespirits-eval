@@ -1,0 +1,1644 @@
+{
+  "schema": "machinespirits.tutor-stub.trajectory-dev-corpus.v1",
+  "id": "trajectory-dev-v1",
+  "generatedAt": "2026-07-16T13:29:50.467Z",
+  "heldOut": false,
+  "runtimeDeliveryGate": false,
+  "retroactiveRelabeling": false,
+  "sourcePolicy": "Saved public learner/tutor messages plus normalized final-delivery audits only. Hidden evidence and private planner text are excluded.",
+  "claimBoundary": "This permanently non-held-out corpus supports development diagnostics only. It cannot relabel V18-V22, establish held-out generalization, or change runtime delivery gates. Independent blinded human review is required before any policy change.",
+  "sourceArtifacts": {
+    "blindCorpus": {
+      "path": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/exports/tutor-stub-first-draft-blind-review/blind-corpus.json",
+      "sha256": "21fc2ddd1565b520d64835d2f41008197cf514cd66381a3de4424b8e3a41eaa4"
+    },
+    "reviewKey": {
+      "path": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/exports/tutor-stub-first-draft-blind-review/review-key.json",
+      "sha256": "e1332ef496f3b2d503f59269d3a157cf0c1ac71714d68a2474dde921f99ddca5"
+    },
+    "ratings": {
+      "path": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/exports/tutor-stub-first-draft-blind-review/ratings.json",
+      "sha256": "1030db5e14bed6e3e185db0f08410c2d1cffe64d3ff2911a299384d553afa3f4"
+    }
+  },
+  "pairedReviews": [
+    {
+      "id": "P01",
+      "campaign": "V18",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/emberwick_contradiction_keeper/2026-07-16T04-44-58-445Z.jsonl",
+          "sha256": "b48395ecbfc695d83150b8d55b327fad0872fa240b01c4d3dc2d66d224a450c4"
+        },
+        "turn": 7
+      },
+      "context": [
+        {
+          "speaker": "Learner",
+          "text": "Bramblewasp now fits the owl-hour pattern, but that still doesn’t show they controlled the nine accounts; what account-record link would rule out that it’s just their usual posting schedule?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Exactly. I hold the public evidence before us. The tally and bramblewasp’s posting history share an owl-hour rhythm, but that is only a lead; control needs a record tying the sock sessions back to bramblewasp, such as one device-bound sign-in credential appearing on both."
+        },
+        {
+          "speaker": "Learner",
+          "text": "If that credential appears on both, would it rule out bramblewasp merely keeping the same owl-hour schedule?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "I open the mod log beside the vote tally: a shared device credential would cut through the “same owl-hour habit” explanation by tying sessions together, though we have not seen one yet. I make room beside the edit screen and read the draft record: the poll’s exact wording, including the misspelled “concensus,” sat in bramblewasp’s drafts two days before a day-old sock posted it. I mark that as advance involvement, not yet the final lock on control—what does this draft change for you?"
+        }
+      ],
+      "learner": "It links bramblewasp to the poll before the sock posted it, but what would rule out the sock having copied that wording from another source?",
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_actorial_part"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "delivered_repair",
+          "text": "The matching draft puts bramblewasp inside the poll’s preparation before the sock post, but it does not by itself prove the sock could not have copied it elsewhere. I hold the public evidence before us. On the mod-log evidence we have, that makes bramblewasp an advance participant, not yet the proven operator; we still need custody evidence tying the sock sessions to them.",
+          "scores": {
+            "naturalness": 3,
+            "learner_responsiveness": 4,
+            "dramatic_effect": 2,
+            "clarity": 4,
+            "usefulness": 4
+          }
+        },
+        {
+          "sourceClass": "rejected_original",
+          "text": "The matching draft puts bramblewasp inside the poll’s preparation before the sock post, but it does not by itself prove the sock could not have copied it elsewhere. On the mod-log evidence we have, that makes bramblewasp an advance participant, not yet the proven operator; we still need custody evidence tying the sock sessions to them.",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 4,
+            "dramatic_effect": 2,
+            "clarity": 4,
+            "usefulness": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "campaign": "V19",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/larkspur_premature_closure/2026-07-16T05-50-54-527Z.jsonl",
+          "sha256": "307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820"
+        },
+        "turn": 5
+      },
+      "context": [
+        {
+          "speaker": "Learner",
+          "text": "WF-11 points to the outside crew—they were around at noon, so they likely took Priya’s lunchbox."
+        },
+        {
+          "speaker": "Tutor",
+          "text": "WF-11 puts the outside crew in the noon window, but it still does not show they cleared shelf two. “I read in the record that the lift notice says Wrenfold was authorized to power down and clear appliances for Tuesday’s outlet testing; anything removed would go to lost property.” I mark that authority beside the badge entry, while the lunchbox itself remains unaccounted for. What does that notice change?"
+        },
+        {
+          "speaker": "Learner",
+          "text": "Wrenfold took Priya’s lunchbox during the authorized appliance clear-out and sent it to lost property."
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Wrenfold’s noon access and appliance-clearance authority support the clear-out, but their sending this lunchbox to lost property was not yet entered. I open the lost-property ledger one floor down and mark the missing link: one labelled lunchbox, logged at 12:14, tagged with the Wrenfold job number, shelf photo attached; it has sat there cold and well-packed all afternoon. There is room beside the ledger for you at the counter—what does this new entry change about who took it from shelf two?"
+        }
+      ],
+      "learner": "The ledger proves Wrenfold took Priya’s lunchbox from shelf two and put it in lost property.",
+      "originalAuditIssues": ["closureAudit:missing_explicit_dialogue_close"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "rejected_original",
+          "text": "I close the ledger beside the fridge notice: Wrenfold’s authorized clear-out and its 12:14 job-tagged lost-property entry establish that Wrenfold removed Priya’s lunchbox from shelf two. Dario’s kitchen badge shows only access, not removal; the incident record is closed.",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 4,
+            "clarity": 5,
+            "usefulness": 5
+          }
+        },
+        {
+          "sourceClass": "delivered_repair",
+          "text": "Yes—the record supports Wrenfold as the crew that removed the lunchbox and logged it to lost property. Dario was only shown in the kitchen; the visitor badge, clearance notice, and Wrenfold-tagged ledger supply the decisive link. The case is closed.",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 2,
+            "clarity": 5,
+            "usefulness": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "campaign": "V20",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl",
+          "sha256": "5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d"
+        },
+        "turn": 5
+      },
+      "context": [
+        {
+          "speaker": "Learner",
+          "text": "What should I write next about the twenty-five-minute gap before the chargers switch on?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Write: “Because Tallow Street dims twenty-five minutes before the chargers switch on, the chargers cannot be causing that first dip.” I set the pen chart beside the depot timetable. My case is that the chargers caused the brownout; break it if the lamps sag before they energise. The easy accusation breaks at 18:40. The cause must lie elsewhere in the street’s supply."
+        },
+        {
+          "speaker": "Learner",
+          "text": "What should I write next about the cause elsewhere in Tallow Street’s supply?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Write: “The chargers were dark during the stocktake, yet Tallow Street still browned out at 18:40, so the cause lies elsewhere in the supply.” I lay the stocktake note beside the pen chart. “I can attest that the chargers stood dark all evening, every van parked cold, and the street browned out to the minute.” What does that rule out for the motion against the depot?"
+        }
+      ],
+      "learner": "What should I put in the minutes about the chargers being dark during the stocktake?",
+      "originalAuditIssues": ["responseCompositionAudit:missing_learner_uptake"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "delivered_repair",
+          "text": "That is a fair question; I’ll answer it before we extend the case. Write: “During the stocktake, the chargers stayed off, yet Tallow Street still browned out at 18:40.” I hold the stocktake note beside the pen chart. My case is that the depot chargers caused the brownout; break it if the dark chargers leave the street dimming anyway. The easy accusation breaks: the cause lies elsewhere, though we still need evidence showing which supply failed.",
+          "scores": {
+            "naturalness": 3,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 3,
+            "clarity": 3,
+            "usefulness": 4
+          }
+        },
+        {
+          "sourceClass": "rejected_original",
+          "text": "Write: “The chargers were off all evening during the stocktake, yet Tallow Street still browned out at 18:40; the depot chargers are therefore ruled out.” My case is that the depot caused the dip; break it if the chargers were dark while the lamps still sagged. The ready accusation breaks on the stocktake note and the pen chart.",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 4,
+            "clarity": 5,
+            "usefulness": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "campaign": "V21",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v21-live/gazette_answer_seeking/2026-07-16T08-35-26-101Z.jsonl",
+          "sha256": "85dd314476e8fe0dcff37f04957c6e577a1c516c1b3896590df9478955cdaf46"
+        },
+        "turn": 1
+      },
+      "context": [
+        {
+          "speaker": "Tutor",
+          "text": "The Gazette pulled its morning run at 4 a. m. On the corrections file, the question is exact: Whose hand planted the fabricated quote that sank the seawall story? The corrections file has no tested clue in it yet. What should we examine first—or which word should we unpack?"
+        }
+      ],
+      "learner": "What should I write next about the corrections file?",
+      "originalAuditIssues": ["questionSupportAudit:missing_clarification_invitation"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "rejected_original",
+          "text": "Write: “The corrections file does not yet identify who planted the quote.” I lift the page-one proof beside the recall sheet. “I read in the record that the seawall story ran under Crane’s name, her slug, her page-one turn; the desk calls it Crane’s copy and its poison.” That supports who answers for the story, but not yet whose hand inserted the quote. What does Crane’s byline change for your file?",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 4,
+            "clarity": 4,
+            "usefulness": 4
+          }
+        },
+        {
+          "sourceClass": "delivered_repair",
+          "text": "Write: We have no tested clue yet, so the file cannot name the hand. I hold the page-one byline against the corrections file. “I read in the record that the byline is no secret: the seawall story ran under Crane's name, her slug, her page-one turn. The desk needs to read no further — the story is Crane's copy, and so, it says, is its poison.” That ties the story to Crane's copy, but not yet to the hand that planted the quote. You may ask which clue, connection, or term needs explaining. What does the byline change?",
+          "scores": {
+            "naturalness": 2,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 3,
+            "clarity": 3,
+            "usefulness": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "campaign": "V22",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/2026-07-16T09-34-06-063Z.jsonl",
+          "sha256": "0fe87c1a64525cd0ffe79c6dce42859694fd26aeac6fcb17e4ee938f726e3337"
+        },
+        "turn": 5
+      },
+      "context": [
+        {
+          "speaker": "Learner",
+          "text": "Should I write that Vess’s late manner makes him a possibility, but not proof of composition?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Yes. I hold the public evidence before us. Vess’s late manner makes him a plausible possibility, but style alone does not prove composition; we still need evidence tied to who wrote and corrected this particular leaf."
+        },
+        {
+          "speaker": "Learner",
+          "text": "What should I write next about who wrote and corrected this particular leaf?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Write that the musicians’ recognition makes Vess plausible, not proven. I point to the water-stained leaf under the archive lamp: their words concern its manner, not who made its corrections. We still need evidence tied to this particular leaf."
+        }
+      ],
+      "learner": "What should I write next about the particular leaf?",
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_performance_tactic"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "rejected_original",
+          "text": "Write: “The particular leaf has not yet given us a physical sign of when it was made.” I lift it beneath the archive lamp: held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill’s mark. The wet folder and its leaves now offer a trace beyond musical manner. What does the Brell mill mark change about our inquiry?",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 4,
+            "clarity": 4,
+            "usefulness": 5
+          }
+        },
+        {
+          "sourceClass": "delivered_repair",
+          "text": "The next note should stay with what this leaf can actually show. I hold it to the lamp: every leaf of the nocturne shows the same heron watermark — the Brell mill's mark. What does that mark change, or which word in the clue needs clarifying?",
+          "scores": {
+            "naturalness": 4,
+            "learner_responsiveness": 3,
+            "dramatic_effect": 3,
+            "clarity": 4,
+            "usefulness": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "P06",
+      "campaign": "V22",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/2026-07-16T09-34-06-063Z.jsonl",
+          "sha256": "0fe87c1a64525cd0ffe79c6dce42859694fd26aeac6fcb17e4ee938f726e3337"
+        },
+        "turn": 3
+      },
+      "context": [
+        {
+          "speaker": "Learner",
+          "text": "What should I write first—the catalogue entry, or the paper and ink of the nocturne?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Write: “I would begin with the nocturne’s paper and ink, since they may show when it was written.” I turn the damp leaf beneath the archive lamp: material examination can date the work, while the catalogue is only silent so far—it does not establish a composer. Would you next note the paper, the ink, or the corrections on the draft? You may also ask which clue, connection, or term needs explaining."
+        },
+        {
+          "speaker": "Learner",
+          "text": "What should I write next about the nocturne’s paper and ink?"
+        },
+        {
+          "speaker": "Tutor",
+          "text": "Write: “The paper and ink have not yet dated the nocturne, so they cannot yet settle its composer.” I hold the stained leaf to the lamp; Vess’s name is the room’s easy verdict, but the page itself has not confirmed it. “I can attest that every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.” Does that manner support Vess as a possibility, or prove he composed it?"
+        }
+      ],
+      "learner": "Should I write that Vess’s late manner makes him a possibility, but not proof of composition?",
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_actorial_part"],
+      "preference": "rejected_original",
+      "candidates": [
+        {
+          "sourceClass": "delivered_repair",
+          "text": "Yes. I hold the public evidence before us. Vess’s late manner makes him a plausible possibility, but style alone does not prove composition; we still need evidence tied to who wrote and corrected this particular leaf.",
+          "scores": {
+            "naturalness": 3,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 2,
+            "clarity": 5,
+            "usefulness": 5
+          }
+        },
+        {
+          "sourceClass": "rejected_original",
+          "text": "Yes. Vess’s late manner makes him a plausible possibility, but style alone does not prove composition; we still need evidence tied to who wrote and corrected this particular leaf.",
+          "scores": {
+            "naturalness": 5,
+            "learner_responsiveness": 5,
+            "dramatic_effect": 1,
+            "clarity": 5,
+            "usefulness": 5
+          }
+        }
+      ]
+    }
+  ],
+  "calibrationCases": [
+    {
+      "id": "2026-07-16T08-35-26-101Z:t004",
+      "source": {
+        "fixture": {
+          "path": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious-trajectory/tests/fixtures/tutor-stub-performance-calibration/gazette-answer-seeking-v21.json",
+          "sha256": "d7d315989da7a27e260707a862541415aa22d5dc2f608fd7ec623af57aa8b9ef"
+        },
+        "turn": 4
+      },
+      "learner": "What should I write next about the kicker?",
+      "candidate": "Write: “The false quote sits in the kicker, so we know where the story was poisoned, but not whose hand put it there.” My case is that Crane’s byline alone cannot name the planter; break it if the kicker itself points to Crane. The archive breaks the desk’s shortcut: a byline owns the story, not necessarily the last inserted words. We need evidence tying someone to that closing graf.",
+      "expectedLabel": "semantic_realization_structural_false_negative",
+      "expectedPerformanceRealized": true,
+      "recordedAuditIssue": "missing_selected_performance_tactic",
+      "rationale": "The candidate visibly makes an accountable case, invites it to be broken, names the archive as contrary public evidence, breaks the desk's shortcut, and hands off the missing evidentiary direction. The recorded lexical surface check missed that composition."
+    },
+    {
+      "id": "2026-07-16T08-35-26-101Z:t007",
+      "source": {
+        "fixture": {
+          "path": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious-trajectory/tests/fixtures/tutor-stub-performance-calibration/gazette-answer-seeking-v21.json",
+          "sha256": "d7d315989da7a27e260707a862541415aa22d5dc2f608fd7ec623af57aa8b9ef"
+        },
+        "turn": 7
+      },
+      "learner": "What should I write next about Crane’s ring-bound notebooks?",
+      "candidate": "Write: “Crane’s notebooks and byline show she filed the story under her own name, but they do not identify the hand that inserted the false kicker.” I open the corrections file beside the ring-bound notebooks and mark the distinction: the desk wants Crane’s name to end it, but that shortcut breaks when answering for a story is confused with planting its poison. “I read in the record that. The corrections file holds two priors under Crane's name — a misdated permit, a misattributed figure, both within the year. The desk reads the file as a confession already written: her name is in the book twice, and now her story is pulped on the depot floor.” What do those priors support about Crane, and what do they still rule out about the hand in the kicker?",
+      "expectedLabel": "genuine_performance_miss",
+      "expectedPerformanceRealized": false,
+      "recordedAuditIssue": "missing_selected_performance_tactic",
+      "rationale": "The candidate stages and reads the due record, but its host beat states a general distinction before that evidence appears. It never uses the newly read priors as the contrary observation that pressures the desk's ready verdict, so the selected counterpressure is not performed."
+    }
+  ],
+  "sequenceEpisodes": [
+    {
+      "id": "ravensmark-affective-resistant-v18",
+      "campaign": "V18",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/ravensmark_affective_resistant/2026-07-16T04-44-58-444Z.jsonl",
+          "sha256": "f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92"
+        },
+        "report": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/ravensmark_affective_resistant/auto-eval-2026-07-16T04-48-59-412Z.json",
+          "sha256": "b434f32f5fa4b1c0bd2a919030edac94bd0050629c6fedd76e7f1bbfb410c63e"
+        }
+      },
+      "turnRange": {
+        "start": 1,
+        "end": 6
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "turnId": "2026-07-16T04-44-58-444Z:t001",
+          "learner": "I would examine the warrant-book line for the dusk gate-pass, to see whose hand is recorded beside its seal.",
+          "tutor": "I draw the dusk pass beneath the lamp; the seal-holder’s hand is indeed the line worth examining. “I can attest that Corvin was steward of the gate-pass roll that week. Every warrant for Leadenhall crossed his table before it crossed the gate.” What does that tell us about Corvin, and what does it still leave unknown about the hand that signed?",
+          "composition": {
+            "uptake": "I draw the dusk pass beneath the lamp; the seal-holder’s hand is indeed the line worth examining.",
+            "development": "I draw the dusk pass beneath the lamp; the seal-holder’s hand is indeed the line worth examining. “I can attest that Corvin was steward of the gate-pass roll that week. Every warrant for Leadenhall crossed his table before it crossed the gate.” What does that tell us about Corvin, and what does it still leave unknown about the hand that signed?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["m_steward"],
+            "releasedNow": ["m_steward"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 2,
+          "turnId": "2026-07-16T04-44-58-444Z:t002",
+          "learner": "It places every warrant under Corvin’s office, but it does not show that Corvin’s own hand signed this dusk pass.",
+          "tutor": "Just so: Corvin must answer for the pass, yet his custody does not place his hand upon it. I hold the parchment to the slant light beside the seal-table lamp: beneath the red wax lies an older dusk-seal, marked by a raven’s notch under its wing, pressed before the public ribbon. What does that hidden seal change in our search for the signing hand?",
+          "composition": {
+            "uptake": "Just so: Corvin must answer for the pass, yet his custody does not place his hand upon it.",
+            "development": "I hold the parchment to the slant light beside the seal-table lamp: beneath the red wax lies an older dusk-seal, marked by a raven’s notch under its wing, pressed before the public ribbon. What does that hidden seal change in our search for the signing hand?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_mark"],
+            "releasedNow": ["p_mark"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "brisk",
+            "tactic": "rapid_handoff",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 3,
+          "turnId": "2026-07-16T04-44-58-444Z:t003",
+          "learner": "It tells us to trace the raven-notched older seal and ask whose seal it was, rather than treating Corvin’s custody as proof of his signature.",
+          "tutor": "I enter that distinction beside the raven-notched impression: Corvin’s custody is recorded, but the older seal is the trail to the signing hand. I turn the morning book beneath the lamp—Corvin’s gate-key hung from his belt, and no dusk cart passed without his office accounting for it. What does that add about Corvin, while leaving the seal-holder still to be found?",
+          "composition": {
+            "uptake": "I enter that distinction beside the raven-notched impression: Corvin’s custody is recorded, but the older seal is the trail to the signing hand.",
+            "development": "I enter that distinction beside the raven-notched impression: Corvin’s custody is recorded, but the older seal is the trail to the signing hand. I turn the morning book beneath the lamp—Corvin’s gate-key hung from his belt, and no dusk cart passed without his office accounting for it. What does that add about Corvin, while leaving the seal-holder still to be found?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["m_key"],
+            "releasedNow": ["m_key"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "record_keeper",
+            "stance": "brisk",
+            "tactic": "rapid_handoff",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 4,
+          "turnId": "2026-07-16T04-44-58-444Z:t004",
+          "learner": "It strengthens Corvin’s responsibility for the gate and its accounting, but still does not identify him as the hand behind the raven-notched seal.",
+          "tutor": "You have kept Corvin’s gate duty, the morning accounting, and the raven-notched impression distinct from the unproved signing hand. I lay the old pass-law beside the wax: on a river-gate warrant, the seal-press—not the fair copy or the steward’s custody—is the signing act; what does that make the raven-notched seal decisive for?",
+          "composition": {
+            "uptake": "You have kept Corvin’s gate duty, the morning accounting, and the raven-notched impression distinct from the unproved signing hand.",
+            "development": "I lay the old pass-law beside the wax: on a river-gate warrant, the seal-press—not the fair copy or the steward’s custody—is the signing act; what does that make the raven-notched seal decisive for?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_clause"],
+            "releasedNow": ["p_clause"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "brisk",
+            "tactic": "rapid_handoff",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 5,
+          "turnId": "2026-07-16T04-44-58-444Z:t005",
+          "learner": "The raven-notched seal is decisive as the signing act, so its holder’s hand—not Corvin’s custody—signed the dusk pass.",
+          "tutor": "I mark that in the warrant book: the raven-notched seal, not Corvin’s custody, bears the signing hand. I open the private-seal register: its sole entry names Elian, night notary of the lower quay, as drawer of that curfew seal; he returned it next morning chipped at the raven’s wing. The room’s easy verdict against Corvin cannot stand on office alone—what does this register now change about whose hand signed?",
+          "composition": {
+            "uptake": "I mark that in the warrant book: the raven-notched seal, not Corvin’s custody, bears the signing hand.",
+            "development": "I open the private-seal register: its sole entry names Elian, night notary of the lower quay, as drawer of that curfew seal; he returned it next morning chipped at the raven’s wing. The room’s easy verdict against Corvin cannot stand on office alone—what does this register now change about whose hand signed?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_registry"],
+            "releasedNow": ["p_registry"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "record_keeper",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted_with_advisory"
+        },
+        {
+          "turn": 6,
+          "turnId": "2026-07-16T04-44-58-444Z:t006",
+          "learner": "The register identifies Elian’s raven-notched curfew seal, so Elian’s hand signed the dusk gate-pass, not Corvin’s custody alone.",
+          "tutor": "I enter the finding in the warrant book: Elian signed the dusk gate-pass. The raven-notched curfew seal is registered to him, and the pass-law makes its presser the signer; Corvin remains answerable for the gate, not proven as the signing hand. The inquiry is closed.",
+          "composition": {
+            "uptake": "I enter the finding in the warrant book: Elian signed the dusk gate-pass.",
+            "development": "The raven-notched curfew seal is registered to him, and the pass-law makes its presser the signer; Corvin remains answerable for the gate, not proven as the signing hand. The inquiry is closed.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "foreperson",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": true,
+            "closesDialogue": true,
+            "questionCount": 0
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        }
+      ]
+    },
+    {
+      "id": "greyfen-answer-seeking-v19",
+      "campaign": "V19",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/greyfen_answer_seeking/2026-07-16T05-50-54-528Z.jsonl",
+          "sha256": "191a4683339da674c0ed13f0494c76b4d92f12b2c042c07150fc3d0a80f9a680"
+        },
+        "report": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/greyfen_answer_seeking/auto-eval-2026-07-16T05-58-06-652Z.json",
+          "sha256": "c644a76be9ac7cdb64d212cb0a8f7ebf56eb1fd7ae7d42eb6380913ebff2ec85"
+        }
+      },
+      "turnRange": {
+        "start": 1,
+        "end": 10
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "turnId": "2026-07-16T05-50-54-528Z:t001",
+          "learner": "What should I write next?",
+          "tutor": "Write that Devlin’s shelf is the first lead, not yet a finding. I lift the Corvat flasks beside the unmarked row: Devlin labels nothing, and they sat there all week without dates or initials. Everyone in Greyfen has a Devlin story. What does this clutter change about what ruined the line? Ask which clue, connection, or term needs explaining.",
+          "composition": {
+            "uptake": "Write that Devlin’s shelf is the first lead, not yet a finding.",
+            "development": "I lift the Corvat flasks beside the unmarked row: Devlin labels nothing, and they sat there all week without dates or initials. Everyone in Greyfen has a Devlin story. What does this clutter change about what ruined the line? Ask which clue, connection, or term needs explaining.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_unlabelled"],
+            "releasedNow": ["p_unlabelled"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 2,
+          "turnId": "2026-07-16T05-50-54-528Z:t002",
+          "learner": "What should I write next?",
+          "tutor": "Write that Devlin’s messy shelf is still only a lead, not the cause. I open the equipment log beside the Corvat flasks and read: “The Larkin incubator was decommissioned last spring, yet it is back on the floor.” Its retired tag remains, and it is absent from this quarter’s log. The quarantine record and a swab taken when it returned both show Aspergillus G17 living inside. Someone brought it from storage and plugged it in for overflow. I mark the Larkin unit as a real possible source, while its link to Corvat remains unproved; what should sit beside it: the unit’s return, the G17 finding, or Devlin’s shelf? You may also ask which clue, connection, or term needs explaining.",
+          "composition": {
+            "uptake": "Write that Devlin’s messy shelf is still only a lead, not the cause.",
+            "development": "I open the equipment log beside the Corvat flasks and read: “The Larkin incubator was decommissioned last spring, yet it is back on the floor.” Its retired tag remains, and it is absent from this quarter’s log. The quarantine record and a swab taken when it returned both show Aspergillus G17 living inside. Someone brought it from storage and plugged it in for overflow. I mark the Larkin unit as a real possible source, while its link to Corvat remains unproved; what should sit beside it: the unit’s return, the G17 finding, or Devlin’s shelf? You may also ask which clue, connection, or term needs explaining.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_reservoir"],
+            "releasedNow": ["p_reservoir"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "record_keeper",
+            "stance": "warm",
+            "tactic": "shared_scene_invitation",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 3,
+          "turnId": "2026-07-16T05-50-54-528Z:t003",
+          "learner": "What should I write next?",
+          "tutor": "Put this next: Larkin contained G17, but it has not yet been tied to Corvat. I point to the retired asset tag and the quarantine swab. G17 inside the incubator matters only if the chamber could leak exposure, so the missing support concerns its seal. You may ask which clue, connection, or term needs explaining.",
+          "composition": {
+            "uptake": "Put this next: Larkin contained G17, but it has not yet been tied to Corvat.",
+            "development": "I point to the retired asset tag and the quarantine swab. G17 inside the incubator matters only if the chamber could leak exposure, so the missing support concerns its seal. You may ask which clue, connection, or term needs explaining.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_plain_recovery_accepted"
+        },
+        {
+          "turn": 4,
+          "turnId": "2026-07-16T05-50-54-528Z:t004",
+          "learner": "What should I write next?",
+          "tutor": "Write that Larkin now has a documented broken seal, so it can leak what is inside. I run a gloved finger beside the Larkin door hinge and point to the split gasket. “I can attest that the Larkin unit's door gasket is perished — cracked the whole length of the hinge, so the chamber bleeds humidity and CO2 the moment the door is shut and never recovers its setpoint. That gasket is exactly why Facilities pulled the unit off the floor.” With G17 already inside, the Larkin unit is now a possible exposure source, but Corvat’s contact with it remains unshown. What does the broken gasket change for the ruined flasks? You may ask which clue, connection, or term needs explaining.",
+          "composition": {
+            "uptake": "Write that Larkin now has a documented broken seal, so it can leak what is inside.",
+            "development": "I run a gloved finger beside the Larkin door hinge and point to the split gasket. “I can attest that the Larkin unit's door gasket is perished — cracked the whole length of the hinge, so the chamber bleeds humidity and CO2 the moment the door is shut and never recovers its setpoint. That gasket is exactly why Facilities pulled the unit off the floor.” With G17 already inside, the Larkin unit is now a possible exposure source, but Corvat’s contact with it remains unshown. What does the broken gasket change for the ruined flasks? You may ask which clue, connection, or term needs explaining.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_seal"],
+            "releasedNow": ["p_seal"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "warm",
+            "tactic": "shared_scene_invitation",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 5,
+          "turnId": "2026-07-16T05-50-54-528Z:t005",
+          "learner": "What should I write next?",
+          "tutor": "Write that Larkin could expose nearby work because G17 was inside and the door gasket was cracked. I set the public record under examination and mark the claim’s limit. Keep only what the public evidence already shows. Would you rather test that distinction against what is already public, hold it open for the next public fact, or ask me to clarify a word or connection?",
+          "composition": {
+            "uptake": "Write that Larkin could expose nearby work because G17 was inside and the door gasket was cracked.",
+            "development": "I set the public record under examination and mark the claim’s limit. Keep only what the public evidence already shows. Would you rather test that distinction against what is already public, hold it open for the next public fact, or ask me to clarify a word or connection?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_deterministic_fallback"
+        },
+        {
+          "turn": 6,
+          "turnId": "2026-07-16T05-50-54-528Z:t006",
+          "learner": "What should I write next?",
+          "tutor": "Write that Corvat was placed inside Larkin overnight, not merely near it. I press the Larkin log against Devlin’s cluttered shelf; the shelf cannot explain this placement. \"I can attest that the night of the crash the booked incubators were all full. The Corvat flasks were parked in the Larkin unit overnight — the only shelf with room left before the nine o'clock deadline.\" That puts the flasks inside the cracked chamber containing G17. What does that overnight placement change about the ruined line?",
+          "composition": {
+            "uptake": "Write that Corvat was placed inside Larkin overnight, not merely near it.",
+            "development": "I press the Larkin log against Devlin’s cluttered shelf; the shelf cannot explain this placement. \"I can attest that the night of the crash the booked incubators were all full. The Corvat flasks were parked in the Larkin unit overnight — the only shelf with room left before the nine o'clock deadline.\" That puts the flasks inside the cracked chamber containing G17. What does that overnight placement change about the ruined line?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_held"],
+            "releasedNow": ["p_held"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 7,
+          "turnId": "2026-07-16T05-50-54-528Z:t007",
+          "learner": "What should I write next?",
+          "tutor": "Write that the ruined flasks contained G17, not just a generic mould. I open the sequencing report beside the Larkin quarantine record: whole-genome testing identifies Aspergillus strain G17 in the flask swab, the exact strain named for Larkin. I enter that match, but not yet the verdict; Devlin’s messy shelf cannot explain this specific strain. What does this result change about Larkin’s link to Corvat?",
+          "composition": {
+            "uptake": "Write that the ruined flasks contained G17, not just a generic mould.",
+            "development": "I open the sequencing report beside the Larkin quarantine record: whole-genome testing identifies Aspergillus strain G17 in the flask swab, the exact strain named for Larkin. I enter that match, but not yet the verdict; Devlin’s messy shelf cannot explain this specific strain. What does this result change about Larkin’s link to Corvat?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_strain"],
+            "releasedNow": ["p_strain"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "record_keeper",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 8,
+          "turnId": "2026-07-16T05-50-54-528Z:t008",
+          "learner": "What should I write next?",
+          "tutor": "You are asking for the next supported line; I’ll supply it directly from the public evidence. Write: “Larkin is now the strongest explanation for the contamination.” I put the sequencing report beside the cracked Larkin gasket. Devlin’s shelf is messy, but it does not account for G17. I would press this case: G17 lived in Larkin, Corvat stayed there overnight, and G17 appeared in the flasks. Break my case if you can: what part of that chain still fails to tie Larkin to the ruined line?",
+          "composition": {
+            "uptake": "You are asking for the next supported line; I’ll supply it directly from the public evidence.",
+            "development": "Write: “Larkin is now the strongest explanation for the contamination.” I put the sequencing report beside the cracked Larkin gasket. Devlin’s shelf is messy, but it does not account for G17. I would press this case: G17 lived in Larkin, Corvat stayed there overnight, and G17 appeared in the flasks. Break my case if you can: what part of that chain still fails to tie Larkin to the ruined line?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "advocate",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_composition_repair_accepted"
+        },
+        {
+          "turn": 9,
+          "turnId": "2026-07-16T05-50-54-528Z:t009",
+          "learner": "What should I write next?",
+          "tutor": "You’ve asked for the next line again, so I hold the G17 sequencing report against Larkin’s cracked door seal. Write next: “The flask contaminant was G17, matching the strain inside Larkin.” I hold the sequencing report against Larkin’s quarantine record; the names match exactly. Devlin’s unmarked shelf looks bad, but it does not explain that match. With the cracked gasket and Corvat’s overnight stay, does Larkin now explain the ruined line?",
+          "composition": {
+            "uptake": "You’ve asked for the next line again, so I hold the G17 sequencing report against Larkin’s cracked door seal.",
+            "development": "Write next: “The flask contaminant was G17, matching the strain inside Larkin.” I hold the sequencing report against Larkin’s quarantine record; the names match exactly. Devlin’s unmarked shelf looks bad, but it does not explain that match. With the cracked gasket and Corvat’s overnight stay, does Larkin now explain the ruined line?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_composition_repair_accepted"
+        },
+        {
+          "turn": 10,
+          "turnId": "2026-07-16T05-50-54-528Z:t010",
+          "learner": "What should I write next?",
+          "tutor": "You want the next entry, so I’ll keep it to one supported public connection. I set the public record under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward?",
+          "composition": {
+            "uptake": "You want the next entry, so I’ll keep it to one supported public connection.",
+            "development": "I set the public record under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 0.5
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_deterministic_fallback"
+        }
+      ]
+    },
+    {
+      "id": "tallow-answer-seeking-v20-turns-1-5",
+      "campaign": "V20",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl",
+          "sha256": "5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d"
+        },
+        "report": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/auto-eval-2026-07-16T07-09-28-450Z.json",
+          "sha256": "c397d0b3a2cdf59d52eac32bfddc22e5fc28b9d8ea4adae396618e7aea53df24"
+        }
+      },
+      "turnRange": {
+        "start": 1,
+        "end": 5
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "turnId": "2026-07-16T07-03-36-147Z:t001",
+          "learner": "What should I write next about the depot’s new chargers?",
+          "tutor": "Write: “The depot’s new chargers are a plausible suspect because they draw their heaviest evening current when vans return.” I tap the six-charger entry beside the amber-lamp note. “I can attest that the depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in. The meeting noted the coincidence with satisfaction.” What does that support—and what does it still leave unknown?",
+          "composition": {
+            "uptake": "Write: “The depot’s new chargers are a plausible suspect because they draw their heaviest evening current when vans return.”",
+            "development": "I tap the six-charger entry beside the amber-lamp note. “I can attest that the depot’s six new chargers draw their heaviest current in the evening, when the vans come home to plug in. The meeting noted the coincidence with satisfaction.” What does that support—and what does it still leave unknown?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_new"],
+            "releasedNow": ["p_new"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 1,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 2,
+          "turnId": "2026-07-16T07-03-36-147Z:t002",
+          "learner": "What should I write next about the chargers’ heaviest evening current?",
+          "tutor": "Write: “The chargers are heavy in the evening, but they cannot cause the first dip because Tallow Street dims before they switch on.” I spread Exhibit One beside the quiz-machine complaint: the pen chart marks dimming at 18:40, while the depot chargers wait until 19:05 for the last van. The easy accusation breaks on those twenty-five minutes. What does that timing rule out?",
+          "composition": {
+            "uptake": "Write: “The chargers are heavy in the evening, but they cannot cause the first dip because Tallow Street dims before they switch on.”",
+            "development": "I spread Exhibit One beside the quiz-machine complaint: the pen chart marks dimming at 18:40, while the depot chargers wait until 19:05 for the last van. The easy accusation breaks on those twenty-five minutes. What does that timing rule out?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_trace"],
+            "releasedNow": ["p_trace"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 3,
+          "turnId": "2026-07-16T07-03-36-147Z:t003",
+          "learner": "What should I write next about the twenty-five-minute gap before the chargers switch on?",
+          "tutor": "Write: “Because Tallow Street dims twenty-five minutes before the chargers switch on, the chargers cannot be causing that first dip.” I set the pen chart beside the depot timetable. My case is that the chargers caused the brownout; break it if the lamps sag before they energise. The easy accusation breaks at 18:40. The cause must lie elsewhere in the street’s supply.",
+          "composition": {
+            "uptake": "Write: “Because Tallow Street dims twenty-five minutes before the chargers switch on, the chargers cannot be causing that first dip.”",
+            "development": "I set the pen chart beside the depot timetable. My case is that the chargers caused the brownout; break it if the lamps sag before they energise. The easy accusation breaks at 18:40. The cause must lie elsewhere in the street’s supply.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "advocate",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 4,
+          "turnId": "2026-07-16T07-03-36-147Z:t004",
+          "learner": "What should I write next about the cause elsewhere in Tallow Street’s supply?",
+          "tutor": "Write: “The chargers were dark during the stocktake, yet Tallow Street still browned out at 18:40, so the cause lies elsewhere in the supply.” I lay the stocktake note beside the pen chart. “I can attest that the chargers stood dark all evening, every van parked cold, and the street browned out to the minute.” What does that rule out for the motion against the depot?",
+          "composition": {
+            "uptake": "Write: “The chargers were dark during the stocktake, yet Tallow Street still browned out at 18:40, so the cause lies elsewhere in the supply.”",
+            "development": "I lay the stocktake note beside the pen chart. “I can attest that the chargers stood dark all evening, every van parked cold, and the street browned out to the minute.” What does that rule out for the motion against the depot?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_idle"],
+            "releasedNow": ["p_idle"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "warm",
+            "tactic": "shared_scene_invitation",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 5,
+          "turnId": "2026-07-16T07-03-36-147Z:t005",
+          "learner": "What should I put in the minutes about the chargers being dark during the stocktake?",
+          "tutor": "That is a fair question; I’ll answer it before we extend the case. Write: “During the stocktake, the chargers stayed off, yet Tallow Street still browned out at 18:40.” I hold the stocktake note beside the pen chart. My case is that the depot chargers caused the brownout; break it if the dark chargers leave the street dimming anyway. The easy accusation breaks: the cause lies elsewhere, though we still need evidence showing which supply failed.",
+          "composition": {
+            "uptake": "That is a fair question; I’ll answer it before we extend the case.",
+            "development": "Write: “During the stocktake, the chargers stayed off, yet Tallow Street still browned out at 18:40.” I hold the stocktake note beside the pen chart. My case is that the depot chargers caused the brownout; break it if the dark chargers leave the street dimming anyway. The easy accusation breaks: the cause lies elsewhere, though we still need evidence showing which supply failed.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "advocate",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_composition_repair_accepted"
+        }
+      ]
+    },
+    {
+      "id": "nocturne-answer-seeking-v22-turns-1-8",
+      "campaign": "V22",
+      "source": {
+        "trace": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/2026-07-16T09-34-06-063Z.jsonl",
+          "sha256": "0fe87c1a64525cd0ffe79c6dce42859694fd26aeac6fcb17e4ee938f726e3337"
+        },
+        "report": {
+          "path": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live/nocturne_answer_seeking/auto-eval-2026-07-16T09-40-35-475Z.json",
+          "sha256": "3de10774b4a7f5fe9c723c4127207eb4c09a582c8012887ba511a1386ef6ffa6"
+        }
+      },
+      "turnRange": {
+        "start": 1,
+        "end": 8
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "turnId": "2026-07-16T09-34-06-063Z:t001",
+          "learner": "What should I write first—the catalogue entry, or the paper and ink of the nocturne?",
+          "tutor": "Write: “I would begin with the nocturne’s paper and ink, since they may show when it was written.” I turn the damp leaf beneath the archive lamp: material examination can date the work, while the catalogue is only silent so far—it does not establish a composer. Would you next note the paper, the ink, or the corrections on the draft? You may also ask which clue, connection, or term needs explaining.",
+          "composition": {
+            "uptake": "Write: “I would begin with the nocturne’s paper and ink, since they may show when it was written.”",
+            "development": "I turn the damp leaf beneath the archive lamp: material examination can date the work, while the catalogue is only silent so far—it does not establish a composer. Would you next note the paper, the ink, or the corrections on the draft? You may also ask which clue, connection, or term needs explaining.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "precise",
+            "tactic": "evidentiary_boundary",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 2,
+          "turnId": "2026-07-16T09-34-06-063Z:t002",
+          "learner": "What should I write next about the nocturne’s paper and ink?",
+          "tutor": "Write: “The paper and ink have not yet dated the nocturne, so they cannot yet settle its composer.” I hold the stained leaf to the lamp; Vess’s name is the room’s easy verdict, but the page itself has not confirmed it. “I can attest that every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.” Does that manner support Vess as a possibility, or prove he composed it?",
+          "composition": {
+            "uptake": "Write: “The paper and ink have not yet dated the nocturne, so they cannot yet settle its composer.”",
+            "development": "I hold the stained leaf to the lamp; Vess’s name is the room’s easy verdict, but the page itself has not confirmed it. “I can attest that every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.” Does that manner support Vess as a possibility, or prove he composed it?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["m_style"],
+            "releasedNow": ["m_style"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.833
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_policy_repair_accepted"
+        },
+        {
+          "turn": 3,
+          "turnId": "2026-07-16T09-34-06-063Z:t003",
+          "learner": "Should I write that Vess’s late manner makes him a possibility, but not proof of composition?",
+          "tutor": "Yes. I hold the public evidence before us. Vess’s late manner makes him a plausible possibility, but style alone does not prove composition; we still need evidence tied to who wrote and corrected this particular leaf.",
+          "composition": {
+            "uptake": "Yes.",
+            "development": "I hold the public evidence before us. Vess’s late manner makes him a plausible possibility, but style alone does not prove composition; we still need evidence tied to who wrote and corrected this particular leaf.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "brisk",
+            "tactic": "rapid_handoff",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_actorial_part_repair_accepted"
+        },
+        {
+          "turn": 4,
+          "turnId": "2026-07-16T09-34-06-063Z:t004",
+          "learner": "What should I write next about who wrote and corrected this particular leaf?",
+          "tutor": "Write that the musicians’ recognition makes Vess plausible, not proven. I point to the water-stained leaf under the archive lamp: their words concern its manner, not who made its corrections. We still need evidence tied to this particular leaf.",
+          "composition": {
+            "uptake": "Write that the musicians’ recognition makes Vess plausible, not proven.",
+            "development": "I point to the water-stained leaf under the archive lamp: their words concern its manner, not who made its corrections. We still need evidence tied to this particular leaf.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 0.667
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_plain_recovery_accepted"
+        },
+        {
+          "turn": 5,
+          "turnId": "2026-07-16T09-34-06-063Z:t005",
+          "learner": "What should I write next about the particular leaf?",
+          "tutor": "The next note should stay with what this leaf can actually show. I hold it to the lamp: every leaf of the nocturne shows the same heron watermark — the Brell mill's mark. What does that mark change, or which word in the clue needs clarifying?",
+          "composition": {
+            "uptake": "The next note should stay with what this leaf can actually show.",
+            "development": "I hold it to the lamp: every leaf of the nocturne shows the same heron watermark — the Brell mill's mark. What does that mark change, or which word in the clue needs clarifying?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_watermark"],
+            "releasedNow": ["p_watermark"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "examiner",
+            "stance": "plain",
+            "tactic": "unadorned_report",
+            "realizationRate": 0.667
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_plain_recovery_accepted"
+        },
+        {
+          "turn": 6,
+          "turnId": "2026-07-16T09-34-06-063Z:t006",
+          "learner": "What should I write next about the Brell mill’s heron watermark?",
+          "tutor": "Write: “The Brell heron watermark identifies the paper’s mill, but it does not yet date the nocturne or name its composer.” My case is that Vess remains only a possibility; break it if the lamp-lit heron or the flooded leaf ties this particular paper to him. What period was Brell paper in Cassia’s copy-room?",
+          "composition": {
+            "uptake": "Write: “The Brell heron watermark identifies the paper’s mill, but it does not yet date the nocturne or name its composer.”",
+            "development": "My case is that Vess remains only a possibility; break it if the lamp-lit heron or the flooded leaf ties this particular paper to him. What period was Brell paper in Cassia’s copy-room?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "advocate",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 7,
+          "turnId": "2026-07-16T09-34-06-063Z:t007",
+          "learner": "What should I write next about the period Brell paper was used in Cassia’s copy-room?",
+          "tutor": "Write: “We have not yet learned when Brell paper was used in Cassia’s copy-room, so the watermark cannot date the nocturne.” I set Vess’s familiar manner against the heron-marked leaf beneath the archive lamp: my case is that neither yet names him; break it if the watermark can be tied to a particular Cassia period.",
+          "composition": {
+            "uptake": "Write: “We have not yet learned when Brell paper was used in Cassia’s copy-room, so the watermark cannot date the nocturne.”",
+            "development": "I set Vess’s familiar manner against the heron-marked leaf beneath the archive lamp: my case is that neither yet names him; break it if the watermark can be tied to a particular Cassia period.",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "advocate",
+            "stance": "charismatic",
+            "tactic": "dramatic_counterpressure",
+            "realizationRate": 0.5
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        },
+        {
+          "turn": 8,
+          "turnId": "2026-07-16T09-34-06-063Z:t008",
+          "learner": "What should I write next about the period Brell paper was used in Cassia’s copy-room?",
+          "tutor": "Write: “The heron watermark has not yet fixed the nocturne’s date, because its period of use at Cassia must be shown.” I open the steward’s stock-book beside the damp leaf and read: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since. I mark the book’s margin, leaving the composer’s name blank. What does this stock-book now tell us about when the nocturne was written?",
+          "composition": {
+            "uptake": "Write: “The heron watermark has not yet fixed the nocturne’s date, because its period of use at Cassia must be shown.”",
+            "development": "I open the steward’s stock-book beside the damp leaf and read: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since. I mark the book’s margin, leaving the composer’s name blank. What does this stock-book now tell us about when the nocturne was written?",
+            "recordedOk": true
+          },
+          "release": {
+            "dueNow": ["p_stock"],
+            "releasedNow": ["p_stock"],
+            "notDeliveredNow": [],
+            "direction": "steady",
+            "effectiveSpeed": 1,
+            "signalDirection": "steady"
+          },
+          "configuration": {
+            "part": "record_keeper",
+            "stance": "warm",
+            "tactic": "shared_scene_invitation",
+            "realizationRate": 1
+          },
+          "closure": {
+            "mandatory": false,
+            "closesDialogue": false,
+            "questionCount": null
+          },
+          "hardIntegrity": {
+            "privateEvidence": 0,
+            "unsupportedEvidence": 0,
+            "sourcePerspectiveDrift": 0,
+            "duplicateClueDelivery": 0,
+            "missingClueDelivery": 0,
+            "unanswerableQuestion": 0,
+            "terminalContinuation": 0
+          },
+          "finalDeliveryOutcome": "guarded_original_accepted"
+        }
+      ]
+    }
+  ],
+  "paceProbes": [
+    {
+      "id": "pace-fast-development-probe",
+      "synthetic": true,
+      "sourceEpisodeId": "greyfen-answer-seeking-v19",
+      "sourceTurn": 5,
+      "learnerMessage": "This is taking too long—move it along and give me the next clue.",
+      "expectedDirection": "faster"
+    },
+    {
+      "id": "pace-slow-development-probe",
+      "synthetic": true,
+      "sourceEpisodeId": "greyfen-answer-seeking-v19",
+      "sourceTurn": 5,
+      "learnerMessage": "Please slow down and keep us to one clue at a time.",
+      "expectedDirection": "slower"
+    }
+  ]
+}

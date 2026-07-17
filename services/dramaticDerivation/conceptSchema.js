@@ -24,6 +24,7 @@ export const DERIVATION_CONCEPT_LAYERS = Object.freeze([
       'director',
       'tutor',
       'learner',
+      'audience',
       'release',
       'staging',
       'secret',
@@ -52,6 +53,9 @@ export const DERIVATION_CONCEPT_LAYERS = Object.freeze([
       'counter_mirror',
       'stage_recognition',
       'stance',
+      'register',
+      'speaker',
+      'hearer',
     ],
   },
   {
@@ -287,6 +291,10 @@ export const DERIVATION_VOCABULARY_GROUPS = Object.freeze([
       'test',
       'counter_mirror',
       'stage_recognition',
+      'register',
+      'speaker',
+      'hearer',
+      'audience',
       'repair_dependency',
       'ask_diagnostic',
       'ask_scope_test',
@@ -333,8 +341,15 @@ export const DERIVATION_CONCEPT_ACTS = Object.freeze([
   },
   {
     title: 'Act II: address',
-    note: 'Rhetorical figures shape the address while preserving proof authority.',
-    concepts: ['rhetoric.figure', 'rhetoric.erotema', 'rhetoric.analogy', 'theory.charisma'],
+    note: 'Rhetorical figures and register position speaker, hearer, and any actual or implied audience while preserving proof authority.',
+    concepts: [
+      'rhetoric.figure',
+      'rhetoric.register',
+      'drama.audience',
+      'rhetoric.erotema',
+      'rhetoric.analogy',
+      'theory.charisma',
+    ],
   },
   {
     title: 'Act III: warrant',
@@ -365,8 +380,22 @@ export const DERIVATION_SEMANTIC_CONCEPTS = Object.freeze([
     definition: 'The authored conceptual stage: roles, question, secret, releases, proof paths, and dramatic timing.',
     links: [
       { type: 'contains', target: 'drama.secret' },
+      { type: 'contains', target: 'drama.audience' },
       { type: 'stages', target: 'logic.proof_dag' },
       { type: 'presses toward', target: 'drama.anagnorisis' },
+    ],
+  },
+  {
+    id: 'drama.audience',
+    label: 'audience',
+    layer: 'drama',
+    category: 'dramaturgical',
+    ontology: 'Audience',
+    definition:
+      'A first-order but non-enacted dramatic position: actual or implied witnesses for whom address and uptake become legible, without a turn, cast binding, interior agency, or belief/desire graph.',
+    links: [
+      { type: 'witnesses', target: 'rhetoric.register' },
+      { type: 'reads', target: 'theory.recognition' },
     ],
   },
   {
@@ -407,6 +436,20 @@ export const DERIVATION_SEMANTIC_CONCEPTS = Object.freeze([
     ],
   },
   {
+    id: 'rhetoric.register',
+    label: 'register',
+    layer: 'rhetoric',
+    category: 'rhetorical',
+    ontology: 'RegisterRealization',
+    definition:
+      'An engagement stance realized by a speaker toward a hearer, optionally before an actual or implied audience; sarcasm typically recruits a separate audience aligned with the speaker.',
+    links: [
+      { type: 'positions', target: 'drama.audience' },
+      { type: 'can enact', target: 'rhetoric.figure' },
+      { type: 'risks', target: 'theory.misrecognition' },
+    ],
+  },
+  {
     id: 'rhetoric.figure',
     label: 'figure of speech',
     layer: 'rhetoric',
@@ -415,6 +458,7 @@ export const DERIVATION_SEMANTIC_CONCEPTS = Object.freeze([
     definition:
       'A controlled turn of language that changes salience, pressure, or address without adding hidden evidence.',
     links: [
+      { type: 'is realized through', target: 'rhetoric.register' },
       { type: 'works through', target: 'rhetoric.erotema' },
       { type: 'works through', target: 'rhetoric.analogy' },
       { type: 'must respect', target: 'logic.entailment' },

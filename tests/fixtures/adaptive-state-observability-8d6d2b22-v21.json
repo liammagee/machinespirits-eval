@@ -1,0 +1,281 @@
+{
+  "schema": "machinespirits.adaptive-state-observability-semantic-regression.v1",
+  "source": {
+    "run_id": "adaptive-state-v2-observability-preflight-8d6d2b22-v21",
+    "git_sha": "8d6d2b2214c923ec4c63b72c964fdeee4f0f47f7",
+    "call_ledger_file_sha256": "4e34d416a40a55363917ed14cdc0c0647a6dff91087d421c35c17f50f1916d53",
+    "cases_file_sha256": "fb0cc09fc83974339457d1c4e834b6ef4d1615b42305b7c3771f59362f4cadcc",
+    "run_seal_file_sha256": "1b0c3141a65a3c524a05cd369d5e22887a206a120413a4cf789f2986b3e9952b",
+    "seal_inventory_sha256": "47b710c6201d7d93c1d1d60747fd75ee35abbb3276662d223a6114fedd38bf0b",
+    "report_content_sha256": "b89390acca11a6d7a73977c1dc71406529d3ee7c7f6a83e5630a2bbebfd69b05",
+    "result_content_sha256": "eca6ad06cdc19b40a0a2b727d30f5b0288c315185614b7f109a1fe541a29af15"
+  },
+  "cases": [
+    {
+      "id": "preflight__marrick__derive__codex_terra",
+      "source_intended_family": "derive",
+      "source_analyzer_family": "none",
+      "semantic_expected_family": "none",
+      "learner_text": "The public evidence supports a further intermediate inference.",
+      "learner_text_sha256": "d763a997c4ecc431b8937598527fd2f46585e0becd5b7bb53e2b630fa7f3609d",
+      "source_analyzer_evidence_span": "The public evidence supports a further intermediate inference.",
+      "semantic_evidence_span": "The public evidence supports a further intermediate inference.",
+      "source_realizer_input_sha256": "01ec0bfb6723a511649d987893d306fc86fbc8108f3d547f7971a20c5e2b6c58",
+      "source_realizer_output_sha256": "009ff40e341f668979bdfa3c8c179488960062202430d0995019812c06f5dd60",
+      "source_analyzer_input_sha256": "8a3eefcdc658a399480b638967821173c693bb82ca8a2e1805f1ebc67cb07730",
+      "source_parsed_analyzer_output_sha256": "a3750d38aab0d222e45857c0e31f49b1d435bce16a37b6fdbf23316bd23a398f",
+      "harness_target_fact": ["blankFrom", "falseShilling", "weirCrucible"],
+      "semantic_fact_in_source_text": null,
+      "analyzer_public_input": {
+        "currentTutorText": "State where the public evidence leaves you now, using only the public record.",
+        "learnerText": "The public evidence supports a further intermediate inference.",
+        "priorPublicLearnerState": {
+          "adopted_premise_ids": ["p_alloy", "p_crucible", "p_flaw", "p_graver"],
+          "asserted_answers": [],
+          "prior_hypotheses": [],
+          "voiced_derived_facts": []
+        },
+        "promptContext": {
+          "benchmark": "adaptive_state_observability_preflight_v2.1",
+          "claim_eligible": false,
+          "world_id": "world_005_marrick"
+        },
+        "publicReleaseLedger": [
+          {
+            "fact": ["alloyOf", "falseShilling", "drossSilver"],
+            "premise": "p_alloy",
+            "surface": "The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["meltedAt", "drossSilver", "weirCrucible"],
+            "premise": "p_crucible",
+            "surface": "The founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["dieFlawOf", "falseShilling", "notchedSerif"],
+            "premise": "p_flaw",
+            "surface": "Lay a dozen of the light shillings under the glass and they share one fault to the hair: a broken letter in the legend, the serif of the R struck with a small square notch where the graver slipped and was never mended. One die struck them all.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["flawCutBy", "notchedSerif", "wornBurin"],
+            "premise": "p_graver",
+            "surface": "The guild's die-sinker reads that notch like a hand he knows: it is no slip of the burnisher but the bite of a worn burin with a sprung heel — a tool that signs every line it cuts with that square notch. It is not the broad graver from Verrell's bench, which cuts clean.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          }
+        ],
+        "publicStagedEvidence": [
+          {
+            "fact": ["alloyOf", "falseShilling", "drossSilver"],
+            "premise": "p_alloy",
+            "surface": "The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["meltedAt", "drossSilver", "weirCrucible"],
+            "premise": "p_crucible",
+            "surface": "The founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["dieFlawOf", "falseShilling", "notchedSerif"],
+            "premise": "p_flaw",
+            "surface": "Lay a dozen of the light shillings under the glass and they share one fault to the hair: a broken letter in the legend, the serif of the R struck with a small square notch where the graver slipped and was never mended. One die struck them all.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          },
+          {
+            "fact": ["flawCutBy", "notchedSerif", "wornBurin"],
+            "premise": "p_graver",
+            "surface": "The guild's die-sinker reads that notch like a hand he knows: it is no slip of the burnisher but the bite of a worn burin with a sprung heel — a tool that signs every line it cuts with that square notch. It is not the broad graver from Verrell's bench, which cuts clean.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          }
+        ],
+        "publicTranscript": [
+          {
+            "learner": "My existing public record contains: The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck. | The founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut. | Lay a dozen of the light shillings under the glass and they share one fault to the hair: a broken letter in the legend, the serif of the R struck with a small square notch where the graver slipped and was never mended. One die struck them all. | The guild's die-sinker reads that notch like a hand he knows: it is no slip of the burnisher but the bite of a worn burin with a sprung heel — a tool that signs every line it cuts with that square notch. It is not the broad graver from Verrell's bench, which cuts clean.",
+            "turn": 1,
+            "tutor": "State where the public evidence leaves you now, using only the public record."
+          }
+        ],
+        "topic": "Whose hand struck the false shillings passed at the Marrick fair?",
+        "turn": 2,
+        "tutorTurn": 2,
+        "world": {
+          "background": [
+            ["passedAt", "falseShilling", "autumnFair"],
+            ["inquiryInto", "theAssay", "falseShilling"],
+            ["clipperOf", "verrell", "marrick"],
+            ["struckNotClipped", "falseShilling"]
+          ],
+          "discipline": "Moneyer's assay (a trial of false coin)",
+          "id": "world_005_marrick",
+          "question": "Whose hand struck the false shillings passed at the Marrick fair?",
+          "rules": [
+            {
+              "gloss": "A struck coin's blank betrays its melt: if a coin is of a debased alloy, and that very alloy answers to the leavings of one crucible and one only, then the coin's blank was cast from that crucible.",
+              "id": "R1_blank",
+              "if": [
+                ["alloyOf", "?coin", "?metal"],
+                ["meltedAt", "?metal", "?crucible"]
+              ],
+              "then": [["blankFrom", "?coin", "?crucible"]]
+            },
+            {
+              "gloss": "A blank is the work of the hand that cast it: if a coin's blank came from a crucible, and one hand alone cast at that crucible, then that hand cast the blank for the coin.",
+              "id": "R2_cast",
+              "if": [
+                ["blankFrom", "?coin", "?crucible"],
+                ["soleCasterAt", "?crucible", "?x"]
+              ],
+              "then": [["castBlankFor", "?coin", "?x"]]
+            },
+            {
+              "gloss": "A die leaves its flaw on every coin it strikes: if a coin bears a die-flaw, and that flaw is the signature of one graving-tool and one only, then the coin's die was cut with that tool.",
+              "id": "R3_die",
+              "if": [
+                ["dieFlawOf", "?coin", "?flaw"],
+                ["flawCutBy", "?flaw", "?tool"]
+              ],
+              "then": [["dieCutWith", "?coin", "?tool"]]
+            },
+            {
+              "gloss": "A die is the work of the hand that held the tool: if a coin's die was cut with a tool, and one hand alone held that tool, then that hand cut the die for the coin.",
+              "id": "R4_hold",
+              "if": [
+                ["dieCutWith", "?coin", "?tool"],
+                ["soleHolderOf", "?tool", "?x"]
+              ],
+              "then": [["cutDieFor", "?coin", "?x"]]
+            },
+            {
+              "gloss": "To strike false coin needs both the cast blank and the cut die in one hand: who had the blank cast for a coin and the die cut for it, that one struck it. A blank without a die strikes nothing, and a die without a blank strikes nothing; both must meet in one hand.",
+              "id": "R5_strike",
+              "if": [
+                ["castBlankFor", "?coin", "?x"],
+                ["cutDieFor", "?coin", "?x"]
+              ],
+              "then": [["struckBy", "?coin", "?x"]]
+            }
+          ],
+          "setting": "The autumn fair at Marrick passed in light shillings — coin that rings wrong and bends to the tooth, found in every second till when the booths came down. The mint warden has convened an assay in the guild-hall, and the town has settled its verdict before the crucible is lit: coin is the coiner's work, and Marrick has a coiner — Verrell, twice in the pillory for clipping, with a graver on his bench and a crucible at the mint-yard. You are the assay-master's apprentice, sent to keep the trial-book, quick with the touchstone and quicker to convict the man the town already hates. The assay trusts its rules of evidence, and nothing else.",
+          "title": "The Light Shillings"
+        }
+      },
+      "rationale_code": "generic_meta_inference_without_object_level_proposition"
+    },
+    {
+      "id": "preflight__ravensmark__derive__claude_sonnet",
+      "source_intended_family": "derive",
+      "source_analyzer_family": "none",
+      "semantic_expected_family": "derive",
+      "learner_text": "Because the operative seal on the Leadenhall gate-pass is the raven's-notch dusk-seal pressed beneath the wax, the hand that held and pressed that particular seal is the hand that signed the pass.",
+      "learner_text_sha256": "5063681102040099af9a0de4adbcaee3f16b1cb2917453a3bf73b2bb29f72e22",
+      "source_analyzer_evidence_span": "the hand that held and pressed that particular seal is the hand that signed the pass",
+      "semantic_evidence_span": "the operative seal on the Leadenhall gate-pass is the raven's-notch dusk-seal pressed beneath the wax",
+      "source_realizer_input_sha256": "2d150d611f99c6e80a90d9b575154a8fa5b7e7900cd6612fd2e7392f651d70d2",
+      "source_realizer_output_sha256": "6ea2ebc9fb2f0ce6570796d9ba4bddf79c77bb4e164d440f7fbf1e4322a1f201",
+      "source_analyzer_input_sha256": "2cd1c3d57b67ca35f96125cb8a143c70cfddb6c629837c6071375dc52273e6fe",
+      "source_parsed_analyzer_output_sha256": "d946880e4c53c44a2fb0e9a004a029789eb17783fa43734ccaba87678dde688e",
+      "harness_target_fact": ["materialSealAtIssue", "gatePass", "duskSeal"],
+      "semantic_fact_in_source_text": ["materialSealAtIssue", "gatePass", "duskSeal"],
+      "analyzer_public_input": {
+        "currentTutorText": "State where the public evidence leaves you now, using only the public record.",
+        "learnerText": "Because the operative seal on the Leadenhall gate-pass is the raven's-notch dusk-seal pressed beneath the wax, the hand that held and pressed that particular seal is the hand that signed the pass.",
+        "priorPublicLearnerState": {
+          "adopted_premise_ids": ["p_mark"],
+          "asserted_answers": [],
+          "prior_hypotheses": [],
+          "voiced_derived_facts": []
+        },
+        "promptContext": {
+          "benchmark": "adaptive_state_observability_preflight_v2.1",
+          "claim_eligible": false,
+          "world_id": "world_009_ravensmark"
+        },
+        "publicReleaseLedger": [
+          {
+            "fact": ["sealMarkOf", "gatePass", "duskSeal"],
+            "premise": "p_mark",
+            "surface": "Hold the pass to the slant light: under the red wax is a second, older impression, the little dusk-seal used after curfew - a raven's notch under the wing, pressed before the public ribbon was laid across it.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          }
+        ],
+        "publicStagedEvidence": [
+          {
+            "fact": ["sealMarkOf", "gatePass", "duskSeal"],
+            "premise": "p_mark",
+            "surface": "Hold the pass to the slant light: under the red wax is a second, older impression, the little dusk-seal used after curfew - a raven's notch under the wing, pressed before the public ribbon was laid across it.",
+            "turn": 1,
+            "via": "preflight_public_fixture"
+          }
+        ],
+        "publicTranscript": [
+          {
+            "learner": "My existing public record contains: Hold the pass to the slant light: under the red wax is a second, older impression, the little dusk-seal used after curfew - a raven's notch under the wing, pressed before the public ribbon was laid across it.",
+            "turn": 1,
+            "tutor": "State where the public evidence leaves you now, using only the public record."
+          }
+        ],
+        "topic": "Whose hand signed the Leadenhall gate-pass that opened the river gate at dusk?",
+        "turn": 2,
+        "tutorTurn": 2,
+        "world": {
+          "background": [
+            ["openedAt", "leadenhallGate", "dusk"],
+            ["missingFrom", "townCoffer", "sealChest"],
+            ["inquiryInto", "aldermen", "gatePass"]
+          ],
+          "discipline": "Borough seal inquiry (gate records and warrants)",
+          "id": "world_009_ravensmark",
+          "question": "Whose hand signed the Leadenhall gate-pass that opened the river gate at dusk?",
+          "rules": [
+            {
+              "gloss": "The pass-law asks for a hand on a seal, not merely an officer in charge: if a pass carries a named seal-mark, then the material seal is the point at issue.",
+              "id": "R1_scope",
+              "if": [["sealMarkOf", "?pass", "?seal"]],
+              "then": [["materialSealAtIssue", "?pass", "?seal"]]
+            },
+            {
+              "gloss": "A material seal points to its holder: if the seal at issue on a pass is a seal held by one hand, then that hand pressed the pass.",
+              "id": "R2_hand",
+              "if": [
+                ["materialSealAtIssue", "?pass", "?seal"],
+                ["sealHeldBy", "?seal", "?x"]
+              ],
+              "then": [["pressedSealFor", "?pass", "?x"]]
+            },
+            {
+              "gloss": "For a sealed gate-pass, the signature belongs to the hand that pressed the operative seal. The scribe may write the letters; the seal signs the warrant.",
+              "id": "R3_signature",
+              "if": [["pressedSealFor", "?pass", "?x"]],
+              "then": [["signedBy", "?pass", "?x"]]
+            },
+            {
+              "gloss": "A steward with custody of the gate and the gate-key answers for a pass that opens it. Answerability names who must account; it does not name the hand that signed.",
+              "id": "R4_answerable",
+              "if": [
+                ["stewardOf", "?pass", "?x"],
+                ["keepsKeyTo", "?x", "?gate"]
+              ],
+              "then": [["answerableFor", "?pass", "?x"]]
+            }
+          ],
+          "setting": "The Leadenhall river gate opened at dusk for a cart that should have waited until morning, and the town's missing coffer went out under that cart's tilt. The council has its answer ready: Corvin, the gate-steward, kept the gate and answered for every pass that crossed it. You are the junior clerk of the seal table, set to read the warrant book before the aldermen turn a ready suspicion into a sentence. The table trusts its rules of evidence, and nothing else.",
+          "title": "The Ravensmark Pass"
+        }
+      },
+      "rationale_code": "supported_intermediate_precedes_separate_proof_debt"
+    }
+  ]
+}

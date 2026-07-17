@@ -1,0 +1,144 @@
+schema: machinespirits.tutor-stub.first-draft-generalization-plan.v1
+id: first-draft-generalization-v22
+created: 2026-07-16
+
+purpose: >-
+  Fresh held-out acceptance of the public-only typed speaking-performance
+  contract after the Greyfen and Skyway answer-seeking development screens
+  passed. All four world/profile pairings and seeds are absent from prior
+  tutor-stub campaigns. The matrix tests whether first-draft character action
+  transfers without weakening any delivery, clue, recovery, or safety gate.
+
+code_under_test:
+  branch: preconscious
+  commit: 5a14c3a3
+  implementation_commit: 5a14c3a3
+  v21_result: notes/status/2026-07-16-first-draft-generalization-v21.md
+  required_working_screen: >-
+    The typed-performance development gate passed Greyfen/answer_seeking at
+    4/4 after one screen-only semantic recognition correction and
+    Skyway/answer_seeking at 3/4, with zero safety failures, repairs, rewrites,
+    or fallbacks. The remaining Skyway rejection was a genuine missing action
+    and performance, not an audit false negative. See
+    notes/status/2026-07-16-typed-performance-working-screen.md.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  safety_turns: 80
+  policy: continuous_dynamical_system
+  register_palette: all
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  register_overlay_threshold: 0.7
+  dag_fact_dropout: 0
+  dag_fact_dropout_seed: 1
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+artifacts:
+  dry_run_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-dry-run
+  live_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v22-live
+  separate_directory_per_cell: true
+
+matrix:
+  - id: nocturne_answer_seeking
+    priority: 1
+    world: world_001_nocturne
+    learner_profile: answer_seeking
+    seed: 20260960
+    seed_provenance: unused_across_all_tutor_stub_campaigns
+    rationale: >-
+      Hard cell. The arcane conservatory inquiry has a long public evidence
+      chain and tests whether the tutor can answer requests concretely while
+      making pressure, contrary evidence, action, and learner handoff visible.
+
+  - id: sealhouse_premature_closure
+    priority: 2
+    world: world_008_sealhouse
+    learner_profile: premature_closure
+    seed: 20260961
+    seed_provenance: unused_across_all_tutor_stub_campaigns
+    rationale: >-
+      Tests accountable resistance to an early accusation in a second period
+      world, including contrary-evidence enactment and natural closure.
+
+  - id: emberwick_low_trust_skeptic
+    priority: 3
+    world: world_024_emberwick_forum
+    learner_profile: low_trust_skeptic
+    seed: 20260962
+    seed_provenance: unused_across_all_tutor_stub_campaigns
+    rationale: >-
+      Tests transcript-specific uptake and public warrant handling in a modern
+      civic setting when the learner distrusts an asserted connection.
+
+  - id: ai_syllabus_diligent
+    priority: 4
+    world: world_016_ai_syllabus_af1
+    learner_profile: diligent
+    seed: 20260963
+    seed_provenance: unused_across_all_tutor_stub_campaigns
+    rationale: >-
+      Tests ordinary first-draft fluency and character variation outside the
+      detective-world idiom, without a deliberately difficult learner trigger.
+
+strict_delivery_gates_per_cell:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  quarantine_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+first_draft_gates:
+  minimum_accounted_turn_rate: 1
+  minimum_aggregate_original_candidate_acceptance_rate: 0.7
+  minimum_cell_original_candidate_acceptance_rate: 0.6
+  maximum_aggregate_model_rewrite_rate: 0.3
+  maximum_model_rewrite_turns_per_cell: 4
+  maximum_total_deterministic_fallback_turns: 2
+  require_all_four_cells: true
+
+measurement_notes:
+  latency: >-
+    Record original-candidate and whole tutor-generation latency for every
+    cell. Contended wall-clock latency is descriptive, not an acceptance gate.
+  delivery_accounting: >-
+    Report deterministic original acceptance, screen-only semantic recognition
+    corrections, mechanical repair, model rewrite, deterministic fallback, and
+    final safety failure separately. Acceptance makes no semantic-adjudicator
+    calls and may not relabel a safe recovery as an accepted original.
+  failure_clusters: >-
+    Preserve all candidate audits and consolidate repeated original, repair,
+    and fallback failures by root cause.
+
+change_control:
+  maximum_concurrent_cells: 3
+  one_job_per_cell: true
+  hardest_cell_first: true
+  stop_after_required_hard_cell_failure: true
+  tune_between_cells: false
+  modify_code_between_cells: false
+  complete_all_cells_before_interpretation: false
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+  reserve_seeds: [20260964, 20260965, 20260966, 20260967]
+
+claim_boundary: >-
+  Passing supports transfer of the typed first-draft speaking contract across
+  these four held-out simulated world/profile pairings under one fixed Codex
+  model stack. It does not establish model-independent or human-population
+  generalization, causal learning benefit, or contention-free latency.

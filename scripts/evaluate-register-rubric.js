@@ -17,7 +17,11 @@ import {
   parseJudgeResponse,
   resolveRubricYamlPath,
 } from '../services/rubricEvaluator.js';
-import { getEngagementRegisterDefinition, getRegisterRubricPath } from '../services/engagementRegisterRegistry.js';
+import {
+  getEngagementRegisterDefinition,
+  getRegisterRubricPath,
+  resolveEngagementRegister,
+} from '../services/engagementRegisterRegistry.js';
 import { applyNegativeRegisterScoreGuardrails } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -123,7 +127,8 @@ function getRecognitionQuality(turnScore) {
 function rubricPathForRegister(registerName) {
   const direct = getRegisterRubricPath(registerName);
   if (direct) return direct;
-  if (registerName === 'charismatic_challenge') return 'config/evaluation-rubric-charisma.yaml';
+  const canonical = resolveEngagementRegister(registerName)?.register || registerName;
+  if (canonical === 'charismatic') return 'config/evaluation-rubric-charisma.yaml';
   return null;
 }
 
@@ -137,9 +142,14 @@ function makeSlices(row, { registerFilter = null } = {}) {
     const turnIndex = Number(traceTurn.turn);
     if (!Number.isInteger(turnIndex) || turnIndex < 0) continue;
     const engagementState = traceTurn.engagementState || traceTurn.engagement_state || {};
-    const registerName = engagementState.selected_register || engagementState.selected_mode || '';
+    const rawRegisterName = engagementState.selected_register || engagementState.selected_mode || '';
+    const resolvedRegister = resolveEngagementRegister(rawRegisterName);
+    const registerName = resolvedRegister?.register || rawRegisterName;
     if (!registerName) continue;
-    if (registerFilter && registerName !== registerFilter) continue;
+    const resolvedFilter = registerFilter
+      ? resolveEngagementRegister(registerFilter)?.register || registerFilter
+      : null;
+    if (resolvedFilter && registerName !== resolvedFilter) continue;
 
     const rubricPath = rubricPathForRegister(registerName);
     if (!rubricPath) continue;

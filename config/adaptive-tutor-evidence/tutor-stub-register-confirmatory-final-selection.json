@@ -1,0 +1,204 @@
+{
+  "schema": "machinespirits.tutor-stub.register-confirmatory-selection.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "analysis": {
+    "primaryHorizon": 16,
+    "bootstrapDraws": 5000,
+    "bootstrapSeed": 20260713,
+    "controlProfile": "diligent",
+    "targetAveragePairwiseCosine": 0.85,
+    "targetMaxSimilarityToControl": 0.9
+  },
+  "families": {
+    "terra": {
+      "label": "GPT-5.6 Terra whole stack",
+      "archiveManifest": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-terra-n5-block-a.manifest.json",
+      "archiveRoot": "register-confirmatory-terra-n5-live-2026-07-13",
+      "expectedRows": 60,
+      "sources": [
+        {
+          "profile": "diligent",
+          "sourceLeg": "sealed-profile-run",
+          "summary": "diligent/auto-eval-2026-07-12T23-47-18-334Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        },
+        {
+          "profile": "affective_resistant",
+          "sourceLeg": "sealed-profile-run",
+          "summary": "affective_resistant/auto-eval-2026-07-13T00-36-45-440Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        },
+        {
+          "profile": "false_memory",
+          "sourceLeg": "sealed-profile-run",
+          "summary": "false_memory/auto-eval-2026-07-13T01-26-03-688Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "sourceLeg": "sealed-profile-run",
+          "summary": "proof_skipper/auto-eval-2026-07-13T02-23-28-900Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        }
+      ]
+    },
+    "sonnet": {
+      "label": "Claude Sonnet 5 whole stack",
+      "archiveManifest": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-sonnet5-n5-block-b.manifest.json",
+      "archiveRoot": "register-confirmatory-sonnet5-n5-live-2026-07-13",
+      "expectedRows": 60,
+      "sources": [
+        {
+          "profile": "diligent",
+          "sourceLeg": "sealed-profile-run",
+          "summary": "diligent/auto-eval-2026-07-13T00-52-45-908Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        },
+        {
+          "profile": "affective_resistant",
+          "sourceLeg": "original-r1-r2",
+          "summary": "affective_resistant-dead-session-limit-0122Z-partial/auto-eval-2026-07-13T01-21-36-793Z.json",
+          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2"]
+        },
+        {
+          "profile": "affective_resistant",
+          "sourceLeg": "resume-r3-and-r4-partial",
+          "summary": "affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/auto-eval-2026-07-13T13-13-51-949Z.json",
+          "keys": ["bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4"]
+        },
+        {
+          "profile": "affective_resistant",
+          "sourceLeg": "post-t16-topup",
+          "summary": "affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/auto-eval-2026-07-13T14-38-33-594Z.json",
+          "keys": ["negative-r4", "bland-r5", "field-r5", "negative-r5"],
+          "primaryOnly": true,
+          "reason": "Each row completed the frozen turn-16 endpoint before a session-window failure; until-grounded outcomes are unavailable."
+        },
+        {
+          "profile": "false_memory",
+          "sourceLeg": "sealed-replacement-run",
+          "summary": "false_memory/auto-eval-2026-07-13T03-05-32-442Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        },
+        {
+          "profile": "proof_skipper",
+          "sourceLeg": "sealed-replacement-run",
+          "summary": "proof_skipper/auto-eval-2026-07-13T08-57-09-553Z.json",
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
+        }
+      ]
+    }
+  }
+}

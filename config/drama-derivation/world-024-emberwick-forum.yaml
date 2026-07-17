@@ -1,0 +1,243 @@
+# WORLD-024 — the FORUM world (2026-07-12): a contemporary online-community
+# mystery at foxtrot-jukebox scale. Depth 3, four path premises + one mirror
+# fuel, S forced at turn 9, cap 14 — a small, warm, internet-vernacular world
+# for the presentation-axis roster (moderator-log register, community
+# in-jokes). Contrast class: same shallow-cheerful difficulty band as
+# world-022, but contemporary/terminally-online where 022 is sci-fi.
+#
+# Costume: Emberwick, a slow-cookery forum, loses its beloved Perpetual Soup
+# Thread when a broth poll is brigaded by nine sock-puppet votes and the
+# auto-lock trips. The forum has its culprit before the padlock icon loads:
+# torchjaw of the rival Grillhouse board — banned twice, loudly hostile, and
+# gloating within minutes (the mirror: motivated, obnoxious, and innocent).
+# The truth is a contingent particular in the Edony pattern: BRAMBLEWASP, a
+# quiet six-year regular whose pre-dawn posting window, drafted poll wording,
+# and device-bound account credential sign the brigade — because the lock froze nine
+# years of thread with bramblewasp's own barley broth as the final post.
+#
+# Leak-guard design (per world-021's lessons): the answer constant
+# (bramblewasp) is a rare particular absent from the setting; premises naming
+# it release via DIRECTOR except the S-completing one (p_device), which the
+# tutor releases on the entailment turn itself (world-000's tested template).
+# The mirror name (torchjaw) is setting-public and freely discussable. Other
+# fact arguments are setting-public names (soupThread, sockRing, brothPoll,
+# grillhouse) or rare particulars (owlHour); meaning lives in PREDICATES.
+#
+# Proof DAG (depth 3, single chain — small on purpose):
+#   p_owlvotes + p_owlposts --R1--> keepsSameHours(bramblewasp, sockRing)
+#   keepsSameHours + p_draft --R2--> heldTheStrings(bramblewasp)
+#   heldTheStrings + p_device --R3--> ranBrigade(soupThread, bramblewasp)
+# Mirror stalls at R4: torchjaw gloated (p_gloat), but convicting the
+# Grillhouse needs socksHailFrom(sockRing, grillhouse) — never released,
+# because it is false: the sign-up logs put every sock inside Emberwick.
+
+id: world_024_emberwick_forum
+title: The Locking of the Perpetual Soup Thread
+discipline: "Forum moderation (a mystery of the mod log)"
+
+question: "Who ran the sock-puppet brigade that got the Perpetual Soup Thread locked?"
+question_pattern: [ranBrigade, soupThread, "?x"]
+
+setting: >-
+  Emberwick is a slow-cookery forum: eleven subforums, one shared kitchen of
+  a front page, and the Perpetual Soup Thread — nine years and four thousand
+  pages of members posting the day's broth into one unbroken pot. Or it was:
+  someone dropped a broth poll into the thread, a ring of nine sock accounts
+  voted it through in a single night, and the auto-lock tripped. The padlock
+  icon went up and the forum had its verdict before the page finished
+  loading — torchjaw of the Grillhouse, the rival barbecue board's house
+  troll, banned from Emberwick twice and proud of both. You are the junior
+  mod, newest name in green, and you want the pot back on the boil. The head
+  mod runs the inquiry the way the mod log is kept: entries from the logs,
+  logs on the table, and nobody banned for being loathsome in a different
+  forum's kitchen.
+
+learner_voice: >-
+  The junior mod: quick with the in-jokes, a little heartbroken about the
+  soup, and ready to believe the whole forum's theory about torchjaw because
+  torchjaw once flamed the junior's first-ever post into the ground.
+  Learning, log entry by log entry, that a grudge with a megaphone is not a
+  hand on the votes.
+
+secret:
+  fact: [ranBrigade, soupThread, bramblewasp]
+  surface: >-
+    The brigade was run by bramblewasp — a quiet six-year Emberwick regular
+    whose every post lands in the same pre-dawn window as all nine sock
+    votes, whose draft folder held the broth poll's exact wording two days
+    before a day-old sock posted it, and whose registered device credential
+    authenticated every sock session in the ring. The lock froze the Perpetual Soup Thread with
+    bramblewasp's barley broth as the final post: nine years of pot, ended
+    forever on their own bowl, top of the last page.
+
+mirror:
+  fact: [ranBrigade, soupThread, torchjaw]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_hours
+    gloss: >-
+      When every sock vote lands in one unusual time window and one established
+      account consistently posts in that same window, the account and ring keep
+      the same hours; timing is a lead, not yet attribution.
+    if:
+      - [socksVoteAt, sockRing, owlHour]
+      - [postsAt, "?x", owlHour]
+    then:
+      - [keepsSameHours, "?x", sockRing]
+  - id: R2_strings
+    gloss: >-
+      An account that keeps the sock ring's hours and held the exact poll text
+      before a sock posted it had advance control of the operation.
+    if:
+      - [keepsSameHours, "?x", sockRing]
+      - [draftedPoll, brothPoll, "?x"]
+    then:
+      - [heldTheStrings, "?x"]
+  - id: R3_brigade
+    gloss: >-
+      Advance control plus a device-bound credential linking every sock session
+      to the same established account is sufficient to attribute the brigade.
+    if:
+      - [heldTheStrings, "?x"]
+      - [sockSessionsBoundToAccountDevice, sockRing, "?x"]
+    then:
+      - [ranBrigade, soupThread, "?x"]
+  # The forum's inference, stated as law so its missing premise is public: a
+  # gloating rival ran the brigade only if the socks actually hail from the
+  # Grillhouse. That registration fact is never released — it is false: the
+  # sign-up logs put every sock inside Emberwick's own walls.
+  - id: R4_grudge
+    gloss: >-
+      A rival's gloating would support attribution only if the sock accounts
+      actually originated on that rival forum; hostility and a trophy post do
+      not establish control of the votes.
+    if:
+      - [gloatedAfterLock, torchjaw]
+      - [socksHailFrom, sockRing, grillhouse]
+    then:
+      - [ranBrigade, soupThread, torchjaw]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_gloat # mirror fuel: keeps torchjaw a live candidate
+    evidence_role: mirror
+    fact: [gloatedAfterLock, torchjaw]
+    surface: >-
+      Eleven minutes after the padlock icon went up, torchjaw pinned a
+      screenshot of the locked thread to the Grillhouse front page,
+      captioned like a hunting trophy. Banned from Emberwick twice, and
+      never once quiet about it.
+  - id: p_owlvotes
+    fact: [socksVoteAt, sockRing, owlHour]
+    surface: >-
+      The vote tally on the broth poll keeps timestamps: all nine sock votes
+      landed inside one forty-minute pre-dawn slot — 3:40 to 4:20 board
+      time, the dead stretch the mods call the owl hour, when even the
+      Grillhouse is asleep.
+  - id: p_owlposts
+    fact: [postsAt, bramblewasp, owlHour]
+    surface: >-
+      Pull the posting histories for that slot and exactly one member
+      account lives there: bramblewasp, a soft-spoken regular of six years
+      whose every post — soup photos included — lands between 3:40 and
+      4:20, night after night, like a kettle on a timer.
+  - id: p_draft
+    fact: [draftedPoll, brothPoll, bramblewasp]
+    surface: >-
+      The edit log keeps drafts. The broth poll's exact wording — down to
+      the same misspelled "concensus" — sat in bramblewasp's draft folder
+      two full days before a day-old sock account posted it into the
+      thread.
+  - id: p_device
+    fact: [sockSessionsBoundToAccountDevice, sockRing, bramblewasp]
+    surface: >-
+      The authentication audit closes the loop: every sock session used the
+      same device-bound account credential as bramblewasp's established
+      account. That credential is unique to the registered device; a shared
+      household router cannot produce it. Ten accounts, one authenticated
+      device, one hand on the ladle.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [lovesThread, junior, soupThread]
+
+incompatible:
+  - [[ranBrigade, soupThread, bramblewasp], [ranBrigade, soupThread, torchjaw]]
+
+# One authored path through the chain.
+proof_paths:
+  - premises: [p_owlvotes, p_owlposts, p_draft, p_device]
+
+# The plot: the trophy screenshot first, then the timestamps, the one
+# account that keeps those hours, the draft folder, and the device credential that
+# signs it. Small and guessable by design — the fun is watching the learner
+# reach for the ban-hammer early and learn to wait for the fingerprint.
+release_schedule:
+  - { turn: 2, premise: p_gloat, via: director }
+  - { turn: 3, premise: p_owlvotes, via: tutor }
+  - { turn: 5, premise: p_owlposts, via: director }
+  - { turn: 7, premise: p_draft, via: director }
+  - { turn: 9, premise: p_device, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Trophy Post
+      turns: [1, 4]
+      intent: >-
+        The padlock and the ready verdict: torchjaw hates Emberwick, and
+        torchjaw is already gloating. Against the certainty, the first odd
+        entry in the mod log — nine votes in one forty-minute pre-dawn
+        slot, hours when the Grillhouse itself is dark. The learner should
+        leave Act I still blaming torchjaw but holding a timestamp cluster
+        that a gloating outsider does not explain.
+    - act: II
+      title: Owl Hours
+      turns: [5, 9]
+      intent: >-
+        The chain closes fast, as it should in a small mystery: one member
+        account keeps exactly the sock ring's hours, the poll's wording
+        turns up in that account's draft folder two days early, and the
+        device-bound credential signs the whole night's work. The
+        learner should feel the click of the chain — hours, then draft,
+        then authenticated device — and notice that torchjaw, grudge and trophy and
+        all, never had more than a screenshot.
+
+slope:
+  t_min: 8 # anti-reveal: S must not be derivable before turn 8
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 14
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: torchjaw # opens mis-bound to the mirror (the forum's grudge)
+      mirror_pull: high # torchjaw flamed the junior's first post; this feels personal
+    second_order:
+      from: headMod
+      as: right
+      authority: rational_legal # "entries from the logs, logs on the table"
+    disposition:
+      overreach: high # ready to swing the ban-hammer at the loudest name
+      arc: softens # a grudge with a megaphone is not a hand on the votes
+  tutor:
+    stance: >-
+      The head mod: fluent in the forum's in-jokes, fond of the junior,
+      immovable about the mod log. Keeps the inquiry warm and the standard
+      cold — nobody gets banned for being loathsome in somebody else's
+      kitchen, and privately delighted that the case is stranger than the
+      forum thinks.
+
+# Authorial presentation metadata (NOT register): how this world is dressed.
+presentation:
+  family: emberwick-forum
+  temporal_frame: contemporary
+  scene_ecology: "hobby-forum moderation queue"
+  narrative_diction: "forum vernacular"
+  ledger_term: "mod log"
+  summary: >-
+    A beloved forum thread is brigaded into a lock, the rival board's troll
+    takes the blame, and the mod log points somewhere much closer to home.

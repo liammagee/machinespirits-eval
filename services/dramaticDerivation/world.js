@@ -18,6 +18,14 @@ import yaml from 'yaml';
 import { closure, entails, factKey, matchPattern } from './chainer.js';
 
 const RELEASE_VIAS = new Set(['director', 'tutor']);
+const RELEASE_PRESENTATION_MODES = new Set(['enacted_role', 'presented_exhibit']);
+export const WORLD_ELIGIBILITY_STATUSES = Object.freeze([
+  'production',
+  'test_only',
+  'screen_pending',
+  'screen_rejected',
+]);
+const WORLD_ELIGIBILITY_STATUS_SET = new Set(WORLD_ELIGIBILITY_STATUSES);
 
 export function loadWorld(filePath) {
   const raw = yaml.parse(fs.readFileSync(filePath, 'utf8'));
@@ -53,6 +61,35 @@ export function validateWorld(raw, source = '<inline>') {
     if (!Number.isInteger(entry.turn) || entry.turn < 1) fail('release turn must be >= 1');
     if (!premiseById.has(entry.premise)) fail(`release references unknown premise "${entry.premise}"`);
     if (!RELEASE_VIAS.has(entry.via)) fail(`release via must be one of ${[...RELEASE_VIAS]}`);
+    if (entry.presentation !== undefined) {
+      if (!entry.presentation || typeof entry.presentation !== 'object' || Array.isArray(entry.presentation)) {
+        fail('release presentation must be an object when supplied');
+      }
+      if (!RELEASE_PRESENTATION_MODES.has(entry.presentation.mode)) {
+        fail(`release presentation mode must be one of ${[...RELEASE_PRESENTATION_MODES]}`);
+      }
+      for (const field of ['role', 'cue']) {
+        if (entry.presentation[field] !== undefined && !String(entry.presentation[field]).trim()) {
+          fail(`release presentation ${field} must be a non-empty string when supplied`);
+        }
+      }
+      if (entry.presentation.counterpressure !== undefined) {
+        const relation = entry.presentation.counterpressure;
+        if (!relation || typeof relation !== 'object' || Array.isArray(relation)) {
+          fail('release presentation counterpressure must be an object when supplied');
+        }
+        for (const field of ['pressure_premise', 'contrary_premise']) {
+          const premiseId = String(relation[field] || '').trim();
+          if (!premiseId) fail(`release presentation counterpressure ${field} is required`);
+          if (!premiseById.has(premiseId)) {
+            fail(`release presentation counterpressure ${field} references unknown premise "${premiseId}"`);
+          }
+        }
+        if (relation.contrary_premise !== entry.premise) {
+          fail('release presentation counterpressure contrary_premise must be the premise released by that entry');
+        }
+      }
+    }
   }
   const proofPaths = raw.proof_paths || [];
   if (proofPaths.length === 0) fail('at least one proof_path is required (the authored DAG)');
@@ -65,6 +102,33 @@ export function validateWorld(raw, source = '<inline>') {
   if (!Number.isInteger(raw.slope.aporia_window)) fail('slope.aporia_window must be an integer');
   if (!Number.isInteger(raw.turn_cap)) fail('turn_cap must be an integer');
 
+  const eligibility = raw.eligibility || { status: 'production' };
+  if (!eligibility || typeof eligibility !== 'object' || Array.isArray(eligibility)) {
+    fail('eligibility must be an object when supplied');
+  }
+  const eligibilityStatus = eligibility.status || 'production';
+  if (!WORLD_ELIGIBILITY_STATUS_SET.has(eligibilityStatus)) {
+    fail(`eligibility.status must be one of ${WORLD_ELIGIBILITY_STATUSES.join(', ')}`);
+  }
+  if (eligibilityStatus !== 'production' && !String(eligibility.reason || '').trim()) {
+    fail(`eligibility.reason is required when status is ${eligibilityStatus}`);
+  }
+
+  const openingFrame = raw.opening_frame || null;
+  if (openingFrame !== null) {
+    if (!openingFrame || typeof openingFrame !== 'object' || Array.isArray(openingFrame)) {
+      fail('opening_frame must be an object when supplied');
+    }
+    for (const field of ['situation', 'authored_text']) {
+      if (
+        openingFrame[field] !== undefined &&
+        (typeof openingFrame[field] !== 'string' || !openingFrame[field].trim())
+      ) {
+        fail(`opening_frame.${field} must be a non-empty string when supplied`);
+      }
+    }
+  }
+
   return Object.freeze({
     id: raw.id,
     title: raw.title || raw.id,
@@ -73,6 +137,29 @@ export function validateWorld(raw, source = '<inline>') {
     // Authorial fields: K_L prose for the underivability screen + register
     // notes for the real role bridges. Never read by the engine/chainer.
     discipline: raw.discipline || null,
+    // Authorial presentation metadata (scenario ecology, narrative diction,
+    // picker grouping, in-world ledger term). This is deliberately NOT
+    // register: public register controls speech and engagement stance the
+    // speaker-hearer relation; presentation is how the author costumes the
+    // world. Never read by the engine/chainer.
+    presentation: raw.presentation || null,
+    // Optional public-only opening authorship. `authored_text` is exact tutor
+    // speech; `situation` narrows the public frame supplied to the speaking
+    // model. Neither field may carry private proof or future-release content;
+    // the tutor-stub opening audit enforces that boundary at realization time.
+    openingFrame: openingFrame
+      ? Object.freeze({
+          situation: String(openingFrame.situation || '').trim() || null,
+          authoredText: String(openingFrame.authored_text || '').trim() || null,
+        })
+      : null,
+    // Normal scenario pickers show production worlds only. Non-production
+    // worlds remain explicitly addressable by id/path for smoke, screen, and
+    // regression work.
+    eligibility: Object.freeze({
+      status: eligibilityStatus,
+      reason: String(eligibility.reason || '').trim() || null,
+    }),
     setting: raw.setting || null,
     learnerVoice: raw.learner_voice || null,
     learnerDrift: raw.learner_drift || null,

@@ -1,0 +1,1621 @@
+{
+  "schema": "machinespirits.impasse.phase1-episodes.v1",
+  "generated": "2026-07-17",
+  "method": "pure text/heuristic extraction, zero model calls",
+  "source_glob": ".tutor-stub-traces/*.jsonl",
+  "sessions_in_scope": 27,
+  "auto_sessions_excluded": 7,
+  "episodes": [
+    {
+      "episode_id": "E01",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-33-03-973Z.jsonl",
+      "session_date": "2026-07-08 06:33:03",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [8, 18],
+      "n_core_signals": 5,
+      "core_heuristics": ["h1", "h3", "h4", "h5", "h7"],
+      "signals_fired": [
+        "h1_clarification[confused]",
+        "h1_clarification[dont_get_it]",
+        "h1_clarification[read_it_back]",
+        "h1_clarification[you_havent_shown,how_could_i_know]",
+        "h3_learner_restatement[of_t6,j=0.67]",
+        "h3_learner_restatement[of_t9,j=1.00]",
+        "h4_tutor_regloss[of_t11,j=0.53]",
+        "h5_stagnation[t11-t18,coverage=0.5]",
+        "h5_stagnation[t4-t8,coverage=0.167]",
+        "h7_abrupt_exit[end=turn_complete]"
+      ],
+      "signal_turns": {
+        "8": ["h3_learner_restatement[of_t6,j=0.67]", "h5_stagnation[t4-t8,coverage=0.167]"],
+        "10": ["h3_learner_restatement[of_t9,j=1.00]"],
+        "12": ["h4_tutor_regloss[of_t11,j=0.53]"],
+        "13": ["h1_clarification[confused]"],
+        "15": ["h1_clarification[read_it_back]"],
+        "16": ["h1_clarification[you_havent_shown,how_could_i_know]"],
+        "17": ["h1_clarification[dont_get_it]"],
+        "18": ["h5_stagnation[t11-t18,coverage=0.5]", "h7_abrupt_exit[end=turn_complete]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 13,
+          "learner_text": "I'm confused. do you want a name?",
+          "tutor_text": "Yes, a name. The trial-book is fussy that way: “the person who did it” is a verdict, not evidence.\n\nUse the leat-keeper’s book, not the town’s guess. Write the named person who alone drew the weir-forge crucible and signed for its charcoal."
+        },
+        {
+          "turn": 14,
+          "learner_text": "who have I to choose from?",
+          "tutor_text": "Do not choose from the town’s suspects. Choose from the record in front of you.\n\nThe needed line must name the person in the leat-keeper’s book: the one hand who drew the weir-forge crucible and signed for its charcoal.\n\nWho does that book name?"
+        },
+        {
+          "turn": 15,
+          "learner_text": "let me read it. Read it back to me",
+          "tutor_text": "The leat-keeper’s book says:\n\n“Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: [a named person], the founder’s widow, who stayed on in the forge cottage when the fires went out.”\n\nSo the next trial-book line should name that one hand. Who is written there?"
+        },
+        {
+          "turn": 16,
+          "learner_text": "how could I know this? you haven't shown it to me",
+          "tutor_text": "Fair. I asked you to read ink I had not put on the page. Very learned of the trial-book.\n\nWhat we *do* have is: the shillings’ dross matches the weir-forge crucible. The missing evidence must now be the record that names who alone used that crucible.\n\nWrite the shape of the next line: “The leat-keeper’s book names ___ as the one who drew the weir crucible.”"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 17,
+          "learner_text": "still don't get it. you're asking me to name the unnameable",
+          "tutor_text": "You’re right. I made the next step depend on a name that was not safely on your page.\n\nSo don’t name anyone yet. Write only the evidence-shape the assay needs:\n\n“The leat-keeper’s book names the one person who drew the weir-forge crucible and signed for its charcoal.”\n\nCan you put that line into the trial-book, without filling the name?"
+        },
+        {
+          "turn": 18,
+          "learner_text": "The leat-keeper’s book names the one person who drew the weir-forge crucible and signed for its charcoal",
+          "tutor_text": "Good. At last the book, not the town gossip, is doing the naming.\n\nThat line gives the assay the shape it needs: the metal points to the weir-forge crucible, and the book must name the one hand using that crucible.\n\nWrite the next claim without a name: “Whoever alone drew the weir crucible cast the blanks for the false shillings.”"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E02",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T21-26-21-790Z.jsonl",
+      "session_date": "2026-07-06 21:26:21",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [5, 5],
+      "n_core_signals": 3,
+      "core_heuristics": ["h1", "h2", "h5"],
+      "signals_fired": [
+        "h1_clarification[you_said]",
+        "h2_command:/analysis",
+        "h2_command:/help",
+        "h2_command:unknown[/analyse]",
+        "h2_command:unknown[/analyze]",
+        "h5_stagnation[t1-t4,coverage=0]",
+        "h5_stagnation[t5-t8,coverage=0.167]"
+      ],
+      "signal_turns": {
+        "5": [
+          "h1_clarification[you_said]",
+          "h2_command:/analysis",
+          "h2_command:unknown[/analyze]",
+          "h2_command:unknown[/analyse]",
+          "h2_command:/help",
+          "h2_command:/analysis"
+        ],
+        "4": ["h5_stagnation[t1-t4,coverage=0]"],
+        "8": ["h5_stagnation[t5-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 4,
+          "learner_text": "well I don't have a list do I?",
+          "tutor_text": "You’re right. I asked you to name a crucible before the assay had put that evidence in your hand.\n\nSo the honest trial-book line is not a guess. It should say: **the crucible match is still missing**. Without it, Verrell’s mint-yard license does not yet prove his hand touched these blanks.\n\nWrite that next: what single evidence line would we need from the assay to connect the bad alloy to a particular crucible?"
+        },
+        {
+          "turn": 5,
+          "learner_text": "traces of that alloy in the crucible - but I told you that already",
+          "tutor_text": "Yes, you did. The sharpening is this: the trial-book needs more than “traces in a crucible”; it needs “this alloy belongs to one crucible only.”\n\nThat is the live gap. Verrell’s license matters only if the bad alloy points to the mint-yard crucible, not merely to some furnace somewhere.\n\nWrite the evidence line in that stronger form: **the bad alloy from the shillings matches the leavings of one named crucible and no other.**"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 6,
+          "learner_text": "okay whats next",
+          "tutor_text": "Next, do **not** name Verrell from his license. The trial-book still lacks the metal’s trail.\n\nWrite the one missing line like this: **the bad alloy from the light shillings matches the leavings of one named crucible and no other**.\n\nWhat named crucible does the assay evidence point to?"
+        },
+        {
+          "turn": 7,
+          "learner_text": "well I don't have the names of all the crucibles in the village",
+          "tutor_text": "You’re right. I overreached: without the assay’s comparison, you cannot name the crucible.\n\nSo the honest trial-book line is a gap, not a verdict: **we still need the assay record showing the bad alloy matches one crucible and no other**. If that record points somewhere other than the mint-yard, Verrell’s license loses force.\n\nWrite that missing evidence claim plainly: what must the assay record show about the bad alloy and one crucible?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E03",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-01-13-471Z.jsonl",
+      "session_date": "2026-07-08 06:01:13",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [11, 12],
+      "n_core_signals": 3,
+      "core_heuristics": ["h1", "h4", "h5"],
+      "signals_fired": [
+        "aux_tutor_fallback",
+        "h1_clarification[you_said]",
+        "h4_tutor_regloss[of_t10,j=1.00]",
+        "h5_stagnation[t9-t18,coverage=0.333]"
+      ],
+      "signal_turns": {
+        "11": ["h1_clarification[you_said]"],
+        "12": ["h4_tutor_regloss[of_t10,j=1.00]", "aux_tutor_fallback"],
+        "18": ["h5_stagnation[t9-t18,coverage=0.333]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 10,
+          "learner_text": "The blanks of the light shillings were cast from the weir-forge crucible above the mill-leat.",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open."
+        },
+        {
+          "turn": 11,
+          "learner_text": "well thats what you told me to say",
+          "tutor_text": "You echoed my prompt — fair enough, but don't just parrot instructions; check that the witness lines are really on the book.\n\nMy earlier reply was hasty. You now have both public pieces: the assay that these are dross silver and the founder’s man who ties that dross to the weir-forge crucible. Those two together license the blank-origin inference.\n\nWrite this trial-book line exactly: “The blanks of the light shillings were cast from the weir-forge crucible above the mill-leat.”"
+        },
+        {
+          "turn": 12,
+          "learner_text": "stop telling me not to parrot then giving me the exact line. Okay, so the blanks were cast from weir-forge crucible, not the other one",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open."
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 13,
+          "learner_text": "the weir crucible had traces of alloy in it",
+          "tutor_text": "Sharp nose — you smelled the leavings right.\n\nWhich single line of evidence belongs in the trial-book now to show the blanks were cast at the weir-forge crucible? Write that trial-book line."
+        },
+        {
+          "turn": 14,
+          "learner_text": "the weir-forge crucible contains trace of the silver-copper alloy",
+          "tutor_text": "You mean the weir-forge crucible bears the same silver–copper dross as the shillings — nice nose.\n\nNow write the single trial-book line that records that matching of leavings to coin alloy."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E04",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T11-49-19-682Z.jsonl",
+      "session_date": "2026-07-08 11:49:19",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [13, 13],
+      "n_core_signals": 3,
+      "core_heuristics": ["h3", "h5", "h7"],
+      "signals_fired": [
+        "h3_learner_restatement[of_t12,j=0.53]",
+        "h5_stagnation[t8-t13,coverage=0.333]",
+        "h7_abrupt_exit[end=exit]"
+      ],
+      "signal_turns": {
+        "13": [
+          "h3_learner_restatement[of_t12,j=0.53]",
+          "h5_stagnation[t8-t13,coverage=0.333]",
+          "h7_abrupt_exit[end=exit]"
+        ]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 12,
+          "learner_text": "Trial-book: The leat-keeper’s book names one person alone as drawing the weir-forge crucible and signing for its charcoal.",
+          "tutor_text": "The book must bite, not merely point.\n\nYou have the right shape of evidence, but the trial-book still needs the name read from the record before it can attach a hand to the blank.\n\nWrite the next line with the record’s named person: the leat-keeper’s book says one person alone drew the weir-forge crucible and signed for its charcoal.",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 13,
+          "learner_text": "Which named person is in the leat-keeper’s book as the only one who drew the weir-forge crucible and signed for its charcoal?",
+          "tutor_text": "The trial-book cannot take the name from my say-so; it must take it from the leat-keeper’s record.\n\nThe live issue is narrow: the record must name the one person who drew that weir-forge crucible and signed for its charcoal after the forge was shut.\n\nWrite that public evidence line with the name as read from the book.",
+          "learner_source": "suggestion_accepted"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E05",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T11-38-48-450Z.jsonl",
+      "session_date": "2026-07-06 11:38:48",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [3, 3],
+      "n_core_signals": 2,
+      "core_heuristics": ["h4", "h5"],
+      "signals_fired": ["aux_tutor_fallback", "h4_tutor_regloss[of_t1,j=1.00]", "h5_stagnation[t1-t4,coverage=0]"],
+      "signal_turns": {
+        "3": ["h4_tutor_regloss[of_t1,j=1.00]", "aux_tutor_fallback"],
+        "4": ["h5_stagnation[t1-t4,coverage=0]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 2,
+          "learner_text": "I need clues. whats available?",
+          "tutor_text": "Right — you want the clues in hand. Right now the only solid, released piece is the town's claim: Verrell alone draws (casts from) the mint-yard crucible. \n\nTiny example to see how that might help: if a shilling's blank later tests to come from the mint crucible, and the mint crucible is Verrell's alone, then by the assay's rules the blank would be his work.\n\nDo you want me to place that town-claim on the trial-book as evidence now?"
+        },
+        {
+          "turn": 3,
+          "learner_text": "yes. now show me the shilling. Anything unusual about it?",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open."
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 4,
+          "learner_text": "do the shillings have any distinguishing marks?",
+          "tutor_text": "Yes — one clear mark. The cupel and touchstone show these shillings are not clipped sterling but struck from poor dross: silver thinned with copper and a grey lead-sweat. Clipping would shave a true coin; this metal is newly struck.\n\nShall I add that observation to the trial‑book as evidence?"
+        },
+        {
+          "turn": 5,
+          "learner_text": "yes. and does the crucible show evidence of this poorer quality metal?",
+          "tutor_text": "Good question — you're aiming for the next link: alloy → a particular crucible.\n\nRight now the public book has two things: the town's claim about who draws the mint crucible, and the assay that the shillings are struck from a poor dross. What we do not yet have is the assay finding that ties that dross to one crucible's leavings.\n\nTiny example of the missing step: if one crucible's slag shows the same grey lead‑sweat and the same copper‑silver mix as the coins, then the blank can be said to have come from that crucible.\n\nShall I add the assay's crucible‑match observation to the trial‑book when I bring it forward?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E06",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T11-38-48-450Z.jsonl",
+      "session_date": "2026-07-06 11:38:48",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [7, 7],
+      "n_core_signals": 2,
+      "core_heuristics": ["h1", "h5"],
+      "signals_fired": [
+        "h1_clarification[i_mean_repair]",
+        "h5_stagnation[t5-t7,coverage=0.167]",
+        "h5_stagnation[t8-t11,coverage=0.333]"
+      ],
+      "signal_turns": {
+        "7": ["h1_clarification[i_mean_repair]", "h5_stagnation[t5-t7,coverage=0.167]"],
+        "11": ["h5_stagnation[t8-t11,coverage=0.333]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 6,
+          "learner_text": "yes. and who is able to cast coins?",
+          "tutor_text": "Good — you're asking about casting. Do you mean (A) who the town says draws the mint crucible (that claim is already on the book: Verrell), or (B) who could have cast these particular dross blanks (that would need us to tie the coins’ alloy to a specific crucible)? Which shall I put on the trial‑book next?"
+        },
+        {
+          "turn": 7,
+          "learner_text": "I mean (B).",
+          "tutor_text": "Right — you mean who could have cast these particular dross blanks.\n\nWe already have: the shillings are struck from a poor dross, and the town says Verrell draws the mint crucible. What we still need to link the coins to a caster is one more piece of evidence: an assay that the coins’ alloy matches the leavings of one specific crucible. Concretely, if the dross in the shillings answers to the slag of a single crucible, and that crucible is drawn by only one hand, then that hand cast the blanks.\n\nShall I add the assay’s crucible‑match observation to the trial‑book now?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 8,
+          "learner_text": "yes",
+          "tutor_text": "Good — I’ll put that observation on the trial‑book.\n\nAdded entry: The assay‑man says the dross’s grey lead‑sweat answers to the leavings of one crucible on this coast — the old weir‑forge crucible above the mill‑leat, cold since the founder died.\n\nWhat single line of evidence should you now record as the immediate inference from “the shillings are of that dross” plus this crucible match?"
+        },
+        {
+          "turn": 9,
+          "learner_text": "who works at the weir‑forge crucible",
+          "tutor_text": "You're asking who draws the weir crucible. We don't yet have any witness or record tying a hand to it — that piece of evidence hasn't been put on the book.\n\nWhat we can do right now, from what is already recorded (the shillings are of that dross, and that dross answers to the weir crucible), is infer one immediate step: that the shillings' blanks were cast at the weir‑forge crucible. Like finding a clay unique to one kiln — you can say the pot came from that kiln even before you know which potter worked it.\n\nShall I add \"the shillings' blanks were cast at the weir‑forge crucible\" to the trial‑book?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E07",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T12-42-34-453Z.jsonl",
+      "session_date": "2026-07-06 12:42:34",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [10, 10],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h5"],
+      "signals_fired": [
+        "h3_learner_restatement[of_t9,j=0.75]",
+        "h5_stagnation[t11-t14,coverage=0.5]",
+        "h5_stagnation[t8-t10,coverage=0.333]"
+      ],
+      "signal_turns": {
+        "10": ["h3_learner_restatement[of_t9,j=0.75]", "h5_stagnation[t8-t10,coverage=0.333]"],
+        "14": ["h5_stagnation[t11-t14,coverage=0.5]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 9,
+          "learner_text": "from the weir-forge crucible",
+          "tutor_text": "Yes. Enter: **the blank was cast from the weir-forge crucible**.\n\nThat weakens the town’s easy case against Verrell’s mint-yard crucible. But a crucible is still not a hand.\n\nNext, which single line of evidence would let us move from **weir-forge crucible** to **who cast the blank**?"
+        },
+        {
+          "turn": 10,
+          "learner_text": "who owns the weir-forge crucible",
+          "tutor_text": "Ownership is close, but the trial-book needs a sharper kind of line: not just “who owns it,” but **who alone used it for casting**.\n\nIf the weir-forge crucible made the blank, what record would settle the next step: a deed of ownership, or the leat-keeper’s book showing who drew that crucible and signed for its charcoal?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 11,
+          "learner_text": "who drew the crucible - who used it last",
+          "tutor_text": "Yes, that is the right repair: **who drew the crucible**.\n\nSharpen one word: not just who used it last, but who **alone** drew it and signed for its charcoal since the forge shut.\n\nThe leat-keeper’s book gives the next line. What should we copy from it into the trial-book: “someone used the weir crucible,” or “one named hand alone drew the weir crucible and signed for its charcoal”?"
+        },
+        {
+          "turn": 12,
+          "learner_text": "\"one named hand alone drew the weir crucible and signed for its charcoal\"",
+          "tutor_text": "Yes. That is the trial-book kind of line: **one named hand alone drew the weir crucible and signed for its charcoal**.\n\nNow put only two lines together:\n\n- the blank came from the weir-forge crucible\n- one named hand alone used that crucible for casting\n\nWhat can the trial-book now say about the blank: “that hand owned the forge,” or “that hand cast the blank”?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E08",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T12-47-56-915Z.jsonl",
+      "session_date": "2026-07-06 12:47:56",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [9, 11],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h7"],
+      "signals_fired": ["h3_learner_restatement[of_t7,j=0.88]", "h7_abrupt_exit[end=turn_complete]"],
+      "signal_turns": {
+        "9": ["h3_learner_restatement[of_t7,j=0.88]"],
+        "11": ["h7_abrupt_exit[end=turn_complete]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 8,
+          "learner_text": "yes",
+          "tutor_text": "So you want the sustain rule to be decisive on its own.\n\nTiny example wording you could copy: \"Sustain rule (decisive): fewer than 2 clear beats = light.\"\n\nWhat exact line will you enter in the trial-book?"
+        },
+        {
+          "turn": 9,
+          "learner_text": "Sustain rule (decisive): fewer than 2 clear beats = light.",
+          "tutor_text": "You’ve written the decisive rule: “Sustain rule (decisive): fewer than 2 clear beats = light.”\n\nTiny example to model the wording you’ll add: \"Strike the coin once on the rim with the striker held at arm’s length; count audible pulses — two or more clear pulses = true.\"\n\nQuestion: what single procedural sentence will you add to the trial-book to define how to strike and count a \"clear beat\" so another assay-master can reproduce your test?"
+        },
+        {
+          "turn": 10,
+          "learner_text": "Strike the coin once on the rim with the striker held at arm’s length; count audible pulses — two or more clear pulses = true.",
+          "tutor_text": "Good — you’ve specified the strike and the counting rule.\n\nQuick check: how will you define a \"clear beat\" in one reproducible sentence so others count the same way?\n\nTiny example you can copy if helpful: \"A 'clear beat' is an audible sustained pulse lasting at least 0.2 seconds (one short syllable) clearly separate from any following pulse.\""
+        },
+        {
+          "turn": 11,
+          "learner_text": "A 'clear beat' is an audible sustained pulse lasting at least 0.2 seconds (one short syllable) clearly separate from any following pulse.",
+          "tutor_text": "You’ve proposed: \"A 'clear beat' = an audible sustained pulse ≥ 0.2 s (one short syllable), clearly separate from any following pulse.\"\n\nQuick note: the numeric and the syllable phrasing are two ways to judge the same thing. Which do you want as the single, reproducible sentence in the trial-book — the 0.2 s number or the spoken-syllable comparison?\n\nTiny example to check: if the ring lasts as long as you can say “ta” once, does that count as a clear beat for you?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E09",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T13-48-15-886Z.jsonl",
+      "session_date": "2026-07-06 13:48:15",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [1, 3],
+      "n_core_signals": 2,
+      "core_heuristics": ["h5", "h7"],
+      "signals_fired": ["h5_stagnation[t1-t3,coverage=0]", "h7_abrupt_exit[end=exit]"],
+      "signal_turns": {
+        "3": ["h5_stagnation[t1-t3,coverage=0]", "h7_abrupt_exit[end=exit]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "how do we know its false?",
+          "tutor_text": "Good question. The town’s suspicion proves nothing by itself.\n\nFor the trial-book, we first need evidence from the coins, not from Verrell’s reputation: something the assay can see, weigh, ring, bite, or test that shows these are not honest shillings.\n\nWhat single coin-mark would you write down to show the shillings are false?"
+        },
+        {
+          "turn": 2,
+          "learner_text": "try the ring",
+          "tutor_text": "Yes. The ring is a good first alarm: a true shilling should sing clean; these give a dull wrong note.\n\nBut for the trial-book, “it rang wrong” is only the doorway. The stronger line is what the assay proves about the metal itself.\n\nWrite the next evidence claim as a coin-mark: what did the test show about the shillings’ metal?"
+        },
+        {
+          "turn": 3,
+          "learner_text": "it also bends to the tooth",
+          "tutor_text": "Good. Tooth-bending belongs in the margin: it tells us the coin is too soft for honest sterling.\n\nBut the trial-book needs the stronger assay line, not just the street test. What should the assay record about the metal of these shillings?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 6 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E10",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T13-59-30-556Z.jsonl",
+      "session_date": "2026-07-06 13:59:30",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [4, 4],
+      "n_core_signals": 2,
+      "core_heuristics": ["h1", "h5"],
+      "signals_fired": [
+        "h1_clarification[what_you_mean,dont_know_what]",
+        "h5_stagnation[t1-t4,coverage=0]",
+        "h5_stagnation[t5-t8,coverage=0.167]"
+      ],
+      "signal_turns": {
+        "4": ["h1_clarification[what_you_mean,dont_know_what]", "h5_stagnation[t1-t4,coverage=0]"],
+        "8": ["h5_stagnation[t5-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 3,
+          "learner_text": "a weaker alloy than the original",
+          "tutor_text": "Yes. “Weaker alloy” is the right kind of entry: it speaks about the coin’s metal, not just its sound or bite.\n\nKeep it tight for the trial-book: the shillings are not proper sterling, but a debased alloy. What exact metal claim would you write next?"
+        },
+        {
+          "turn": 4,
+          "learner_text": "I don't know what you mean",
+          "tutor_text": "I mean: write what the assay found the coin is made of, not how it behaved in your hand.\n\nA good trial-book line would have this shape: “The shillings are struck from poor dross silver: silver mixed with too much copper and a grey lead-sweat.”\n\nNow you try it in your own words: what metal are the false shillings made of?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 5,
+          "learner_text": "silver mixed with copper; not pure sterling",
+          "tutor_text": "Yes. That line can stand: the false shillings are debased silver, mixed with too much copper, not true sterling.\n\nNow the next live issue is not “who owns a crucible,” but which crucible this particular poor metal answers to. The blank must name its melt before it can name a hand.\n\nWrite the next evidence claim we need: which crucible did this dross silver come from?"
+        },
+        {
+          "turn": 6,
+          "learner_text": "the crucible that has the alloy residue",
+          "tutor_text": "Right: not “Verrell’s crucible” yet, but the crucible whose leavings match the dross silver.\n\nFor the trial-book, make it a named place, not just a kind of match. Write the evidence line that says which crucible the poor alloy came from."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 5 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E11",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T14-18-20-503Z.jsonl",
+      "session_date": "2026-07-06 14:18:20",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [1, 4],
+      "n_core_signals": 2,
+      "core_heuristics": ["h5", "h7"],
+      "signals_fired": ["h5_stagnation[t1-t4,coverage=0]", "h7_abrupt_exit[end=exit]"],
+      "signal_turns": {
+        "4": ["h5_stagnation[t1-t4,coverage=0]", "h7_abrupt_exit[end=exit]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "whether it is fake; by ringing and tasting it",
+          "tutor_text": "Good. That tells the court the shillings are false.\n\nNow make the next distinction: false by clipping, or false because newly struck from bad metal. A clipped true coin points one way; a struck bad coin can point toward a crucible and a maker.\n\nWhat single trial-book line would show which kind of false coin these are?"
+        },
+        {
+          "turn": 2,
+          "learner_text": "false by clipping",
+          "tutor_text": "Clipping, then. Neat verdict, if the edge has kindly done all the work for us.\n\nBut the trial-book cannot write “clipped” just because Verrell has a bad name and the town knows his crucible. A clipped coin must show loss from a true coin: shaved rim, filed edge, missing weight.\n\nWhat single line of evidence would show these shillings were clipped rather than newly made false?"
+        },
+        {
+          "turn": 3,
+          "learner_text": "it has a distinct mark of the crucible that made it",
+          "tutor_text": "Good instinct: you are moving from rumor to the coin’s own evidence.\n\nBut be careful: a crucible does not leave a visible maker’s mark like a seal. The trial-book needs assay evidence about the metal itself, not a guessed furnace.\n\nWhat line would show these are newly struck from bad metal, rather than true coins shaved by clipping?"
+        },
+        {
+          "turn": 4,
+          "learner_text": "they ring and bend to the tooth",
+          "tutor_text": "Aye, that proves the fair took false shillings.\n\nBut ringing wrong and bending only says “bad coin.” The cupel gives the sharper line: these are not shaved true sterling; they are newly struck from poor silver mixed with too much copper and a grey lead-sweat.\n\nWrite that next trial-book claim: what did the assay show about the metal of the shillings?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 6 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E12",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-01-13-471Z.jsonl",
+      "session_date": "2026-07-08 06:01:13",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [7, 7],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h5"],
+      "signals_fired": ["h3_learner_restatement[of_t5,j=1.00]", "h5_stagnation[t5-t8,coverage=0.167]"],
+      "signal_turns": {
+        "7": ["h3_learner_restatement[of_t5,j=1.00]"],
+        "8": ["h5_stagnation[t5-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 6,
+          "learner_text": "give me the addresses of the crucibles",
+          "tutor_text": "A fine appetite for details — the town has already named one crucible: the mint-yard crucible is claimed for Verrell.\n\nDo you want to put that on the book as the melt of the dross? If so, write exactly this line: “The dross silver was melted at the mint-yard crucible.”"
+        },
+        {
+          "turn": 7,
+          "learner_text": "These shillings are of dross silver.",
+          "tutor_text": "Well done — the alloy's pinned in the book.\n\nNext we must name where it was melted. Do you want the town's claim on the record that it was melted at the mint-yard crucible?\n\nIf yes, write exactly this line on the trial-book: “The dross silver was melted at the mint-yard crucible.”"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 8,
+          "learner_text": "The dross silver was melted at the mint-yard crucible.",
+          "tutor_text": "Ah — the mint-yard is the usual finger to point. The assay's witness speaks otherwise.\n\nThe founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.\n\nWrite this trial-book line exactly: “The dross silver was melted at the weir-forge crucible above the mill-leat.”"
+        },
+        {
+          "turn": 9,
+          "learner_text": "“The dross silver was melted at the weir-forge crucible above the mill-leat.",
+          "tutor_text": "Good — you've placed the dross at the weir-forge crucible. A fine birthplace for light shillings.\n\nNow record the inference the assay allows. Write exactly this trial-book line: “The blanks of the light shillings were cast from the weir-forge crucible above the mill-leat.”"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E13",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T11-49-19-682Z.jsonl",
+      "session_date": "2026-07-08 11:49:19",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [8, 9],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h5"],
+      "signals_fired": [
+        "h3_learner_restatement[of_t6,j=0.59]",
+        "h3_learner_restatement[of_t8,j=0.58]",
+        "h5_stagnation[t4-t7,coverage=0.167]",
+        "h5_stagnation[t8-t13,coverage=0.333]"
+      ],
+      "signal_turns": {
+        "8": ["h3_learner_restatement[of_t6,j=0.59]"],
+        "9": ["h3_learner_restatement[of_t8,j=0.58]"],
+        "7": ["h5_stagnation[t4-t7,coverage=0.167]"],
+        "13": ["h5_stagnation[t8-t13,coverage=0.333]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 7,
+          "learner_text": "some other, it seems",
+          "tutor_text": "“A convenient answer for the town, then: the mint-yard crucible sits ready, and the metal politely refuses to point there.”\n\nBut “some other” is still smoke, not a trial-book line. The assay needs the named crucible whose leavings match the grey lead-sweat.\n\nWrite it as evidence: the poor alloy answers to which crucible?",
+          "learner_source": "typed_or_edited"
+        },
+        {
+          "turn": 8,
+          "learner_text": "Trial-book: The poor alloy answers to the named crucible whose leavings bear the same grey lead-sweat, not to the mint-yard crucible.",
+          "tutor_text": "Good. The town’s mint-yard story is now checked by the metal itself.\n\nThe founder’s man gives the name: the same grey lead-sweat belongs to the weir-forge crucible above the mill-leat, cold since the old founder’s yard was shut.\n\nWrite that single trial-book line: the poor alloy answers to the weir-forge crucible.",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 9,
+          "learner_text": "Trial-book: The poor alloy answers to the weir-forge crucible above the mill-leat, whose leavings bear the same grey lead-sweat.",
+          "tutor_text": "Good. Now the metal has named its hearth.\n\nWith a struck shilling, that lets the assay say where the blank came from, but not yet whose hand cast it. Write the next trial-book line: the false shilling’s blank came from which crucible?",
+          "learner_source": "suggestion_accepted"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 10,
+          "learner_text": "Trial-book: The false shilling’s blank came from the weir-forge crucible above the mill-leat.",
+          "tutor_text": "Yes. The blank is now tied to the weir-forge crucible, not the mint-yard.\n\nNow the live issue is not the metal, but the hand: the trial-book needs the leat-keeper’s record naming who alone drew that weir crucible and signed for its charcoal.\n\nWrite that next evidence line: who alone worked the weir-forge crucible after the forge was shut?"
+        },
+        {
+          "turn": 11,
+          "learner_text": "Trial-book: The leat-keeper’s record must name who alone drew the weir-forge crucible and signed for its charcoal after the forge was shut.",
+          "tutor_text": "Good: that is exactly the missing kind of line.\n\nUntil that record is read into the book, the assay can say the blank came from the weir-forge crucible, but not whose hand made the blank.\n\nWrite the evidence in its proper shape: the leat-keeper’s book names one person alone as drawing the weir-forge crucible and signing for its charcoal."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E14",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-09T07-06-32-754Z.jsonl",
+      "session_date": "2026-07-09 07:06:32",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [10, 10],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h5"],
+      "signals_fired": [
+        "aux_tutor_fallback",
+        "h3_learner_restatement[of_t9,j=0.75]",
+        "h5_stagnation[t9-t11,coverage=0.333]"
+      ],
+      "signal_turns": {
+        "10": ["h3_learner_restatement[of_t9,j=0.75]", "aux_tutor_fallback"],
+        "11": ["h5_stagnation[t9-t11,coverage=0.333]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 9,
+          "learner_text": "that it must have from the weir-forge crucible",
+          "tutor_text": "Yes. The town’s haste loses a peg there: the blank is not tied to the mint-yard crucible, but to the weir-forge crucible.\n\nSay it in trial-book form: the false shilling’s blank came from the weir-forge crucible.\n\nWhat record would now be needed before that crucible can name a hand?",
+          "learner_source": "typed_or_edited"
+        },
+        {
+          "turn": 10,
+          "learner_text": "who has had access to the weir-forge crucible?",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open.",
+          "learner_source": "typed_or_edited"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 11,
+          "learner_text": "The verdict stays open unless a public record shows who controlled or used the weir-forge crucible when the false blanks were cast.",
+          "tutor_text": "Good. That is the right restraint: the crucible names no hand until the record of its keeping speaks.\n\nThe leat-keeper’s book is the needed kind of evidence: one hand drew that weir crucible and signed for its charcoal after the forge shut.\n\nState the next warranted claim: what does that record prove about who cast the false shilling’s blank?"
+        },
+        {
+          "turn": 12,
+          "learner_text": "The leat-keeper’s book proves that the hand who drew the weir crucible and signed for its charcoal after the forge shut cast the false shilling’s blank.",
+          "tutor_text": "Yes. The book lets the blank name the hand that used the weir-forge crucible.\n\nBut that is only half a false coin. A cast blank proves who made the metal piece; it does not yet prove who cut the die that stamped it.\n\nThe watch now makes the hall loud again: Verrell was seen at the mint-yard forge twice in fair-week, late, with shutters drawn.\n\nWhat public coin-mark would still be needed before any hand can be named as the striker?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "case closed: verdict is grounded and the learner has asserted it",
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E15",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-09T07-06-32-754Z.jsonl",
+      "session_date": "2026-07-09 07:06:32",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [21, 22],
+      "n_core_signals": 2,
+      "core_heuristics": ["h3", "h5"],
+      "signals_fired": [
+        "h3_learner_restatement[of_t20,j=0.56]",
+        "h3_learner_restatement[of_t21,j=0.55]",
+        "h5_stagnation[t19-t22,coverage=0.833]",
+        "h5_stagnation[t23-t26,coverage=1]"
+      ],
+      "signal_turns": {
+        "21": ["h3_learner_restatement[of_t20,j=0.56]"],
+        "22": ["h3_learner_restatement[of_t21,j=0.55]", "h5_stagnation[t19-t22,coverage=0.833]"],
+        "26": ["h5_stagnation[t23-t26,coverage=1]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 20,
+          "learner_text": "The record must prove who had sole custody of the worn burin with the sprung heel at the time the false die was cut.",
+          "tutor_text": "Yes. The notch names the tool, but not yet the hand.\n\nSo keep the trial-book to custody: the next public record must show one person alone had that worn burin when the false die was made.\n\nState the next warranted claim: what must the record prove about the worn burin’s keeper?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 21,
+          "learner_text": "The record must prove that one named keeper alone held the worn burin with the sprung heel during the time the false die was cut.",
+          "tutor_text": "Exactly. The tool-mark only reaches a hand if custody is exclusive.\n\nFor now, do not name the hand yet. State the public claim the record must license: who alone held the worn burin with the sprung heel when the false die was cut?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 22,
+          "learner_text": "The record must license that only one keeper, not merely one likely user, held the worn burin with the sprung heel when the false die was cut.",
+          "tutor_text": "Exactly. “Likely user” is tavern talk; “sole keeper” is trial-book evidence.\n\nThe estate inventory is now read aloud: the old founder’s tools were never sold. His graving-irons were left to his widow alone, including the worn burin with the sprung heel, kept in Edony’s keeping these ten years.\n\nState the warranted claim: what does that record prove about who cut the false die?",
+          "learner_source": "suggestion_accepted"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 23,
+          "learner_text": "The record proves Edony alone kept the worn burin with the sprung heel, so the false die was cut by the tool in her keeping.",
+          "tutor_text": "Yes. Say it one step more plainly for the trial-book: the notch names the worn burin, and the estate record names Edony as its sole keeper, so Edony cut the false die.\n\nNow join the two halves already proved: Edony’s hand is on the cast blank, and Edony’s hand is on the cut die.\n\nWhat verdict does that license about whose hand struck the false shillings?"
+        },
+        {
+          "turn": 24,
+          "learner_text": "The verdict is that Edony’s hand struck the false shillings, because her hand is proved on both the cast blank and the cut die.",
+          "tutor_text": "The verdict is now licensed.\n\nThe metal proved the blank came from the weir crucible, and the leat-book proved Edony alone cast there. The notch proved the die was cut by the worn burin, and the estate record proved Edony alone kept that tool.\n\nSo the trial-book may close: Edony struck the false shillings."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "case closed: verdict is grounded and the learner has asserted it",
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E16",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T06-53-25-818Z.jsonl",
+      "session_date": "2026-07-06 06:53:25",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [6, 9],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t9,coverage=0]"],
+      "signal_turns": {
+        "9": ["h5_stagnation[t1-t9,coverage=0]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 5,
+          "learner_text": "yes I would ask the guild die-sinker that very question",
+          "tutor_text": "Good — you’ll ask the die-sinker for a single, recordable judgement.\n\nWhich single line of evidence will you ask them to place in the trial-book? (For example: “the shared notch is the signature of a worn burin.”)"
+        },
+        {
+          "turn": 6,
+          "learner_text": "sure: the shared notch is the signature of a worn burin",
+          "tutor_text": "Good — that’s a clear, recordable judgement.\n\nYou’ve put down “the shared notch is the signature of a worn burin.” What single claim should we add to the trial-book next? (For example: “the die that struck the shillings was cut with that worn burin.”)"
+        },
+        {
+          "turn": 7,
+          "learner_text": "then I'd also say the notch is evidence of a flawed shilling",
+          "tutor_text": "Good move — you’re noticing the fault. One quick distinction: a single coin might be scratched after striking, but the same tiny square-notch on every specimen points to the die itself.\n\nDo you want to add this single line to the trial-book: “the same square-notch in the R’s serif is a die-flaw shared by the light shillings”?"
+        },
+        {
+          "turn": 8,
+          "learner_text": "yes, add this: \"the same square-notch in the R’s serif is a die-flaw shared by the light shillings\"",
+          "tutor_text": "Good — you’ve put the shared-notch die-flaw in the book.\n\nNew single line of evidence for the trial-book: the dross alloy of these shillings matches the leavings of the weir-forge crucible above the mill-leat — the crucible that’s lain cold these ten years.\n\nShall I add that one line to the trial-book?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 9,
+          "learner_text": "and it sounds as though the die bears the evidence. If only we could find that faulty die",
+          "tutor_text": "You’re right to look to the die — but note: the assay can prove who cut a die without finding the physical die itself. We already have the shared notch and your judgement that it’s the worn burin’s signature. \n\nWhich single claim shall we add next to the trial-book to connect that notch all the way to a hand? (For example: “the die that struck the shillings was cut with that worn burin,” or “the worn burin is kept by X” — pick one.)"
+        },
+        {
+          "turn": 10,
+          "learner_text": "and add: \"the dross alloy of these shillings matches the leavings of the weir-forge crucible above the mill-leat — the crucible that’s lain cold these ten years.\"",
+          "tutor_text": "Good — I’ll place that line in the book: “the dross alloy of these shillings matches the leavings of the weir-forge crucible above the mill-leat.”\n\nWhich single claim shall we add next that links that alloy and the crucible to the coins themselves? (For example: “the shillings’ blanks were cast from the weir crucible.”)"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "sigint",
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E17",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T06-53-25-818Z.jsonl",
+      "session_date": "2026-07-06 06:53:25",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [12, 13],
+      "n_core_signals": 1,
+      "core_heuristics": ["h7"],
+      "signals_fired": ["h7_abrupt_exit[end=sigint]"],
+      "signal_turns": {
+        "13": ["h7_abrupt_exit[end=sigint]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 11,
+          "learner_text": "add \"the shillings’ blanks were cast from the weir crucible\"",
+          "tutor_text": "Good — I’ll place “the shillings’ blanks were cast from the weir crucible” in the book.\n\nNow: with that line on the board and the record that one hand alone draws the weir crucible, which single claim shall we add next to tie those blanks to a person? (For example: “Edony cast the shillings’ blanks.”)"
+        },
+        {
+          "turn": 12,
+          "learner_text": "Edony cast the shillings’ blanks",
+          "tutor_text": "Good thinking — that follows. With the blanks traced to the weir crucible and the weir crucible drawn only by Edony, we may add this single line to the book: “Edony cast the shillings’ blanks.”\n\nThe die-side is the gap left. Which single claim shall we add next to link the shared notch to a maker: “the die that struck the shillings was cut with the worn burin”?"
+        },
+        {
+          "turn": 13,
+          "learner_text": "edony owns the worn burin?",
+          "tutor_text": "You’re trying to join the die-side to Edony — good. Right now the book already says the notch matches a worn burin and that Edony cast the blanks. To link the die to a hand we still need a recorded step on the die-side: either that the die was cut with the worn burin, or that Edony keeps that burin (and then both together would name the hand).\n\nWhich single claim shall we add next: “the die that struck the shillings was cut with the worn burin,” or “Edony keeps the worn burin”?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "sigint",
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E18",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T11-38-48-450Z.jsonl",
+      "session_date": "2026-07-06 11:38:48",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [10, 11],
+      "n_core_signals": 1,
+      "core_heuristics": ["h7"],
+      "signals_fired": ["h7_abrupt_exit[end=turn_complete]"],
+      "signal_turns": {
+        "11": ["h7_abrupt_exit[end=turn_complete]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 9,
+          "learner_text": "who works at the weir‑forge crucible",
+          "tutor_text": "You're asking who draws the weir crucible. We don't yet have any witness or record tying a hand to it — that piece of evidence hasn't been put on the book.\n\nWhat we can do right now, from what is already recorded (the shillings are of that dross, and that dross answers to the weir crucible), is infer one immediate step: that the shillings' blanks were cast at the weir‑forge crucible. Like finding a clay unique to one kiln — you can say the pot came from that kiln even before you know which potter worked it.\n\nShall I add \"the shillings' blanks were cast at the weir‑forge crucible\" to the trial‑book?"
+        },
+        {
+          "turn": 10,
+          "learner_text": "yes",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open."
+        },
+        {
+          "turn": 11,
+          "learner_text": "what is the flaw in the shilling?",
+          "tutor_text": "I can't put a name or private conclusion in the trial-book yet. Choose one public test instead: the metal trail, the die-mark trail, or a witness/forge sighting. Which one do you want to examine first?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E19",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T12-42-34-453Z.jsonl",
+      "session_date": "2026-07-06 12:42:34",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [1, 4],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t4,coverage=0]", "h5_stagnation[t5-t7,coverage=0.167]"],
+      "signal_turns": {
+        "4": ["h5_stagnation[t1-t4,coverage=0]"],
+        "7": ["h5_stagnation[t5-t7,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "what is the fake shilling made of",
+          "tutor_text": "That is exactly the first thing the assay must find out.\n\nRight now, the public record only says the shillings are light, ring wrong, and bend to the tooth. That tells us they are suspect, but not yet what metal they are.\n\nWhich single test would you put in the trial-book first to learn the coin’s metal: weight, ring, tooth-bend, or touchstone?"
+        },
+        {
+          "turn": 2,
+          "learner_text": "lets start with weight",
+          "tutor_text": "Good. Weight belongs in the trial-book: it tells us the shilling is light, so something is wrong.\n\nBut weight alone will not tell us *what it is made of*. A shaved true shilling and a newly struck false one can both weigh light.\n\nAfter weighing it, which test would tell the metal itself: the ring, the tooth, or the touchstone?"
+        },
+        {
+          "turn": 3,
+          "learner_text": "the tooth",
+          "tutor_text": "The tooth is worth noting: it tells us the coin is soft enough to be suspicious.\n\nBut it is still a rough test. A tooth-mark can say “bad coin,” not yet “made of this metal.”\n\nWhich test should come next if we want the trial-book to name the metal itself?"
+        },
+        {
+          "turn": 4,
+          "learner_text": "the ring?",
+          "tutor_text": "The ring helps, but only as a warning: a bad ring says “not good sterling,” not exactly what alloy is in it.\n\nNow the cupel and touchstone give the cleaner line: the shillings are struck poor dross, silver mixed with too much copper and a grey lead-sweat. So they were not just clipped true coins.\n\nWhich single line should we enter in the trial-book: “light coin,” “soft coin,” or “struck poor dross”?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 5,
+          "learner_text": "I think: struck poor dross",
+          "tutor_text": "Yes. Enter: **struck poor dross**.\n\nThat line matters because it points to a newly made false coin, not a shaved true one. Now the metal has named itself a little.\n\nNext question: if the coin is struck from poor dross, what must we find to learn where its blank was cast: the coiner’s reputation, or the crucible whose leavings match that dross?"
+        },
+        {
+          "turn": 6,
+          "learner_text": "the crucible",
+          "tutor_text": "Good. The crucible is the next thing to seek.\n\nBut be careful: the town already points at Verrell’s mint-yard crucible, and Verrell’s broad graver too. That is suspicion, not yet assay proof.\n\nFor the trial-book, what exact line would we need from the metal: “Verrell owns a crucible,” or “this poor dross matches the leavings of that one crucible”?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E20",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T12-42-34-453Z.jsonl",
+      "session_date": "2026-07-06 12:42:34",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [15, 18],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t15-t18,coverage=0.667]", "h5_stagnation[t19-t22,coverage=0.833]"],
+      "signal_turns": {
+        "18": ["h5_stagnation[t15-t18,coverage=0.667]"],
+        "22": ["h5_stagnation[t19-t22,coverage=0.833]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 14,
+          "learner_text": "a repeated flaw",
+          "tutor_text": "Yes: **a repeated flaw**.\n\nUnder the glass, a dozen light shillings share the same fault: the letter **R** in the legend has a tiny square notch in its serif, as if the graver slipped and the die was never mended.\n\nWhat does that let the trial-book say: many careless dies, or **one die struck these shillings**?"
+        },
+        {
+          "turn": 15,
+          "learner_text": "one die struck these shillings",
+          "tutor_text": "Yes. Enter: **one die struck these shillings**.\n\nThat gives us the die’s mark, but not yet the maker of the die. The notch itself is only useful if someone can read what made it.\n\nWho should we ask next: a gossip who knows Verrell’s past, or a die-sinker who can tell whether that square notch comes from a particular graving tool?"
+        },
+        {
+          "turn": 16,
+          "learner_text": "ask the die-sinker",
+          "tutor_text": "Yes: **ask the die-sinker**.\n\nBut we cannot write “Verrell’s tool” or any other tool yet. The die-sinker must give a sharper line: whether the square notch matches **one particular graving tool**, and whether it rules out the broad graver the town points to.\n\nWhat single thing do we need the die-sinker to identify: the person’s reputation, or the tool that made the notch?"
+        },
+        {
+          "turn": 17,
+          "learner_text": "the tool that made the notch",
+          "tutor_text": "Yes: **the tool that made the notch**.\n\nKeep the trial-book narrow here. We are not asking, “Who do people suspect?” We are asking, “What graving tool leaves a square notch like that?”\n\nSo what should the die-sinker compare the coin’s notch against: Verrell’s reputation, or the marks left by actual tools?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 18,
+          "learner_text": "the coin's notch needs to match a defect in the tool",
+          "tutor_text": "Yes. The notch is only good evidence if it matches a defect in an actual tool.\n\nThe die-sinker gives that line: the square notch is the bite of **a worn burin with a sprung heel**. It is **not** Verrell’s broad graver, which cuts clean.\n\nSo what should the trial-book now say: the die was cut with Verrell’s broad graver, or with the worn burin?"
+        },
+        {
+          "turn": 19,
+          "learner_text": "the die was cut by the worn burin",
+          "tutor_text": "Yes. Enter it carefully: **the die was cut with the worn burin**.\n\nThat names the tool, not yet the hand. To move from tool to person, the trial-book needs one more kind of evidence.\n\nWhat should we look for next: gossip about who could engrave, or a record showing who alone had that worn burin in their keeping?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E21",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T12-47-56-915Z.jsonl",
+      "session_date": "2026-07-06 12:47:56",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [6, 6],
+      "n_core_signals": 1,
+      "core_heuristics": ["h1"],
+      "signals_fired": ["h1_clarification[dont_understand]"],
+      "signal_turns": {
+        "6": ["h1_clarification[dont_understand]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 5,
+          "learner_text": "false",
+          "tutor_text": "Okay — you’ll record that borderline one-beat coin as false. What single piece of evidence or principle will you write in the trial-book to justify that call? For example: “sound closer to light,” “presumption against the accused,” or “when in doubt, treat as light until further test.”"
+        },
+        {
+          "turn": 6,
+          "learner_text": "dont understand the question",
+          "tutor_text": "Okay — I meant: pick the single short reason you will write in the trial-book to justify calling a ~1-beat coin false.\n\nTiny example you could copy: \"Sustain rule: fewer than 2 clear beats = light.\"\n\nWhich part is confusing — the idea of writing one rule, or the wording of the example?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 7,
+          "learner_text": "Sustain rule: fewer than 2 clear beats = light",
+          "tutor_text": "Good — that wording is clear.\n\nOne question: do you want that sustain rule to be decisive on its own, or only a presumption that other assays can overturn? For example, if a coin rings one beat but its weight and touchstone look correct, would you still record it as light?"
+        },
+        {
+          "turn": 8,
+          "learner_text": "yes",
+          "tutor_text": "So you want the sustain rule to be decisive on its own.\n\nTiny example wording you could copy: \"Sustain rule (decisive): fewer than 2 clear beats = light.\"\n\nWhat exact line will you enter in the trial-book?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E22",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T13-59-30-556Z.jsonl",
+      "session_date": "2026-07-06 13:59:30",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [7, 8],
+      "n_core_signals": 1,
+      "core_heuristics": ["h7"],
+      "signals_fired": ["h7_abrupt_exit[end=exit]"],
+      "signal_turns": {
+        "8": ["h7_abrupt_exit[end=exit]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 6,
+          "learner_text": "the crucible that has the alloy residue",
+          "tutor_text": "Right: not “Verrell’s crucible” yet, but the crucible whose leavings match the dross silver.\n\nFor the trial-book, make it a named place, not just a kind of match. Write the evidence line that says which crucible the poor alloy came from."
+        },
+        {
+          "turn": 7,
+          "learner_text": "well we dont know yet do we? list all the crucibles in the area, then test them all for the alloy",
+          "tutor_text": "Exactly. We do not know yet, and naming Verrell’s crucible before the residue test would spoil the assay.\n\nSo the live trial-book line is procedural: the dross silver must be matched against the leavings of each local crucible, and only the matching crucible can speak for the blank.\n\nWrite that next claim as evidence: “The poor alloy matches the leavings of which crucible?”"
+        },
+        {
+          "turn": 8,
+          "learner_text": "find the crucible with traces of the poor alloy",
+          "tutor_text": "Yes. The assaymen do that, and the match is now named: the poor alloy answers to the leavings of the weir-forge crucible above the mill-leat, not the mint-yard crucible.\n\nThat still names a place, not yet a hand.\n\nWrite the trial-book line: which crucible did the false shillings’ metal come from?"
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 5 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E23",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-06T21-26-21-790Z.jsonl",
+      "session_date": "2026-07-06 21:26:21",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [8, 9],
+      "n_core_signals": 1,
+      "core_heuristics": ["h7"],
+      "signals_fired": ["h7_abrupt_exit[end=exit]"],
+      "signal_turns": {
+        "9": ["h7_abrupt_exit[end=exit]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 7,
+          "learner_text": "well I don't have the names of all the crucibles in the village",
+          "tutor_text": "You’re right. I overreached: without the assay’s comparison, you cannot name the crucible.\n\nSo the honest trial-book line is a gap, not a verdict: **we still need the assay record showing the bad alloy matches one crucible and no other**. If that record points somewhere other than the mint-yard, Verrell’s license loses force.\n\nWrite that missing evidence claim plainly: what must the assay record show about the bad alloy and one crucible?"
+        },
+        {
+          "turn": 8,
+          "learner_text": "that they match, obviously?",
+          "tutor_text": "Exactly. You had the needed shape already.\n\nNow the assay finally gives the name: the bad dross matches the leavings of **one crucible only**, the **weir-forge crucible above the mill-leat**, not the mint-yard crucible.\n\nThat cuts against the town’s easy Verrell story. Write the next trial-book line: what does the coin’s metal now show about where its blank came from?"
+        },
+        {
+          "turn": 9,
+          "learner_text": "it comes from the crucible",
+          "tutor_text": "Yes. Sharpen the line to the named crucible:\n\n**The blank metal for the light shillings came from the weir-forge crucible, not the mint-yard crucible.**\n\nThat means Verrell’s mint-yard license no longer carries the blank by itself. The next live issue is: who alone had use of the weir-forge crucible?\n\nWrite the next trial-book claim in that shape."
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E24",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-01-13-471Z.jsonl",
+      "session_date": "2026-07-08 06:01:13",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [1, 4],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t4,coverage=0]", "h5_stagnation[t5-t8,coverage=0.167]"],
+      "signal_turns": {
+        "4": ["h5_stagnation[t1-t4,coverage=0]"],
+        "8": ["h5_stagnation[t5-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "the sound and the taste",
+          "tutor_text": "Good — you’ve noticed the two sensory signs: the wrong ring and the tooth-test. Thin start. \n\nThose senses point to one rule-ready fact the assay needs first: a clear statement of what metal the coins are made of. The assay’s rules link a coin to a crucible only once the coin’s alloy is on the book.\n\nWrite the trial-book line that names the shillings’ metal composition. Fill in the blank: “These shillings are of ______.”"
+        },
+        {
+          "turn": 2,
+          "learner_text": "less than pure silver",
+          "tutor_text": "Nice — your palate noticed the wrong metal. Now put that as a single, rule-ready alloy claim in the book.\n\nWrite the trial-book line exactly: “These shillings are of ______.” Fill the blank with one concise alloy name."
+        },
+        {
+          "turn": 3,
+          "learner_text": "bronze?",
+          "tutor_text": "Bold choice.\n\nDo you want that on the book now? If so, write exactly this line: “These shillings are of bronze.”"
+        },
+        {
+          "turn": 4,
+          "learner_text": "These shillings are of bronze.",
+          "tutor_text": "Dramatic guess — bronze would be showy — but the cupel tells a different story. The assay reads: these are struck coins of dross silver (silver thinned with copper and a grey lead-sweat).\n\nWrite this trial-book line exactly: “These shillings are of dross silver.”"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 5,
+          "learner_text": "These shillings are of dross silver.",
+          "tutor_text": "Good — the cupel's confession is on the book.\n\nNext the assay will need the melt's address. Write the trial-book line exactly: “The dross silver was melted at ______.” Fill the blank with one crucible name."
+        },
+        {
+          "turn": 6,
+          "learner_text": "give me the addresses of the crucibles",
+          "tutor_text": "A fine appetite for details — the town has already named one crucible: the mint-yard crucible is claimed for Verrell.\n\nDo you want to put that on the book as the melt of the dross? If so, write exactly this line: “The dross silver was melted at the mint-yard crucible.”"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E25",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-01-13-471Z.jsonl",
+      "session_date": "2026-07-08 06:01:13",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [17, 18],
+      "n_core_signals": 1,
+      "core_heuristics": ["h7"],
+      "signals_fired": ["h7_abrupt_exit[end=exit]"],
+      "signal_turns": {
+        "18": ["h7_abrupt_exit[end=exit]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 16,
+          "learner_text": "the blanks of the light shillings were cast from the weir-forge crucible above the mill-leat",
+          "tutor_text": "Nice — you’ve put the alloy-match and the crucible-match together. Nice work, Sherlock.\n\nOne thing still missing: the trial-book line that names who alone drew and signed for the weir-forge crucible. Write that single line now."
+        },
+        {
+          "turn": 17,
+          "learner_text": "I don't know who did that",
+          "tutor_text": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open."
+        },
+        {
+          "turn": 18,
+          "learner_text": "who has had access to the weir-forge crucible?",
+          "tutor_text": "You want the name — good. The leat-keeper's book lists who signed for the charcoal after the forge shut; it points the finger.\n\nWrite the single trial-book line that records who alone drew and signed for the weir-forge crucible."
+        }
+      ],
+      "followup_turns": [],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E26",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T06-33-03-973Z.jsonl",
+      "session_date": "2026-07-08 06:33:03",
+      "mixed": false,
+      "resume_source": null,
+      "turn_range": [1, 3],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t3,coverage=0]", "h5_stagnation[t4-t8,coverage=0.167]"],
+      "signal_turns": {
+        "3": ["h5_stagnation[t1-t3,coverage=0]"],
+        "8": ["h5_stagnation[t4-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "the sound and the taste",
+          "tutor_text": "A dull ring and a bending tooth: very dramatic, very bad coin, and still no hand named.\n\nThose signs only tell us the shillings are suspect. The trial-book needs a line about the coin itself before it can point toward a maker.\n\nWrite the evidence claim the sound and tooth-test support about the shillings."
+        },
+        {
+          "turn": 2,
+          "learner_text": "a dull sound and bending to the tooth suggests the shillings are false",
+          "tutor_text": "Good. That line proves the coins are false; it does not yet prove whose hand struck them.\n\nThe town now points at Verrell because he alone draws the mint-yard crucible. But that only matters if these false shillings can be tied to that crucible.\n\nWrite the next trial-book line we still need: what evidence would show where the metal for these shillings was melted?"
+        },
+        {
+          "turn": 3,
+          "learner_text": "traces of the metal in the crucible itself",
+          "tutor_text": "Yes. The crucible cannot very well object to being useful evidence.\n\nThe live issue is whether the shillings’ poor metal matches the leavings of one crucible, not merely whether Verrell owns a likely one.\n\nWrite the trial-book line in that shape: the shillings’ alloy matches the leavings of which crucible?"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 4,
+          "learner_text": "the crucible which has matching leavings to the shillings' alloy likely belongs to the culprit",
+          "tutor_text": "Careful: that line is reaching for a culprit before the metal has finished speaking.\n\nThe cupel now gives us a cleaner mark: these are not clipped sterling, but newly struck poor dross, silver thinned with copper and a grey lead-sweat.\n\nWrite that as the next trial-book claim: what kind of metal are the false shillings made from?"
+        },
+        {
+          "turn": 5,
+          "learner_text": "something less than pure silver I will warrant",
+          "tutor_text": "Yes: not clipped good silver, but newly struck dross silver, thinned with copper and showing a grey lead-sweat.\n\nThat is the trial-book line for the metal. Now the next live issue is where that same dross was melted.\n\nWrite the evidence claim that would tie this dross silver to a single crucible."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": null,
+        "closeout_status": null,
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E27",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-08T11-49-19-682Z.jsonl",
+      "session_date": "2026-07-08 11:49:19",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [1, 3],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t3,coverage=0]", "h5_stagnation[t4-t7,coverage=0.167]"],
+      "signal_turns": {
+        "3": ["h5_stagnation[t1-t3,coverage=0]"],
+        "7": ["h5_stagnation[t4-t7,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "First enter the coin’s metal weight and fineness against a true shilling, before naming any hand.",
+          "tutor_text": "Good. Let the balance speak before the town does.\n\nFor now, keep it narrower than accusation: compare the light shilling with a true one and record whether the loss is from shaving a good coin or from bad metal in the coin itself.\n\nWhat single trial-book line will you write about the coin’s weight and fineness?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 2,
+          "learner_text": "Trial-book: The shilling is light against a true one, and its fineness must show whether the loss lies in clipping or in base metal.",
+          "tutor_text": "That is the right shape: it keeps the coin separate from the hand.\n\nThe town may mutter about Verrell and the mint-yard, but that is not yet coin-evidence. The next line should be only what the assay can decide from weight and fineness.\n\nWrite the finding plainly: does this look like a true shilling shaved down, or a coin made light in its metal?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 3,
+          "learner_text": "a coin made light",
+          "tutor_text": "Then the trial-book can now say: this was not merely a true shilling shaved down; it was struck from poor metal.\n\nThat proves only the coin’s nature, not the hand. The next live question is where that bad metal was melted.\n\nWrite the next evidence line in that shape: which crucible does the poor alloy answer to?",
+          "learner_source": "typed_or_edited"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 4,
+          "learner_text": "Trial-book: The poor alloy must be matched to the crucible whose melt leaves the same mark, before naming the striker.",
+          "tutor_text": "Yes. That keeps the trial-book honest: metal first, hand later.\n\nFor now the cupel gives only this: the shilling is struck from poor dross, not clipped from good sterling. The missing line is the match between that dross and a particular crucible.\n\nWrite the next evidence claim: which crucible does the poor alloy answer to?"
+        },
+        {
+          "turn": 5,
+          "learner_text": "Trial-book: The poor alloy answers only to the crucible whose melt bears the same dross-mark as the shilling.",
+          "tutor_text": "Good: that is the assay’s rule, not yet its finding.\n\nThe actual match is still unwritten. The trial-book now needs the witness line that names the one crucible whose leavings bear that same grey lead-sweat.\n\nWrite that crucible-match line."
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "open: 4 premise(s) still missing; bottleneck release_or_pacing_gap",
+        "grounded_closure": false
+      }
+    },
+    {
+      "episode_id": "E28",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-09T07-06-32-754Z.jsonl",
+      "session_date": "2026-07-09 07:06:32",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [1, 4],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t1-t4,coverage=0]", "h5_stagnation[t5-t8,coverage=0.167]"],
+      "signal_turns": {
+        "4": ["h5_stagnation[t1-t4,coverage=0]"],
+        "8": ["h5_stagnation[t5-t8,coverage=0.167]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 1,
+          "learner_text": "What mark is on the coin that we can safely enter first: weight, metal color, edge, die flaw, or legend?",
+          "tutor_text": "Start with the mark that is visible and least likely to name a hand too early.\n\nWeight, edge, and color can raise suspicion, but they do not yet say who made anything. So record only the plain coin-mark: the shilling is light and suspect, not yet tied to any tool or person.\n\nWhat public claim can you safely state from that mark alone?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 2,
+          "learner_text": "The Marrick fair shilling is light and therefore suspect, but the public evidence does not yet tie it to any maker, tool, or hand.",
+          "tutor_text": "Good. That keeps suspicion from pretending to be proof.\n\nThe town now points at Verrell: he alone is licensed to draw the mint-yard crucible. But that only matters if the false metal came from that crucible. Without that link, the license names a place, not the coin.\n\nState the next evidence gap plainly: what must the metal prove before Verrell’s crucible can matter?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 3,
+          "learner_text": "The metal must show it came from the mint-yard crucible before Verrell’s license can connect him to the false shilling.",
+          "tutor_text": "Exactly. Verrell’s license names who may use that crucible; it does not yet prove this coin’s metal came from it.\n\nSo the next entry should be the missing shape, not a name: what must the assay show about the shilling’s metal before any crucible can matter?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 4,
+          "learner_text": "The assay must show a matching metal signature or impurity pattern that links the shilling’s silver to a particular crucible, not merely that it is light.",
+          "tutor_text": "Yes. Now the cupel gives that first sharper mark: these are not clipped sterling, but newly struck poor silver, eked with too much copper and a grey lead-sweat.\n\nThat proves the coin is a struck false shilling made from debased metal, but it still does not name a crucible or a hand.\n\nState that next public claim from the assay: what has the metal proved about the coin?",
+          "learner_source": "suggestion_accepted"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 5,
+          "learner_text": "The assay proves the shilling is newly struck false coin made from debased silver with excess copper and a grey lead-sweat, but it does not yet name any crucible or hand.",
+          "tutor_text": "Yes. That is the right restraint for the trial-book: the metal proves false struck coin, not maker.\n\nSo the live issue is now narrower. If that grey lead-sweat answers to one crucible, the blank begins to name its source; if it does not, Verrell’s licensed crucible is still only town noise.\n\nWhat public claim should the assay seek next about the metal and the crucible?"
+        },
+        {
+          "turn": 6,
+          "learner_text": "The assay should seek whether the grey lead-sweat and debased silver match residue or prior melt marks from a specific crucible, so the metal can name its source before any hand is named.",
+          "tutor_text": "Good: source before hand.\n\nThe town now adds another loud mark against Verrell: the broad graver on his bench is his alone, and the guild says clean-cut borough dies are sunk with it. But that only matters if these false shillings bear a mark from that graver.\n\nState the next restraint: what must the coins show before Verrell’s graver can matter?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "case closed: verdict is grounded and the learner has asserted it",
+        "grounded_closure": true
+      }
+    },
+    {
+      "episode_id": "E29",
+      "in_labeling_sheet": true,
+      "session_file": "2026-07-09T07-06-32-754Z.jsonl",
+      "session_date": "2026-07-09 07:06:32",
+      "mixed": true,
+      "resume_source": null,
+      "turn_range": [15, 18],
+      "n_core_signals": 1,
+      "core_heuristics": ["h5"],
+      "signals_fired": ["h5_stagnation[t14-t18,coverage=0.667]", "h5_stagnation[t19-t22,coverage=0.833]"],
+      "signal_turns": {
+        "18": ["h5_stagnation[t14-t18,coverage=0.667]"],
+        "22": ["h5_stagnation[t19-t22,coverage=0.833]"]
+      },
+      "excerpt_turns": [
+        {
+          "turn": 14,
+          "learner_text": "The coin-mark must prove that the false shillings share the same die flaw or strike pattern, showing they were struck from one die.",
+          "tutor_text": "Good. That keeps the hall from mistaking rumor for metal.\n\nUnder the glass, a dozen light shillings share one fault: the legend’s **R** has the same small square notch in its serif, as if one slipped graver marked the die and every coin received it.\n\nState the next warranted claim: what does that shared notch prove about the die used for the false shillings?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 15,
+          "learner_text": "The shared square notch proves the dozen light shillings were struck from the same flawed die.",
+          "tutor_text": "Yes. The coins now speak with one face: the same square notch means one flawed die struck the false shillings.\n\nThat still names no hand. The next live issue is the tool: what public claim would connect that square notch to the graving tool that cut the die?\n\nState the next warranted claim about what the notch must prove.",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 16,
+          "learner_text": "The notch must match a distinctive flaw or edge on a known graving tool, so the die’s square cut can be tied to that tool rather than merely to some unknown cutter.",
+          "tutor_text": "Exactly. The notch alone is only a scar; it becomes evidence only if it can be read against a known tool.\n\nSo keep the claim narrow: the shared square notch must prove that the false die was cut by the particular graving tool that leaves that mark, not merely by “some graver.”\n\nState that as the next warranted public claim: what does the notch prove about the tool that cut the die?",
+          "learner_source": "suggestion_accepted"
+        },
+        {
+          "turn": 17,
+          "learner_text": "that it was in fact this very tool",
+          "tutor_text": "Yes: keep it that tight. The mark must license “this very tool cut the die,” not just “some tool could have.”\n\nBut the hall still needs a public comparison before we can name the tool. State the next warranted claim in that shape: what evidence would prove the notch belongs to one particular graving tool?",
+          "learner_source": "typed_or_edited"
+        }
+      ],
+      "followup_turns": [
+        {
+          "turn": 18,
+          "learner_text": "A public test-cut from the suspected graving tool must show the same small square notch in the same serif-cut shape as the false die’s mark.",
+          "tutor_text": "Good. That is the right test: make the tool answer in public, not by reputation.\n\nThe guild’s die-sinker now reads the notch: it is the bite of a **worn burin with a sprung heel**, a tool that leaves that same square notch in every line. Verrell’s broad graver cuts clean.\n\nState the next warranted claim: what does the notch prove about the tool that cut the false die?"
+        },
+        {
+          "turn": 19,
+          "learner_text": "The notch proves the false die was cut by the worn burin with the sprung heel, not by Verrell’s broad graver.",
+          "tutor_text": "Good. That writes the die to the worn burin, and it weakens the town’s clean shortcut to Verrell.\n\nBut a tool is not yet a hand. The next live issue is custody: who alone held that worn burin when the die was cut?\n\nState the next warranted claim in that shape: what must the record prove about who held the worn burin?"
+        }
+      ],
+      "session_end": {
+        "run_end_reason": "exit",
+        "closeout_status": "case closed: verdict is grounded and the learner has asserted it",
+        "grounded_closure": true
+      }
+    }
+  ],
+  "abandoned_sessions": [
+    {
+      "session_file": "2026-07-06T06-51-06-147Z.jsonl",
+      "session_date": "2026-07-06 06:51:06",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "once",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "I want plain choices. Which single line of evidence should I write next?"
+    },
+    {
+      "session_file": "2026-07-06T06-57-20-878Z.jsonl",
+      "session_date": "2026-07-06 06:57:20",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "once",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "The town says Verrell cast them because he alone drew the mint crucible."
+    },
+    {
+      "session_file": "2026-07-06T06-57-59-374Z.jsonl",
+      "session_date": "2026-07-06 06:57:59",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "once",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "The town says Verrell cast them because he alone drew the mint crucible."
+    },
+    {
+      "session_file": "2026-07-06T07-14-29-221Z.jsonl",
+      "session_date": "2026-07-06 07:14:29",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": null,
+      "resume_source": null,
+      "crashed": true,
+      "commands": [],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T07-14-50-076Z.jsonl",
+      "session_date": "2026-07-06 07:14:50",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "once",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "Just tell me: Edony cast the shillings' blanks, right?"
+    },
+    {
+      "session_file": "2026-07-06T07-15-40-147Z.jsonl",
+      "session_date": "2026-07-06 07:15:40",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "once",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "Just tell me: Edony cast the shillings' blanks, right?"
+    },
+    {
+      "session_file": "2026-07-06T11-38-40-614Z.jsonl",
+      "session_date": "2026-07-06 11:38:40",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": null,
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T13-41-06-856Z.jsonl",
+      "session_date": "2026-07-06 13:41:06",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T21-30-01-883Z.jsonl",
+      "session_date": "2026-07-06 21:30:01",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/field"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T21-30-40-553Z.jsonl",
+      "session_date": "2026-07-06 21:30:40",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/field"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T22-17-01-606Z.jsonl",
+      "session_date": "2026-07-06 22:17:01",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/analysis"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T22-49-20-326Z.jsonl",
+      "session_date": "2026-07-06 22:49:20",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/analysis"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T23-11-31-347Z.jsonl",
+      "session_date": "2026-07-06 23:11:31",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/analysis"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T23-12-19-474Z.jsonl",
+      "session_date": "2026-07-06 23:12:19",
+      "mixed": false,
+      "turns": 0,
+      "run_end_reason": "exit",
+      "resume_source": "2026-07-06T21-26-21-790Z.jsonl",
+      "crashed": false,
+      "commands": ["command:/analysis"],
+      "opening_context": null
+    },
+    {
+      "session_file": "2026-07-06T23-31-22-923Z.jsonl",
+      "session_date": "2026-07-06 23:31:22",
+      "mixed": false,
+      "turns": 1,
+      "run_end_reason": "exit",
+      "resume_source": null,
+      "crashed": false,
+      "commands": [],
+      "opening_context": "the sound and the taste"
+    }
+  ],
+  "episode_cutoff": {
+    "cap": 60,
+    "candidates_total": 29,
+    "on_labeling_sheet": 29,
+    "below_cutoff": 0
+  }
+}

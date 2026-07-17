@@ -405,3 +405,22 @@ modules:
       and straitjacket results under one bottleneck reading.
     sections: ["6.14", "7.11"]
     cross_refs: ["recognition-calibration", "superego-error-correction", "id-director-charisma", "ontology-state-interior"]
+
+  - id: register-selection-boundary
+    n: 13
+    title: "Register Selection and the Profile-Contingency Boundary"
+    family: ontology-state
+    status: scope-bound
+    claim: >-
+      A pre-registered two-family test does not confirm a profile-contingent
+      benefit from adaptive register selection: Terra fails the binding
+      profile-manipulation gate, Sonnet passes the gate but returns a null
+      interaction, and the field selector is closed on this evidence.
+    abstract: >-
+      A 120-dialogue fixed-horizon confirmatory study and provenance stress test.
+      It separates endpoint level from profile separability, retains a bounded
+      hostile-register safety hypothesis, and limits the result to one simulated
+      detective world and whole-stack model families rather than an isolated
+      tutor-model or human-learning claim.
+    sections: ["6.17"]
+    cross_refs: ["ontology-state-interior", "adaptive-null", "composition-small-kernel", "provable-discourse"]

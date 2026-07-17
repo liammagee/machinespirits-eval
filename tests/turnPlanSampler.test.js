@@ -64,6 +64,24 @@ test('director moves are now form-typed: cue/pressure -> Peripeteia, interruptio
   assert.equal((await validateTurnPlan([entry], ['peripeteia'])).ok, true);
 });
 
+test('audience is first-order but non-enacted: it cannot receive or validate a turn-plan move', async () => {
+  await assert.rejects(
+    () => validMovesFor('audience', ['peripeteia']),
+    /Audience is a non-enacted position and cannot perform moves/u,
+  );
+  await assert.rejects(
+    () => sampleTurnPlan(['peripeteia'], 'audience', { seed: 'A' }),
+    /Audience is a non-enacted position and cannot perform moves/u,
+  );
+
+  const validation = await validateTurnPlan(
+    [{ at: { turn: 3 }, role: 'audience', target: 'peripeteia', moves: ['route_change'] }],
+    ['peripeteia'],
+  );
+  assert.equal(validation.ok, false);
+  assert.equal(validation.errors[0].code, 'unsupported_role');
+});
+
 // ── Stage 2: alter-ego + context conditioning ──────────────────────────────────────────────
 
 test('agenciesForArchitecture maps the cast architecture to the interior agencies present', () => {

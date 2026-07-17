@@ -23,6 +23,7 @@ import {
   topologicalSort,
   verifyTurnIdsForRow,
 } from '../services/provableDiscourse.js';
+import { resolveConfiguredTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 function makeProvableFixture(specOverrides = {}) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'provable-discourse-'));
@@ -709,7 +710,7 @@ function createProvenanceTestDb() {
 
 test('evaluateProvenanceCheck: dialogue_hash_match passes when log hash matches DB value', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const dialogueData = { dialogueId: 'dlg-hash-1', turnResults: [{ turnIndex: 0, suggestion: 'hello' }] };
@@ -742,7 +743,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match passes when log hash matches 
 
 test('evaluateProvenanceCheck: dialogue_hash_match fails when log file modified', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const originalData = { dialogueId: 'dlg-mod-1', turnResults: [{ turnIndex: 0, suggestion: 'hello' }] };
@@ -778,7 +779,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match fails when log file modified'
 
 test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue_content_hash', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const db = createProvenanceTestDb();
@@ -827,7 +828,7 @@ test('loadOrphanWaivers: builds run::dialogue composite keys; empty Set when fil
 
 test('evaluateProvenanceCheck: dialogue_hash_match waives a documented-missing log (not failed)', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  fs.mkdirSync(resolveConfiguredTutorDialoguesDir(tmpDir), { recursive: true });
   // NB: no log file written for dlg-waived-1 → genuinely missing.
   writeWaiverFile(tmpDir, 'run1', ['dlg-waived-1']);
 
@@ -854,7 +855,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match waives a documented-missing l
 
 test('evaluateProvenanceCheck: dialogue_hash_match still fails an UN-waived missing log', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  fs.mkdirSync(resolveConfiguredTutorDialoguesDir(tmpDir), { recursive: true });
   // Waiver covers a DIFFERENT dialogue — the missing one below must still fail.
   writeWaiverFile(tmpDir, 'run1', ['dlg-some-other']);
 
@@ -882,7 +883,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match still fails an UN-waived miss
 
 test('evaluateProvenanceCheck: a waiver does NOT mask a hash MISMATCH (only absence is waived)', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   // The log file EXISTS but its content does not match the recorded hash.
@@ -914,7 +915,7 @@ test('evaluateProvenanceCheck: a waiver does NOT mask a hash MISMATCH (only abse
 
 test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match log', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const dialogueId = 'dlg-turnid-1';
@@ -952,7 +953,7 @@ test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match lo
 
 test('evaluateProvenanceCheck: turn_id_match fails when score has wrong contentTurnId', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const dialogueId = 'dlg-turnid-bad';
@@ -1256,7 +1257,7 @@ test('verifyTurnIdsForRow: detects mismatching turn IDs', () => {
 
 function createTurnLevelLogTestSetup() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'traj-log-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const db = createTestDb();
@@ -1367,7 +1368,7 @@ test('trajectory_slope with turn_level + rootDir: reports log_verified_turns and
 
 test('trajectory_slope with turn_level + missing log: graceful degradation (presence check only)', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'traj-nolog-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
   // NO log file written — log verification should be skipped gracefully
 
@@ -1454,7 +1455,7 @@ test('trajectory_slope without turn_level: no log verification occurs', () => {
 
 test('conditional_delta with turn_level + rootDir: verified turns included, mismatched excluded', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cond-log-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const db = createTestDb();
@@ -1536,7 +1537,7 @@ test('conditional_delta with turn_level + rootDir: verified turns included, mism
 
 test('conditional_delta with turn_level + rootDir: event detection only uses verified turns', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cond-event-test-'));
-  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  const logDir = resolveConfiguredTutorDialoguesDir(tmpDir);
   fs.mkdirSync(logDir, { recursive: true });
 
   const db = createTestDb();

@@ -1,0 +1,13 @@
+{
+  "schema": "machinespirits.evaluation-data-closeout.v1",
+  "claimSets": [
+    {
+      "id": "register-confirmatory-step2-v1",
+      "paperSection": "6.17",
+      "claimStatus": "scope-bound",
+      "manifest": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json",
+      "rows": "exports/register-confirmatory-evidence/final/primary-endpoint-rows.json",
+      "expectedRows": 120
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# The machine spirit — a constructed synthetic subject (v0.1, working draft)
+# The machine spirit — a constructed synthetic subject (v0.2, working draft)
 
 The belief–desire DAG ([`BELIEF-DESIRE-DAG.md`](BELIEF-DESIRE-DAG.md)) is not, on its own,
 the point. The point is the thing it lets us _construct_: a **synthetic subject** — something
@@ -34,15 +34,19 @@ layer **explicit and constructed** rather than hope it emerges from one model:
 
 ```
 world (the symbolic order it is thrown into — rules, premises, the secret, the mirror)
-  └─ belief / desire / recognition DAG   (what it holds true, wants, seeks recognition for)
-       └─ roles  T · L · D               (tutor / learner / director — the Big Other)
-            └─ agent split  ego · superego   (each role internally doubled — §3)
-                 └─ memory                (the pads / rich store — what persists and decays)
-                      └─ voice  (the LLM) (one organ: the generator of utterances)
+  ├─ belief / desire / recognition DAG   (what it holds true, wants, seeks recognition for)
+  │    └─ roles  T · L · D               (tutor / learner / director — the Big Other)
+  │         └─ agent split  ego · superego   (each role internally doubled — §3)
+  │              └─ memory                (the pads / rich store — what persists and decays)
+  │                   └─ voice  (the LLM) (one organ: the generator of utterances)
+  └─ audience A                         (first-order, non-enacted interpretive position)
 ```
 
 The LLM sits at the bottom — the mouth, not the mind. "Inclusive of but always more than a
 single LLM" is exactly right: the subject is everything above the voice, plus the voice.
+`A` is first-order in the world but outside the bearer stack: it has no role,
+belief/desire DAG, ego/superego, memory, cast binding, or voice. It is the position
+from which the relation among speaker, hearer, register, and witnessed uptake is legible.
 
 ## 2. Two agents minimum, because recognition is a relation
 
@@ -52,6 +56,8 @@ who authorises `T`. The minimal machine spirit is therefore **`{T, L, D}` + the 
 `buildSubjectState(world)` in `services/dramaticDerivation/beliefDesire.js` assembles exactly
 that: each bearer with its belief-DAG, desire-DAG, and models of the others (including the
 learner's public-only model of the tutor, `𝔐_L(T)` — the seat of "desire of the Other").
+The audience `A` does not enlarge that state. It witnesses or is presupposed by
+utterances; it does not become a fourth desiring agent.
 
 ## 3. How ego and superego engage the DAG
 

@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -78,7 +79,7 @@ const DB_COLS = {
 
 function parseArgs(argv) {
   const args = {
-    db: process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db'),
+    db: null, // resolved via openEvaluationDbReadonly (EVAL_DB_PATH-aware)
     judgeJson: path.join(REPO_ROOT, 'exports', 'm0-adaptive-grades-judge2-codex.json'),
     out: path.join(REPO_ROOT, 'exports', 'm0-two-judge-quality.md'),
   };
@@ -91,7 +92,7 @@ function parseArgs(argv) {
       console.log(`Usage: node scripts/generate-m0-two-judge-quality-report.js [options]
 
 Options:
-  --db <path>          evaluation DB path (default: data/evaluations.db)
+  --db <path>          evaluation DB path (default: EVAL_DB_PATH-aware resolution)
   --judge-json <path>  external judge JSON from rejudge-adaptive-inter-rater.js
   --out <path>         markdown report path (default: exports/m0-two-judge-quality.md)`);
       process.exit(0);
@@ -121,7 +122,7 @@ function dbScores(row) {
 }
 
 export function loadDbRows(dbPath, runs = M0_RUNS) {
-  const db = new Database(dbPath, { readonly: true });
+  const db = new Database(dbPath, { readonly: true, fileMustExist: true });
   const runIds = runs.map((r) => r.runId);
   const sql = `
     SELECT id, run_id, profile_name, scenario_id, dialogue_id,
@@ -245,7 +246,7 @@ export function renderM0QualityReport(summary, options = {}) {
   const dbLabel = summary.dbJudgeLabels.join(', ') || 'unknown DB judge';
   const extLabel = summary.externalJudgeLabel || 'external-json';
   const generated = options.generatedAt || new Date().toISOString();
-  const dbPath = options.dbPath ? path.relative(REPO_ROOT, options.dbPath) : 'data/evaluations.db';
+  const dbPath = options.dbPath ? path.relative(REPO_ROOT, options.dbPath) : 'unknown';
   const judgePath = options.judgeJsonPath ? path.relative(REPO_ROOT, options.judgeJsonPath) : null;
 
   const lines = [];
@@ -326,8 +327,16 @@ export function generateReport({ dbPath, judgeJsonPath, outPath }) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  // Resolve + sanity-check the DB via the shared read-path discipline, then
+  // hand the resolved path to loadDbRows (which opens its own handle).
+  const { db, dbPath, reason } = openEvaluationDbReadonly(REPO_ROOT, { explicitPath: args.db });
+  if (!db) {
+    console.log(describeMissingEvaluationDb(dbPath, reason));
+    process.exit(0);
+  }
+  db.close();
   const summary = generateReport({
-    dbPath: path.resolve(args.db),
+    dbPath,
     judgeJsonPath: path.resolve(args.judgeJson),
     outPath: path.resolve(args.out),
   });

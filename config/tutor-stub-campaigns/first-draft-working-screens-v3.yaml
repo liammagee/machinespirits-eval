@@ -1,0 +1,107 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens-v3
+created: 2026-07-17
+held_out: false
+purpose: >-
+  Development-only frozen-prefix screen for the configuration-realization
+  failures observed in V23 Marrick answer-seeking. It replays only turns 4, 5,
+  6, and 9: the saved public states that exposed plain-language,
+  adult-novice-audience, selected-action, and actorial-tactic misses. It cannot
+  certify held-out generalization.
+
+fixed_configuration:
+  original_only: true
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_recompiled_first_draft_contract
+  effort_source: exact_saved_request
+  max_live_model_jobs: 1
+  semantic_adjudication: true
+  semantic_adjudication_scope: eligible_actorial_recognition_only
+  adjudicator_model_source: saved_analysis_model
+  adjudicator_effort: low
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v3
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+matrix:
+  - id: marrick_v23_configuration_misses
+    priority: 1
+    world: world_005_marrick
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
+    turns: [4, 5, 6, 9]
+    development_seed: 20261200
+    seed_status: reusable_non_held_out_development
+    target_failures:
+      - plain_lexical_accessibility
+      - adult_novice_audience
+      - selected_action_family
+      - selected_actorial_tactic
+
+gates_per_cell:
+  required_originals_accepted: 4
+  required_turns: 4
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_fallbacks: 0
+  require_transcript_specific_uptake: true
+
+change_log:
+  speaking_prompt: >-
+    Iteration 6 assigns each adaptive performance axis a stable host beat.
+    Sentence 2 performs the selected part, sentence 3 performs the selected
+    tactic outside the uptake and any authored quotation, and sentence 4 is
+    reserved for a separate handoff only when needed. Charismatic force must
+    intensify rather than replace the selected part's action.
+  recovery_only: >-
+    Recovery is disabled in original-only screening. Strict end-to-end repair
+    and fallback behavior remains unchanged outside this development screen.
+  audit_recognition_only: >-
+    No audit recognition change is made in iteration 6. The prior general
+    support/exclusion correction remains active and separately accounted.
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_cell_fails: true
+  maximum_consecutive_iterations_without_improvement: 2
+  final_frontier_attempt_iteration: 6
+  stop_if_final_frontier_attempt_fails: true
+  frontier_reference:
+    iteration: 2
+    turn_configuration_vector:
+      4: 1.0
+      5: 1.0
+      6: 1.0
+      9: 0.667
+    requirement: >-
+      Iteration 6 must retain full realization on turns 4, 5, and 6, reach
+      turn 9, and raise turn 9 to full realization. Any failed working gate is
+      stagnation; a shorter clean prefix is not a new frontier.
+
+claim_boundary: >-
+  Passing means one fresh original tutor draw satisfies all strict delivery and
+  all selected response-configuration obligations on each of the four frozen
+  V23 public prefixes, with zero safety, fallback, or uptake failures. It is
+  development evidence only and cannot replace a newly predeclared held-out
+  strict end-to-end matrix.

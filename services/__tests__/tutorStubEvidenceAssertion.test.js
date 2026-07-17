@@ -1,0 +1,128 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from '../tutorStubEvidenceAssertion.js';
+
+test('an inflection of a current clue word is not mistaken for future evidence', () => {
+  const publicTokens = new Set(['notch', 'mended', 'square']);
+
+  assert.equal(tutorStubPrivateTokenAlreadyPublic('notched', publicTokens), true);
+  assert.equal(tutorStubPrivateTokenAlreadyPublic('unredeemed', publicTokens), false);
+});
+
+test('rejects a newly invented positive match between exhibits', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'I press both streaks to the touchstone; they match, copper-grey and lead-sweated.',
+    permittedText: 'The shillings are struck coin of poor dross. The broad graver on Verrell’s bench is his alone.',
+  });
+
+  assert.equal(audit.ok, false);
+  assert.equal(audit.issues[0].type, 'unsupported_evidence_correspondence');
+});
+
+test('allows a positive match when the public evidence already states it', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The shilling’s dross matches the crucible leavings.',
+    permittedText: 'That dross answers to the leavings of the weir-forge crucible.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
+test('allows a public single-die finding to be carried forward with tie language', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The shared notch ties these coins to one damaged die.',
+    permittedText:
+      'The shared notch shows all twelve were struck from one same damaged die; it still does not show whose graver made it.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
+test('does not let a public single-die finding license an unrelated exhibit match', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The shilling’s alloy matches the crucible leavings.',
+    permittedText: 'The shared notch shows all twelve shillings were struck from one damaged die.',
+  });
+
+  assert.equal(audit.ok, false);
+});
+
+test('allows questions, requirements, conditions, and explicit non-matches', () => {
+  for (const text of [
+    'Which streak must match the crucible leavings?',
+    'If the alloy matches, the crucible would matter.',
+    'The shilling has not yet been matched to any crucible leavings.',
+    'We need to look for a mark that corresponds to this tool.',
+    'We still need the shilling’s alloy to answer to its leavings.',
+    'A distinctive alloy can lead us to the crucible whose leavings match it.',
+    'The missing link is a match between this alloy and one crucible’s leavings.',
+    'The tool is tied to Verrell, not yet to this coin.',
+    'Yet I object to one phrase: no shared flaw has been proved, nor has any flaw been matched to that graver.',
+    'You have kept the graver tied to die-cutting without treating it as proof of the striking hand.',
+    'I turn a shilling beneath the lens, seeking a die-flaw that can answer to this broad graver.',
+    'The next safe check is a post-filing record tied to that graf.',
+    'The well may tell us where to trace the water, not whom to blame.',
+  ]) {
+    assert.equal(auditTutorStubEvidenceAssertions({ text }).ok, true, text);
+  }
+});
+
+test('ignores conversational agreement that is not an exhibit correspondence', () => {
+  assert.equal(auditTutorStubEvidenceAssertions({ text: 'Your answer matches the distinction we entered.' }).ok, true);
+});
+
+test('ignores an attribution conclusion that uses tied to without asserting an exhibit match', () => {
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'Edony’s hand is tied to casting these blanks, but the shilling’s die remains unaccounted for.',
+    }).ok,
+    true,
+  );
+});
+
+test('allows a public tool-to-person inference without treating it as a new exhibit match', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'Edony’s sole keeping of the sprung-heel burin ties her to cutting the flawed die. The same hand is already tied to the weir-forge blanks.',
+    permittedText:
+      'That ties the damaged die to Edony’s worn burin, so she likely cut it, though it does not prove she struck the shillings.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
+test('allows a public job-number entry to support a handling attribution', () => {
+  const audit = auditTutorStubEvidenceAssertions({
+    text: 'The Wrenfold job number ties that 12:14 entry to their handling of Priya’s lunchbox.',
+    permittedText:
+      'Priya’s labelled lunchbox was logged at 12:14, tagged with the Wrenfold job number, with a shelf photo attached.',
+  });
+
+  assert.equal(audit.ok, true);
+});
+
+test('ignores an explicit tool-custody boundary that is not an exhibit match', () => {
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'You have kept the graver tied to its owner without pretending it has marked this coin.',
+    }).ok,
+    true,
+  );
+});
+
+test('ignores a released burin-to-hand custody attribution', () => {
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'This ties that burin to Edony’s hand, though the striking remains open.',
+    }).ok,
+    true,
+  );
+});
+
+test('accepts a same-strain conclusion only when that strain correspondence is public', () => {
+  const text = 'Whole-genome typing identifies the Corvat contaminant as the same G17 strain.';
+  const permittedText = 'Whole-genome typing identifies the Corvat contaminant as the same G17 strain.';
+
+  assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText }).ok, true);
+  assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText: '' }).ok, false);
+});

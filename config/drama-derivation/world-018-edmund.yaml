@@ -31,6 +31,10 @@
 id: world_018_edmund
 title: The Cracked Tenor of Saint-Edmund
 
+eligibility:
+  status: screen_pending
+  reason: Awaiting the paid S-underivability screen required before a generation run.
+
 discipline: bell-founding
 question: "Whose hand cracked the tenor bell of Saint-Edmund?"
 question_pattern: [crackedBy, tenorBell, "?x"]
@@ -202,3 +206,14 @@ motivation:
     temptation: high # Crale's reputation should genuinely tempt
     suspense: tight # hug the floor — the wardens' waiting IS the suspense
     reversal: emphatic # the MUTUAL recognition, against the master's own interest, is the climax
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: edmund
+  temporal_frame: period
+  scene_ecology: "bell-founders' wardens inquiry"
+  narrative_diction: "medieval craft-guild formal"
+  ledger_term: "foundry book"
+  summary: Two metallurgical chains converge on the under-caster whose choices cracked Saint-Edmund's tenor bell.

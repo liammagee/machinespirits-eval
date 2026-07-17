@@ -12,6 +12,10 @@
 id: world_000_smoke
 title: The Heir of House Aldra (smoke-grade)
 
+eligibility:
+  status: test_only
+  reason: Deterministic plumbing fixture for engine, ledger, chainer, slope, and failure-taxonomy tests.
+
 question: "Who is the rightful heir of House Aldra?"
 question_pattern: [heir, "?x"]
 
@@ -25,12 +29,17 @@ mirror:
 # Public law of the world: the learner KNOWS the rules; it lacks the facts.
 rules:
   - id: R1_lineage
+    gloss: >-
+      A child of the founder's child is the founder's grandchild.
     if:
       - [child, "?x", "?y"]
       - [child, "?y", "?z"]
     then:
       - [grandchild, "?x", "?z"]
   - id: R2_succession
+    gloss: >-
+      Under Aldra's succession rule, a grandchild of the founder who bears
+      the house mark is the rightful heir.
     if:
       - [grandchild, "?x", founder]
       - [bearsMark, "?x"]
@@ -49,6 +58,7 @@ premises:
     fact: [bearsMark, marin]
     surface: "Marin bears the mark of the house"
   - id: p4 # mirror fuel: makes Joren a live candidate
+    evidence_role: mirror
     fact: [child, joren, tessa]
     surface: "Joren too is Tessa's child"
 
@@ -56,7 +66,8 @@ premises:
 background:
   - [livesAt, marin, harbor]
 
-incompatible: []
+incompatible:
+  - [[heir, marin], [heir, joren]]
 
 # The authored proof DAG (plot skeleton): D(t) counts missing premises here.
 proof_paths:
@@ -75,3 +86,14 @@ slope:
   aporia_window: 4 # anti-aporia: progress required within any 4-turn window
 
 turn_cap: 14
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: aldra
+  temporal_frame: period
+  scene_ecology: "household succession inquiry"
+  narrative_diction: "plain heraldic"
+  ledger_term: "succession roll"
+  summary: A tiny inheritance mystery retained only as the deterministic derivation-engine smoke fixture.

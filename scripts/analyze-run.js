@@ -2,8 +2,13 @@
  * Detailed statistical analysis of an evaluation run.
  * Usage: node scripts/analyze-run.js [run_id]
  */
-import Database from 'better-sqlite3';
-const db = new Database('data/evaluations.db');
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
+
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 const RUN_ID =
   process.argv[2] || db.prepare('SELECT run_id FROM evaluation_results ORDER BY created_at DESC LIMIT 1').get()?.run_id;

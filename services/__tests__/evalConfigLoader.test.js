@@ -145,7 +145,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "anthropic.sonnet" to full model ID', () => {
     const r = resolveModel('anthropic.sonnet');
     assert.strictEqual(r.provider, 'anthropic');
-    assert.strictEqual(r.model, 'claude-sonnet-4-5');
+    assert.strictEqual(r.model, 'claude-sonnet-5');
     assert.ok('apiKey' in r, 'should have apiKey field');
     assert.ok('isConfigured' in r, 'should have isConfigured field');
     assert.ok('baseUrl' in r, 'should have baseUrl field');
@@ -160,7 +160,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "anthropic.opus"', () => {
     const r = resolveModel('anthropic.opus');
     assert.strictEqual(r.provider, 'anthropic');
-    assert.strictEqual(r.model, 'claude-opus-4-6');
+    assert.strictEqual(r.model, 'claude-opus-4-8');
   });
 
   it('resolves "openai.mini"', () => {
@@ -229,6 +229,15 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.model, 'gpt-5.5');
     assert.strictEqual(r.isConfigured, true);
   });
+
+  for (const model of ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']) {
+    it(`resolves "codex.${model}"`, () => {
+      const r = resolveModel(`codex.${model}`);
+      assert.strictEqual(r.provider, 'codex');
+      assert.strictEqual(r.model, model);
+      assert.strictEqual(r.isConfigured, true);
+    });
+  }
 
   it('passes through unknown alias as-is', () => {
     const r = resolveModel('openrouter.some-future-model');

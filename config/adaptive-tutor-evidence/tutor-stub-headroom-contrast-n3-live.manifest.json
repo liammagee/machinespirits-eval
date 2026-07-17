@@ -1,0 +1,56 @@
+{
+  "schema": "machinespirits.tutor-stub-evidence-manifest.v1",
+  "runDir": ".tutor-stub-auto-eval/headroom-contrast-n3-live",
+  "createdAt": "2026-07-12T21:21:56.443587+00:00",
+  "claimStatus": "exploratory",
+  "sourceCommit": "bd4532fe",
+  "archive": {
+    "location": "~/.machinespirits-data/runs/tutor-stub/headroom-contrast-n3-live-20260710.tar.gz",
+    "sha256": "d1700785c89488286b6c9ac75d66be80ab24bda0b1ec49e060adf3b9c4398263",
+    "bytes": 49596143,
+    "note": "full run directory (per-dialogue traces + reports); tar.gz of the gitignored .tutor-stub-auto-eval run dir; not a sealed experiment-run archive"
+  },
+  "distilledFiles": [
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/profile-discrimination.json",
+      "sha256": "2662e6477c9e8e73a1b677a34e693b4935dc4538fd3f213919e40162510a2f1b",
+      "bytes": 66608
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/profile-discrimination.md",
+      "sha256": "c3a9c539b29b2ae494a3ebb6e3f078c7e36f92e3f6b4d7c7c28102609cf7b9a4",
+      "bytes": 2937
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/qa-matrix.json",
+      "sha256": "91d05cb03b2534260f61abf60b7e01d60fd35bbbfec444192b4e5e517a0da3bd",
+      "bytes": 22947
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/qa-matrix.md",
+      "sha256": "5ded11bac22589e507c1720b17300e465414be0b6b44ad9070ad21a65942599d",
+      "bytes": 5466
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/qa-plan.json",
+      "sha256": "258f6d3196fc85b915814072496f32a9f2cac5337776497837fbd936888dc78d",
+      "bytes": 6053
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/trajectory-analysis.json",
+      "sha256": "d52f3df083e28dfcaa1197e8f7efa889f07ab83c33b2a36072eac9c26d20c43a",
+      "bytes": 26647
+    },
+    {
+      "path": "exports/tutor-stub-headroom-evidence/headroom-contrast-n3-live/trajectory-analysis.md",
+      "sha256": "8833890b8e431fca7ba7b8990ac999b2d7c2169ceb621f01f31924646b91c653",
+      "bytes": 8859
+    }
+  ],
+  "exclusions": [
+    "auto-eval output directory, not a sealed experiment run: no run-plan/run-events/run-seal chain exists",
+    "n=3 per cell exploratory evidence; no claim-bearing status",
+    "simulated learner outcomes do not estimate human learning effects"
+  ],
+  "notes": "2026-07-10 headroom contrast, 60/60 rows, 5 policies x 4 profiles x n=3. Model provenance caveat: run_start metadata records codex.gpt-5.6-terra (requested gpt-5.5; child flag-forwarding bug fixed in 7d50c8f0). Endpoint + fixed-horizon reanalysis: PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md."
+}

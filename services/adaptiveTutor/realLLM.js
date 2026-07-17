@@ -21,7 +21,7 @@ import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
-import { callAIWithCliBridge } from '../cliProviderBridge.js';
+import { callAIWithCliBridge, claudeCliIsolation, CLAUDE_CLI_CONTEXT_ISOLATION } from '../cliProviderBridge.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 import { lookupRates } from './budgetTracker.js';
 import { parseIdConstruction } from '../idDirectorEngine.js';
@@ -108,84 +108,93 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
       `[claude-cli] start role=${role} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${model || 'default'}`,
     );
   }
-  return await new Promise((resolve, reject) => {
-    // Pass the system prompt via --system-prompt rather than concatenating
-    // into stdin. Two reasons:
-    //   1. It REPLACES the default system prompt, which suppresses any
-    //      ambient output-style additions (e.g. the "★ Insight" annotation
-    //      the explanatory style appends after the model's response).
-    //      Without this, parseJsonLoose receives `<json>\n<insight prose>`
-    //      and either fails or jsonrepair coerces the prose into JSON.
-    //   2. Cleanly separates system from user — stdin carries just the user
-    //      prompt, mirroring the (system, messages[]) shape of the API.
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    let firstByteAt = null;
-    const cliTimeout = setTimeout(() => {
-      const elapsed = Date.now() - start;
-      // Always emit a stderr line on timeout, even without CLI_TRACE, so
-      // future smokes never repeat the silent-hang failure mode. firstByteAt
-      // distinguishes "child never produced any output" from "child stalled
-      // mid-stream" — the former points at CLI/network init issues, the
-      // latter at server-side stream completion.
-      const sawAny = firstByteAt != null;
-      console.error(
-        `[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`,
-      );
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
-      }
-      reject(
-        new Error(
-          `claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`,
-        ),
-      );
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      if (firstByteAt == null) firstByteAt = Date.now();
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(cliTimeout);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(cliTimeout);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
-      } else {
-        const latencyMs = Date.now() - start;
-        if (CLI_TRACE) {
-          const ttfb = firstByteAt != null ? `${firstByteAt - start}ms` : 'no-output';
-          console.error(`[claude-cli] done  role=${role} latency=${latencyMs}ms ttfb=${ttfb} outBytes=${out.length}`);
+  // Context isolation (claudeCliIsolation): --safe-mode + no session
+  // persistence + tools off + empty temp cwd, so the adaptive tutor's role
+  // calls never see the repo's ambient project context (CLAUDE.md etc.).
+  const isolation = claudeCliIsolation();
+  try {
+    return await new Promise((resolve, reject) => {
+      // Pass the system prompt via --system-prompt rather than concatenating
+      // into stdin. Two reasons:
+      //   1. It REPLACES the default system prompt, which suppresses any
+      //      ambient output-style additions (e.g. the "★ Insight" annotation
+      //      the explanatory style appends after the model's response).
+      //      Without this, parseJsonLoose receives `<json>\n<insight prose>`
+      //      and either fails or jsonrepair coerces the prose into JSON.
+      //   2. Cleanly separates system from user — stdin carries just the user
+      //      prompt, mirroring the (system, messages[]) shape of the API.
+      const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt, ...isolation.args];
+      if (model) args.push('--model', model);
+      const env = { ...process.env };
+      delete env.CLAUDE_CODE;
+      delete env.CLAUDECODE;
+      delete env.ANTHROPIC_API_KEY;
+      delete env.ANTHROPIC_AUTH_TOKEN;
+      const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
+      let out = '';
+      let err = '';
+      let firstByteAt = null;
+      const cliTimeout = setTimeout(() => {
+        const elapsed = Date.now() - start;
+        // Always emit a stderr line on timeout, even without CLI_TRACE, so
+        // future smokes never repeat the silent-hang failure mode. firstByteAt
+        // distinguishes "child never produced any output" from "child stalled
+        // mid-stream" — the former points at CLI/network init issues, the
+        // latter at server-side stream completion.
+        const sawAny = firstByteAt != null;
+        console.error(
+          `[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`,
+        );
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
         }
-        resolve({
-          text: out.trim(),
-          model: model || 'claude-cli',
-          provider: 'claude-code',
-          latencyMs,
-          inputTokens: 0,
-          outputTokens: 0,
-          cost: 0,
-        });
-      }
+        reject(
+          new Error(
+            `claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`,
+          ),
+        );
+      }, CLAUDE_CLI_TIMEOUT_MS);
+      child.stdout.on('data', (d) => {
+        if (firstByteAt == null) firstByteAt = Date.now();
+        out += d;
+      });
+      child.stderr.on('data', (d) => {
+        err += d;
+      });
+      child.on('error', (e) => {
+        clearTimeout(cliTimeout);
+        reject(e);
+      });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        if (code !== 0) {
+          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
+        } else {
+          const latencyMs = Date.now() - start;
+          if (CLI_TRACE) {
+            const ttfb = firstByteAt != null ? `${firstByteAt - start}ms` : 'no-output';
+            console.error(`[claude-cli] done  role=${role} latency=${latencyMs}ms ttfb=${ttfb} outBytes=${out.length}`);
+          }
+          resolve({
+            text: out.trim(),
+            model: model || 'claude-cli',
+            provider: 'claude-code',
+            latencyMs,
+            inputTokens: 0,
+            outputTokens: 0,
+            cost: 0,
+            contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
+          });
+        }
+      });
+      child.stdin.write(userPrompt);
+      child.stdin.end();
     });
-    child.stdin.write(userPrompt);
-    child.stdin.end();
-  });
+  } finally {
+    isolation.cleanup();
+  }
 }
 
 async function callAI(agentConfig, systemPrompt, userPrompt, role) {

@@ -1,0 +1,669 @@
+<!doctype html>
+<!--
+  Adaptive Tutor: State of the Evidence, 2026-07-11.
+  A dated, evidence-graded techne audit of PLAN_4_0, current code, recent runs,
+  72-hour commit history, workplan, and current primary literature.
+  The original audit boundary is preserved; a dated execution checkpoint was
+  appended on 2026-07-12 through codex/adaptive-tutor-implementation@bd8f47ec.
+  The HTML is the source. Shared design: notes/poetics/assets/techne.css + .js.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Adaptive Tutor — State of the Evidence · PLAN 4.0</title>
+<meta name="description" content="A full Jul 11 audit of PLAN_4_0, with a fail-closed Jul 12 checkpoint covering learner-state S0/S1 execution, four 24-cell preflights, a stopped 72-case reliability gate, the v2.3 exact-channel successor, its stopped zero-call canonical sensor pilot, and Phase 6A v2.1." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&amp;family=Source+Serif+4:opsz,wght@8..60,200..900&amp;family=JetBrains+Mono:wght@300..700&amp;display=swap" />
+<link rel="stylesheet" href="../notes/poetics/assets/techne.css" />
+<style>
+  :root { --audit-blue: #315c72; --audit-violet: #6e5a88; }
+  .hero__h1 { max-width: 13ch; }
+  .hero__lede { max-width: 980px; }
+  .verdict-grid, .metric-grid, .map-grid, .priority-grid, .reference-grid {
+    display: grid; gap: 14px; margin: 1.4rem 0;
+  }
+  .verdict-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .map-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+  .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reference-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric, .verdict, .map-card, .priority-card, .reference-card {
+    border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 92%, var(--paper-2));
+    padding: 16px; border-radius: 2px;
+  }
+  .metric__value { display:block; font-family:"Fraunces",serif; font-size:clamp(2rem,4vw,3.3rem); line-height:.9; color:var(--ink); }
+  .metric__label, .eyebrow { display:block; margin-top:.55rem; font-family:"JetBrains Mono",monospace; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .verdict h3, .map-card h3, .priority-card h3, .reference-card h3 { margin:.35rem 0 .55rem; font-family:"Fraunces",serif; font-size:1.25rem; }
+  .verdict p, .map-card p, .priority-card p, .reference-card p { margin:.4rem 0; }
+  .verdict--yes { border-top:4px solid var(--moss); }
+  .verdict--no { border-top:4px solid var(--brick); }
+  .verdict--open { border-top:4px solid var(--ochre); }
+  .map-card { position:relative; padding-top:22px; }
+  .map-card::before { content:attr(data-step); position:absolute; top:-10px; left:14px; padding:2px 7px; background:var(--ink); color:var(--paper); font:600 .65rem/1.4 "JetBrains Mono",monospace; letter-spacing:.1em; }
+  .map-arrow { display:flex; justify-content:center; align-items:center; color:var(--ink-3); font-size:1.4rem; }
+  .grade { display:inline-grid; place-items:center; min-width:2.2rem; min-height:2.2rem; border:1px solid currentColor; border-radius:50%; font:700 .8rem/1 "JetBrains Mono",monospace; }
+  .grade--strong { color:var(--moss-deep); }
+  .grade--mixed { color:var(--ochre-d); }
+  .grade--weak { color:var(--brick-d); }
+  .table-wrap { width:100%; overflow-x:auto; margin:1.2rem 0 1.6rem; border:1px solid var(--rule); }
+  .diag > .body, .diag > .ml, .diag > .mr { min-width:0; }
+  .body code, .mr code { overflow-wrap:anywhere; word-break:break-word; }
+  table.audit { width:100%; border-collapse:collapse; min-width:720px; font-size:.86rem; }
+  table.audit th, table.audit td { padding:.64rem .72rem; border-bottom:1px solid var(--rule); text-align:left; vertical-align:top; }
+  table.audit th { position:sticky; top:0; z-index:1; background:var(--paper-2); font:600 .68rem/1.35 "JetBrains Mono",monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
+  table.audit tr:last-child td { border-bottom:0; }
+  table.audit .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  table.audit .best { color:var(--moss-deep); font-weight:700; }
+  table.audit .bad { color:var(--brick-d); font-weight:700; }
+  table.audit code { white-space:nowrap; }
+  .status { display:inline-block; padding:.18rem .42rem; border:1px solid currentColor; font:600 .62rem/1.1 "JetBrains Mono",monospace; letter-spacing:.05em; text-transform:uppercase; }
+  .status--yes { color:var(--moss-deep); }
+  .status--partial { color:var(--ochre-d); }
+  .status--no { color:var(--brick-d); }
+  .status--neutral { color:var(--ink-3); }
+  .evidence-line { display:grid; grid-template-columns:80px 1fr; gap:14px; padding:.9rem 0; border-bottom:1px solid var(--rule); }
+  .evidence-line:last-child { border-bottom:0; }
+  .evidence-line p { margin:0; }
+  .architecture { margin:1.5rem 0; padding:1rem; border:1px solid var(--rule); background:var(--paper-2); }
+  .architecture__lane { display:grid; grid-template-columns:1.05fr 40px 1.05fr 40px 1.05fr 40px 1.05fr; gap:8px; align-items:stretch; margin:.75rem 0; }
+  .architecture__box { min-height:92px; padding:.8rem; border:1px solid var(--ink-3); background:var(--paper); }
+  .architecture__box strong { display:block; font-family:"JetBrains Mono",monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; }
+  .architecture__box small { display:block; margin-top:.45rem; line-height:1.35; color:var(--ink-2); }
+  .architecture__arrow { display:grid; place-items:center; color:var(--ink-3); }
+  .lane-label { font:700 .66rem/1.2 "JetBrains Mono",monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--brick-d); }
+  .risk-list { counter-reset:risk; list-style:none; padding:0; }
+  .risk-list li { counter-increment:risk; position:relative; padding:.9rem 0 .9rem 3.1rem; border-bottom:1px solid var(--rule); }
+  .risk-list li::before { content:counter(risk,decimal-leading-zero); position:absolute; left:0; top:.95rem; color:var(--brick-d); font:700 .72rem/1 "JetBrains Mono",monospace; }
+  .roadmap { counter-reset:phase; }
+  .roadmap-step { counter-increment:phase; display:grid; grid-template-columns:70px 1fr; gap:16px; padding:1.25rem 0; border-bottom:1px solid var(--rule); }
+  .roadmap-step::before { content:"P" counter(phase); color:var(--brick-d); font:700 1.05rem/1 "JetBrains Mono",monospace; }
+  .roadmap-step h3 { margin:0 0 .45rem; }
+  .roadmap-step p, .roadmap-step ul { margin:.4rem 0; }
+  .gate { border-left:4px solid var(--moss); padding:.7rem 1rem; background:color-mix(in srgb,var(--moss) 6%,var(--paper)); }
+  .gate strong { font-family:"JetBrains Mono",monospace; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; }
+  details.audit-details { border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:.85rem 0; margin:1rem 0; }
+  details.audit-details summary { cursor:pointer; font-family:"JetBrains Mono",monospace; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+  .mini-bars { margin:1.2rem 0; }
+  .mini-bar { display:grid; grid-template-columns:160px 1fr 52px; gap:10px; align-items:center; margin:.55rem 0; font-size:.82rem; }
+  .mini-bar__track { height:9px; background:var(--rule); }
+  .mini-bar__fill { display:block; height:100%; background:var(--audit-blue); }
+  .mini-bar__fill--brick { background:var(--brick); }
+  .mini-bar__fill--moss { background:var(--moss); }
+  .mini-bar__value { text-align:right; font-family:"JetBrains Mono",monospace; font-size:.72rem; }
+  .mono-block { overflow:auto; padding:1rem; background:var(--ink); color:var(--paper); font:400 .72rem/1.65 "JetBrains Mono",monospace; white-space:pre; }
+  .source-list li { margin:.55rem 0; }
+  .muted { color:var(--ink-3); }
+  .nowrap { white-space:nowrap; }
+  @media (max-width: 900px) {
+    .verdict-grid, .metric-grid, .map-grid, .priority-grid, .reference-grid { grid-template-columns:1fr 1fr; }
+    .architecture__lane { grid-template-columns:1fr; }
+    .architecture__arrow { transform:rotate(90deg); min-height:28px; }
+  }
+  @media (max-width: 620px) {
+    .verdict-grid, .metric-grid, .map-grid, .priority-grid, .reference-grid { grid-template-columns:1fr; }
+    .metric-grid { grid-template-columns:1fr 1fr; }
+    .evidence-line { grid-template-columns:54px 1fr; }
+    .mini-bar { grid-template-columns:110px 1fr 45px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">PLAN 4.0 · evidence audit</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#verdict">Verdict</a>
+      <a href="#scope">Scope</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#history">72 hours</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#interactions">Interactions</a>
+      <a href="#field">Field theory</a>
+      <a href="#audit">Audit</a>
+      <a href="#literature">Literature</a>
+      <a href="#gaps">Gaps</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#appendix">Appendix</a>
+    </nav>
+    <div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> PLAN 4.0 · original audit 2026-07-11 · <code>be40a9e0</code> · execution checkpoint 2026-07-12</div>
+    <h1 class="hero__h1">An adaptive tutor—or an increasingly precise <span class="em">simulator</span> of one?</h1>
+    <p class="hero__subtitle">What the code and recent runs actually show, what remains unproven, and the shortest credible route to a tutor whose adaptation can be believed.</p>
+    <div class="hero__lede"><div>
+      <p><strong>The direction is right; the claim is not yet earned.</strong> In three days this branch has built a serious experimental substrate: explicit interaction state, multiple policy families, profile-conditioned synthetic learners, fixed-horizon trajectory analysis, a pressure probe, frozen evidence-gate machinery, formal proof outcomes, and enough reporting to expose rather than conceal negative results. The best current result is a reproducible <em>structure</em>: policy rankings cross by learner profile, and simple policies remain hard to beat. The deepest current limitation is equally clear: the system has not yet validated its learner-state estimates, has not isolated instructional action from register, has not run the real four-arm field-planner gate, and has measured no human learning.</p>
+      <p>So: <strong>keep the explicit-state, guarded-policy, formal-evidence architecture.</strong> Stop treating richer fields as evidence in themselves. Make the next cycle about predictive validity, diagnostic value, meaningful pedagogical actions, immutable provenance, independent performance, and authentic learners.</p>
+    </div></div>
+  </section>
+
+  <div class="shell">
+    <section class="s" id="verdict">
+      <div class="diag"><div class="ml"><h2 class="s__num">00<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Answer first</p>
+        <h2 class="s__h">The project has found <em>interaction signal</em>, not adaptive-tutoring efficacy.</h2>
+        <div class="metric-grid">
+          <div class="metric"><span class="metric__value">35</span><span class="metric__label">first-parent commits · 72h</span></div>
+          <div class="metric"><span class="metric__value">120</span><span class="metric__label">recent headroom trajectories</span></div>
+          <div class="metric"><span class="metric__value">1</span><span class="metric__label">world in decisive tutor-stub runs</span></div>
+          <div class="metric"><span class="metric__value">0</span><span class="metric__label">human learning outcomes</span></div>
+        </div>
+        <div class="verdict-grid">
+          <article class="verdict verdict--yes"><span class="eyebrow">What is working</span><h3>Scientific instrumentation</h3><p>Fixed horizons reveal differences hidden by eventual completion. Policy interleaving reduces temporal drift. Formal DAG coverage is independent of stylistic judge preference. The reports preserve rank reversals and failures.</p></article>
+          <article class="verdict verdict--yes"><span class="eyebrow">What is real</span><h3>Policy × profile interaction</h3><p>Across Terra and Sonnet 5, the best turn-16 policy changes with learner profile. Bland wins the diligent profile; adaptive or adversarial policies lead the stress profiles. There is no universal winner.</p></article>
+          <article class="verdict verdict--no"><span class="eyebrow">What is not shown</span><h3>A validated adaptive tutor</h3><p>No learner-state calibration against people, no authentic transition model, no independent posttest or retention, no causal field advantage, and no generalization beyond one synthetic proof world.</p></article>
+          <article class="verdict verdict--open"><span class="eyebrow">What should happen next</span><h3>Validate, then learn</h3><p>Freeze provenance; test state prediction; separate move, task, support, and register; run the four-arm gate; log propensities; fit lean transition baselines; then cross into authentic logs and human studies.</p></article>
+        </div>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Dimension</th><th>Audit grade</th><th>Reading</th></tr></thead>
+          <tbody>
+            <tr><td>Architecture and modular causal intent</td><td><span class="grade grade--strong">A−</span></td><td>State, policy, realization, guards, and outcomes are conceptually separable—even where implementation is still monolithic.</td></tr>
+            <tr><td>Instrumentation and negative-result discipline</td><td><span class="grade grade--strong">B+</span></td><td>Fixed horizons, formal endpoints, profile gates, pressure probes, placebo arms, and explicit caveats are unusually good for this stage.</td></tr>
+            <tr><td>Run provenance and reproducibility</td><td><span class="grade grade--weak">D+</span></td><td>A root plan was overwritten during analysis; tutor-stub runs omit a commit/config hash; stochastic policy sampling is unseeded; primary artifacts are ignored.</td></tr>
+            <tr><td>Evidence for better policy selection</td><td><span class="grade grade--mixed">C</span></td><td>Exploratory profile interactions exist at <code>n=3</code>, but no policy wins generally and no inferential replication exists.</td></tr>
+            <tr><td>Learner-state validity</td><td><span class="grade grade--weak">D</span></td><td>Profiles are separable under their own contracts; that is not calibration to real cognition or affect.</td></tr>
+            <tr><td>Human educational efficacy</td><td><span class="grade grade--weak">—</span></td><td>Not tested. Engineering for the pilot exists, but recruitment is blocked by IRB/consent/item readiness.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout"><strong>Claim boundary</strong><br />The defensible Jul 11 statement remains: <em>the system can expose policy-dependent trajectories and profile interactions in a synthetic, formally scored environment.</em> The Jul 12 executions add instrument and failure evidence, not a positive tutor result. They license <strong>no efficacy, human-learning, deployment, live-default parity, or learner-state sensor-validity claim</strong>.</div>
+        <div class="callout" id="execution-checkpoint"><strong>Execution checkpoint · 2026-07-12 · v2.3 canonical pilot sealed at <code>bd8f47ec</code></strong><br />The original clean v2.1 S0 instrument passed with 24 dialogues, 144 scored transitions, zero model calls, and three frozen state-blind baselines. S1 then failed closed three times at progressively later boundaries: one provider-schema canary call; a complete 339-dispatch technical run whose public event-family recovery was <code>0.395833</code>; and a repaired run stopped after 73 dispatches because an analyzer evidence span was not an exact learner-turn substring. Four sealed 24-cell preflights moved exact recovery from 19/24 to 22/24 to 23/24 to 23/24. A zero-call construct audit replaced Ravensmark's ambiguous unary event with the distinct <code>pressedSealFor</code> relation and a fresh S0 passed. Option 2 was then frozen before new calls: three complete fresh draws of every existing cell, 72 cases and 144 serial dispatches, every draw retained, and aggregate plus stratum floors. The v2.2 run completed without technical failure at 70/72, but both misses repeated in Ravensmark/derive/Codex, yielding 1/3 for that cell, derive 16/18, Codex 34/36, and Ravensmark 22/24. Draws 1 and 2 merely repeated the holder premise and were correctly scored <code>none</code>; draw 3 still omitted the intended pressed-seal action but was nominally scored <code>derive</code>, exposing an analyzer false positive. The repeated-draw gate therefore stopped <code>stop_observability_channel_no_s1</code>. The zero-call v2.3 successor separates an exact, deterministic claim-bearing event channel from a gate-ineligible language-transfer lane; its clean S0 passed 24 dialogues, 144 scored transitions, and 168/168 semantically faithful realized turns. The prospectively frozen canonical pilot then fit 84 heads over 12 independent latent clusters. The oracle instrument passed, but lean DAG was worse than no-state on both targets under pooled world transfer, improved both targets in only Hethel and neither held-out generator, and richer trajectory/field rungs were worse still. The sealed decision is <code>do_not_run_canonical_s2</code>: no confirmation candidate, no validated winner, and no policy optimization. Phase 6A v2.1 still has no paid evidence.</div>
+      </div><div class="mr"><p class="note note--moss"><span class="note__lbl">Verdict</span> On the right path at the substrate level; one or two full evidence ladders short of a proper adaptive tutor.</p></div></div>
+    </section>
+
+    <section class="s" id="scope">
+      <div class="diag"><div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Audit boundary and method</p>
+        <h2 class="s__h">Current code, local evidence, workplan, and current literature—read together.</h2>
+        <p>This report is a dated engineering-and-evidence audit of branch <code>preconscious</code> at <code>be40a9e0</code>. At inspection time it matched <code>origin/preconscious</code>, stood 56 commits ahead of <code>origin/main</code>, and its branch diff spanned 93 files and roughly 38.7k additions. Thirty-five first-parent commits landed in the preceding 72 hours. The review covered all eight PLAN_4_0 documents, relevant workplan cards, the two recent 60-dialogue fixed-horizon sets, Phase 6 artifacts, report logic, profile contracts, field-planner code, current tests, and 2024–2026 primary research.</p>
+        <p><strong>Historical boundary preserved.</strong> The prose and grades above are the Jul 11 audit, not a retroactive re-audit at a later HEAD. The Jul 12 checkpoint appends execution facts from <code>codex/adaptive-tutor-implementation</code> through <code>bd8f47ec</code>. Where it changes operational status, the dated checkpoint controls; where it does not speak, the original audit boundary remains.</p>
+        <div class="evidence-line"><span class="status status--yes">Direct</span><p>Source code, tracked plans, workplan cards, Git history, JSON summaries, trace-derived trajectory reports, run manifests, and focused hermetic tests.</p></div>
+        <div class="evidence-line"><span class="status status--partial">Derived</span><p>Audit recomputation and interpretation from the above, including comparisons of saved root plans with row-level observed configurations.</p></div>
+        <div class="evidence-line"><span class="status status--partial">Web</span><p>Primary papers and official proceedings pages through July 2026. The local literature corpus is incomplete: it contains one substantive PDF plus manifests, not the indexed multi-area library.</p></div>
+        <div class="evidence-line"><span class="status status--no">Jul 11 excluded</span><p>The original audit made no new paid model calls, performed no new grading or database mutation, and made no retroactive rescoring or human-study inference. The separate Jul 12 checkpoint reports later paid technical-gate executions explicitly.</p></div>
+        <p>The report uses four evidence labels: <span class="chip chip--moss">supported</span> for a direct and appropriately bounded result; <span class="chip chip--ochre">exploratory</span> for small or confounded evidence; <span class="chip chip--brick">not shown</span> for an attractive claim without a decisive test; and <span class="chip chip--ink">engineering</span> for machinery that works but has not shown outcome value.</p>
+        <p>The focused hermetic verification suite completed <strong>68/68 tests</strong>: QA matrix, profile discrimination, human discourse, continuous register, reporting, Phase 6, field planner, comprehension, DAG fact dropout, register temperature, and response configuration. This verifies the tested code paths; it does not repair experimental identification.</p>
+      </div><div class="mr"><p class="note note--ochre"><span class="note__lbl">Corpus caveat</span> The expected <code>docs/explorations/literature/pdfs/</code> topic folders are absent. The companion synthesis records that gap.</p></div></div>
+    </section>
+
+    <section class="s" id="architecture">
+      <div class="diag"><div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">What was actually built</p>
+        <h2 class="s__h">Two adaptive controllers share a question, but not an intervention.</h2>
+        <p>PLAN_4_0 currently contains two distinct experimental systems. They must not be collapsed into a single “field” result.</p>
+        <div class="architecture">
+          <span class="lane-label">Tutor-stub · register controller</span>
+          <div class="architecture__lane">
+            <div class="architecture__box"><strong>Observable dialogue</strong><small>Learner utterance, proof-DAG state, prior turns, classifier outputs.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Profile / field features</strong><small>Mastery/risk proxies, stance, agency, evidence-use labels, trajectory.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Register policy</strong><small><code>bland</code>, <code>negative</code>, <code>dynamic</code>, <code>field</code>, <code>dynamical_system</code>.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Same proof substrate</strong><small>Tutor language changes stance; the underlying six-fact proof task and action substrate largely remain shared.</small></div>
+          </div>
+          <span class="lane-label">Dramatic derivation · move-family controller</span>
+          <div class="architecture__lane">
+            <div class="architecture__box"><strong>Public board</strong><small>Premise ledger, proof debt, candidate releases, conduct state, dialogue history.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Coupled fields</strong><small>Learner, tutor, discourse, joint interaction features computed each turn.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Move projection</strong><small>Deterministic candidate-move scores, scripts, safety guards, due-release override.</small></div><div class="architecture__arrow">→</div>
+            <div class="architecture__box"><strong>Four authority modes</strong><small>Baseline, report-only, advisory, enforce. This controller can change <em>what move</em> is made.</small></div>
+          </div>
+        </div>
+        <div class="map-grid">
+          <article class="map-card" data-step="STATE"><h3>Explicit and inspectable</h3><p>This is the right move. Both systems expose what the controller sees and preserve machine-owned proof state.</p></article>
+          <article class="map-card" data-step="POLICY"><h3>Mostly hand-coded</h3><p>“Field” and “dynamical” do not yet mean learned dynamics. They are engineered scoring rules and priors.</p></article>
+          <article class="map-card" data-step="OUTCOME"><h3>Formally grounded</h3><p>DAG coverage and release discipline are strong internal endpoints. Human knowledge, transfer, and retention are absent.</p></article>
+        </div>
+        <div class="claim"><span class="claim__no">i.</span><h3 class="claim__h">The strongest architectural choice <span class="chip chip--moss">supported</span></h3><div class="claim__body"><p>Keep learner/tutor state, policy choice, LLM realization, safety authority, and outcome measurement separable. The code increasingly supports this decomposition, even though the two main runner scripts remain very large.</p></div></div>
+        <div class="claim"><span class="claim__no">ii.</span><h3 class="claim__h">The strongest theoretical overreach <span class="chip chip--ochre">exploratory</span></h3><div class="claim__body"><p>Velocity, curvature, attractors, and coupled fields are currently names for computed features and deterministic projections. They become scientific constructs only if they are reliable, invariant, calibrated, incrementally predictive, and intervention-sensitive.</p></div></div>
+      </div><div class="mr"><p class="note note--ink"><span class="note__lbl">Do not conflate</span> Tutor-stub asks whether <em>stance choice</em> matters. Phase 6 asks whether <em>move planning</em> adds value.</p></div></div>
+    </section>
+
+    <section class="s" id="history">
+      <div class="diag"><div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">The last 72 hours</p>
+        <h2 class="s__h">A rapid shift from spectacle to <em>testable contrast</em>.</h2>
+        <div class="timeline">
+          <div class="timeline-row"><p><span class="when">Jul 8</span></p><h3>Runtime and evidence substrate</h3><p>Empirical register priors, SQL ingest, animated reports, field-planner phases, due-release safety, and the four-arm Phase 6 runner arrived.</p></div>
+          <div class="timeline-row"><p><span class="when">Jul 9</span></p><h3>Robustness and human-facing discourse</h3><p>QA matrix reporting, continuous register policies, profile discrimination, ABM support, and strict/defeasible human discourse scaffolds expanded the test surface.</p></div>
+          <div class="timeline-row"><p><span class="when">Jul 10</span></p><h3>Headroom and confound correction</h3><p>Outcome-only scoring removed register diversity from policy rankings; Phase 6 placebo wiring was repaired; fixed-horizon/AUC analysis, profile contracts, fact dropout, interleaving, and a pressure probe were added.</p></div>
+          <div class="timeline-row"><p><span class="when">Jul 11</span></p><h3>Cross-model result and usability</h3><p>The Sonnet 5 interaction pattern was documented, and interactive profile-list guidance was simplified at current HEAD.</p></div>
+          <div class="timeline-row"><p><span class="when">Jul 12</span></p><h3>Fail-closed execution and protocol repair</h3><p>S0 passed as an instrument; S1 exposed low event-family observability and later exact-span failure; four complete preflights moved exact recovery from 19/24 to 22/24 to 23/24 to 23/24. A zero-call construct audit replaced an ambiguous unary Ravensmark event and a fresh S0 passed. A prospectively frozen three-draw reliability gate then completed 72 cases and 144 calls at 70/72, but both misses repeated in Ravensmark/derive/Codex and its one nominal pass still omitted the intended action. The observation channel stopped and full S1 remains blocked. Phase 6A advanced to a sealed canary → k5 → k10 protocol without generating paid v2.1 evidence.</p></div>
+        </div>
+        <p>The history is directionally healthy: each wave reacts to a discovered confound. The branch removed diversity from the outcome score after recognizing the policy controlled it; moved from endpoint completion to fixed horizons after recognizing the catch-up confound; added interleaving after recognizing model drift; added persistent profile contracts after recognizing learner near-clones; and repaired the report-only placebo before running the gate.</p>
+        <p class="pq">The best evidence of progress is not a higher score. It is that successive commits make it harder for the system to fool itself.<cite>audit reading · 35 first-parent commits</cite></p>
+        <div class="callout"><strong>But speed has a cost</strong><br />The result is two high-coupling scripts: <code>scripts/tutor-stub.js</code> at roughly 11.8k lines and <code>scripts/run-tutor-stub-auto-eval.js</code> at roughly 9.9k. The conceptual modules are improving faster than the implementation boundaries.</div>
+      </div><div class="mr"><p class="note note--moss"><span class="note__lbl">Healthy pattern</span> Instrument → detect confound → harden comparison → rerun. That is the right research loop.</p></div></div>
+    </section>
+
+    <section class="s" id="evidence">
+      <div class="diag"><div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Evidence ledger</p>
+        <h2 class="s__h">What each run licenses—and what it does not.</h2>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Artifact</th><th>Design</th><th>Result</th><th>Evidence status</th><th>Claim boundary</th></tr></thead>
+          <tbody>
+            <tr><td>Frontier QA</td><td>84 trajectories; 4 profiles × 7 policies × 3</td><td>All eventually grounded; bland led endpoint composite through fewer turns.</td><td><span class="status status--partial">Descriptive</span></td><td>Mixed model provenance (52 GPT-5.5, 32 Terra) and profile-schema versions; endpoint catch-up confound.</td></tr>
+            <tr><td>Terra headroom</td><td>60 rows; 4 × 5 × 3; fixed turns 8/12/16</td><td>Turn-16 rank crossings: adaptive policies led stress profiles; bland led diligent.</td><td><span class="status status--partial">Exploratory</span></td><td>One world, <code>n=3</code>; requested-model labeling bug; no pressure arm.</td></tr>
+            <tr><td>Sonnet 5 pressure</td><td>60 rows; interleaved; forced turn-6 pressure; fixed horizons</td><td>Rank crossings replicated structurally; overall profile gate narrowly failed; dynamic policy collapsed.</td><td><span class="status status--partial">Best current</span></td><td>One world, same model in tutor/classifier/learner roles, <code>n=3</code>, no no-probe comparator; 112/2,111 tutor turns were replaced by a deterministic safety fallback amid 162 candidate guard matches.</td></tr>
+            <tr><td>State benchmark v1 formal proxy</td><td>Sealed 12-row fixture with repeated holdout rows, no true no-state baseline, and degenerate or world-local targets</td><td><code>winner: null</code>; <code>not_passed / do_not_optimize_policy</code>.</td><td><span class="status status--no">Non-promotable stop</span></td><td>A valid stop signal for policy optimization under that fixture, but not a verdict on the canonical policy-invariant sensor and not a human-learning result.</td></tr>
+            <tr><td>State benchmark v2.1 · S0</td><td>24 dialogues; 144 transitions; 0 model calls; 3 worlds × 2 kernels × 2 deterministic realizers; uniform, fold-only class-prior, and no-state baselines</td><td>Instrument, replay, controls, and baseline sanity passed. Dataset <code>5364a521…</code>; report <code>10fd8330…</code>.</td><td><span class="status status--yes">Instrument pass</span></td><td>Proves the free instrument can discriminate oracle information from state-blind baselines. It is not a public-sensor verdict.</td></tr>
+            <tr><td>State benchmark v2.1 · first S1 canary</td><td>Planned 339 dispatches; stopped on dispatch 1</td><td>Codex rejected <code>uniqueItems</code> in the strict response schema.</td><td><span class="status status--no">Technical stop</span></td><td>Zero matrix rows; no scientific result. The schema was repaired to the provider-supported subset described by the official <a href="https://developers.openai.com/api/docs/guides/structured-outputs">OpenAI Structured Outputs guide</a>.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>b69775b6</code> S1</td><td>24 dialogues; 144 transitions; 339/339 dispatches complete</td><td>Exact harness event-family recovery <code>0.395833</code>; generator and realizer floors also failed.</td><td><span class="status status--no">Technical stop</span></td><td>The analyzer/realizer observation boundary did not recover the harness transition family reliably. This is not the S2 sensor verdict and does not invalidate the canonical sensor.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>bb65da27</code> repair</td><td>73 dispatched; 72 completed; 1 failed; 4 dialogues complete</td><td>Stopped when the analyzer returned an evidence span that was not an exact substring of the learner turn.</td><td><span class="status status--no">Technical stop</span></td><td>Fail-closed guard worked. The matrix is incomplete, so there is no recovery estimate and no scientific result.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>5fda0824</code> observability preflight</td><td>24 isolated cells; 3 worlds × 4 event families × 2 realizers; 48/48 serial CLI dispatches</td><td>Exact intended-family recovery <code>19/24</code> (<code>0.791667</code>); all five mismatches were observed as <code>derive</code>.</td><td><span class="status status--no">Semantic stop</span></td><td>Claim-ineligible observation-contract diagnostic. No technical failure, retry, reroll, repair, fallback, exclusion, partial reuse, span failure, or event-ID leak occurred, but <code>s1_retry_eligible</code> is false; S1 and S2 remain blocked.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>8d6d2b22</code> observability preflight</td><td>Same fresh 24-cell matrix; 48/48 unique serial CLI dispatches</td><td>Exact recovery <code>22/24</code> (<code>0.916667</code>); none, adopt, and retract 6/6; derive 4/6.</td><td><span class="status status--no">Semantic stop</span></td><td>The ontology/fixture repair closed all five earlier mismatches, but Marrick voiced no concrete conclusion and Ravensmark's supported intermediate clause was lost beside a later unsupported clause. S1 remained blocked.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>c0ccd5c9</code> observability preflight</td><td>Same fresh 24-cell matrix; 48/48 unique serial CLI dispatches; zero retry, repair, fallback, exclusion, or partial reuse</td><td>Exact recovery <code>23/24</code> (<code>0.958333</code>); Codex 12/12, Claude 11/12; only Ravensmark/Claude derive failed.</td><td><span class="status status--no">Semantic stop</span></td><td>Sealed <code>stop_and_repair_observability_preflight</code>. The repeated scope/typing boundary makes construct separability the next zero-call hypothesis, not a demonstrated cause. <code>s1_retry_eligible</code> is false; no sensor verdict exists.</td></tr>
+            <tr><td>State benchmark v2.1 · replacement S0</td><td>24 dialogues; 144 transitions; 0 model calls; shared structural-support contract and dual-S0 lineage</td><td>Instrument and controls passed under the repaired Ravensmark target. Dataset <code>c9d67065…</code>; report <code>09ed0b4c…</code>.</td><td><span class="status status--yes">Instrument pass</span></td><td>The ambiguous unary scope event is no longer measured; it remains symbolic support for the distinct two-premise derive target. This is not a public-sensor verdict.</td></tr>
+            <tr><td>State benchmark v2.1 · <code>985bd542</code> observability preflight</td><td>Fresh replacement-contract 24-cell matrix; 48/48 unique serial CLI dispatches; original diagnostic and current S0 lineages independently sealed</td><td>Exact recovery <code>23/24</code> (<code>0.958333</code>); Claude 12/12, Codex 11/12; only Ravensmark/Codex derive failed.</td><td><span class="status status--no">Semantic stop</span></td><td>Claude and the analyzer passed the new separable target. Codex copied the holder premise rather than deriving the action relation; the analyzer correctly returned <code>none</code>. This is a realizer-fidelity stop, not a sensor verdict. <code>s1_retry_eligible</code> remains false.</td></tr>
+            <tr><td>State benchmark v2.2 · <code>4133d7ff</code> repeated-draw gate</td><td>24 base cells × 3 fresh draws; 72/72 cases; 144/144 serial CLI dispatches; every draw retained; zero retry, reroll, repair, exclusion, or reuse</td><td>Aggregate <code>70/72</code> (<code>0.972222</code>) met its floor, but Ravensmark/derive/Codex repeated at <code>1/3</code>; derive <code>16/18</code>, Codex <code>34/36</code>, Ravensmark <code>22/24</code>.</td><td><span class="status status--no">Reliability stop</span></td><td>Both counted misses repeated the holder premise. The nominal third match also omitted <code>pressedSealFor</code> and reveals an analyzer false positive. Sealed <code>stop_observability_channel_no_s1</code>; S1 and S2 remain blocked.</td></tr>
+            <tr><td>State benchmark v2.3 · <code>346e472a</code> exact-channel S0</td><td>Same 3 worlds × 2 latent kernels × 2 deterministic exact surfaces; 24/24 dialogues, 144/144 scored transitions, 168/168 faithful realized turns; zero model calls</td><td>Exact replay; zero structural or leakage failures; all fixed-head folds converged; oracle beat all three state-blind baselines on both metrics and targets.</td><td><span class="status status--yes">S0 pass</span></td><td>Instrument-only result. It authorizes the zero-call canonical sensor pilot, not paid S1, S2, a sensor winner, or policy optimization. Codex/Claude language transfer remains descriptive only.</td></tr>
+            <tr><td>State benchmark v2.3 · <code>bd8f47ec</code> canonical sensor pilot</td><td>24 dialogues; 144 transitions; 12 independent latent clusters; 84/84 fixed heads converged; zero model calls</td><td>Oracle instrument passed. Lean DAG versus no-state: log-loss <code>-0.5212</code>/<code>-0.5013</code> and Brier <code>-0.0485</code>/<code>-0.0674</code> across the two targets. Only Hethel and neither generator improved on both targets; richer rungs were worse.</td><td><span class="status status--no">Sensor stop</span></td><td>Sealed <code>do_not_run_canonical_s2</code>. Exact-renderer transfer was positive but cannot rescue world/generator failure. No candidate, validated winner, policy optimization, Phase 6B, efficacy, or human-learning claim.</td></tr>
+            <tr><td>State benchmark v2.1 · S2</td><td>Fixed eight-per-cell confirmation</td><td>Unrun; <code>s2_validity_verdict</code> remains null.</td><td><span class="status status--neutral">Fail-closed</span></td><td>No learner-state validity, deployment, or live-default parity claim is available.</td></tr>
+            <tr><td>Phase 6 dry</td><td>Four-arm manifest, no model calls</td><td>0/8 executed.</td><td><span class="status status--neutral">Plumbing</span></td><td>No outcome evidence.</td></tr>
+            <tr><td>Phase 6 mock, no decay</td><td>8 rows across arms</td><td>8/8 grounded; arms equal at ceiling.</td><td><span class="status status--neutral">Plumbing</span></td><td>Verifies runner path, not policy value.</td></tr>
+            <tr><td>Phase 6 mock, decay</td><td>16 rows; engineered release decay</td><td>1/16 grounded, in enforce arm.</td><td><span class="status status--partial">Mechanism</span></td><td>Shows override authority can force a due release under a deterministic mock; not learner modeling.</td></tr>
+            <tr><td>Phase 6 real smoke</td><td>1 Marrick enforce row</td><td>1/1 grounded; 9/9 releases; no safety failures.</td><td><span class="status status--neutral">Smoke</span></td><td>No comparator, so no planner-effect estimate.</td></tr>
+            <tr><td>Phase 6 placebo-fix smoke</td><td>Baseline vs report-only mock</td><td>2/2; distinct wiring and audits pass; equal outcomes.</td><td><span class="status status--yes">Integrity fix</span></td><td>Repairs the gate; does not run it.</td></tr>
+            <tr><td>Phase 6 pre-contract Terra</td><td>60/60 historical rows</td><td>Readable only through the legacy artifact path; lacks the v2.1 identity, immutable lineage, and required placebo-beating decision.</td><td><span class="status status--partial">Exploratory only</span></td><td>Non-promotable: it cannot serve as Phase 6A v2.1 evidence or as a canary/k5/k10 parent.</td></tr>
+            <tr><td>Phase 6A v2.1</td><td>Excluded seed-0 canary → sealed seeds 1–5 k5 → sealed seeds 6–10 continuation</td><td>Protocol and lineage enforcement implemented; no paid v2.1 row has run.</td><td><span class="status status--neutral">Protocol only</span></td><td>No field-planner effect, efficacy, or human-learning evidence.</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>The database is not the recent-run source of truth.</strong> Since the 72-hour cutoff, the ordinary <code>evaluation_runs</code> history is dominated by 75 test fixtures, including 15 stale <code>running</code> rejudgment-test rows. The tutor-stub SQL tables contain only 20 early ingested summaries and omit both major 60-row matrices. The current empirical history therefore lives primarily in local JSON/JSONL artifacts, which makes the ignored-artifact and manifest problems especially consequential.</p>
+        <div class="claim"><span class="claim__no">✓</span><h3 class="claim__h">What survives scrutiny <span class="chip chip--moss">supported · bounded</span></h3><div class="claim__body"><ul>
+          <li>Profile contracts can produce materially distinct trace distributions under Sonnet 5.</li>
+          <li>Policy rankings cross by synthetic learner profile at fixed horizons.</li>
+          <li>Endpoint completion can conceal large differences in the route and early proof progress.</li>
+          <li>External proof-state ownership, release guards, and fixed-horizon analysis work as instrumentation.</li>
+          <li>No single adaptive register policy dominates a strong simple baseline.</li>
+        </ul></div></div>
+        <div class="claim"><span class="claim__no">×</span><h3 class="claim__h">What the runs do not show <span class="chip chip--brick">not shown</span></h3><div class="claim__body"><ul>
+          <li>That the state variables correspond to real learner knowledge, affect, memory, or agency.</li>
+          <li>That “field” is a better representation than a lean probabilistic mastery/difficulty state.</li>
+          <li>That register adaptation causes learning rather than changing dialogue dynamics.</li>
+          <li>That the policy effect generalizes across worlds, content, independent simulator families, or people.</li>
+          <li>That the Phase 6 move planner beats baseline, report-only, or advisory control.</li>
+          <li>That the canonical learner-state sensor is valid, equivalent to the enriched live default, or ready for deployment.</li>
+        </ul></div></div>
+      </div><div class="mr"><p class="note note--ochre"><span class="note__lbl">Evidence unit</span> Coverage advances in sixths because the world owns six proof facts. At <code>n=3</code>, many displayed differences are one or two fact events.</p></div></div>
+    </section>
+
+    <section class="s" id="interactions">
+      <div class="diag"><div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">The strongest empirical pattern</p>
+        <h2 class="s__h">The right policy depends on the learner—and the model.</h2>
+        <p>The fixed-horizon analysis samples proof coverage at learner turn 16, avoiding the “until grounded” catch-up confound. The table below reports every policy/profile cell from both recent model families. Bold marks the best policy within a profile/model block; ties are retained.</p>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Profile</th><th>Policy</th><th class="num">Terra t16 coverage</th><th class="num">Sonnet 5 t16 coverage</th><th>Reading</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="5">affective_resistant</td><td>bland</td><td class="num">.222</td><td class="num">.167</td><td rowspan="5">Terra favors dynamic; Sonnet favors field. Negative collapses at Terra endpoint. The adaptive advantage is plausible but controller-specific.</td></tr>
+            <tr><td>dynamic</td><td class="num best">.556</td><td class="num">.167</td></tr>
+            <tr><td>dynamical_system</td><td class="num">.444</td><td class="num">.111</td></tr>
+            <tr><td>field</td><td class="num">.444</td><td class="num best">.333</td></tr>
+            <tr><td>negative</td><td class="num">.278</td><td class="num">.167</td></tr>
+            <tr><td rowspan="5">diligent</td><td>bland</td><td class="num best">.667</td><td class="num best">.556</td><td rowspan="5">The strong simple baseline wins on both models. Adaptation adds friction when the learner is already progressing.</td></tr>
+            <tr><td>dynamic</td><td class="num">.556</td><td class="num">.167</td></tr>
+            <tr><td>dynamical_system</td><td class="num">.500</td><td class="num">.333</td></tr>
+            <tr><td>field</td><td class="num">.500</td><td class="num">.167</td></tr>
+            <tr><td>negative</td><td class="num">.611</td><td class="num">.278</td></tr>
+            <tr><td rowspan="5">false_memory</td><td>bland</td><td class="num">.278</td><td class="num">.222</td><td rowspan="5">Field wins on Terra; negative on Sonnet. Both models show headroom over bland, but not for the same controller.</td></tr>
+            <tr><td>dynamic</td><td class="num">.389</td><td class="num bad">.056</td></tr>
+            <tr><td>dynamical_system</td><td class="num">.389</td><td class="num">.278</td></tr>
+            <tr><td>field</td><td class="num best">.556</td><td class="num">.333</td></tr>
+            <tr><td>negative</td><td class="num">.444</td><td class="num best">.389</td></tr>
+            <tr><td rowspan="5">proof_skipper</td><td>bland</td><td class="num best">.445</td><td class="num">.111</td><td rowspan="5">Terra is effectively a bland/field/negative tie; Sonnet strongly favors field. This is the largest Sonnet headroom cell.</td></tr>
+            <tr><td>dynamic</td><td class="num">.389</td><td class="num bad">.000</td></tr>
+            <tr><td>dynamical_system</td><td class="num">.278</td><td class="num">.167</td></tr>
+            <tr><td>field</td><td class="num">.444</td><td class="num best">.445</td></tr>
+            <tr><td>negative</td><td class="num">.444</td><td class="num">.333</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Sonnet endpoint composite: the simple baseline still wins</h3>
+        <p>The outcome-only QA composite excludes register diversity—an important correction—but it remains an analyst-chosen weighted score. It is useful descriptively, not as a confirmatory primary endpoint.</p>
+        <div class="mini-bars" aria-label="Mean Sonnet outcome score by policy">
+          <div class="mini-bar"><span>bland</span><span class="mini-bar__track"><span class="mini-bar__fill mini-bar__fill--moss" style="width:83%"></span></span><span class="mini-bar__value">.830</span></div>
+          <div class="mini-bar"><span>negative</span><span class="mini-bar__track"><span class="mini-bar__fill" style="width:78.3%"></span></span><span class="mini-bar__value">.783</span></div>
+          <div class="mini-bar"><span>dynamical_system</span><span class="mini-bar__track"><span class="mini-bar__fill" style="width:77.2%"></span></span><span class="mini-bar__value">.772</span></div>
+          <div class="mini-bar"><span>field</span><span class="mini-bar__track"><span class="mini-bar__fill" style="width:76.7%"></span></span><span class="mini-bar__value">.767</span></div>
+          <div class="mini-bar"><span>dynamic</span><span class="mini-bar__track"><span class="mini-bar__fill mini-bar__fill--brick" style="width:58.2%"></span></span><span class="mini-bar__value">.582</span></div>
+        </div>
+        <p>The in-context <code>dynamic</code> policy is the sharpest negative result: only .083 endpoint closure and .582 mean outcome, versus .667 and .830 for bland. A policy can be consistently poor and still receive the report label “robust across observed learners” because the current label tests only low cross-profile spread. That wording is a bug, not a result.</p>
+        <h3>Contingency is established; beneficial consequence is not</h3>
+        <p>The Sonnet summaries explicitly separate whether a policy responds to classified state from whether the selected action improves the next state. Field, dynamic, and dynamical-system policies show substantially more state/action contingency than bland, but <strong>all 20 policy-by-profile mean reward proxies are negative</strong>, and every aggregate records <code>dimensions.consequence = "not_established"</code>.</p>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Policy</th><th class="num">NMI range across profiles</th><th class="num">Mean reward-proxy range</th><th>Interpretation</th></tr></thead>
+          <tbody>
+            <tr><td>bland</td><td class="num">.016–.033</td><td class="num">−.105 to −.008</td><td>Little state/action contingency; no positive consequence signal.</td></tr>
+            <tr><td>field</td><td class="num best">.290–.330</td><td class="num">−.123 to −.037</td><td>Strongest contingency; consequence still unestablished.</td></tr>
+            <tr><td>dynamic</td><td class="num">.185–.243</td><td class="num">−.110 to −.020</td><td>Varies with state; poor endpoint performance and no positive next-state proxy.</td></tr>
+            <tr><td>dynamical_system</td><td class="num">.235–.323</td><td class="num">−.106 to −.022</td><td>High contingency; consequence still unestablished.</td></tr>
+            <tr><td>negative</td><td class="num">.115–.137</td><td class="num">−.100 to −.007</td><td>Moderate contingency; no positive consequence signal.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout"><strong>The core distinction</strong><br />The current adaptive policies demonstrably choose different actions in different classified states. The run does not show that those choices improve the following state. “Responsive” is not yet “effective.”</div>
+        <h3>Profile discrimination: a meaningful improvement, a narrow miss</h3>
+        <p>Sonnet produced pooled average pairwise cosine .565, maximum similarity to diligent .619, and matched-policy macro cosine .551—substantially more separated than the mixed-provenance Terra set (.836, .963, .783). The contract-conditioned gate still failed because proof-skipper failure recurrence was .597 against a .600 threshold. Affective-resistant and false-memory passed their contract gates.</p>
+        <div class="callout"><strong>Interpret this correctly</strong><br />The gate shows that Sonnet followed persistent-failure profile contracts and produced distinct traces. Because the generation contract contains target label distributions that feed the discriminator, it does not establish that the profiles resemble real learners.</div>
+        <details class="audit-details"><summary>Pressure-probe recovery · all Sonnet cells</summary>
+          <div class="table-wrap"><table class="audit">
+            <thead><tr><th>Profile</th><th>Policy</th><th class="num">Coverage post-Δ</th><th class="num">Mastery post-Δ</th><th class="num">Risk post-Δ</th></tr></thead>
+            <tbody>
+              <tr><td>affective</td><td>bland</td><td class="num">.000</td><td class="num">−.040</td><td class="num">+.017</td></tr>
+              <tr><td>affective</td><td>dynamic</td><td class="num">.000</td><td class="num">−.103</td><td class="num bad">+.283</td></tr>
+              <tr><td>affective</td><td>dynamical_system</td><td class="num">+.056</td><td class="num best">+.118</td><td class="num best">−.152</td></tr>
+              <tr><td>affective</td><td>field</td><td class="num">+.055</td><td class="num">−.014</td><td class="num">+.098</td></tr>
+              <tr><td>affective</td><td>negative</td><td class="num">.000</td><td class="num">+.063</td><td class="num">+.067</td></tr>
+              <tr><td>diligent</td><td>bland</td><td class="num">+.222</td><td class="num">+.083</td><td class="num">−.075</td></tr>
+              <tr><td>diligent</td><td>dynamic</td><td class="num">.000</td><td class="num">.000</td><td class="num">.000</td></tr>
+              <tr><td>diligent</td><td>dynamical_system</td><td class="num">+.111</td><td class="num">+.041</td><td class="num">−.037</td></tr>
+              <tr><td>diligent</td><td>field</td><td class="num">.000</td><td class="num">−.005</td><td class="num">−.017</td></tr>
+              <tr><td>diligent</td><td>negative</td><td class="num">.000</td><td class="num">+.032</td><td class="num">+.017</td></tr>
+              <tr><td>false_memory</td><td>bland</td><td class="num">.000</td><td class="num">−.112</td><td class="num">+.133</td></tr>
+              <tr><td>false_memory</td><td>dynamic</td><td class="num">+.056</td><td class="num">−.151</td><td class="num">+.248</td></tr>
+              <tr><td>false_memory</td><td>dynamical_system</td><td class="num">+.167</td><td class="num">−.031</td><td class="num">+.160</td></tr>
+              <tr><td>false_memory</td><td>field</td><td class="num">+.167</td><td class="num">−.029</td><td class="num">+.093</td></tr>
+              <tr><td>false_memory</td><td>negative</td><td class="num">+.111</td><td class="num best">+.162</td><td class="num best">−.171</td></tr>
+              <tr><td>proof_skipper</td><td>bland</td><td class="num">.000</td><td class="num">+.083</td><td class="num best">−.217</td></tr>
+              <tr><td>proof_skipper</td><td>dynamic</td><td class="num">.000</td><td class="num">−.005</td><td class="num">−.017</td></tr>
+              <tr><td>proof_skipper</td><td>dynamical_system</td><td class="num">.000</td><td class="num best">+.155</td><td class="num">−.167</td></tr>
+              <tr><td>proof_skipper</td><td>field</td><td class="num">+.166</td><td class="num">+.026</td><td class="num">−.040</td></tr>
+              <tr><td>proof_skipper</td><td>negative</td><td class="num">+.166</td><td class="num">+.118</td><td class="num">−.190</td></tr>
+            </tbody>
+          </table></div>
+          <p>The probe fired in every row, but the method has no no-probe arm. “Recovery” is post-versus-pre movement, not a difference-in-differences causal effect. The negative policy is already hostile, and a selected hostile register is not proof the tutor utterance realized equal pressure. Treat these numbers as hypothesis generators.</p>
+        </details>
+      </div><div class="mr"><p class="note note--moss"><span class="note__lbl">The actual signal</span> Adaptation may matter most when a learner exhibits a persistent failure mode—and hurt when they do not.</p></div></div>
+    </section>
+
+    <section class="s" id="field">
+      <div class="diag"><div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Field theory versus field implementation</p>
+        <h2 class="s__h">A valuable controller hypothesis, not yet a validated theory.</h2>
+        <p><code>FIELD_THEORY_IMPLEMENTATION_PLAN.md</code> is substantially implemented through Phase 5: field objects, per-turn reporting, deterministic move projection, pedagogical scripts, and advisory/enforce authority. Phase 6 is deliberately the evidence gate. The operative Phase 6A v2.1 protocol remains unrun in paid four-arm form.</p>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Arm</th><th>What enters tutor context</th><th>Conduct authority</th><th>Why it exists</th></tr></thead>
+          <tbody>
+            <tr><td><code>baseline</code></td><td>No field report or recommendation</td><td>Non-acts hidden pacing</td><td><code>baseline_hidden_pacing_v1</code> control</td></tr>
+            <tr><td><code>field_report_only</code></td><td>Coupled-field summary</td><td>None</td><td>Information/placebo control</td></tr>
+            <tr><td><code>field_planner_advisory</code></td><td>Summary + recommended move</td><td>Tutor may ignore</td><td>Tests recommendation value</td></tr>
+            <tr><td><code>field_planner_enforce</code></td><td>Summary + selected move</td><td>Planner/guard can constrain</td><td>Tests controller authority</td></tr>
+          </tbody>
+        </table></div>
+        <p>Phase 6A v2.1 now requires an excluded, sealed, passing Marrick × four-arm seed-0 route canary before seeds 1–5; a sealed <code>provisional_promote</code> k5 result then becomes the mandatory parent of seeds 6–10. Git, invariant sources, role models, runtime settings, CLI fingerprints, concurrency, row snapshots, and checksums must match across that lineage. The old Terra 60/60 collection predates this contract and is non-promotable. Phase 6B remains blocked until an acts-safe planner consumes only validated reconstructed learner state.</p>
+        <div class="claim"><span class="claim__no">i.</span><h3 class="claim__h">What field planning currently is <span class="chip chip--ink">engineering</span></h3><div class="claim__body"><p>A deterministic feature-and-prior system that scores candidate moves, applies scripts, logs projections, and can cede or take conduct authority under guards. This is a useful controller baseline.</p></div><div class="claim__counter"><p>The prior/delta tables are hand-authored. No fitted transition model demonstrates that the named fields predict how a learner will move.</p></div></div>
+        <div class="claim"><span class="claim__no">ii.</span><h3 class="claim__h">What would make it a scientific field model <span class="chip chip--ochre">open gate</span></h3><div class="claim__body"><ul>
+          <li>Test–retest reliability and measurement invariance across worlds and model families.</li>
+          <li>Calibrated uncertainty for every dimension and explicit evidence provenance.</li>
+          <li>Held-out next-observation prediction beyond a lean mastery/confidence/difficulty state.</li>
+          <li>Predicted-versus-observed movement under intervention, with state-scramble controls.</li>
+          <li>Incremental policy value after matching action frequencies and safety authority.</li>
+        </ul></div></div>
+        <p>The triaged <code>tutor-stub-transition-reward-model</code> card is therefore not a side quest; it is the bridge from geometric metaphor to empirical dynamics. Start with ridge/logistic and tree baselines, cross-fit by world/profile/model, and make the rich field earn every extra degree of freedom.</p>
+      </div><div class="mr"><p class="note note--ochre"><span class="note__lbl">Promotion rule</span> Even a Phase 6 pass licenses only: “field planning improves a predeclared formal failure mode without harming proof reliability.”</p></div></div>
+    </section>
+
+    <section class="s" id="audit">
+      <div class="diag"><div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Code and experimental-integrity audit</p>
+        <h2 class="s__h">Eleven things to fix before the next claim-bearing run.</h2>
+        <ol class="risk-list">
+          <li><strong>The Sonnet root plan is false.</strong> The saved <code>qa-plan.json</code> now says six core profiles, seven policies, one run, no interleaving, no pressure, and GPT-5.5—while row artifacts prove four sentinel profiles, five policies, three runs, interleaving, turn-6 pressure, and Sonnet 5. In <code>run-tutor-stub-qa-matrix.js:419–459</code>, <code>--from-dir</code> builds and writes a fresh default plan before skipping jobs. An analysis command overwrote the run manifest.</li>
+          <li><strong>Tutor-stub artifacts do not pin code.</strong> They lack Git SHA, dirty-tree fingerprint, policy/profile/config hashes, and resume lineage. Notes name a commit, but the artifact cannot prove it. Phase 6's manifest discipline should become shared infrastructure.</li>
+          <li><strong>The primary evidence is machine-local.</strong> <code>exports/</code>, <code>.tutor-stub-auto-eval/</code>, logs, and databases are ignored. Without checksum manifests and an archival destination, the evidentiary record can vanish or drift independently of the plans that cite it.</li>
+          <li><strong>Policy randomness is not replayable.</strong> <code>sampleEngagementStanceDistribution()</code> uses <code>Math.random()</code> at <code>tutor-stub.js:4397–4422</code>. The draw is logged, but no seed recreates the sequence. Interleaving reduces clock drift; it does not solve stochastic reproducibility.</li>
+          <li><strong>“Robust” means low spread, not good performance.</strong> At <code>analyze-tutor-stub-auto-evals.js:628–633</code>, a consistently bad policy is labeled robust if mean minus worst score is below .12. Add adequacy and non-inferiority gates; rename the existing property “low cross-profile dispersion.”</li>
+          <li><strong>The outcome composite is still constructed.</strong> Removing register diversity was correct. The remaining weighted composite should not be the confirmatory endpoint. Predeclare raw turn-16 proof coverage, grounded-by horizon, safety, and later transfer/retention outcomes.</li>
+          <li><strong>Learner generation and validation are entangled.</strong> Profile contracts specify target evidence/stance/agency distributions that the same model family then produces and classifies. This is a manipulation check for contract obedience, not an external validity test.</li>
+          <li><strong>There is role monoculture.</strong> In Sonnet, the tutor, learner, and analyzer are all <code>claude-sonnet-5</code>. Formal proof state prevents total circularity, but semantic state and profile success may reflect model self-consistency. Cross model roles or use an external, human-calibrated label channel.</li>
+          <li><strong>The safety guard is an unbalanced co-intervention.</strong> Sonnet recorded 162 candidate guard matches, repaired 253 turns, and replaced 112 of 2,111 tutor turns (5.3%) with a deterministic public-evidence fallback; Terra recorded only two matches across 1,820 turns. These are audit hits before/through repair, not 162 learner-visible leaks. The guard preserves safety, but the measured treatment is sometimes policy-plus-repair or replacement. Generic matched tokens such as “under,” “glass,” and “silver” suggest over-triggering. Log original-candidate, repaired-output, and fallback exposure by policy; tighten matching; and add a guard-frequency-yoked control.</li>
+          <li><strong>The decisive experiment is tiny and narrow.</strong> One world, four authored profiles, five policies, three draws. Coverage changes in sixths. No confidence intervals, hierarchical model, preregistered minimum effect, or independent replication set.</li>
+          <li><strong>The implementation boundary is strained.</strong> Two scripts contain more than 21k lines between them. Extract run manifests, profile contracts, policy sampling, action schema, artifact IO, and analysis adapters before another experimental dimension multiplies the coupling.</li>
+        </ol>
+        <div class="gate"><strong>Immediate stop condition</strong><br />Do not launch a claim-bearing Phase 6 or larger tutor-stub matrix until the immutable-manifest bug is fixed and regression-tested. A frozen experiment whose root plan can be rewritten during analysis is not frozen.</div>
+        <div class="mono-block">run-manifest.json (write once, before calls)
+  git: { sha, branch, dirty_patch_sha256 }
+  code: { runner_hash, analyzer_hash, policy_hashes }
+  design: { worlds, profiles, policies, seeds, horizons, endpoints }
+  models: { requested, resolved, observed_by_role }
+  stochasticity: { master_seed, per_job_seed, job_order }
+  lineage: { parent_run, resumed_jobs, superseded_artifacts }
+  artifacts: [{ path, sha256, bytes, schema }]
+  status: planned | running | sealed | superseded</div>
+      </div><div class="mr"><p class="note note--brick"><span class="note__lbl">P0 finding</span> The report can reconstruct the Sonnet design from row artifacts; a future reader should never have to.</p></div></div>
+    </section>
+
+    <section class="s" id="literature">
+      <div class="diag"><div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Recent literature · 2024–2026</p>
+        <h2 class="s__h">The field is converging on explicit state, guarded action, and harder outcome tests.</h2>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Literature signal</th><th>Representative primary work</th><th>Implication here</th></tr></thead>
+          <tbody>
+            <tr><td>Assessment-driven state and scaffold planning</td><td><a href="https://aclanthology.org/2026.acl-long.325/">ScaffoldLM</a>; <a href="https://aclanthology.org/2026.acl-long.1371/">LongTutor</a></td><td>Keep explicit assessment memory, but test whether it produces better long-horizon diagnosis and action. LongTutor finds those remain weak.</td></tr>
+            <tr><td>Ability and item difficulty must be joint</td><td><a href="https://aclanthology.org/2026.bea-1.43/">Difficulty-aware dialogue KT</a></td><td>Add knowledge component, item difficulty/discrimination, learner ability distribution, and uncertainty. Do not read every hard-item failure as learner regression.</td></tr>
+            <tr><td>Prompt-only simulated students are cognitively unreliable</td><td><a href="https://aclanthology.org/2026.acl-long.1960/">Simulated Students: Substance or Illusion?</a>; <a href="https://arxiv.org/abs/2605.12748">misconception-faithful simulation</a></td><td>Use synthetic profiles for stress/regression. Separate latent state from utterance generation and validate against authentic transitions before policy selection.</td></tr>
+            <tr><td>Instructional action matters beyond style</td><td><a href="https://arxiv.org/abs/2505.01563">TutorGym</a>; <a href="https://aclanthology.org/2025.findings-acl.1348/">pedagogical steering</a></td><td>Factor move family, support, task, difficulty, and register. Add productive-failure transitions and explicit next-step actions.</td></tr>
+            <tr><td>Error localization needs grounded verification</td><td><a href="https://aclanthology.org/2024.emnlp-main.478/">stepwise verification for tutoring</a></td><td>Build diagnostic actions and verifier-owned error location; do not rely on holistic classifier prose.</td></tr>
+            <tr><td>Multi-turn rewards need trajectory credit</td><td><a href="https://aclanthology.org/2026.acl-long.518/">MHPO</a>; <a href="https://aclanthology.org/2026.acl-long.529/">SHAPE</a></td><td>Log turn and trajectory rewards, mastery graph state, and candidate actions. Preserve external safety and proof vetoes around any learned ranker.</td></tr>
+            <tr><td>Off-policy claims require logged propensities</td><td><a href="https://arxiv.org/abs/2606.23015">counterfactual evaluation of logged ITS policies</a></td><td>Record candidate scores and selection probabilities; use contextual-bandit/Rasch baselines and doubly robust evaluation before expensive online trials.</td></tr>
+            <tr><td>Theory-of-Mind benchmarks can reward literal prediction, not useful adaptation</td><td><a href="https://arxiv.org/abs/2412.19726">Are ToM benchmarks broken?</a>; <a href="https://aclanthology.org/2026.bea-1.1/">functional mutual ToM</a></td><td>Represent multiple learner hypotheses and value discriminating observations. Judge ToM by better action/outcome, not psychological-sounding labels.</td></tr>
+            <tr><td>Guarded tutoring can improve outcomes; assistance can also hide dependency</td><td><a href="https://arxiv.org/abs/2410.03017">Tutor CoPilot</a>; <a href="https://www.nature.com/articles/s41598-025-97652-6">Harvard tutor RCT</a></td><td>Preserve guardrails and consider a tutor co-pilot path. Measure immediate unassisted work, transfer, retention, and support dependence.</td></tr>
+            <tr><td>Longitudinal adaptation needs safe memory, not narrative summaries</td><td><a href="https://arxiv.org/abs/2410.10813">LongMemEval</a>; <a href="https://aclanthology.org/2024.acl-long.747/">LoCoMo</a></td><td>Use typed, evidence-anchored memory with supersession, contradiction, validity, confidence, and abstention.</td></tr>
+          </tbody>
+        </table></div>
+        <p>One local paper, <em>The Drama Machine</em>, supplies architectural lineage for ego–superego dramatic interaction. Its two qualitative scenarios do not show educational efficacy or prove that multiple agents outperform a carefully designed single prompt. The later local nulls—rich state, bilateral ToM, evidence audit, learned policy lever, concealed interior—are therefore more important for the current design than the original architectural promise.</p>
+        <div class="claim"><span class="claim__no">→</span><h3 class="claim__h">The literature-adjusted action space</h3><div class="claim__body"><p><code>action = {diagnose, elicit, hint, explain, worked_example, buggy_example, self_explain, retrieve, fade, transfer} × {support_level} × {task/difficulty} × {register}</code></p></div><div class="claim__counter"><p>Register remains useful. It should modulate a pedagogical action, not stand in for the action.</p></div></div>
+        <p>See the companion <a href="../docs/explorations/literature/synthesis/adaptive-tutoring-strategy-gaps-2026-07-11.md">architecture-aimed literature synthesis</a> for the concise code recommendations and evaluation ladder.</p>
+      </div><div class="mr"><p class="note note--ink"><span class="note__lbl">Review limitation</span> Current web review plus one local PDF; not a complete maintained local-corpus synthesis.</p></div></div>
+    </section>
+
+    <section class="s" id="gaps">
+      <div class="diag"><div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Strategies still underexplored</p>
+        <h2 class="s__h">The missing moves are mostly about <em>identification</em>, not more persona.</h2>
+        <div class="priority-grid">
+          <article class="priority-card"><span class="eyebrow">01 · Active diagnosis</span><h3>Ask to reduce uncertainty</h3><p>Choose a question for expected information gain, not immediate proof progress. Compare information-seeking, reward-greedy, and fixed-sequence policies.</p></article>
+          <article class="priority-card"><span class="eyebrow">02 · Difficulty-aware belief</span><h3>Separate learner from item</h3><p>Track mastery and ability jointly with item difficulty/discrimination. Benchmark full fields against this lean probabilistic state.</p></article>
+          <article class="priority-card"><span class="eyebrow">03 · Closed-loop scaffolding</span><h3>Support, observe uptake, fade</h3><p>Add support level, expected uptake, fade condition, responsibility owner, independent-work window, and recovery path.</p></article>
+          <article class="priority-card"><span class="eyebrow">04 · Outer-loop curriculum</span><h3>Adapt what comes next</h3><p>Select knowledge component, retrieval spacing, interleaving, example difficulty, and worked-versus-problem mode across turns and sessions.</p></article>
+          <article class="priority-card"><span class="eyebrow">05 · Hybrid learned policy</span><h3>Learn ranking inside hard guards</h3><p>Compare hand-coded planner, learned candidate ranker, hybrid ranker plus veto, strong fixed, random, and frequency-yoked policies.</p></article>
+          <article class="priority-card"><span class="eyebrow">06 · Calibrated hypotheses</span><h3>Do not collapse to one learner story</h3><p>Maintain weighted hypotheses, evidence for/against, and the next discriminating observation. Drop dimensions that fail held-out prediction.</p></article>
+          <article class="priority-card"><span class="eyebrow">07 · Typed longitudinal memory</span><h3>Remember with expiry and contradiction</h3><p>Store evidence IDs, confidence, validity, supersession, contradictions, retrieval reason, and action preconditions. Test stale-memory harm.</p></article>
+          <article class="priority-card"><span class="eyebrow">08 · Co-pilot before autonomy</span><h3>Use human overrides as data</h3><p>Recommend a move, evidence, confidence, and alternative to real tutors; measure acceptance, override, and downstream transitions.</p></article>
+          <article class="priority-card"><span class="eyebrow">09 · Assistance dependence</span><h3>Make independence the endpoint</h3><p>Measure unassisted posttest, delayed retention, near/far transfer, hint dependence, agency, and calibration—not assisted closure alone.</p></article>
+          <article class="priority-card"><span class="eyebrow">10 · Simulator triangulation</span><h3>Use disagreement as uncertainty</h3><p>Run independently constructed learner models, hidden latent states, targeted/misaligned feedback, and human-calibrated transition checks.</p></article>
+        </div>
+        <p>Several strategies have already been explored enough to lower their priority: richer internal state for its own sake, bilateral ToM without action-value evidence, more critic/deliberation layers, and style-heavy universal policies. Preserve them as conditional mechanisms for a diagnosed failure mode, not as the default architecture.</p>
+      </div><div class="mr"><p class="note note--moss"><span class="note__lbl">Strategic correction</span> Move from “which interior description is richest?” to “which uncertain state predicts the next observable and changes the right action?”</p></div></div>
+    </section>
+
+    <section class="s" id="roadmap">
+      <div class="diag"><div class="ml"><h2 class="s__num">10<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Prioritized route to a credible claim</p>
+        <h2 class="s__h">Fix the evidence chain, validate the sensor, then optimize the controller.</h2>
+        <div class="roadmap">
+          <article class="roadmap-step"><div><h3>Seal provenance before any paid gate</h3><p>Make manifests immutable; pin Git/config/prompt/model hashes; seed all randomness; preserve observed role models; checksum and archive artifacts; add resume lineage; fix the robustness label.</p><div class="gate"><strong>Exit gate</strong> Analysis cannot alter the manifest; a clean-room rerun can reproduce job order and policy draws from the artifact alone.</div></div></article>
+          <article class="roadmap-step"><div><h3>Diagnose the learner-state sensor stop</h3><p>The exact-channel S0 passed, but the zero-call canonical pilot stopped. Lean DAG lost to no-state on both targets under pooled world transfer, cleared both targets only in Hethel, and failed under both held-out latent generators; trajectory and field features degraded further and did not beat their matched stale controls. This rules out confirmation of the current representation/head on the frozen critical path. It does not justify adding more fields or moving directly to policy optimization.</p><div class="gate"><strong>Exit gate</strong> First perform a zero-call error/decomposition audit: quantify target predictability from action/task sequence alone, feature dimensionality and regularization effects, world-specific encoding, and per-kernel failure modes. Any successor representation or head requires a new prospective contract and fresh data; current S2 remains prohibited. Language transfer and live-observation parity remain separate gates.</div></div></article>
+          <article class="roadmap-step"><div><h3>Orthogonalize the adaptive action</h3><p>Introduce a typed action schema. Run register-only and instructional-move-only ablations; add diagnosis, hint, explanation, worked/buggy example, retrieval, fade, and transfer actions plus fixed/yoked/random controls.</p><div class="gate"><strong>Exit gate</strong> The project can attribute a gain to move, task, support, or register rather than a bundled policy name.</div></div></article>
+          <article class="roadmap-step"><div><h3>Run Phase 6A; keep Phase 6B blocked</h3><p>Execute v2.1 in its frozen order: excluded sealed canary, canary-bound k5, then k10 continuation only from a sealed provisional parent. Do not treat the old Terra 60/60 set as evidence or lineage, and do not describe Phase 6A as a comparison with production hidden+proofDebt. Build the acts-safe reconstructed-state adapter before Phase 6B.</p><div class="gate"><strong>Exit gate</strong> Apply the numerical verdict mechanically for canary-bound k5 and k10; run 6B only after the redaction-safe state adapter and a new frozen protocol exist.</div></div></article>
+          <article class="roadmap-step"><div><h3>Replicate tutor-stub headroom properly</h3><p>Use multiple proof geometries/worlds, at least two independent learner-model families, separated tutor/analyzer roles, seeded interleaving, probe × policy factorial, and enough runs for interval or hierarchical estimates.</p><div class="gate"><strong>Exit gate</strong> A predeclared policy × profile interaction survives held-out worlds and model families, with raw coverage/safety endpoints and uncertainty intervals.</div></div></article>
+          <article class="roadmap-step"><div><h3>Fit the first learned transition/reward baselines</h3><p>Log candidates and propensities. Fit interpretable ridge/logistic/tree models before RL; cross-fit by world/profile/model; compare hand-coded, learned, and hybrid guarded controllers with off-policy diagnostics.</p><div class="gate"><strong>Exit gate</strong> Predicted movement calibrates out of sample and a guarded learned ranker beats a strong fixed/yoked baseline without safety loss.</div></div></article>
+          <article class="roadmap-step"><div><h3>Add closed-loop memory and curriculum adaptation</h3><p>Implement a minimal typed memory and outer-loop task selector. Test supersession, contradiction, forgetting, retrieval, spacing, and transfer of responsibility.</p><div class="gate"><strong>Exit gate</strong> Memory improves delayed independent performance; stale/conflicting memory is detected and abstained from.</div></div></article>
+          <article class="roadmap-step"><div><h3>Cross the synthetic–human boundary</h3><p>Unblock A1 governance/content, then shadow with human tutors or a co-pilot before full autonomy. Randomize policy, include a guarded nonadaptive baseline, and measure supported and independent outcomes.</p><div class="gate"><strong>Exit gate</strong> Pretest-adjusted gains survive immediate unassisted posttest, delayed retention, transfer, safety, agency, and subgroup checks.</div></div></article>
+        </div>
+        <h3>Workplan order implied by the audit</h3>
+        <div class="table-wrap"><table class="audit">
+          <thead><tr><th>Priority</th><th>Work item</th><th>Current state</th><th>Audit disposition</th></tr></thead>
+          <tbody>
+            <tr><td>P0</td><td><code>adaptive-eval-immutable-provenance</code></td><td>Done</td><td>Shared immutable plan/event/seal kernel exists; retain checksum and lineage gates in every continuation.</td></tr>
+            <tr><td>P0</td><td>A1 human learner validation</td><td>Blocked</td><td>Keep blocked until governance/content are real; do not substitute synthetic evidence.</td></tr>
+            <tr><td>P0</td><td><code>tutor-stub-learner-state-validity</code></td><td>Active; v2.3 exact-channel S0 passed; canonical pilot stopped; S2 prohibited</td><td>Audit why no-state transfers better than DAG/trajectory/field. Any successor must be prospectively redesigned and use fresh data. No policy optimization, Phase 6B, or sensor claim.</td></tr>
+            <tr><td>P1</td><td><code>field-planner-phase6-gate</code></td><td>Triaged; v2.1 implemented, paid evidence absent</td><td>Execute only sealed canary → k5 → k10 lineage; old Terra 60/60 is non-promotable.</td></tr>
+            <tr><td>P1</td><td><code>field-planner-acts-safe-promotion-gate</code></td><td>Blocked</td><td>Keep blocked until the public sensor and acts-safe reconstructed-state adapter pass.</td></tr>
+            <tr><td>P1</td><td><code>tutor-stub-transition-reward-model</code></td><td>Triaged</td><td>Do not optimize against the state representation until the sensor gate passes.</td></tr>
+            <tr><td>P1</td><td><code>tutor-stub-human-discourse-layer</code></td><td>Active</td><td>Finish targeted strict/defeasible smoke; keep separate from efficacy.</td></tr>
+            <tr><td>P1</td><td><code>tutor-stub-headroom-contrast</code></td><td>Review</td><td>Close as exploratory; spin out a preregistered multi-world replication.</td></tr>
+          </tbody>
+        </table></div>
+      </div><div class="mr"><p class="note note--brick"><span class="note__lbl">Order matters</span> Learning a controller before validating the state sensor will optimize classifier artifacts.</p></div></div>
+    </section>
+
+    <section class="s" id="appendix">
+      <div class="diag"><div class="ml"><h2 class="s__num">11<span class="glyph">·</span></h2></div><div class="body">
+        <p class="s__kicker">Traceability appendix</p>
+        <h2 class="s__h">Commits, artifacts, plans, and source trail.</h2>
+        <details class="audit-details" open><summary>All 35 first-parent commits in the 72-hour window</summary>
+          <div class="table-wrap"><table class="audit">
+            <thead><tr><th>Commit</th><th>Timestamp · Australia/Melbourne</th><th>Subject</th></tr></thead>
+            <tbody>
+              <tr><td><code>be40a9e0</code></td><td class="nowrap">2026-07-11 11:58</td><td>feat(tutor-stub): simplify interactive profile lists</td></tr>
+              <tr><td><code>5e15804f</code></td><td>2026-07-11 08:21</td><td>Record Sonnet-5 cross-model replication of the fixed-horizon interactions</td></tr>
+              <tr><td><code>d265edad</code></td><td>2026-07-10 23:48</td><td>Add policy interleaving, pressure probe, and recovery scoring</td></tr>
+              <tr><td><code>40261509</code></td><td>2026-07-10 23:39</td><td>docs(workplan): record headroom trajectory result</td></tr>
+              <tr><td><code>ac27475a</code></td><td>2026-07-10 23:34</td><td>docs(plan): record fixed-horizon interaction findings</td></tr>
+              <tr><td><code>f96752d9</code></td><td>2026-07-10 23:33</td><td>feat(tutor-stub): add trajectory analysis</td></tr>
+              <tr><td><code>8fb9ba2d</code></td><td>2026-07-10 23:31</td><td>Merge remote-tracking branch <code>origin/main</code> into preconscious</td></tr>
+              <tr><td><code>c5a909d7</code></td><td>2026-07-10 23:28</td><td>feat(tutor-stub): validate learner profile discrimination</td></tr>
+              <tr><td><code>fa95982d</code></td><td>2026-07-10 23:14</td><td>feat(tutor-stub): add DAG fact dropout control</td></tr>
+              <tr><td><code>7d50c8f0</code></td><td>2026-07-10 22:56</td><td>feat(tutor-stub): improve adaptive dialogue configuration</td></tr>
+              <tr><td><code>50e37f88</code></td><td>2026-07-10 21:40</td><td>Complete tutor-stub interactive guidance and closure</td></tr>
+              <tr><td><code>d4743574</code></td><td>2026-07-10 21:03</td><td>Record headroom-contrast result on the workplan card</td></tr>
+              <tr><td><code>6129bd3f</code></td><td>2026-07-10 20:50</td><td>Add progress and interpretation layer to tutor stub report console</td></tr>
+              <tr><td><code>57ef79bc</code></td><td>2026-07-10 18:03</td><td>Add mixed learner clues and smart prefetch</td></tr>
+              <tr><td><code>bd4532fe</code></td><td>2026-07-10 15:08</td><td>Fix Phase 6 evidence-gate blockers and add outcome-headroom QA</td></tr>
+              <tr><td><code>5dba3808</code></td><td>2026-07-10 10:22</td><td>Improve tutor stub reporting UX</td></tr>
+              <tr><td><code>2bbe2a37</code></td><td>2026-07-09 21:50</td><td>Shrink tutor stub default model flags</td></tr>
+              <tr><td><code>100a67a7</code></td><td>2026-07-09 21:36</td><td>Improve tutor stub human usability controls</td></tr>
+              <tr><td><code>af23c88a</code></td><td>2026-07-09 20:04</td><td>Add tutor-stub human scaffold QA support</td></tr>
+              <tr><td><code>e9d21e41</code></td><td>2026-07-09 18:26</td><td>Add tutor-stub human discourse trace substrate</td></tr>
+              <tr><td><code>f6a59c1a</code></td><td>2026-07-09 17:51</td><td>Improve tutor-stub QA report and profile discrimination</td></tr>
+              <tr><td><code>4cf29863</code></td><td>2026-07-09 17:13</td><td>Standardize learner robustness lens</td></tr>
+              <tr><td><code>e699d826</code></td><td>2026-07-09 17:00</td><td>Add continuous tutor-stub register policies</td></tr>
+              <tr><td><code>0398d9a9</code></td><td>2026-07-09 16:16</td><td>Clarify QA matrix child reports</td></tr>
+              <tr><td><code>e8d55d23</code></td><td>2026-07-09 16:09</td><td>Improve tutor stub report exploration</td></tr>
+              <tr><td><code>e817e8d2</code></td><td>2026-07-09 11:13</td><td>Add tutor-stub QA matrix reporting</td></tr>
+              <tr><td><code>0c91b46a</code></td><td>2026-07-08 23:00</td><td>Protect due releases in field planner</td></tr>
+              <tr><td><code>aa6c8285</code></td><td>2026-07-08 22:21</td><td>Add Phase 6 derivation gate runner</td></tr>
+              <tr><td><code>58571662</code></td><td>2026-07-08 22:13</td><td>Refine tutor-stub report styling and claim handling</td></tr>
+              <tr><td><code>2660aea7</code></td><td>2026-07-08 22:02</td><td>Complete PLAN_4_0 field planner machinery</td></tr>
+              <tr><td><code>aba07bb2</code></td><td>2026-07-08 21:47</td><td>Enhance tutor-stub reports and GPT defaults</td></tr>
+              <tr><td><code>1ddf42a6</code></td><td>2026-07-08 21:13</td><td>Add animated tutor stub report visualizations</td></tr>
+              <tr><td><code>1ee6107a</code></td><td>2026-07-08 20:56</td><td>Add tutor-stub SQL ingest and DB reports</td></tr>
+              <tr><td><code>eec5d12b</code></td><td>2026-07-08 20:46</td><td>Add empirical dynamical register policy</td></tr>
+              <tr><td><code>ad5dfa18</code></td><td>2026-07-08 15:22</td><td>Add tutor stub eval memory and cross-run analysis</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+        <details class="audit-details" open><summary>Jul 11–12 implementation and execution checkpoint</summary>
+          <div class="table-wrap"><table class="audit">
+            <thead><tr><th>Commit</th><th>Timestamp · Australia/Melbourne</th><th>Checkpoint role</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/7920e0575f86778e051ce0c481b1b631acdb1c73"><code>7920e057</code></a></td><td>2026-07-11 12:16</td><td>Add the adaptive-tutoring evidence audit.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/2e5e7096667f6245cb04d60d8e7489406695d1a4"><code>2e5e7096</code></a></td><td>2026-07-11 21:48</td><td>Implement the evidence-gated adaptation plan.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/182932911cd3834666d9b6b5d37c8661d9d11790"><code>18293291</code></a></td><td>2026-07-12 07:33</td><td>Add staged learner-state and Phase 6 gates.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/5a3e5aae2eab995cb08bb06a2d4719b4683ceae7"><code>5a3e5aae</code></a></td><td>2026-07-12 09:21</td><td>Harden state and Phase 6 protocols; produce the promotion-eligible S0 lineage.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/b69775b60b0281e6bcbc78134863146b02e22ad2"><code>b69775b6</code></a></td><td>2026-07-12 09:32</td><td>Remove provider-incompatible schema keywords; complete the first full S1 technical run.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/1e1067839e2613a654eda08c932be8d4e22a7a53"><code>1e106783</code></a></td><td>2026-07-12 11:02</td><td>Require sealed Phase 6A canary → k5 → k10 lineage.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/6d40a1ba61e1e9fa18e84d58a6fa6c9951dc487e"><code>6d40a1ba</code></a></td><td>2026-07-12 11:08</td><td>Repair explicit S1 transition recovery and prior public-state handling.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/bb65da27b9fbfbb5e24249960823b258fe9529f8"><code>bb65da27</code></a></td><td>2026-07-12 11:20</td><td>Bind repaired S1 recovery, evidence spans, and prior-state lineage fail-closed.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/5fda0824769adf28f1b99be2045ac703d748b29f"><code>5fda0824</code></a></td><td>2026-07-12 13:20</td><td>Add the immutable observability preflight gate and execute it from a clean, pushed SHA.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/8d6d2b2214c923ec4c63b72c964fdeee4f0f47f7"><code>8d6d2b22</code></a></td><td>2026-07-12 14:11</td><td>Repair public transition fixtures and execute the second fresh observability preflight.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/c0ccd5c920313445c678881b1f947f673803d00a"><code>c0ccd5c9</code></a></td><td>2026-07-12 15:01</td><td>Repair concrete derive realization and clause-wise recovery; execute the third fresh observability preflight.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/2dd039c510111fb313c117fb5058ea4740bb228c"><code>2dd039c5</code></a></td><td>2026-07-12 15:33</td><td>Separate structural proof support from observable learner events; produce the replacement S0 contract.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/985bd54252da6d047f657a14f0c5b36196c38c21"><code>985bd542</code></a></td><td>2026-07-12 15:40</td><td>Bind original diagnostic and replacement S0 lineages; execute the fourth fresh observability preflight.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/4133d7ff9e3f39b74b87a589ac231d05056ac66a"><code>4133d7ff</code></a></td><td>2026-07-12 16:17</td><td>Freeze the three-draw v2.2 reliability gate before calls; execute its sealed 72-case transaction.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/346e472a48a857972eeecc58ecba2b3c765177eb"><code>346e472a</code></a></td><td>2026-07-12 17:04</td><td>Implement the exact public-event channel; execute the sealed zero-call v2.3 successor S0.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/e68b5ee09ac50e974676857e1ecca82a5032db45"><code>e68b5ee0</code></a></td><td>2026-07-12 17:25</td><td>Prospectively freeze and implement the zero-call canonical sensor pilot before fitting the S0 data.</td></tr>
+              <tr><td><a href="https://github.com/liammagee/machinespirits-eval/commit/bd8f47ecded7d35f1a69a9f41f4514ae1b5500d6"><code>bd8f47ec</code></a></td><td>2026-07-12 17:27</td><td>Validate the full evidence plan in dry-run; execute the sealed zero-call pilot, which stopped without a confirmation candidate.</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+        <div class="reference-grid">
+          <article class="reference-card"><span class="eyebrow">PLAN 4.0</span><h3>Primary local plans</h3><ul class="source-list">
+            <li><a href="Towards_a_Field_Theory_of_Adaptive_Pedagogical_Interaction.md">Towards a Field Theory…</a></li>
+            <li><a href="Dynamic_Learner_Fields_Geometric_Architecture.md">Dynamic Learner Fields</a></li>
+            <li><a href="FIELD_THEORY_IMPLEMENTATION_PLAN.md">Field Theory Implementation Plan</a></li>
+            <li><a href="PHASE_6_EVIDENCE_GATE_PLAN.md">Phase 6 Evidence Gate</a></li>
+            <li><a href="2026-07-10-preconscious-adaptation-review.md">Preconscious adaptation review</a></li>
+            <li><a href="2026-07-10-adaptive-policy-discrimination-and-learner-diversity.md">Policy discrimination and learner diversity</a></li>
+            <li><a href="2026-07-10-headroom-fixed-horizon-interactions.md">Fixed-horizon interactions</a></li>
+            <li><a href="2026-07-10-phase6-gate-explainer-and-headroom-result.md">Phase 6 gate explainer</a></li>
+            <li><a href="../docs/research/paper-full-2.0.md">Canonical Paper 2.0 · v3.0.211</a></li>
+            <li><a href="../docs/explorations/claude/2026-05-01-comprehensive-strategy.md">May comprehensive strategy</a></li>
+            <li><a href="../docs/explorations/claude/agents/2026-05-01-agent-framework-analysis.md">May agent-framework analysis</a></li>
+          </ul></article>
+          <article class="reference-card"><span class="eyebrow">Recent artifacts</span><h3>Direct evidence</h3><ul class="source-list">
+            <li><a href="../.tutor-stub-auto-eval/headroom-contrast-n3-live/trajectory-analysis.md">Terra fixed-horizon report</a></li>
+            <li><a href="../.tutor-stub-auto-eval/headroom-contrast-n3-live/profile-discrimination.md">Terra profile discrimination</a></li>
+            <li><a href="../.tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/trajectory-analysis.md">Sonnet fixed-horizon + recovery</a></li>
+            <li><a href="../.tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/profile-discrimination.md">Sonnet profile discrimination</a></li>
+            <li><a href="../.tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/qa-matrix.md">Sonnet QA matrix</a></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s0-clean-5a3e5aae-v21/stage0-contract-report.md">v2.1 S0 instrument report</a> · dataset <code>5364a521…</code> · report <code>10fd8330…</code></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-technical-5a3e5aae-v21/run-seal.json">first S1 schema-canary stop</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-technical-5a3e5aae-v21/stage1-partial-accounting.json">partial accounting</a></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-technical-b69775b6-v21/stage1-technical-report.md">complete <code>b69775b6</code> S1 technical report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-technical-b69775b6-v21/run-seal.json">seal</a></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-repair-bb65da27-v21/run-seal.json">repaired <code>bb65da27</code> S1 stop</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-repair-bb65da27-v21/stage1-partial-accounting.json">partial accounting</a></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-5fda0824-v21/observability-preflight-report.md"><code>5fda0824</code> observability preflight report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-5fda0824-v21/run-seal.json">seal</a> · exact recovery <code>19/24</code></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-8d6d2b22-v21/observability-preflight-report.md"><code>8d6d2b22</code> observability preflight report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-8d6d2b22-v21/run-seal.json">seal</a> · exact recovery <code>22/24</code></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-c0ccd5c9-v21/observability-preflight-report.md"><code>c0ccd5c9</code> observability preflight report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-c0ccd5c9-v21/run-seal.json">seal</a> · exact recovery <code>23/24</code></li>
+            <li><a href="2026-07-12-ravensmark-derive-separability-audit.md">Ravensmark derive separability audit</a> · structural-support decision and execution outcome</li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s0-structural-support-2dd039c5-v21/stage0-contract-report.md">replacement v2.1 S0 report</a> · dataset <code>c9d67065…</code> · report <code>09ed0b4c…</code></li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-985bd542-v21/observability-preflight-report.md"><code>985bd542</code> observability preflight report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-preflight-985bd542-v21/run-seal.json">seal</a> · exact recovery <code>23/24</code></li>
+            <li><a href="2026-07-12-adaptive-state-observability-reliability-protocol-v2.2.md">v2.2 repeated-draw protocol and outcome</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-reliability-4133d7ff-v22/observability-reliability-report.md">report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-observability-reliability-4133d7ff-v22/run-seal.json">seal</a> · <code>70/72</code>, stopped</li>
+            <li><a href="2026-07-12-adaptive-state-exact-channel-protocol-v2.3.md">v2.3 exact-channel successor</a> · zero-call claim-bearing lane, descriptive-only language transfer, repaired Phase 6 dependencies</li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s0-exact-channel-346e472a-v23/stage0-contract-report.md"><code>346e472a</code> exact-channel S0 report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s0-exact-channel-346e472a-v23/run-seal.json">seal</a> · 24 dialogues, 144 transitions, zero calls, passed</li>
+            <li><a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23/canonical-pilot-report.md"><code>bd8f47ec</code> canonical sensor pilot report</a> · <a href="../exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23/run-seal.json">seal</a> · 84/84 heads converged, zero calls, stopped with no candidate</li>
+            <li><a href="https://developers.openai.com/api/docs/guides/structured-outputs">OpenAI Structured Outputs guide</a> · supported strict-schema subset</li>
+          </ul></article>
+          <article class="reference-card"><span class="eyebrow">Code under audit</span><h3>Load-bearing implementation</h3><ul class="source-list">
+            <li><a href="../services/dramaticDerivation/fieldPlanner.js">fieldPlanner.js</a></li>
+            <li><a href="../services/dramaticDerivation/pedagogicalScripts.js">pedagogicalScripts.js</a></li>
+            <li><a href="../scripts/run-derivation-phase6-gate.js">Phase 6 runner</a></li>
+            <li><a href="../services/tutorStubFieldTrajectory.js">shared live field/trajectory projection</a></li>
+            <li><a href="../config/adaptive-state-benchmark-v2.yaml">learner-state benchmark v2 contract</a></li>
+            <li><a href="../config/adaptive-state-instrument-v2.3.yaml">v2.3 exact-channel contract</a></li>
+            <li><a href="../services/adaptiveTutor/stateBenchmarkExactObserver.js">deterministic exact public-event observer</a></li>
+            <li><a href="../services/adaptiveTutor/stateBenchmarkCanonicalPilot.js">v2.3 canonical pilot analyzer and directional gate</a></li>
+            <li><a href="../scripts/execute-adaptive-state-canonical-pilot-v23.js">zero-call canonical pilot transaction runner</a></li>
+            <li><a href="../scripts/run-adaptive-state-benchmark-v2.js">v2 critical-path planner</a></li>
+            <li><a href="../scripts/execute-adaptive-state-benchmark-v2-s1.js">v2.1 S1 executor entry point</a></li>
+            <li><a href="../scripts/execute-adaptive-state-observability-preflight-v2.js">v2.1 observability preflight runner</a></li>
+            <li><a href="../services/adaptiveTutor/stateBenchmarkStage1Executor.js">S1 transaction executor</a></li>
+            <li><a href="../services/adaptiveTutor/stateBenchmarkPublicSurface.js">shared transition-atomic public surface projection</a></li>
+            <li><a href="../config/drama-derivation/phase6-field-planner-gate-v2.1.json">Phase 6A v2.1 frozen contract</a></li>
+            <li><a href="../scripts/tutor-stub.js">tutor-stub.js</a></li>
+            <li><a href="../scripts/run-tutor-stub-auto-eval.js">auto-eval runner</a></li>
+            <li><a href="../scripts/tutor-stub-learner-profile-contracts.js">learner profile contracts</a></li>
+            <li><a href="../scripts/analyze-tutor-stub-trajectories.js">trajectory analyzer</a></li>
+            <li><a href="../scripts/analyze-tutor-stub-profile-discrimination.js">profile discriminator</a></li>
+          </ul></article>
+          <article class="reference-card"><span class="eyebrow">Workplan</span><h3>Decision surfaces</h3><ul class="source-list">
+            <li><a href="../workplan/items/field-planner-phase6-gate.md">Phase 6 field-planner gate</a></li>
+            <li><a href="../workplan/items/field-planner-acts-safe-promotion-gate.md">Phase 6B acts-safe promotion gate</a></li>
+            <li><a href="../workplan/items/tutor-stub-learner-state-validity.md">learner-state validity</a></li>
+            <li><a href="../workplan/items/adaptive-eval-immutable-provenance.md">immutable adaptive-eval provenance</a></li>
+            <li><a href="../workplan/items/tutor-stub-transition-reward-model.md">Transition/reward model</a></li>
+            <li><a href="../workplan/items/tutor-stub-headroom-contrast.md">Headroom contrast</a></li>
+            <li><a href="../workplan/items/tutor-stub-human-discourse-layer.md">Human discourse layer</a></li>
+            <li><a href="../workplan/items/a1-human-learner-validation.md">Human learner validation</a></li>
+            <li><a href="../workplan/BOARD.md">Current board</a></li>
+          </ul></article>
+        </div>
+        <h3>Final answer to the strategic question</h3>
+        <p><strong>Yes, the project is on the right path—if “path” means explicit state, guarded control, formal evidence, and aggressive falsification.</strong> It is on the wrong path whenever it equates richer internal description with a better learner model, simulated persona fidelity with human validity, or register diversity with adaptive pedagogy. The recent negative results are not detours; they are the reason the next architecture can be smaller, more identifiable, and more credible.</p>
+        <p class="pq">The next breakthrough should not be a more elaborate interior. It should be a state estimate that predicts, a diagnostic action that informs, a scaffold that fades, and an outcome that survives when the tutor is gone.<cite>PLAN 4.0 audit · 2026-07-11</cite></p>
+      </div><div class="mr"><p class="note note--moss"><span class="note__lbl">Bottom line</span> Preserve the machine; narrow the ontology; widen the action space; harden the evidence.</p></div></div>
+    </section>
+  </div>
+
+  <footer class="colophon"><p><span class="label">Colophon</span> &nbsp; Dated engineering-and-evidence audit, not a source of canonical paper claims. Original audit: <code>preconscious@be40a9e0</code>, 2026-07-11. Execution checkpoint updated 2026-07-12 through <code>codex/adaptive-tutor-implementation@bd8f47ec</code>; it records both earlier S0 contracts, stopped S1 execution, four stopped 24-cell preflights, the stopped 72-case v2.2 reliability gate, the sealed zero-call v2.3 exact-channel S0, the stopped zero-call canonical sensor pilot, and Phase 6A protocol status without asserting efficacy, human learning, deployment readiness, live-default parity, or sensor validity. Local run artifacts are machine-local and may not survive checkout movement; links are provided for traceability in this workspace. Design: <code>notes/poetics/assets/techne.css</code>. Behaviour: <code>notes/poetics/assets/techne.js</code>.</p></footer>
+</main>
+
+<script src="../notes/poetics/assets/techne.js"></script>
+</body>
+</html>

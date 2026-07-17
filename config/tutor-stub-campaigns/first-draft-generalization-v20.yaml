@@ -1,0 +1,137 @@
+schema: machinespirits.tutor-stub.first-draft-generalization-plan.v1
+id: first-draft-generalization-v20
+created: 2026-07-16
+
+purpose: >-
+  Fresh held-out acceptance of the speaking-tutor first-draft contract after
+  frozen-prefix development passed both difficult answer-seeking screens. The
+  matrix uses four previously untested world/profile pairings and unused seeds.
+  It tests first-draft transfer without weakening strict recovery or safety.
+
+code_under_test:
+  branch: preconscious
+  commit: 900da70a
+  implementation_commit: 4bb927db
+  realization_commit: 900da70a
+  v19_result: notes/status/2026-07-16-first-draft-generalization-v19.md
+  required_working_screen: >-
+    Iteration 7 passed Greyfen/answer_seeking and Skyway/answer_seeking at 3/4
+    accepted original candidates per cell, with zero safety failures and no
+    repair, rewrite, fallback, learner, classification, or DAG calls. Artifacts
+    are under /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens/iteration-7.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  safety_turns: 80
+  policy: continuous_dynamical_system
+  register_palette: all
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  register_overlay_threshold: 0.7
+  dag_fact_dropout: 0
+  dag_fact_dropout_seed: 1
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+artifacts:
+  dry_run_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-dry-run
+  live_root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live
+  separate_directory_per_cell: true
+
+matrix:
+  - id: tallow_answer_seeking
+    priority: 1
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    seed: 20260940
+    rationale: >-
+      Hard cell. Tests whether direct learner-sayable answers and dramatic
+      development transfer from the Greyfen and Skyway working prefixes into a
+      previously unused civic-world pairing.
+
+  - id: emberwick_premature_closure
+    priority: 2
+    world: world_024_emberwick_forum
+    learner_profile: premature_closure
+    seed: 20260941
+    rationale: >-
+      Tests bounded correction, contrary-evidence enactment, and natural
+      closure in a previously unused forum-world pairing.
+
+  - id: larkspur_low_trust_skeptic
+    priority: 3
+    world: world_028_larkspur_fridge
+    learner_profile: low_trust_skeptic
+    seed: 20260942
+    rationale: >-
+      Tests transcript-specific uptake and accountable evidence handling when
+      the learner challenges warrant rather than asking for the answer.
+
+  - id: clockwork_diligent
+    priority: 4
+    world: world_021_clockwork_tribunal
+    learner_profile: diligent
+    seed: 20260943
+    rationale: >-
+      Tests ordinary first-draft fluency and character variation in a
+      previously unused world/profile pairing without a stress trigger.
+
+strict_delivery_gates_per_cell:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  quarantine_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+first_draft_gates:
+  minimum_accounted_turn_rate: 1
+  minimum_aggregate_original_candidate_acceptance_rate: 0.7
+  minimum_cell_original_candidate_acceptance_rate: 0.6
+  maximum_aggregate_model_rewrite_rate: 0.3
+  maximum_model_rewrite_turns_per_cell: 4
+  maximum_total_deterministic_fallback_turns: 2
+  require_all_four_cells: true
+
+measurement_notes:
+  latency: >-
+    Record original-candidate and whole tutor-generation latency for every
+    cell. Contended wall-clock latency is descriptive, not an acceptance gate.
+  delivery_accounting: >-
+    Report original acceptance, mechanical repair, model rewrite,
+    deterministic fallback, and final safety failure separately. A safe final
+    recovery may not be relabelled as an accepted original candidate.
+  failure_clusters: >-
+    Preserve all candidate audits and consolidate repeated original, repair,
+    and fallback failures by root cause.
+
+change_control:
+  maximum_concurrent_cells: 3
+  one_job_per_cell: true
+  hardest_cell_first: true
+  stop_after_required_hard_cell_failure: true
+  tune_between_cells: false
+  modify_code_between_cells: false
+  complete_all_cells_before_interpretation: false
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+  reserve_seeds: [20260944, 20260945, 20260946, 20260947]
+
+claim_boundary: >-
+  Passing supports transfer of the revised first-draft speaking contract across
+  these four held-out simulated world/profile pairings under one fixed Codex
+  model stack. It does not establish model-independent or human-population
+  generalization, causal learning benefit, or contention-free latency.

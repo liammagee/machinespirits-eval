@@ -1,6 +1,6 @@
 # Pre-registration: the unreliable-learner visibility contrast (v1)
 
-**Status**: registered 2026-06-11, before any arm-B build and before any paid contrast run.
+**Status**: **COMPLETE** — registered 2026-06-11 before any arm-B build or paid contrast run; amended twice before any scored run; 12/12 amended runs completed and mechanically rescored.
 **Base commit**: b0686fc9 (twin-fact alias fix; this document registers against that engine).
 **Condition**: seeded decay of the learner's grounded board (`services/dramaticDerivation/corruption.js`) — a run-level condition; worlds stay frozen.
 **Provenance chain**: design note [notes/poetics/2026-06-10-unreliable-learner-design.md] → mock survival map [exports/dramatic-derivation/adaptation-sweep-2026-06-11/SURVIVAL-MAP.md] + narrative [notes/poetics/2026-06-11-adaptation-survival-map.md] → first real probe [exports/dramatic-derivation/episodes/decay-probe-real-001/] → this registration.
@@ -138,3 +138,37 @@ Changes to worlds, detector windows, decay semantics, endpoints, or hypothesis t
 - **Run 2 stopped mid-flight.** `wit-decay-v1-A-s1` (arm A, told, opus director) was killed at ~t11/24 before artifact write; no artifacts exist; it re-runs codex-directed.
 - **Effect on the first amendment above**: inverted, not removed. The withercombe baseline discrepancy is resolved (baseline and decay arms now both codex-directed); the mirror discrepancy is created for nocturne (baseline `nocturne-v002-real-superego-on-t1-charterv2` ran an opus director; its decay arms run codex). Same standing: exploratory baseline color only — H1/H2 are within-experiment and casting-identical across arms; H3 anchors on the mock survival map. The G2 probe episodes (opus-directed) remain valid: the gate's conclusion (`byReadoption = 0`) concerns the learner role, which is unchanged.
 - **Unchanged**: tutor codex, tutor superego codex, learner claude/sonnet (pinned), Fable critic; worlds, scripts, decay cell, seeds, arm order, endpoints, hypotheses, scorer.
+
+## Results addendum — 2026-06-11, independently reverified 2026-07-14
+
+The amended registered set is complete: two worlds × three seeds × two arms =
+12/12 Codex-directed runs. The superseded Opus-directed `wit-decay-v1-B-s1`
+remains outside the scorer's scan. The stopped Opus-directed arm-A attempt
+produced no artifact. No endpoint, threshold, world, seed, or decay parameter
+changed after registration.
+
+Mechanical re-scoring from `diagnosis.json`, `result.json`, and the frozen world
+YAMLs reproduces the archived result exactly after excluding the scoring
+timestamp:
+
+| arm | runs | decay events | tutor repairs | pooled per-slip | selected | completions | stall-ended |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A — told | 6 | 57 | 49 | **0.860** | 28 | 4 | 2 |
+| B — conduct | 6 | 19 | 7 | **0.368** | 0 | 0 | 6 |
+
+- G2 remained intact: `repairs.byReadoption = 0` in every scored run.
+- The frozen release schedule remained intact: 94/94 releases on cue and zero
+  schedule violations.
+- H1a passed (`0.860 >= 0.66`) and H1b passed (4.67 selected repairs/run;
+  57% of told repairs), so arm A used the explicit channel.
+- H2 was supported: A - B = +0.491, run-level bootstrap 95% CI
+  `[0.313, 0.746]`, 10,000 resamples, seed 20260611, zero reversals.
+- H3 remains descriptive: 9.5 decay events/run in told versus 3.17 in conduct.
+
+Authoritative scorer: `scripts/score-unreliable-learner.js`. Archived outputs:
+`exports/dramatic-derivation/unreliable-v1-scoring/`. Interpretive record:
+`notes/poetics/2026-06-11-unreliable-learner-results.md`. The canonical paper
+fold-in is `docs/research/paper-full-2.0.md` §6.13.7, with the revision-history
+entry already present. The licensed reading is scope-bound: harness-owned
+hidden state was load-bearing for repair in these two simulated worlds and this
+cast; this is not a human-learning or general mind-reading claim.

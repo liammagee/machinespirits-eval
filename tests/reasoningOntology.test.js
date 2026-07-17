@@ -92,6 +92,42 @@ test('casting consistency is scoped out of the default ToM check (decision 2B)',
   assert.ok(specCheck.violations.role1);
 });
 
+test('audience is a first-order dramatic position but not an enacted role', async () => {
+  const abox = `${ABOX_PREFIXES}\nms:witness1 rdf:type ms:Audience ; rdf:type ms:DramaticRole .`;
+
+  const defaultCheck = await checkAboxConsistency(abox);
+  assert.equal(defaultCheck.consistent, true, 'the default ToM check does not apply structural casting axioms');
+
+  const specCheck = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'consistency', 'casting'],
+  });
+  assert.equal(specCheck.consistent, false);
+  assert.deepEqual(specCheck.violations.witness1, ['Audience', 'DramaticRole']);
+});
+
+test('register realization relates speaker, hearer, addressee profile, and optional audience', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:audience1 rdf:type ms:Audience .
+ms:register1 rdf:type ms:RegisterRealization ;
+  ms:hasSpeakerRole ms:TutorRole ;
+  ms:hasHearerRole ms:LearnerRole ;
+  ms:hasAudience ms:audience1 ;
+  ms:realizesEngagementStance ms:SarcasticStance ;
+  ms:usesAddresseeProfile ms:AdultNoviceProfile ;
+  ms:hasAddressStructure ms:TriadicAddress ;
+  ms:hasAudienceAlignment ms:SpeakerAlignedAudience ;
+  ms:invitesAudienceAlignmentWith ms:TutorRole .`;
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'rhetoric'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assert.match(result.closureText, /RegisterRealization/);
+  assert.match(result.closureText, /SarcasticStance/);
+  assert.match(result.closureText, /SpeakerAlignedAudience/);
+});
+
 test('the Roman rhetoric vocabulary is an opt-in module that co-loads and parses', async () => {
   // rhetoric-core.ttl (course 1001 lectures 5–8) is registered but NOT in
   // DEFAULT_MODULES. Loading it with poetics must resolve the module name, parse

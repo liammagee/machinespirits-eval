@@ -17,7 +17,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Database from 'better-sqlite3';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -105,7 +105,7 @@ function getFlag(name, defaultValue = false) {
   return defaultValue;
 }
 
-const dbPath = getOption('db', process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db'));
+const dbOverride = getOption('db');
 const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
 const metricVersion = getOption('metric-version', 'within-test-v2-aligned-proxy');
 const jsonOutPath = getOption('json');
@@ -141,7 +141,11 @@ function colorize(text, c) {
   return `${COLOR[c] || ''}${text}${COLOR.reset}`;
 }
 
-const db = new Database(dbPath, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly(ROOT_DIR, { explicitPath: dbOverride });
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 function mean(arr) {
   if (!arr || arr.length === 0) return null;

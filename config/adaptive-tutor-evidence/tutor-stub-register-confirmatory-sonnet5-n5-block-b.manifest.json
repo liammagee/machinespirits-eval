@@ -1,0 +1,69 @@
+{
+  "schema": "machinespirits.tutor-stub-evidence-manifest.v1",
+  "runDir": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13",
+  "createdAt": "2026-07-13T22:23:21.538231+00:00",
+  "claimStatus": "scope-bound",
+  "prereg": "REGISTER-CONFIRMATORY-PREREGISTRATION.md",
+  "model": "claude-code.sonnet-5 (all four seams)",
+  "archive": {
+    "location": "~/.machinespirits-data/runs/tutor-stub/register-confirmatory-sonnet5-n5-live-20260714.tar.gz",
+    "sha256": "8150d2182015e7a1e91b537a385f545ed532e84125167f379c68ca02ead3e665",
+    "bytes": 234149200,
+    "note": "family block B, all legs incl. quarantined dead dirs (5 window deaths) + affective top-up + unsealed merged resume source, as execution record"
+  },
+  "affectiveAssembly": {
+    "note": "affective_resistant n=5 assembled across 3 sealed legs due to session-window deaths",
+    "r1_r2": "affective_resistant-dead-session-limit-0122Z-partial",
+    "r3_blandR4_fieldR4": "affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z",
+    "negR4_blandR5_fieldR5_negR5": "affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z (post-t16-death rows; valid primary endpoint)",
+    "deviation": "the 4 top-up dialogues died at turns 16-18 post-endpoint; included for cov@t16 (valid, unbiased); verdict invariant to exclusion"
+  },
+  "distilledFiles": [
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.json",
+      "sha256": "eaf299db9b71efea15d8c4e20788f36f718cdf1f2afb3838546351a8de42274a",
+      "bytes": 6397
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/qa-matrix.md",
+      "sha256": "635c1e432a382987d10a14715076afec3d4d14baa967a2069579d873010b9ae5",
+      "bytes": 1203
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.json",
+      "sha256": "84e809b1397a86edd8ad15be3775bfdfb49371d3226378d31b122154da790c10",
+      "bytes": 14586
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.md",
+      "sha256": "7f0e6b4fafd70c459e4db68677222f8d1157301bfad4e4fa7add4d8159e31be8",
+      "bytes": 2500
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/diligent-auto-eval.json",
+      "sha256": "34fe2f32715c7fdef541fb51860c0c99cbbe8ad035c8823f2b308992410ff843",
+      "bytes": 150258544
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/false_memory-auto-eval.json",
+      "sha256": "aa20bf412822c37c8322a2a1b39e2d30b88ca1b40951bc977ef0ed50ae5ec8e8",
+      "bytes": 180400171
+    },
+    {
+      "path": "exports/register-confirmatory-evidence/sonnet5-n5-block-b/proof_skipper-auto-eval.json",
+      "sha256": "7e6ea3055ffaea16084c47b05999d97156a87b86bf05a7cc29e2138b6e4de6fc",
+      "bytes": 186823988
+    }
+  ],
+  "finalAnalysis": {
+    "path": "config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json",
+    "sha256": "5246fbc4b0b434f1ebf6aef48a4878a2af6b36b2a26246f1dc17af1c035e550c",
+    "bytes": 4003,
+    "note": "Canonical 120-row selection, bootstrap, in-run profile gates, sensitivity, and corrected selected-row QA matrix"
+  },
+  "exclusions": [
+    "simulated learner outcomes do not estimate human learning effects",
+    "affective secondary until-grounded outcomes unavailable for the 4 top-up rows"
+  ],
+  "notes": "Sonnet passes the frozen cosine manipulation gate (0.645 average, 0.694 max to diligent) but has no supported primary interaction. Family result: null. No one-family or two-family confirmation. Corrected verdict in the appended prereg reproducibility correction and final-analysis manifest."
+}

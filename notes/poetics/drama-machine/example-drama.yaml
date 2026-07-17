@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# example-drama.yaml — a worked drama-machine spec (drama-machine v0.1).
+# example-drama.yaml — a worked drama-machine spec (drama-machine v0.2).
 #
 # Brief it encodes: "a recognition-tutor, a struggling-anxious learner, on
 # logarithms, aiming for peripeteia + catharsis; the learner is an LLM (sonnet)
@@ -76,8 +76,13 @@ cast:
   critic:   llm:api:gpt
   default_backend: api
 
-# ── AUDIENCE (the critic config) ──           # panel+consensus RUN TODAY; unified dispatch TO-BUILD
+# ── AUDIENCE (position + critic config) ──    # context DECLARED; panel+consensus RUN TODAY
 audience:
+  context:                                      # TO-BUILD at runtime; Audience has no role or turn
+    description: "an implied seminar audience following the exchange"
+    relation_to_speaker: "invited to inspect the tutor's framing, not automatically align with it"
+    relation_to_hearer: "witnesses the learner's work without becoming a second learner"
+    knowledge: "knows the public scene and worksheet, but not the withheld reasoning"
   panel: [gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash]
   consensus: 3-of-4
   grading: graded                              # 0–4 attainment ladder

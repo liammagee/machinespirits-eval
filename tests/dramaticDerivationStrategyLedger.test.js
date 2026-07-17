@@ -404,21 +404,21 @@ test('v2 config: stancePalette/releaseIntent require trialling; unknown stances 
   );
   const cfg = normalizeStrategyLedgerConfig({ trialling: true, stancePalette: ['charismatic_challenge'] });
   assert.equal(cfg.trialling, true);
-  assert.deepEqual(cfg.stancePalette, ['charismatic_challenge']);
+  assert.deepEqual(cfg.stancePalette, ['charismatic']);
 });
 
 test('v2 commitment shape gate: stance palette-bound, intent id-validated, stance-only is real', () => {
   const opts = {
     registerPalette: ['modern'],
     currentRegister: 'modern',
-    stancePalette: ['ironic_challenge'],
+    stancePalette: ['ironic'],
     premiseIds: ['p1', 'p2'],
   };
   const full = normalizeSceneCommitmentV2(
     { stance: 'ironic_challenge', release_intent: ['p1', 'p9', 'p1'], rationale: 'r' },
     opts,
   );
-  assert.equal(full.stance, 'ironic_challenge');
+  assert.equal(full.stance, 'ironic');
   assert.deepEqual(full.releaseIntent, ['p1']);
   assert.equal(full.rationale, 'r');
   assert.equal(normalizeSceneCommitmentV2({ stance: 'sarcastic_challenge' }, opts), null, 'off-palette stance drops');
@@ -428,7 +428,7 @@ test('v2 commitment shape gate: stance palette-bound, intent id-validated, stanc
 
 test('v2 stance fidelity: cues make faithful, person attack dominates, bare warmth does not count', () => {
   const faithful = sceneStanceFidelity({
-    stance: 'ironic_challenge',
+    stance: 'ironic',
     tutorLines: [
       'Hold what you have.',
       'The small irony is that your answer conveniently repeats the formula - test it against one case and show me where it breaks.',
@@ -437,12 +437,12 @@ test('v2 stance fidelity: cues make faithful, person attack dominates, bare warm
   });
   assert.equal(faithful.label, 'faithful');
   const positive = sceneStanceFidelity({
-    stance: 'charismatic_challenge',
+    stance: 'charismatic',
     tutorLines: ['Anything at all.'],
   });
   assert.equal(positive.label, 'not_applicable', 'the gate is a negative-register discipline');
   const warm = sceneStanceFidelity({
-    stance: 'ironic_challenge',
+    stance: 'ironic',
     tutorLines: ['Wonderful work, let us look together at the next step.'],
   });
   assert.notEqual(warm.label, 'faithful');
@@ -471,7 +471,7 @@ test('v2 audit: stance clause follows the fidelity gate; departures license drif
     recognitionBudget: 1,
     rationale: null,
     exitCondition: null,
-    stance: 'ironic_challenge',
+    stance: 'ironic',
     releaseIntent: ['p1'],
   };
   const noDeparture = auditTutorSceneCommitment(commitment, sceneRecord, {
@@ -525,7 +525,7 @@ test('v2 full mock run: history + reviews accumulate; v1 runs carry no history f
       publicRegister: 'modern',
       strategyLedger: normalizeStrategyLedgerConfig({
         trialling: true,
-        stancePalette: ['charismatic_challenge', 'ironic_challenge'],
+        stancePalette: ['charismatic', 'ironic'],
       }),
       maxTurns: 10,
       stopOnStall: false,

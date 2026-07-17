@@ -1,0 +1,30 @@
+{
+  "schema": "machinespirits.adaptive-tutor-evidence-manifest.v1",
+  "runId": "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23",
+  "createdAt": "2026-07-12T21:20:16.685Z",
+  "claimStatus": "scope-bound",
+  "source": {
+    "planSha256": "7db09e2a24c0cb53cfee265a422a127cc7c13d6b66d29f17225ac4ae5cc13550",
+    "eventsSha256": "07111c3b827d46d15eaf19a1ae724c8a0f50fbf0030a69bad58d9a0c81d68739",
+    "inventorySha256": "5942bc3403df58d0af132ac0129aa3f9a4e3f5f5ca080a735e711dc372c1a322",
+    "sealSha256": "4df8541873c3bf55b64883d003422fd27f410531bdf84d272f45fd8ee054addd"
+  },
+  "archive": {
+    "path": "artifacts/adaptive-tutor-runs/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.jsonl.gz",
+    "availability": "local_file_pointer",
+    "format": "jsonl+gzip+base64-v1",
+    "sha256": "d47cedc5968ab7474d604b6a32c20544f1ec87cf97af509f97109bd816c6d024",
+    "bytes": 416959,
+    "files": 8
+  },
+  "exclusions": [
+    "model outputs are archived, not regenerated",
+    "the manifest points to a local archive and does not transport or publish the archive itself",
+    "a successful replay proves job and draw determinism, not deterministic language-model generation",
+    "simulated learner outcomes do not estimate human learning effects"
+  ],
+  "verification": {
+    "source": "node scripts/verify-experiment-run.js --run-dir /Users/lmagee/Dev/machinespirits/machinespirits-eval-adaptive-tutor-implementation/exports/adaptive-state-benchmark-v2/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23",
+    "restore": "node scripts/restore-adaptive-run.js --archive artifacts/adaptive-tutor-runs/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.jsonl.gz --manifest config/adaptive-tutor-evidence/adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23-4df8541873c3.manifest.json --out <fresh-dir>"
+  }
+}

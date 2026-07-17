@@ -33,6 +33,8 @@ import Database from 'better-sqlite3';
 import { runThreeWayANOVA } from '../services/anovaStats.js';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { calculateOverallScore } from '../services/rubricEvaluator.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+import { describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -81,7 +83,9 @@ function hasFlag(name) {
   return cli.flags.has(name);
 }
 
-const dbPath = getOption('db', process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db'));
+// Writer script (persists metrics by default), so it resolves the path itself
+// instead of using the readonly helper; the open still never creates the file.
+const dbPath = resolveEvaluationDbPath(ROOT_DIR, getOption('db'));
 const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
 const jsonOutPath = getOption('json');
 const metricVersion = getOption('metric-version', 'within-test-v2-aligned-proxy');
@@ -102,7 +106,11 @@ const rowLimit = smokeTestMode
     ? parsedLimit
     : null;
 
-const db = new Database(dbPath, { readonly: !persistEnabled });
+if (!fs.existsSync(dbPath)) {
+  console.log(describeMissingEvaluationDb(dbPath, 'database not found'));
+  process.exit(0);
+}
+const db = new Database(dbPath, { readonly: !persistEnabled, fileMustExist: true });
 
 function mean(arr) {
   if (!arr || arr.length === 0) return null;

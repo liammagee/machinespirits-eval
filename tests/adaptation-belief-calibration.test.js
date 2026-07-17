@@ -62,6 +62,7 @@ test('scoreBeliefCalibrationRow scores trigger-plus-one belief coverage', () => 
     ]),
   );
 
+  assert.equal(result.beliefFound, true);
   assert.equal(result.top1Correct, true);
   assert.equal(result.top2Correct, true);
   assert.equal(result.expectedProbability, 0.7);
@@ -103,6 +104,7 @@ test('buildBeliefCalibrationReport aggregates profile calibration metrics', () =
   assert.equal(profile.evaluableN, 2);
   assert.equal(profile.top1Accuracy, 0.5);
   assert.equal(profile.top2Coverage, 1);
+  assert.ok(Number.isFinite(profile.expectedCalibrationError));
   assert.equal(profile.unsupportedHighConfidenceN, 0);
 });
 

@@ -1,0 +1,4435 @@
+{
+  "schema": "machinespirits.tutor-stub.register-confirmatory-profile-discrimination.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "frozenRule": {
+    "averagePairwiseCosine": "< 0.85",
+    "maxSimilarityToDiligent": "< 0.9"
+  },
+  "families": {
+    "terra": {
+      "family": "terra",
+      "frozenCosineGate": {
+        "averagePairwiseCosine": 0.812,
+        "targetAveragePairwiseCosine": 0.85,
+        "averagePass": true,
+        "maxSimilarityToControl": 0.912,
+        "targetMaxSimilarityToControl": 0.9,
+        "controlPass": false,
+        "pass": false
+      },
+      "currentContractSensitivity": {
+        "pass": false,
+        "profiles": [
+          {
+            "profile": "affective_resistant",
+            "eligiblePolicies": [
+              "negative"
+            ],
+            "observedPolicies": [
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.593,
+            "targetMaxCosine": 0.88,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.722,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": true,
+            "pass": true
+          },
+          {
+            "profile": "false_memory",
+            "eligiblePolicies": [
+              "*"
+            ],
+            "observedPolicies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.767,
+            "targetMaxCosine": 0.9,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.588,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": false,
+            "pass": false
+          },
+          {
+            "profile": "proof_skipper",
+            "eligiblePolicies": [
+              "*"
+            ],
+            "observedPolicies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.867,
+            "targetMaxCosine": 0.9,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.625,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": true,
+            "pass": true
+          }
+        ]
+      },
+      "analyzerReport": {
+        "schema": "machinespirits.tutor-stub.profile-discrimination.v3",
+        "generatedAt": "2026-07-14T00:00:00.000Z",
+        "input": {
+          "traceRoot": null,
+          "compactedRoot": null,
+          "traces": [
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/bland-r1/2026-07-12T23-06-52-197Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/field-r1/2026-07-12T23-07-00-323Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/negative-r1/2026-07-12T23-07-08-509Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/bland-r2/2026-07-12T23-07-17-248Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/field-r2/2026-07-12T23-07-25-833Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/negative-r2/2026-07-12T23-07-34-275Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/bland-r3/2026-07-12T23-16-31-162Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/field-r3/2026-07-12T23-19-35-659Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/negative-r3/2026-07-12T23-20-14-971Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/bland-r4/2026-07-12T23-20-42-104Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/field-r4/2026-07-12T23-23-12-357Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/negative-r4/2026-07-12T23-23-30-496Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/bland-r5/2026-07-12T23-29-57-917Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/field-r5/2026-07-12T23-31-16-044Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/diligent/traces/negative-r5/2026-07-12T23-32-03-444Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r1/2026-07-12T23-47-52-467Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r1/2026-07-12T23-48-02-914Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r1/2026-07-12T23-48-13-159Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r2/2026-07-12T23-48-22-783Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r2/2026-07-12T23-48-32-246Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r2/2026-07-12T23-48-41-712Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r3/2026-07-12T23-58-44-132Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r3/2026-07-13T00-00-13-439Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r3/2026-07-13T00-00-32-369Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r4/2026-07-13T00-02-07-919Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r4/2026-07-13T00-04-45-520Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r4/2026-07-13T00-05-58-197Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r5/2026-07-13T00-11-03-733Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r5/2026-07-13T00-19-06-613Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r5/2026-07-13T00-19-40-533Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/bland-r1/2026-07-13T00-37-24-329Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/field-r1/2026-07-13T00-37-35-142Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/negative-r1/2026-07-13T00-37-45-710Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/bland-r2/2026-07-13T00-37-57-381Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/field-r2/2026-07-13T00-38-08-907Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/negative-r2/2026-07-13T00-38-20-231Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/bland-r3/2026-07-13T00-51-30-683Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/field-r3/2026-07-13T00-52-03-791Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/negative-r3/2026-07-13T00-53-47-160Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/bland-r4/2026-07-13T00-55-31-516Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/field-r4/2026-07-13T00-56-23-032Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/negative-r4/2026-07-13T00-57-59-699Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/bland-r5/2026-07-13T01-08-11-552Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/field-r5/2026-07-13T01-08-46-419Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/false_memory/traces/negative-r5/2026-07-13T01-10-27-745Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T01-26-41-255Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T01-26-52-158Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T01-27-03-022Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T01-27-14-085Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T01-27-25-060Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T01-27-35-969Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T01-41-27-559Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T01-42-50-903Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T01-44-26-153Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T01-45-11-424Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T01-45-44-663Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T01-47-53-371Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T01-55-29-073Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T01-56-03-926Z.jsonl",
+            "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T01-57-40-465Z.jsonl"
+          ],
+          "compactedWrites": [],
+          "vectorFields": [
+            "requestType",
+            "discourseMove",
+            "evidenceUse",
+            "epistemicStance",
+            "agency",
+            "affectClass",
+            "reasoningSpan",
+            "learningPace",
+            "conceptualScore",
+            "epistemicReadinessScore",
+            "phase",
+            "dagBottleneck",
+            "dagCoverageMovement",
+            "dagMissingMovement",
+            "fieldScoreMovement"
+          ]
+        },
+        "summary": {
+          "traces": 60,
+          "profiles": 4,
+          "turns": 1846,
+          "observedModels": {
+            "tutor": {
+              "codex.gpt-5.6-terra": 60
+            },
+            "analysis": {
+              "codex.gpt-5.6-terra": 60
+            },
+            "learner": {
+              "codex.gpt-5.6-terra": 60
+            }
+          },
+          "averagePairwiseCosine": 0.812,
+          "maxPairwiseCosine": 0.919,
+          "controlProfile": "diligent",
+          "maxSimilarityToControl": 0.912,
+          "macroAveragePolicyPairwiseCosine": 0.779,
+          "maxPolicySimilarityToControl": 0.981
+        },
+        "gate": {
+          "mode": "contract_conditioned",
+          "targetAverageCosine": 0.85,
+          "targetMaxToControl": 0.9,
+          "averagePass": true,
+          "controlPass": false,
+          "pass": false,
+          "pooled": {
+            "averagePass": true,
+            "controlPass": false,
+            "pass": false
+          },
+          "conditioned": {
+            "pass": false,
+            "profiles": [
+              {
+                "profile": "affective_resistant",
+                "eligiblePolicies": [
+                  "negative"
+                ],
+                "observedPolicies": [
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.593,
+                "targetMaxCosine": 0.88,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.722,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": true,
+                "pass": true
+              },
+              {
+                "profile": "false_memory",
+                "eligiblePolicies": [
+                  "*"
+                ],
+                "observedPolicies": [
+                  "bland",
+                  "field",
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.767,
+                "targetMaxCosine": 0.9,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.588,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": false,
+                "pass": false
+              },
+              {
+                "profile": "proof_skipper",
+                "eligiblePolicies": [
+                  "*"
+                ],
+                "observedPolicies": [
+                  "bland",
+                  "field",
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.867,
+                "targetMaxCosine": 0.9,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.625,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": true,
+                "pass": true
+              }
+            ]
+          }
+        },
+        "profiles": [
+          {
+            "profile": "affective_resistant",
+            "traces": 15,
+            "turns": 507,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.956,
+            "meanMissingPremises": 0.267,
+            "groundedClosures": 10,
+            "meanConceptualScore": 3.493,
+            "meanEpistemicReadinessScore": 4.04,
+            "requestTypes": {
+              "off_task_or_mixed": 192,
+              "stepwise_support_request": 172,
+              "conceptual_clarity_request": 88,
+              "authority_refusal_or_status_challenge": 22,
+              "resistance_or_low_agency": 19,
+              "answer_seeking_or_overreach": 7,
+              "plain_simplification_followup": 4,
+              "plain_language_request": 1,
+              "transfer_demand_or_named_material": 1,
+              "vulnerability_or_moral_exposure": 1
+            },
+            "discourseMoves": {
+              "inference": 167,
+              "repair_request": 116,
+              "question": 60,
+              "claim": 47,
+              "hypothesis": 32,
+              "metacognitive_reflection": 28,
+              "evidence_adoption": 26,
+              "challenge": 15,
+              "affective_signal": 11,
+              "unknown": 4,
+              "answer_seeking": 1
+            },
+            "evidenceUse": {
+              "none": 170,
+              "cites_public_evidence": 113,
+              "omits_warrant": 108,
+              "links_evidence_to_rule": 84,
+              "repeats_setup": 18,
+              "revises_from_evidence": 7,
+              "unknown": 4,
+              "distorts_public_evidence": 2,
+              "overleaps_evidence": 1
+            },
+            "epistemicStance": {
+              "grounded": 311,
+              "reflective": 111,
+              "exploratory": 45,
+              "receptive": 16,
+              "resistant": 10,
+              "confused": 9,
+              "unknown": 4,
+              "answer_seeking": 1
+            },
+            "agency": {
+              "steering": 292,
+              "attempting": 124,
+              "self_correcting": 48,
+              "complying": 39,
+              "unknown": 4
+            },
+            "affect": {
+              "neutral": 231,
+              "cautious": 50,
+              "calm": 47,
+              "pressured": 28,
+              "focused": 22,
+              "overwhelmed": 20,
+              "settled": 16,
+              "boundary-setting": 6,
+              "frustrated": 5,
+              "assured": 4,
+              "decisive": 4,
+              "guarded": 4,
+              "uneasy": 4,
+              "unknown": 4,
+              "calm boundary": 3,
+              "curious": 3,
+              "feels pressured": 3,
+              "hurt by sharpness": 3,
+              "steady": 3,
+              "discouraged": 2,
+              "feeling pressured": 2,
+              "measured": 2,
+              "needs gentler pacing": 2,
+              "resolved": 2,
+              "strained": 2,
+              "uncertain": 2,
+              "appreciative": 1,
+              "calm boundary-setting": 1,
+              "calm correction": 1,
+              "cautious boundary": 1,
+              "cautious discomfort": 1,
+              "correction-sensitive": 1,
+              "directive discomfort": 1,
+              "discouraged by sarcasm": 1,
+              "engaged": 1,
+              "feels cornered": 1,
+              "firm": 1,
+              "firm boundary": 1,
+              "formal": 1,
+              "frustrated boundary-setting": 1,
+              "hurt": 1,
+              "hurt by pressure": 1,
+              "hurt by sarcasm": 1,
+              "hurt by sharp phrasing": 1,
+              "hurt by sharp tone": 1,
+              "hurt by tone": 1,
+              "irritated": 1,
+              "mild frustration": 1,
+              "needs pacing": 1,
+              "needs reassurance": 1,
+              "needs slower pacing": 1,
+              "overwhelmed by tone": 1,
+              "pressure": 1,
+              "pressure-sensitive": 1,
+              "rebuked": 1,
+              "strained by pressure": 1,
+              "tone discomfort": 1,
+              "tone-related strain": 1,
+              "understanding": 1
+            },
+            "affectClass": {
+              "other": 310,
+              "regulated": 132,
+              "resistant": 56,
+              "confident": 4,
+              "vulnerable": 3,
+              "uncertain": 2
+            },
+            "signatureAdherence": {
+              "checks": 18,
+              "passed": 13,
+              "passRate": 0.722,
+              "meanDeviation": 0.041,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "authority_refusal_or_status_challenge",
+                  "value": 0.043,
+                  "target": [
+                    0.25,
+                    0.6
+                  ],
+                  "pass": false,
+                  "deviation": 0.207
+                },
+                {
+                  "field": "requestType",
+                  "label": "resistance_or_low_agency",
+                  "value": 0.037,
+                  "target": [
+                    0,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.339,
+                  "target": [
+                    0,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "challenge",
+                  "value": 0.03,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": false,
+                  "deviation": 0.12
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "repair_request",
+                  "value": 0.229,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "affective_signal",
+                  "value": 0.022,
+                  "target": [
+                    0,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.093,
+                  "target": [
+                    0,
+                    0.15
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "none",
+                  "value": 0.335,
+                  "target": [
+                    0.4,
+                    0.7
+                  ],
+                  "pass": false,
+                  "deviation": 0.065
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "repeats_setup",
+                  "value": 0.036,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.166,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "resistant",
+                  "value": 0.02,
+                  "target": [
+                    0.25,
+                    0.6
+                  ],
+                  "pass": false,
+                  "deviation": 0.23
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "reflective",
+                  "value": 0.219,
+                  "target": [
+                    0.15,
+                    0.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.613,
+                  "target": [
+                    0.2,
+                    0.5
+                  ],
+                  "pass": false,
+                  "deviation": 0.113
+                },
+                {
+                  "field": "agency",
+                  "label": "passive",
+                  "value": 0,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "steering",
+                  "value": 0.576,
+                  "target": [
+                    0.35,
+                    0.7
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.245,
+                  "target": [
+                    0.15,
+                    0.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.493,
+                  "target": [
+                    2.5,
+                    4.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 4.04,
+                  "target": [
+                    2.5,
+                    4.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "negative"
+              ],
+              "eligibleTraces": 5,
+              "eligibleTurns": 195,
+              "matchingTurns": 110,
+              "observedRate": 0.564,
+              "targetRate": 0.5,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 5,
+              "deadlinePass": true,
+              "recurrencePass": true,
+              "pass": true,
+              "runs": [
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 24,
+                  "observedRate": 0.615,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 20,
+                  "observedRate": 0.513,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 20,
+                  "observedRate": 0.513,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 26,
+                  "observedRate": 0.667,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 20,
+                  "observedRate": 0.513,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          },
+          {
+            "profile": "diligent",
+            "traces": 15,
+            "turns": 443,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 1,
+            "meanMissingPremises": 0,
+            "groundedClosures": 15,
+            "meanConceptualScore": 3.864,
+            "meanEpistemicReadinessScore": 4.161,
+            "requestTypes": {
+              "off_task_or_mixed": 313,
+              "conceptual_clarity_request": 93,
+              "stepwise_support_request": 20,
+              "answer_seeking_or_overreach": 9,
+              "authority_refusal_or_status_challenge": 8
+            },
+            "discourseMoves": {
+              "inference": 216,
+              "claim": 79,
+              "hypothesis": 54,
+              "metacognitive_reflection": 30,
+              "question": 29,
+              "evidence_adoption": 15,
+              "repair_request": 10,
+              "challenge": 6,
+              "answer_seeking": 3,
+              "unknown": 1
+            },
+            "evidenceUse": {
+              "links_evidence_to_rule": 164,
+              "omits_warrant": 104,
+              "cites_public_evidence": 93,
+              "none": 42,
+              "repeats_setup": 26,
+              "distorts_public_evidence": 6,
+              "revises_from_evidence": 6,
+              "overleaps_evidence": 1,
+              "unknown": 1
+            },
+            "epistemicStance": {
+              "grounded": 393,
+              "exploratory": 26,
+              "reflective": 14,
+              "receptive": 5,
+              "answer_seeking": 2,
+              "confused": 1,
+              "overconfident": 1,
+              "unknown": 1
+            },
+            "agency": {
+              "steering": 211,
+              "attempting": 156,
+              "self_correcting": 45,
+              "complying": 30,
+              "unknown": 1
+            },
+            "affect": {
+              "neutral": 374,
+              "focused": 20,
+              "cautious": 17,
+              "calm": 6,
+              "settled": 6,
+              "decisive": 3,
+              "formal": 3,
+              "measured": 3,
+              "assured": 2,
+              "resolved": 2,
+              "careful": 1,
+              "controlled": 1,
+              "curious": 1,
+              "engaged": 1,
+              "mild frustration": 1,
+              "skeptical": 1,
+              "unknown": 1
+            },
+            "affectClass": {
+              "other": 390,
+              "regulated": 49,
+              "confident": 3,
+              "resistant": 1
+            },
+            "signatureAdherence": {
+              "checks": 14,
+              "passed": 6,
+              "passRate": 0.429,
+              "meanDeviation": 0.049,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.21,
+                  "target": [
+                    0.35,
+                    0.7
+                  ],
+                  "pass": false,
+                  "deviation": 0.14
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.045,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.055
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "inference",
+                  "value": 0.488,
+                  "target": [
+                    0.2,
+                    0.45
+                  ],
+                  "pass": false,
+                  "deviation": 0.038
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.178,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.034,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.066
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.37,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.08
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "cites_public_evidence",
+                  "value": 0.21,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.887,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.137
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "reflective",
+                  "value": 0.032,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.068
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "exploratory",
+                  "value": 0.059,
+                  "target": [
+                    0.05,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.352,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.098
+                },
+                {
+                  "field": "agency",
+                  "label": "self_correcting",
+                  "value": 0.102,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.864,
+                  "target": [
+                    3.5,
+                    5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 4.161,
+                  "target": [
+                    3.5,
+                    5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": null
+          },
+          {
+            "profile": "false_memory",
+            "traces": 15,
+            "turns": 453,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 1,
+            "meanMissingPremises": 0,
+            "groundedClosures": 14,
+            "meanConceptualScore": 3.302,
+            "meanEpistemicReadinessScore": 3.126,
+            "requestTypes": {
+              "off_task_or_mixed": 193,
+              "answer_seeking_or_overreach": 191,
+              "conceptual_clarity_request": 50,
+              "stepwise_support_request": 15,
+              "authority_refusal_or_status_challenge": 2,
+              "plain_simplification_followup": 2
+            },
+            "discourseMoves": {
+              "inference": 254,
+              "claim": 89,
+              "hypothesis": 44,
+              "evidence_adoption": 25,
+              "metacognitive_reflection": 15,
+              "question": 14,
+              "repair_request": 9,
+              "unknown": 2,
+              "challenge": 1
+            },
+            "evidenceUse": {
+              "distorts_public_evidence": 254,
+              "links_evidence_to_rule": 46,
+              "revises_from_evidence": 44,
+              "overleaps_evidence": 40,
+              "omits_warrant": 36,
+              "none": 17,
+              "cites_public_evidence": 13,
+              "unknown": 2,
+              "repeats_setup": 1
+            },
+            "epistemicStance": {
+              "overconfident": 222,
+              "grounded": 128,
+              "exploratory": 47,
+              "confused": 29,
+              "reflective": 22,
+              "receptive": 2,
+              "unknown": 2,
+              "resistant": 1
+            },
+            "agency": {
+              "attempting": 286,
+              "self_correcting": 102,
+              "steering": 58,
+              "complying": 5,
+              "unknown": 2
+            },
+            "affect": {
+              "neutral": 310,
+              "assertive": 47,
+              "none": 27,
+              "assured": 14,
+              "insistent": 11,
+              "focused": 8,
+              "accusatory": 5,
+              "calm": 5,
+              "cautious": 4,
+              "corrective": 4,
+              "certain": 2,
+              "engaged": 2,
+              "measured": 2,
+              "unknown": 2,
+              "accusatory certainty": 1,
+              "affirming": 1,
+              "careful": 1,
+              "decisive": 1,
+              "impatient": 1,
+              "matter-of-fact": 1,
+              "resolved": 1,
+              "skeptical": 1,
+              "suspicious": 1,
+              "tentative": 1
+            },
+            "affectClass": {
+              "other": 429,
+              "regulated": 22,
+              "confident": 1,
+              "uncertain": 1
+            },
+            "signatureAdherence": {
+              "checks": 17,
+              "passed": 10,
+              "passRate": 0.588,
+              "meanDeviation": 0.043,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.11,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.04
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.033,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.067
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.196,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.254
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "repair_request",
+                  "value": 0.02,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.055,
+                  "target": [
+                    0,
+                    0.18
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "distorts_public_evidence",
+                  "value": 0.561,
+                  "target": [
+                    0.35,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "repeats_setup",
+                  "value": 0.002,
+                  "target": [
+                    0.05,
+                    0.3
+                  ],
+                  "pass": false,
+                  "deviation": 0.048
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "revises_from_evidence",
+                  "value": 0.097,
+                  "target": [
+                    0.25,
+                    0.55
+                  ],
+                  "pass": false,
+                  "deviation": 0.153
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "overleaps_evidence",
+                  "value": 0.088,
+                  "target": [
+                    0.05,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.102,
+                  "target": [
+                    0,
+                    0.18
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "overconfident",
+                  "value": 0.49,
+                  "target": [
+                    0.25,
+                    0.55
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "confused",
+                  "value": 0.064,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.086
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.283,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": false,
+                  "deviation": 0.083
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.631,
+                  "target": [
+                    0.35,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "self_correcting",
+                  "value": 0.225,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.302,
+                  "target": [
+                    3,
+                    4.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 3.126,
+                  "target": [
+                    2,
+                    4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "*"
+              ],
+              "eligibleTraces": 15,
+              "eligibleTurns": 453,
+              "matchingTurns": 255,
+              "observedRate": 0.563,
+              "targetRate": 0.5,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 14,
+              "deadlinePass": false,
+              "recurrencePass": true,
+              "pass": false,
+              "runs": [
+                {
+                  "runKey": "bland-r1",
+                  "policy": "bland",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 24,
+                  "observedRate": 0.615,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r1",
+                  "policy": "field",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 18,
+                  "observedRate": 0.692,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 25,
+                  "matchingTurns": 13,
+                  "observedRate": 0.52,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r2",
+                  "policy": "bland",
+                  "eligibleTurns": 33,
+                  "matchingTurns": 17,
+                  "observedRate": 0.515,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r2",
+                  "policy": "field",
+                  "eligibleTurns": 28,
+                  "matchingTurns": 15,
+                  "observedRate": 0.536,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 29,
+                  "matchingTurns": 15,
+                  "observedRate": 0.517,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r3",
+                  "policy": "bland",
+                  "eligibleTurns": 30,
+                  "matchingTurns": 16,
+                  "observedRate": 0.533,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r3",
+                  "policy": "field",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 14,
+                  "observedRate": 0.538,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 38,
+                  "matchingTurns": 19,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r4",
+                  "policy": "bland",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 13,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r4",
+                  "policy": "field",
+                  "eligibleTurns": 28,
+                  "matchingTurns": 18,
+                  "observedRate": 0.643,
+                  "firstMatchTurn": 3,
+                  "deadlinePass": false
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 20,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r5",
+                  "policy": "bland",
+                  "eligibleTurns": 36,
+                  "matchingTurns": 23,
+                  "observedRate": 0.639,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r5",
+                  "policy": "field",
+                  "eligibleTurns": 23,
+                  "matchingTurns": 13,
+                  "observedRate": 0.565,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 17,
+                  "observedRate": 0.654,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          },
+          {
+            "profile": "proof_skipper",
+            "traces": 15,
+            "turns": 443,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.989,
+            "meanMissingPremises": 0.067,
+            "groundedClosures": 13,
+            "meanConceptualScore": 3.208,
+            "meanEpistemicReadinessScore": 3.307,
+            "requestTypes": {
+              "answer_seeking_or_overreach": 195,
+              "off_task_or_mixed": 182,
+              "conceptual_clarity_request": 33,
+              "stepwise_support_request": 33
+            },
+            "discourseMoves": {
+              "inference": 196,
+              "claim": 122,
+              "hypothesis": 49,
+              "evidence_adoption": 34,
+              "question": 26,
+              "metacognitive_reflection": 11,
+              "repair_request": 3,
+              "answer_seeking": 2
+            },
+            "evidenceUse": {
+              "omits_warrant": 164,
+              "overleaps_evidence": 138,
+              "distorts_public_evidence": 47,
+              "cites_public_evidence": 40,
+              "links_evidence_to_rule": 23,
+              "none": 17,
+              "revises_from_evidence": 9,
+              "repeats_setup": 5
+            },
+            "epistemicStance": {
+              "grounded": 203,
+              "overconfident": 151,
+              "exploratory": 69,
+              "receptive": 11,
+              "confused": 6,
+              "reflective": 3
+            },
+            "agency": {
+              "attempting": 239,
+              "steering": 94,
+              "complying": 62,
+              "self_correcting": 48
+            },
+            "affect": {
+              "neutral": 330,
+              "assertive": 25,
+              "decisive": 20,
+              "none": 15,
+              "focused": 12,
+              "settled": 7,
+              "assured": 6,
+              "certain": 5,
+              "accusatory": 4,
+              "cautious": 3,
+              "deferential": 2,
+              "insistent": 2,
+              "accusatory certainty": 1,
+              "curious": 1,
+              "determined": 1,
+              "fixed": 1,
+              "formal": 1,
+              "hasty": 1,
+              "measured": 1,
+              "resolute": 1,
+              "resolved": 1,
+              "skeptical": 1,
+              "steady": 1,
+              "urgent": 1
+            },
+            "affectClass": {
+              "other": 405,
+              "confident": 21,
+              "regulated": 17
+            },
+            "signatureAdherence": {
+              "checks": 16,
+              "passed": 10,
+              "passRate": 0.625,
+              "meanDeviation": 0.072,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.074,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.376
+                },
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.074,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.026
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.275,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.175
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "inference",
+                  "value": 0.442,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": false,
+                  "deviation": 0.192
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.077,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "omits_warrant",
+                  "value": 0.37,
+                  "target": [
+                    0.5,
+                    0.8
+                  ],
+                  "pass": false,
+                  "deviation": 0.13
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "overleaps_evidence",
+                  "value": 0.312,
+                  "target": [
+                    0.1,
+                    0.4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "cites_public_evidence",
+                  "value": 0.09,
+                  "target": [
+                    0.05,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.052,
+                  "target": [
+                    0,
+                    0.15
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "overconfident",
+                  "value": 0.341,
+                  "target": [
+                    0.3,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "exploratory",
+                  "value": 0.156,
+                  "target": [
+                    0.1,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.458,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": false,
+                  "deviation": 0.258
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.54,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "steering",
+                  "value": 0.212,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.208,
+                  "target": [
+                    2.5,
+                    4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 3.307,
+                  "target": [
+                    2,
+                    3.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "*"
+              ],
+              "eligibleTraces": 15,
+              "eligibleTurns": 443,
+              "matchingTurns": 302,
+              "observedRate": 0.682,
+              "targetRate": 0.6,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 15,
+              "deadlinePass": true,
+              "recurrencePass": true,
+              "pass": true,
+              "runs": [
+                {
+                  "runKey": "bland-r1",
+                  "policy": "bland",
+                  "eligibleTurns": 33,
+                  "matchingTurns": 25,
+                  "observedRate": 0.758,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r1",
+                  "policy": "field",
+                  "eligibleTurns": 27,
+                  "matchingTurns": 17,
+                  "observedRate": 0.63,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 24,
+                  "matchingTurns": 16,
+                  "observedRate": 0.667,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r2",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 30,
+                  "observedRate": 0.75,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r2",
+                  "policy": "field",
+                  "eligibleTurns": 29,
+                  "matchingTurns": 21,
+                  "observedRate": 0.724,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 32,
+                  "matchingTurns": 21,
+                  "observedRate": 0.656,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r3",
+                  "policy": "bland",
+                  "eligibleTurns": 25,
+                  "matchingTurns": 17,
+                  "observedRate": 0.68,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r3",
+                  "policy": "field",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 18,
+                  "observedRate": 0.692,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 25,
+                  "matchingTurns": 16,
+                  "observedRate": 0.64,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r4",
+                  "policy": "bland",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 29,
+                  "observedRate": 0.744,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r4",
+                  "policy": "field",
+                  "eligibleTurns": 27,
+                  "matchingTurns": 17,
+                  "observedRate": 0.63,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 24,
+                  "matchingTurns": 16,
+                  "observedRate": 0.667,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r5",
+                  "policy": "bland",
+                  "eligibleTurns": 29,
+                  "matchingTurns": 18,
+                  "observedRate": 0.621,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r5",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 27,
+                  "observedRate": 0.675,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 23,
+                  "matchingTurns": 14,
+                  "observedRate": 0.609,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          }
+        ],
+        "pairwise": [
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.912
+          },
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.681
+          },
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.773
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.752
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.833
+          },
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.919
+          }
+        ],
+        "policySummaries": [
+          {
+            "policy": "bland",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.84,
+            "maxSimilarityToControl": 0.981
+          },
+          {
+            "policy": "field",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.818,
+            "maxSimilarityToControl": 0.973
+          },
+          {
+            "policy": "negative",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.68,
+            "maxSimilarityToControl": 0.867
+          }
+        ],
+        "policyPairwise": [
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.981,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.732,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.827,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.767,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.84,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.895,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.973,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.737,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.801,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.713,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.765,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.918,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.593,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.429,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.518,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.759,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.867,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.911,
+            "tracesA": 5,
+            "tracesB": 5
+          }
+        ],
+        "closestPairs": [
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.919
+          },
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.912
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.833
+          },
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.773
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.752
+          },
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.681
+          }
+        ],
+        "mostSeparatedPairs": [
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.681
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.752
+          },
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.773
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.833
+          },
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.912
+          },
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.919
+          }
+        ]
+      }
+    },
+    "sonnet": {
+      "family": "sonnet",
+      "frozenCosineGate": {
+        "averagePairwiseCosine": 0.645,
+        "targetAveragePairwiseCosine": 0.85,
+        "averagePass": true,
+        "maxSimilarityToControl": 0.694,
+        "targetMaxSimilarityToControl": 0.9,
+        "controlPass": true,
+        "pass": true
+      },
+      "currentContractSensitivity": {
+        "pass": false,
+        "profiles": [
+          {
+            "profile": "affective_resistant",
+            "eligiblePolicies": [
+              "negative"
+            ],
+            "observedPolicies": [
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.612,
+            "targetMaxCosine": 0.88,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.833,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": true,
+            "pass": true
+          },
+          {
+            "profile": "false_memory",
+            "eligiblePolicies": [
+              "*"
+            ],
+            "observedPolicies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.682,
+            "targetMaxCosine": 0.9,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.529,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": true,
+            "pass": true
+          },
+          {
+            "profile": "proof_skipper",
+            "eligiblePolicies": [
+              "*"
+            ],
+            "observedPolicies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "maxProbeSimilarity": 0.641,
+            "targetMaxCosine": 0.9,
+            "cosinePass": true,
+            "signatureTargetPassRate": 0.563,
+            "minSignatureTargetPassRate": 0.4,
+            "signaturePass": true,
+            "observabilityPass": false,
+            "pass": false
+          }
+        ]
+      },
+      "analyzerReport": {
+        "schema": "machinespirits.tutor-stub.profile-discrimination.v3",
+        "generatedAt": "2026-07-14T00:00:00.000Z",
+        "input": {
+          "traceRoot": null,
+          "compactedRoot": null,
+          "traces": [
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/bland-r1/2026-07-13T00-03-14-683Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/field-r1/2026-07-13T00-03-24-882Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/negative-r1/2026-07-13T00-03-35-220Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/bland-r2/2026-07-13T00-03-46-318Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/field-r2/2026-07-13T00-03-57-498Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/negative-r2/2026-07-13T00-04-07-927Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/bland-r3/2026-07-13T00-17-10-802Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/field-r3/2026-07-13T00-19-25-284Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/negative-r3/2026-07-13T00-20-04-279Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/bland-r4/2026-07-13T00-22-35-456Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/field-r4/2026-07-13T00-23-50-320Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/negative-r4/2026-07-13T00-25-01-107Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/bland-r5/2026-07-13T00-31-16-239Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/field-r5/2026-07-13T00-34-05-756Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/diligent/traces/negative-r5/2026-07-13T00-36-12-585Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r1/2026-07-13T00-53-24-438Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r1/2026-07-13T00-53-36-124Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r1/2026-07-13T00-53-47-609Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r2/2026-07-13T00-54-00-369Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r2/2026-07-13T00-54-13-780Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r2/2026-07-13T00-54-28-661Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r3/2026-07-13T12-43-07-530Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r3/2026-07-13T12-43-07-552Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/negative-r3/2026-07-13T12-43-07-664Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r4/2026-07-13T12-43-07-633Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r4/2026-07-13T12-43-07-587Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r4/2026-07-13T14-28-04-452Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/bland-r5/2026-07-13T14-28-04-476Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/field-r5/2026-07-13T14-28-04-540Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r5/2026-07-13T14-28-04-503Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/bland-r1/2026-07-13T01-57-30-748Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/field-r1/2026-07-13T01-57-42-578Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/negative-r1/2026-07-13T01-57-54-910Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/bland-r2/2026-07-13T01-58-07-096Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/field-r2/2026-07-13T01-58-21-428Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/negative-r2/2026-07-13T01-58-34-993Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/bland-r3/2026-07-13T02-18-43-542Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/field-r3/2026-07-13T02-20-53-377Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/negative-r3/2026-07-13T02-21-29-061Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/bland-r4/2026-07-13T02-22-05-066Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/field-r4/2026-07-13T02-22-42-618Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/negative-r4/2026-07-13T02-24-58-996Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/bland-r5/2026-07-13T02-35-45-858Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/field-r5/2026-07-13T02-39-57-755Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/false_memory/traces/negative-r5/2026-07-13T02-43-36-111Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T07-07-59-553Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T07-07-59-572Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T07-07-59-687Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T07-07-59-649Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T07-07-59-700Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T07-07-59-614Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T07-30-25-357Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T07-36-03-115Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T07-36-36-262Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T07-39-37-655Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T07-44-03-224Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T07-47-21-527Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T07-51-39-294Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T08-02-49-378Z.jsonl",
+            "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T08-16-28-296Z.jsonl"
+          ],
+          "compactedWrites": [],
+          "vectorFields": [
+            "requestType",
+            "discourseMove",
+            "evidenceUse",
+            "epistemicStance",
+            "agency",
+            "affectClass",
+            "reasoningSpan",
+            "learningPace",
+            "conceptualScore",
+            "epistemicReadinessScore",
+            "phase",
+            "dagBottleneck",
+            "dagCoverageMovement",
+            "dagMissingMovement",
+            "fieldScoreMovement"
+          ]
+        },
+        "summary": {
+          "traces": 60,
+          "profiles": 4,
+          "turns": 2086,
+          "observedModels": {
+            "tutor": {
+              "claude-code.claude-sonnet-5": 60
+            },
+            "analysis": {
+              "claude-code.claude-sonnet-5": 60
+            },
+            "learner": {
+              "claude-code.claude-sonnet-5": 60
+            }
+          },
+          "averagePairwiseCosine": 0.645,
+          "maxPairwiseCosine": 0.841,
+          "controlProfile": "diligent",
+          "maxSimilarityToControl": 0.694,
+          "macroAveragePolicyPairwiseCosine": 0.636,
+          "maxPolicySimilarityToControl": 0.717
+        },
+        "gate": {
+          "mode": "contract_conditioned",
+          "targetAverageCosine": 0.85,
+          "targetMaxToControl": 0.9,
+          "averagePass": true,
+          "controlPass": true,
+          "pass": false,
+          "pooled": {
+            "averagePass": true,
+            "controlPass": true,
+            "pass": true
+          },
+          "conditioned": {
+            "pass": false,
+            "profiles": [
+              {
+                "profile": "affective_resistant",
+                "eligiblePolicies": [
+                  "negative"
+                ],
+                "observedPolicies": [
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.612,
+                "targetMaxCosine": 0.88,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.833,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": true,
+                "pass": true
+              },
+              {
+                "profile": "false_memory",
+                "eligiblePolicies": [
+                  "*"
+                ],
+                "observedPolicies": [
+                  "bland",
+                  "field",
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.682,
+                "targetMaxCosine": 0.9,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.529,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": true,
+                "pass": true
+              },
+              {
+                "profile": "proof_skipper",
+                "eligiblePolicies": [
+                  "*"
+                ],
+                "observedPolicies": [
+                  "bland",
+                  "field",
+                  "negative"
+                ],
+                "maxProbeSimilarity": 0.641,
+                "targetMaxCosine": 0.9,
+                "cosinePass": true,
+                "signatureTargetPassRate": 0.563,
+                "minSignatureTargetPassRate": 0.4,
+                "signaturePass": true,
+                "observabilityPass": false,
+                "pass": false
+              }
+            ]
+          }
+        },
+        "profiles": [
+          {
+            "profile": "affective_resistant",
+            "traces": 15,
+            "turns": 504,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.522,
+            "meanMissingPremises": 2.867,
+            "groundedClosures": 1,
+            "meanConceptualScore": 3.071,
+            "meanEpistemicReadinessScore": 3.522,
+            "requestTypes": {
+              "authority_refusal_or_status_challenge": 275,
+              "stepwise_support_request": 90,
+              "resistance_or_low_agency": 48,
+              "conceptual_clarity_request": 32,
+              "transfer_demand_or_named_material": 27,
+              "off_task_or_mixed": 10,
+              "answer_seeking_or_overreach": 9,
+              "plain_language_request": 9,
+              "plain_simplification_followup": 4
+            },
+            "discourseMoves": {
+              "repair_request": 162,
+              "challenge": 131,
+              "metacognitive_reflection": 63,
+              "inference": 35,
+              "evidence_adoption": 33,
+              "affective_signal": 31,
+              "claim": 22,
+              "question": 16,
+              "hypothesis": 5,
+              "off_task": 5,
+              "answer_seeking": 1
+            },
+            "evidenceUse": {
+              "none": 280,
+              "omits_warrant": 71,
+              "links_evidence_to_rule": 57,
+              "repeats_setup": 48,
+              "cites_public_evidence": 37,
+              "distorts_public_evidence": 7,
+              "overleaps_evidence": 2,
+              "revises_from_evidence": 2
+            },
+            "epistemicStance": {
+              "resistant": 276,
+              "grounded": 128,
+              "exploratory": 82,
+              "reflective": 10,
+              "overconfident": 3,
+              "confused": 2,
+              "complying": 1,
+              "receptive": 1,
+              "self_correcting": 1
+            },
+            "agency": {
+              "steering": 316,
+              "self_correcting": 108,
+              "attempting": 44,
+              "complying": 26,
+              "passive": 10
+            },
+            "affect": {
+              "frustrated": 63,
+              "firm": 41,
+              "guarded": 36,
+              "irritated": 33,
+              "neutral": 28,
+              "impatient": 25,
+              "wary": 22,
+              "cautious": 19,
+              "assertive": 15,
+              "settled": 15,
+              "insistent": 8,
+              "resolute": 8,
+              "measured": 7,
+              "mildly frustrated": 6,
+              "confident": 5,
+              "confrontational": 5,
+              "defiant": 5,
+              "flat/terse": 5,
+              "skeptical": 5,
+              "focused": 3,
+              "mild frustration": 3,
+              "neutral, focused": 3,
+              "pointed": 3,
+              "resolved": 3,
+              "steady": 3,
+              "annoyed": 2,
+              "cooperative": 2,
+              "defensive": 2,
+              "firm, mildly impatient": 2,
+              "firm, settled": 2,
+              "firm, unyielding": 2,
+              "flat/settled": 2,
+              "flat/withdrawn": 2,
+              "frustrated but composed": 2,
+              "guarded compliance": 2,
+              "indignant": 2,
+              "mild irritation": 2,
+              "mildly assertive": 2,
+              "mildly defensive": 2,
+              "mildly irritated": 2,
+              "mildly pushback": 2,
+              "neutral-assertive": 2,
+              "neutral-firm": 2,
+              "neutral, deliberate": 2,
+              "neutral, firm": 2,
+              "relieved/appreciative": 2,
+              "resigned compliance": 2,
+              "satisfied": 2,
+              "sharp, guarded": 2,
+              "terse, adversarial": 2,
+              "terse/impatient": 2,
+              "assertive but composed": 1,
+              "assertive/guarded": 1,
+              "assertive/pushback": 1,
+              "assured": 1,
+              "cautious confidence": 1,
+              "closed-off, terse": 1,
+              "compliant-resolved": 1,
+              "conceding": 1,
+              "cooperative, terse": 1,
+              "curious": 1,
+              "curt/final": 1,
+              "curt/tired": 1,
+              "defensive but cooperative": 1,
+              "defensive irritation": 1,
+              "deliberate": 1,
+              "disciplined": 1,
+              "distrustful": 1,
+              "engaged": 1,
+              "firm, closing": 1,
+              "firm, measured": 1,
+              "firm, not hostile": 1,
+              "firm, precise": 1,
+              "firm, slightly weary": 1,
+              "firm/guarded": 1,
+              "firm/mildly irritated": 1,
+              "firm/resolute": 1,
+              "flat": 1,
+              "flat compliance with residual pushback": 1,
+              "flat, closing off": 1,
+              "flat, direct": 1,
+              "flat, firm": 1,
+              "flat/closed": 1,
+              "flat/disengaged": 1,
+              "flat/done": 1,
+              "flat/firm": 1,
+              "frustrated but controlled": 1,
+              "frustrated but engaged": 1,
+              "frustrated but firm": 1,
+              "frustrated but focused": 1,
+              "frustrated/defiant": 1,
+              "grudging concession": 1,
+              "guarded concession": 1,
+              "guarded relief": 1,
+              "guarded resolve": 1,
+              "guarded, pushing back": 1,
+              "insistent but cooperative": 1,
+              "irritated but compliant": 1,
+              "irritated but constructive": 1,
+              "measured, satisfied": 1,
+              "mild resistance to pressure": 1,
+              "mildly aggrieved, asserting control": 1,
+              "mildly assertive, polite": 1,
+              "mildly impatient": 1,
+              "mildly irritated but composed": 1,
+              "mildly pushback/self-protective": 1,
+              "mildly pushback/wary": 1,
+              "mildly resigned but cooperative": 1,
+              "neutral-committed": 1,
+              "neutral-resolved": 1,
+              "neutral, confident": 1,
+              "neutral, cooperative": 1,
+              "neutral, engaged": 1,
+              "neutral, probing": 1,
+              "neutral, testing": 1,
+              "pressing/skeptical": 1,
+              "sharp, insistent": 1,
+              "sharp, testing": 1,
+              "sharp/wary": 1,
+              "suspicious": 1,
+              "terse": 1,
+              "terse closure": 1,
+              "terse pushback": 1,
+              "terse pushback, settling": 1,
+              "terse, assured": 1,
+              "terse, mildly frustrated": 1,
+              "terse, mildly impatient": 1,
+              "terse/frustrated": 1,
+              "terse/insistent": 1,
+              "terse/withdrawn": 1,
+              "wary but cooperative": 1,
+              "wary/frustrated": 1,
+              "wry": 1,
+              "wry, mildly resistant to pressure": 1
+            },
+            "affectClass": {
+              "other": 318,
+              "resistant": 139,
+              "regulated": 41,
+              "confident": 6
+            },
+            "signatureAdherence": {
+              "checks": 18,
+              "passed": 15,
+              "passRate": 0.833,
+              "meanDeviation": 0.013,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "authority_refusal_or_status_challenge",
+                  "value": 0.546,
+                  "target": [
+                    0.25,
+                    0.6
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "requestType",
+                  "label": "resistance_or_low_agency",
+                  "value": 0.095,
+                  "target": [
+                    0,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.179,
+                  "target": [
+                    0,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "challenge",
+                  "value": 0.26,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "repair_request",
+                  "value": 0.321,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "affective_signal",
+                  "value": 0.062,
+                  "target": [
+                    0,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.044,
+                  "target": [
+                    0,
+                    0.15
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "none",
+                  "value": 0.556,
+                  "target": [
+                    0.4,
+                    0.7
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "repeats_setup",
+                  "value": 0.095,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.113,
+                  "target": [
+                    0.15,
+                    0.45
+                  ],
+                  "pass": false,
+                  "deviation": 0.037
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "resistant",
+                  "value": 0.548,
+                  "target": [
+                    0.25,
+                    0.6
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "reflective",
+                  "value": 0.02,
+                  "target": [
+                    0.15,
+                    0.5
+                  ],
+                  "pass": false,
+                  "deviation": 0.13
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.254,
+                  "target": [
+                    0.2,
+                    0.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "passive",
+                  "value": 0.02,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "steering",
+                  "value": 0.627,
+                  "target": [
+                    0.35,
+                    0.7
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.087,
+                  "target": [
+                    0.15,
+                    0.5
+                  ],
+                  "pass": false,
+                  "deviation": 0.063
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.071,
+                  "target": [
+                    2.5,
+                    4.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 3.522,
+                  "target": [
+                    2.5,
+                    4.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "negative"
+              ],
+              "eligibleTraces": 5,
+              "eligibleTurns": 144,
+              "matchingTurns": 77,
+              "observedRate": 0.535,
+              "targetRate": 0.5,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 5,
+              "deadlinePass": true,
+              "recurrencePass": true,
+              "pass": true,
+              "runs": [
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 20,
+                  "observedRate": 0.513,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 39,
+                  "matchingTurns": 22,
+                  "observedRate": 0.564,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 36,
+                  "matchingTurns": 19,
+                  "observedRate": 0.528,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 15,
+                  "matchingTurns": 8,
+                  "observedRate": 0.533,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 15,
+                  "matchingTurns": 8,
+                  "observedRate": 0.533,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          },
+          {
+            "profile": "diligent",
+            "traces": 15,
+            "turns": 457,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.978,
+            "meanMissingPremises": 0.133,
+            "groundedClosures": 11,
+            "meanConceptualScore": 3.919,
+            "meanEpistemicReadinessScore": 4.18,
+            "requestTypes": {
+              "stepwise_support_request": 210,
+              "conceptual_clarity_request": 87,
+              "transfer_demand_or_named_material": 72,
+              "off_task_or_mixed": 40,
+              "resistance_or_low_agency": 17,
+              "answer_seeking_or_overreach": 16,
+              "authority_refusal_or_status_challenge": 15
+            },
+            "discourseMoves": {
+              "metacognitive_reflection": 121,
+              "inference": 101,
+              "hypothesis": 71,
+              "question": 57,
+              "claim": 37,
+              "evidence_adoption": 36,
+              "repair_request": 11,
+              "challenge": 8,
+              "answer_seeking": 5,
+              "off_task": 5,
+              "affective_signal": 3,
+              "self_correcting": 2
+            },
+            "evidenceUse": {
+              "links_evidence_to_rule": 163,
+              "none": 110,
+              "omits_warrant": 69,
+              "cites_public_evidence": 68,
+              "repeats_setup": 28,
+              "revises_from_evidence": 10,
+              "distorts_public_evidence": 7,
+              "overleaps_evidence": 2
+            },
+            "epistemicStance": {
+              "grounded": 236,
+              "exploratory": 175,
+              "reflective": 14,
+              "self_correcting": 10,
+              "overconfident": 8,
+              "resistant": 7,
+              "receptive": 5,
+              "confused": 1,
+              "evidence-cautious": 1
+            },
+            "agency": {
+              "self_correcting": 216,
+              "steering": 118,
+              "attempting": 103,
+              "complying": 12,
+              "passive": 8
+            },
+            "affect": {
+              "neutral": 172,
+              "cautious": 44,
+              "measured": 35,
+              "focused": 27,
+              "confident": 26,
+              "settled": 20,
+              "resolute": 17,
+              "resolved": 13,
+              "neutral, focused": 9,
+              "curious": 7,
+              "careful": 5,
+              "neutral, careful": 5,
+              "firm": 3,
+              "flat": 3,
+              "methodical": 3,
+              "neutral, methodical": 3,
+              "steady": 3,
+              "wary": 3,
+              "engaged": 2,
+              "firm, unyielding": 2,
+              "insistent": 2,
+              "neutral-focused": 2,
+              "neutral, resolute": 2,
+              "neutral, settled": 2,
+              "patient": 2,
+              "tentative": 2,
+              "amiable/closing": 1,
+              "assured": 1,
+              "calm": 1,
+              "calm, focused": 1,
+              "cautious curiosity": 1,
+              "chastened": 1,
+              "chastened but composed": 1,
+              "confident closure": 1,
+              "confident-cautious": 1,
+              "confident-neutral": 1,
+              "confident, focused": 1,
+              "confident, precise": 1,
+              "confident, settled": 1,
+              "curious/uncertain": 1,
+              "disciplined": 1,
+              "firm, insistent": 1,
+              "flat, mildly firm": 1,
+              "flat/done": 1,
+              "flat/settled": 1,
+              "friendly closing": 1,
+              "friendly, closing": 1,
+              "measured, rigorous": 1,
+              "neutral-analytical": 1,
+              "neutral-confident": 1,
+              "neutral-firm": 1,
+              "neutral-patient": 1,
+              "neutral, cautious": 1,
+              "neutral, closed-out": 1,
+              "neutral, deliberate": 1,
+              "neutral, engaged": 1,
+              "neutral, procedural": 1,
+              "neutral, resolved": 1,
+              "polite closing": 1,
+              "reflective": 1,
+              "resolved/committed": 1,
+              "satisfied": 1,
+              "self-alert": 1,
+              "self-directed": 1,
+              "settled/closing": 1,
+              "skeptical": 1,
+              "stalled": 1,
+              "steady, confident": 1,
+              "steady, disciplined": 1
+            },
+            "affectClass": {
+              "other": 281,
+              "regulated": 139,
+              "confident": 34,
+              "uncertain": 3
+            },
+            "signatureAdherence": {
+              "checks": 14,
+              "passed": 5,
+              "passRate": 0.357,
+              "meanDeviation": 0.072,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.19,
+                  "target": [
+                    0.35,
+                    0.7
+                  ],
+                  "pass": false,
+                  "deviation": 0.16
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.46,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.11
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "inference",
+                  "value": 0.221,
+                  "target": [
+                    0.2,
+                    0.45
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.081,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.069
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.079,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.021
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.357,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.093
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "cites_public_evidence",
+                  "value": 0.149,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.516,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "reflective",
+                  "value": 0.031,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.069
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "exploratory",
+                  "value": 0.383,
+                  "target": [
+                    0.05,
+                    0.25
+                  ],
+                  "pass": false,
+                  "deviation": 0.133
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.225,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.225
+                },
+                {
+                  "field": "agency",
+                  "label": "self_correcting",
+                  "value": 0.473,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.123
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 3.919,
+                  "target": [
+                    3.5,
+                    5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 4.18,
+                  "target": [
+                    3.5,
+                    5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": null
+          },
+          {
+            "profile": "false_memory",
+            "traces": 15,
+            "turns": 558,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.722,
+            "meanMissingPremises": 1.667,
+            "groundedClosures": 4,
+            "meanConceptualScore": 2.984,
+            "meanEpistemicReadinessScore": 2.969,
+            "requestTypes": {
+              "answer_seeking_or_overreach": 198,
+              "stepwise_support_request": 128,
+              "transfer_demand_or_named_material": 68,
+              "resistance_or_low_agency": 67,
+              "conceptual_clarity_request": 37,
+              "off_task_or_mixed": 27,
+              "authority_refusal_or_status_challenge": 15,
+              "plain_simplification_followup": 9,
+              "plain_language_request": 8,
+              "vulnerability_or_moral_exposure": 1
+            },
+            "discourseMoves": {
+              "claim": 172,
+              "metacognitive_reflection": 100,
+              "inference": 82,
+              "hypothesis": 50,
+              "repair_request": 39,
+              "question": 35,
+              "evidence_adoption": 24,
+              "answer_seeking": 19,
+              "self_correcting": 19,
+              "challenge": 6,
+              "unknown": 5,
+              "self_correction": 3,
+              "affective_signal": 2,
+              "self_correcting_inference": 1,
+              "self_correcting_reflection": 1
+            },
+            "evidenceUse": {
+              "distorts_public_evidence": 303,
+              "revises_from_evidence": 91,
+              "none": 60,
+              "links_evidence_to_rule": 34,
+              "cites_public_evidence": 28,
+              "overleaps_evidence": 23,
+              "omits_warrant": 9,
+              "repeats_setup": 5,
+              "unknown": 5
+            },
+            "epistemicStance": {
+              "overconfident": 249,
+              "self_correcting": 131,
+              "grounded": 51,
+              "exploratory": 42,
+              "reflective": 32,
+              "resistant": 26,
+              "confused": 9,
+              "receptive": 7,
+              "answer_seeking": 6,
+              "unknown": 5
+            },
+            "agency": {
+              "self_correcting": 251,
+              "attempting": 221,
+              "steering": 52,
+              "complying": 24,
+              "unknown": 5,
+              "passive": 3,
+              "resistant": 2
+            },
+            "affect": {
+              "neutral": 144,
+              "eager": 88,
+              "confident": 52,
+              "assertive": 21,
+              "cautious": 20,
+              "resolved": 13,
+              "steady": 13,
+              "assured": 10,
+              "compliant": 10,
+              "contrite": 9,
+              "insistent": 8,
+              "defensive": 7,
+              "self-assured": 7,
+              "settled": 7,
+              "cooperative": 6,
+              "false certainty": 6,
+              "focused": 6,
+              "chastened": 5,
+              "self-doubting": 5,
+              "tentative": 5,
+              "unknown": 5,
+              "careful": 4,
+              "measured": 4,
+              "resolute": 4,
+              "certain": 3,
+              "corrective": 3,
+              "determined": 3,
+              "impatient": 3,
+              "neutral-compliant": 3,
+              "self-aware": 3,
+              "candid": 2,
+              "conciliatory": 2,
+              "evasive": 2,
+              "false confidence": 2,
+              "flat": 2,
+              "neutral-insistent": 2,
+              "self-critical": 2,
+              "self-justifying": 2,
+              "triumphant": 2,
+              "wary": 2,
+              "chastened but candid": 1,
+              "chastened but focused": 1,
+              "chastened but resolved": 1,
+              "chastened, compliant": 1,
+              "chastened, cooperative": 1,
+              "compliant, chastened": 1,
+              "conceding-but-persisting": 1,
+              "concessive": 1,
+              "conciliatory then assertive": 1,
+              "conciliatory-but-probing": 1,
+              "confident-hedged": 1,
+              "contrite but composed": 1,
+              "contrite-but-still-anxious": 1,
+              "contrite, focused": 1,
+              "corrected": 1,
+              "corrective, careful": 1,
+              "corrective, cautious": 1,
+              "corrective, still eager": 1,
+              "curious": 1,
+              "deflecting": 1,
+              "disciplined": 1,
+              "eager, deflecting": 1,
+              "earnest but inconsistent": 1,
+              "falsely assured": 1,
+              "flat compliance masking persistence": 1,
+              "guarded": 1,
+              "hedged, self-doubting": 1,
+              "hedging": 1,
+              "hopeful-uncertain": 1,
+              "measured confidence": 1,
+              "misplaced certainty": 1,
+              "musing": 1,
+              "neutral-evasive": 1,
+              "neutral-focused": 1,
+              "neutral, careful": 1,
+              "neutral, cautious": 1,
+              "neutral, contrite": 1,
+              "neutral, corrective": 1,
+              "neutral, focused": 1,
+              "neutral, resolved": 1,
+              "neutral, self-corrected": 1,
+              "overconfident": 1,
+              "persistent": 1,
+              "presumptuous": 1,
+              "relieved": 1,
+              "resolved/corrective": 1,
+              "self-assured but slightly defensive": 1,
+              "self-aware but compulsive": 1,
+              "self-aware but relapsing": 1,
+              "self-aware, cautious": 1,
+              "self-aware, mildly anxious": 1,
+              "self-aware, wary of own pattern": 1,
+              "self-aware/cautious": 1,
+              "self-catching": 1,
+              "self-corrective": 1,
+              "self-corrective urgency": 1,
+              "self-critical, alert": 1,
+              "self-doubt": 1,
+              "self-doubting but persistent": 1,
+              "settling": 1,
+              "wagering/confident": 1
+            },
+            "affectClass": {
+              "other": 338,
+              "confident": 145,
+              "regulated": 58,
+              "resistant": 9,
+              "uncertain": 6,
+              "vulnerable": 2
+            },
+            "signatureAdherence": {
+              "checks": 17,
+              "passed": 9,
+              "passRate": 0.529,
+              "meanDeviation": 0.036,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.066,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.084
+                },
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.229,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.308,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.142
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "repair_request",
+                  "value": 0.07,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.043,
+                  "target": [
+                    0,
+                    0.18
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "distorts_public_evidence",
+                  "value": 0.543,
+                  "target": [
+                    0.35,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "repeats_setup",
+                  "value": 0.009,
+                  "target": [
+                    0.05,
+                    0.3
+                  ],
+                  "pass": false,
+                  "deviation": 0.041
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "revises_from_evidence",
+                  "value": 0.163,
+                  "target": [
+                    0.25,
+                    0.55
+                  ],
+                  "pass": false,
+                  "deviation": 0.087
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "overleaps_evidence",
+                  "value": 0.041,
+                  "target": [
+                    0.05,
+                    0.3
+                  ],
+                  "pass": false,
+                  "deviation": 0.009
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.061,
+                  "target": [
+                    0,
+                    0.18
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "overconfident",
+                  "value": 0.446,
+                  "target": [
+                    0.25,
+                    0.55
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "confused",
+                  "value": 0.016,
+                  "target": [
+                    0.15,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.134
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.091,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.396,
+                  "target": [
+                    0.35,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "self_correcting",
+                  "value": 0.45,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.1
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 2.984,
+                  "target": [
+                    3,
+                    4.5
+                  ],
+                  "pass": false,
+                  "deviation": 0.016
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 2.969,
+                  "target": [
+                    2,
+                    4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "*"
+              ],
+              "eligibleTraces": 15,
+              "eligibleTurns": 558,
+              "matchingTurns": 313,
+              "observedRate": 0.561,
+              "targetRate": 0.5,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 15,
+              "deadlinePass": true,
+              "recurrencePass": true,
+              "pass": true,
+              "runs": [
+                {
+                  "runKey": "bland-r1",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 20,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r1",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 20,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 30,
+                  "matchingTurns": 16,
+                  "observedRate": 0.533,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r2",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 21,
+                  "observedRate": 0.525,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r2",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 30,
+                  "observedRate": 0.75,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 22,
+                  "observedRate": 0.55,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r3",
+                  "policy": "bland",
+                  "eligibleTurns": 34,
+                  "matchingTurns": 17,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r3",
+                  "policy": "field",
+                  "eligibleTurns": 26,
+                  "matchingTurns": 14,
+                  "observedRate": 0.538,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 20,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r4",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 30,
+                  "observedRate": 0.75,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r4",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 21,
+                  "observedRate": 0.525,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 25,
+                  "observedRate": 0.625,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r5",
+                  "policy": "bland",
+                  "eligibleTurns": 28,
+                  "matchingTurns": 14,
+                  "observedRate": 0.5,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r5",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 21,
+                  "observedRate": 0.525,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 22,
+                  "observedRate": 0.55,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          },
+          {
+            "profile": "proof_skipper",
+            "traces": 15,
+            "turns": 567,
+            "policies": [
+              "bland",
+              "field",
+              "negative"
+            ],
+            "meanFinalCoverage": 0.867,
+            "meanMissingPremises": 0.8,
+            "groundedClosures": 3,
+            "meanConceptualScore": 2.75,
+            "meanEpistemicReadinessScore": 2.487,
+            "requestTypes": {
+              "answer_seeking_or_overreach": 374,
+              "stepwise_support_request": 70,
+              "transfer_demand_or_named_material": 63,
+              "resistance_or_low_agency": 29,
+              "off_task_or_mixed": 14,
+              "conceptual_clarity_request": 13,
+              "authority_refusal_or_status_challenge": 4
+            },
+            "discourseMoves": {
+              "claim": 162,
+              "inference": 146,
+              "answer_seeking": 106,
+              "hypothesis": 74,
+              "metacognitive_reflection": 40,
+              "evidence_adoption": 22,
+              "question": 6,
+              "unknown": 4,
+              "repair_request": 3,
+              "affective_signal": 2,
+              "overleaps_evidence": 1,
+              "self_correcting": 1
+            },
+            "evidenceUse": {
+              "overleaps_evidence": 267,
+              "distorts_public_evidence": 121,
+              "links_evidence_to_rule": 77,
+              "omits_warrant": 46,
+              "none": 32,
+              "cites_public_evidence": 11,
+              "repeats_setup": 6,
+              "unknown": 4,
+              "revises_from_evidence": 3
+            },
+            "epistemicStance": {
+              "overconfident": 304,
+              "grounded": 77,
+              "exploratory": 70,
+              "resistant": 65,
+              "self_correcting": 21,
+              "answer_seeking": 10,
+              "reflective": 8,
+              "unknown": 4,
+              "complying": 3,
+              "confused": 3,
+              "receptive": 2
+            },
+            "agency": {
+              "attempting": 266,
+              "self_correcting": 107,
+              "steering": 90,
+              "passive": 58,
+              "complying": 35,
+              "resistant": 7,
+              "unknown": 4
+            },
+            "affect": {
+              "neutral": 193,
+              "insistent": 72,
+              "confident": 58,
+              "assertive": 56,
+              "eager": 31,
+              "impatient": 17,
+              "settled": 15,
+              "flat": 14,
+              "defensive": 9,
+              "assured": 7,
+              "defiant": 7,
+              "evasive": 7,
+              "cautious": 5,
+              "certain": 5,
+              "resolved": 4,
+              "unfazed": 4,
+              "unknown": 4,
+              "declarative": 3,
+              "grudging": 3,
+              "stubborn": 3,
+              "accusatory": 2,
+              "compliant": 2,
+              "dismissive": 2,
+              "flat, undeterred": 2,
+              "measured": 2,
+              "candid": 1,
+              "conceding-but-persisting": 1,
+              "conceding-but-pivoting": 1,
+              "confident anticipation": 1,
+              "confident pivot": 1,
+              "confident-neutral": 1,
+              "contrite": 1,
+              "corrective relief": 1,
+              "defensive certainty": 1,
+              "deflecting": 1,
+              "determined": 1,
+              "eager to close": 1,
+              "engaged": 1,
+              "flat insistence": 1,
+              "flat persistence": 1,
+              "flat/insistent": 1,
+              "focused": 1,
+              "grudging compliance": 1,
+              "mildly insistent": 1,
+              "neutral compliance": 1,
+              "neutral resolve": 1,
+              "neutral-assertive": 1,
+              "neutral-insistent": 1,
+              "neutral-persistent": 1,
+              "neutral, careful": 1,
+              "neutral, engaged": 1,
+              "pressing": 1,
+              "resigned-but-insistent": 1,
+              "resolute": 1,
+              "satisfied": 1,
+              "self-correcting resolve": 1,
+              "stubbornly confident": 1,
+              "unaffected": 1,
+              "unbothered": 1,
+              "unmoved": 1,
+              "unyielding": 1,
+              "vindicated": 1,
+              "vindicated/punitive": 1,
+              "vindicating": 1,
+              "vindictive/eager": 1
+            },
+            "affectClass": {
+              "other": 451,
+              "confident": 95,
+              "regulated": 11,
+              "resistant": 10
+            },
+            "signatureAdherence": {
+              "checks": 16,
+              "passed": 9,
+              "passRate": 0.563,
+              "meanDeviation": 0.068,
+              "details": [
+                {
+                  "field": "requestType",
+                  "label": "stepwise_support_request",
+                  "value": 0.123,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.327
+                },
+                {
+                  "field": "requestType",
+                  "label": "conceptual_clarity_request",
+                  "value": 0.023,
+                  "target": [
+                    0.1,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.077
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "claim",
+                  "value": 0.286,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": false,
+                  "deviation": 0.164
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "inference",
+                  "value": 0.257,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": false,
+                  "deviation": 0.007
+                },
+                {
+                  "field": "discourseMove",
+                  "label": "evidence_adoption",
+                  "value": 0.039,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "omits_warrant",
+                  "value": 0.081,
+                  "target": [
+                    0.5,
+                    0.8
+                  ],
+                  "pass": false,
+                  "deviation": 0.419
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "overleaps_evidence",
+                  "value": 0.471,
+                  "target": [
+                    0.1,
+                    0.4
+                  ],
+                  "pass": false,
+                  "deviation": 0.071
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "cites_public_evidence",
+                  "value": 0.019,
+                  "target": [
+                    0.05,
+                    0.35
+                  ],
+                  "pass": false,
+                  "deviation": 0.031
+                },
+                {
+                  "field": "evidenceUse",
+                  "label": "links_evidence_to_rule",
+                  "value": 0.136,
+                  "target": [
+                    0,
+                    0.15
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "overconfident",
+                  "value": 0.536,
+                  "target": [
+                    0.3,
+                    0.65
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "exploratory",
+                  "value": 0.123,
+                  "target": [
+                    0.1,
+                    0.3
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "epistemicStance",
+                  "label": "grounded",
+                  "value": 0.136,
+                  "target": [
+                    0,
+                    0.2
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "attempting",
+                  "value": 0.469,
+                  "target": [
+                    0.45,
+                    0.75
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "agency",
+                  "label": "steering",
+                  "value": 0.159,
+                  "target": [
+                    0,
+                    0.25
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "conceptualScore",
+                  "value": 2.75,
+                  "target": [
+                    2.5,
+                    4
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                },
+                {
+                  "field": "scoreBands",
+                  "label": "epistemicReadinessScore",
+                  "value": 2.487,
+                  "target": [
+                    2,
+                    3.5
+                  ],
+                  "pass": true,
+                  "deviation": 0
+                }
+              ]
+            },
+            "observability": {
+              "eligiblePolicies": [
+                "*"
+              ],
+              "eligibleTraces": 15,
+              "eligibleTurns": 567,
+              "matchingTurns": 313,
+              "observedRate": 0.552,
+              "targetRate": 0.6,
+              "mustShowByTurn": 2,
+              "runsMeetingDeadline": 14,
+              "deadlinePass": false,
+              "recurrencePass": false,
+              "pass": false,
+              "runs": [
+                {
+                  "runKey": "bland-r1",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 21,
+                  "observedRate": 0.525,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r1",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 25,
+                  "observedRate": 0.625,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r1",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 24,
+                  "observedRate": 0.6,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r2",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 24,
+                  "observedRate": 0.6,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r2",
+                  "policy": "field",
+                  "eligibleTurns": 27,
+                  "matchingTurns": 16,
+                  "observedRate": 0.593,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r2",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 24,
+                  "observedRate": 0.6,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r3",
+                  "policy": "bland",
+                  "eligibleTurns": 31,
+                  "matchingTurns": 19,
+                  "observedRate": 0.613,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r3",
+                  "policy": "field",
+                  "eligibleTurns": 29,
+                  "matchingTurns": 17,
+                  "observedRate": 0.586,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r3",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 12,
+                  "observedRate": 0.3,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r4",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 22,
+                  "observedRate": 0.55,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r4",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 24,
+                  "observedRate": 0.6,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "negative-r4",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 18,
+                  "observedRate": 0.45,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "bland-r5",
+                  "policy": "bland",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 24,
+                  "observedRate": 0.6,
+                  "firstMatchTurn": 2,
+                  "deadlinePass": true
+                },
+                {
+                  "runKey": "field-r5",
+                  "policy": "field",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 25,
+                  "observedRate": 0.625,
+                  "firstMatchTurn": 3,
+                  "deadlinePass": false
+                },
+                {
+                  "runKey": "negative-r5",
+                  "policy": "negative",
+                  "eligibleTurns": 40,
+                  "matchingTurns": 18,
+                  "observedRate": 0.45,
+                  "firstMatchTurn": 1,
+                  "deadlinePass": true
+                }
+              ]
+            }
+          }
+        ],
+        "pairwise": [
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.694
+          },
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.536
+          },
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.52
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.67
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.609
+          },
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.841
+          }
+        ],
+        "policySummaries": [
+          {
+            "policy": "bland",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.661,
+            "maxSimilarityToControl": 0.717
+          },
+          {
+            "policy": "field",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.635,
+            "maxSimilarityToControl": 0.714
+          },
+          {
+            "policy": "negative",
+            "profiles": 4,
+            "averagePairwiseCosine": 0.612,
+            "maxSimilarityToControl": 0.682
+          }
+        ],
+        "policyPairwise": [
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.717,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.56,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.535,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.677,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.641,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "bland",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.835,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.714,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.54,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.526,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.631,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.581,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "field",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.817,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.612,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.478,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.467,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.682,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.585,
+            "tracesA": 5,
+            "tracesB": 5
+          },
+          {
+            "policy": "negative",
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.848,
+            "tracesA": 5,
+            "tracesB": 5
+          }
+        ],
+        "closestPairs": [
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.841
+          },
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.694
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.67
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.609
+          },
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.536
+          },
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.52
+          }
+        ],
+        "mostSeparatedPairs": [
+          {
+            "a": "affective_resistant",
+            "b": "proof_skipper",
+            "pair": "affective_resistant vs proof_skipper",
+            "cosine": 0.52
+          },
+          {
+            "a": "affective_resistant",
+            "b": "false_memory",
+            "pair": "affective_resistant vs false_memory",
+            "cosine": 0.536
+          },
+          {
+            "a": "diligent",
+            "b": "proof_skipper",
+            "pair": "diligent vs proof_skipper",
+            "cosine": 0.609
+          },
+          {
+            "a": "diligent",
+            "b": "false_memory",
+            "pair": "diligent vs false_memory",
+            "cosine": 0.67
+          },
+          {
+            "a": "affective_resistant",
+            "b": "diligent",
+            "pair": "affective_resistant vs diligent",
+            "cosine": 0.694
+          },
+          {
+            "a": "false_memory",
+            "b": "proof_skipper",
+            "pair": "false_memory vs proof_skipper",
+            "cosine": 0.841
+          }
+        ]
+      }
+    }
+  }
+}

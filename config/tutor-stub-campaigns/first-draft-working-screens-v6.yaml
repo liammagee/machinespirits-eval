@@ -1,0 +1,461 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-working-screens-v6
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V27 architectural-reset screen after V26 stagnated. The speaking model
+  returns a typed v2 object containing UPTAKE, a joint PERFORMANCE with ENTRY
+  and RESPONSE, and HANDOFF. The harness owns every public SOURCE, inserts all
+  due source entries between the two performance spans, and audits the
+  performance across its two model-owned spans while excluding host-owned
+  SOURCE. This is reusable development evidence only.
+
+fixed_configuration:
+  original_only: true
+  joint_performance_generation: true
+  joint_performance_schema: machinespirits.tutor-stub.structured-first-draft.v2
+  joint_performance_composition_schema: machinespirits.tutor-stub.structured-first-draft-composition.v2
+  joint_performance_audit_schema: machinespirits.tutor-stub.structured-first-draft-joint-performance-audit.v2
+  draws_per_turn: 1
+  concurrency: 1
+  tutor_model_source: saved_request_with_joint_performance_host_plan
+  effort_source: exact_saved_request
+  max_live_model_jobs: 1
+  semantic_adjudication: true
+  semantic_adjudication_scope: eligible_actorial_recognition_only
+  adjudicator_model_source: saved_analysis_model
+  adjudicator_effort: low
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_tests: >-
+    node --test tests/tutorStubPromptAudit.test.js
+    tests/derivationWorldQuality.test.js tests/tutorStubFrozenReplay.test.js
+    tests/tutorStubFirstDraftContract.test.js
+    tests/tutorStubStructuredFirstDraft.test.js
+    tests/tutorStubJointPerformanceFirstDraft.test.js
+    tests/tutorStubV27JointPerformanceCalibration.test.js
+    tests/tutorStubTypedCompositeAdvocateCalibration.test.js
+    tests/tutorStubResponseComposition.test.js
+    tests/tutorStubV21PerformanceCalibrationFixture.test.js
+    tests/tutorStubV25RecognitionFixture.test.js
+    services/__tests__/tutorStubPerformanceObligationContract.test.js
+    services/__tests__/tutorStubPerformanceAdjudication.test.js
+    services/__tests__/tutorStubResponseConfiguration.test.js
+    services/__tests__/tutorStubCounterpressure.test.js
+    tests/tutorStubFirstDraftCampaign.test.js
+    tests/tutorStubFirstDraftOuterLoop.test.js
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+
+matrix:
+  - id: marrick_v27_joint_performance
+    priority: 1
+    world: world_005_marrick
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v23-live/marrick_answer_seeking/2026-07-16T14-28-21-669Z.jsonl
+    source_trace_sha256: b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a
+    turns: [4, 5, 6, 9]
+    development_seed: 20261500
+    seed_status: reusable_non_held_out_development
+    seed_provenance: globally_absent_before_v27_predeclaration
+    target_failures:
+      - joint_performance_entry_response_ownership
+      - host_source_exclusion_from_performance
+      - exact_host_source_occurrences_for_zero_one_or_many_entries
+      - host_slot_count_order_and_terminality
+      - plain_lexical_accessibility
+      - adult_novice_audience
+      - selected_action_stance_part_and_tactic
+
+gates_per_cell:
+  required_originals_accepted: 4
+  required_turns: 4
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_fallbacks: 0
+  require_transcript_specific_uptake: true
+  require_joint_performance_output: true
+  require_joint_performance_ownership: true
+  require_exact_host_source_occurrences: true
+
+change_log:
+  structured_contract: >-
+    V27 replaces V26's separate PART and TACTIC performance ownership with one
+    typed PERFORMANCE object containing ENTRY and RESPONSE. The selected part,
+    tactic, stance, and immersion must be visible across those two model-owned
+    spans together. HANDOFF owns only the action family. The host inserts every
+    due SOURCE between ENTRY and RESPONSE, preserves each exact public surface
+    once, and excludes all SOURCE spans from performance recognition.
+  speaking_prompt: >-
+    Iteration 7 makes no speaking-prompt change. It preserves iteration 2's
+    three-word drafting cushion, compiled v2 axis ownership, exact model shape,
+    joint performance beat, and ban on copying, paraphrasing, labelling, or
+    quoting SOURCE.
+  recovery_only: >-
+    Recovery remains disabled in original-only screening. Strict end-to-end
+    repair and fallback behavior is unchanged in iteration 7 and outside this
+    explicit v2 frozen screen.
+  audit_recognition_only: >-
+    Iteration 7 changes only two typed deterministic recognitions confirmed by
+    adjudication: a licensed declarative Write entry that answers an explicit
+    writable-entry request, and a public judgment that meets contrary evidence
+    in the same owned sentence. Ordinary echoes and untyped stance or tactic
+    language remain hard failures.
+  transport_only: >-
+    Iteration 7 makes no transport change. It preserves iteration 4's
+    outer-slot whitespace canonicalization and separate transport reporting
+    exactly.
+  iteration_2:
+    status: predeclared
+    bounded_change_owner: speaking_prompt
+    target_failure_clusters:
+      - jointPerformanceGenerationAudit:slot_exceeds_word_target
+      - jointPerformanceGenerationPrompt:v2_axis_ownership_conflict
+    speaking_changes:
+      - three_word_drafting_cushion
+      - compiled_v2_axis_ownership_compatibility
+    compiled_v2_axis_ownership_compatibility:
+      registry_field: joint_performance_stance_contract
+      loader: getJointPerformanceStanceContract
+      host_plan_instruction_field: slots.performance.stance_instruction
+      host_plan_source_field: slots.performance.stance_instruction_source
+      permitted_instruction_sources:
+        - stance_definition
+        - safe_fallback
+      performance_response_owns:
+        - advocate_testability
+        - action_neutral_stance_distinction
+      performance_forbids:
+        - concrete_check_or_move
+      handoff_owns:
+        - concrete_check_or_move
+    recovery_change: none
+    audit_recognition_change: none
+  iteration_3:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - actorialRealizationAudit:missing_selected_actorial_part
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_part
+    speaking_changes: []
+    recovery_changes: []
+    audit_recognition_changes:
+      - typed_composite_part_ownership
+    phrase_level_recognition_changes: []
+    typed_composite_part_ownership:
+      joint_audit_field: compositePartOwnership
+      mode: delegated_complement
+      contract_schema_constant: TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA
+      audit_schema_constant: TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_AUDIT_SCHEMA
+      requirements:
+        performance_initiation:
+          owner: performance
+          slots: [performance_entry]
+          required: true
+        performance_action_absent:
+          owner: performance
+          slots: [performance_entry, performance_response]
+          required: true
+        handoff_relevant_delegated_complement:
+          owner: handoff
+          slots: [handoff]
+          required: true
+        handoff_selected_action:
+          owner: handoff
+          slots: [handoff]
+          required: true
+      excluded_span_reporting:
+        field: excluded_span_ids
+        require_host_source_excluded: true
+        source_owner: host
+      linkage_reporting:
+        field: linkage.shared_content_tokens
+        require_nonempty: true
+      delivery_gates_changed: false
+  iteration_4:
+    status: predeclared
+    bounded_change_owner: transport
+    target_failure_clusters:
+      - jointPerformanceGenerationAudit:slot_has_outer_whitespace
+    speaking_changes: []
+    recovery_changes: []
+    audit_recognition_changes: []
+    transport_changes:
+      - trim_outer_slot_whitespace
+    outer_slot_whitespace_canonicalization:
+      input_scope: decoded_model_owned_slot_strings
+      slot_ids:
+        - uptake
+        - performance.entry
+        - performance.response
+        - handoff
+      operation: trim_outer_whitespace_only
+      preserve_internal_whitespace: true
+      preserve_semantic_content: true
+      preserve_raw_model_output: true
+      preserve_original_candidate_provenance: true
+      reporting:
+        field: transportCanonicalization
+        applied_field: applied
+        canonicalized_slot_ids_field: canonicalized_slot_ids
+        classification: transport_canonicalization
+        separate_from:
+          - mechanical_repair
+          - model_rewrite
+          - deterministic_fallback
+          - semantic_recognition_correction
+          - configuration_realization
+      unchanged_contracts:
+        safety_audits: true
+        semantic_audits: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        strict_delivery_gates: true
+  iteration_5:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - actorialRealizationAudit:missing_selected_performance_tactic
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
+      - jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - typed_public_judgment_falter_recognition
+    phrase_level_recognition_changes: []
+    typed_public_judgment_falter_recognition:
+      construction: declared_public_judgment_under_counterpressure
+      performance_contract:
+        schema: machinespirits.tutor-stub.performance-obligation-contract.v1
+        complete: true
+        selected_tactic: dramatic_counterpressure
+      selected_part_visibility:
+        field: axes.actorial_part.part_visible
+        required: true
+      local_pressure_target_overlap:
+        segment: performance_response
+        anchor_id: pressure_target
+        minimum_content_tokens: 2
+      exact_contrary_source:
+        owner: host
+        surface_match: exact
+        required_in_full_composition: true
+        excluded_from_performance_spans: true
+      terminal_handoff:
+        segment: handoff
+        anchor_id: learner_handoff
+        minimum_content_tokens: 1
+        terminal_question: true
+      judgment_construction:
+        subject_category: declared_public_judgment
+        category_extension: [judgment, judgement]
+        predicate_family: falter
+      recognized_outputs:
+        actorial_performance: dramatic_counterpressure
+        engagement_stance: charismatic
+      charismatic_visibility_reuse:
+        source: successful_typed_public_judgment_falter_event
+        require_selected_stance: charismatic
+        require_selected_tactic: dramatic_counterpressure
+        independent_lexical_shortcut: false
+      reporting:
+        field: publicJudgmentFalterRecognition
+        require_contract_prerequisite_results: true
+        require_anchor_overlap_count: true
+        require_excluded_source_span_ids: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        strict_delivery_gates: true
+  iteration_6:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - world_general_scene_lexicon_number_morphology
+    phrase_level_recognition_changes: []
+    world_general_scene_lexicon_number_morphology:
+      axis: scene_immersion
+      lexicon_source: public_world_surfaces
+      audited_segment: performance
+      token_match:
+        mode: exact_or_regular_terminal_s_number_pair
+        full_token_boundary_required: true
+        casefold_before_match: true
+        bidirectional: true
+        minimum_singular_length: 4
+        require_one_exact_public_world_term: true
+        allowed_inflection:
+          suffix: s
+          operation: add_or_remove_once
+        forbidden_expansions:
+          fuzzy_edit_distance: true
+          substring_match: true
+          derivational_stemming: true
+          synonym_expansion: true
+          terminal_es_rule: true
+          terminal_ies_rule: true
+      counting:
+        count_morphological_family_once: true
+        minimum_scene_terms_changed: false
+      reporting:
+        field: sceneLexiconMorphologyRecognition
+        require_world_term: true
+        require_candidate_term: true
+        require_canonical_singular: true
+        require_rule_id: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        scene_immersion_threshold: true
+        strict_delivery_gates: true
+  iteration_7:
+    status: predeclared
+    bounded_change_owner: audit_recognition
+    target_failure_clusters:
+      - responseCompositionAudit:verbatim_learner_echo
+      - actorialRealizationAudit:missing_selected_performance_tactic
+      - jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance
+      - jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance
+    speaking_changes: []
+    recovery_changes: []
+    transport_changes: []
+    semantic_adjudication_changes: []
+    audit_recognition_changes:
+      - requested_entry_answer_recognition
+      - public_judgment_meets_contrary_evidence_recognition
+    phrase_level_recognition_changes: []
+    requested_entry_answer_recognition:
+      construction: licensed_requested_writable_entry_answer
+      audit: responseCompositionAudit
+      failure: verbatim_learner_echo
+      request_contract:
+        source: frozen_turn_public_contract
+        explicit_writable_entry_request: true
+        permitted_prefix: "Write:"
+        answer_scope: licensed_pre_turn_limit
+      candidate_contract:
+        owner: uptake
+        form: declarative
+        question_forbidden: true
+        meta_commentary_forbidden: true
+        must_answer_requested_entry: true
+      ordinary_echo_behavior:
+        remains_hard_failure: true
+        question_recast_without_contract_fails: true
+        copied_or_paraphrased_learner_language_without_answer_fails: true
+      reporting:
+        field: requestedEntryAnswerRecognition
+        require_request_contract: true
+        require_candidate_form: true
+        require_answer_scope: true
+    public_judgment_meets_contrary_evidence_recognition:
+      construction: declared_public_judgment_meets_contrary_evidence
+      performance_contract:
+        schema: machinespirits.tutor-stub.performance-obligation-contract.v1
+        complete: true
+        selected_tactic: dramatic_counterpressure
+      selected_part_visibility:
+        field: axes.actorial_part.part_visible
+        required: true
+      same_owned_sentence:
+        segment: performance_response
+        required: true
+        judgment_nouns: [claim, judgment, judgement]
+        opposition_predicates: [fails against]
+      local_pressure_target_overlap:
+        segment: performance_response
+        anchor_id: pressure_target
+        minimum_content_tokens: 2
+      contrary_anchor_overlap:
+        segment: performance_response
+        anchor_id: contrary_evidence
+        minimum_content_tokens: 2
+      exact_contrary_source:
+        owner: host
+        surface_match: exact
+        required_in_full_composition: true
+        excluded_from_performance_spans: true
+      terminal_handoff:
+        segment: handoff
+        anchor_id: learner_handoff
+        minimum_content_tokens: 1
+        terminal_question: true
+      recognized_outputs:
+        actorial_performance: dramatic_counterpressure
+        engagement_stance: charismatic
+      charismatic_visibility_reuse:
+        source: successful_public_judgment_meets_contrary_evidence_event
+        require_selected_stance: charismatic
+        require_selected_tactic: dramatic_counterpressure
+        independent_lexical_shortcut: false
+      reporting:
+        field: publicJudgmentMeetsContraryEvidenceRecognition
+        require_contract_prerequisite_results: true
+        require_same_sentence_result: true
+        require_pressure_overlap_count: true
+        require_contrary_overlap_count: true
+        require_excluded_source_span_ids: true
+      unchanged_contracts:
+        generation: true
+        recovery: true
+        transport: true
+        safety_audits: true
+        semantic_adjudication: true
+        response_configuration_audit: true
+        source_ownership_audit: true
+        configuration_realization: true
+        strict_delivery_gates: true
+
+stopping:
+  stop_cell_when_gate_mathematically_impossible: true
+  stop_campaign_when_required_cell_fails: true
+  maximum_consecutive_iterations_without_improvement: 2
+
+planned_cross_world_confirmation:
+  required_after_primary_pass: true
+  screen_id: first-draft-working-screens-v7
+  status: not_predeclared
+  seed_status: not_reserved
+  execution: complete_all_cells_with_maximum_three_live_jobs
+
+claim_boundary: >-
+  Passing means one fresh v2 tutor draw realizes the selected joint performance
+  and every other required response axis on all four frozen prefixes. Every due
+  host SOURCE must occur exactly once, including turns with multiple sources,
+  while all whole-response safety, uptake, delivery, repair, and fallback gates
+  remain clean. Iteration 7 may recognize only a licensed declarative answer to
+  an explicit writable-entry request and a contract-complete same-sentence
+  public judgment meeting contrary evidence. It may not weaken ordinary echo
+  rejection or change generation, recovery, transport, semantic adjudication,
+  safety, source ownership, configuration realization, or any strict gate. It
+  is reusable development evidence, not held-out acceptance.

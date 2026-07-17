@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
+  buildDialogueReport,
+  buildFieldReportContext,
   FIELD_PLANNER_SCHEMA,
+  FIELD_PLANNER_PROJECTION_SCHEMA,
+  FIELD_REPORT_CONTEXT_SCHEMA,
   loadWorld,
   runDrama,
   selectFieldPlannerMove,
@@ -60,12 +64,137 @@ test('field planner maps high-risk learner attractor to scope test and contrast 
   });
 
   assert.equal(plan.schema, FIELD_PLANNER_SCHEMA);
+  assert.equal(plan.projection.schema, FIELD_PLANNER_PROJECTION_SCHEMA);
   assert.equal(plan.selectedMoveFamily, 'ask_scope_test');
   assert.equal(plan.targetPremise, 'p1');
   assert.equal(plan.didacticMode.recommendedMode, 'contrast_case');
   assert.equal(plan.conductDecision.selectedMoveFamily, 'ask_scope_test');
   assert.equal(plan.conductDecision.nonLeakAudit.ok, true);
+  assert.ok(plan.candidateMoves.length >= 8);
+  assert.equal(plan.candidateMoves[0].moveFamily, 'ask_scope_test');
+  assert.ok(plan.expectedMovement.joint.trajectoryRisk < 0);
   assert.match(plan.promptLines.join('\n'), /conduct family: ask_scope_test/u);
+  assert.match(plan.promptLines.join('\n'), /candidate projection:/u);
+});
+
+test('field planner cannot let consolidation outrank a due scheduled release', () => {
+  const plan = selectFieldPlannerMove({
+    world: SMOKE_WORLD,
+    turn: 8,
+    interactionField: {
+      final: {
+        turn: 8,
+        learner: {
+          dimensions: {
+            mastery: 0.42,
+            evidenceGrounding: 0.46,
+            productiveConfusion: 0.35,
+          },
+          attractorCounts: {},
+          meanSpeed: 0.08,
+        },
+        tutor: { dimensions: { diagnosticConfidence: 0.5, instructionalMomentum: 0.3 } },
+        discourse: { dimensions: { explanatoryStructure: 0.55, commitmentStrength: 0.45 } },
+        joint: {
+          dimensions: {
+            couplingStrength: 0.5,
+            pedagogicalAlignment: 0.55,
+            productiveTension: 0.5,
+            interactionMomentum: 0.3,
+            trajectoryRisk: 0.2,
+          },
+          attractor: 'productive_tension',
+        },
+        script: {
+          stage: 'stress-test',
+          preferredMoves: ['consolidate_subproof'],
+          antiPatterns: ['release_next_evidence'],
+        },
+      },
+    },
+    learnerField: { turns: [] },
+    nextScheduledRelease: { turn: 8, premise: 'p1', via: 'tutor' },
+  });
+
+  const scores = Object.fromEntries(plan.candidateMoves.map((candidate) => [candidate.moveFamily, candidate.score]));
+  assert.ok(scores.consolidate_subproof > scores.release_next_evidence);
+  assert.equal(plan.projection.context.selectionOverride, 'due_release_dominates_field_score');
+  assert.equal(plan.selectedMoveFamily, 'release_next_evidence');
+  assert.equal(plan.targetPremise, 'p1');
+  assert.equal(plan.conductDecision.selectedMoveFamily, 'release_next_evidence');
+});
+
+test('field report context carries field summary without any move recommendation', () => {
+  const report = buildFieldReportContext({
+    turn: 3,
+    interactionField: {
+      final: {
+        turn: 3,
+        learner: {
+          dimensions: { mastery: 0.1, evidenceGrounding: 0.1, productiveConfusion: 0.2 },
+          attractorCounts: { misconception_attractor: 1 },
+          meanSpeed: 0.1,
+        },
+        tutor: { dimensions: { pedagogicalUncertainty: 0.8 } },
+        discourse: { dimensions: { openQuestions: 0.8 } },
+        joint: {
+          dimensions: {
+            couplingStrength: 0.2,
+            pedagogicalAlignment: 0.3,
+            productiveTension: 0.25,
+            interactionMomentum: 0.2,
+            trajectoryRisk: 0.75,
+          },
+          attractor: 'asymmetric_drift',
+        },
+        script: { stage: 'failure' },
+      },
+    },
+    learnerField: { turns: [] },
+  });
+
+  assert.equal(report.schema, FIELD_REPORT_CONTEXT_SCHEMA);
+  assert.equal(report.active, true);
+  assert.equal(report.conductAuthority, false);
+  assert.equal(report.nonLeakAudit.ok, true);
+  const text = report.promptLines.join('\n');
+  assert.match(text, /joint field:/u);
+  assert.match(text, /script stage: failure/u);
+  // The placebo block must describe, never recommend: no conduct family, no
+  // candidate projection, no release language.
+  assert.doesNotMatch(text, /conduct family/u);
+  assert.doesNotMatch(text, /candidate/u);
+  assert.doesNotMatch(text, /release/u);
+});
+
+test('runDrama records field report context rows without planner authority', async () => {
+  const tutorViews = [];
+  const result = await runDrama({
+    world: SMOKE_WORLD,
+    roles: {
+      director: async () => ({ direction: '[The inquiry opens.]' }),
+      tutor: async (view) => {
+        tutorViews.push(JSON.parse(JSON.stringify(view)));
+        return { dialogue: 'Say what the current public object licenses.' };
+      },
+      learner: async () => ({ dialogue: 'I am listening.' }),
+    },
+    options: {
+      fieldReportContext: true,
+      maxTurns: 1,
+      stopOnStall: false,
+    },
+  });
+
+  assert.equal(tutorViews.length, 1);
+  assert.equal(tutorViews[0].fieldReportContext.schema, FIELD_REPORT_CONTEXT_SCHEMA);
+  assert.equal(tutorViews[0].fieldReportContext.active, true);
+  // Report-only arm: no planner state on the view, no planner rows recorded.
+  assert.equal(tutorViews[0].fieldPlanner, undefined);
+  assert.equal(result.fieldPlanner, undefined);
+  assert.equal(result.fieldReportContext.length, 1);
+  assert.equal(result.fieldReportContext[0].nonLeakAuditOk, true);
+  assert.ok(result.fieldReportContext[0].metrics);
 });
 
 test('runDrama computes and records field planner rows before tutor turns', async () => {
@@ -94,7 +223,17 @@ test('runDrama computes and records field planner rows before tutor turns', asyn
   assert.equal(tutorViews[0].fieldPlanner.schema, FIELD_PLANNER_SCHEMA);
   assert.equal(result.fieldPlanner.length, 1);
   assert.equal(result.fieldPlanner[0].schema, FIELD_PLANNER_SCHEMA);
+  assert.ok(result.fieldPlanner[0].candidateMoves.length >= 8);
+  assert.ok(result.fieldPlanner[0].expectedMovement);
+  assert.ok(result.fieldPlanner[0].projection.selected.score !== null);
   assert.equal(result.fieldPlanner[0].outcome.efficacy, 'no_immediate_movement');
+  assert.equal(result.fieldPlanner[0].outcome.projectionAlignment, 'not_observed_yet');
   const tutorLine = result.transcript.find((line) => line.role === 'tutor');
   assert.equal(tutorLine.meta.fieldPlanner.schema, FIELD_PLANNER_SCHEMA);
+  assert.ok(tutorLine.meta.fieldPlanner.selectedScore !== null);
+
+  const report = buildDialogueReport(result, SMOKE_WORLD, { label: 'field-planner-report-smoke' });
+  assert.equal(report.fieldPlanner.count, 1);
+  assert.equal(report.summary.fieldPlannerCount, 1);
+  assert.equal(report.fieldPlanner.rows[0].candidateCount, result.fieldPlanner[0].candidateMoves.length);
 });

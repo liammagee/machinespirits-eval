@@ -108,6 +108,26 @@ test('validateWorld requires the public question pattern', () => {
   assert.throws(() => validateWorld(raw, 'test'), /question_pattern/);
 });
 
+test('validateWorld normalizes optional public opening authorship', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.opening_frame = {
+    situation: 'The succession roll is open on the household table.',
+    authored_text: `${raw.question} Name the first public mark you would inspect.`,
+  };
+  const withOpening = validateWorld(raw, 'opening-frame');
+
+  assert.deepEqual(withOpening.openingFrame, {
+    situation: 'The succession roll is open on the household table.',
+    authoredText: `${raw.question} Name the first public mark you would inspect.`,
+  });
+
+  raw.opening_frame.authored_text = '   ';
+  assert.throws(() => validateWorld(raw, 'bad-opening-frame'), /opening_frame\.authored_text/u);
+
+  raw.opening_frame.authored_text = { speech: raw.question };
+  assert.throws(() => validateWorld(raw, 'non-string-opening-frame'), /opening_frame\.authored_text/u);
+});
+
 test('plotLint passes the smoke world and reports first entailment turn', () => {
   const lint = plotLint(world);
   assert.deepEqual(lint.errors, []);

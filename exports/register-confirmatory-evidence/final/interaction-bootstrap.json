@@ -1,0 +1,577 @@
+{
+  "schema": "machinespirits.tutor-stub.register-confirmatory-bootstrap.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "settings": {
+    "primaryHorizon": 16,
+    "bootstrapDraws": 5000,
+    "bootstrapSeed": 20260713,
+    "controlProfile": "diligent",
+    "targetAveragePairwiseCosine": 0.85,
+    "targetMaxSimilarityToControl": 0.9
+  },
+  "verdict": {
+    "summary": "no family confirmation; no two-family claim; field selector closed on this evidence",
+    "familyConfirmations": {
+      "terra": false,
+      "sonnet": false
+    },
+    "twoFamilyConfirmation": false
+  },
+  "families": {
+    "terra": {
+      "bootstrap": {
+        "rows": 60,
+        "cellSizes": {
+          "diligent/bland": 5,
+          "diligent/field": 5,
+          "diligent/negative": 5,
+          "affective_resistant/bland": 5,
+          "affective_resistant/field": 5,
+          "affective_resistant/negative": 5,
+          "false_memory/bland": 5,
+          "false_memory/field": 5,
+          "false_memory/negative": 5,
+          "proof_skipper/bland": 5,
+          "proof_skipper/field": 5,
+          "proof_skipper/negative": 5
+        },
+        "cellMeans": {
+          "diligent": {
+            "bland": 0.5,
+            "field": 0.467,
+            "negative": 0.667
+          },
+          "affective_resistant": {
+            "bland": 0.533,
+            "field": 0.567,
+            "negative": 0.366
+          },
+          "false_memory": {
+            "bland": 0.4,
+            "field": 0.433,
+            "negative": 0.467
+          },
+          "proof_skipper": {
+            "bland": 0.433,
+            "field": 0.366,
+            "negative": 0.533
+          }
+        },
+        "contrastsVsBland": {
+          "diligent": {
+            "field": {
+              "estimate": -0.033,
+              "lower": -0.2,
+              "upper": 0.134,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.167,
+              "lower": 0.067,
+              "upper": 0.267,
+              "supported": true
+            }
+          },
+          "affective_resistant": {
+            "field": {
+              "estimate": 0.033,
+              "lower": -0.1,
+              "upper": 0.167,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.167,
+              "lower": -0.267,
+              "upper": -0.033,
+              "supported": true
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": 0.034,
+              "lower": -0.133,
+              "upper": 0.2,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.067,
+              "lower": -0.067,
+              "upper": 0.2,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": -0.067,
+              "lower": -0.167,
+              "upper": 0.033,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.1,
+              "lower": -0.033,
+              "upper": 0.234,
+              "supported": false
+            }
+          }
+        },
+        "interactionsVsDiligent": {
+          "affective_resistant": {
+            "field": {
+              "estimate": 0.067,
+              "lower": -0.134,
+              "upper": 0.3,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.334,
+              "lower": -0.468,
+              "upper": -0.167,
+              "supported": true
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": 0.067,
+              "lower": -0.167,
+              "upper": 0.3,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.1,
+              "lower": -0.267,
+              "upper": 0.067,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": -0.034,
+              "lower": -0.234,
+              "upper": 0.167,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.067,
+              "lower": -0.234,
+              "upper": 0.1,
+              "supported": false
+            }
+          }
+        },
+        "supportedInteractions": [
+          {
+            "profile": "affective_resistant",
+            "policy": "negative",
+            "estimate": -0.334,
+            "lower": -0.468,
+            "upper": -0.167,
+            "supported": true
+          }
+        ],
+        "crossingProbability": 1,
+        "leaderProbabilities": {
+          "diligent": {
+            "bland": 0,
+            "field": 0,
+            "negative": 0.999,
+            "tie": 0.001
+          },
+          "affective_resistant": {
+            "bland": 0.268,
+            "field": 0.594,
+            "negative": 0,
+            "tie": 0.138
+          },
+          "false_memory": {
+            "bland": 0.045,
+            "field": 0.376,
+            "negative": 0.49,
+            "tie": 0.088
+          },
+          "proof_skipper": {
+            "bland": 0.034,
+            "field": 0.001,
+            "negative": 0.902,
+            "tie": 0.063
+          }
+        }
+      },
+      "verdict": {
+        "status": "instrument_invalid",
+        "confirmation": false,
+        "frozenGatePassed": false,
+        "supportedInteraction": true,
+        "predeclaredDirectionObserved": false,
+        "reasons": [
+          "The frozen in-run profile-discrimination gate failed.",
+          "Bland did not lead the diligent control profile.",
+          "The only supported interaction is the off-direction negative x affective-resistant sign flip."
+        ]
+      }
+    },
+    "sonnet": {
+      "bootstrap": {
+        "rows": 60,
+        "cellSizes": {
+          "diligent/bland": 5,
+          "diligent/field": 5,
+          "diligent/negative": 5,
+          "affective_resistant/bland": 5,
+          "affective_resistant/field": 5,
+          "affective_resistant/negative": 5,
+          "false_memory/bland": 5,
+          "false_memory/field": 5,
+          "false_memory/negative": 5,
+          "proof_skipper/bland": 5,
+          "proof_skipper/field": 5,
+          "proof_skipper/negative": 5
+        },
+        "cellMeans": {
+          "diligent": {
+            "bland": 0.367,
+            "field": 0.467,
+            "negative": 0.167
+          },
+          "affective_resistant": {
+            "bland": 0.233,
+            "field": 0.233,
+            "negative": 0.1
+          },
+          "false_memory": {
+            "bland": 0.133,
+            "field": 0.2,
+            "negative": 0.233
+          },
+          "proof_skipper": {
+            "bland": 0.2,
+            "field": 0.2,
+            "negative": 0.167
+          }
+        },
+        "contrastsVsBland": {
+          "diligent": {
+            "field": {
+              "estimate": 0.1,
+              "lower": -0.167,
+              "upper": 0.367,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.2,
+              "lower": -0.467,
+              "upper": 0.1,
+              "supported": false
+            }
+          },
+          "affective_resistant": {
+            "field": {
+              "estimate": 0,
+              "lower": -0.2,
+              "upper": 0.2,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.133,
+              "lower": -0.333,
+              "upper": 0.066,
+              "supported": false
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": 0.067,
+              "lower": -0.133,
+              "upper": 0.267,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.1,
+              "lower": -0.067,
+              "upper": 0.267,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": 0,
+              "lower": -0.233,
+              "upper": 0.233,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.033,
+              "lower": -0.233,
+              "upper": 0.167,
+              "supported": false
+            }
+          }
+        },
+        "interactionsVsDiligent": {
+          "affective_resistant": {
+            "field": {
+              "estimate": -0.1,
+              "lower": -0.433,
+              "upper": 0.233,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.067,
+              "lower": -0.267,
+              "upper": 0.4,
+              "supported": false
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": -0.033,
+              "lower": -0.367,
+              "upper": 0.3,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.3,
+              "lower": -0.033,
+              "upper": 0.633,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": -0.1,
+              "lower": -0.433,
+              "upper": 0.267,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.167,
+              "lower": -0.2,
+              "upper": 0.5,
+              "supported": false
+            }
+          }
+        },
+        "supportedInteractions": [],
+        "crossingProbability": 0.946,
+        "leaderProbabilities": {
+          "diligent": {
+            "bland": 0.23,
+            "field": 0.743,
+            "negative": 0.001,
+            "tie": 0.027
+          },
+          "affective_resistant": {
+            "bland": 0.47,
+            "field": 0.447,
+            "negative": 0.018,
+            "tie": 0.064
+          },
+          "false_memory": {
+            "bland": 0.054,
+            "field": 0.334,
+            "negative": 0.555,
+            "tie": 0.057
+          },
+          "proof_skipper": {
+            "bland": 0.381,
+            "field": 0.429,
+            "negative": 0.17,
+            "tie": 0.02
+          }
+        }
+      },
+      "verdict": {
+        "status": "null",
+        "confirmation": false,
+        "frozenGatePassed": true,
+        "supportedInteraction": false,
+        "predeclaredDirectionObserved": false,
+        "reasons": [
+          "No bootstrap interaction interval excludes zero.",
+          "Bland did not lead the diligent control profile."
+        ]
+      }
+    }
+  },
+  "sensitivity": {
+    "sonnetExcludePostT16Topups": {
+      "excludedKeys": [
+        "negative-r4",
+        "bland-r5",
+        "field-r5",
+        "negative-r5"
+      ],
+      "rows": 56,
+      "bootstrap": {
+        "rows": 56,
+        "cellSizes": {
+          "diligent/bland": 5,
+          "diligent/field": 5,
+          "diligent/negative": 5,
+          "affective_resistant/bland": 4,
+          "affective_resistant/field": 4,
+          "affective_resistant/negative": 3,
+          "false_memory/bland": 5,
+          "false_memory/field": 5,
+          "false_memory/negative": 5,
+          "proof_skipper/bland": 5,
+          "proof_skipper/field": 5,
+          "proof_skipper/negative": 5
+        },
+        "cellMeans": {
+          "diligent": {
+            "bland": 0.367,
+            "field": 0.467,
+            "negative": 0.167
+          },
+          "affective_resistant": {
+            "bland": 0.25,
+            "field": 0.292,
+            "negative": 0.056
+          },
+          "false_memory": {
+            "bland": 0.133,
+            "field": 0.2,
+            "negative": 0.233
+          },
+          "proof_skipper": {
+            "bland": 0.2,
+            "field": 0.2,
+            "negative": 0.167
+          }
+        },
+        "contrastsVsBland": {
+          "diligent": {
+            "field": {
+              "estimate": 0.1,
+              "lower": -0.167,
+              "upper": 0.367,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.2,
+              "lower": -0.467,
+              "upper": 0.067,
+              "supported": false
+            }
+          },
+          "affective_resistant": {
+            "field": {
+              "estimate": 0.042,
+              "lower": -0.166,
+              "upper": 0.25,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.194,
+              "lower": -0.403,
+              "upper": 0.001,
+              "supported": false
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": 0.067,
+              "lower": -0.133,
+              "upper": 0.267,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.1,
+              "lower": -0.1,
+              "upper": 0.3,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": 0,
+              "lower": -0.233,
+              "upper": 0.233,
+              "supported": false
+            },
+            "negative": {
+              "estimate": -0.033,
+              "lower": -0.234,
+              "upper": 0.167,
+              "supported": false
+            }
+          }
+        },
+        "interactionsVsDiligent": {
+          "affective_resistant": {
+            "field": {
+              "estimate": -0.058,
+              "lower": -0.408,
+              "upper": 0.3,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.006,
+              "lower": -0.35,
+              "upper": 0.35,
+              "supported": false
+            }
+          },
+          "false_memory": {
+            "field": {
+              "estimate": -0.033,
+              "lower": -0.367,
+              "upper": 0.3,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.3,
+              "lower": -0.033,
+              "upper": 0.633,
+              "supported": false
+            }
+          },
+          "proof_skipper": {
+            "field": {
+              "estimate": -0.1,
+              "lower": -0.466,
+              "upper": 0.267,
+              "supported": false
+            },
+            "negative": {
+              "estimate": 0.167,
+              "lower": -0.2,
+              "upper": 0.5,
+              "supported": false
+            }
+          }
+        },
+        "supportedInteractions": [],
+        "crossingProbability": 0.935,
+        "leaderProbabilities": {
+          "diligent": {
+            "bland": 0.24,
+            "field": 0.731,
+            "negative": 0.002,
+            "tie": 0.027
+          },
+          "affective_resistant": {
+            "bland": 0.314,
+            "field": 0.623,
+            "negative": 0,
+            "tie": 0.063
+          },
+          "false_memory": {
+            "bland": 0.05,
+            "field": 0.32,
+            "negative": 0.57,
+            "tie": 0.06
+          },
+          "proof_skipper": {
+            "bland": 0.377,
+            "field": 0.428,
+            "negative": 0.167,
+            "tie": 0.028
+          }
+        }
+      },
+      "verdict": "null_invariant"
+    }
+  }
+}

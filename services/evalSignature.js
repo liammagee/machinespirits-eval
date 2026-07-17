@@ -8,6 +8,15 @@
  * This enables accumulative data collection: multiple `--runs 1` executions
  * can be aggregated into a virtual combined dataset.
  *
+ * Known instrument boundary (2026-07-17): claude-CLI subprocess calls became
+ * context-isolated (--safe-mode etc., CLAUDE_CLI_ISOLATION_ARGS in
+ * cliProviderBridge.js). Before that, every claude-code call — generation AND
+ * judging — carried ~16k tokens of ambient repo context (CLAUDE.md, skills,
+ * hooks, MCP). The signature does not encode this, so cross-run aggregation
+ * that pools claude-code rows across the boundary mixes instruments; check
+ * run metadata `claudeCliContextIsolation` (present = isolated) before
+ * pooling. Within-run comparisons are unaffected.
+ *
  * Usage:
  *   import { getAggregatedGroups, getAggregatedStats } from '../services/evalSignature.js';
  *   const groups = getAggregatedGroups(db, '2.0');

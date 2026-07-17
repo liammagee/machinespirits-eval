@@ -18,9 +18,11 @@ const FIELD_RANKS = {
     none: 0,
     repeats_setup: 0.1,
     cites_public_evidence: 0.4,
+    omits_warrant: 0.15,
     revises_from_evidence: 0.5,
     links_evidence_to_rule: 0.7,
     overleaps_evidence: -0.2,
+    distorts_public_evidence: -0.35,
   },
   agency: {
     passive: 0,
@@ -220,6 +222,7 @@ function dagSnapshot(turn) {
   const model = turn.tutorLearnerDagModel || {};
   const assessment = model.assessment || {};
   const metrics = model.metrics || {};
+  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null;
   return {
     status: assessment.status || null,
     bestPathCoverage: asNumber(assessment.bestPathCoverage),
@@ -234,6 +237,7 @@ function dagSnapshot(turn) {
     assertedSecret: Boolean(assessment.assertedSecret),
     assertedMirror: Boolean(assessment.assertedMirror),
     bottleneck: assessment.bottleneck || null,
+    learnerAdvance,
   };
 }
 
@@ -294,6 +298,7 @@ function analyzeTrace(file, args) {
     model: turn.model || null,
     field: scoreTurnField(turn),
     dag: dagSnapshot(turn),
+    learnerAdvance: turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null,
     classification: {
       turn: turn.classification?.turn || null,
       overall: turn.classification?.overall || null,
@@ -387,6 +392,12 @@ function analyzeTrace(file, args) {
       finalLeakFailures: enrichedTurns.filter((turn) => turn.leakAuditOk === false).length,
       repairedTurns: enrichedTurns.filter((turn) => turn.tutorResponseRepaired).length,
       deterministicFallbacks: enrichedTurns.filter((turn) => turn.tutorDeterministicFallback).length,
+      acceleratedTurns: enrichedTurns.filter((turn) => turn.learnerAdvance?.accelerated).length,
+      multiPremiseTurns: enrichedTurns.filter((turn) => turn.learnerAdvance?.multiPremise).length,
+      maxSupportedMoves: Math.max(
+        0,
+        ...enrichedTurns.map((turn) => Number(turn.learnerAdvance?.supportedMoveCount || 0)),
+      ),
       failedAuditAttempts,
     },
   };

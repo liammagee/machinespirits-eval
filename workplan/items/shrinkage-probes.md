@@ -52,4 +52,3 @@ recommendation: smokes license mechanism-availability reads only
 outcome claims begin at pre-registered tier with shrunken-estimate
 sizing. Deviations disclosed on the prereg (rerun2 skip, A1 codex,
 quota interruptions — all operator-directed or label-exact-resumed).
-

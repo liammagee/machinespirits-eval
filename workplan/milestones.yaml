@@ -39,3 +39,8 @@ milestones:
     target: 2026-08-15
     status: planned
     description: Developer-ID notarization, electron-updater, and Windows/Linux targets.
+  - id: adaptive-tutor-evidence-v1
+    title: Adaptive tutor evidence v1
+    target: 2026-09-30
+    status: active
+    description: Provenance-sealed adaptive control, validated learner state, typed actions, multi-world replication, and the guarded route to human evidence.

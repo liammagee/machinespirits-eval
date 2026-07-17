@@ -165,6 +165,7 @@ premises:
       Liane, who kept them burning.
   # --- presence (path B: the ledger — scheduled late as corroboration) ---
   - id: p_ledger
+    evidence_role: corroboration
     fact: [signedLedger, liane, floodWinter]
     surface: >-
       The copy-room ledger's winter pages carry the same initials line after
@@ -293,3 +294,14 @@ slope:
   aporia_window: 8 # anti-aporia: D(t) must strictly decrease within any 8-turn window
 
 turn_cap: 40
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: nocturne
+  temporal_frame: period
+  scene_ecology: "conservatory archive inquiry"
+  narrative_diction: "late-romantic archival formal"
+  ledger_term: "archive folio"
+  summary: An unsigned flood-damaged nocturne is attributed through paper, presence, source, and handwriting evidence.

@@ -1,0 +1,12 @@
+{
+  "schema": "machinespirits.tutor-stub.step4-zero-model-gate-manifest.v1",
+  "generatedAt": "2026-07-14T01:59:24.168Z",
+  "status": "pass",
+  "modelCalls": 0,
+  "jobCount": 80,
+  "planSha256": "93bd2933d6124a2ee285e9747824cee5e2eba21c0b59ccf6dc8ac8d602156df0",
+  "artifact": "exports/tutor-stub-step4-dry-run/zero-model-dry-run.json",
+  "artifactSha256": "5a12bb26b8ab10a2c1c9e8afc5e8845c4db8681444ce2b5ff9fc81c91d8a3716",
+  "command": "npm run tutor:stub:step4 -- --dry-run",
+  "paidLaunchStatus": "locked_pending_explicit_user_approval"
+}

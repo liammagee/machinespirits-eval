@@ -83,6 +83,38 @@ function eventSummary(result = {}) {
   }));
 }
 
+function fieldPlannerSummary(rows = []) {
+  const normalized = (Array.isArray(rows) ? rows : []).map((row) => ({
+    turn: row.turn,
+    selectedMoveFamily: row.selectedMoveFamily || null,
+    reasonCode: row.reasonCode || null,
+    targetPremise: row.targetPremise || null,
+    scriptStage: row.scriptStage || null,
+    jointAttractor: row.jointAttractor || null,
+    selectedScore: row.projection?.selected?.score ?? null,
+    candidateCount: (row.candidateMoves || []).length,
+    topCandidates: (row.candidateMoves || []).slice(0, 3).map((candidate) => ({
+      moveFamily: candidate.moveFamily,
+      score: candidate.score,
+      expectedMovement: candidate.expectedMovement,
+    })),
+    expectedMovement: row.expectedMovement || row.projection?.selected?.expectedMovement || null,
+    observedMovement: row.outcome?.observedMovement || null,
+    projectionAlignment: row.outcome?.projectionAlignment || null,
+    efficacy: row.outcome?.efficacy || null,
+    nonLeakAuditOk: row.conductDecision?.nonLeakAuditOk ?? null,
+    enforcementRequested: row.enforcementRequested === true,
+  }));
+  return {
+    rows: normalized,
+    count: normalized.length,
+    movementObserved: normalized.filter((row) => ['movement_observed', 'closure_realized'].includes(row.efficacy || ''))
+      .length,
+    notObservedYet: normalized.filter((row) => row.efficacy === 'no_immediate_movement').length,
+    nonLeakAuditFailures: normalized.filter((row) => row.nonLeakAuditOk === false).length,
+  };
+}
+
 function fieldTurnRows(field = {}) {
   return (field.turns || []).map((turn) => ({
     turn: turn.turn,
@@ -101,6 +133,7 @@ export function buildDialogueReport(result = {}, world, { label = null, diagnosi
   const finalField = dynamicLearnerField?.final || null;
   const finalSummary = finalField?.summary || null;
   const interactionFinal = pedagogicalInteractionField?.final || null;
+  const fieldPlanner = fieldPlannerSummary(result.fieldPlanner || []);
   return {
     schema: DIALOGUE_REPORT_SCHEMA,
     label,
@@ -120,6 +153,7 @@ export function buildDialogueReport(result = {}, world, { label = null, diagnosi
     learnerDagAssessment: result.learnerDag?.assessment || null,
     dynamicLearnerField,
     pedagogicalInteractionField,
+    fieldPlanner,
     fieldTurnRows: fieldTurnRows(dynamicLearnerField),
     summary: {
       finalTurn: finalField?.turn ?? null,
@@ -133,6 +167,9 @@ export function buildDialogueReport(result = {}, world, { label = null, diagnosi
       interactionFinalDimensions: interactionFinal?.joint?.dimensions || {},
       interactionFinalAttractor: interactionFinal?.joint?.attractor || null,
       finalScriptStage: pedagogicalInteractionField?.trajectory?.finalScriptStage || null,
+      fieldPlannerCount: fieldPlanner.count,
+      fieldPlannerMovementObserved: fieldPlanner.movementObserved,
+      fieldPlannerNonLeakAuditFailures: fieldPlanner.nonLeakAuditFailures,
     },
   };
 }
@@ -385,6 +422,11 @@ export function renderDialogueReportMarkdown(report, { visualizationPath = 'dyna
   lines.push('');
   lines.push(`- Final script stage: \`${escapeMarkdown(summary.finalScriptStage || 'n/a')}\``);
   lines.push(`- Final joint attractor: \`${escapeMarkdown(summary.interactionFinalAttractor || 'n/a')}\``);
+  if (summary.fieldPlannerCount) {
+    lines.push(
+      `- Field planner: ${summary.fieldPlannerCount} turn(s), ${summary.fieldPlannerMovementObserved} observed movement, ${summary.fieldPlannerNonLeakAuditFailures} non-leak audit failure(s)`,
+    );
+  }
   lines.push('');
   lines.push('| joint dimension | final |');
   lines.push('| --- | ---: |');
@@ -409,6 +451,29 @@ export function renderDialogueReportMarkdown(report, { visualizationPath = 'dyna
     lines.push(
       `| ${row.turn ?? 'n/a'} | ${formatDimension(rowDims.mastery)} | ${formatDimension(rowDims.evidenceGrounding)} | ${formatDimension(rowDims.uncertainty)} | ${formatDimension(row.summary?.meanSpeed)} | ${escapeMarkdown(attractorText(row.attractorCounts))} | ${escapeMarkdown(actionText(row.recommendedActions))} |`,
     );
+  }
+  if (report.fieldPlanner?.rows?.length) {
+    lines.push('');
+    lines.push('## Field Planner Trace');
+    lines.push('');
+    lines.push('| turn | selected | score | alternatives | expected | observed | efficacy |');
+    lines.push('| ---: | --- | ---: | --- | --- | --- | --- |');
+    for (const row of report.fieldPlanner.rows) {
+      const alternatives = (row.topCandidates || [])
+        .map((candidate) => `${candidate.moveFamily} ${formatDimension(candidate.score)}`)
+        .join(', ');
+      const expected = row.expectedMovement?.joint
+        ? Object.entries(row.expectedMovement.joint)
+            .map(([key, value]) => `${key} ${formatDimension(value)}`)
+            .join(', ')
+        : 'n/a';
+      const observed = row.observedMovement
+        ? `D ${formatDimension(row.observedMovement.proofDistance)}, grounded ${row.observedMovement.groundedPremises ?? 0}, adopted ${row.observedMovement.adoptedFacts ?? 0}`
+        : 'n/a';
+      lines.push(
+        `| ${row.turn ?? 'n/a'} | ${escapeMarkdown(row.selectedMoveFamily || 'n/a')} | ${formatDimension(row.selectedScore)} | ${escapeMarkdown(alternatives || 'n/a')} | ${escapeMarkdown(expected)} | ${escapeMarkdown(observed)} | ${escapeMarkdown(row.efficacy || 'n/a')} |`,
+      );
+    }
   }
   const dag = report.learnerDagAssessment;
   if (dag) {

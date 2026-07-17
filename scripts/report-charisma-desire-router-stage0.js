@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
+import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -414,18 +415,32 @@ function main() {
   const cases = buildCases(scenarios);
   const rows = [];
   for (const testCase of cases) {
+    const expectedResolution = resolveEngagementRegister(testCase.expectedRegister, {
+      fallback: testCase.expectedRegister,
+    });
+    const expectedRegister = expectedResolution?.register || testCase.expectedRegister;
+    const legacyExpectedRegister =
+      expectedResolution?.legacy_selected_register ||
+      (expectedRegister !== testCase.expectedRegister ? testCase.expectedRegister : '');
     const routed = routeEngagementMode({
       learnerMessage: testCase.message,
       recentHistory: testCase.recentHistory || '',
       curriculumContext: testCase.curriculumContext || '',
       modeHistory: testCase.modeHistory || [],
     });
-    const selectedRegister = routed.selected_register || routed.selected_mode;
-    const passed = selectedRegister === testCase.expectedRegister;
+    const selectedResolution = resolveEngagementRegister(routed.selected_register || routed.selected_mode, {
+      fallback: routed.selected_register || routed.selected_mode,
+    });
+    const selectedRegister = selectedResolution?.register || routed.selected_register || routed.selected_mode;
+    const legacySelectedRegister =
+      routed.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      (selectedRegister !== (routed.selected_register || routed.selected_mode)
+        ? routed.selected_register || routed.selected_mode
+        : '');
+    const passed = selectedRegister === expectedRegister;
     if (!passed) {
-      errors.push(
-        `${testCase.scenarioId} ${testCase.turn}: expected ${testCase.expectedRegister}, got ${selectedRegister}`,
-      );
+      errors.push(`${testCase.scenarioId} ${testCase.turn}: expected ${expectedRegister}, got ${selectedRegister}`);
     }
     if (testCase.expectedResistanceSignal && routed.resistance_signal !== testCase.expectedResistanceSignal) {
       errors.push(
@@ -435,8 +450,10 @@ function main() {
     rows.push([
       testCase.scenarioId.replace('charisma_desire_', ''),
       testCase.turn,
-      testCase.expectedRegister,
+      expectedRegister,
       selectedRegister,
+      legacyExpectedRegister,
+      legacySelectedRegister,
       testCase.expectedResistanceSignal || '',
       routed.resistance_signal || '',
       passed ? 'yes' : 'no',
@@ -499,7 +516,7 @@ Status: ${status}
 
 ## Routing Cases
 
-${markdownTable(['Scenario', 'Turn', 'Expected register', 'Selected register', 'Expected signal', 'Selected signal', 'Pass', 'Evidence'], rows)}
+${markdownTable(['Scenario', 'Turn', 'Expected register', 'Selected register', 'Legacy expected', 'Legacy selected', 'Expected signal', 'Selected signal', 'Pass', 'Evidence'], rows)}
 
 ## Planned First Paid Smoke
 

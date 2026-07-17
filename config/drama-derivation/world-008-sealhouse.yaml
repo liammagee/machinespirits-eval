@@ -14,7 +14,7 @@
 #
 #   beta first (the wax):
 #     p_wax + p_lamp --R1--> sealLiftedWith(priorySeal, cloisterLamp)
-#     sealLiftedWith + p_trimmer --R2--> liftedSeal(priorySeal, neris)
+#     sealLiftedWith + p_keeper --R2--> liftedSeal(priorySeal, neris)
 #
 #   alpha late (the lock):
 #     p_scratch + p_pick --R3--> chestOpenedWith(chapterChest, thornpick)
@@ -71,12 +71,13 @@ rules:
       - [sealLiftedWith, "?seal", "?lamp"]
   - id: R2_lifter
     gloss: >-
-      The hand at the lifted seal is the keeper of the lamp that melted the
-      wax. If the seal was lifted with a lamp, and one person trimmed that
-      lamp that night, that person lifted the seal.
+      The hand at the lifted seal is the person with exclusive custody of the
+      lamp during the relevant watch. If the seal was lifted with that lamp
+      and only one person could carry or use it that night, that person lifted
+      the seal.
     if:
       - [sealLiftedWith, "?seal", "?lamp"]
-      - [lampTrimmedBy, "?lamp", "?x"]
+      - [soleNightKeeperOf, "?lamp", "?x"]
     then:
       - [liftedSeal, "?seal", "?x"]
   - id: R3_lock
@@ -120,11 +121,12 @@ premises:
     surface: >-
       The wax-burner matches the smell and ash: that green wax melts only at
       the small cloister lamp, whose smoky wick leaves black grit in the edge.
-  - id: p_trimmer
-    fact: [lampTrimmedBy, cloisterLamp, neris]
+  - id: p_keeper
+    fact: [soleNightKeeperOf, cloisterLamp, neris]
     surface: >-
-      The lamp roll names the night hand. Neris trimmed the cloister lamp
-      after compline and kept its snuff-box until the bell for prime.
+      The lamp roll assigns the cloister lamp to Neris alone from compline to
+      prime. She signed it out, carried it on the night watch, and returned it;
+      no second bearer or duplicate lamp is entered for those hours.
   - id: p_scratch
     fact: [scratchOf, chapterChest, thornpick]
     surface: >-
@@ -168,7 +170,7 @@ incompatible:
   - [[stoleSeal, priorySeal, neris], [stoleSeal, priorySeal, baldric]]
 
 proof_paths:
-  - premises: [p_wax, p_lamp, p_trimmer, p_scratch, p_pick, p_holder]
+  - premises: [p_wax, p_lamp, p_keeper, p_scratch, p_pick, p_holder]
 
 release_schedule:
   - { turn: 2, premise: m_key, via: director }
@@ -176,7 +178,7 @@ release_schedule:
   - { turn: 6, premise: m_waxtrade, via: director }
   - { turn: 8, premise: p_lamp, via: tutor }
   - { turn: 10, premise: m_near, via: director }
-  - { turn: 12, premise: p_trimmer, via: director }
+  - { turn: 12, premise: p_keeper, via: director }
   - { turn: 14, premise: p_scratch, via: tutor }
   - { turn: 18, premise: p_pick, via: tutor }
   - { turn: 22, premise: p_holder, via: director }
@@ -223,3 +225,14 @@ slope:
   aporia_window: 6
 
 turn_cap: 28
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: sealhouse
+  temporal_frame: period
+  scene_ecology: "priory sacristy inquiry"
+  narrative_diction: "medieval cloister formal"
+  ledger_term: "custody roll"
+  summary: An asymmetric proof joins wax handling and chest entry to identify who stole the priory's chapter seal.

@@ -1,0 +1,1212 @@
+{
+  "schema": "machinespirits.tutor-stub.step4-trigger-density.v1",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "zeroCall": true,
+  "corpus": {
+    "runs": 68,
+    "step2Runs": 60,
+    "greenroomRuns": 8,
+    "profiles": [
+      "affective_resistant",
+      "proof_skipper"
+    ],
+    "world": "world_005_marrick",
+    "turnWindow": [
+      3,
+      24
+    ],
+    "traceHashesVerified": 68
+  },
+  "assignmentRule": "stagnant_repeat > warrant_skip; one assigned trigger per eligible turn",
+  "selectedTriggers": {
+    "warrant_skip": {
+      "definition": "evidence_use is omits_warrant or overleaps_evidence; suppress near-closure and close_inquiry turns",
+      "targetAction": "expose_warrant: ask exactly one public, focused question linking the claim to an evidence item or rule; release no premise",
+      "opportunities": 484,
+      "runsWithOpportunity": 66,
+      "runsAudited": 68,
+      "baselineCompliant": 152,
+      "baselineComplianceRate": 0.314,
+      "opportunitiesPerRun": {
+        "p25": 3,
+        "median": 7,
+        "p75": 10.25,
+        "max": 15
+      }
+    },
+    "stagnant_repeat": {
+      "definition": "replayed stagnation >= 0.60 and the proposed action family repeats the four immediately preceding tutor actions; suppress glossary, near-closure, and close_inquiry turns",
+      "targetAction": "break_stagnation: release a due public premise, otherwise reanchor a different already-public exhibit or material domain",
+      "opportunities": 204,
+      "runsWithOpportunity": 55,
+      "runsAudited": 68,
+      "baselineCompliant": 57,
+      "baselineComplianceRate": 0.279,
+      "opportunitiesPerRun": {
+        "p25": 1,
+        "median": 2.5,
+        "p75": 4,
+        "max": 9
+      }
+    }
+  },
+  "rejectedCandidates": {
+    "affective_risk": {
+      "opportunities": 53,
+      "decision": "reject",
+      "reason": "classifier/trajectory-derived risk produced neutral-regression false positives in deterministic review and was not stable enough for a claim-bearing trigger"
+    },
+    "regloss": {
+      "opportunities": 57,
+      "decision": "reject",
+      "reason": "mechanically valid but sparse and concentrated in one profile/family, so it cannot support a balanced two-family compliance denominator"
+    }
+  },
+  "cohorts": [
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "runs": 8,
+      "warrant_skip": {
+        "opportunities": 77,
+        "baselineCompliant": 14,
+        "baselineComplianceRate": 0.182
+      },
+      "stagnant_repeat": {
+        "opportunities": 49,
+        "baselineCompliant": 15,
+        "baselineComplianceRate": 0.306
+      }
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "runs": 15,
+      "warrant_skip": {
+        "opportunities": 38,
+        "baselineCompliant": 8,
+        "baselineComplianceRate": 0.211
+      },
+      "stagnant_repeat": {
+        "opportunities": 26,
+        "baselineCompliant": 7,
+        "baselineComplianceRate": 0.269
+      }
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "runs": 15,
+      "warrant_skip": {
+        "opportunities": 162,
+        "baselineCompliant": 35,
+        "baselineComplianceRate": 0.216
+      },
+      "stagnant_repeat": {
+        "opportunities": 43,
+        "baselineCompliant": 9,
+        "baselineComplianceRate": 0.209
+      }
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "runs": 15,
+      "warrant_skip": {
+        "opportunities": 47,
+        "baselineCompliant": 22,
+        "baselineComplianceRate": 0.468
+      },
+      "stagnant_repeat": {
+        "opportunities": 52,
+        "baselineCompliant": 18,
+        "baselineComplianceRate": 0.346
+      }
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "runs": 15,
+      "warrant_skip": {
+        "opportunities": 160,
+        "baselineCompliant": 73,
+        "baselineComplianceRate": 0.456
+      },
+      "stagnant_repeat": {
+        "opportunities": 34,
+        "baselineCompliant": 8,
+        "baselineComplianceRate": 0.235
+      }
+    }
+  ],
+  "manualReview": {
+    "reviewer": "Codex, deterministic excerpt review, 2026-07-14",
+    "warrant_skip": {
+      "sampleSize": 12,
+      "validOpportunities": 12,
+      "samples": [
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r4",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T01-45-11-424Z.jsonl",
+          "traceSha256": "e970ef8d03123f6e02f966e0b036a833a1d9afa786e6e1679e400752d8444ad5",
+          "turn": 3,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "answer_accountably",
+          "stagnation": 0.25,
+          "nearClosure": false,
+          "learnerExcerpt": "Then the shillings point to Verrell’s hand.",
+          "tutorExcerpt": "Not yet. The wrong ring and soft edge tell us the shillings are false, but they do not yet tie them to Verrell’s crucible or his hand. What further mark would make that link checkable?",
+          "sampleKey": "006166fefba9bcac94d35765c280caa1d0dbaad491f040fb76119c0d2ff01297",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "standing_book",
+          "run": "P6",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-21-08-397Z.jsonl",
+          "traceSha256": "a12196c8e3df18be01b789dbad6e4e8094ed43e9100d6ed1bad7ccdf38e7ba4c",
+          "turn": 18,
+          "trigger": "warrant_skip",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "The broken serif is on all twelve — the same flaw, repeated — that *is* the mark itself naming the hand.",
+          "tutorExcerpt": "The mark is real — one die, one flaw, repeated true across all twelve. But notice what you did just now: you named the flaw twice and called it the hand both times. Saying it louder doesn't cross the gap. A flaw names a tool. A tool has ...",
+          "sampleKey": "006863635536433df3f0e428a5b007e59fe1bfecc5209a7e1dd25de688dd292c",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r5",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T07-51-39-294Z.jsonl",
+          "traceSha256": "07506966a49d455bb2db65aa394a17209e613a7306413ae77c4d1888dca14efc",
+          "turn": 18,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.2,
+          "nearClosure": false,
+          "learnerExcerpt": "No — no one's opened a book on the graver yet. But the same touch-mark that proves one die struck all twelve would be on the tool itself, so whoever's workshop holds a graver with a matching notch is the trial-book's striker.",
+          "tutorExcerpt": "Still one gap: matching notch doesn't prove workshop ownership without a record. You've fused two things again. A notch on the tool tells you which tool cut the die — but it doesn't yet tell you whose hand held that tool. The crucible-bo...",
+          "sampleKey": "0087c6020635a533e52e7da54498b77d2ec358c39eb1d6dda50037b44f120918",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "terra",
+          "profile": "affective_resistant",
+          "condition": "field",
+          "run": "field-r3",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r3/2026-07-13T00-00-13-439Z.jsonl",
+          "traceSha256": "f73e87c1a6256b722b8618fd7947965a8a5298ded697e9ac4d51b8d3e4fb72ac",
+          "turn": 5,
+          "trigger": "warrant_skip",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0,
+          "nearClosure": false,
+          "learnerExcerpt": "It rules out that Verrell’s old clipping made these coins; they were newly struck from dross metal.",
+          "tutorExcerpt": "Right: clipping can lighten an old true coin, but it cannot make these newly struck dross shillings. Verrell’s past now proves no hand in this work. What mark must we next trace to connect this dross metal to a particular crucible?",
+          "sampleKey": "00f9ba1c05e65eebc308b51aabeda69f13870a085f05fac8fc83a8725e274dda",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r4",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T01-45-11-424Z.jsonl",
+          "traceSha256": "e970ef8d03123f6e02f966e0b036a833a1d9afa786e6e1679e400752d8444ad5",
+          "turn": 13,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "Verrell cut the die for these shillings; enter his hand in the trial-book.",
+          "tutorExcerpt": "Not yet. His broad graver is known to cut clean, but we have no die-mark from these shillings to match against it. When the glass comes over the coin, which flaw should we look for?",
+          "sampleKey": "01aa28f7fdc3fa10b7d5b5d1c349d86f4de522cbc6be4c82e77e4d314a6c30ad",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "standing_book",
+          "run": "P3",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-10-11-407Z.jsonl",
+          "traceSha256": "f08bb7671c05dc62728c1668d11d7f1603d7429e29e0545bc98f9cbb9d02686f",
+          "turn": 16,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "The column is still closed — but when it opens, that mark will be beside Aldric's man's name.",
+          "tutorExcerpt": "The column's still shut, and yet you've already read a name off the blank page inside it. Interesting trick, if the ledger cooperates. Set Aldric's man down for a moment — not as wrong, just as unwritten. Here's the live question: right ...",
+          "sampleKey": "01c3b18edb80f52132a0fbfa8f2934f60a441b8cb3a4feea1b945f9674c94ca3",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "negative",
+          "run": "negative-r4",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T01-47-53-371Z.jsonl",
+          "traceSha256": "eeeafad5d43533b155b38c741db669be2c9fdd59d5916e3164abad682e3aa56a",
+          "turn": 9,
+          "trigger": "warrant_skip",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "clarify_distinction",
+          "stagnation": 0,
+          "nearClosure": false,
+          "learnerExcerpt": "The blanks came from the cold weir-forge above the mill-leat; I enter that forge in the trial-book.",
+          "tutorExcerpt": "Yes. The alloy matches that crucible’s leavings alone, so these shillings’ blanks came from the cold weir-forge—not Verrell’s mint-yard. The town’s shortcut rather inconveniently has the wrong furnace. Whose hand is recorded as the sole ...",
+          "sampleKey": "01d0d5baab4ef6546bd3f26ec2d5bbc5918669ccbb40516c6aaf4a8ae93c0e3c",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "negative",
+          "run": "negative-r1",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T07-07-59-687Z.jsonl",
+          "traceSha256": "d27520c8e81e61bfc661d4952a8d419f86c094cb3250842c1d963748a1d6f9de",
+          "turn": 12,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "If it drew coal, it kept the fire — that's the hand the trial-book names.",
+          "tutorExcerpt": "Same coin, new sleeve — you've made \"drew coal\" and \"kept the fire alight\" into one fact by decree, and the ledger still hasn't been asked to say so itself. Go read it: whose name is actually written against charcoal for the weir crucibl...",
+          "sampleKey": "021e4dcc390916b6c9aeeb3b4187708432d2734ac43e54bbe80189f43477e052",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r1",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T07-07-59-553Z.jsonl",
+          "traceSha256": "5cb793f58188e32b259936e79b0594844e5ac487cd189b881ddd80ad8213a373",
+          "turn": 3,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.2,
+          "nearClosure": false,
+          "learnerExcerpt": "Then the mint-yard crucible marks this a struck coin from Verrell's own working, not clipped stock — that's what the assay should confirm before anyone's alloy line gets weighed against it.",
+          "tutorExcerpt": "That's a fair question to ask — but notice what it does. You're using the crucible fact to rule out clipping, when it already stands ruled out: the marks show these coins were struck fresh, not shaved down. What the crucible fact actuall...",
+          "sampleKey": "02c4538256b1c4cd1101e1071195c6ffb67c934e5162ebffe6c4d5c90ff77c4c",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r4",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T07-39-37-655Z.jsonl",
+          "traceSha256": "d8b00edcd109d8becb15b11f9e681dd0eb4f634d089104ac28e080bf7414f102",
+          "turn": 12,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "The lead-sweat traces back to the same lead-flux the harbor smelters use — I'd write it as: assayed from a debased-flux run, the kind that runs off the harbor road.",
+          "tutorExcerpt": "The harbor smelters and their flux aren't in the trial-book either — nobody's assayed them here. Same problem as before: you're reaching past the coin in front of you. Set the harbor road aside entirely. Stay narrow: the touchstone gave ...",
+          "sampleKey": "035944da75eae0300d2f095952f69272318cc389cd805fdfa47de1f8b7cb9bd5",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "standing_book",
+          "run": "P4",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-34-21-660Z.jsonl",
+          "traceSha256": "5eb35a60e64b692ca6da91ab722494b4b6736b6967cbb82b8c235c7e8bbec7e0",
+          "turn": 5,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 1,
+          "nearClosure": false,
+          "learnerExcerpt": "The lead-sweat is Capper's signature — his alloy always bleeds grey when the cupel cools.",
+          "tutorExcerpt": "The alloy tells you a fact about the metal — copper, lead-sweat, thin silver. It does not tell you whose hand poured it. You've now called that grey sweat a \"signature,\" which is a nice word for a guess dressed up as a test. So: what wou...",
+          "sampleKey": "0385e07a5b55e8418b1d9a24b4ba44df4fcca6191e72710115ca5dafb764b585",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "standing_book",
+          "run": "P4",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-34-21-660Z.jsonl",
+          "traceSha256": "5eb35a60e64b692ca6da91ab722494b4b6736b6967cbb82b8c235c7e8bbec7e0",
+          "turn": 7,
+          "trigger": "warrant_skip",
+          "evidenceUse": "overleaps_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.45,
+          "nearClosure": false,
+          "learnerExcerpt": "A trace metal no other hearth carries — and tin-ground ash would be exactly that mark.",
+          "tutorExcerpt": "Hold — tin-ground ash is still your notion, not the assay's. Trace-minerals are a fine idea for a hearth-master to test someday, but no one's run that test on this coin, and you're spending it as if it were already read in the metal. Sti...",
+          "sampleKey": "04798632780bbfc21cd6409c04ba83aba9b05181fdcd9ac1abe4b0d2f9f10e30",
+          "baselineCompliancePass": false
+        }
+      ]
+    },
+    "stagnant_repeat": {
+      "sampleSize": 12,
+      "validOpportunities": 12,
+      "samples": [
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "bare",
+          "run": "P2",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T02-35-22-055Z.jsonl",
+          "traceSha256": "1e0597496c10c72d287fa483efdd9bee8c461100b1c012f4a45eae967902e249",
+          "turn": 10,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "The mint license — Verrell holds the mint license, so the verdict holds.",
+          "tutorExcerpt": "Right — the mint license is a caster's claim: it says whose hand melts metal at that yard. But listen to what it's licensing. Verrell's mint license speaks to the *mint-yard* crucible — and the dross in these shillings was traced to the ...",
+          "sampleKey": "01c86fae529210a19f8931f79e48aaf3be39ae58ed21c5519128b53e40d5ebd8",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r5",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T01-55-29-073Z.jsonl",
+          "traceSha256": "5938a81cf5c6d70a242dbd9ad896344ff16cd4b2d264ead6e05c78b8752cf7dd",
+          "turn": 14,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "distorts_public_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 1,
+          "nearClosure": false,
+          "learnerExcerpt": "The charcoal book puts Verrell at the cold weir-forge.",
+          "tutorExcerpt": "The charcoal book has not put Verrell at the cold forge. Under the glass, though, each light shilling bears the same square notch in the letter R—what does that shared mark suggest about the die?",
+          "sampleKey": "040c3d0192d04c61acdb537f5a3c897a0e33b696ea7676a5ef72eb395fd2dbc4",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "field",
+          "run": "field-r1",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T01-26-52-158Z.jsonl",
+          "traceSha256": "d3347c0d40c03f38d296c047988ba9a7c9e38274d5c2f07c40cb2f2dcdca3325",
+          "turn": 14,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "distorts_public_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 1,
+          "nearClosure": false,
+          "learnerExcerpt": "The keeper’s book enters Verrell as the hand at the cold weir-forge.",
+          "tutorExcerpt": "The keeper’s entry is not before us, so Verrell’s name cannot be taken from it. Look instead at the coins beneath the glass: each bears the same square notch in the letter R. What does that shared flaw tell us about the die?",
+          "sampleKey": "061f6d74d35cd695454b95657f1a1d1e97d87a34e8bbbb4d6d84de7e05cd8ecc",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "negative",
+          "run": "negative-r3",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T07-36-36-262Z.jsonl",
+          "traceSha256": "ced3e189cef79df30ba2f0b9abaff6c7419b2c957e0ae9998b8b9154e8257f5b",
+          "turn": 19,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "The caster's mark will turn up first — the coal-book already names whoever tends the weir crucible fair-week by fair-week, so that's a settled record waiting to be read, not one we still have to build.",
+          "tutorExcerpt": "The coal-book will tell you who tends the fire. Read your own words back: you already used that exact record to name Verrell as caster, and I had to stop you from calling that a strike. So what does a caster's name — settled or not — act...",
+          "sampleKey": "07164fd4e8515d32e3f705af40e8539d15dcb552852b0c2e98a969d9c5d0b7d4",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "affective_resistant",
+          "condition": "bland",
+          "run": "bland-r5",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/bland-r5/2026-07-13T14-28-04-476Z.jsonl",
+          "traceSha256": "61481c917ecff652241f269f9e698542f1f77238d995e2b0845438ebe97bd459",
+          "turn": 11,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "none",
+          "actionFamily": "answer_accountably",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "That's not a new task, that's the same die-question dressed up again — what mark on the coin itself have you actually shown me, versus one you're about to hand me?",
+          "tutorExcerpt": "I can't put a name or private conclusion in the trial-book yet. State the next warranted public claim in one line: what mark in the evidence before us licenses it?",
+          "sampleKey": "079e97c5c163717567d5f04e6613aac198c046f2b0dd3ab3699ed09cb9698d75",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "bland",
+          "run": "bland-r2",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T07-07-59-649Z.jsonl",
+          "traceSha256": "cd3444d942d56cdda61d1c57fe68cf56703c80b34e6fc244a4c01ca8c04311e2",
+          "turn": 19,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "links_evidence_to_rule",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.7,
+          "nearClosure": false,
+          "learnerExcerpt": "A worn burin with a sprung heel — that's not Verrell's clean-cutting graver, so whoever's writing that entry, the die that struck these coins wasn't cut on his bench.",
+          "tutorExcerpt": "Good — that's the die-tool question settled by the evidence itself, not by habit or motive. Verrell's bench is out for the die. Now hold that separately from the caster question, which is still unread. When the leat-keeper's entry is ope...",
+          "sampleKey": "0a14b86c565d0b00a05ad35e23e687b07bf4e55e543573e1663b07b6b1503dc4",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "greenroom-sonnet",
+          "profile": "proof_skipper",
+          "condition": "standing_book",
+          "run": "P7",
+          "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-50-34-593Z.jsonl",
+          "traceSha256": "a865dbd44af50a9d16c66adc297e67a1353abafca487918240eeb7abc6a30ca8",
+          "turn": 14,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "The flaw-pattern on the face is a maker's mark — the die-sinker's record will show which tool cut that pattern.",
+          "tutorExcerpt": "Good instinct to look at the flaw itself first — but before opening the die-sinker's record, look again at what's under the glass right now. The dozen coins share one broken serif, the same square notch, over and over. What does that sam...",
+          "sampleKey": "0cc62ec83c9396844bb52208e98d109d5df0c7b7cbc6cae3df0fd4b4040af27e",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "field",
+          "run": "field-r1",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T07-07-59-572Z.jsonl",
+          "traceSha256": "5648d8b321edd9b8263d4c002b15342711be11b0253cd65ae5ef4c4b2c774ef3",
+          "turn": 10,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "distorts_public_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "The letters near the rim strike shallow on one side of every false shilling — that's the flaw, and it points straight to a worn punch in Verrell's own hand.",
+          "tutorExcerpt": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open.",
+          "sampleKey": "0d3fa7526bde3f9fb1e24ae65869933688eb9a4dcb5eea3e8fe837c9f11f7096",
+          "baselineCompliancePass": true
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "field",
+          "run": "field-r3",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T01-42-50-903Z.jsonl",
+          "traceSha256": "78571a487d8848b36829840625cc3c7a9e06ce6599ba7a9d0bce1ea187a9d1ba",
+          "turn": 9,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "revises_from_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.7,
+          "nearClosure": false,
+          "learnerExcerpt": "The town’s mint-yard theory is wrong; the false shillings came from the old weir-forge above the mill-leat.",
+          "tutorExcerpt": "Yes. The alloy ties these blanks to the old weir-forge, not Verrell’s mint-yard crucible. What does that establish about where the coin’s metal was cast?",
+          "sampleKey": "0f50c273c2070df9b383d16b750dbefd1d5ee483051c7558bd08d00511675e71",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "affective_resistant",
+          "condition": "negative",
+          "run": "negative-r2",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r2/2026-07-13T00-54-28-661Z.jsonl",
+          "traceSha256": "852b7ded4de6b6a799c00dd0d041aa1e50d9065bf4dc0acd76b63db45e8ceda2",
+          "turn": 20,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "omits_warrant",
+          "actionFamily": "answer_accountably",
+          "stagnation": 0.7,
+          "nearClosure": false,
+          "learnerExcerpt": "You're asking where the burin's been — but you've slid past whether \"his say-so\" even counts as book-worthy, or if it's just the die-sinker's opinion until someone puts a reason behind it. Give me that first: is his reading tested, or ju...",
+          "tutorExcerpt": "Fair question, and it deserves a straight answer, not a fourth ribbon on the same box: no, \"the die-sinker said so\" isn't book-worthy by itself — his say-so becomes evidence when he can point to *why* that notch is a tool's signature rat...",
+          "sampleKey": "111ed0319042eb3fff4bf070b4bf8a72e01cd04f6c77d86b4c8e64525e3d199b",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "terra",
+          "profile": "proof_skipper",
+          "condition": "negative",
+          "run": "negative-r2",
+          "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T01-27-35-969Z.jsonl",
+          "traceSha256": "f3fe497eaf7beec1b6784cddad79997cdb2455749728944a5ca39ce23e6c1373",
+          "turn": 17,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "revises_from_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.7,
+          "nearClosure": false,
+          "learnerExcerpt": "Then the square notch was not cut by Verrell’s broad graver.",
+          "tutorExcerpt": "I can't license that conclusion yet. Name the public evidence that would make the next step follow, or keep the verdict open.",
+          "sampleKey": "11305a53ef53672fa57101eec6c6afbf17430c86b873d1b3dec6158da1bdfc0e",
+          "baselineCompliancePass": false
+        },
+        {
+          "family": "sonnet",
+          "profile": "proof_skipper",
+          "condition": "negative",
+          "run": "negative-r5",
+          "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T08-16-28-296Z.jsonl",
+          "traceSha256": "183597f71b68a6ecd49efe10d30a9f679caab00906a274410f4f0432b46cca72",
+          "turn": 19,
+          "trigger": "stagnant_repeat",
+          "evidenceUse": "distorts_public_evidence",
+          "actionFamily": "stage_next_step",
+          "stagnation": 0.95,
+          "nearClosure": false,
+          "learnerExcerpt": "The leat-keeper's own book carries the name Simeon Vye for the weir crucible, and that's the signature the trial-book copies onto the blank.",
+          "tutorExcerpt": "Simeon Vye — \"his own book,\" you say, and yet the book still hasn't spoken one word in this hall, and now you've put words in the leat-keeper's mouth too. That's ten names and zero lines read. So we stop here. No more names until the boo...",
+          "sampleKey": "117ff7979a6409c8cf03363d1b18b4ee187f1fd9980a9072653442a539142686",
+          "baselineCompliancePass": false
+        }
+      ]
+    },
+    "caveat": "Small deterministic samples from one simulated world; validity does not establish human pedagogical benefit."
+  },
+  "preregistrationConsequence": {
+    "futureRunsPerArmFamily": 10,
+    "minimumAssignedOpportunitiesPerArmFamily": {
+      "warrant_skip": 25,
+      "stagnant_repeat": 12
+    },
+    "interpretation": "A family/arm below either minimum is an instrument failure for the affected trigger, not evidence of a coaching null."
+  },
+  "sources": [
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r1/2026-07-12T23-47-52-467Z.jsonl",
+      "traceSha256": "0a54202b7de9ff211dc5d9fd7499fed9e0c86251acbf188556bffe6cd8c0ad1f",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r1/2026-07-12T23-47-52-467Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r1/2026-07-12T23-48-02-914Z.jsonl",
+      "traceSha256": "9936d552ecf6fc3926ff0eb7eecac05127231340fc007e1bb161d3f0b18f153c",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r1/2026-07-12T23-48-02-914Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r1/2026-07-12T23-48-13-159Z.jsonl",
+      "traceSha256": "cd71005fdf7a157b0b2607475f5c36630160a4b31299dae302b7afaf1b806b07",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r1/2026-07-12T23-48-13-159Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r2/2026-07-12T23-48-22-783Z.jsonl",
+      "traceSha256": "17aca8ede31f06822a454c2a015b49b9e6103ac94fb5c37c6b89e32506099512",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r2/2026-07-12T23-48-22-783Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r2/2026-07-12T23-48-32-246Z.jsonl",
+      "traceSha256": "ee631372285d2aa3ab9032587ac9c506db9a0bc1b9f27527a2b0deceeca1878d",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r2/2026-07-12T23-48-32-246Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r2/2026-07-12T23-48-41-712Z.jsonl",
+      "traceSha256": "31fee452bfdc7bf96508d34fe58a4a74dd4f52fb54121fa5f039275828355bd5",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r2/2026-07-12T23-48-41-712Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r3/2026-07-12T23-58-44-132Z.jsonl",
+      "traceSha256": "98ad685bc52baed1f6007e376fd69e9b05dcf19255514b970493b1531e506116",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r3/2026-07-12T23-58-44-132Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r3/2026-07-13T00-00-13-439Z.jsonl",
+      "traceSha256": "f73e87c1a6256b722b8618fd7947965a8a5298ded697e9ac4d51b8d3e4fb72ac",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r3/2026-07-13T00-00-13-439Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r3/2026-07-13T00-00-32-369Z.jsonl",
+      "traceSha256": "725e4728f30b9303570c1502bf7c90ca6e4e1a1ff711e916278f0de2d9e82763",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r3/2026-07-13T00-00-32-369Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r4/2026-07-13T00-02-07-919Z.jsonl",
+      "traceSha256": "add00bf992bff5e4338645c310d86c798f8e8ca946f4e0156b6922a848fdfe5d",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r4/2026-07-13T00-02-07-919Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r4/2026-07-13T00-04-45-520Z.jsonl",
+      "traceSha256": "b85b6f18246ec9566557ef1de1dbaf69d3ff18d7cc51b92a2c9000ca54a8c1eb",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r4/2026-07-13T00-04-45-520Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r4/2026-07-13T00-05-58-197Z.jsonl",
+      "traceSha256": "7e68d641c7576038c9a80ced2cc841bc978e8af0a5d668381cb0b208a3373172",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r4/2026-07-13T00-05-58-197Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r5/2026-07-13T00-11-03-733Z.jsonl",
+      "traceSha256": "1bf0b067a4e63fb3226c38ec50d1b6714a9c2e533746f910dee2a2262f18e276",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/bland-r5/2026-07-13T00-11-03-733Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r5/2026-07-13T00-19-06-613Z.jsonl",
+      "traceSha256": "ce96503566b8de85595c0aad858fa2e482bb91d2ccac5c27fd929528028885c7",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/field-r5/2026-07-13T00-19-06-613Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r5/2026-07-13T00-19-40-533Z.jsonl",
+      "traceSha256": "d3aa367faa037bb89d6f010978b907c6724c61d3ded09124672e2fbcf219a133",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/affective_resistant/traces/negative-r5/2026-07-13T00-19-40-533Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T01-26-41-255Z.jsonl",
+      "traceSha256": "a9d0da34269796c7f7b9852896f93f72f4294a67599daa35672dbe6ab82d4abc",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T01-26-41-255Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T01-26-52-158Z.jsonl",
+      "traceSha256": "d3347c0d40c03f38d296c047988ba9a7c9e38274d5c2f07c40cb2f2dcdca3325",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T01-26-52-158Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r1",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T01-27-03-022Z.jsonl",
+      "traceSha256": "29bc81a02b4ca660e630bcf6897f56e37e5d68aa47254b6311ee9eeb103bf97c",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T01-27-03-022Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T01-27-14-085Z.jsonl",
+      "traceSha256": "086e4c3a311a4c172335ca03495e72aa5d0c910e607bda5148178785b717762e",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T01-27-14-085Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T01-27-25-060Z.jsonl",
+      "traceSha256": "5250f73977e08b005281d672bb23609689b12e75b97af7f7ef302cfc69b19608",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T01-27-25-060Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r2",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T01-27-35-969Z.jsonl",
+      "traceSha256": "f3fe497eaf7beec1b6784cddad79997cdb2455749728944a5ca39ce23e6c1373",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T01-27-35-969Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T01-41-27-559Z.jsonl",
+      "traceSha256": "39d8cbe36141d8219fc529ee8907f23086b4823a96c3d1304e14fb120025f41e",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T01-41-27-559Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T01-42-50-903Z.jsonl",
+      "traceSha256": "78571a487d8848b36829840625cc3c7a9e06ce6599ba7a9d0bce1ea187a9d1ba",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T01-42-50-903Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r3",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T01-44-26-153Z.jsonl",
+      "traceSha256": "1e13201c7d86c829fb2d4aa2b3f9f89644f66ab717072a6d1ca0a4908a69e73b",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T01-44-26-153Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T01-45-11-424Z.jsonl",
+      "traceSha256": "e970ef8d03123f6e02f966e0b036a833a1d9afa786e6e1679e400752d8444ad5",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T01-45-11-424Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T01-45-44-663Z.jsonl",
+      "traceSha256": "64495994c7d4317172585a2dd4804dae522934d9da2040f2e9c6668b980974a3",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T01-45-44-663Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r4",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T01-47-53-371Z.jsonl",
+      "traceSha256": "eeeafad5d43533b155b38c741db669be2c9fdd59d5916e3164abad682e3aa56a",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T01-47-53-371Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T01-55-29-073Z.jsonl",
+      "traceSha256": "5938a81cf5c6d70a242dbd9ad896344ff16cd4b2d264ead6e05c78b8752cf7dd",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T01-55-29-073Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T01-56-03-926Z.jsonl",
+      "traceSha256": "2847b1f1ff5cc53d1eb174c675738102e2df86e2371fa3ffcc5559f93e396316",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T01-56-03-926Z.jsonl"
+    },
+    {
+      "family": "terra",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r5",
+      "trace": "register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T01-57-40-465Z.jsonl",
+      "traceSha256": "e9ace85a8ed8fc63f218c0f53a99ef2e057ae8cd7aacc6bb79d1de963f7227a8",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T01-57-40-465Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r1/2026-07-13T00-53-24-438Z.jsonl",
+      "traceSha256": "b226d2796486d73ad90db2186a5116e9a9c21a90da44d44c2000276c3eae6821",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r1/2026-07-13T00-53-24-438Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r1/2026-07-13T00-53-36-124Z.jsonl",
+      "traceSha256": "2f043f64aa8f4e4bba9e083d6a6631c1182702ab376f217ffcb9e5eba8b2e4bb",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r1/2026-07-13T00-53-36-124Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r1/2026-07-13T00-53-47-609Z.jsonl",
+      "traceSha256": "54eab633201437beb0b5b9e3912202ad829af0635ee015a007e0eeb2e4bae83a",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r1/2026-07-13T00-53-47-609Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r2/2026-07-13T00-54-00-369Z.jsonl",
+      "traceSha256": "e9e0733ec5dbe7703f6b97cbc3eb2e932d20ef8abe68af4c97797e9a038feabe",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/bland-r2/2026-07-13T00-54-00-369Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r2/2026-07-13T00-54-13-780Z.jsonl",
+      "traceSha256": "9fba9af9df0436c64243d6816dbf03ab7e2f76213e93a56a6e82892d6e4ea505",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/field-r2/2026-07-13T00-54-13-780Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r2/2026-07-13T00-54-28-661Z.jsonl",
+      "traceSha256": "852b7ded4de6b6a799c00dd0d041aa1e50d9065bf4dc0acd76b63db45e8ceda2",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial/traces/negative-r2/2026-07-13T00-54-28-661Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r3/2026-07-13T12-43-07-530Z.jsonl",
+      "traceSha256": "49e07363b4f98505e48a112487b3e547cbf7245a9f2f6e909cfe328c2f55f8bd",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r3/2026-07-13T12-43-07-530Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r3/2026-07-13T12-43-07-552Z.jsonl",
+      "traceSha256": "da247e7f8d36df3aa8334359b143734305233a7c1202010fddd70b3394005548",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r3/2026-07-13T12-43-07-552Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/negative-r3/2026-07-13T12-43-07-664Z.jsonl",
+      "traceSha256": "0c4fee84d586b3b50f3514f73a810900afdfa7866366a1908043661906515706",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/negative-r3/2026-07-13T12-43-07-664Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r4/2026-07-13T12-43-07-633Z.jsonl",
+      "traceSha256": "079ac203019eb32cbcaef101e36e652d0d69bd3c8c23fecda984f5b7fc954ad9",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/bland-r4/2026-07-13T12-43-07-633Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r4/2026-07-13T12-43-07-587Z.jsonl",
+      "traceSha256": "7ed3a2d54e1e5653fa5d1a64f85dabf33d7cdc40b3304db1f2ff261f0c2b6c7a",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-dead-session-limit-0122Z-partial-resume-2026-07-13T12-43-06-530Z/traces/field-r4/2026-07-13T12-43-07-587Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r4/2026-07-13T14-28-04-452Z.jsonl",
+      "traceSha256": "7a223f9b36957c988c02fb795a5fdfbe7e92c913133e667de02072301dc51773",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r4/2026-07-13T14-28-04-452Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "bland",
+      "run": "bland-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/bland-r5/2026-07-13T14-28-04-476Z.jsonl",
+      "traceSha256": "61481c917ecff652241f269f9e698542f1f77238d995e2b0845438ebe97bd459",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/bland-r5/2026-07-13T14-28-04-476Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "field",
+      "run": "field-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/field-r5/2026-07-13T14-28-04-540Z.jsonl",
+      "traceSha256": "e401ba751606796ce9ba0c51e8359492390312638908f8aed63beface6f9ea3b",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/field-r5/2026-07-13T14-28-04-540Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "affective_resistant",
+      "condition": "negative",
+      "run": "negative-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r5/2026-07-13T14-28-04-503Z.jsonl",
+      "traceSha256": "be8ce8add53a7c3f1727f28c54046866f46cb0b6bc018ddc2ff6fc20088c4c67",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/affective_resistant-topup-source-unsealed-resume-2026-07-13T14-28-03-907Z/traces/negative-r5/2026-07-13T14-28-04-503Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T07-07-59-553Z.jsonl",
+      "traceSha256": "5cb793f58188e32b259936e79b0594844e5ac487cd189b881ddd80ad8213a373",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r1/2026-07-13T07-07-59-553Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T07-07-59-572Z.jsonl",
+      "traceSha256": "5648d8b321edd9b8263d4c002b15342711be11b0253cd65ae5ef4c4b2c774ef3",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r1/2026-07-13T07-07-59-572Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r1",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T07-07-59-687Z.jsonl",
+      "traceSha256": "d27520c8e81e61bfc661d4952a8d419f86c094cb3250842c1d963748a1d6f9de",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r1/2026-07-13T07-07-59-687Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T07-07-59-649Z.jsonl",
+      "traceSha256": "cd3444d942d56cdda61d1c57fe68cf56703c80b34e6fc244a4c01ca8c04311e2",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r2/2026-07-13T07-07-59-649Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T07-07-59-700Z.jsonl",
+      "traceSha256": "dd46ff307638c706034d46a27db7dd9ed1211f550ab2547eab3cb629f7e1073d",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r2/2026-07-13T07-07-59-700Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r2",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T07-07-59-614Z.jsonl",
+      "traceSha256": "650b5bd8cd8544df90b77712f73f51be4d86a679d703f83f4be278a8f32b9cd3",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r2/2026-07-13T07-07-59-614Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T07-30-25-357Z.jsonl",
+      "traceSha256": "caccecc78906e961624059b19bf0c45841571ca45d072d18f555fb422f569501",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r3/2026-07-13T07-30-25-357Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T07-36-03-115Z.jsonl",
+      "traceSha256": "aa9278274b7338eda4a0dbf5c1b3d40f82d801a1054d249ece0f5073c2694eae",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r3/2026-07-13T07-36-03-115Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r3",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T07-36-36-262Z.jsonl",
+      "traceSha256": "ced3e189cef79df30ba2f0b9abaff6c7419b2c957e0ae9998b8b9154e8257f5b",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r3/2026-07-13T07-36-36-262Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T07-39-37-655Z.jsonl",
+      "traceSha256": "d8b00edcd109d8becb15b11f9e681dd0eb4f634d089104ac28e080bf7414f102",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r4/2026-07-13T07-39-37-655Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T07-44-03-224Z.jsonl",
+      "traceSha256": "067963aeaf8332d8f4d1dba342e7f42651713076abd3740b0f46e0c5374da2c4",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r4/2026-07-13T07-44-03-224Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r4",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T07-47-21-527Z.jsonl",
+      "traceSha256": "3b178b0aaf3153e21d35d90275fa0360a70f27890e4fb04d2e310d0bab223850",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r4/2026-07-13T07-47-21-527Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "bland",
+      "run": "bland-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T07-51-39-294Z.jsonl",
+      "traceSha256": "07506966a49d455bb2db65aa394a17209e613a7306413ae77c4d1888dca14efc",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/bland-r5/2026-07-13T07-51-39-294Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "field",
+      "run": "field-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T08-02-49-378Z.jsonl",
+      "traceSha256": "3aeb3933d844fb720f70758509c6caf1781c1b5ff06e603b1da3fc17804a7305",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/field-r5/2026-07-13T08-02-49-378Z.jsonl"
+    },
+    {
+      "family": "sonnet",
+      "profile": "proof_skipper",
+      "condition": "negative",
+      "run": "negative-r5",
+      "trace": "register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T08-16-28-296Z.jsonl",
+      "traceSha256": "183597f71b68a6ecd49efe10d30a9f679caab00906a274410f4f0432b46cca72",
+      "source": ".tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13/proof_skipper/traces/negative-r5/2026-07-13T08-16-28-296Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "bare",
+      "run": "P1",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T02-16-46-315Z.jsonl",
+      "traceSha256": "c1cff0aad4ea8278c16fa585550a697413449e96b56d84ab0bfd26cea1beccdc",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T02-16-46-315Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "bare",
+      "run": "P2",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T02-35-22-055Z.jsonl",
+      "traceSha256": "1e0597496c10c72d287fa483efdd9bee8c461100b1c012f4a45eae967902e249",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T02-35-22-055Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P3",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-10-11-407Z.jsonl",
+      "traceSha256": "f08bb7671c05dc62728c1668d11d7f1603d7429e29e0545bc98f9cbb9d02686f",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-10-11-407Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P4",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-34-21-660Z.jsonl",
+      "traceSha256": "5eb35a60e64b692ca6da91ab722494b4b6736b6967cbb82b8c235c7e8bbec7e0",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-34-21-660Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P5",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-53-00-764Z.jsonl",
+      "traceSha256": "3ec6c65f6146f156fbe95eb47895519912e8d4b243763654bfd5fb354035e99e",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T03-53-00-764Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P6",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-21-08-397Z.jsonl",
+      "traceSha256": "a12196c8e3df18be01b789dbad6e4e8094ed43e9100d6ed1bad7ccdf38e7ba4c",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-21-08-397Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P7",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-50-34-593Z.jsonl",
+      "traceSha256": "a865dbd44af50a9d16c66adc297e67a1353abafca487918240eeb7abc6a30ca8",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T04-50-34-593Z.jsonl"
+    },
+    {
+      "family": "greenroom-sonnet",
+      "profile": "proof_skipper",
+      "condition": "standing_book",
+      "run": "P8",
+      "trace": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T05-15-34-153Z.jsonl",
+      "traceSha256": "95b76bd5d19abf8c01fe5e0bc05a9044ab9e0b380c36de397d8d1cca7545044e",
+      "source": "exports/greenroom-gate1-2026-07-12/traces/2026-07-12T05-15-34-153Z.jsonl"
+    }
+  ]
+}

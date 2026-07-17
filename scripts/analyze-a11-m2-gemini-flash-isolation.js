@@ -7,11 +7,13 @@
 // Usage:
 //   node scripts/analyze-a11-m2-gemini-flash-isolation.js
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/evaluations.db');
-const db = new Database(DB_PATH, { readonly: true });
+const { db, dbPath, reason } = openEvaluationDbReadonly();
+if (!db) {
+  console.log(describeMissingEvaluationDb(dbPath, reason));
+  process.exit(0);
+}
 
 const BASELINE_RUN = 'eval-2026-03-02-18027efc'; // Existing Gemini Flash base data
 const A11_RUN_PATTERN = 'A11 M2-alone isolation on Gemini Flash%';

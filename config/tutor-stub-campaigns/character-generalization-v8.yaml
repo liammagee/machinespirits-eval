@@ -1,0 +1,98 @@
+schema: machinespirits.tutor-stub.character-generalization-plan.v2
+id: character-generalization-v8
+created: 2026-07-15
+
+purpose: >-
+  Fresh acceptance matrix after learner-specific recovery coordination. This
+  matrix tests whether direct low-agency uptake, natural scene-partner actions,
+  and world-neutral continuation fallbacks transfer to four unobserved
+  scenario/profile pairings without weakening public-evidence or character
+  gates.
+
+code_under_test:
+  branch: preconscious
+  commit: 824b407a
+  strict_working_result: >-
+    .tutor-stub-auto-eval/character-adaptation-loop/
+    strict-working-primary-i16-2026-07-15T17-47-28-960Z/character-loop-result.md
+
+prior_acceptance_retirement:
+  matrix: character-generalization-v7
+  affected_seeds: [20260790, 20260791, 20260792, 20260793]
+  reason: >-
+    The complete v7 matrix was inspected before low-agency conclusion uptake,
+    natural exhibit-space collaboration, and the world-neutral public-record
+    fallback were implemented. Its four trajectories are tuning evidence and
+    cannot be reused as acceptance evidence.
+
+fixed_configuration:
+  mode: strict
+  turns: 10
+  policy: continuous_dynamical_system
+  dag_mode: defeasible_human_scaffold
+  register_temperature: 0.15
+  release_speed: 1
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  learner_model: codex.gpt-5.6-terra
+  cli_effort: low
+  max_tokens: 4096
+  history_turns: 4
+  parallelism_per_cell: 1
+
+matrix:
+  - id: ravensmark_false_memory
+    world: world_009_ravensmark
+    learner_profile: false_memory
+    seed: 20260800
+    rationale: >-
+      Gate-record attribution with a learner who imports plausible but absent
+      details; the world was previously paired only with low agency.
+
+  - id: emberwick_fast
+    world: world_024_emberwick_forum
+    learner_profile: fast_learner
+    seed: 20260801
+    rationale: >-
+      Contemporary forum evidence with accelerated multi-premise uptake; the
+      world was previously paired only with slow and low-agency learners.
+
+  - id: lantern_slow
+    world: world_002_lantern
+    learner_profile: slow_learner
+    seed: 20260802
+    rationale: >-
+      Maritime elimination evidence with deliberately narrow integration; the
+      world was previously paired only with fast learning.
+
+  - id: hethel_low_agency
+    world: world_006_hethel
+    learner_profile: low_agency
+    seed: 20260803
+    rationale: >-
+      Civic attribution evidence with repeated delegation of selections and
+      conclusions; the world was previously paired only with fast learning.
+
+strict_gates:
+  final_delivery_audit_failures: 0
+  maximum_deterministic_fallback_turns: 1
+  error_count: 0
+  meta_performance_turns: 0
+  role_stage_direction_turns: 0
+  source_replacement_turns: 0
+  duplicate_clue_delivery_turns: 0
+  minimum_host_visibility_rate: 1
+  minimum_mean_configuration_realization: 0.9
+  minimum_distinct_host_parts: 2
+
+change_control:
+  tune_between_cells: false
+  complete_all_cells_before_coordinated_fixes: true
+  infrastructure_failure_may_retry_same_seed: true
+  tuning_after_observation_retires_all_affected_seeds: true
+  replacement_seeds_must_be_declared_before_rerun: true
+
+claim_boundary: >-
+  Passing supports transfer across these four freshly paired scenario/profile
+  combinations and evidence modalities; it does not establish population-wide
+  generalization.

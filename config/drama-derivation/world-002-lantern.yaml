@@ -128,6 +128,8 @@ premises:
       years since.
   # --- the burning branch (path A: the lamp-room itself) ---
   - id: p_residue
+    evidence_role: alternative_route
+    alternative_group: south_stack_burning
     fact: [lampBurnedAt, southStack, wreckNight]
     surface: >-
       The court's officer boarded the South Stack at low water: the
@@ -137,6 +139,8 @@ premises:
   # --- the burning branch (path B: the pilot — authored but unscheduled;
   #     the tutor's later freedom) ---
   - id: p_glimpse
+    evidence_role: alternative_route
+    alternative_group: south_stack_burning
     fact: [lampBurnedAt, southStack, wreckNight]
     surface: >-
       The pilot's deposition, taken wet and signed sober: through the
@@ -152,14 +156,19 @@ premises:
       cottage when the light went dark.
   # --- the hand: presence (path A: the oyster-watch) ---
   - id: p_skiff
+    evidence_role: alternative_route
+    alternative_group: senna_presence
     fact: [atTowerThatNight, senna, southStack]
     surface: >-
-      The oyster-watch will swear to it: a skiff lay tied at the Stack
-      steps from dusk until the gale's height — Senna's skiff, by the
-      patched brown lug, and a small light moving up the tower stair.
+      The oyster-watch will swear to it: Senna brought her skiff to the Stack
+      steps at dusk — the patched brown lug they knew — tied it there herself,
+      and climbed the tower stair carrying a small light. The skiff remained
+      at the steps until the gale's height.
   # --- the hand: presence (path B: the ferryman — authored but
   #     unscheduled) ---
   - id: p_ferry
+    evidence_role: alternative_route
+    alternative_group: senna_presence
     fact: [atTowerThatNight, senna, southStack]
     surface: >-
       The ferryman carried one passenger out before the gale closed the
@@ -286,3 +295,14 @@ motivation:
     second_order: null
     disposition:
       withhold: lawful
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: lantern
+  temporal_frame: period
+  scene_ecology: "harbour wreck inquiry"
+  narrative_diction: "maritime commission formal"
+  ledger_term: "inquiry log"
+  summary: A wreck commission eliminates the official lighthouse and traces the brig Mara's fatal light to an unexpected keeper.
