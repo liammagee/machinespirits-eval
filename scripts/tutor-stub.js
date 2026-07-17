@@ -182,6 +182,7 @@ import {
   tutorStubLiveResponseConfigurationSurface,
 } from '../services/tutorStubLiveFirstDraftAudit.js';
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
+import { projectTutorStubSpeakerPublicPremise } from '../services/tutorStubSpeakerPublicPremise.js';
 import { resolveTutorStubPublicCounterpressure } from '../services/tutorStubCounterpressure.js';
 import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
 import {
@@ -4065,14 +4066,14 @@ function currentReleaseRows(state, tutorTurn) {
     const premise = world.premiseById.get(premiseId);
     const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
     return {
-      premise: premiseId,
-      turn: Number(tutorTurn),
-      via: release?.via || null,
+      ...projectTutorStubSpeakerPublicPremise(premise, {
+        premise: premiseId,
+        turn: Number(tutorTurn),
+        via: release?.via || null,
+      }),
       presentation: release?.presentation || null,
       role: release?.role || null,
       cue: release?.cue || null,
-      surface: String(premise?.surface || '').trim(),
-      fact: premise?.fact || null,
     };
   });
 }
@@ -4092,13 +4093,11 @@ function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
     )
     .map((entry) => {
       const premise = world.premiseById.get(entry.premise);
-      return {
+      return projectTutorStubSpeakerPublicPremise(premise, {
         premise: entry.premise,
         turn: Number(entry.releasedTurn),
         via: entry.via || null,
-        surface: String(premise?.surface || '').trim(),
-        fact: premise?.fact || null,
-      };
+      });
     });
 }
 

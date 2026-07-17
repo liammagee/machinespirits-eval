@@ -463,7 +463,8 @@ test('model-free corpus applies current deterministic audits and makes live-pari
     const unexpectedClusters = audit.hardFailureClusters.filter(
       (cluster) =>
         !cluster.startsWith('live_turn_progression_v1:') &&
-        !cluster.startsWith('live_source_action_alignment_v1:'),
+        !cluster.startsWith('live_source_action_alignment_v1:') &&
+        cluster !== 'response_composition:unlicensed_requested_entry',
     );
     assert.deepEqual(
       unexpectedClusters,

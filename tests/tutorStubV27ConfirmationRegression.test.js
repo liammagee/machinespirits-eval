@@ -78,11 +78,23 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
     ),
   );
   const expected = fixture.post_canonical_audit_expected;
+  const typedCausalFailureCluster = 'responseCompositionAudit:unlicensed_requested_entry';
+  const typedCausalHardFailureCluster = 'response_composition:unlicensed_requested_entry';
+  const currentFailureClusters = [
+    ...expected.failure_clusters.slice(0, 1),
+    typedCausalFailureCluster,
+    ...expected.failure_clusters.slice(1),
+  ];
+  const currentHardFailureClusters = [
+    ...expected.hard_failure_clusters.slice(0, 1),
+    typedCausalHardFailureCluster,
+    ...expected.hard_failure_clusters.slice(1),
+  ];
   assert.equal(expected.classification, 'audit_recognition_correction_not_generation_improvement');
   assert.equal(audit.ok, expected.ok);
   assert.equal(audit.safetyFailure, expected.safety_failure);
-  assert.deepEqual(audit.failureClusters, expected.failure_clusters);
-  assert.deepEqual(audit.hardFailureClusters, expected.hard_failure_clusters);
+  assert.deepEqual(audit.failureClusters, currentFailureClusters);
+  assert.deepEqual(audit.hardFailureClusters, currentHardFailureClusters);
   assert.equal(
     audit.failureClusters.includes(fixture.post_v28_expected_audit.corrected_recorded_false_negative),
     false,
@@ -102,7 +114,12 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
       .causal_relation_supported,
     expected.causal_relation_supported,
   );
-  assert.deepEqual(audit.audits.responseCompositionAudit.issues, []);
+  assert.deepEqual(audit.audits.responseCompositionAudit.issues, [
+    {
+      type: 'unlicensed_requested_entry',
+      reason: 'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
+    },
+  ]);
   assert.deepEqual(
     audit.audits.jointPerformanceAudit.issues.map((issue) => [issue.type, issue.axis]),
     [

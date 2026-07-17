@@ -182,8 +182,15 @@ test('binds a writable causal entry to the public relation without reversing cau
     learnerText: 'What should I put in the minutes about the chargers?',
     responseConfiguration: configuration(),
     committedPublicEvidence: [
-      { surface: 'The depot chargers stood dark throughout the stocktake.' },
-      { surface: 'Tallow Street still browned out at 18:40.' },
+      {
+        surface: 'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out at 18:40.',
+        causal_relation: {
+          kind: 'inactive_candidate_with_persisting_outcome',
+          family: 'production',
+          subject: 'depot chargers',
+          outcome: 'Tallow Street brownout',
+        },
+      },
     ],
     dramaticReleaseFrame: { active: false, entries: [] },
   });
@@ -197,9 +204,11 @@ test('binds a writable causal entry to the public relation without reversing cau
     contract.opening.causal_relation_contract?.forbidden_relation,
     'candidate_failed_to_prevent_outcome',
   );
-  assert.match(prompt, /candidate was inactive while the outcome still occurred/iu);
-  assert.match(prompt, /rules out candidate causation/iu);
-  assert.match(prompt, /never say[^.]*failed to prevent/iu);
+  assert.equal(contract.opening.causal_relation_contract?.subject, 'depot chargers');
+  assert.equal(contract.opening.causal_relation_contract?.outcome, 'Tallow Street brownout');
+  assert.match(prompt, /The depot chargers did not cause the Tallow Street brownout/iu);
+  assert.match(prompt, /Keep both named roles exact/iu);
+  assert.match(prompt, /never widen either role/iu);
   assert.ok(wordCount(prompt) <= 220, `expected causal writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
 });
 

@@ -231,10 +231,15 @@ function compactUptakeInstruction(contract) {
   let instruction =
     'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.';
   if (contract.opening?.writable_entry_requested) {
+    const causalContract = contract.opening?.causal_relation_contract || null;
+    const subject = oneLine(causalContract?.subject);
+    const outcome = oneLine(causalContract?.outcome);
     instruction = contract.opening?.complementary_to_due_evidence
       ? 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.'
-      : contract.opening?.causal_relation_contract
-        ? 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.'
+      : causalContract && subject
+        ? `Begin exactly “Write:” with this learner-sayable sentence: “The ${subject} did not cause the ${outcome}.” Keep both named roles exact; never widen either role or change cause into prevention.`
+        : causalContract
+          ? 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.'
         : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
@@ -538,15 +543,26 @@ export function buildTutorStubFirstDraftContract({
     },
     policy: sourceAccessibilityPolicy,
   });
+  const committedPublicEntries = (Array.isArray(committedPublicEvidence) ? committedPublicEvidence : [])
+    .map((entry) =>
+      typeof entry === 'string'
+        ? { surface: oneLine(entry), causal_relation: null }
+        : {
+            surface: oneLine(entry?.surface),
+            causal_relation: entry?.causal_relation ? structuredClone(entry.causal_relation) : null,
+          },
+    )
+    .filter((entry) => entry.surface);
   const committedPublicSurfaces = [
     ...new Set(
-      (Array.isArray(committedPublicEvidence) ? committedPublicEvidence : [])
-        .map((entry) => oneLine(typeof entry === 'string' ? entry : entry?.surface))
-        .filter(Boolean),
+      committedPublicEntries.map((entry) => entry.surface),
     ),
   ];
   const writableEntryCausalContract = writableEntryRequested
-    ? compileTutorStubWritableEntryCausalContract({ surfaces: committedPublicSurfaces })
+    ? compileTutorStubWritableEntryCausalContract({
+        evidence: committedPublicEntries,
+        surfaces: committedPublicSurfaces,
+      })
     : null;
   const directionOnlyWithoutNewEvidence =
     questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;

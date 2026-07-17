@@ -71,3 +71,137 @@ test('does not invent a causal contract without both inactivity and a persisting
     null,
   );
 });
+
+test('typed causal roles bind the exact public subject without world-specific vocabulary', () => {
+  const surfaces = [
+    'The depot chargers stood dark throughout the stocktake.',
+    'Tallow Street still browned out at 18:40.',
+  ];
+  const evidence = [
+    {
+      surface: surfaces.join(' '),
+      causal_relation: {
+        kind: 'inactive_candidate_with_persisting_outcome',
+        family: 'production',
+        subject: 'depot chargers',
+        outcome: 'Tallow Street brownout',
+      },
+    },
+  ];
+  const contract = compileTutorStubWritableEntryCausalContract({ evidence, surfaces });
+  const exact = auditTutorStubPublicCausalRelationSupport({
+    surfaces,
+    quotedLine: 'The depot chargers did not cause the Tallow Street brownout.',
+    causalContract: contract,
+  });
+  const widened = auditTutorStubPublicCausalRelationSupport({
+    surfaces,
+    quotedLine: 'The depot did not cause the Tallow Street brownout.',
+    causalContract: contract,
+  });
+
+  assert.equal(contract.subject, 'depot chargers');
+  assert.equal(contract.outcome, 'Tallow Street brownout');
+  assert.match(contract.instruction, /exact causal subject/iu);
+  assert.equal(exact.supported, true);
+  assert.equal(exact.subject_binding.preserved, true);
+  assert.equal(widened.supported, false);
+  assert.equal(widened.subject_binding.preserved, false);
+});
+
+test('typed causal binding preserves subject, outcome, family, and polarity as one tuple', () => {
+  const surfaces = [
+    'The depot chargers stood dark throughout the stocktake.',
+    'Tallow Street still browned out at 18:40.',
+  ];
+  const causalContract = {
+    family: 'production',
+    polarity: 'negative',
+    subject: 'depot chargers',
+    outcome: 'Tallow Street brownout',
+  };
+  for (const quotedLine of [
+    'The depot chargers and every depot machine did not cause the Tallow Street brownout.',
+    'The depot chargers did not cause the North Street brownout.',
+    'The depot did not cause the Tallow Street brownout.',
+    'The depot chargers did not prevent the Tallow Street brownout.',
+  ]) {
+    const audit = auditTutorStubPublicCausalRelationSupport({
+      surfaces,
+      quotedLine,
+      causalContract,
+    });
+    assert.equal(audit.supported, false, quotedLine);
+    assert.equal(audit.relation_binding.preserved, false, quotedLine);
+  }
+  const exact = auditTutorStubPublicCausalRelationSupport({
+    surfaces,
+    quotedLine: 'The depot chargers did not cause the Tallow Street brownout.',
+    causalContract,
+  });
+  assert.equal(exact.supported, true);
+  assert.equal(exact.relation_binding.preserved, true);
+  assert.equal(exact.relation_binding.candidates[0].subject_preserved, true);
+  assert.equal(exact.relation_binding.candidates[0].outcome_preserved, true);
+});
+
+test('typed causal extraction is stable across repeated calls', () => {
+  const input = {
+    surfaces: ['The pumps were idle, yet the basement still flooded.'],
+    quotedLine: 'The cellar pumps did not cause the basement flood.',
+    causalContract: {
+      family: 'production',
+      subject: 'cellar pumps',
+      outcome: 'basement flood',
+    },
+  };
+  const first = auditTutorStubPublicCausalRelationSupport(input);
+  const second = auditTutorStubPublicCausalRelationSupport(input);
+  assert.deepEqual(second, first);
+  assert.equal(second.supported, true);
+});
+
+test('typed causal compilation fails closed on malformed or ambiguous metadata', () => {
+  const surface = 'The pumps were idle, yet the basement still flooded.';
+  assert.throws(
+    () => compileTutorStubWritableEntryCausalContract({
+      surfaces: [surface],
+      evidence: [{
+        surface,
+        causal_relation: {
+          kind: 'inactive_candidate_with_persisting_outcome',
+          family: 'prevention',
+          subject: 'cellar pumps',
+          outcome: 'basement flood',
+        },
+      }],
+    }),
+    /incomplete or incompatible/iu,
+  );
+  assert.throws(
+    () => compileTutorStubWritableEntryCausalContract({
+      surfaces: [surface],
+      evidence: [
+        {
+          surface,
+          causal_relation: {
+            kind: 'inactive_candidate_with_persisting_outcome',
+            family: 'production',
+            subject: 'cellar pumps',
+            outcome: 'basement flood',
+          },
+        },
+        {
+          surface,
+          causal_relation: {
+            kind: 'inactive_candidate_with_persisting_outcome',
+            family: 'production',
+            subject: 'drain pumps',
+            outcome: 'basement flood',
+          },
+        },
+      ],
+    }),
+    /exactly one typed public relation/iu,
+  );
+});

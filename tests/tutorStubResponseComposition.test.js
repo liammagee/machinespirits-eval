@@ -320,6 +320,52 @@ test('generic evidentiary-limit wording cannot invent an exculpatory causal stat
   }
 });
 
+test('typed requested-entry causality rejects widening a public mechanism to its larger actor', () => {
+  const learnerText = 'What should I put in the minutes about the chargers?';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Asks for the exact supported causal entry.' } },
+    registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
+  });
+  const causalRelationContract = {
+    public_relation: 'inactive_candidate_with_persisting_outcome',
+    licensed_conclusion: 'rules_out_candidate_production',
+    subject: 'depot chargers',
+    outcome: 'Tallow Street brownout',
+  };
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    opening: {
+      writable_entry_requested: true,
+      causal_relation_contract: causalRelationContract,
+    },
+    evidence: {
+      committed_public_surfaces: [
+        'The depot chargers stood dark throughout the stocktake.',
+        'Tallow Street still browned out at 18:40.',
+      ],
+    },
+  };
+  const exact = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract,
+    text: 'Write: “The depot chargers did not cause the Tallow Street brownout.” We leave the actual cause open.',
+  });
+  const widened = auditTutorStubResponseComposition({
+    learnerText,
+    frame,
+    firstDraftContract,
+    text: 'Write: “The depot did not cause the Tallow Street brownout.” We leave the actual cause open.',
+  });
+
+  assert.equal(exact.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(exact.requestedEntryAnswerRecognition.license.material_grounding.causal_subject_binding.preserved, true);
+  assert.equal(widened.requestedEntryAnswerRecognition.recognized, false);
+  assert.equal(widened.requestedEntryAnswerRecognition.license.material_grounding.causal_subject_binding.preserved, false);
+  assert.ok(widened.issues.some((issue) => issue.type === 'unlicensed_requested_entry'));
+});
+
 test('a generic epistemic limit cannot invent an entity outside the public turn', () => {
   const learnerText = 'What should I put in the minutes about Dario?';
   const frame = buildTutorStubResponseCompositionFrame({

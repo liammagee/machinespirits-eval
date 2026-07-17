@@ -226,6 +226,9 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
     ? tutorStubSourceAccessibilityInstruction(sourceAccessibility)
     : [
         oneLine(slots.get('tactic').instruction),
+        stanceContract.operation
+          ? `Stance operation (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.operation)}`
+          : null,
         `Stance here (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.contract)}`,
       ]
         .filter(Boolean)

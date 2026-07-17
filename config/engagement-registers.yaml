@@ -162,6 +162,10 @@ engagement_stances:
     joint_performance_contract: |
       Put the current public material under sharper contrast, consequence, or
       challenge while leaving refusal legible and avoiding status display.
+    joint_performance_operation: |
+      Open PERFORMANCE RESPONSE by directly challenging the named live case or
+      easy verdict with the named public evidence, then state its exact limit.
+      Do not merely summarize what the evidence supports.
     risk_flags:
       - over_challenge
       - status_display

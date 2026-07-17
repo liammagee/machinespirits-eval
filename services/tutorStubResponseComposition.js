@@ -293,7 +293,11 @@ function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, cau
   const coverage = required.size ? matched.length / required.size : 0;
   const negativeCausal = tutorStubRequestedEntryNegativeCausalVisible(quotedLine);
   const causalRelation = causal
-    ? auditTutorStubPublicCausalRelationSupport({ surfaces, quotedLine })
+    ? auditTutorStubPublicCausalRelationSupport({
+        surfaces,
+        quotedLine,
+        causalContract: firstDraftContract?.opening?.causal_relation_contract || null,
+      })
     : {
         family: null,
         negative: false,
@@ -316,6 +320,8 @@ function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, cau
     causal_relation_family: causalRelation.family,
     causal_relation_negative: negativeCausal,
     causal_relation_support_constructions: causalRelation.constructions,
+    causal_relation_binding: causalRelation.relation_binding || null,
+    causal_subject_binding: causalRelation.subject_binding || null,
     public_causal_relation_families: causalRelation.public_families,
   };
 }
@@ -866,6 +872,16 @@ export function auditTutorStubResponseComposition({
     issues.push({
       type: 'verbatim_learner_echo',
       reason: 'repeats the learner’s substantive wording instead of crediting or developing it concisely',
+    });
+  }
+  if (
+    firstDraftContract?.opening?.causal_relation_contract?.subject &&
+    segments.uptake &&
+    !requestedEntryAnswerRecognition.recognized
+  ) {
+    issues.push({
+      type: 'unlicensed_requested_entry',
+      reason: 'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
     });
   }
   if (

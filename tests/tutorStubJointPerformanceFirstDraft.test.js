@@ -313,6 +313,8 @@ test('evidentiary-boundary speaking contract requires explicit evidence and conc
   assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit; use no pronoun substitute/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
   assert.match(plan.slots.performance.response_instruction, /Stance here \(charismatic\)/iu);
+  assert.match(plan.slots.performance.response_instruction, /Stance operation \(charismatic\)/iu);
+  assert.match(plan.slots.performance.response_instruction, /directly challenging the named live case/iu);
 });
 
 test('saved V38 original preserves causal boundary but genuinely misses charismatic stance', () => {

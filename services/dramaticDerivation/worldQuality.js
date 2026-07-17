@@ -84,6 +84,23 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
         `${premise.id} evidence_role must be one of ${WORLD_EVIDENCE_ROLES.join(', ')}`,
       );
     }
+    if (premise.causal_relation !== undefined) {
+      const relation = premise.causal_relation;
+      if (
+        !relation ||
+        typeof relation !== 'object' ||
+        Array.isArray(relation) ||
+        relation.kind !== 'inactive_candidate_with_persisting_outcome' ||
+        relation.family !== 'production' ||
+        !String(relation.subject || '').trim() ||
+        !String(relation.outcome || '').trim()
+      ) {
+        addError(
+          'invalid_causal_relation',
+          `${premise.id} causal_relation must declare inactive_candidate_with_persisting_outcome, production, subject, and outcome`,
+        );
+      }
+    }
   }
 
   const duplicateFacts = new Map();

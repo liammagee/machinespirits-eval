@@ -12,6 +12,7 @@ import {
 import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
 import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
+import { projectTutorStubSpeakerPublicPremise } from './tutorStubSpeakerPublicPremise.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
 import { tutorStubPublicProvenanceText } from './tutorStubPublicProvenance.js';
@@ -481,10 +482,18 @@ export function refreshTutorStubFrozenFirstDraftRequest({
     (premiseId) => !duePremiseIds.has(premiseId),
   );
   const committedPublicEvidence = committedPublicPremiseIds
-    .map((premiseId) => world?.premiseById?.get?.(premiseId))
+    .map((premiseId) =>
+      projectTutorStubSpeakerPublicPremise(world?.premiseById?.get?.(premiseId), {
+        premise: premiseId,
+      }),
+    )
     .filter(Boolean);
   const dueEvidence = (bundle.duePremiseIds || [])
-    .map((premiseId) => world?.premiseById?.get?.(premiseId))
+    .map((premiseId) =>
+      projectTutorStubSpeakerPublicPremise(world?.premiseById?.get?.(premiseId), {
+        premise: premiseId,
+      }),
+    )
     .filter(Boolean);
   const publicCounterpressure = resolveTutorStubPublicCounterpressure({
     world,

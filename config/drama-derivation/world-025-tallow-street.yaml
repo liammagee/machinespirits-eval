@@ -163,6 +163,11 @@ premises:
   - id: p_idle
     evidence_role: corroboration
     fact: [sagPersistsWhenIdle, tallowStreet]
+    causal_relation:
+      kind: inactive_candidate_with_persisting_outcome
+      family: production
+      subject: depot chargers
+      outcome: Tallow Street brownout
     surface: >-
       On the Thursday of the depot's annual stocktake the chargers stood dark
       all evening, every van parked cold — and Tallow Street browned out at

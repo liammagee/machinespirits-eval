@@ -142,6 +142,7 @@ export function getJointPerformanceStanceContract(name) {
   const definition = getEngagementStanceDefinition(name);
   const settings = registry.joint_performance_stance_contract || {};
   const authored = String(definition?.joint_performance_contract || '').trim();
+  const operation = String(definition?.joint_performance_operation || '').trim();
   const fallback = String(settings.fallback || '').trim();
   const actionBoundary = String(settings.action_boundary || '').trim();
   const contract = [authored || fallback, actionBoundary].filter(Boolean).join('\n');
@@ -149,6 +150,7 @@ export function getJointPerformanceStanceContract(name) {
   return {
     stance: definition?.canonical_register || String(name || '').trim() || null,
     contract,
+    operation: operation || null,
     source: authored ? 'stance_definition' : 'safe_fallback',
   };
 }
