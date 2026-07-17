@@ -375,8 +375,11 @@ process.stdin.on('end', () => {
     assert.doesNotMatch(turn.tutor, /role-play|another piece of information|back to (?:us|the case)/iu);
     const prompts = fs.readFileSync(promptLog, 'utf8');
     assert.match(prompts, /The archive names Marin as the founder's child/u);
-    assert.match(prompts, /\[Tutor-only first-draft performance contract\]/u);
-    assert.match(prompts, /PUBLIC EVIDENCE DUE NOW/u);
+    assert.match(prompts, /\[Tutor-only host plan\]/u);
+    assert.match(
+      prompts,
+      /SOURCE — After PART, open, read, show, test, or place this public exhibit exactly once: The archive names Marin as the founder's child/u,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

@@ -348,7 +348,13 @@ function groundedGenericEpistemicLimit({
   };
 }
 
-function substantiveLearnerEcho(uptake, learnerText) {
+/**
+ * Delivery echo audit predicate: does this uptake repeat the learner's
+ * substantive wording instead of crediting or developing it concisely?
+ * Exported so deterministic uptake composers (tutorStubTurnProgressionContract)
+ * can be checked against the exact audit boundary rather than a diverging copy.
+ */
+export function tutorStubSubstantiveLearnerEcho(uptake, learnerText) {
   const uptakeSurface = oneLine(uptake).toLowerCase().replace(/[.!?]+$/gu, '');
   const fullLearnerSurface = oneLine(learnerText).toLowerCase().replace(/[.!?]+$/gu, '');
   const learnerSurface = tutorStubLearnerRequestsWritableEntry(fullLearnerSurface)
@@ -866,7 +872,7 @@ export function auditTutorStubResponseComposition({
   }
   if (
     segments.uptake &&
-    substantiveLearnerEcho(segments.uptake, learnerText) &&
+    tutorStubSubstantiveLearnerEcho(segments.uptake, learnerText) &&
     !requestedEntryAnswerRecognition.recognized
   ) {
     issues.push({

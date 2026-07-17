@@ -168,6 +168,7 @@ import {
   deterministicTutorStubWritableEntryUptake,
   formatTutorStubResponseComposition,
   tutorStubLearnerSelectedToolMarkPath,
+  tutorStubSubstantiveLearnerEcho,
 } from '../services/tutorStubResponseComposition.js';
 import {
   buildTutorStubFirstDraftContract,
@@ -11203,6 +11204,7 @@ async function callTutor({
         contract: firstDraftContract?.progression || null,
         recentTutorTexts,
         variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+        learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
         defaultUptake: deterministicTutorStubLearnerUptake({
           learnerText,
           classification,
@@ -11695,6 +11697,7 @@ async function callTutor({
       contract: firstDraftContract?.progression || null,
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+      learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
       defaultUptake: deterministicTutorStubLearnerUptake({
         learnerText,
         classification,

@@ -219,48 +219,94 @@ function interrogativeUptake(value) {
   );
 }
 
+function realizeTurnProgressionUptakeVariants(quotedFocus) {
+  return [
+    `I keep your point about “${quotedFocus}” in view before we develop it.`,
+    `I hear the focus: “${quotedFocus}”; that stays at the centre of this turn.`,
+    `Your point about “${quotedFocus}” is the one I will answer now.`,
+  ];
+}
+
+function trimQuotedFocusFragment(value) {
+  const words = oneLine(value)
+    .replace(/[\s,;:—–]+$/gu, '')
+    .split(' ')
+    .filter(Boolean);
+  while (words.length && FOCUS_STOP_WORDS.has(normalizeToken(words.at(-1)))) words.pop();
+  return words.join(' ').replace(/[\s,;:—–]+$/gu, '');
+}
+
+/**
+ * Shrinking public sub-spans of the quoted focus, longest clause run first,
+ * for realizing a bounded uptake when quoting the whole focus would repeat
+ * the learner's substantive wording (the response-composition echo audit).
+ */
+function boundedQuotedFocusCandidates(focus) {
+  const source = oneLine(focus);
+  const candidates = [];
+  const seen = new Set([source]);
+  const push = (value) => {
+    const fragment = trimQuotedFocusFragment(value);
+    if (fragment && !seen.has(fragment)) {
+      seen.add(fragment);
+      candidates.push(fragment);
+    }
+  };
+  const clauses = source
+    .split(/\s*(?:[;:—–]|,)\s*|\s+(?:and|because|but|so|which|while)\s+/iu)
+    .map(oneLine)
+    .filter(Boolean);
+  for (let end = clauses.length - 1; end >= 2; end -= 1) push(clauses.slice(0, end).join(', '));
+  push(clauses[0] || '');
+  const words = (clauses[0] || source).split(' ').filter(Boolean);
+  for (const length of [10, 8, 6, 5, 4, 3]) {
+    if (length < words.length) push(words.slice(0, length).join(' '));
+  }
+  return candidates;
+}
+
 /**
  * Preserve a deterministic acknowledgement only when it satisfies the same
  * typed learner-focus linkage as the live progression audit. If a generic
  * acknowledgement loses that focus, realize a bounded public-only uptake from
- * the compiled contract instead of weakening recognition.
+ * the compiled contract instead of weakening recognition. When the caller
+ * supplies the delivery echo audit (`learnerEchoGuard`), the realized uptake
+ * must also clear it: quoting the learner's whole surface back verbatim is a
+ * `verbatim_learner_echo`, so the quoted focus is bounded to the longest
+ * sub-span that keeps typed linkage without the echo.
  */
 export function deterministicTutorStubTurnProgressionUptake({
   contract = null,
   defaultUptake = '',
   recentTutorTexts = [],
   variationKey = '',
+  learnerEchoGuard = null,
 } = {}) {
   const fallback = oneLine(defaultUptake);
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
     return fallback;
   }
-  const linkage = substantiveLearnerUptake({
-    uptake: fallback,
-    focusTerms: contract.learner_uptake?.focus_terms || [],
-    acceptedMeaning: contract.learner_uptake?.accepted_meaning || '',
-  });
+  const focusTerms = contract.learner_uptake?.focus_terms || [];
+  const acceptedMeaning = contract.learner_uptake?.accepted_meaning || '';
+  const linkage = substantiveLearnerUptake({ uptake: fallback, focusTerms, acceptedMeaning });
   if (linkage.visible && !interrogativeUptake(fallback)) return fallback;
 
   const focus = boundedPublicFocus(
     contract.turn_focus_contract?.primary_surface || contract.learner_uptake?.learner_surface,
   );
   if (!focus) return fallback;
-  const variants = [
-    `I keep your point about “${focus}” in view before we develop it.`,
-    `I hear the focus: “${focus}”; that stays at the centre of this turn.`,
-    `Your point about “${focus}” is the one I will answer now.`,
-  ];
+  const variants = realizeTurnProgressionUptakeVariants(focus);
   const variantIndex = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).filter(oneLine).length
     ? 1 + stableVariationIndex(variationKey, variants.length - 1)
     : 0;
+  const echoes = (candidate) => typeof learnerEchoGuard === 'function' && learnerEchoGuard(candidate) === true;
+  const visible = (candidate) => substantiveLearnerUptake({ uptake: candidate, focusTerms, acceptedMeaning }).visible;
   const candidate = variants[variantIndex];
-  const candidateLinkage = substantiveLearnerUptake({
-    uptake: candidate,
-    focusTerms: contract.learner_uptake?.focus_terms || [],
-    acceptedMeaning: contract.learner_uptake?.accepted_meaning || '',
-  });
-  return candidateLinkage.visible ? candidate : fallback;
+  if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
+  const bounded = boundedQuotedFocusCandidates(focus)
+    .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus)[variantIndex])
+    .find((row) => !echoes(row) && visible(row));
+  return bounded || fallback;
 }
 
 function stableVariationIndex(value, count) {

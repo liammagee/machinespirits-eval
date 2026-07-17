@@ -11,6 +11,7 @@ import {
   tutorStubLearnerRequestsWritableEntry,
   tutorStubTurnProgressionContractPrompt,
 } from '../services/tutorStubTurnProgressionContract.js';
+import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
 function composition({
@@ -846,6 +847,36 @@ test('deterministic V1 recovery varies bounded uptake after a recent tutor turn'
   assert.doesNotMatch(uptake, /^I keep your point/iu);
   assert.match(uptake, /Second learner message/iu);
   assert.doesNotMatch(uptake, /\?/u);
+});
+
+test('deterministic V1 recovery bounds the quoted focus below the learner echo audit', () => {
+  const learnerText = 'I am not sure; can you just tell me which public clue matters?';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: {},
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+  });
+  const learnerEchoGuard = (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText);
+  const unguarded = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'That is a fair question; I’ll answer it before we extend the case.',
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'That is a fair question; I’ll answer it before we extend the case.',
+    learnerEchoGuard,
+  });
+
+  // Without the delivery echo guard the realized uptake quotes the learner's
+  // whole surface back — exactly what the response-composition audit rejects
+  // as verbatim_learner_echo on the deterministic fallback.
+  assert.equal(tutorStubSubstantiveLearnerEcho(unguarded, learnerText), true);
+  assert.equal(uptake, 'I keep your point about “I am not sure, can you just tell” in view before we develop it.');
+  assert.equal(tutorStubSubstantiveLearnerEcho(uptake, learnerText), false);
 });
 
 test('deterministic V1 recovery replaces interrogative uptake instead of stripping punctuation', () => {

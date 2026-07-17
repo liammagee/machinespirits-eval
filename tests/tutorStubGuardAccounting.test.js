@@ -463,12 +463,26 @@ test('an explicit request for plain peer-level speech accepts the applicable pla
   );
 
   assert.equal(modelCalls.length, 1);
-  assert.equal(accounting.outcome, 'guarded_original_accepted');
+  // The plain draft drops the selected optional performance tactic. Under the
+  // guard-disposition catalog the explicit learner style request makes that an
+  // advisory, not a repair trigger: one model call, accepted with advisory.
+  assert.equal(accounting.outcome, 'guarded_original_accepted_with_advisory');
   assert.equal(accounting.attempts.length, 1);
-  assert.equal(accounting.originalCandidate.audits.actorialRealizationAudit.ok, true);
+  assert.equal(accounting.originalCandidate.audits.actorialRealizationAudit.ok, false);
   assert.equal(accounting.originalCandidate.audits.deliveryOk, true);
+  assert.deepEqual(accounting.originalCandidate.audits.deliveryDecision.hardIssues, []);
+  assert.deepEqual(
+    accounting.originalCandidate.audits.deliveryDecision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
+    ['actorial_realization:missing_selected_performance_tactic'],
+  );
   assert.equal(accounting.finalDelivery.source, 'original_candidate');
   assert.equal(accounting.finalDelivery.candidate.text, PLAIN_STYLE_DRAFT);
   assert.equal(accounting.finalDelivery.auditOk, true);
-  assert.equal(advisory, undefined);
+  assert.equal(advisory.accepted, true);
+  assert.equal(advisory.attempt, 0);
+  assert.equal(advisory.reason, 'explicit learner style request outranks optional actorial realization');
+  assert.deepEqual(
+    advisory.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
+    ['actorial_realization:missing_selected_performance_tactic'],
+  );
 });
