@@ -188,7 +188,9 @@ function jointPerformanceCompatibility(contract, entryInstruction) {
       : null;
   return {
     decisions,
-    entryInstruction: `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, ${oneLine(compositePartOwnership.prompt.performance_initiation)}`,
+    entryInstruction: oneLine(contract?.opening?.causal_performance_entry_instruction)
+      ? `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, ${oneLine(contract.opening.causal_performance_entry_instruction)}`
+      : `As ${oneLine(contract?.performance?.actorial_part_label) || 'the public advocate'}, without naming the role, ${oneLine(compositePartOwnership.prompt.performance_initiation)}`,
     performanceResponseInstruction: oneLine(compositePartOwnership.prompt.performance_action_boundary),
     handoffDelegatedComplementInstruction: handoffDeclarativeOperationInstruction
       ? null
@@ -451,6 +453,27 @@ function validateSentence(value, id, { maxWordsPerSlot = null, allowQuotation = 
   return issues;
 }
 
+function escapedRolePattern(value = '') {
+  return String(value || '')
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean)
+    .map((token) => token.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+    .join('\\s+');
+}
+
+function typedPositiveCausalClaimVisible(value = '', causalContract = null) {
+  const subject = escapedRolePattern(causalContract?.subject);
+  const outcome = escapedRolePattern(causalContract?.outcome);
+  if (!subject || !outcome || causalContract?.polarity !== 'negative') return false;
+  const relation = causalContract?.family === 'production'
+    ? '(?:account(?:s|ed|ing)?\\s+for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|produc(?:e|ed|es|ing))'
+    : null;
+  if (!relation) return false;
+  return new RegExp(`\\b(?:the\\s+)?${subject}\\s+${relation}\\s+(?:the\\s+)?${outcome}\\b`, 'iu')
+    .test(String(value || ''));
+}
+
 function normalizeTransportSlot(value, slot, normalizations) {
   if (typeof value !== 'string') return value;
   const normalized = value.replace(OUTER_HORIZONTAL_WHITESPACE_PATTERN, '');
@@ -461,7 +484,10 @@ function normalizeTransportSlot(value, slot, normalizations) {
   return normalized;
 }
 
-export function parseTutorStubJointPerformanceFirstDraft(text = '', { maxWordsPerSlot = null } = {}) {
+export function parseTutorStubJointPerformanceFirstDraft(
+  text = '',
+  { maxWordsPerSlot = null, causalRelationContract = null } = {},
+) {
   const rawOutput = String(text || '');
   const raw = rawOutput.trim();
   let value;
@@ -511,6 +537,12 @@ export function parseTutorStubJointPerformanceFirstDraft(text = '', { maxWordsPe
     issues.push(...validateSentence(normalized.performance?.entry, 'performance.entry', { maxWordsPerSlot }));
     issues.push(...validateSentence(normalized.performance?.response, 'performance.response', { maxWordsPerSlot }));
     issues.push(...validateSentence(normalized.handoff, 'handoff', { maxWordsPerSlot }));
+    if (typedPositiveCausalClaimVisible(normalized.performance?.entry, causalRelationContract)) {
+      issues.push('performance_entry_reverses_typed_causal_polarity');
+    }
+    if (typedPositiveCausalClaimVisible(normalized.performance?.response, causalRelationContract)) {
+      issues.push('performance_response_reverses_typed_causal_polarity');
+    }
   }
   if (issues.length) throw new Error(`joint performance first draft invalid: ${issues.join(', ')}`);
   return {

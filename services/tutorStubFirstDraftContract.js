@@ -117,7 +117,14 @@ function typedCausalPerformanceInstruction(causalContract = null) {
   const subject = oneLine(causalContract?.subject);
   const outcome = oneLine(causalContract?.outcome);
   if (!subject || !outcome) return null;
-  return `PERFORMANCE RESPONSE must say “The ${subject} did not cause the ${outcome}” and leave the actual cause open; do not widen the actor.`;
+  return `Say “The ${subject} did not cause the ${outcome}; actual cause remains open.” Add no third clause or role change.`;
+}
+
+function typedCausalPerformanceEntryInstruction(causalContract = null) {
+  const subject = oneLine(causalContract?.subject);
+  const outcome = oneLine(causalContract?.outcome);
+  if (!subject || !outcome) return null;
+  return `Begin “My case is” with the licensed conclusion that the ${subject} did not cause the ${outcome}; never state the opposite, even temporarily.`;
 }
 
 function definitionContract(definitions, key, fallback = '') {
@@ -638,6 +645,9 @@ export function buildTutorStubFirstDraftContract({
       writable_entry_requested: writableEntryRequested,
       complementary_to_due_evidence: writableEntryBeforeDueEvidence,
       causal_relation_contract: writableEntryBeforeDueEvidence ? null : writableEntryCausalContract,
+      causal_performance_entry_instruction: writableEntryBeforeDueEvidence
+        ? null
+        : typedCausalPerformanceEntryInstruction(writableEntryCausalContract),
     },
     development: {
       action_family: actionFamily,

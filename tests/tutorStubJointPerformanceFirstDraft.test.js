@@ -223,6 +223,39 @@ test('v2 prompt drafts below the hard slot limit while the parser retains the ex
   );
 });
 
+test('typed causal parsing rejects a positive claim that reverses the licensed relation', () => {
+  const causalRelationContract = {
+    family: 'production',
+    polarity: 'negative',
+    subject: 'depot chargers',
+    outcome: 'Tallow Street brownout',
+  };
+  const reversed = validRaw({
+    performance: {
+      entry: 'My case is that the depot chargers caused the Tallow Street brownout.',
+      response: 'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.',
+    },
+  });
+  const coherent = validRaw({
+    performance: {
+      entry: 'My case is that the stocktake rules out the depot chargers.',
+      response: 'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.',
+    },
+  });
+
+  assert.throws(
+    () => parseTutorStubJointPerformanceFirstDraft(reversed, {
+      maxWordsPerSlot: 40,
+      causalRelationContract,
+    }),
+    /performance_entry_reverses_typed_causal_polarity/u,
+  );
+  assert.doesNotThrow(() => parseTutorStubJointPerformanceFirstDraft(coherent, {
+    maxWordsPerSlot: 40,
+    causalRelationContract,
+  }));
+});
+
 test('v2 compiles declared advocate delegation into a bounded performance and action-only handoff', () => {
   const selectedConfiguration = advocateConfiguration();
   const contract = firstDraftContract({ responseConfiguration: selectedConfiguration });

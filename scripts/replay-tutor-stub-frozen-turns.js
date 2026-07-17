@@ -793,6 +793,9 @@ async function main() {
             bundle.firstDraftContract?.language?.host_sentence_word_target ||
             bundle.firstDraftContract?.language?.max_average_sentence_words ||
             null,
+          ...(jointPerformanceGeneration
+            ? { causalRelationContract: bundle.firstDraftContract?.opening?.causal_relation_contract || null }
+            : {}),
         });
         const composition = compose({
           structured: parsed,

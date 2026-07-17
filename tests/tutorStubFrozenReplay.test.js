@@ -263,10 +263,13 @@ test('typed causal PERFORMANCE keeps the exact public tuple inside the compact p
     refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.response_instruction;
   assert.match(
     responseInstruction,
-    /PERFORMANCE RESPONSE must say “The depot chargers did not cause the Tallow Street brownout”/iu,
+    /Say “The depot chargers did not cause the Tallow Street brownout; actual cause remains open/iu,
   );
-  assert.match(responseInstruction, /leave the actual cause open/iu);
-  assert.match(responseInstruction, /do not widen the actor/iu);
+  assert.match(responseInstruction, /Add no third clause or role change/iu);
+  assert.match(
+    refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction,
+    /never state the opposite, even temporarily/iu,
+  );
   assert.ok(refreshed.compactSpeakingPrompt.promptSize.authoredTotal.estimatedTokens <= 2500);
 });
 

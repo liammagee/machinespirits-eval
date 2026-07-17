@@ -211,10 +211,13 @@ test('binds a writable causal entry to the public relation without reversing cau
   assert.match(prompt, /never widen either role/iu);
   assert.match(
     contract.performance.tactic_execution,
-    /PERFORMANCE RESPONSE[^.]*must say “The depot chargers did not cause the Tallow Street brownout”/iu,
+    /Say “The depot chargers did not cause the Tallow Street brownout; actual cause remains open/iu,
   );
-  assert.match(contract.performance.tactic_execution, /leave the actual cause open/iu);
-  assert.match(contract.performance.tactic_execution, /do not widen the actor/iu);
+  assert.match(contract.performance.tactic_execution, /Add no third clause or role change/iu);
+  assert.match(
+    contract.opening.causal_performance_entry_instruction,
+    /never state the opposite, even temporarily/iu,
+  );
   assert.ok(wordCount(prompt) <= 250, `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`);
 });
 
