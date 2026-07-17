@@ -190,3 +190,37 @@ test('prompt-size summaries require complete observed usage and preserve inferre
   assert.equal(incomplete.totalObservedProviderInputTokens, null);
   assert.equal(incomplete.totalInferredResidualTokens, null);
 });
+
+test('compact decision and scaffold tags remain measurable without reviving technical histories', () => {
+  const sections = tutorStubPromptSizeSectionsFromRequest({
+    systemPrompt: [
+      'BASE',
+      '# Detective-story world',
+      'WORLD',
+      '# Speaking-tutor evidence contract',
+      'SAFE',
+      '[Named tutor instance: Named]',
+      'NAMED',
+    ].join('\n'),
+    messages: [
+      { role: 'assistant', content: 'Opening.' },
+      {
+        role: 'user',
+        content: [
+          '[Tutor-only public evidence window]\nEvidence.\n[End tutor-only public evidence window]',
+          '[Tutor-only compact response decision]\nDecision.\n[End tutor-only compact response decision]',
+          '[Tutor-only compact scaffold]\nScaffold.\n[End tutor-only compact scaffold]',
+          '[Tutor-only joint-performance host plan]\nPlan.\n[End tutor-only joint-performance host plan]',
+          'Latest.',
+        ].join('\n\n'),
+      },
+    ],
+  });
+
+  assert.match(sections.publicEvidenceWindow, /Evidence\./u);
+  assert.match(sections.scaffold, /Decision\./u);
+  assert.match(sections.scaffold, /Scaffold\./u);
+  assert.match(sections.hostPlan, /Plan\./u);
+  assert.equal(sections.classifier, '');
+  assert.equal(sections.learnerDag, '');
+});

@@ -1624,6 +1624,7 @@ test('CLI exposes the explicit v2 flag and rejects simultaneous v1/v2 generation
   const help = spawnSync(process.execPath, [REPLAY_SCRIPT, '--help'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(help.status, 0, help.stderr);
   assert.match(help.stdout, /--joint-performance-generation/u);
+  assert.match(help.stdout, /--compact-speaker-prompt/u);
   assert.match(help.stdout, /--source-accessibility-policy direct_or_compensated_v1/u);
 
   const conflicting = spawnSync(
@@ -1641,4 +1642,12 @@ test('CLI exposes the explicit v2 flag and rejects simultaneous v1/v2 generation
   );
   assert.notEqual(compensationWithoutV2.status, 0);
   assert.match(compensationWithoutV2.stderr, /requires --joint-performance-generation/u);
+
+  const compactWithoutV2 = spawnSync(
+    process.execPath,
+    [REPLAY_SCRIPT, '--compact-speaker-prompt'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(compactWithoutV2.status, 0);
+  assert.match(compactWithoutV2.stderr, /requires --joint-performance-generation/u);
 });

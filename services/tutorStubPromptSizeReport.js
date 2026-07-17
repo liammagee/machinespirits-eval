@@ -54,6 +54,16 @@ const LATEST_BLOCKS = Object.freeze([
     end: '[End tutor-only human discourse scaffold]',
   }),
   Object.freeze({
+    key: 'scaffold',
+    start: '[Tutor-only compact response decision]',
+    end: '[End tutor-only compact response decision]',
+  }),
+  Object.freeze({
+    key: 'scaffold',
+    start: '[Tutor-only compact scaffold]',
+    end: '[End tutor-only compact scaffold]',
+  }),
+  Object.freeze({
     key: 'hostPlan',
     start: '[Tutor-only joint-performance host plan]',
     end: '[End tutor-only joint-performance host plan]',

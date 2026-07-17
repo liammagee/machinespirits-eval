@@ -11,6 +11,10 @@ import { call as callAI } from '../tutor-core/services/unifiedAIProviderService.
 import { callAIWithCliBridge, isCliProvider } from '../services/cliProviderBridge.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { resolveTutorStubDevelopmentDirectModel } from '../services/tutorStubDevelopmentSpeakerTransport.js';
+import {
+  replaceTutorStubFrozenRequestWithCompactNoSourcePrompt,
+  TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA,
+} from '../services/tutorStubCompactSpeakingPrompt.js';
 import { normalizeTokenUsage, tokenUsageFields } from '../services/tokenUsage.js';
 import { buildTutorStubPromptSizeReportForRequest } from '../services/tutorStubPromptSizeReport.js';
 import {
@@ -69,6 +73,7 @@ const { values: args } = parseArgs({
     'stop-on-first-rejection': { type: 'boolean', default: false },
     'structured-generation': { type: 'boolean', default: false },
     'joint-performance-generation': { type: 'boolean', default: false },
+    'compact-speaker-prompt': { type: 'boolean', default: false },
     'source-accessibility-policy': { type: 'string', default: 'direct_only' },
     'semantic-adjudication': { type: 'boolean', default: false },
     'adjudicator-model': { type: 'string' },
@@ -83,6 +88,7 @@ function usage() {
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 2,3,7,10 --draws 1 --original-only --semantic-adjudication --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --structured-generation --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --joint-performance-generation --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --joint-performance-generation --compact-speaker-prompt --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --joint-performance-generation --source-accessibility-policy direct_or_compensated_v1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --stop-on-first-rejection --concurrency 1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --development-seed 123 --development-direct-model openai.standard --out report.json
@@ -101,7 +107,12 @@ then closes admission at the first strict rejection.
 
 --development-direct-model is a tool-free, cross-model prompt-screening path.
 It requires a non-held-out development seed, is recorded as non-equivalent,
-and never counts as Codex CLI or held-out acceptance.`;
+and never counts as Codex CLI or held-out acceptance.
+
+--compact-speaker-prompt is an opt-in no-source compiler for the V2 joint
+performance request. It preserves the public prefix and selected response
+contract while omitting technical classifier/DAG histories. It fails closed
+when evidence is due and does not change the default or strict path.`;
 }
 
 function structuredGenerationFailureAudit(error, { jointPerformance = false } = {}) {
@@ -561,12 +572,16 @@ async function main() {
   }
   const structuredGeneration = Boolean(args['structured-generation']);
   const jointPerformanceGeneration = Boolean(args['joint-performance-generation']);
+  const compactSpeakerPrompt = Boolean(args['compact-speaker-prompt']);
   const sourceAccessibilityPolicy = String(args['source-accessibility-policy'] || 'direct_only');
   if (!['direct_only', 'direct_or_compensated_v1'].includes(sourceAccessibilityPolicy)) {
     throw new Error('--source-accessibility-policy must be direct_only or direct_or_compensated_v1');
   }
   if (structuredGeneration && jointPerformanceGeneration) {
     throw new Error('--structured-generation and --joint-performance-generation are mutually exclusive');
+  }
+  if (compactSpeakerPrompt && !jointPerformanceGeneration) {
+    throw new Error('--compact-speaker-prompt requires --joint-performance-generation');
   }
   if (sourceAccessibilityPolicy !== 'direct_only' && !jointPerformanceGeneration) {
     throw new Error('--source-accessibility-policy direct_or_compensated_v1 requires --joint-performance-generation');
@@ -690,7 +705,12 @@ async function main() {
       world: worldForBundle(extracted),
       sourceAccessibilityPolicy,
     });
-    if (jointPerformanceGeneration) return replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
+    if (jointPerformanceGeneration) {
+      const joint = replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
+      return compactSpeakerPrompt
+        ? replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(joint)
+        : joint;
+    }
     return structuredGeneration ? replaceTutorStubFrozenRequestWithStructuredPrompt(refreshed) : refreshed;
   });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
@@ -865,6 +885,12 @@ async function main() {
           jointPerformanceAuditSchema: TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
         }
       : {}),
+    ...(compactSpeakerPrompt
+      ? {
+          compactSpeakerPrompt: true,
+          compactSpeakerPromptSchema: TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA,
+        }
+      : {}),
     sourceTrace: tracePath,
     turns,
     drawsPerTurn: draws,
@@ -899,6 +925,7 @@ async function main() {
       dialogueContinued: false,
       unsafeCandidatePubliclyExposed: false,
       runtimeDialoguePathChanged: false,
+      compactSpeakerPromptOptInOnly: compactSpeakerPrompt,
       directProviderScreenCountsAsCodexCliAcceptance: false,
       ...(structuredGeneration ? { deterministicStructuredCompositionInvoked: true } : {}),
       ...(jointPerformanceGeneration ? { deterministicJointPerformanceCompositionInvoked: true } : {}),
