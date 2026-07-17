@@ -177,6 +177,43 @@ test('keeps a writable-entry scene invitation declarative after the uptake answe
   assert.ok(wordCount(prompt) <= 220, `expected writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
 });
 
+test('binds a writable causal entry to the public relation without reversing causal role', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I put in the minutes about the chargers?',
+    responseConfiguration: configuration(),
+    committedPublicEvidence: [
+      { surface: 'The depot chargers stood dark throughout the stocktake.' },
+      { surface: 'Tallow Street still browned out at 18:40.' },
+    ],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.equal(
+    contract.opening.causal_relation_contract?.licensed_conclusion,
+    'rules_out_candidate_production',
+  );
+  assert.equal(
+    contract.opening.causal_relation_contract?.forbidden_relation,
+    'candidate_failed_to_prevent_outcome',
+  );
+  assert.match(prompt, /candidate was inactive while the outcome still occurred/iu);
+  assert.match(prompt, /rules out candidate causation/iu);
+  assert.match(prompt, /never say[^.]*failed to prevent/iu);
+  assert.ok(wordCount(prompt) <= 220, `expected causal writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
+});
+
+test('does not add a causal relation contract to an ordinary writable entry', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write about the badge?',
+    responseConfiguration: configuration(),
+    committedPublicEvidence: [{ surface: 'The visitor badge records code WF-11 at noon.' }],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+
+  assert.equal(contract.opening.causal_relation_contract, null);
+});
+
 test('keeps an optional unresolved handoff optional in the compiled speaking prompt', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'The blue seal may belong to another packet.',

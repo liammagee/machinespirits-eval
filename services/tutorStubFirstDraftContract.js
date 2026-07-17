@@ -24,6 +24,7 @@ import {
   compileTutorStubSourceAccessibilityContract,
   tutorStubSourceAccessibilityInstruction,
 } from './tutorStubSourceAccessibilityContract.js';
+import { compileTutorStubWritableEntryCausalContract } from './tutorStubRequestedEntryCausality.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 export const TUTOR_STUB_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.host-plan.v1';
@@ -232,7 +233,9 @@ function compactUptakeInstruction(contract) {
   if (contract.opening?.writable_entry_requested) {
     instruction = contract.opening?.complementary_to_due_evidence
       ? 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.'
-      : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
+      : contract.opening?.causal_relation_contract
+        ? 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.'
+        : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
   }
@@ -535,6 +538,16 @@ export function buildTutorStubFirstDraftContract({
     },
     policy: sourceAccessibilityPolicy,
   });
+  const committedPublicSurfaces = [
+    ...new Set(
+      (Array.isArray(committedPublicEvidence) ? committedPublicEvidence : [])
+        .map((entry) => oneLine(typeof entry === 'string' ? entry : entry?.surface))
+        .filter(Boolean),
+    ),
+  ];
+  const writableEntryCausalContract = writableEntryRequested
+    ? compileTutorStubWritableEntryCausalContract({ surfaces: committedPublicSurfaces })
+    : null;
   const directionOnlyWithoutNewEvidence =
     questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;
   const compiledCompatibilityDecisions = compatibilityDecisions({
@@ -599,6 +612,7 @@ export function buildTutorStubFirstDraftContract({
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
       writable_entry_requested: writableEntryRequested,
       complementary_to_due_evidence: writableEntryBeforeDueEvidence,
+      causal_relation_contract: writableEntryBeforeDueEvidence ? null : writableEntryCausalContract,
     },
     development: {
       action_family: actionFamily,
@@ -647,13 +661,7 @@ export function buildTutorStubFirstDraftContract({
       active: releaseCues.length > 0,
       cues: releaseCues,
       sources: structuredClone(renderedSources),
-      committed_public_surfaces: [
-        ...new Set(
-          (Array.isArray(committedPublicEvidence) ? committedPublicEvidence : [])
-            .map((entry) => oneLine(typeof entry === 'string' ? entry : entry?.surface))
-            .filter(Boolean),
-        ),
-      ],
+      committed_public_surfaces: committedPublicSurfaces,
       exact_public_only: true,
       source_accessibility: sourceAccessibility,
     },

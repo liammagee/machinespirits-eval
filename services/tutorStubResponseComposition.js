@@ -5,6 +5,11 @@ import {
   deterministicTutorStubTurnProgressionHandoff,
   tutorStubLearnerRequestsWritableEntry,
 } from './tutorStubTurnProgressionContract.js';
+import {
+  auditTutorStubPublicCausalRelationSupport,
+  tutorStubRequestedEntryCausalClaimVisible,
+  tutorStubRequestedEntryNegativeCausalVisible,
+} from './tutorStubRequestedEntryCausality.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
@@ -32,20 +37,6 @@ const REQUESTED_ENTRY_LIMIT_PATTERN =
   /\b(?:(?:can(?:not|[’']t)|could(?: not|n[’']t)|do(?:es)? not|don[’']t|doesn[’']t|have not|haven[’']t|has not|hasn[’']t|had not|hadn[’']t|is not|isn[’']t|are not|aren[’']t|was not|wasn[’']t|were not|weren[’']t)\b[^.!?]{0,70}\b(?:yet|establish(?:ed)?|identif(?:ied|y)|know|known|learn(?:ed|t)?|name(?:d)?|prov(?:e|ed|en)|settle(?:d)?|show(?:n)?|support(?:ed)?|trace(?:d)?)\b|(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t)\s+(?:account for|cause|explain|prevent|produce|stop)\b|(?:still\s+)?need(?:s)?\s+evidence\b|not yet\b|still\s+(?:absent|missing|open|unknown|unproved|unshown)|remains?\s+(?:absent|missing|open|unknown|unproved|unshown)|(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:establishes?|identif(?:y|ies)|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,90}\b(?:but not|does not|doesn[’']t|not|only|rather than|without)\b)\b/iu;
 const GENERIC_EPISTEMIC_LIMIT_PATTERN =
   /^(?:(?:we|i)\b[^.!?]{0,80}\b(?:cannot|can[’']t|could not|couldn[’']t|do not|don[’']t|have not|haven[’']t|not yet|still need)\b[^.!?]{0,60}\b(?:establish|identify|know|learn|name|prove|settle|show|support|trace)|(?:the )?(?:(?:available|current|public)\s+){0,2}(?:evidence|clue|entry|mark|record|result|test|trace)\b[^.!?]{0,80}\b(?:does not|doesn[’']t|fails? to|not yet|only|remains?)\b|(?:we\s+)?(?:still\s+)?need(?:s)?\s+evidence\b)/iu;
-const REQUESTED_ENTRY_CAUSAL_CLAIM_PATTERN =
-  /\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
-const REQUESTED_ENTRY_PRODUCTION_CAUSAL_PATTERN =
-  /\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|produc(?:e|ed|es|ing))\b/iu;
-const REQUESTED_ENTRY_PREVENTION_CAUSAL_PATTERN =
-  /\b(?:prevent(?:ed|s|ing)?|stop(?:ped|s|ping)?)\b/iu;
-const REQUESTED_ENTRY_NEGATIVE_CAUSAL_PATTERN =
-  /\b(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t|never)\b[^.!?]{0,24}\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
-const PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN =
-  /\b(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t|never)\b[^.!?]{0,40}\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b|\b(?:despite|regardless|even though|even when|all the same|nevertheless)\b|\b(?:before|leads?)\b[^.!?]{0,70}\b(?:after|later|until)\b/iu;
-const PUBLIC_INACTIVE_AGENT_PATTERN =
-  /\b(?:cold|dark|idle|inactive|off|offline|parked|shut|stopped|unpowered)\b|\b(?:did not|didn[’']t|does not|doesn[’']t|never|not)\b[^.!?]{0,35}\b(?:activate|draw|energise|energize|operate|run|start|switch on|work)\b/iu;
-const PUBLIC_PERSISTING_OUTCOME_PATTERN =
-  /\b(?:all the same|despite|even though|even when|nevertheless|regardless|still|yet)\b|\b(?:brown(?:ed)? out|dimmed?|failed?|flooded?|happened|occurred|sagged?)\b[^.!?]{0,45}\b(?:anyway|regardless|still)\b/iu;
 const EVIDENTIARY_WITHHOLDING_UPTAKE_PATTERN =
   /\b(?:leave|keep)\b[^.!?]{0,35}\b(?:entry|line|record)\b[^.!?]{0,20}\b(?:blank|open|unentered|unwritten)\b|\b(?:do not|don[’']t|will not|won[’']t)\b[^.!?]{0,25}\b(?:enter|record|write)\b/iu;
 const LEARNER_WITHHOLDS_JUDGMENT_PATTERN =
@@ -291,59 +282,6 @@ function causalGroundingTokens(value = '') {
   );
 }
 
-function requestedEntryCausalRelationFamily(value = '') {
-  const production = REQUESTED_ENTRY_PRODUCTION_CAUSAL_PATTERN.test(value);
-  const prevention = REQUESTED_ENTRY_PREVENTION_CAUSAL_PATTERN.test(value);
-  if (production && prevention) return 'mixed';
-  if (production) return 'production';
-  if (prevention) return 'prevention';
-  return null;
-}
-
-function publicCausalRelationSupport({ surfaces = [], quotedLine = '' } = {}) {
-  const publicText = surfaces.join(' ');
-  const family = requestedEntryCausalRelationFamily(quotedLine);
-  const negative = REQUESTED_ENTRY_NEGATIVE_CAUSAL_PATTERN.test(quotedLine);
-  const publicProduction = REQUESTED_ENTRY_PRODUCTION_CAUSAL_PATTERN.test(publicText);
-  const publicPrevention = REQUESTED_ENTRY_PREVENTION_CAUSAL_PATTERN.test(publicText);
-  const inactiveAgentOutcomePersists =
-    PUBLIC_INACTIVE_AGENT_PATTERN.test(publicText) &&
-    PUBLIC_PERSISTING_OUTCOME_PATTERN.test(publicText);
-  let supported = false;
-  const constructions = [];
-  if (family === 'production' && negative && inactiveAgentOutcomePersists) {
-    supported = true;
-    constructions.push('inactive_candidate_with_persisting_outcome_rules_out_production');
-  }
-  if (family === 'production' && publicProduction && PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN.test(publicText)) {
-    supported = true;
-    constructions.push('public_production_relation');
-  }
-  if (family === 'prevention' && publicPrevention && PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN.test(publicText)) {
-    supported = true;
-    constructions.push('public_prevention_relation');
-  }
-  if (!negative && family === 'production' && publicProduction) {
-    supported = true;
-    constructions.push('public_positive_production_relation');
-  }
-  if (!negative && family === 'prevention' && publicPrevention) {
-    supported = true;
-    constructions.push('public_positive_prevention_relation');
-  }
-  return {
-    family,
-    negative,
-    supported,
-    constructions,
-    public_families: [
-      publicProduction ? 'production' : null,
-      publicPrevention ? 'prevention' : null,
-      inactiveAgentOutcomePersists ? 'inactive_candidate_with_persisting_outcome' : null,
-    ].filter(Boolean),
-  };
-}
-
 function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, causal = false } = {}) {
   const surfaces = committedPublicSurfaces(firstDraftContract);
   const assertion = causal
@@ -353,9 +291,9 @@ function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, cau
   const publicTokens = causalGroundingTokens(surfaces.join(' '));
   const matched = [...required].filter((token) => publicTokens.has(token));
   const coverage = required.size ? matched.length / required.size : 0;
-  const negativeCausal = REQUESTED_ENTRY_NEGATIVE_CAUSAL_PATTERN.test(quotedLine);
+  const negativeCausal = tutorStubRequestedEntryNegativeCausalVisible(quotedLine);
   const causalRelation = causal
-    ? publicCausalRelationSupport({ surfaces, quotedLine })
+    ? auditTutorStubPublicCausalRelationSupport({ surfaces, quotedLine })
     : {
         family: null,
         negative: false,
@@ -490,7 +428,7 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
   const limitPatternMatched =
     oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
   const causalClaim =
-    limitPatternMatched && REQUESTED_ENTRY_CAUSAL_CLAIM_PATTERN.test(lineWithoutTerminalPeriod);
+    limitPatternMatched && tutorStubRequestedEntryCausalClaimVisible(lineWithoutTerminalPeriod);
   const materialGrounding = limitPatternMatched
     ? groundedLimitMaterial({
         quotedLine: lineWithoutTerminalPeriod,
