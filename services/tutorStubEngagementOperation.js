@@ -127,6 +127,8 @@ export function compileTutorStubEngagementOperation({
   }
   const subject = oneLine(causalRelationContract.subject);
   const outcome = oneLine(causalRelationContract.outcome);
+  const requiredEntry =
+    `I set this against the claim: ${subject} stayed inactive; ${outcome} continued.`;
   return {
     schema: TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA,
     active: true,
@@ -144,9 +146,10 @@ export function compileTutorStubEngagementOperation({
       outcome,
     },
     public_evidence_surface: oneLine(causalRelationContract.public_evidence_surface),
+    required_entry: requiredEntry,
     instruction:
-      `Begin exactly “I set” and place the public inactivity clue against the accusation or claim about the ${subject} and the ${outcome}. ` +
-      'Keep “I set … against …” in that sentence and name the clue, pressure target, subject, and outcome. Do not merely say the case is weak or that the subject cannot explain the outcome; PERFORMANCE RESPONSE states the exact causal boundary.',
+      `Say exactly “${requiredEntry}” It places the public inactivity clue against the claim about the ${subject} and the ${outcome}. ` +
+      'Do not alter or paraphrase this entry. PERFORMANCE RESPONSE states the exact causal boundary.',
   };
 }
 

@@ -224,7 +224,7 @@ test('typed charismatic ownership stays in PERFORMANCE entry through compact com
     owner: 'performance_entry',
   };
   bundle.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction =
-    'Begin exactly “I set” and place the public inactivity clue against the named accusation.';
+    'Say exactly “I set this against the claim: depot chargers stayed inactive; Tallow Street brownout continued.”';
 
   const result = buildTutorStubCompactNoSourceRequest(bundle);
   const latest = result.request.messages.at(-1).content;
@@ -233,7 +233,7 @@ test('typed charismatic ownership stays in PERFORMANCE entry through compact com
     latest,
     /PERFORMANCE ENTRY owns the advocate part and the charismatic stance/iu,
   );
-  assert.match(latest, /Begin exactly “I set”/iu);
+  assert.match(latest, /Say exactly “I set this against the claim:/iu);
   assert.doesNotMatch(latest, /Begin exactly “My case is/iu);
   assert.match(
     latest,

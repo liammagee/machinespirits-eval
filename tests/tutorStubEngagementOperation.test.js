@@ -37,9 +37,16 @@ test('compiles a world-general charismatic public-pressure collision from a type
   assert.equal(contract.schema, TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA);
   assert.equal(contract.owner, 'performance_entry');
   assert.equal(contract.id, 'public_pressure_collision');
-  assert.match(contract.instruction, /public inactivity clue against the accusation or claim/iu);
+  assert.equal(
+    contract.required_entry,
+    'I set this against the claim: depot chargers stayed inactive; Tallow Street brownout continued.',
+  );
+  assert.match(contract.instruction, /Say exactly “I set this against the claim:/iu);
+  assert.match(contract.instruction, /public inactivity clue against the claim/iu);
   assert.match(contract.instruction, /depot chargers/iu);
   assert.match(contract.instruction, /Tallow Street brownout/iu);
+  assert.equal(contract.required_entry.split(/\s+/u).length, 14);
+  assert.equal(auditEntry(contract, contract.required_entry).ok, true);
 });
 
 test('V46 remains a genuine generation miss under the typed operation', () => {
@@ -96,6 +103,10 @@ test('binds the same typed operation across an unrelated subject and outcome', (
   assert.equal(audit.ok, true, audit.reason);
   assert.equal(audit.checks.entry_subject_visible, true);
   assert.equal(audit.checks.entry_outcome_head_visible, true);
+  assert.equal(
+    contract.required_entry,
+    'I set this against the claim: backup pump stayed inactive; basement flood continued.',
+  );
 });
 
 test('binds the clue to the supplied public surface instead of a fixed inactivity vocabulary', () => {
