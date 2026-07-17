@@ -39,6 +39,7 @@ import {
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from '../services/tutorStubJointPerformanceFirstDraft.js';
+import { TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA } from '../services/tutorStubCompactSpeakingPrompt.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   extractTutorStubFrozenTurn,
@@ -658,6 +659,15 @@ function enableJointPerformanceGeneration(config) {
   config.gates_per_cell.require_joint_performance_output = true;
   config.gates_per_cell.require_joint_performance_ownership = true;
   config.gates_per_cell.require_exact_host_source_occurrences = true;
+  return config;
+}
+
+function enableCompactSpeakerPrompt(config) {
+  enableJointPerformanceGeneration(config);
+  config.fixed_configuration.compact_speaker_prompt = true;
+  config.fixed_configuration.compact_speaker_prompt_schema =
+    TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
+  config.gates_per_cell.require_compact_speaker_prompt = true;
   return config;
 }
 
@@ -2368,6 +2378,65 @@ test('joint-performance campaign validation propagates only the explicit v2 repl
   }
 });
 
+test('compact speaker campaign validation propagates the opt-in replay flag and schema', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-compact-speaker-'));
+  try {
+    const config = enableCompactSpeakerPrompt(workingConfig(tmp));
+    config.gates_per_cell.maximum_transport_normalizations = 1;
+    const validation = validateTutorStubFirstDraftCampaign({ config, root: tmp });
+    assert.equal(validation.kind, 'working_screen');
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
+    for (const command of plan.cells.flatMap((cell) => cell.commands)) {
+      assert.ok(command.argv.includes('--joint-performance-generation'));
+      assert.ok(command.argv.includes('--compact-speaker-prompt'));
+      assert.ok(!command.argv.includes('--structured-generation'));
+      assert.ok(command.argv.includes('--original-only'));
+    }
+    const report = buildTutorStubFirstDraftCampaignValidationReport({
+      root: tmp,
+      config,
+      validation,
+      plan,
+    });
+    assert.equal(report.generationMode, 'joint_performance_v2_compact_no_source');
+    assert.equal(report.compactSpeakerPrompt, true);
+    assert.equal(report.compactSpeakerPromptSchema, TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('compact speaker campaign validation fails closed on mode, schema, or gate drift', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-compact-speaker-gates-'));
+  try {
+    const withoutJoint = workingConfig(tmp);
+    withoutJoint.fixed_configuration.compact_speaker_prompt = true;
+    withoutJoint.fixed_configuration.compact_speaker_prompt_schema =
+      TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
+    withoutJoint.gates_per_cell.require_compact_speaker_prompt = true;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: withoutJoint, root: tmp }),
+      /compact speaker prompt requires.*joint_performance_generation/iu,
+    );
+
+    const wrongSchema = enableCompactSpeakerPrompt(workingConfig(tmp));
+    wrongSchema.fixed_configuration.compact_speaker_prompt_schema = 'drifted';
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: wrongSchema, root: tmp }),
+      new RegExp(`compact working screen must declare.*${TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA}`, 'u'),
+    );
+
+    const missingGate = enableCompactSpeakerPrompt(workingConfig(tmp));
+    delete missingGate.gates_per_cell.require_compact_speaker_prompt;
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config: missingGate, root: tmp }),
+      /gates_per_cell\.require_compact_speaker_prompt: true/iu,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('joint-performance campaign validation fails closed on mode, schema, or gate drift', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-joint-performance-gates-'));
   try {
@@ -2495,6 +2564,66 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
     wrongOwner[0].results[0].jointPerformanceGeneration.composition.spans[1].owner = 'model';
     const rejected = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: wrongOwner, config });
     assert.equal(rejected.gates.exactHostSourceOccurrences, false);
+    assert.equal(rejected.status, 'fail');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('working summary requires compact prompt provenance on every completed draw', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-compact-speaker-summary-'));
+  try {
+    const config = enableCompactSpeakerPrompt(workingConfig(tmp));
+    config.gates_per_cell.maximum_transport_normalizations = 1;
+    const reports = [2, 3, 7, 10].map((turn) => ({
+      bundles: [{
+        turn,
+        turnId: `run:t${turn}`,
+        frames: { dramaticRelease: { active: false, entries: [] } },
+        compactSpeakingPrompt: {
+          schema: TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA,
+          mode: 'compact-no-source.v1',
+          publicHistoryPreservedExactly: true,
+          v2OutputShapePreserved: true,
+          noNewEvidence: true,
+          promptSize: { authoredTotal: { estimatedTokens: 2302 } },
+          maxEstimatedTokens: 2500,
+        },
+      }],
+      results: [{
+        turn,
+        turnId: `run:t${turn}`,
+        latencyMs: 100,
+        jointPerformanceGeneration: {
+          ok: true,
+          parsed: { transport_normalizations: [] },
+          composition: { text: 'A concrete reply.', sourceCount: 0, spans: [] },
+        },
+        audit: {
+          ok: true,
+          safetyFailure: false,
+          failureClusters: [],
+          audits: {
+            responseCompositionAudit: { ok: true },
+            actorialRealizationAudit: { ok: true },
+            responseConfigurationAudit: { realization_rate: 1 },
+            jointPerformanceAudit: { ok: true },
+          },
+        },
+      }],
+    }));
+
+    const passing = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
+    assert.equal(passing.compactSpeakerPromptPasses, 4);
+    assert.equal(passing.compactSpeakerPromptFailures, 0);
+    assert.equal(passing.gates.compactSpeakerPrompt, true);
+
+    const missing = structuredClone(reports);
+    delete missing[1].bundles[0].compactSpeakingPrompt;
+    const rejected = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: missing, config });
+    assert.equal(rejected.compactSpeakerPromptPasses, 3);
+    assert.equal(rejected.compactSpeakerPromptFailures, 1);
+    assert.equal(rejected.gates.compactSpeakerPrompt, false);
     assert.equal(rejected.status, 'fail');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

@@ -10,6 +10,7 @@ import {
   TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from './tutorStubJointPerformanceFirstDraft.js';
+import { TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA } from './tutorStubCompactSpeakingPrompt.js';
 import { loadWorld } from './dramaticDerivation/world.js';
 import {
   extractTutorStubFrozenTurn,
@@ -430,6 +431,22 @@ function validateWorkingScreen(config, { root }) {
       if (config.gates_per_cell?.[gate] !== true) {
         throw new Error(`joint-performance working screen must declare gates_per_cell.${gate}: true`);
       }
+    }
+  }
+  if (config.fixed_configuration?.compact_speaker_prompt === true) {
+    if (config.fixed_configuration?.joint_performance_generation !== true) {
+      throw new Error('compact speaker prompt requires fixed_configuration.joint_performance_generation: true');
+    }
+    if (
+      config.fixed_configuration?.compact_speaker_prompt_schema !==
+      TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA
+    ) {
+      throw new Error(
+        `compact working screen must declare fixed_configuration.compact_speaker_prompt_schema: ${TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA}`,
+      );
+    }
+    if (config.gates_per_cell?.require_compact_speaker_prompt !== true) {
+      throw new Error('compact working screen must declare gates_per_cell.require_compact_speaker_prompt: true');
     }
   }
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
@@ -917,6 +934,9 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
   if (config.fixed_configuration?.joint_performance_generation === true) {
     command.splice(command.length - 2, 0, '--joint-performance-generation');
   }
+  if (config.fixed_configuration?.compact_speaker_prompt === true) {
+    command.splice(command.length - 2, 0, '--compact-speaker-prompt');
+  }
   if (config.fixed_configuration?.source_accessibility_policy) {
     command.splice(
       command.length - 2,
@@ -1078,6 +1098,7 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
   frozen = null,
 } = {}) {
   const jointPerformanceGeneration = config?.fixed_configuration?.joint_performance_generation === true;
+  const compactSpeakerPrompt = config?.fixed_configuration?.compact_speaker_prompt === true;
   return {
     schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
     generatedAt: new Date().toISOString(),
@@ -1096,7 +1117,9 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
     frozen,
     maxConcurrency: plan?.maxConcurrency,
     generationMode: jointPerformanceGeneration
-      ? 'joint_performance_v2'
+      ? compactSpeakerPrompt
+        ? 'joint_performance_v2_compact_no_source'
+        : 'joint_performance_v2'
       : config?.fixed_configuration?.structured_generation === true
         ? 'structured_v1'
         : 'plain',
@@ -1106,6 +1129,13 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
           jointPerformanceCompositionSchema:
             config.fixed_configuration.joint_performance_composition_schema,
           jointPerformanceAuditSchema: config.fixed_configuration.joint_performance_audit_schema,
+        }
+      : {}),
+    ...(compactSpeakerPrompt
+      ? {
+          compactSpeakerPrompt: true,
+          compactSpeakerPromptSchema:
+            config.fixed_configuration.compact_speaker_prompt_schema,
         }
       : {}),
     cells: (plan?.cells || []).map((cell) => ({
@@ -1812,6 +1842,8 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const structuredGenerationEnabled = config.fixed_configuration?.structured_generation === true;
   const jointPerformanceGenerationEnabled =
     config.fixed_configuration?.joint_performance_generation === true;
+  const compactSpeakerPromptEnabled =
+    config.fixed_configuration?.compact_speaker_prompt === true;
   const typedGenerationEnabled = structuredGenerationEnabled || jointPerformanceGenerationEnabled;
   const generationField = jointPerformanceGenerationEnabled
     ? 'jointPerformanceGeneration'
@@ -1837,6 +1869,28 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const sourceSurfaceAccessibilityPasses = sourceSurfaceAccessibilities.filter(
     (metric) => metric.ok,
   ).length;
+  const compactSpeakerPrompts = resultEntries.map(({ row, bundle }) => {
+    const prompt = bundle?.compactSpeakingPrompt || null;
+    const authoredTokens = prompt?.promptSize?.authoredTotal?.estimatedTokens ?? null;
+    return {
+      turn: Number(row?.turn),
+      draw: Number(row?.draw ?? 1),
+      schema: prompt?.schema || null,
+      mode: prompt?.mode || null,
+      publicHistoryPreservedExactly: prompt?.publicHistoryPreservedExactly === true,
+      v2OutputShapePreserved: prompt?.v2OutputShapePreserved === true,
+      noNewEvidence: prompt?.noNewEvidence === true,
+      authoredEstimatedTokens: authoredTokens,
+      ok:
+        prompt?.schema === TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA &&
+        prompt?.publicHistoryPreservedExactly === true &&
+        prompt?.v2OutputShapePreserved === true &&
+        prompt?.noNewEvidence === true &&
+        Number.isFinite(Number(authoredTokens)) &&
+        Number(authoredTokens) <= Number(prompt?.maxEstimatedTokens || 2500),
+    };
+  });
+  const compactSpeakerPromptPasses = compactSpeakerPrompts.filter((metric) => metric.ok).length;
   const transportNormalizations = resultEntries.flatMap(({ row }) =>
     (row?.[generationField]?.parsed?.transport_normalizations || []).map((normalization) => ({
       turn: row.turn,
@@ -1969,6 +2023,9 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     jointPerformanceOwnership:
       config.gates_per_cell.require_joint_performance_ownership !== true ||
       (jointPerformanceGenerationEnabled && structuredSlotOwnershipPasses === results.length),
+    compactSpeakerPrompt:
+      config.gates_per_cell.require_compact_speaker_prompt !== true ||
+      (compactSpeakerPromptEnabled && compactSpeakerPromptPasses === results.length),
     exactHostSourceOccurrences:
       config.gates_per_cell.require_exact_host_source_occurrences !== true ||
       (jointPerformanceGenerationEnabled && exactSourceOccurrencePasses === results.length),
@@ -2026,6 +2083,13 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     jointPerformanceOwnershipFailures: jointPerformanceGenerationEnabled
       ? results.length - structuredSlotOwnershipPasses
       : 0,
+    compactSpeakerPromptPasses: compactSpeakerPromptEnabled
+      ? compactSpeakerPromptPasses
+      : 0,
+    compactSpeakerPromptFailures: compactSpeakerPromptEnabled
+      ? results.length - compactSpeakerPromptPasses
+      : 0,
+    compactSpeakerPrompts: compactSpeakerPromptEnabled ? compactSpeakerPrompts : [],
     exactHostSourceOccurrencePasses: jointPerformanceGenerationEnabled
       ? exactSourceOccurrencePasses
       : 0,
