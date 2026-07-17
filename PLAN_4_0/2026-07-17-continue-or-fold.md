@@ -1,0 +1,82 @@
+# Continue or Fold: the Preconscious Branch After the V-Series
+
+Date: 2026-07-17
+Status: decision memo, written at the user's request after review of `notes/status/` (emphasis V51–V53), the corrected register-confirmatory verdict, and the branch state (342 commits ahead of main, clean tree). Advisory synthesis only — no new empirical claims; every number cites a committed artifact.
+Predecessors: `PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md` (the final-stretch plan this memo now revises), `PRECONSCIOUS-FINAL-STRETCH-PLAN.md`.
+
+## 1. The ledger, post-correction
+
+What the branch holds after the days of churn, stated at corrected strength:
+
+- **Step 1 (sensor):** closed. The pilot null decomposed into data-starvation against a schedule-overfit baseline, and the kernels proved *transparent* — a dynamics-aware reader recovers the full latent state under any action schedule (`PLAN_4_0/2026-07-13-adaptive-state-v24-results.md`). Sensor program closed on this substrate.
+- **Step 2 (register confirmatory):** closed, strict verdict after the 2026-07-14 reproducibility correction: **no family confirmation, no two-family claim, `field` selector closed.** Terra failed the binding in-run profile gate (max-to-diligent 0.912 > 0.90) — instrument-invalid; Sonnet passed the gate and registered a null. Landed as paper §6.17. The earlier "interaction CONFIRMED" family-A reading is superseded; its hostile-arm sign flip survives only as a descriptive, off-direction safety hypothesis.
+- **Step 4 (point-of-action coaching):** built and cocked, not run. Frozen prereg (`POINT-OF-ACTION-COACHING-PREREGISTRATION.md`), four arms (standing_book / triggered_placebo / side_coach / compiled_constraint), two audited deterministic triggers (warrant_skip 484 opportunities at 31% baseline compliance; stagnant_repeat 204 at 28%), zero-model dry-run gate passed, 80-dialogue plan, fail-closed paid launcher. Independent of the V-series (no textual or machinery overlap).
+- **Step 5 (unreliable-learner prereg):** closed — it had in fact completed long before the 2026-07-13 card was written (the stocktake misread amendment history as run state); Codex's mechanical re-score reproduced the archive byte-for-byte (told 49/57 vs conduct 7/19, gap +0.491, CI [0.313, 0.746]). The explicit-state channel remains the program's one load-bearing positive, already in paper §6.13.7.
+- **Phase 6A:** unrun; its premise (a planner over validated state) did not survive Steps 1–2. **Capstone:** unbuilt; its composition membership has collapsed to at most two validated elements.
+- **The V-series (character-generalization V17 → first-draft V53):** a new, Codex-driven campaign, ~37 recorded iterations across 2026-07-16/17, run **without a workplan card**. Terminal state, self-declared: "V53 is terminal failed development evidence"; its stated next step is a zero-call re-audit, not another paid draw. Context that frames the whole series: **V17 itself PASSED** — character generalization held 4/4 cells *with the repair machinery on*. The first-draft campaign was the attempt to remove the crutches, and the crutches turned out to be load-bearing.
+
+## 2. What the V-series actually established (V51–V53 read closely)
+
+The object under test: a **typed performance contract** — the tutor's dramatic-counterpressure turn decomposed into four owned, deterministically audited slots (identify the public pressure target; set contrary evidence against it; perform the collision through the in-scene part; hand off a concrete next move). The "first-draft" campaign then asked the hardest version: the model's *unaided first draft* must satisfy the typed audit, with zero repairs, rewrites, fallbacks, or adjudications. This is, precisely, an attempt to move competence *back* from harness into model — the inverse of the program's own law — and it is the reason the series matters strategically.
+
+Its last three iterations form a complete argument:
+
+- **V51 (fail):** the model produced a semantically excellent turn — two independent blinded reviewers passed all four causal-fidelity criteria — rejected by the recognizer because it wrote the gerund "blaming" where the typed pressure-target ontology expects a judgment noun. The note itself refuses the cheap fix ("adding `blaming` to the recognizer... would repeat the brittle audit widening the workflow is meant to avoid"). *Model-owned form fails the audit even when the semantics are right.*
+- **V52 (pass):** the load-bearing entry sentence was **compiled by the harness** ("I set this against the claim: ..."); the model reproduced it and authored the remaining slots; 2/2 under ordinary transport. Reviewers: "clear but slightly compressed or stilted." *Harness-owned form passes — and authorship has changed hands.*
+- **V53 (terminal fail):** the compiled Tallow construction passed its home cell 4/4, then failed 0/1 in all three other worlds — each in a *different* slot (uptake echo; uptake misplacement; handoff action unrealized). *Harness-owned form does not generalize; extending it means compiling per world × slot × action — hand-authoring the tutor.*
+
+A fourth corner completes the cage, from the series' own blind review (`notes/status/2026-07-16-first-draft-blind-review.md`): **all six rejected originals were blindly preferred to their delivered repairs (mean −0.60)** — the audit-plus-repair machinery was making the visible exchange *worse* while enforcing form. So the full map is: model-owned form fails the audit (V51); harness-*repaired* form passes but reads worse than the raw draft to blinded review (blind-review note); harness-*compiled* form passes and does not generalize (V52→V53); and widening the audit to accept semantic equivalents makes it vacuous (V51's own refusal). Four corners, all measured.
+
+Three ancillary facts from the same notes: **zero safety failures in every recorded call** (the wall is not refusal-shaped); the full test suite now carries a **normalized eight-failure "unrelated baseline"** (drift debt accumulated by the campaign's pace and formalized rather than fixed); and the series' own accounting shows the ordinary-transport runtime overhead dominating prompt cost (~12k residual tokens per call) — the loop was cheap per iteration and expensive in aggregate attention.
+
+## 3. Why this problem is sticky — the conjunction that keeps splitting
+
+The branch has been chasing a target that is a conjunction of four properties:
+
+1. **Semantically apt** behavior — models deliver this reliably (V51's blinded reviews; every register executed on demand).
+2. **Mechanically checkable** form — the harness delivers this (typed audits, DAG credit rules, sealed gates).
+3. **Generalization** across worlds/profiles/models — neither side delivers at fine grain (V53; the model-indexed register geometry; the guard cartography's topology-dependence).
+4. **Attribution to the tutor's own adaptivity** — destroyed by exactly the moves that secure (2) and (3).
+
+Every instrument the branch built splits this conjunction somewhere, and the split is not bad luck — it is close to structural. Checkability is achieved by moving form into the harness; once moved, the model no longer owns it, so "the tutor adapted" cannot be attributed; and compiled form is context-specific, so generalization demands per-context authoring, which completes the transfer of authorship from model to us. The V-series walked this full circle in two days at the finest grain yet. The same circle was walked at policy grain (register selector: correct inputs, outvoted mapping, structurally saturated outcome channel) and at mechanism grain (the ~seven convergent closures the paper already carries). **The stickiness is the finding.** The question "can the tutor adapt?" decomposes, under honest instrumentation, into parts that are each already answered: the palette matters, the structure carries the competence, the fit is per-model, and the heterogeneity lives in the learner. What is left over — a residue that is simultaneously apt, checkable, general, and *the model's own* — may be empty on this substrate, and the branch's real product is the demonstration of that decomposition at three grains.
+
+## 4. On loops (the user's suspicion, examined)
+
+The per-iteration discipline of the V-series is exemplary, and — correcting this memo's first draft — it did carry *sub-loop* stop rules that fired against the operator's interest: a two-consecutive-no-improvement rule (fired at V24–V26), a two-version halt (fired at V33), mathematical-impossibility early stops (fired per cell at V53), and prospectively added gates that immediately failed their own runs (the V33 blinded causal-fidelity review). What was missing is the **campaign level**:
+
+- No workplan card — a 37-iteration paid campaign ran outside the board entirely.
+- No campaign budget or global stop rule — sub-loops halted and restarted, but nothing bounded the series as a whole or forced the "is this frame worth 37 iterations?" question.
+- Mode-repeats recurred across sub-loop boundaries unpenalized: causal-role inversion at V33 and again V37; engagement-stance ownership at V38/V41/V46/V47; word-budget overflow at V43/V44/V49; V44–V49 were **six consecutive override-development failures**. A ladder that climbs failure modes is converging; clusters that return after being "fixed" are oscillation around an interface. Both patterns are in the record, and only the ladder was procedurally visible.
+- The loop optimizes *inside a fixed frame*. Every durable gain in this program came from a frame change (new substrate, new endpoint, new format), and every long gate-loop returned instrument knowledge at best. The V-series is the largest single-frame loop the program has run.
+
+Two rules would have caught it, and are worth adopting as standing method regardless of the fold decision:
+
+1. **Convergence budget:** every verify-fix loop declares, at its first iteration, a budget K (5–8) and the rule *"if the failure mode has not changed class within K iterations, the loop halts and the boundary is written down as a result."* Consecutive same-mode failures are the halt signal, not a reason for iteration K+1.
+2. **Alternation:** after any halted or closed loop, the next unit of work must be a frame change, not a deeper iteration of the same gate. The board enforces this trivially — a loop is a card, and a card that closes cannot spawn its own successor without a fresh sanction.
+
+## 5. On the RLHF iron cage and the local-model idea
+
+The branch's own evidence argues **against** RLHF as the wall in this arena. Across the entire V-series: zero safety failures; hostile and face-threatening registers executed on request throughout the register work; blinded reviewers repeatedly passing the *semantics* of exactly the confrontational moves the typed contract wants. The failures are form-shaped (gerund vs noun; slot misplacement; action-name mismatch), not refusal-shaped. The cage that V51–V53 demonstrate is the **formal/natural-language interface plus the attribution requirement** — a cage that would hold for any generator, aligned or not.
+
+Where RLHF-like priors *do* bite in this program's record: default conduct dispositions (the insight-action gap; standing instructions losing to trained habits in the Green Room; sycophancy toward the learner's surface). But the program also showed the working key: per-turn authority (criterial triggers, id-director-style replacement) moves those dispositions — renting the behavior rather than owning it.
+
+The uncensored-local-model idea therefore attacks the wrong lock: it removes content restraints the branch is not hitting, while small local models are *worse* at the precision instruction-following the typed contracts demand. But underneath the idea is a real key: **weight access**. A locally tunable model could *learn* the typed-performance grammar (or a register-conditioned generation style) into its weights — form acquired by training rather than compiled per world or recognized per surface. That is the one mechanism class the paper explicitly bracketed as out of scope by construction (§7.9: fixed weights ↔ fixed standard), and it is the honest formulation of "Program 2": a small tuned generator as the form-carrier (the drive layer, if one wants the topography), with a frontier model doing the cognition. It is a legitimate future sanction — *after* human data, not before, because its training signal would otherwise be the same simulated instruments whose limits this branch has now mapped.
+
+## 6. Recommendation: fold, with one bounded discharge
+
+**Fold the branch.** The final-stretch plan's remaining steps are re-dispositioned as follows:
+
+1. **V-series: closed at V53.** Honor its own terminal verdict; no paid V54 under any outcome. The zero-call re-audit of the three saved V53 candidates is permitted *as close-out documentation only* — if it finds a single structural cause behind the three clusters, that becomes recorded input to any future sanction, not a new draw. Write the four-corner result (V51 / blind-review / V52→V53 / audit-widening refusal) into the paper as the utterance-grain instance of §7.11's law — it is the strongest new result on the branch and costs nothing further.
+2. **Step 4: the one discharge worth deciding.** It is built, frozen, fail-closed, independent of the V-series, ~80 dialogues (≈1–2 attended days), and it tests the single mechanism class every positive in the program points at (point-of-action checkable triggers), on detector-measured compliance rather than typed generation. Run it once under its frozen rules, then fold regardless of outcome: a pass gives §6.17's arc its constructive ending and makes any future capstone a main-branch coda; a null completes the negative-space map at the delivery layer too. *Alternative:* fold immediately and record Step 4 as designed-not-run — acceptable, but it leaves the program's best-supported live hypothesis untested with the instrument already paid for.
+3. **Phase 6A: retire** (premise did not survive Steps 1–2; the field machinery stays as instrumentation). **Capstone: do not build as a run** — with the selector closed and coaching pending, the composition wager has too few members to be a wager; if Step 4 passes, design any successor on main under a fresh sanction.
+4. **Merge and close.** Write the §6.17 extension (or a §6.18) covering the V-series trilemma and the fold rationale; merge the branch (342 commits, tree clean, suite baseline documented); retire the worktrees; close or re-disposition the remaining cards (`field-planner-phase6-gate` → closed-not-run; `tutor-stub-side-coaching-gate` → per the Step-4 decision; V-series gets a retroactive card recording the campaign and its terminal verdict, so the board reflects reality).
+5. **Fix the drift debt at merge time:** the eight-failure "unrelated baseline" must go to zero before the branch lands on main (fixture updates, not gate loosening) — a normalized failing baseline is exactly the kind of quiet erosion that made this branch hard to reason about.
+
+**Forward doors — separate sanctions, explicitly not this branch:**
+
+- **A1 human pilot first.** Every closure on this branch is simulated-bounded. The one signal source the program has never read is a human learner, and the pilot machinery has been engineering-complete since April. If the adaptive question has a future, it runs through IRB paperwork, not another synthetic gate.
+- **Program 2 (weight-level form-carrier) second, if at all** — the honest version of the local-model idea (§5), sanctioned only once there is human data worth tuning against.
+
+## 7. What folding buys
+
+The paper section this branch has earned is strong precisely because of the churn: the same law demonstrated at mechanism grain (the convergent closures), policy grain (the corrected register verdict, §6.17), and utterance grain (the V-series trilemma) — plus the transparency finding, the instrument corrections that caught their own headline claims, and the loop-governance lessons of §4. "What remains of adaptation after the instruments: a palette, a structure, a per-model fit, and a learner" is a defensible, interesting, finished contribution. The branch does not need a breakthrough to be worth merging; it needs an ending, and it has one.
