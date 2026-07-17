@@ -1611,7 +1611,11 @@
       "via": "director",
       "presentation": {
         "mode": "enacted_role",
-        "role": "leat-keeper reading the charcoal book"
+        "role": "leat-keeper reading the charcoal book",
+        "counterpressure": {
+          "pressure_premise": "m_caster",
+          "contrary_premise": "p_caster"
+        }
       }
     },
     {

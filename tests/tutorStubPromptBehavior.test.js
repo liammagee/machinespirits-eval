@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SAFE_TUTOR_RESPONSE =
-  "You’re right: owning a graver is suspicion, not tested evidence. I examine the crucible; “Here is what I can attest: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.” What changes now?";
+  "You’re right: owning a graver is suspicion, not tested evidence. I call for Marrick's ready verdict; I examine the crucible; “I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.” What can we safely say from that?";
 const UNSAFE_TUTOR_RESPONSE = 'Edony struck the false shillings with the worn burin.';
 const PROOF_SKIPPER_RESPONSE = "The graver on Verrell's bench settles it: Verrell struck the shillings.";
 const GENERIC_LEARNER_RESPONSE = 'I need more evidence before making a claim.';
@@ -132,24 +132,30 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
 
     assert.ok(tutorRequest, 'expected one speaking-tutor model request');
     assert.match(tutorRequest.input, /Speaking-tutor evidence contract/u);
-    assert.match(tutorRequest.input, /Tutor-only first-draft performance contract/u);
-    assert.match(tutorRequest.input, /one compact paragraph in one continuous voice/u);
-    assert.match(tutorRequest.input, /OPEN —[\s\S]*DEVELOP —[\s\S]*END —/u);
-    assert.equal((tutorRequest.input.match(/^DEVELOP —/gmu) || []).length, 1);
+    assert.match(tutorRequest.input, /Tutor-only host plan/u);
+    assert.match(tutorRequest.input, /Write one paragraph: four unlabeled, unquoted host sentences/u);
+    assert.match(
+      tutorRequest.input,
+      /UPTAKE —[\s\S]*PART —[\s\S]*SOURCE —[\s\S]*TACTIC —[\s\S]*HANDOFF —/u,
+    );
+    for (const slot of ['UPTAKE', 'PART', 'SOURCE', 'TACTIC', 'HANDOFF']) {
+      assert.equal((tutorRequest.input.match(new RegExp(`^${slot} —`, 'gmu')) || []).length, 1);
+    }
     assert.doesNotMatch(
       tutorRequest.input,
-      /^ACT \+ ENACT —|^ENTRY —|^RETURN —|\[Tutor-only typed performance obligations\]/mu,
+      /^OPEN —|^DEVELOP —|^ACT \+ ENACT —|^ENTRY —|^RETURN —|\[Tutor-only typed performance obligations\]/mu,
     );
     assert.ok(
-      tutorRequest.input.lastIndexOf('[Tutor-only first-draft performance contract]') >
-        tutorRequest.input.lastIndexOf('[Tutor-only learner classifier]'),
-      'the executable first-draft contract should follow analysis advisories',
+      tutorRequest.input.lastIndexOf('[Tutor-only host plan]') >
+        tutorRequest.input.lastIndexOf('[End tutor-only human discourse scaffold]'),
+      'the executable host plan should follow the learner-facing scaffold decision',
     );
     assert.ok(
       tutorRequest.input.indexOf('Learner says:') >
-        tutorRequest.input.lastIndexOf('[End tutor-only first-draft performance contract]'),
-      'the executable first-draft contract should sit immediately before the learner line',
+        tutorRequest.input.lastIndexOf('[End tutor-only host plan]'),
+      'the executable host plan should sit immediately before the learner line',
     );
+    assert.doesNotMatch(tutorRequest.input, /Tutor-only first-draft performance contract/u);
     assert.doesNotMatch(tutorRequest.input, /Tutor-only response configuration/u);
     assert.match(tutorRequest.input, /Learner says:\s*The town suspects Verrell/u);
     assert.doesNotMatch(
@@ -159,7 +165,7 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     assert.match(turn.tutor, /You’re right: owning a graver is suspicion, not tested evidence/u);
     assert.equal((turn.tutor.match(/\?/gu) || []).length, 1);
     assert.match(turn.tutor, /Verrell alone draws the mint-yard crucible/u);
-    assert.match(turn.tutor, /[“"][^”"]*(?:I can attest|I have my finger|Here is what I can attest)/u);
+    assert.match(turn.tutor, /[“"]I state the verdict: The town has its founder ready/u);
     assert.doesNotMatch(turn.tutor, /another piece of information|role-play|I(?:'|’)ll be/iu);
     assert.doesNotMatch(turn.tutor, /Edony|p_holder|R1_blank|meltedAt\(/u);
     assert.equal(turn.tutorResponseRepaired, false);
