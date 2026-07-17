@@ -490,7 +490,11 @@ test('live V1 compensation cannot rescue weak host part, tactic, or stance reali
     world,
   });
   assert.equal(unpartitioned.axes.actorial_part.part_visible, true);
-  assert.equal(unpartitioned.axes.actorial_part.performance_visible, true);
+  assert.equal(
+    unpartitioned.axes.actorial_part.performance_visible,
+    false,
+    'a lexical-only source/compensation surface must not impersonate an evidentiary boundary',
+  );
   assert.equal(unpartitioned.axes.engagement_stance.visible, true);
 
   const weakHostSurface = tutorStubLiveResponseConfigurationSurface({
@@ -512,7 +516,7 @@ test('live V1 compensation cannot rescue weak host part, tactic, or stance reali
   assert.equal(partitionedWeak.axes.engagement_stance.visible, false);
 
   const strongText =
-    `I hear you. I examine only the private-seal register, not the whole case. ${source.text} ` +
+    `I hear you. I examine the private-seal register: it shows a name, but not who held the seal. ${source.text} ` +
     `${compensation} What does the entry show?`;
   const strongLiveAudit = auditTutorStubLiveSourceActionAlignmentV1({
     text: strongText,

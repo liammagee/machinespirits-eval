@@ -307,8 +307,8 @@ test('evidentiary-boundary speaking contract requires explicit evidence and conc
   });
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
 
-  assert.match(plan.slots.performance.response_instruction, /Name the public evidence/iu);
-  assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit/iu);
+  assert.match(plan.slots.performance.response_instruction, /Name the public evidence, what it supports/iu);
+  assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit; use no pronoun substitute/iu);
   assert.match(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
   assert.match(plan.slots.performance.entry_instruction, /do not replace either with “it,” “that,” or another pronoun/iu);
 });
