@@ -143,6 +143,20 @@ POINT-OF-ACTION-COACHING-PREREGISTRATION.md §11 (execution ledger), paper
 §6.18 addendum (v3.0.216), analyzer scripts/analyze-step4-compliance.mjs
 (reproduces the committed JSON byte-identically), artifacts
 exports/tutor-stub-step4-claim-runs/{compliance-analysis,launch-plan}.json.
-Raw traces machine-local in the ms-preconscious-step4 worktree pending
-archive-repo consolidation. No successor run licensed under this prereg; the
-preconscious fold is complete.
+Raw traces archived checksum-verified to
+~/.machinespirits-data/step4-claim-runs-2026-07/ (traces + quarantine + plan
++ analysis); the ms-preconscious-step4 worktree is removed, branch
+step4-frozen-isolated retained as cited provenance. No successor run licensed
+under this prereg; the preconscious fold is complete.
+
+2026-07-18 Claude: CROSS-IMPLEMENTATION CHECK. An independent Codex-authored
+scorer (analyze-step4-point-of-action-results.js + test, found uncommitted in
+the scorer staging worktree, preserved to the archive's uncommitted-scorer/)
+reproduces every point estimate, density verdict, guardrail figure, and the
+instrument-failure verdict exactly (two scratch-copy scaffolding adjustments:
+its pre-backport provenance SHA and its one-file-per-dir assumption). Sole
+divergence: compiled-arm CI lower bounds — degenerate-draw convention in the
+starved T1 channel (theirs drops the draw; the analyzer of record keeps the
+conservative T2-only macro). All licensed conclusions convention-robust;
+noted in prereg §11 + paper v3.0.218. Independent outputs archived at
+results.{json,md} beside the traces.

@@ -403,3 +403,30 @@ descriptions stand as exploratory observations only. Under §8's closing
 clause, no prompt tuning, threshold tuning, fifth arm, additional seeds, or
 new selector is licensed; a successor study requires a new document. The Step
 4 gate is discharged: this pre-registration is closed.
+
+### Cross-implementation check (added 2026-07-18, post-verdict)
+
+A second, independently written analyzer
+(`scripts/analyze-step4-point-of-action-results.js`, found uncommitted in the
+scorer staging worktree; 537 lines, Codex-authored) was run against the same
+80 sealed traces after the verdict above was recorded. Two scaffolding
+adjustments were required in a scratch copy, both documented deviations rather
+than analysis changes: its frozen provenance SHA predates the isolation
+backport (092cf672 vs the actual launch SHA 91b8a50e), and its
+one-trace-file-per-directory assumption predates the capped-retry partials
+(replaced with the sealed-file rule). With those two adjustments it
+reproduces **every point estimate, opportunity count, density verdict,
+coverage/safety/leak figure, and the §8 verdict
+(`instrument_failure_no_mechanism_verdict`) exactly.** One divergence: the
+95% CI lower bounds on the compiled_constraint contrasts (theirs [+0.183,
++0.664] sol and [+0.250, +0.629] sonnet vs [−0.033, +0.658] and [+0.089,
++0.626] here). Cause localized: in bootstrap resamples where the sparse T1
+channel draws zero opportunities, their implementation drops the draw while
+the analyzer of record keeps it as a T2-only macro (the conservative
+convention). The frozen text did not specify degenerate-draw handling because
+the density floor was supposed to make it unreachable; the sensitivity is
+confined to the compiled arms' lower bounds and touches no verdict, density
+gate, or point estimate. Reading: whether the sol compiled CI excludes zero
+is convention-dependent; every licensed conclusion is convention-robust. The
+independent run's outputs are archived beside the traces
+(`~/.machinespirits-data/step4-claim-runs-2026-07/results.{json,md}`).
