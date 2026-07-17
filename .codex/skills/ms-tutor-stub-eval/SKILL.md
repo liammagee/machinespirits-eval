@@ -409,6 +409,31 @@ Useful variants:
   never to child-directed speech. Every completed tutor response stores a
   deterministic surface audit for whether each configured axis became visible
   in the transcript.
+- `/random` toggles a session-only random-performance overlay; `/random on`,
+  `/random off`, and `/random status` are explicit forms. While enabled, the
+  harness uniformly samples the engagement stance from the safe active palette
+  and the actorial host part from the non-closure character set. It excludes
+  the immediately previous choice when alternatives exist. These two draws are
+  seeded and independent of classifier, learner-DAG, field, trajectory, pacing,
+  and pressure signals. The learner analysis still selects `action_family`,
+  audience, lexical accessibility, and scene immersion; authored evidence
+  release, licensed closure, and response safety remain authoritative. The
+  underlying register policy is preserved and resumes when the overlay is
+  disabled. Toggle changes invalidate mixed suggestion/analysis/tutor-prefetch
+  state, survive `/reset` within the session, appear in status/transcript
+  settings and the compact model line, and persist both draw audits on each
+  turn. Random mode bypasses engagement-stance/actorial-part temperature.
+- `/register <stance>` and `/character <part>` explicitly direct one
+  performance axis for subsequent tutor turns. With no argument they show the
+  active value and choices; `auto` (plus `clear`, `off`, or `reset`) returns
+  that axis to normal selection. An explicit direction outranks `/random` only
+  on its own axis, so the other axis may remain random or adaptive. Learner
+  analysis still selects the action family, audience, language, and scene;
+  authored clue-source enactment, licensed closeout character, evidence release,
+  and response safety retain structural priority. Changes refresh mixed
+  suggestion/analysis/tutor-prefetch state, survive `/reset` within the
+  session, autocomplete from the slash palette, and appear in status,
+  transcript settings, compact model output, and turn traces.
 - In `defeasible_human_scaffold`, high-confidence adjacent ellipsis such as
   `it will be the same` is resolved against the immediately preceding
   single-referent public question. The strict learner-DAG may retain an audit
@@ -441,6 +466,19 @@ Useful variants:
 - Mixed mode also pre-analyzes the exact cached answer in the background. An
   unchanged Tab or `/use` submission reuses that result; edited text or changed
   turn state invalidates it and runs the normal analysis path.
+- Every learner response carries
+  `machinespirits.tutor-stub.learner-response-provenance.v1`. Use
+  `authorship` (`human`, `ai`, `hybrid`, or legacy `unknown`) as the stable
+  analysis field. Terminal and voice-transcribed turns are human; automated
+  learner turns are AI; unchanged Tab and `/use` drafts are AI with
+  `humanInLoop: true`; an edited Tab draft is hybrid. Model, profile, suggestion
+  request, input method, and human/AI boolean facets are retained when
+  applicable. Each compound fragment keeps its own provenance and the turn
+  aggregates it. The record appears on the completed turn, `learnerInput`,
+  `learnerMessages`, the explicit `learner_response_provenance_recorded` trace
+  event, transcript HTML, and the final learning summary. Do not infer
+  authorship from interaction mode: an explicit first message in auto mode is
+  still human-authored.
 - After that analysis, mixed mode speculatively generates the tutor response on
   a cloned state. It is reused only when the exact rendered classifier,
   learner-DAG, register, scaffold, transcript, and tutor configuration context
@@ -609,15 +647,16 @@ Useful variants:
 - Type `/` during a run to open the live slash-command palette above the
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
-  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/theme`, `/motion`, `/field`, `/viz`,
+  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - Consecutive public learner lines entered before the tutor reply appears form
   one compound learner turn. Each added line aborts or invalidates the current
   analysis/tutor attempt, every assessment is regenerated from the full input,
   and only the latest transactional state commits. The JSONL trace preserves
-  each typed fragment plus the superseded-attempt lifecycle; the public history
-  stores one user message and one completed turn with `learnerMessages`.
+  each typed fragment plus its learner-response provenance and the
+  superseded-attempt lifecycle; the public history stores one user message and
+  one completed turn with `learnerMessages`.
 
 ## Automated Single-Learner Eval
 

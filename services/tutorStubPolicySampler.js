@@ -3,6 +3,7 @@ import { deterministicChoice } from './deterministicExperimentSampler.js';
 export const TUTOR_STUB_POLICY_DRAW_SCHEMA = 'machinespirits.tutor-stub.policy-draw.v1';
 export const TUTOR_STUB_STOCHASTIC_POLICY_IDS = Object.freeze([
   'random',
+  'random_performance',
   'negative',
   'field',
   'trajectory',

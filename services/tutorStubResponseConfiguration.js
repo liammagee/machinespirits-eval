@@ -249,6 +249,13 @@ export function selectTutorStubSceneImmersion({ classification, comprehension, w
 
 const ACTORIAL_PART_IDS = ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'];
 
+// These host parts are safe to vary independently of the learner assessment.
+// `foreperson` remains a structural closeout role and is therefore selected
+// only by the normal closure lock.
+export function tutorStubRandomizableActorialPartIds() {
+  return ACTORIAL_PART_IDS.filter((part) => part !== 'foreperson');
+}
+
 const STANCE_PART_AFFINITY = {
   plain: { record_keeper: 0.8, scene_partner: 0.55, examiner: 0.35 },
   precise: { examiner: 0.9, skeptic: 0.7, record_keeper: 0.4 },
@@ -639,9 +646,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const sceneDefinitions = getSceneImmersionDefinitions();
   const actorialDefinitions = getActorialPartDefinitions();
   const stance = configuration.engagement_stance;
-  const stanceContract = oneLine(
-    stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract,
-  );
+  const stanceContract = oneLine(stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
   return [
     '[Tutor-only response configuration]',
@@ -675,6 +680,17 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       configuration.actorial_performance?.contract ||
         'Enter through a concrete character action or spoken line and keep the learner inside the scene.',
     )}`,
+    configuration.random_performance?.enabled
+      ? 'Random performance mode: the engagement stance and actorial host part were sampled independently of learner assessment. The action, audience, language, scene, evidence release, closure, and response-safety constraints still apply normally.'
+      : null,
+    configuration.performance_directives?.register
+      ? `Explicit stance direction: keep ${configuration.performance_directives.register.value} as the engagement stance for this response. Do not soften, intensify, or replace it from learner analysis, and never mention the direction or its command.`
+      : null,
+    configuration.performance_directives?.character
+      ? configuration.performance_directives.character.applied
+        ? `Explicit host-character direction: perform ${configuration.performance_directives.character.value} as the host part for this response. Do not replace it from learner analysis, and never mention the direction or its command.`
+        : 'Explicit host-character direction is deferred by the licensed closeout role. Perform the closeout role and do not mention the deferred direction.'
+      : null,
     `Unresolved terms: ${unresolved}.`,
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
@@ -685,7 +701,11 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
         ? `Clue release: slower at ${configuration.release_pacing.effectiveSpeed}x. Do not add a new clue unless it is already due; consolidate one public step first.`
         : `Clue release: authored pace at ${configuration.release_pacing?.effectiveSpeed ?? 1}x; add no more than one authored clue batch this turn.`,
     'These are independent axes. Perform the action family and visibly take the actorial host part; do not infer either one from the engagement stance or replace it with an authored clue source.',
-    'Temperature sharpens or broadens only the engagement-stance and actorial-part distributions. Do not blur the audience, lexical, action, or scene contracts.',
+    configuration.random_performance?.enabled
+      ? 'Random performance mode bypasses temperature for the engagement stance and actorial host part. Do not let that random variation blur the audience, lexical, action, scene, evidence, or safety contracts.'
+      : configuration.performance_directives?.register || configuration.performance_directives?.character
+        ? 'Temperature never changes an explicitly directed axis. It may still sharpen or broaden an undirected engagement-stance or actorial-part distribution; it never blurs the audience, lexical, action, or scene contracts.'
+        : 'Temperature sharpens or broadens only the engagement-stance and actorial-part distributions. Do not blur the audience, lexical, action, or scene contracts.',
     'Enter the part through concrete first-person action or direct speech. Do not use a role-name speaker label, stage direction, description of acting, or announcement of an abstract teaching strategy. Preserve the learner-responsive opening and let it flow into the scene as one voice.',
     'Forbidden meta-frames: “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” “back to us,” and any stock announcement that another piece of information is being supplied. Let the scene itself signal the arrival.',
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',
@@ -730,9 +750,7 @@ export function measureTutorStubSurfaceSentenceAccessibility({
   const words = responseWords(text);
   const sentences = responseSentences(text);
   const sentenceWordCounts = sentences.map((sentence) => responseWords(sentence).length);
-  const averageSentenceWords = Number(
-    (words.length / Math.max(1, sentences.length)).toFixed(2),
-  );
+  const averageSentenceWords = Number((words.length / Math.max(1, sentences.length)).toFixed(2));
   const audienceDefinition = getAudienceRegisterDefinitions()[audienceRegister] || {};
   const lexicalDefinition = getLexicalAccessibilityDefinitions()[lexicalAccessibility] || {};
   const audienceMaximum = Number(audienceDefinition.max_average_sentence_words);
@@ -825,7 +843,11 @@ function singularSceneLexeme(value) {
 function sceneLexiconMatches(text, world) {
   const candidateTerms = [
     ...new Set(
-      (String(text || '').toLowerCase().match(/[\p{L}][\p{L}'’-]{3,}/gu) || []).map(normalizedSceneLexeme),
+      (
+        String(text || '')
+          .toLowerCase()
+          .match(/[\p{L}][\p{L}'’-]{3,}/gu) || []
+      ).map(normalizedSceneLexeme),
     ),
   ];
   const candidateTermSet = new Set(candidateTerms);
@@ -1291,16 +1313,23 @@ function contractAnchor(contract, id) {
 
 function normalizedContentTokens(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []).map((token) =>
-      token.replace(/[’]/gu, "'").replace(/'s$/u, ''),
-    ),
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []
+    ).map((token) => token.replace(/[’]/gu, "'").replace(/'s$/u, '')),
   );
 }
 
 function anchorOverlapCount(text, anchor) {
   const textTokens = normalizedContentTokens(text);
   return (anchor?.content_tokens || []).filter((token) =>
-    textTokens.has(String(token || '').toLowerCase().replace(/[’]/gu, "'").replace(/'s$/u, '')),
+    textTokens.has(
+      String(token || '')
+        .toLowerCase()
+        .replace(/[’]/gu, "'")
+        .replace(/'s$/u, ''),
+    ),
   ).length;
 }
 
@@ -1369,9 +1398,7 @@ function auditPublicJudgmentCounterpressureEvents({
     declared_judgment_falter_visible: Boolean(falterSentence),
   };
   const falterRecognized =
-    Object.values(falterPrerequisites).every(Boolean) &&
-    handoffOverlapCount > 0 &&
-    contraryEvidenceOverlapCount > 0;
+    Object.values(falterPrerequisites).every(Boolean) && handoffOverlapCount > 0 && contraryEvidenceOverlapCount > 0;
   const meetsContraryPrerequisites = {
     ...commonPrerequisites,
     exact_contrary_source_excluded: exactContrarySourceExcluded,
@@ -1379,8 +1406,7 @@ function auditPublicJudgmentCounterpressureEvents({
     pressure_target_overlap_at_least_two: meetsPressureTargetOverlapCount >= 2,
     contrary_evidence_overlap_at_least_two: meetsContraryEvidenceOverlapCount >= 2,
   };
-  const meetsContraryRecognized =
-    Object.values(meetsContraryPrerequisites).every(Boolean) && handoffOverlapCount > 0;
+  const meetsContraryRecognized = Object.values(meetsContraryPrerequisites).every(Boolean) && handoffOverlapCount > 0;
   const excludedSourceSpanIdsResult = [...excludedSourceSpanIds];
   return {
     publicJudgmentFalterRecognition: {
@@ -1438,10 +1464,7 @@ function evidentiaryBoundaryRecognition(text) {
   const boundedEvidenceForce =
     /\b(?:claim|conclusion|finding|inference|verdict)\b[^.!?]{0,55}\bbeyond\b[^.!?]{0,30}\bevidence\b|\b(?:establish|licensed|prove|show|support|tie)\w*\b[^.!?]{0,70}\b(?:and no more|no more|not proof (?:of|that))\b|,\s*not proof (?:of|that)\b|\bnot yet\s+(?:the\s+)?(?:[\p{L}-]+\s+){0,2}(?:answer|cause|conclusion|culprit|finding|identity|person|source|suspect|verdict)\b|\b(?:cause|hand|route|source)\b[^.!?]{0,25}\bremains?\s+unshown\b|\bnothing yet about whether\b/iu.test(
       text,
-    ) ||
-    /\bwhat\b[^?]{0,100}\bsupport\w*\b[^?]{0,80}\band what\b[^?]{0,60}\bremains?\s+unshown\b/iu.test(
-      text,
-    );
+    ) || /\bwhat\b[^?]{0,100}\bsupport\w*\b[^?]{0,80}\band what\b[^?]{0,60}\bremains?\s+unshown\b/iu.test(text);
   const unresolvedDependency =
     /\b(?:has|have) not yet been matched\b|\buntil\b[^.!?]{0,100}\b(?:assay|match|metal|record|result|test|trace)\b[^.!?]{0,100}\b(?:answers?|matches?|proves?|shows?|ties?)\b[^.!?]{0,100}\b(?:establishes? nothing|remains? unproved|what\b[^?]{0,35}\bprove|only\b[^.!?]{0,35}\b(?:accusation|claim|suspicion|theory|verdict))\b/iu.test(
       text,
@@ -1466,10 +1489,18 @@ function evidentiaryBoundaryRecognition(text) {
   // observation is said to leave its causal/identity conclusion unresolved.
   const boundedClaimRevision = sentences.some(
     (sentence) =>
-      /\b(?:limits?|qualif(?:y|ies)|undermines?|weakens?)\b[^.!?]{0,35}\b(?:that|this|the)\s+(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b/iu.test(sentence) ||
-      /\b(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b[^.!?]{0,35}\b(?:is|was)\s+(?:limited|qualified|undermined|weakened)\b/iu.test(sentence) ||
-      /\b(?:identif(?:y|ies)|names?|proves?|shows?)\s+(?:neither|no)\b[^.!?]{0,55}\b(?:cause|culprit|person|source|suspect)\b/iu.test(sentence) ||
-      /\b(?:cause|culprit|person|source|suspect)\b[^.!?]{0,45}\b(?:remains?|stays?)\s+(?:open|unknown|unproved|unshown)\b/iu.test(sentence),
+      /\b(?:limits?|qualif(?:y|ies)|undermines?|weakens?)\b[^.!?]{0,35}\b(?:that|this|the)\s+(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b/iu.test(
+        sentence,
+      ) ||
+      /\b(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b[^.!?]{0,35}\b(?:is|was)\s+(?:limited|qualified|undermined|weakened)\b/iu.test(
+        sentence,
+      ) ||
+      /\b(?:identif(?:y|ies)|names?|proves?|shows?)\s+(?:neither|no)\b[^.!?]{0,55}\b(?:cause|culprit|person|source|suspect)\b/iu.test(
+        sentence,
+      ) ||
+      /\b(?:cause|culprit|person|source|suspect)\b[^.!?]{0,45}\b(?:remains?|stays?)\s+(?:open|unknown|unproved|unshown)\b/iu.test(
+        sentence,
+      ),
   );
   // Recognize the general evidence -> proposition relation when the evidence
   // is explicitly denied enough force to support a named live claim. Keep the
@@ -1489,10 +1520,7 @@ function evidentiaryBoundaryRecognition(text) {
       /\b(?:book|chargers?|clue|entry|evidence|finding|ledger|log|mark|note|observation|reading|record|result|sample|stocktake|test|trace)\b[^.!?]{0,80}\b(?:cannot|can[’']t|does not|doesn[’']t|fails? to|is not enough to)\s+(?:establish|prove|show|support|tie)\b[^.!?]{0,35}\b(?:that|this|the)\s+(?:case|claim|conclusion|inference|theory|verdict)\b/iu.test(
         sentence,
       );
-    return (
-      (namedPropositionBeforeContrast && evidenceDeniesAnaphoricSupport) ||
-      namedEvidenceDeniesExplicitClaim
-    );
+    return (namedPropositionBeforeContrast && evidenceDeniesAnaphoricSupport) || namedEvidenceDeniesExplicitClaim;
   });
   // A second directed boundary construction: named evidence can support one
   // explicit proposition while a contrastive clause denies establishment of
@@ -1785,9 +1813,7 @@ export function auditTutorStubActorialPerformanceRealization({
 } = {}) {
   const normalizedOwnedText = oneLine(ownedText);
   const normalizedFullText = oneLine(fullText);
-  const normalizedSpanTexts = (Array.isArray(spanTexts) ? spanTexts : [])
-    .map(oneLine)
-    .filter(Boolean);
+  const normalizedSpanTexts = (Array.isArray(spanTexts) ? spanTexts : []).map(oneLine).filter(Boolean);
   const scopeBound = ownedScopeBound({
     ownedText: normalizedOwnedText,
     fullText: normalizedFullText,
@@ -1797,19 +1823,17 @@ export function auditTutorStubActorialPerformanceRealization({
   const selected = configuration?.actorial_performance?.id || null;
   const visible = Boolean(
     configuration &&
-      scopeBound &&
-      actorialPerformanceVisible(configuration, normalizedOwnedText, metrics, {
-        performanceObligationContract,
-        actorialPartVisible: selectedPartVisible,
-        fullText: normalizedFullText,
-        publicJudgmentFalterRecognition,
-        publicJudgmentMeetsContraryEvidenceRecognition,
-      }),
+    scopeBound &&
+    actorialPerformanceVisible(configuration, normalizedOwnedText, metrics, {
+      performanceObligationContract,
+      actorialPartVisible: selectedPartVisible,
+      fullText: normalizedFullText,
+      publicJudgmentFalterRecognition,
+      publicJudgmentMeetsContraryEvidenceRecognition,
+    }),
   );
   const boundaryRecognition =
-    selected === 'evidentiary_boundary'
-      ? evidentiaryBoundaryRecognition(normalizedOwnedText)
-      : null;
+    selected === 'evidentiary_boundary' ? evidentiaryBoundaryRecognition(normalizedOwnedText) : null;
   return {
     schema: TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA,
     predicate: 'selected_actorial_performance_visible',

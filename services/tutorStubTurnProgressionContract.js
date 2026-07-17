@@ -1,9 +1,6 @@
-export const TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA =
-  'machinespirits.tutor-stub.turn-progression-contract.v1';
-export const TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.turn-progression-audit.v1';
-export const TUTOR_STUB_LIVE_TURN_PROGRESSION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.live-turn-progression-audit.v1';
+export const TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-contract.v1';
+export const TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-audit.v1';
+export const TUTOR_STUB_LIVE_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.live-turn-progression-audit.v1';
 
 const TOKEN_PATTERN = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 const QUESTION_PATTERN = /\?/u;
@@ -28,85 +25,83 @@ const NO_QUESTION_ACTIONS = new Set([
   'receive_vulnerability',
 ]);
 const liveSentenceSegmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
-const FOCUS_STOP_WORDS = new Set(
-  [
-    'a',
-    'about',
-    'after',
-    'again',
-    'also',
-    'an',
-    'and',
-    'are',
-    'as',
-    'at',
-    'be',
-    'because',
-    'before',
-    'but',
-    'by',
-    'can',
-    'could',
-    'did',
-    'do',
-    'does',
-    'down',
-    'enter',
-    'for',
-    'from',
-    'give',
-    'had',
-    'has',
-    'have',
-    'how',
-    'i',
-    'in',
-    'into',
-    'is',
-    'it',
-    'its',
-    'line',
-    'me',
-    'next',
-    'not',
-    'now',
-    'of',
-    'on',
-    'only',
-    'or',
-    'record',
-    'say',
-    'sentence',
-    'should',
-    'show',
-    'that',
-    'the',
-    'their',
-    'them',
-    'then',
-    'this',
-    'to',
-    'us',
-    'was',
-    'were',
-    'what',
-    'when',
-    'where',
-    'which',
-    'him',
-    'who',
-    'whose',
-    'why',
-    'will',
-    'with',
-    'wording',
-    'words',
-    'would',
-    'write',
-    'you',
-    'your',
-  ],
-);
+const FOCUS_STOP_WORDS = new Set([
+  'a',
+  'about',
+  'after',
+  'again',
+  'also',
+  'an',
+  'and',
+  'are',
+  'as',
+  'at',
+  'be',
+  'because',
+  'before',
+  'but',
+  'by',
+  'can',
+  'could',
+  'did',
+  'do',
+  'does',
+  'down',
+  'enter',
+  'for',
+  'from',
+  'give',
+  'had',
+  'has',
+  'have',
+  'how',
+  'i',
+  'in',
+  'into',
+  'is',
+  'it',
+  'its',
+  'line',
+  'me',
+  'next',
+  'not',
+  'now',
+  'of',
+  'on',
+  'only',
+  'or',
+  'record',
+  'say',
+  'sentence',
+  'should',
+  'show',
+  'that',
+  'the',
+  'their',
+  'them',
+  'then',
+  'this',
+  'to',
+  'us',
+  'was',
+  'were',
+  'what',
+  'when',
+  'where',
+  'which',
+  'him',
+  'who',
+  'whose',
+  'why',
+  'will',
+  'with',
+  'wording',
+  'words',
+  'would',
+  'write',
+  'you',
+  'your',
+]);
 
 function oneLine(value) {
   return String(value || '')
@@ -149,14 +144,16 @@ function normalizeToken(value) {
     .replace(/[’']/gu, '')
     .replace(/(?:ies)$/u, 'y')
     .replace(/(?:ing|ed|es|s)$/u, (suffix) => (String(value || '').length - suffix.length >= 4 ? '' : suffix));
-  return {
-    begin: 'start',
-    confirmation: 'confirm',
-    pacing: 'pace',
-    proof: 'prove',
-    slower: 'slow',
-    suspicion: 'suspect',
-  }[token] || token;
+  return (
+    {
+      begin: 'start',
+      confirmation: 'confirm',
+      pacing: 'pace',
+      proof: 'prove',
+      slower: 'slow',
+      suspicion: 'suspect',
+    }[token] || token
+  );
 }
 
 function contentTerms(value) {
@@ -205,7 +202,10 @@ function boundedPublicFocus(value, maxLength = 120) {
     .replace(/[.!]+$/gu, '')
     .trim();
   if (surface.length <= maxLength) return surface;
-  const bounded = surface.slice(0, maxLength + 1).replace(/\s+\S*$/u, '').trim();
+  const bounded = surface
+    .slice(0, maxLength + 1)
+    .replace(/\s+\S*$/u, '')
+    .trim();
   return `${bounded || surface.slice(0, maxLength).trim()}…`;
 }
 
@@ -351,10 +351,20 @@ function focusSurface({ learnerText = '', responseCompositionFrame = null } = {}
     return {
       surface: summary,
       source: 'learner_move_summary',
-      semanticCandidates: { accepted_meaning: acceptedMeaning || null, summary: summary || null, pedagogical_need: pedagogicalNeed || null },
+      semanticCandidates: {
+        accepted_meaning: acceptedMeaning || null,
+        summary: summary || null,
+        pedagogical_need: pedagogicalNeed || null,
+      },
     };
   }
-  const typedSignals = [move.request_type, move.discourse_move, move.epistemic_stance, move.affect, move.pedagogical_need]
+  const typedSignals = [
+    move.request_type,
+    move.discourse_move,
+    move.epistemic_stance,
+    move.affect,
+    move.pedagogical_need,
+  ]
     .map(oneLine)
     .join(' ');
   if (
@@ -395,8 +405,13 @@ function focusGroups(surface = '') {
   const source = oneLine(surface)
     .replace(/^[\s\S]*?\babout\s+/iu, '')
     .replace(/[?.!]+$/gu, '');
-  const pieces = source.split(/\s+(?:and|versus|vs\.?|to)\s+/iu).map(oneLine).filter(Boolean);
-  const groups = pieces.map((piece) => ({ surface: piece, terms: contentTerms(piece) })).filter((row) => row.terms.length);
+  const pieces = source
+    .split(/\s+(?:and|versus|vs\.?|to)\s+/iu)
+    .map(oneLine)
+    .filter(Boolean);
+  const groups = pieces
+    .map((piece) => ({ surface: piece, terms: contentTerms(piece) }))
+    .filter((row) => row.terms.length);
   return groups.slice(0, 3);
 }
 
@@ -417,13 +432,9 @@ function typedFocusRelation({ primaryTerms = [], dramaticReleaseFrame = null, pu
   if (mapping.relationship === 'direct' || mapping.relationship === 'sibling') {
     return { kind: mapping.relationship, basis: 'explicit_public_focus_mapping' };
   }
-  const conclusionPredicates = Array.isArray(mapping.conclusion_predicates)
-    ? mapping.conclusion_predicates
-    : [];
+  const conclusionPredicates = Array.isArray(mapping.conclusion_predicates) ? mapping.conclusion_predicates : [];
   const conclusionGroups = conclusionPredicates.map(predicateTerms).filter((terms) => terms.length >= 2);
-  const focusMatchesConclusion = conclusionGroups.some((terms) =>
-    terms.every((term) => primaryTerms.includes(term)),
-  );
+  const focusMatchesConclusion = conclusionGroups.some((terms) => terms.every((term) => primaryTerms.includes(term)));
   const mappedPremise = oneLine(mapping.premise_id);
   const mappedPredicate = oneLine(mapping.evidence_predicate);
   const dueMatchesInput = dueEntries.some((entry) => {
@@ -466,9 +477,7 @@ function handoffInstruction(contract) {
   const handoff = contract.handoff_contract;
   const focus = contract.turn_focus_contract;
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
-  const settled = handoff.prohibited_settled_surfaces.length
-    ? ' Do not reopen the settled point.'
-    : '';
+  const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
   const bridge = focus.sibling_relation_requires_explicit_bridge
     ? ' Explicitly connect SOURCE back to the learner’s requested relation.'
     : '';
@@ -584,13 +593,8 @@ function declarativeFallbackFocus(
 ) {
   const focus = contract?.turn_focus_contract || {};
   const uptake = contract?.learner_uptake || {};
-  const surface = oneLine(
-    focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface,
-  );
-  const terms = new Set([
-    ...(focus.primary_terms || []),
-    ...(uptake.focus_terms || []),
-  ].map(normalizeToken));
+  const surface = oneLine(focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface);
+  const terms = new Set([...(focus.primary_terms || []), ...(uptake.focus_terms || [])].map(normalizeToken));
   if (
     ['pace', 'slow', 'confus', 'overwhelm'].some((term) => terms.has(term)) ||
     /\b(?:slow down|one step at a time|overwhelm|confus)\b/iu.test(surface)
@@ -614,13 +618,18 @@ function declarativeFallbackFocus(
       : 'The record will carry only that supported public line for now.';
   }
   if (uptake.accepted_meaning) {
-    return `We will carry this settled point forward: ${oneLine(uptake.accepted_meaning).replace(/[?]+/gu, '').replace(/[.!]+$/gu, '')}.`;
+    return `We will carry this settled point forward: ${oneLine(uptake.accepted_meaning)
+      .replace(/[?]+/gu, '')
+      .replace(/[.!]+$/gu, '')}.`;
   }
   const focusObject = surface.match(
     /\b(?:badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
   )?.[0];
   if (focusObject) return `We will keep the ${focusObject} as the current public check.`;
-  const boundedSurface = surface.replace(/[?]+/gu, '').replace(/[.!]+$/gu, '').trim();
+  const boundedSurface = surface
+    .replace(/[?]+/gu, '')
+    .replace(/[.!]+$/gu, '')
+    .trim();
   return boundedSurface
     ? `We will carry this point forward as stated: ${boundedSurface}.`
     : 'We will carry that public point forward as stated.';
@@ -632,8 +641,7 @@ function handoffTargetVisible(handoff, text) {
   const target = coverage(requiredTerms, text);
   const minimumTargetCount = Math.min(2, requiredTerms.length);
   return (
-    target.count >= minimumTargetCount &&
-    target.coverage >= Math.min(0.5, minimumTargetCount / requiredTerms.length)
+    target.count >= minimumTargetCount && target.coverage >= Math.min(0.5, minimumTargetCount / requiredTerms.length)
   );
 }
 
@@ -642,15 +650,11 @@ function contractAwareFallbackQuestion(contract, defaultQuestion) {
   const handoff = contract?.handoff_contract || {};
   const dueSurfaces = contract?.turn_focus_contract?.due_surfaces || [];
   if (dueSurfaces.length || handoffTargetVisible(handoff, question)) return question;
-  const targetSurface = oneLine(
-    handoff.required_target_surfaces?.[0] || contract?.turn_focus_contract?.primary_surface,
-  )
+  const targetSurface = oneLine(handoff.required_target_surfaces?.[0] || contract?.turn_focus_contract?.primary_surface)
     .replace(/[?]+/gu, '')
     .replace(/[.!]+$/gu, '')
     .trim();
-  return targetSurface
-    ? `What does that let us carry forward about “${targetSurface}”?`
-    : question;
+  return targetSurface ? `What does that let us carry forward about “${targetSurface}”?` : question;
 }
 
 /**
@@ -693,7 +697,9 @@ function reopensSettledPoint(question = '', surfaces = []) {
     const settledTerms = contentTerms(surface);
     if (!settledTerms.length || !questionTerms.length) return false;
     const shared = overlap(settledTerms, questionTerms).length;
-    return shared >= Math.min(2, settledTerms.length) && shared / Math.min(settledTerms.length, questionTerms.length) >= 0.55;
+    return (
+      shared >= Math.min(2, settledTerms.length) && shared / Math.min(settledTerms.length, questionTerms.length) >= 0.55
+    );
   });
 }
 
@@ -730,10 +736,7 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
     contract.learner_uptake.mode === 'writable_entry' &&
     /^Write:\s*[“"]/u.test(slots.uptake) &&
     uptakeLinkage.materiallyLinked;
-  const responsiveUptake =
-    contract.learner_uptake.mode === 'writable_entry'
-      ? writableUptake
-      : uptakeLinkage.visible;
+  const responsiveUptake = contract.learner_uptake.mode === 'writable_entry' ? writableUptake : uptakeLinkage.visible;
   if (contract.learner_uptake.required && (!slots.uptake || !responsiveUptake)) {
     issues.push({
       type: 'learner_uptake_not_realized',
@@ -784,7 +787,8 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
   const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
   if (
     handoff.required_target_terms.length &&
-    (target.count < minimumTargetCount || target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
+    (target.count < minimumTargetCount ||
+      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
   ) {
     issues.push({
       type: 'handoff_loses_turn_focus',
@@ -873,15 +877,10 @@ export function auditTutorStubLiveTurnProgressionV1({
     acceptedMeaning: contract.learner_uptake.accepted_meaning,
   });
   const uptakeOverlap = uptakeLinkage.matchedTerms;
-  const requestedEntryAnswerRecognition =
-    responseComposition?.requestedEntryAnswerRecognition || null;
+  const requestedEntryAnswerRecognition = responseComposition?.requestedEntryAnswerRecognition || null;
   const writableUptake =
-    contract.learner_uptake.mode === 'writable_entry' &&
-    requestedEntryAnswerRecognition?.recognized === true;
-  const responsiveUptake =
-    contract.learner_uptake.mode === 'writable_entry'
-      ? writableUptake
-      : uptakeLinkage.visible;
+    contract.learner_uptake.mode === 'writable_entry' && requestedEntryAnswerRecognition?.recognized === true;
+  const responsiveUptake = contract.learner_uptake.mode === 'writable_entry' ? writableUptake : uptakeLinkage.visible;
   if (contract.learner_uptake.required && (!uptake || !responsiveUptake)) {
     issues.push({
       type: 'learner_uptake_not_realized',
@@ -947,17 +946,13 @@ export function auditTutorStubLiveTurnProgressionV1({
   // adjacent boundary instead of fabricating V2 ownership. Declarative endings
   // must still carry their own focus in the terminal sentence.
   const targetSurface =
-    questionCount > 0 && handoff.question_owner === 'handoff'
-      ? sentences.slice(-2).join(' ')
-      : terminalSurface;
+    questionCount > 0 && handoff.question_owner === 'handoff' ? sentences.slice(-2).join(' ') : terminalSurface;
   const target = coverage(handoff.required_target_terms, targetSurface);
   const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
   if (
     handoff.required_target_terms.length &&
-    (
-      target.count < minimumTargetCount ||
-      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length)
-    )
+    (target.count < minimumTargetCount ||
+      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
   ) {
     issues.push({
       type: 'handoff_loses_turn_focus',
@@ -998,8 +993,7 @@ export function auditTutorStubLiveTurnProgressionV1({
       uptake_question_count: uptakeQuestionCount,
       development_question_count: developmentQuestionCount,
       host_question_positions: questionPositions,
-      authored_source_question_count:
-        (responseText.match(/\?/gu) || []).length - questionPositions.length,
+      authored_source_question_count: (responseText.match(/\?/gu) || []).length - questionPositions.length,
       handoff_focus_surface: targetSurface,
     },
     learner_uptake: {

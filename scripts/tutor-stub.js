@@ -36,6 +36,7 @@ import {
   buildTutorLearnerDagModel,
 } from '../services/dramaticDerivation/proxyDagMemory.js';
 import {
+  getActorialPartDefinitions,
   getEngagementStanceDefinition,
   getEngagementStanceDefinitions,
   getEngagementStanceNames,
@@ -157,6 +158,7 @@ import {
   selectTutorStubActorialPart,
   selectTutorStubActorialPerformance,
   summarizeTutorStubResponseConfigurationAudits,
+  tutorStubRandomizableActorialPartIds,
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
 import {
@@ -218,6 +220,12 @@ import {
   learnerProfileSpeakerLabel,
   learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
+import {
+  TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
+  aggregateTutorStubLearnerResponseProvenance,
+  createTutorStubLearnerResponseProvenance,
+  summarizeTutorStubLearnerResponseProvenance,
+} from '../services/tutorStubLearnerResponseProvenance.js';
 import {
   TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
   launchTutorStubTranscriptHtml,
@@ -514,6 +522,9 @@ const SLASH_COMMANDS = [
   '/demo',
   '/theme',
   '/motion',
+  '/random',
+  '/register',
+  '/character',
   '/analysis',
   '/a',
   '/field',
@@ -587,6 +598,9 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/help',
   '/theme',
   '/motion',
+  '/random',
+  '/register',
+  '/character',
   '/status',
   '/release-notes',
   '/debug',
@@ -636,6 +650,10 @@ const SETTINGS_COMPLETIONS = [
   '/settings policy clear',
   '/settings policy threshold ',
 ];
+
+const RANDOM_PERFORMANCE_COMPLETIONS = ['/random on', '/random off', '/random status'];
+
+const EXPLICIT_PERFORMANCE_CLEAR_WORDS = new Set(['auto', 'clear', 'off', 'reset']);
 
 const VOICE_COMPLETIONS = [
   '/voice on',
@@ -1941,10 +1959,7 @@ function tutorResponseRecoveryPrompt({
   const dramaticReleaseIssues = hardFor('dramatic_release', dramaticReleaseAudit?.issues);
   const actorialRealizationIssues = hardFor('actorial_realization', actorialRealizationAudit?.issues);
   const responseCompositionIssues = hardFor('response_composition', responseCompositionAudit?.issues);
-  const liveTurnProgressionIssues = hardFor(
-    'live_turn_progression_v1',
-    liveTurnProgressionAudit?.issues,
-  );
+  const liveTurnProgressionIssues = hardFor('live_turn_progression_v1', liveTurnProgressionAudit?.issues);
   const liveSourceActionAlignmentIssues = hardFor(
     'live_source_action_alignment_v1',
     liveSourceActionAlignmentAudit?.issues,
@@ -1963,10 +1978,7 @@ function tutorResponseRecoveryPrompt({
     : [];
   const responseCompositionRows = rows('response_composition', responseCompositionIssues);
   const liveTurnProgressionRows = rows('live_turn_progression_v1', liveTurnProgressionIssues);
-  const liveSourceActionAlignmentRows = rows(
-    'live_source_action_alignment_v1',
-    liveSourceActionAlignmentIssues,
-  );
+  const liveSourceActionAlignmentRows = rows('live_source_action_alignment_v1', liveSourceActionAlignmentIssues);
   const repetitionRows = rows('repetition', repetitionIssues);
   const closureRows = rows('dialogue_closure', closureIssues);
   const recoveryTransition = responseConfiguration?.recovery_transition || null;
@@ -1994,9 +2006,10 @@ function tutorResponseRecoveryPrompt({
     liveSourceActionAlignmentRows
       ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'
       : null,
-    liveSourceActionAlignmentIssues.some((issue) =>
-      String(issue.type || '').startsWith('compensation_') ||
-      ['direct_source_inaccessible', 'source_qualifier_not_preserved'].includes(issue.type),
+    liveSourceActionAlignmentIssues.some(
+      (issue) =>
+        String(issue.type || '').startsWith('compensation_') ||
+        ['direct_source_inaccessible', 'source_qualifier_not_preserved'].includes(issue.type),
     )
       ? 'After the exact SOURCE, make the very next complete sentence its one unquoted declarative accessibility sentence. Keep SOURCE words in order, preserve no/not/only/may, add only a/an/the, and stay within the stated word limit.'
       : null,
@@ -3100,6 +3113,14 @@ function metadataLine(meta) {
     null;
   const performance =
     selection?.actorial_performance?.label || selection?.response_configuration?.actorial_performance?.label || null;
+  const randomPerformance = selection?.random_performance?.enabled ? ', random performance' : '';
+  const directedPerformance = [
+    selection?.performance_directives?.register?.applied ? 'style directed' : null,
+    selection?.performance_directives?.character?.applied ? 'character directed' : null,
+  ]
+    .filter(Boolean)
+    .map((part) => `, ${part}`)
+    .join('');
   const register = [
     stance ? `style ${displayDiagnosticLabel(stance)}` : null,
     action ? `move ${displayDiagnosticLabel(action)}` : null,
@@ -3110,7 +3131,7 @@ function metadataLine(meta) {
     .map((part) => `, ${part}`)
     .join('');
   const tutor = meta.tutorRef ? `, tutor ${meta.tutorRef}` : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${pace}${guard}${stream}${cache}${tutor}`;
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${randomPerformance}${directedPerformance}${pace}${guard}${stream}${cache}${tutor}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -5678,12 +5699,12 @@ function fixedBlandEngagementStanceSelection({ state, classification }) {
   };
 }
 
-function policySamplingContext(state, decisionKind) {
+function policySamplingContext(state, decisionKind, { policy = null } = {}) {
   const experiment = state.experiment || {};
   return {
     runSeed: experiment.runSeed ?? 1,
     profile: experiment.profile || automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
-    policy: state.register?.policy || 'unknown',
+    policy: policy || state.register?.policy || 'unknown',
     repeat: experiment.repeat ?? 1,
     learnerTurn: state.turns.length + 1,
     decisionKind,
@@ -5696,27 +5717,161 @@ function uniformEngagementStanceDistribution(registers) {
   return registers.map((register) => ({ register, weight: 1, probability }));
 }
 
-function randomEngagementStanceSelection({ state, classification }) {
-  const palette = state.register?.palette || [];
+function explicitPerformanceDirectiveValue(state, axis) {
+  const value = String(state.performanceDirectives?.[axis] || '').trim();
+  return value || null;
+}
+
+function explicitEngagementStanceSelection({ classification, stance }) {
+  const definition = getEngagementStanceDefinition(stance) || {};
+  const distribution = [
+    {
+      engagement_stance: stance,
+      register: stance,
+      weight: 1,
+      probability: 1,
+      sourceScore: 1,
+    },
+  ];
+  const requestType = classification?.turn?.request_type || 'explicit_register_directive';
+  return {
+    selected_register: stance,
+    engagement_stance: stance,
+    request_type: requestType,
+    action_family: null,
+    legacy_selected_register: preferredLegacyRegister({
+      register: stance,
+      requestType,
+      actionFamily: null,
+    }),
+    reviewer_signal: 'explicit_register_directive',
+    register_reason: `The session explicitly directed the engagement stance to ${stance} with /register; learner assessment still selects the independent teaching action, audience, language, and scene axes.`,
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: Array.isArray(definition.risk_flags) ? [...definition.risk_flags] : [],
+    expected_dag_move: 'Follow the normal public-evidence and learner-DAG plan without changing the directed stance.',
+    expected_field_move: 'Observe the learner response without letting the assessment replace the directed stance.',
+    expected_progress_marker: 'Measure the next learner move under the explicitly directed stance.',
+    confidence: 1,
+    source: 'explicit_register_directive',
+    distribution,
+    engagement_stance_distribution: distribution,
+    selected_probability: 1,
+    explicit_directive: {
+      schema: 'machinespirits.tutor-stub.explicit-performance-directive.v1',
+      axis: 'engagement_stance',
+      value: stance,
+      applied: true,
+      assessment_influence: false,
+    },
+  };
+}
+
+function explicitPerformanceActorialPartSelection({ inputs, baseSelection, character }) {
+  if (!baseSelection) return baseSelection;
+  if (baseSelection.locked === true) {
+    return {
+      ...baseSelection,
+      explicit_directive: {
+        schema: 'machinespirits.tutor-stub.explicit-performance-directive.v1',
+        axis: 'actorial_part',
+        value: character,
+        applied: false,
+        assessment_influence: false,
+        outcome: 'structural_lock',
+        reason: baseSelection.lock_reason || 'licensed_closeout',
+      },
+    };
+  }
+  const selected = selectTutorStubActorialPart({
+    ...inputs,
+    selectedPartOverride: character,
+  });
+  return {
+    ...selected,
+    probability: 1,
+    score: null,
+    temperature: null,
+    pre_directive_distribution: selected.distribution,
+    distribution: [{ part: character, weight: 1, probability: 1 }],
+    drivers: [],
+    reason: `The session explicitly directed the host character to ${character} with /character; learner assessment still selects the independent teaching action, audience, language, and scene axes.`,
+    selection_method: 'explicit_character_directive',
+    explicit_directive: {
+      schema: 'machinespirits.tutor-stub.explicit-performance-directive.v1',
+      axis: 'actorial_part',
+      value: character,
+      applied: true,
+      assessment_influence: false,
+    },
+  };
+}
+
+function performanceTemperatureScope({ policy, explicitRegister, explicitCharacter, randomStance, randomCharacter }) {
+  const axes = [];
+  if (!explicitRegister && !randomStance) axes.push('engagement_stance');
+  if (!explicitCharacter && !randomCharacter) axes.push('actorial_part');
+  if (!axes.length) {
+    return {
+      applied: false,
+      scope:
+        randomStance && randomCharacter
+          ? 'bypassed_for_random_engagement_stance_and_actorial_part'
+          : 'bypassed_by_explicit_or_random_directives',
+    };
+  }
+  if (!registerTemperatureApplies(policy)) {
+    return { applied: false, scope: 'saved_but_not_used_by_policy' };
+  }
+  return {
+    applied: true,
+    scope: axes.join('_and_'),
+  };
+}
+
+function randomEngagementStanceSelection({ state, classification, performanceMode = false }) {
+  const activePalette = state.register?.palette || [];
+  const safePalette = activePalette.filter(
+    (register) => getEngagementStanceDefinition(register)?.router_selectable === true,
+  );
+  const tutorTurn = state.turns.length + 1;
+  const publicEvidenceAvailable = Boolean(
+    committedReleaseRows(state, tutorTurn).length || currentReleaseRows(state, tutorTurn).length,
+  );
+  const performanceReadyPalette =
+    performanceMode && !publicEvidenceAvailable
+      ? safePalette.filter((register) => ['plain', 'warm'].includes(register))
+      : safePalette;
+  const eligiblePalette = performanceMode && performanceReadyPalette.length ? performanceReadyPalette : activePalette;
+  const previousRegister = state.register?.history?.at(-1)?.selected_register || null;
+  const palette =
+    performanceMode && eligiblePalette.length > 1
+      ? eligiblePalette.filter((register) => register !== previousRegister)
+      : eligiblePalette;
   const distribution = uniformEngagementStanceDistribution(palette);
   const sampled = sampleTutorStubPolicyDistribution(
     distribution,
-    policySamplingContext(state, 'random_engagement_stance'),
+    policySamplingContext(
+      state,
+      performanceMode ? 'random_performance_engagement_stance' : 'random_engagement_stance',
+      performanceMode ? { policy: 'random_performance' } : {},
+    ),
   );
   const selected = sampled.entry?.register || firstAvailableRegister(new Set(palette), ['precise', 'plain', 'brisk']);
+  const requestType = performanceMode ? 'random_performance' : classification?.turn?.request_type || 'random_policy';
   return {
     selected_register: selected,
-    request_type: classification?.turn?.request_type || 'random_policy',
+    request_type: requestType,
     action_family: null,
     legacy_selected_register: preferredLegacyRegister({
       register: selected,
-      requestType: classification?.turn?.request_type || 'random_policy',
+      requestType,
       actionFamily: null,
     }),
-    reviewer_signal: 'random_policy',
-    register_reason:
-      'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
-    evidence_span: classification?.turn?.summary || '',
+    reviewer_signal: performanceMode ? 'random_performance_mode' : 'random_policy',
+    register_reason: performanceMode
+      ? 'Random performance mode sampled uniformly from the safe active stance palette, excluding the immediately previous stance when alternatives exist. Learner assessment did not influence this choice.'
+      : 'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
+    evidence_span: performanceMode ? '' : classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move:
       'No register-specific DAG move is predicted; preserve evidence safety while following the sampled register stance.',
@@ -5725,10 +5880,70 @@ function randomEngagementStanceSelection({ state, classification }) {
     expected_progress_marker:
       'Use the next learner turn to observe whether this random register coincides with learner-DAG progress.',
     confidence: null,
-    source: 'random_register_policy',
+    source: performanceMode ? 'random_performance_mode' : 'random_register_policy',
     distribution,
     selected_probability: sampled.entry?.probability ?? null,
     random: sampled.audit,
+    ...(performanceMode
+      ? {
+          random_performance: {
+            enabled: true,
+            assessment_influence: false,
+            previous_register_excluded: palette.length < eligiblePalette.length ? previousRegister : null,
+            eligible_registers: eligiblePalette,
+            public_evidence_available: publicEvidenceAvailable,
+            structural_filter: publicEvidenceAvailable ? null : 'no_public_evidence_yet',
+          },
+        }
+      : {}),
+  };
+}
+
+function randomPerformanceActorialPartSelection({ state, inputs, baseSelection }) {
+  if (!baseSelection || baseSelection.locked === true) {
+    return baseSelection
+      ? {
+          ...baseSelection,
+          random_performance: {
+            enabled: true,
+            assessment_influence: false,
+            outcome: 'structural_lock',
+            reason: baseSelection.lock_reason || 'licensed_closeout',
+          },
+        }
+      : baseSelection;
+  }
+  const allParts = tutorStubRandomizableActorialPartIds();
+  const previousPart = inputs.recentActorialParts?.at(-1) || null;
+  const parts = allParts.length > 1 ? allParts.filter((part) => part !== previousPart) : allParts;
+  const probability = parts.length ? 1 / parts.length : 0;
+  const distribution = parts.map((part) => ({ part, weight: 1, probability }));
+  const sampled = sampleTutorStubPolicyDistribution(
+    distribution.map((row) => ({ register: row.part, weight: row.weight, probability: row.probability })),
+    policySamplingContext(state, 'random_performance_actorial_part', { policy: 'random_performance' }),
+  );
+  const selectedPart = sampled.entry?.register || parts[0] || baseSelection.id;
+  const selected = selectTutorStubActorialPart({
+    ...inputs,
+    selectedPartOverride: selectedPart,
+  });
+  return {
+    ...selected,
+    probability: sampled.entry?.probability ?? probability,
+    score: null,
+    temperature: null,
+    distribution,
+    drivers: [],
+    reason:
+      'Random performance mode sampled uniformly from the safe host-character set, excluding the immediately previous part when alternatives exist. Learner assessment did not influence this choice.',
+    selection_method: 'random_performance_seeded_uniform',
+    random: sampled.audit,
+    random_performance: {
+      enabled: true,
+      assessment_influence: false,
+      previous_part_excluded: parts.length < allParts.length ? previousPart : null,
+      eligible_parts: allParts,
+    },
   };
 }
 
@@ -6494,7 +6709,17 @@ function normalizeResponseConfigurationSelection(
   if (!state.register?.enabled) return null;
   const palette = new Set(state.register.palette || []);
   const policy = state.register?.policy || 'dynamic';
-  if (policy === 'random') {
+  const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
+  const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
+  const randomPerformanceEnabled = state.randomPerformance?.enabled === true;
+  const randomStanceEnabled = randomPerformanceEnabled && !explicitRegister;
+  const randomCharacterEnabled = randomPerformanceEnabled && !explicitCharacter;
+  const externalStanceDirective = Boolean(explicitRegister || randomStanceEnabled);
+  if (explicitRegister) {
+    rawSelection = explicitEngagementStanceSelection({ classification, stance: explicitRegister });
+  } else if (randomStanceEnabled) {
+    rawSelection = randomEngagementStanceSelection({ state, classification, performanceMode: true });
+  } else if (policy === 'random') {
     rawSelection = randomEngagementStanceSelection({ state, classification });
   } else if (policy === 'negative') {
     rawSelection = negativeEngagementStanceSelection({ state, classification });
@@ -6537,29 +6762,33 @@ function normalizeResponseConfigurationSelection(
   const requestedRegister = requestedResolution?.register || requested;
   const requestedIsKnown = Boolean(requestedRegister && palette.has(requestedRegister));
   const dynamicBriskBlocked = Boolean(
+    !externalStanceDirective &&
     requestedIsKnown &&
     policy === 'dynamic' &&
     requestedRegister === 'brisk' &&
     !shouldUseDynamicBrisk({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
   );
   let source =
-    policy === 'random'
+    externalStanceDirective || policy === 'random'
       ? normalizedRawSelection
       : requestedIsKnown && !dynamicBriskBlocked
         ? normalizedRawSelection
         : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
-  source = composeRegisterPolicySelection({
-    primarySelection: source,
-    state,
-    classification,
-    tutorLearnerDag,
-  });
+  if (!externalStanceDirective) {
+    source = composeRegisterPolicySelection({
+      primarySelection: source,
+      state,
+      classification,
+      tutorLearnerDag,
+    });
+  }
   const comprehensionPressure = Number(
     tutorStubComprehensionFeatures(state.comprehension, {
       turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     }).pressure || 0,
   );
   if (
+    !externalStanceDirective &&
     policy === 'dynamic' &&
     comprehensionPressure > 0 &&
     !['plain', 'warm', 'precise'].includes(
@@ -6575,6 +6804,7 @@ function normalizeResponseConfigurationSelection(
   }
   const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
   if (
+    !externalStanceDirective &&
     comprehensionPressure === 0 &&
     releasePacing?.signal?.direction &&
     releasePacing.signal.direction !== 'steady' &&
@@ -6618,6 +6848,7 @@ function normalizeResponseConfigurationSelection(
   }
   const learnerAdvance = tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
   if (
+    !externalStanceDirective &&
     policy === 'dynamic' &&
     comprehensionPressure === 0 &&
     learnerAdvance?.accelerated &&
@@ -6643,7 +6874,7 @@ function normalizeResponseConfigurationSelection(
     });
   }
   const pressureProbeTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
-  if (predeclaredPressureTurns().has(pressureProbeTurn)) {
+  if (!externalStanceDirective && predeclaredPressureTurns().has(pressureProbeTurn)) {
     source = applyEngagementStanceOverride(source, 'face_threat', {
       register_reason: `Predeclared pressure probe: hostile register forced at learner turn ${pressureProbeTurn} by design, independent of the register policy. The policy resumes control next turn.`,
       expected_dag_move: 'Learner-DAG advancement may stall or regress this turn; recovery is measured afterward.',
@@ -6671,7 +6902,7 @@ function normalizeResponseConfigurationSelection(
     stanceDistribution: source.engagement_stance_distribution || source.distribution || null,
     stanceVector: source.engagement_stance_vector || source.register_vector || null,
     temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    policy: policyStack,
+    policy: explicitRegister ? 'explicit_register_directive' : randomStanceEnabled ? 'random_performance' : policyStack,
     learnerText,
     classification,
     tutorLearnerDag,
@@ -6687,7 +6918,42 @@ function normalizeResponseConfigurationSelection(
       .filter(Boolean),
   };
   let responseConfiguration = buildTutorStubResponseConfiguration(configurationInputs);
-  if (
+  const actorialInputs = {
+    engagementStance: configurationInputs.engagementStance,
+    stanceDistribution: configurationInputs.stanceDistribution,
+    actionFamily: responseConfiguration.action_family,
+    temperature: configurationInputs.temperature,
+    classification,
+    tutorLearnerDag,
+    comprehension: configurationInputs.comprehension,
+    world: state.world,
+    dueEvidence: configurationInputs.dueEvidence,
+    recentActorialParts: configurationInputs.recentActorialParts,
+  };
+  if (explicitCharacter) {
+    const directedSelection = explicitPerformanceActorialPartSelection({
+      inputs: actorialInputs,
+      baseSelection: responseConfiguration.actorial_part_selection,
+      character: explicitCharacter,
+    });
+    responseConfiguration = buildTutorStubResponseConfiguration({
+      ...configurationInputs,
+      actorialPartOverride: directedSelection,
+    });
+    responseConfiguration.selection_reasons.actorial_part =
+      directedSelection?.reason || 'The licensed closeout character takes structural priority.';
+  } else if (randomCharacterEnabled) {
+    const sampledSelection = randomPerformanceActorialPartSelection({
+      state,
+      inputs: actorialInputs,
+      baseSelection: responseConfiguration.actorial_part_selection,
+    });
+    responseConfiguration = buildTutorStubResponseConfiguration({
+      ...configurationInputs,
+      actorialPartOverride: sampledSelection,
+    });
+    responseConfiguration.selection_reasons.actorial_part = sampledSelection?.reason || 'structural closeout lock';
+  } else if (
     registerTemperatureApplies(policy) &&
     responseConfiguration.actorial_part_selection?.distribution?.length &&
     responseConfiguration.actorial_part_selection.locked !== true
@@ -6719,6 +6985,66 @@ function normalizeResponseConfigurationSelection(
       actorialPartOverride: sampledSelection,
     });
   }
+  const randomPerformanceActive = randomStanceEnabled || randomCharacterEnabled;
+  if (randomPerformanceEnabled) {
+    responseConfiguration.random_performance = {
+      schema: 'machinespirits.tutor-stub.random-performance-selection.v1',
+      enabled: randomPerformanceActive,
+      configured: true,
+      active_axes: [
+        randomStanceEnabled ? 'engagement_stance' : null,
+        randomCharacterEnabled ? 'actorial_part' : null,
+      ].filter(Boolean),
+      explicitly_directed_axes: [
+        explicitRegister ? 'engagement_stance' : null,
+        explicitCharacter ? 'actorial_part' : null,
+      ].filter(Boolean),
+      assessment_influence: {
+        engagement_stance: false,
+        actorial_part: false,
+        other_axes: true,
+      },
+      stance_random: randomStanceEnabled ? source.random || null : null,
+      actorial_part_random: randomCharacterEnabled
+        ? responseConfiguration.actorial_part_selection?.random || null
+        : null,
+      hard_constraints_preserved: ['dialogue_closure', 'evidence_release', 'response_safety'],
+    };
+  }
+  if (explicitRegister || explicitCharacter) {
+    responseConfiguration.performance_directives = {
+      schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
+      register: explicitRegister
+        ? {
+            value: explicitRegister,
+            applied: true,
+            assessment_influence: false,
+          }
+        : null,
+      character: explicitCharacter
+        ? {
+            value: explicitCharacter,
+            applied: responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
+            outcome: responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
+            assessment_influence: false,
+          }
+        : null,
+      hard_constraints_preserved: [
+        'dialogue_closure',
+        'authored_evidence_source',
+        'evidence_release',
+        'response_safety',
+      ],
+    };
+  }
+  const temperatureSelection = performanceTemperatureScope({
+    policy,
+    explicitRegister,
+    explicitCharacter,
+    randomStance: randomStanceEnabled,
+    randomCharacter: randomCharacterEnabled,
+  });
+  responseConfiguration.temperature_scope = temperatureSelection.scope;
   const actionFamily = responseConfiguration.action_family;
   const reviewerSignal = String(
     source.reviewer_signal ||
@@ -6734,7 +7060,11 @@ function normalizeResponseConfigurationSelection(
     policy: policyStack,
     primary_policy: policy,
     overlay_policies: [...(state.register?.overlays || [])],
-    activated_policy: source.policy_composition?.activated_overlay || policy,
+    activated_policy: explicitRegister
+      ? 'explicit_register_directive'
+      : randomStanceEnabled
+        ? 'random_performance'
+        : source.policy_composition?.activated_overlay || policy,
     policy_composition: source.policy_composition || null,
     turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     engagement_stance: selected,
@@ -6772,7 +7102,8 @@ function normalizeResponseConfigurationSelection(
     expected_progress_marker: String(source.expected_progress_marker || ''),
     temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
     engagement_stance_temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    temperature_scope: 'engagement_stance_and_actorial_part',
+    temperature_scope: temperatureSelection.scope,
+    temperature_applied: temperatureSelection.applied,
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
     selected_probability: Number.isFinite(Number(source.selected_probability))
       ? Number(source.selected_probability)
@@ -6806,6 +7137,68 @@ function normalizeResponseConfigurationSelection(
     source: source.source || 'combined_learner_analysis',
     ...(source.predeclared_pressure === true ? { predeclared_pressure: true } : {}),
     random: source.random || null,
+    random_performance: randomPerformanceEnabled
+      ? {
+          schema: 'machinespirits.tutor-stub.random-performance-selection.v1',
+          enabled: randomPerformanceActive,
+          configured: true,
+          active_axes: [
+            randomStanceEnabled ? 'engagement_stance' : null,
+            randomCharacterEnabled ? 'actorial_part' : null,
+          ].filter(Boolean),
+          explicitly_directed_axes: [
+            explicitRegister ? 'engagement_stance' : null,
+            explicitCharacter ? 'actorial_part' : null,
+          ].filter(Boolean),
+          assessment_influence: {
+            engagement_stance: false,
+            actorial_part: false,
+            action_family: true,
+            audience_register: true,
+            lexical_accessibility: true,
+            scene_immersion: true,
+          },
+          engagement_stance: randomStanceEnabled ? source.random || null : null,
+          actorial_part: randomCharacterEnabled ? responseConfiguration.actorial_part_selection?.random || null : null,
+          hard_constraints_preserved: ['dialogue_closure', 'evidence_release', 'response_safety'],
+        }
+      : null,
+    performance_directives:
+      explicitRegister || explicitCharacter
+        ? {
+            schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
+            precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+            register: explicitRegister
+              ? {
+                  value: explicitRegister,
+                  applied: true,
+                  assessment_influence: false,
+                }
+              : null,
+            character: explicitCharacter
+              ? {
+                  value: explicitCharacter,
+                  applied: responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
+                  outcome: responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
+                  assessment_influence: false,
+                }
+              : null,
+            assessment_influence: {
+              engagement_stance: !explicitRegister,
+              actorial_part: !explicitCharacter,
+              action_family: true,
+              audience_register: true,
+              lexical_accessibility: true,
+              scene_immersion: true,
+            },
+            hard_constraints_preserved: [
+              'dialogue_closure',
+              'authored_evidence_source',
+              'evidence_release',
+              'response_safety',
+            ],
+          }
+        : null,
     model: raw ? { provider: raw.provider, model: raw.model, latencyMs: raw.latencyMs, usage: raw.usage } : null,
     selectedAtDag: tutorLearnerDag?.model || null,
     efficacy: null,
@@ -7297,7 +7690,11 @@ function printResponseConfigurationSelection(selection, previousEfficacy = null)
       selection.engagement_stance || selection.selected_register
     }${confidence}${source}${warning}`,
   );
-  if (Number.isFinite(Number(selection.temperature))) {
+  if (selection.random_performance?.enabled) {
+    console.log(
+      `${C.dim}  random performance: stance and host character sampled independently of learner assessment; action and safety controls retained${C.reset}`,
+    );
+  } else if (Number.isFinite(Number(selection.temperature))) {
     console.log(
       `${C.dim}  adaptive-performance temperature: ${selection.temperature} (stance + part; lower sharper, higher broader)${C.reset}`,
     );
@@ -7962,6 +8359,7 @@ function printInteractiveHelp(state = null) {
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
   );
   console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
+  console.log(`${C.cyan}  direct${C.reset}       /register <style> · /character <part> · /random`);
   console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
   console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
   console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
@@ -7979,6 +8377,12 @@ function printInteractiveHelp(state = null) {
   );
   console.log(
     `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
   );
   console.log(
     `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
@@ -8457,6 +8861,12 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
       selection?.temperature ?? state.register?.temperature ?? 'n/a'
     }`,
   );
+  if (selection?.random_performance?.enabled) {
+    printAnalysisLine(
+      'random performance',
+      'engagement stance and host character sampled without learner-assessment influence; the field calculations above did not select them',
+    );
+  }
   if (selection?.policy_composition) {
     const composition = selection.policy_composition;
     printAnalysisLine(
@@ -9626,6 +10036,7 @@ function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
       turn: turn.turn,
       turnId: turn.turnId || null,
       learner: turn.learner || '',
+      learnerResponseProvenance: jsonClone(turn.learnerResponseProvenance || null),
       tutor: turn.tutor || '',
       reading: turn.classification?.turn?.summary || turn.classification?.overall?.current_state || null,
       coverage: model.assessment?.bestPathCoverage ?? null,
@@ -9715,6 +10126,7 @@ function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
       maxSupportedMoves: Math.max(0, ...learnerAdvances.map((advance) => Number(advance.supportedMoveCount || 0))),
     },
     releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
+    learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(turns),
     evidenceHeld,
     reasoningVoiced,
     comprehension: {
@@ -10249,8 +10661,7 @@ async function callTutor({
         questionSupport: humanDiscourseFrame?.questionSupport || null,
         dialogueClosureFrame,
         performanceObligationContract,
-        sourceAccessibilityPolicy:
-          speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
+        sourceAccessibilityPolicy: speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
         sourceAccessibilityOwner: 'post_source_sentence',
       });
   const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
@@ -10670,23 +11081,22 @@ async function callTutor({
     response.responseComposition = responseCompositionAudit.segments || null;
     response.responseCompositionFrame = responseCompositionFrame;
     response.responseCompositionAudit = responseCompositionAudit;
-    const liveTurnProgressionAudit = firstDraftContract?.progression?.complete === true
-      ? auditTutorStubLiveTurnProgressionV1({
-          contract: firstDraftContract.progression,
-          text: response.text,
-          responseComposition: responseCompositionAudit,
-          authoredSourceTexts: (firstDraftContract.evidence?.sources || []).map(
-            (source) => source?.text,
-          ),
-        })
-      : {
-          schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
-          active: false,
-          ok: true,
-          scope: 'whole_response_terminal_boundary',
-          slot_ownership_inferred: false,
-          issues: [],
-        };
+    const liveTurnProgressionAudit =
+      firstDraftContract?.progression?.complete === true
+        ? auditTutorStubLiveTurnProgressionV1({
+            contract: firstDraftContract.progression,
+            text: response.text,
+            responseComposition: responseCompositionAudit,
+            authoredSourceTexts: (firstDraftContract.evidence?.sources || []).map((source) => source?.text),
+          })
+        : {
+            schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
+            active: false,
+            ok: true,
+            scope: 'whole_response_terminal_boundary',
+            slot_ownership_inferred: false,
+            issues: [],
+          };
     const liveSourceActionAlignmentAudit = firstDraftContract
       ? auditTutorStubLiveSourceActionAlignmentV1({
           text: response.text,
@@ -10929,9 +11339,7 @@ async function callTutor({
 
   function preservableTutorUptake(audits) {
     if (
-      (audits?.liveTurnProgressionAudit?.issues || []).some(
-        (issue) => issue.type === 'learner_uptake_not_realized',
-      )
+      (audits?.liveTurnProgressionAudit?.issues || []).some((issue) => issue.type === 'learner_uptake_not_realized')
     ) {
       return '';
     }
@@ -11710,8 +12118,7 @@ async function callTutor({
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const fallbackUptake =
-      firstDraftContract?.opening?.writable_entry_requested === true &&
-      !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
+      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
     const baseFallbackText = closureFallbackSelected
@@ -11727,8 +12134,7 @@ async function callTutor({
             variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
             avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
             turnProgressionContract: firstDraftContract?.progression || null,
-            sourceAccessibilityContract:
-              firstDraftContract?.evidence?.source_accessibility || null,
+            sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
@@ -12551,7 +12957,23 @@ function typedActionRegisterSelection({
       .filter(Boolean),
   };
   let actorialPart = selectTutorStubActorialPart(actorialInputs);
-  if (
+  const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
+  const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
+  const randomStanceEnabled = state.randomPerformance?.enabled === true && !explicitRegister;
+  const randomCharacterEnabled = state.randomPerformance?.enabled === true && !explicitCharacter;
+  if (explicitCharacter) {
+    actorialPart = explicitPerformanceActorialPartSelection({
+      inputs: actorialInputs,
+      baseSelection: actorialPart,
+      character: explicitCharacter,
+    });
+  } else if (randomCharacterEnabled) {
+    actorialPart = randomPerformanceActorialPartSelection({
+      state,
+      inputs: actorialInputs,
+      baseSelection: actorialPart,
+    });
+  } else if (
     registerTemperatureApplies(state.register?.policy) &&
     actorialPart.distribution.length &&
     actorialPart.locked !== true
@@ -12585,6 +13007,50 @@ function typedActionRegisterSelection({
     knowledge_component: patch.knowledge_component,
     item_difficulty: patch.item_difficulty,
     typed_action_schema: decision.schema,
+    random_performance: state.randomPerformance?.enabled
+      ? {
+          schema: 'machinespirits.tutor-stub.random-performance-selection.v1',
+          enabled: randomStanceEnabled || randomCharacterEnabled,
+          configured: true,
+          active_axes: [
+            randomStanceEnabled ? 'engagement_stance' : null,
+            randomCharacterEnabled ? 'actorial_part' : null,
+          ].filter(Boolean),
+          explicitly_directed_axes: [
+            explicitRegister ? 'engagement_stance' : null,
+            explicitCharacter ? 'actorial_part' : null,
+          ].filter(Boolean),
+          assessment_influence: {
+            engagement_stance: false,
+            actorial_part: false,
+            other_axes: true,
+          },
+          stance_random: randomStanceEnabled ? registerSelection?.random || null : null,
+          actorial_part_random: randomCharacterEnabled ? actorialPart.random || null : null,
+          hard_constraints_preserved: ['dialogue_closure', 'evidence_release', 'response_safety'],
+        }
+      : baseConfiguration.random_performance || null,
+    performance_directives:
+      explicitRegister || explicitCharacter
+        ? {
+            schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
+            register: explicitRegister ? { value: explicitRegister, applied: true, assessment_influence: false } : null,
+            character: explicitCharacter
+              ? {
+                  value: explicitCharacter,
+                  applied: actorialPart.explicit_directive?.applied !== false,
+                  outcome: actorialPart.explicit_directive?.outcome || 'applied',
+                  assessment_influence: false,
+                }
+              : null,
+            hard_constraints_preserved: [
+              'dialogue_closure',
+              'authored_evidence_source',
+              'evidence_release',
+              'response_safety',
+            ],
+          }
+        : baseConfiguration.performance_directives || null,
     selection_reasons: {
       ...(baseConfiguration.selection_reasons || {}),
       action_family: `Selected by the opt-in typed pedagogical-action policy as ${decision.chosen_action.action_type}.`,
@@ -12616,6 +13082,7 @@ function typedActionRegisterSelection({
     actorial_part_selection: responseConfiguration.actorial_part_selection,
     actorial_performance: responseConfiguration.actorial_performance,
     unresolved_terms: responseConfiguration.unresolved_terms,
+    performance_directives: responseConfiguration.performance_directives,
     valence: registerSelection?.valence || definition.valence || null,
     request_type:
       registerSelection?.request_type ||
@@ -12775,6 +13242,9 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
   const learnerInput = runtimeOptions.learnerInput ? jsonClone(runtimeOptions.learnerInput) : null;
+  const learnerResponseProvenance = jsonClone(
+    learnerInput?.provenance || runtimeOptions.learnerResponseProvenance || createTutorStubLearnerResponseProvenance(),
+  );
   const response = await callTutor({
     learnerText,
     history: state.history,
@@ -12811,6 +13281,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     turn: tutorTurn,
     tutorRef: response.tutorRef,
     learner: learnerText,
+    learnerResponseProvenance,
     ...(learnerInput
       ? {
           learnerInput,
@@ -12834,6 +13305,12 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     tokenUsageAvailable: response.tokenUsageAvailable,
   };
   state.turns.push(turnRecord);
+  appendTraceEvent(state.trace, {
+    type: 'learner_response_provenance_recorded',
+    turnId,
+    turn: tutorTurn,
+    provenance: learnerResponseProvenance,
+  });
   appendTraceEvent(state.trace, {
     type: 'passthrough_turn_complete',
     turnId,
@@ -12878,6 +13355,9 @@ async function runOneTurn(
     return runPassthroughTurn(learnerText, state, runtimeOptions);
   }
   const learnerInput = runtimeOptions.learnerInput ? jsonClone(runtimeOptions.learnerInput) : null;
+  const learnerResponseProvenance = jsonClone(
+    learnerInput?.provenance || runtimeOptions.learnerResponseProvenance || createTutorStubLearnerResponseProvenance(),
+  );
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
@@ -12903,6 +13383,7 @@ async function runOneTurn(
     turnRecord: {
       turn: tutorTurn,
       learner: learnerText,
+      learnerResponseProvenance,
       tutorFeedback: learnerInput?.tutorFeedback || null,
       classification,
       tutorLearnerDagModel: tutorLearnerDag?.model || null,
@@ -13242,6 +13723,7 @@ async function runOneTurn(
       text: learnerText,
       messageCount: learnerInput?.messageCount || learnerInput?.messages?.length || 1,
       messages: learnerInput?.messages || null,
+      learnerResponseProvenance,
       classification,
     },
     currentTurn: {
@@ -13270,6 +13752,7 @@ async function runOneTurn(
       worldId: state.world?.id || null,
       learnerProfileId: state.learnerProfileId || null,
       interactionMode: state.interaction?.mode || 'learner',
+      learnerResponseAuthorship: learnerResponseProvenance.authorship,
     },
   });
 
@@ -13298,6 +13781,7 @@ async function runOneTurn(
     turn: tutorTurn,
     tutorRef: response.tutorRef,
     learner: learnerText,
+    learnerResponseProvenance,
     ...(learnerInput
       ? {
           learnerInput,
@@ -13390,8 +13874,7 @@ async function runOneTurn(
       ? {
           directAccessible: response.liveSourceActionAlignmentAudit.direct_accessible,
           compensationRequired: response.liveSourceActionAlignmentAudit.compensation_required,
-          compensationContractReady:
-            response.liveSourceActionAlignmentAudit.compensation_contract_ready,
+          compensationContractReady: response.liveSourceActionAlignmentAudit.compensation_contract_ready,
           compensationVisible: response.liveSourceActionAlignmentAudit.compensation_visible,
           effectiveMode: response.liveSourceActionAlignmentAudit.effective_mode,
         }
@@ -13412,6 +13895,12 @@ async function runOneTurn(
     tokenUsageAvailable: response.tokenUsageAvailable,
   };
   state.turns.push(turnRecord);
+  appendTraceEvent(state.trace, {
+    type: 'learner_response_provenance_recorded',
+    turnId,
+    turn: tutorTurn,
+    provenance: learnerResponseProvenance,
+  });
   if (feedbackObservation) {
     recordTutorStubTuningFeedback(state.tuning, feedbackObservation);
     appendTraceEvent(state.trace, {
@@ -13439,7 +13928,7 @@ async function runOneTurn(
 async function runAnalyzedTutorTurn(
   learnerText,
   state,
-  { precomputedRaw = null, signal = null, isCurrent = null } = {},
+  { precomputedRaw = null, signal = null, isCurrent = null, learnerInput = null } = {},
 ) {
   const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
     learnerText,
@@ -13469,11 +13958,12 @@ async function runAnalyzedTutorTurn(
       registerSelection,
       previousRegisterEfficacy,
       null,
-      { signal, isCurrent },
+      { signal, isCurrent, learnerInput },
     );
   } catch (error) {
     error.tutorDiagnosticContext = jsonClone({
       learnerText,
+      learnerResponseProvenance: learnerInput?.provenance || null,
       turn: state.turns.length + 1,
       classification,
       tutorLearnerDag,
@@ -13556,7 +14046,7 @@ function quarantinedGuardAccounting(error, quarantineAudit) {
   };
 }
 
-function commitTutorStubQuarantinedTurn({ state, learnerText, error, failure, transaction }) {
+function commitTutorStubQuarantinedTurn({ state, learnerText, learnerInput = null, error, failure, transaction }) {
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
   const text = TUTOR_STUB_QUARANTINE_CONTINUATION;
@@ -13583,10 +14073,18 @@ function commitTutorStubQuarantinedTurn({ state, learnerText, error, failure, tr
   const accounting = quarantinedGuardAccounting(error, quarantineAudit);
   const lastValidModel = state.turns.at(-1)?.tutorLearnerDagModel || state.learnerDag?.lastModel || null;
   const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+  const learnerResponseProvenance = jsonClone(learnerInput?.provenance || createTutorStubLearnerResponseProvenance());
   const turnRecord = {
     turnId,
     turn: tutorTurn,
     learner: learnerText,
+    learnerResponseProvenance,
+    ...(learnerInput
+      ? {
+          learnerInput: jsonClone(learnerInput),
+          learnerMessages: jsonClone(learnerInput.messages || []),
+        }
+      : {}),
     tutor: text,
     quarantined: true,
     trajectoryContaminated: true,
@@ -13637,6 +14135,12 @@ function commitTutorStubQuarantinedTurn({ state, learnerText, error, failure, tr
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: text });
   state.turns.push(turnRecord);
+  appendTraceEvent(state.trace, {
+    type: 'learner_response_provenance_recorded',
+    turn: tutorTurn,
+    turnId,
+    provenance: learnerResponseProvenance,
+  });
   appendTraceEvent(state.trace, {
     type: 'diagnostic_turn_transaction_rolled_back',
     turn: tutorTurn,
@@ -13710,7 +14214,16 @@ async function runAutomatedLearnerDialogue({
       break;
     }
     const turnNumber = state.turns.length + 1;
+    const turnId = turnDebugId(state, turnNumber);
     let precomputedRaw = null;
+    let learnerResponseProvenance = nextLearnerText
+      ? createTutorStubLearnerResponseProvenance({
+          authorship: 'human',
+          origin: 'launch_first_message',
+          inputMethod: 'command_line_argument',
+          humanInLoop: true,
+        })
+      : null;
     if (!nextLearnerText) {
       startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
       let generated;
@@ -13741,8 +14254,10 @@ async function runAutomatedLearnerDialogue({
       generated = enforced.generated;
       precomputedRaw = enforced.precomputedRaw;
       nextLearnerText = generated.text;
+      let deterministicFallback = false;
       if (!nextLearnerText) {
         nextLearnerText = deterministicAutomatedLearnerFallback({ state });
+        deterministicFallback = true;
         appendTraceEvent(state.trace, {
           type: 'auto_learner_empty_fallback',
           turn: turnNumber,
@@ -13751,6 +14266,21 @@ async function runAutomatedLearnerDialogue({
           model: generated.model,
         });
       }
+      learnerResponseProvenance = createTutorStubLearnerResponseProvenance({
+        authorship: 'ai',
+        origin: 'automated_learner',
+        inputMethod: 'automated_learner',
+        humanInLoop: false,
+        modelRef: state.autoLearner?.modelRef || null,
+        provider: generated.provider || autoLearnerResolved?.provider || null,
+        model: generated.model || autoLearnerResolved?.model || null,
+        learnerProfileId: automatedLearnerProfileId(autoLearnerProfile),
+        automation: {
+          profileRepaired: enforced.repaired,
+          profileAdherencePassed: enforced.passed,
+          deterministicFallback,
+        },
+      });
       appendTraceEvent(state.trace, {
         type: 'auto_learner_turn',
         turn: turnNumber,
@@ -13761,6 +14291,7 @@ async function runAutomatedLearnerDialogue({
         usage: generated.usage,
         profileRepaired: enforced.repaired,
         profileAdherencePassed: enforced.passed,
+        learnerResponseProvenance,
       });
       printWithConcurrentTerminal(state, () => {
         printTurnDebugLine(state, turnNumber);
@@ -13772,6 +14303,28 @@ async function runAutomatedLearnerDialogue({
         console.log(`${C.brightBlue}${C.bold}${autoLearnerSpeakerLabel} (auto) >${C.reset} ${nextLearnerText}\n`);
       });
     }
+
+    const receivedAt = new Date().toISOString();
+    const learnerInput = {
+      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
+      compoundTurnId: `${turnId}:learner`,
+      turn: turnNumber,
+      turnId,
+      revision: 1,
+      messageCount: 1,
+      messages: [
+        {
+          index: 1,
+          text: nextLearnerText,
+          receivedAt,
+          provenance: jsonClone(learnerResponseProvenance),
+        },
+      ],
+      tutorFeedback: null,
+      combinedText: nextLearnerText,
+      coalescedBeforeTutorReply: false,
+      provenance: jsonClone(learnerResponseProvenance),
+    };
 
     const diagnosticCollection = state.loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE;
     const transaction = diagnosticCollection ? snapshotTutorStubDiagnosticTransaction(state) : null;
@@ -13785,7 +14338,12 @@ async function runAutomatedLearnerDialogue({
       });
     }
     try {
-      await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw, signal, isCurrent });
+      await runAnalyzedTutorTurn(nextLearnerText, state, {
+        precomputedRaw,
+        signal,
+        isCurrent,
+        learnerInput,
+      });
       if (diagnosticCollection) {
         appendTraceEvent(state.trace, {
           type: 'diagnostic_turn_transaction_committed',
@@ -13810,6 +14368,7 @@ async function runAutomatedLearnerDialogue({
       const quarantine = commitTutorStubQuarantinedTurn({
         state,
         learnerText: nextLearnerText,
+        learnerInput,
         error,
         failure,
         transaction,
@@ -14477,6 +15036,15 @@ async function main() {
       tracePreservesTypedMessages: true,
       analysisAndTutorView: 'one_compound_learner_turn',
     },
+    learnerResponseProvenance: {
+      schema: TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
+      categories: ['human', 'ai', 'hybrid', 'unknown'],
+      recordedOn: ['learner_message_fragment', 'completed_turn', 'trace_event', 'html_transcript', 'learning_summary'],
+      humanSources: ['terminal', 'voice_transcription', 'command_line_argument'],
+      aiSources: ['automated_learner', 'mixed_suggestion_accepted'],
+      hybridSource: 'mixed_suggestion_edited',
+      compoundAggregation: true,
+    },
   };
   const turnFeedbackConfig = {
     schema: 'machinespirits.tutor-stub.turn-feedback-config.v1',
@@ -14652,6 +15220,22 @@ async function main() {
             ],
             temperatureScope: 'engagement_stance_and_actorial_part',
             transcriptVisibilityAudit: true,
+          },
+          randomPerformance: {
+            available: registerSelectionEnabled,
+            enabled: false,
+            slashCommand: '/random',
+            scope: ['engagement_stance', 'actorial_part'],
+            assessmentInfluence: false,
+            preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
+          },
+          performanceDirectives: {
+            available: registerSelectionEnabled,
+            sessionOnly: true,
+            register: null,
+            character: null,
+            slashCommands: ['/register', '/character'],
+            precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
           },
           promptArchitecture,
           directorContext,
@@ -14914,6 +15498,22 @@ async function main() {
         temperatureScope: 'engagement_stance_and_actorial_part',
         transcriptVisibilityAudit: true,
       },
+      randomPerformance: {
+        available: registerSelectionEnabled,
+        enabled: false,
+        slashCommand: '/random',
+        scope: ['engagement_stance', 'actorial_part'],
+        assessmentInfluence: false,
+        preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
+      },
+      performanceDirectives: {
+        available: registerSelectionEnabled,
+        sessionOnly: true,
+        register: null,
+        character: null,
+        slashCommands: ['/register', '/character'],
+        precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+      },
       pointOfAction: pointOfActionArm
         ? {
             enabled: true,
@@ -14968,6 +15568,7 @@ async function main() {
             startupPrompts: mixedLearnerStartupPrompts,
           }
         : { enabled: false, requested: mixedLearnerRequested },
+      learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
       interactiveRoleModes,
       turnFeedback: turnFeedbackConfig,
       explanatoryDebug: explanatoryDebugConfig,
@@ -15087,6 +15688,7 @@ async function main() {
     },
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
     passthrough: passthroughConfig,
+    learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
     requestedTemperature: temperature,
     temperature: effectiveTemperature,
     maxTokens,
@@ -15156,6 +15758,20 @@ async function main() {
       empiricalPriorPath: registerEmpiricalPrior.filePath,
       current: null,
       history: [],
+    },
+    randomPerformance: {
+      schema: 'machinespirits.tutor-stub.random-performance-mode.v1',
+      enabled: false,
+      scope: ['engagement_stance', 'actorial_part'],
+      assessmentInfluence: false,
+      sessionOnly: true,
+    },
+    performanceDirectives: {
+      schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
+      register: null,
+      character: null,
+      sessionOnly: true,
+      precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
     },
     pointOfAction: {
       enabled: Boolean(pointOfActionArm),
@@ -15656,6 +16272,15 @@ async function main() {
         tutorLearnerDag,
         registerSelection,
         previousRegisterEfficacy,
+        null,
+        {
+          learnerResponseProvenance: createTutorStubLearnerResponseProvenance({
+            authorship: 'human',
+            origin: 'launch_first_message',
+            inputMethod: 'command_line_argument',
+            humanInLoop: true,
+          }),
+        },
       );
     } finally {
       stopInterimAnimation(state);
@@ -15718,6 +16343,7 @@ async function main() {
     seq: 0,
     pending: null,
     suggestion: null,
+    draftInsertion: null,
     error: null,
     artifactAbortController: null,
     analysisCache: null,
@@ -16155,6 +16781,20 @@ async function main() {
       pool = TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/theme ${theme}`);
     } else if (trimmed.startsWith('/motion ')) {
       pool = TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/motion ${motion}`);
+    } else if (trimmed.startsWith('/random ')) {
+      pool = RANDOM_PERFORMANCE_COMPLETIONS;
+    } else if (trimmed.startsWith('/register ')) {
+      pool = [
+        '/register auto',
+        '/register status',
+        ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
+      ];
+    } else if (trimmed.startsWith('/character ')) {
+      pool = [
+        '/character auto',
+        '/character status',
+        ...tutorStubRandomizableActorialPartIds().map((part) => `/character ${part}`),
+      ];
     } else if (trimmed.startsWith('/settings model ')) {
       const modelCompletions = [
         '/settings model default',
@@ -16228,6 +16868,7 @@ async function main() {
 
   function resetMixedLearnerSuggestion(reason, { preserveAnalysisCache = false } = {}) {
     if (!mixedLearner.enabled) return;
+    mixedLearner.draftInsertion = null;
     const cachedAnalysis = mixedLearner.analysisCache;
     const cachedAnalysisSnapshot = cachedAnalysis
       ? {
@@ -16278,6 +16919,11 @@ async function main() {
         : null,
       learnerDagPreflightHash: dagPreflight?.contentSha256 || null,
       registerPolicy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      randomPerformance: Boolean(state.randomPerformance?.enabled),
+      performanceDirectives: {
+        register: explicitPerformanceDirectiveValue(state, 'register'),
+        character: explicitPerformanceDirectiveValue(state, 'character'),
+      },
       registerOverlayThreshold: state.register?.overlayThreshold ?? null,
       registerTemperature: state.register?.temperature ?? null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
@@ -16307,6 +16953,8 @@ async function main() {
       comprehension: structuredClone(state.comprehension),
       releasePacing: structuredClone(state.releasePacing),
       register: structuredClone(state.register),
+      randomPerformance: structuredClone(state.randomPerformance),
+      performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
       coach: structuredClone(state.coach),
       stream: { enabled: false, interim: state.interim },
@@ -16322,6 +16970,8 @@ async function main() {
       comprehension: structuredClone(state.comprehension),
       releasePacing: structuredClone(state.releasePacing),
       register: structuredClone(state.register),
+      randomPerformance: structuredClone(state.randomPerformance),
+      performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
       typedActions: structuredClone(state.typedActions),
       coach: structuredClone(state.coach),
@@ -18179,7 +18829,25 @@ async function main() {
       showMixedLearnerSuggestion({ duringTurn });
       return;
     }
+    const provenance = createTutorStubLearnerResponseProvenance({
+      authorship: 'ai',
+      origin: 'mixed_suggestion_accepted',
+      inputMethod: 'slash_use',
+      humanInLoop: true,
+      modelRef: state.autoLearner?.modelRef || null,
+      provider: suggestion.provider || mixedLearner.resolved?.provider || null,
+      model: suggestion.model || mixedLearner.resolved?.model || null,
+      learnerProfileId: suggestion.profileId || mixedLearner.profileId || null,
+      suggestion: {
+        requestId: suggestion.requestId,
+        turn: suggestion.turn,
+        turnId: suggestion.turnId,
+        acceptedUnchanged: true,
+        edited: false,
+      },
+    });
     mixedLearner.suggestion = null;
+    mixedLearner.draftInsertion = null;
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_suggestion_accepted',
       turn: suggestion.turn,
@@ -18189,17 +18857,18 @@ async function main() {
       move: suggestion.move,
       profileId: suggestion.profileId,
       profileSignal: suggestion.profileSignal,
+      learnerResponseProvenance: provenance,
       duringTurn,
     });
     printMixedLearnerProfilePresentation(suggestion, { verb: 'visible in response' });
     console.log(`${C.bold}learner(mixed) >${C.reset} ${suggestion.text}\n`);
     if (processingTurn || duringTurn) {
-      if (extendActiveLearnerTurn(suggestion.text)) return;
-      pendingLearnerLines.push(suggestion.text);
+      if (extendActiveLearnerTurn(suggestion.text, provenance)) return;
+      pendingLearnerLines.push({ text: suggestion.text, provenance });
       console.log(`${C.dim}learner reply queued (${pendingLearnerLines.length} waiting)${C.reset}`);
       return;
     }
-    void processLearnerLine(suggestion.text);
+    void processLearnerLine(suggestion.text, provenance);
   }
 
   function transcriptPayload() {
@@ -18239,6 +18908,8 @@ async function main() {
             history: state.register.history,
           }
         : null,
+      randomPerformance: jsonClone(state.randomPerformance),
+      performanceDirectives: jsonClone(state.performanceDirectives),
       dialogueClosure: state.dialogueClosure,
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
       interaction: jsonClone(state.interaction),
@@ -18388,6 +19059,7 @@ async function main() {
           safetyTurns: autoSafetyTurns,
           stopOnGrounded: autoStopOnGrounded,
         },
+        learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(state.turns),
         dag: {
           tutorDagEnabled: Boolean(state.dag),
           learnerDagEnabled: tutorLearnerDagEnabled,
@@ -18409,6 +19081,8 @@ async function main() {
           current: state.register?.current || null,
           empiricalPriorStatus: state.register?.empiricalPriorStatus || null,
         },
+        randomPerformance: jsonClone(state.randomPerformance),
+        performanceDirectives: jsonClone(state.performanceDirectives),
         rememberedDefaults: {
           enabled: Boolean(state.rememberedSettings?.enabled),
           status: state.rememberedSettings?.status || 'disabled',
@@ -18550,6 +19224,7 @@ async function main() {
       reason,
       filePath: displayPath,
       turns: summary.turnCount,
+      learnerResponseProvenance: summary.learnerResponseProvenance,
       natural: summary.completion.natural,
       launched: Boolean(launchResult),
     });
@@ -18571,6 +19246,7 @@ async function main() {
       reason,
       turns: state.turns.length,
       mixedLearnerCache: { ...mixedLearner.cacheStats },
+      learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(state.turns),
     });
     if (closeoutReportEnabled) {
       const report = printDialogueCloseout(state, { reason, trace: state.trace });
@@ -18838,6 +19514,11 @@ async function main() {
     const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
     const profile = mixedLearnerProfilePresentation(mixedLearner.suggestion);
     const policy = tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays);
+    const directedRegister = explicitPerformanceDirectiveValue(state, 'register');
+    const directedCharacter = explicitPerformanceDirectiveValue(state, 'character');
+    const randomPerformanceAxes = [!directedRegister ? 'style' : null, !directedCharacter ? 'character' : null].filter(
+      Boolean,
+    );
     const closure = state.dialogueClosure?.phase || 'open';
     const coachPending = state.coach?.pending?.length || 0;
     const suggestion = mixedLearner.enabled
@@ -18866,6 +19547,18 @@ async function main() {
     );
     console.log(
       `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  random performance: ${
+        state.randomPerformance?.enabled
+          ? randomPerformanceAxes.length
+            ? `on — assessment-independent ${randomPerformanceAxes.join(' + ')}`
+            : 'on — armed; both axes explicitly directed'
+          : 'off'
+      } · /random${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  directed performance: style ${directedRegister || 'auto'} · character ${directedCharacter || 'auto'} · /register · /character${C.reset}`,
     );
     console.log(
       `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
@@ -19546,7 +20239,18 @@ async function main() {
   }
 
   function printDialogueSettings() {
-    const active = registerTemperatureApplies(state.register?.policy);
+    const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
+    const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
+    const temperatureSelection = performanceTemperatureScope({
+      policy: state.register?.policy,
+      explicitRegister,
+      explicitCharacter,
+      randomStance: state.randomPerformance?.enabled === true && !explicitRegister,
+      randomCharacter: state.randomPerformance?.enabled === true && !explicitCharacter,
+    });
+    const randomPerformanceAxes = [!explicitRegister ? 'style' : null, !explicitCharacter ? 'character' : null].filter(
+      Boolean,
+    );
     const modelRoles = Object.keys(liveModelRoleDefinitions).map(liveModelRoleSnapshot);
     console.log(`${C.cyan}settings >${C.reset}`);
     console.log(
@@ -19585,7 +20289,25 @@ async function main() {
       `${C.dim}  teaching-style range: ${state.register?.temperature ?? registerTemperature} — lower concentrates the strongest style and part; higher mixes in more alternatives${C.reset}`,
     );
     console.log(
-      `${C.dim}  style range is ${active ? 'active for this approach' : 'saved but not used by this approach'}${C.reset}`,
+      `${C.dim}  style range is ${
+        temperatureSelection.applied
+          ? `active for ${displayDiagnosticLabel(temperatureSelection.scope)}`
+          : temperatureSelection.scope === 'saved_but_not_used_by_policy'
+            ? 'saved but not used by this approach'
+            : 'bypassed on axes controlled by /random, /register, or /character'
+      }${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  random performance: ${
+        state.randomPerformance?.enabled
+          ? randomPerformanceAxes.length
+            ? `on — ${randomPerformanceAxes.join(' and ')} ignore assessment`
+            : 'on — armed; both axes explicitly directed'
+          : 'off'
+      }; session only; /random toggles${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  directed performance: style ${explicitPerformanceDirectiveValue(state, 'register') || 'auto'}; character ${explicitPerformanceDirectiveValue(state, 'character') || 'auto'}; session only; /register and /character${C.reset}`,
     );
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     console.log(
@@ -20883,6 +21605,214 @@ async function main() {
     }
   }
 
+  function handleRandomPerformanceCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const action = String(argument || '')
+      .trim()
+      .toLowerCase();
+    if (!state.register?.enabled) {
+      console.log(`${C.dim}random performance is unavailable because teaching-style selection is off${C.reset}`);
+      console.log(`${C.dim}  start without --no-register-selection to use /random${C.reset}\n`);
+      return true;
+    }
+    if (action && !['on', 'off', 'status'].includes(action)) {
+      console.log(`${C.red}random error:${C.reset} use /random, /random on, /random off, or /random status\n`);
+      return true;
+    }
+    const previous = state.randomPerformance?.enabled === true;
+    const directedAxes = [
+      explicitPerformanceDirectiveValue(state, 'register') ? 'style' : null,
+      explicitPerformanceDirectiveValue(state, 'character') ? 'host character' : null,
+    ].filter(Boolean);
+    const randomAxes = ['style', 'host character'].filter((axis) => !directedAxes.includes(axis));
+    if (action === 'status') {
+      console.log(`${C.brightMagenta}${C.bold}random performance >${C.reset} ${previous ? 'on' : 'off'}`);
+      console.log(
+        `${C.dim}  ${
+          previous
+            ? randomAxes.length
+              ? `${randomAxes.join(' and ')} ${randomAxes.length === 1 ? 'is' : 'are'} sampled without learner-assessment influence${directedAxes.length ? `; directed ${directedAxes.join(' and ')} remains locked` : ''}`
+              : 'both performance axes are explicitly directed, so no random draw is currently active'
+            : 'the configured adaptive teaching approach controls every axis that is not explicitly directed'
+        }; evidence release, action choice, closure, and response safety remain active${C.reset}\n`,
+      );
+      return true;
+    }
+    const enabled = action === 'on' ? true : action === 'off' ? false : !previous;
+    if (enabled === previous) {
+      console.log(`${C.brightMagenta}${C.bold}random performance >${C.reset} already ${enabled ? 'on' : 'off'}\n`);
+      return true;
+    }
+    state.randomPerformance = {
+      schema: 'machinespirits.tutor-stub.random-performance-mode.v1',
+      enabled,
+      scope: ['engagement_stance', 'actorial_part'],
+      assessmentInfluence: false,
+      sessionOnly: true,
+    };
+    const turnInProgress = Boolean(duringTurn || processingTurn);
+    const effectiveTurn = state.turns.length + 1;
+    const invalidated = turnInProgress ? null : resetMixedLearnerSuggestion('random_performance_mode_changed');
+    appendTraceEvent(state.trace, {
+      type: 'random_performance_mode_changed',
+      schema: 'machinespirits.tutor-stub.random-performance-mode-change.v1',
+      previous,
+      enabled,
+      effectiveTurn,
+      effectiveSelection: turnInProgress ? 'next_not_yet_completed_selection' : 'next_selection',
+      duringTurn: turnInProgress,
+      assessmentInfluence: {
+        engagementStance: false,
+        actorialPart: false,
+        actionAndSafetyPipeline: true,
+      },
+      cacheRefresh: invalidated
+        ? {
+            priorStateCleared: Boolean(invalidated.hadState),
+            analysisDiscarded: Boolean(invalidated.discardedAnalysis),
+            tutorResponseDiscarded: Boolean(invalidated.discardedTutorResponse),
+          }
+        : { deferredUntilCurrentTurnCompletes: turnInProgress },
+      publicTranscriptChanged: false,
+    });
+    console.log(`${C.brightMagenta}${C.bold}random performance >${C.reset} ${enabled ? 'on' : 'off'}`);
+    console.log(
+      `${C.dim}  ${
+        enabled
+          ? randomAxes.length
+            ? `${randomAxes.join(' and ')} will change randomly without learner-assessment influence${directedAxes.length ? `; directed ${directedAxes.join(' and ')} remains locked` : ''}`
+            : 'both performance axes are explicitly directed, so /random is armed but has no active axis'
+          : directedAxes.length
+            ? `directed ${directedAxes.join(' and ')} remains locked; every other performance axis returns to ${plainPolicyLabel(state.register?.policy)}`
+            : `style and host character return to ${plainPolicyLabel(state.register?.policy)}`
+      }; applies to the ${turnInProgress ? 'next teaching-style selection not already completed' : `next turn (${effectiveTurn})`}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  evidence release, teaching action, dialogue closure, and response safety still use the normal harness${C.reset}`,
+    );
+    if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('random_performance_mode_changed');
+      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
+    }
+    console.log();
+    return true;
+  }
+
+  function handleExplicitPerformanceDirectiveCommand(axis, argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const command = axis === 'register' ? '/register' : '/character';
+    const publicAxis = axis === 'register' ? 'teaching style' : 'host character';
+    if (!state.register?.enabled) {
+      console.log(`${C.dim}${publicAxis} direction is unavailable because teaching-style selection is off${C.reset}`);
+      console.log(`${C.dim}  start without --no-register-selection to use ${command}${C.reset}\n`);
+      return true;
+    }
+
+    const rawAction = String(argument || '')
+      .trim()
+      .toLowerCase();
+    const normalizedAction = rawAction.replace(/[\s-]+/gu, '_');
+    const current = explicitPerformanceDirectiveValue(state, axis);
+    const definitions = getActorialPartDefinitions();
+    const characterOptions = tutorStubRandomizableActorialPartIds();
+    const characterByLabel = Object.fromEntries(
+      characterOptions.map((id) => [
+        String(definitions[id]?.label || id)
+          .toLowerCase()
+          .replace(/[\s-]+/gu, '_'),
+        id,
+      ]),
+    );
+    const resolvedRegister = resolveEngagementStance(normalizedAction)?.register || normalizedAction;
+    const requestedValue =
+      axis === 'register' ? resolvedRegister : characterByLabel[normalizedAction] || normalizedAction;
+    const options = axis === 'register' ? [...(state.register?.palette || [])] : characterOptions;
+
+    if (!rawAction || rawAction === 'status') {
+      console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${current || 'auto'}`);
+      if (axis === 'register') {
+        console.log(`${C.dim}  choose: ${options.join(' · ')}${C.reset}`);
+      } else {
+        for (const option of options) {
+          console.log(
+            `${C.dim}  ${option.padEnd(15)} ${definitions[option]?.label || displayDiagnosticLabel(option)}${C.reset}`,
+          );
+        }
+      }
+      console.log(
+        `${C.dim}  ${command} <choice> locks this axis · ${command} auto returns it to ${state.randomPerformance?.enabled ? '/random or ' : ''}the adaptive teaching approach${C.reset}\n`,
+      );
+      return true;
+    }
+
+    const clearing = EXPLICIT_PERFORMANCE_CLEAR_WORDS.has(rawAction);
+    if (!clearing && !options.includes(requestedValue)) {
+      console.log(`${C.red}${publicAxis} error:${C.reset} choose ${options.join(', ')}, or use ${command} auto\n`);
+      return true;
+    }
+    const next = clearing ? null : requestedValue;
+    if (next === current) {
+      console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} already ${next || 'auto'}\n`);
+      return true;
+    }
+
+    state.performanceDirectives = {
+      ...state.performanceDirectives,
+      schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
+      [axis]: next,
+      sessionOnly: true,
+      precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+    };
+    const turnInProgress = Boolean(duringTurn || processingTurn);
+    const effectiveTurn = state.turns.length + 1;
+    const reason = `explicit_${axis}_directive_changed`;
+    const invalidated = turnInProgress ? null : resetMixedLearnerSuggestion(reason);
+    appendTraceEvent(state.trace, {
+      type: 'explicit_performance_directive_changed',
+      schema: 'machinespirits.tutor-stub.explicit-performance-directive-change.v1',
+      axis: axis === 'register' ? 'engagement_stance' : 'actorial_part',
+      previous: current,
+      value: next,
+      effectiveTurn,
+      effectiveSelection: turnInProgress ? 'next_not_yet_completed_selection' : 'next_selection',
+      duringTurn: turnInProgress,
+      randomPerformanceEnabled: state.randomPerformance?.enabled === true,
+      precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+      assessmentInfluence: false,
+      cacheRefresh: invalidated
+        ? {
+            priorStateCleared: Boolean(invalidated.hadState),
+            analysisDiscarded: Boolean(invalidated.discardedAnalysis),
+            tutorResponseDiscarded: Boolean(invalidated.discardedTutorResponse),
+          }
+        : { deferredUntilCurrentTurnCompletes: turnInProgress },
+      publicTranscriptChanged: false,
+    });
+
+    console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${next || 'auto'}`);
+    console.log(
+      `${C.dim}  ${
+        next
+          ? `${publicAxis} is locked for subsequent tutor turns`
+          : `${publicAxis} returns to ${state.randomPerformance?.enabled ? 'the /random draw' : plainPolicyLabel(state.register?.policy)}`
+      }; applies to the ${turnInProgress ? 'next selection not already completed' : `next turn (${effectiveTurn})`}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  the other performance axis still follows its own command, /random, or the adaptive policy; evidence, closure, and response safety remain active${C.reset}`,
+    );
+    if (axis === 'character') {
+      console.log(
+        `${C.dim}  an authored clue source may still speak its due clue, and the final closeout character retains structural priority${C.reset}`,
+      );
+    }
+    if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch(reason);
+      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
+    }
+    console.log();
+    return true;
+  }
+
   function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
     if (!trimmed.startsWith('/')) return false;
     const command = trimmed.split(/\s+/u)[0];
@@ -21009,6 +21939,18 @@ async function main() {
       } catch (error) {
         console.log(`${C.danger}motion error:${C.reset} ${error.message}\n`);
       }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/random') {
+      handleRandomPerformanceCommand(commandArg, { duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/register' || command === '/character') {
+      handleExplicitPerformanceDirectiveCommand(command === '/register' ? 'register' : 'character', commandArg, {
+        duringTurn,
+      });
       finishSlashCommand();
       return true;
     }
@@ -21416,13 +22358,47 @@ async function main() {
     return true;
   }
 
+  function humanLearnerResponseProvenance(source = 'terminal') {
+    return createTutorStubLearnerResponseProvenance({
+      authorship: 'human',
+      origin: source === 'voice' ? 'human_voice' : 'human_direct',
+      inputMethod: source === 'voice' ? 'voice_transcription' : 'terminal',
+      humanInLoop: true,
+    });
+  }
+
+  function mixedDraftLearnerResponseProvenance(insertion, submittedText) {
+    if (!insertion?.suggestion) return null;
+    const suggestion = insertion.suggestion;
+    const acceptedUnchanged = String(submittedText || '').trim() === String(suggestion.text || '').trim();
+    return createTutorStubLearnerResponseProvenance({
+      authorship: acceptedUnchanged ? 'ai' : 'hybrid',
+      origin: acceptedUnchanged ? 'mixed_suggestion_accepted' : 'mixed_suggestion_edited',
+      inputMethod: acceptedUnchanged ? 'tab_completion' : 'tab_completion_then_edit',
+      humanInLoop: true,
+      modelRef: state.autoLearner?.modelRef || null,
+      provider: suggestion.provider || mixedLearner.resolved?.provider || null,
+      model: suggestion.model || mixedLearner.resolved?.model || null,
+      learnerProfileId: suggestion.profileId || mixedLearner.profileId || null,
+      suggestion: {
+        requestId: suggestion.requestId,
+        turn: suggestion.turn,
+        turnId: suggestion.turnId,
+        acceptedUnchanged,
+        edited: !acceptedUnchanged,
+      },
+    });
+  }
+
   function compoundLearnerInput(active, revision = active.revision) {
     const messages = active.fragments.map((fragment, index) => ({
       index: index + 1,
       text: fragment.text,
       receivedAt: fragment.receivedAt,
+      provenance: jsonClone(fragment.provenance),
       tutorFeedback: jsonClone(active.tutorFeedback),
     }));
+    const provenance = aggregateTutorStubLearnerResponseProvenance(messages.map((message) => message.provenance));
     return {
       schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
       compoundTurnId: active.id,
@@ -21434,15 +22410,16 @@ async function main() {
       tutorFeedback: jsonClone(active.tutorFeedback),
       combinedText: messages.map((message) => message.text).join('\n'),
       coalescedBeforeTutorReply: messages.length > 1,
+      provenance,
     };
   }
 
-  function extendActiveLearnerTurn(text) {
+  function extendActiveLearnerTurn(text, provenance = humanLearnerResponseProvenance()) {
     const active = activeLearnerTurn;
     if (!active || active.responseDisplayed || active.committed) return false;
     const previousRevision = active.revision;
     const receivedAt = new Date().toISOString();
-    active.fragments.push({ text, receivedAt });
+    active.fragments.push({ text, receivedAt, provenance: jsonClone(provenance) });
     active.revision += 1;
     resetMixedLearnerSuggestion('learner_turn_extended');
     appendTraceEvent(state.trace, {
@@ -21455,6 +22432,7 @@ async function main() {
       revision: active.revision,
       text,
       receivedAt,
+      learnerResponseProvenance: jsonClone(provenance),
       tutorFeedback: jsonClone(active.tutorFeedback),
       whileTutorPending: true,
       publicTranscriptStatus: 'pending_compound_turn',
@@ -21477,7 +22455,7 @@ async function main() {
     return true;
   }
 
-  async function processLearnerLine(initialText) {
+  async function processLearnerLine(initialText, provenance = humanLearnerResponseProvenance()) {
     if (exiting) return;
     if (state.dialogueClosure?.phase === 'closed') {
       offerAnotherScenario('dialogue_grounded_closure');
@@ -21491,7 +22469,7 @@ async function main() {
       turn: tutorTurn,
       turnId,
       revision: 1,
-      fragments: [{ text: initialText, receivedAt: new Date().toISOString() }],
+      fragments: [{ text: initialText, receivedAt: new Date().toISOString(), provenance: jsonClone(provenance) }],
       tutorFeedback: tutorStubTurnFeedbackEnvelope(state.turnFeedback),
       abortController: null,
       responseDisplayed: false,
@@ -21510,6 +22488,7 @@ async function main() {
       revision: 1,
       text: initialText,
       receivedAt: active.fragments[0].receivedAt,
+      learnerResponseProvenance: jsonClone(provenance),
       tutorFeedback: jsonClone(active.tutorFeedback),
       whileTutorPending: false,
       publicTranscriptStatus: 'pending_compound_turn',
@@ -21537,6 +22516,7 @@ async function main() {
           revision,
           messageCount: learnerInput.messageCount,
           messages: learnerInput.messages,
+          learnerResponseProvenance: learnerInput.provenance,
         });
 
         try {
@@ -21696,6 +22676,7 @@ async function main() {
             messages: learnerInput.messages,
             combinedText: learnerInput.combinedText,
             tutorFeedback: learnerInput.tutorFeedback,
+            learnerResponseProvenance: learnerInput.provenance,
           });
           appendTraceEvent(state.trace, {
             type: 'learner_turn_tutor_feedback_committed',
@@ -21790,7 +22771,7 @@ async function main() {
             printWithConcurrentTerminal(state, () =>
               console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`),
             );
-            void processLearnerLine(next);
+            void processLearnerLine(next.text, next.provenance);
           } else {
             if (completedTurn) startMixedLearnerPrefetch('turn_complete');
             promptIfIdle();
@@ -21800,24 +22781,30 @@ async function main() {
     }
   }
 
-  function routeLearnerText(text, { source = 'terminal' } = {}) {
+  function routeLearnerText(text, { source = 'terminal', provenance = null } = {}) {
     const trimmed = String(text || '').trim();
     if (!trimmed || exiting) return { accepted: false, reason: 'empty_or_exiting' };
+    const interactionMode = state.interaction?.mode || 'learner';
+    const learnerResponseProvenance =
+      interactionMode === 'learner'
+        ? provenance || humanLearnerResponseProvenance(source === 'voice' ? 'voice' : 'terminal')
+        : null;
     appendTraceEvent(state.trace, {
       type: 'learner_input_routed',
       source,
       text: trimmed,
       duringTurn: processingTurn,
-      interactionMode: state.interaction?.mode || 'learner',
+      interactionMode,
+      ...(learnerResponseProvenance ? { learnerResponseProvenance } : {}),
       publicTranscriptStatus: 'pending_compound_turn',
     });
-    if (state.interaction?.mode === 'coach') {
+    if (interactionMode === 'coach') {
       const pausedInterim = processingTurn ? pauseInterimAnimation(state) : false;
       queueCoachGuidance(trimmed, { duringTurn: processingTurn });
       if (pausedInterim) resumeInterimAnimation(state);
       return { accepted: true, route: 'coach_guidance' };
     }
-    if (processingTurn && state.interaction?.mode === 'auto') {
+    if (processingTurn && interactionMode === 'auto') {
       console.log(`${C.dim}automation is running; enter a slash command, or wait for learner mode to resume${C.reset}`);
       appendTraceEvent(state.trace, {
         type: 'auto_mode_non_command_ignored',
@@ -21829,11 +22816,11 @@ async function main() {
     }
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
-      if (extendActiveLearnerTurn(trimmed)) {
+      if (extendActiveLearnerTurn(trimmed, learnerResponseProvenance)) {
         if (pausedInterim) resumeInterimAnimation(state);
         return { accepted: true, route: 'compound_learner_turn' };
       }
-      pendingLearnerLines.push(trimmed);
+      pendingLearnerLines.push({ text: trimmed, provenance: learnerResponseProvenance });
       console.log(
         `${C.dim}queued next learner turn (${pendingLearnerLines.length} queued); use /analysis, /transcript, /field, /viz, or /clarify while waiting${C.reset}`,
       );
@@ -21842,11 +22829,12 @@ async function main() {
         queued: pendingLearnerLines.length,
         reason: 'previous_tutor_response_already_displayed',
         source,
+        learnerResponseProvenance,
       });
       if (pausedInterim) resumeInterimAnimation(state);
       return { accepted: true, route: 'next_learner_turn_queue' };
     }
-    void processLearnerLine(trimmed);
+    void processLearnerLine(trimmed, learnerResponseProvenance);
     return { accepted: true, route: 'new_learner_turn' };
   }
 
@@ -21860,6 +22848,25 @@ async function main() {
   if (input.isTTY && output.isTTY) {
     emitKeypressEvents(input, rl);
     onInteractiveKeypress = (character, key) => {
+      if (key?.name === 'tab') {
+        const completion = mixedLearnerCompletionForLine(rl.line);
+        if (completion && mixedLearner.suggestion?.text) {
+          mixedLearner.draftInsertion = {
+            insertedAt: new Date().toISOString(),
+            lineBeforeInsertion: rl.line,
+            completion,
+            suggestion: jsonClone(mixedLearner.suggestion),
+          };
+          appendTraceEvent(state.trace, {
+            type: 'mixed_learner_suggestion_inserted',
+            turn: mixedLearner.suggestion.turn,
+            turnId: mixedLearner.suggestion.turnId,
+            requestId: mixedLearner.suggestion.requestId,
+            inputMethod: 'tab_completion',
+            publicTranscriptChanged: false,
+          });
+        }
+      }
       const arrowRating = tutorStubTurnFeedbackArrowRating({
         line: rl.line,
         key,
@@ -21896,6 +22903,9 @@ async function main() {
     concurrentTerminal.acceptLine();
     if (scenarioPickerActive) return;
     const trimmed = line.trim();
+    const draftInsertion = mixedLearner.draftInsertion;
+    mixedLearner.draftInsertion = null;
+    const draftProvenance = trimmed ? mixedDraftLearnerResponseProvenance(draftInsertion, trimmed) : null;
     if (trimmed === '👍' || trimmed === '👎') {
       handleTutorFeedbackCommand(trimmed === '👍' ? 'up' : 'down', {
         duringTurn: processingTurn,
@@ -21940,7 +22950,7 @@ async function main() {
       }
       return;
     }
-    routeLearnerText(trimmed, { source: 'terminal' });
+    routeLearnerText(trimmed, { source: 'terminal', provenance: draftProvenance });
     promptIfIdle();
   });
 

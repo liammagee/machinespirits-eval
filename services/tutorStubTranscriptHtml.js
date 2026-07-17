@@ -2,6 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
+import {
+  summarizeTutorStubLearnerResponseProvenance,
+  tutorStubLearnerResponseProvenanceLabel,
+} from './tutorStubLearnerResponseProvenance.js';
+
 export const TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA = 'machinespirits.tutor-stub.transcript-html.v1';
 
 function escapeHtml(value) {
@@ -51,7 +56,13 @@ function transcriptMessages(snapshot) {
     messages.push({ role: 'assistant', content: snapshot.opening, kind: 'opening' });
   }
   for (const turn of snapshot.turns || []) {
-    messages.push({ role: 'user', content: turn.learner, turn: turn.turn, kind: 'learner' });
+    messages.push({
+      role: 'user',
+      content: turn.learner,
+      turn: turn.turn,
+      kind: 'learner',
+      learnerResponseProvenance: turn.learnerResponseProvenance || null,
+    });
     messages.push({ role: 'assistant', content: turn.tutor, turn: turn.turn, kind: 'tutor_reply' });
   }
   return messages.length ? messages : Array.isArray(snapshot.history) ? snapshot.history : [];
@@ -110,7 +121,8 @@ function replayRequestDetails(snapshot) {
       provider,
       model,
       messages,
-      transportNote: 'This standalone version uses the OpenRouter Chat Completions API and needs an OPENROUTER_API_KEY.',
+      transportNote:
+        'This standalone version uses the OpenRouter Chat Completions API and needs an OPENROUTER_API_KEY.',
       code: [
         `const messages = ${messageJson};`,
         '',
@@ -118,7 +130,7 @@ function replayRequestDetails(snapshot) {
         "  method: 'POST',",
         '  headers: {',
         "    'content-type': 'application/json',",
-        "    authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,",
+        '    authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,',
         '  },',
         `  body: JSON.stringify({ model: ${JSON.stringify(model)}, messages }),`,
         '});',
@@ -146,7 +158,7 @@ function replayRequestDetails(snapshot) {
       "  method: 'POST',",
       '  headers: {',
       "    'content-type': 'application/json',",
-      "    authorization: `Bearer ${process.env.OPENAI_API_KEY}`,",
+      '    authorization: `Bearer ${process.env.OPENAI_API_KEY}`,',
       '  },',
       '  body: JSON.stringify({',
       `    model: ${JSON.stringify(model)},`,
@@ -187,7 +199,11 @@ function rawView(snapshot) {
             : message.kind === 'tutor_reply'
               ? `TURN ${message.turn} · TUTOR REPLY`
               : `MESSAGE ${index + 1} · ${speaker}`;
-      return `[${marker}]\n${message.content || ''}`;
+      const provenance =
+        message.kind === 'learner'
+          ? `\n[AUTHORSHIP] ${tutorStubLearnerResponseProvenanceLabel(message.learnerResponseProvenance)}`
+          : '';
+      return `[${marker}]${provenance}\n${message.content || ''}`;
     })
     .join('\n\n');
   return `<pre class="raw-transcript">${escapeHtml(text || '(No public transcript yet.)')}</pre>`;
@@ -278,10 +294,17 @@ function speechCard(role, text, turn, { opening = false } = {}) {
 function learnerTutorFeedbackBadge(turn) {
   const feedback = turn?.learnerInput?.tutorFeedback || null;
   if (!feedback?.requested) return '';
-  const label =
-    feedback.rating === 'up' ? '👍 helpful' : feedback.rating === 'down' ? '👎 not helpful' : 'not rated';
+  const label = feedback.rating === 'up' ? '👍 helpful' : feedback.rating === 'down' ? '👎 not helpful' : 'not rated';
   const reason = feedback.reasonLabel || feedback.reason || null;
   return `<div class="turn-feedback" data-rating="${escapeHtml(feedback.rating || 'none')}">Previous tutor reply: ${escapeHtml(label)}${reason ? ` · ${escapeHtml(plainLabel(reason))}` : ''}</div>`;
+}
+
+function learnerResponseProvenanceBadge(turn) {
+  const provenance = turn?.learnerResponseProvenance || null;
+  const authorship = provenance?.authorship || 'unknown';
+  return `<div class="learner-provenance" data-learner-authorship="${escapeHtml(authorship)}">${escapeHtml(
+    tutorStubLearnerResponseProvenanceLabel(provenance),
+  )}${provenance?.inputMethod ? ` · ${escapeHtml(plainLabel(provenance.inputMethod))}` : ''}</div>`;
 }
 
 function tutorSpeechCard(turn) {
@@ -299,7 +322,9 @@ function scriptView(snapshot) {
   const blocks = [stageCard(snapshot)];
   if (snapshot.opening) blocks.push(speechCard('tutor', snapshot.opening, 0, { opening: true }));
   for (const turn of snapshot.turns || []) {
-    blocks.push(`${speechCard('learner', turn.learner, turn.turn)}${learnerTutorFeedbackBadge(turn)}`);
+    blocks.push(
+      `${speechCard('learner', turn.learner, turn.turn)}${learnerResponseProvenanceBadge(turn)}${learnerTutorFeedbackBadge(turn)}`,
+    );
     blocks.push(`${tutorSpeechCard(turn)}${registerPills(turn)}`);
   }
   if (blocks.filter(Boolean).length === 0) return '<div class="empty">No public transcript yet.</div>';
@@ -317,7 +342,7 @@ function swimlaneView(snapshot) {
     rows.push(`<div class="swim-row learner-step" data-swim-role="learner" data-turn="${escapeHtml(turn.turn)}">
       <div class="lane"></div>
       <div class="spine"><b>${escapeHtml(turn.turn)}</b></div>
-      <div class="lane learner">${speechCard('learner', turn.learner, turn.turn)}${learnerTutorFeedbackBadge(turn)}</div>
+      <div class="lane learner">${speechCard('learner', turn.learner, turn.turn)}${learnerResponseProvenanceBadge(turn)}${learnerTutorFeedbackBadge(turn)}</div>
     </div>
     <div class="swim-row tutor-step" data-swim-role="tutor-reply" data-turn="${escapeHtml(turn.turn)}">
       <div class="lane tutor">${tutorSpeechCard(turn)}${registerPills(turn)}</div>
@@ -365,14 +390,18 @@ function tuningView(snapshot) {
   const tuning = snapshot.settings?.tuning || {};
   const candidates = Array.isArray(tuning.candidates) ? tuning.candidates : [];
   const rows = candidates.length
-    ? candidates.map((candidate) => `<article class="analysis-card tuning-candidate">
+    ? candidates
+        .map(
+          (candidate) => `<article class="analysis-card tuning-candidate">
         <header><h3>${escapeHtml(candidate.id)}</h3><strong>${escapeHtml(plainLabel(candidate.status))}</strong></header>
         <p><b>Signal:</b> ${escapeHtml(candidate.evidence?.reasonLabel || candidate.evidence?.reason || 'manual review')}</p>
         ${candidate.evidence?.comment ? `<p><b>Learner note:</b> ${escapeHtml(candidate.evidence.comment)}</p>` : ''}
         <p><b>Bounded proposal:</b> ${escapeHtml(candidate.proposal?.rule || candidate.proposal?.explanation || 'No automatic prompt change.')}</p>
         <p><b>Scope:</b> ${escapeHtml(plainLabel(candidate.proposal?.scope || 'manual review'))} · base v${escapeHtml(candidate.baseVersion)}${candidate.canaryVersion ? ` · canary v${escapeHtml(candidate.canaryVersion)}` : ''}</p>
         <details><summary>Evidence and frozen-prefix replay plan</summary><pre>${escapeHtml(safeJson({ evidence: candidate.evidence, replay: candidate.replay, validation: candidate.validation }))}</pre></details>
-      </article>`).join('')
+      </article>`,
+        )
+        .join('')
     : '<p class="empty">No tutor-tuning candidates have been recorded.</p>';
   return `<div class="analysis-list tuning-view">
     <article class="analysis-card"><header><h3>Named tutor</h3><strong>${escapeHtml(tuning.activeRef || snapshot.settings?.tutor?.activeRef || 'not recorded')}</strong></header>
@@ -443,6 +472,7 @@ function settingsView(snapshot) {
       generatedAt: snapshot.generatedAt,
       runId: snapshot.runId,
       turns: (snapshot.turns || []).length,
+      learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(snapshot.turns || []),
     }),
   )}</pre></section></div>`;
 }
@@ -468,7 +498,7 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)} · transcript</title>
 <style>
-:root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.director-ledger{margin:18px 0 0;border:2px solid var(--ink);background:#eee5d5}.director-ledger details{padding:12px 16px}.director-ledger summary{font:800 12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.director-ledger h2{font:800 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}.director-scope{color:var(--muted);margin:6px 0}.director-note{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid var(--rule)}.director-note div{white-space:pre-wrap}.director-note.release{grid-template-columns:160px minmax(0,1fr)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.turn-feedback{margin:-6px 0 8px 16px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.04em}.speech-beat{margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}.speech-beat small{display:block;margin-bottom:4px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-guide{margin:0 0 4px;padding:8px 10px;border-left:4px solid var(--ink);background:var(--paper2);color:var(--muted)}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.spine b.opening-badge{width:52px;border-radius:15px}.spine b.reply-badge{background:var(--paper);color:var(--ink);border:2px solid var(--ink);line-height:26px}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.director-note,.director-note.release{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
+:root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.director-ledger{margin:18px 0 0;border:2px solid var(--ink);background:#eee5d5}.director-ledger details{padding:12px 16px}.director-ledger summary{font:800 12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.director-ledger h2{font:800 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}.director-scope{color:var(--muted);margin:6px 0}.director-note{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid var(--rule)}.director-note div{white-space:pre-wrap}.director-note.release{grid-template-columns:160px minmax(0,1fr)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.turn-feedback,.learner-provenance{margin:-6px 0 8px 16px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.04em}.speech-beat{margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}.speech-beat small{display:block;margin-bottom:4px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-guide{margin:0 0 4px;padding:8px 10px;border-left:4px solid var(--ink);background:var(--paper2);color:var(--muted)}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.spine b.opening-badge{width:52px;border-radius:15px}.spine b.reply-badge{background:var(--paper);color:var(--ink);border:2px solid var(--ink);line-height:26px}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.director-note,.director-note.release{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
 .replay-view{border:1px solid var(--rule);background:var(--paper2);padding:12px}.replay-head{display:flex;justify-content:space-between;gap:12px}.replay-head h2{margin-top:0}.replay-head p{margin-bottom:0;color:var(--muted);max-width:850px}.replay-note{padding:9px 12px;border-left:4px solid var(--tutor);background:var(--paper);color:var(--muted)}.copy-code{align-self:flex-start;border:2px solid var(--ink);background:var(--ink);color:var(--paper2);padding:8px 12px;cursor:pointer;font-weight:700;white-space:nowrap}.copy-code.copied{background:var(--tutor)}.replay-code{max-height:none}@media(max-width:760px){.replay-head{display:block}.copy-code{margin-top:12px}}
 </style></head><body><main class="shell"><header class="hero"><div class="eyebrow">Tutor stub · live transcript snapshot</div><h1>${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml(completionLabel)} · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
 ${directorNotesView(snapshot)}

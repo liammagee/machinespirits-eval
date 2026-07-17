@@ -100,16 +100,22 @@ test('automated learner replays the full public dialogue with learner-relative n
       secondLearnerCall.request.messageHistory.map((message) => message.role),
       ['user', 'assistant', 'user'],
     );
-    assert.match(
-      secondLearnerCall.request.messageHistory[0].content,
-      /autumn fair booths are down/u,
-    );
+    assert.match(secondLearnerCall.request.messageHistory[0].content, /autumn fair booths are down/u);
     assert.equal(secondLearnerCall.request.messageHistory[1].content, 'I would compare the metal residues first.');
     const firstTutorTurn = traceEvents(tmp).find((event) => event.type === 'turn_complete')?.turnRecord?.tutor;
     assert.ok(firstTutorTurn, 'expected the first delivered tutor turn in the trace');
     assert.equal(secondLearnerCall.request.messageHistory[2].content, firstTutorTurn);
     assert.equal(secondLearnerCall.request.messages.at(-1).role, 'user');
     assert.match(secondLearnerCall.request.messages.at(-1).content, /Write learner turn 2/u);
+
+    const completedTurns = traceEvents(tmp).filter((event) => event.type === 'turn_complete');
+    assert.equal(completedTurns.length, 2);
+    for (const completed of completedTurns) {
+      assert.equal(completed.turnRecord.learnerResponseProvenance.authorship, 'ai');
+      assert.equal(completed.turnRecord.learnerResponseProvenance.origin, 'automated_learner');
+      assert.equal(completed.turnRecord.learnerResponseProvenance.humanInLoop, false);
+      assert.equal(completed.turnRecord.learnerMessages[0].provenance.aiGenerated, true);
+    }
 
     const cliCalls = fs.readFileSync(promptLog, 'utf8').split('\n---CALL---\n').filter(Boolean);
     const learnerCliCall = cliCalls.find((call) => call.includes('Write learner turn 1'));

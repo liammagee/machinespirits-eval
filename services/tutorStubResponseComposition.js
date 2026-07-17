@@ -12,8 +12,7 @@ import {
 } from './tutorStubRequestedEntryCausality.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
-export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.response-composition-audit.v1';
+export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-composition-audit.v1';
 export const TUTOR_STUB_REQUESTED_ENTRY_ANSWER_RECOGNITION_SCHEMA =
   'machinespirits.tutor-stub.requested-entry-answer-recognition.v1';
 
@@ -51,8 +50,7 @@ const CONDITIONAL_DISMISSAL_UPTAKE_PATTERN =
   /\b(?:possible conclusion|public evidence (?:does not|doesn[’']t) settle it yet)\b/iu;
 const CONDITIONAL_ACKNOWLEDGEMENT_PATTERN =
   /\b(?:if|assuming|on that condition|under that condition|given that condition)\b/iu;
-const TOOL_MARK_PATH_PATTERN =
-  /\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
+const TOOL_MARK_PATH_PATTERN = /\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
 const TOOL_MARK_SELECTION_PATTERN =
   /\b(?:assay|compare|examine|find|inspect|look for|match|seek|test|watch for)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b|\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b[^.!?]{0,110}\b(?:assay|compare|examine|find|inspect|match(?:ed|es|ing)?|need(?:ed|s)?|seek|test|watch)\b|\b(?:before|first|until)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
 const TOOL_MARK_ACKNOWLEDGEMENT_PATTERN =
@@ -63,8 +61,7 @@ const DIRECT_SCENE_DEVELOPMENT_LEAD_PATTERN =
   /^(?:i (?:lay|set|place|slide|hold|open|unfold|read|point|tap|trace|circle|slap|snap|strike|test|weigh)\b|i\b[^.!?]{0,70}\b(?:across|against|along|atop|beside|beneath|into|onto|over|through|under)\b|[\p{Lu}][\p{L}\p{N}'’ -]{1,64},\s*[^.!?:“"']{1,120}:|[\p{Lu}][\p{L}\p{N}'’ -]{1,64}:\s*[“"'])/iu;
 const DEVELOPMENT_BOUNDARY_PATTERN =
   /\b(?:i(?:[’']m| am) (?:going to|bringing|showing|opening|putting)|i(?:[’']ll| will) (?:bring|show|open|put|read|take)|let(?:[’']s| us) (?:role-play|bring|look|open|put|step)|step (?:up|over)|the next (?:clue|piece|exhibit|record)|here(?:[’']s| is) (?:the|another|our) next)\b/iu;
-const SCENE_ACTION_PATTERN =
-  /\bi\s+(?:flatten|lay|mark|open|place|set|slide|tap|underline|unfold)\b/iu;
+const SCENE_ACTION_PATTERN = /\bi\s+(?:flatten|lay|mark|open|place|set|slide|tap|underline|unfold)\b/iu;
 const LEARNER_RESPONSIVE_ACTION_FAMILIES = new Set([
   'answer_accountably',
   'receive_vulnerability',
@@ -118,15 +115,16 @@ function developmentLeadVisible(value) {
 }
 
 function directlySuppliesRequestedEntry(surface, learnerText) {
-  return (
-    tutorStubLearnerRequestsWritableEntry(learnerText) &&
-    DIRECT_REQUESTED_ENTRY_PATTERN.test(oneLine(surface))
-  );
+  return tutorStubLearnerRequestsWritableEntry(learnerText) && DIRECT_REQUESTED_ENTRY_PATTERN.test(oneLine(surface));
 }
 
 function publicTokenSet(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’']s$/u, '').replace(/[’']/gu, ''))
       .filter((token) => !CONTENT_STOP_WORDS.has(token)),
   );
@@ -182,10 +180,7 @@ function publicStatusClauses(value = '') {
     .filter(Boolean);
   return coarse.flatMap((clause) => {
     const parts = clause.split(/\s+(?:and|or)\s+/iu);
-    if (
-      parts.length <= 1 ||
-      !parts.every((part) => PUBLIC_STATUS_CLAUSE_PREDICATE_PATTERN.test(part))
-    ) {
+    if (parts.length <= 1 || !parts.every((part) => PUBLIC_STATUS_CLAUSE_PREDICATE_PATTERN.test(part))) {
       return [clause];
     }
     return parts.map((part) => part.trim()).filter(Boolean);
@@ -193,9 +188,7 @@ function publicStatusClauses(value = '') {
 }
 
 function publicStatusAnchorTokens(value = '') {
-  return new Set(
-    [...publicTokenSet(value)].filter((token) => publicStatusQualifiers(token).size === 0),
-  );
+  return new Set([...publicTokenSet(value)].filter((token) => publicStatusQualifiers(token).size === 0));
 }
 
 function publicStatusQualifierPreservation({ quotedLine = '', publicSurface = '' } = {}) {
@@ -222,12 +215,8 @@ function publicStatusQualifierPreservation({ quotedLine = '', publicSurface = ''
       matched_tokens: best?.matched || [],
       required_qualifiers: [...requiredQualifiers],
       quoted_qualifiers: [...quotedQualifiers],
-      missing_qualifiers: [...requiredQualifiers].filter(
-        (qualifier) => !quotedQualifiers.has(qualifier),
-      ),
-      added_qualifiers: [...quotedQualifiers].filter(
-        (qualifier) => !requiredQualifiers.has(qualifier),
-      ),
+      missing_qualifiers: [...requiredQualifiers].filter((qualifier) => !quotedQualifiers.has(qualifier)),
+      added_qualifiers: [...quotedQualifiers].filter((qualifier) => !requiredQualifiers.has(qualifier)),
     };
   });
   const requiredQualifiers = new Set(clauseMatches.flatMap((row) => row.required_qualifiers));
@@ -254,9 +243,7 @@ function committedPublicSurfaces(firstDraftContract = null) {
 }
 
 function genericLimitPublicSurfaces(firstDraftContract = null) {
-  const caseQuestion = oneLine(
-    firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question,
-  );
+  const caseQuestion = oneLine(firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question);
   return [...new Set([...committedPublicSurfaces(firstDraftContract), caseQuestion].filter(Boolean))];
 }
 
@@ -284,9 +271,7 @@ function causalGroundingTokens(value = '') {
 
 function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, causal = false } = {}) {
   const surfaces = committedPublicSurfaces(firstDraftContract);
-  const assertion = causal
-    ? quotedLine
-    : oneLine(quotedLine).split(/\b(?:but|however|though|yet)\b/iu)[0];
+  const assertion = causal ? quotedLine : oneLine(quotedLine).split(/\b(?:but|however|though|yet)\b/iu)[0];
   const required = causalGroundingTokens(assertion);
   const publicTokens = causalGroundingTokens(surfaces.join(' '));
   const matched = [...required].filter((token) => publicTokens.has(token));
@@ -307,11 +292,7 @@ function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, cau
       };
   const causalRelationSupported = causalRelation.supported;
   return {
-    recognized:
-      surfaces.length > 0 &&
-      required.size >= (causal ? 3 : 2) &&
-      coverage === 1 &&
-      causalRelationSupported,
+    recognized: surfaces.length > 0 && required.size >= (causal ? 3 : 2) && coverage === 1 && causalRelationSupported,
     required_tokens: [...required],
     matched_tokens: matched,
     material_coverage: Number(coverage.toFixed(3)),
@@ -326,25 +307,17 @@ function groundedLimitMaterial({ quotedLine = '', firstDraftContract = null, cau
   };
 }
 
-function groundedGenericEpistemicLimit({
-  quotedLine = '',
-  learnerText = '',
-  firstDraftContract = null,
-} = {}) {
-  const materialTerms = [...causalGroundingTokens(quotedLine)]
-    .filter((token) => !GENERIC_EPISTEMIC_GROUNDING_STOP_WORDS.has(token));
-  const publicTerms = causalGroundingTokens([
-    learnerText,
-    ...genericLimitPublicSurfaces(firstDraftContract),
-  ].join(' '));
+function groundedGenericEpistemicLimit({ quotedLine = '', learnerText = '', firstDraftContract = null } = {}) {
+  const materialTerms = [...causalGroundingTokens(quotedLine)].filter(
+    (token) => !GENERIC_EPISTEMIC_GROUNDING_STOP_WORDS.has(token),
+  );
+  const publicTerms = causalGroundingTokens([learnerText, ...genericLimitPublicSurfaces(firstDraftContract)].join(' '));
   const matchedTerms = materialTerms.filter((token) => publicTerms.has(token));
   return {
     recognized: matchedTerms.length === materialTerms.length,
     material_terms: materialTerms,
     matched_terms: matchedTerms,
-    material_coverage: materialTerms.length
-      ? Number((matchedTerms.length / materialTerms.length).toFixed(3))
-      : 1,
+    material_coverage: materialTerms.length ? Number((matchedTerms.length / materialTerms.length).toFixed(3)) : 1,
   };
 }
 
@@ -355,8 +328,12 @@ function groundedGenericEpistemicLimit({
  * can be checked against the exact audit boundary rather than a diverging copy.
  */
 export function tutorStubSubstantiveLearnerEcho(uptake, learnerText) {
-  const uptakeSurface = oneLine(uptake).toLowerCase().replace(/[.!?]+$/gu, '');
-  const fullLearnerSurface = oneLine(learnerText).toLowerCase().replace(/[.!?]+$/gu, '');
+  const uptakeSurface = oneLine(uptake)
+    .toLowerCase()
+    .replace(/[.!?]+$/gu, '');
+  const fullLearnerSurface = oneLine(learnerText)
+    .toLowerCase()
+    .replace(/[.!?]+$/gu, '');
   const learnerSurface = tutorStubLearnerRequestsWritableEntry(fullLearnerSurface)
     ? fullLearnerSurface.replace(/^[\s\S]*?\babout\s+/iu, '')
     : fullLearnerSurface;
@@ -432,15 +409,12 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
     exactWriteEnvelope &&
     !/[?]/u.test(quotedLine) &&
     !REQUESTED_ENTRY_QUESTION_LEAD_PATTERN.test(lineWithoutTerminalPeriod);
-  const oneDeclarativeQuotedLine =
-    nonQuestion && quotedLine.endsWith('.') && !/[.!?]/u.test(quotedLine.slice(0, -1));
+  const oneDeclarativeQuotedLine = nonQuestion && quotedLine.endsWith('.') && !/[.!?]/u.test(quotedLine.slice(0, -1));
   const publicStatus = oneDeclarativeQuotedLine
     ? licensedPublicStatusRecognition(lineWithoutTerminalPeriod, firstDraftContract)
     : { recognized: false, matchedSurface: null, coverage: 0 };
-  const limitPatternMatched =
-    oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
-  const causalClaim =
-    limitPatternMatched && tutorStubRequestedEntryCausalClaimVisible(lineWithoutTerminalPeriod);
+  const limitPatternMatched = oneDeclarativeQuotedLine && REQUESTED_ENTRY_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
+  const causalClaim = limitPatternMatched && tutorStubRequestedEntryCausalClaimVisible(lineWithoutTerminalPeriod);
   const materialGrounding = limitPatternMatched
     ? groundedLimitMaterial({
         quotedLine: lineWithoutTerminalPeriod,
@@ -449,9 +423,7 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
       })
     : null;
   const genericEpistemicLimit =
-    limitPatternMatched &&
-    !causalClaim &&
-    GENERIC_EPISTEMIC_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
+    limitPatternMatched && !causalClaim && GENERIC_EPISTEMIC_LIMIT_PATTERN.test(lineWithoutTerminalPeriod);
   const genericEpistemicGrounding = genericEpistemicLimit
     ? groundedGenericEpistemicLimit({
         quotedLine: lineWithoutTerminalPeriod,
@@ -461,11 +433,9 @@ function auditRequestedEntryAnswerRecognition({ uptake = '', learnerText = '', f
     : null;
   const limitLicensed =
     limitPatternMatched &&
-    (
-      publicStatus.recognized ||
+    (publicStatus.recognized ||
       materialGrounding?.recognized === true ||
-      genericEpistemicGrounding?.recognized === true
-    );
+      genericEpistemicGrounding?.recognized === true);
   const prerequisites = {
     contract_schema_matches: firstDraftContract?.schema === TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
     writable_entry_requested: firstDraftContract?.opening?.writable_entry_requested === true,
@@ -597,8 +567,7 @@ export function buildTutorStubResponseCompositionFrame({
       expected_interaction_move: registerSelection?.expected_field_move || null,
       clue_release_required: dramaticReleaseFrame?.active === true,
       closure_phase: closurePhase,
-      instruction:
-        `Without announcing a switch, continue through the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
+      instruction: `Without announcing a switch, continue through the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
     },
     shared_realization: {
       engagement_stance: configuration.engagement_stance || registerSelection?.engagement_stance || null,
@@ -640,9 +609,7 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
       development.action_family ? ` Realize the selected action family here: ${development.action_family}.` : ''
     }`,
     development.expected_dag_move ? `Private next-reasoning aim: ${development.expected_dag_move}` : null,
-    development.expected_interaction_move
-      ? `Private interaction aim: ${development.expected_interaction_move}`
-      : null,
+    development.expected_interaction_move ? `Private interaction aim: ${development.expected_interaction_move}` : null,
     development.clue_release_required
       ? 'A clue is due. Let the response flow directly into the clue performance; do not let the release erase the learner uptake or create an announced change of role.'
       : null,
@@ -887,7 +854,8 @@ export function auditTutorStubResponseComposition({
   ) {
     issues.push({
       type: 'unlicensed_requested_entry',
-      reason: 'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
+      reason:
+        'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
     });
   }
   if (
@@ -918,7 +886,8 @@ export function auditTutorStubResponseComposition({
   ) {
     issues.push({
       type: 'learner_selected_test_not_acknowledged',
-      reason: 'develops a different evidence path without carrying forward the learner’s selected tool-mark examination',
+      reason:
+        'develops a different evidence path without carrying forward the learner’s selected tool-mark examination',
     });
   }
   if (!segments.development) {
@@ -951,9 +920,7 @@ export function auditTutorStubResponseComposition({
 }
 
 export function deterministicTutorStubWritableEntryUptake({ firstDraftContract = null } = {}) {
-  const question = oneLine(
-    firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question,
-  )
+  const question = oneLine(firstDraftContract?.performance?.obligation_contract?.public_context?.world?.question)
     .replace(/[?]+$/gu, '')
     .trim();
   if (/^(?:who|whose|what|which|where|when|why|how)\b/iu.test(question)) {
@@ -1022,10 +989,7 @@ export function deterministicTutorStubLearnerUptake({
       'Old clipping stays out of the trial-book; the metal and die marks must provide the specific link instead.',
     );
   }
-  if (
-    TOOL_MARK_PATH_PATTERN.test(text) &&
-    /\b(?:graver|tool)\b[^.!?]{0,45}\b(?:struck|strike)\b/iu.test(text)
-  ) {
+  if (TOOL_MARK_PATH_PATTERN.test(text) && /\b(?:graver|tool)\b[^.!?]{0,45}\b(?:struck|strike)\b/iu.test(text)) {
     return fresh(
       'You have chosen a useful die-mark, but the graver cuts the die; it does not strike the shilling itself.',
       'Keep the repeated die-mark as your test, with one correction: it can identify a die-cutting tool, not the striking hand by itself.',
@@ -1056,12 +1020,12 @@ export function deterministicTutorStubLearnerUptake({
       text,
     )
   ) {
-    return fresh('You’re right to separate suspicion from proof.', 'That keeps suspicion from hardening into a verdict.');
+    return fresh(
+      'You’re right to separate suspicion from proof.',
+      'That keeps suspicion from hardening into a verdict.',
+    );
   }
-  if (
-    /\b(?:access|licen[cs]e|means|ownership)\b/iu.test(text) &&
-    /\b(?:mistak(?:e|ing)|proof|prove)\b/iu.test(text)
-  ) {
+  if (/\b(?:access|licen[cs]e|means|ownership)\b/iu.test(text) && /\b(?:mistak(?:e|ing)|proof|prove)\b/iu.test(text)) {
     return fresh(
       'You have separated access from proof that this hand made the coin.',
       'That correctly keeps possession or access from becoming proof of making.',
@@ -1208,7 +1172,9 @@ export function deterministicTutorStubLearnerUptake({
   }
   if (
     /\?/u.test(learnerText) &&
-    /\b(?:can|could|may|shall|should|would)\s+(?:i|we)\b[^?]{0,70}\b(?:assay|begin|behold|compare|examine|inspect|look at|see|start|test|weigh)\b/iu.test(text)
+    /\b(?:can|could|may|shall|should|would)\s+(?:i|we)\b[^?]{0,70}\b(?:assay|begin|behold|compare|examine|inspect|look at|see|start|test|weigh)\b/iu.test(
+      text,
+    )
   ) {
     const publicObject = text.match(
       /\b(?:visitor badge log|badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
@@ -1273,7 +1239,9 @@ export function deterministicTutorStubLearnerUptake({
   if (
     /\?/u.test(learnerText) &&
     /\b(?:die|flaw|graver|mark|tool)\b/iu.test(text) &&
-    /\b(?:compare(?:s|d)?|link(?:s|ed)?|match(?:es|ed)?|show(?:s|ed)?|tie(?:s|d)?|trace(?:s|d)?|what|which)\b/iu.test(text)
+    /\b(?:compare(?:s|d)?|link(?:s|ed)?|match(?:es|ed)?|show(?:s|ed)?|tie(?:s|d)?|trace(?:s|d)?|what|which)\b/iu.test(
+      text,
+    )
   ) {
     return fresh(
       'The useful mark would be a repeated nick, burr, or crooked stroke on the coins that can be compared with one die-cutting tool.',
@@ -1356,10 +1324,7 @@ export function deterministicTutorStubLearnerUptake({
       'The test is now concrete: the blank and the crucible must share a metal signature not found in the other melts.',
     );
   }
-  if (
-    /\blook about (?:the )?hall\b/iu.test(text) &&
-    /\b(?:coins?|trial-book|witness)\b/iu.test(text)
-  ) {
+  if (/\blook about (?:the )?hall\b/iu.test(text) && /\b(?:coins?|trial-book|witness)\b/iu.test(text)) {
     return fresh(
       'We will begin with the first public coin or witness the hall can supply.',
       'Your search starts with what the hall can place openly before the trial-book.',
@@ -1377,10 +1342,7 @@ export function deterministicTutorStubLearnerUptake({
   if (explicitComprehensionRequest) {
     return fresh('That needs a clear answer before we move on.', 'Let me make that plain before the case advances.');
   }
-  if (
-    /\?/u.test(learnerText) ||
-    (requestType === 'conceptual_clarity_request' && discourseMove === 'question')
-  ) {
+  if (/\?/u.test(learnerText) || (requestType === 'conceptual_clarity_request' && discourseMove === 'question')) {
     return fresh(
       'That is a fair question; I’ll answer it before we extend the case.',
       'I’ll answer that directly before bringing in anything new.',
@@ -1455,13 +1417,22 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (requestType === 'authority_refusal_or_status_challenge' || actionFamily === 'answer_accountably') {
-    return fresh('You’re right to ask what the evidence actually licenses.', 'The record must answer that challenge, not my authority.');
+    return fresh(
+      'You’re right to ask what the evidence actually licenses.',
+      'The record must answer that challenge, not my authority.',
+    );
   }
   if (requestType === 'vulnerability_or_moral_exposure' || actionFamily === 'receive_vulnerability') {
-    return fresh('I hear the concern, and it should shape how we proceed.', 'That concern belongs in how we handle the next step.');
+    return fresh(
+      'I hear the concern, and it should shape how we proceed.',
+      'That concern belongs in how we handle the next step.',
+    );
   }
   if (requestType === 'resistance_or_low_agency' || actionFamily === 'challenge_resistance') {
-    return fresh('Fair—the current route is not giving you enough to work with.', 'Let’s lower the pressure and make the next move concrete.');
+    return fresh(
+      'Fair—the current route is not giving you enough to work with.',
+      'Let’s lower the pressure and make the next move concrete.',
+    );
   }
   if (requestType === 'answer_seeking_or_overreach') {
     return fresh(
@@ -1488,14 +1459,16 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
 }
 
 function configuredFallbackHost({ part, object }) {
-  return {
-    scene_partner: `I set the ${object} between us so we can test the distinction together.`,
-    examiner: `I set the ${object} under examination and mark the claim’s limit.`,
-    record_keeper: `I enter that distinction in the ${object}.`,
-    advocate: `I lay the ${object} against the easy case; your limit is where it fails.`,
-    skeptic: `Not so fast—I hold that claim against the ${object}.`,
-    foreperson: `I keep that finding provisional in the ${object}.`,
-  }[part] || `I set the ${object} under examination and mark the claim’s limit.`;
+  return (
+    {
+      scene_partner: `I set the ${object} between us so we can test the distinction together.`,
+      examiner: `I set the ${object} under examination and mark the claim’s limit.`,
+      record_keeper: `I enter that distinction in the ${object}.`,
+      advocate: `I lay the ${object} against the easy case; your limit is where it fails.`,
+      skeptic: `Not so fast—I hold that claim against the ${object}.`,
+      foreperson: `I keep that finding provisional in the ${object}.`,
+    }[part] || `I set the ${object} under examination and mark the claim’s limit.`
+  );
 }
 
 function configuredFallbackPerformance({ part, object, tactic }) {
@@ -1516,17 +1489,19 @@ function configuredFallbackPerformance({ part, object, tactic }) {
 }
 
 function configuredFallbackStance(stance) {
-  return {
-    plain: 'Keep only what the public evidence already shows.',
-    precise: 'It supports the present step, not the conclusion beyond it.',
-    brisk: 'Keep the live point and move to the next public check.',
-    warm: 'We can carry that point forward without forcing the rest.',
-    witnessing: 'Let the point stand without asking it to bear more.',
-    charismatic: 'The easy conclusion breaks at that limit.',
-    ironic: 'Apparently the neat conclusion still has a gap.',
-    sarcastic: 'Conveniently, the easy conclusion skipped that gap.',
-    face_threat: 'Stop at the weak link; the conclusion has not earned the rest.',
-  }[stance] || 'Keep only what the public evidence already shows.';
+  return (
+    {
+      plain: 'Keep only what the public evidence already shows.',
+      precise: 'It supports the present step, not the conclusion beyond it.',
+      brisk: 'Keep the live point and move to the next public check.',
+      warm: 'We can carry that point forward without forcing the rest.',
+      witnessing: 'Let the point stand without asking it to bear more.',
+      charismatic: 'The easy conclusion breaks at that limit.',
+      ironic: 'Apparently the neat conclusion still has a gap.',
+      sarcastic: 'Conveniently, the easy conclusion skipped that gap.',
+      face_threat: 'Stop at the weak link; the conclusion has not earned the rest.',
+    }[stance] || 'Keep only what the public evidence already shows.'
+  );
 }
 
 function configuredFallbackHandoff({ support = null, actionFamily = null } = {}) {
@@ -1544,12 +1519,14 @@ function configuredFallbackHandoff({ support = null, actionFamily = null } = {})
 }
 
 function configuredFallbackVariationBridge(variant) {
-  return [
-    '',
-    'A fresh line in the public record separates this point from the one we just tested.',
-    'I clear a new space on the table for this point before testing its limit.',
-    'We begin again from this public statement, leaving the previous wording behind.',
-  ][variant] || '';
+  return (
+    [
+      '',
+      'A fresh line in the public record separates this point from the one we just tested.',
+      'I clear a new space on the table for this point before testing its limit.',
+      'We begin again from this public statement, leaving the previous wording behind.',
+    ][variant] || ''
+  );
 }
 
 function configuredFallbackVariantOrder({ variationKey = '', recentTutorTexts = [], count = 4 } = {}) {
@@ -1560,7 +1537,11 @@ function configuredFallbackVariantOrder({ variationKey = '', recentTutorTexts = 
     hash = Math.imul(hash, 16777619);
   }
   const preferred = 1 + ((hash >>> 0) % Math.max(1, count - 1));
-  return [preferred, ...Array.from({ length: count - 1 }, (_, index) => index + 1).filter((row) => row !== preferred), 0];
+  return [
+    preferred,
+    ...Array.from({ length: count - 1 }, (_, index) => index + 1).filter((row) => row !== preferred),
+    0,
+  ];
 }
 
 /**
@@ -1580,9 +1561,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   variationKey = '',
 } = {}) {
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
-  const part = oneLine(
-    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
-  );
+  const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
   const actionFamily = oneLine(responseConfiguration?.action_family || '');
   const tactic = oneLine(responseConfiguration?.actorial_performance?.id || '');
   const object = configuredFallbackObject({ world, learnerText, part });
@@ -1596,9 +1575,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     [
       oneLine(uptake),
       configuredFallbackVariationBridge(variant),
-      uptakeAlreadyPerformsRecordKeeper
-        ? null
-        : configuredFallbackPerformance({ part, object, tactic }),
+      uptakeAlreadyPerformsRecordKeeper ? null : configuredFallbackPerformance({ part, object, tactic }),
       configuredFallbackStance(stance),
       deterministicTutorStubTurnProgressionHandoff({
         contract: turnProgressionContract,
@@ -1610,9 +1587,10 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       .filter(Boolean)
       .join(' '),
   );
-  return candidates.find((candidate) =>
-    auditTutorStubRepetitionResponse({ text: candidate, recentTutorTexts }).ok,
-  ) || candidates[0];
+  return (
+    candidates.find((candidate) => auditTutorStubRepetitionResponse({ text: candidate, recentTutorTexts }).ok) ||
+    candidates[0]
+  );
 }
 
 export function formatTutorStubResponseComposition(audit = null) {

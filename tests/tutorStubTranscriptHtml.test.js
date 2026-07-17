@@ -53,6 +53,16 @@ function fixtureSnapshot() {
       {
         turn: 1,
         learner: 'Does <this> identify the hand?',
+        learnerResponseProvenance: {
+          schema: 'machinespirits.tutor-stub.learner-response-provenance.v1',
+          authorship: 'human',
+          humanGenerated: true,
+          aiGenerated: false,
+          aiAssisted: false,
+          humanInLoop: true,
+          origin: 'human_direct',
+          inputMethod: 'terminal',
+        },
         learnerInput: {
           tutorFeedback: {
             requested: true,
@@ -220,6 +230,10 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /machinespirits\.tutor-stub\.feedback-observation\.v1/u);
   assert.match(html, /Response shape:<\/b> one continuous reply with learner uptake and development/u);
   assert.match(html, /Previous tutor reply: 👎 not helpful/u);
+  assert.match(html, /Human-authored learner response · terminal/u);
+  assert.match(html, /data-learner-authorship="human"/u);
+  assert.match(html, /\[AUTHORSHIP\] Human-authored learner response/u);
+  assert.match(html, /&quot;human&quot;: 1/u);
   assert.match(html, /Learner rating of the previous tutor reply:<\/b> 👎 not helpful/u);
   assert.equal((html.match(/data-director-notes/gu) || []).length, 1);
   assert.ok(html.indexOf('data-director-notes') < html.indexOf('class="tabs"'));

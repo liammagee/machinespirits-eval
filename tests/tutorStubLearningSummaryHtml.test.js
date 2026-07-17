@@ -44,10 +44,14 @@ function fixtureSummary() {
     },
     openQuestions: ['Who alone used that crucible?'],
     nextStep: 'Connect the crucible to its documented user.',
+    learnerResponseProvenance: {
+      counts: { human: 1, ai: 0, hybrid: 1, unknown: 0 },
+    },
     journey: [
       {
         turn: 1,
         learner: 'What does blank mean?',
+        learnerResponseProvenance: { authorship: 'human', inputMethod: 'terminal' },
         tutor: 'A blank is the metal piece before a coin is struck.',
         reading: 'The learner asked for a lexical explanation.',
         coverage: 0.25,
@@ -57,6 +61,7 @@ function fixtureSummary() {
       {
         turn: 2,
         learner: 'Then I would compare the residue.',
+        learnerResponseProvenance: { authorship: 'hybrid', inputMethod: 'tab_completion_then_edit' },
         tutor: 'Yes—which crucible bears the same trace?',
         reading: 'The learner proposed a concrete evidentiary test.',
         coverage: 0.5,
@@ -107,6 +112,9 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /Tutor learning from this session/u);
   assert.match(html, /dramatic-detective@v1/u);
   assert.match(html, /cand-example/u);
+  assert.match(html, /Human-authored learner response/u);
+  assert.match(html, /Human-edited AI learner response/u);
+  assert.match(html, /1 human-authored · 0 AI-authored · 1 human-edited AI/u);
   assert.doesNotMatch(html, /The residue matches the <mint crucible>/u);
 });
 

@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { tutorStubLearnerResponseProvenanceLabel } from './tutorStubLearnerResponseProvenance.js';
+
 export const TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA = 'machinespirits.tutor-stub.learning-summary-html.v1';
 
 function escapeHtml(value) {
@@ -45,7 +47,7 @@ function journey(summary) {
           row.coverage == null ? '' : `${percent(row.coverage)} of the reasoning path`,
         )}</em></summary>
         <div class="turn-body">
-          <div class="speech learner"><b>Learner</b><p>${escapeHtml(row.learner)}</p></div>
+          <div class="speech learner"><b>Learner · ${escapeHtml(tutorStubLearnerResponseProvenanceLabel(row.learnerResponseProvenance))}</b><p>${escapeHtml(row.learner)}</p></div>
           <div class="speech tutor"><b>Tutor</b><p>${escapeHtml(row.tutor)}</p></div>
           ${row.newEvidence?.length ? `<div class="movement"><b>New evidence held</b>${list(row.newEvidence, '')}</div>` : ''}
           ${row.newReasoning?.length ? `<div class="movement"><b>New reasoning voiced</b>${list(row.newReasoning, '')}</div>` : ''}
@@ -74,6 +76,7 @@ export function renderTutorStubLearningSummaryHtml(summary = {}) {
   const question = summary.world?.question || summary.question || '';
   const coverage = percent(summary.progress?.bestPathCoverage);
   const completed = summary.completion?.natural ? 'Natural close' : 'Session ended';
+  const learnerProvenance = summary.learnerResponseProvenance?.counts || {};
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)} · what we learned</title>
@@ -107,6 +110,7 @@ export function renderTutorStubLearningSummaryHtml(summary = {}) {
   )}</article>
   <article class="card wide"><h2>Language and clarification</h2>${vocabulary(summary)}</article>
   <article class="card wide"><h2>Still open</h2>${list(summary.openQuestions, 'Nothing remains open in the recorded inquiry.')}</article>
+  <article class="card wide"><h2>Learner response authorship</h2><p>${escapeHtml(learnerProvenance.human || 0)} human-authored · ${escapeHtml(learnerProvenance.ai || 0)} AI-authored · ${escapeHtml(learnerProvenance.hybrid || 0)} human-edited AI · ${escapeHtml(learnerProvenance.unknown || 0)} legacy or unknown.</p></article>
   ${tuningSummary(summary)}
 </section>
 <section><h2>How the reasoning developed</h2>${journey(summary)}</section>

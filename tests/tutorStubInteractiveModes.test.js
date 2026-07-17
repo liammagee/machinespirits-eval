@@ -104,27 +104,29 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
     let stdout = '';
     let stderr = '';
     let stopping = false;
-    const followupTimers = followupInputs.map(({ delayMs, afterLogIncludes = null, afterPlainIncludes = null, text }) => {
-      if (afterLogIncludes) {
-        const interval = setInterval(() => {
-          if (!fs.existsSync(logPath) || !fs.readFileSync(logPath, 'utf8').includes(afterLogIncludes)) return;
-          clearInterval(interval);
+    const followupTimers = followupInputs.map(
+      ({ delayMs, afterLogIncludes = null, afterPlainIncludes = null, text }) => {
+        if (afterLogIncludes) {
+          const interval = setInterval(() => {
+            if (!fs.existsSync(logPath) || !fs.readFileSync(logPath, 'utf8').includes(afterLogIncludes)) return;
+            clearInterval(interval);
+            if (!child.killed && child.stdin.writable) child.stdin.write(text);
+          }, 25);
+          return interval;
+        }
+        if (afterPlainIncludes) {
+          const interval = setInterval(() => {
+            if (!plainTerminalText(stdout).includes(afterPlainIncludes)) return;
+            clearInterval(interval);
+            if (!child.killed && child.stdin.writable) child.stdin.write(text);
+          }, 25);
+          return interval;
+        }
+        return setTimeout(() => {
           if (!child.killed && child.stdin.writable) child.stdin.write(text);
-        }, 25);
-        return interval;
-      }
-      if (afterPlainIncludes) {
-        const interval = setInterval(() => {
-          if (!plainTerminalText(stdout).includes(afterPlainIncludes)) return;
-          clearInterval(interval);
-          if (!child.killed && child.stdin.writable) child.stdin.write(text);
-        }, 25);
-        return interval;
-      }
-      return setTimeout(() => {
-        if (!child.killed && child.stdin.writable) child.stdin.write(text);
-      }, delayMs);
-    });
+        }, delayMs);
+      },
+    );
     const timer = setTimeout(() => {
       child.kill('SIGKILL');
       reject(new Error(`interactive mode test timed out\nstdout:\n${stdout}\nstderr:\n${stderr}`));
@@ -332,10 +334,7 @@ test('consecutive ordinary deterministic recoveries vary without weakening progr
       .filter((event) => event.type === 'tutor_response_guard_accounting')
       .map((event) => event.accounting);
     assert.equal(accountings.length, 2);
-    assert.notEqual(
-      accountings[0].finalDelivery.candidate.text,
-      accountings[1].finalDelivery.candidate.text,
-    );
+    assert.notEqual(accountings[0].finalDelivery.candidate.text, accountings[1].finalDelivery.candidate.text);
     for (const accounting of accountings) {
       assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
       assert.equal(accounting.finalDelivery.auditOk, true);
@@ -418,6 +417,16 @@ test('learner messages sent before the tutor replies form one restart-safe compo
       completedTurns[0].turnRecord.learnerMessages.map((message) => message.text),
       ['The first clue is unclear.', 'I mean the residue comparison specifically.'],
     );
+    assert.equal(completedTurns[0].turnRecord.learnerResponseProvenance.authorship, 'human');
+    assert.deepEqual(
+      completedTurns[0].turnRecord.learnerMessages.map((message) => message.provenance.authorship),
+      ['human', 'human'],
+    );
+    assert.ok(
+      events.some(
+        (event) => event.type === 'learner_response_provenance_recorded' && event.provenance.authorship === 'human',
+      ),
+    );
     assert.ok(
       events.some(
         (event) => event.type === 'learner_turn_compound_committed' && event.revision === 2 && event.messageCount === 2,
@@ -427,6 +436,161 @@ test('learner messages sent before the tutor replies form one restart-safe compo
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('/use records an unchanged mixed learner suggestion as AI-authored with human acceptance', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-mixed-learner-provenance-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--mixed-learner',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '\n\n',
+      followupInputs: [{ afterPlainIncludes: 'learner suggestion ready >', text: '/use\n' }],
+      stopWhen: (plain) => (plain.match(/optional tutor feedback >/gu) || []).length >= 2,
+      timeoutMs: 15_000,
+      env: {
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const turn = events.find((event) => event.type === 'turn_complete')?.turnRecord;
+    assert.ok(turn, result.plain);
+    assert.equal(turn.learnerResponseProvenance.authorship, 'ai');
+    assert.equal(turn.learnerResponseProvenance.origin, 'mixed_suggestion_accepted');
+    assert.equal(turn.learnerResponseProvenance.inputMethod, 'slash_use');
+    assert.equal(turn.learnerResponseProvenance.humanInLoop, true);
+    assert.equal(turn.learnerMessages[0].provenance.aiGenerated, true);
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'mixed_learner_suggestion_accepted' && event.learnerResponseProvenance.authorship === 'ai',
+      ),
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test(
+  'editing a Tab-inserted mixed learner suggestion records hybrid authorship',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-edited-mixed-provenance-'));
+    try {
+      installFakeCodex(tmp);
+      let terminalOutput = '';
+      let submitted = false;
+      let submissionScheduled = false;
+      let requestedExit = false;
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--mixed-learner',
+          '--auto-learner-profile',
+          'diligent',
+          '--release-speed',
+          '1',
+          '--no-classifier',
+          '--no-register-selection',
+          '--no-closeout-report',
+          '--no-interim-animation',
+          '--no-stream',
+          '--trace-dir',
+          tmp,
+          '--world',
+          'world_005_marrick',
+        ],
+        {
+          cwd: ROOT,
+          cols: 140,
+          rows: 30,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+            CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+            TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          },
+        },
+      );
+
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`edited mixed provenance terminal timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 12_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          const feedbackCount = (plain.match(/optional tutor feedback >/gu) || []).length;
+          if (
+            !submissionScheduled &&
+            plain.includes('learner suggestion ready >') &&
+            plain.includes('A Diligent Learner >') &&
+            feedbackCount >= 1
+          ) {
+            submissionScheduled = true;
+            setTimeout(() => {
+              if (requestedExit) return;
+              terminal.write('\t');
+              setTimeout(() => {
+                if (requestedExit) return;
+                submitted = true;
+                terminal.write(' carefully\r');
+              }, 100);
+            }, 100);
+          } else if (submitted && !requestedExit && feedbackCount >= 2) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`edited mixed provenance terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const events = fs
+        .readdirSync(tmp)
+        .filter((name) => name.endsWith('.jsonl'))
+        .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+      const turn = events.find((event) => event.type === 'turn_complete')?.turnRecord;
+      assert.ok(turn, plainTerminalText(terminalOutput));
+      assert.match(turn.learner, /carefully$/u);
+      assert.equal(turn.learnerResponseProvenance.authorship, 'hybrid');
+      assert.equal(turn.learnerResponseProvenance.origin, 'mixed_suggestion_edited');
+      assert.equal(turn.learnerResponseProvenance.inputMethod, 'tab_completion_then_edit');
+      assert.equal(turn.learnerResponseProvenance.humanGenerated, true);
+      assert.equal(turn.learnerResponseProvenance.aiGenerated, true);
+      assert.ok(events.some((event) => event.type === 'mixed_learner_suggestion_inserted'));
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
 
 test('optional thumbs feedback is attached to the next human learner message and guides the tutor privately', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-turn-feedback-'));
@@ -580,9 +744,7 @@ test(
         .filter(Boolean)
         .map((line) => JSON.parse(line));
       const selection = events.find(
-        (event) =>
-          event.type === 'tutor_turn_feedback_selected' &&
-          event.inputSource === 'empty_prompt_right_arrow',
+        (event) => event.type === 'tutor_turn_feedback_selected' && event.inputSource === 'empty_prompt_right_arrow',
       );
       assert.equal(selection.rating, 'up');
       const secondTurn = events.find((event) => event.type === 'turn_complete' && event.turn === 2)?.turnRecord;
@@ -649,9 +811,7 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
       ),
     );
     assert.ok(
-      events.some(
-        (event) => event.type === 'learner_turn_attempt_discarded' && event.reason === 'dialogue_reset',
-      ),
+      events.some((event) => event.type === 'learner_turn_attempt_discarded' && event.reason === 'dialogue_reset'),
     );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -732,7 +892,10 @@ test('/demo runs a bounded live tour, writes inspectable evidence, and returns c
     });
 
     assert.match(result.plain, /guided harness demonstration · 1 live turn/u);
-    assert.match(result.plain, /limited tour: learner interpretation, reasoning-map tracking, adaptive teaching style, authored evidence DAG are off/u);
+    assert.match(
+      result.plain,
+      /limited tour: learner interpretation, reasoning-map tracking, adaptive teaching style, authored evidence DAG are off/u,
+    );
     assert.match(result.plain, /A Diligent Learner \(auto\) >/u);
     assert.match(result.plain, /demo readout · learner interpretation/u);
     assert.match(result.plain, /demo readout · inspectable evidence/u);
@@ -1324,7 +1487,10 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
     assert.doesNotMatch(tutorPrompt, /worn burin with the sprung heel/u);
     assert.match(tutorPrompt, /Private coach guidance/u);
     assert.ok(trace.some((event) => event.type === 'turn_complete'));
-    assert.equal(trace.some((event) => event.type === 'model_call_error'), false);
+    assert.equal(
+      trace.some((event) => event.type === 'model_call_error'),
+      false,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -1415,6 +1581,246 @@ test('technical explanatory debug mode prints exact field calculations and the r
   }
 });
 
+test('/random samples style and host character independently while preserving the adaptive safety pipeline', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-random-performance-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/random on\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /random performance > on/u);
+    assert.match(result.plain, /style and host character will change randomly without learner-assessment influence/u);
+    assert.match(result.plain, /random performance: on — assessment-independent style \+ character/u);
+    assert.match(result.plain, /, random performance,/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const modeChange = events.find((event) => event.type === 'random_performance_mode_changed');
+    const turn = events.find((event) => event.type === 'turn_complete')?.turnRecord;
+    const selection = turn?.registerSelection;
+    assert.equal(modeChange?.enabled, true);
+    assert.equal(modeChange?.assessmentInfluence.engagementStance, false);
+    assert.equal(selection?.primary_policy, 'dynamic');
+    assert.equal(selection?.activated_policy, 'random_performance');
+    assert.equal(selection?.source, 'random_performance_mode');
+    assert.equal(selection?.random_performance.assessment_influence.engagement_stance, false);
+    assert.equal(selection?.random_performance.assessment_influence.actorial_part, false);
+    assert.equal(selection?.random_performance.assessment_influence.action_family, true);
+    assert.equal(selection?.temperature_applied, false);
+    assert.match(selection?.temperature_scope || '', /bypassed_for_random/u);
+    assert.ok(
+      ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic'].includes(selection?.selected_register),
+    );
+    assert.ok(['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic'].includes(selection?.actorial_part));
+    assert.equal(selection?.actorial_part_selection.selection_method, 'random_performance_seeded_uniform');
+    assert.equal(selection?.random?.decision?.material?.policy, 'random_performance');
+    assert.equal(selection?.actorial_part_selection.random?.decision?.material?.policy, 'random_performance');
+    assert.deepEqual(selection?.random_performance.hard_constraints_preserved, [
+      'dialogue_closure',
+      'evidence_release',
+      'response_safety',
+    ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/register and /character explicitly direct their own performance axes and outrank /random', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explicit-performance-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/random on\n/register warm\n/character advocate\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /teaching style direction > warm/u);
+    assert.match(result.plain, /host character direction > advocate/u);
+    assert.match(result.plain, /directed performance: style warm · character advocate/u);
+    assert.match(result.plain, /style warm/u);
+    assert.match(result.plain, /character advocate for the live case/u);
+    assert.match(result.plain, /style directed, character directed/u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const changes = events.filter((event) => event.type === 'explicit_performance_directive_changed');
+    const selection = events.find((event) => event.type === 'turn_complete')?.turnRecord?.registerSelection;
+    assert.deepEqual(
+      changes.map((event) => [event.axis, event.value]),
+      [
+        ['engagement_stance', 'warm'],
+        ['actorial_part', 'advocate'],
+      ],
+    );
+    assert.equal(selection?.primary_policy, 'dynamic');
+    assert.equal(selection?.activated_policy, 'explicit_register_directive');
+    assert.equal(selection?.source, 'explicit_register_directive');
+    assert.equal(selection?.selected_register, 'warm');
+    assert.equal(selection?.actorial_part, 'advocate');
+    assert.equal(selection?.actorial_part_selection.selection_method, 'explicit_character_directive');
+    assert.equal(selection?.performance_directives.register.assessment_influence, false);
+    assert.equal(selection?.performance_directives.character.assessment_influence, false);
+    assert.equal(selection?.performance_directives.character.applied, true);
+    assert.equal(selection?.random_performance.configured, true);
+    assert.equal(selection?.random_performance.enabled, false);
+    assert.deepEqual(selection?.random_performance.active_axes, []);
+    assert.deepEqual(selection?.random_performance.explicitly_directed_axes, ['engagement_stance', 'actorial_part']);
+    assert.deepEqual(selection?.performance_directives.hard_constraints_preserved, [
+      'dialogue_closure',
+      'authored_evidence_source',
+      'evidence_release',
+      'response_safety',
+    ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/register leaves the undirected character axis available to /random', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explicit-register-random-character-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/random on\n/register warm\nThe assay still confuses me.\n',
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /random performance: on — assessment-independent character/u);
+    assert.match(result.plain, /directed performance: style warm · character auto/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const selection = events.find((event) => event.type === 'turn_complete')?.turnRecord?.registerSelection;
+    assert.equal(selection?.selected_register, 'warm');
+    assert.equal(selection?.actorial_part_selection.selection_method, 'random_performance_seeded_uniform');
+    assert.equal(selection?.random_performance.enabled, true);
+    assert.deepEqual(selection?.random_performance.active_axes, ['actorial_part']);
+    assert.deepEqual(selection?.random_performance.explicitly_directed_axes, ['engagement_stance']);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/register auto and /character auto clear only their session locks', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-explicit-performance-clear-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/register warm\n/character advocate\n/register auto\n/character auto\n/status\n',
+      stopWhen: (plain) => plain.includes('directed performance: style auto · character auto'),
+      env: {
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /teaching style direction > auto/u);
+    assert.match(result.plain, /host character direction > auto/u);
+    assert.match(result.plain, /directed performance: style auto · character auto/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const changes = events.filter((event) => event.type === 'explicit_performance_directive_changed');
+    assert.deepEqual(
+      changes.map((event) => [event.axis, event.value]),
+      [
+        ['engagement_stance', 'warm'],
+        ['actorial_part', 'advocate'],
+        ['engagement_stance', null],
+        ['actorial_part', null],
+      ],
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('debug off suppresses automatic technical diagnostics but keeps the compact stance line', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-debug-off-'));
   try {
@@ -1445,10 +1851,7 @@ test('debug off suppresses automatic technical diagnostics but keeps the compact
     assert.doesNotMatch(result.plain, /engagement stance >/u);
     assert.doesNotMatch(result.plain, /tutor DAG >/u);
     assert.doesNotMatch(result.plain, /debug explain > turn 1/u);
-    assert.match(
-      result.plain,
-      /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+, character [^,\n]+/u,
-    );
+    assert.match(result.plain, /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+, character [^,\n]+/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

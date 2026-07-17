@@ -47,10 +47,13 @@ test('a writable-entry turn compiles a declarative handoff on the learner reques
   assert.equal(contract.handoff_contract.mode, 'declarative_missing_support');
   assert.equal(contract.handoff_contract.question_allowed, false);
   assert.equal(contract.handoff_contract.question_required, false);
-  assert.deepEqual(contract.turn_focus_contract.primary_groups.map((row) => row.terms), [
-    ['blue', 'seal'],
-    ['custody', 'chain'],
-  ]);
+  assert.deepEqual(
+    contract.turn_focus_contract.primary_groups.map((row) => row.terms),
+    [
+      ['blue', 'seal'],
+      ['custody', 'chain'],
+    ],
+  );
   assert.match(tutorStubTurnProgressionContractPrompt(contract), /Keep the learner’s requested focus primary/iu);
 
   const accepted = auditTutorStubTurnProgression({
@@ -167,8 +170,7 @@ test('a neighbouring due relation needs an explicit bridge back to the learner q
 });
 
 test('a detailed due clue containing the learner focus is not misclassified as a sibling relation', () => {
-  const due =
-    'The depot’s new chargers were dark throughout the stocktake while Tallow Street still browned out.';
+  const due = 'The depot’s new chargers were dark throughout the stocktake while Tallow Street still browned out.';
   const contract = compileTutorStubTurnProgressionContract({
     learnerText: 'What should I write next about the depot’s new chargers?',
     responseCompositionFrame: {
@@ -249,12 +251,14 @@ test('focus recognition treats hyphenated compounds as lexical terms without adm
     }),
   });
   assert.equal(unrelated.ok, false);
-  assert.deepEqual(unrelated.issues.map((issue) => issue.type), ['handoff_loses_turn_focus']);
+  assert.deepEqual(
+    unrelated.issues.map((issue) => issue.type),
+    ['handoff_loses_turn_focus'],
+  );
 });
 
 test('saved V32 diagnostic 2 handoff retains its exact learner focus model-free', () => {
-  const learnerText =
-    'What should I put in the minutes about the chargers being dark during the stocktake?';
+  const learnerText = 'What should I put in the minutes about the chargers being dark during the stocktake?';
   const contract = compileTutorStubTurnProgressionContract({
     learnerText,
     responseCompositionFrame: {
@@ -268,8 +272,7 @@ test('saved V32 diagnostic 2 handoff retains its exact learner focus model-free'
   const savedSlots = {
     uptake: 'Write: “The dark chargers did not stop Tallow Street’s brownout.”',
     entry: 'My case is the depot caused it, but dark chargers cannot explain the brownout.',
-    response:
-      'The stocktake shows the brownout continued without charger current; it does not identify its source.',
+    response: 'The stocktake shows the brownout continued without charger current; it does not identify its source.',
     handoff: 'Next, compare the dark-charger stocktake with the 18:40 pen chart.',
   };
 
@@ -298,13 +301,20 @@ test('saved V32 diagnostic 2 handoff retains its exact learner focus model-free'
     }),
   });
   assert.equal(unrelated.ok, false);
-  assert.deepEqual(unrelated.issues.map((issue) => issue.type), ['handoff_loses_turn_focus']);
+  assert.deepEqual(
+    unrelated.issues.map((issue) => issue.type),
+    ['handoff_loses_turn_focus'],
+  );
 });
 
 test('closure and accountable answers cannot acquire a shared-scene question', () => {
   for (const input of [
     { dialogueClosureFrame: { mandatory: true }, actionFamily: 'close_inquiry', expected: 'closure' },
-    { dialogueClosureFrame: { mandatory: false }, actionFamily: 'answer_accountably', expected: 'declarative_current_limit' },
+    {
+      dialogueClosureFrame: { mandatory: false },
+      actionFamily: 'answer_accountably',
+      expected: 'declarative_current_limit',
+    },
   ]) {
     const contract = compileTutorStubTurnProgressionContract({
       learnerText: 'The measured result settles the comparison.',

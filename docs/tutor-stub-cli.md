@@ -51,6 +51,48 @@ The command is available in normal and passthrough modes, does not alter public
 message history, and repeats the latest tutor utterance when it returns to the
 scene. Newly committed changes appear automatically; uncommitted work does not.
 
+## Directing and randomizing performance
+
+Use `/register <style>` to direct the engagement stance and `/character <part>`
+to direct the tutor's host character. Both commands show their current value
+and available choices when used without an argument, and both autocomplete:
+
+```text
+/register warm
+/character advocate
+/register auto
+/character auto
+```
+
+`auto` (also accepted as `clear`, `off`, or `reset`) removes only that explicit
+direction. These controls are session-only and survive `/reset`. They do not
+replace the learner analysis: action family, audience, language, scene,
+evidence release, and safety continue through the normal pipeline. A due
+authored clue source may still voice its clue, and the structurally licensed
+final closeout character takes priority over a directed host character.
+
+Explicit direction composes with `/random`. A `/register` lock outranks random
+selection only for style; `/random` can still vary character. A `/character`
+lock behaves symmetrically. If both axes are explicitly directed, `/random`
+remains armed but performs no draw until either lock returns to `auto`.
+
+Use `/random` to toggle a session-only performance experiment. `/random on`,
+`/random off`, and `/random status` are also available and autocomplete from
+the slash-command palette.
+
+While it is on, every undirected performance axis samples a safe engagement
+stance or host character independently of the learner assessment. The
+immediately previous stance and character are excluded when alternatives exist,
+so the variation is visible rather than accidentally repetitive. The configured
+teaching policy is not replaced: it resumes when `/random` is turned off.
+
+Only those two performance axes are randomized. Learner/DAG analysis still
+chooses the teaching action, audience level, language accessibility, and scene
+grounding; authored clue release, dialogue closure, and response-safety checks
+remain active. The compact model line says `random performance`, and transcript
+settings plus JSONL turns retain both seeded draws for exact replay. Changing
+the mode refreshes any prefetched mixed-learner response.
+
 ## Returning to a saved scenario
 
 When an interactive session restores a saved scenario and its dialogue
@@ -64,6 +106,27 @@ First-time initialization is unchanged: scenario/profile/settings selection
 finishes before the richer model-realized opening and its first mixed-learner
 prelude are displayed. Explicit `--resume-last` also remains distinct: it
 restores the existing public transcript rather than creating another opening.
+
+## Learner response authorship
+
+Every completed learner turn now records structured response provenance for
+human-evaluation work. The stable `authorship` value is `human`, `ai`,
+`hybrid`, or `unknown` for an older trace. The record also keeps the input
+method, whether a human was in the loop, the learner model/profile when one was
+used, and the originating mixed-suggestion request.
+
+- terminal and voice-transcribed replies are human-authored;
+- fully automated learner replies are AI-generated;
+- `/use` and an unchanged Tab draft are AI-authored and human-accepted; and
+- editing a Tab-inserted draft produces a hybrid, human-edited AI reply.
+
+When several messages arrive before the tutor responds, each fragment retains
+its own provenance and the compound turn aggregates them. JSONL traces contain
+an explicit `learner_response_provenance_recorded` event and retain the same
+record on `turnRecord`, `learnerInput`, and each `learnerMessages` fragment.
+Transcript and learning-summary HTML label every learner response and show
+session totals. Public tutor/learner speech and replay-JavaScript messages remain
+unchanged.
 
 ## Terminal compatibility
 
