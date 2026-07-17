@@ -222,6 +222,14 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
         .filter(Boolean)
         .join(' ')
     : compatibility.entryInstruction;
+  const performanceResponseInstruction = compensated
+    ? tutorStubSourceAccessibilityInstruction(sourceAccessibility)
+    : [
+        oneLine(slots.get('tactic').instruction),
+        `Stance here (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.contract)}`,
+      ]
+        .filter(Boolean)
+        .join(' ');
   return {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA,
     host_sentence_count: 4,
@@ -241,9 +249,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
       uptake: { instruction: oneLine(slots.get('uptake').instruction) },
       performance: {
         entry_instruction: compensatedEntryInstruction,
-        response_instruction: compensated
-          ? tutorStubSourceAccessibilityInstruction(sourceAccessibility)
-          : oneLine(slots.get('tactic').instruction),
+        response_instruction: performanceResponseInstruction,
         compatibility_instruction: compensated ? null : compatibility.performanceResponseInstruction,
         stance_instruction: oneLine(stanceContract.contract),
         stance_instruction_source: stanceContract.source,
@@ -275,9 +281,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
               'RESPONSE only makes SOURCE easier to follow; it owns no other axis.',
             ]
           : [
-              `Treat entry and response as one ${oneLine(contract?.performance?.actorial_part_label) || 'public part'} performance beat.`,
-              `Across them, make the ${oneLine(contract?.performance?.tactic_label) || 'selected tactic'} and ${oneLine(contract?.performance?.engagement_stance) || 'selected'} stance visible.`,
-              oneLine(stanceContract.contract),
+              'ENTRY owns the part; RESPONSE owns tactic and stance.',
             ])
           .filter(Boolean)
           .join(' '),

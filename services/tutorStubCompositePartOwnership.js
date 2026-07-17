@@ -9,8 +9,8 @@ const RELEVANCE_STOP_WORDS = new Set(
   ),
 );
 
-const BOUNDED_CASE_PATTERN =
-  /\b(?:but|cannot|can[’']t|does not|doesn[’']t|limit|not|only|possible|unproved|unless|until|yet)\b/iu;
+const ABSTRACT_CASE_STATUS_PATTERN =
+  /^my case (?:is|rests)\s+(?:that\s+)?(?:closed|limited|open|strong|uncertain|unproved|weak|weakened)\b/iu;
 const DELEGATED_COMPLEMENT_PATTERN =
   /\b(?:break|challenge|check|compare|establish|examine|inspect|look|prove|read|resist|show|test|tie|trace|weigh)\b/iu;
 const RELATIONAL_OPERATION_PATTERN =
@@ -81,7 +81,7 @@ export function compileTutorStubCompositePartOwnership({
         id: 'performance_initiation',
         owner: 'performance',
         slot_ids: ['performance_entry'],
-        kind: 'bounded_first_person_case',
+        kind: 'concrete_first_person_case',
       },
       {
         id: 'performance_action_absent',
@@ -106,7 +106,7 @@ export function compileTutorStubCompositePartOwnership({
     excluded_owners: ['source'],
     prompt: {
       performance_initiation:
-        'Begin “My case is” and state a concrete public proposition, not merely whether the case is strong, weak, or limited. In this same PERFORMANCE ENTRY, name the evidence and the conclusion it cannot establish; do not replace either with “it,” “that,” or another pronoun. Do not defer the limit to PERFORMANCE RESPONSE.',
+        'Begin “My case is” and state a concrete public proposition, not merely whether the case is strong, weak, or limited. PERFORMANCE RESPONSE owns the evidence boundary and stance.',
       performance_action_boundary:
         'Keep PERFORMANCE declarative: do not request, schedule, offer, or direct the next action.',
       handoff_delegated_complement:
@@ -141,7 +141,10 @@ export function auditTutorStubCompositePartOwnership({
   const performanceText = [entry?.text, response?.text].filter(Boolean).join(' ');
   const entryText = oneLine(entry?.text);
   const handoffText = oneLine(handoff?.text);
-  const initiatesCase = /^my case (?:is|rests)\b/iu.test(entryText) && BOUNDED_CASE_PATTERN.test(entryText);
+  const initiatesCase =
+    /^my case (?:is|rests)\b/iu.test(entryText) &&
+    !ABSTRACT_CASE_STATUS_PATTERN.test(entryText) &&
+    contentTokens(entryText).size >= 2;
   const performanceActionAbsent = !performanceIssuesAction(entry, response);
   const performanceTokens = contentTokens(performanceText);
   const handoffTokens = contentTokens(handoffText);
@@ -158,8 +161,8 @@ export function auditTutorStubCompositePartOwnership({
       ok: initiatesCase,
       evidence: initiatesCase ? exactEvidence(entry) : [],
       reason: initiatesCase
-        ? 'PERFORMANCE begins a bounded first-person case.'
-        : 'PERFORMANCE must begin a bounded first-person case independently of HANDOFF.',
+        ? 'PERFORMANCE begins a concrete first-person case.'
+        : 'PERFORMANCE ENTRY must begin a concrete first-person case independently of RESPONSE and HANDOFF.',
     },
     {
       id: 'performance_action_absent',

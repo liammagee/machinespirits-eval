@@ -237,11 +237,13 @@ test('v2 compiles declared advocate delegation into a bounded performance and ac
   assert.equal(contract.compatibility.composite_axis_ownership.mode, 'delegated_complement');
   assert.match(plan.slots.performance.entry_instruction, /state a concrete public proposition/iu);
   assert.match(plan.slots.performance.entry_instruction, /not merely whether the case is strong, weak, or limited/iu);
-  assert.match(plan.slots.performance.entry_instruction, /same PERFORMANCE ENTRY/iu);
-  assert.match(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
-  assert.match(plan.slots.performance.entry_instruction, /do not replace either with “it,” “that,” or another pronoun/iu);
-  assert.match(plan.slots.performance.entry_instruction, /Do not defer the limit to PERFORMANCE RESPONSE/iu);
+  assert.match(plan.slots.performance.entry_instruction, /PERFORMANCE RESPONSE owns the evidence boundary and stance/iu);
+  assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
+  assert.match(plan.slots.performance.response_instruction, /Stance here \(precise\)/iu);
+  assert.match(plan.slots.performance.response_instruction, /distinction or warrant cleanly/iu);
+  assert.match(plan.slots.performance.joint_instruction, /ENTRY owns the part/iu);
+  assert.match(plan.slots.performance.joint_instruction, /RESPONSE owns tactic and stance/iu);
   assert.match(plan.slots.performance.compatibility_instruction, /Keep PERFORMANCE declarative/iu);
   assert.match(plan.slots.handoff.instruction, /Begin HANDOFF with “Next,” or “Now,”/iu);
   assert.match(plan.slots.handoff.instruction, /test, check, compare, or trace/iu);
@@ -309,8 +311,58 @@ test('evidentiary-boundary speaking contract requires explicit evidence and conc
 
   assert.match(plan.slots.performance.response_instruction, /Name the public evidence, what it supports/iu);
   assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit; use no pronoun substitute/iu);
-  assert.match(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
-  assert.match(plan.slots.performance.entry_instruction, /do not replace either with “it,” “that,” or another pronoun/iu);
+  assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
+  assert.match(plan.slots.performance.response_instruction, /Stance here \(charismatic\)/iu);
+});
+
+test('saved V38 original preserves causal boundary but genuinely misses charismatic stance', () => {
+  const selectedConfiguration = advocateConfiguration({
+    engagement_stance: 'charismatic',
+    actorial_performance: {
+      id: 'evidentiary_boundary',
+      label: 'evidentiary boundary',
+      contract: 'State the strongest licensed case and make its public limit visible.',
+    },
+  });
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake:
+          'Write: “Because the chargers were dark during stocktake, they cannot cause Tallow Street’s brownout.”',
+        performance: {
+          entry:
+            'My case is the depot caused brownouts; stocktake cannot establish the depot caused brownouts.',
+          response:
+            'The stocktake’s dark chargers support ruling out chargers, not identifying the supply cause.',
+        },
+        handoff:
+          'Next, compare the chargers being dark during the stocktake with the 18:40 brownout.',
+      }),
+      { maxWordsPerSlot: 18 },
+    ),
+  });
+  const audit = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    world: {
+      title: 'The Thursday Brownouts of Tallow Street',
+      setting: 'The stocktake note and pen chart lie on the hall table.',
+      question: 'What browns out Tallow Street every Thursday evening?',
+      premiseById: new Map(),
+    },
+  });
+
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.axes.actorial_performance.visible, true);
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.engagement_stance.visible, false);
+  assert.equal(audit.ok, false);
+  assert.ok(
+    audit.issues.some(
+      (issue) => issue.axis === 'engagement_stance' && issue.owner === 'performance',
+    ),
+  );
 });
 
 test('V32 speaking contract rejects the saved V31 static-break shape and preserves a compliant owner-local counterfactual', () => {
