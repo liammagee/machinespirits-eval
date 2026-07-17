@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 
@@ -255,6 +257,99 @@ describe('cliProviderBridge', () => {
     assert.equal(result.outputTokens, null);
     assert.equal(result.reasoningOutputTokens, null);
     assert.equal(result.totalTokens, null);
+  });
+
+  it('passes an explicit replacement instruction file without changing the default Codex path', async () => {
+    const calls = [];
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-codex-instructions-test-'));
+    const instructions = path.join(dir, 'speaker.md');
+    fs.writeFileSync(instructions, 'Return only public tutor speech.\n');
+    const spawnImpl = (command, args) => {
+      const overrideArg = args.find((arg) => arg.startsWith('model_instructions_file='));
+      const copiedPath = overrideArg
+        ? JSON.parse(overrideArg.slice('model_instructions_file='.length))
+        : null;
+      calls.push({
+        command,
+        args,
+        copiedPath,
+        copiedText: copiedPath ? fs.readFileSync(copiedPath, 'utf8') : null,
+      });
+      const outputPath = args[args.indexOf('-o') + 1];
+      return fakeChild({
+        stdoutText: '{"type":"turn.completed"}\n',
+        onEnd: () => fs.writeFileSync(outputPath, 'ready\n'),
+      });
+    };
+
+    try {
+      const overridden = await callAIWithCliBridge(
+        { provider: 'codex', model: 'gpt-test' },
+        'system',
+        'user',
+        'tutor',
+        {
+          developmentModelInstructionsFile: instructions,
+          allowDevelopmentBaseInstructionsOverride: true,
+          modelInstructionsSource: 'config/speaker.md',
+          timeoutMs: 1000,
+          spawnImpl,
+        },
+      );
+      const ordinary = await callAIWithCliBridge(
+        { provider: 'codex', model: 'gpt-test' },
+        'system',
+        'user',
+        'tutor',
+        { timeoutMs: 1000, spawnImpl },
+      );
+
+      const overrideArg = calls[0].args.find((arg) => arg.startsWith('model_instructions_file='));
+      assert.ok(overrideArg);
+      const copiedPath = JSON.parse(overrideArg.slice('model_instructions_file='.length));
+      assert.notEqual(copiedPath, instructions);
+      assert.equal(calls[0].copiedText, 'Return only public tutor speech.\n');
+      assert.ok(calls[0].args.includes('--strict-config'));
+      assert.equal(overridden.baseInstructionsMode, 'replacement_file');
+      assert.equal(overridden.modelInstructionsSource, 'config/speaker.md');
+      assert.equal(overridden.modelInstructionsBytes, 33);
+      assert.match(overridden.modelInstructionsSha256, /^[a-f0-9]{64}$/u);
+      assert.equal(calls[1].args.some((arg) => arg.startsWith('model_instructions_file=')), false);
+      assert.equal(calls[1].args.includes('--strict-config'), false);
+      assert.equal(ordinary.baseInstructionsMode, 'codex_default');
+      assert.equal(ordinary.modelInstructionsSource, null);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('fails before launch when the replacement instruction file is missing', async () => {
+    await assert.rejects(
+      () => callAIWithCliBridge(
+        { provider: 'codex', model: 'gpt-test' },
+        'system',
+        'user',
+        'tutor',
+        {
+          developmentModelInstructionsFile: '/definitely/missing/speaker.md',
+          allowDevelopmentBaseInstructionsOverride: true,
+        },
+      ),
+      /model instructions file does not exist/iu,
+    );
+  });
+
+  it('rejects base replacement without the explicit development-only capability', async () => {
+    await assert.rejects(
+      () => callAIWithCliBridge(
+        { provider: 'codex', model: 'gpt-test' },
+        'system',
+        'user',
+        'tutor',
+        { developmentModelInstructionsFile: '/not-read-without-capability.md' },
+      ),
+      /explicit development-only capability/iu,
+    );
   });
 
   it('returns real Codex CLI token usage when the JSON stream reports it', async () => {

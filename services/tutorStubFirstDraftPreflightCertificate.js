@@ -75,6 +75,9 @@ function defaultImplementationFiles(root) {
         !filePath.startsWith('config/tutor-stub-campaigns/') &&
         /\.(?:json|ya?ml)$/u.test(filePath),
     ),
+    ...(fs.existsSync(path.join(root, 'config', 'tutor-stub-codex-speaker-instructions.md'))
+      ? ['config/tutor-stub-codex-speaker-instructions.md']
+      : []),
   ];
 }
 

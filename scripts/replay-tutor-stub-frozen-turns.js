@@ -56,6 +56,11 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
+const DEVELOPMENT_CODEX_INSTRUCTIONS_FILE = path.join(
+  ROOT,
+  'config',
+  'tutor-stub-codex-speaker-instructions.md',
+);
 
 const { values: args } = parseArgs({
   options: {
@@ -69,6 +74,7 @@ const { values: args } = parseArgs({
     'adjudicate-report': { type: 'string' },
     'development-seed': { type: 'string', default: '' },
     'development-direct-model': { type: 'string', default: '' },
+    'development-codex-instructions-file': { type: 'string', default: '' },
     'original-only': { type: 'boolean', default: false },
     'stop-on-first-rejection': { type: 'boolean', default: false },
     'structured-generation': { type: 'boolean', default: false },
@@ -92,6 +98,7 @@ function usage() {
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --joint-performance-generation --source-accessibility-policy direct_or_compensated_v1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 4,6,9 --draws 1 --original-only --stop-on-first-rejection --concurrency 1 --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --development-seed 123 --development-direct-model openai.standard --out report.json
+  node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 5 --draws 1 --original-only --development-seed 123 --development-codex-instructions-file /absolute/path/to/instructions.md --out report.json
   node scripts/replay-tutor-stub-frozen-turns.js --trace TRACE --turns 1,2 --write-fixture fixture.json
   node scripts/replay-tutor-stub-frozen-turns.js --audit-fixture fixture.json --out audit.json
   node scripts/replay-tutor-stub-frozen-turns.js --adjudicate-report original-screen.json --reuse-adjudication --out reaudited.json
@@ -108,6 +115,12 @@ then closes admission at the first strict rejection.
 --development-direct-model is a tool-free, cross-model prompt-screening path.
 It requires a non-held-out development seed, is recorded as non-equivalent,
 and never counts as Codex CLI or held-out acceptance.
+
+--development-codex-instructions-file replaces Codex's built-in base
+instructions for a non-equivalent development screen. It requires the absolute
+path to config/tutor-stub-codex-speaker-instructions.md plus a development
+seed, never counts as strict Codex acceptance, and does not change the default
+Codex CLI path.
 
 --compact-speaker-prompt is an opt-in no-source compiler for the V2 joint
 performance request. It preserves the public prefix and selected response
@@ -301,7 +314,10 @@ function worldForBundle(bundle) {
   return loadWorld(worldPathForId(bundle.worldId));
 }
 
-async function generateOriginal(bundle, { directDevelopmentModel = null } = {}) {
+async function generateOriginal(
+  bundle,
+  { directDevelopmentModel = null, developmentCodexInstructionsFile = null } = {},
+) {
   const request = bundle.request || {};
   const messages = request.messages || [];
   const latest = messages.at(-1);
@@ -315,7 +331,15 @@ async function generateOriginal(bundle, { directDevelopmentModel = null } = {}) 
       request.systemPrompt,
       latest.content,
       'tutor_stub_tutor_frozen_screen',
-      { messageHistory: history, effort: request.effort || request.config?.cliEffort || null },
+      {
+        messageHistory: history,
+        effort: request.effort || request.config?.cliEffort || null,
+        developmentModelInstructionsFile: developmentCodexInstructionsFile,
+        allowDevelopmentBaseInstructionsOverride: Boolean(developmentCodexInstructionsFile),
+        modelInstructionsSource: developmentCodexInstructionsFile
+          ? path.relative(ROOT, developmentCodexInstructionsFile)
+          : null,
+      },
     );
     const tokenUsage = normalizeTokenUsage(result, { available: result.tokenUsageAvailable });
     const promptSizeReport = buildTutorStubPromptSizeReportForRequest({
@@ -334,6 +358,18 @@ async function generateOriginal(bundle, { directDevelopmentModel = null } = {}) 
       usage: tokenUsageFields(tokenUsage),
       tokenUsageAvailable: tokenUsage.tokenUsageAvailable,
       promptSizeReport,
+      transport: developmentCodexInstructionsFile
+        ? {
+            kind: 'codex_cli_development_base_override_non_equivalent',
+            acceptanceEligible: false,
+            equivalentToFrozenModelTransport: false,
+            baseInstructionsMode: result.baseInstructionsMode,
+            modelInstructionsSource: result.modelInstructionsSource,
+            modelInstructionsSha256: result.modelInstructionsSha256,
+            modelInstructionsBytes: result.modelInstructionsBytes,
+            codexCliVersion: result.codexCliVersion,
+          }
+        : null,
     };
   }
   const effectiveRequest = directDevelopmentModel
@@ -696,6 +732,25 @@ async function main() {
     modelRef: args['development-direct-model'],
     developmentSeed: args['development-seed'],
   });
+  const developmentCodexInstructionsFile = args['development-codex-instructions-file']
+    ? path.resolve(args['development-codex-instructions-file'])
+    : null;
+  if (developmentCodexInstructionsFile) {
+    if (!path.isAbsolute(args['development-codex-instructions-file'])) {
+      throw new Error('--development-codex-instructions-file requires an absolute path');
+    }
+    if (!args['development-seed']) {
+      throw new Error('--development-codex-instructions-file requires --development-seed');
+    }
+    if (directDevelopmentModel) {
+      throw new Error('--development-codex-instructions-file cannot be combined with --development-direct-model');
+    }
+    if (developmentCodexInstructionsFile !== DEVELOPMENT_CODEX_INSTRUCTIONS_FILE) {
+      throw new Error(
+        `--development-codex-instructions-file is restricted to ${DEVELOPMENT_CODEX_INSTRUCTIONS_FILE}`,
+      );
+    }
+  }
   const draws = positiveInt(args.draws, '--draws', { max: 20 });
   const concurrency = positiveInt(args.concurrency, '--concurrency', { max: 3 });
   const bundles = turns.map((turn) => {
@@ -715,7 +770,13 @@ async function main() {
   });
   const jobs = bundles.flatMap((bundle) => Array.from({ length: draws }, (_, index) => ({ bundle, draw: index + 1 })));
   const runJob = async ({ bundle, draw }) => {
-    const generated = await generateOriginal(bundle, { directDevelopmentModel });
+    if (developmentCodexInstructionsFile && bundle.request?.provider !== 'codex') {
+      throw new Error('--development-codex-instructions-file requires a frozen Codex request');
+    }
+    const generated = await generateOriginal(bundle, {
+      directDevelopmentModel,
+      developmentCodexInstructionsFile,
+    });
     const world = worldForBundle(bundle);
     let candidate = generated.text;
     let structuredResult = null;
@@ -870,6 +931,8 @@ async function main() {
     schema: TUTOR_STUB_FROZEN_REPLAY_SCHEMA,
     mode: directDevelopmentModel
       ? 'original_only_direct_provider_development_screen_non_equivalent'
+      : developmentCodexInstructionsFile
+        ? 'original_only_codex_base_override_development_screen_non_equivalent'
       : jointPerformanceGeneration
       ? 'original_only_joint_performance_screen'
       : structuredGeneration
@@ -905,7 +968,17 @@ async function main() {
           acceptanceEligible: false,
           consumesHeldOutOrAcceptanceSeed: false,
         }
-      : {
+      : developmentCodexInstructionsFile
+        ? {
+            kind: 'codex_cli_development_base_override_non_equivalent',
+            provider: bundles[0]?.request?.provider || null,
+            model: bundles[0]?.request?.model || null,
+            modelInstructionsSource: path.relative(ROOT, developmentCodexInstructionsFile),
+            acceptanceEligible: false,
+            equivalentToFrozenModelTransport: false,
+            consumesHeldOutOrAcceptanceSeed: false,
+          }
+        : {
           kind: 'frozen_model_transport',
           provider: bundles[0]?.request?.provider || null,
           model: bundles[0]?.request?.model || null,

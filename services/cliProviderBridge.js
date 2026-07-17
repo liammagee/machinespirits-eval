@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { recordExternalApiCall } from './apiPayloadCapture.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 
@@ -22,6 +23,15 @@ const DEFAULT_CODEX_TIMEOUT_MS = positiveIntEnv(
 );
 const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
 const CLI_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max', 'config']);
+let cachedCodexCliVersion;
+
+function codexCliVersion({ enabled = true } = {}) {
+  if (!enabled) return null;
+  if (cachedCodexCliVersion !== undefined) return cachedCodexCliVersion;
+  const result = spawnSync('codex', ['--version'], { encoding: 'utf8' });
+  cachedCodexCliVersion = result.status === 0 ? String(result.stdout || '').trim() || null : null;
+  return cachedCodexCliVersion;
+}
 
 export function normalizeCliEffort(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -336,9 +346,36 @@ async function callCodexCli({
   onEvent,
   signal,
   outputSchema,
+  developmentModelInstructionsFile,
+  allowDevelopmentBaseInstructionsOverride = false,
+  modelInstructionsSource = null,
   spawnImpl = spawn,
 }) {
   if (signal?.aborted) throw abortError(role);
+  let replacementInstructionsSourceFile = null;
+  let replacementInstructionsBytes = null;
+  let replacementInstructionsSha256 = null;
+  if (
+    developmentModelInstructionsFile !== undefined &&
+    developmentModelInstructionsFile !== null &&
+    developmentModelInstructionsFile !== ''
+  ) {
+    if (allowDevelopmentBaseInstructionsOverride !== true) {
+      throw new Error('Codex base-instructions replacement requires the explicit development-only capability');
+    }
+    replacementInstructionsSourceFile = path.resolve(String(developmentModelInstructionsFile));
+    let stat = null;
+    try {
+      stat = fs.statSync(replacementInstructionsSourceFile);
+    } catch {
+      throw new Error(`Codex model instructions file does not exist: ${replacementInstructionsSourceFile}`);
+    }
+    if (!stat.isFile()) {
+      throw new Error(`Codex model instructions path must be a file: ${replacementInstructionsSourceFile}`);
+    }
+    replacementInstructionsBytes = fs.readFileSync(replacementInstructionsSourceFile);
+    replacementInstructionsSha256 = createHash('sha256').update(replacementInstructionsBytes).digest('hex');
+  }
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-codex-'));
   const outFile = path.join(tmpDir, 'last-message.txt');
   const start = Date.now();
@@ -347,6 +384,12 @@ async function callCodexCli({
   const schema = normalizedOutputSchema(outputSchema);
   const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
   if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
+  const replacementInstructionsFile = replacementInstructionsBytes
+    ? path.join(tmpDir, 'model-instructions.md')
+    : null;
+  if (replacementInstructionsFile) {
+    fs.writeFileSync(replacementInstructionsFile, replacementInstructionsBytes, { mode: 0o600 });
+  }
   const prompt = buildCodexCliPromptText({
     systemPrompt,
     userPrompt,
@@ -370,8 +413,12 @@ async function callCodexCli({
         'never',
         '--json',
       ];
+      if (replacementInstructionsFile) args.splice(1, 0, '--strict-config');
       if (effectiveEffort && effectiveEffort !== 'config') {
         args.push('-c', `model_reasoning_effort="${effectiveEffort}"`);
+      }
+      if (replacementInstructionsFile) {
+        args.push('-c', `model_instructions_file=${JSON.stringify(replacementInstructionsFile)}`);
       }
       if (model && model !== 'auto') args.push('-m', model);
       if (schemaFile) args.push('--output-schema', schemaFile);
@@ -465,6 +512,11 @@ async function callCodexCli({
           prohibitedToolEventCount: eventAudit.prohibited_event_count,
           modelAttestationBasis: cliModelAttestationBasis(model),
           modelIndependentlyAttested: false,
+          baseInstructionsMode: replacementInstructionsFile ? 'replacement_file' : 'codex_default',
+          modelInstructionsSource: replacementInstructionsFile ? modelInstructionsSource : null,
+          modelInstructionsSha256: replacementInstructionsSha256,
+          modelInstructionsBytes: replacementInstructionsBytes?.length ?? null,
+          codexCliVersion: codexCliVersion({ enabled: spawnImpl === spawn }),
         });
       });
       child.stdin.write(prompt);
@@ -597,6 +649,9 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       onEvent: opts?.onEvent,
       signal: opts?.signal,
       outputSchema: opts?.outputSchema,
+      developmentModelInstructionsFile: opts?.developmentModelInstructionsFile,
+      allowDevelopmentBaseInstructionsOverride: opts?.allowDevelopmentBaseInstructionsOverride,
+      modelInstructionsSource: opts?.modelInstructionsSource,
       spawnImpl: opts?.spawnImpl,
     });
   }
