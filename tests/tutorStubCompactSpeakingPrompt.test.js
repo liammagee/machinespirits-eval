@@ -214,6 +214,35 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   );
 });
 
+test('typed charismatic ownership stays in PERFORMANCE entry through compact compilation', () => {
+  const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
+  const bundle = v33Bundle(fixture.request);
+  bundle.jointPerformanceFirstDraft.host_plan.slots.performance.engagement_operation_contract = {
+    schema: 'machinespirits.tutor-stub.engagement-operation.v1',
+    active: true,
+    id: 'public_pressure_collision',
+    owner: 'performance_entry',
+  };
+  bundle.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction =
+    'Begin exactly “My case is this: I set” and place the public inactivity clue against the named accusation.';
+
+  const result = buildTutorStubCompactNoSourceRequest(bundle);
+  const latest = result.request.messages.at(-1).content;
+
+  assert.match(
+    latest,
+    /PERFORMANCE ENTRY owns the advocate part and the charismatic stance/iu,
+  );
+  assert.match(
+    latest,
+    /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\):/iu,
+  );
+  assert.doesNotMatch(
+    latest,
+    /PERFORMANCE RESPONSE owns[^\n]*charismatic stance/iu,
+  );
+});
+
 test('frozen-bundle replacement is opt-in and preserves the V2 request shape', () => {
   const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
   const bundle = v33Bundle(fixture.request);

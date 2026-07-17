@@ -300,6 +300,9 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
             ])
           .filter(Boolean)
           .join(' '),
+        engagement_operation_contract: clone(
+          contract?.performance?.engagement_operation_contract || null,
+        ),
       },
       source: source
         ? {
@@ -834,6 +837,7 @@ export function auditTutorStubJointPerformanceOwnership({
   performanceObligationContract = null,
   progressionContract = null,
   sourceAccessibility = null,
+  engagementOperationContract = null,
 } = {}) {
   const issues = compositionIntegrityIssues(composition, candidate);
   if (composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA) {
@@ -925,6 +929,7 @@ export function auditTutorStubJointPerformanceOwnership({
     world,
     performanceObligationContract,
     actorialPerformanceScope,
+    engagementOperationContract,
     performanceAuditContext: {
       fullComposedPublicText: composition.text,
       verifiedPartVisible:
@@ -937,6 +942,7 @@ export function auditTutorStubJointPerformanceOwnership({
         .map((span) => span.id),
     },
   });
+  const engagementOperationAudit = performanceAudit?.engagement_operation_realization || null;
   const responseObligation = compensated
     ? {
         active: false,
@@ -968,9 +974,16 @@ export function auditTutorStubJointPerformanceOwnership({
       realization: clone(performanceAudit?.actorial_performance_realization || null),
     },
     engagement_stance: {
-      owner: 'performance',
+      owner:
+        engagementOperationAudit.active === true
+          ? engagementOperationAudit.owner
+          : 'performance',
       selected: configuration.engagement_stance,
-      visible: performanceAudit?.axes?.engagement_stance?.visible === true,
+      visible:
+        engagementOperationAudit.active === true
+          ? engagementOperationAudit.ok === true
+          : performanceAudit?.axes?.engagement_stance?.visible === true,
+      typed_operation: clone(engagementOperationAudit),
     },
     scene_immersion: {
       owner: 'performance',
@@ -1118,7 +1131,7 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
   source.reportOnlyFailureClusters = deliveryDecision.reportOnlyIssues.map(
     (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
   );
-  source.shadowAdvisoryFailureClusters = deliveryDecision.shadow.advisoryIssues.map(
+  source.shadowAdvisoryFailureClusters = (deliveryDecision.shadow?.advisoryIssues || []).map(
     (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
   );
   source.performanceAdjudicationEligibility = {
@@ -1130,6 +1143,58 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
     reason: 'isolated_part_miss_satisfied_by_typed_composite_contract',
   };
   return { audit: source, applied: true, reason: source.deterministicCompositePartRecognition.reason };
+}
+
+function applyTypedEngagementOperationRecognition(audit, jointAudit) {
+  const source = clone(audit);
+  const typed = jointAudit?.spanAudits?.performance?.engagement_operation_realization || null;
+  const jointAxis = jointAudit?.axes?.engagement_stance || null;
+  const responseAudit = source?.audits?.responseConfigurationAudit || null;
+  if (
+    typed?.active !== true ||
+    typed?.ok !== true ||
+    jointAxis?.visible !== true ||
+    !responseAudit?.axes?.engagement_stance
+  ) {
+    return { audit: source, applied: false, reason: 'typed_engagement_operation_not_satisfied' };
+  }
+  responseAudit.axes.engagement_stance = clone(jointAxis);
+  const axisRows = Object.values(responseAudit.axes || {});
+  const visibleAxes = axisRows.filter((axis) => axis?.visible === true).length;
+  responseAudit.visible_axis_count = visibleAxes;
+  responseAudit.axis_count = axisRows.length;
+  responseAudit.realization_rate = Number((visibleAxes / Math.max(1, axisRows.length)).toFixed(3));
+  responseAudit.transcript_visible =
+    visibleAxes >= 5 &&
+    responseAudit.axes?.actorial_part?.visible === true &&
+    responseAudit.metrics?.fourthWallBreak !== true;
+  responseAudit.visible_signature = `${String(responseAudit.visible_signature || '')}|typed_stance:${typed.operation}`;
+  responseAudit.engagement_operation_realization = clone(typed);
+  source.audits.responseConfigurationAudit = responseAudit;
+  const issueRows = tutorStubGuardIssueRows(source.audits);
+  const deliveryDecision = tutorStubGuardDeliveryDecision(issueRows);
+  source.deliveryDecision = deliveryDecision;
+  source.ok = deliveryDecision.ok;
+  source.failureClusters = failureClustersFromAudits(source.audits);
+  source.hardFailureClusters = deliveryDecision.hardIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
+  );
+  source.reportOnlyFailureClusters = deliveryDecision.reportOnlyIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.shadowAdvisoryFailureClusters = deliveryDecision.shadow.advisoryIssues.map(
+    (issue) => `${issue.guard}:${issue.type || 'failed'}${issue.axis ? `:${issue.axis}` : ''}`,
+  );
+  source.deterministicTypedEngagementRecognition = {
+    applied: true,
+    schema: typed.schema,
+    operation: typed.operation,
+    owner: typed.owner,
+  };
+  return { audit: source, applied: true, reason: 'typed_engagement_operation_satisfied' };
 }
 
 const JOINT_PERFORMANCE_OWNED_AXES = Object.freeze([
@@ -1218,6 +1283,7 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
   performanceObligationContract = null,
   progressionContract = null,
   sourceAccessibility = null,
+  engagementOperationContract = null,
 } = {}) {
   if (!audit) throw new Error('joint performance ownership requires the whole-response audit');
   const jointAudit = auditTutorStubJointPerformanceOwnership({
@@ -1228,6 +1294,7 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     performanceObligationContract,
     progressionContract,
     sourceAccessibility,
+    engagementOperationContract,
   });
   const turnProgressionAudit = progressionContract
     ? auditTutorStubTurnProgression({ contract: progressionContract, composition })
@@ -1238,8 +1305,9 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
         issues: [],
         reason: 'legacy_call_without_progression_contract',
       };
+  const typedEngagementRecognized = applyTypedEngagementOperationRecognition(audit, jointAudit);
   const recognized = applyDeterministicCompositePartRecognition(
-    audit,
+    typedEngagementRecognized.audit,
     jointAudit.compositePartOwnership,
   );
   const jointRecognized = applyDeterministicJointPerformanceRecognition(recognized.audit, jointAudit);
@@ -1278,6 +1346,10 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     deterministicCompositePartRecognition: {
       applied: recognized.applied,
       reason: recognized.reason,
+    },
+    deterministicTypedEngagementRecognition: {
+      applied: typedEngagementRecognized.applied,
+      reason: typedEngagementRecognized.reason,
     },
     deterministicJointPerformanceRecognition: jointRecognized.report,
     performanceAdjudicationEligibility: jointAudit.ok && turnProgressionAudit.ok

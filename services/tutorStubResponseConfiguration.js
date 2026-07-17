@@ -13,6 +13,7 @@ import {
   tutorStubRoleStageDirectionVisible,
 } from './tutorStubDramaticRelease.js';
 import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPerformanceObligationContract.js';
+import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
 
 const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
@@ -1867,6 +1868,7 @@ export function auditTutorStubResponseConfiguration({
   performanceObligationContract = null,
   performanceAuditContext = null,
   actorialPerformanceScope = null,
+  engagementOperationContract = null,
 } = {}) {
   if (!configuration) return null;
   const words = responseWords(text);
@@ -2001,16 +2003,24 @@ export function auditTutorStubResponseConfiguration({
     publicJudgmentMeetsContraryEvidenceRecognition,
   });
   const actorialPerformancePass = actorialPerformanceRealization.visible;
+  const engagementOperationRealization = auditTutorStubEngagementOperation({
+    contract: engagementOperationContract,
+    performanceEntry: performanceAuditContext?.auditedSpanTexts?.[0] || '',
+  });
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
-      visible: stanceVisible(configuration.engagement_stance, performanceText, performanceMetrics, {
-        performanceObligationContract,
-        actorialPartVisible: performancePrerequisitePartVisible,
-        fullText: performancePrerequisiteFullText,
-        publicJudgmentFalterRecognition,
-        publicJudgmentMeetsContraryEvidenceRecognition,
-      }),
+      visible:
+        engagementOperationRealization.active === true
+          ? engagementOperationRealization.ok === true
+          : stanceVisible(configuration.engagement_stance, performanceText, performanceMetrics, {
+              performanceObligationContract,
+              actorialPartVisible: performancePrerequisitePartVisible,
+              fullText: performancePrerequisiteFullText,
+              publicJudgmentFalterRecognition,
+              publicJudgmentMeetsContraryEvidenceRecognition,
+            }),
+      typed_operation: engagementOperationRealization,
     },
     action_family: {
       selected: configuration.action_family,
@@ -2097,6 +2107,7 @@ export function auditTutorStubResponseConfiguration({
       issues: actorialIssues,
     },
     actorial_performance_realization: actorialPerformanceRealization,
+    engagement_operation_realization: engagementOperationRealization,
     sceneLexiconMorphologyRecognition: sceneLexicon.morphologyRecognition,
     publicJudgmentFalterRecognition,
     publicJudgmentMeetsContraryEvidenceRecognition,

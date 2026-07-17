@@ -238,10 +238,13 @@ function compactUserPrompt({
   const axisRows = decisions.map(
     (row) => `- ${row.axis}=${row.selected}: ${row.instruction || 'make this selection visible'}`,
   );
+  const engagementOperation = plan.slots.performance.engagement_operation_contract || null;
+  const entryOwnsStance =
+    engagementOperation?.active === true && engagementOperation?.owner === 'performance_entry';
   const performanceInstructions = [
     plan.slots.performance.response_instruction,
     plan.slots.performance.compatibility_instruction,
-    plan.slots.performance.stance_instruction,
+    entryOwnsStance ? null : plan.slots.performance.stance_instruction,
   ]
     .map(oneLine)
     .filter(Boolean)
@@ -279,8 +282,8 @@ function compactUserPrompt({
     `Use at most ${draftingWords} words per sentence. Use one voice, common words, and one relation per sentence. Only uptake may use quotation marks when its instruction requires them.`,
     'SLOT OWNERSHIP:',
     `UPTAKE owns the direct response to the learner: ${oneLine(plan.slots.uptake.instruction)}`,
-    `PERFORMANCE ENTRY owns the ${axes.actorial_part} part and begins the performed claim: ${oneLine(plan.slots.performance.entry_instruction)}`,
-    `PERFORMANCE RESPONSE owns ${performance.id} (${performance.label}) and the ${axes.engagement_stance} stance: ${performanceInstructions}`,
+    `PERFORMANCE ENTRY owns the ${axes.actorial_part} part${entryOwnsStance ? ` and the ${axes.engagement_stance} stance` : ''} and begins the performed claim: ${oneLine(plan.slots.performance.entry_instruction)}`,
+    `PERFORMANCE RESPONSE owns ${performance.id} (${performance.label})${entryOwnsStance ? '' : ` and the ${axes.engagement_stance} stance`}: ${performanceInstructions}`,
     `HANDOFF alone owns ${axes.action_family}: ${oneLine(plan.slots.handoff.instruction)}`,
     `HANDOFF FOCUS: Keep both the public subject and its condition visible in the operation: “${handoffFocus}”. Naming only a generic record or exhibit loses the learner’s focus.`,
     'Do not move a PERFORMANCE duty into HANDOFF or a HANDOFF operation into PERFORMANCE.',

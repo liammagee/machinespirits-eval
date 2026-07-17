@@ -268,11 +268,11 @@ test('typed causal PERFORMANCE keeps the exact public tuple inside the compact p
   assert.match(responseInstruction, /Add no third clause or role change/iu);
   assert.match(
     refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction,
-    /Put one named public clue directly against the accusation/iu,
+    /public inactivity clue against the accusation or claim/iu,
   );
   assert.match(
     refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction,
-    /Begin exactly “My case is this:”/iu,
+    /Begin exactly “My case is this: I set”/iu,
   );
   assert.doesNotMatch(responseInstruction, /Stance operation/iu);
   assert.match(

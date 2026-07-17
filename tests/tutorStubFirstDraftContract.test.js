@@ -206,6 +206,8 @@ test('binds a writable causal entry to the public relation without reversing cau
   );
   assert.equal(contract.opening.causal_relation_contract?.subject, 'depot chargers');
   assert.equal(contract.opening.causal_relation_contract?.outcome, 'Tallow Street brownout');
+  assert.match(contract.opening.causal_relation_contract?.public_evidence_surface, /stood dark throughout the stocktake/iu);
+  assert.equal(contract.performance.engagement_operation_contract, null);
   assert.match(prompt, /The depot chargers did not cause the Tallow Street brownout/iu);
   assert.match(prompt, /Keep both named roles exact/iu);
   assert.match(prompt, /never widen either role/iu);
@@ -226,6 +228,37 @@ test('binds a writable causal entry to the public relation without reversing cau
     /actual cause remains open/iu,
   );
   assert.ok(wordCount(prompt) <= 250, `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`);
+});
+
+test('charismatic typed causal entry compiles one public-only PERFORMANCE entry operation', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I put in the minutes about the chargers?',
+    responseConfiguration: configuration({ engagement_stance: 'charismatic' }),
+    committedPublicEvidence: [
+      {
+        surface:
+          'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out.',
+        causal_relation: {
+          kind: 'inactive_candidate_with_persisting_outcome',
+          family: 'production',
+          subject: 'depot chargers',
+          outcome: 'Tallow Street brownout',
+        },
+      },
+    ],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+
+  assert.equal(contract.performance.engagement_operation_contract?.owner, 'performance_entry');
+  assert.equal(contract.performance.engagement_operation_contract?.id, 'public_pressure_collision');
+  assert.match(
+    contract.opening.causal_performance_entry_instruction,
+    /Begin exactly “My case is this: I set”/iu,
+  );
+  assert.doesNotMatch(
+    JSON.stringify(contract.performance.engagement_operation_contract),
+    /premise_id|rule_id|release_schedule|dag/iu,
+  );
 });
 
 test('does not add a causal relation contract to an ordinary writable entry', () => {

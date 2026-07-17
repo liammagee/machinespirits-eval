@@ -80,6 +80,7 @@ function firstDraftContract({
   dialogueClosureFrame = null,
   questionSupport = null,
   sourceAccessibilityPolicy = 'direct_only',
+  committedPublicEvidence = [],
 } = {}) {
   return buildTutorStubFirstDraftContract({
     learnerText,
@@ -93,6 +94,7 @@ function firstDraftContract({
     dialogueClosureFrame,
     questionSupport,
     sourceAccessibilityPolicy,
+    committedPublicEvidence,
   });
 }
 
@@ -346,8 +348,7 @@ test('evidentiary-boundary speaking contract requires explicit evidence and conc
   assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit; use no pronoun substitute/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
   assert.match(plan.slots.performance.response_instruction, /Stance here \(charismatic\)/iu);
-  assert.match(plan.slots.performance.response_instruction, /Stance operation \(charismatic\)/iu);
-  assert.match(plan.slots.performance.response_instruction, /directly challenging the named live case/iu);
+  assert.doesNotMatch(plan.slots.performance.response_instruction, /Stance operation \(charismatic\)/iu);
 });
 
 test('saved V38 original preserves causal boundary but genuinely misses charismatic stance', () => {
@@ -447,6 +448,140 @@ test('saved V39 original re-audits as support plus explicit exclusion without ch
       'positive_support_with_explicit_exclusion',
     ),
   );
+});
+
+test('typed charismatic causal operation has one owner and generic cue words cannot rescue a flat entry', () => {
+  const selectedConfiguration = advocateConfiguration({
+    engagement_stance: 'charismatic',
+    scene_immersion: 'immersive',
+    actorial_performance: {
+      id: 'evidentiary_boundary',
+      label: 'evidentiary boundary',
+      contract: 'State the strongest licensed case and make its public limit visible.',
+    },
+  });
+  const committedPublicEvidence = [
+    {
+      surface:
+        'The depot chargers stood dark during stocktake while Tallow Street still browned out at 18:40.',
+      causal_relation: {
+        kind: 'inactive_candidate_with_persisting_outcome',
+        family: 'production',
+        subject: 'depot chargers',
+        outcome: 'Tallow Street brownout',
+      },
+    },
+  ];
+  const contract = firstDraftContract({
+    learnerText: 'What should I put in the minutes about the chargers being dark during the stocktake?',
+    responseConfiguration: selectedConfiguration,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Asks for wording about the stocktake evidence.' },
+      scene_action_budget: { saturated: true },
+    },
+    committedPublicEvidence,
+  });
+  assert.equal(contract.performance.engagement_operation_contract?.owner, 'performance_entry');
+  const world = {
+    title: 'The Thursday Brownouts of Tallow Street',
+    setting: 'The stocktake note and pen chart lie on the hall table.',
+    question: 'What browns out Tallow Street every Thursday evening?',
+    premiseById: new Map(),
+  };
+  const auditEntry = (entry) => {
+    const structured = parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake: 'Write: “The depot chargers did not cause the Tallow Street brownout.”',
+        performance: {
+          entry,
+          response:
+            'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.',
+        },
+        handoff: 'Next, compare the dark chargers with the 18:40 brownout.',
+      }),
+      {
+        maxWordsPerSlot: 18,
+        causalRelationContract: contract.opening.causal_relation_contract,
+      },
+    );
+    const composition = composeTutorStubJointPerformanceFirstDraft({ structured });
+    const audit = auditTutorStubJointPerformanceOwnership({
+      composition,
+      candidate: composition.text,
+      configuration: selectedConfiguration,
+      world,
+      progressionContract: contract.progression,
+      sourceAccessibility: contract.evidence.source_accessibility,
+      engagementOperationContract: contract.performance.engagement_operation_contract,
+    });
+    return { audit, composition };
+  };
+
+  const { audit: flat } = auditEntry(
+    'My case is this: dark depot chargers cannot explain the Tallow Street brownout, but the claim stops now.',
+  );
+  assert.equal(flat.axes.engagement_stance.visible, false);
+  assert.equal(flat.axes.engagement_stance.typed_operation.active, true);
+  assert.equal(flat.axes.engagement_stance.typed_operation.checks.first_person_set_against_visible, false);
+  assert.equal(flat.ok, false);
+
+  const { audit: performed, composition: performedComposition } = auditEntry(
+    'My case is this: I set stocktake darkness against the depot-charger Tallow Street brownout accusation.',
+  );
+  assert.equal(performed.axes.engagement_stance.visible, true, JSON.stringify(performed.issues));
+  assert.equal(performed.axes.engagement_stance.typed_operation.ok, true);
+  assert.equal(performed.spanAudits.performance.axes.engagement_stance.visible, true);
+
+  const wholeResponseConfigurationAudit = auditTutorStubResponseConfiguration({
+    text: performedComposition.text,
+    configuration: selectedConfiguration,
+    world,
+  });
+  assert.equal(wholeResponseConfigurationAudit.axes.engagement_stance.visible, false);
+  const passingAudit = { ok: true, issues: [] };
+  const combined = applyTutorStubJointPerformanceOwnershipAudit({
+    audit: {
+      ok: true,
+      safetyFailure: false,
+      failureClusters: [],
+      hardFailureClusters: [],
+      advisoryFailureClusters: [],
+      reportOnlyFailureClusters: ['response_configuration:axis_not_visible:engagement_stance'],
+      shadowAdvisoryFailureClusters: [],
+      deliveryDecision: {
+        ok: true,
+        hardIssues: [],
+        advisoryIssues: [],
+        reportOnlyIssues: [],
+        shadow: { advisoryIssues: [] },
+      },
+      audits: {
+        leakAudit: passingAudit,
+        scaffoldAudit: passingAudit,
+        questionSupportAudit: passingAudit,
+        dramaticReleaseAudit: passingAudit,
+        actorialRealizationAudit: { ok: true, issues: [] },
+        responseConfigurationAudit: wholeResponseConfigurationAudit,
+        responseCompositionAudit: passingAudit,
+        repetitionAudit: passingAudit,
+        closureAudit: passingAudit,
+        releaseDeliveryAudit: passingAudit,
+      },
+    },
+    composition: performedComposition,
+    candidate: performedComposition.text,
+    configuration: selectedConfiguration,
+    world,
+    progressionContract: contract.progression,
+    sourceAccessibility: contract.evidence.source_accessibility,
+    engagementOperationContract: contract.performance.engagement_operation_contract,
+  });
+  assert.equal(combined.deterministicTypedEngagementRecognition.applied, true);
+  assert.equal(
+    combined.audits.responseConfigurationAudit.visible_axis_count,
+    wholeResponseConfigurationAudit.visible_axis_count + 1,
+  );
+  assert.equal(combined.audits.responseConfigurationAudit.axes.engagement_stance.visible, true);
 });
 
 test('V32 speaking contract rejects the saved V31 static-break shape and preserves a compliant owner-local counterfactual', () => {

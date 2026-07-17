@@ -198,6 +198,8 @@ function auditOriginalCandidate({
       performanceObligationContract: bundle.performanceObligationContract,
       progressionContract: bundle.firstDraftContract?.progression || null,
       sourceAccessibility: bundle.firstDraftContract?.evidence?.source_accessibility || null,
+      engagementOperationContract:
+        bundle.firstDraftContract?.performance?.engagement_operation_contract || null,
     });
   }
   return applyTutorStubStructuredSlotOwnershipAudit({

@@ -25,6 +25,7 @@ import {
   tutorStubSourceAccessibilityInstruction,
 } from './tutorStubSourceAccessibilityContract.js';
 import { compileTutorStubWritableEntryCausalContract } from './tutorStubRequestedEntryCausality.js';
+import { compileTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
 
 export const TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.first-draft-turn-contract.v1';
 export const TUTOR_STUB_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.host-plan.v1';
@@ -120,10 +121,15 @@ function typedCausalPerformanceInstruction(causalContract = null) {
   return `Say “The ${subject} did not cause the ${outcome}; actual cause remains open.” Add no third clause or role change.`;
 }
 
-function typedCausalPerformanceEntryInstruction(causalContract = null, stance = 'precise') {
+function typedCausalPerformanceEntryInstruction(
+  causalContract = null,
+  stance = 'precise',
+  engagementOperation = null,
+) {
   const subject = oneLine(causalContract?.subject);
   const outcome = oneLine(causalContract?.outcome);
   if (!subject || !outcome) return null;
+  if (engagementOperation?.instruction) return oneLine(engagementOperation.instruction);
   const pressure = stance === 'charismatic' ? 'Put one named public clue directly against the accusation: ' : '';
   return `${pressure}Begin exactly “My case is this:” and say why the ${subject} cannot explain the ${outcome}. Do not repeat the minutes sentence or merely call the case strong, weak, limited, or weakened.`;
 }
@@ -579,6 +585,10 @@ export function buildTutorStubFirstDraftContract({
         surfaces: committedPublicSurfaces,
       })
     : null;
+  const engagementOperation = compileTutorStubEngagementOperation({
+    engagementStance: stance,
+    causalRelationContract: writableEntryCausalContract,
+  });
   const directionOnlyWithoutNewEvidence =
     questionSupport?.answerability === 'direction_only_until_evidence_is_public' && releaseCues.length === 0;
   const compiledCompatibilityDecisions = compatibilityDecisions({
@@ -648,7 +658,11 @@ export function buildTutorStubFirstDraftContract({
       causal_relation_contract: writableEntryBeforeDueEvidence ? null : writableEntryCausalContract,
       causal_performance_entry_instruction: writableEntryBeforeDueEvidence
         ? null
-        : typedCausalPerformanceEntryInstruction(writableEntryCausalContract, stance),
+        : typedCausalPerformanceEntryInstruction(
+            writableEntryCausalContract,
+            stance,
+            engagementOperation,
+          ),
       causal_performance_response_instruction: writableEntryBeforeDueEvidence
         ? null
         : typedCausalPerformanceInstruction(writableEntryCausalContract),
@@ -669,6 +683,7 @@ export function buildTutorStubFirstDraftContract({
     },
     performance: {
       engagement_stance: stance,
+      engagement_operation_contract: engagementOperation,
       stance_instruction: oneLine(getEngagementStanceDefinition(stance)?.stance_contract),
       stance_execution: stanceExecution,
       actorial_part: part,

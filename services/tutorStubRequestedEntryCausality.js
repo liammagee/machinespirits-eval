@@ -206,6 +206,7 @@ export function compileTutorStubWritableEntryCausalContract({ evidence = [], sur
     polarity: typed ? 'negative' : null,
     subject,
     outcome,
+    public_evidence_surface: typedRow?.surface || null,
     instruction: subject
       ? `Public causal relation: “${subject}” was inactive while “${outcome || 'the outcome'}” still occurred. Keep “${subject}” as the exact causal subject; do not widen it to a larger actor. Say this rules out production by “${subject}”; never say it failed to prevent or stop the outcome.`
       : 'Public causal relation: the candidate was inactive while the outcome still occurred. Say this rules out candidate causation; never say the candidate failed to prevent or stop the outcome.',
