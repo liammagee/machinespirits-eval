@@ -1,0 +1,80 @@
+{
+  "schema": "machinespirits.program2.extraction-report.v1",
+  "generatedAt": "2026-07-17T22:30:41.093Z",
+  "outDir": "/Users/lmagee/.machinespirits-data/program-2/datasets/v1",
+  "report": {
+    "file": "extraction-report.json",
+    "sha256": "90e7ce46fea56571bf0913df576b821f11ddd2c7c07035af7d195cb747dab18e"
+  },
+  "plan": "PROGRAM-2-FINETUNE-PLAN.md",
+  "phase": 0,
+  "splitSeed": 20260718,
+  "source": {
+    "step4Root": "/Users/lmagee/.machinespirits-data/step4-claim-runs-2026-07",
+    "launchPlanSha256": "0db392f6d592acb596f03a3a6caf374e1e596e680e6585d6fb3bf70380c5d4b6",
+    "expectedGitShaPrefix": "91b8a50e"
+  },
+  "counters": {
+    "dialogues": 80,
+    "turns": 2076,
+    "triggerMoments": 645,
+    "acceptedOriginals": 1096,
+    "failedOriginals": 980,
+    "missingOriginalCall": 0,
+    "leakDroppedPositives": 0,
+    "nonOriginalDeliveryCompliantTaskA": 40
+  },
+  "splitCounts": {
+    "taskA": {
+      "train": 105,
+      "dev": 21,
+      "heldout": 15
+    },
+    "general": {
+      "train": 868,
+      "dev": 112,
+      "heldout": 116
+    },
+    "kto": {
+      "train": 1676,
+      "dev": 203,
+      "heldout": 197
+    },
+    "evalMoments": {
+      "train": 518,
+      "dev": 66,
+      "heldout": 61
+    }
+  },
+  "leakFilter": {
+    "droppedPositives": 0,
+    "lossFraction": 0
+  },
+  "files": [
+    {
+      "name": "taskA-sft.jsonl",
+      "rows": 141,
+      "sha256": "f9b7501eee4b0fb5729d44e0a0b8fe01ebfb0e1ad89f1b7e20165889fe3ccc40"
+    },
+    {
+      "name": "general-sft.jsonl",
+      "rows": 1096,
+      "sha256": "bbaa1ae07c4dc5adefe2a51c90e8e68662d43d3fb77dee3e2a5fd9a5e0f63fe7"
+    },
+    {
+      "name": "kto.jsonl",
+      "rows": 2076,
+      "sha256": "f2ff7808eae4935fa00d9b702fb8ba23d4587c33aaba4cd88dfd0474ba1e0973"
+    },
+    {
+      "name": "eval-moments.jsonl",
+      "rows": 645,
+      "sha256": "13a148cded6e939183033c8720f801459ebe505e06ab4c3b73843299d0e84171"
+    },
+    {
+      "name": "splits.json",
+      "rows": 80,
+      "sha256": "77b524d596e6dbd464f1b8613caf63d4f2f0e6fd18f7f92941a01d30623c49d8"
+    }
+  ]
+}
