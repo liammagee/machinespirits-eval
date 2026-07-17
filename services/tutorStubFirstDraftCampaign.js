@@ -394,6 +394,15 @@ export function tutorStubFirstDraftFocusedTestSuites(config, { root = process.cw
 
 function validateWorkingScreen(config, { root }) {
   if (config.held_out !== false) throw new Error('working screen must declare held_out: false');
+  const developmentCodexInstructionsFile = config.fixed_configuration?.development_codex_instructions_file || null;
+  if (developmentCodexInstructionsFile) {
+    if (developmentCodexInstructionsFile !== 'config/tutor-stub-codex-speaker-instructions.md') {
+      throw new Error('development Codex base override is restricted to config/tutor-stub-codex-speaker-instructions.md');
+    }
+    if (!fs.existsSync(absolute(root, developmentCodexInstructionsFile))) {
+      throw new Error('development Codex base override file is missing');
+    }
+  }
   const focusedTestSuites = tutorStubFirstDraftFocusedTestSuites(config, { root });
   if (
     config.fixed_configuration?.structured_generation === true &&
@@ -945,6 +954,14 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
       String(config.fixed_configuration.source_accessibility_policy),
     );
   }
+  if (config.fixed_configuration?.development_codex_instructions_file) {
+    command.splice(
+      command.length - 2,
+      0,
+      '--development-codex-instructions-file',
+      absolute(root, config.fixed_configuration.development_codex_instructions_file),
+    );
+  }
   if (
     config.execution?.stop_cell_when_gate_mathematically_impossible === true &&
     Number(config.fixed_configuration?.draws_per_turn || 1) > 1
@@ -1099,6 +1116,8 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
 } = {}) {
   const jointPerformanceGeneration = config?.fixed_configuration?.joint_performance_generation === true;
   const compactSpeakerPrompt = config?.fixed_configuration?.compact_speaker_prompt === true;
+  const developmentCodexInstructionsFile =
+    config?.fixed_configuration?.development_codex_instructions_file || null;
   return {
     schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
     generatedAt: new Date().toISOString(),
@@ -1116,6 +1135,10 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
     makesModelCalls: false,
     frozen,
     maxConcurrency: plan?.maxConcurrency,
+    speakerTransportMode: developmentCodexInstructionsFile
+      ? 'codex_cli_development_base_override_non_equivalent'
+      : 'frozen_model_transport',
+    developmentCodexInstructionsFile,
     generationMode: jointPerformanceGeneration
       ? compactSpeakerPrompt
         ? 'joint_performance_v2_compact_no_source'

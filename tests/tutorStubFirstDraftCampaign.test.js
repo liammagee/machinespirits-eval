@@ -2406,6 +2406,39 @@ test('compact speaker campaign validation propagates the opt-in replay flag and 
   }
 });
 
+test('development campaign propagates only the guarded non-equivalent Codex base override', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-codex-base-override-'));
+  try {
+    const instructions = path.join(tmp, 'config', 'tutor-stub-codex-speaker-instructions.md');
+    fs.mkdirSync(path.dirname(instructions), { recursive: true });
+    fs.writeFileSync(instructions, 'Speak only as the public tutor.\n');
+    const config = enableCompactSpeakerPrompt(workingConfig(tmp));
+    config.fixed_configuration.development_codex_instructions_file =
+      'config/tutor-stub-codex-speaker-instructions.md';
+    config.gates_per_cell.maximum_transport_normalizations = 1;
+    const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
+    for (const command of plan.cells.flatMap((cell) => cell.commands)) {
+      const index = command.argv.indexOf('--development-codex-instructions-file');
+      assert.ok(index > -1);
+      assert.equal(command.argv[index + 1], instructions);
+    }
+    const report = buildTutorStubFirstDraftCampaignValidationReport({ config, plan });
+    assert.equal(report.speakerTransportMode, 'codex_cli_development_base_override_non_equivalent');
+    assert.equal(
+      report.developmentCodexInstructionsFile,
+      'config/tutor-stub-codex-speaker-instructions.md',
+    );
+
+    config.fixed_configuration.development_codex_instructions_file = '../arbitrary.md';
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config, root: tmp }),
+      /restricted to config\/tutor-stub-codex-speaker-instructions\.md/iu,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('compact speaker campaign validation fails closed on mode, schema, or gate drift', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-compact-speaker-gates-'));
   try {
