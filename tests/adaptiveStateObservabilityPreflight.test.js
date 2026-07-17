@@ -6,6 +6,12 @@ import path from 'node:path';
 import test from 'node:test';
 import yaml from 'yaml';
 
+// cliFingerprint freezes real codex/claude CLI versions, so lineage tests that
+// exercise it need both binaries on the host (CI runners lack them).
+const CLI_FINGERPRINT_HOSTS_AVAILABLE = ['codex', 'claude'].every(
+  (command) => spawnSync(command, ['--version'], { timeout: 10_000 }).status === 0,
+);
+
 import {
   appendRunEvent,
   buildExperimentRunPlan,
@@ -562,7 +568,11 @@ test('a complete but wrong-family matrix stops instead of authorizing S1', async
   );
 });
 
-test('a sealed passing preflight is a current-runtime S1 prerequisite', async () => {
+test('a sealed passing preflight is a current-runtime S1 prerequisite', async (t) => {
+  if (!CLI_FINGERPRINT_HOSTS_AVAILABLE) {
+    t.skip('codex/claude CLIs not installed on this host');
+    return;
+  }
   const plan = buildAdaptiveStateObservabilityPreflightPlan(CONFIG, { label: 'fixture-sealed-pass' });
   const result = await executeAdaptiveStateObservabilityPreflight({
     plan,

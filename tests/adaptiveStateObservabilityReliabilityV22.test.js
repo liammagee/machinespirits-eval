@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import yaml from 'yaml';
+
+// cliFingerprint freezes real codex/claude CLI versions, so lineage tests that
+// exercise it need both binaries on the host (CI runners lack them).
+const CLI_FINGERPRINT_HOSTS_AVAILABLE = ['codex', 'claude'].every(
+  (command) => spawnSync(command, ['--version'], { timeout: 10_000 }).status === 0,
+);
 
 import {
   appendRunEvent,
@@ -249,7 +256,11 @@ test('only a paid-bound passing result authorizes the separately invoked S1 retr
   assert.equal(report.s1_retry_eligible, true);
 });
 
-test('a sealed paid v2.2 pass is accepted as the current S1 reliability parent', async () => {
+test('a sealed paid v2.2 pass is accepted as the current S1 reliability parent', async (t) => {
+  if (!CLI_FINGERPRINT_HOSTS_AVAILABLE) {
+    t.skip('codex/claude CLIs not installed on this host');
+    return;
+  }
   const { plan, result } = await executeFixture(['draw_01|preflight__ravensmark__derive__codex_terra']);
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptive-reliability-v22-lineage-'));
   const benchmarkConfigPath = path.join(ROOT, 'config/adaptive-state-benchmark-v2.yaml');
