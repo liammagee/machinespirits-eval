@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-17T06:10:54.639Z",
+  "generated": "2026-07-17T09:24:13.133Z",
   "counts": {
-    "total": 119,
+    "total": 120,
     "byStatus": {
       "done": 101,
       "blocked": 1,
       "dropped": 2,
       "triaged": 5,
       "review": 2,
-      "active": 4,
+      "active": 5,
       "archived": 4
     },
     "byType": {
-      "research": 43,
+      "research": 44,
       "experiment": 43,
       "infra": 15,
       "maintenance": 6,
@@ -203,6 +203,36 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "impasse-corpus-phase1",
+      "title": "Impasse program Phase I: candidate-episode corpus from the user's own sessions",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "verification": "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-17-continue-or-fold.md",
+          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
+        ],
+        "items": [
+          "tutor-stub-side-coaching-gate"
+        ]
+      },
+      "tags": [
+        "impasse-program",
+        "human-sessions",
+        "tutor-stub",
+        "ground-truth"
+      ],
+      "milestone": "impasse-program-v1"
     },
     {
       "id": "tutor-stub-side-coaching-gate",
