@@ -238,7 +238,8 @@ test('v2 compiles declared advocate delegation into a bounded performance and ac
   assert.match(plan.slots.performance.entry_instruction, /state a concrete public proposition/iu);
   assert.match(plan.slots.performance.entry_instruction, /not merely whether the case is strong, weak, or limited/iu);
   assert.match(plan.slots.performance.entry_instruction, /same PERFORMANCE ENTRY/iu);
-  assert.match(plan.slots.performance.entry_instruction, /such as but, cannot, not yet, only, or does not establish/iu);
+  assert.match(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
+  assert.match(plan.slots.performance.entry_instruction, /do not replace either with “it,” “that,” or another pronoun/iu);
   assert.match(plan.slots.performance.entry_instruction, /Do not defer the limit to PERFORMANCE RESPONSE/iu);
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
   assert.match(plan.slots.performance.compatibility_instruction, /Keep PERFORMANCE declarative/iu);
@@ -291,6 +292,25 @@ test('v2 compiles declared advocate delegation into a bounded performance and ac
       ['handoff_selected_action', 'handoff', true],
     ],
   );
+});
+
+test('evidentiary-boundary speaking contract requires explicit evidence and conclusions', () => {
+  const contract = firstDraftContract({
+    responseConfiguration: advocateConfiguration({
+      engagement_stance: 'charismatic',
+      actorial_performance: {
+        id: 'evidentiary_boundary',
+        label: 'evidentiary boundary',
+        contract: 'State the strongest licensed case and make its public limit visible.',
+      },
+    }),
+  });
+  const plan = buildTutorStubJointPerformanceHostPlan(contract);
+
+  assert.match(plan.slots.performance.response_instruction, /Name the public evidence/iu);
+  assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit/iu);
+  assert.match(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
+  assert.match(plan.slots.performance.entry_instruction, /do not replace either with “it,” “that,” or another pronoun/iu);
 });
 
 test('V32 speaking contract rejects the saved V31 static-break shape and preserves a compliant owner-local counterfactual', () => {

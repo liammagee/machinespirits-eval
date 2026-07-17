@@ -85,7 +85,7 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
   unadorned_report:
     'Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.',
   evidentiary_boundary:
-    'In that action, state the exact support and its limit with concrete boundary words such as “only,” “not yet,” or “does not establish.”',
+    'Name the public evidence, state the strongest conclusion it supports, and state the named conclusion it does not establish. Keep both conclusions explicit rather than replacing either with a pronoun.',
   rapid_handoff:
     'Move straight from the named public object or line to the learner, ending with the shortest useful concrete question.',
   shared_scene_invitation:

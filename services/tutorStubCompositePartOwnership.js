@@ -106,7 +106,7 @@ export function compileTutorStubCompositePartOwnership({
     excluded_owners: ['source'],
     prompt: {
       performance_initiation:
-        'Begin “My case is” and state a concrete public proposition, not merely whether the case is strong, weak, or limited. In this same PERFORMANCE ENTRY, make its limit explicit with public boundary language such as but, cannot, not yet, only, or does not establish. Do not defer the limit to PERFORMANCE RESPONSE.',
+        'Begin “My case is” and state a concrete public proposition, not merely whether the case is strong, weak, or limited. In this same PERFORMANCE ENTRY, name the evidence and the conclusion it cannot establish; do not replace either with “it,” “that,” or another pronoun. Do not defer the limit to PERFORMANCE RESPONSE.',
       performance_action_boundary:
         'Keep PERFORMANCE declarative: do not request, schedule, offer, or direct the next action.',
       handoff_delegated_complement:

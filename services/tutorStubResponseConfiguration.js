@@ -1434,27 +1434,70 @@ function evidentiaryBoundaryRecognition(text) {
       );
     return evidenceSubjectContrast || performedClassificationContrast || explicitCategoryExclusion;
   });
+  const boundedEvidenceForce =
+    /\b(?:claim|conclusion|finding|inference|verdict)\b[^.!?]{0,55}\bbeyond\b[^.!?]{0,30}\bevidence\b|\b(?:establish|licensed|prove|show|support|tie)\w*\b[^.!?]{0,70}\b(?:and no more|no more|not proof (?:of|that))\b|,\s*not proof (?:of|that)\b|\bnot yet\s+(?:the\s+)?(?:[\p{L}-]+\s+){0,2}(?:answer|cause|conclusion|culprit|finding|identity|person|source|suspect|verdict)\b|\b(?:cause|hand|route|source)\b[^.!?]{0,25}\bremains?\s+unshown\b|\bnothing yet about whether\b/iu.test(
+      text,
+    ) ||
+    /\bwhat\b[^?]{0,100}\bsupport\w*\b[^?]{0,80}\band what\b[^?]{0,60}\bremains?\s+unshown\b/iu.test(
+      text,
+    );
+  const unresolvedDependency =
+    /\b(?:has|have) not yet been matched\b|\buntil\b[^.!?]{0,100}\b(?:assay|match|metal|record|result|test|trace)\b[^.!?]{0,100}\b(?:answers?|matches?|proves?|shows?|ties?)\b[^.!?]{0,100}\b(?:establishes? nothing|remains? unproved|what\b[^?]{0,35}\bprove|only\b[^.!?]{0,35}\b(?:accusation|claim|suspicion|theory|verdict))\b/iu.test(
+      text,
+    );
+  const negativeTestInterpretation =
+    /\b(?:key|mark|reading|result|sample|test|trace)\b[^.!?]{0,55}\bdid not\b[^.!?]{0,40}\b(?:cleanly|match|meet|turn)\b[\s\S]{0,100}\bwhat does\b[^?]{0,45}\bestablish\b/iu.test(
+      text,
+    );
   const explicitEpistemicLimit =
-    /\b(?:beyond|exact|establish|licensed|line that matters|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(
+    /\b(?:(?:cannot|can[’']t|did not|does not|doesn[’']t|fails? to)\s+(?:establish|identify|name|prove|show|tie)|no\s+(?:cause|culprit|identity|person|source|suspect)\s+(?:is|was)\s+(?:established|identified|named|proved|shown|tied)|(?:cause|culprit|identity|person|source|suspect)\s+remains?\s+(?:open|unknown|unproved|unshown)|(?:nothing|not)\s+yet\s+(?:establishes?|identifies?|names?|proves?|shows?|supports?|ties?)|not\s+(?:proof|evidence)\s+of|only\s+(?:establishes?|identifies?|names?|proves?|rules? out|shows?|supports?|ties?)|(?:establishes?|identifies?|names?|proves?|shows?|supports?|ties?)\s+only)\b/iu.test(
       text,
     ) ||
     /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
     /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bstill needs?\b[^.!?]{0,70}\b(?:blank|die|evidence|hand|link|mark|proof|tool)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(
       text,
-    );
+    ) ||
+    boundedEvidenceForce ||
+    unresolvedDependency ||
+    negativeTestInterpretation;
   // This construction is semantic rather than phrase-specific: a named live
   // proposition is explicitly reduced in evidentiary force, or a public
   // observation is said to leave its causal/identity conclusion unresolved.
   const boundedClaimRevision = sentences.some(
     (sentence) =>
-      /\b(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b[^.!?]{0,90}\b(?:limits?|qualif(?:y|ies)|undermines?|weakens?)\b/iu.test(sentence) ||
+      /\b(?:limits?|qualif(?:y|ies)|undermines?|weakens?)\b[^.!?]{0,35}\b(?:that|this|the)\s+(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b/iu.test(sentence) ||
+      /\b(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b[^.!?]{0,35}\b(?:is|was)\s+(?:limited|qualified|undermined|weakened)\b/iu.test(sentence) ||
       /\b(?:identif(?:y|ies)|names?|proves?|shows?)\s+(?:neither|no)\b[^.!?]{0,55}\b(?:cause|culprit|person|source|suspect)\b/iu.test(sentence) ||
       /\b(?:cause|culprit|person|source|suspect)\b[^.!?]{0,45}\b(?:remains?|stays?)\s+(?:open|unknown|unproved|unshown)\b/iu.test(sentence),
   );
+  // Recognize the general evidence -> proposition relation when the evidence
+  // is explicitly denied enough force to support a named live claim. Keep the
+  // direction strict: a claim failing to support an object is not the same
+  // construction. A pronoun is licensed only when its proposition antecedent
+  // is named earlier in the same sentence.
+  const negativeEvidentiarySupport = sentences.some((sentence) => {
+    const namedPropositionBeforeContrast =
+      /\b(?:my|our|the)\s+(?:case|claim|conclusion|inference|theory|verdict)\s+(?:is|rests?\b|that\b)[^.!?]{1,110}\b(?:but|yet)\b/iu.test(
+        sentence,
+      );
+    const evidenceDeniesAnaphoricSupport =
+      /\b(?:but|yet)\b[^.!?]{1,90}\b(?:cannot|can[’']t|does not|doesn[’']t|fails? to|is not enough to)\s+(?:establish|prove|show|support|tie)\b[^.!?]{0,35}\b(?:it|that|this|the (?:case|claim|conclusion|inference|theory|verdict))\b/iu.test(
+        sentence,
+      );
+    const namedEvidenceDeniesExplicitClaim =
+      /\b(?:book|chargers?|clue|entry|evidence|finding|ledger|log|mark|note|observation|reading|record|result|sample|stocktake|test|trace)\b[^.!?]{0,80}\b(?:cannot|can[’']t|does not|doesn[’']t|fails? to|is not enough to)\s+(?:establish|prove|show|support|tie)\b[^.!?]{0,35}\b(?:that|this|the)\s+(?:case|claim|conclusion|inference|theory|verdict)\b/iu.test(
+        sentence,
+      );
+    return (
+      (namedPropositionBeforeContrast && evidenceDeniesAnaphoricSupport) ||
+      namedEvidenceDeniesExplicitClaim
+    );
+  });
   const constructions = [
     evidenceGroundedCategoryContrast ? 'evidence_grounded_category_contrast' : null,
     explicitEpistemicLimit ? 'explicit_epistemic_limit' : null,
     boundedClaimRevision ? 'bounded_claim_revision' : null,
+    negativeEvidentiarySupport ? 'negative_evidentiary_support' : null,
   ].filter(Boolean);
   return {
     visible: constructions.length > 0,
@@ -1462,7 +1505,11 @@ function evidentiaryBoundaryRecognition(text) {
     checks: {
       evidence_grounded_category_contrast: evidenceGroundedCategoryContrast,
       explicit_epistemic_limit: explicitEpistemicLimit,
+      bounded_evidence_force: boundedEvidenceForce,
+      unresolved_dependency: unresolvedDependency,
+      negative_test_interpretation: negativeTestInterpretation,
       bounded_claim_revision: boundedClaimRevision,
+      negative_evidentiary_support: negativeEvidentiarySupport,
     },
   };
 }

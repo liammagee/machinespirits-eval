@@ -54,6 +54,16 @@ test('canonical realization fixtures bind one predicate to the exact PERFORMANCE
       'handoff_cannot_rescue_performance',
       'tactic_without_selected_advocate_part',
       'owned_advocate_case_and_limit',
+      'saved_compact_strict_original',
+      'explicit_evidence_to_claim_limit',
+      'claim_cannot_support_evidence_negative',
+      'positive_support_relation_negative',
+      'unresolved_pronoun_negative',
+      'negative_support_in_wrong_owner',
+      'lexical_only_decoy_negative',
+      'unrelated_did_not_negative',
+      'causal_inversion_negative',
+      'reversed_revision_direction_negative',
     ],
   );
 
