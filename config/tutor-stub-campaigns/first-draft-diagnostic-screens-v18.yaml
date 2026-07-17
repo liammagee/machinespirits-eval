@@ -141,7 +141,7 @@ matrix:
     source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
     turns: [5]
     development_seed: 20262800
-    seed_status: fresh_non_held_out_development
+    seed_status: reusable_non_held_out_development
     seed_provenance: globally_absent_before_v38_predeclaration
     prefix_integrity:
       target_turn: 5
@@ -174,7 +174,7 @@ matrix:
     source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
     turns: [5]
     development_seed: 20262801
-    seed_status: fresh_non_held_out_development
+    seed_status: reusable_non_held_out_development
     seed_provenance: globally_absent_before_v38_predeclaration
     prefix_integrity:
       target_turn: 5
@@ -298,6 +298,7 @@ change_control:
   preflight_orchestration_changes:
     - record_v36_as_zero_call_preflight_failure
     - reuse_untouched_development_seeds_with_explicit_provenance
+    - retain_required_reusable_non_held_out_schema_label_for_fresh_development_seeds
   transport_changes:
     - retain_codex_cli_as_the_strict_model_specific_path
     - document_direct_provider_as_non_equivalent_development_transport_only
@@ -316,4 +317,3 @@ structural_debt_targets:
   consequence: >-
     Both V38 diagnostics must pass automatic and independent qualitative review
     before any separate strict confirmation campaign may be predeclared.
-
