@@ -52,3 +52,20 @@ training examples reconstruct the identical interface the large models faced.
 Provider layer already supports OpenAI-compatible base_url for the eventual
 live phase (scripts/tutor-stub.js:3021). Awaiting Phase 0-1 execution, then
 the Phase 2 freeze gate.
+
+2026-07-18 Claude: PHASE 0 COMPLETE, both gates PASS (user go: "do Phase 0").
+Extractor scripts/program2-extract-dataset.mjs walks the sealed Step 4
+archive fail-closed (provenance SHA enforced per trace) and emits v1 datasets
+to ~/.machinespirits-data/program-2/datasets/v1/: taskA-sft 141 rows
+(compliant + original-accepted + leak-clean; the 40 compliant-via-repair
+turns are excluded from SFT and retained in eval), general-sft 1,096, kto
+2,076 (1,096 true / 980 false), eval-moments 645 (with sealed-trace pointers
+for the offline graders), splits.json (seed 20260718, 64/8/8 dialogues
+stratified family x profile). Counts reconcile EXACTLY with plan §4 and the
+independent Step 4 analysis tallies; leak-filter loss 0%. Training inputs use
+original-role model_call requests only (repair-role prompts excluded — they
+carry repair instructions). Register/headroom tarballs deferred to a v2
+dataset if Phase 3 wants a larger general pool. Manifest:
+config/adaptive-tutor-evidence/program-2-dataset-v1.manifest.json; report:
+notes/program-2/2026-07-18-phase0-extraction.md. Next: Phase 1 floor
+(offline grader + untuned base), then the Phase 2 freeze.
