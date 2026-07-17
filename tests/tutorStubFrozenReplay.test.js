@@ -22,6 +22,8 @@ import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { buildTutorStubResponseCompositionFrame } from '../services/tutorStubResponseComposition.js';
 import { TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA } from '../services/tutorStubTurnProgressionContract.js';
+import { replaceTutorStubFrozenRequestWithJointPerformancePrompt } from '../services/tutorStubJointPerformanceFirstDraft.js';
+import { replaceTutorStubFrozenRequestWithCompactNoSourcePrompt } from '../services/tutorStubCompactSpeakingPrompt.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
@@ -242,6 +244,30 @@ test('frozen screens can refresh an already-current typed host plan', () => {
   assert.equal(prompt.split('[Tutor-only host plan]').length - 1, 1);
   assert.equal(prompt.split('[End tutor-only host plan]').length - 1, 1);
   assert.doesNotMatch(prompt, /Tutor-only first-draft performance contract/u);
+});
+
+test('typed causal PERFORMANCE keeps the exact public tuple inside the compact prompt budget', () => {
+  const fixture = readFixture(FIXTURE_PATHS[2]);
+  const source = fixture.cases.find((entry) => entry.bundle.turn === 5);
+  assert.ok(source, 'Tallow fixture must preserve the hard turn-5 prefix');
+  const world = worldForId(source.bundle.worldId);
+  let refreshed = refreshTutorStubFrozenFirstDraftRequest({
+    bundle: source.bundle,
+    world,
+    sourceAccessibilityPolicy: 'direct_or_compensated_v1',
+  });
+  refreshed = replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
+  refreshed = replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(refreshed);
+
+  const responseInstruction =
+    refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.response_instruction;
+  assert.match(
+    responseInstruction,
+    /PERFORMANCE RESPONSE must say “The depot chargers did not cause the Tallow Street brownout”/iu,
+  );
+  assert.match(responseInstruction, /leave the actual cause open/iu);
+  assert.match(responseInstruction, /do not widen the actor/iu);
+  assert.ok(refreshed.compactSpeakingPrompt.promptSize.authoredTotal.estimatedTokens <= 2500);
 });
 
 test('model-free frozen replay enforces live V1 question ownership and terminal placement', () => {

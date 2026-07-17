@@ -113,6 +113,13 @@ function oneLine(value) {
     .trim();
 }
 
+function typedCausalPerformanceInstruction(causalContract = null) {
+  const subject = oneLine(causalContract?.subject);
+  const outcome = oneLine(causalContract?.outcome);
+  if (!subject || !outcome) return null;
+  return `PERFORMANCE RESPONSE must say “The ${subject} did not cause the ${outcome}” and leave the actual cause open; do not widen the actor.`;
+}
+
 function definitionContract(definitions, key, fallback = '') {
   return oneLine(definitions?.[key]?.contract || fallback);
 }
@@ -585,10 +592,12 @@ export function buildTutorStubFirstDraftContract({
   const partExecution =
     PART_CUES[part] ||
     'In the unquoted host voice, make the selected part concrete through one public action or judgment.';
-  const tacticExecution =
+  const baseTacticExecution =
     directionOnlyWithoutNewEvidence && tactic === 'rapid_handoff'
       ? 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.'
       : TACTIC_EXECUTION_CUES[tactic] || TACTIC_EXECUTION_CUES.unadorned_report;
+  const causalPerformanceInstruction = typedCausalPerformanceInstruction(writableEntryCausalContract);
+  const tacticExecution = [baseTacticExecution, causalPerformanceInstruction].filter(Boolean).join(' ');
   const stanceExecution = STANCE_EXECUTION_CUES[stance] || null;
   const baseActionInstruction =
     directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'

@@ -209,7 +209,13 @@ test('binds a writable causal entry to the public relation without reversing cau
   assert.match(prompt, /The depot chargers did not cause the Tallow Street brownout/iu);
   assert.match(prompt, /Keep both named roles exact/iu);
   assert.match(prompt, /never widen either role/iu);
-  assert.ok(wordCount(prompt) <= 220, `expected causal writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
+  assert.match(
+    contract.performance.tactic_execution,
+    /PERFORMANCE RESPONSE[^.]*must say “The depot chargers did not cause the Tallow Street brownout”/iu,
+  );
+  assert.match(contract.performance.tactic_execution, /leave the actual cause open/iu);
+  assert.match(contract.performance.tactic_execution, /do not widen the actor/iu);
+  assert.ok(wordCount(prompt) <= 250, `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`);
 });
 
 test('does not add a causal relation contract to an ordinary writable entry', () => {
