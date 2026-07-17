@@ -26,7 +26,7 @@ import {
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
-import { buildCliProviderHook } from './cliProviderBridge.js';
+import { buildCliProviderHook, CLAUDE_CLI_CONTEXT_ISOLATION } from './cliProviderBridge.js';
 // Extend CLI providers (codex / claude-code) into tutor-core's dialogue
 // engine: the hook is injected from the eval side so tutor-core never
 // imports eval code (one-way seam). Covers the callAI standard loop
@@ -2432,6 +2432,12 @@ export async function runEvaluation(options = {}) {
       contentPath: process.env.EVAL_CONTENT_PATH || null,
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
+      // Instrument stamp: claude-CLI subprocess calls run context-isolated
+      // (--safe-mode etc. — see CLAUDE_CLI_ISOLATION_ARGS in
+      // cliProviderBridge.js). Runs whose metadata lacks this field predate
+      // the isolation and saw ~16k tokens of ambient repo context (CLAUDE.md,
+      // skills, hooks, MCP) in every claude-code call, judges included.
+      claudeCliContextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
       pid: process.pid,
     },
   });

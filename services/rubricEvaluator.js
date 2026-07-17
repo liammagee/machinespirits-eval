@@ -13,6 +13,7 @@ import { spawn } from 'node:child_process';
 import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
+import { claudeCliIsolation } from './cliProviderBridge.js';
 import { jsonrepair } from 'jsonrepair';
 
 // HTTP request timeout for all judge API calls (ms)
@@ -829,46 +830,56 @@ async function callJudgeModel(prompt, overrides = {}) {
     // CRITICAL: unset ANTHROPIC_API_KEY in the child env. When set, `claude`
     // routes via API mode (per-call billing) rather than the subscription.
     // The whole point of using the CLI is to avoid API credit metering.
-    return await new Promise((resolve, reject) => {
-      const args = ['-p', '-', '--output-format', 'text'];
-      if (model) args.push('--model', model);
-      const env = { ...process.env };
-      delete env.CLAUDE_CODE;
-      delete env.CLAUDECODE;
-      delete env.ANTHROPIC_API_KEY;
-      delete env.ANTHROPIC_AUTH_TOKEN;
-      const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-      let out = '';
-      let err = '';
-      const cliTimeout = setTimeout(() => {
-        try {
-          child.kill('SIGKILL');
-        } catch (_) {
-          // intentionally empty
-        }
-        reject(new Error('claude CLI judge timed out after 180s'));
-      }, 180_000);
-      child.stdout.on('data', (d) => {
-        out += d;
+    //
+    // Context isolation (claudeCliIsolation): without it the judge inherits
+    // the repo cwd's ambient project context — CLAUDE.md, skills, hooks, MCP
+    // (~16k tokens, research hypotheses included) — the sharpest closed-loop
+    // contamination risk in the stack. The judge must score blind.
+    const isolation = claudeCliIsolation();
+    try {
+      return await new Promise((resolve, reject) => {
+        const args = ['-p', '-', '--output-format', 'text', ...isolation.args];
+        if (model) args.push('--model', model);
+        const env = { ...process.env };
+        delete env.CLAUDE_CODE;
+        delete env.CLAUDECODE;
+        delete env.ANTHROPIC_API_KEY;
+        delete env.ANTHROPIC_AUTH_TOKEN;
+        const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
+        let out = '';
+        let err = '';
+        const cliTimeout = setTimeout(() => {
+          try {
+            child.kill('SIGKILL');
+          } catch (_) {
+            // intentionally empty
+          }
+          reject(new Error('claude CLI judge timed out after 180s'));
+        }, 180_000);
+        child.stdout.on('data', (d) => {
+          out += d;
+        });
+        child.stderr.on('data', (d) => {
+          err += d;
+        });
+        child.on('error', (e) => {
+          clearTimeout(cliTimeout);
+          reject(e);
+        });
+        child.on('close', (code) => {
+          clearTimeout(cliTimeout);
+          if (code !== 0) {
+            reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code}`));
+          } else {
+            resolve(out);
+          }
+        });
+        child.stdin.write(prompt);
+        child.stdin.end();
       });
-      child.stderr.on('data', (d) => {
-        err += d;
-      });
-      child.on('error', (e) => {
-        clearTimeout(cliTimeout);
-        reject(e);
-      });
-      child.on('close', (code) => {
-        clearTimeout(cliTimeout);
-        if (code !== 0) {
-          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code}`));
-        } else {
-          resolve(out);
-        }
-      });
-      child.stdin.write(prompt);
-      child.stdin.end();
-    });
+    } finally {
+      isolation.cleanup();
+    }
   }
 
   throw new Error(`Unsupported judge provider: ${provider}`);

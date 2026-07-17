@@ -33,6 +33,47 @@ function codexCliVersion({ enabled = true } = {}) {
   return cachedCodexCliVersion;
 }
 
+// Ambient-context isolation for `claude` CLI subprocess calls.
+//
+// `--system-prompt` only replaces the system prompt TEXT — it does not stop
+// the CLI from loading ambient customizations (CLAUDE.md, skills, plugins,
+// hooks, MCP servers) resolved from the spawn cwd and user config. Measured
+// 2026-07-17: from the repo cwd that layer injected ~16k prompt tokens of
+// project context — research hypotheses and standing directives included —
+// into every call, and a direct probe quoted CLAUDE.md verbatim. For an eval
+// instrument that is contamination (sharpest on the judge: closed-loop
+// scoring tell).
+//
+// `--safe-mode` starts the CLI with all customizations disabled;
+// `--no-session-persistence` keeps eval calls out of on-disk session
+// history; `--tools ''` removes the built-in agentic toolset (bridge calls
+// are pure text generation — a judge or ego must never run tools mid-call).
+// Spawning from an empty temp cwd is defense in depth, mirroring the codex
+// path (which was always isolated: --ephemeral --ignore-user-config
+// --ignore-rules + tmp cwd).
+//
+// Instrument boundary: runs generated before this change saw the ambient
+// context on claude-code calls; runs after do not. CLAUDE_CLI_CONTEXT_ISOLATION
+// is stamped into run metadata (evaluationRunner createRun) and onto each
+// bridge result so pre/post rows stay distinguishable. Within-run
+// comparability is unaffected.
+export const CLAUDE_CLI_CONTEXT_ISOLATION = 'safe-mode-v1';
+export const CLAUDE_CLI_ISOLATION_ARGS = Object.freeze(['--safe-mode', '--no-session-persistence', '--tools', '']);
+
+/**
+ * Per-call isolation bundle for spawning `claude`: the shared flag set plus
+ * a fresh empty cwd. Callers spread `args`, spawn with `cwd`, and call
+ * `cleanup()` once the call settles.
+ */
+export function claudeCliIsolation() {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-claude-cli-'));
+  return {
+    args: [...CLAUDE_CLI_ISOLATION_ARGS],
+    cwd,
+    cleanup: () => fs.rmSync(cwd, { recursive: true, force: true }),
+  };
+}
+
 export function normalizeCliEffort(value) {
   if (value === undefined || value === null || value === '') return null;
   const normalized = String(value).trim().toLowerCase();
@@ -256,83 +297,90 @@ async function callClaudeCli({
   const effectiveEffort = resolveCliEffort('claude-code', effort);
   const schema = normalizedOutputSchema(outputSchema);
 
-  return await new Promise((resolve, reject) => {
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
-    if (schema) {
-      // Keep structured benchmark calls free of ambient project instructions,
-      // tools, and persisted sessions. Existing callers retain their exact CLI
-      // behavior because these flags are opt-in with outputSchema.
-      args.push('--no-session-persistence', '--safe-mode', '--tools', '', '--json-schema', JSON.stringify(schema));
-    }
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawnImpl('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const onAbort = () => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
+  // Every claude call — schema or not — runs context-isolated (see
+  // CLAUDE_CLI_ISOLATION_ARGS above). Before 2026-07-17 only outputSchema
+  // calls were isolated; plain-text calls inherited the repo cwd's ambient
+  // project context.
+  const isolation = claudeCliIsolation();
+  try {
+    return await new Promise((resolve, reject) => {
+      const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt, ...isolation.args];
+      if (model) args.push('--model', model);
+      if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
+      if (schema) {
+        args.push('--json-schema', JSON.stringify(schema));
       }
-      reject(abortError(role));
-    };
-    signal?.addEventListener('abort', onAbort, { once: true });
-    const cliTimeout = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
-      }
-      reject(new Error(`claude CLI timed out after ${effectiveTimeout}ms (role=${role})`));
-    }, effectiveTimeout);
-    child.stdout.on('data', (d) => {
-      out += d;
+      const env = { ...process.env };
+      delete env.CLAUDE_CODE;
+      delete env.CLAUDECODE;
+      delete env.ANTHROPIC_API_KEY;
+      delete env.ANTHROPIC_AUTH_TOKEN;
+      const child = spawnImpl('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
+      let out = '';
+      let err = '';
+      const onAbort = () => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(abortError(role));
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
+      const cliTimeout = setTimeout(() => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(new Error(`claude CLI timed out after ${effectiveTimeout}ms (role=${role})`));
+      }, effectiveTimeout);
+      child.stdout.on('data', (d) => {
+        out += d;
+      });
+      child.stderr.on('data', (d) => {
+        err += d;
+      });
+      child.on('error', (e) => {
+        clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
+        reject(e);
+      });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
+        if (code !== 0) {
+          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
+        } else {
+          resolve({
+            text: out.trim(),
+            model: model || 'claude-cli',
+            provider: 'claude-code',
+            effort: effectiveEffort || null,
+            latencyMs: Date.now() - start,
+            ...normalizeTokenUsage(null),
+            cost: 0,
+            structuredOutput: Boolean(schema),
+            contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
+            structuredEventAudit: {
+              event_type_counts: {},
+              item_type_counts: {},
+              prohibited_event_count: 0,
+              prohibited_events: [],
+              enforcement: 'claude_tools_disabled',
+            },
+            prohibitedToolEventCount: 0,
+            modelAttestationBasis: cliModelAttestationBasis(model),
+            modelIndependentlyAttested: false,
+          });
+        }
+      });
+      child.stdin.write(userText);
+      child.stdin.end();
     });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(cliTimeout);
-      signal?.removeEventListener('abort', onAbort);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(cliTimeout);
-      signal?.removeEventListener('abort', onAbort);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
-      } else {
-        resolve({
-          text: out.trim(),
-          model: model || 'claude-cli',
-          provider: 'claude-code',
-          effort: effectiveEffort || null,
-          latencyMs: Date.now() - start,
-          ...normalizeTokenUsage(null),
-          cost: 0,
-          structuredOutput: Boolean(schema),
-          structuredEventAudit: {
-            event_type_counts: {},
-            item_type_counts: {},
-            prohibited_event_count: 0,
-            prohibited_events: [],
-            enforcement: schema ? 'claude_tools_disabled' : 'not_applicable',
-          },
-          prohibitedToolEventCount: 0,
-          modelAttestationBasis: cliModelAttestationBasis(model),
-          modelIndependentlyAttested: false,
-        });
-      }
-    });
-    child.stdin.write(userText);
-    child.stdin.end();
-  });
+  } finally {
+    isolation.cleanup();
+  }
 }
 
 async function callCodexCli({
@@ -384,9 +432,7 @@ async function callCodexCli({
   const schema = normalizedOutputSchema(outputSchema);
   const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
   if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
-  const replacementInstructionsFile = replacementInstructionsBytes
-    ? path.join(tmpDir, 'model-instructions.md')
-    : null;
+  const replacementInstructionsFile = replacementInstructionsBytes ? path.join(tmpDir, 'model-instructions.md') : null;
   if (replacementInstructionsFile) {
     fs.writeFileSync(replacementInstructionsFile, replacementInstructionsBytes, { mode: 0o600 });
   }

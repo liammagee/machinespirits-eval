@@ -3,12 +3,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 
 import {
   callAIWithCliBridge,
   cliAwareProviderConfig,
+  CLAUDE_CLI_CONTEXT_ISOLATION,
+  CLAUDE_CLI_ISOLATION_ARGS,
   codexFinalMessageFromEvents,
   codexUsageFromEvents,
   createCodexJsonlEventParser,
@@ -17,6 +20,8 @@ import {
   normalizeCliEffort,
   resolveCliEffort,
 } from '../cliProviderBridge.js';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 function fakeChild({ stdoutText = '', onEnd = null } = {}) {
   const child = new EventEmitter();
@@ -188,9 +193,7 @@ describe('cliProviderBridge', () => {
 
   it('preserves partial Codex usage as null instead of inventing zeroes', () => {
     assert.deepEqual(
-      codexUsageFromEvents([
-        { type: 'turn.completed', usage: { input_tokens: 120, reasoning_output_tokens: 4 } },
-      ]),
+      codexUsageFromEvents([{ type: 'turn.completed', usage: { input_tokens: 120, reasoning_output_tokens: 4 } }]),
       {
         inputTokens: 120,
         cachedInputTokens: null,
@@ -266,9 +269,7 @@ describe('cliProviderBridge', () => {
     fs.writeFileSync(instructions, 'Return only public tutor speech.\n');
     const spawnImpl = (command, args) => {
       const overrideArg = args.find((arg) => arg.startsWith('model_instructions_file='));
-      const copiedPath = overrideArg
-        ? JSON.parse(overrideArg.slice('model_instructions_file='.length))
-        : null;
+      const copiedPath = overrideArg ? JSON.parse(overrideArg.slice('model_instructions_file='.length)) : null;
       calls.push({
         command,
         args,
@@ -296,13 +297,10 @@ describe('cliProviderBridge', () => {
           spawnImpl,
         },
       );
-      const ordinary = await callAIWithCliBridge(
-        { provider: 'codex', model: 'gpt-test' },
-        'system',
-        'user',
-        'tutor',
-        { timeoutMs: 1000, spawnImpl },
-      );
+      const ordinary = await callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'tutor', {
+        timeoutMs: 1000,
+        spawnImpl,
+      });
 
       const overrideArg = calls[0].args.find((arg) => arg.startsWith('model_instructions_file='));
       assert.ok(overrideArg);
@@ -314,7 +312,10 @@ describe('cliProviderBridge', () => {
       assert.equal(overridden.modelInstructionsSource, 'config/speaker.md');
       assert.equal(overridden.modelInstructionsBytes, 33);
       assert.match(overridden.modelInstructionsSha256, /^[a-f0-9]{64}$/u);
-      assert.equal(calls[1].args.some((arg) => arg.startsWith('model_instructions_file=')), false);
+      assert.equal(
+        calls[1].args.some((arg) => arg.startsWith('model_instructions_file=')),
+        false,
+      );
       assert.equal(calls[1].args.includes('--strict-config'), false);
       assert.equal(ordinary.baseInstructionsMode, 'codex_default');
       assert.equal(ordinary.modelInstructionsSource, null);
@@ -325,29 +326,21 @@ describe('cliProviderBridge', () => {
 
   it('fails before launch when the replacement instruction file is missing', async () => {
     await assert.rejects(
-      () => callAIWithCliBridge(
-        { provider: 'codex', model: 'gpt-test' },
-        'system',
-        'user',
-        'tutor',
-        {
+      () =>
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'tutor', {
           developmentModelInstructionsFile: '/definitely/missing/speaker.md',
           allowDevelopmentBaseInstructionsOverride: true,
-        },
-      ),
+        }),
       /model instructions file does not exist/iu,
     );
   });
 
   it('rejects base replacement without the explicit development-only capability', async () => {
     await assert.rejects(
-      () => callAIWithCliBridge(
-        { provider: 'codex', model: 'gpt-test' },
-        'system',
-        'user',
-        'tutor',
-        { developmentModelInstructionsFile: '/not-read-without-capability.md' },
-      ),
+      () =>
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'tutor', {
+          developmentModelInstructionsFile: '/not-read-without-capability.md',
+        }),
       /explicit development-only capability/iu,
     );
   });
@@ -424,6 +417,8 @@ describe('cliProviderBridge', () => {
     assert.ok(calls[0].args.includes('--no-session-persistence'));
     assert.ok(calls[0].args.includes('--safe-mode'));
     assert.ok(calls[0].args.includes('--tools'));
+    // Isolation moved into the base args — must not be double-pushed here.
+    assert.equal(calls[0].args.filter((arg) => arg === '--safe-mode').length, 1);
     assert.deepEqual(JSON.parse(calls[0].args[calls[0].args.indexOf('--json-schema') + 1]), outputSchema);
     assert.equal(calls[0].options.env.ANTHROPIC_API_KEY, undefined);
     assert.equal(result.structuredOutput, true);
@@ -434,5 +429,67 @@ describe('cliProviderBridge', () => {
     assert.equal(result.outputTokens, null);
     assert.equal(result.reasoningOutputTokens, null);
     assert.equal(result.totalTokens, null);
+  });
+
+  it('isolates ambient context on plain-text (non-schema) Claude calls', async () => {
+    const calls = [];
+    const spawnImpl = (command, args, options) => {
+      calls.push({ command, args, options });
+      return fakeChild({ stdoutText: 'plain response' });
+    };
+
+    const result = await callAIWithCliBridge(
+      { provider: 'claude-code', model: 'claude-test' },
+      'system',
+      'user',
+      'learner',
+      { timeoutMs: 1000, spawnImpl },
+    );
+
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].command, 'claude');
+    // The full isolation flag set applies without outputSchema: ambient
+    // customizations (CLAUDE.md, skills, hooks, MCP) must never reach
+    // production ego/superego/judge calls.
+    for (const flag of CLAUDE_CLI_ISOLATION_ARGS) {
+      assert.ok(calls[0].args.includes(flag), `missing isolation arg ${JSON.stringify(flag)}`);
+    }
+    assert.equal(calls[0].args.includes('--json-schema'), false);
+    // Defense in depth: spawned from a fresh empty temp cwd, not the repo.
+    const spawnCwd = calls[0].options.cwd;
+    assert.ok(spawnCwd);
+    assert.notEqual(spawnCwd, process.cwd());
+    assert.ok(path.basename(spawnCwd).startsWith('ms-claude-cli-'));
+    assert.equal(fs.existsSync(spawnCwd), false, 'temp cwd is removed once the call settles');
+    assert.equal(result.text, 'plain response');
+    assert.equal(result.structuredOutput, false);
+    assert.equal(result.contextIsolation, CLAUDE_CLI_CONTEXT_ISOLATION);
+    assert.equal(result.structuredEventAudit.enforcement, 'claude_tools_disabled');
+  });
+
+  it('keeps every services/ claude spawn site on the shared isolation exports', () => {
+    const walkJsFiles = (dir) => {
+      const out = [];
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === 'node_modules' || entry.name === '__tests__') continue;
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) out.push(...walkJsFiles(full));
+        else if (entry.name.endsWith('.js')) out.push(full);
+      }
+      return out;
+    };
+
+    const offenders = [];
+    for (const file of walkJsFiles(path.join(repoRoot, 'services'))) {
+      const source = fs.readFileSync(file, 'utf8');
+      if (!/spawn(?:Impl)?\(\s*['"]claude['"]/u.test(source)) continue;
+      if (/claudeCliIsolation\(|CLAUDE_CLI_ISOLATION_ARGS/u.test(source)) continue;
+      offenders.push(path.relative(repoRoot, file));
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      'services/ files spawning `claude` must apply claudeCliIsolation()/CLAUDE_CLI_ISOLATION_ARGS (ambient-context leak)',
+    );
   });
 });
