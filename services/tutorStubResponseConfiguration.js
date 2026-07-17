@@ -2006,6 +2006,7 @@ export function auditTutorStubResponseConfiguration({
   const engagementOperationRealization = auditTutorStubEngagementOperation({
     contract: engagementOperationContract,
     performanceEntry: performanceAuditContext?.auditedSpanTexts?.[0] || '',
+    performanceResponse: performanceAuditContext?.auditedSpanTexts?.[1] || '',
   });
   const axes = {
     engagement_stance: {

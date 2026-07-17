@@ -67,6 +67,12 @@ function roleVisible(text, role) {
   return expected.length > 0 && expected.every((token) => actual.has(token));
 }
 
+function roleHeadVisible(text, role) {
+  const expected = [...roleTokens(role)];
+  if (expected.length === 0) return false;
+  return roleTokens(text).has(expected.at(-1));
+}
+
 function publicEvidenceAnchorTokens(contract = null) {
   const excluded = new Set([
     ...roleTokens(contract?.causal_relation?.subject),
@@ -115,6 +121,7 @@ export function compileTutorStubEngagementOperation({
     active: true,
     id: 'public_pressure_collision',
     owner: 'performance_entry',
+    boundary_owner: 'performance_response',
     engagement_stance: 'charismatic',
     pressure_target_family: 'public_accusation_or_claim',
     operator_family: 'first_person_set_against',
@@ -132,7 +139,11 @@ export function compileTutorStubEngagementOperation({
   };
 }
 
-export function auditTutorStubEngagementOperation({ contract = null, performanceEntry = '' } = {}) {
+export function auditTutorStubEngagementOperation({
+  contract = null,
+  performanceEntry = '',
+  performanceResponse = '',
+} = {}) {
   if (!contract) {
     return {
       schema: TUTOR_STUB_ENGAGEMENT_OPERATION_AUDIT_SCHEMA,
@@ -144,6 +155,7 @@ export function auditTutorStubEngagementOperation({ contract = null, performance
     };
   }
   const text = oneLine(performanceEntry);
+  const boundaryText = oneLine(performanceResponse);
   const operationBody = text.replace(/^My case is this:\s*/u, '');
   const againstIndex = operationBody.toLowerCase().indexOf(' against ');
   const rightOperand = againstIndex >= 0 ? operationBody.slice(againstIndex + ' against '.length) : '';
@@ -152,13 +164,16 @@ export function auditTutorStubEngagementOperation({ contract = null, performance
     schema_matches: contract?.schema === TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA,
     contract_active: contract?.active === true,
     owner_matches: contract?.owner === 'performance_entry',
+    boundary_owner_matches: contract?.boundary_owner === 'performance_response',
     operation_matches: contract?.id === 'public_pressure_collision',
     begins_concrete_case: /^My case is this: I set\b/u.test(text),
     first_person_set_against_visible: SET_AGAINST_PATTERN.test(operationBody),
     public_evidence_cue_visible: publicEvidenceCueVisible(operationBody, contract),
     pressure_target_visible: PRESSURE_TARGET_PATTERN.test(rightOperand),
-    subject_visible: roleVisible(text, relation.subject),
-    outcome_visible: roleVisible(text, relation.outcome),
+    entry_subject_visible: roleVisible(text, relation.subject),
+    entry_outcome_head_visible: roleHeadVisible(text, relation.outcome),
+    boundary_subject_visible: roleVisible(boundaryText, relation.subject),
+    boundary_outcome_visible: roleVisible(boundaryText, relation.outcome),
     not_abstract_case_status: !ABSTRACT_CASE_STATUS_PATTERN.test(operationBody),
   };
   const issues = Object.entries(checks)
