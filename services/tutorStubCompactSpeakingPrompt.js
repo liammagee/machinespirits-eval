@@ -190,6 +190,15 @@ function responseDecision(contract) {
   );
 }
 
+function handoffTurnFocus(contract, fallback) {
+  const groups = contract?.progression?.turn_focus_contract?.primary_groups;
+  return oneLine(
+    (Array.isArray(groups) ? groups.find((group) => oneLine(group?.surface))?.surface : '') ||
+      contract?.progression?.turn_focus_contract?.primary_surface ||
+      fallback,
+  );
+}
+
 function compactSystemPrompt({ tutor, world }) {
   const sceneCues = [world.diction, ...world.publicObjects].filter(Boolean).join('; ');
   const named = tutor || 'the continuing speaking tutor';
@@ -222,6 +231,7 @@ function compactUserPrompt({
   decisions,
   contract,
   plan,
+  handoffFocus,
 }) {
   const maxWords = Number(contract?.language?.host_sentence_word_target || 24);
   const draftingWords = Math.min(maxWords, Math.max(8, maxWords - 3));
@@ -272,6 +282,7 @@ function compactUserPrompt({
     `PERFORMANCE ENTRY owns the ${axes.actorial_part} part and begins the performed claim: ${oneLine(plan.slots.performance.entry_instruction)}`,
     `PERFORMANCE RESPONSE owns ${performance.id} (${performance.label}) and the ${axes.engagement_stance} stance: ${performanceInstructions}`,
     `HANDOFF alone owns ${axes.action_family}: ${oneLine(plan.slots.handoff.instruction)}`,
+    `HANDOFF FOCUS: Keep both the public subject and its condition visible in the operation: “${handoffFocus}”. Naming only a generic record or exhibit loses the learner’s focus.`,
     'Do not move a PERFORMANCE duty into HANDOFF or a HANDOFF operation into PERFORMANCE.',
     '- Return only the JSON object.',
     '[End tutor-only joint-performance host plan]',
@@ -312,6 +323,7 @@ export function buildTutorStubCompactNoSourceRequest(bundle = null, { maxEstimat
     bundle.learnerText || contract?.progression?.learner_uptake?.learner_surface,
   );
   const focus = oneLine(contract?.progression?.turn_focus_contract?.primary_surface || learnerText);
+  const handoffFocus = handoffTurnFocus(contract, focus);
   if (!learnerText || !focus) {
     throw new Error('compact-no-source.v1 requires the latest learner text and turn focus');
   }
@@ -330,6 +342,7 @@ export function buildTutorStubCompactNoSourceRequest(bundle = null, { maxEstimat
     decisions,
     contract,
     plan,
+    handoffFocus,
   });
   const request = {
     ...clone(sourceRequest),

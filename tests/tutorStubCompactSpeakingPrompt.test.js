@@ -99,6 +99,12 @@ function v33Bundle(request) {
         learner_uptake: { learner_surface: LEARNER_TEXT },
         turn_focus_contract: {
           primary_surface: LEARNER_TEXT,
+          primary_groups: [
+            {
+              surface: 'the chargers being dark during the stocktake',
+              terms: ['charger', 'being', 'dark', 'during', 'stocktake'],
+            },
+          ],
           due_surfaces: [],
           semantic_focus_candidates: {
             summary: 'Asks for wording about the stocktake evidence',
@@ -161,7 +167,7 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   const latest = result.request.messages.at(-1).content;
 
   assert.equal(result.schema, TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA);
-  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2302);
+  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2353);
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens <= 2500);
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens < 4930);
   assert.deepEqual(result.request.messages.slice(0, -1), fixture.request.messages.slice(0, -1));
@@ -183,6 +189,10 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
     /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\)/iu,
   );
   assert.match(latest, /HANDOFF alone owns stage_next_step/iu);
+  assert.match(
+    latest,
+    /HANDOFF FOCUS: Keep both the public subject and its condition visible.*the chargers being dark during the stocktake/iu,
+  );
   const measured = Object.fromEntries(
     result.compilation.promptSize.sections.map((section) => [section.id, section]),
   );
