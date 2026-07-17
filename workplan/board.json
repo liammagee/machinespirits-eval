@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-17T18:10:33.577Z",
+  "generated": "2026-07-17T21:24:55.012Z",
   "counts": {
-    "total": 120,
+    "total": 121,
     "byStatus": {
       "done": 102,
       "blocked": 1,
       "dropped": 2,
       "triaged": 5,
       "review": 2,
-      "active": 4,
+      "active": 5,
       "archived": 4
     },
     "byType": {
       "research": 44,
-      "experiment": 43,
+      "experiment": 44,
       "infra": 15,
       "maintenance": 6,
       "content": 2,
@@ -233,6 +233,38 @@
         "ground-truth"
       ],
       "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "program-2-context-vs-weights-finetune",
+      "title": "Program-2: context-versus-weights fine-tune (form-carrier hypothesis)",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "verification": "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§7.12, §6.18, §6.19",
+        "notes": [
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PLAN_4_0/2026-07-17-continue-or-fold.md",
+          "POINT-OF-ACTION-COACHING-PREREGISTRATION.md"
+        ],
+        "items": [
+          "tutor-stub-side-coaching-gate"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "insight-action-gap",
+        "form-carrier"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "main"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
