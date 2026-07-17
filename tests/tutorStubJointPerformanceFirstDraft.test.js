@@ -365,6 +365,55 @@ test('saved V38 original preserves causal boundary but genuinely misses charisma
   );
 });
 
+test('saved V39 original re-audits as support plus explicit exclusion without changing its historical failure', () => {
+  const selectedConfiguration = advocateConfiguration({
+    engagement_stance: 'charismatic',
+    actorial_performance: {
+      id: 'evidentiary_boundary',
+      label: 'evidentiary boundary',
+      contract: 'State the strongest licensed case and make its public limit visible.',
+    },
+  });
+  const composition = composeTutorStubJointPerformanceFirstDraft({
+    structured: parseTutorStubJointPerformanceFirstDraft(
+      JSON.stringify({
+        uptake:
+          'Write: “The chargers were dark during stocktake, yet brownout occurred, ruling out depot causation.”',
+        performance: {
+          entry: 'My case is the depot chargers caused Tallow Street’s Thursday brownouts.',
+          response:
+            'The stocktake evidence supports ruling out depot causation, but establishes no other cause.',
+        },
+        handoff:
+          'Next, compare the chargers being dark during stocktake with the 18:40 pen chart.',
+      }),
+      { maxWordsPerSlot: 18 },
+    ),
+  });
+  const audit = auditTutorStubJointPerformanceOwnership({
+    composition,
+    candidate: composition.text,
+    configuration: selectedConfiguration,
+    world: {
+      title: 'The Thursday Brownouts of Tallow Street',
+      setting: 'The stocktake note and pen chart lie on the hall table.',
+      question: 'What browns out Tallow Street every Thursday evening?',
+      premiseById: new Map(),
+    },
+  });
+
+  assert.equal(audit.axes.actorial_part.visible, true);
+  assert.equal(audit.axes.actorial_performance.visible, true);
+  assert.equal(audit.axes.engagement_stance.visible, true);
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.ok(
+    audit.axes.actorial_performance.realization.recognition.constructions.includes(
+      'positive_support_with_explicit_exclusion',
+    ),
+  );
+});
+
 test('V32 speaking contract rejects the saved V31 static-break shape and preserves a compliant owner-local counterfactual', () => {
   const selectedConfiguration = advocateConfiguration({ engagement_stance: 'charismatic' });
   const contract = firstDraftContract({

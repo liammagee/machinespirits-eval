@@ -1493,11 +1493,27 @@ function evidentiaryBoundaryRecognition(text) {
       namedEvidenceDeniesExplicitClaim
     );
   });
+  // A second directed boundary construction: named evidence can support one
+  // explicit proposition while a contrastive clause denies establishment of
+  // another explicit conclusion. Both sides must name epistemic content; an
+  // anaphoric "supports it" or a non-evidentiary subject cannot satisfy it.
+  const positiveSupportWithExplicitExclusion = sentences.some((sentence) => {
+    const namedEvidenceSupportsExplicitProposition =
+      /\b(?:book|chargers?|clue|entry|evidence|finding|ledger|log|mark|note|observation|reading|record|result|sample|stocktake|test|trace)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|proves?|shows?|supports?|ties?)\b[^.!?]{0,65}\b(?:accusation|case|causation|cause|claim|conclusion|culprit|identity|inference|motion|person|source|suspect|theory|verdict)\b[^.!?]{0,45}\b(?:but|yet)\b/iu.test(
+        sentence,
+      );
+    const contrastDeniesExplicitConclusion =
+      /\b(?:but|yet)\b[^.!?]{0,65}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|names?|proves?|shows?|supports?|ties?)\b[^.!?]{0,30}\b(?:neither|no|not)\b[^.!?]{0,40}\b(?:accusation|case|causation|cause|claim|conclusion|culprit|identity|inference|motion|person|source|suspect|theory|verdict)\b/iu.test(
+        sentence,
+      );
+    return namedEvidenceSupportsExplicitProposition && contrastDeniesExplicitConclusion;
+  });
   const constructions = [
     evidenceGroundedCategoryContrast ? 'evidence_grounded_category_contrast' : null,
     explicitEpistemicLimit ? 'explicit_epistemic_limit' : null,
     boundedClaimRevision ? 'bounded_claim_revision' : null,
     negativeEvidentiarySupport ? 'negative_evidentiary_support' : null,
+    positiveSupportWithExplicitExclusion ? 'positive_support_with_explicit_exclusion' : null,
   ].filter(Boolean);
   return {
     visible: constructions.length > 0,
@@ -1510,6 +1526,7 @@ function evidentiaryBoundaryRecognition(text) {
       negative_test_interpretation: negativeTestInterpretation,
       bounded_claim_revision: boundedClaimRevision,
       negative_evidentiary_support: negativeEvidentiarySupport,
+      positive_support_with_explicit_exclusion: positiveSupportWithExplicitExclusion,
     },
   };
 }

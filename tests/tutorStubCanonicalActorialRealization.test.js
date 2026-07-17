@@ -152,3 +152,65 @@ test('the V33 audit-recognition repair leaves its causal-role generation failure
     'inactive_candidate_with_persisting_outcome',
   ]);
 });
+
+test('directed positive support plus explicit exclusion is a boundary without admitting brittle decoys', () => {
+  const cases = [
+    {
+      id: 'saved_v39_owned_performance',
+      text: 'The stocktake evidence supports ruling out depot causation, but establishes no other cause.',
+      visible: true,
+    },
+    {
+      id: 'cross_world_valid',
+      text: 'The assay result supports the alloy claim, yet identifies no other source.',
+      visible: true,
+    },
+    {
+      id: 'anaphoric_supported_proposition',
+      text: 'The stocktake evidence supports it, but establishes no other cause.',
+      visible: false,
+    },
+    {
+      id: 'non_evidentiary_subject',
+      text: 'The depot claim supports charger causation, but establishes no other cause.',
+      visible: false,
+    },
+    {
+      id: 'non_epistemic_exclusion',
+      text: 'The stocktake evidence supports charger causation, but establishes no other colour.',
+      visible: false,
+    },
+    {
+      id: 'positive_support_without_exclusion',
+      text: 'The stocktake evidence supports charger causation, and the chargers stayed dark.',
+      visible: false,
+    },
+  ];
+
+  for (const testCase of cases) {
+    const composition = composeTutorStubJointPerformanceFirstDraft({
+      structured: parseTutorStubJointPerformanceFirstDraft(
+        JSON.stringify({
+          uptake: 'The minutes need one bounded entry.',
+          performance: {
+            entry: 'My case is the minutes must record the public result.',
+            response: testCase.text,
+          },
+          handoff: 'Next, compare the result with the public record.',
+        }),
+      ),
+    });
+    const result = auditTutorStubActorialPerformanceRealization({
+      configuration: FIXTURE.configuration,
+      world: FIXTURE.world,
+      ...tutorStubJointPerformanceActorialScope(composition),
+      actorialPartVisible: true,
+    });
+    assert.equal(result.visible, testCase.visible, testCase.id);
+    assert.equal(
+      result.recognition.constructions.includes('positive_support_with_explicit_exclusion'),
+      testCase.visible,
+      testCase.id,
+    );
+  }
+});
