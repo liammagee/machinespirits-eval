@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import {
   getActorialPartDefinitions,
   getActionFamilyDefinitions,
@@ -15,6 +17,8 @@ import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPe
 const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
 const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
+export const TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA =
+  'machinespirits.tutor-stub.actorial-performance-realization.v1';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -1413,6 +1417,56 @@ function declaredPublicJudgmentFalterVisible(options) {
   return auditDeclaredPublicJudgmentFalter(options).recognized;
 }
 
+function evidentiaryBoundaryRecognition(text) {
+  const sentences = responseSentences(text);
+  const evidenceGroundedCategoryContrast = sentences.some((sentence) => {
+    const evidenceSubjectContrast =
+      /\b(?:book|clue|entry|evidence|finding|ledger|log|mark|reading|record|result|sample|test|trace)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|mark(?:s|ed)?|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,80}(?:\brather than\b|,\s*not\b)/iu.test(
+        sentence,
+      );
+    const performedClassificationContrast =
+      /\b(?:i|we)\b[^.!?]{0,80}\b(?:enter|mark|record|write)\b[^.!?]{0,100}\b(?:as|marking|identifying|showing|supporting|tying)\b[^.!?]{0,80}\brather than\b/iu.test(
+        sentence,
+      );
+    const explicitCategoryExclusion =
+      /\b(?:enter|mark|record|write)\b[^.!?]{0,80}\b(?:as|for|under)\b[^.!?]{0,70},?\s+not\b[^.!?]{0,70}\b(?:as|for|under)\b/iu.test(
+        sentence,
+      );
+    return evidenceSubjectContrast || performedClassificationContrast || explicitCategoryExclusion;
+  });
+  const explicitEpistemicLimit =
+    /\b(?:beyond|exact|establish|licensed|line that matters|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(
+      text,
+    ) ||
+    /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
+    /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bstill needs?\b[^.!?]{0,70}\b(?:blank|die|evidence|hand|link|mark|proof|tool)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(
+      text,
+    );
+  // This construction is semantic rather than phrase-specific: a named live
+  // proposition is explicitly reduced in evidentiary force, or a public
+  // observation is said to leave its causal/identity conclusion unresolved.
+  const boundedClaimRevision = sentences.some(
+    (sentence) =>
+      /\b(?:accusation|case|claim|conclusion|inference|motion|theory|verdict)\b[^.!?]{0,90}\b(?:limits?|qualif(?:y|ies)|undermines?|weakens?)\b/iu.test(sentence) ||
+      /\b(?:identif(?:y|ies)|names?|proves?|shows?)\s+(?:neither|no)\b[^.!?]{0,55}\b(?:cause|culprit|person|source|suspect)\b/iu.test(sentence) ||
+      /\b(?:cause|culprit|person|source|suspect)\b[^.!?]{0,45}\b(?:remains?|stays?)\s+(?:open|unknown|unproved|unshown)\b/iu.test(sentence),
+  );
+  const constructions = [
+    evidenceGroundedCategoryContrast ? 'evidence_grounded_category_contrast' : null,
+    explicitEpistemicLimit ? 'explicit_epistemic_limit' : null,
+    boundedClaimRevision ? 'bounded_claim_revision' : null,
+  ].filter(Boolean);
+  return {
+    visible: constructions.length > 0,
+    constructions,
+    checks: {
+      evidence_grounded_category_contrast: evidenceGroundedCategoryContrast,
+      explicit_epistemic_limit: explicitEpistemicLimit,
+      bounded_claim_revision: boundedClaimRevision,
+    },
+  };
+}
+
 function actorialPerformanceVisible(
   configuration,
   text,
@@ -1438,31 +1492,7 @@ function actorialPerformanceVisible(
     return (metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100) || plainlyHandledExhibit;
   }
   if (tactic === 'evidentiary_boundary') {
-    const evidenceGroundedCategoryContrast = responseSentences(text).some((sentence) => {
-      const evidenceSubjectContrast =
-        /\b(?:book|clue|entry|evidence|finding|ledger|log|mark|reading|record|result|sample|test|trace)\b[^.!?]{0,80}\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|mark(?:s|ed)?|proves?|records?|shows?|supports?|ties?)\b[^.!?]{0,80}(?:\brather than\b|,\s*not\b)/iu.test(
-          sentence,
-        );
-      const performedClassificationContrast =
-        /\b(?:i|we)\b[^.!?]{0,80}\b(?:enter|mark|record|write)\b[^.!?]{0,100}\b(?:as|marking|identifying|showing|supporting|tying)\b[^.!?]{0,80}\brather than\b/iu.test(
-          sentence,
-        );
-      const explicitCategoryExclusion =
-        /\b(?:enter|mark|record|write)\b[^.!?]{0,80}\b(?:as|for|under)\b[^.!?]{0,70},?\s+not\b[^.!?]{0,70}\b(?:as|for|under)\b/iu.test(
-          sentence,
-        );
-      return evidenceSubjectContrast || performedClassificationContrast || explicitCategoryExclusion;
-    });
-    return (
-      evidenceGroundedCategoryContrast ||
-      /\b(?:beyond|exact|establish|licensed|line that matters|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|limit|nothing yet|only|not merely|not proof|not that|not yet|must still|remains? unshown|what remains|until|unproved)\b/iu.test(
-        text,
-      ) ||
-      /\byet\s+not\b[^.!?]{0,45}\b(?:alone|by itself|enough|sufficient)\b/iu.test(text) ||
-      /\bmust\b[^.!?]{0,50}\b(?:before|still)\b|\bneed\b[^.!?]{0,90}\bbefore\b|\bstill needs?\b[^.!?]{0,70}\b(?:blank|die|evidence|hand|link|mark|proof|tool)\b|\bbefore\b[^.!?]{0,80}\b(?:alloy|assay|can|coin|evidence|mark|metal|test(?:ed|ing)?)\b|\balone\b[^.!?]{0,45}\b(?:names?|proves?|shows?|ties?)\s+no\b|\bbut\b[^.!?]{0,50}\b(?:names?|proves?|shows?|ties?) (?:neither|no)\b|\bbut\s+neither\b[^.!?]{0,90}\b(?:names?|proves?|shows?|ties?)\b|\bbut\s+does\b[^?]{0,90}\byet\s+(?:name|prove|show|tie)\b|\b(?:names?|proves?|shows?)\s+neither\b|\bwhat\b[^?]{0,100}\band what\b[^?]{0,60}\b(?:leave|must|remain|unsafe|unproved)\b|\bwhat\b[^?]{0,100}\b(?:is|remains?|stays?)\s+still\s+(?:absent|missing|open|unproved)\b|\b(?:establishes?|shows?|supports?)\b[^.!?]{0,100},?\s+not\b/iu.test(
-        text,
-      )
-    );
+    return evidentiaryBoundaryRecognition(text).visible;
   }
   if (tactic === 'rapid_handoff') {
     const boundedDirectQuestion =
@@ -1640,6 +1670,110 @@ function actorialPerformanceVisible(
   return false;
 }
 
+function realizationMetrics(text, world) {
+  const words = responseWords(text);
+  const sentences = responseSentences(text);
+  const sceneTerms = sceneLexiconMatches(text, world).sceneTerms;
+  return {
+    wordCount: words.length,
+    sentenceCount: sentences.length,
+    averageSentenceWords: Number((words.length / Math.max(1, sentences.length)).toFixed(2)),
+    maxSentenceWords: Math.max(0, ...sentences.map((sentence) => responseWords(sentence).length)),
+    questionCount: (String(text).match(/\?/gu) || []).length,
+    concreteSceneTerms: [...new Set(sceneTerms)].slice(0, 12),
+    concreteSceneTermCount: new Set(sceneTerms).size,
+  };
+}
+
+function ownedScopeBound({ ownedText, fullText, spanTexts }) {
+  if (!ownedText || !fullText) return false;
+  if (!spanTexts?.length) return fullText.includes(ownedText);
+  let cursor = 0;
+  for (const spanText of spanTexts) {
+    if (!spanText) return false;
+    const index = fullText.indexOf(spanText, cursor);
+    if (index < 0) return false;
+    cursor = index + spanText.length;
+  }
+  return spanTexts.join(' ') === ownedText;
+}
+
+/**
+ * Canonical selected-tactic evaluator. Every caller supplies the exact owned
+ * public span set; full-response text is context only and cannot rescue a
+ * missing owner-local realization. The scope hashes make two audit reports
+ * directly comparable without retaining an ambiguous implicit segment.
+ */
+export function auditTutorStubActorialPerformanceRealization({
+  configuration = null,
+  ownedText = '',
+  fullText = ownedText,
+  owner = 'whole_response',
+  spanIds = ['whole_response'],
+  spanTexts = [ownedText],
+  excludedSpanIds = [],
+  world = null,
+  performanceObligationContract = null,
+  actorialPartVisible: selectedPartVisible = false,
+  publicJudgmentFalterRecognition = null,
+  publicJudgmentMeetsContraryEvidenceRecognition = null,
+} = {}) {
+  const normalizedOwnedText = oneLine(ownedText);
+  const normalizedFullText = oneLine(fullText);
+  const normalizedSpanTexts = (Array.isArray(spanTexts) ? spanTexts : [])
+    .map(oneLine)
+    .filter(Boolean);
+  const scopeBound = ownedScopeBound({
+    ownedText: normalizedOwnedText,
+    fullText: normalizedFullText,
+    spanTexts: normalizedSpanTexts,
+  });
+  const metrics = realizationMetrics(normalizedOwnedText, world);
+  const selected = configuration?.actorial_performance?.id || null;
+  const visible = Boolean(
+    configuration &&
+      scopeBound &&
+      actorialPerformanceVisible(configuration, normalizedOwnedText, metrics, {
+        performanceObligationContract,
+        actorialPartVisible: selectedPartVisible,
+        fullText: normalizedFullText,
+        publicJudgmentFalterRecognition,
+        publicJudgmentMeetsContraryEvidenceRecognition,
+      }),
+  );
+  const boundaryRecognition =
+    selected === 'evidentiary_boundary'
+      ? evidentiaryBoundaryRecognition(normalizedOwnedText)
+      : null;
+  return {
+    schema: TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA,
+    predicate: 'selected_actorial_performance_visible',
+    selected,
+    selected_label: configuration?.actorial_performance?.label || null,
+    visible,
+    scope: {
+      owner,
+      span_ids: [...(Array.isArray(spanIds) ? spanIds : [])],
+      excluded_span_ids: [...(Array.isArray(excludedSpanIds) ? excludedSpanIds : [])],
+      bound: scopeBound,
+      owned_text_sha256: createHash('sha256').update(normalizedOwnedText).digest('hex'),
+      full_text_sha256: createHash('sha256').update(normalizedFullText).digest('hex'),
+      owned_text: normalizedOwnedText,
+    },
+    recognition: boundaryRecognition || {
+      visible,
+      constructions: visible ? ['selected_tactic_recognizer'] : [],
+      checks: {},
+    },
+    metrics,
+    reason: !scopeBound
+      ? 'the supplied owned span set is not exactly bound to the public response'
+      : visible
+        ? `the selected ${configuration?.actorial_performance?.label || selected || 'performance'} is visible in its owned span set`
+        : `the selected ${configuration?.actorial_performance?.label || selected || 'performance'} is absent from its owned span set`,
+  };
+}
+
 function visibleSignature(metrics) {
   const length = metrics.wordCount <= 60 ? 'short' : metrics.wordCount <= 110 ? 'medium' : 'long';
   const syntax =
@@ -1668,6 +1802,7 @@ export function auditTutorStubResponseConfiguration({
   composition = null,
   performanceObligationContract = null,
   performanceAuditContext = null,
+  actorialPerformanceScope = null,
 } = {}) {
   if (!configuration) return null;
   const words = responseWords(text);
@@ -1773,13 +1908,35 @@ export function auditTutorStubResponseConfiguration({
     : null;
   const publicJudgmentMeetsContraryEvidenceRecognition =
     publicJudgmentCounterpressureEvents?.publicJudgmentMeetsContraryEvidenceRecognition || null;
-  const actorialPerformancePass = actorialPerformanceVisible(configuration, performanceText, performanceMetrics, {
+  const canonicalPerformanceScope = actorialPerformanceScope || {
+    owner: configuration?.actorial_part_selection?.authored_role
+      ? 'adaptive_host_without_authored_source'
+      : 'whole_response',
+    spanIds: [
+      configuration?.actorial_part_selection?.authored_role
+        ? 'adaptive_host_without_authored_source'
+        : 'whole_response',
+    ],
+    spanTexts: [performanceText],
+    excludedSpanIds: [],
+    ownedText: performanceText,
+    fullText: performanceText,
+  };
+  const actorialPerformanceRealization = auditTutorStubActorialPerformanceRealization({
+    configuration,
+    ownedText: canonicalPerformanceScope.ownedText,
+    fullText: canonicalPerformanceScope.fullText,
+    owner: canonicalPerformanceScope.owner,
+    spanIds: canonicalPerformanceScope.spanIds,
+    spanTexts: canonicalPerformanceScope.spanTexts,
+    excludedSpanIds: canonicalPerformanceScope.excludedSpanIds,
+    world,
     performanceObligationContract,
     actorialPartVisible: performancePrerequisitePartVisible,
-    fullText: performancePrerequisiteFullText,
     publicJudgmentFalterRecognition,
     publicJudgmentMeetsContraryEvidenceRecognition,
   });
+  const actorialPerformancePass = actorialPerformanceRealization.visible;
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
@@ -1831,9 +1988,8 @@ export function auditTutorStubResponseConfiguration({
       part_visible: actorialPartPass,
       performance_visible: actorialPerformancePass,
       visible: actorialPartPass && actorialPerformancePass,
-      evaluated_segment: configuration?.actorial_part_selection?.authored_role
-        ? 'adaptive_host_without_authored_source'
-        : 'whole_response',
+      evaluated_segment: actorialPerformanceRealization.scope.owner,
+      realization_scope: actorialPerformanceRealization.scope,
     },
   };
   const visibleAxes = Object.values(axes).filter((axis) => axis.visible).length;
@@ -1876,6 +2032,7 @@ export function auditTutorStubResponseConfiguration({
       ok: actorialIssues.length === 0,
       issues: actorialIssues,
     },
+    actorial_performance_realization: actorialPerformanceRealization,
     sceneLexiconMorphologyRecognition: sceneLexicon.morphologyRecognition,
     publicJudgmentFalterRecognition,
     publicJudgmentMeetsContraryEvidenceRecognition,

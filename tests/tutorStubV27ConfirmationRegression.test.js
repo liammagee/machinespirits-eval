@@ -77,19 +77,31 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
       fixture.post_v28_expected_audit.corrected_recorded_false_negative,
     ),
   );
-  assert.equal(audit.ok, fixture.post_v28_expected_audit.ok);
-  assert.equal(audit.safetyFailure, fixture.post_v28_expected_audit.safety_failure);
-  assert.deepEqual(audit.failureClusters, fixture.post_v28_expected_audit.failure_clusters);
-  assert.deepEqual(audit.hardFailureClusters, fixture.post_v28_expected_audit.hard_failure_clusters);
+  const expected = fixture.post_canonical_audit_expected;
+  assert.equal(expected.classification, 'audit_recognition_correction_not_generation_improvement');
+  assert.equal(audit.ok, expected.ok);
+  assert.equal(audit.safetyFailure, expected.safety_failure);
+  assert.deepEqual(audit.failureClusters, expected.failure_clusters);
+  assert.deepEqual(audit.hardFailureClusters, expected.hard_failure_clusters);
   assert.equal(
     audit.failureClusters.includes(fixture.post_v28_expected_audit.corrected_recorded_false_negative),
     false,
   );
   assert.equal(
     audit.audits.responseConfigurationAudit.realization_rate,
-    fixture.post_v28_expected_audit.configuration_realization,
+    expected.configuration_realization,
   );
-  assert.equal(audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.recognized, false);
+  assert.equal(
+    audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.license.material_grounding
+      .causal_relation_family,
+    expected.causal_relation_family,
+  );
+  assert.equal(
+    audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.license.material_grounding
+      .causal_relation_supported,
+    expected.causal_relation_supported,
+  );
   assert.deepEqual(audit.audits.responseCompositionAudit.issues, []);
   assert.deepEqual(
     audit.audits.jointPerformanceAudit.issues.map((issue) => [issue.type, issue.axis]),

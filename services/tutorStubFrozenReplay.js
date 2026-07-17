@@ -5,7 +5,10 @@ import { auditTutorStubDialogueClosureResponse } from './tutorStubDialogueClosur
 import { auditTutorStubDramaticReleaseResponse } from './tutorStubDramaticRelease.js';
 import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from './tutorStubEvidenceAssertion.js';
 import { buildTutorStubFirstDraftContract, tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
-import { TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA } from './tutorStubJointPerformanceFirstDraft.js';
+import {
+  tutorStubJointPerformanceActorialScope,
+  TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+} from './tutorStubJointPerformanceFirstDraft.js';
 import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
 import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
@@ -620,6 +623,9 @@ export function auditTutorStubFrozenCandidate({
     jointPerformanceComposition,
     auditedText,
   );
+  const typedActorialPerformanceScope = typedJointBoundary
+    ? tutorStubJointPerformanceActorialScope(jointPerformanceComposition)
+    : null;
   const liveTurnProgressionAudit = !typedJointBoundary && bundle.firstDraftContract?.progression?.complete === true
     ? auditTutorStubLiveTurnProgressionV1({
         contract: bundle.firstDraftContract.progression,
@@ -690,6 +696,7 @@ export function auditTutorStubFrozenCandidate({
         world,
         composition: responseCompositionAudit.segments,
         performanceObligationContract: bundle.performanceObligationContract,
+        actorialPerformanceScope: typedActorialPerformanceScope,
       })
     : null;
   const repetitionAudit = guards.repetition

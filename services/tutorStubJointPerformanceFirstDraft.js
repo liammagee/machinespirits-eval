@@ -747,6 +747,36 @@ function compositionIntegrityIssues(composition, candidate = null) {
   return issues;
 }
 
+export function tutorStubJointPerformanceActorialScope(composition = null) {
+  if (
+    composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA ||
+    !Array.isArray(composition?.spans)
+  ) {
+    return null;
+  }
+  const spans = new Map(
+    composition.spans
+      .filter((span) => span?.owner === 'model')
+      .map((span) => [span.id, span]),
+  );
+  const compensated = composition.sourceAccessibilityAudit?.active === true;
+  const spanIds = compensated
+    ? ['performance_entry']
+    : ['performance_entry', 'performance_response'];
+  const spanTexts = spanIds.map((id) => oneLine(spans.get(id)?.text));
+  if (spanTexts.some((text) => !text)) return null;
+  return {
+    owner: 'performance',
+    spanIds,
+    spanTexts,
+    excludedSpanIds: composition.spans
+      .filter((span) => span?.owner === 'host')
+      .map((span) => span.id),
+    ownedText: spanTexts.join(' '),
+    fullText: oneLine(composition.text),
+  };
+}
+
 export function auditTutorStubJointPerformanceOwnership({
   composition = null,
   candidate = null,
@@ -802,13 +832,21 @@ export function auditTutorStubJointPerformanceOwnership({
     }
   }
   const compensated = accessibilityAudit.active === true;
-  const performanceText = compensated
-    ? spans.get('performance_entry').text
-    : `${spans.get('performance_entry').text} ${spans.get('performance_response').text}`;
+  const actorialPerformanceScope = tutorStubJointPerformanceActorialScope(composition);
+  if (!actorialPerformanceScope) {
+    issues.push({
+      type: 'invalid_actorial_performance_scope',
+      axis: 'actorial_performance',
+      owner: 'performance',
+      reason: 'the model-owned PERFORMANCE span set cannot be bound exactly',
+    });
+  }
+  const performanceText = actorialPerformanceScope?.ownedText || '';
   const preliminaryPerformanceAudit = auditTutorStubResponseConfiguration({
     text: performanceText,
     configuration,
     world,
+    actorialPerformanceScope,
   });
   const handoffAudit = auditTutorStubResponseConfiguration({
     text: spans.get('handoff').text,
@@ -837,6 +875,7 @@ export function auditTutorStubJointPerformanceOwnership({
     configuration,
     world,
     performanceObligationContract,
+    actorialPerformanceScope,
     performanceAuditContext: {
       fullComposedPublicText: composition.text,
       verifiedPartVisible:
@@ -877,6 +916,7 @@ export function auditTutorStubJointPerformanceOwnership({
       selected: configuration.actorial_performance?.id || null,
       visible:
         performanceAudit?.axes?.actorial_part?.performance_visible === true && responseObligation.ok,
+      realization: clone(performanceAudit?.actorial_performance_realization || null),
     },
     engagement_stance: {
       owner: 'performance',

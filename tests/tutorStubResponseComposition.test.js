@@ -116,7 +116,7 @@ test('a put-in-the-minutes wording request receives typed Write uptake without l
         ],
       },
     },
-    text: 'Write: “The dark chargers did not prevent the 18:40 brownout.” The stocktake now rules out that timing claim.',
+    text: 'Write: “The dark chargers did not cause the 18:40 brownout.” The stocktake now rules out that timing claim.',
   });
   assert.equal(direct.requestedEntryAnswerRecognition.recognized, true);
   assert.equal(direct.issues.some((issue) => issue.type === 'missing_learner_uptake'), false);
@@ -385,33 +385,48 @@ test('a generic epistemic limit may answer from the public case question before 
   assert.equal(inventedEntity.license.generic_epistemic_grounding.material_coverage < 1, true);
 });
 
-test('a grounded negative-causal limit may combine committed subject, event, and timing status', () => {
+test('a grounded negative-production limit preserves causal role and rejects a prevention inversion', () => {
   const learnerText = 'What should I put in the minutes about the chargers?';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
     classification: { turn: { summary: 'Asks what the minutes can say about the chargers.' } },
     registerSelection: { response_configuration: { action_family: 'answer_accountably' } },
   });
-  const recognition = auditTutorStubResponseComposition({
-    learnerText,
-    frame,
-    firstDraftContract: {
-      ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
-      evidence: {
-        committed_public_surfaces: [
-          'The depot chargers stood dark throughout the stocktake.',
-          'Tallow Street browned out at 18:40 regardless.',
-        ],
-      },
+  const firstDraftContract = {
+    ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
+    evidence: {
+      committed_public_surfaces: [
+        'The depot chargers stood dark throughout the stocktake.',
+        'Tallow Street browned out at 18:40 regardless.',
+      ],
     },
-    text:
-      'Write: “The dark chargers did not prevent Tallow Street’s 18:40 brownout.” We leave the failed supply open.',
-  }).requestedEntryAnswerRecognition;
+  };
+  const recognize = (line) =>
+    auditTutorStubResponseComposition({
+      learnerText,
+      frame,
+      firstDraftContract,
+      text: `Write: “${line}” We leave the failed supply open.`,
+    }).requestedEntryAnswerRecognition;
+  const recognition = recognize('The dark chargers did not cause Tallow Street’s 18:40 brownout.');
 
   assert.equal(recognition.recognized, true);
   assert.equal(recognition.license.mode, 'evidentiary_limit');
   assert.equal(recognition.license.material_grounding.material_coverage, 1);
   assert.equal(recognition.license.material_grounding.causal_relation_supported, true);
+  assert.equal(recognition.license.material_grounding.causal_relation_family, 'production');
+  assert.deepEqual(
+    recognition.license.material_grounding.causal_relation_support_constructions,
+    ['inactive_candidate_with_persisting_outcome_rules_out_production'],
+  );
+
+  const inverted = recognize('The dark chargers did not prevent Tallow Street’s 18:40 brownout.');
+  assert.equal(inverted.recognized, false);
+  assert.equal(inverted.license.material_grounding.causal_relation_family, 'prevention');
+  assert.equal(inverted.license.material_grounding.causal_relation_supported, false);
+  assert.deepEqual(inverted.license.material_grounding.public_causal_relation_families, [
+    'inactive_candidate_with_persisting_outcome',
+  ]);
 });
 
 test('qualifiers are preserved by proposition rather than borrowed across conjuncts', () => {
