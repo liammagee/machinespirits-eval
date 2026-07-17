@@ -249,4 +249,157 @@ npm run tutor:stub:step4 -- --launch-approved --expected-sha 092cf6723ec5ddcda73
 No deviations. No claim-bearing runs started. No model calls were made while
 freezing or implementing this pre-registration. The archived dry-run manifest
 records `paidLaunchStatus: locked_pending_explicit_user_approval`; therefore no
-Step 4 outcome exists yet.
+Step 4 outcome exists yet. *(Superseded 2026-07-18: the paid run was
+subsequently approved, executed, and sealed — see §11.)*
+
+## 11. Results (added 2026-07-18; run sealed, frozen rules applied)
+
+### Execution ledger
+
+- **Launch**: 2026-07-17, from worktree branch `step4-frozen-isolated` @
+  `91b8a50e798ace53872a839e923076fcfbac3038` = the frozen implementation
+  commit `092cf672` plus a hand-backported minimal port of the safe-mode-v1
+  claude-CLI context-isolation fix (`services/cliProviderBridge.js`;
+  `--safe-mode --no-session-persistence --tools ''`, fresh temp cwd,
+  `CLAUDE_CLI_CONTEXT_ISOLATION=safe-mode-v1` stamp). Zero design change; the
+  freeze-era test suite passed 15/15 on the backport and a mock-spawn probe
+  verified flags, cwd, and stamp. Rationale: before the fix, every claude-CLI
+  call ambiently loaded ~16k tokens of repo CLAUDE.md context — a
+  contamination channel into the Sonnet speaking-tutor family. The codex path
+  was always isolated.
+- **Pre-isolation quarantine**: 7 dialogues generated before the fix were
+  quarantined to
+  `exports/tutor-stub-step4-claim-runs/quarantine-preisolation/` and never
+  analyzed. Their cells were re-run from scratch under the isolated branch.
+- **Census**: **80/80 claim dialogues sealed; zero exclusions.** Three
+  scheduling passes (initial launch + two capped retries) re-ran only unsealed
+  cells with the plan's own byte-identical frozen commands (census = presence
+  of `run_end` in the job trace; resume was idempotent). Crash causes across
+  retries, all technical: claude-CLI 180 s timeouts (raised to 360 s via
+  `ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS`, an env knob, no code change),
+  path-dependent deterministic-audit trips ending a job process, one recurring
+  learner-prompt budget overflow, and codex-side capacity/cache errors. Under
+  §6 these are documented technical failures; re-running them under the same
+  frozen seed contract is the licensed remedy that was applied.
+- **Provenance checks (all pass, enforced fail-closed by the analyzer)**: all
+  80 sealed traces stamp `git 91b8a50e @ step4-frozen-isolated`; every
+  detector event stamps `detector_version: step4-frozen-2026-07-14.v1`; the
+  arm stamped inside every trigger/compliance event equals the plan's arm for
+  that job; per dialogue, assigned opportunities exactly equal recorded
+  compliance verdicts; zero trigger-window violations (all assignments in
+  learner turns 3–24).
+- **Analysis**: `scripts/analyze-step4-compliance.mjs` (committed with this
+  addendum) aggregates the runtime's sealed per-turn
+  `point_of_action_assignment` / `point_of_action_compliance` events —
+  nothing is re-derived at analysis time. Fixed-horizon outcomes reuse
+  `services/tutorStubEvalIntegrity.js` (`summarizeTutorStubFixedHorizon`,
+  horizon 16) and the bootstrap reuses the Step 2 apparatus RNG (`mulberry32`)
+  with the frozen seed 20260714 and 5,000 dialogue-cluster draws stratified by
+  profile; machine-readable output at
+  `exports/tutor-stub-step4-claim-runs/compliance-analysis.json`.
+
+### Density gate (§6): FAIL on the T1 channel — instrument failure
+
+`warrant_skip` (T2) density passes everywhere (59–94 assigned opportunities
+per arm × family against the floor of 25). `stagnant_repeat` (T1) density
+fails in 7 of 8 arm × family blocks against the floor of 12; only
+`standing_book` × sonnet reaches it (13):
+
+| arm | sonnet T1 opp | sol T1 opp |
+|---|---|---|
+| standing_book | **13** | 10 |
+| triggered_placebo | 8 | 4 |
+| side_coach | 7 | 5 |
+| compiled_constraint | 2 | 1 |
+
+Both profiles contributed to their intended channels in every cell, so the
+failure is purely the opportunity count. Because §7's condition 4 requires the
+density gate to pass for the treatment **and** placebo arms, and both
+families' placebo arms fail T1, **no primary contrast can license a mechanism
+verdict in either family**. Per §6, a minimum miss "is an instrument failure
+for that arm/family/trigger, not a coaching null," and the block may not be
+enlarged to rescue the contrast — the dialogues completed normally, so no
+technical-failure rerun is licensed. Under §8 the governing row is: *"Density
+or provenance gate fails → instrument failure; no mechanism verdict."*
+
+**Why the channel starved.** The T1 floor was set from the Step 2 replay
+density audit; the fresh population stagnated far less. Two mechanisms are
+visible in the sealed traces: (a) the trap profiles produced fewer
+four-identical-action-family runs than the replay corpus predicted; (b) the
+treatment arms suppress their own trigger — enforced or coached re-anchoring
+prevents the stagnation precondition from rebuilding (compiled_constraint
+recorded 2 and 1 T1 opportunities). The denominator is endogenous to the arm:
+a design lesson any successor trigger-conditioned study must absorb (e.g.
+yoked-trigger designs or opportunity-matched analysis).
+
+### Primary endpoint numbers (reported under the instrument-failure verdict)
+
+Compliance as comp/opp (rate); macro = unweighted mean of the two
+trigger-specific rates.
+
+**claude-code.sonnet-5**
+
+| arm | T1 | T2 | macro |
+|---|---|---|---|
+| standing_book | 3/13 (.231) | 9/61 (.148) | .189 |
+| triggered_placebo | 3/8 (.375) | 9/77 (.117) | .246 |
+| side_coach | 4/7 (.571) | 14/66 (.212) | .392 |
+| compiled_constraint | 2/2 (1.000) | 34/86 (.395) | .698 |
+
+Contrasts vs placebo: side_coach **+0.146** (CI95 [−0.108, +0.422]);
+compiled_constraint **+0.452** (CI95 [+0.089, +0.626]).
+
+**codex.gpt-5.6-sol**
+
+| arm | T1 | T2 | macro |
+|---|---|---|---|
+| standing_book | 6/10 (.600) | 11/68 (.162) | .381 |
+| triggered_placebo | 2/4 (.500) | 17/84 (.202) | .351 |
+| side_coach | 4/5 (.800) | 11/59 (.186) | .493 |
+| compiled_constraint | 1/1 (1.000) | 51/94 (.543) | .771 |
+
+Contrasts vs placebo: side_coach **+0.142** (CI95 [−0.228, +0.432]);
+compiled_constraint **+0.420** (CI95 [−0.033, +0.658]).
+
+Guardrails (would-have-applied, reported for completeness): the
+compiled_constraint arm fails the coverage guardrail in both families
+(coverage@16 0.517 and 0.500 vs placebo 0.650 and 0.634 — beyond the −0.05
+margin) and fails the sol safety guardrail (hard-safety 0.30 vs 0.60); the
+zero-leak bar fails in every arm including controls (arm totals 1–12 leaks;
+placebo itself carries 5–10). No treatment arm introduced a new
+deterministic response-guard failure category (that guardrail passes
+everywhere).
+
+### Descriptive observations (non-claim; development tier)
+
+1. **Enforcement moves realized action, not phrasing.** All 180 compiled T2
+   turns realized `answer_accountably` (vs `stage_next_step` dominance in
+   every other arm), and `no_new_premise` violations drop to zero (49–64 in
+   un-enforced arms) — yet `warrant_cue` remains the binding constraint (94 of
+   95 non-compliant compiled T2 turns miss it). The typed-action layer
+   controls *which* action executes; the compliance definition also demands a
+   surface warrant cue the enforcement layer does not write.
+2. **The insight–action gap persists directionally at the point of action.**
+   side_coach — recognition delivered at the exact trigger moment, action
+   named, not enforced — lands under the +0.15 bar in both families with CIs
+   straddling zero, and its T2 diff is negative on sol. Fresh point-of-action
+   signal without enforcement did not clear even the modest frozen bar.
+3. **Enforcement's transfer cost is visible.** Both compiled arms pay ~0.13
+   proof-DAG coverage at turn 16 relative to placebo — consistent with forced
+   warrant-accounting displacing release progress.
+4. **T1 compliance is all-or-nothing.** On every non-compliant stagnation
+   turn, all three components fail together (no release increase, no family
+   change, no re-anchor); when the tutor breaks stagnation it satisfies all
+   three at once.
+5. **Sonnet side_coach safety anomaly.** Hard-safety 0.90 vs placebo 0.30 and
+   1 leak vs 10 — the side-coached sonnet arm was descriptively the safest
+   cell in the study.
+
+### Verdict
+
+**Instrument failure on the stagnant_repeat channel; no mechanism verdict for
+either treatment arm in either family (§8, density row).** The secondary
+descriptions stand as exploratory observations only. Under §8's closing
+clause, no prompt tuning, threshold tuning, fifth arm, additional seeds, or
+new selector is licensed; a successor study requires a new document. The Step
+4 gate is discharged: this pre-registration is closed.

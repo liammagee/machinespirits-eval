@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-17T09:24:13.133Z",
+  "generated": "2026-07-17T18:10:33.577Z",
   "counts": {
     "total": 120,
     "byStatus": {
-      "done": 101,
+      "done": 102,
       "blocked": 1,
       "dropped": 2,
       "triaged": 5,
       "review": 2,
-      "active": 5,
+      "active": 4,
       "archived": 4
     },
     "byType": {
@@ -233,49 +233,6 @@
         "ground-truth"
       ],
       "milestone": "impasse-program-v1"
-    },
-    {
-      "id": "tutor-stub-side-coaching-gate",
-      "title": "Point-of-action coaching gate: compiled constraints + side-coaching (final-stretch Step 4)",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-13",
-      "updated": "2026-07-17",
-      "verification": "The frozen successor pre-registration runs standing_book, trigger-yoked placebo, side_coach, and compiled_constraint on proof_skipper and affective_resistant at n=5 per cell on two speaking-tutor families while learner/classifier/record seams stay fixed. A zero-call 68-trace audit selects two deterministic triggers (warrant_skip and stagnant_repeat), freezes opportunity minimums, and rejects affective-risk/re-gloss candidates. Side coaching or compilation must beat triggered placebo on equally weighted trigger compliance by >=0.15 with a positive dialogue-clustered 95% interval, improve both trigger types, clear coverage/safety non-inferiority, and produce zero leaks. No model calls occur until explicit launch approval.",
-      "claim_status": "planned",
-      "depends_on": [
-        "adaptive-eval-immutable-provenance"
-      ],
-      "links": {
-        "paper": "§6.16, §6.17",
-        "notes": [
-          "POINT-OF-ACTION-COACHING-PREREGISTRATION.md",
-          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md",
-          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
-          "GREEN-ROOM-PLAN.md",
-          "notes/2026-07-12-greenroom-gate1-diagnosis.md"
-        ],
-        "exports": [
-          "exports/tutor-stub-step4-trigger-audit/trigger-density.md",
-          "exports/tutor-stub-step4-dry-run/zero-model-dry-run.json",
-          "config/adaptive-tutor-evidence/tutor-stub-step4-zero-model-dry-run.manifest.json"
-        ],
-        "items": [
-          "a22-green-room-coached-tutor-training"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "green-room",
-        "side-coaching",
-        "insight-action-gap",
-        "pre-registration"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "preconscious"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -1436,6 +1393,51 @@
         "controls"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-side-coaching-gate",
+      "title": "Point-of-action coaching gate: compiled constraints + side-coaching (final-stretch Step 4)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-13",
+      "updated": "2026-07-18",
+      "verification": "The frozen successor pre-registration runs standing_book, trigger-yoked placebo, side_coach, and compiled_constraint on proof_skipper and affective_resistant at n=5 per cell on two speaking-tutor families while learner/classifier/record seams stay fixed. A zero-call 68-trace audit selects two deterministic triggers (warrant_skip and stagnant_repeat), freezes opportunity minimums, and rejects affective-risk/re-gloss candidates. Side coaching or compilation must beat triggered placebo on equally weighted trigger compliance by >=0.15 with a positive dialogue-clustered 95% interval, improve both trigger types, clear coverage/safety non-inferiority, and produce zero leaks. No model calls occur until explicit launch approval.",
+      "claim_status": "settled",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "paper": "§6.16, §6.17",
+        "notes": [
+          "POINT-OF-ACTION-COACHING-PREREGISTRATION.md",
+          "PRECONSCIOUS-FINAL-STRETCH-PLAN.md",
+          "PLAN_4_0/2026-07-13-preconscious-arc-stocktake-and-final-stretch.md",
+          "GREEN-ROOM-PLAN.md",
+          "notes/2026-07-12-greenroom-gate1-diagnosis.md"
+        ],
+        "exports": [
+          "exports/tutor-stub-step4-trigger-audit/trigger-density.md",
+          "exports/tutor-stub-step4-dry-run/zero-model-dry-run.json",
+          "config/adaptive-tutor-evidence/tutor-stub-step4-zero-model-dry-run.manifest.json",
+          "exports/tutor-stub-step4-claim-runs/compliance-analysis.json",
+          "exports/tutor-stub-step4-claim-runs/launch-plan.json"
+        ],
+        "items": [
+          "a22-green-room-coached-tutor-training"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "green-room",
+        "side-coaching",
+        "insight-action-gap",
+        "pre-registration"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "preconscious"
     },
     {
       "id": "tutor-stub-transition-reward-model",
