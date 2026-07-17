@@ -1,15 +1,15 @@
 ---
 id: field-planner-phase6-gate
 title: "Phase 6A non-acts field-planner feasibility gate"
-status: triaged
+status: done
 type: experiment
 priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-10
-updated: 2026-07-14
+updated: 2026-07-17
 verification: "The v2.1 gate requires a sealed passing Marrick x four-arm seed-0 canary as the same-SHA/model/runtime/CLI parent of seeds 1-5, then requires a sealed canary-bound provisional parent for seeds 6-10. It forbids real --force, validates immutable rows, matrix/numeric schema/output leaks and provenance, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same winner across both blocks plus pooled k=10."
-claim_status: planned
+claim_status: killed
 depends_on:
   - adaptive-eval-immutable-provenance
 links:
@@ -108,3 +108,12 @@ point-of-action coaching gate. Step 2 did not validate a register selector, so
 Phase 6A has lower information value and should not consume its canary/k5 quota
 until Step 4 is frozen and decided. The existing v2.1 protocol remains frozen;
 no paid Phase 6A row has run.
+
+2026-07-17 Claude: CLOSED, designed-not-run, per the approved fold
+(PLAN_4_0/2026-07-17-continue-or-fold.md §6.3). The gate's premise — a
+planner over validated learner state with a validated selector beneath it —
+did not survive Steps 1–2 (sensor closed `do_not_run_canonical_s2`; register
+selector closed by the corrected §6.17 verdict). The v2.1 protocol, sealed
+canary-lineage machinery, and mock/one-row real evidence remain in the
+repository as methods; the field machinery survives as reporting
+instrumentation only. No paid row was ever run; nothing is reclassified.

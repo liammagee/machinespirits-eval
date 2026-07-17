@@ -1,15 +1,15 @@
 ---
 id: tutor-stub-transition-reward-model
 title: "Learn tutor-stub transition and reward models from turn frames"
-status: blocked
+status: done
 type: research
 priority: P1
 owner: unassigned
 source: manual
 created: 2026-07-09
-updated: 2026-07-14
+updated: 2026-07-17
 verification: "A sealed stable export from tutor_stub_turn_frames records typed actions, realized outcomes, guard exposure, and logging propensities; overlap and effective sample size are reported before estimation; ridge/logistic/GBM baselines use dialogue-grouped cross-fitting with held-out worlds and learner sources; a guarded learned ranker is compared out of sample with strong fixed, action-frequency-yoked, and guard-frequency-yoked controls on raw outcomes and cannot pass with a safety loss."
-claim_status: planned
+claim_status: killed
 blocked_by: "Step 2 is a one-world dataset with no validated adaptive policy effect, and the v2.4 sensor program is closed on the authored substrate. No claim-grade multi-world transition dataset or supported action effect exists for fitting a learned ranker."
 depends_on:
   - tutor-stub-multiworld-policy-replication
@@ -57,3 +57,11 @@ Suggested sequence:
 supplying a validated action effect, and its single Marrick world is not the
 held-out multi-world transition corpus required by this card. Do not launch
 model fitting from the 120 confirmatory rows.
+
+2026-07-17 Claude: CLOSED unexecuted per the approved fold
+(PLAN_4_0/2026-07-17-continue-or-fold.md). Its prerequisites are now all
+closed (sensor `do_not_run_canonical_s2`; selector closed §6.17; multiworld
+card done as a null). The fitted state→action lever also remains foreclosed
+program-wide (paper §6.9.8). The turn-frames SQL substrate stays in place as
+data infrastructure. Any weight-level successor is the separately-sanctioned
+Program-2 door in the fold memo, not this card.

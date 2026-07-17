@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-07-13
-updated: 2026-07-14
+updated: 2026-07-17
 verification: "The frozen successor pre-registration runs standing_book, trigger-yoked placebo, side_coach, and compiled_constraint on proof_skipper and affective_resistant at n=5 per cell on two speaking-tutor families while learner/classifier/record seams stay fixed. A zero-call 68-trace audit selects two deterministic triggers (warrant_skip and stagnant_repeat), freezes opportunity minimums, and rejects affective-risk/re-gloss candidates. Side coaching or compilation must beat triggered placebo on equally weighted trigger compliance by >=0.15 with a positive dialogue-clustered 95% interval, improve both trigger types, clear coverage/safety non-inferiority, and produce zero leaks. No model calls occur until explicit launch approval."
 claim_status: planned
 depends_on:
@@ -90,3 +90,14 @@ speaking-tutor blocks. The paid launcher fails closed unless it receives both
 pending explicit user approval. The frozen implementation commit is
 `092cf6723ec5ddcda735b59f1c53728f4f00248e`; the dry plan SHA-256 is
 `93bd2933d6124a2ee285e9747824cee5e2eba21c0b59ccf6dc8ac8d602156df0`.
+
+2026-07-17 Claude: PAID LAUNCH APPROVED by the user as the fold's one bounded
+discharge (PLAN_4_0/2026-07-17-continue-or-fold.md §6.2). First launch from
+clean SHA c038e254 in an isolated worktree FAILED on dialogue 1/80: "Fatal:
+Tutor deterministic fallback failed final audit:
+response_composition:verbatim_learner_echo" — the same fallback path behind
+four of the normalized failing-baseline tests, now shown to be a live runtime
+regression, not fixture drift. The regression is being root-caused and fixed
+(fallback composer, not the echo audit); relaunch follows from the fixed clean
+SHA. The frozen design (arms, triggers, gates, plan) is untouched — the fix
+must be verified out-of-scope for the prereg before relaunch.
