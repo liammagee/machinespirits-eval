@@ -1,11 +1,7 @@
-export const TUTOR_STUB_FEEDBACK_ADAPTATION_PLAN_SCHEMA =
-  'machinespirits.tutor-stub.feedback-adaptation-plan.v1';
-export const TUTOR_STUB_FEEDBACK_ADAPTATION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.feedback-adaptation-audit.v1';
-export const TUTOR_STUB_FEEDBACK_OBSERVATION_SCHEMA =
-  'machinespirits.tutor-stub.feedback-observation.v1';
-export const TUTOR_STUB_FEEDBACK_RATING_RECORD_SCHEMA =
-  'machinespirits.tutor-stub.feedback-rating-record.v1';
+export const TUTOR_STUB_FEEDBACK_ADAPTATION_PLAN_SCHEMA = 'machinespirits.tutor-stub.feedback-adaptation-plan.v1';
+export const TUTOR_STUB_FEEDBACK_ADAPTATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.feedback-adaptation-audit.v1';
+export const TUTOR_STUB_FEEDBACK_OBSERVATION_SCHEMA = 'machinespirits.tutor-stub.feedback-observation.v1';
+export const TUTOR_STUB_FEEDBACK_RATING_RECORD_SCHEMA = 'machinespirits.tutor-stub.feedback-rating-record.v1';
 
 export const TUTOR_STUB_RESPONSE_CONFIGURATION_AXES = [
   'engagement_stance',
@@ -34,7 +30,12 @@ function feedbackRating(feedback) {
 }
 
 function responseConfiguration(value) {
-  return value?.responseConfiguration || value?.response_configuration || value?.registerSelection?.response_configuration || null;
+  return (
+    value?.responseConfiguration ||
+    value?.response_configuration ||
+    value?.registerSelection?.response_configuration ||
+    null
+  );
 }
 
 function configurationValue(configuration, axis) {
@@ -182,7 +183,8 @@ export function buildTutorStubFeedbackAdaptationPlan({ feedback, targetTurn, nex
   const rating = feedbackRating(feedback);
   if (!rating || !targetTurn) return null;
   const targetConfiguration = responseConfiguration(targetTurn);
-  const nextConfiguration = responseConfiguration(nextSelection) || nextSelection?.response_configuration || nextSelection;
+  const nextConfiguration =
+    responseConfiguration(nextSelection) || nextSelection?.response_configuration || nextSelection;
   const changedAxes = changedConfigurationAxes(targetConfiguration, nextConfiguration);
   const retainedAxes = TUTOR_STUB_RESPONSE_CONFIGURATION_AXES.filter((axis) => {
     const before = configurationValue(targetConfiguration, axis);
@@ -267,9 +269,7 @@ export function auditTutorStubFeedbackAdaptation({ plan, targetTurn, currentTurn
     null;
   const observableChange = Boolean(surfaceDistinct && (visibleAxes.length > 0 || plan.requiresRealizationChange));
   const passed =
-    plan.rating === 'down'
-      ? observableChange
-      : Boolean(surfaceDistinct && acknowledgedThenDeveloped !== false);
+    plan.rating === 'down' ? observableChange : Boolean(surfaceDistinct && acknowledgedThenDeveloped !== false);
   return {
     schema: TUTOR_STUB_FEEDBACK_ADAPTATION_AUDIT_SCHEMA,
     rating: plan.rating,

@@ -1,7 +1,4 @@
-import {
-  compileTutorStubDueSourceActionReferents,
-  renderTutorStubDueSource,
-} from './tutorStubDueSourceRenderer.js';
+import { compileTutorStubDueSourceActionReferents, renderTutorStubDueSource } from './tutorStubDueSourceRenderer.js';
 import { deterministicTutorStubTurnProgressionHandoff } from './tutorStubTurnProgressionContract.js';
 import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 
@@ -210,8 +207,7 @@ export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
         mode: presentation.mode,
         role: presentation.role || defaultRoleForSurface(row.surface),
         cue: presentation.cue,
-        action_referents:
-          row.action_referents ?? row.presentation?.action_referents ?? null,
+        action_referents: row.action_referents ?? row.presentation?.action_referents ?? null,
       };
       entry.action_referents = compileTutorStubDueSourceActionReferents(entry);
       return entry;
@@ -776,14 +772,16 @@ export function deterministicTutorStubSourceAccessibilityCompensation(contract =
   if (colonTail) candidates.push(colonTail);
   candidates.push(authored);
   for (const candidate of [...candidates]) {
-    const withoutAppositive = candidate.replace(
-      /^([^,]{1,48}),\s*[^,]{1,120},\s*/u,
-      '$1 ',
-    );
+    const withoutAppositive = candidate.replace(/^([^,]{1,48}),\s*[^,]{1,120},\s*/u, '$1 ');
     if (withoutAppositive !== candidate) candidates.unshift(withoutAppositive);
   }
   const complete = candidates
-    .map((candidate) => candidate.trim().replace(/[;,:\s]+$/u, '').replace(/[!?]+$/u, '.'))
+    .map((candidate) =>
+      candidate
+        .trim()
+        .replace(/[;,:\s]+$/u, '')
+        .replace(/[!?]+$/u, '.'),
+    )
     .map((candidate) => (/[.]$/u.test(candidate) ? candidate : `${candidate}.`))
     .filter((candidate) => compensationWordCount(candidate) >= 4)
     .filter((candidate) => !maximum || compensationWordCount(candidate) <= maximum)
@@ -803,9 +801,7 @@ function renderEnactedEntry(entry, { stance, hostPart, index, compensation = '' 
 function renderExhibitEntry(entry, { stance, hostPart, index, compensation = '' }) {
   const object = sceneObject(entry);
   const source = renderTutorStubDueSource(entry, index);
-  const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance)]
-    .filter(Boolean)
-    .join('; ');
+  const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance)].filter(Boolean).join('; ');
   return [`${host}: ${source.text}`, compensation].filter(Boolean).join(' ');
 }
 
@@ -822,9 +818,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
   const hostPart = fallbackHostPart(responseConfiguration);
-  const compensation = deterministicTutorStubSourceAccessibilityCompensation(
-    sourceAccessibilityContract,
-  );
+  const compensation = deterministicTutorStubSourceAccessibilityCompensation(sourceAccessibilityContract);
   const compensationSourceId = sourceAccessibilityContract?.compensation?.source_id || null;
   const rendered = frame.entries.map((entry, index) =>
     entry.mode === 'enacted_role'
@@ -833,20 +827,14 @@ export function deterministicTutorStubDramaticReleaseFallback({
           hostPart,
           variationKey,
           index,
-          compensation:
-            !compensationSourceId || compensationSourceId === `source_${index + 1}`
-              ? compensation
-              : '',
+          compensation: !compensationSourceId || compensationSourceId === `source_${index + 1}` ? compensation : '',
         })
       : renderExhibitEntry(entry, {
           stance,
           hostPart,
           variationKey,
           index,
-          compensation:
-            !compensationSourceId || compensationSourceId === `source_${index + 1}`
-              ? compensation
-              : '',
+          compensation: !compensationSourceId || compensationSourceId === `source_${index + 1}` ? compensation : '',
         }),
   );
   const clarification = support?.clarificationInvitationRequired

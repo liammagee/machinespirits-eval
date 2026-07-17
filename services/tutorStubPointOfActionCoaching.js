@@ -39,7 +39,9 @@ const PLACEBO_BASE =
 const PLACEBO_FILLER = ['current', 'exchange', 'carefully', 'present', 'context', 'ordinary', 'attention'];
 
 function sha256(value) {
-  return createHash('sha256').update(String(value || '')).digest('hex');
+  return createHash('sha256')
+    .update(String(value || ''))
+    .digest('hex');
 }
 
 export function pointOfActionTokenCount(value) {
@@ -76,7 +78,9 @@ export function normalizeTutorStubPointOfActionArm(value, { allowOff = true } = 
     .replace(/-/gu, '_');
   if (!arm && allowOff) return null;
   if (!TUTOR_STUB_POINT_OF_ACTION_ARMS.includes(arm)) {
-    throw new Error(`Unknown point-of-action arm ${JSON.stringify(value)}; expected ${TUTOR_STUB_POINT_OF_ACTION_ARMS.join(', ')}`);
+    throw new Error(
+      `Unknown point-of-action arm ${JSON.stringify(value)}; expected ${TUTOR_STUB_POINT_OF_ACTION_ARMS.join(', ')}`,
+    );
   }
   return arm;
 }

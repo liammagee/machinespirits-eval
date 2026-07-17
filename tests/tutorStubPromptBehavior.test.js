@@ -134,10 +134,7 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
     assert.match(tutorRequest.input, /Speaking-tutor evidence contract/u);
     assert.match(tutorRequest.input, /Tutor-only host plan/u);
     assert.match(tutorRequest.input, /Write one paragraph: four unlabeled, unquoted host sentences/u);
-    assert.match(
-      tutorRequest.input,
-      /UPTAKE —[\s\S]*PART —[\s\S]*SOURCE —[\s\S]*TACTIC —[\s\S]*HANDOFF —/u,
-    );
+    assert.match(tutorRequest.input, /UPTAKE —[\s\S]*PART —[\s\S]*SOURCE —[\s\S]*TACTIC —[\s\S]*HANDOFF —/u);
     for (const slot of ['UPTAKE', 'PART', 'SOURCE', 'TACTIC', 'HANDOFF']) {
       assert.equal((tutorRequest.input.match(new RegExp(`^${slot} —`, 'gmu')) || []).length, 1);
     }
@@ -151,8 +148,7 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
       'the executable host plan should follow the learner-facing scaffold decision',
     );
     assert.ok(
-      tutorRequest.input.indexOf('Learner says:') >
-        tutorRequest.input.lastIndexOf('[End tutor-only host plan]'),
+      tutorRequest.input.indexOf('Learner says:') > tutorRequest.input.lastIndexOf('[End tutor-only host plan]'),
       'the executable host plan should sit immediately before the learner line',
     );
     assert.doesNotMatch(tutorRequest.input, /Tutor-only first-draft performance contract/u);

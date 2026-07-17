@@ -112,9 +112,7 @@ export function summarizeTutorStubFixedHorizon(turnRecords, { primaryHorizon } =
     guardTurnsMissing,
     leakCount,
     modelRepairTurns: guardRows.filter((row) =>
-      (row.repairsApplied || []).some((repair) =>
-        ['model_rewrite', 'model_plain_recovery'].includes(repair.kind),
-      ),
+      (row.repairsApplied || []).some((repair) => ['model_rewrite', 'model_plain_recovery'].includes(repair.kind)),
     ).length,
     deterministicFallbackTurns: guardRows.filter((row) => row?.finalDelivery?.deterministicFallback === true).length,
   };

@@ -117,10 +117,7 @@ describe('surface-consistent classification', () => {
     const classification = validAnalysis({
       turn: { request_type: 'conceptual_clarity_request', discourse_move: 'question' },
     }).classification;
-    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(
-      classification,
-      'What does blank mean?',
-    );
+    const normalized = normalizeTutorStubClassificationAgainstLearnerSurface(classification, 'What does blank mean?');
 
     assert.equal(normalized.turn.request_type, 'conceptual_clarity_request');
   });
@@ -410,14 +407,9 @@ describe('strict public learner analysis', () => {
       /unknown \$\.learner_record\.human_discourse\.side_arc\.type/u,
     );
 
-    assert.doesNotThrow(() =>
-      parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(providerCompleteAnalysis())),
-    );
+    assert.doesNotThrow(() => parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(providerCompleteAnalysis())));
     assert.throws(
-      () =>
-        parseTutorStubPublicLearnerAnalysisStrict(
-          JSON.stringify(validAnalysis({ turn: { summary: ' ' } })),
-        ),
+      () => parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(validAnalysis({ turn: { summary: ' ' } }))),
       /requires non-empty string \$\.classification\.turn\.summary/u,
     );
     assert.throws(() => {
@@ -427,9 +419,7 @@ describe('strict public learner analysis', () => {
     }, /requires a 1-5 score/u);
     assert.throws(
       () =>
-        parseTutorStubPublicLearnerAnalysisStrict(
-          JSON.stringify(validAnalysis({ learnerRecord: { derive: [[]] } })),
-        ),
+        parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(validAnalysis({ learnerRecord: { derive: [[]] } }))),
       /requires fact arrays/u,
     );
     assert.throws(
@@ -507,7 +497,10 @@ describe('strict public learner analysis', () => {
     assert.match(prompt, /pure epistemic-status statement.*not a derived world fact/iu);
     assert.match(prompt, /evidence is insufficient.*answer remains unknown.*cannot yet determine.*is none/iu);
     assert.match(prompt, /unless it also voices a substantive new object-level world conclusion or direct answer/iu);
-    assert.match(prompt, /Evaluate multi-clause turns clause by clause.*Retain every new supported object-level conclusion/iu);
+    assert.match(
+      prompt,
+      /Evaluate multi-clause turns clause by clause.*Retain every new supported object-level conclusion/iu,
+    );
     assert.match(prompt, /record the later gap as a missing warrant or proof-debt candidate/iu);
     assert.match(prompt, /supported intermediate conclusion counts as derive.*does not identify the final answer/iu);
     assert.match(prompt, /Assess clauses independently.*do not downgrade the supported derive to none/iu);

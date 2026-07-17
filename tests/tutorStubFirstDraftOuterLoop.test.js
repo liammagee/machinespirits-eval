@@ -61,14 +61,38 @@ function fixture(tmp) {
   manifest.current.required_confirmation_after_primary_pass.seed_status = 'reusable_non_held_out_development';
   manifest.versioning.current = 27;
   manifest.versioning.next = 28;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 27);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 27);
   manifest.seed_ledger.development = [
-    { seed: 20261500, status: 'reusable_non_held_out_development', cell: 'marrick_v27_joint_performance', screen: 'first-draft-working-screens-v6' },
-    { seed: 20261600, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v7' },
-    { seed: 20261601, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v7' },
-    { seed: 20261602, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v7' },
-    { seed: 20261603, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v7' },
+    {
+      seed: 20261500,
+      status: 'reusable_non_held_out_development',
+      cell: 'marrick_v27_joint_performance',
+      screen: 'first-draft-working-screens-v6',
+    },
+    {
+      seed: 20261600,
+      status: 'reusable_non_held_out_development',
+      cell: 'tallow_answer_seeking',
+      screen: 'first-draft-working-screens-v7',
+    },
+    {
+      seed: 20261601,
+      status: 'reusable_non_held_out_development',
+      cell: 'ravensmark_affective_resistant',
+      screen: 'first-draft-working-screens-v7',
+    },
+    {
+      seed: 20261602,
+      status: 'reusable_non_held_out_development',
+      cell: 'larkspur_premature_closure',
+      screen: 'first-draft-working-screens-v7',
+    },
+    {
+      seed: 20261603,
+      status: 'reusable_non_held_out_development',
+      cell: 'foxtrot_diligent',
+      screen: 'first-draft-working-screens-v7',
+    },
   ];
   return { manifest, screen, screenPath, primaryScreen, primaryScreenPath };
 }
@@ -95,13 +119,32 @@ function v28Fixture(tmp) {
   manifest.current.version_advance_from = manifest.current.v28_version_advance_from;
   manifest.versioning.current = 28;
   manifest.versioning.next = 29;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 28);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 28);
   manifest.seed_ledger.development = [
-    { seed: 20261800, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v8' },
-    { seed: 20261801, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v8' },
-    { seed: 20261802, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v8' },
-    { seed: 20261803, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v8' },
+    {
+      seed: 20261800,
+      status: 'reusable_non_held_out_development',
+      cell: 'tallow_answer_seeking',
+      screen: 'first-draft-working-screens-v8',
+    },
+    {
+      seed: 20261801,
+      status: 'reusable_non_held_out_development',
+      cell: 'ravensmark_affective_resistant',
+      screen: 'first-draft-working-screens-v8',
+    },
+    {
+      seed: 20261802,
+      status: 'reusable_non_held_out_development',
+      cell: 'larkspur_premature_closure',
+      screen: 'first-draft-working-screens-v8',
+    },
+    {
+      seed: 20261803,
+      status: 'reusable_non_held_out_development',
+      cell: 'foxtrot_diligent',
+      screen: 'first-draft-working-screens-v8',
+    },
   ];
   return { manifest, screen, screenPath };
 }
@@ -128,13 +171,32 @@ function v29Fixture(tmp) {
   manifest.current.version_advance_from = manifest.current.v29_version_advance_from;
   manifest.versioning.current = 29;
   manifest.versioning.next = 30;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 29);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 29);
   manifest.seed_ledger.development = [
-    { seed: 20261900, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v9' },
-    { seed: 20261901, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v9' },
-    { seed: 20261902, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v9' },
-    { seed: 20261903, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v9' },
+    {
+      seed: 20261900,
+      status: 'reusable_non_held_out_development',
+      cell: 'tallow_answer_seeking',
+      screen: 'first-draft-working-screens-v9',
+    },
+    {
+      seed: 20261901,
+      status: 'reusable_non_held_out_development',
+      cell: 'ravensmark_affective_resistant',
+      screen: 'first-draft-working-screens-v9',
+    },
+    {
+      seed: 20261902,
+      status: 'reusable_non_held_out_development',
+      cell: 'larkspur_premature_closure',
+      screen: 'first-draft-working-screens-v9',
+    },
+    {
+      seed: 20261903,
+      status: 'reusable_non_held_out_development',
+      cell: 'foxtrot_diligent',
+      screen: 'first-draft-working-screens-v9',
+    },
   ];
   return { manifest, screen, screenPath };
 }
@@ -157,18 +219,36 @@ function v30Fixture(tmp) {
   manifest.current.primary_working_screen_id = 'first-draft-working-screens-v10';
   manifest.current.active_working_history = [manifest.current.v30_preflight_observation];
   manifest.current.active_last_observation = manifest.current.v30_preflight_observation;
-  manifest.current.working_history_scope =
-    'preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights';
+  manifest.current.working_history_scope = 'preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights';
   manifest.current.version_advance_from = manifest.current.v30_version_advance_from;
   manifest.versioning.current = 30;
   manifest.versioning.next = 31;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 30);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 30);
   manifest.seed_ledger.development = [
-    { seed: 20262000, status: 'retired_unconsumed_after_preflight_failure', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v10' },
-    { seed: 20262001, status: 'retired_unconsumed_after_preflight_failure', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v10' },
-    { seed: 20262002, status: 'retired_unconsumed_after_preflight_failure', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v10' },
-    { seed: 20262003, status: 'retired_unconsumed_after_preflight_failure', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v10' },
+    {
+      seed: 20262000,
+      status: 'retired_unconsumed_after_preflight_failure',
+      cell: 'tallow_answer_seeking',
+      screen: 'first-draft-working-screens-v10',
+    },
+    {
+      seed: 20262001,
+      status: 'retired_unconsumed_after_preflight_failure',
+      cell: 'ravensmark_affective_resistant',
+      screen: 'first-draft-working-screens-v10',
+    },
+    {
+      seed: 20262002,
+      status: 'retired_unconsumed_after_preflight_failure',
+      cell: 'larkspur_premature_closure',
+      screen: 'first-draft-working-screens-v10',
+    },
+    {
+      seed: 20262003,
+      status: 'retired_unconsumed_after_preflight_failure',
+      cell: 'foxtrot_diligent',
+      screen: 'first-draft-working-screens-v10',
+    },
   ];
   return { manifest, screen, screenPath };
 }
@@ -203,13 +283,32 @@ function v31Fixture(tmp) {
   manifest.current.version_advance_from = manifest.current.v31_version_advance_from;
   manifest.versioning.current = 31;
   manifest.versioning.next = 32;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 31);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 31);
   manifest.seed_ledger.development = [
-    { seed: 20262100, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v11' },
-    { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v11' },
-    { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v11' },
-    { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v11' },
+    {
+      seed: 20262100,
+      status: 'consumed_development_failed_retired',
+      cell: 'tallow_answer_seeking',
+      screen: 'first-draft-working-screens-v11',
+    },
+    {
+      seed: 20262101,
+      status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+      cell: 'ravensmark_affective_resistant',
+      screen: 'first-draft-working-screens-v11',
+    },
+    {
+      seed: 20262102,
+      status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+      cell: 'larkspur_premature_closure',
+      screen: 'first-draft-working-screens-v11',
+    },
+    {
+      seed: 20262103,
+      status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+      cell: 'foxtrot_diligent',
+      screen: 'first-draft-working-screens-v11',
+    },
   ];
   return { manifest, screen, screenPath };
 }
@@ -228,20 +327,14 @@ function v32Fixture(tmp) {
       fs.writeFileSync(target, '// focused-suite fixture\n');
     }
   }
-  const screenPath = path.join(
-    tmp,
-    'config',
-    'tutor-stub-campaigns',
-    'first-draft-diagnostic-screens-v12.yaml',
-  );
+  const screenPath = path.join(tmp, 'config', 'tutor-stub-campaigns', 'first-draft-diagnostic-screens-v12.yaml');
   fs.mkdirSync(path.dirname(screenPath), { recursive: true });
   fs.writeFileSync(screenPath, YAML.stringify(screen));
   manifest.current.campaign_version = 32;
   manifest.current.label = 'V32';
   manifest.current.state = 'retired_after_working_failure';
   manifest.current.working_screen_id = 'first-draft-diagnostic-screens-v12';
-  manifest.current.working_screen_config =
-    'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml';
+  manifest.current.working_screen_config = 'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml';
   manifest.current.primary_working_screen_id = 'first-draft-diagnostic-screens-v12';
   manifest.current.primary_working_screen_config =
     'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml';
@@ -252,11 +345,20 @@ function v32Fixture(tmp) {
   manifest.current.version_advance_from = manifest.current.v31_working_observation;
   manifest.versioning.current = 32;
   manifest.versioning.next = 33;
-  manifest.seed_ledger.historical = manifest.seed_ledger.historical
-    .filter((entry) => Number(entry.version) < 32);
+  manifest.seed_ledger.historical = manifest.seed_ledger.historical.filter((entry) => Number(entry.version) < 32);
   manifest.seed_ledger.development = [
-    { seed: 20262200, status: 'consumed_development_passed_but_campaign_failed_retired', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v12' },
-    { seed: 20262201, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v12' },
+    {
+      seed: 20262200,
+      status: 'consumed_development_passed_but_campaign_failed_retired',
+      cell: 'tallow_answer_seeking_diagnostic_1',
+      screen: 'first-draft-diagnostic-screens-v12',
+    },
+    {
+      seed: 20262201,
+      status: 'consumed_development_failed_retired',
+      cell: 'tallow_answer_seeking_diagnostic_2',
+      screen: 'first-draft-diagnostic-screens-v12',
+    },
   ];
   return { manifest, screen, screenPath };
 }
@@ -275,12 +377,7 @@ function v33Fixture(tmp) {
       fs.writeFileSync(target, '// focused-suite fixture\n');
     }
   }
-  const screenPath = path.join(
-    tmp,
-    'config',
-    'tutor-stub-campaigns',
-    'first-draft-diagnostic-screens-v13.yaml',
-  );
+  const screenPath = path.join(tmp, 'config', 'tutor-stub-campaigns', 'first-draft-diagnostic-screens-v13.yaml');
   fs.mkdirSync(path.dirname(screenPath), { recursive: true });
   fs.writeFileSync(screenPath, YAML.stringify(screen));
   return { manifest, screen, screenPath };
@@ -301,18 +398,12 @@ test('outer-loop manifest validates the predeclared V27 cross-world confirmation
     assert.deepEqual(validation.workingScreen.turns, [5]);
     assert.equal(validation.workingScreen.developmentSeed, 20261600);
     assert.equal(validation.workingScreen.jointPerformanceGeneration, true);
-    assert.equal(
-      validation.workingScreen.jointPerformanceSchema,
-      TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
-    );
+    assert.equal(validation.workingScreen.jointPerformanceSchema, TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA);
     assert.equal(
       validation.workingScreen.jointPerformanceCompositionSchema,
       TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
     );
-    assert.equal(
-      validation.workingScreen.jointPerformanceAuditSchema,
-      TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
-    );
+    assert.equal(validation.workingScreen.jointPerformanceAuditSchema, TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA);
     assert.deepEqual(validation.seedCounts, {
       historical: 19,
       development: 5,
@@ -333,9 +424,10 @@ test('outer-loop status exposes only the predeclared V27 working transition and 
     assert.equal(status.label, 'V27');
     assert.equal(status.workingIteration, 8);
     assert.equal(status.heldOutMatrixStatus, 'not_predeclared');
-    assert.deepEqual(status.developmentSeeds.map(({ seed }) => seed), [
-      20261500, 20261600, 20261601, 20261602, 20261603,
-    ]);
+    assert.deepEqual(
+      status.developmentSeeds.map(({ seed }) => seed),
+      [20261500, 20261600, 20261601, 20261602, 20261603],
+    );
     assert.deepEqual(
       status.next.map((transition) => transition.state),
       ['working_running'],
@@ -360,23 +452,21 @@ test('outer-loop manifest advances honestly to the predeclared V28 structural sc
     assert.equal(validation.workingScreen.adjudicationPolicy, 'deterministic_only');
     assert.equal(validation.workingScreen.preflightReady, false);
     assert.equal(validation.workingScreen.preflightBlockers.length, 1);
-    assert.equal(
-      validation.workingScreen.preflightBlockers[0].cellId,
-      'ravensmark_affective_resistant',
-    );
-    assert.equal(
-      validation.workingScreen.preflightBlockers[0].sources[0].averageSentenceWords,
-      36,
-    );
+    assert.equal(validation.workingScreen.preflightBlockers[0].cellId, 'ravensmark_affective_resistant');
+    assert.equal(validation.workingScreen.preflightBlockers[0].sources[0].averageSentenceWords, 36);
     assert.equal(validation.workingScreen.gates.requireSourceSurfaceAccessibility, true);
-    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
-      id, developmentSeed,
-    })), [
-      { id: 'tallow_answer_seeking', developmentSeed: 20261800 },
-      { id: 'ravensmark_affective_resistant', developmentSeed: 20261801 },
-      { id: 'larkspur_premature_closure', developmentSeed: 20261802 },
-      { id: 'foxtrot_diligent', developmentSeed: 20261803 },
-    ]);
+    assert.deepEqual(
+      validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+        id,
+        developmentSeed,
+      })),
+      [
+        { id: 'tallow_answer_seeking', developmentSeed: 20261800 },
+        { id: 'ravensmark_affective_resistant', developmentSeed: 20261801 },
+        { id: 'larkspur_premature_closure', developmentSeed: 20261802 },
+        { id: 'foxtrot_diligent', developmentSeed: 20261803 },
+      ],
+    );
     assert.deepEqual(validation.seedCounts, {
       historical: 24,
       development: 4,
@@ -395,9 +485,15 @@ test('V28 preserves the failed V27 confirmation and its exact seed dispositions'
     const advance = manifest.current.version_advance_from;
     assert.equal(advance.version, 27);
     assert.equal(advance.final_iteration, 8);
-    assert.equal(advance.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json');
+    assert.equal(
+      advance.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json',
+    );
     assert.equal(advance.provenance.result_sha256, '05783cc988308539b05a6934dfbf7654dba79dc7513bb04b1efdcbfb1539e355');
-    assert.equal(advance.provenance.turn_artifact_sha256, '5a5bc1c05a39ad306ecfe6e8db23e8ab549dc2e93462deba0c920479d6ce8a93');
+    assert.equal(
+      advance.provenance.turn_artifact_sha256,
+      '5a5bc1c05a39ad306ecfe6e8db23e8ab549dc2e93462deba0c920479d6ce8a93',
+    );
     assert.equal(advance.strict_originals_accepted, 0);
     assert.equal(advance.mean_configuration_realization, 0.833);
     assert.equal(advance.final_safety_failures, 0);
@@ -416,7 +512,10 @@ test('V28 preserves the failed V27 confirmation and its exact seed dispositions'
       ...manifest.seed_ledger.held_out.entries,
       ...manifest.seed_ledger.reserve.entries,
     ].map(({ seed }) => Number(seed));
-    assert.equal(everySeed.some((seed) => seed >= 20261700 && seed <= 20261799), false);
+    assert.equal(
+      everySeed.some((seed) => seed >= 20261700 && seed <= 20261799),
+      false,
+    );
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -434,15 +533,11 @@ test('V28 change control separates structural generation from recognition and le
     'colon_safe_due_source_renderer',
     'due_source_action_referent_alignment',
   ]);
-  assert.deepEqual(screen.change_control.audit_recognition_changes, [
-    'shared_writable_request_classifier',
-  ]);
+  assert.deepEqual(screen.change_control.audit_recognition_changes, ['shared_writable_request_classifier']);
   for (const field of ['recovery_changes', 'transport_changes', 'safety_changes']) {
     assert.deepEqual(screen.change_control[field], [], field);
   }
-  assert.deepEqual(screen.change_control.semantic_adjudication_changes, [
-    'explicit_deterministic_only_working_screen',
-  ]);
+  assert.deepEqual(screen.change_control.semantic_adjudication_changes, ['explicit_deterministic_only_working_screen']);
   assert.deepEqual(screen.change_control.gate_changes, [
     'per_draw_structural_target_activation',
     'source_renderer_mode_activation',
@@ -483,13 +578,16 @@ test('V28 validator fails closed on result, seed, or structural change-control d
   const cases = [
     {
       name: 'result hash',
-      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.version_advance_from.provenance.result_sha256 = 'drift';
+      },
       pattern: /result hash/iu,
     },
     {
       name: 'retired seed disposition',
       mutate: ({ manifest }) => {
-        manifest.seed_ledger.historical.find((entry) => entry.seed === 20261601).status = 'reusable_non_held_out_development';
+        manifest.seed_ledger.historical.find((entry) => entry.seed === 20261601).status =
+          'reusable_non_held_out_development';
       },
       pattern: /V27 seed 20261601/iu,
     },
@@ -544,18 +642,19 @@ test('outer-loop advances V28 zero-call evidence into the predeclared V29 access
     assert.equal(validation.workingIteration, 1);
     assert.equal(validation.workingScreen.id, 'first-draft-working-screens-v9');
     assert.equal(validation.workingScreen.v29SourceAccessibilityScreen, true);
-    assert.equal(
-      validation.workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
+    assert.equal(validation.workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1');
+    assert.deepEqual(
+      validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+        id,
+        developmentSeed,
+      })),
+      [
+        { id: 'tallow_answer_seeking', developmentSeed: 20261900 },
+        { id: 'ravensmark_affective_resistant', developmentSeed: 20261901 },
+        { id: 'larkspur_premature_closure', developmentSeed: 20261902 },
+        { id: 'foxtrot_diligent', developmentSeed: 20261903 },
+      ],
     );
-    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
-      id, developmentSeed,
-    })), [
-      { id: 'tallow_answer_seeking', developmentSeed: 20261900 },
-      { id: 'ravensmark_affective_resistant', developmentSeed: 20261901 },
-      { id: 'larkspur_premature_closure', developmentSeed: 20261902 },
-      { id: 'foxtrot_diligent', developmentSeed: 20261903 },
-    ]);
     assert.deepEqual(validation.seedCounts, {
       historical: 28,
       development: 4,
@@ -592,9 +691,7 @@ test('V29 change control is additive, typed, and preserves every strict delivery
   assert.deepEqual(screen.change_control.audit_recognition_changes, []);
   assert.deepEqual(screen.change_control.transport_changes, []);
   assert.deepEqual(screen.change_control.safety_changes, []);
-  assert.deepEqual(screen.change_control.recovery_changes, [
-    'compensation_aware_v1_recovery_and_fallback',
-  ]);
+  assert.deepEqual(screen.change_control.recovery_changes, ['compensation_aware_v1_recovery_and_fallback']);
   assert.equal(screen.gates_per_cell.require_source_surface_accessibility, true);
   assert.equal(screen.gates_per_cell.require_structural_target_activation, true);
   assert.equal(screen.gates_per_cell.maximum_safety_failures, 0);
@@ -613,7 +710,9 @@ test('V29 validator fails closed on V28 provenance, fresh seed, or accessibility
   const cases = [
     {
       name: 'V28 result hash',
-      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.version_advance_from.provenance.result_sha256 = 'drift';
+      },
       pattern: /result hash/iu,
     },
     {
@@ -626,7 +725,9 @@ test('V29 validator fails closed on V28 provenance, fresh seed, or accessibility
     },
     {
       name: 'V29 development seed',
-      mutate: ({ manifest }) => { manifest.seed_ledger.development[0].seed = 20261909; },
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.development[0].seed = 20261909;
+      },
       pattern: /absent from the outer-loop ledger|V29 development seed ledger/iu,
     },
     {
@@ -666,14 +767,18 @@ test('outer-loop preserves V30 as a zero-call preflight failure awaiting the nex
     assert.equal(validation.workingScreen.id, 'first-draft-working-screens-v10');
     assert.equal(validation.workingScreen.v30RecoveryIntegrationScreen, true);
     assert.equal(validation.workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1');
-    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
-      id, developmentSeed,
-    })), [
-      { id: 'tallow_answer_seeking', developmentSeed: 20262000 },
-      { id: 'ravensmark_affective_resistant', developmentSeed: 20262001 },
-      { id: 'larkspur_premature_closure', developmentSeed: 20262002 },
-      { id: 'foxtrot_diligent', developmentSeed: 20262003 },
-    ]);
+    assert.deepEqual(
+      validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+        id,
+        developmentSeed,
+      })),
+      [
+        { id: 'tallow_answer_seeking', developmentSeed: 20262000 },
+        { id: 'ravensmark_affective_resistant', developmentSeed: 20262001 },
+        { id: 'larkspur_premature_closure', developmentSeed: 20262002 },
+        { id: 'foxtrot_diligent', developmentSeed: 20262003 },
+      ],
+    );
     assert.deepEqual(validation.seedCounts, {
       historical: 32,
       development: 4,
@@ -687,10 +792,14 @@ test('outer-loop preserves V30 as a zero-call preflight failure awaiting the nex
     assert.equal(observation.candidates_generated, 0);
     assert.equal(observation.completed_turns, 0);
     assert.deepEqual(observation.focused_test_observation.first_run, {
-      passed: 536, total: 537, exit_code: 1,
+      passed: 536,
+      total: 537,
+      exit_code: 1,
     });
     assert.deepEqual(observation.focused_test_observation.immediate_identical_rerun, {
-      passed: 537, total: 537, exit_code: 0,
+      passed: 537,
+      total: 537,
+      exit_code: 0,
     });
     assert.equal(observation.focused_test_observation.rerun_artifact, null);
     assert.match(observation.focused_test_observation.evidence_gap, /subtest output/iu);
@@ -749,7 +858,9 @@ test('V30 validator fails closed on V29 provenance, fresh seed, or recovery chan
   const cases = [
     {
       name: 'V29 audit hash',
-      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.model_free_audit_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.version_advance_from.provenance.model_free_audit_sha256 = 'drift';
+      },
       pattern: /model-free hash/iu,
     },
     {
@@ -762,7 +873,9 @@ test('V30 validator fails closed on V29 provenance, fresh seed, or recovery chan
     },
     {
       name: 'V30 development seed',
-      mutate: ({ manifest }) => { manifest.seed_ledger.development[0].seed = 20262009; },
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.development[0].seed = 20262009;
+      },
       pattern: /absent from the outer-loop ledger|V30 development seed ledger/iu,
     },
     {
@@ -809,14 +922,18 @@ test('outer-loop preserves the V31 hard-cell failure while awaiting the next scr
     assert.equal(validation.workingScreen.id, 'first-draft-working-screens-v11');
     assert.equal(validation.workingScreen.v31PreflightDiagnosticsScreen, true);
     assert.equal(validation.workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1');
-    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
-      id, developmentSeed,
-    })), [
-      { id: 'tallow_answer_seeking', developmentSeed: 20262100 },
-      { id: 'ravensmark_affective_resistant', developmentSeed: 20262101 },
-      { id: 'larkspur_premature_closure', developmentSeed: 20262102 },
-      { id: 'foxtrot_diligent', developmentSeed: 20262103 },
-    ]);
+    assert.deepEqual(
+      validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+        id,
+        developmentSeed,
+      })),
+      [
+        { id: 'tallow_answer_seeking', developmentSeed: 20262100 },
+        { id: 'ravensmark_affective_resistant', developmentSeed: 20262101 },
+        { id: 'larkspur_premature_closure', developmentSeed: 20262102 },
+        { id: 'foxtrot_diligent', developmentSeed: 20262103 },
+      ],
+    );
     assert.deepEqual(validation.seedCounts, {
       historical: 36,
       development: 4,
@@ -886,10 +1003,7 @@ test('V31 changes only named preflight orchestration and diagnostics from V30', 
   assert.deepEqual(v31.gates_per_cell, v30.gates_per_cell);
   assert.equal(v31.preflight.focused_tests, v30.preflight.focused_tests);
   assert.deepEqual(v31.preflight.model_free_fixtures, v30.preflight.model_free_fixtures);
-  assert.deepEqual(
-    v31.preflight.structural_regression_fixtures,
-    v30.preflight.structural_regression_fixtures,
-  );
+  assert.deepEqual(v31.preflight.structural_regression_fixtures, v30.preflight.structural_regression_fixtures);
   assert.deepEqual(v31.change_control.speaking_prompt_changes, []);
   assert.deepEqual(v31.change_control.deterministic_host_changes, []);
   assert.deepEqual(v31.change_control.audit_recognition_changes, []);
@@ -917,18 +1031,17 @@ test('V31 changes only named preflight orchestration and diagnostics from V30', 
   });
   assert.deepEqual(v31.matrix.map(stableCell), v30.matrix.map(stableCell));
 
-  const legacyInventory = [...v31.preflight.focused_tests.matchAll(
-    /(?:^|\s)((?:tests|services\/__tests__)\/[A-Za-z0-9._/-]+\.test\.js)(?=\s|$)/gu,
-  )].map((match) => match[1]);
-  const suiteInventory = v31.preflight.focused_test_suites
-    .flatMap((suite) => suite.test_files);
+  const legacyInventory = [
+    ...v31.preflight.focused_tests.matchAll(
+      /(?:^|\s)((?:tests|services\/__tests__)\/[A-Za-z0-9._/-]+\.test\.js)(?=\s|$)/gu,
+    ),
+  ].map((match) => match[1]);
+  const suiteInventory = v31.preflight.focused_test_suites.flatMap((suite) => suite.test_files);
   assert.deepEqual([...new Set(suiteInventory)].sort(), [...new Set(legacyInventory)].sort());
-  assert.deepEqual(v31.preflight.focused_test_suites.map((suite) => suite.id), [
-    'audit_contracts',
-    'interactive_modes',
-    'adaptive_evidence',
-    'campaign_orchestration',
-  ]);
+  assert.deepEqual(
+    v31.preflight.focused_test_suites.map((suite) => suite.id),
+    ['audit_contracts', 'interactive_modes', 'adaptive_evidence', 'campaign_orchestration'],
+  );
 });
 
 test('V31 validator fails closed on V30 provenance, fresh seed, behavior, gate, or suite drift', () => {
@@ -950,7 +1063,9 @@ test('V31 validator fails closed on V30 provenance, fresh seed, behavior, gate, 
     },
     {
       name: 'V31 development seed',
-      mutate: ({ manifest }) => { manifest.seed_ledger.development[0].seed = 20262109; },
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.development[0].seed = 20262109;
+      },
       pattern: /absent from the outer-loop ledger|V31 development seed ledger/iu,
     },
     {
@@ -1163,10 +1278,7 @@ test('outer-loop preserves V32 as a failed but measurably improved staged diagno
     );
     assert.equal(manifest.current.version_advance_from.version, 31);
     assert.equal(manifest.current.version_advance_from.model_calls, 1);
-    assert.deepEqual(
-      manifest.current.v31_working_observation,
-      manifest.current.version_advance_from,
-    );
+    assert.deepEqual(manifest.current.v31_working_observation, manifest.current.version_advance_from);
     assert.equal(manifest.current.v30_version_advance_from.version, 29);
     assert.equal(manifest.current.v30_version_advance_from.model_calls, 0);
     assert.equal(manifest.current.v31_version_advance_from.version, 30);
@@ -1197,9 +1309,15 @@ test('V32 preserves the exact frozen V31 Tallow prefix while changing only speak
     'require_eligible_declarative_handoff_to_begin_next_or_now_and_name_concrete_operation_on_public_object',
   ]);
   for (const field of [
-    'deterministic_host_changes', 'audit_recognition_changes', 'recovery_changes',
-    'transport_changes', 'safety_changes', 'gate_changes', 'delivery_audit_changes',
-  ]) assert.deepEqual(v32.change_control[field], [], `unexpected ${field}`);
+    'deterministic_host_changes',
+    'audit_recognition_changes',
+    'recovery_changes',
+    'transport_changes',
+    'safety_changes',
+    'gate_changes',
+    'delivery_audit_changes',
+  ])
+    assert.deepEqual(v32.change_control[field], [], `unexpected ${field}`);
   assert.deepEqual(v32.change_control.preflight_orchestration_changes, [
     'run_outer_loop_governance_tests_separately_at_frozen_config_and_result_boundaries',
     'exclude_outer_loop_governance_tests_from_reusable_speaking_compiler_preflight_certificate',
@@ -1217,17 +1335,23 @@ test('V32 validator fails closed on provenance, staging, one-draw gates, or seed
   const cases = [
     {
       name: 'V31 result provenance',
-      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.version_advance_from.provenance.result_sha256 = 'drift';
+      },
       pattern: /V32 version advance result hash/iu,
     },
     {
       name: 'diagnostic config path',
-      mutate: ({ manifest }) => { manifest.current.working_screen_config = 'config/tutor-stub-campaigns/other.yaml'; },
+      mutate: ({ manifest }) => {
+        manifest.current.working_screen_config = 'config/tutor-stub-campaigns/other.yaml';
+      },
       pattern: /working screen config is missing|V32 diagnostic config path/iu,
     },
     {
       name: 'second seed',
-      mutate: ({ manifest }) => { manifest.seed_ledger.development[1].seed = 20262209; },
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.development[1].seed = 20262209;
+      },
       pattern: /absent from the outer-loop ledger|V32 development seed ledger/iu,
     },
     {
@@ -1287,12 +1411,16 @@ test('outer-loop preserves terminal V33 hard-cell evidence and stops at the caus
     assert.equal(validation.acceptancePredeclared, false);
     assert.equal(validation.workingScreen.id, 'first-draft-diagnostic-screens-v13');
     assert.equal(validation.workingScreen.v33DiagnosticScreen, true);
-    assert.deepEqual(validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
-      id, developmentSeed,
-    })), [
-      { id: 'tallow_answer_seeking_diagnostic_1', developmentSeed: 20262300 },
-      { id: 'tallow_answer_seeking_diagnostic_2', developmentSeed: 20262301 },
-    ]);
+    assert.deepEqual(
+      validation.workingScreen.cells.map(({ id, developmentSeed }) => ({
+        id,
+        developmentSeed,
+      })),
+      [
+        { id: 'tallow_answer_seeking_diagnostic_1', developmentSeed: 20262300 },
+        { id: 'tallow_answer_seeking_diagnostic_2', developmentSeed: 20262301 },
+      ],
+    );
     assert.deepEqual(validation.seedCounts, {
       historical: 42,
       development: 2,
@@ -1363,12 +1491,23 @@ test('V33 preserves V32 frozen inputs and adds only separated speaking, recognit
     const previous = v32.matrix[index];
     const current = v33.matrix[index];
     for (const field of [
-      'id', 'priority', 'world', 'learner_profile', 'source_trace',
-      'source_trace_sha256', 'turns', 'prefix_integrity', 'structural_targets',
+      'id',
+      'priority',
+      'world',
+      'learner_profile',
+      'source_trace',
+      'source_trace_sha256',
+      'turns',
+      'prefix_integrity',
+      'structural_targets',
       'structural_activation',
-    ]) assert.deepEqual(current[field], previous[field], `unexpected V33 ${field} drift`);
+    ])
+      assert.deepEqual(current[field], previous[field], `unexpected V33 ${field} drift`);
   }
-  assert.deepEqual(v33.matrix.map((cell) => cell.development_seed), [20262300, 20262301]);
+  assert.deepEqual(
+    v33.matrix.map((cell) => cell.development_seed),
+    [20262300, 20262301],
+  );
   assert.deepEqual(v33.change_control.implementation_commits, {
     speaking_and_audit: 'bb42573c26dcab54eca7776cd09ec7140205bfc5',
     preflight_certificate_scoping: 'd0cd2c12982d7d04538a1a2f0068085b8041d272',
@@ -1385,9 +1524,14 @@ test('V33 preserves V32 frozen inputs and adds only separated speaking, recognit
     'exclude_unselected_governance_tests_from_certificate_invalidation',
   ]);
   for (const field of [
-    'deterministic_host_changes', 'recovery_changes', 'transport_changes',
-    'safety_changes', 'gate_changes', 'delivery_audit_changes',
-  ]) assert.deepEqual(v33.change_control[field], [], `unexpected V33 ${field}`);
+    'deterministic_host_changes',
+    'recovery_changes',
+    'transport_changes',
+    'safety_changes',
+    'gate_changes',
+    'delivery_audit_changes',
+  ])
+    assert.deepEqual(v33.change_control[field], [], `unexpected V33 ${field}`);
   const review = v33.qualitative_review;
   assert.equal(review.reviewers_per_draw, 2);
   assert.equal(review.automatic, false);
@@ -1418,12 +1562,16 @@ test('V33 validator fails closed on result provenance, fresh seeds, change separ
   const cases = [
     {
       name: 'V33 result provenance',
-      mutate: ({ manifest }) => { manifest.current.v33_working_observation.provenance.result_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.v33_working_observation.provenance.result_sha256 = 'drift';
+      },
       pattern: /V33 (?:result history|working observation) result hash/iu,
     },
     {
       name: 'V33 qualitative result provenance',
-      mutate: ({ manifest }) => { manifest.current.v33_working_observation.provenance.qualitative_review_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.v33_working_observation.provenance.qualitative_review_sha256 = 'drift';
+      },
       pattern: /V33 (?:result history|working observation) qualitative review hash/iu,
     },
     {
@@ -1435,12 +1583,16 @@ test('V33 validator fails closed on result provenance, fresh seeds, change separ
     },
     {
       name: 'V32 result provenance',
-      mutate: ({ manifest }) => { manifest.current.version_advance_from.provenance.result_sha256 = 'drift'; },
+      mutate: ({ manifest }) => {
+        manifest.current.version_advance_from.provenance.result_sha256 = 'drift';
+      },
       pattern: /V33 (?:V32 result history|version advance) result hash/iu,
     },
     {
       name: 'V33 seed drift',
-      mutate: ({ manifest }) => { manifest.seed_ledger.development[1].seed = 20262309; },
+      mutate: ({ manifest }) => {
+        manifest.seed_ledger.development[1].seed = 20262309;
+      },
       pattern: /absent from the outer-loop ledger|V33 development seed ledger/iu,
     },
     {
@@ -1500,14 +1652,29 @@ test('V27 preserves exact V26 terminal provenance and retires all V26 labels', (
     assert.equal(reset.version, 26);
     assert.equal(reset.terminal_state, 'stagnated');
     assert.equal(reset.final_iteration, 3);
-    assert.equal(reset.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/working-screen-result.json');
+    assert.equal(
+      reset.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v5/iteration-3/working-screen-result.json',
+    );
     assert.equal(reset.development_seed, 20261400);
     assert.equal(reset.seed_disposition, 'consumed_development_retired_after_stagnation');
     assert.equal(reset.run_head, '6f41a8d602539d7811342a218d8213a49e737146');
-    assert.equal(reset.provenance.working_screen_config_sha256, '35193154149780818e5aa684dc980c2d6f017166928bd123134c7fc8d7fd4802');
-    assert.equal(reset.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(reset.provenance.campaign_validation_sha256, '60d2288e07e5b48170fd719a94d26dabba8556a1e112ef63cd273c5953801891');
-    assert.equal(reset.provenance.turn_artifact_sha256, '69f8a539863ff40b6f86a0f76a3244045fd1d51d28ec824efa6f385459f0fc1a');
+    assert.equal(
+      reset.provenance.working_screen_config_sha256,
+      '35193154149780818e5aa684dc980c2d6f017166928bd123134c7fc8d7fd4802',
+    );
+    assert.equal(
+      reset.provenance.source_trace_sha256,
+      'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+    );
+    assert.equal(
+      reset.provenance.campaign_validation_sha256,
+      '60d2288e07e5b48170fd719a94d26dabba8556a1e112ef63cd273c5953801891',
+    );
+    assert.equal(
+      reset.provenance.turn_artifact_sha256,
+      '69f8a539863ff40b6f86a0f76a3244045fd1d51d28ec824efa6f385459f0fc1a',
+    );
     assert.equal(reset.provenance.result_sha256, '2643b16921017de46573bd4d92ae08dc8a7e7303b07ff094dc798a239b61e1ae');
     assert.deepEqual(reset.completed_turns, [4]);
     assert.deepEqual(reset.unstarted_turns, [5, 6, 9]);
@@ -1527,18 +1694,24 @@ test('V27 preserves exact V26 terminal provenance and retires all V26 labels', (
         .filter((entry) => entry.version === 26)
         .map((entry) => [entry.seed, entry.status]),
     );
-    assert.deepEqual([...retired], [
-      [20261400, 'consumed_development_retired_after_stagnation'],
-      [20261401, 'retired_unstarted_due_to_stagnation'],
-      [20261402, 'retired_unstarted_due_to_stagnation'],
-      [20261403, 'retired_unstarted_due_to_stagnation'],
-      [20261404, 'retired_unstarted_due_to_stagnation'],
-    ]);
+    assert.deepEqual(
+      [...retired],
+      [
+        [20261400, 'consumed_development_retired_after_stagnation'],
+        [20261401, 'retired_unstarted_due_to_stagnation'],
+        [20261402, 'retired_unstarted_due_to_stagnation'],
+        [20261403, 'retired_unstarted_due_to_stagnation'],
+        [20261404, 'retired_unstarted_due_to_stagnation'],
+      ],
+    );
     assert.equal(manifest.current.last_observation.version, 27);
     assert.equal(manifest.current.last_observation.working_iteration, 7);
     assert.equal(manifest.current.working_history.length, 7);
     assert.equal(manifest.current.acceptance_config, null);
-    assert.equal(manifest.current.required_confirmation_after_primary_pass.seed_status, 'reusable_non_held_out_development');
+    assert.equal(
+      manifest.current.required_confirmation_after_primary_pass.seed_status,
+      'reusable_non_held_out_development',
+    );
     assert.equal(JSON.stringify(manifest).includes('20261600'), true);
     assert.equal(validateTutorStubFirstDraftOuterLoop({ manifest, root: tmp }).valid, true);
   } finally {
@@ -1551,11 +1724,23 @@ test('V27 preserves the exact iteration-1 result and iteration-2 speaking-prompt
   try {
     const { manifest, primaryScreen: screen } = fixture(tmp);
     const observation = manifest.current.working_history[0];
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json',
+    );
     assert.equal(observation.run_head, '7fc926a2801f947da056b573a499933dccc71968');
-    assert.equal(observation.provenance.campaign_validation_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json');
-    assert.equal(observation.provenance.campaign_validation_sha256, 'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07');
-    assert.equal(observation.provenance.result_sha256, '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435');
+    assert.equal(
+      observation.provenance.campaign_validation_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435',
+    );
     assert.deepEqual(
       observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
       [
@@ -1634,14 +1819,29 @@ test('V27 preserves the exact improved iteration-2 result before iteration 3', (
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[1];
     assert.equal(manifest.current.last_observation.working_iteration, 7);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json',
+    );
     assert.equal(observation.run_head, 'bec13717719be76891bf5ece0c1ae94375cdea9a');
     assert.equal(observation.run_head_provenance, 'launch_log_timeline_confirmed');
     assert.equal(observation.run_head_artifact_embedded, false);
-    assert.equal(observation.provenance.working_screen_config_sha256, '4b71da924e17639a800012ed45f7682a1942eac25356bc7d9450715cc2638ea5');
-    assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, '7eb96da004326ac21dc0844d23fbf95bb8209bde221e297f47870437946b842d');
-    assert.equal(observation.provenance.result_sha256, 'a5788cc7cd8aa68d1e540611b457f04d1590f1e3b5f5692663b7a04da186a4fb');
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      '4b71da924e17639a800012ed45f7682a1942eac25356bc7d9450715cc2638ea5',
+    );
+    assert.equal(
+      observation.provenance.source_trace_sha256,
+      'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      '7eb96da004326ac21dc0844d23fbf95bb8209bde221e297f47870437946b842d',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      'a5788cc7cd8aa68d1e540611b457f04d1590f1e3b5f5692663b7a04da186a4fb',
+    );
     assert.deepEqual(
       observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
       [
@@ -1759,14 +1959,29 @@ test('V27 preserves the exact failed iteration-3 result and provenance before it
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[2];
     assert.equal(manifest.current.last_observation.working_iteration, 7);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json',
+    );
     assert.equal(observation.run_head, 'f0df994d1912c3c8b6d6f1b9960b5ef05962f1a6');
     assert.equal(observation.run_head_provenance, 'launch_log_confirmed');
     assert.equal(observation.run_head_artifact_embedded, false);
-    assert.equal(observation.provenance.working_screen_config_sha256, 'eac765695c4e10a971cdf9ec95d4e83dd20ea48fdc281487541147e98f996568');
-    assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, 'd758f789c558e687d60cd97272658f580a1e4bc07d02e07b4592690b1cd77b7d');
-    assert.equal(observation.provenance.result_sha256, '743a31ae5779930b02e488c6092069fc3a1872ac462af6acee8512f1abd43888');
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      'eac765695c4e10a971cdf9ec95d4e83dd20ea48fdc281487541147e98f996568',
+    );
+    assert.equal(
+      observation.provenance.source_trace_sha256,
+      'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      'd758f789c558e687d60cd97272658f580a1e4bc07d02e07b4592690b1cd77b7d',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      '743a31ae5779930b02e488c6092069fc3a1872ac462af6acee8512f1abd43888',
+    );
     assert.deepEqual(
       observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
       [{ turn: 4, sha256: '675d6a7794253e4c16b28ba0ec69625fef5ee26d790aac88496b4ca15422351f' }],
@@ -1877,14 +2092,29 @@ test('V27 preserves the exact iteration-4 result and provenance before iteration
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[3];
     assert.equal(manifest.current.last_observation.working_iteration, 7);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json',
+    );
     assert.equal(observation.run_head, 'd048ec273e3a4a4618f51b7b0c999d20542ea14f');
     assert.equal(observation.run_head_provenance, 'launch_log_confirmed');
     assert.equal(observation.run_head_artifact_embedded, false);
-    assert.equal(observation.provenance.working_screen_config_sha256, '287169e63d296f311e422933e94af582057716f04f9a8a3ed20a1f7686e5cc38');
-    assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, '7d36c45d8c3c4a2afc849658674de57c30632f5c282bf1e7621b1582b14a2bcd');
-    assert.equal(observation.provenance.result_sha256, 'c90dd4a8e785988f7b1d10b888ca9f6a158acc057f6d9f1b853865568ebe1169');
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      '287169e63d296f311e422933e94af582057716f04f9a8a3ed20a1f7686e5cc38',
+    );
+    assert.equal(
+      observation.provenance.source_trace_sha256,
+      'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      '7d36c45d8c3c4a2afc849658674de57c30632f5c282bf1e7621b1582b14a2bcd',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      'c90dd4a8e785988f7b1d10b888ca9f6a158acc057f6d9f1b853865568ebe1169',
+    );
     assert.deepEqual(
       observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
       [
@@ -2026,24 +2256,44 @@ test('V27 preserves the exact iteration-5 result and provenance in history', () 
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[4];
     assert.equal(observation.working_iteration, 5);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json',
+    );
     assert.equal(observation.run_head, '965a5708d5acc37a79e51b9f5c813b32336106d2');
-    assert.equal(observation.provenance.working_screen_config_sha256, '236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f');
-    assert.equal(observation.provenance.campaign_validation_sha256, 'a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd');
-    assert.equal(observation.provenance.result_sha256, '5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709');
-    assert.deepEqual(observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })), [
-      { turn: 4, sha256: 'c3a444ac33a7cb2ae5e13cf06edbeca350e21be2ce9e3b186e3d9002d007c67b' },
-    ]);
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      '236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      'a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      '5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709',
+    );
+    assert.deepEqual(
+      observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
+      [{ turn: 4, sha256: 'c3a444ac33a7cb2ae5e13cf06edbeca350e21be2ce9e3b186e3d9002d007c67b' }],
+    );
     assert.deepEqual(observation.completed_turns, [4]);
     assert.deepEqual(observation.unstarted_turns, [5, 6, 9]);
     assert.equal(observation.original_candidates_accepted, 0);
     assert.equal(observation.original_candidates_completed, 1);
     assert.equal(observation.mean_configuration_realization, 1);
     for (const field of [
-      'final_safety_failures', 'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
-      'semantic_adjudicator_calls', 'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-      'transport_normalized_outputs', 'transport_normalization_count',
-    ]) assert.equal(observation[field], 0, field);
+      'final_safety_failures',
+      'mechanical_repairs',
+      'model_rewrites',
+      'deterministic_fallbacks',
+      'semantic_adjudicator_calls',
+      'semantic_adjudicator_errors',
+      'semantic_recognition_corrections',
+      'transport_normalized_outputs',
+      'transport_normalization_count',
+    ])
+      assert.equal(observation[field], 0, field);
     assert.equal(observation.valid_joint_performance_outputs, 1);
     assert.equal(observation.joint_performance_ownership_failures, 1);
     assert.equal(observation.exact_host_source_occurrence_passes, 1);
@@ -2107,17 +2357,32 @@ test('V27 preserves the exact iteration-6 result and provenance before iteration
     const { manifest } = fixture(tmp);
     const observation = manifest.current.working_history[5];
     assert.equal(manifest.current.last_observation.working_iteration, 7);
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json',
+    );
     assert.equal(observation.run_head, '1e6ae86ee407ea06258cfc9d013e2eaec5d8bf3a');
-    assert.equal(observation.provenance.working_screen_config_sha256, 'bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928');
-    assert.equal(observation.provenance.campaign_validation_sha256, '8f4b6aed9dced0bde19b9b4200937b56623a9aa9f62365d54e21ea75f934abbf');
-    assert.equal(observation.provenance.result_sha256, 'd5fb716abac48df6eba0a2561513d05f954e994108e5074eca3a4781d2d24a3d');
-    assert.deepEqual(observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })), [
-      { turn: 4, sha256: 'fa3aa342375afd87ecc3be64e78283bc826800bfc3e7b645c1fca8eee2d27087' },
-      { turn: 5, sha256: '19f82a57250fe47d8c9cb861fbc2331927b54c19a44c980d2593e78bad8f1c4d' },
-      { turn: 6, sha256: '97fdeb6d9856b75ea80e006d9969d790b3434aaf21b090ead9aaa848c767e6eb' },
-      { turn: 9, sha256: '841b6a2ab228de92f0e70bd78469c2d2bf9918564d9c77828813706d50cd0510' },
-    ]);
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      'bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      '8f4b6aed9dced0bde19b9b4200937b56623a9aa9f62365d54e21ea75f934abbf',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      'd5fb716abac48df6eba0a2561513d05f954e994108e5074eca3a4781d2d24a3d',
+    );
+    assert.deepEqual(
+      observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
+      [
+        { turn: 4, sha256: 'fa3aa342375afd87ecc3be64e78283bc826800bfc3e7b645c1fca8eee2d27087' },
+        { turn: 5, sha256: '19f82a57250fe47d8c9cb861fbc2331927b54c19a44c980d2593e78bad8f1c4d' },
+        { turn: 6, sha256: '97fdeb6d9856b75ea80e006d9969d790b3434aaf21b090ead9aaa848c767e6eb' },
+        { turn: 9, sha256: '841b6a2ab228de92f0e70bd78469c2d2bf9918564d9c77828813706d50cd0510' },
+      ],
+    );
     assert.deepEqual(observation.completed_turns, [4, 5, 6, 9]);
     assert.deepEqual(observation.unstarted_turns, []);
     assert.equal(observation.original_candidates_accepted, 3);
@@ -2126,10 +2391,17 @@ test('V27 preserves the exact iteration-6 result and provenance before iteration
     assert.equal(observation.mean_configuration_realization, 0.95825);
     assert.equal(observation.transcript_specific_uptake_failures, 1);
     for (const field of [
-      'final_safety_failures', 'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
-      'semantic_adjudicator_calls', 'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-      'transport_normalized_outputs', 'transport_normalization_count',
-    ]) assert.equal(observation[field], 0, field);
+      'final_safety_failures',
+      'mechanical_repairs',
+      'model_rewrites',
+      'deterministic_fallbacks',
+      'semantic_adjudicator_calls',
+      'semantic_adjudicator_errors',
+      'semantic_recognition_corrections',
+      'transport_normalized_outputs',
+      'transport_normalization_count',
+    ])
+      assert.equal(observation[field], 0, field);
     assert.equal(observation.valid_joint_performance_outputs, 4);
     assert.equal(observation.joint_performance_ownership_passes, 3);
     assert.equal(observation.joint_performance_ownership_failures, 1);
@@ -2167,18 +2439,36 @@ test('V27 preserves the exact iteration-7 passing result and provenance before c
     const observation = manifest.current.working_history[6];
     assert.deepEqual(manifest.current.last_observation, observation);
     assert.equal(observation.status, 'pass');
-    assert.equal(observation.result_artifact, '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json');
+    assert.equal(
+      observation.result_artifact,
+      '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json',
+    );
     assert.equal(observation.run_head, '20f9cb414a6ef0a225f7e0c0f22674ddffd812f7');
-    assert.equal(observation.provenance.working_screen_config_sha256, 'ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e');
-    assert.equal(observation.provenance.source_trace_sha256, 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a');
-    assert.equal(observation.provenance.campaign_validation_sha256, '083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee');
-    assert.equal(observation.provenance.result_sha256, 'd4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6');
-    assert.deepEqual(observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })), [
-      { turn: 4, sha256: '0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29' },
-      { turn: 5, sha256: 'b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a' },
-      { turn: 6, sha256: 'b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24' },
-      { turn: 9, sha256: 'c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30' },
-    ]);
+    assert.equal(
+      observation.provenance.working_screen_config_sha256,
+      'ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e',
+    );
+    assert.equal(
+      observation.provenance.source_trace_sha256,
+      'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
+    );
+    assert.equal(
+      observation.provenance.campaign_validation_sha256,
+      '083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee',
+    );
+    assert.equal(
+      observation.provenance.result_sha256,
+      'd4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6',
+    );
+    assert.deepEqual(
+      observation.provenance.turn_artifacts.map(({ turn, sha256 }) => ({ turn, sha256 })),
+      [
+        { turn: 4, sha256: '0b4cc362375600648e85e432cb7526a7bd7ef28f15a8e7d747523c77bb51fa29' },
+        { turn: 5, sha256: 'b282db8cab2c44f33188544bd58056317bfe50cf7274014b6a8c5d77c319344a' },
+        { turn: 6, sha256: 'b1b0108408c17ba2d28db2d6eefde7bb099a97f2a6d5e094fdcc89618b3bcd24' },
+        { turn: 9, sha256: 'c2e82605fa1e1d9d015d91d647f1ace7b326cf06703aff1d31f27268b176de30' },
+      ],
+    );
     assert.deepEqual(observation.completed_turns, [4, 5, 6, 9]);
     assert.deepEqual(observation.unstarted_turns, []);
     assert.equal(observation.original_candidates_accepted, 4);
@@ -2188,11 +2478,18 @@ test('V27 preserves the exact iteration-7 passing result and provenance before c
     assert.equal(observation.joint_performance_ownership_passes, 4);
     assert.equal(observation.exact_host_source_occurrence_passes, 4);
     for (const field of [
-      'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
-      'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
-      'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-      'transport_normalized_outputs', 'transport_normalization_count',
-    ]) assert.equal(observation[field], 0, field);
+      'final_safety_failures',
+      'transcript_specific_uptake_failures',
+      'mechanical_repairs',
+      'model_rewrites',
+      'deterministic_fallbacks',
+      'semantic_adjudicator_calls',
+      'semantic_adjudicator_errors',
+      'semantic_recognition_corrections',
+      'transport_normalized_outputs',
+      'transport_normalization_count',
+    ])
+      assert.equal(observation[field], 0, field);
     assert.equal(observation.mean_original_latency_ms, 8157);
     assert.equal(observation.mean_total_tutor_latency_ms, 8157);
     assert.deepEqual(observation.token_usage, { input: 68702, output: 982, total: 69684 });
@@ -2291,31 +2588,81 @@ test('outer-loop validator fails closed on V27 result, confirmation, or open-deb
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-drift-'));
   try {
     const mutations = [
-      ({ manifest }) => { manifest.current.working_iteration = 7; },
-      ({ manifest }) => { manifest.current.working_history = []; },
-      ({ manifest }) => { manifest.current.last_observation.provenance.result_sha256 = 'wrong'; },
-      ({ manifest }) => { manifest.current.last_observation.run_head_provenance = 'artifact_embedded'; },
-      ({ manifest }) => { manifest.current.last_observation.unstarted_turns = [9]; },
-      ({ manifest }) => { manifest.current.last_observation.original_candidates_accepted = 3; },
-      ({ manifest }) => { manifest.current.last_observation.mean_configuration_realization = 0.9; },
-      ({ manifest }) => { manifest.current.last_observation.final_safety_failures = 1; },
-      ({ manifest }) => { manifest.current.last_observation.dominant_failure_clusters.push({ cluster: 'other', count: 1 }); },
-      ({ manifest }) => { manifest.current.last_observation.comparison.stop = true; },
-      ({ manifest }) => { manifest.seed_ledger.development[0].status = 'consumed_and_not_reusable'; },
-      ({ primaryScreen }) => { primaryScreen.change_log.iteration_7.speaking_changes = ['changed']; },
-      ({ primaryScreen }) => { primaryScreen.change_log.iteration_7.requested_entry_answer_recognition.candidate_contract.form = 'any'; },
-      ({ screen }) => { screen.fixed_configuration.draws_per_turn = 3; },
-      ({ screen }) => { screen.matrix[0].source_trace_sha256 = 'wrong'; },
-      ({ screen }) => { screen.matrix[0].prefix_integrity.verified_prior_turns = [1, 2, 3]; },
-      ({ screen }) => { screen.matrix[0].prefix_integrity.target_bundle.request_model = 'wrong'; },
-      ({ screen }) => { screen.execution.hard_cell = 'foxtrot_diligent'; },
-      ({ screen }) => { screen.execution.maximum_concurrent_remaining_cells = 4; },
-      ({ screen }) => { screen.execution.forbid_duplicate_active_or_completed_cells = false; },
-      ({ screen }) => { screen.change_control.speaking_changes = ['changed']; },
-      ({ screen }) => { screen.gates_per_cell.minimum_mean_configuration_realization = 0.9; },
-      ({ screen }) => { screen.gates_per_cell.maximum_mechanical_repairs = 1; },
-      ({ screen }) => { screen.open_qualitative_debt.status = 'resolved'; },
-      ({ manifest }) => { manifest.current.required_confirmation_after_primary_pass.open_qualitative_debt.items.pop(); },
+      ({ manifest }) => {
+        manifest.current.working_iteration = 7;
+      },
+      ({ manifest }) => {
+        manifest.current.working_history = [];
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.provenance.result_sha256 = 'wrong';
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.run_head_provenance = 'artifact_embedded';
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.unstarted_turns = [9];
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.original_candidates_accepted = 3;
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.mean_configuration_realization = 0.9;
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.final_safety_failures = 1;
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.dominant_failure_clusters.push({ cluster: 'other', count: 1 });
+      },
+      ({ manifest }) => {
+        manifest.current.last_observation.comparison.stop = true;
+      },
+      ({ manifest }) => {
+        manifest.seed_ledger.development[0].status = 'consumed_and_not_reusable';
+      },
+      ({ primaryScreen }) => {
+        primaryScreen.change_log.iteration_7.speaking_changes = ['changed'];
+      },
+      ({ primaryScreen }) => {
+        primaryScreen.change_log.iteration_7.requested_entry_answer_recognition.candidate_contract.form = 'any';
+      },
+      ({ screen }) => {
+        screen.fixed_configuration.draws_per_turn = 3;
+      },
+      ({ screen }) => {
+        screen.matrix[0].source_trace_sha256 = 'wrong';
+      },
+      ({ screen }) => {
+        screen.matrix[0].prefix_integrity.verified_prior_turns = [1, 2, 3];
+      },
+      ({ screen }) => {
+        screen.matrix[0].prefix_integrity.target_bundle.request_model = 'wrong';
+      },
+      ({ screen }) => {
+        screen.execution.hard_cell = 'foxtrot_diligent';
+      },
+      ({ screen }) => {
+        screen.execution.maximum_concurrent_remaining_cells = 4;
+      },
+      ({ screen }) => {
+        screen.execution.forbid_duplicate_active_or_completed_cells = false;
+      },
+      ({ screen }) => {
+        screen.change_control.speaking_changes = ['changed'];
+      },
+      ({ screen }) => {
+        screen.gates_per_cell.minimum_mean_configuration_realization = 0.9;
+      },
+      ({ screen }) => {
+        screen.gates_per_cell.maximum_mechanical_repairs = 1;
+      },
+      ({ screen }) => {
+        screen.open_qualitative_debt.status = 'resolved';
+      },
+      ({ manifest }) => {
+        manifest.current.required_confirmation_after_primary_pass.open_qualitative_debt.items.pop();
+      },
     ];
     for (const mutate of mutations) {
       const item = fixture(tmp);
@@ -2415,13 +2762,27 @@ test('outer-loop validator fails closed on V27 joint flag, schema, and gate drif
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-joint-'));
   try {
     const mutations = [
-      (screen) => { screen.fixed_configuration.joint_performance_generation = false; },
-      (screen) => { delete screen.fixed_configuration.joint_performance_schema; },
-      (screen) => { delete screen.fixed_configuration.joint_performance_composition_schema; },
-      (screen) => { delete screen.fixed_configuration.joint_performance_audit_schema; },
-      (screen) => { delete screen.gates_per_cell.require_joint_performance_output; },
-      (screen) => { delete screen.gates_per_cell.require_joint_performance_ownership; },
-      (screen) => { delete screen.gates_per_cell.require_exact_host_source_occurrences; },
+      (screen) => {
+        screen.fixed_configuration.joint_performance_generation = false;
+      },
+      (screen) => {
+        delete screen.fixed_configuration.joint_performance_schema;
+      },
+      (screen) => {
+        delete screen.fixed_configuration.joint_performance_composition_schema;
+      },
+      (screen) => {
+        delete screen.fixed_configuration.joint_performance_audit_schema;
+      },
+      (screen) => {
+        delete screen.gates_per_cell.require_joint_performance_output;
+      },
+      (screen) => {
+        delete screen.gates_per_cell.require_joint_performance_ownership;
+      },
+      (screen) => {
+        delete screen.gates_per_cell.require_exact_host_source_occurrences;
+      },
     ];
     for (const mutate of mutations) {
       const { manifest, screen, screenPath } = fixture(tmp);
@@ -2441,11 +2802,21 @@ test('outer-loop validator preserves the V26-to-V27 architectural transition', (
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-reset-'));
   try {
     for (const mutate of [
-      (manifest) => { manifest.current.architectural_reset_from.version = 25; },
-      (manifest) => { manifest.current.architectural_reset_from.terminal_state = 'accepted'; },
-      (manifest) => { manifest.current.architectural_reset_from.provenance.result_sha256 = 'wrong'; },
-      (manifest) => { manifest.current.required_confirmation_after_primary_pass.seed_status = 'reserved'; },
-      (manifest) => { manifest.current.working_history.push({ working_iteration: 1 }); },
+      (manifest) => {
+        manifest.current.architectural_reset_from.version = 25;
+      },
+      (manifest) => {
+        manifest.current.architectural_reset_from.terminal_state = 'accepted';
+      },
+      (manifest) => {
+        manifest.current.architectural_reset_from.provenance.result_sha256 = 'wrong';
+      },
+      (manifest) => {
+        manifest.current.required_confirmation_after_primary_pass.seed_status = 'reserved';
+      },
+      (manifest) => {
+        manifest.current.working_history.push({ working_iteration: 1 });
+      },
     ]) {
       const { manifest } = fixture(tmp);
       mutate(manifest);
@@ -2473,7 +2844,10 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.equal(screen.fixed_configuration.joint_performance_generation, true);
   assert.equal(screen.fixed_configuration.structured_generation, undefined);
   assert.equal(screen.fixed_configuration.joint_performance_schema, TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA);
-  assert.equal(screen.fixed_configuration.joint_performance_composition_schema, TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA);
+  assert.equal(
+    screen.fixed_configuration.joint_performance_composition_schema,
+    TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA,
+  );
   assert.equal(screen.fixed_configuration.joint_performance_audit_schema, TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA);
   assert.equal(screen.matrix.length, 1);
   assert.deepEqual(screen.matrix[0].turns, [4, 5, 6, 9]);
@@ -2491,9 +2865,7 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.match(screen.preflight.focused_tests, /tutorStubV27JointPerformanceCalibration\.test\.js/u);
   assert.match(screen.preflight.focused_tests, /tutorStubTypedCompositeAdvocateCalibration\.test\.js/u);
   assert.equal(
-    screen.preflight.model_free_fixtures.includes(
-      'tests/fixtures/tutor-stub-typed-composite-advocate.json',
-    ),
+    screen.preflight.model_free_fixtures.includes('tests/fixtures/tutor-stub-typed-composite-advocate.json'),
     false,
   );
   assert.match(screen.change_log.structured_contract, /PERFORMANCE object.*ENTRY and RESPONSE/isu);
@@ -2507,7 +2879,7 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
     target_failure_clusters: [
       'jointPerformanceGenerationAudit:slot_exceeds_word_target',
       'jointPerformanceGenerationPrompt:v2_axis_ownership_conflict',
-  ],
+    ],
     speaking_changes: ['three_word_drafting_cushion', 'compiled_v2_axis_ownership_compatibility'],
     compiled_v2_axis_ownership_compatibility: {
       registry_field: 'joint_performance_stance_contract',
@@ -2525,13 +2897,8 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
   assert.equal(screen.change_log.iteration_3.bounded_change_owner, 'audit_recognition');
   assert.deepEqual(screen.change_log.iteration_3.speaking_changes, []);
   assert.deepEqual(screen.change_log.iteration_3.recovery_changes, []);
-  assert.deepEqual(screen.change_log.iteration_3.audit_recognition_changes, [
-    'typed_composite_part_ownership',
-  ]);
-  assert.equal(
-    screen.change_log.iteration_3.typed_composite_part_ownership.mode,
-    'delegated_complement',
-  );
+  assert.deepEqual(screen.change_log.iteration_3.audit_recognition_changes, ['typed_composite_part_ownership']);
+  assert.equal(screen.change_log.iteration_3.typed_composite_part_ownership.mode, 'delegated_complement');
   assert.equal(screen.change_log.iteration_4.bounded_change_owner, 'transport');
   assert.deepEqual(screen.change_log.iteration_4.speaking_changes, []);
   assert.deepEqual(screen.change_log.iteration_4.recovery_changes, []);
@@ -2554,7 +2921,8 @@ test('tracked V6 screen applies the V27 joint-performance plan to four Marrick t
     'typed_public_judgment_falter_recognition',
   ]);
   assert.equal(
-    screen.change_log.iteration_5.typed_public_judgment_falter_recognition.local_pressure_target_overlap.minimum_content_tokens,
+    screen.change_log.iteration_5.typed_public_judgment_falter_recognition.local_pressure_target_overlap
+      .minimum_content_tokens,
     2,
   );
   assert.equal(screen.change_log.iteration_6.bounded_change_owner, 'audit_recognition');
@@ -2601,18 +2969,45 @@ test('tracked V7 screen predeclares exact uncontaminated cross-world confirmatio
   assert.equal(screen.fixed_configuration.original_only, true);
   assert.equal(screen.fixed_configuration.draws_per_turn, 4);
   assert.equal(screen.fixed_configuration.max_live_model_jobs, 3);
-  assert.deepEqual(screen.matrix.map((cell) => ({
-    id: cell.id,
-    turns: cell.turns,
-    seed: cell.development_seed,
-    trace: cell.source_trace_sha256,
-    prior: cell.prefix_integrity.verified_prior_turns,
-  })), [
-    { id: 'tallow_answer_seeking', turns: [5], seed: 20261600, trace: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d', prior: [1, 2, 3, 4] },
-    { id: 'ravensmark_affective_resistant', turns: [5], seed: 20261601, trace: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92', prior: [1, 2, 3, 4] },
-    { id: 'larkspur_premature_closure', turns: [2], seed: 20261602, trace: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820', prior: [1] },
-    { id: 'foxtrot_diligent', turns: [4], seed: 20261603, trace: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da', prior: [1, 2, 3] },
-  ]);
+  assert.deepEqual(
+    screen.matrix.map((cell) => ({
+      id: cell.id,
+      turns: cell.turns,
+      seed: cell.development_seed,
+      trace: cell.source_trace_sha256,
+      prior: cell.prefix_integrity.verified_prior_turns,
+    })),
+    [
+      {
+        id: 'tallow_answer_seeking',
+        turns: [5],
+        seed: 20261600,
+        trace: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        prior: [1, 2, 3, 4],
+      },
+      {
+        id: 'ravensmark_affective_resistant',
+        turns: [5],
+        seed: 20261601,
+        trace: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        prior: [1, 2, 3, 4],
+      },
+      {
+        id: 'larkspur_premature_closure',
+        turns: [2],
+        seed: 20261602,
+        trace: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        prior: [1],
+      },
+      {
+        id: 'foxtrot_diligent',
+        turns: [4],
+        seed: 20261603,
+        trace: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        prior: [1, 2, 3],
+      },
+    ],
+  );
   assert.deepEqual(screen.execution, {
     hardest_cell_first: true,
     hard_cell: 'tallow_answer_seeking',
@@ -2631,10 +3026,14 @@ test('tracked V7 screen predeclares exact uncontaminated cross-world confirmatio
   assert.equal(screen.gates_per_cell.required_draws_per_prefix, 4);
   assert.equal(screen.gates_per_cell.minimum_mean_configuration_realization, 1);
   for (const field of [
-    'maximum_safety_failures', 'maximum_mechanical_repairs', 'maximum_model_rewrites',
-    'maximum_fallbacks', 'maximum_semantic_recognition_corrections',
+    'maximum_safety_failures',
+    'maximum_mechanical_repairs',
+    'maximum_model_rewrites',
+    'maximum_fallbacks',
+    'maximum_semantic_recognition_corrections',
     'maximum_transport_normalizations',
-  ]) assert.equal(screen.gates_per_cell[field], 0, field);
+  ])
+    assert.equal(screen.gates_per_cell[field], 0, field);
   assert.deepEqual(screen.change_control, {
     implementation_change_from_v27_iteration_7: 'none',
     speaking_changes: [],
@@ -2653,10 +3052,37 @@ test('tracked V7 screen predeclares exact uncontaminated cross-world confirmatio
   ]);
   assert.equal(screen.open_qualitative_debt.status, 'open_debt');
   assert.match(screen.open_qualitative_debt.consequence, /cannot terminate.*final acceptance/isu);
-  assert.deepEqual(screen.matrix.map((cell) => cell.prefix_integrity.target_bundle), [
-    { turn_id: '2026-07-16T07-03-36-147Z:t005', world: 'world_025_tallow_street', learner_profile: 'answer_seeking', request_model: 'gpt-5.6-terra', request_effort: 'low' },
-    { turn_id: '2026-07-16T04-44-58-444Z:t005', world: 'world_009_ravensmark', learner_profile: 'affective_resistant', request_model: 'gpt-5.6-terra', request_effort: 'low' },
-    { turn_id: '2026-07-16T05-50-54-527Z:t002', world: 'world_028_larkspur_fridge', learner_profile: 'premature_closure', request_model: 'gpt-5.6-terra', request_effort: 'low' },
-    { turn_id: '2026-07-16T05-56-49-920Z:t004', world: 'world_022_foxtrot_jukebox', learner_profile: 'diligent', request_model: 'gpt-5.6-terra', request_effort: 'low' },
-  ]);
+  assert.deepEqual(
+    screen.matrix.map((cell) => cell.prefix_integrity.target_bundle),
+    [
+      {
+        turn_id: '2026-07-16T07-03-36-147Z:t005',
+        world: 'world_025_tallow_street',
+        learner_profile: 'answer_seeking',
+        request_model: 'gpt-5.6-terra',
+        request_effort: 'low',
+      },
+      {
+        turn_id: '2026-07-16T04-44-58-444Z:t005',
+        world: 'world_009_ravensmark',
+        learner_profile: 'affective_resistant',
+        request_model: 'gpt-5.6-terra',
+        request_effort: 'low',
+      },
+      {
+        turn_id: '2026-07-16T05-50-54-527Z:t002',
+        world: 'world_028_larkspur_fridge',
+        learner_profile: 'premature_closure',
+        request_model: 'gpt-5.6-terra',
+        request_effort: 'low',
+      },
+      {
+        turn_id: '2026-07-16T05-56-49-920Z:t004',
+        world: 'world_022_foxtrot_jukebox',
+        learner_profile: 'diligent',
+        request_model: 'gpt-5.6-terra',
+        request_effort: 'low',
+      },
+    ],
+  );
 });

@@ -69,7 +69,10 @@ function clone(value) {
 }
 
 function hash(value) {
-  return crypto.createHash('sha256').update(String(value || ''), 'utf8').digest('hex');
+  return crypto
+    .createHash('sha256')
+    .update(String(value || ''), 'utf8')
+    .digest('hex');
 }
 
 function now() {
@@ -117,7 +120,9 @@ export function normalizeTutorStubTuningMode(value) {
 }
 
 export function normalizeTutorStubFeedbackReason(value, rating = null) {
-  const normalized = cleanLine(value).toLowerCase().replace(/[\s-]+/gu, '_');
+  const normalized = cleanLine(value)
+    .toLowerCase()
+    .replace(/[\s-]+/gu, '_');
   if (!normalized) return null;
   if (!TUTOR_STUB_FEEDBACK_REASONS[normalized]) {
     throw new Error(`unknown feedback reason "${value}"; use ${Object.keys(TUTOR_STUB_FEEDBACK_REASONS).join(', ')}`);
@@ -333,25 +338,35 @@ function candidateProposal(reason) {
   };
 }
 
-export function synthesizeTutorStubTuningCandidate(runtime, {
-  rating,
-  reason = null,
-  comment = '',
-  observation = null,
-  publicMessages = [],
-  runId = null,
-  targetTurnId = null,
-  systemPromptHash = null,
-  systemPrompt = null,
-  speaker = null,
-} = {}) {
+export function synthesizeTutorStubTuningCandidate(
+  runtime,
+  {
+    rating,
+    reason = null,
+    comment = '',
+    observation = null,
+    publicMessages = [],
+    runId = null,
+    targetTurnId = null,
+    systemPromptHash = null,
+    systemPrompt = null,
+    speaker = null,
+  } = {},
+) {
   if (!runtime?.enabled || runtime.mode === 'capture') return null;
   const normalizedRating = cleanLine(rating).toLowerCase();
   if (normalizedRating !== 'down') return null;
   const normalizedReason = normalizeTutorStubFeedbackReason(reason || 'custom', normalizedRating) || 'custom';
   const proposal = candidateProposal(normalizedReason);
   const fingerprint = hash(
-    JSON.stringify({ tutorId: runtime.tutorId, version: runtime.activeVersion, runId, targetTurnId, normalizedReason, comment }),
+    JSON.stringify({
+      tutorId: runtime.tutorId,
+      version: runtime.activeVersion,
+      runId,
+      targetTurnId,
+      normalizedReason,
+      comment,
+    }),
   );
   const id = `cand-${fingerprint.slice(0, 12)}`;
   const replay = {
@@ -403,7 +418,11 @@ export function synthesizeTutorStubTuningCandidate(runtime, {
     if (!fs.existsSync(file)) writeJson(file, candidate);
     writeJson(path.join(tutorDir(runtime.root, runtime.tutorId), 'replays', `${id}.json`), replay);
     appendJsonl(path.join(tutorDir(runtime.root, runtime.tutorId), 'ledger.jsonl'), {
-      at: now(), type: 'candidate_created', candidateId: id, status: candidate.status, reason: normalizedReason,
+      at: now(),
+      type: 'candidate_created',
+      candidateId: id,
+      status: candidate.status,
+      reason: normalizedReason,
     });
   }
   if (!runtime.sessionCandidateIds.includes(id)) runtime.sessionCandidateIds.push(id);
@@ -413,7 +432,11 @@ export function synthesizeTutorStubTuningCandidate(runtime, {
 export function listTutorStubTuningCandidates(runtime) {
   const dir = path.join(tutorDir(runtime.root, runtime.tutorId), 'candidates');
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((name) => name.endsWith('.json')).sort().map((name) => readJson(path.join(dir, name)));
+  return fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => readJson(path.join(dir, name)));
 }
 
 export function readTutorStubTuningCandidate(runtime, id) {
@@ -425,7 +448,9 @@ export function readTutorStubTuningCandidate(runtime, id) {
 function saveCandidate(runtime, candidate, event) {
   writeJson(candidatePath(runtime.root, runtime.tutorId, candidate.id), candidate);
   appendJsonl(path.join(tutorDir(runtime.root, runtime.tutorId), 'ledger.jsonl'), {
-    at: now(), candidateId: candidate.id, ...event,
+    at: now(),
+    candidateId: candidate.id,
+    ...event,
   });
   return candidate;
 }
@@ -449,10 +474,14 @@ export function approveTutorStubTuningCandidate(runtime, id) {
     candidate.baseVersion,
   );
   const existing = [...(parent.policyRules || []), ...(parent.promptBook || [])];
-  if (existing.includes(candidate.proposal.rule)) throw new Error('candidate rule is already present in the stable tutor');
+  if (existing.includes(candidate.proposal.rule))
+    throw new Error('candidate rule is already present in the stable tutor');
   const versionsDir = path.join(tutorDir(runtime.root, runtime.tutorId), 'versions');
   const versions = fs.existsSync(versionsDir)
-    ? fs.readdirSync(versionsDir).map((name) => Number(name.match(/^v(\d+)\.json$/u)?.[1])).filter(Number.isFinite)
+    ? fs
+        .readdirSync(versionsDir)
+        .map((name) => Number(name.match(/^v(\d+)\.json$/u)?.[1]))
+        .filter(Number.isFinite)
     : [manifest.sourceVersion];
   const nextVersion = Math.max(...versions, manifest.sourceVersion) + 1;
   const next = {
@@ -462,12 +491,14 @@ export function approveTutorStubTuningCandidate(runtime, id) {
     parentVersion: parent.version,
     createdAt: now(),
     source: 'approved_tuning_candidate',
-    promptBook: candidate.proposal.kind === 'prompt_note'
-      ? [...(parent.promptBook || []), candidate.proposal.rule]
-      : [...(parent.promptBook || [])],
-    policyRules: candidate.proposal.kind === 'policy_rule'
-      ? [...(parent.policyRules || []), candidate.proposal.rule]
-      : [...(parent.policyRules || [])],
+    promptBook:
+      candidate.proposal.kind === 'prompt_note'
+        ? [...(parent.promptBook || []), candidate.proposal.rule]
+        : [...(parent.promptBook || [])],
+    policyRules:
+      candidate.proposal.kind === 'policy_rule'
+        ? [...(parent.policyRules || []), candidate.proposal.rule]
+        : [...(parent.policyRules || [])],
     candidateIds: [...(parent.candidateIds || []), candidate.id],
   };
   writeJson(versionPath(runtime.root, runtime.tutorId, nextVersion), next);
@@ -524,9 +555,10 @@ export function rejectTutorStubTuningCandidate(runtime, id, note = '') {
 export function rollbackTutorStubTutorVersion(runtime, requestedVersion = null) {
   if (!runtime?.writeEnabled) throw new Error('tuning writes are disabled');
   const manifest = readJson(manifestPath(runtime.root, runtime.tutorId));
-  const target = requestedVersion === null
-    ? manifest.previousStableVersions?.at(-1)
-    : Number(String(requestedVersion).replace(/^v/iu, ''));
+  const target =
+    requestedVersion === null
+      ? manifest.previousStableVersions?.at(-1)
+      : Number(String(requestedVersion).replace(/^v/iu, ''));
   if (!Number.isInteger(target)) throw new Error('no previous stable tutor version is available');
   loadVersion({ id: runtime.tutorId, sourceVersion: manifest.sourceVersion, modelDefaults: {} }, runtime.root, target);
   const previous = manifest.stableVersion;
@@ -536,7 +568,10 @@ export function rollbackTutorStubTutorVersion(runtime, requestedVersion = null) 
   manifest.updatedAt = now();
   writeJson(manifestPath(runtime.root, runtime.tutorId), manifest);
   appendJsonl(path.join(tutorDir(runtime.root, runtime.tutorId), 'ledger.jsonl'), {
-    at: now(), type: 'rollback', fromVersion: previous, toVersion: target,
+    at: now(),
+    type: 'rollback',
+    fromVersion: previous,
+    toVersion: target,
   });
   runtime.manifest = manifest;
   return { fromVersion: previous, toVersion: target };

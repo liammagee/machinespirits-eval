@@ -439,9 +439,7 @@
             "max_average_sentence_words": 17
           },
           "compatibility": {
-            "decisions": [
-              "due_public_evidence_replaces_generic_development"
-            ]
+            "decisions": ["due_public_evidence_replaces_generic_development"]
           }
         },
         "frames": {
@@ -540,11 +538,7 @@
             "entries": [
               {
                 "premise": "p_reservoir",
-                "fact": [
-                  "residentStrainIn",
-                  "larkinUnit",
-                  "aspergillusG17"
-                ],
+                "fact": ["residentStrainIn", "larkinUnit", "aspergillusG17"],
                 "via": "director",
                 "surface": "An incubator Facilities decommissioned last spring is back on the floor: the Larkin unit, retired asset tag still showing, absent from this quarter's equipment log. Its quarantine record and the swab taken when it reappeared both identify a resident Aspergillus strain, G17. Someone wheeled the unit out of storage and plugged it in to cover the overflow.",
                 "mode": "presented_exhibit",
@@ -563,11 +557,7 @@
             "guardRequired": true,
             "clarificationInvitationRequired": true,
             "responsiveRepairRequired": false,
-            "learnerMoves": [
-              "answer_from_stated_clue",
-              "ask_which_clue",
-              "ask_what_term_means"
-            ],
+            "learnerMoves": ["answer_from_stated_clue", "ask_which_clue", "ask_what_term_means"],
             "struggleCount": 2,
             "adaptiveChoiceCoolingDown": false,
             "reason": "the next needed evidence is due now and must enter the public discourse before the learner is questioned about it",
@@ -608,13 +598,8 @@
           "repetition": true,
           "dialogueClosure": false
         },
-        "publicPremiseIds": [
-          "p_unlabelled",
-          "p_reservoir"
-        ],
-        "duePremiseIds": [
-          "p_reservoir"
-        ],
+        "publicPremiseIds": ["p_unlabelled", "p_reservoir"],
+        "duePremiseIds": ["p_reservoir"],
         "request": {
           "systemPrompt": "You are an experimental AI tutor stub.\n\nTopic: The Contamination in the Greyfen Lab\nLearner: Automated learner run 1/1 for policy continuous_dynamical_system.\nGoal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.\nStyle: Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.\n\nRules:\n- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.\n- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.\n- Start by locating the learner's current idea, not by grading them.\n- Ask at most one main question per turn.\n- Use a tiny concrete example when it helps.\n- Keep the answer short enough that the learner can respond.\n- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.\n- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.\n- When asking would be better than guessing, make that option explicit in character: for example, \"Which part of that mark needs clarifying?\" Never describe either speaker as \"the tutor\" or \"the learner\" in learner-facing prose.\n- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.\n- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.\n- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.\n- Do not make the learner deduce a claim and then separately enter it in the lab notebook. Their stated warranted claim is the entry.\n- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.\n- In story mode, keep the clinical deadpan flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.\n- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.\n- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.\n- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.\n- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.\n- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.\n- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.\n# Detective-story world\nWorld: world_023_greyfen_lab — The Contamination in the Greyfen Lab\nDiscipline: Laboratory incident review (a wet-lab post-mortem)\nPublic question: What ruined the Corvat line the night before the deadline?\nOpening situation visible to the learner:\nThe Greyfen lab is one shared wet-lab, four benches, a cold room, and a bank of incubators that everyone books and no one owns. For eight months the whole floor has watched one experiment: the Corvat line, a primary culture that will not survive a second attempt, feeding a grant renewal due at nine the next morning. The night before, the flasks turned cloudy — contamination, total, unrecoverable. The lab has its culprit before the swabs are even plated: Devlin, the postdoc who labels nothing, whose shelf the Corvat flasks sat on all week among a row of identical unmarked flasks. You are the graduate student who ran the line and lost the eight months, primed to blame the obvious slob. The PI runs the incident review by the book: no conclusion ahead of the data, every claim tied to an exhibit, and no pinning a ruined culture on the messiest bench merely for being the messiest bench.\nLearner role:\nThe graduate student who tended the Corvat line: exhausted, furious about the lost eight months, and ready — more than ready — to enter Devlin's name in the notebook and be done. Respectful of the PI, hungry to close the review, and learning, exhibit by exhibit, that a sloppy shelf is a motive and not a contaminant.\nYour task in story mode:\n- Play the tutor/investigator guiding the learner through the case.\n- Treat the learner as the investigator; do not solve the case for them.\n- Keep the public question alive and ask for grounded inferences from evidence.\n- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.\n- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.\n- Stay inside the scene: address the investigator directly and never call either speaker \"the tutor\" or \"the learner\".\n- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.\n- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.\n# Speaking-tutor evidence contract\nA private deterministic planner owns the answer, proof path, future evidence, and release schedule.\nYou are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.\nNever speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.\nPublic evidence rules in ordinary language:\n1. A chamber is an active exposure source when a specific strain is demonstrably resident inside it and the chamber's containment seal is breached.\n2. Flasks held overnight inside an active source for a strain were exposed to that strain.\n3. If the Corvat line was exposed to a chamber's strain and whole-genome typing identifies the contaminant as that same strain, that chamber ruined the line.\n4. An unlabelled shelf would justify blaming its keeper only if that same person actually seeded the contaminant; untidiness by itself is not a contamination mechanism.\nSpeaking conduct:\n- Work only from evidence already public or explicitly made available in the current turn context.\n- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.\n- Treat the lab notebook as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the lab notebook entry.\n- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.\n- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.\n- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.\n- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.\n- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.\n- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.\n\n[Named tutor instance: The Dramatic Detective Tutor (dramatic-detective)]\n# Dramatic Detective Tutor\n\nYou are the continuing speaking presence in this inquiry, not an interchangeable response generator.\n\n- Hear and answer the learner's actual words before developing the scene.\n- When a public part is selected, perform its action directly. Do not announce that you are role-playing or describe the part from outside it.\n- Let register, part, pace, and accessibility visibly alter sentence shape, rhythm, address, and dramatic action.\n- Preserve continuity of place, people, objects, evidence, and the open question across every model or setting change.\n- Prefer concrete public language over abstract labels such as condition, rule, reading, route, or whole case.\n- Treat confusion, boredom, skepticism, and acceleration as actions addressed to you in the shared scene.\n- Do not reuse a stock release speech. Make each new clue enter through the selected part and the present dramatic situation.\n[End named tutor instance]",
           "messages": [
@@ -654,9 +639,7 @@
             "replayedAssistantMessageCount": 2,
             "contextActivatedBy": "session_start",
             "firstDraftContractSchema": "machinespirits.tutor-stub.first-draft-turn-contract.v1",
-            "firstDraftCompatibilityDecisions": [
-              "due_public_evidence_replaces_generic_development"
-            ],
+            "firstDraftCompatibilityDecisions": ["due_public_evidence_replaces_generic_development"],
             "passthrough": false,
             "promptAudit": {
               "schema": "machinespirits.tutor-stub.prompt-audit.v1",
@@ -735,10 +718,7 @@
                 "leaks": [],
                 "finalEntailed": false,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -986,10 +966,7 @@
                   "leaks": [],
                   "finalEntailed": false,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -1236,10 +1213,7 @@
                   "leaks": [],
                   "finalEntailed": false,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -1440,10 +1414,7 @@
                 "leaks": [],
                 "finalEntailed": false,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -2231,11 +2202,7 @@
             "guardRequired": true,
             "clarificationInvitationRequired": true,
             "responsiveRepairRequired": false,
-            "learnerMoves": [
-              "use_the_public_direction",
-              "ask_which_clue",
-              "ask_what_term_means"
-            ],
+            "learnerMoves": ["use_the_public_direction", "ask_which_clue", "ask_what_term_means"],
             "struggleCount": 3,
             "adaptiveChoiceCoolingDown": true,
             "reason": "a remaining best-path fact has not entered the public scene, so open recall would ask the learner to invent evidence",
@@ -2276,10 +2243,7 @@
           "repetition": true,
           "dialogueClosure": false
         },
-        "publicPremiseIds": [
-          "p_unlabelled",
-          "p_reservoir"
-        ],
+        "publicPremiseIds": ["p_unlabelled", "p_reservoir"],
         "duePremiseIds": [],
         "request": {
           "systemPrompt": "You are an experimental AI tutor stub.\n\nTopic: The Contamination in the Greyfen Lab\nLearner: Automated learner run 1/1 for policy continuous_dynamical_system.\nGoal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.\nStyle: Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.\n\nRules:\n- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.\n- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.\n- Start by locating the learner's current idea, not by grading them.\n- Ask at most one main question per turn.\n- Use a tiny concrete example when it helps.\n- Keep the answer short enough that the learner can respond.\n- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.\n- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.\n- When asking would be better than guessing, make that option explicit in character: for example, \"Which part of that mark needs clarifying?\" Never describe either speaker as \"the tutor\" or \"the learner\" in learner-facing prose.\n- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.\n- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.\n- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.\n- Do not make the learner deduce a claim and then separately enter it in the lab notebook. Their stated warranted claim is the entry.\n- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.\n- In story mode, keep the clinical deadpan flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.\n- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.\n- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.\n- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.\n- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.\n- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.\n- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.\n# Detective-story world\nWorld: world_023_greyfen_lab — The Contamination in the Greyfen Lab\nDiscipline: Laboratory incident review (a wet-lab post-mortem)\nPublic question: What ruined the Corvat line the night before the deadline?\nOpening situation visible to the learner:\nThe Greyfen lab is one shared wet-lab, four benches, a cold room, and a bank of incubators that everyone books and no one owns. For eight months the whole floor has watched one experiment: the Corvat line, a primary culture that will not survive a second attempt, feeding a grant renewal due at nine the next morning. The night before, the flasks turned cloudy — contamination, total, unrecoverable. The lab has its culprit before the swabs are even plated: Devlin, the postdoc who labels nothing, whose shelf the Corvat flasks sat on all week among a row of identical unmarked flasks. You are the graduate student who ran the line and lost the eight months, primed to blame the obvious slob. The PI runs the incident review by the book: no conclusion ahead of the data, every claim tied to an exhibit, and no pinning a ruined culture on the messiest bench merely for being the messiest bench.\nLearner role:\nThe graduate student who tended the Corvat line: exhausted, furious about the lost eight months, and ready — more than ready — to enter Devlin's name in the notebook and be done. Respectful of the PI, hungry to close the review, and learning, exhibit by exhibit, that a sloppy shelf is a motive and not a contaminant.\nYour task in story mode:\n- Play the tutor/investigator guiding the learner through the case.\n- Treat the learner as the investigator; do not solve the case for them.\n- Keep the public question alive and ask for grounded inferences from evidence.\n- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.\n- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.\n- Stay inside the scene: address the investigator directly and never call either speaker \"the tutor\" or \"the learner\".\n- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.\n- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.\n# Speaking-tutor evidence contract\nA private deterministic planner owns the answer, proof path, future evidence, and release schedule.\nYou are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.\nNever speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.\nPublic evidence rules in ordinary language:\n1. A chamber is an active exposure source when a specific strain is demonstrably resident inside it and the chamber's containment seal is breached.\n2. Flasks held overnight inside an active source for a strain were exposed to that strain.\n3. If the Corvat line was exposed to a chamber's strain and whole-genome typing identifies the contaminant as that same strain, that chamber ruined the line.\n4. An unlabelled shelf would justify blaming its keeper only if that same person actually seeded the contaminant; untidiness by itself is not a contamination mechanism.\nSpeaking conduct:\n- Work only from evidence already public or explicitly made available in the current turn context.\n- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.\n- Treat the lab notebook as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the lab notebook entry.\n- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.\n- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.\n- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.\n- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.\n- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.\n- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.\n\n[Named tutor instance: The Dramatic Detective Tutor (dramatic-detective)]\n# Dramatic Detective Tutor\n\nYou are the continuing speaking presence in this inquiry, not an interchangeable response generator.\n\n- Hear and answer the learner's actual words before developing the scene.\n- When a public part is selected, perform its action directly. Do not announce that you are role-playing or describe the part from outside it.\n- Let register, part, pace, and accessibility visibly alter sentence shape, rhythm, address, and dramatic action.\n- Preserve continuity of place, people, objects, evidence, and the open question across every model or setting change.\n- Prefer concrete public language over abstract labels such as condition, rule, reading, route, or whole case.\n- Treat confusion, boredom, skepticism, and acceleration as actions addressed to you in the shared scene.\n- Do not reuse a stock release speech. Make each new clue enter through the selected part and the present dramatic situation.\n[End named tutor instance]",
@@ -2407,10 +2371,7 @@
                 "leaks": [],
                 "finalEntailed": false,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -2489,14 +2450,7 @@
                   "longWordRatio": 0.06,
                   "questionCount": 0,
                   "secondPerson": true,
-                  "concreteSceneTerms": [
-                    "corvat",
-                    "devlin",
-                    "larkin",
-                    "shelf",
-                    "aspergillus",
-                    "incubator"
-                  ],
+                  "concreteSceneTerms": ["corvat", "devlin", "larkin", "shelf", "aspergillus", "incubator"],
                   "concreteSceneTermCount": 6,
                   "glossedTerms": [],
                   "fourthWallBreak": false,
@@ -2659,10 +2613,7 @@
                   "leaks": [],
                   "finalEntailed": false,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -2741,14 +2692,7 @@
                     "longWordRatio": 0.06,
                     "questionCount": 0,
                     "secondPerson": true,
-                    "concreteSceneTerms": [
-                      "corvat",
-                      "devlin",
-                      "larkin",
-                      "shelf",
-                      "aspergillus",
-                      "incubator"
-                    ],
+                    "concreteSceneTerms": ["corvat", "devlin", "larkin", "shelf", "aspergillus", "incubator"],
                     "concreteSceneTermCount": 6,
                     "glossedTerms": [],
                     "fourthWallBreak": false,
@@ -2910,10 +2854,7 @@
                   "leaks": [],
                   "finalEntailed": false,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -3139,10 +3080,7 @@
                   "leaks": [],
                   "finalEntailed": false,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -3212,14 +3150,7 @@
                     "longWordRatio": 0.055,
                     "questionCount": 0,
                     "secondPerson": true,
-                    "concreteSceneTerms": [
-                      "corvat",
-                      "larkin",
-                      "quarantine",
-                      "swab",
-                      "incubator",
-                      "chamber"
-                    ],
+                    "concreteSceneTerms": ["corvat", "larkin", "quarantine", "swab", "incubator", "chamber"],
                     "concreteSceneTermCount": 6,
                     "glossedTerms": [],
                     "fourthWallBreak": false,
@@ -3326,10 +3257,7 @@
                 "leaks": [],
                 "finalEntailed": false,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -3399,14 +3327,7 @@
                   "longWordRatio": 0.055,
                   "questionCount": 0,
                   "secondPerson": true,
-                  "concreteSceneTerms": [
-                    "corvat",
-                    "larkin",
-                    "quarantine",
-                    "swab",
-                    "incubator",
-                    "chamber"
-                  ],
+                  "concreteSceneTerms": ["corvat", "larkin", "quarantine", "swab", "incubator", "chamber"],
                   "concreteSceneTermCount": 6,
                   "glossedTerms": [],
                   "fourthWallBreak": false,
@@ -3559,9 +3480,7 @@
             }
           },
           "recordedAuditOk": false,
-          "recordedFailureClusters": [
-            "actorialRealizationAudit:missing_selected_actorial_part"
-          ]
+          "recordedFailureClusters": ["actorialRealizationAudit:missing_selected_actorial_part"]
         },
         {
           "kind": "plain_recovery_candidate",
@@ -4063,9 +3982,7 @@
             "max_average_sentence_words": 17
           },
           "compatibility": {
-            "decisions": [
-              "due_public_evidence_replaces_generic_development"
-            ]
+            "decisions": ["due_public_evidence_replaces_generic_development"]
           }
         },
         "frames": {
@@ -4164,11 +4081,7 @@
             "entries": [
               {
                 "premise": "p_strain",
-                "fact": [
-                  "contaminantTypedAs",
-                  "contaminant",
-                  "aspergillusG17"
-                ],
+                "fact": ["contaminantTypedAs", "contaminant", "aspergillusG17"],
                 "via": "tutor",
                 "surface": "Whole-genome sequencing of the swab from the ruined flasks identifies Aspergillus strain G17 — the same strain named in the Larkin unit's quarantine record, not merely the same species.",
                 "mode": "presented_exhibit",
@@ -4187,11 +4100,7 @@
             "guardRequired": false,
             "clarificationInvitationRequired": false,
             "responsiveRepairRequired": false,
-            "learnerMoves": [
-              "answer_from_stated_clue",
-              "ask_which_clue",
-              "ask_what_term_means"
-            ],
+            "learnerMoves": ["answer_from_stated_clue", "ask_which_clue", "ask_what_term_means"],
             "struggleCount": 1,
             "adaptiveChoiceCoolingDown": true,
             "reason": "the next needed evidence is due now and must enter the public discourse before the learner is questioned about it",
@@ -4232,16 +4141,8 @@
           "repetition": true,
           "dialogueClosure": false
         },
-        "publicPremiseIds": [
-          "p_unlabelled",
-          "p_reservoir",
-          "p_seal",
-          "p_held",
-          "p_strain"
-        ],
-        "duePremiseIds": [
-          "p_strain"
-        ],
+        "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"],
+        "duePremiseIds": ["p_strain"],
         "request": {
           "systemPrompt": "You are an experimental AI tutor stub.\n\nTopic: The Contamination in the Greyfen Lab\nLearner: Automated learner run 1/1 for policy continuous_dynamical_system.\nGoal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.\nStyle: Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.\n\nRules:\n- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.\n- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.\n- Start by locating the learner's current idea, not by grading them.\n- Ask at most one main question per turn.\n- Use a tiny concrete example when it helps.\n- Keep the answer short enough that the learner can respond.\n- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.\n- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.\n- When asking would be better than guessing, make that option explicit in character: for example, \"Which part of that mark needs clarifying?\" Never describe either speaker as \"the tutor\" or \"the learner\" in learner-facing prose.\n- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.\n- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.\n- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.\n- Do not make the learner deduce a claim and then separately enter it in the lab notebook. Their stated warranted claim is the entry.\n- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.\n- In story mode, keep the clinical deadpan flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.\n- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.\n- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.\n- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.\n- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.\n- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.\n- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.\n# Detective-story world\nWorld: world_023_greyfen_lab — The Contamination in the Greyfen Lab\nDiscipline: Laboratory incident review (a wet-lab post-mortem)\nPublic question: What ruined the Corvat line the night before the deadline?\nOpening situation visible to the learner:\nThe Greyfen lab is one shared wet-lab, four benches, a cold room, and a bank of incubators that everyone books and no one owns. For eight months the whole floor has watched one experiment: the Corvat line, a primary culture that will not survive a second attempt, feeding a grant renewal due at nine the next morning. The night before, the flasks turned cloudy — contamination, total, unrecoverable. The lab has its culprit before the swabs are even plated: Devlin, the postdoc who labels nothing, whose shelf the Corvat flasks sat on all week among a row of identical unmarked flasks. You are the graduate student who ran the line and lost the eight months, primed to blame the obvious slob. The PI runs the incident review by the book: no conclusion ahead of the data, every claim tied to an exhibit, and no pinning a ruined culture on the messiest bench merely for being the messiest bench.\nLearner role:\nThe graduate student who tended the Corvat line: exhausted, furious about the lost eight months, and ready — more than ready — to enter Devlin's name in the notebook and be done. Respectful of the PI, hungry to close the review, and learning, exhibit by exhibit, that a sloppy shelf is a motive and not a contaminant.\nYour task in story mode:\n- Play the tutor/investigator guiding the learner through the case.\n- Treat the learner as the investigator; do not solve the case for them.\n- Keep the public question alive and ask for grounded inferences from evidence.\n- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.\n- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.\n- Stay inside the scene: address the investigator directly and never call either speaker \"the tutor\" or \"the learner\".\n- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.\n- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.\n# Speaking-tutor evidence contract\nA private deterministic planner owns the answer, proof path, future evidence, and release schedule.\nYou are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.\nNever speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.\nPublic evidence rules in ordinary language:\n1. A chamber is an active exposure source when a specific strain is demonstrably resident inside it and the chamber's containment seal is breached.\n2. Flasks held overnight inside an active source for a strain were exposed to that strain.\n3. If the Corvat line was exposed to a chamber's strain and whole-genome typing identifies the contaminant as that same strain, that chamber ruined the line.\n4. An unlabelled shelf would justify blaming its keeper only if that same person actually seeded the contaminant; untidiness by itself is not a contamination mechanism.\nSpeaking conduct:\n- Work only from evidence already public or explicitly made available in the current turn context.\n- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.\n- Treat the lab notebook as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the lab notebook entry.\n- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.\n- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.\n- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.\n- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.\n- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.\n- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.\n\n[Named tutor instance: The Dramatic Detective Tutor (dramatic-detective)]\n# Dramatic Detective Tutor\n\nYou are the continuing speaking presence in this inquiry, not an interchangeable response generator.\n\n- Hear and answer the learner's actual words before developing the scene.\n- When a public part is selected, perform its action directly. Do not announce that you are role-playing or describe the part from outside it.\n- Let register, part, pace, and accessibility visibly alter sentence shape, rhythm, address, and dramatic action.\n- Preserve continuity of place, people, objects, evidence, and the open question across every model or setting change.\n- Prefer concrete public language over abstract labels such as condition, rule, reading, route, or whole case.\n- Treat confusion, boredom, skepticism, and acceleration as actions addressed to you in the shared scene.\n- Do not reuse a stock release speech. Make each new clue enter through the selected part and the present dramatic situation.\n[End named tutor instance]",
           "messages": [
@@ -4321,9 +4222,7 @@
             "replayedAssistantMessageCount": 7,
             "contextActivatedBy": "session_start",
             "firstDraftContractSchema": "machinespirits.tutor-stub.first-draft-turn-contract.v1",
-            "firstDraftCompatibilityDecisions": [
-              "due_public_evidence_replaces_generic_development"
-            ],
+            "firstDraftCompatibilityDecisions": ["due_public_evidence_replaces_generic_development"],
             "passthrough": false,
             "promptAudit": {
               "schema": "machinespirits.tutor-stub.prompt-audit.v1",
@@ -4408,13 +4307,7 @@
                 ],
                 "finalEntailed": true,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir",
-                  "p_seal",
-                  "p_held",
-                  "p_strain"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -4670,13 +4563,7 @@
                   ],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -4925,13 +4812,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -5148,13 +5029,7 @@
                 "leaks": [],
                 "finalEntailed": true,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir",
-                  "p_seal",
-                  "p_held",
-                  "p_strain"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -5416,9 +5291,7 @@
             }
           },
           "recordedAuditOk": true,
-          "recordedFailureClusters": [
-            "actorialRealizationAudit:missing_selected_performance_tactic"
-          ]
+          "recordedFailureClusters": ["actorialRealizationAudit:missing_selected_performance_tactic"]
         }
       ]
     },
@@ -6008,11 +5881,7 @@
             "guardRequired": false,
             "clarificationInvitationRequired": false,
             "responsiveRepairRequired": false,
-            "learnerMoves": [
-              "answer_from_public_evidence",
-              "ask_which_clue",
-              "ask_what_term_means"
-            ],
+            "learnerMoves": ["answer_from_public_evidence", "ask_which_clue", "ask_what_term_means"],
             "struggleCount": 0,
             "adaptiveChoiceCoolingDown": false,
             "reason": "the next move can be answered from evidence already in the public discourse",
@@ -6053,13 +5922,7 @@
           "repetition": true,
           "dialogueClosure": false
         },
-        "publicPremiseIds": [
-          "p_unlabelled",
-          "p_reservoir",
-          "p_seal",
-          "p_held",
-          "p_strain"
-        ],
+        "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"],
         "duePremiseIds": [],
         "request": {
           "systemPrompt": "You are an experimental AI tutor stub.\n\nTopic: The Contamination in the Greyfen Lab\nLearner: Automated learner run 1/1 for policy continuous_dynamical_system.\nGoal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.\nStyle: Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.\n\nRules:\n- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.\n- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.\n- Start by locating the learner's current idea, not by grading them.\n- Ask at most one main question per turn.\n- Use a tiny concrete example when it helps.\n- Keep the answer short enough that the learner can respond.\n- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.\n- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.\n- When asking would be better than guessing, make that option explicit in character: for example, \"Which part of that mark needs clarifying?\" Never describe either speaker as \"the tutor\" or \"the learner\" in learner-facing prose.\n- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.\n- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.\n- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.\n- Do not make the learner deduce a claim and then separately enter it in the lab notebook. Their stated warranted claim is the entry.\n- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.\n- In story mode, keep the clinical deadpan flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.\n- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.\n- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.\n- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.\n- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.\n- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.\n- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.\n# Detective-story world\nWorld: world_023_greyfen_lab — The Contamination in the Greyfen Lab\nDiscipline: Laboratory incident review (a wet-lab post-mortem)\nPublic question: What ruined the Corvat line the night before the deadline?\nOpening situation visible to the learner:\nThe Greyfen lab is one shared wet-lab, four benches, a cold room, and a bank of incubators that everyone books and no one owns. For eight months the whole floor has watched one experiment: the Corvat line, a primary culture that will not survive a second attempt, feeding a grant renewal due at nine the next morning. The night before, the flasks turned cloudy — contamination, total, unrecoverable. The lab has its culprit before the swabs are even plated: Devlin, the postdoc who labels nothing, whose shelf the Corvat flasks sat on all week among a row of identical unmarked flasks. You are the graduate student who ran the line and lost the eight months, primed to blame the obvious slob. The PI runs the incident review by the book: no conclusion ahead of the data, every claim tied to an exhibit, and no pinning a ruined culture on the messiest bench merely for being the messiest bench.\nLearner role:\nThe graduate student who tended the Corvat line: exhausted, furious about the lost eight months, and ready — more than ready — to enter Devlin's name in the notebook and be done. Respectful of the PI, hungry to close the review, and learning, exhibit by exhibit, that a sloppy shelf is a motive and not a contaminant.\nYour task in story mode:\n- Play the tutor/investigator guiding the learner through the case.\n- Treat the learner as the investigator; do not solve the case for them.\n- Keep the public question alive and ask for grounded inferences from evidence.\n- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.\n- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.\n- Stay inside the scene: address the investigator directly and never call either speaker \"the tutor\" or \"the learner\".\n- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.\n- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.\n# Speaking-tutor evidence contract\nA private deterministic planner owns the answer, proof path, future evidence, and release schedule.\nYou are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.\nNever speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.\nPublic evidence rules in ordinary language:\n1. A chamber is an active exposure source when a specific strain is demonstrably resident inside it and the chamber's containment seal is breached.\n2. Flasks held overnight inside an active source for a strain were exposed to that strain.\n3. If the Corvat line was exposed to a chamber's strain and whole-genome typing identifies the contaminant as that same strain, that chamber ruined the line.\n4. An unlabelled shelf would justify blaming its keeper only if that same person actually seeded the contaminant; untidiness by itself is not a contamination mechanism.\nSpeaking conduct:\n- Work only from evidence already public or explicitly made available in the current turn context.\n- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.\n- Treat the lab notebook as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the lab notebook entry.\n- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.\n- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.\n- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.\n- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.\n- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.\n- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.\n\n[Named tutor instance: The Dramatic Detective Tutor (dramatic-detective)]\n# Dramatic Detective Tutor\n\nYou are the continuing speaking presence in this inquiry, not an interchangeable response generator.\n\n- Hear and answer the learner's actual words before developing the scene.\n- When a public part is selected, perform its action directly. Do not announce that you are role-playing or describe the part from outside it.\n- Let register, part, pace, and accessibility visibly alter sentence shape, rhythm, address, and dramatic action.\n- Preserve continuity of place, people, objects, evidence, and the open question across every model or setting change.\n- Prefer concrete public language over abstract labels such as condition, rule, reading, route, or whole case.\n- Treat confusion, boredom, skepticism, and acceleration as actions addressed to you in the shared scene.\n- Do not reuse a stock release speech. Make each new clue enter through the selected part and the present dramatic situation.\n[End named tutor instance]",
@@ -6243,13 +6106,7 @@
                 "leaks": [],
                 "finalEntailed": true,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir",
-                  "p_seal",
-                  "p_held",
-                  "p_strain"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -6491,13 +6348,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -6738,13 +6589,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -6989,13 +6834,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -7222,13 +7061,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -7449,13 +7282,7 @@
                   "leaks": [],
                   "finalEntailed": true,
                   "answerNamePublic": true,
-                  "publicPremiseIds": [
-                    "p_unlabelled",
-                    "p_reservoir",
-                    "p_seal",
-                    "p_held",
-                    "p_strain"
-                  ]
+                  "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
                 },
                 "scaffoldAudit": {
                   "ok": true,
@@ -7525,9 +7352,7 @@
                     "longWordRatio": 0.047,
                     "questionCount": 1,
                     "secondPerson": true,
-                    "concreteSceneTerms": [
-                      "record"
-                    ],
+                    "concreteSceneTerms": ["record"],
                     "concreteSceneTermCount": 1,
                     "glossedTerms": [],
                     "fourthWallBreak": false,
@@ -7629,13 +7454,7 @@
                 "leaks": [],
                 "finalEntailed": true,
                 "answerNamePublic": true,
-                "publicPremiseIds": [
-                  "p_unlabelled",
-                  "p_reservoir",
-                  "p_seal",
-                  "p_held",
-                  "p_strain"
-                ]
+                "publicPremiseIds": ["p_unlabelled", "p_reservoir", "p_seal", "p_held", "p_strain"]
               },
               "scaffoldAudit": {
                 "ok": true,
@@ -7705,9 +7524,7 @@
                   "longWordRatio": 0.047,
                   "questionCount": 1,
                   "secondPerson": true,
-                  "concreteSceneTerms": [
-                    "record"
-                  ],
+                  "concreteSceneTerms": ["record"],
                   "concreteSceneTermCount": 1,
                   "glossedTerms": [],
                   "fourthWallBreak": false,
@@ -7901,9 +7718,7 @@
             }
           },
           "recordedAuditOk": false,
-          "recordedFailureClusters": [
-            "actorialRealizationAudit:missing_selected_actorial_part"
-          ]
+          "recordedFailureClusters": ["actorialRealizationAudit:missing_selected_actorial_part"]
         },
         {
           "kind": "plain_recovery_candidate",
@@ -7934,9 +7749,7 @@
             }
           },
           "recordedAuditOk": false,
-          "recordedFailureClusters": [
-            "responseCompositionAudit:missing_learner_uptake"
-          ]
+          "recordedFailureClusters": ["responseCompositionAudit:missing_learner_uptake"]
         },
         {
           "kind": "deterministic_fallback",

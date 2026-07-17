@@ -17,10 +17,7 @@ import {
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
-import {
-  decideTutorStubGuardDelivery,
-  tutorStubGuardIssueRows,
-} from '../services/tutorStubGuardDisposition.js';
+import { decideTutorStubGuardDelivery, tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
 import { deterministicTutorStubConfiguredContinuationFallback } from '../services/tutorStubResponseComposition.js';
 
 function progressionContract(overrides = {}) {
@@ -86,11 +83,7 @@ test('live V1 progression rejects generic uptake, forbidden questions, and a los
   assert.equal(audit.ok, false);
   assert.deepEqual(
     audit.issues.map((issue) => issue.type),
-    [
-      'learner_uptake_not_realized',
-      'question_forbidden_by_handoff_contract',
-      'handoff_loses_turn_focus',
-    ],
+    ['learner_uptake_not_realized', 'question_forbidden_by_handoff_contract', 'handoff_loses_turn_focus'],
   );
 });
 
@@ -163,8 +156,7 @@ test('live V1 question ownership excludes question marks inside an exact authore
       prohibited_settled_surfaces: [],
     },
   });
-  const declarativeDevelopment =
-    `I open the visitor badge log. ${source.text} The visitor badge log leaves WF-11 unassigned.`;
+  const declarativeDevelopment = `I open the visitor badge log. ${source.text} The visitor badge log leaves WF-11 unassigned.`;
   const declarative = auditTutorStubLiveTurnProgressionV1({
     contract: declarativeContract,
     text: `${learnerUptake} ${declarativeDevelopment}`,
@@ -188,8 +180,7 @@ test('live V1 question ownership excludes question marks inside an exact authore
       prohibited_settled_surfaces: [],
     },
   });
-  const questionDevelopment =
-    `I open the visitor badge log. ${source.text} What does the visitor badge log show about WF-11?`;
+  const questionDevelopment = `I open the visitor badge log. ${source.text} What does the visitor badge log show about WF-11?`;
   const question = auditTutorStubLiveTurnProgressionV1({
     contract: questionContract,
     text: `${learnerUptake} ${questionDevelopment}`,
@@ -334,16 +325,10 @@ test('live V1 requires one exact source and binds its carrier to the nearest pre
   assert.equal(passing.exact_source_occurrence_passes, 1);
   assert.equal(passing.exact_source_occurrence_failures, 0);
   assert.deepEqual(passing.source_occurrences[0].spans, [{ start: 30, end: 93 }]);
+  assert.equal(passing.pre_source_boundaries[0].audited_host_text, 'I open the visitor badge log.');
   assert.equal(
     passing.pre_source_boundaries[0].audited_host_text,
-    'I open the visitor badge log.',
-  );
-  assert.equal(
-    passing.pre_source_boundaries[0].audited_host_text,
-    passingText.slice(
-      passing.pre_source_boundaries[0].boundary_start,
-      passing.pre_source_boundaries[0].boundary_end,
-    ),
+    passingText.slice(passing.pre_source_boundaries[0].boundary_start, passing.pre_source_boundaries[0].boundary_end),
   );
   assert.doesNotMatch(passing.audited_host_text, /outside crew/iu);
 
@@ -353,10 +338,7 @@ test('live V1 requires one exact source and binds its carrier to the nearest pre
   });
   assert.equal(failing.ok, false);
   assert.equal(failing.issues[0].type, 'due_source_action_referent_missing');
-  assert.equal(
-    failing.pre_source_boundaries[0].audited_host_text,
-    'I set the kettle beside us.',
-  );
+  assert.equal(failing.pre_source_boundaries[0].audited_host_text, 'I set the kettle beside us.');
   assert.match(failing.audited_host_text, /visitor badge log/iu);
 });
 
@@ -369,8 +351,7 @@ test('live V1 rejects a paraphrased or duplicated host-rendered source', () => {
   });
   const firstDraftContract = { evidence: { sources: [source] } };
   const paraphrase = auditTutorStubLiveSourceActionAlignmentV1({
-    text:
-      'I open the visitor badge log. “I report this: WF-11 was issued to the outside crew.” What changes?',
+    text: 'I open the visitor badge log. “I report this: WF-11 was issued to the outside crew.” What changes?',
     firstDraftContract,
   });
   assert.equal(paraphrase.ok, false);
@@ -417,8 +398,7 @@ test('live V1 binds opt-in compensation only to the first complete sentence afte
       source_accessibility: sourceAccessibility,
     },
   };
-  const compensation =
-    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const compensation = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
   const passing = auditTutorStubLiveSourceActionAlignmentV1({
     text: `I open the private-seal register. ${source.text} ${compensation} What does the chipped seal show?`,
     firstDraftContract: contract,
@@ -477,8 +457,7 @@ test('live V1 compensation cannot rescue weak host part, tactic, or stance reali
     question: 'Who drew the dusk-seal?',
   };
   const weakText =
-    `I hear you. The private-seal register lies open. ${source.text} ` +
-    `${compensation} What does the entry show?`;
+    `I hear you. The private-seal register lies open. ${source.text} ` + `${compensation} What does the entry show?`;
   const weakLiveAudit = auditTutorStubLiveSourceActionAlignmentV1({
     text: weakText,
     firstDraftContract,
@@ -654,8 +633,5 @@ test('deterministic live fallback places an audited extractive compensation imme
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
   assert.equal(audit.compensation_visible, true);
   assert.equal(audit.passing_compensation_spans.length, 1);
-  assert.match(
-    audit.passing_compensation_spans[0].text,
-    /^Elian drew it for curfew warrants/u,
-  );
+  assert.match(audit.passing_compensation_spans[0].text, /^Elian drew it for curfew warrants/u);
 });

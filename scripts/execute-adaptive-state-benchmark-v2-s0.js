@@ -168,7 +168,9 @@ export function renderAdaptiveStateStage0Report(report) {
         `- \`${target}\`: oracle ${row.oracle_beats_all_state_blind_baselines_on_both_metrics ? 'beats' : 'does not beat'} no-state, training-fold class-prior, and uniform on log loss and Brier`,
     ),
     '',
-    ...(report.stop_reasons.length ? ['## Stop reasons', '', ...report.stop_reasons.map((reason) => `- \`${reason}\``), ''] : []),
+    ...(report.stop_reasons.length
+      ? ['## Stop reasons', '', ...report.stop_reasons.map((reason) => `- \`${reason}\``), '']
+      : []),
     '> This is a deterministic contract/instrument check. It is not the untouched S2 sensor verdict and makes no tutoring-efficacy or human-learning claim.',
     '',
     `Report SHA-256: \`${report.content_sha256}\``,
@@ -212,7 +214,10 @@ async function main(argv = process.argv.slice(2)) {
   validateAdaptiveStateCriticalPathPlan(plan);
   const runDir = path.join(outRoot, label);
   createRunPlan(runDir, executionRunPlan({ plan, config, configPath, runSeed }));
-  writeExclusive(path.join(runDir, 'critical-path-plan.json'), canonicalJson(plan, { space: 2, trailingNewline: true }));
+  writeExclusive(
+    path.join(runDir, 'critical-path-plan.json'),
+    canonicalJson(plan, { space: 2, trailingNewline: true }),
+  );
   appendRunEvent(runDir, {
     type: 'stage0_execution_started',
     dialogueJobs: plan.counts.dialogue_jobs,
@@ -245,10 +250,16 @@ async function main(argv = process.argv.slice(2)) {
     benchmark_rows_jsonl: { path: 'benchmark-rows.jsonl', sha256: rowsFile.sha256, bytes: rowsFile.bytes },
     split_manifest: { path: 'split-manifest.json', sha256: splitFile.sha256, bytes: splitFile.bytes },
   });
-  writeExclusive(path.join(runDir, 'dataset-manifest.json'), canonicalJson(manifest, { space: 2, trailingNewline: true }));
+  writeExclusive(
+    path.join(runDir, 'dataset-manifest.json'),
+    canonicalJson(manifest, { space: 2, trailingNewline: true }),
+  );
   const report = buildAdaptiveStateStage0Report({ dataset, plan, config, splitManifest, replay });
   validateAdaptiveStateStage0ReportContentSha256(report);
-  writeExclusive(path.join(runDir, 'stage0-contract-report.json'), canonicalJson(report, { space: 2, trailingNewline: true }));
+  writeExclusive(
+    path.join(runDir, 'stage0-contract-report.json'),
+    canonicalJson(report, { space: 2, trailingNewline: true }),
+  );
   writeExclusive(path.join(runDir, 'stage0-contract-report.md'), renderAdaptiveStateStage0Report(report));
   appendRunEvent(runDir, {
     type: 'stage0_contract_evaluated',

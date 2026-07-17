@@ -10,8 +10,7 @@ import { cloneKernelValue } from './contract.js';
 
 export const ADAPTIVE_STATE_WORLD_ADAPTER_SCHEMA = 'machinespirits.adaptive-state-world-proof-adapter.v2';
 export const ADAPTIVE_STATE_PUBLIC_ACT_ENVELOPE_SCHEMA = 'machinespirits.adaptive-state-public-act-envelope.v2';
-export const ADAPTIVE_STATE_PUBLIC_SEMANTIC_EVENT_SCHEMA =
-  'machinespirits.adaptive-state-public-semantic-event.v2.3';
+export const ADAPTIVE_STATE_PUBLIC_SEMANTIC_EVENT_SCHEMA = 'machinespirits.adaptive-state-public-semantic-event.v2.3';
 export const ADAPTIVE_STATE_PROOF_TRANSITION_V2_SCHEMA = 'machinespirits.adaptive-state-proof-transition.v2';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -321,7 +320,9 @@ export function createWorldNormalizedProofAdapter({
     const key = factKey(fact);
     const slot = derivedSlot.get(key);
     if (!slot || structuralDerivedKeys.has(key)) {
-      throw new Error('learnerKernel.worldAdapter: derive event must be an observable fact licensed by the world closure');
+      throw new Error(
+        'learnerKernel.worldAdapter: derive event must be an observable fact licensed by the world closure',
+      );
     }
     return {
       kind: 'derive',

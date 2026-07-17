@@ -44,7 +44,8 @@ export const CHARACTER_ADAPTATION_LOOP_SPEC = Object.freeze({
         }),
         Object.freeze({
           seed: 20260720,
-          reason: 'consumed before explicit boundary stops, corrections, and lab-notebook acts counted as character work',
+          reason:
+            'consumed before explicit boundary stops, corrections, and lab-notebook acts counted as character work',
         }),
         Object.freeze({
           seed: 20260721,
@@ -64,19 +65,23 @@ export const CHARACTER_ADAPTATION_LOOP_SPEC = Object.freeze({
         }),
         Object.freeze({
           seed: 20260725,
-          reason: 'two safe fallbacks exceeded the strict maximum before cross-domain skeptic and advocate acts were recognized',
+          reason:
+            'two safe fallbacks exceeded the strict maximum before cross-domain skeptic and advocate acts were recognized',
         }),
         Object.freeze({
           seed: 20260726,
-          reason: 'three safe fallbacks exceeded the strict maximum before cross-domain comparison and supported-finding acts were recognized',
+          reason:
+            'three safe fallbacks exceeded the strict maximum before cross-domain comparison and supported-finding acts were recognized',
         }),
         Object.freeze({
           seed: 20260727,
-          reason: 'three safe fallbacks exceeded the strict maximum before placement likelihood, explicit evidence boundaries, and supported advocacy were recognized',
+          reason:
+            'three safe fallbacks exceeded the strict maximum before placement likelihood, explicit evidence boundaries, and supported advocacy were recognized',
         }),
         Object.freeze({
           seed: 20260728,
-          reason: 'two safe fallbacks and undercounted corrective-answer realization failed the held-out transfer gates',
+          reason:
+            'two safe fallbacks and undercounted corrective-answer realization failed the held-out transfer gates',
         }),
       ]),
       purpose: 'held_out_scenario_and_profile_transfer_check',
@@ -139,13 +144,17 @@ working verification passes.`);
 }
 
 function loopMode() {
-  const value = String(args.mode || '').trim().toLowerCase();
+  const value = String(args.mode || '')
+    .trim()
+    .toLowerCase();
   if (!['diagnostic', 'strict'].includes(value)) throw new Error('--mode must be diagnostic or strict');
   return value;
 }
 
 function loopPhase() {
-  const value = String(args.phase || '').trim().toLowerCase();
+  const value = String(args.phase || '')
+    .trim()
+    .toLowerCase();
   if (!['working', 'acceptance'].includes(value)) throw new Error('--phase must be working or acceptance');
   if (loopMode() === 'diagnostic' && value === 'acceptance') {
     throw new Error('Diagnostic collection is working evidence, not acceptance; use --phase working');
@@ -154,7 +163,9 @@ function loopPhase() {
 }
 
 function targetSpec() {
-  const target = String(args.target || '').trim().toLowerCase();
+  const target = String(args.target || '')
+    .trim()
+    .toLowerCase();
   const spec = CHARACTER_ADAPTATION_LOOP_SPEC.targets[target];
   if (!spec) throw new Error('--target must be primary or transfer');
   if (target === 'transfer' && loopPhase() !== 'acceptance') {
@@ -259,7 +270,9 @@ function sum(rows, reader) {
 }
 
 export function assessCharacterAdaptationReport(summary, { mode = summary.config?.loopMode || 'strict' } = {}) {
-  const normalizedMode = String(mode || 'strict').trim().toLowerCase();
+  const normalizedMode = String(mode || 'strict')
+    .trim()
+    .toLowerCase();
   if (!['diagnostic', 'strict'].includes(normalizedMode)) throw new Error('report mode must be diagnostic or strict');
   const rows = (summary.rows || []).filter((row) => row.status === 'ok');
   const dryRun = summary.config?.dryRun === true || (summary.rows || []).every((row) => row.status === 'dry_run');
@@ -281,29 +294,17 @@ export function assessCharacterAdaptationReport(summary, { mode = summary.config
     finalDeliveryAuditFailures: sum(rows, (row) => row.guardAccounting?.finalDeliveryAuditFailures),
     originalCandidateAcceptedTurns: sum(rows, (row) => row.guardAccounting?.originalCandidateAcceptedTurns),
     originalCandidateAcceptanceRate: turns
-      ? Number(
-          (
-            sum(rows, (row) => row.guardAccounting?.originalCandidateAcceptedTurns) / turns
-          ).toFixed(3),
-        )
+      ? Number((sum(rows, (row) => row.guardAccounting?.originalCandidateAcceptedTurns) / turns).toFixed(3))
       : null,
     mechanicalRepairTurns: sum(rows, (row) => row.guardAccounting?.mechanicalRepairTurns),
     modelRepairTurns: sum(rows, (row) => row.guardAccounting?.modelRepairTurns),
     deterministicFallbackTurns: sum(rows, (row) => row.guardAccounting?.deterministicFallbackTurns),
     totalTutorGenerationLatencyMs: sum(rows, (row) => row.guardAccounting?.totalTutorGenerationLatencyMs),
     meanTutorGenerationLatencyMs: turns
-      ? Number(
-          (
-            sum(rows, (row) => row.guardAccounting?.totalTutorGenerationLatencyMs) / turns
-          ).toFixed(1),
-        )
+      ? Number((sum(rows, (row) => row.guardAccounting?.totalTutorGenerationLatencyMs) / turns).toFixed(1))
       : null,
     meanOriginalCandidateLatencyMs: turns
-      ? Number(
-          (
-            sum(rows, (row) => row.guardAccounting?.totalOriginalCandidateLatencyMs) / turns
-          ).toFixed(1),
-        )
+      ? Number((sum(rows, (row) => row.guardAccounting?.totalOriginalCandidateLatencyMs) / turns).toFixed(1))
       : null,
     errorCount: Number(summary.aggregates?.errorCount || 0) + sum(rows, (row) => row.errorCount),
     metaPerformanceTurns: sum(rows, (row) => row.characterAdaptation?.metaPerformanceTurns),
@@ -316,34 +317,43 @@ export function assessCharacterAdaptationReport(summary, { mode = summary.config
     hostParts: [...hostParts].sort(),
     quarantineCount: sum(rows, (row) => row.diagnosticCollection?.quarantineCount),
     firstQuarantinedTurn:
-      rows.map((row) => row.diagnosticCollection?.firstQuarantinedTurn).filter(Number.isFinite).sort((a, b) => a - b)[0] ??
-      null,
+      rows
+        .map((row) => row.diagnosticCollection?.firstQuarantinedTurn)
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b)[0] ?? null,
   };
-  const diagnosticCollection = rows.length === 1
-    ? rows[0].diagnosticCollection || null
-    : {
-        schema: 'machinespirits.tutor-stub.diagnostic-collection-batch.v1',
-        rows: rows.map((row) => row.diagnosticCollection).filter(Boolean),
-      };
+  const diagnosticCollection =
+    rows.length === 1
+      ? rows[0].diagnosticCollection || null
+      : {
+          schema: 'machinespirits.tutor-stub.diagnostic-collection-batch.v1',
+          rows: rows.map((row) => row.diagnosticCollection).filter(Boolean),
+        };
   const threshold = CHARACTER_ADAPTATION_LOOP_SPEC.gates;
-  const gates = dryRun || normalizedMode === 'diagnostic'
-    ? []
-    : [
-        ['technical delivery', observed.finalDeliveryAuditFailures === threshold.finalDeliveryAuditFailures && observed.errorCount === threshold.errorCount],
-        [
-          'bounded safe repair',
-          observed.deterministicFallbackTurns <= threshold.maximumDeterministicFallbackTurns,
-        ],
-        ['no meta-performance', observed.metaPerformanceTurns === threshold.metaPerformanceTurns && observed.roleStageDirectionTurns === threshold.roleStageDirectionTurns],
-        ['host/source separation', observed.sourceReplacementTurns === threshold.sourceReplacementTurns],
-        ['single clue delivery', observed.duplicateClueDeliveryTurns === threshold.duplicateClueDeliveryTurns],
-        ['host visible', observed.hostVisibilityRate >= threshold.minimumHostVisibilityRate],
-        ['configuration realized', observed.meanConfigurationRealization >= threshold.minimumMeanConfigurationRealization],
-        [
-          'host variation',
-          turns < 4 || observed.distinctHostParts >= threshold.minimumDistinctHostParts,
-        ],
-      ].map(([name, pass]) => ({ name, pass }));
+  const gates =
+    dryRun || normalizedMode === 'diagnostic'
+      ? []
+      : [
+          [
+            'technical delivery',
+            observed.finalDeliveryAuditFailures === threshold.finalDeliveryAuditFailures &&
+              observed.errorCount === threshold.errorCount,
+          ],
+          ['bounded safe repair', observed.deterministicFallbackTurns <= threshold.maximumDeterministicFallbackTurns],
+          [
+            'no meta-performance',
+            observed.metaPerformanceTurns === threshold.metaPerformanceTurns &&
+              observed.roleStageDirectionTurns === threshold.roleStageDirectionTurns,
+          ],
+          ['host/source separation', observed.sourceReplacementTurns === threshold.sourceReplacementTurns],
+          ['single clue delivery', observed.duplicateClueDeliveryTurns === threshold.duplicateClueDeliveryTurns],
+          ['host visible', observed.hostVisibilityRate >= threshold.minimumHostVisibilityRate],
+          [
+            'configuration realized',
+            observed.meanConfigurationRealization >= threshold.minimumMeanConfigurationRealization,
+          ],
+          ['host variation', turns < 4 || observed.distinctHostParts >= threshold.minimumDistinctHostParts],
+        ].map(([name, pass]) => ({ name, pass }));
   return {
     schema: CHARACTER_ADAPTATION_LOOP_SPEC.schema,
     mode: normalizedMode,
@@ -421,7 +431,11 @@ function markdown(result, reportPath) {
     '',
     ...(result.gates.length
       ? result.gates.map((gate) => `- ${gate.pass ? 'PASS' : 'FAIL'} — ${gate.name}`)
-      : [result.mode === 'diagnostic' ? '- Not applicable — diagnostic evidence cannot certify acceptance' : '- Pending — dry-run only']),
+      : [
+          result.mode === 'diagnostic'
+            ? '- Not applicable — diagnostic evidence cannot certify acceptance'
+            : '- Pending — dry-run only',
+        ]),
     '',
     '## Observed',
     '',

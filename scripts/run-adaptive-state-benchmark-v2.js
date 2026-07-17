@@ -116,17 +116,10 @@ export function renderAdaptiveStateCriticalPathMarkdown(plan) {
 
 export function buildPlanArtifact({ config, configPath, stage, confirmationPerCell, label, promotionParent = null }) {
   if (stage === 's2_confirmation') assertAdaptiveStateS1PromotionParentAuthorization(promotionParent);
-  if (
-    stage === 's2_confirmation' &&
-    confirmationPerCell !== null &&
-    Number(confirmationPerCell) !== 8
-  ) {
+  if (stage === 's2_confirmation' && confirmationPerCell !== null && Number(confirmationPerCell) !== 8) {
     throw new Error('S2 is frozen at --per-cell 8; no pilot-derived sample-size selection is permitted');
   }
-  if (
-    stage === 's2_confirmation' &&
-    promotionParent.authorization.s1.config_sha256 !== hashCanonicalJson(config)
-  ) {
+  if (stage === 's2_confirmation' && promotionParent.authorization.s1.config_sha256 !== hashCanonicalJson(config)) {
     throw new Error('S2 planning requires an S1 parent produced under the current frozen config');
   }
   const plan = buildAdaptiveStateCriticalPathPlan(config, { stage, confirmationPerCell, label });

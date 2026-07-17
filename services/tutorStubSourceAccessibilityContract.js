@@ -2,8 +2,7 @@ import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubRespons
 
 export const TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA =
   'machinespirits.tutor-stub.source-accessibility-contract.v1';
-export const TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.source-accessibility-audit.v1';
+export const TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA = 'machinespirits.tutor-stub.source-accessibility-audit.v1';
 
 const SUPPORTED_POLICIES = new Set(['direct_only', 'direct_or_compensated_v1']);
 const SUPPORTED_OWNERS = new Set(['performance_response', 'post_source_sentence']);
@@ -73,30 +72,22 @@ function semanticSourceText(source) {
 
 function relationToken(row) {
   return Boolean(
-    row &&
-      (RELATION_WORDS.has(row.normalized) ||
-        (row.normalized.length >= 4 && RELATION_SUFFIX.test(row.normalized))),
+    row && (RELATION_WORDS.has(row.normalized) || (row.normalized.length >= 4 && RELATION_SUFFIX.test(row.normalized))),
   );
 }
 
 function normalizeOwner(configuration = {}) {
-  const explicitKey = [
-    'source_accessibility_owner',
-    'compensation_owner',
-    'owner',
-  ].find((key) => Object.prototype.hasOwnProperty.call(configuration, key));
+  const explicitKey = ['source_accessibility_owner', 'compensation_owner', 'owner'].find((key) =>
+    Object.prototype.hasOwnProperty.call(configuration, key),
+  );
   if (explicitKey) {
     const explicit = oneLine(configuration[explicitKey]);
     return SUPPORTED_OWNERS.has(explicit) ? explicit : null;
   }
   const version = oneLine(
-    configuration.first_draft_contract_version ||
-      configuration.contract_version ||
-      configuration.version,
+    configuration.first_draft_contract_version || configuration.contract_version || configuration.version,
   ).toLowerCase();
-  return version === 'v1' || version.includes('live')
-    ? 'post_source_sentence'
-    : 'performance_response';
+  return version === 'v1' || version.includes('live') ? 'post_source_sentence' : 'performance_response';
 }
 
 function configurationAxis(configuration, key) {
@@ -104,9 +95,7 @@ function configurationAxis(configuration, key) {
 }
 
 function sentenceRows(value) {
-  return [...sentenceSegmenter.segment(String(value || ''))]
-    .map((segment) => segment.segment.trim())
-    .filter(Boolean);
+  return [...sentenceSegmenter.segment(String(value || ''))].map((segment) => segment.segment.trim()).filter(Boolean);
 }
 
 function qualifierBindings(sourceTokens) {
@@ -180,10 +169,7 @@ function sourceWitnessCandidates(source) {
   }
   candidates.push(authored);
   for (const candidate of [...candidates]) {
-    const withoutLeadingAppositive = candidate.replace(
-      /^([^,]{1,64}),\s*[^,]{1,160},\s*/u,
-      '$1 ',
-    );
+    const withoutLeadingAppositive = candidate.replace(/^([^,]{1,64}),\s*[^,]{1,160},\s*/u, '$1 ');
     if (withoutLeadingAppositive !== candidate) candidates.unshift(withoutLeadingAppositive);
   }
   return [...new Set(candidates.map(completeWitnessCandidate).filter(Boolean))];
@@ -197,18 +183,20 @@ function compensationFeasibilityWitness(source, maxWords) {
     source_relation_tokens: source.source_relation_tokens,
     required_qualifier_bindings: source.required_qualifier_bindings,
   };
-  return sourceWitnessCandidates(source).find((candidate) => {
-    const evaluation = evaluateCompensationSemantics(expected, candidate);
-    return (
-      evaluation.wordCount <= maxWords &&
-      evaluation.orderedExtractive &&
-      evaluation.materialTokenCount >= expected.min_material_source_tokens &&
-      evaluation.anchorMatches.length > 0 &&
-      evaluation.qualifiersPreserved &&
-      evaluation.relationClauseComplete &&
-      evaluation.notFullSource
-    );
-  }) || null;
+  return (
+    sourceWitnessCandidates(source).find((candidate) => {
+      const evaluation = evaluateCompensationSemantics(expected, candidate);
+      return (
+        evaluation.wordCount <= maxWords &&
+        evaluation.orderedExtractive &&
+        evaluation.materialTokenCount >= expected.min_material_source_tokens &&
+        evaluation.anchorMatches.length > 0 &&
+        evaluation.qualifiersPreserved &&
+        evaluation.relationClauseComplete &&
+        evaluation.notFullSource
+      );
+    }) || null
+  );
 }
 
 function compensationReadiness(source, owner) {
@@ -225,8 +213,7 @@ function compensationReadiness(source, owner) {
   }
   if (!(source?.fact_derived_anchors || []).length) issues.push('missing_fact_derived_anchor');
   if (!(source?.source_relation_tokens || []).length) issues.push('missing_source_relation');
-  const feasibilityWitness =
-    issues.length === 0 ? compensationFeasibilityWitness(source, maxWords) : null;
+  const feasibilityWitness = issues.length === 0 ? compensationFeasibilityWitness(source, maxWords) : null;
   if (!feasibilityWitness && !issues.length) issues.push('no_feasible_compensation_clause');
   return {
     ready: issues.length === 0,
@@ -253,9 +240,7 @@ export function compileTutorStubSourceAccessibilityContract({
   const normalizedSources = normalizeSources(sources, configuration);
   const owner = normalizeOwner(configuration);
   const active = normalizedSources.length > 0;
-  const directAccessible = normalizedSources.every(
-    (source) => source.text && source.accessibility?.ok === true,
-  );
+  const directAccessible = normalizedSources.every((source) => source.text && source.accessibility?.ok === true);
   const inaccessible = normalizedSources.filter((source) => source.accessibility?.ok !== true);
   const issues = [];
   let effectiveMode = 'direct';
@@ -383,8 +368,7 @@ function qualifierAudit(bindings, matchedSourceIndexes) {
   return (bindings || []).map((binding) => ({
     ...binding,
     qualifier_visible: matchedSourceIndexes.has(binding.qualifier_source_index),
-    scope_visible:
-      binding.scope_source_index === null || matchedSourceIndexes.has(binding.scope_source_index),
+    scope_visible: binding.scope_source_index === null || matchedSourceIndexes.has(binding.scope_source_index),
     ok:
       matchedSourceIndexes.has(binding.qualifier_source_index) &&
       (binding.scope_source_index === null || matchedSourceIndexes.has(binding.scope_source_index)),
@@ -392,36 +376,24 @@ function qualifierAudit(bindings, matchedSourceIndexes) {
 }
 
 function evaluateCompensationSemantics(expected, compensationText) {
-  const sourceTokenRows = tokens(
-    expected.semantic_source_text || expected.source_text || '',
-  );
+  const sourceTokenRows = tokens(expected.semantic_source_text || expected.source_text || '');
   const compensationTokenRows = tokens(compensationText);
   const match = orderedSourceMatch(sourceTokenRows, compensationTokenRows);
   const orderedExtractive = match.invalid.length === 0;
   const matchedSourceIndexes = new Set(match.matched.map((row) => row.source_index));
-  const materialMatches = match.matched.filter((row) =>
-    materialToken(sourceTokenRows[row.source_index]),
-  );
-  const anchorMatches = match.matched.filter((row) =>
-    (expected.fact_derived_anchors || []).includes(row.token),
-  );
-  const relationMatches = match.matched.filter((row) =>
-    (expected.source_relation_tokens || []).includes(row.token),
-  );
+  const materialMatches = match.matched.filter((row) => materialToken(sourceTokenRows[row.source_index]));
+  const anchorMatches = match.matched.filter((row) => (expected.fact_derived_anchors || []).includes(row.token));
+  const relationMatches = match.matched.filter((row) => (expected.source_relation_tokens || []).includes(row.token));
   const relationClauseComplete = relationMatches.some((relation) => {
-    const before = match.matched.some((matched) =>
-      matched.compensation_index < relation.compensation_index &&
-      (materialToken(sourceTokenRows[matched.source_index]) || SUBJECT_WORDS.has(matched.token)),
+    const before = match.matched.some(
+      (matched) =>
+        matched.compensation_index < relation.compensation_index &&
+        (materialToken(sourceTokenRows[matched.source_index]) || SUBJECT_WORDS.has(matched.token)),
     );
-    const after = materialMatches.some(
-      (material) => material.compensation_index > relation.compensation_index,
-    );
+    const after = materialMatches.some((material) => material.compensation_index > relation.compensation_index);
     return before && after;
   });
-  const qualifierBindings = qualifierAudit(
-    expected.required_qualifier_bindings,
-    matchedSourceIndexes,
-  );
+  const qualifierBindings = qualifierAudit(expected.required_qualifier_bindings, matchedSourceIndexes);
   const normalizedSource = sourceTokenRows.map((row) => row.normalized).join(' ');
   const normalizedCompensation = compensationTokenRows.map((row) => row.normalized).join(' ');
   return {
@@ -438,8 +410,7 @@ function evaluateCompensationSemantics(expected, compensationText) {
     qualifierBindings,
     qualifiersPreserved: qualifierBindings.every((binding) => binding.ok),
     wordCount: compensationTokenRows.length,
-    notFullSource:
-      normalizedCompensation.length > 0 && normalizedCompensation !== normalizedSource,
+    notFullSource: normalizedCompensation.length > 0 && normalizedCompensation !== normalizedSource,
   };
 }
 
@@ -522,8 +493,7 @@ export function auditTutorStubSourceAccessibilityCompensation({
     !/[?]/u.test(trimmedCompensation) &&
     !/^(?:how|what|when|where|which|who|why)\b/iu.test(trimmedCompensation);
   const unquoted =
-    !/[“”"‘]/u.test(trimmedCompensation) &&
-    !/(?:^|[^\p{L}])’|’(?:$|[^\p{L}])/u.test(trimmedCompensation);
+    !/[“”"‘]/u.test(trimmedCompensation) && !/(?:^|[^\p{L}])’|’(?:$|[^\p{L}])/u.test(trimmedCompensation);
   const semantics = evaluateCompensationSemantics(expected, trimmedCompensation);
   const {
     match,
@@ -599,9 +569,7 @@ export function auditTutorStubSourceAccessibilityCompensation({
     checks,
     spans: {
       source: sourceSpanValid ? { ...sourceSpan, text: sourceSlice } : sourceSpan,
-      compensation: compensationSpanValid
-        ? { ...compensationSpan, text: compensationSlice }
-        : compensationSpan,
+      compensation: compensationSpanValid ? { ...compensationSpan, text: compensationSlice } : compensationSpan,
     },
     word_count: wordCount,
     max_words: expected.max_words,

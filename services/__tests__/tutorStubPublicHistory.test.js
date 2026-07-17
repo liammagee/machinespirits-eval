@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  tutorStubPublicMessageContext,
-  tutorStubPublicMessagesForSpeaker,
-} from '../tutorStubPublicHistory.js';
+import { tutorStubPublicMessageContext, tutorStubPublicMessagesForSpeaker } from '../tutorStubPublicHistory.js';
 
 const storedHistory = [
   { role: 'system', content: 'private system text' },

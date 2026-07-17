@@ -30,19 +30,21 @@ test('development direct transport requires a seed and fails closed on CLI or un
     /requires an explicit non-held-out --development-seed/u,
   );
   assert.throws(
-    () => resolveTutorStubDevelopmentDirectModel({
-      modelRef: 'codex.gpt-5.6-terra',
-      developmentSeed: '1',
-      resolve: () => ({ provider: 'codex', model: 'gpt-5.6-terra', isConfigured: true }),
-    }),
+    () =>
+      resolveTutorStubDevelopmentDirectModel({
+        modelRef: 'codex.gpt-5.6-terra',
+        developmentSeed: '1',
+        resolve: () => ({ provider: 'codex', model: 'gpt-5.6-terra', isConfigured: true }),
+      }),
     /must resolve to a non-CLI provider/u,
   );
   assert.throws(
-    () => resolveTutorStubDevelopmentDirectModel({
-      modelRef: 'openai.standard',
-      developmentSeed: '1',
-      resolve: () => ({ provider: 'openai', model: 'gpt-test', isConfigured: false }),
-    }),
+    () =>
+      resolveTutorStubDevelopmentDirectModel({
+        modelRef: 'openai.standard',
+        developmentSeed: '1',
+        resolve: () => ({ provider: 'openai', model: 'gpt-test', isConfigured: false }),
+      }),
     /credentials are not configured/u,
   );
 });

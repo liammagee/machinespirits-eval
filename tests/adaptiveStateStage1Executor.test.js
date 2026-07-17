@@ -167,14 +167,7 @@ function createRealizer({ mutateMetadata = null, malformed = false, fail = null 
 }
 
 function createAnalyzerText({ capture = null, mutateMetadata = null, fail = null } = {}) {
-  return async ({
-    publicModelInput,
-    modelRef,
-    effort,
-    timeoutMs,
-    parseMode,
-    context,
-  }) => {
+  return async ({ publicModelInput, modelRef, effort, timeoutMs, parseMode, context }) => {
     if (capture) capture.push(structuredClone(publicModelInput));
     if (fail?.(context)) {
       const error = new Error('fixture analyzer failure');
@@ -284,10 +277,8 @@ function createAnalyzerText({ capture = null, mutateMetadata = null, fail = null
 
 async function postprocessAnalyzer({ analysis, publicModelInput, deterministicPostprocessorInput }) {
   const world = deterministicPostprocessorInput.world;
-  const record =
-    deterministicPostprocessorInput.learnerRecord || createTutorStubPublicLearnerRecord(world);
-  const dropout =
-    deterministicPostprocessorInput.dropout || createTutorStubDagFactDropoutState();
+  const record = deterministicPostprocessorInput.learnerRecord || createTutorStubPublicLearnerRecord(world);
+  const dropout = deterministicPostprocessorInput.dropout || createTutorStubDagFactDropoutState();
   const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({
     update: analysis.learnerRecordUpdate,
     world,
@@ -384,8 +375,10 @@ test('public analyzer sees only prior completed exchanges and currently staged e
   const matrixInputs = capturedAnalyzerInputs.filter((row) => row.promptContext.technical_canary !== true);
   assert.equal(matrixInputs.length, 168);
   for (const input of matrixInputs) {
-    assert.deepEqual(Object.keys(input.publicTranscript[0] || {}).sort(),
-      input.publicTranscript.length ? ['learner', 'turn', 'tutor'] : []);
+    assert.deepEqual(
+      Object.keys(input.publicTranscript[0] || {}).sort(),
+      input.publicTranscript.length ? ['learner', 'turn', 'tutor'] : [],
+    );
     assert.equal(input.publicTranscript.length, input.turn - 1);
     assert.ok(input.publicTranscript.every((row) => row.turn < input.turn));
     assert.ok(input.publicTranscript.every((row) => row.learner !== input.learnerText || row.turn !== input.turn));
@@ -441,13 +434,15 @@ test('public analyzer sees only prior completed exchanges and currently staged e
   const promptCall = completeDataset.calls.find((row) => {
     if (row.role !== 'public_turn_analyzer' || row.turn !== 3 || !row.matrix_scored_call) return false;
     const input = row.public_model_input;
-    return new Set([
-      input.publicTranscript[0].learner,
-      input.publicTranscript[0].tutor,
-      input.publicTranscript[1].learner,
-      input.publicTranscript[1].tutor,
-      input.learnerText,
-    ]).size === 5;
+    return (
+      new Set([
+        input.publicTranscript[0].learner,
+        input.publicTranscript[0].tutor,
+        input.publicTranscript[1].learner,
+        input.publicTranscript[1].tutor,
+        input.learnerText,
+      ]).size === 5
+    );
   });
   assert.ok(promptCall, 'turn-3 fixture needs five distinguishable chronological utterances');
   const [first, second] = promptCall.public_model_input.publicTranscript;
@@ -460,7 +455,10 @@ test('public analyzer sees only prior completed exchanges and currently staged e
     prompt.lastIndexOf(promptCall.public_model_input.learnerText),
   ];
   assert.ok(positions.every((value) => value >= 0));
-  assert.deepEqual([...positions].sort((left, right) => left - right), positions);
+  assert.deepEqual(
+    [...positions].sort((left, right) => left - right),
+    positions,
+  );
   assert.doesNotMatch(prompt, /Immediately preceding public tutor turn/u);
 });
 
@@ -532,12 +530,8 @@ test('S1 evaluator passes structural machinery but keeps injected execution non-
   assert.equal(audit.matrix.independent_latent_clusters, 12);
   assert.equal(audit.public_analyzer_event_family_recovery.passed, true);
   assert.ok(audit.public_analyzer_event_family_recovery.overall >= 0.8);
-  assert.ok(
-    Object.values(audit.public_analyzer_event_family_recovery.by_generator).every((rate) => rate >= 0.65),
-  );
-  assert.ok(
-    Object.values(audit.public_analyzer_event_family_recovery.by_realizer).every((rate) => rate >= 0.65),
-  );
+  assert.ok(Object.values(audit.public_analyzer_event_family_recovery.by_generator).every((rate) => rate >= 0.65));
+  assert.ok(Object.values(audit.public_analyzer_event_family_recovery.by_realizer).every((rate) => rate >= 0.65));
   const splitManifest = buildAdaptiveStateStage1SplitManifest(completeDataset.rows, config);
   assert.equal(splitManifest.cluster_key, 'groups.latent_pair_id');
   const report = buildAdaptiveStateStage1Report({
@@ -653,9 +647,7 @@ test('S1 structural audit rejects incomplete representations, non-oracle leakage
   const leaked = structuredClone(completeDataset);
   leaked.rows[0].representations.lean_dag.additional_state.leaked = leaked.world_local_fact_ids[0];
   assert.ok(
-    auditAdaptiveStateStage1Dataset(leaked, plan, config, { repoRoot: ROOT }).failures.includes(
-      'non_oracle_leakage',
-    ),
+    auditAdaptiveStateStage1Dataset(leaked, plan, config, { repoRoot: ROOT }).failures.includes('non_oracle_leakage'),
   );
 
   const stale = structuredClone(completeDataset);
@@ -742,10 +734,7 @@ test('S1 report validator rejects rehashed target-vocabulary drift', () => {
   });
   report.protocol.target_contracts[0].labels.reverse();
   report.content_sha256 = adaptiveStateStage1ReportContentSha256(report);
-  assert.throws(
-    () => validateAdaptiveStateStage1ReportContentSha256(report),
-    /report contract differs/u,
-  );
+  assert.throws(() => validateAdaptiveStateStage1ReportContentSha256(report), /report contract differs/u);
 });
 
 test('a canary model mismatch stops before the matrix with exactly one failed dispatched ledger row', async () => {
@@ -903,10 +892,7 @@ test('stale or non-v2.1 S0 parent and analyzer model mismatch are rejected', asy
 });
 
 test('pure S1 executor imports no provider bridge or live analyzer implementation', () => {
-  const source = fs.readFileSync(
-    path.join(ROOT, 'services/adaptiveTutor/stateBenchmarkStage1Executor.js'),
-    'utf8',
-  );
+  const source = fs.readFileSync(path.join(ROOT, 'services/adaptiveTutor/stateBenchmarkStage1Executor.js'), 'utf8');
   assert.doesNotMatch(source, /cliProviderBridge|stateBenchmarkCliRealizer|tutorStubPublicLearnerAnalysis/u);
 });
 
@@ -969,7 +955,10 @@ test('live seams propagate abort before dispatch and emit a finished zero-dispat
     /aborted before CLI process dispatch/u,
   );
   assert.equal(dispatched, false);
-  assert.deepEqual(lifecycle.map((event) => event.type), ['call_reached', 'call_finished']);
+  assert.deepEqual(
+    lifecycle.map((event) => event.type),
+    ['call_reached', 'call_finished'],
+  );
   assert.equal(lifecycle.at(-1).dispatchCount, 0);
 });
 

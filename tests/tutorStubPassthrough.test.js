@@ -10,7 +10,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function plainTerminalText(value) {
   const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
-  return String(value || '').replace(ansi, '').replace(/\r/gu, '');
+  return String(value || '')
+    .replace(ansi, '')
+    .replace(/\r/gu, '');
 }
 
 function installFakeCodex(tmp) {
@@ -162,15 +164,14 @@ test('passthrough makes exactly one speaker call with raw learner text and no ha
 
     const completion = events.find((event) => event.type === 'passthrough_turn_complete');
     assert.equal(completion.modelCallCount, 1);
-    assert.deepEqual(completion.requestSurface, [
-      'system_setup',
-      'full_public_history',
-      'latest_learner_message',
-    ]);
+    assert.deepEqual(completion.requestSurface, ['system_setup', 'full_public_history', 'latest_learner_message']);
     const stdout = plainTerminalText(result.stdout);
     assert.match(stdout, /passthrough > pure speaker chat/u);
     assert.match(stdout, /tutor > Pure speaker reply\./u);
-    assert.doesNotMatch(stdout, /director instructions|learning summary|learner classifier|learner reasoning tracker/iu);
+    assert.doesNotMatch(
+      stdout,
+      /director instructions|learning summary|learner classifier|learner reasoning tracker/iu,
+    );
     assert.equal(fs.existsSync(promptLog), true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

@@ -1,5 +1,4 @@
-export const TUTOR_STUB_SPEAKER_PUBLIC_PREMISE_SCHEMA =
-  'machinespirits.tutor-stub.speaker-public-premise.v1';
+export const TUTOR_STUB_SPEAKER_PUBLIC_PREMISE_SCHEMA = 'machinespirits.tutor-stub.speaker-public-premise.v1';
 
 function cloneCausalRelation(value = null) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;

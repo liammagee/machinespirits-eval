@@ -52,10 +52,7 @@ test('transition isolation replaces the bundled Hethel consequence on every real
   assert.equal(isolated.currentPublicActEnvelope.events[0].evidence_surface, atomic);
   assert.deepEqual(isolated.publicWorldVocabulary.released_evidence_surfaces, [atomic]);
   assert.equal(input.currentPublicActEnvelope.events[0].evidence_surface, source);
-  assert.equal(
-    adaptiveStateTransitionAtomicSurface({ question: 'A different world?', surface: source }),
-    source,
-  );
+  assert.equal(adaptiveStateTransitionAtomicSurface({ question: 'A different world?', surface: source }), source);
 });
 
 function publicInput() {
@@ -156,10 +153,9 @@ test('CLI realizer output parser is strict and preserves exact harness-owned eve
   );
   assert.throws(
     () =>
-      parseAdaptiveStateCliRealizerOutput(
-        '{"learner_text":"x","realized_public_event_ids":["derive:inference_01"]}',
-        { expectedEventIds },
-      ),
+      parseAdaptiveStateCliRealizerOutput('{"learner_text":"x","realized_public_event_ids":["derive:inference_01"]}', {
+        expectedEventIds,
+      }),
     /differ from the harness-owned/u,
   );
   assert.throws(
@@ -180,10 +176,9 @@ test('CLI realizer output parser is strict and preserves exact harness-owned eve
   );
   assert.throws(
     () =>
-      parseAdaptiveStateCliRealizerOutput(
-        '{"learner_text":" ","realized_public_event_ids":["adopt:evidence_01"]}',
-        { expectedEventIds },
-      ),
+      parseAdaptiveStateCliRealizerOutput('{"learner_text":" ","realized_public_event_ids":["adopt:evidence_01"]}', {
+        expectedEventIds,
+      }),
     /learner_text must be a non-empty string/u,
   );
 });

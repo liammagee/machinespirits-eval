@@ -20,8 +20,7 @@ function prohibitedStreamActivity(response) {
     ...(response?.streamEventTypeCounts || {}),
     ...(response?.streamItemTypeCounts || {}),
   }).filter(
-    ([type, count]) =>
-      Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
+    ([type, count]) => Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
   );
   if (Number(response?.prohibitedToolEventCount || 0) !== 0) {
     violations.push(['structured_event_audit', response.prohibitedToolEventCount]);
@@ -136,14 +135,7 @@ export function createAdaptiveStateStage1LiveSeams({
     }
   };
 
-  const analyzePublicText = async ({
-    publicModelInput,
-    modelRef,
-    effort,
-    timeoutMs,
-    parseMode,
-    context,
-  }) => {
+  const analyzePublicText = async ({ publicModelInput, modelRef, effort, timeoutMs, parseMode, context }) => {
     await notify(onReached, {
       type: 'call_reached',
       role: 'public_turn_analyzer',
@@ -305,11 +297,7 @@ export function createAdaptiveStateStage1LiveSeams({
     }
   };
 
-  const postprocessPublicAnalysis = async ({
-    analysis,
-    publicModelInput,
-    deterministicPostprocessorInput,
-  }) =>
+  const postprocessPublicAnalysis = async ({ analysis, publicModelInput, deterministicPostprocessorInput }) =>
     postprocessTutorStubPublicLearnerAnalysis({
       rawAnalysis: analysis.rawAnalysis,
       learnerText: publicModelInput.learnerText,

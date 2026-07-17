@@ -44,27 +44,20 @@ export function normalizeTokenUsage(usage, { available } = {}) {
     'completionTokens',
     'completion_tokens',
   ]);
-  const reasoningOutputTokens = firstUsageValue(usage, [
-    'reasoningOutputTokens',
-    'reasoning_output_tokens',
-  ]);
+  const reasoningOutputTokens = firstUsageValue(usage, ['reasoningOutputTokens', 'reasoning_output_tokens']);
   const reportedTotalTokens = firstUsageValue(usage, ['totalTokens', 'total_tokens']);
   const totalTokens =
-    reportedTotalTokens ??
-    (inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null);
+    reportedTotalTokens ?? (inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null);
   const normalized = {
     inputTokens,
     cachedInputTokens,
-    uncachedInputTokens:
-      inputTokens !== null && cachedInputTokens !== null ? inputTokens - cachedInputTokens : null,
+    uncachedInputTokens: inputTokens !== null && cachedInputTokens !== null ? inputTokens - cachedInputTokens : null,
     outputTokens,
     reasoningOutputTokens,
     totalTokens,
   };
   const tokenUsageAvailable = TOKEN_USAGE_FIELDS.some((field) => normalized[field] !== null);
-  return tokenUsageAvailable
-    ? { ...normalized, tokenUsageAvailable: true }
-    : unavailableTokenUsage();
+  return tokenUsageAvailable ? { ...normalized, tokenUsageAvailable: true } : unavailableTokenUsage();
 }
 
 export function tokenUsageFields(usage) {

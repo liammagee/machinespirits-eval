@@ -80,10 +80,7 @@ test('database closeout discards test rows and idempotently imports the exact cl
     git: { sha: 'c'.repeat(40) },
     configSha256: 'd'.repeat(64),
   }));
-  fs.writeFileSync(
-    rowsPath,
-    `${JSON.stringify({ schema: 'fixture', rows }, null, 2)}\n`,
-  );
+  fs.writeFileSync(rowsPath, `${JSON.stringify({ schema: 'fixture', rows }, null, 2)}\n`);
   fs.writeFileSync(
     manifestPath,
     `${JSON.stringify(
@@ -133,9 +130,7 @@ test('database closeout discards test rows and idempotently imports the exact cl
   assert.equal(before.local.tutorStub.sourcePresent, 1);
   assert.equal(before.claimSets[0].complete, false);
 
-  const applied = JSON.parse(
-    execFileSync(process.execPath, [...command, '--apply'], { cwd: ROOT, encoding: 'utf8' }),
-  );
+  const applied = JSON.parse(execFileSync(process.execPath, [...command, '--apply'], { cwd: ROOT, encoding: 'utf8' }));
   assert.equal(applied.ok, true);
   assert.equal(applied.claimSets[0].importedRows, 2);
   assert.ok(applied.backup?.path);

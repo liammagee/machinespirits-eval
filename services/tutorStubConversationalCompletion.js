@@ -1,5 +1,4 @@
-export const TUTOR_STUB_CONVERSATIONAL_COMPLETION_SCHEMA =
-  'machinespirits.tutor-stub.conversational-completion.v1';
+export const TUTOR_STUB_CONVERSATIONAL_COMPLETION_SCHEMA = 'machinespirits.tutor-stub.conversational-completion.v1';
 
 const QUESTION_MOVE_PATTERN = /\b(?:question|clarification|repair_request|plain_language_request)\b/iu;
 const RESOLVING_MOVE_PATTERN =
@@ -110,7 +109,10 @@ export function resolveTutorStubConversationalCompletion({
   if (UNSAFE_MOVE_PATTERN.test(moveSignal)) {
     return { ...base, status: 'rejected', reason: 'learner_move_conflicts_with_public_evidence' };
   }
-  if (NON_ANSWER_MOVE_PATTERN.test(moveSignal) && !/\b(?:hypothesis|inference|claim|evidence_adoption)\b/iu.test(moveSignal)) {
+  if (
+    NON_ANSWER_MOVE_PATTERN.test(moveSignal) &&
+    !/\b(?:hypothesis|inference|claim|evidence_adoption)\b/iu.test(moveSignal)
+  ) {
     return { ...base, reason: 'learner_move_changes_pacing_or_affect_without_answering_the_local_question' };
   }
 
@@ -127,9 +129,7 @@ export function resolveTutorStubConversationalCompletion({
 
   const qualified = QUALIFIED_MOVE_PATTERN.test(moveSignal) || Boolean(tutorLearnerDag?.accepted?.hypothesis);
   const status = qualified ? 'qualified' : 'accepted';
-  const acceptedMeaning = contextualAnswer
-    ? oneLine(generousInference.resolvedMeaning || summary)
-    : summary;
+  const acceptedMeaning = contextualAnswer ? oneLine(generousInference.resolvedMeaning || summary) : summary;
   const conceptSignature = [...new Set(tokens(`${sourceTutorQuestion} ${acceptedMeaning}`))].slice(0, 16);
   return {
     ...base,
@@ -187,8 +187,7 @@ export function auditTutorStubConversationalCompletionResponse({
     : questionOverlap >= reopenOverlapThreshold;
   const reopensResolvedPoint = Boolean(
     responseQuestion &&
-      (overlapReopensResolvedPoint ||
-        (!newEvidenceVisible && REOPEN_QUESTION_PATTERN.test(responseQuestion))),
+    (overlapReopensResolvedPoint || (!newEvidenceVisible && REOPEN_QUESTION_PATTERN.test(responseQuestion))),
   );
   const issues = [];
   if (reopensResolvedPoint) {
@@ -217,7 +216,8 @@ export function auditTutorStubConversationalCompletionResponse({
     if (novelClaimTokens.length >= 2) {
       issues.push({
         type: 'unsupported_endorsement_request',
-        reason: 'invites the learner to endorse a materially stronger proposition than the resolved move or available evidence supplies',
+        reason:
+          'invites the learner to endorse a materially stronger proposition than the resolved move or available evidence supplies',
         responseQuestion,
         novelClaimTokens: [...new Set(novelClaimTokens)].slice(0, 8),
       });
@@ -250,9 +250,12 @@ export function applyTutorStubConversationalCompletionSelection(selection = null
         null,
     };
   }
-  const previousActionFamily =
-    selection.response_configuration?.action_family || selection.action_family || null;
-  if (['close_inquiry', 'clarify_term', 'receive_vulnerability', 'reanchor_public_evidence'].includes(previousActionFamily)) {
+  const previousActionFamily = selection.response_configuration?.action_family || selection.action_family || null;
+  if (
+    ['close_inquiry', 'clarify_term', 'receive_vulnerability', 'reanchor_public_evidence'].includes(
+      previousActionFamily,
+    )
+  ) {
     return { selection, changed: false, previousActionFamily };
   }
   const updated = {

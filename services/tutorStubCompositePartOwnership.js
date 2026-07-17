@@ -1,5 +1,4 @@
-export const TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA =
-  'machinespirits.tutor-stub.composite-part-ownership.v1';
+export const TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_SCHEMA = 'machinespirits.tutor-stub.composite-part-ownership.v1';
 export const TUTOR_STUB_COMPOSITE_PART_OWNERSHIP_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.composite-part-ownership-audit.v1';
 
@@ -13,8 +12,7 @@ const ABSTRACT_CASE_STATUS_PATTERN =
   /^my case (?:is|rests)\s+(?:that\s+)?(?:closed|limited|open|strong|uncertain|unproved|weak|weakened)\b/iu;
 const DELEGATED_COMPLEMENT_PATTERN =
   /\b(?:break|challenge|check|compare|establish|examine|inspect|look|prove|read|resist|show|test|tie|trace|weigh)\b/iu;
-const RELATIONAL_OPERATION_PATTERN =
-  /\b(?:hold|lay|place|put|set)\b[^.!?]{0,70}\b(?:against|beside|by|with)\b/iu;
+const RELATIONAL_OPERATION_PATTERN = /\b(?:hold|lay|place|put|set)\b[^.!?]{0,70}\b(?:against|beside|by|with)\b/iu;
 const RELATIONAL_INQUIRY_PATTERN =
   /\bask\b[^.!?]{0,80}\b(?:how|what|which)\b|\b(?:how|what|which)\b[^.!?]{0,80}\b(?:can|could|does|would)\b[^.!?]{0,35}\b(?:establish|mean|prove|show|tell)\b/iu;
 const PERFORMANCE_ACTION_LEAD_PATTERN =

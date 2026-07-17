@@ -4,12 +4,7 @@
     "title": "The Recalled Edition",
     "setting": "The archive ledger, revision log, final paragraph, and window latch lie in public view on the archive desk.",
     "question": "Who inserted the false quote?",
-    "public_objects": [
-      "archive ledger",
-      "revision log",
-      "final paragraph",
-      "window latch"
-    ]
+    "public_objects": ["archive ledger", "revision log", "final paragraph", "window latch"]
   },
   "public_turn": {
     "visibility": "public",
@@ -51,12 +46,7 @@
         "title": "The Light Shillings",
         "setting": "Verrell's graver, the shilling, and the touchstone are public in the Marrick assay room.",
         "question": "Whose hand struck the false shillings?",
-        "public_objects": [
-          "graver",
-          "shilling",
-          "touchstone",
-          "crucible"
-        ]
+        "public_objects": ["graver", "shilling", "touchstone", "crucible"]
       },
       "public_turn": {
         "visibility": "public",

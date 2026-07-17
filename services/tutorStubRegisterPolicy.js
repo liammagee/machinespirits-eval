@@ -259,20 +259,20 @@ function registerEfficacyFromDagProgress({
     Math.max(0, delta.unsupportedAssertionCount);
   const label =
     progressScore > 0 ? 'positive_progress' : progressScore < 0 ? 'regression_or_overreach' : 'no_clear_progress';
-  const learnerRating = tutorFeedback?.supplied && ['up', 'down'].includes(tutorFeedback.rating)
-    ? tutorFeedback.rating
-    : null;
+  const learnerRating =
+    tutorFeedback?.supplied && ['up', 'down'].includes(tutorFeedback.rating) ? tutorFeedback.rating : null;
   const learnerFeedbackScore = learnerRating === 'up' ? 1 : learnerRating === 'down' ? -1 : 0;
   const selfAssessmentScore = progressScore + learnerFeedbackScore * 2;
-  const selfAssessmentLabel = learnerRating === 'up'
-    ? progressScore >= 0
-      ? 'learner_endorsed_with_stable_or_positive_progress'
-      : 'learner_endorsed_despite_dag_regression'
-    : learnerRating === 'down'
-      ? progressScore > 0
-        ? 'dag_progress_with_learner_disapproval'
-        : 'learner_disapproved_without_dag_progress'
-      : 'behavioral_evidence_only';
+  const selfAssessmentLabel =
+    learnerRating === 'up'
+      ? progressScore >= 0
+        ? 'learner_endorsed_with_stable_or_positive_progress'
+        : 'learner_endorsed_despite_dag_regression'
+      : learnerRating === 'down'
+        ? progressScore > 0
+          ? 'dag_progress_with_learner_disapproval'
+          : 'learner_disapproved_without_dag_progress'
+        : 'behavioral_evidence_only';
   const dagProgress = progressScore > 0;
   const field = fieldProgressFromClassification({ state, classification });
   const mismatch = classifyFieldStateRelation({ fieldProgress: field.progress, dagProgress });

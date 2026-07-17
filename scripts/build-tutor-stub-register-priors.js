@@ -414,10 +414,7 @@ function analyzeTrace(file) {
         ? byTurnId.get(String(legacyFeedback.targetTutorTurnId)) || null
         : byTurn.get(Number(legacyFeedback?.targetTutorTurn)) || null;
     const sourceTurn =
-      feedbackTargetTurn ||
-      byTurn.get(Number(efficacy?.registerTurn)) ||
-      byTurn.get(Number(turn.turn) - 1) ||
-      null;
+      feedbackTargetTurn || byTurn.get(Number(efficacy?.registerTurn)) || byTurn.get(Number(turn.turn) - 1) || null;
     const recordedConfiguration = recordedFeedback?.ratedResponse?.responseConfiguration || null;
     const register = canonicalRegister(
       recordedConfiguration?.engagement_stance ||
@@ -435,7 +432,11 @@ function analyzeTrace(file) {
       runId: recordedFeedback?.provenance?.runId || events.find((event) => event.runId)?.runId || null,
       evaluatedAtTurn: efficacy?.evaluatedAtTurn ?? turn.turn ?? null,
       registerTurn:
-        recordedFeedback?.ratedResponse?.turn ?? efficacy?.registerTurn ?? sourceTurn?.turn ?? legacyFeedback?.targetTutorTurn ?? null,
+        recordedFeedback?.ratedResponse?.turn ??
+        efficacy?.registerTurn ??
+        sourceTurn?.turn ??
+        legacyFeedback?.targetTutorTurn ??
+        null,
       register,
       outcome: objectiveOutcome,
       objectiveOutcome,
@@ -621,8 +622,7 @@ function heldOutRegisterValidation(observations, { minN }) {
   const minimumAbsoluteImprovement = 0.002;
   const minimumRelativeImprovement = 0.02;
   const eligible =
-    Number(improvement) >= minimumAbsoluteImprovement &&
-    Number(relativeImprovement) >= minimumRelativeImprovement;
+    Number(improvement) >= minimumAbsoluteImprovement && Number(relativeImprovement) >= minimumRelativeImprovement;
   return {
     status: eligible ? 'passed' : 'failed_no_material_holdout_advantage',
     eligible,

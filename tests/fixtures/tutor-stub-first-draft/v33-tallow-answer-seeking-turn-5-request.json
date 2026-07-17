@@ -71,9 +71,7 @@
       "replayedAssistantMessageCount": 5,
       "contextActivatedBy": "session_start",
       "firstDraftContractSchema": "machinespirits.tutor-stub.first-draft-turn-contract.v1",
-      "firstDraftCompatibilityDecisions": [
-        "recent_prop_saturation_prefers_spoken_character_work"
-      ],
+      "firstDraftCompatibilityDecisions": ["recent_prop_saturation_prefers_spoken_character_work"],
       "passthrough": false,
       "promptAudit": {
         "schema": "machinespirits.tutor-stub.prompt-audit.v1",

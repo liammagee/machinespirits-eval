@@ -52,8 +52,7 @@ const RELEASE_NOTE_GROUPS = [
     ],
     effect:
       'If a draft fails a response check, the repair should retain the live conversation and released clues without exposing private evidence or falling back to another scenario.',
-    lookFor:
-      'Fewer generic safe continuations and no sudden Marrick-like vocabulary or non sequiturs after a repair.',
+    lookFor: 'Fewer generic safe continuations and no sudden Marrick-like vocabulary or non sequiturs after a repair.',
   },
   {
     id: 'cli_experience',
@@ -61,8 +60,7 @@ const RELEASE_NOTE_GROUPS = [
     matches: [/safe diagnostic character loop/iu, /voice companion/iu, /CLI themes/iu, /release notes/iu],
     effect:
       'Diagnostic campaigns can preserve failures safely, while the interactive CLI has clearer visual and voice surfaces.',
-    lookFor:
-      'Safer complete diagnostic traces, theme-aware output, and an optional browser voice companion.',
+    lookFor: 'Safer complete diagnostic traces, theme-aware output, and an optional browser voice companion.',
   },
 ];
 
@@ -83,7 +81,8 @@ const OTHER_GROUP = {
   lookFor: 'Open the named commit before attributing a visible behavior change to it.',
 };
 
-const TUTOR_STUB_FILE = /^(?:scripts\/tutor-stub(?:[-.]|\/)|services\/tutorStub|tests\/tutorStub|services\/__tests__\/tutorStub|config\/tutor-stub|notes\/status\/.*character-generalization|docs\/tutor-stub|\.codex\/skills\/ms-tutor-stub-eval)/u;
+const TUTOR_STUB_FILE =
+  /^(?:scripts\/tutor-stub(?:[-.]|\/)|services\/tutorStub|tests\/tutorStub|services\/__tests__\/tutorStub|config\/tutor-stub|notes\/status\/.*character-generalization|docs\/tutor-stub|\.codex\/skills\/ms-tutor-stub-eval)/u;
 
 export function normalizeTutorStubReleaseNotesHours(value) {
   if (value === undefined || value === null || String(value).trim() === '') {
@@ -129,9 +128,7 @@ export function tutorStubReleaseNoteCommitIsRelevant(commit) {
 function groupForCommit(commit) {
   const subject = String(commit?.subject || '');
   if (/^(?:test|docs)\(tutor-stub\):/iu.test(subject)) return VALIDATION_GROUP;
-  return (
-    RELEASE_NOTE_GROUPS.find((group) => group.matches.some((pattern) => pattern.test(subject))) || OTHER_GROUP
-  );
+  return RELEASE_NOTE_GROUPS.find((group) => group.matches.some((pattern) => pattern.test(subject))) || OTHER_GROUP;
 }
 
 export function buildTutorStubReleaseNotes(

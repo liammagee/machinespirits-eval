@@ -15,10 +15,7 @@ import { compileTutorStubPerformanceObligationContract } from '../services/tutor
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fixture = JSON.parse(
-  fs.readFileSync(
-    path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-typed-composite-advocate.json'),
-    'utf8',
-  ),
+  fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-typed-composite-advocate.json'), 'utf8'),
 );
 
 function responseConfiguration() {
@@ -68,9 +65,7 @@ function contextFor(row) {
       learner_move: { summary: sourceTurn.learner_move },
       scene_action_budget: { saturated: false },
     },
-    dramaticReleaseFrame: row.source
-      ? { active: true, entries: [row.source] }
-      : { active: false, entries: [] },
+    dramaticReleaseFrame: row.source ? { active: true, entries: [row.source] } : { active: false, entries: [] },
     performanceObligationContract,
   });
   const jointPerformanceHostPlan = buildTutorStubJointPerformanceHostPlan(firstDraftContract);
@@ -95,9 +90,7 @@ function auditCase(row) {
   );
   const composition = composeTutorStubJointPerformanceFirstDraft({
     structured,
-    dramaticReleaseFrame: row.source
-      ? { active: true, entries: [row.source] }
-      : { active: false, entries: [] },
+    dramaticReleaseFrame: row.source ? { active: true, entries: [row.source] } : { active: false, entries: [] },
   });
   const audit = auditTutorStubJointPerformanceOwnership({
     composition,
@@ -116,15 +109,10 @@ function assertCompositeRequirements(row, audit) {
   assert.equal(audit.compositePartOwnership?.selected_part, 'advocate', row.id);
   assert.equal(audit.compositePartOwnership?.mode, 'delegated_complement', row.id);
   const requirements = Object.fromEntries(
-    (audit.compositePartOwnership?.requirements || []).map((requirement) => [
-      requirement.id,
-      requirement,
-    ]),
+    (audit.compositePartOwnership?.requirements || []).map((requirement) => [requirement.id, requirement]),
   );
   assert.deepEqual(
-    Object.fromEntries(
-      Object.entries(requirements).map(([id, requirement]) => [id, requirement.ok]),
-    ),
+    Object.fromEntries(Object.entries(requirements).map(([id, requirement]) => [id, requirement.ok])),
     row.expected.composite_requirements,
     row.id,
   );
@@ -174,11 +162,7 @@ test('typed composite fixture binds only the declared advocate compatibility dec
     const advocateDecisions = context.firstDraftContract.compatibility.decisions.filter((decision) =>
       decision.startsWith('advocate_'),
     );
-    assert.deepEqual(
-      advocateDecisions,
-      ['advocate_case_delegates_concrete_test_to_final_handoff'],
-      row.id,
-    );
+    assert.deepEqual(advocateDecisions, ['advocate_case_delegates_concrete_test_to_final_handoff'], row.id);
     assert.deepEqual(
       context.jointPerformanceHostPlan.compatibility.decisions,
       context.firstDraftContract.compatibility.decisions,

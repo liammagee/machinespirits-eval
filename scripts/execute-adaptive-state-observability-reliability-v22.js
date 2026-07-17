@@ -38,11 +38,7 @@ import { validateAdaptiveStateStoppedObservabilityPreflightV21 } from '../servic
 const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
 const DEFAULT_BENCHMARK_CONFIG = path.join(ROOT, 'config', 'adaptive-state-benchmark-v2.yaml');
-const DEFAULT_RELIABILITY_CONFIG = path.join(
-  ROOT,
-  'config',
-  'adaptive-state-observability-reliability-v2.2.yaml',
-);
+const DEFAULT_RELIABILITY_CONFIG = path.join(ROOT, 'config', 'adaptive-state-observability-reliability-v2.2.yaml');
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'adaptive-state-benchmark-v2');
 
 function arg(argv, name, fallback = null) {
@@ -112,9 +108,7 @@ function executionRunPlan({
 }) {
   const git = captureGitFingerprint({ repoRoot: ROOT });
   delete git.repoRoot;
-  const realizers = Object.fromEntries(
-    benchmarkConfig.critical_path.language_realizers.map((row) => [row.id, row]),
-  );
+  const realizers = Object.fromEntries(benchmarkConfig.critical_path.language_realizers.map((row) => [row.id, row]));
   const runtime = benchmarkConfig.paid_execution_contract.realizer_runtime;
   const analyzer = benchmarkConfig.paid_execution_contract.public_turn_analyzer;
   const s1Contract = adaptiveStateStage1StaticExecutionContract({
@@ -220,9 +214,7 @@ function renderReport(report) {
       ? [
           '## Failed draws',
           '',
-          ...report.failures.map(
-            (row) => `- ${row.id}: ${row.intended_family} -> ${row.observed_family}`,
-          ),
+          ...report.failures.map((row) => `- ${row.id}: ${row.intended_family} -> ${row.observed_family}`),
           '',
         ]
       : []),
@@ -262,12 +254,8 @@ async function main(argv = process.argv.slice(2)) {
   const stoppedArg = arg(argv, 'diagnoses-stopped-preflight');
   if (!s0Arg) throw new Error('--s0-parent is required');
   if (!stoppedArg) throw new Error('--diagnoses-stopped-preflight is required');
-  const benchmarkConfigPath = resolveFromRoot(
-    arg(argv, 'benchmark-config', DEFAULT_BENCHMARK_CONFIG),
-  );
-  const reliabilityConfigPath = resolveFromRoot(
-    arg(argv, 'reliability-config', DEFAULT_RELIABILITY_CONFIG),
-  );
+  const benchmarkConfigPath = resolveFromRoot(arg(argv, 'benchmark-config', DEFAULT_BENCHMARK_CONFIG));
+  const reliabilityConfigPath = resolveFromRoot(arg(argv, 'reliability-config', DEFAULT_RELIABILITY_CONFIG));
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
   const label = arg(argv, 'label', 'adaptive-state-v2-observability-reliability-v22');
   const runSeed = Number(arg(argv, 'run-seed', '20260712'));
@@ -289,11 +277,7 @@ async function main(argv = process.argv.slice(2)) {
     s0Parent,
     benchmarkConfig,
   });
-  const plan = buildAdaptiveStateObservabilityReliabilityPlan(
-    benchmarkConfig,
-    reliabilityConfig,
-    { label },
-  );
+  const plan = buildAdaptiveStateObservabilityReliabilityPlan(benchmarkConfig, reliabilityConfig, { label });
   const runDir = path.join(outRoot, label);
   const cliFingerprints = {
     codex: cliFingerprint('codex', { repoRoot: ROOT }),
@@ -432,12 +416,7 @@ async function main(argv = process.argv.slice(2)) {
       cli_fingerprints_sha256: runPlan.metadata.cliFingerprintsSha256,
     };
     result.content_sha256 = adaptiveStateObservabilityReliabilityResultContentSha256(result);
-    validateAdaptiveStateObservabilityReliabilityResult(
-      result,
-      plan,
-      benchmarkConfig,
-      reliabilityConfig,
-    );
+    validateAdaptiveStateObservabilityReliabilityResult(result, plan, benchmarkConfig, reliabilityConfig);
   } catch (error) {
     const partial = error.reliabilityPartial || {
       completed_draw_results: [],

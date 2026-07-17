@@ -212,9 +212,7 @@ function phase6ParentPlanProvenanceBlockers(plan = {}) {
   if (hashCanonicalJson(plan.requiredHashKinds) !== hashCanonicalJson([...PHASE6_REQUIRED_HASH_KINDS].sort())) {
     blockers.push('parent required hash kinds differ from the Phase 6A source contract');
   }
-  if (
-    PHASE6_REQUIRED_HASH_KINDS.some((kind) => !/^[0-9a-f]{64}$/u.test(String(plan.hashes?.[kind] || '')))
-  ) {
+  if (PHASE6_REQUIRED_HASH_KINDS.some((kind) => !/^[0-9a-f]{64}$/u.test(String(plan.hashes?.[kind] || '')))) {
     blockers.push('parent source hash set is incomplete');
   }
   if (
@@ -224,10 +222,7 @@ function phase6ParentPlanProvenanceBlockers(plan = {}) {
   ) {
     blockers.push('parent frozen role models/runtime are internally inconsistent');
   }
-  if (
-    !cliFingerprints ||
-    plan.metadata?.phase6CliFingerprintsSha256 !== hashCanonicalJson(cliFingerprints)
-  ) {
+  if (!cliFingerprints || plan.metadata?.phase6CliFingerprintsSha256 !== hashCanonicalJson(cliFingerprints)) {
     blockers.push('parent CLI executable/version fingerprints are internally inconsistent');
   }
   if (Number(plan.metadata?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY) {
@@ -275,13 +270,12 @@ function phase6CanarySnapshotBlockers(prior = null) {
   if (PHASE6_REQUIRED_HASH_KINDS.some((kind) => !/^[0-9a-f]{64}$/u.test(String(prior?.hashes?.[kind] || '')))) {
     blockers.push('technical-canary source hash set is incomplete');
   }
-  if (hashCanonicalJson(Object.keys(prior?.models || {}).sort()) !== hashCanonicalJson(['director', 'learner', 'tutor'])) {
+  if (
+    hashCanonicalJson(Object.keys(prior?.models || {}).sort()) !== hashCanonicalJson(['director', 'learner', 'tutor'])
+  ) {
     blockers.push('technical-canary frozen model roles are incomplete');
   }
-  if (
-    !prior?.phase6ModelRuntime ||
-    prior.phase6ModelRuntimeSha256 !== hashCanonicalJson(prior.phase6ModelRuntime)
-  ) {
+  if (!prior?.phase6ModelRuntime || prior.phase6ModelRuntimeSha256 !== hashCanonicalJson(prior.phase6ModelRuntime)) {
     blockers.push('technical-canary role runtime hash is inconsistent');
   }
   if (
@@ -805,9 +799,7 @@ function phase6RoleRuntime(role, mode) {
 }
 
 export function phase6ModelRuntime(mode) {
-  return Object.fromEntries(
-    ['director', 'tutor', 'learner'].map((role) => [role, phase6RoleRuntime(role, mode)]),
-  );
+  return Object.fromEntries(['director', 'tutor', 'learner'].map((role) => [role, phase6RoleRuntime(role, mode)]));
 }
 
 function evidenceModels(mode, runtime = phase6ModelRuntime(mode)) {
@@ -844,12 +836,7 @@ export function assertPhase6FrozenRuntime({ manifest, frozenPlan, concurrency } 
 
 export function buildEvidencePlan(
   manifest,
-  {
-    masterSeed,
-    dryRun,
-    gitFingerprint = null,
-    concurrency = manifest.mode === 'real' ? PHASE6_REAL_CONCURRENCY : 4,
-  },
+  { masterSeed, dryRun, gitFingerprint = null, concurrency = manifest.mode === 'real' ? PHASE6_REAL_CONCURRENCY : 4 },
 ) {
   const design = gateDesign(manifest);
   const git = gitFingerprint || capturePhase6GitFingerprint();
@@ -878,16 +865,10 @@ export function buildEvidencePlan(
     requiredObservedModelRoles: dryRun ? [] : ['director', 'tutor', 'learner'],
     hashes: {
       runner: hashFileSet(['scripts/run-derivation-phase6-gate.js', 'scripts/run-derivation-loop.js']),
-      analyzer: hashFileSet([
-        'scripts/run-derivation-phase6-gate.js',
-        'services/dramaticDerivation/phase6Verdict.js',
-      ]),
+      analyzer: hashFileSet(['scripts/run-derivation-phase6-gate.js', 'services/dramaticDerivation/phase6Verdict.js']),
       policy: hashFileSet(['services/dramaticDerivation/fieldPlanner.js']),
       profile: hashCanonicalJson({ profile: manifest.profile, worlds: manifest.worlds, arms: manifest.arms }),
-      prompt: hashFileSet([
-        'services/dramaticDerivation/llmRoles.js',
-        'services/dramaticDerivation/llmClient.js',
-      ]),
+      prompt: hashFileSet(['services/dramaticDerivation/llmRoles.js', 'services/dramaticDerivation/llmClient.js']),
       script: hashFileSet(manifest.rows.map((row) => row.script)),
       world: hashFileSet(manifest.rows.map((row) => row.world)),
       config: hashCanonicalJson({
@@ -944,7 +925,8 @@ export function phase6CanaryCompatibilityBlockers({ manifest, plan } = {}) {
   }
   if (
     parent.phase6ModelRuntimeSha256 !== plan?.metadata?.phase6ModelRuntimeSha256 ||
-    hashCanonicalJson(parent.phase6ModelRuntime || null) !== hashCanonicalJson(plan?.metadata?.phase6ModelRuntime || null)
+    hashCanonicalJson(parent.phase6ModelRuntime || null) !==
+      hashCanonicalJson(plan?.metadata?.phase6ModelRuntime || null)
   ) {
     blockers.push('technical canary and seeds 1-5 effort/timeout/runtime policies must match exactly');
   }
@@ -963,8 +945,7 @@ export function phase6CanaryCompatibilityBlockers({ manifest, plan } = {}) {
   }
   if (
     plan?.lineage?.parentRunId !== parent.parentRunId ||
-    hashCanonicalJson(plan?.metadata?.phase6CanaryParentProvenance) !==
-      hashCanonicalJson(priorCanaryMetadata(parent))
+    hashCanonicalJson(plan?.metadata?.phase6CanaryParentProvenance) !== hashCanonicalJson(priorCanaryMetadata(parent))
   ) {
     blockers.push('seeds 1-5 run plan must checksum-bind the sealed technical-canary parent');
   }
@@ -1006,8 +987,7 @@ export function phase6ContinuationCompatibilityBlockers({ manifest, plan } = {})
   }
   if (
     parent.phase6CliFingerprintsSha256 !== plan?.metadata?.phase6CliFingerprintsSha256 ||
-    hashCanonicalJson(parent.phase6CliFingerprints) !==
-      hashCanonicalJson(plan?.metadata?.phase6CliFingerprints)
+    hashCanonicalJson(parent.phase6CliFingerprints) !== hashCanonicalJson(plan?.metadata?.phase6CliFingerprints)
   ) {
     blockers.push('parent and continuation CLI executable realpaths/versions must match exactly');
   }
@@ -1063,7 +1043,9 @@ export function prepareEvidenceTransaction(
     }
     assertPhase6FrozenRuntime({ manifest, frozenPlan, concurrency });
     if (!fs.existsSync(manifestPath)) {
-      throw new Error('Refusing to resume Phase 6 without its immutable compatibility manifest; use a superseding label');
+      throw new Error(
+        'Refusing to resume Phase 6 without its immutable compatibility manifest; use a superseding label',
+      );
     }
     const expectedManifest = { ...structuredClone(manifest), generatedAt: frozenPlan.createdAt };
     if (hashCanonicalJson(readJson(manifestPath)) !== hashCanonicalJson(expectedManifest)) {
@@ -1082,11 +1064,7 @@ export function prepareEvidenceTransaction(
     assertPhase6ContinuationCompatibility({ manifest, plan: frozenPlan });
     const events = readRunEvents(manifest.gateDir);
     assertPhase6EventChain(events);
-    if (
-      events.some(
-        (event) => event.type === 'run_stopped' || event.status === PHASE6_INDETERMINATE_STATUS,
-      )
-    ) {
+    if (events.some((event) => event.type === 'run_stopped' || event.status === PHASE6_INDETERMINATE_STATUS)) {
       throw new Error('Refusing to resume a Phase 6 transaction marked same-label-forbidden; use a superseding label');
     }
     appendRunEvent(manifest.gateDir, {
@@ -1794,7 +1772,9 @@ function assertPhase6RowArtifactSemantics(row, plan) {
     Boolean(diagnosis.fieldPlanner) !== row.armKey.startsWith('field_planner') ||
     Boolean(diagnosis.fieldPlannerEnforce) !== (row.armKey === 'field_planner_enforce')
   ) {
-    throw new Error(`Phase 6 row ${row.id} artifacts do not match the frozen row/model semantics; use a superseding label`);
+    throw new Error(
+      `Phase 6 row ${row.id} artifacts do not match the frozen row/model semantics; use a superseding label`,
+    );
   }
 }
 
@@ -1919,9 +1899,7 @@ export function inspectPhase6ResumeMatrix(manifest, { plan, events = null } = {}
     });
     if (state.disposition === 'run_missing') reachedUntouchedTail = true;
     else if (reachedUntouchedTail) {
-      throw new Error(
-        `Phase 6 committed rows are not an exact prefix at ${row.id}; use a superseding label`,
-      );
+      throw new Error(`Phase 6 committed rows are not an exact prefix at ${row.id}; use a superseding label`);
     }
     states.set(row.id, state);
   }

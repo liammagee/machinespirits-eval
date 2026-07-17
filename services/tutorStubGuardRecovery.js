@@ -71,7 +71,7 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
     actorial_host_part: part,
     actorial_host_part_label: definition.label,
     actorial_part_selection: {
-      ...(structuredClone(source.actorial_part_selection || {})),
+      ...structuredClone(source.actorial_part_selection || {}),
       id: part,
       label: definition.label,
       contract: definition.contract,
@@ -87,11 +87,8 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
       selection_method: 'simplified_recovery_configuration',
     },
     surface_budgets: {
-      ...(structuredClone(source.surface_budgets || {})),
-      max_average_sentence_words: Math.min(
-        18,
-        Number(source.surface_budgets?.max_average_sentence_words || 18),
-      ),
+      ...structuredClone(source.surface_budgets || {}),
+      max_average_sentence_words: Math.min(18, Number(source.surface_budgets?.max_average_sentence_words || 18)),
     },
   };
   configuration.recovery_transition = {
@@ -106,7 +103,8 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
 export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstDraftContract = null } = {}) {
   const part = configuration?.actorial_part || 'examiner';
   const partCue = {
-    scene_partner: 'Use one short first-person shared action beside a named public object and make room for the learner.',
+    scene_partner:
+      'Use one short first-person shared action beside a named public object and make room for the learner.',
     examiner: 'Use one short first-person action that holds, compares, tests, or points to a named public exhibit.',
     record_keeper: 'Use one short first-person action that opens, reads, marks, or closes a named public record.',
     foreperson: 'State the supported finding, close the named public record, and ask no question.',
@@ -118,9 +116,7 @@ export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstD
     firstDraftContract?.learner_move
       ? `OPEN — Directly answer or credit this move without echoing it: ${firstDraftContract.learner_move}`
       : 'OPEN — Directly answer or credit the learner’s concrete move without generic praise.',
-    firstDraftContract?.development?.instruction
-      ? `ACT — ${firstDraftContract.development.instruction}`
-      : null,
+    firstDraftContract?.development?.instruction ? `ACT — ${firstDraftContract.development.instruction}` : null,
     `ENACT — ${partCue} Keep it direct and unadorned.`,
     evidence.length ? 'PUBLIC EVIDENCE — deliver each supplied line once and add nothing beyond it:' : null,
     ...evidence.map((row) => `- ${row}`),
@@ -139,8 +135,7 @@ const RECOVERY_TOKEN_STOPWORDS = new Set(
     ' ',
   ),
 );
-const RECOVERY_HOST_ACTION_PATTERN =
-  /^i\s+(?:compare|examine|hold|inspect|test|trace)\b/iu;
+const RECOVERY_HOST_ACTION_PATTERN = /^i\s+(?:compare|examine|hold|inspect|test|trace)\b/iu;
 
 function candidateText(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -148,7 +143,11 @@ function candidateText(value) {
 
 function recoveryTokens(value) {
   return new Set(
-    (String(value || '').toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+    (
+      String(value || '')
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’']/gu, ''))
       .filter((token) => !RECOVERY_TOKEN_STOPWORDS.has(token)),
   );
@@ -163,12 +162,18 @@ function recoveryOverlap(left, right) {
 }
 
 function recoverySentences(value) {
-  return String(value || '').trim().match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [];
+  return (
+    String(value || '')
+      .trim()
+      .match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || []
+  );
 }
 
 function recoveryDevelopmentWithoutRepeatedUptake(uptake, development) {
   const safeUptake = candidateText(uptake);
-  const sentences = recoverySentences(development).map((sentence) => sentence.trim()).filter(Boolean);
+  const sentences = recoverySentences(development)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
   while (
     sentences.length &&
     recoveryOverlap(safeUptake, sentences[0]) >= 0.45 &&
@@ -176,7 +181,10 @@ function recoveryDevelopmentWithoutRepeatedUptake(uptake, development) {
   ) {
     sentences.shift();
   }
-  return sentences.join(' ').replace(/\s+([”"])/gu, '$1').trim();
+  return sentences
+    .join(' ')
+    .replace(/\s+([”"])/gu, '$1')
+    .trim();
 }
 
 /**
@@ -197,8 +205,7 @@ export function repairTutorStubMissingClarificationInvitation({ text = '', deliv
   const eligible =
     hardIssues.length > 0 &&
     hardIssues.every(
-      (issue) =>
-        issue?.guard === 'question_support' && issue?.type === 'missing_clarification_invitation',
+      (issue) => issue?.guard === 'question_support' && issue?.type === 'missing_clarification_invitation',
     );
   if (!eligible) return { changed: false, text: candidateText(text) };
   const source = candidateText(text);
@@ -220,9 +227,7 @@ export function repairTutorStubUnanswerableOpenRecall({ text = '', deliveryDecis
   const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
   const eligible =
     hardIssues.length > 0 &&
-    hardIssues.every(
-      (issue) => issue?.guard === 'question_support' && issue?.type === 'unanswerable_open_recall',
-    );
+    hardIssues.every((issue) => issue?.guard === 'question_support' && issue?.type === 'unanswerable_open_recall');
   const source = candidateText(text);
   if (!eligible || !source) return { changed: false, text: source };
   const forbiddenQuestions = hardIssues.flatMap((issue) =>
@@ -231,9 +236,7 @@ export function repairTutorStubUnanswerableOpenRecall({ text = '', deliveryDecis
   if (!forbiddenQuestions.length) return { changed: false, text: source };
   const retained = recoverySentences(source).filter((sentence) => {
     const normalized = candidateText(sentence);
-    return !forbiddenQuestions.some(
-      (question) => normalized.includes(question) || question.includes(normalized),
-    );
+    return !forbiddenQuestions.some((question) => normalized.includes(question) || question.includes(normalized));
   });
   const repaired = retained.join(' ').trim();
   return {
@@ -257,8 +260,7 @@ export function repairTutorStubMissingActorialPart({
   const eligible =
     hardIssues.length > 0 &&
     hardIssues.every(
-      (issue) =>
-        issue?.guard === 'actorial_realization' && issue?.type === 'missing_selected_actorial_part',
+      (issue) => issue?.guard === 'actorial_realization' && issue?.type === 'missing_selected_actorial_part',
     );
   const source = candidateText(text);
   const uptake = candidateText(responseComposition?.uptake);
@@ -301,14 +303,16 @@ function mechanicalHostLeadIn(responseConfiguration = null) {
   const part = String(
     responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
   ).trim();
-  return {
-    scene_partner: 'I set the evidence between us',
-    examiner: 'I hold the evidence before us',
-    record_keeper: 'I mark the evidence in the open record',
-    advocate: 'I put the strongest public case before us',
-    skeptic: 'Not so fast—I hold the claim against the evidence',
-    foreperson: 'I enter the evidence as a provisional finding',
-  }[part] || 'I hold the evidence before us';
+  return (
+    {
+      scene_partner: 'I set the evidence between us',
+      examiner: 'I hold the evidence before us',
+      record_keeper: 'I mark the evidence in the open record',
+      advocate: 'I put the strongest public case before us',
+      skeptic: 'Not so fast—I hold the claim against the evidence',
+      foreperson: 'I enter the evidence as a provisional finding',
+    }[part] || 'I hold the evidence before us'
+  );
 }
 
 /**
@@ -326,13 +330,8 @@ export function repairTutorStubThirdPersonSourceLeadIn({
   for (const entry of dramaticReleaseFrame?.entries || []) {
     if (entry?.mode !== 'enacted_role' || !String(entry?.role || '').trim()) continue;
     const role = String(entry.role).trim();
-    const roleStem = role.replace(
-      /\s+(?:carrying|holding|presenting|reading|reciting|reporting|showing)\b.*$/iu,
-      '',
-    );
-    const variants = [...new Set([role, roleStem].filter(Boolean))].sort(
-      (left, right) => right.length - left.length,
-    );
+    const roleStem = role.replace(/\s+(?:carrying|holding|presenting|reading|reciting|reporting|showing)\b.*$/iu, '');
+    const variants = [...new Set([role, roleStem].filter(Boolean))].sort((left, right) => right.length - left.length);
     let match = null;
     let matchedPattern = null;
     for (const variant of variants) {
@@ -408,7 +407,12 @@ export function tutorStubPlainRecoveryAllowsActorialAdvisory({
   loopMode = 'strict',
   learnerRequestedPlainStyle = false,
 } = {}) {
-  return learnerRequestedPlainStyle === true || String(loopMode || '').trim().toLowerCase() === 'diagnostic';
+  return (
+    learnerRequestedPlainStyle === true ||
+    String(loopMode || '')
+      .trim()
+      .toLowerCase() === 'diagnostic'
+  );
 }
 
 /**
@@ -423,9 +427,7 @@ export function tutorStubActorialPerformanceMayBeAdvisory(
   actorialRealizationAudit = null,
   responseConfigurationAudit = null,
 ) {
-  const issues = Array.isArray(actorialRealizationAudit?.issues)
-    ? actorialRealizationAudit.issues
-    : [];
+  const issues = Array.isArray(actorialRealizationAudit?.issues) ? actorialRealizationAudit.issues : [];
   const axes = responseConfigurationAudit?.axes || {};
   const nonActorialAxesVisible = [
     'engagement_stance',
@@ -445,10 +447,7 @@ export function tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
   actorialRealizationAudit = null,
   responseConfigurationAudit = null,
 ) {
-  return tutorStubActorialPerformanceMayBeAdvisory(
-    actorialRealizationAudit,
-    responseConfigurationAudit,
-  );
+  return tutorStubActorialPerformanceMayBeAdvisory(actorialRealizationAudit, responseConfigurationAudit);
 }
 
 export function tutorStubGuardDeliveryDecision(issueRows = [], options = {}) {

@@ -1,15 +1,10 @@
 import { auditTutorStubResponseConfiguration } from './tutorStubResponseConfiguration.js';
-import {
-  auditTutorStubDueSourceActionAlignment,
-  renderTutorStubDueSource,
-} from './tutorStubDueSourceRenderer.js';
+import { auditTutorStubDueSourceActionAlignment, renderTutorStubDueSource } from './tutorStubDueSourceRenderer.js';
 
-export const TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA =
-  'machinespirits.tutor-stub.structured-first-draft.v1';
+export const TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA = 'machinespirits.tutor-stub.structured-first-draft.v1';
 export const TUTOR_STUB_STRUCTURED_COMPOSITION_SCHEMA =
   'machinespirits.tutor-stub.structured-first-draft-composition.v1';
-export const TUTOR_STUB_STRUCTURED_SLOT_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.structured-first-draft-slot-audit.v1';
+export const TUTOR_STUB_STRUCTURED_SLOT_AUDIT_SCHEMA = 'machinespirits.tutor-stub.structured-first-draft-slot-audit.v1';
 
 const STRUCTURED_KEYS = Object.freeze(['uptake', 'part', 'tactic', 'handoff']);
 const HOST_PLAN_BLOCK = /\[Tutor-only host plan\][\s\S]*?\[End tutor-only host plan\]/u;
@@ -71,7 +66,11 @@ function exactOccurrences(text, needle) {
 
 function sourceContentTokens(value) {
   return new Set(
-    (String(value || '').toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]{2,}/gu) || [])
+    (
+      String(value || '')
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’]/gu, "'").replace(/'s$/u, ''))
       .filter((token) => token.length >= 4 && !SOURCE_FINGERPRINT_STOP_WORDS.has(token)),
   );
@@ -231,10 +230,7 @@ export function replaceTutorStubFrozenRequestWithStructuredPrompt(bundle = null)
   if (matches.length !== 1) {
     throw new Error(`structured frozen request requires exactly one host plan block; found ${matches.length}`);
   }
-  latest.content = content.replace(
-    HOST_PLAN_BLOCK,
-    tutorStubStructuredFirstDraftPrompt(refreshed.firstDraftContract),
-  );
+  latest.content = content.replace(HOST_PLAN_BLOCK, tutorStubStructuredFirstDraftPrompt(refreshed.firstDraftContract));
   refreshed.request.messages = messages;
   refreshed.structuredFirstDraft = {
     schema: TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA,

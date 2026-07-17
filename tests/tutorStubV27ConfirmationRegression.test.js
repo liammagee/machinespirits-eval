@@ -73,9 +73,7 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
   });
 
   assert.ok(
-    fixture.recorded_audit.failure_clusters.includes(
-      fixture.post_v28_expected_audit.corrected_recorded_false_negative,
-    ),
+    fixture.recorded_audit.failure_clusters.includes(fixture.post_v28_expected_audit.corrected_recorded_false_negative),
   );
   const expected = fixture.post_canonical_audit_expected;
   const typedCausalFailureCluster = 'responseCompositionAudit:unlicensed_requested_entry';
@@ -99,10 +97,7 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
     audit.failureClusters.includes(fixture.post_v28_expected_audit.corrected_recorded_false_negative),
     false,
   );
-  assert.equal(
-    audit.audits.responseConfigurationAudit.realization_rate,
-    expected.configuration_realization,
-  );
+  assert.equal(audit.audits.responseConfigurationAudit.realization_rate, expected.configuration_realization);
   assert.equal(audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.recognized, false);
   assert.equal(
     audit.audits.responseCompositionAudit.requestedEntryAnswerRecognition.license.material_grounding
@@ -117,7 +112,8 @@ test('V27 cross-world confirmation rejection remains available for exact model-f
   assert.deepEqual(audit.audits.responseCompositionAudit.issues, [
     {
       type: 'unlicensed_requested_entry',
-      reason: 'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
+      reason:
+        'supplies requested wording that changes an actor, causal relation, polarity, or public evidentiary limit',
     },
   ]);
   assert.deepEqual(

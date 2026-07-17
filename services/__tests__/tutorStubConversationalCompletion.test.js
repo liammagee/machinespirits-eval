@@ -91,8 +91,7 @@ test('new public evidence permits a genuinely new question after concise uptake'
     previousTutorText: GAZETTE_QUESTION,
     classification: gazetteClassification(),
   });
-  const dueEvidence =
-    'The archive copy shows Crane filed clean prose; the false kicker was inserted after filing.';
+  const dueEvidence = 'The archive copy shows Crane filed clean prose; the false kicker was inserted after filing.';
   const audit = auditTutorStubConversationalCompletionResponse({
     text: `Exactly—Crane remains possible, not proven. ${dueEvidence} Whose later access should we test next?`,
     completion,

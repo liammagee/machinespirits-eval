@@ -29,14 +29,8 @@ test('does not mistake an explicit evidentiary boundary for an asserted conclusi
   const text =
     'You have it: Edony alone drew the crucible whose melt these blanks bear. I slide the charcoal book between us. A struck coin also needs its die; what remains unsafe to write about Edony?';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: strikingWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: strikingWords }), false);
 });
 
 test('allows a proof-boundary question but not a leading culprit question', () => {
@@ -62,54 +56,36 @@ test('does not bind a later generic die boundary back to an earlier answer sente
   const text =
     'Edony alone drew the crucible whose melt these blanks bear, so the blanks were cast by Edony. I close the charcoal book; that still tells us nothing yet of whose die struck them.';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: strikingWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: strikingWords }), false);
 });
 
 test('does not treat an answer-naming custody clue plus an unfound die-mark as a die conclusion', () => {
   const text =
     '“I have kept this book exact: since the forge was shut, one hand alone drew the weir crucible and signed for its charcoal—Edony, the founder’s widow.” What does that change about the blanks, while the die-mark remains to be found?';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
 });
 
 test('does not bind a quoted custody clue to a following die-boundary question', () => {
   const text =
     '“I have kept this book exact: since the forge was shut, Edony alone drew the weir crucible and signed for its charcoal.” What does that tell the trial-book about who cast these blanks, while the die remains unmarked?';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
 });
 
 test('does not treat an answer-naming custody clue plus an unseen die-mark as a die conclusion', () => {
   const text =
     '“I have kept the charcoal reckonings since the forge shut. One hand alone drew the weir crucible and signed for its charcoal: Edony, the founder’s widow.” What does this fix about the hand that cast the blank, while the die-mark remains unseen?';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
 });
 
 test('does not treat an answer-naming casting inference plus an unaccounted die as a die conclusion', () => {
   const text =
     'Edony’s hand is tied to casting these blanks, but the shilling’s die remains unaccounted for. A cast blank alone cannot tell us whose hammer struck it.';
 
-  assert.equal(
-    tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }),
-    false,
-  );
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
 });
 
 test('does not treat explicit cast-versus-strike boundaries as a final conclusion', () => {

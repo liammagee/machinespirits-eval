@@ -24,10 +24,7 @@ test('compiles the inactive-candidate relation into a production claim, not a pr
 
 test('the causal contract is world-general rather than tied to Tallow vocabulary', () => {
   const contract = compileTutorStubWritableEntryCausalContract({
-    surfaces: [
-      'The cellar pumps were idle for the whole inspection.',
-      'The basement still flooded before dawn.',
-    ],
+    surfaces: ['The cellar pumps were idle for the whole inspection.', 'The basement still flooded before dawn.'],
   });
 
   assert.equal(contract?.public_relation, 'inactive_candidate_with_persisting_outcome');
@@ -35,10 +32,7 @@ test('the causal contract is world-general rather than tied to Tallow vocabulary
 });
 
 test('the shared audit licenses negative production but rejects prevention inversion', () => {
-  const surfaces = [
-    'The cellar pumps were idle for the whole inspection.',
-    'The basement still flooded before dawn.',
-  ];
+  const surfaces = ['The cellar pumps were idle for the whole inspection.', 'The basement still flooded before dawn.'];
   const production = auditTutorStubPublicCausalRelationSupport({
     surfaces,
     quotedLine: 'The idle pumps did not cause the basement flood.',
@@ -50,9 +44,7 @@ test('the shared audit licenses negative production but rejects prevention inver
 
   assert.equal(production.family, 'production');
   assert.equal(production.supported, true);
-  assert.deepEqual(production.constructions, [
-    'inactive_candidate_with_persisting_outcome_rules_out_production',
-  ]);
+  assert.deepEqual(production.constructions, ['inactive_candidate_with_persisting_outcome_rules_out_production']);
   assert.equal(prevention.family, 'prevention');
   assert.equal(prevention.supported, false);
 });
@@ -164,44 +156,48 @@ test('typed causal extraction is stable across repeated calls', () => {
 test('typed causal compilation fails closed on malformed or ambiguous metadata', () => {
   const surface = 'The pumps were idle, yet the basement still flooded.';
   assert.throws(
-    () => compileTutorStubWritableEntryCausalContract({
-      surfaces: [surface],
-      evidence: [{
-        surface,
-        causal_relation: {
-          kind: 'inactive_candidate_with_persisting_outcome',
-          family: 'prevention',
-          subject: 'cellar pumps',
-          outcome: 'basement flood',
-        },
-      }],
-    }),
+    () =>
+      compileTutorStubWritableEntryCausalContract({
+        surfaces: [surface],
+        evidence: [
+          {
+            surface,
+            causal_relation: {
+              kind: 'inactive_candidate_with_persisting_outcome',
+              family: 'prevention',
+              subject: 'cellar pumps',
+              outcome: 'basement flood',
+            },
+          },
+        ],
+      }),
     /incomplete or incompatible/iu,
   );
   assert.throws(
-    () => compileTutorStubWritableEntryCausalContract({
-      surfaces: [surface],
-      evidence: [
-        {
-          surface,
-          causal_relation: {
-            kind: 'inactive_candidate_with_persisting_outcome',
-            family: 'production',
-            subject: 'cellar pumps',
-            outcome: 'basement flood',
+    () =>
+      compileTutorStubWritableEntryCausalContract({
+        surfaces: [surface],
+        evidence: [
+          {
+            surface,
+            causal_relation: {
+              kind: 'inactive_candidate_with_persisting_outcome',
+              family: 'production',
+              subject: 'cellar pumps',
+              outcome: 'basement flood',
+            },
           },
-        },
-        {
-          surface,
-          causal_relation: {
-            kind: 'inactive_candidate_with_persisting_outcome',
-            family: 'production',
-            subject: 'drain pumps',
-            outcome: 'basement flood',
+          {
+            surface,
+            causal_relation: {
+              kind: 'inactive_candidate_with_persisting_outcome',
+              family: 'production',
+              subject: 'drain pumps',
+              outcome: 'basement flood',
+            },
           },
-        },
-      ],
-    }),
+        ],
+      }),
     /exactly one typed public relation/iu,
   );
 });

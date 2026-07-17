@@ -14,12 +14,7 @@ const REQUIRED_AXES = Object.freeze([
   'scene_immersion',
   'actorial_part',
 ]);
-const V2_SURFACE_IDS = Object.freeze([
-  'uptake',
-  'performance_entry',
-  'performance_response',
-  'handoff',
-]);
+const V2_SURFACE_IDS = Object.freeze(['uptake', 'performance_entry', 'performance_response', 'handoff']);
 
 function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
@@ -41,9 +36,7 @@ function lineValue(text, label) {
 }
 
 function namedTutor(systemPrompt) {
-  return oneLine(
-    String(systemPrompt || '').match(/\[Named tutor instance:\s*([^\]\n]+)\]/iu)?.[1],
-  );
+  return oneLine(String(systemPrompt || '').match(/\[Named tutor instance:\s*([^\]\n]+)\]/iu)?.[1]);
 }
 
 function publicWorld(contract, systemPrompt) {
@@ -115,15 +108,12 @@ function jointHostPlan(bundle) {
 }
 
 function selectedAxes(bundle, contract) {
-  const configuration =
-    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const configuration = bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
   const axes = {
-    engagement_stance:
-      configuration.engagement_stance || contract?.performance?.engagement_stance,
+    engagement_stance: configuration.engagement_stance || contract?.performance?.engagement_stance,
     action_family: configuration.action_family || contract?.development?.action_family,
     audience_register: configuration.audience_register || contract?.language?.audience_register,
-    lexical_accessibility:
-      configuration.lexical_accessibility || contract?.language?.lexical_accessibility,
+    lexical_accessibility: configuration.lexical_accessibility || contract?.language?.lexical_accessibility,
     scene_immersion: configuration.scene_immersion || contract?.language?.scene_immersion,
     actorial_part: configuration.actorial_part || contract?.performance?.actorial_part,
   };
@@ -135,8 +125,7 @@ function selectedAxes(bundle, contract) {
 }
 
 function selectedPerformance(bundle, contract) {
-  const configuration =
-    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const configuration = bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
   const selected = configuration.actorial_performance || {};
   const id = oneLine(selected.id || contract?.performance?.tactic);
   const label = oneLine(selected.label || contract?.performance?.tactic_label || id);
@@ -239,8 +228,7 @@ function compactUserPrompt({
     (row) => `- ${row.axis}=${row.selected}: ${row.instruction || 'make this selection visible'}`,
   );
   const engagementOperation = plan.slots.performance.engagement_operation_contract || null;
-  const entryOwnsStance =
-    engagementOperation?.active === true && engagementOperation?.owner === 'performance_entry';
+  const entryOwnsStance = engagementOperation?.active === true && engagementOperation?.owner === 'performance_entry';
   const performanceInstructions = [
     plan.slots.performance.response_instruction,
     plan.slots.performance.compatibility_instruction,
@@ -322,9 +310,7 @@ export function buildTutorStubCompactNoSourceRequest(bundle = null, { maxEstimat
   const performance = selectedPerformance(bundle, contract);
   const decisions = axisDecisions(axes, contract, plan);
   const world = publicWorld(contract, sourceRequest.systemPrompt);
-  const learnerText = oneLine(
-    bundle.learnerText || contract?.progression?.learner_uptake?.learner_surface,
-  );
+  const learnerText = oneLine(bundle.learnerText || contract?.progression?.learner_uptake?.learner_surface);
   const focus = oneLine(contract?.progression?.turn_focus_contract?.primary_surface || learnerText);
   const handoffFocus = handoffTurnFocus(contract, focus);
   if (!learnerText || !focus) {
@@ -387,10 +373,7 @@ export function buildTutorStubCompactNoSourceRequest(bundle = null, { maxEstimat
   };
 }
 
-export function replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(
-  bundle = null,
-  options = {},
-) {
+export function replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(bundle = null, options = {}) {
   const result = buildTutorStubCompactNoSourceRequest(bundle, options);
   const refreshed = clone(bundle);
   refreshed.request = result.request;

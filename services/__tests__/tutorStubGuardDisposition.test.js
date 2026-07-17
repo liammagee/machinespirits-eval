@@ -83,11 +83,7 @@ test('the existing actorial advisory override cannot override an independent har
 });
 
 test('unknown and malformed findings fail closed under every boundary policy', () => {
-  const issues = [
-    { guard: 'new_guard', type: 'new_issue' },
-    { guard: 'question_support' },
-    null,
-  ];
+  const issues = [{ guard: 'new_guard', type: 'new_issue' }, { guard: 'question_support' }, null];
   for (const boundaryPolicy of Object.values(TUTOR_STUB_GUARD_BOUNDARY_POLICIES)) {
     for (const issue of issues) {
       const classification = classifyTutorStubGuardIssue(issue);
@@ -163,15 +159,12 @@ test('deterministic audits remain immutable and disposition provenance is record
   assert.equal(decision.dispositions[0].ruleId, 'dramatic_release:missing_return_to_inquiry');
   assert.deepEqual(
     decision.reportOnlyIssues.map((issue) => issue.axis),
-    [
-      'engagement_stance',
-      'action_family',
-      'audience_register',
-      'lexical_accessibility',
-      'scene_immersion',
-    ],
+    ['engagement_stance', 'action_family', 'audience_register', 'lexical_accessibility', 'scene_immersion'],
   );
-  assert.equal(rows.some((row) => row.axis === 'actorial_part'), false);
+  assert.equal(
+    rows.some((row) => row.axis === 'actorial_part'),
+    false,
+  );
 });
 
 test('an issue payload cannot spoof the hard audit namespace that produced it', () => {
@@ -220,10 +213,7 @@ test('missing clue delivery is a hard transactional veto and cannot commit relea
   });
   const issues = tutorStubGuardIssueRows({ releaseDeliveryAudit: audit });
   const decision = decideTutorStubGuardDelivery(
-    [
-      ...issues,
-      { guard: 'actorial_realization', type: 'missing_selected_performance_tactic' },
-    ],
+    [...issues, { guard: 'actorial_realization', type: 'missing_selected_performance_tactic' }],
     { boundaryPolicy: TUTOR_STUB_GUARD_BOUNDARY_POLICIES.shadowAdvisory },
   );
   assert.equal(audit.ok, false);

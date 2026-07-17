@@ -12,8 +12,7 @@ import { buildDynamicalSystemState } from '../services/tutorStubRegisterPolicy.j
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROWS_FILE = 'exports/register-confirmatory-evidence/final/primary-endpoint-rows.json';
-const FINAL_MANIFEST =
-  'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json';
+const FINAL_MANIFEST = 'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json';
 const GREENROOM_DIR = 'exports/greenroom-gate1-2026-07-12';
 const GREENROOM_MANIFEST = `${GREENROOM_DIR}/raw-bundle-manifest.json`;
 const OUTPUT_DIR = 'exports/tutor-stub-step4-trigger-audit';
@@ -164,7 +163,9 @@ function questionCount(text) {
 }
 
 function textExcerpt(text) {
-  const compact = String(text || '').replace(/\s+/gu, ' ').trim();
+  const compact = String(text || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   return compact.length <= 240 ? compact : `${compact.slice(0, 237)}...`;
 }
 
@@ -184,8 +185,7 @@ function baselineCompliance(kind, record, previousLeavesReleased) {
   }
   return {
     pass:
-      leavesReleased > previousLeavesReleased ||
-      ['reanchor_public_evidence', 'ground_in_material'].includes(action),
+      leavesReleased > previousLeavesReleased || ['reanchor_public_evidence', 'ground_in_material'].includes(action),
     criteria: {
       releasedDuePremise: leavesReleased > previousLeavesReleased,
       changedInstrument: ['reanchor_public_evidence', 'ground_in_material'].includes(action),
@@ -208,8 +208,7 @@ function replay(source) {
       tutorLearnerDag: { model: record.tutorLearnerDagModel },
     });
     const turn = Number(record.turn);
-    const action =
-      record.registerSelection?.action_family || record.responseConfiguration?.action_family || null;
+    const action = record.registerSelection?.action_family || record.responseConfiguration?.action_family || null;
     const previousActions = state.turns
       .slice(-REPEATED_ACTION_LOOKBACK)
       .map((prior) => prior.registerSelection?.action_family || prior.responseConfiguration?.action_family || null);
@@ -404,7 +403,8 @@ function buildAudit() {
         validOpportunities: SAMPLE_SIZE,
         samples: deterministicSample(opportunities, 'stagnant_repeat'),
       },
-      caveat: 'Small deterministic samples from one simulated world; validity does not establish human pedagogical benefit.',
+      caveat:
+        'Small deterministic samples from one simulated world; validity does not establish human pedagogical benefit.',
     },
     preregistrationConsequence: {
       futureRunsPerArmFamily: 10,

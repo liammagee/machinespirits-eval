@@ -67,8 +67,7 @@ function trainingRows() {
         },
       },
       targets: {
-        next_dag_event_family:
-          action === 'request_evidence' ? 'derive' : action === 'minimal_hint' ? 'adopt' : 'none',
+        next_dag_event_family: action === 'request_evidence' ? 'derive' : action === 'minimal_hint' ? 'adopt' : 'none',
       },
     };
   });
@@ -108,7 +107,10 @@ test('state-blind baselines use only training-fold counts with alpha=1 and an ex
   const testing = trainingRows().slice(6, 9);
   for (const row of testing) row.targets.next_dag_event_family = 'retract';
   const predictions = predictAdaptiveStateTrainingFoldClassPrior(model, testing);
-  assert.deepEqual(predictions.map((row) => row.probabilities), Array(3).fill(model.probabilities));
+  assert.deepEqual(
+    predictions.map((row) => row.probabilities),
+    Array(3).fill(model.probabilities),
+  );
   const uniform = predictAdaptiveStateUniformBaseline(testing, {
     target: 'next_dag_event_family',
     labels,
@@ -175,8 +177,5 @@ test('Stage-0 content hash rejects post-seal dataset mutation', () => {
   const { dataset } = stage0Fixture();
   dataset.rows[0].targets.next_dag_event_family =
     dataset.rows[0].targets.next_dag_event_family === 'none' ? 'adopt' : 'none';
-  assert.throws(
-    () => validateAdaptiveStateStage0DatasetContentSha256(dataset),
-    /dataset content SHA-256 mismatch/u,
-  );
+  assert.throws(() => validateAdaptiveStateStage0DatasetContentSha256(dataset), /dataset content SHA-256 mismatch/u);
 });

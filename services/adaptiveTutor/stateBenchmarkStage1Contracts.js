@@ -20,11 +20,7 @@ function aggregateFileHash(paths, repoRoot) {
  * Freeze the exact source/config surface that a passing observability preflight
  * is allowed to authorize for a later full S1 retry.
  */
-export function adaptiveStateStage1StaticExecutionContract({
-  config,
-  configPath,
-  repoRoot = path.resolve('.'),
-} = {}) {
+export function adaptiveStateStage1StaticExecutionContract({ config, configPath, repoRoot = path.resolve('.') } = {}) {
   if (!config || !configPath) {
     throw new Error('stateBenchmarkStage1Contracts: config and configPath are required');
   }
@@ -79,7 +75,10 @@ export function adaptiveStateStage1StaticExecutionContract({
         realizer: config.realizer_contract,
         analyzer: config.paid_execution_contract.public_turn_analyzer,
       }),
-      world: aggregateFileHash(config.critical_path.worlds.map((row) => row.source), repoRoot),
+      world: aggregateFileHash(
+        config.critical_path.worlds.map((row) => row.source),
+        repoRoot,
+      ),
       config: hashFile(path.resolve(configPath)),
     },
     call_contract: {

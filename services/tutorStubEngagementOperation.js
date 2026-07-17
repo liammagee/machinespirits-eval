@@ -1,19 +1,9 @@
-export const TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA =
-  'machinespirits.tutor-stub.engagement-operation.v1';
+export const TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA = 'machinespirits.tutor-stub.engagement-operation.v1';
 
-export const TUTOR_STUB_ENGAGEMENT_OPERATION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.engagement-operation-audit.v1';
+export const TUTOR_STUB_ENGAGEMENT_OPERATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.engagement-operation-audit.v1';
 
-const PRESSURE_TARGET_TOKENS = new Set([
-  'accusation',
-  'case',
-  'charge',
-  'claim',
-  'conclusion',
-  'verdict',
-]);
-const SET_AGAINST_PATTERN =
-  /\bi\s+(?:hold|lay|place|press|set|pit)\b[^.!?]{1,100}\bagainst\b/iu;
+const PRESSURE_TARGET_TOKENS = new Set(['accusation', 'case', 'charge', 'claim', 'conclusion', 'verdict']);
+const SET_AGAINST_PATTERN = /\bi\s+(?:hold|lay|place|press|set|pit)\b[^.!?]{1,100}\bagainst\b/iu;
 const TYPED_INACTIVITY_CUE_PATTERN =
   /\b(?:cold|dark(?:ness)?|dormant|idle|inactive|off|offline|parked|quiescent|shut|silent|stopped|unpowered)\b/iu;
 const ABSTRACT_CASE_STATUS_PATTERN =
@@ -104,15 +94,11 @@ function publicEvidenceAnchorVisible(text, contract = null) {
 function publicEvidenceCueVisible(text, contract = null) {
   return (
     publicEvidenceAnchorVisible(text, contract) ||
-    (contract?.evidence_cue_family === 'inactive_candidate' &&
-      TYPED_INACTIVITY_CUE_PATTERN.test(text))
+    (contract?.evidence_cue_family === 'inactive_candidate' && TYPED_INACTIVITY_CUE_PATTERN.test(text))
   );
 }
 
-export function compileTutorStubEngagementOperation({
-  engagementStance = null,
-  causalRelationContract = null,
-} = {}) {
+export function compileTutorStubEngagementOperation({ engagementStance = null, causalRelationContract = null } = {}) {
   if (engagementStance !== 'charismatic') return null;
   if (
     causalRelationContract?.schema !== 'machinespirits.tutor-stub.writable-entry-causal-contract.v1' ||
@@ -127,8 +113,7 @@ export function compileTutorStubEngagementOperation({
   }
   const subject = oneLine(causalRelationContract.subject);
   const outcome = oneLine(causalRelationContract.outcome);
-  const requiredEntry =
-    `I set this against the claim: ${subject} stayed inactive; ${outcome} continued.`;
+  const requiredEntry = `I set this against the claim: ${subject} stayed inactive; ${outcome} continued.`;
   return {
     schema: TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA,
     active: true,

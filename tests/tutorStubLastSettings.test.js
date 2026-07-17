@@ -263,13 +263,7 @@ test('a restored scenario prints its opening without waiting for a model call', 
     );
     const result = spawnSync(
       process.execPath,
-      [
-        'scripts/tutor-stub.js',
-        '--no-closeout-report',
-        '--no-interim-animation',
-        '--no-stream',
-        '--no-trace',
-      ],
+      ['scripts/tutor-stub.js', '--no-closeout-report', '--no-interim-animation', '--no-stream', '--no-trace'],
       {
         cwd: ROOT,
         encoding: 'utf8',

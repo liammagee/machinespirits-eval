@@ -23,13 +23,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE = JSON.parse(
   fs.readFileSync(
-    path.join(
-      ROOT,
-      'tests',
-      'fixtures',
-      'tutor-stub-first-draft',
-      'v33-canonical-realization-cases.json',
-    ),
+    path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft', 'v33-canonical-realization-cases.json'),
     'utf8',
   ),
 );
@@ -41,10 +35,7 @@ function compositionFor(testCase) {
 }
 
 test('canonical realization fixtures bind one predicate to the exact PERFORMANCE owner span', () => {
-  assert.equal(
-    FIXTURE.schema,
-    'machinespirits.tutor-stub.actorial-realization-regression-fixture.v1',
-  );
+  assert.equal(FIXTURE.schema, 'machinespirits.tutor-stub.actorial-realization-regression-fixture.v1');
   assert.deepEqual(
     FIXTURE.cases.map((row) => row.kind),
     [
@@ -101,27 +92,19 @@ test('canonical realization fixtures bind one predicate to the exact PERFORMANCE
     assert.equal(wholeResult.visible, jointResult.visible, testCase.id);
     assert.equal(jointResult.visible, testCase.expected.tactic_visible_in_performance, testCase.id);
     if (testCase.expected.boundary_construction) {
-      assert.ok(
-        jointResult.recognition.constructions.includes(testCase.expected.boundary_construction),
-        testCase.id,
-      );
+      assert.ok(jointResult.recognition.constructions.includes(testCase.expected.boundary_construction), testCase.id);
     } else {
       assert.deepEqual(jointResult.recognition.constructions, [], testCase.id);
     }
     if (typeof testCase.expected.joint_actorial_part_visible === 'boolean') {
-      assert.equal(
-        jointAudit.axes.actorial_part.visible,
-        testCase.expected.joint_actorial_part_visible,
-        testCase.id,
-      );
+      assert.equal(jointAudit.axes.actorial_part.visible, testCase.expected.joint_actorial_part_visible, testCase.id);
     }
   }
 });
 
 test('the V33 audit-recognition repair leaves its causal-role generation failure intact', () => {
   const testCase = FIXTURE.cases.find((row) => row.id === 'exact_v33_candidate');
-  const learnerText =
-    'What should I put in the minutes about the chargers being dark during the stocktake?';
+  const learnerText = 'What should I put in the minutes about the chargers being dark during the stocktake?';
   const firstDraftContract = {
     schema: 'machinespirits.tutor-stub.first-draft-turn-contract.v1',
     opening: { writable_entry_requested: true },
@@ -148,9 +131,7 @@ test('the V33 audit-recognition repair leaves its causal-role generation failure
   assert.equal(audit.requestedEntryAnswerRecognition.recognized, false);
   assert.equal(grounding.causal_relation_family, 'prevention');
   assert.equal(grounding.causal_relation_supported, false);
-  assert.deepEqual(grounding.public_causal_relation_families, [
-    'inactive_candidate_with_persisting_outcome',
-  ]);
+  assert.deepEqual(grounding.public_causal_relation_families, ['inactive_candidate_with_persisting_outcome']);
 });
 
 test('directed positive support plus explicit exclusion is a boundary without admitting brittle decoys', () => {

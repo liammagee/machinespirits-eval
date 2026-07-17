@@ -66,7 +66,7 @@ test('a possessive released answer name is public without making its conclusion 
   assert.equal(
     tutorStubAnswerNameIsPublic({
       answerTerm: 'moth',
-      publicText: "The decommission log says Moth’s override key was never revoked.",
+      publicText: 'The decommission log says Moth’s override key was never revoked.',
     }),
     true,
   );
@@ -180,7 +180,10 @@ test('the repetition guard rejects a substantial repeated opener even when the c
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['repeated_tutor_opening']);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['repeated_tutor_opening'],
+  );
 });
 
 test('the repetition guard rejects an exact stock opener nine tutor turns later', () => {
@@ -189,8 +192,9 @@ test('the repetition guard rejects an exact stock opener nine tutor turns later'
     text: `${opening} I draw the charcoal book beside your entry.`,
     recentTutorTexts: [
       `${opening} I turn the cold crucible toward the candlelight.`,
-      ...Array.from({ length: 8 }, (_, index) =>
-        `Distinct intervening tutor turn ${index + 1} examines a different public exhibit.`,
+      ...Array.from(
+        { length: 8 },
+        (_, index) => `Distinct intervening tutor turn ${index + 1} examines a different public exhibit.`,
       ),
     ],
   });
@@ -209,7 +213,10 @@ test('the repetition guard rejects a substantial sentence repeated inside one re
 
   assert.equal(audit.ok, false);
   assert.equal(audit.maxSimilarity, 1);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['repeated_tutor_sentence']);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['repeated_tutor_sentence'],
+  );
 });
 
 test('world scaffolds derive their language from Larkspur rules rather than Marrick vocabulary', () => {

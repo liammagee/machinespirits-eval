@@ -20,9 +20,7 @@ export function resolveTutorStubDevelopmentDirectModel({
     throw new Error('--development-direct-model must resolve to a non-CLI provider');
   }
   if (resolved?.isConfigured !== true) {
-    throw new Error(
-      `--development-direct-model ${ref} is unavailable: provider credentials are not configured`,
-    );
+    throw new Error(`--development-direct-model ${ref} is unavailable: provider credentials are not configured`);
   }
   return {
     schema: TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA,

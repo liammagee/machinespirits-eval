@@ -61,7 +61,10 @@ test('diagnostic failure classification aborts infrastructure and quarantines re
   const network = new Error('network timed out');
   network.code = 'ETIMEDOUT';
   assert.equal(classifyTutorStubDiagnosticFailure(network).disposition, 'abort');
-  assert.equal(classifyTutorStubDiagnosticFailure(new TypeError('bad state')).category, 'irrecoverable_state_corruption');
+  assert.equal(
+    classifyTutorStubDiagnosticFailure(new TypeError('bad state')).category,
+    'irrecoverable_state_corruption',
+  );
 });
 
 test('diagnostic transaction rollback restores all mutable teaching state but leaves trace ownership alone', () => {
@@ -103,7 +106,13 @@ test('retains all candidates, marks contamination, and clusters duplicate root c
     tutorGuardAccounting: {
       attempts: [
         attempt('original_candidate', 0, 'actorial_realization', 'missing_selected_performance_tactic', 'draft one'),
-        attempt('model_repair_candidate', 1, 'actorial_realization', 'missing_selected_performance_tactic', 'draft two'),
+        attempt(
+          'model_repair_candidate',
+          1,
+          'actorial_realization',
+          'missing_selected_performance_tactic',
+          'draft two',
+        ),
         attempt('deterministic_fallback', 2, 'dramatic_release', 'missing_exhibit_action', 'fallback'),
       ],
     },
@@ -114,7 +123,10 @@ test('retains all candidates, marks contamination, and clusters duplicate root c
   assert.equal(summary.evidenceSegments.cleanPrefix.throughPublicTurn, 2);
   assert.equal(summary.evidenceSegments.boundaryAttempts.candidateCount, 3);
   assert.equal(summary.evidenceSegments.contaminatedSuffix.turnCount, 8);
-  assert.deepEqual(summary.candidates.map((candidate) => candidate.text), ['draft one', 'draft two', 'fallback']);
+  assert.deepEqual(
+    summary.candidates.map((candidate) => candidate.text),
+    ['draft one', 'draft two', 'fallback'],
+  );
   const duplicate = summary.duplicateFailureClusters.find(
     (cluster) => cluster.issueType === 'missing_selected_performance_tactic',
   );

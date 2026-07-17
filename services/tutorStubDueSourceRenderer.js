@@ -1,9 +1,6 @@
-export const TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA =
-  'machinespirits.tutor-stub.due-source-render.v1';
-export const TUTOR_STUB_DUE_SOURCE_ACTION_REFERENTS_SCHEMA =
-  'machinespirits.tutor-stub.due-source-action-referents.v1';
-export const TUTOR_STUB_DUE_SOURCE_ACTION_ALIGNMENT_SCHEMA =
-  'machinespirits.tutor-stub.due-source-action-alignment.v1';
+export const TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA = 'machinespirits.tutor-stub.due-source-render.v1';
+export const TUTOR_STUB_DUE_SOURCE_ACTION_REFERENTS_SCHEMA = 'machinespirits.tutor-stub.due-source-action-referents.v1';
+export const TUTOR_STUB_DUE_SOURCE_ACTION_ALIGNMENT_SCHEMA = 'machinespirits.tutor-stub.due-source-action-alignment.v1';
 
 const ROLE_ACTION_PATTERN =
   /\b(?:attesting|describing|giving|holding|identifying|opening|presenting|reading|reporting|showing|testifying|unfolding|voicing|witnessing)\b/iu;
@@ -38,7 +35,10 @@ function roleCarrier(entry) {
   const role = oneLine(entry?.role);
   const match = ROLE_ACTION_PATTERN.exec(role);
   if (!match) return null;
-  const identity = role.slice(0, match.index).trim().replace(/^(?:the|a|an)\s+/iu, '');
+  const identity = role
+    .slice(0, match.index)
+    .trim()
+    .replace(/^(?:the|a|an)\s+/iu, '');
   let label = role.slice(match.index + match[0].length).trim();
   if (!label) return null;
   if (/^(?:his|her|their|its)\b/iu.test(label) && identity) {
@@ -135,11 +135,7 @@ export function compileTutorStubDueSourceActionReferents(entry = null) {
       ]
     : [];
   const factReferents = factActionReferents(entry);
-  const referents = dedupeReferents([
-    ...authored,
-    ...roleRows,
-    ...factReferents.filter((row) => row.speaker_eligible),
-  ]);
+  const referents = dedupeReferents([...authored, ...roleRows, ...factReferents.filter((row) => row.speaker_eligible)]);
   const traceOnlyFactReferents = factReferents.filter((row) => !row.speaker_eligible);
   return {
     schema: TUTOR_STUB_DUE_SOURCE_ACTION_REFERENTS_SCHEMA,
@@ -211,9 +207,7 @@ export function tutorStubDueSourceActionInstruction(entries = []) {
     entry?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA ? entry : renderTutorStubDueSource(entry, index),
   );
   const required = dedupeReferents(
-    sources.flatMap((source) =>
-      (source.action_referents?.referents || []).filter((row) => row.alignment_required),
-    ),
+    sources.flatMap((source) => (source.action_referents?.referents || []).filter((row) => row.alignment_required)),
   );
   // Optional public fact arguments are useful trace provenance, but they do
   // not create an action obligation. Naming one before SOURCE would reveal a
@@ -225,7 +219,11 @@ export function tutorStubDueSourceActionInstruction(entries = []) {
 
 function contentTokens(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || [])
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’']/gu, "'").replace(/'s$/u, ''))
       .filter((token) => token.length >= 3 && !CONTENT_STOP_WORDS.has(token)),
   );
@@ -236,12 +234,8 @@ export function auditTutorStubDueSourceActionAlignment({ text = '', sources = []
   const rows = (Array.isArray(sources) ? sources : [])
     .map((source, index) => {
       const rendered =
-        source?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA
-          ? source
-          : renderTutorStubDueSource(source, index);
-      const required = (rendered.action_referents?.referents || []).filter(
-        (row) => row.alignment_required,
-      );
+        source?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA ? source : renderTutorStubDueSource(source, index);
+      const required = (rendered.action_referents?.referents || []).filter((row) => row.alignment_required);
       const accepted = rendered.action_referents?.referents || [];
       const eligibleMatches = required.length ? required : accepted;
       const matches = eligibleMatches.filter((row) => {

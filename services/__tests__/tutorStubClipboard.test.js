@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  copyTutorStubTextToClipboard,
-  formatTutorStubDebugClipboardText,
-} from '../tutorStubClipboard.js';
+import { copyTutorStubTextToClipboard, formatTutorStubDebugClipboardText } from '../tutorStubClipboard.js';
 
 describe('tutor-stub clipboard', () => {
   it('formats the complete debug block for pasting into Codex', () => {

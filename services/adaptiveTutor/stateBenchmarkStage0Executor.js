@@ -26,12 +26,9 @@ import {
   stepAdaptiveStateKernelSession,
 } from './learnerKernels/index.js';
 
-export const ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA =
-  'machinespirits.adaptive-state-stage0-dataset.v2';
-export const ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA =
-  'machinespirits.adaptive-state-benchmark-row.v2';
-export const ADAPTIVE_STATE_STAGE0_DIALOGUE_V2_SCHEMA =
-  'machinespirits.adaptive-state-stage0-dialogue.v2';
+export const ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA = 'machinespirits.adaptive-state-stage0-dataset.v2';
+export const ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA = 'machinespirits.adaptive-state-benchmark-row.v2';
+export const ADAPTIVE_STATE_STAGE0_DIALOGUE_V2_SCHEMA = 'machinespirits.adaptive-state-stage0-dialogue.v2';
 export const ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES = Object.freeze([
   'services/adaptiveTutor/stateBenchmarkStage0Analysis.js',
   'services/adaptiveTutor/tutorStubStateAdapter.js',
@@ -167,16 +164,20 @@ function runDialogue(job, adapter, world) {
       realizerId: job.language_realizer.id,
       ...inputForRealizer(transition.public_envelope, transcript, action),
     });
-    semanticFidelity.push(assertAdaptiveStateSemanticFidelity({
-      currentPublicActEnvelope: {
-        ...clone(transition.public_envelope.current_public_act_envelope),
-        turn: Number(transition.public_envelope.turn),
-      },
-      output: realized,
-    }));
+    semanticFidelity.push(
+      assertAdaptiveStateSemanticFidelity({
+        currentPublicActEnvelope: {
+          ...clone(transition.public_envelope.current_public_act_envelope),
+          turn: Number(transition.public_envelope.turn),
+        },
+        output: realized,
+      }),
+    );
     const expectedIds = transition.public_envelope.required_realizer_output.realized_public_event_ids;
     if (JSON.stringify(realized.realized_public_event_ids) !== JSON.stringify(expectedIds)) {
-      throw new Error(`stateBenchmarkStage0: realizer changed the semantic event in ${job.id} turn ${predictionTurn + 1}`);
+      throw new Error(
+        `stateBenchmarkStage0: realizer changed the semantic event in ${job.id} turn ${predictionTurn + 1}`,
+      );
     }
     transcript.push({ turn: predictionTurn + 1, role: 'learner', text: realized.learner_text });
     const record = observeAdaptiveStateExactPublicEvent({

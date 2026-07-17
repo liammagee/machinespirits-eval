@@ -1,5 +1,4 @@
-export const TUTOR_STUB_EVIDENCE_ASSERTION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.evidence-assertion-audit.v1';
+export const TUTOR_STUB_EVIDENCE_ASSERTION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.evidence-assertion-audit.v1';
 
 function evidenceTokenRoot(value) {
   const token = String(value || '').toLowerCase();
@@ -60,9 +59,11 @@ function contextualizedEvidenceClauses(value) {
 
 function evidenceTokens(value) {
   return new Set(
-    (oneLine(value).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []).filter((token) =>
-      EVIDENCE_OBJECT_PATTERN.test(token),
-    ),
+    (
+      oneLine(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{2,}/gu) || []
+    ).filter((token) => EVIDENCE_OBJECT_PATTERN.test(token)),
   );
 }
 

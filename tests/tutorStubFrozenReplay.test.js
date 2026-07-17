@@ -90,9 +90,7 @@ test('frozen replay summary totals complete token usage and preserves missing fi
   assert.equal(summary.promptSize.totalObservedProviderInputTokens, 220);
   assert.equal(summary.promptSize.totalInferredResidualTokens, 198);
 
-  const unavailable = summarizeTutorStubFrozenReplay([
-    { latencyMs: 10, usage: null, tokenUsageAvailable: false },
-  ]);
+  const unavailable = summarizeTutorStubFrozenReplay([{ latencyMs: 10, usage: null, tokenUsageAvailable: false }]);
   assert.equal(unavailable.tokenUsageAvailable, false);
   assert.deepEqual(unavailable.tokenUsage, {
     inputTokens: null,
@@ -259,8 +257,7 @@ test('typed causal PERFORMANCE keeps the exact public tuple inside the compact p
   refreshed = replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
   refreshed = replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(refreshed);
 
-  const responseInstruction =
-    refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.response_instruction;
+  const responseInstruction = refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.response_instruction;
   assert.match(
     responseInstruction,
     /Say “The depot chargers did not cause the Tallow Street brownout; actual cause remains open/iu,
@@ -289,15 +286,13 @@ test('model-free frozen replay enforces live V1 question ownership and terminal 
     {
       name: 'forbidden question',
       progression: frozenProgressionContract({ questionAllowed: false }),
-      text:
-        'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change?',
+      text: 'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change?',
       cluster: 'live_turn_progression_v1:question_forbidden_by_handoff_contract',
     },
     {
       name: 'nonterminal question',
       progression: frozenProgressionContract({ questionAllowed: true }),
-      text:
-        'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change? We can wait.',
+      text: 'Right—the badge log leaves Dario possible but unproved. What does the visitor badge log change? We can wait.',
       cluster: 'live_turn_progression_v1:handoff_question_not_terminal',
     },
   ];
@@ -313,9 +308,7 @@ test('model-free frozen replay enforces live V1 question ownership and terminal 
     assert.equal(audit.audits.liveTurnProgressionAudit.ok, false, fixture.name);
     assert.ok(audit.hardFailureClusters.includes(fixture.cluster), fixture.name);
     assert.ok(
-      audit.deliveryDecision.hardIssues.some(
-        (issue) => issue.guard === 'live_turn_progression_v1',
-      ),
+      audit.deliveryDecision.hardIssues.some((issue) => issue.guard === 'live_turn_progression_v1'),
       fixture.name,
     );
   }
@@ -335,14 +328,12 @@ test('model-free frozen replay enforces exact due SOURCE and its nearest host ca
   const cases = [
     {
       name: 'misaligned source carrier',
-      text:
-        `Right—the badge log leaves Dario possible but unproved. I set the kettle beside us. ${source.text} What does the visitor badge log change?`,
+      text: `Right—the badge log leaves Dario possible but unproved. I set the kettle beside us. ${source.text} What does the visitor badge log change?`,
       cluster: 'live_source_action_alignment_v1:due_source_action_referent_missing',
     },
     {
       name: 'paraphrased source',
-      text:
-        'Right—the badge log leaves Dario possible but unproved. I open the visitor badge log. “I report this: WF-11 was issued to the outside crew.” What does the visitor badge log change?',
+      text: 'Right—the badge log leaves Dario possible but unproved. I open the visitor badge log. “I report this: WF-11 was issued to the outside crew.” What does the visitor badge log change?',
       cluster: 'live_source_action_alignment_v1:due_source_exact_occurrence_count',
     },
   ];
@@ -358,9 +349,7 @@ test('model-free frozen replay enforces exact due SOURCE and its nearest host ca
     assert.equal(audit.audits.liveSourceActionAlignmentAudit.ok, false, fixture.name);
     assert.ok(audit.hardFailureClusters.includes(fixture.cluster), fixture.name);
     assert.ok(
-      audit.deliveryDecision.hardIssues.some(
-        (issue) => issue.guard === 'live_source_action_alignment_v1',
-      ),
+      audit.deliveryDecision.hardIssues.some((issue) => issue.guard === 'live_source_action_alignment_v1'),
       fixture.name,
     );
   }
@@ -478,9 +467,7 @@ test('frozen refresh preserves an authored public counterpressure pair without e
     world.premiseById.get('p_crucible').surface,
   ]);
   assert.equal(
-    refreshed.firstDraftContract.evidence.committed_public_surfaces.includes(
-      world.premiseById.get('p_caster').surface,
-    ),
+    refreshed.firstDraftContract.evidence.committed_public_surfaces.includes(world.premiseById.get('p_caster').surface),
     false,
   );
   assert.equal(
@@ -583,8 +570,7 @@ test('model-free corpus applies current deterministic audits and makes live-pari
           audit.hardFailureClusters.length > 0 &&
           audit.hardFailureClusters.every(
             (cluster) =>
-              cluster.startsWith('live_turn_progression_v1:') ||
-              cluster.startsWith('live_source_action_alignment_v1:'),
+              cluster.startsWith('live_turn_progression_v1:') || cluster.startsWith('live_source_action_alignment_v1:'),
           )
         ) {
           recordLiveParityReclassification({ testCase, candidate, audit });

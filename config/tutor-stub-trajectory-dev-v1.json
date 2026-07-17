@@ -51,9 +51,7 @@
         }
       ],
       "learner": "It links bramblewasp to the poll before the sock posted it, but what would rule out the sock having copied that wording from another source?",
-      "originalAuditIssues": [
-        "actorialRealizationAudit:missing_selected_actorial_part"
-      ],
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_actorial_part"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -109,9 +107,7 @@
         }
       ],
       "learner": "The ledger proves Wrenfold took Priya’s lunchbox from shelf two and put it in lost property.",
-      "originalAuditIssues": [
-        "closureAudit:missing_explicit_dialogue_close"
-      ],
+      "originalAuditIssues": ["closureAudit:missing_explicit_dialogue_close"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -167,9 +163,7 @@
         }
       ],
       "learner": "What should I put in the minutes about the chargers being dark during the stocktake?",
-      "originalAuditIssues": [
-        "responseCompositionAudit:missing_learner_uptake"
-      ],
+      "originalAuditIssues": ["responseCompositionAudit:missing_learner_uptake"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -213,9 +207,7 @@
         }
       ],
       "learner": "What should I write next about the corrections file?",
-      "originalAuditIssues": [
-        "questionSupportAudit:missing_clarification_invitation"
-      ],
+      "originalAuditIssues": ["questionSupportAudit:missing_clarification_invitation"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -271,9 +263,7 @@
         }
       ],
       "learner": "What should I write next about the particular leaf?",
-      "originalAuditIssues": [
-        "actorialRealizationAudit:missing_selected_performance_tactic"
-      ],
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_performance_tactic"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -329,9 +319,7 @@
         }
       ],
       "learner": "Should I write that Vess’s late manner makes him a possibility, but not proof of composition?",
-      "originalAuditIssues": [
-        "actorialRealizationAudit:missing_selected_actorial_part"
-      ],
+      "originalAuditIssues": ["actorialRealizationAudit:missing_selected_actorial_part"],
       "preference": "rejected_original",
       "candidates": [
         {
@@ -423,12 +411,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "m_steward"
-            ],
-            "releasedNow": [
-              "m_steward"
-            ],
+            "dueNow": ["m_steward"],
+            "releasedNow": ["m_steward"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -467,12 +451,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_mark"
-            ],
-            "releasedNow": [
-              "p_mark"
-            ],
+            "dueNow": ["p_mark"],
+            "releasedNow": ["p_mark"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -511,12 +491,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "m_key"
-            ],
-            "releasedNow": [
-              "m_key"
-            ],
+            "dueNow": ["m_key"],
+            "releasedNow": ["m_key"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -555,12 +531,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_clause"
-            ],
-            "releasedNow": [
-              "p_clause"
-            ],
+            "dueNow": ["p_clause"],
+            "releasedNow": ["p_clause"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -599,12 +571,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_registry"
-            ],
-            "releasedNow": [
-              "p_registry"
-            ],
+            "dueNow": ["p_registry"],
+            "releasedNow": ["p_registry"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -703,12 +671,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_unlabelled"
-            ],
-            "releasedNow": [
-              "p_unlabelled"
-            ],
+            "dueNow": ["p_unlabelled"],
+            "releasedNow": ["p_unlabelled"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -747,12 +711,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_reservoir"
-            ],
-            "releasedNow": [
-              "p_reservoir"
-            ],
+            "dueNow": ["p_reservoir"],
+            "releasedNow": ["p_reservoir"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -831,12 +791,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_seal"
-            ],
-            "releasedNow": [
-              "p_seal"
-            ],
+            "dueNow": ["p_seal"],
+            "releasedNow": ["p_seal"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -915,12 +871,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_held"
-            ],
-            "releasedNow": [
-              "p_held"
-            ],
+            "dueNow": ["p_held"],
+            "releasedNow": ["p_held"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -959,12 +911,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_strain"
-            ],
-            "releasedNow": [
-              "p_strain"
-            ],
+            "dueNow": ["p_strain"],
+            "releasedNow": ["p_strain"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1143,12 +1091,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_new"
-            ],
-            "releasedNow": [
-              "p_new"
-            ],
+            "dueNow": ["p_new"],
+            "releasedNow": ["p_new"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1187,12 +1131,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_trace"
-            ],
-            "releasedNow": [
-              "p_trace"
-            ],
+            "dueNow": ["p_trace"],
+            "releasedNow": ["p_trace"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1271,12 +1211,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_idle"
-            ],
-            "releasedNow": [
-              "p_idle"
-            ],
+            "dueNow": ["p_idle"],
+            "releasedNow": ["p_idle"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1415,12 +1351,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "m_style"
-            ],
-            "releasedNow": [
-              "m_style"
-            ],
+            "dueNow": ["m_style"],
+            "releasedNow": ["m_style"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1539,12 +1471,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_watermark"
-            ],
-            "releasedNow": [
-              "p_watermark"
-            ],
+            "dueNow": ["p_watermark"],
+            "releasedNow": ["p_watermark"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,
@@ -1663,12 +1591,8 @@
             "recordedOk": true
           },
           "release": {
-            "dueNow": [
-              "p_stock"
-            ],
-            "releasedNow": [
-              "p_stock"
-            ],
+            "dueNow": ["p_stock"],
+            "releasedNow": ["p_stock"],
             "notDeliveredNow": [],
             "direction": "steady",
             "effectiveSpeed": 1,

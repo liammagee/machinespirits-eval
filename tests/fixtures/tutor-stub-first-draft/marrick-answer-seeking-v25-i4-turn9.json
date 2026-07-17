@@ -33,11 +33,7 @@
     "setting": "The Marrick trial-book, leat-keeper's charcoal book, false shilling, touchstone, and weir crucible lie before the assay.",
     "question": "Whose hand struck the false shillings passed at the Marrick fair?",
     "ledger_term": "trial-book",
-    "public_objects": [
-      "trial-book",
-      "charcoal book",
-      "shilling"
-    ]
+    "public_objects": ["trial-book", "charcoal book", "shilling"]
   },
   "public_turn": {
     "learner_move": "What should I write next about whose hand cast the blanks at the weir-forge?",

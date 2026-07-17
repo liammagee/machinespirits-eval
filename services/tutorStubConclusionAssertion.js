@@ -24,13 +24,9 @@ function explicitlyWithholdsConclusion(text) {
     /\b(?:cannot|can[’']t|will not|won[’']t|would not|wouldn[’']t)\b[^.!?]{0,28}\b(?:conclude|name|prove|say|show|write)\b/iu.test(
       text,
     ) ||
-    /\b(?:cannot|can[’']t|does not|doesn[’']t|never)\b[^.!?]{0,30}\b(?:cut|make|made|strike|struck)\b/iu.test(
-      text,
-    ) ||
+    /\b(?:cannot|can[’']t|does not|doesn[’']t|never)\b[^.!?]{0,30}\b(?:cut|make|made|strike|struck)\b/iu.test(text) ||
     /\bseparat(?:e|ed|es|ing)\b[^.!?]{0,80}\bfrom proof\b/iu.test(text) ||
-    /\b(?:strik(?:e|er|ing)|verdict)\b[^.!?]{0,45}\b(?:still\s+)?(?:must|need(?:s)?|require(?:s)?)\b/iu.test(
-      text,
-    ) ||
+    /\b(?:strik(?:e|er|ing)|verdict)\b[^.!?]{0,45}\b(?:still\s+)?(?:must|need(?:s)?|require(?:s)?)\b/iu.test(text) ||
     /\b(?:leave|leaving|keep|keeping)\b[^.!?]{0,70}\b(?:die|strik(?:e|er|ing))\b[^.!?]{0,35}\b(?:open|separate|unspoken|unproved|unproven)\b/iu.test(
       text,
     ) ||
@@ -66,7 +62,10 @@ export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', 
     const hasTrigger = wordPatterns.some((pattern) => pattern.test(sentence.toLowerCase()));
     if (!hasTrigger) continue;
     let candidate = sentence;
-    if (!answerVisible(candidate, answerTerm) && /^(?:he|her|hers|him|his|she|their|theirs|them|they)\b/iu.test(sentence)) {
+    if (
+      !answerVisible(candidate, answerTerm) &&
+      /^(?:he|her|hers|him|his|she|their|theirs|them|they)\b/iu.test(sentence)
+    ) {
       candidate = `${sentences[index - 1] || ''} ${sentence}`.trim();
     }
     if (!answerVisible(candidate, answerTerm)) continue;

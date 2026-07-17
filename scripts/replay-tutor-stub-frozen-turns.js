@@ -56,11 +56,7 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
-const DEVELOPMENT_CODEX_INSTRUCTIONS_FILE = path.join(
-  ROOT,
-  'config',
-  'tutor-stub-codex-speaker-instructions.md',
-);
+const DEVELOPMENT_CODEX_INSTRUCTIONS_FILE = path.join(ROOT, 'config', 'tutor-stub-codex-speaker-instructions.md');
 
 const { values: args } = parseArgs({
   options: {
@@ -198,8 +194,7 @@ function auditOriginalCandidate({
       performanceObligationContract: bundle.performanceObligationContract,
       progressionContract: bundle.firstDraftContract?.progression || null,
       sourceAccessibility: bundle.firstDraftContract?.evidence?.source_accessibility || null,
-      engagementOperationContract:
-        bundle.firstDraftContract?.performance?.engagement_operation_contract || null,
+      engagementOperationContract: bundle.firstDraftContract?.performance?.engagement_operation_contract || null,
     });
   }
   return applyTutorStubStructuredSlotOwnershipAudit({
@@ -225,11 +220,12 @@ function summarizeScreenResults(results = []) {
       ...normalization,
     })),
   );
-  const sourceAccessibilityRows = jointRows.map((row) =>
-    row.audit?.audits?.sourceAccessibilityAudit ||
-    row.jointPerformanceGeneration?.composition?.sourceAccessibilityAudit ||
-    row.sourceAccessibility ||
-    null,
+  const sourceAccessibilityRows = jointRows.map(
+    (row) =>
+      row.audit?.audits?.sourceAccessibilityAudit ||
+      row.jointPerformanceGeneration?.composition?.sourceAccessibilityAudit ||
+      row.sourceAccessibility ||
+      null,
   );
   const sourceAccessibilityModes = sourceAccessibilityRows.reduce((counts, audit) => {
     const mode = audit?.effective_mode || 'unreported';
@@ -748,9 +744,7 @@ async function main() {
       throw new Error('--development-codex-instructions-file cannot be combined with --development-direct-model');
     }
     if (developmentCodexInstructionsFile !== DEVELOPMENT_CODEX_INSTRUCTIONS_FILE) {
-      throw new Error(
-        `--development-codex-instructions-file is restricted to ${DEVELOPMENT_CODEX_INSTRUCTIONS_FILE}`,
-      );
+      throw new Error(`--development-codex-instructions-file is restricted to ${DEVELOPMENT_CODEX_INSTRUCTIONS_FILE}`);
     }
   }
   const draws = positiveInt(args.draws, '--draws', { max: 20 });
@@ -764,9 +758,7 @@ async function main() {
     });
     if (jointPerformanceGeneration) {
       const joint = replaceTutorStubFrozenRequestWithJointPerformancePrompt(refreshed);
-      return compactSpeakerPrompt
-        ? replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(joint)
-        : joint;
+      return compactSpeakerPrompt ? replaceTutorStubFrozenRequestWithCompactNoSourcePrompt(joint) : joint;
     }
     return structuredGeneration ? replaceTutorStubFrozenRequestWithStructuredPrompt(refreshed) : refreshed;
   });
@@ -938,11 +930,11 @@ async function main() {
       ? 'original_only_direct_provider_development_screen_non_equivalent'
       : developmentCodexInstructionsFile
         ? 'original_only_codex_base_override_development_screen_non_equivalent'
-      : jointPerformanceGeneration
-      ? 'original_only_joint_performance_screen'
-      : structuredGeneration
-        ? 'original_only_structured_screen'
-        : 'original_only_screen',
+        : jointPerformanceGeneration
+          ? 'original_only_joint_performance_screen'
+          : structuredGeneration
+            ? 'original_only_structured_screen'
+            : 'original_only_screen',
     originalOnly: true,
     ...(structuredGeneration ? { structuredGeneration: true } : {}),
     ...(jointPerformanceGeneration
@@ -984,11 +976,11 @@ async function main() {
             consumesHeldOutOrAcceptanceSeed: false,
           }
         : {
-          kind: 'frozen_model_transport',
-          provider: bundles[0]?.request?.provider || null,
-          model: bundles[0]?.request?.model || null,
-          acceptanceEligible: true,
-        },
+            kind: 'frozen_model_transport',
+            provider: bundles[0]?.request?.provider || null,
+            model: bundles[0]?.request?.model || null,
+            acceptanceEligible: true,
+          },
     sourceAccessibilityPolicy,
     semanticAdjudication: Boolean(args['semantic-adjudication']),
     adjudicatorModelOverride: args['adjudicator-model'] || null,

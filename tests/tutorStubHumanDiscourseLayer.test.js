@@ -173,7 +173,7 @@ test('--all-models overrides tutor, classifier, learner-DAG analysis, and mixed 
     schema: 'machinespirits.tutor-stub.all-models-override.v1',
     modelRef: 'codex.gpt-5.6-luna',
     source: 'cli',
-      precedence: 'overrides_all_role_specific_model_settings',
+    precedence: 'overrides_all_role_specific_model_settings',
     roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
   });
 });

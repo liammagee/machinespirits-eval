@@ -5,10 +5,7 @@ import { spawn } from 'node:child_process';
 export const TUTOR_STUB_VOICE_BRIDGE_SCHEMA = 'machinespirits.tutor-stub.voice-bridge.v1';
 export const DEFAULT_TUTOR_STUB_VOICE_MODEL = 'gpt-realtime-2.1-mini';
 export const DEFAULT_TUTOR_STUB_VOICE_NAME = 'marin';
-export const TUTOR_STUB_VOICE_MODELS = Object.freeze([
-  'gpt-realtime-2.1-mini',
-  'gpt-realtime-2.1',
-]);
+export const TUTOR_STUB_VOICE_MODELS = Object.freeze(['gpt-realtime-2.1-mini', 'gpt-realtime-2.1']);
 
 const MAX_JSON_BYTES = 64 * 1024;
 const MAX_SDP_BYTES = 256 * 1024;
@@ -168,7 +165,10 @@ function safeOpenBrowser(url, { spawnImpl = spawn, platform = process.platform }
 }
 
 function safetyIdentifier(runId) {
-  return createHash('sha256').update(String(runId || 'tutor-stub-voice')).digest('hex').slice(0, 32);
+  return createHash('sha256')
+    .update(String(runId || 'tutor-stub-voice'))
+    .digest('hex')
+    .slice(0, 32);
 }
 
 export function createTutorStubVoiceBridge({
@@ -198,7 +198,11 @@ export function createTutorStubVoiceBridge({
 
   function authorized(url, request) {
     const bearer = String(request.headers.authorization || '').replace(/^Bearer\s+/iu, '');
-    return url.searchParams.get('token') === token || request.headers['x-tutor-stub-voice-token'] === token || bearer === token;
+    return (
+      url.searchParams.get('token') === token ||
+      request.headers['x-tutor-stub-voice-token'] === token ||
+      bearer === token
+    );
   }
 
   function emit(type, payload) {
@@ -272,7 +276,8 @@ export function createTutorStubVoiceBridge({
         'cache-control': 'no-store',
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'no-referrer',
-        'content-security-policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; media-src 'self' blob:; img-src 'self' data:",
+        'content-security-policy':
+          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; media-src 'self' blob:; img-src 'self' data:",
       });
       response.end(renderTutorStubVoiceHtml({ title, model: session.model, voice: session.audio.output.voice }));
       return;
@@ -287,7 +292,9 @@ export function createTutorStubVoiceBridge({
         'cache-control': 'no-store',
         connection: 'keep-alive',
       });
-      response.write(`event: bridge\ndata: ${JSON.stringify({ message: 'Connected to the authoritative CLI tutor.' })}\n\n`);
+      response.write(
+        `event: bridge\ndata: ${JSON.stringify({ message: 'Connected to the authoritative CLI tutor.' })}\n\n`,
+      );
       if (latestTutor) response.write(`event: tutor\ndata: ${JSON.stringify(latestTutor)}\n\n`);
       clients.add(response);
       request.on('close', () => clients.delete(response));
@@ -330,7 +337,10 @@ export function createTutorStubVoiceBridge({
       const deliveryId = nonEmptyString(body.deliveryId, 'voice delivery id');
       const transcript = nonEmptyString(body.transcript, 'spoken tutor transcript');
       const canonical = tutorDeliveries.get(deliveryId)?.text || null;
-      const normalize = (text) => String(text || '').replace(/\s+/gu, ' ').trim();
+      const normalize = (text) =>
+        String(text || '')
+          .replace(/\s+/gu, ' ')
+          .trim();
       const matchesCanonical = Boolean(canonical && normalize(canonical) === normalize(transcript));
       const result = await onSpokenTranscript({
         deliveryId,
@@ -409,7 +419,14 @@ export function createTutorStubVoiceBridge({
     return { ...safeOpenBrowser(url, { spawnImpl }), url };
   }
 
-  function publishTutor({ text, turn = null, turnId = null, register = null, character = null, reason = 'accepted_tutor_text' }) {
+  function publishTutor({
+    text,
+    turn = null,
+    turnId = null,
+    register = null,
+    character = null,
+    reason = 'accepted_tutor_text',
+  }) {
     const approved = nonEmptyString(text, 'approved tutor text');
     deliverySequence += 1;
     latestTutor = {

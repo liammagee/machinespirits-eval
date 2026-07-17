@@ -42,9 +42,7 @@ const RELIABILITY = yaml.parse(
 );
 
 function label(modelRef) {
-  return modelRef === 'codex.gpt-5.6-terra'
-    ? 'codex/gpt-5.6-terra'
-    : 'claude-code/claude-sonnet-4-6';
+  return modelRef === 'codex.gpt-5.6-terra' ? 'codex/gpt-5.6-terra' : 'claude-code/claude-sonnet-4-6';
 }
 
 function fakeRealizer() {
@@ -228,9 +226,7 @@ test('one retained semantic miss passes the repeated-draw reliability thresholds
 });
 
 test('only a paid-bound passing result authorizes the separately invoked S1 retry', async () => {
-  const { plan, result } = await executeFixture([
-    'draw_01|preflight__ravensmark__derive__codex_terra',
-  ]);
+  const { plan, result } = await executeFixture(['draw_01|preflight__ravensmark__derive__codex_terra']);
   const digest = 'a'.repeat(64);
   result.execution_mode = 'paid_cli';
   result.execution_transaction = {
@@ -254,15 +250,10 @@ test('only a paid-bound passing result authorizes the separately invoked S1 retr
 });
 
 test('a sealed paid v2.2 pass is accepted as the current S1 reliability parent', async () => {
-  const { plan, result } = await executeFixture([
-    'draw_01|preflight__ravensmark__derive__codex_terra',
-  ]);
+  const { plan, result } = await executeFixture(['draw_01|preflight__ravensmark__derive__codex_terra']);
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptive-reliability-v22-lineage-'));
   const benchmarkConfigPath = path.join(ROOT, 'config/adaptive-state-benchmark-v2.yaml');
-  const reliabilityConfigPath = path.join(
-    ROOT,
-    'config/adaptive-state-observability-reliability-v2.2.yaml',
-  );
+  const reliabilityConfigPath = path.join(ROOT, 'config/adaptive-state-observability-reliability-v2.2.yaml');
   const s0Parent = {
     run_id: 'fixture-current-s0',
     plan_sha256: 'a'.repeat(64),
@@ -429,10 +420,7 @@ test('a sealed paid v2.2 pass is accepted as the current S1 reliability parent',
 
 test('repeated failure in one base cell stops even when aggregate recovery is 70/72', async () => {
   const failedCell = 'preflight__ravensmark__derive__codex_terra';
-  const { plan, result } = await executeFixture([
-    `draw_01|${failedCell}`,
-    `draw_02|${failedCell}`,
-  ]);
+  const { plan, result } = await executeFixture([`draw_01|${failedCell}`, `draw_02|${failedCell}`]);
   assert.equal(result.exact_family_matches, 70);
   assert.equal(result.gate_checks.overall_exact, true);
   assert.equal(result.gate_checks.every_base_cell, false);
@@ -445,8 +433,5 @@ test('repeated failure in one base cell stops even when aggregate recovery is 70
 test('protocol config threshold drift fails closed', () => {
   const mutated = structuredClone(RELIABILITY);
   mutated.pass_contract.minimum_matches_per_base_cell = 1;
-  assert.throws(
-    () => validateAdaptiveStateObservabilityReliabilityConfig(mutated),
-    /protocol config drifted/,
-  );
+  assert.throws(() => validateAdaptiveStateObservabilityReliabilityConfig(mutated), /protocol config drifted/);
 });

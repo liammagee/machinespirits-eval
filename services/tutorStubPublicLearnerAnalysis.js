@@ -27,8 +27,7 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES = Object.freeze({
   INTERACTIVE: 'interactive',
 });
 
-export const TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA =
-  'machinespirits.tutor-stub.learner-dag-preflight.v1';
+export const TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA = 'machinespirits.tutor-stub.learner-dag-preflight.v1';
 
 export const TUTOR_STUB_PUBLIC_STAGED_EVIDENCE_SCHEMA = Object.freeze({
   type: 'object',
@@ -387,9 +386,7 @@ function providerDiscourseOutputSchema() {
   const discourseRow = {
     anyOf: [
       { type: 'string' },
-      providerObjectSchema(
-        Object.fromEntries(HUMAN_DISCOURSE_ROW_FIELDS.map((field) => [field, { type: 'string' }])),
-      ),
+      providerObjectSchema(Object.fromEntries(HUMAN_DISCOURSE_ROW_FIELDS.map((field) => [field, { type: 'string' }]))),
     ],
   };
   return providerObjectSchema({
@@ -397,9 +394,7 @@ function providerDiscourseOutputSchema() {
       type: 'string',
       enum: [...CONTROLLED_ENUMS.proof_status],
     },
-    ...Object.fromEntries(
-      HUMAN_DISCOURSE_ARRAY_FIELDS.map((field) => [field, { type: 'array', items: discourseRow }]),
-    ),
+    ...Object.fromEntries(HUMAN_DISCOURSE_ARRAY_FIELDS.map((field) => [field, { type: 'array', items: discourseRow }])),
     side_arc: providerObjectSchema({
       detected: { type: 'boolean' },
       type: { type: ['string', 'null'], enum: [...SIDE_ARC_TYPES, null] },
@@ -846,12 +841,11 @@ export function buildTutorStubLearnerDagPreflight({
   }
   const staged = resolvedPublicStagedEvidence(world, Number(tutorTurn), publicStagedEvidence);
   const stagedByFactKey = new Map(staged.map((row) => [factKey(row.fact), row]));
-  const prior = priorPublicLearnerState && typeof priorPublicLearnerState === 'object'
-    ? priorPublicLearnerState
-    : {};
-  const groundedFacts = record?.board instanceof Map
-    ? [...record.board.values()].filter(validFactArray)
-    : (prior.groundedFacts || prior.grounded_facts || []).filter(validFactArray);
+  const prior = priorPublicLearnerState && typeof priorPublicLearnerState === 'object' ? priorPublicLearnerState : {};
+  const groundedFacts =
+    record?.board instanceof Map
+      ? [...record.board.values()].filter(validFactArray)
+      : (prior.groundedFacts || prior.grounded_facts || []).filter(validFactArray);
   const voicedDerivedFacts = Array.isArray(record?.voiced)
     ? record.voiced.map((row) => row?.fact).filter(validFactArray)
     : (prior.voicedDerivedFacts || prior.voiced_derived_facts || []).filter(validFactArray);
@@ -871,11 +865,13 @@ export function buildTutorStubLearnerDagPreflight({
     .filter(([key]) => !currentClosed.facts.has(key) && publicClosed.proofs.get(key))
     .map(([key, fact]) => {
       const proof = publicClosed.proofs.get(key);
-      const supportingPremiseIds = [...new Set(
-        proofBaseKeys(publicClosed, key)
-          .map((baseKey) => stagedByFactKey.get(baseKey)?.premise)
-          .filter(Boolean),
-      )];
+      const supportingPremiseIds = [
+        ...new Set(
+          proofBaseKeys(publicClosed, key)
+            .map((baseKey) => stagedByFactKey.get(baseKey)?.premise)
+            .filter(Boolean),
+        ),
+      ];
       return {
         fact: [...fact],
         publicRuleId: String(proof?.rule || ''),
@@ -949,10 +945,7 @@ function matchingQuestionAnswerFacts(world, answer, candidateFacts = []) {
     const bindings = matchPattern(world?.questionPattern, fact);
     if (!bindings) return false;
     const values = Object.values(bindings).map(normalizedAnswerSurface).filter(Boolean);
-    return (
-      values.length > 0 &&
-      values.every((value) => ` ${answerSurface} `.includes(` ${value} `))
-    );
+    return values.length > 0 && values.every((value) => ` ${answerSurface} `.includes(` ${value} `));
   });
 }
 
@@ -1293,7 +1286,9 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     includeRegisterSelection ? '# Prior tutor engagement stances and observed efficacy' : null,
     includeRegisterSelection ? registerContext.historyPrompt : null,
     includeRegisterSelection && registerContext.feedbackPrompt ? '' : null,
-    includeRegisterSelection && registerContext.feedbackPrompt ? '# Explicit learner rating of the previous tutor response' : null,
+    includeRegisterSelection && registerContext.feedbackPrompt
+      ? '# Explicit learner rating of the previous tutor response'
+      : null,
     includeRegisterSelection && registerContext.feedbackPrompt ? registerContext.feedbackPrompt : null,
     '',
     '# JSON schema',
@@ -1558,9 +1553,7 @@ function validateStrictAnalysis(
   if (Object.hasOwn(learnerRecord, 'derive')) {
     if (
       !Array.isArray(learnerRecord.derive) ||
-      learnerRecord.derive.some(
-        (fact) => !validFactArray(fact) || fact.some((part) => !part.trim()),
-      )
+      learnerRecord.derive.some((fact) => !validFactArray(fact) || fact.some((part) => !part.trim()))
     ) {
       throw new TutorStubPublicLearnerAnalysisError(
         'strict public learner analysis requires fact arrays at $.learner_record.derive',
@@ -1688,10 +1681,7 @@ function validateStrictAnalysis(
         { code: 'invalid_analysis_schema', details: { path: '$.benchmark_transition.evidence_span' } },
       );
     }
-    if (
-      typeof benchmarkLearnerText === 'string' &&
-      !benchmarkLearnerText.includes(transition.evidence_span)
-    ) {
+    if (typeof benchmarkLearnerText === 'string' && !benchmarkLearnerText.includes(transition.evidence_span)) {
       throw new TutorStubPublicLearnerAnalysisError(
         'strict public learner analysis benchmark transition evidence_span is not an exact learner-turn substring',
         { code: 'invalid_analysis_evidence_span', details: { path: '$.benchmark_transition.evidence_span' } },
@@ -1813,7 +1803,7 @@ export function normalizeTutorStubClassificationAgainstLearnerSurface(classifica
                 !explicitAuthorityChallenge &&
                 explicitEvidentiaryRestraint
               ? 'stepwise_support_request'
-        : turn.request_type;
+              : turn.request_type;
   if (normalizedRequestType === turn.request_type) return classification;
   return {
     ...classification,
@@ -2502,22 +2492,23 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       Array.isArray(promptContext.registerPalette) &&
       promptContext.registerPalette.length,
     );
-    const { classification: rawClassification, learnerRecordUpdate, registerSelection, benchmarkTransitionEvent } =
-      splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
-        strict,
-        includeRegisterSelection,
-        includeBenchmarkTransitionEvent,
-      });
+    const {
+      classification: rawClassification,
+      learnerRecordUpdate,
+      registerSelection,
+      benchmarkTransitionEvent,
+    } = splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
+      strict,
+      includeRegisterSelection,
+      includeBenchmarkTransitionEvent,
+    });
     if (!rawClassification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
         'public learner analysis did not provide both classification and learner_record',
         { code: 'incomplete_analysis_output' },
       );
     }
-    const classification = normalizeTutorStubClassificationAgainstLearnerSurface(
-      rawClassification,
-      learnerText,
-    );
+    const classification = normalizeTutorStubClassificationAgainstLearnerSurface(rawClassification, learnerText);
     const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({
       update: learnerRecordUpdate,
       world,

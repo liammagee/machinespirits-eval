@@ -7,8 +7,7 @@ import {
 } from '../tutorStubPublicLearnerAnalysis.js';
 import { createTutorStubDagFactDropoutState } from '../tutorStubDagFactDropout.js';
 
-export const ADAPTIVE_STATE_EXACT_OBSERVER_SCHEMA =
-  'machinespirits.adaptive-state-exact-public-observer.v2.3';
+export const ADAPTIVE_STATE_EXACT_OBSERVER_SCHEMA = 'machinespirits.adaptive-state-exact-public-observer.v2.3';
 
 function clone(value) {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value));

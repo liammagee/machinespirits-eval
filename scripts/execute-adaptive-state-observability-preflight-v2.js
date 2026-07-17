@@ -31,9 +31,7 @@ import {
   validateAdaptiveStateObservabilityPreflightReport,
   validateAdaptiveStateObservabilityPreflightResult,
 } from '../services/adaptiveTutor/stateObservabilityPreflight.js';
-import {
-  validateAdaptiveStateStoppedS1DiagnosticParent,
-} from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
+import { validateAdaptiveStateStoppedS1DiagnosticParent } from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
 import { adaptiveStateObservabilityPreflightStaticExecutionContract } from '../services/adaptiveTutor/stateObservabilityPreflightContracts.js';
 
 const SCRIPT = fileURLToPath(import.meta.url);
@@ -95,15 +93,7 @@ function jsonl(rows) {
   return `${rows.map((row) => canonicalJson(row)).join('\n')}\n`;
 }
 
-function executionRunPlan({
-  plan,
-  config,
-  configPath,
-  s0Parent,
-  stoppedS1,
-  runSeed,
-  cliFingerprints,
-}) {
+function executionRunPlan({ plan, config, configPath, s0Parent, stoppedS1, runSeed, cliFingerprints }) {
   const git = captureGitFingerprint({ repoRoot: ROOT });
   delete git.repoRoot;
   const realizers = Object.fromEntries(config.critical_path.language_realizers.map((row) => [row.id, row]));
@@ -202,7 +192,12 @@ function renderReport(report) {
     '- retries, rerolls, repairs, fallbacks, exclusions: 0',
     '',
     ...(report.failures.length
-      ? ['## Failed cells', '', ...report.failures.map((row) => `- ${row.id}: ${row.intended_family} -> ${row.observed_family}`), '']
+      ? [
+          '## Failed cells',
+          '',
+          ...report.failures.map((row) => `- ${row.id}: ${row.intended_family} -> ${row.observed_family}`),
+          '',
+        ]
       : []),
     '> This diagnostic is claim-ineligible. A pass authorizes only a separately confirmed full S1 retry; it is not a learner-state validity or tutoring result.',
     '',

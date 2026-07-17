@@ -165,10 +165,7 @@
           "dramatic_action": null,
           "learner_handoff": "What do those priors support about Crane, and what do they still rule out about the hand in the kicker?"
         },
-        "missingComponents": [
-          "contrary_evidence_applied_to_pressure",
-          "performed_counterpressure"
-        ]
+        "missingComponents": ["contrary_evidence_applied_to_pressure", "performed_counterpressure"]
       }
     }
   ]

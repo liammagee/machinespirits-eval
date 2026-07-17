@@ -174,10 +174,7 @@ process.stdin.on('end', () => {
     assert.doesNotMatch(plain, /tutor learner-DAG model >/u);
     assert.doesNotMatch(plain, /engagement stance >/u);
     assert.doesNotMatch(plain, /tutor DAG >/u);
-    assert.match(
-      plain,
-      /tokens unavailable, effort medium, style brisk, move clarify distinction, character [^,\n]+/u,
-    );
+    assert.match(plain, /tokens unavailable, effort medium, style brisk, move clarify distinction, character [^,\n]+/u);
 
     const events = fs
       .readdirSync(tmp)

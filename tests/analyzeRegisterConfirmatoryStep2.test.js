@@ -4,10 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import {
-  bootstrapFamily,
-  summarizeQaFamily,
-} from '../scripts/analyze-register-confirmatory-step2.js';
+import { bootstrapFamily, summarizeQaFamily } from '../scripts/analyze-register-confirmatory-step2.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROFILES = ['diligent', 'affective_resistant', 'false_memory', 'proof_skipper'];
@@ -49,17 +46,12 @@ function syntheticRows() {
 test('frozen selection declares exactly 60 unique rows per family and four primary-only top-ups', () => {
   const selection = JSON.parse(
     fs.readFileSync(
-      path.join(
-        ROOT,
-        'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-selection.json',
-      ),
+      path.join(ROOT, 'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-selection.json'),
       'utf8',
     ),
   );
   for (const [familyId, family] of Object.entries(selection.families)) {
-    const ids = family.sources.flatMap((source) =>
-      source.keys.map((key) => `${source.profile}/${key}`),
-    );
+    const ids = family.sources.flatMap((source) => source.keys.map((key) => `${source.profile}/${key}`));
     assert.equal(ids.length, 60, familyId);
     assert.equal(new Set(ids).size, 60, familyId);
   }
@@ -97,10 +89,7 @@ test('final QA summary separates primary completeness from secondary availabilit
 
 test('tracked compact artifacts lock the 24 means, frozen gates, and affective lineage', () => {
   const bootstrap = JSON.parse(
-    fs.readFileSync(
-      path.join(ROOT, 'exports/register-confirmatory-evidence/final/interaction-bootstrap.json'),
-      'utf8',
-    ),
+    fs.readFileSync(path.join(ROOT, 'exports/register-confirmatory-evidence/final/interaction-bootstrap.json'), 'utf8'),
   );
   assert.deepEqual(bootstrap.families.terra.bootstrap.cellMeans, {
     diligent: { bland: 0.5, field: 0.467, negative: 0.667 },
@@ -136,10 +125,7 @@ test('tracked compact artifacts lock the 24 means, frozen gates, and affective l
 
   const lineage = JSON.parse(
     fs.readFileSync(
-      path.join(
-        ROOT,
-        'exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.json',
-      ),
+      path.join(ROOT, 'exports/register-confirmatory-evidence/sonnet5-n5-block-b/affective-lineage.json'),
       'utf8',
     ),
   );

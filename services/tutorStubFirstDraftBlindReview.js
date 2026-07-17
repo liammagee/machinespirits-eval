@@ -168,9 +168,7 @@ export function summarizeTutorStubFirstDraftReviewInventory(rows = []) {
     finalDeliverySources: counts(rows.map((row) => row.finalSource)),
     rejectedSafeFailureClusters: counts(issueRows),
     rejectedSafeIssueFamilies: counts(issueRows.map(tutorStubFirstDraftReviewIssueFamily)),
-    rejectedSafeCandidateFamilies: counts(
-      familySets.flat(),
-    ),
+    rejectedSafeCandidateFamilies: counts(familySets.flat()),
     shadowBuckets: {
       trajectoryOnly: familySets.filter(
         (families) => families.length > 0 && families.every((family) => family === 'trajectory_realization'),
@@ -178,12 +176,10 @@ export function summarizeTutorStubFirstDraftReviewInventory(rows = []) {
       noPublicIntegrityFailure: familySets.filter(
         (families) => !families.includes('public_delivery_integrity') && !families.includes('evidence_safety'),
       ).length,
-      learnerResponseStructureInvolved: familySets.filter((families) =>
-        families.includes('learner_response_structure'),
-      ).length,
-      publicDeliveryIntegrityInvolved: familySets.filter((families) =>
-        families.includes('public_delivery_integrity'),
-      ).length,
+      learnerResponseStructureInvolved: familySets.filter((families) => families.includes('learner_response_structure'))
+        .length,
+      publicDeliveryIntegrityInvolved: familySets.filter((families) => families.includes('public_delivery_integrity'))
+        .length,
     },
   };
 }
@@ -229,9 +225,7 @@ export function buildTutorStubFirstDraftBlindReview({
   const safeRows = rows.filter((row) => row.originalPublicSafe);
   const pairRows = safeRows.filter(
     (row) =>
-      !row.originalAccepted &&
-      row.deliveredText &&
-      normalized(row.deliveredText) !== normalized(row.originalText),
+      !row.originalAccepted && row.deliveredText && normalized(row.deliveredText) !== normalized(row.originalText),
   );
   const calibrationRows = safeRows.filter((row) => row.originalAccepted);
   if (pairRows.length < pairCount) throw new Error(`only ${pairRows.length} eligible pairs for requested ${pairCount}`);
@@ -268,7 +262,8 @@ export function buildTutorStubFirstDraftBlindReview({
       originalRealizationRate: Number.isFinite(row.originalRealizationRate) ? row.originalRealizationRate : null,
       candidates: candidates.map((candidate) => ({
         label: candidate.label,
-        sourceClass: normalized(candidate.text) === normalized(row.originalText) ? 'rejected_original' : 'delivered_repair',
+        sourceClass:
+          normalized(candidate.text) === normalized(row.originalText) ? 'rejected_original' : 'delivered_repair',
       })),
     });
   });
@@ -337,7 +332,8 @@ export function tutorStubFirstDraftBlindReviewHtml(blind) {
               <h3>Reply ${escapeHtml(candidate.label)}</h3><p class="reply">${escapeHtml(candidate.text)}</p>
               <div class="ratings">${blind.dimensions
                 .map(
-                  (dimension) => `<label>${escapeHtml(dimension.replaceAll('_', ' '))}<select data-dimension="${escapeHtml(dimension)}"><option value=""></option>${[1, 2, 3, 4, 5].map((value) => `<option>${value}</option>`).join('')}</select></label>`,
+                  (dimension) =>
+                    `<label>${escapeHtml(dimension.replaceAll('_', ' '))}<select data-dimension="${escapeHtml(dimension)}"><option value=""></option>${[1, 2, 3, 4, 5].map((value) => `<option>${value}</option>`).join('')}</select></label>`,
                 )
                 .join('')}</div>
             </article>`,
@@ -379,7 +375,8 @@ export function compileTutorStubFirstDraftBlindReview({ blind, key, ratings } = 
     for (const candidate of blindCase.candidates) {
       const keyCandidate = keyCase.candidates.find((entry) => entry.label === candidate.label);
       const ratingCandidate = byLabel.get(candidate.label);
-      if (!keyCandidate || !ratingCandidate) throw new Error(`missing candidate rating ${blindCase.id}/${candidate.label}`);
+      if (!keyCandidate || !ratingCandidate)
+        throw new Error(`missing candidate rating ${blindCase.id}/${candidate.label}`);
       const scores = Object.fromEntries(
         FIRST_DRAFT_REVIEW_DIMENSIONS.map((dimension) => {
           const score = Number(ratingCandidate.scores?.[dimension]);
@@ -433,7 +430,10 @@ export function compileTutorStubFirstDraftBlindReview({ blind, key, ratings } = 
           n: rows.length,
           overall: mean(rows.map((row) => row.overall)),
           dimensions: Object.fromEntries(
-            FIRST_DRAFT_REVIEW_DIMENSIONS.map((dimension) => [dimension, mean(rows.map((row) => row.scores[dimension]))]),
+            FIRST_DRAFT_REVIEW_DIMENSIONS.map((dimension) => [
+              dimension,
+              mean(rows.map((row) => row.scores[dimension])),
+            ]),
           ),
         },
       ];
@@ -464,18 +464,24 @@ export function compileTutorStubFirstDraftBlindReview({ blind, key, ratings } = 
 export function tutorStubFirstDraftBlindReviewMarkdown(report) {
   const fmt = (value) => (Number.isFinite(value) ? value.toFixed(2) : 'n/a');
   const classes = ['accepted_original', 'rejected_original', 'delivered_repair'];
-  return `# Blind first-draft transcript review\n\n` +
+  return (
+    `# Blind first-draft transcript review\n\n` +
     `Candidates: ${report.candidateCount}; paired rejected-original vs delivered-repair cases: ${report.pairCount}.\n\n` +
     `| Source revealed after rating | n | Overall | Naturalness | Learner response | Dramatic effect | Clarity | Usefulness |\n` +
     `| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n` +
-    classes.map((sourceClass) => {
-      const row = report.bySourceClass[sourceClass] || {};
-      return `| ${sourceClass.replaceAll('_', ' ')} | ${row.n || 0} | ${fmt(row.overall)} | ${fmt(row.dimensions?.naturalness)} | ${fmt(row.dimensions?.learner_responsiveness)} | ${fmt(row.dimensions?.dramatic_effect)} | ${fmt(row.dimensions?.clarity)} | ${fmt(row.dimensions?.usefulness)} |`;
-    }).join('\n') +
+    classes
+      .map((sourceClass) => {
+        const row = report.bySourceClass[sourceClass] || {};
+        return `| ${sourceClass.replaceAll('_', ' ')} | ${row.n || 0} | ${fmt(row.overall)} | ${fmt(row.dimensions?.naturalness)} | ${fmt(row.dimensions?.learner_responsiveness)} | ${fmt(row.dimensions?.dramatic_effect)} | ${fmt(row.dimensions?.clarity)} | ${fmt(row.dimensions?.usefulness)} |`;
+      })
+      .join('\n') +
     `\n\n## Paired comparison\n\n` +
     `Mean delivered-minus-original score: ${fmt(report.pairedComparison.meanDeliveredMinusOriginal)}. ` +
     `Delivered repair scored higher in ${report.pairedComparison.deliveredBetterCount}/${report.pairCount}; ` +
     `rejected original scored higher in ${report.pairedComparison.originalBetterCount}/${report.pairCount}; ` +
     `equal scores in ${report.pairedComparison.equalScoreCount}/${report.pairCount}.\n\n` +
-    `Blind preferences: ${Object.entries(report.pairedComparison.preferenceCounts).map(([key, value]) => `${key.replaceAll('_', ' ')} ${value}`).join('; ')}.\n`;
+    `Blind preferences: ${Object.entries(report.pairedComparison.preferenceCounts)
+      .map(([key, value]) => `${key.replaceAll('_', ' ')} ${value}`)
+      .join('; ')}.\n`
+  );
 }

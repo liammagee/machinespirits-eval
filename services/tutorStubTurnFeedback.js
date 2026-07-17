@@ -1,8 +1,5 @@
 import { tutorStubFeedbackAdaptationPrompt } from './tutorStubFeedbackLearning.js';
-import {
-  TUTOR_STUB_FEEDBACK_REASONS,
-  normalizeTutorStubFeedbackReason,
-} from './tutorStubTuning.js';
+import { TUTOR_STUB_FEEDBACK_REASONS, normalizeTutorStubFeedbackReason } from './tutorStubTuning.js';
 
 export const TUTOR_STUB_TURN_FEEDBACK_STATE_SCHEMA = 'machinespirits.tutor-stub.turn-feedback-state.v1';
 export const TUTOR_STUB_TURN_FEEDBACK_SCHEMA = 'machinespirits.tutor-stub.turn-feedback.v1';
@@ -60,7 +57,11 @@ export function setTutorStubTurnFeedbackRating(
   if (!state?.enabled || state.automatedLearner || !state.target) return null;
   state.rating = normalized;
   state.reason = reason ? normalizeTutorStubFeedbackReason(reason, normalized) : null;
-  state.comment = String(comment || '').replace(/\s+/gu, ' ').trim().slice(0, 500) || null;
+  state.comment =
+    String(comment || '')
+      .replace(/\s+/gu, ' ')
+      .trim()
+      .slice(0, 500) || null;
   state.scope = String(scope || TUTOR_STUB_FEEDBACK_REASONS[state.reason]?.scope || '').trim() || null;
   state.ratedAt = String(ratedAt || '').trim() || new Date().toISOString();
   return tutorStubTurnFeedbackEnvelope(state);
@@ -169,19 +170,21 @@ export function tutorStubTurnFeedbackPrompt(feedback, { adaptationPlan = null } 
     rating === 'up'
       ? 'Preserve the useful quality, but still respond to the learner’s new words and avoid repeating the prior response.'
       : 'Change something observable now: make the response clearer, more direct, better grounded, or differently paced according to the current learner evidence.';
-  const typedDirection = feedback.reason
-    ? TUTOR_STUB_FEEDBACK_REASONS[feedback.reason]?.rule || null
-    : null;
+  const typedDirection = feedback.reason ? TUTOR_STUB_FEEDBACK_REASONS[feedback.reason]?.rule || null : null;
   return [
     '[Private learner feedback on your previous response]',
     reading,
     'Treat this as one subjective self-assessment signal alongside the public learner turn and objective reasoning-state movement.',
     action,
-    typedDirection ? `The learner selected this bounded reason: ${feedback.reasonLabel}. Apply this reviewed interpretation: ${typedDirection}` : null,
+    typedDirection
+      ? `The learner selected this bounded reason: ${feedback.reasonLabel}. Apply this reviewed interpretation: ${typedDirection}`
+      : null,
     tutorStubFeedbackAdaptationPrompt(adaptationPlan),
     'Do not mention the rating, the feedback request, or this private note in public speech.',
     '[End private learner feedback]',
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export function tutorStubTurnFeedbackRegisterPrompt(feedback) {

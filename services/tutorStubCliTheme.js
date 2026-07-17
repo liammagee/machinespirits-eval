@@ -284,7 +284,9 @@ export function stripTutorStubCliAnsi(value) {
 }
 
 function truncateText(value, width) {
-  const text = String(value || '').replace(/\s+/gu, ' ').trim();
+  const text = String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   if (text.length <= width) return text;
   if (width <= 1) return text.slice(0, width);
   return `${text.slice(0, Math.max(0, width - 1)).trimEnd()}…`;

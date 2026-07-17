@@ -41,8 +41,7 @@ test('duplicate due-clue wording is rejected before it can be delivered', () => 
 test('duplicate-clue guard exempts one exact passing compensation span and no other overlap', () => {
   const surface =
     "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
-  const compensation =
-    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const compensation = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [
       {
@@ -257,7 +256,7 @@ test('a possessive evidence object is not mistaken for a role-label stage direct
   const evidenceObjects = [
     'I open the leat-keeper’s charcoal book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
     'I open the leat-keeper’s book. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
-    'I mark the leat-keeper\'s ledger. “I record that the forge was shut and only Edony cast blanks there.” What does that change?',
+    "I mark the leat-keeper's ledger. “I record that the forge was shut and only Edony cast blanks there.” What does that change?",
   ];
   const trueRoleLabels = [
     'The leat-keeper opens the charcoal book: “I record that the forge was shut and only Edony cast blanks there.” What does that change?',

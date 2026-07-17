@@ -150,9 +150,7 @@ function certificateFixture(tmp, overrides = {}) {
     },
     ...overrides.config,
   };
-  const focusedTestSuites = overrides.focusedTestSuites || [
-    { id: 'focused', testFiles: ['focused.test.js'] },
-  ];
+  const focusedTestSuites = overrides.focusedTestSuites || [{ id: 'focused', testFiles: ['focused.test.js'] }];
   const commands = overrides.commands || [
     { id: 'world-quality', kind: 'world_quality', suiteId: null, tap: false, argv: ['node', 'compiler.js'] },
     ...focusedTestSuites.map((suite) => ({
@@ -209,9 +207,7 @@ function certificateReport(tmp, { status = 'pass', tests = 3, pass = 3, fail = 0
       ...command,
       label: command.id,
       argv: command.tap ? ['node', '--test', 'focused.test.js'] : ['node', 'compiler.js'],
-      command: command.tap
-        ? '"node" "--test" "focused.test.js"'
-        : '"node" "compiler.js"',
+      command: command.tap ? '"node" "--test" "focused.test.js"' : '"node" "compiler.js"',
       attempt: 1,
       retryPolicy: 'none',
       startedAt: '2026-07-17T00:00:00.000Z',
@@ -254,13 +250,15 @@ test('preflight certificate key binds deterministic content but not campaign boo
         change_log: { speaking_prompt: 'bookkeeping only' },
         execution: { hard_cell: 'different-cell', maximum_concurrent_remaining_cells: 1 },
         stopping: { maximum_consecutive_iterations_without_improvement: 9 },
-        matrix: [{
-          id: 'different-cell',
-          seed: 999,
-          development_seed: 1000,
-          source_trace: '/different/result/trace.jsonl',
-          source_trace_sha256: 'metadata-only-hash',
-        }],
+        matrix: [
+          {
+            id: 'different-cell',
+            seed: 999,
+            development_seed: 1000,
+            source_trace: '/different/result/trace.jsonl',
+            source_trace_sha256: 'metadata-only-hash',
+          },
+        ],
       },
     });
     assert.equal(metadataOnly.key, baseline.key);
@@ -320,8 +318,7 @@ test('unselected governance tests cannot invalidate a focused preflight certific
     const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
     const baseline = certificateFixture(tmp, { focusedTestSuites });
     assert.equal(
-      baseline.boundary.testDependencies.some((row) =>
-        row.path.endsWith('tutorStubFirstDraftOuterLoop.test.js')),
+      baseline.boundary.testDependencies.some((row) => row.path.endsWith('tutorStubFirstDraftOuterLoop.test.js')),
       false,
     );
 
@@ -329,13 +326,12 @@ test('unselected governance tests cannot invalidate a focused preflight certific
     const unselectedChange = certificateFixture(tmp, { focusedTestSuites });
     assert.equal(unselectedChange.key, baseline.key);
 
-    const selectedSuites = [{
-      id: 'focused',
-      testFiles: [
-        'tests/focused.test.js',
-        'tests/tutorStubFirstDraftOuterLoop.test.js',
-      ],
-    }];
+    const selectedSuites = [
+      {
+        id: 'focused',
+        testFiles: ['tests/focused.test.js', 'tests/tutorStubFirstDraftOuterLoop.test.js'],
+      },
+    ];
     const selected = certificateFixture(tmp, { focusedTestSuites: selectedSuites });
     fs.writeFileSync(outerPath, '// outer governance v3\n');
     const selectedChange = certificateFixture(tmp, { focusedTestSuites: selectedSuites });
@@ -349,17 +345,12 @@ test('selected tests bind their recursive local import closure', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-certificate-imports-'));
   try {
     fs.mkdirSync(path.join(tmp, 'tests'), { recursive: true });
-    fs.writeFileSync(
-      path.join(tmp, 'tests', 'focused.test.js'),
-      "import './focused-helper.js';\n// selected\n",
-    );
+    fs.writeFileSync(path.join(tmp, 'tests', 'focused.test.js'), "import './focused-helper.js';\n// selected\n");
     const helperPath = path.join(tmp, 'tests', 'focused-helper.js');
     fs.writeFileSync(helperPath, 'export const helper = 1;\n');
     const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
     const baseline = certificateFixture(tmp, { focusedTestSuites });
-    assert.ok(
-      baseline.boundary.testDependencies.some((row) => row.path === 'tests/focused-helper.js'),
-    );
+    assert.ok(baseline.boundary.testDependencies.some((row) => row.path === 'tests/focused-helper.js'));
     fs.writeFileSync(helperPath, 'export const helper = 2;\n');
     const changed = certificateFixture(tmp, { focusedTestSuites });
     assert.notEqual(changed.key, baseline.key);
@@ -375,12 +366,7 @@ test('selected tests bind literal campaign config, prompt, and fixture resources
     fs.mkdirSync(path.join(tmp, 'prompts'), { recursive: true });
     fs.mkdirSync(path.join(tmp, 'config', 'tutor-stub-campaigns'), { recursive: true });
     const testPath = path.join(tmp, 'tests', 'focused.test.js');
-    const configPath = path.join(
-      tmp,
-      'config',
-      'tutor-stub-campaigns',
-      'first-draft-working-screens-v9.yaml',
-    );
+    const configPath = path.join(tmp, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v9.yaml');
     const promptPath = path.join(tmp, 'prompts', 'focused.md');
     const resourcePath = path.join(tmp, 'tests', 'fixtures', 'focused.json');
     fs.writeFileSync(
@@ -398,14 +384,11 @@ test('selected tests bind literal campaign config, prompt, and fixture resources
     fs.writeFileSync(resourcePath, '{"version":1}\n');
     const focusedTestSuites = [{ id: 'focused', testFiles: ['tests/focused.test.js'] }];
     const baseline = certificateFixture(tmp, { focusedTestSuites });
-    assert.deepEqual(
-      baseline.boundary.testDependencies.map((row) => row.path).sort(),
-      [
-        'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
-        'prompts/focused.md',
-        'tests/fixtures/focused.json',
-      ],
-    );
+    assert.deepEqual(baseline.boundary.testDependencies.map((row) => row.path).sort(), [
+      'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
+      'prompts/focused.md',
+      'tests/fixtures/focused.json',
+    ]);
 
     for (const [filePath, content] of [
       [configPath, 'schema: v2\n'],
@@ -437,10 +420,10 @@ test('passing preflight certificate is reusable and materializes complete captur
     assert.equal(certificate.status, 'pass');
     assert.equal(certificate.tapTotals.tests, 3);
     assert.deepEqual(certificate.failingNames, []);
-    assert.deepEqual(
-      validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }),
-      { ok: true, reasons: [] },
-    );
+    assert.deepEqual(validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }), {
+      ok: true,
+      reasons: [],
+    });
     const iterationRoot = path.join(tmp, 'iteration-2');
     const reused = materializeTutorStubFirstDraftPreflightCertificate({
       certificate,
@@ -471,40 +454,37 @@ test('preflight certificates reject tamper, mismatch, failure, incompleteness, a
     });
     const tampered = structuredClone(passing);
     tampered.commands[0].stdout.base64 = Buffer.from('tampered').toString('base64');
-    assert.equal(
-      validateTutorStubFirstDraftPreflightCertificate(tampered, { boundary, key }).ok,
-      false,
-    );
+    assert.equal(validateTutorStubFirstDraftPreflightCertificate(tampered, { boundary, key }).ok, false);
 
     const missingTap = structuredClone(passing);
     missingTap.commands[1].tap = null;
     assert.ok(
-      validateTutorStubFirstDraftPreflightCertificate(missingTap, { boundary, key })
-        .reasons.includes('command_evidence_mismatch'),
+      validateTutorStubFirstDraftPreflightCertificate(missingTap, { boundary, key }).reasons.includes(
+        'command_evidence_mismatch',
+      ),
     );
 
     const zeroOneSuite = structuredClone(passing);
     zeroOneSuite.commands[1].tap.tests = 0;
     zeroOneSuite.commands[1].tap.pass = 0;
     assert.ok(
-      validateTutorStubFirstDraftPreflightCertificate(zeroOneSuite, { boundary, key })
-        .reasons.includes('command_evidence_mismatch'),
+      validateTutorStubFirstDraftPreflightCertificate(zeroOneSuite, { boundary, key }).reasons.includes(
+        'command_evidence_mismatch',
+      ),
     );
 
     const commandDrift = structuredClone(passing);
     commandDrift.commands[1].argv.push('--changed');
     assert.ok(
-      validateTutorStubFirstDraftPreflightCertificate(commandDrift, { boundary, key })
-        .reasons.includes('command_evidence_mismatch'),
+      validateTutorStubFirstDraftPreflightCertificate(commandDrift, { boundary, key }).reasons.includes(
+        'command_evidence_mismatch',
+      ),
     );
 
     const changedRuntime = certificateFixture(tmp, {
       runtime: { node: 'v-new', v8: 'v8-test', platform: 'test', arch: 'test' },
     });
-    assert.equal(
-      validateTutorStubFirstDraftPreflightCertificate(passing, changedRuntime).ok,
-      false,
-    );
+    assert.equal(validateTutorStubFirstDraftPreflightCertificate(passing, changedRuntime).ok, false);
 
     const failed = buildTutorStubFirstDraftPreflightCertificate({
       boundary,
@@ -520,9 +500,7 @@ test('preflight certificates reject tamper, mismatch, failure, incompleteness, a
       report: certificateReport(tmp, { tests: 0, pass: 0, fail: 0 }),
     });
     assert.equal(zeroTap.status, 'incomplete');
-    assert.ok(
-      validateTutorStubFirstDraftPreflightCertificate(zeroTap, { boundary, key }).reasons.includes('zero_tap'),
-    );
+    assert.ok(validateTutorStubFirstDraftPreflightCertificate(zeroTap, { boundary, key }).reasons.includes('zero_tap'));
 
     const incomplete = structuredClone(passing);
     incomplete.complete = false;
@@ -544,8 +522,20 @@ test('one valid TAP suite cannot mask a second exit-zero suite with missing TAP'
     ];
     const commands = [
       { id: 'world-quality', kind: 'world_quality', suiteId: null, tap: false, argv: ['node', 'compiler.js'] },
-      { id: 'focused-focused', kind: 'focused_test_suite', suiteId: 'focused', tap: true, argv: ['node', '--test', 'focused.test.js'] },
-      { id: 'focused-focused_b', kind: 'focused_test_suite', suiteId: 'focused_b', tap: true, argv: ['node', '--test', 'focused-b.test.js'] },
+      {
+        id: 'focused-focused',
+        kind: 'focused_test_suite',
+        suiteId: 'focused',
+        tap: true,
+        argv: ['node', '--test', 'focused.test.js'],
+      },
+      {
+        id: 'focused-focused_b',
+        kind: 'focused_test_suite',
+        suiteId: 'focused_b',
+        tap: true,
+        argv: ['node', '--test', 'focused-b.test.js'],
+      },
     ];
     const { boundary, key } = certificateFixture(tmp, { focusedTestSuites, commands });
     const report = certificateReport(tmp);
@@ -559,10 +549,7 @@ test('one valid TAP suite cannot mask a second exit-zero suite with missing TAP'
     const certificate = buildTutorStubFirstDraftPreflightCertificate({ boundary, key, report });
     assert.equal(certificate.status, 'incomplete');
     assert.equal(certificate.commandEvidenceComplete, false);
-    assert.equal(
-      validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }).ok,
-      false,
-    );
+    assert.equal(validateTutorStubFirstDraftPreflightCertificate(certificate, { boundary, key }).ok, false);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -573,21 +560,30 @@ test('mandatory staged diagnostics cannot be bypassed by complete-all-cells', ()
     hard_cell_must_pass_before_remaining: true,
     mandatory_stage_dependency: true,
   };
-  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
-    execution,
-    hardCellStatus: 'fail',
-    completeAllCells: true,
-  }), true);
-  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
-    execution: { ...execution, mandatory_stage_dependency: false },
-    hardCellStatus: 'fail',
-    completeAllCells: true,
-  }), false);
-  assert.equal(tutorStubFirstDraftHardCellBlocksRemaining({
-    execution,
-    hardCellStatus: 'pass',
-    completeAllCells: true,
-  }), false);
+  assert.equal(
+    tutorStubFirstDraftHardCellBlocksRemaining({
+      execution,
+      hardCellStatus: 'fail',
+      completeAllCells: true,
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubFirstDraftHardCellBlocksRemaining({
+      execution: { ...execution, mandatory_stage_dependency: false },
+      hardCellStatus: 'fail',
+      completeAllCells: true,
+    }),
+    false,
+  );
+  assert.equal(
+    tutorStubFirstDraftHardCellBlocksRemaining({
+      execution,
+      hardCellStatus: 'pass',
+      completeAllCells: true,
+    }),
+    false,
+  );
 });
 
 function workingConfig(tmp) {
@@ -650,12 +646,9 @@ function enableStructuredGeneration(config) {
 
 function enableJointPerformanceGeneration(config) {
   config.fixed_configuration.joint_performance_generation = true;
-  config.fixed_configuration.joint_performance_schema =
-    TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA;
-  config.fixed_configuration.joint_performance_composition_schema =
-    TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA;
-  config.fixed_configuration.joint_performance_audit_schema =
-    TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA;
+  config.fixed_configuration.joint_performance_schema = TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA;
+  config.fixed_configuration.joint_performance_composition_schema = TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA;
+  config.fixed_configuration.joint_performance_audit_schema = TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA;
   config.gates_per_cell.require_joint_performance_output = true;
   config.gates_per_cell.require_joint_performance_ownership = true;
   config.gates_per_cell.require_exact_host_source_occurrences = true;
@@ -665,8 +658,7 @@ function enableJointPerformanceGeneration(config) {
 function enableCompactSpeakerPrompt(config) {
   enableJointPerformanceGeneration(config);
   config.fixed_configuration.compact_speaker_prompt = true;
-  config.fixed_configuration.compact_speaker_prompt_schema =
-    TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
+  config.fixed_configuration.compact_speaker_prompt_schema = TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
   config.gates_per_cell.require_compact_speaker_prompt = true;
   return config;
 }
@@ -674,11 +666,18 @@ function enableCompactSpeakerPrompt(config) {
 function confirmationConfig(tmp) {
   const config = enableJointPerformanceGeneration(workingConfig(tmp));
   const trace = config.matrix[0].source_trace;
-  fs.writeFileSync(trace, [1, 2, 3, 4].map((turn) => JSON.stringify({
-    type: 'tutor_response_guard_accounting',
-    turn,
-    accounting: { finalDelivery: { source: 'original_candidate' } },
-  })).join('\n') + '\n');
+  fs.writeFileSync(
+    trace,
+    [1, 2, 3, 4]
+      .map((turn) =>
+        JSON.stringify({
+          type: 'tutor_response_guard_accounting',
+          turn,
+          accounting: { finalDelivery: { source: 'original_candidate' } },
+        }),
+      )
+      .join('\n') + '\n',
+  );
   config.fixed_configuration.draws_per_turn = 4;
   config.gates_per_cell.required_turns = 4;
   config.gates_per_cell.required_originals_accepted = 4;
@@ -729,7 +728,10 @@ test('development confirmation runs one hard cell then three remaining cells wit
     const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
     assert.equal(plan.maxConcurrency, 3);
     assert.equal(execution.hardCell.id, 'hard');
-    assert.deepEqual(execution.remainingCells.map((cell) => cell.id), ['second', 'third', 'fourth']);
+    assert.deepEqual(
+      execution.remainingCells.map((cell) => cell.id),
+      ['second', 'third', 'fourth'],
+    );
     assert.equal(execution.remainingConcurrency, 3);
     assert.equal(execution.preflightRuns, 1);
     assert.equal(execution.hardCellMustPassBeforeRemaining, true);
@@ -758,8 +760,7 @@ test('structured focused test suites preserve the complete legacy gate inventory
     fs.writeFileSync(path.join(tmp, 'tests', 'alpha.test.js'), '// alpha\n');
     fs.writeFileSync(path.join(tmp, 'services', '__tests__', 'beta.test.js'), '// beta\n');
     const config = workingConfig(tmp);
-    config.preflight.focused_tests =
-      'node --test tests/alpha.test.js services/__tests__/beta.test.js';
+    config.preflight.focused_tests = 'node --test tests/alpha.test.js services/__tests__/beta.test.js';
     config.preflight.focused_test_suites = [
       { id: 'contracts', test_files: ['tests/alpha.test.js'] },
       { id: 'integration', test_files: ['services/__tests__/beta.test.js'] },
@@ -775,9 +776,7 @@ test('structured focused test suites preserve the complete legacy gate inventory
     ]);
 
     const shrunk = structuredClone(config);
-    shrunk.preflight.focused_test_suites = [
-      { id: 'contracts', test_files: ['tests/alpha.test.js'] },
-    ];
+    shrunk.preflight.focused_test_suites = [{ id: 'contracts', test_files: ['tests/alpha.test.js'] }];
     assert.throws(
       () => validateTutorStubFirstDraftCampaign({ config: shrunk, root: tmp }),
       /refusing to shrink or change the deterministic gate/u,
@@ -798,9 +797,7 @@ test('structured focused test suites preserve the complete legacy gate inventory
     );
 
     const absoluteFile = structuredClone(config);
-    absoluteFile.preflight.focused_test_suites[0].test_files = [
-      path.join(tmp, 'tests', 'alpha.test.js'),
-    ];
+    absoluteFile.preflight.focused_test_suites[0].test_files = [path.join(tmp, 'tests', 'alpha.test.js')];
     assert.throws(
       () => validateTutorStubFirstDraftCampaign({ config: absoluteFile, root: tmp }),
       /must be repo-relative/u,
@@ -860,31 +857,48 @@ test('interrupted cells distinguish partial consumption from zero-output indeter
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-interrupted-cell-'));
   try {
     const cell = {
-      id: 'hard', world: 'world_hard', learnerProfile: 'answer_seeking', seed: 20261600, turns: [5],
+      id: 'hard',
+      world: 'world_hard',
+      learnerProfile: 'answer_seeking',
+      seed: 20261600,
+      turns: [5],
     };
     const reportPath = path.join(tmp, 'turn-5.json');
-    fs.writeFileSync(reportPath, JSON.stringify({
-      schema: 'machinespirits.tutor-stub.frozen-replay.v1',
-      drawsPerTurn: 4,
-      admissionState: { status: 'in_progress', completedDraws: 2, unstartedDraws: 2 },
-      results: [{ turn: 5, draw: 1 }, { turn: 5, draw: 2 }],
-    }));
+    fs.writeFileSync(
+      reportPath,
+      JSON.stringify({
+        schema: 'machinespirits.tutor-stub.frozen-replay.v1',
+        drawsPerTurn: 4,
+        admissionState: { status: 'in_progress', completedDraws: 2, unstartedDraws: 2 },
+        results: [
+          { turn: 5, draw: 1 },
+          { turn: 5, draw: 2 },
+        ],
+      }),
+    );
     const partial = tutorStubFirstDraftInterruptedCellResult({
-      cell, reportPath, error: new Error('transport interrupted'),
+      cell,
+      reportPath,
+      error: new Error('transport interrupted'),
     });
     assert.equal(partial.seedDisposition, 'consumed_development_incomplete');
     assert.equal(partial.completedTurns, 2);
     assert.deepEqual(partial.unstartedDraws, ['5:3', '5:4']);
     assert.equal(partial.partialCheckpoint.completedDraws, 2);
 
-    fs.writeFileSync(reportPath, JSON.stringify({
-      schema: 'machinespirits.tutor-stub.frozen-replay.v1',
-      drawsPerTurn: 4,
-      admissionState: { status: 'in_progress', completedDraws: 0, unstartedDraws: 4 },
-      results: [],
-    }));
+    fs.writeFileSync(
+      reportPath,
+      JSON.stringify({
+        schema: 'machinespirits.tutor-stub.frozen-replay.v1',
+        drawsPerTurn: 4,
+        admissionState: { status: 'in_progress', completedDraws: 0, unstartedDraws: 4 },
+        results: [],
+      }),
+    );
     const empty = tutorStubFirstDraftInterruptedCellResult({
-      cell, reportPath, error: new Error('transport interrupted'),
+      cell,
+      reportPath,
+      error: new Error('transport interrupted'),
     });
     assert.equal(empty.seedDisposition, 'indeterminate_zero_output_claim_preserved');
     assert.equal(empty.completedTurns, 0);
@@ -1032,17 +1046,20 @@ test('V8 expands the structural working panel hard-cell first with fresh develop
   assert.equal(plan.preflightBlockers[0].sources[0].averageSentenceWords, 36);
   assert.equal(plan.preflightBlockers[0].sources[0].audienceMaximum, 23);
   assert.equal(plan.preflightBlockers[0].sources[0].lexicalMaximum, 23);
-  assert.deepEqual(plan.cells.map((cell) => ({
-    id: cell.id,
-    priority: cell.priority,
-    seed: cell.seed,
-    turns: cell.turns,
-  })), [
-    { id: 'tallow_answer_seeking', priority: 1, seed: 20261800, turns: [5] },
-    { id: 'ravensmark_affective_resistant', priority: 2, seed: 20261801, turns: [5] },
-    { id: 'larkspur_premature_closure', priority: 3, seed: 20261802, turns: [2] },
-    { id: 'foxtrot_diligent', priority: 4, seed: 20261803, turns: [4] },
-  ]);
+  assert.deepEqual(
+    plan.cells.map((cell) => ({
+      id: cell.id,
+      priority: cell.priority,
+      seed: cell.seed,
+      turns: cell.turns,
+    })),
+    [
+      { id: 'tallow_answer_seeking', priority: 1, seed: 20261800, turns: [5] },
+      { id: 'ravensmark_affective_resistant', priority: 2, seed: 20261801, turns: [5] },
+      { id: 'larkspur_premature_closure', priority: 3, seed: 20261802, turns: [2] },
+      { id: 'foxtrot_diligent', priority: 4, seed: 20261803, turns: [4] },
+    ],
+  );
   for (const cell of plan.cells) {
     assert.equal(cell.commands.length, 1);
     const argv = cell.commands[0].argv;
@@ -1065,53 +1082,53 @@ test('V8 expands the structural working panel hard-cell first with fresh develop
   assert.equal(loaded.config.gates_per_cell.require_deterministic_only_audit, true);
   assert.equal(loaded.config.gates_per_cell.maximum_semantic_adjudicator_calls, 0);
   assert.equal(loaded.config.execution.require_clean_worktree, true);
-  assert.deepEqual(loaded.config.matrix.map((cell) => ({
-    id: cell.id,
-    targets: cell.structural_targets,
-    sourceModes: cell.structural_activation?.deterministic_host_source_renderer?.expected_modes || [],
-  })), [
-    {
-      id: 'tallow_answer_seeking',
-      targets: [
-        'handoff_contract_and_cross_slot_progression',
-        'typed_turn_focus_relation',
-        'shared_writable_request_classifier',
-      ],
-      sourceModes: [],
-    },
-    {
-      id: 'ravensmark_affective_resistant',
-      targets: ['deterministic_host_source_renderer', 'typed_turn_focus_relation'],
-      sourceModes: ['presented_exhibit'],
-    },
-    {
-      id: 'larkspur_premature_closure',
-      targets: [
-        'deterministic_host_source_renderer',
-        'typed_due_source_action_referent',
-        'handoff_contract_and_cross_slot_progression',
-        'typed_turn_focus_relation',
-      ],
-      sourceModes: ['enacted_role'],
-    },
-    {
-      id: 'foxtrot_diligent',
-      targets: [
-        'deterministic_host_source_renderer',
-        'handoff_contract_and_cross_slot_progression',
-        'typed_turn_focus_relation',
-      ],
-      sourceModes: ['presented_exhibit'],
-    },
-  ]);
+  assert.deepEqual(
+    loaded.config.matrix.map((cell) => ({
+      id: cell.id,
+      targets: cell.structural_targets,
+      sourceModes: cell.structural_activation?.deterministic_host_source_renderer?.expected_modes || [],
+    })),
+    [
+      {
+        id: 'tallow_answer_seeking',
+        targets: [
+          'handoff_contract_and_cross_slot_progression',
+          'typed_turn_focus_relation',
+          'shared_writable_request_classifier',
+        ],
+        sourceModes: [],
+      },
+      {
+        id: 'ravensmark_affective_resistant',
+        targets: ['deterministic_host_source_renderer', 'typed_turn_focus_relation'],
+        sourceModes: ['presented_exhibit'],
+      },
+      {
+        id: 'larkspur_premature_closure',
+        targets: [
+          'deterministic_host_source_renderer',
+          'typed_due_source_action_referent',
+          'handoff_contract_and_cross_slot_progression',
+          'typed_turn_focus_relation',
+        ],
+        sourceModes: ['enacted_role'],
+      },
+      {
+        id: 'foxtrot_diligent',
+        targets: [
+          'deterministic_host_source_renderer',
+          'handoff_contract_and_cross_slot_progression',
+          'typed_turn_focus_relation',
+        ],
+        sourceModes: ['presented_exhibit'],
+      },
+    ],
+  );
 });
 
 test('V8 reports a valid predeclaration separately from its failed deterministic preflight', () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-  const configPath = path.join(
-    repoRoot,
-    'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml',
-  );
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
   const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
   const plan = expandTutorStubFirstDraftCampaign({
     config: loaded.config,
@@ -1191,17 +1208,12 @@ test('V8 reports a valid predeclaration separately from its failed deterministic
   });
   assert.deepEqual(retired.seedInventory.unconsumed, []);
   assert.equal(retired.seedInventory.retired.length, 4);
-  assert.ok(retired.cells.every(
-    (cell) => cell.seedDisposition === 'retired_development_preflight_failure',
-  ));
+  assert.ok(retired.cells.every((cell) => cell.seedDisposition === 'retired_development_preflight_failure'));
 });
 
 test('deterministic preflight command failures preserve validation, exact failure, and zero-call seed state', () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-  const sourceConfigPath = path.join(
-    repoRoot,
-    'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
-  );
+  const sourceConfigPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
   const sourceConfig = loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config;
   const cases = [
     {
@@ -1309,10 +1321,7 @@ test('deterministic preflight command failures preserve validation, exact failur
       assert.equal(result.commandFailure.signal, null);
       assert.equal(result.commandFailure.spawnErrorCode, null);
       assert.equal(result.preflightExecutionArtifactPath, preflightExecutionPath);
-      assert.equal(
-        result.commandFailure.preflightExecutionArtifactPath,
-        preflightExecutionPath,
-      );
+      assert.equal(result.commandFailure.preflightExecutionArtifactPath, preflightExecutionPath);
       assert.deepEqual(
         result.commandFailure.argv.slice(0, 2),
         testCase.kind === 'model_free_fixture'
@@ -1326,13 +1335,9 @@ test('deterministic preflight command failures preserve validation, exact failur
       assert.equal(result.completedTurns, 0);
       assert.deepEqual(result.seedInventory.retired, []);
       assert.equal(result.seedInventory.unconsumed.length, result.cells.length);
-      assert.ok(result.cells.every(
-        (cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure',
-      ));
+      assert.ok(result.cells.every((cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure'));
       assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
-      const preflightExecution = JSON.parse(
-        fs.readFileSync(preflightExecutionPath, 'utf8'),
-      );
+      const preflightExecution = JSON.parse(fs.readFileSync(preflightExecutionPath, 'utf8'));
       assert.equal(preflightExecution.status, 'fail');
       assert.equal(preflightExecution.executionPolicy.attemptsPerCommand, 1);
       assert.equal(preflightExecution.executionPolicy.retryPolicy, 'none');
@@ -1340,11 +1345,7 @@ test('deterministic preflight command failures preserve validation, exact failur
       assert.equal(preflightExecution.modelCalls, 0);
       assert.equal(
         preflightExecution.commands.length,
-        testCase.kind === 'world_quality'
-          ? 1
-          : testCase.kind === 'focused_tests'
-            ? 2
-            : 3,
+        testCase.kind === 'world_quality' ? 1 : testCase.kind === 'focused_tests' ? 2 : 3,
       );
       const failedExecution = preflightExecution.commands.at(-1);
       assert.equal(failedExecution.status, 'fail');
@@ -1355,10 +1356,7 @@ test('deterministic preflight command failures preserve validation, exact failur
         const artifact = failedExecution[streamName];
         const bytes = fs.readFileSync(artifact.path);
         assert.equal(artifact.bytes, bytes.byteLength);
-        assert.equal(
-          artifact.sha256,
-          createHash('sha256').update(bytes).digest('hex'),
-        );
+        assert.equal(artifact.sha256, createHash('sha256').update(bytes).digest('hex'));
       }
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -1369,11 +1367,7 @@ test('deterministic preflight command failures preserve validation, exact failur
 test('structured focused suite failure is captured once and blocks every model call', () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-preflight-'));
-  const testFile = path.join(
-    repoRoot,
-    'tests',
-    `generated-preflight-failure-${process.pid}-${Date.now()}.test.js`,
-  );
+  const testFile = path.join(repoRoot, 'tests', `generated-preflight-failure-${process.pid}-${Date.now()}.test.js`);
   try {
     const relativeTestFile = path.relative(repoRoot, testFile);
     fs.writeFileSync(
@@ -1396,19 +1390,12 @@ test('structured focused suite failure is captured once and blocks every model c
       '#!/bin/sh\nif [ "$1" = "rev-parse" ]; then echo test-head; exit 0; fi\nif [ "$1" = "status" ]; then exit 0; fi\nexit 2\n',
     );
     fs.chmodSync(fakeGit, 0o755);
-    const sourceConfigPath = path.join(
-      repoRoot,
-      'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
-    );
-    const config = structuredClone(
-      loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config,
-    );
+    const sourceConfigPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
+    const config = structuredClone(loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config);
     config.artifacts.root = artifactRoot;
     config.preflight.world_quality = 'true';
     config.preflight.focused_tests = `node --test ${relativeTestFile}`;
-    config.preflight.focused_test_suites = [
-      { id: 'failure_capture', test_files: [relativeTestFile] },
-    ];
+    config.preflight.focused_test_suites = [{ id: 'failure_capture', test_files: [relativeTestFile] }];
     config.preflight.model_free_fixtures = [];
     fs.writeFileSync(configPath, YAML.stringify(config));
 
@@ -1437,10 +1424,7 @@ test('structured focused suite failure is captured once and blocks every model c
     );
 
     assert.equal(execution.status, 1, execution.stderr);
-    assert.match(
-      `${execution.stdout}\n${execution.stderr}`,
-      /captured deterministic failure sentinel/u,
-    );
+    assert.match(`${execution.stdout}\n${execution.stderr}`, /captured deterministic failure sentinel/u);
     const iterationRoot = path.join(artifactRoot, 'iteration-1');
     const reportPath = path.join(iterationRoot, 'preflight-execution.json');
     const resultPath = path.join(iterationRoot, 'working-screen-result.json');
@@ -1450,9 +1434,7 @@ test('structured focused suite failure is captured once and blocks every model c
     assert.equal(report.modelCalls, 0);
     assert.equal(report.testInventory.suiteCount, 1);
     assert.equal(report.testInventory.fileCount, 1);
-    assert.deepEqual(report.testInventory.suites, [
-      { id: 'failure_capture', testFiles: [relativeTestFile] },
-    ]);
+    assert.deepEqual(report.testInventory.suites, [{ id: 'failure_capture', testFiles: [relativeTestFile] }]);
     assert.equal(report.commands.length, 2);
     const suiteExecution = report.commands[1];
     assert.equal(suiteExecution.kind, 'focused_test_suite');
@@ -1468,18 +1450,14 @@ test('structured focused suite failure is captured once and blocks every model c
     assert.equal(suiteExecution.tap.tests, 1);
     assert.equal(suiteExecution.tap.pass, 0);
     assert.equal(suiteExecution.tap.fail, 1);
-    assert.ok(
-      suiteExecution.tap.failureNames.includes('captured deterministic failure sentinel'),
-    );
+    assert.ok(suiteExecution.tap.failureNames.includes('captured deterministic failure sentinel'));
     assert.equal(result.status, 'preflight_failed');
     assert.equal(result.modelCalls, 0);
     assert.equal(result.candidates, 0);
     assert.equal(result.commandFailure.kind, 'focused_test_suite');
     assert.equal(result.preflightExecutionArtifactPath, reportPath);
     assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
-    assert.ok(result.cells.every(
-      (cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure',
-    ));
+    assert.ok(result.cells.every((cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure'));
   } finally {
     fs.rmSync(testFile, { force: true });
     fs.rmSync(root, { recursive: true, force: true });
@@ -1502,19 +1480,12 @@ test('zero-test TAP is a failed captured suite and cannot unlock a replay', () =
       '#!/bin/sh\nif [ "$1" = "rev-parse" ]; then echo test-head; exit 0; fi\nif [ "$1" = "status" ]; then exit 0; fi\nexit 2\n',
     );
     fs.chmodSync(fakeGit, 0o755);
-    const sourceConfigPath = path.join(
-      repoRoot,
-      'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
-    );
-    const config = structuredClone(
-      loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config,
-    );
+    const sourceConfigPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
+    const config = structuredClone(loadTutorStubFirstDraftCampaign(sourceConfigPath, { root: repoRoot }).config);
     config.artifacts.root = artifactRoot;
     config.preflight.world_quality = 'true';
     config.preflight.focused_tests = 'node --test tests/processUtils.test.js';
-    config.preflight.focused_test_suites = [
-      { id: 'zero_tap', test_files: ['tests/processUtils.test.js'] },
-    ];
+    config.preflight.focused_test_suites = [{ id: 'zero_tap', test_files: ['tests/processUtils.test.js'] }];
     // This is a safety barrier for the test itself: even if Node changes its
     // recursive-test behavior, the campaign still stops before a replay.
     config.preflight.model_free_fixtures = [invalidFixture];
@@ -1575,10 +1546,7 @@ test('zero-test TAP is a failed captured suite and cannot unlock a replay', () =
 
 test('V9 preflight makes the dense Ravensmark source effectively accessible without changing direct controls', () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-  const configPath = path.join(
-    repoRoot,
-    'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml',
-  );
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
   const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
   const plan = expandTutorStubFirstDraftCampaign({
     config: loaded.config,
@@ -1589,9 +1557,7 @@ test('V9 preflight makes the dense Ravensmark source effectively accessible with
   assert.equal(plan.valid, true);
   assert.equal(plan.preflightReady, true);
   assert.deepEqual(plan.preflightBlockers, []);
-  const ravensmark = plan.structuralPreflight.find(
-    (entry) => entry.cellId === 'ravensmark_affective_resistant',
-  );
+  const ravensmark = plan.structuralPreflight.find((entry) => entry.cellId === 'ravensmark_affective_resistant');
   assert.equal(ravensmark.directAccessible, false);
   assert.equal(ravensmark.compensationRequired, true);
   assert.equal(ravensmark.compensationContractReady, true);
@@ -1652,10 +1618,7 @@ test('campaign accessibility readiness accepts one ready compensation but fails 
     configuration,
     policy: 'direct_or_compensated_v1',
   });
-  assert.equal(
-    tutorStubSourceSurfaceAccessibilityReady(one.source_accessibility, 1, one),
-    true,
-  );
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady(one.source_accessibility, 1, one), true);
 
   const multiple = compileTutorStubSourceAccessibilityContract({
     sources: [
@@ -1666,14 +1629,7 @@ test('campaign accessibility readiness accepts one ready compensation but fails 
     policy: 'direct_or_compensated_v1',
   });
   assert.equal(multiple.effective_mode, 'blocked');
-  assert.equal(
-    tutorStubSourceSurfaceAccessibilityReady(
-      multiple.source_accessibility,
-      2,
-      multiple,
-    ),
-    false,
-  );
+  assert.equal(tutorStubSourceSurfaceAccessibilityReady(multiple.source_accessibility, 2, multiple), false);
 });
 
 test('a required dirty worktree becomes a recorded zero-call preflight blocker', () => {
@@ -1702,10 +1658,7 @@ test('a required dirty worktree becomes a recorded zero-call preflight blocker',
 
 test('V8 validation fails closed if its clean-worktree requirement is removed', () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-  const configPath = path.join(
-    repoRoot,
-    'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml',
-  );
+  const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
   const loaded = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot });
   const drift = structuredClone(loaded.config);
   drift.execution.require_clean_worktree = false;
@@ -1758,7 +1711,11 @@ test('working summary gates declared structural activation and deterministic-onl
     },
   };
   const cell = {
-    id: 'source-turn', world: 'world', learnerProfile: 'diligent', seed: 1, turns: [2],
+    id: 'source-turn',
+    world: 'world',
+    learnerProfile: 'diligent',
+    seed: 1,
+    turns: [2],
     structural_targets: [
       'deterministic_host_source_renderer',
       'typed_due_source_action_referent',
@@ -1829,7 +1786,9 @@ test('working summary gates declared structural activation and deterministic-onl
     },
   };
   const result = {
-    turn: 2, draw: 1, latencyMs: 10,
+    turn: 2,
+    draw: 1,
+    latencyMs: 10,
     semanticAdjudication: { called: false, adjudication: null, error: null },
     jointPerformanceGeneration: {
       ok: true,
@@ -1843,7 +1802,9 @@ test('working summary gates declared structural activation and deterministic-onl
       },
     },
     audit: {
-      ok: true, safetyFailure: false, failureClusters: [],
+      ok: true,
+      safetyFailure: false,
+      failureClusters: [],
       audits: {
         actorialRealizationAudit: { ok: true },
         responseCompositionAudit: { ok: true },
@@ -1855,13 +1816,15 @@ test('working summary gates declared structural activation and deterministic-onl
           ok: true,
           axes: { source_action_alignment: { visible: true } },
           sourceActionAlignment: {
-            active: true, ok: true,
+            active: true,
+            ok: true,
             sources: [{ required: [{ kind: 'role_carrier', label: 'public log' }] }],
           },
         },
         sourceAccessibilityAudit: directAccessibilityAudit,
         turnProgressionAudit: {
-          active: true, ok: true,
+          active: true,
+          ok: true,
           learner_uptake: { mode: 'direct_response', visible: true },
           handoff: { target_coverage: { count: 2, coverage: 1 } },
         },
@@ -1917,8 +1880,7 @@ test('working summary gates declared structural activation and deterministic-onl
 test('working summary requires the generated compensation owner to clear the candidate audit', () => {
   const sourceText =
     "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
-  const compensationText =
-    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const compensationText = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
   const configuration = {
     audience_register: 'domain_apprentice',
     lexical_accessibility: 'standard',
@@ -2075,8 +2037,7 @@ test('working summary requires the generated compensation owner to clear the can
     owner: 'performance_response',
   };
   minimal.audit.audits.sourceAccessibilityAudit = structuredClone(minimalAudit);
-  minimal.jointPerformanceGeneration.composition.sourceAccessibilityAudit =
-    structuredClone(minimalAudit);
+  minimal.jointPerformanceGeneration.composition.sourceAccessibilityAudit = structuredClone(minimalAudit);
   const minimalRejected = summarizeMutation(minimal);
   assert.equal(minimalRejected.sourceSurfaceAccessibilities[0].rowRecordedAuditSchemaValid, true);
   assert.equal(minimalRejected.sourceSurfaceAccessibilities[0].recordedAuditsConsistent, false);
@@ -2090,13 +2051,9 @@ test('working summary requires the generated compensation owner to clear the can
   assert.equal(staleRejected.gates.sourceSurfaceAccessibility, false);
 
   const contractTamper = structuredClone(result);
-  contractTamper.jointPerformanceGeneration.composition.sourceAccessibilityContract
-    .compensation.max_words += 1;
+  contractTamper.jointPerformanceGeneration.composition.sourceAccessibilityContract.compensation.max_words += 1;
   const contractRejected = summarizeMutation(contractTamper);
-  assert.equal(
-    contractRejected.sourceSurfaceAccessibilities[0].compositionContractConsistent,
-    false,
-  );
+  assert.equal(contractRejected.sourceSurfaceAccessibilities[0].compositionContractConsistent, false);
   assert.equal(contractRejected.gates.sourceSurfaceAccessibility, false);
 
   const spanTamper = structuredClone(result);
@@ -2118,33 +2075,34 @@ test('working summary reports and hard-gates every declared intervention maximum
       maximum_transport_normalizations: 0,
     });
     const reports = [2, 3, 7, 10].map((turn, index) => ({
-      summary: index === 0
-        ? {
-            mechanicalRepairs: 1,
-            modelRewrites: 1,
-            deterministicFallbacks: 1,
-            transportNormalizedOutputs: 1,
-            transportNormalizationCount: 1,
-          }
-        : {},
-      results: [{
-        turn,
-        draw: 1,
-        latencyMs: 10,
-        deterministicAudit: index === 0
-          ? { audits: { actorialRealizationAudit: { ok: false } } }
-          : null,
-        audit: {
-          ok: true,
-          safetyFailure: false,
-          failureClusters: [],
-          audits: {
-            responseCompositionAudit: { ok: true },
-            actorialRealizationAudit: { ok: true },
-            responseConfigurationAudit: { realization_rate: 1 },
+      summary:
+        index === 0
+          ? {
+              mechanicalRepairs: 1,
+              modelRewrites: 1,
+              deterministicFallbacks: 1,
+              transportNormalizedOutputs: 1,
+              transportNormalizationCount: 1,
+            }
+          : {},
+      results: [
+        {
+          turn,
+          draw: 1,
+          latencyMs: 10,
+          deterministicAudit: index === 0 ? { audits: { actorialRealizationAudit: { ok: false } } } : null,
+          audit: {
+            ok: true,
+            safetyFailure: false,
+            failureClusters: [],
+            audits: {
+              responseCompositionAudit: { ok: true },
+              actorialRealizationAudit: { ok: true },
+              responseConfigurationAudit: { realization_rate: 1 },
+            },
           },
         },
-      }],
+      ],
     }));
     const summary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
     assert.equal(summary.mechanicalRepairs, 1);
@@ -2167,11 +2125,14 @@ test('development confirmation rejects contaminated prefixes and orchestration d
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-development-contamination-'));
   try {
     const contaminated = confirmationConfig(tmp);
-    fs.appendFileSync(contaminated.matrix[0].source_trace, `${JSON.stringify({
-      type: 'tutor_response_guard_accounting',
-      turn: 4,
-      accounting: { finalDelivery: { source: 'model_rewrite' } },
-    })}\n`);
+    fs.appendFileSync(
+      contaminated.matrix[0].source_trace,
+      `${JSON.stringify({
+        type: 'tutor_response_guard_accounting',
+        turn: 4,
+        accounting: { finalDelivery: { source: 'model_rewrite' } },
+      })}\n`,
+    );
     assert.throws(
       () => validateTutorStubFirstDraftCampaign({ config: contaminated, root: tmp }),
       /prior delivery turn inventory|prior non-original tutor delivery/u,
@@ -2249,10 +2210,7 @@ test('development validation artifacts are immutable per iteration while dry val
     () => tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode: 'unknown', iteration: 1 }),
     /unsupported campaign mode/u,
   );
-  assert.deepEqual(
-    tutorStubFirstDraftUnexpectedIterationArtifacts(['campaign-validation.json']),
-    [],
-  );
+  assert.deepEqual(tutorStubFirstDraftUnexpectedIterationArtifacts(['campaign-validation.json']), []);
   assert.deepEqual(
     tutorStubFirstDraftUnexpectedIterationArtifacts([
       'campaign-validation.json',
@@ -2267,10 +2225,10 @@ test('development validation and result artifacts refuse silent overwrite', () =
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-immutable-artifacts-'));
   try {
     const iterationRoot = path.join(tmp, 'iteration-1');
-    assert.deepEqual(
-      assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot),
-      { vacant: true, existing: [] },
-    );
+    assert.deepEqual(assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot), {
+      vacant: true,
+      existing: [],
+    });
     const validationPath = path.join(iterationRoot, 'campaign-validation.json');
     const resultPath = path.join(iterationRoot, 'working-screen-result.json');
     writeTutorStubFirstDraftJsonExclusive(validationPath, { version: 1 });
@@ -2292,10 +2250,10 @@ test('development validation and result artifacts refuse silent overwrite', () =
     assert.deepEqual(JSON.parse(fs.readFileSync(resultPath, 'utf8')), { version: 1 });
     const archiveRoot = `${iterationRoot}-archived-zero-call`;
     fs.renameSync(iterationRoot, archiveRoot);
-    assert.deepEqual(
-      assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot),
-      { vacant: true, existing: [] },
-    );
+    assert.deepEqual(assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoot), {
+      vacant: true,
+      existing: [],
+    });
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(archiveRoot, 'campaign-validation.json'), 'utf8')), {
       version: 1,
     });
@@ -2413,8 +2371,7 @@ test('development campaign propagates only the guarded non-equivalent Codex base
     fs.mkdirSync(path.dirname(instructions), { recursive: true });
     fs.writeFileSync(instructions, 'Speak only as the public tutor.\n');
     const config = enableCompactSpeakerPrompt(workingConfig(tmp));
-    config.fixed_configuration.development_codex_instructions_file =
-      'config/tutor-stub-codex-speaker-instructions.md';
+    config.fixed_configuration.development_codex_instructions_file = 'config/tutor-stub-codex-speaker-instructions.md';
     config.gates_per_cell.maximum_transport_normalizations = 1;
     const plan = expandTutorStubFirstDraftCampaign({ config, root: tmp, iteration: 1 });
     for (const command of plan.cells.flatMap((cell) => cell.commands)) {
@@ -2424,10 +2381,7 @@ test('development campaign propagates only the guarded non-equivalent Codex base
     }
     const report = buildTutorStubFirstDraftCampaignValidationReport({ config, plan });
     assert.equal(report.speakerTransportMode, 'codex_cli_development_base_override_non_equivalent');
-    assert.equal(
-      report.developmentCodexInstructionsFile,
-      'config/tutor-stub-codex-speaker-instructions.md',
-    );
+    assert.equal(report.developmentCodexInstructionsFile, 'config/tutor-stub-codex-speaker-instructions.md');
 
     config.fixed_configuration.development_codex_instructions_file = '../arbitrary.md';
     assert.throws(
@@ -2444,8 +2398,7 @@ test('compact speaker campaign validation fails closed on mode, schema, or gate 
   try {
     const withoutJoint = workingConfig(tmp);
     withoutJoint.fixed_configuration.compact_speaker_prompt = true;
-    withoutJoint.fixed_configuration.compact_speaker_prompt_schema =
-      TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
+    withoutJoint.fixed_configuration.compact_speaker_prompt_schema = TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA;
     withoutJoint.gates_per_cell.require_compact_speaker_prompt = true;
     assert.throws(
       () => validateTutorStubFirstDraftCampaign({ config: withoutJoint, root: tmp }),
@@ -2515,9 +2468,7 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
     const config = enableJointPerformanceGeneration(workingConfig(tmp));
     config.gates_per_cell.maximum_transport_normalizations = 1;
     const reports = [2, 3, 7, 10].map((turn, index) => {
-      const entries = index === 0
-        ? [{ surface: 'First public source.' }, { surface: 'Second public source.' }]
-        : [];
+      const entries = index === 0 ? [{ surface: 'First public source.' }, { surface: 'Second public source.' }] : [];
       const sourceSpans = entries.map((entry, sourceIndex) => ({
         id: `source_${sourceIndex + 1}`,
         kind: 'source',
@@ -2526,40 +2477,43 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
       }));
       const sourceText = entries.map((entry) => entry.surface).join(' ');
       return {
-        bundles: [{
-          turn,
-          turnId: `run:t${turn}`,
-          frames: { dramaticRelease: { active: entries.length > 0, entries } },
-        }],
-        results: [{
-          turn,
-          turnId: `run:t${turn}`,
-          latencyMs: 100,
-          jointPerformanceGeneration: {
-            ok: true,
-            parsed: {
-              transport_normalizations: index === 0
-                ? [{ slot: 'performance.response', type: 'trim_outer_whitespace', count: 1 }]
-                : [],
+        bundles: [
+          {
+            turn,
+            turnId: `run:t${turn}`,
+            frames: { dramaticRelease: { active: entries.length > 0, entries } },
+          },
+        ],
+        results: [
+          {
+            turn,
+            turnId: `run:t${turn}`,
+            latencyMs: 100,
+            jointPerformanceGeneration: {
+              ok: true,
+              parsed: {
+                transport_normalizations:
+                  index === 0 ? [{ slot: 'performance.response', type: 'trim_outer_whitespace', count: 1 }] : [],
+              },
+              composition: {
+                text: `We enter the scene. ${sourceText} What do you see?`.replace(/\s+/gu, ' ').trim(),
+                sourceCount: entries.length,
+                spans: sourceSpans,
+              },
             },
-            composition: {
-              text: `We enter the scene. ${sourceText} What do you see?`.replace(/\s+/gu, ' ').trim(),
-              sourceCount: entries.length,
-              spans: sourceSpans,
+            audit: {
+              ok: true,
+              safetyFailure: false,
+              failureClusters: [],
+              audits: {
+                responseCompositionAudit: { ok: true },
+                actorialRealizationAudit: { ok: true },
+                responseConfigurationAudit: { realization_rate: 1 },
+                jointPerformanceAudit: { ok: true },
+              },
             },
           },
-          audit: {
-            ok: true,
-            safetyFailure: false,
-            failureClusters: [],
-            audits: {
-              responseCompositionAudit: { ok: true },
-              actorialRealizationAudit: { ok: true },
-              responseConfigurationAudit: { realization_rate: 1 },
-              jointPerformanceAudit: { ok: true },
-            },
-          },
-        }],
+        ],
       };
     });
 
@@ -2586,7 +2540,12 @@ test('working summary enforces v2 joint output, ownership, and N host-owned SOUR
         row.hostOwnedSourceSpanCount,
         row.actualOccurrenceCount,
       ]),
-      [[2, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      [
+        [2, 2, 2, 2],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ],
     );
     assert.equal(passing.gates.jointPerformanceOutput, true);
     assert.equal(passing.gates.jointPerformanceOwnership, true);
@@ -2609,41 +2568,45 @@ test('working summary requires compact prompt provenance on every completed draw
     const config = enableCompactSpeakerPrompt(workingConfig(tmp));
     config.gates_per_cell.maximum_transport_normalizations = 1;
     const reports = [2, 3, 7, 10].map((turn) => ({
-      bundles: [{
-        turn,
-        turnId: `run:t${turn}`,
-        frames: { dramaticRelease: { active: false, entries: [] } },
-        compactSpeakingPrompt: {
-          schema: TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA,
-          mode: 'compact-no-source.v1',
-          publicHistoryPreservedExactly: true,
-          v2OutputShapePreserved: true,
-          noNewEvidence: true,
-          promptSize: { authoredTotal: { estimatedTokens: 2302 } },
-          maxEstimatedTokens: 2500,
-        },
-      }],
-      results: [{
-        turn,
-        turnId: `run:t${turn}`,
-        latencyMs: 100,
-        jointPerformanceGeneration: {
-          ok: true,
-          parsed: { transport_normalizations: [] },
-          composition: { text: 'A concrete reply.', sourceCount: 0, spans: [] },
-        },
-        audit: {
-          ok: true,
-          safetyFailure: false,
-          failureClusters: [],
-          audits: {
-            responseCompositionAudit: { ok: true },
-            actorialRealizationAudit: { ok: true },
-            responseConfigurationAudit: { realization_rate: 1 },
-            jointPerformanceAudit: { ok: true },
+      bundles: [
+        {
+          turn,
+          turnId: `run:t${turn}`,
+          frames: { dramaticRelease: { active: false, entries: [] } },
+          compactSpeakingPrompt: {
+            schema: TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA,
+            mode: 'compact-no-source.v1',
+            publicHistoryPreservedExactly: true,
+            v2OutputShapePreserved: true,
+            noNewEvidence: true,
+            promptSize: { authoredTotal: { estimatedTokens: 2302 } },
+            maxEstimatedTokens: 2500,
           },
         },
-      }],
+      ],
+      results: [
+        {
+          turn,
+          turnId: `run:t${turn}`,
+          latencyMs: 100,
+          jointPerformanceGeneration: {
+            ok: true,
+            parsed: { transport_normalizations: [] },
+            composition: { text: 'A concrete reply.', sourceCount: 0, spans: [] },
+          },
+          audit: {
+            ok: true,
+            safetyFailure: false,
+            failureClusters: [],
+            audits: {
+              responseCompositionAudit: { ok: true },
+              actorialRealizationAudit: { ok: true },
+              responseConfigurationAudit: { realization_rate: 1 },
+              jointPerformanceAudit: { ok: true },
+            },
+          },
+        },
+      ],
     }));
 
     const passing = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports, config });
@@ -2722,7 +2685,11 @@ test('working summary reports and enforces each named structured-generation gate
     assert.equal(passing.exactSourceOccurrencePasses, 4);
     assert.equal(passing.exactSourceOccurrenceFailures, 0);
     assert.deepEqual(
-      passing.structuredSourceOccurrences.map((row) => [row.turn, row.expectedOccurrenceCount, row.actualOccurrenceCount]),
+      passing.structuredSourceOccurrences.map((row) => [
+        row.turn,
+        row.expectedOccurrenceCount,
+        row.actualOccurrenceCount,
+      ]),
       [
         [2, 1, 1],
         [3, 0, 0],
@@ -2769,7 +2736,11 @@ test('working summary reports and enforces each named structured-generation gate
 
     const substituted = structuredClone(reports);
     substituted[1].results[0].audit.audits.structuredSlotOwnershipAudit.ok = false;
-    const substitutedSummary = summarizeTutorStubWorkingScreen({ cell: config.matrix[0], reports: substituted, config });
+    const substitutedSummary = summarizeTutorStubWorkingScreen({
+      cell: config.matrix[0],
+      reports: substituted,
+      config,
+    });
     assert.equal(substitutedSummary.gates.structuredSlotOwnership, false);
     assert.equal(substitutedSummary.status, 'fail');
 

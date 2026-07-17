@@ -30,9 +30,7 @@ function inputFor(envelope) {
 }
 
 test('v2.3 freezes a claim-bearing exact channel and a separate descriptive transfer lane', () => {
-  const protocol = yaml.parse(
-    fs.readFileSync(path.join(ROOT, 'config/adaptive-state-instrument-v2.3.yaml'), 'utf8'),
-  );
+  const protocol = yaml.parse(fs.readFileSync(path.join(ROOT, 'config/adaptive-state-instrument-v2.3.yaml'), 'utf8'));
   assert.equal(protocol.version, '2.3');
   assert.equal(protocol.lanes.claim_bearing.model_calls, 0);
   assert.equal(protocol.lanes.claim_bearing.can_authorize_sensor_analysis, true);

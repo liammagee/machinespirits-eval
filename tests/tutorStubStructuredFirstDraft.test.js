@@ -326,8 +326,7 @@ test('deterministic composition rejects source copying and malformed source surf
 });
 
 test('deterministic composition rejects substantial SOURCE fingerprints but permits isolated scene words', () => {
-  const surface =
-    'The leat-keeper’s book records that Edony alone drew the weir crucible and signed for its charcoal.';
+  const surface = 'The leat-keeper’s book records that Edony alone drew the weir crucible and signed for its charcoal.';
   const frame = {
     active: true,
     entries: [{ mode: 'enacted_role', role: 'leat-keeper reading the charcoal book', surface }],
@@ -362,15 +361,12 @@ test('structured slot audit verifies part, tactic, action, and stance only in th
   });
 
   assert.equal(audit.ok, true);
-  assert.deepEqual(
-    Object.fromEntries(Object.entries(audit.axes).map(([axis, row]) => [axis, row.owner])),
-    {
-      actorial_part: 'part',
-      actorial_performance: 'tactic',
-      action_family: 'handoff',
-      engagement_stance: 'handoff',
-    },
-  );
+  assert.deepEqual(Object.fromEntries(Object.entries(audit.axes).map(([axis, row]) => [axis, row.owner])), {
+    actorial_part: 'part',
+    actorial_performance: 'tactic',
+    action_family: 'handoff',
+    engagement_stance: 'handoff',
+  });
 });
 
 test('structured slot audit rejects axis substitution that a whole-response audit can mask', () => {
@@ -481,11 +477,7 @@ test('structured falter recognition uses verified PART and SOURCE prerequisites 
     performanceObligationContract: fixture.performanceObligationContract,
   });
   assert.equal(cueBleedAudit.axes.actorial_performance.visible, false);
-  assert.ok(
-    cueBleedAudit.issues.some(
-      (issue) => issue.axis === 'actorial_performance' && issue.owner === 'tactic',
-    ),
-  );
+  assert.ok(cueBleedAudit.issues.some((issue) => issue.axis === 'actorial_performance' && issue.owner === 'tactic'));
 
   const missingPartAction = composeTutorStubStructuredFirstDraft({
     structured: fixture.structured({ part: 'The room waits beside the shilling.' }),

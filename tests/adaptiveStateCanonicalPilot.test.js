@@ -11,9 +11,7 @@ import {
 } from '../services/adaptiveTutor/stateBenchmarkCanonicalPilot.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CONFIG = yaml.parse(
-  fs.readFileSync(path.join(ROOT, 'config', 'adaptive-state-instrument-v2.3.yaml'), 'utf8'),
-);
+const CONFIG = yaml.parse(fs.readFileSync(path.join(ROOT, 'config', 'adaptive-state-instrument-v2.3.yaml'), 'utf8'));
 const TARGETS = ['next_dag_event_family', 'next_proof_trajectory'];
 const CANDIDATES = ['lean_dag', 'dag_trajectory', 'field_trajectory'];
 const BASELINES = ['no_state', 'class_prior', 'uniform'];
@@ -84,10 +82,7 @@ test('v2.3 canonical pilot contract is prospectively exact and fail-closed on dr
   assert.equal(contract.may_automatically_launch_confirmation, false);
   const drifted = structuredClone(CONFIG);
   drifted.stage_contract.s1_canonical_sensor_pilot.decision_contract.paired_cluster_bootstrap.iterations = 4999;
-  assert.throws(
-    () => validateAdaptiveStateCanonicalPilotContract(drifted),
-    /decision contract drifted/u,
-  );
+  assert.throws(() => validateAdaptiveStateCanonicalPilotContract(drifted), /decision contract drifted/u);
 });
 
 test('passing directional screen can nominate only an S2 candidate', () => {
@@ -108,10 +103,7 @@ test('passing directional screen can nominate only an S2 candidate', () => {
 test('instrument failure stops the pilot without a candidate', () => {
   const comparisons = passingComparisons();
   comparisons.find(
-    (row) =>
-      row.candidate === 'oracle' &&
-      row.baseline === 'no_state' &&
-      row.target === 'next_dag_event_family',
+    (row) => row.candidate === 'oracle' && row.baseline === 'no_state' && row.target === 'next_dag_event_family',
   ).metrics.log_loss.point_delta = -0.01;
   const screen = evaluateAdaptiveStateCanonicalPilotScreen({
     auditPassed: true,

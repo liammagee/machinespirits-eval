@@ -70,8 +70,7 @@ function matrixJobs(config) {
   const jobs = [];
   for (const [familyIndex, eventFamily] of FAMILIES.entries()) {
     for (const [worldIndex, world] of worlds.entries()) {
-      const orderedRealizers =
-        (familyIndex + worldIndex) % 2 === 0 ? realizers : [...realizers].reverse();
+      const orderedRealizers = (familyIndex + worldIndex) % 2 === 0 ? realizers : [...realizers].reverse();
       for (const realizer of orderedRealizers) {
         jobs.push({
           id: `preflight__${world.id}__${eventFamily}__${realizer.id}`,
@@ -198,7 +197,9 @@ export function validateAdaptiveStateObservabilityPreflightPlan(plan, config = n
     throw new Error('stateObservabilityPreflight: invalid crossed axes');
   }
   const expected = new Set(
-    worlds.flatMap((world) => FAMILIES.flatMap((family) => realizers.map((realizer) => `${world}|${family}|${realizer}`))),
+    worlds.flatMap((world) =>
+      FAMILIES.flatMap((family) => realizers.map((realizer) => `${world}|${family}|${realizer}`)),
+    ),
   );
   const observed = new Set();
   for (const job of plan.jobs) {
@@ -224,8 +225,7 @@ export function validateAdaptiveStateObservabilityPreflightPlan(plan, config = n
   if (config) {
     const expectedJobs = matrixJobs(config);
     if (
-      hashCanonicalJson(plan.axes.worlds) !==
-        hashCanonicalJson(config.critical_path.worlds.map((row) => row.id)) ||
+      hashCanonicalJson(plan.axes.worlds) !== hashCanonicalJson(config.critical_path.worlds.map((row) => row.id)) ||
       hashCanonicalJson(plan.axes.language_realizers) !==
         hashCanonicalJson(config.critical_path.language_realizers.map((row) => row.id)) ||
       hashCanonicalJson(plan.jobs) !== hashCanonicalJson(expectedJobs)
@@ -444,7 +444,9 @@ function validateAnalyzerInput(input, expectedEventIds) {
     ) ||
     hashCanonicalJson(input.publicReleaseLedger) !== hashCanonicalJson(input.publicStagedEvidence)
   ) {
-    throw new Error('stateObservabilityPreflight: analyzer input nested public schema differs from the frozen contract');
+    throw new Error(
+      'stateObservabilityPreflight: analyzer input nested public schema differs from the frozen contract',
+    );
   }
   assertNoForbiddenAnalyzerKey(input);
   const serialized = canonicalJson(input);
@@ -535,9 +537,12 @@ function realizerCallRecord({ index, job, role, result, provenance }) {
     artifactHashes.raw_output_sha256 !== result.call_metadata?.raw_output_sha256 ||
     artifactHashes.parsed_output_sha256 !== result.call_metadata?.output_sha256
   ) {
-    throw Object.assign(new Error('stateObservabilityPreflight: realizer artifact hashes differ from call provenance'), {
-      callMetadata: result.call_metadata,
-    });
+    throw Object.assign(
+      new Error('stateObservabilityPreflight: realizer artifact hashes differ from call provenance'),
+      {
+        callMetadata: result.call_metadata,
+      },
+    );
   }
   return {
     schema: ADAPTIVE_STATE_OBSERVABILITY_PREFLIGHT_CALL_SCHEMA,
@@ -597,9 +602,12 @@ function analyzerCallRecord({ index, job, result, publicModelInput, provenance }
     artifactHashes.parsed_output_sha256 !== metadata?.parsed_output_sha256 ||
     artifactHashes.model_input_envelope_sha256 !== metadata?.input_sha256
   ) {
-    throw Object.assign(new Error('stateObservabilityPreflight: analyzer artifact hashes differ from call provenance'), {
-      callMetadata: metadata,
-    });
+    throw Object.assign(
+      new Error('stateObservabilityPreflight: analyzer artifact hashes differ from call provenance'),
+      {
+        callMetadata: metadata,
+      },
+    );
   }
   return {
     schema: ADAPTIVE_STATE_OBSERVABILITY_PREFLIGHT_CALL_SCHEMA,
@@ -888,7 +896,12 @@ export function validateAdaptiveStateObservabilityPreflightResult(result, plan =
   ) {
     throw new Error('stateObservabilityPreflight: result lacks a valid injected or paid execution binding');
   }
-  if (!Array.isArray(result.calls) || result.calls.length !== 48 || !Array.isArray(result.cases) || result.cases.length !== 24) {
+  if (
+    !Array.isArray(result.calls) ||
+    result.calls.length !== 48 ||
+    !Array.isArray(result.cases) ||
+    result.cases.length !== 24
+  ) {
     throw new Error('stateObservabilityPreflight: complete result requires exactly 48 calls and 24 cases');
   }
   const accounting = callAccounting(result.calls);
@@ -1022,7 +1035,9 @@ export function validateAdaptiveStateObservabilityPreflightResult(result, plan =
       String(parsedTransition?.family || '') !== row.analyzer_observed_family ||
       String(parsedTransition?.evidence_span || '') !== row.analyzer_evidence_span
     ) {
-      throw new Error(`stateObservabilityPreflight: case differs from its realizer/analyzer parsed artifacts for ${row.id}`);
+      throw new Error(
+        `stateObservabilityPreflight: case differs from its realizer/analyzer parsed artifacts for ${row.id}`,
+      );
     }
     const expectedPass =
       row.analyzer_observed_family === row.event_family &&

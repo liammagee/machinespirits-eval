@@ -2,8 +2,7 @@ const CAUSAL_CLAIM_PATTERN =
   /\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
 const PRODUCTION_CAUSAL_PATTERN =
   /\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|produc(?:e|ed|es|ing))\b/iu;
-const PREVENTION_CAUSAL_PATTERN =
-  /\b(?:prevent(?:ed|s|ing)?|stop(?:ped|s|ping)?)\b/iu;
+const PREVENTION_CAUSAL_PATTERN = /\b(?:prevent(?:ed|s|ing)?|stop(?:ped|s|ping)?)\b/iu;
 const NEGATIVE_CAUSAL_PATTERN =
   /\b(?:did not|didn[’']t|does not|doesn[’']t|cannot|can[’']t|could not|couldn[’']t|never)\b[^.!?]{0,24}\b(?:account for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|prevent(?:ed|s|ing)?|produc(?:e|ed|es|ing)|stop(?:ped|s|ping)?)\b/iu;
 const PUBLIC_NEGATIVE_CAUSAL_SUPPORT_PATTERN =
@@ -130,8 +129,7 @@ export function auditTutorStubPublicCausalRelationSupport({
   const publicProduction = PRODUCTION_CAUSAL_PATTERN.test(publicText);
   const publicPrevention = PREVENTION_CAUSAL_PATTERN.test(publicText);
   const inactiveAgentOutcomePersists =
-    PUBLIC_INACTIVE_AGENT_PATTERN.test(publicText) &&
-    PUBLIC_PERSISTING_OUTCOME_PATTERN.test(publicText);
+    PUBLIC_INACTIVE_AGENT_PATTERN.test(publicText) && PUBLIC_PERSISTING_OUTCOME_PATTERN.test(publicText);
   const relationBinding = typedCausalRelationBinding({ quotedLine, causalContract });
   let supported = false;
   const constructions = [];

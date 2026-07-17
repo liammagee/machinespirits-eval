@@ -15,8 +15,7 @@ const DEFAULT_SELECTION = path.join(
 );
 const FINAL_DIR = 'exports/register-confirmatory-evidence/final';
 const SONNET_DIR = 'exports/register-confirmatory-evidence/sonnet5-n5-block-b';
-const FINAL_MANIFEST =
-  'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json';
+const FINAL_MANIFEST = 'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json';
 const PROFILE_ANALYZER = path.join(ROOT, 'scripts/analyze-tutor-stub-profile-discrimination.js');
 const FAMILY_ORDER = ['terra', 'sonnet'];
 const PROFILE_ORDER = ['diligent', 'affective_resistant', 'false_memory', 'proof_skipper'];
@@ -125,7 +124,10 @@ function extractMembers(archive, destination, members) {
 
 function firstJsonlEvent(buffer, file) {
   const end = buffer.indexOf(10);
-  const line = buffer.subarray(0, end === -1 ? buffer.length : end).toString('utf8').trim();
+  const line = buffer
+    .subarray(0, end === -1 ? buffer.length : end)
+    .toString('utf8')
+    .trim();
   if (!line) throw new Error(`Empty trace: ${file}`);
   const event = JSON.parse(line);
   if (event.type !== 'run_start') throw new Error(`Trace does not begin with run_start: ${file}`);
@@ -156,9 +158,9 @@ function prepareFamily(familyId, familySpec, args, temporaryDirs) {
   const manifestPath = path.resolve(ROOT, familySpec.archiveManifest);
   const manifest = readJson(manifestPath);
   const archivePath = expandHome(manifest.archive?.location || '');
-  const summaryMembers = [...new Set(familySpec.sources.map((source) =>
-    path.posix.join(familySpec.archiveRoot, source.summary),
-  ))];
+  const summaryMembers = [
+    ...new Set(familySpec.sources.map((source) => path.posix.join(familySpec.archiveRoot, source.summary))),
+  ];
 
   if (args.roots[familyId]) {
     const sourceRoot = args.roots[familyId];
@@ -263,9 +265,9 @@ function selectedRowsFromSummaries(family) {
         secondaryEndpoint: {
           available: !source.primaryOnly,
           stopReason: source.primaryOnly ? null : traceSummary.stopReason || null,
-          turnCount: source.primaryOnly ? null : traceSummary.turnCount ?? null,
+          turnCount: source.primaryOnly ? null : (traceSummary.turnCount ?? null),
           groundedClosure: source.primaryOnly ? null : Boolean(traceSummary.groundedClosure),
-          finalCoverage: source.primaryOnly ? null : traceSummary.bestPathCoverage ?? null,
+          finalCoverage: source.primaryOnly ? null : (traceSummary.bestPathCoverage ?? null),
           unavailableReason: source.primaryOnly
             ? 'Session window ended after the primary endpoint; until-grounded outcome excluded.'
             : null,
@@ -436,8 +438,7 @@ export function bootstrapFamily(rows, settings = {}) {
     for (const profile of PROFILE_ORDER.slice(1)) {
       for (const policy of ['field', 'negative']) {
         interactionDraws[profile][policy].push(
-          sampled[profile][policy] - sampled[profile].bland -
-            (sampled.diligent[policy] - sampled.diligent.bland),
+          sampled[profile][policy] - sampled[profile].bland - (sampled.diligent[policy] - sampled.diligent.bland),
         );
       }
     }
@@ -466,7 +467,8 @@ export function bootstrapFamily(rows, settings = {}) {
     interactionsVsDiligent[profile] = {};
     for (const policy of ['field', 'negative']) {
       interactionsVsDiligent[profile][policy] = interval(
-        observedMeans[profile][policy] - observedMeans[profile].bland -
+        observedMeans[profile][policy] -
+          observedMeans[profile].bland -
           (observedMeans.diligent[policy] - observedMeans.diligent.bland),
         interactionDraws[profile][policy],
       );
@@ -530,7 +532,8 @@ function runProfileDiscrimination(familyId, rows, selection) {
 function familyVerdict(familyId, bootstrap, discrimination) {
   const frozenGatePassed = discrimination.frozenCosineGate.pass;
   const supportedInteraction = bootstrap.supportedInteractions.length > 0;
-  const blandLeadsDiligent = bootstrap.cellMeans.diligent.bland >
+  const blandLeadsDiligent =
+    bootstrap.cellMeans.diligent.bland >
     Math.max(bootstrap.cellMeans.diligent.field, bootstrap.cellMeans.diligent.negative);
   const predeclaredDirectionObserved = blandLeadsDiligent;
   const confirmation = frozenGatePassed && supportedInteraction && predeclaredDirectionObserved;
@@ -585,7 +588,9 @@ export function summarizeQaFamily(familyId, rows, verdict) {
     secondaryAvailableRows: rows.filter((row) => row.secondaryEndpoint.available).length,
     primaryOnlyRows: rows.filter((row) => row.primaryOnly).length,
     sourceLegs: Object.fromEntries(
-      [...new Set(rows.map((row) => row.sourceLeg))].sort().map((leg) => [leg, rows.filter((row) => row.sourceLeg === leg).length]),
+      [...new Set(rows.map((row) => row.sourceLeg))]
+        .sort()
+        .map((leg) => [leg, rows.filter((row) => row.sourceLeg === leg).length]),
     ),
     verdict,
     cells,
@@ -710,22 +715,25 @@ function affectiveLineage(rows, generatedAt) {
     primaryOnlyRows: selected.filter((row) => row.primaryOnly).length,
     legs: [...new Set(selected.map((row) => row.sourceLeg))].map((sourceLeg) => ({
       sourceLeg,
-      rows: selected.filter((row) => row.sourceLeg === sourceLeg).map((row) => ({
-        key: row.key,
-        policy: row.policy,
-        runIndex: row.runIndex,
-        sourceSummary: row.sourceSummary,
-        sourceSummarySha256: row.sourceSummarySha256,
-        trace: row.trace,
-        traceSha256: row.traceSha256,
-        coverageAtTurn16: row.primaryEndpoint.coverage,
-        hardSafetyPassed: row.primaryEndpoint.hardSafetyPassed,
-        observedTurns: row.observedTurns,
-        secondaryAvailable: row.secondaryEndpoint.available,
-        inclusionReason: row.inclusionReason,
-      })),
+      rows: selected
+        .filter((row) => row.sourceLeg === sourceLeg)
+        .map((row) => ({
+          key: row.key,
+          policy: row.policy,
+          runIndex: row.runIndex,
+          sourceSummary: row.sourceSummary,
+          sourceSummarySha256: row.sourceSummarySha256,
+          trace: row.trace,
+          traceSha256: row.traceSha256,
+          coverageAtTurn16: row.primaryEndpoint.coverage,
+          hardSafetyPassed: row.primaryEndpoint.hardSafetyPassed,
+          observedTurns: row.observedTurns,
+          secondaryAvailable: row.secondaryEndpoint.available,
+          inclusionReason: row.inclusionReason,
+        })),
     })),
-    interpretation: 'All 15 selected rows have complete turn-16 primary endpoints. Four top-up rows are excluded from until-grounded secondary outcomes.',
+    interpretation:
+      'All 15 selected rows have complete turn-16 primary endpoints. Four top-up rows are excluded from until-grounded secondary outcomes.',
   };
 }
 
@@ -848,16 +856,21 @@ function buildArtifacts(selection, selectionPath, families, rowsByFamily, discri
     schema: 'machinespirits.tutor-stub.register-confirmatory-final-analysis-manifest.v1',
     generatedAt: selection.generatedAt,
     selection: artifactEntry(path.relative(ROOT, selectionPath), selectionContent),
-    sourceArchives: Object.fromEntries(FAMILY_ORDER.map((familyId) => {
-      const family = families[familyId];
-      return [familyId, {
-        manifest: path.relative(ROOT, family.manifestPath),
-        location: family.manifest.archive.location,
-        sha256: family.archiveSha256,
-        bytes: family.archiveBytes,
-        archiveRoot: family.familySpec.archiveRoot,
-      }];
-    })),
+    sourceArchives: Object.fromEntries(
+      FAMILY_ORDER.map((familyId) => {
+        const family = families[familyId];
+        return [
+          familyId,
+          {
+            manifest: path.relative(ROOT, family.manifestPath),
+            location: family.manifest.archive.location,
+            sha256: family.archiveSha256,
+            bytes: family.archiveBytes,
+            archiveRoot: family.familySpec.archiveRoot,
+          },
+        ];
+      }),
+    ),
     derivedArtifacts: [...artifacts].map(([relativePath, content]) => artifactEntry(relativePath, content)),
     verdict: overallVerdict,
     notes: [
@@ -883,7 +896,9 @@ function writeOrCheck(artifacts, check) {
     fs.writeFileSync(file, content);
   }
   if (check && mismatches.length) {
-    throw new Error(`Tracked Step 2 artifacts are stale or missing:\n${mismatches.map((file) => `- ${file}`).join('\n')}`);
+    throw new Error(
+      `Tracked Step 2 artifacts are stale or missing:\n${mismatches.map((file) => `- ${file}`).join('\n')}`,
+    );
   }
 }
 
@@ -919,7 +934,9 @@ async function main() {
     console.log(`${action} ${artifacts.size} Step 2 artifacts`);
     for (const familyId of FAMILY_ORDER) {
       const gate = reports.discriminationReport.families[familyId].frozenCosineGate;
-      console.log(`${familyId}: ${rowsByFamily[familyId].length} rows; cosine ${gate.averagePairwiseCosine}/${gate.maxSimilarityToControl}; gate ${gate.pass ? 'pass' : 'fail'}`);
+      console.log(
+        `${familyId}: ${rowsByFamily[familyId].length} rows; cosine ${gate.averagePairwiseCosine}/${gate.maxSimilarityToControl}; gate ${gate.pass ? 'pass' : 'fail'}`,
+      );
     }
     console.log(reports.bootstrapReport.verdict.summary);
   } finally {

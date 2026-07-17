@@ -1,15 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  assertExperimentRun,
-  hashCanonicalJson,
-  readRunEvents,
-} from '../experimentRunArtifacts.js';
-import {
-  adaptiveStateStage1StaticExecutionContract,
-  cliFingerprint,
-} from './stateBenchmarkStage1Contracts.js';
+import { assertExperimentRun, hashCanonicalJson, readRunEvents } from '../experimentRunArtifacts.js';
+import { adaptiveStateStage1StaticExecutionContract, cliFingerprint } from './stateBenchmarkStage1Contracts.js';
 import {
   buildAdaptiveStateObservabilityPreflightReport,
   validateAdaptiveStateObservabilityPreflightPlan,
@@ -125,7 +118,9 @@ export function validateAdaptiveStateStoppedObservabilityPreflightV21({
     Number(sealMetadata.exactFamilyMatches) !== 23 ||
     sealMetadata.s1RetryEligible !== false
   ) {
-    throw new Error('stateObservabilityReliabilityV22Lineage: diagnostic v2.1 preflight is stale, incomplete, or not the sealed 23/24 current-contract stop');
+    throw new Error(
+      'stateObservabilityReliabilityV22Lineage: diagnostic v2.1 preflight is stale, incomplete, or not the sealed 23/24 current-contract stop',
+    );
   }
   return {
     run_id: verification.plan.runId,
@@ -173,12 +168,7 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
   const callLedger = readJsonLines(runDir, ADAPTIVE_STATE_OBSERVABILITY_RELIABILITY_FILES.calls);
   const caseLedger = readJsonLines(runDir, ADAPTIVE_STATE_OBSERVABILITY_RELIABILITY_FILES.cases);
   validateAdaptiveStateObservabilityReliabilityPlan(plan, benchmarkConfig, reliabilityConfig);
-  validateAdaptiveStateObservabilityReliabilityResult(
-    result,
-    plan,
-    benchmarkConfig,
-    reliabilityConfig,
-  );
+  validateAdaptiveStateObservabilityReliabilityResult(result, plan, benchmarkConfig, reliabilityConfig);
   validateAdaptiveStateObservabilityReliabilityReport(report);
   const rebuilt = buildAdaptiveStateObservabilityReliabilityReport({
     plan,
@@ -220,7 +210,8 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
     hashCanonicalJson(verification.plan?.hashes) !== hashCanonicalJson(currentContract) ||
     hashCanonicalJson(verification.plan?.intent?.observabilityReliability) !== hashCanonicalJson(plan) ||
     hashCanonicalJson(verification.plan?.jobs) !== hashCanonicalJson(plan.jobs) ||
-    hashCanonicalJson(verification.plan?.randomization?.jobOrder) !== hashCanonicalJson(plan.jobs.map((row) => row.id)) ||
+    hashCanonicalJson(verification.plan?.randomization?.jobOrder) !==
+      hashCanonicalJson(plan.jobs.map((row) => row.id)) ||
     metadata.reliabilityPlanSha256 !== plan.content_sha256 ||
     metadata.s1RelevantHashesSha256 !== hashCanonicalJson(currentS1Contract.hashes) ||
     hashCanonicalJson(metadata.cliFingerprints) !== hashCanonicalJson(currentCli) ||
@@ -236,7 +227,8 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
     result.execution_transaction?.cli_fingerprints_sha256 !== metadata.cliFingerprintsSha256 ||
     result.reliability_gate_passed !== true ||
     hashCanonicalJson(rebuilt) !== hashCanonicalJson(report) ||
-    hashCanonicalJson(callLedger) !== hashCanonicalJson(adaptiveStateObservabilityReliabilityCallRows(result.draw_results)) ||
+    hashCanonicalJson(callLedger) !==
+      hashCanonicalJson(adaptiveStateObservabilityReliabilityCallRows(result.draw_results)) ||
     hashCanonicalJson(caseLedger) !== hashCanonicalJson(result.cases) ||
     sealMetadata.decision !== report.decision ||
     sealMetadata.reliabilityPlanSha256 !== plan.content_sha256 ||
@@ -246,7 +238,9 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
     Number(sealMetadata.exactFamilyMatches) !== result.exact_family_matches ||
     sealMetadata.s1RetryEligible !== true
   ) {
-    throw new Error('stateObservabilityReliabilityV22Lineage: reliability parent is stale, incomplete, non-passing, or not bound to current S1');
+    throw new Error(
+      'stateObservabilityReliabilityV22Lineage: reliability parent is stale, incomplete, non-passing, or not bound to current S1',
+    );
   }
   const events = readRunEvents(runDir);
   const lifecycleTypes = [

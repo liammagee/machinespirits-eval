@@ -71,9 +71,7 @@ function defaultImplementationFiles(root) {
     ...walkFiles(
       root,
       'config',
-      (filePath) =>
-        !filePath.startsWith('config/tutor-stub-campaigns/') &&
-        /\.(?:json|ya?ml)$/u.test(filePath),
+      (filePath) => !filePath.startsWith('config/tutor-stub-campaigns/') && /\.(?:json|ya?ml)$/u.test(filePath),
     ),
     ...(fs.existsSync(path.join(root, 'config', 'tutor-stub-codex-speaker-instructions.md'))
       ? ['config/tutor-stub-codex-speaker-instructions.md']
@@ -95,23 +93,21 @@ function localImportSpecifiers(source) {
     /\bimport\(\s*['"]([^'"]+)['"]\s*\)/gu,
     /\brequire\(\s*['"]([^'"]+)['"]\s*\)/gu,
   ];
-  return [...new Set(patterns.flatMap((pattern) =>
-    [...source.matchAll(pattern)].map((match) => match[1])))]
-    .filter((specifier) => specifier.startsWith('.'));
+  return [...new Set(patterns.flatMap((pattern) => [...source.matchAll(pattern)].map((match) => match[1])))].filter(
+    (specifier) => specifier.startsWith('.'),
+  );
 }
 
 function resolveLocalImport(importer, specifier) {
   const base = path.resolve(path.dirname(importer), specifier);
   const candidates = [base, `${base}.js`, `${base}.json`, path.join(base, 'index.js')];
-  return candidates.find((candidate) =>
-    fs.existsSync(candidate) && fs.statSync(candidate).isFile()) || null;
+  return candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile()) || null;
 }
 
 function literalResourceCandidates(root, importer, source) {
   const campaignDirectory = path.join(root, 'config', 'tutor-stub-campaigns');
   const resources = [];
-  const quoted = [...source.matchAll(/['"]([^'"\n]+\.(?:json|md|txt|ya?ml))['"]/giu)]
-    .map((match) => match[1]);
+  const quoted = [...source.matchAll(/['"]([^'"\n]+\.(?:json|md|txt|ya?ml))['"]/giu)].map((match) => match[1]);
   for (const value of quoted) {
     const candidates = [];
     if (path.isAbsolute(value)) candidates.push(value);
@@ -123,8 +119,7 @@ function literalResourceCandidates(root, importer, source) {
         candidates.push(path.join(campaignDirectory, value));
       }
     }
-    const resolved = candidates.find((candidate) =>
-      fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+    const resolved = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
     if (resolved) resources.push(resolved);
   }
   return resources;
@@ -132,9 +127,7 @@ function literalResourceCandidates(root, importer, source) {
 
 function focusedTestDependencyFiles(root, focusedTestSuites) {
   const selected = new Set(
-    focusedTestSuites
-      .flatMap((suite) => suite.testFiles)
-      .map((filePath) => path.resolve(root, filePath)),
+    focusedTestSuites.flatMap((suite) => suite.testFiles).map((filePath) => path.resolve(root, filePath)),
   );
   const files = [];
   const visited = new Set();
@@ -164,9 +157,7 @@ function normalizedArg(root, value) {
   const text = String(value);
   if (text === process.execPath) return '$NODE';
   const absoluteRoot = `${path.resolve(root)}${path.sep}`;
-  return text.startsWith(absoluteRoot)
-    ? `$ROOT/${path.relative(root, text).split(path.sep).join('/')}`
-    : text;
+  return text.startsWith(absoluteRoot) ? `$ROOT/${path.relative(root, text).split(path.sep).join('/')}` : text;
 }
 
 export function buildTutorStubFirstDraftPreflightBoundary({
@@ -188,8 +179,7 @@ export function buildTutorStubFirstDraftPreflightBoundary({
   const fixtureFiles = [
     ...(config.preflight?.model_free_fixtures || []),
     ...(config.preflight?.structural_regression_fixtures || []),
-  ].map((filePath) =>
-    path.isAbsolute(filePath) ? filePath : path.join(root, filePath));
+  ].map((filePath) => (path.isAbsolute(filePath) ? filePath : path.join(root, filePath)));
   const boundary = {
     schema: 'machinespirits.tutor-stub.first-draft-preflight-boundary.v1',
     implementation: {
@@ -222,10 +212,7 @@ export function buildTutorStubFirstDraftPreflightBoundary({
     testFiles: fileInventory(root, testFiles),
     testDependencies: fileInventory(root, focusedTestDependencyFiles(root, focusedTestSuites)),
     fixtureFiles: fileInventory(root, fixtureFiles),
-    worldCompilerInputs: fileInventory(
-      root,
-      worldCompilerFiles || defaultWorldCompilerFiles(root),
-    ),
+    worldCompilerInputs: fileInventory(root, worldCompilerFiles || defaultWorldCompilerFiles(root)),
   };
   return {
     boundary,
@@ -268,7 +255,8 @@ function commandEvidenceValid(command, plan, index) {
     !Array.isArray(command.argv) ||
     command.argv.length !== plan.argv.length ||
     !command.argv.every((arg, argIndex) => commandArgMatches(arg, plan.argv[argIndex]))
-  ) return false;
+  )
+    return false;
   if (plan.tap !== true) return command.tap === null;
   return (
     Number.isInteger(command.tap?.tests) &&
@@ -282,12 +270,7 @@ function commandEvidenceValid(command, plan, index) {
   );
 }
 
-export function buildTutorStubFirstDraftPreflightCertificate({
-  boundary,
-  key,
-  report,
-  observedHead = null,
-}) {
+export function buildTutorStubFirstDraftPreflightCertificate({ boundary, key, report, observedHead = null }) {
   const commands = report.commands.map((command) => ({
     ...structuredClone(command),
     stdout: capturedStream(command.stdout),
@@ -305,8 +288,7 @@ export function buildTutorStubFirstDraftPreflightCertificate({
   };
   const complete = commands.length > 0 && commands.length === boundary.commandPlan.length;
   const commandEvidenceComplete =
-    complete && commands.every((command, index) =>
-      commandEvidenceValid(command, boundary.commandPlan[index], index));
+    complete && commands.every((command, index) => commandEvidenceValid(command, boundary.commandPlan[index], index));
   const reusable =
     report.status === 'pass' &&
     commandEvidenceComplete &&
@@ -345,10 +327,8 @@ export function validateTutorStubFirstDraftPreflightCertificate(certificate, { b
   if (certificate?.schema !== TUTOR_STUB_FIRST_DRAFT_PREFLIGHT_CERTIFICATE_SCHEMA) reasons.push('schema_mismatch');
   if (certificate?.key !== key) reasons.push('key_mismatch');
   if (tutorStubFirstDraftPreflightSha256(certificate?.boundary) !== key) reasons.push('boundary_mismatch');
-  if (
-    certificate?.certificateSha256 !==
-    tutorStubFirstDraftPreflightSha256(certificatePayload(certificate || {}))
-  ) reasons.push('certificate_hash_mismatch');
+  if (certificate?.certificateSha256 !== tutorStubFirstDraftPreflightSha256(certificatePayload(certificate || {})))
+    reasons.push('certificate_hash_mismatch');
   if (certificate?.status !== 'pass' || certificate?.reusable !== true) reasons.push('not_passing');
   if (certificate?.complete !== true) reasons.push('incomplete');
   if (!Array.isArray(certificate?.commands) || certificate.commands.length !== boundary.commandPlan.length) {
@@ -362,13 +342,18 @@ export function validateTutorStubFirstDraftPreflightCertificate(certificate, { b
     for (const streamName of ['stdout', 'stderr']) {
       const stream = command[streamName];
       let bytes = null;
-      try { bytes = Buffer.from(stream?.base64 || '', 'base64'); } catch { /* validated below */ }
+      try {
+        bytes = Buffer.from(stream?.base64 || '', 'base64');
+      } catch {
+        /* validated below */
+      }
       if (
         !stream ||
         !bytes ||
         bytes.byteLength !== stream.bytes ||
         tutorStubFirstDraftPreflightSha256(bytes) !== stream.sha256
-      ) reasons.push(`${streamName}_capture_mismatch`);
+      )
+        reasons.push(`${streamName}_capture_mismatch`);
     }
   }
   return { ok: reasons.length === 0, reasons: [...new Set(reasons)] };
@@ -378,11 +363,7 @@ export function tutorStubFirstDraftPreflightCertificatePath({ cacheDir, key }) {
   return path.join(cacheDir, `${key}.json`);
 }
 
-export function tutorStubFirstDraftHardCellBlocksRemaining({
-  execution,
-  hardCellStatus,
-  completeAllCells,
-}) {
+export function tutorStubFirstDraftHardCellBlocksRemaining({ execution, hardCellStatus, completeAllCells }) {
   if (hardCellStatus === 'pass' || execution?.hard_cell_must_pass_before_remaining !== true) {
     return false;
   }

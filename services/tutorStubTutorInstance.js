@@ -11,7 +11,10 @@ const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/u;
 export const TUTOR_STUB_TUTOR_INSTANCE_SCHEMA = 'machinespirits.tutor-stub.tutor-instance.v1';
 
 function hashText(text) {
-  return crypto.createHash('sha256').update(String(text || ''), 'utf8').digest('hex');
+  return crypto
+    .createHash('sha256')
+    .update(String(text || ''), 'utf8')
+    .digest('hex');
 }
 
 export function parseTutorStubTutorRef(value) {
@@ -43,9 +46,7 @@ export function resolveTutorStubTutorInstance(value, { registryPath = DEFAULT_RE
   }
   const source = registry.instances[ref.id];
   const sourceVersion = Number(source.source_version || 1);
-  const rolePromptPath = path.isAbsolute(source.role_prompt)
-    ? source.role_prompt
-    : path.join(ROOT, source.role_prompt);
+  const rolePromptPath = path.isAbsolute(source.role_prompt) ? source.role_prompt : path.join(ROOT, source.role_prompt);
   const rolePrompt = fs.readFileSync(rolePromptPath, 'utf8').trim();
   return {
     schema: TUTOR_STUB_TUTOR_INSTANCE_SCHEMA,

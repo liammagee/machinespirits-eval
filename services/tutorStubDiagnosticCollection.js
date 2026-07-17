@@ -11,7 +11,12 @@ export function normalizeTutorStubLoopMode(value, { label = 'loop mode' } = {}) 
     .trim()
     .toLowerCase()
     .replace(/[-\s]+/gu, '_');
-  const alias = normalized === 'diagnostic_collection' ? 'diagnostic' : normalized === 'strict_verification' ? 'strict' : normalized;
+  const alias =
+    normalized === 'diagnostic_collection'
+      ? 'diagnostic'
+      : normalized === 'strict_verification'
+        ? 'strict'
+        : normalized;
   if (!MODES.has(alias)) throw new Error(`${label} must be strict or diagnostic`);
   return alias;
 }
@@ -56,7 +61,10 @@ export function classifyTutorStubDiagnosticFailure(error) {
   if (error?.name === 'AbortError') {
     return { disposition: 'abort', category: 'infrastructure', reason: 'operation_aborted' };
   }
-  if (INFRASTRUCTURE_CODES.has(String(error?.code || '').toUpperCase()) || INFRASTRUCTURE_PATTERN.test(String(error?.message || ''))) {
+  if (
+    INFRASTRUCTURE_CODES.has(String(error?.code || '').toUpperCase()) ||
+    INFRASTRUCTURE_PATTERN.test(String(error?.message || ''))
+  ) {
     return { disposition: 'abort', category: 'infrastructure', reason: 'provider_or_transport_failure' };
   }
   if (

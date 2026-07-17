@@ -1,5 +1,4 @@
-export const TUTOR_STUB_PROMPT_SIZE_REPORT_SCHEMA =
-  'machinespirits.tutor-stub.prompt-size-report.v1';
+export const TUTOR_STUB_PROMPT_SIZE_REPORT_SCHEMA = 'machinespirits.tutor-stub.prompt-size-report.v1';
 
 export const TUTOR_STUB_PROMPT_SIZE_TOKENIZER = Object.freeze({
   id: 'utf16-code-units-div-4-ceiling-v1',
@@ -157,11 +156,7 @@ function systemSections(systemPrompt = '') {
   const worldStart = text.indexOf(SYSTEM_WORLD_MARKER);
   const evidenceStart = text.indexOf(SYSTEM_EVIDENCE_MARKER);
   const namedTutorStart = text.indexOf(SYSTEM_NAMED_TUTOR_MARKER);
-  if (
-    worldStart < 0 ||
-    evidenceStart < worldStart ||
-    namedTutorStart < evidenceStart
-  ) {
+  if (worldStart < 0 || evidenceStart < worldStart || namedTutorStart < evidenceStart) {
     return {
       baseTutorRules: text,
       worldScene: '',
@@ -228,9 +223,7 @@ export function tutorStubPromptSizeSectionsFromRequest({
   const normalizedMessages = Array.isArray(messages) ? messages : [];
   const latest = normalizedMessages.at(-1) || { role: 'user', content: '' };
   const history = normalizedMessages.slice(0, -1);
-  const publicHistory = history
-    .map((message) => `${message?.role || 'user'}: ${message?.content || ''}`)
-    .join('\n\n');
+  const publicHistory = history.map((message) => `${message?.role || 'user'}: ${message?.content || ''}`).join('\n\n');
   const latestSections = taggedLatestSections(latest?.content || '');
   const wrappers = [
     'System prompt for this role:\n',
@@ -326,8 +319,7 @@ export function buildTutorStubPromptSizeReport({
   const authoredText = authoredTexts.join('');
   const authoredMeasurement = measuredText(authoredText, estimateTokens);
   const observed = tutorStubObservedProviderInput(usage);
-  const residualTokens =
-    observed.tokens === null ? null : observed.tokens - authoredMeasurement.estimatedTokens;
+  const residualTokens = observed.tokens === null ? null : observed.tokens - authoredMeasurement.estimatedTokens;
 
   return {
     schema: TUTOR_STUB_PROMPT_SIZE_REPORT_SCHEMA,
@@ -342,10 +334,7 @@ export function buildTutorStubPromptSizeReport({
       measurement: 'estimated',
       tokenizer: { ...tokenizerDescriptor },
       ...authoredMeasurement,
-      sectionEstimatedTokensSum: sectionReports.reduce(
-        (sum, section) => sum + section.estimatedTokens,
-        0,
-      ),
+      sectionEstimatedTokensSum: sectionReports.reduce((sum, section) => sum + section.estimatedTokens, 0),
     },
     observedProviderInput: {
       id: 'observed_provider_input',

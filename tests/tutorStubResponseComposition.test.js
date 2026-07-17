@@ -62,8 +62,14 @@ test('answer-seeking fallback uptake names the requested entry instead of using 
   });
 
   assert.match(uptake, /next supported line about how the extra travel time makes the loaves cold/iu);
-  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
-  assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
+  );
 });
 
 test('a leading Write directive is uptake only when the learner asked for an entry', () => {
@@ -89,11 +95,12 @@ test('a leading Write directive is uptake only when the learner asked for an ent
     text: 'Write: “The Larkin incubator is now the stronger source lead.” Its breached seal and resident G17 give us a concrete source to test.',
   });
 
-  assert.equal(requested.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
   assert.equal(
-    unrequested.issues.some((issue) =>
-      ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
-    ),
+    requested.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
+  assert.equal(
+    unrequested.issues.some((issue) => ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type)),
     true,
   );
 });
@@ -119,8 +126,14 @@ test('a put-in-the-minutes wording request receives typed Write uptake without l
     text: 'Write: “The dark chargers did not cause the 18:40 brownout.” The stocktake now rules out that timing claim.',
   });
   assert.equal(direct.requestedEntryAnswerRecognition.recognized, true);
-  assert.equal(direct.issues.some((issue) => issue.type === 'missing_learner_uptake'), false);
-  assert.equal(direct.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+  assert.equal(
+    direct.issues.some((issue) => issue.type === 'missing_learner_uptake'),
+    false,
+  );
+  assert.equal(
+    direct.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
+  );
 
   const ordinaryEcho = auditTutorStubResponseComposition({
     learnerText,
@@ -129,7 +142,10 @@ test('a put-in-the-minutes wording request receives typed Write uptake without l
     text: 'The chargers were dark during the stocktake. The stocktake now rules out that timing claim.',
   });
   assert.equal(ordinaryEcho.requestedEntryAnswerRecognition.recognized, false);
-  assert.equal(ordinaryEcho.issues.some((issue) => issue.type === 'verbatim_learner_echo'), true);
+  assert.equal(
+    ordinaryEcho.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    true,
+  );
 });
 
 test('a requested Write line may restate a licensed committed public status but not an unsupported status', () => {
@@ -156,7 +172,10 @@ test('a requested Write line may restate a licensed committed public status but 
   assert.equal(licensed.requestedEntryAnswerRecognition.recognized, true);
   assert.equal(licensed.requestedEntryAnswerRecognition.license.mode, 'committed_public_status');
   assert.equal(licensed.requestedEntryAnswerRecognition.license.material_coverage, 1);
-  assert.equal(licensed.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+  assert.equal(
+    licensed.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
+  );
 
   const unsupported = auditTutorStubResponseComposition({
     learnerText,
@@ -171,8 +190,7 @@ test('a requested Write line may restate a licensed committed public status but 
     learnerText,
     frame,
     firstDraftContract,
-    text:
-      'Write: “The frost shutter over Piper’s Gullet is still bolted and murdered a climber.” We can leave the route open.',
+    text: 'Write: “The frost shutter over Piper’s Gullet is still bolted and murdered a climber.” We can leave the route open.',
   });
   assert.equal(extraClaim.requestedEntryAnswerRecognition.recognized, false);
   assert.equal(extraClaim.requestedEntryAnswerRecognition.license.mode, null);
@@ -205,10 +223,7 @@ test('committed public status recognition preserves local negation and modality 
 
   const reversedNegation = audit('Visitor code opened the kitchen.');
   assert.equal(reversedNegation.recognized, false);
-  assert.deepEqual(
-    reversedNegation.license.qualifier_preservation.missing_qualifiers,
-    ['negation'],
-  );
+  assert.deepEqual(reversedNegation.license.qualifier_preservation.missing_qualifiers, ['negation']);
 
   const faithfulNegative = audit('No visitor code opened the kitchen.');
   assert.equal(faithfulNegative.recognized, true);
@@ -216,10 +231,7 @@ test('committed public status recognition preserves local negation and modality 
 
   const independentPositiveClause = audit('The lobby badge was issued at noon.');
   assert.equal(independentPositiveClause.recognized, true);
-  assert.deepEqual(
-    independentPositiveClause.license.qualifier_preservation.required_qualifiers,
-    [],
-  );
+  assert.deepEqual(independentPositiveClause.license.qualifier_preservation.required_qualifiers, []);
 
   const deletedModality = audit('The maintenance code opened the loading bay after noon.');
   assert.equal(deletedModality.recognized, false);
@@ -228,22 +240,14 @@ test('committed public status recognition preserves local negation and modality 
   const faithfulModal = audit('The maintenance code may have opened the loading bay.');
   assert.equal(faithfulModal.recognized, true);
 
-  const deletedNegativePronoun = audit(
-    'The visitor entry connected the kitchen, and the desk log was signed at noon.',
-  );
+  const deletedNegativePronoun = audit('The visitor entry connected the kitchen, and the desk log was signed at noon.');
   assert.equal(deletedNegativePronoun.recognized, false);
-  assert.deepEqual(
-    deletedNegativePronoun.license.qualifier_preservation.missing_qualifiers,
-    ['negation'],
-  );
+  assert.deepEqual(deletedNegativePronoun.license.qualifier_preservation.missing_qualifiers, ['negation']);
 
   const positiveStatusContract = {
     ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
     evidence: {
-      committed_public_surfaces: [
-        'The visitor code opened the kitchen.',
-        'The lobby badge was issued at noon.',
-      ],
+      committed_public_surfaces: ['The visitor code opened the kitchen.', 'The lobby badge was issued at noon.'],
     },
   };
   const auditPositiveStatus = (line) =>
@@ -256,10 +260,7 @@ test('committed public status recognition preserves local negation and modality 
 
   const addedNegation = auditPositiveStatus('No visitor code opened the kitchen.');
   assert.equal(addedNegation.recognized, false);
-  assert.deepEqual(
-    addedNegation.license.qualifier_preservation.added_qualifiers,
-    ['negation'],
-  );
+  assert.deepEqual(addedNegation.license.qualifier_preservation.added_qualifiers, ['negation']);
 
   const addedOnly = auditPositiveStatus('Only the lobby badge was issued at noon.');
   assert.equal(addedOnly.recognized, false);
@@ -288,8 +289,7 @@ test('typed status safeguards do not block a multi-premise evidentiary-limit ent
         ],
       },
     },
-    text:
-      'Write: “The badge and ledger support a visit but do not prove who entered the kitchen.” We keep the wider finding open.',
+    text: 'Write: “The badge and ledger support a visit but do not prove who entered the kitchen.” We keep the wider finding open.',
   });
 
   assert.equal(result.requestedEntryAnswerRecognition.recognized, true);
@@ -362,7 +362,10 @@ test('typed requested-entry causality rejects widening a public mechanism to its
   assert.equal(exact.requestedEntryAnswerRecognition.recognized, true);
   assert.equal(exact.requestedEntryAnswerRecognition.license.material_grounding.causal_subject_binding.preserved, true);
   assert.equal(widened.requestedEntryAnswerRecognition.recognized, false);
-  assert.equal(widened.requestedEntryAnswerRecognition.license.material_grounding.causal_subject_binding.preserved, false);
+  assert.equal(
+    widened.requestedEntryAnswerRecognition.license.material_grounding.causal_subject_binding.preserved,
+    false,
+  );
   assert.ok(widened.issues.some((issue) => issue.type === 'unlicensed_requested_entry'));
 });
 
@@ -377,10 +380,7 @@ test('a generic epistemic limit cannot invent an entity outside the public turn'
     ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
     evidence: { committed_public_surfaces: ['Dario was in the building.'] },
   };
-  for (const line of [
-    'The current evidence does not identify Dracula.',
-    'We cannot yet identify Dracula.',
-  ]) {
+  for (const line of ['The current evidence does not identify Dracula.', 'We cannot yet identify Dracula.']) {
     const recognition = auditTutorStubResponseComposition({
       learnerText,
       frame,
@@ -461,10 +461,9 @@ test('a grounded negative-production limit preserves causal role and rejects a p
   assert.equal(recognition.license.material_grounding.material_coverage, 1);
   assert.equal(recognition.license.material_grounding.causal_relation_supported, true);
   assert.equal(recognition.license.material_grounding.causal_relation_family, 'production');
-  assert.deepEqual(
-    recognition.license.material_grounding.causal_relation_support_constructions,
-    ['inactive_candidate_with_persisting_outcome_rules_out_production'],
-  );
+  assert.deepEqual(recognition.license.material_grounding.causal_relation_support_constructions, [
+    'inactive_candidate_with_persisting_outcome_rules_out_production',
+  ]);
 
   const inverted = recognize('The dark chargers did not prevent Tallow Street’s 18:40 brownout.');
   assert.equal(inverted.recognized, false);
@@ -485,9 +484,7 @@ test('qualifiers are preserved by proposition rather than borrowed across conjun
   const firstDraftContract = {
     ...WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
     evidence: {
-      committed_public_surfaces: [
-        'No visitor code opened the kitchen and no staff badge opened the loading bay.',
-      ],
+      committed_public_surfaces: ['No visitor code opened the kitchen and no staff badge opened the loading bay.'],
     },
   };
   const recognize = (line) =>
@@ -527,9 +524,7 @@ test('matching language inside a scene action is not mistaken for learner acknow
   });
 
   assert.equal(
-    audit.issues.some((issue) =>
-      ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
-    ),
+    audit.issues.some((issue) => ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type)),
     true,
   );
 });
@@ -547,8 +542,7 @@ test('supported terminal inference receives a non-echoing deterministic acknowle
 
 test('the Gazette completion frame rejects an elegant restatement loop and accepts new pressure', () => {
   const learnerText = 'Crane is a possible culprit, but not proven guilty.';
-  const dueEvidence =
-    'The archive copy shows Crane filed clean prose; the false kicker was inserted after filing.';
+  const dueEvidence = 'The archive copy shows Crane filed clean prose; the false kicker was inserted after filing.';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
     classification: {
@@ -591,10 +585,8 @@ test('the Gazette completion frame rejects an elegant restatement loop and accep
 });
 
 test('newly released custody evidence may advance from a tool to the hand that used it', () => {
-  const learnerText =
-    'The mark shows a worn sprung-heel burin cut the die; the striking hand remains unproved.';
-  const dueEvidence =
-    'The estate inventory leaves the worn sprung-heel burin in Edony’s sole keeping.';
+  const learnerText = 'The mark shows a worn sprung-heel burin cut the die; the striking hand remains unproved.';
+  const dueEvidence = 'The estate inventory leaves the worn sprung-heel burin in Edony’s sole keeping.';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
     classification: { turn: { summary: learnerText, discourse_move: 'inference' } },
@@ -627,8 +619,7 @@ test('newly released custody evidence may advance from a tool to the hand that u
 
 test('a short generic question about newly staged evidence is not a resolved-question loop', () => {
   const learnerText = 'Crane answers for the reporting, but the planting remains open.';
-  const dueEvidence =
-    'The version history shows that the false kicker was inserted after Crane filed the clean story.';
+  const dueEvidence = 'The version history shows that the false kicker was inserted after Crane filed the clean story.';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
     classification: { turn: { summary: learnerText, discourse_move: 'inference' } },
@@ -656,7 +647,10 @@ test('a short generic question about newly staged evidence is not a resolved-que
 
   assert.equal(audit.conversational_completion.newEvidenceVisible, true);
   assert.equal(audit.conversational_completion.sharedQuestionTokenCount, 1);
-  assert.equal(audit.issues.some((issue) => issue.type === 'resolved_point_reopened'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'resolved_point_reopened'),
+    false,
+  );
 });
 
 test('natural scene-partner, skeptic, and evidentiary-boundary performances are visible', () => {
@@ -992,12 +986,12 @@ test('an explicitly requested Write entry may answer with one licensed evidentia
     firstDraftContract: WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT,
   });
 
-  assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
-  assert.equal(audit.requestedEntryAnswerRecognition.recognized, true);
   assert.equal(
-    Object.values(audit.requestedEntryAnswerRecognition.prerequisites).every(Boolean),
-    true,
+    audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
   );
+  assert.equal(audit.requestedEntryAnswerRecognition.recognized, true);
+  assert.equal(Object.values(audit.requestedEntryAnswerRecognition.prerequisites).every(Boolean), true);
 });
 
 test('requested-entry recognition does not forgive questions, meta text, unrequested entries, or claim echoes', () => {
@@ -1063,9 +1057,7 @@ test('requested-entry recognition does not forgive questions, meta text, unreque
     } else {
       assert.equal(audit.ok, false, row.name);
       assert.equal(
-        audit.issues.some((issue) =>
-          ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type),
-        ),
+        audit.issues.some((issue) => ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type)),
         true,
         row.name,
       );
@@ -1081,7 +1073,10 @@ test('a short necessary acknowledgement may reuse the learner’s public terms',
     learnerText: "No, it doesn't prove that.",
   });
 
-  assert.equal(audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'verbatim_learner_echo'),
+    false,
+  );
 });
 
 test('too fast is a direct corrective uptake when the learner has overreached', () => {
@@ -1117,7 +1112,10 @@ test('an in-scene rightly-entered opening visibly acknowledges a trial-book infe
     learnerText:
       'I enter: Edony alone controlled the weir crucible and thus cast the debased blanks, though this still does not show who struck them.',
   });
-  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
 });
 
 test('a clue rehearsal without learner uptake fails composition even when it develops the lesson', () => {
@@ -1130,7 +1128,10 @@ test('a clue rehearsal without learner uptake fails composition even when it dev
 
   assert.equal(audit.ok, false);
   assert.equal(audit.segments.method, 'development_only');
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_learner_uptake']);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['missing_learner_uptake'],
+  );
 });
 
 test('marking the learner distinction in the scene counts as fused uptake', () => {
@@ -1160,7 +1161,10 @@ test('an uppercase first-person scene action is development, not preservable lea
   assert.equal(audit.segments.uptake, '');
   assert.equal(audit.segments.development, text);
   assert.equal(audit.ok, false);
-  assert.deepEqual(audit.issues.map((issue) => issue.type), ['missing_learner_uptake']);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['missing_learner_uptake'],
+  );
 });
 
 test('a scene action can fuse learner uptake into its first sentence without becoming two replies', () => {
@@ -1182,8 +1186,7 @@ test('a scene action can fuse learner uptake into its first sentence without bec
 
 test('enacting the learner proposed touchstone comparison is fused uptake', () => {
   const frame = traceFrame();
-  const learnerText =
-    'I would first mark a fair shilling against one of the light pieces on the touchstone.';
+  const learnerText = 'I would first mark a fair shilling against one of the light pieces on the touchstone.';
   const text =
     'I set the two shillings upon the touchstone; that comparison may show what differs in their metal, but not yet whose hand struck either coin. A witness gives the next public entry.';
   const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
@@ -1195,8 +1198,7 @@ test('enacting the learner proposed touchstone comparison is fused uptake', () =
 
 test('thou hast it is a direct period-appropriate acknowledgement', () => {
   const frame = traceFrame();
-  const learnerText =
-    'The graver may connect Verrell to a die, but it does not connect this blank to his crucible.';
+  const learnerText = 'The graver may connect Verrell to a die, but it does not connect this blank to his crucible.';
   const text =
     'Thou hast it: Verrell’s sole graver could connect him to a die, yet the coin still lacks a proved link to his crucible. We need the dross alloy itself to answer to a particular crucible.';
   const audit = auditTutorStubResponseComposition({ text, frame, learnerText });
@@ -1464,10 +1466,7 @@ test('configured non-release fallback varies after a recent deterministic recove
 
   assert.notEqual(second, first);
   assert.match(second, /fresh line|new space|previous wording/iu);
-  assert.equal(
-    auditTutorStubRepetitionResponse({ text: second, recentTutorTexts: [first] }).ok,
-    true,
-  );
+  assert.equal(auditTutorStubRepetitionResponse({ text: second, recentTutorTexts: [first] }).ok, true);
 });
 
 test('record-keeper fallback does not duplicate an uptake that already enters the distinction', () => {
@@ -1575,7 +1574,7 @@ test('the deterministic uptake is public, learner-specific, and action-aware', (
   );
 });
 
-test('evidence adoption names the learner\'s record instead of using a generic transition', () => {
+test("evidence adoption names the learner's record instead of using a generic transition", () => {
   const uptake = deterministicTutorStubLearnerUptake({
     learnerText: 'The badge log puts Dario in the kitchen at noon, so I will keep that clue in the record.',
     classification: {
@@ -1635,10 +1634,7 @@ test('deterministic uptake preserves a settled blank source while leaving the di
     },
   });
 
-  assert.equal(
-    uptake,
-    'You have kept the blank’s known source separate from the still-unproved die trail.',
-  );
+  assert.equal(uptake, 'You have kept the blank’s known source separate from the still-unproved die trail.');
 
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
@@ -1656,7 +1652,10 @@ test('deterministic uptake preserves a settled blank source while leaving the di
   });
 
   assert.equal(audit.ok, true);
-  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
 });
 
 test('generic safe uptake avoids evaluator vocabulary in public speech', () => {
@@ -1680,7 +1679,8 @@ test('generic safe uptake avoids evaluator vocabulary in public speech', () => {
 
 test('Marrick’s caster-versus-striker gap names both missing hands without stock language', () => {
   const uptake = deterministicTutorStubLearnerUptake({
-    learnerText: 'Trial-book: the weir-forge fixes the shillings’ blank, but shows neither who cast it nor who struck the coins.',
+    learnerText:
+      'Trial-book: the weir-forge fixes the shillings’ blank, but shows neither who cast it nor who struck the coins.',
     classification: {
       turn: { request_type: 'stepwise_support_request', discourse_move: 'inference' },
     },
@@ -1688,10 +1688,7 @@ test('Marrick’s caster-versus-striker gap names both missing hands without sto
     world: { id: 'world_005_marrick', title: 'The Light Shillings' },
   });
 
-  assert.equal(
-    uptake,
-    'You have left both hands unnamed: who cast the blank, and who struck it into coin.',
-  );
+  assert.equal(uptake, 'You have left both hands unnamed: who cast the blank, and who struck it into coin.');
   assert.doesNotMatch(uptake, /enough for now|evidentiary|contribution/iu);
 });
 
@@ -1706,10 +1703,7 @@ test('Edony’s crucible access is not misread as an unproved source match', () 
     world: { id: 'world_005_marrick', title: 'The Light Shillings' },
   });
 
-  assert.equal(
-    uptake,
-    'You have separated Edony’s control of the weir crucible from proof that she struck the coins.',
-  );
+  assert.equal(uptake, 'You have separated Edony’s control of the weir crucible from proof that she struck the coins.');
   assert.doesNotMatch(uptake, /source crucible still unproved|alloy link provisional/iu);
 });
 
@@ -1811,9 +1805,7 @@ test('deterministic uptake avoids a substantial opener used in recent tutor turn
     learnerText: 'I will make one public move.',
     classification: { turn: { request_type: 'stepwise_support_request' } },
     actionFamily: 'stage_next_step',
-    recentTutorTexts: [
-      'Your proposed move sets our next public check. I open the register.',
-    ],
+    recentTutorTexts: ['Your proposed move sets our next public check. I open the register.'],
   });
 
   assert.equal(uptake, 'We will test what you proposed against the next public evidence.');
@@ -1840,10 +1832,7 @@ test('deterministic uptake keeps a learner-proposed die test visible while anoth
     actionFamily: 'stage_next_step',
   });
 
-  assert.equal(
-    uptake,
-    'That is the right tool-mark test; keep the shared flaw before us.',
-  );
+  assert.equal(uptake, 'That is the right tool-mark test; keep the shared flaw before us.');
 });
 
 test('a must-compare die proposal outranks generic uncertainty handling', () => {
@@ -1857,21 +1846,20 @@ test('a must-compare die proposal outranks generic uncertainty handling', () => 
 
 test('deterministic uptake specifically credits a two-part metal and tool-mark examination plan', () => {
   const uptake = deterministicTutorStubLearnerUptake({
-    learnerText: 'I would first examine the shillings’ weight and metal, then compare their marks with Verrell’s tools.',
+    learnerText:
+      'I would first examine the shillings’ weight and metal, then compare their marks with Verrell’s tools.',
     classification: { turn: { request_type: 'off_task_or_mixed', discourse_move: 'claim' } },
     actionFamily: 'reanchor_public_evidence',
   });
 
-  assert.equal(
-    uptake,
-    'Your plan keeps the blank’s metal test separate from the die’s tool-mark comparison.',
-  );
+  assert.equal(uptake, 'Your plan keeps the blank’s metal test separate from the die’s tool-mark comparison.');
   assert.doesNotMatch(uptake, /contribution|proposed next move/u);
 });
 
 test('trial-book mark used as a verb does not invent a die-mark test', () => {
   const uptake = deterministicTutorStubLearnerUptake({
-    learnerText: 'Let us first assay the shillings’ weight and silver; that is matter enough to mark before naming any hand.',
+    learnerText:
+      'Let us first assay the shillings’ weight and silver; that is matter enough to mark before naming any hand.',
     classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'claim' } },
     actionFamily: 'stage_next_step',
   });
@@ -1949,7 +1937,8 @@ test('a modal die-mark proposal is acknowledged without confusing striking with 
 
 test('what is public inside a declarative evidence boundary is not mistaken for a comprehension request', () => {
   const uptake = deterministicTutorStubLearnerUptake({
-    learnerText: 'Let us test it against what is public: Verrell’s graver is his alone, but no flaw yet links it to these coins.',
+    learnerText:
+      'Let us test it against what is public: Verrell’s graver is his alone, but no flaw yet links it to these coins.',
     classification: { turn: { request_type: 'stepwise_support_request' } },
     actionFamily: 'reanchor_public_evidence',
   });
@@ -1978,16 +1967,14 @@ test('a custody question after source attribution is not mistaken for a missing 
     actionFamily: 'stage_next_step',
   });
 
-  assert.equal(
-    uptake,
-    'You have identified the remaining blank question: who alone controlled that source crucible.',
-  );
+  assert.equal(uptake, 'You have identified the remaining blank question: who alone controlled that source crucible.');
   assert.doesNotMatch(uptake, /source crucible still unproved/u);
 });
 
 test('deterministic uptake directly answers an alloy-leavings question before development', () => {
   const uptake = deterministicTutorStubLearnerUptake({
-    learnerText: 'What in the crucible leavings would need to match the shillings’ alloy before we tie them to Verrell’s fire?',
+    learnerText:
+      'What in the crucible leavings would need to match the shillings’ alloy before we tie them to Verrell’s fire?',
     classification: { turn: { request_type: 'conceptual_clarity_request', discourse_move: 'question' } },
     actionFamily: 'stage_next_step',
   });
@@ -2077,8 +2064,7 @@ test('a proposed metal test cannot be described as a completed evidentiary disti
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'I keep that completed evidentiary distinction in the record as the case advances. I draw the shilling across the touchstone.',
+    text: 'I keep that completed evidentiary distinction in the record as the case advances. I draw the shilling across the touchstone.',
     frame,
     learnerText,
   });
@@ -2104,8 +2090,7 @@ test('an imperative assay plan cannot be described as a completed evidentiary di
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'I keep that completed evidentiary distinction in the record as the case advances. I turn the shilling on the touchstone.',
+    text: 'I keep that completed evidentiary distinction in the record as the case advances. I turn the shilling on the touchstone.',
     frame,
     learnerText,
   });
@@ -2129,8 +2114,7 @@ test('a correct conditional answer is not misread as a present claim', () => {
     },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'That is a possible conclusion, but the public evidence does not settle it yet. I shift the balance aside and leave room beside the shilling.',
+    text: 'That is a possible conclusion, but the public evidence does not settle it yet. I shift the balance aside and leave room beside the shilling.',
     frame,
     learnerText,
   });
@@ -2213,8 +2197,7 @@ test('a useful-mark answer visibly responds to a direct die-flaw question', () =
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'The useful mark would be a repeated nick, burr, or crooked stroke on the coins that can be compared with one die-cutting tool. I set the next exhibit beside the shilling.',
+    text: 'The useful mark would be a repeated nick, burr, or crooked stroke on the coins that can be compared with one die-cutting tool. I set the next exhibit beside the shilling.',
     frame,
     learnerText,
   });
@@ -2247,8 +2230,7 @@ test('a possessive learner tool reference is recognized by a specific custody-bo
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'You have kept the graver tied to its owner without pretending it has marked this coin. I set the next assay record beside it.',
+    text: 'You have kept the graver tied to its owner without pretending it has marked this coin. I set the next assay record beside it.',
     frame,
     learnerText,
   });
@@ -2271,8 +2253,7 @@ test('a stock transition does not count as specific uptake of a learner-proposed
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'Right—that gives us a sound place to begin; we’ll examine it before extending the case. I draw the next assay record across the bench.',
+    text: 'Right—that gives us a sound place to begin; we’ll examine it before extending the case. I draw the next assay record across the bench.',
     frame,
     learnerText,
   });
@@ -2282,8 +2263,7 @@ test('a stock transition does not count as specific uptake of a learner-proposed
 });
 
 test('keep your contribution is always treated as generic uptake', () => {
-  const learnerText =
-    'Verrell’s past misdeeds are not yet proof that he struck these shillings.';
+  const learnerText = 'Verrell’s past misdeeds are not yet proof that he struck these shillings.';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
     classification: { turn: { summary: 'Separates reputation from proof.' } },
@@ -2294,8 +2274,7 @@ test('keep your contribution is always treated as generic uptake', () => {
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'I keep your contribution in view as the next public fact develops it. I set a light shilling beside the crucible.',
+    text: 'I keep your contribution in view as the next public fact develops it. I set a light shilling beside the crucible.',
     frame,
     learnerText,
   });
@@ -2328,7 +2307,10 @@ test('deterministic uptake answers a low-agency request for the tutor to choose 
   });
 
   assert.match(uptake, /choose the first concrete register entry/iu);
-  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
 });
 
 test('a concrete choice directly answers a low-agency which-first question', () => {
@@ -2400,7 +2382,10 @@ test('deterministic uptake answers a repeated low-agency request for the conclus
   });
 
   assert.match(uptake, /choose the conclusion/iu);
-  assert.equal(audit.issues.some((issue) => issue.type === 'generic_learner_uptake'), false);
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+  );
 });
 
 test('sparse scene-partner fallback uses a public record without a doubled spatial phrase', () => {
@@ -2424,11 +2409,12 @@ test('sparse scene-partner fallback uses a public record without a doubled spati
 });
 
 test('a learner-selected maker-mark test must be carried forward before another clue develops', () => {
-  const learnerText =
-    'Let us examine them for a maker’s mark; that could speak to the hand that struck them.';
+  const learnerText = 'Let us examine them for a maker’s mark; that could speak to the hand that struck them.';
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText,
-    classification: { turn: { summary: 'Selects the offered maker-mark examination.', request_type: 'stepwise_support_request' } },
+    classification: {
+      turn: { summary: 'Selects the offered maker-mark examination.', request_type: 'stepwise_support_request' },
+    },
     registerSelection: {
       expected_dag_move: 'Stage the due alloy clue.',
       response_configuration: { action_family: 'stage_next_step' },
@@ -2436,8 +2422,7 @@ test('a learner-selected maker-mark test must be carried forward before another 
     dramaticReleaseFrame: { active: true },
   });
   const audit = auditTutorStubResponseComposition({
-    text:
-      'That is the right order: test the public evidence before naming a hand. I draw the shilling across the touchstone.',
+    text: 'That is the right order: test the public evidence before naming a hand. I draw the shilling across the touchstone.',
     frame,
     learnerText,
   });

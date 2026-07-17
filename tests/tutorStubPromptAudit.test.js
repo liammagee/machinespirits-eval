@@ -41,10 +41,7 @@ test('prompt audit rejects oversized and duplicated instruction surfaces', () =>
 });
 
 test('semantic performance adjudication has its own bounded non-speaking prompt surface', () => {
-  assert.equal(
-    tutorStubPromptSurfaceForRole('tutor_stub_performance_adjudication'),
-    'performance_adjudication',
-  );
+  assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_performance_adjudication'), 'performance_adjudication');
   const audit = auditTutorStubPrompt({
     surface: 'performance_adjudication',
     systemPrompt: 'Classify the supplied public performance. Never rewrite it.',
@@ -66,7 +63,10 @@ test('exact duplicate-only prompt rows can be compacted and re-audited safely', 
   assert.equal(original.ok, false);
 
   const actual = recoverTutorStubDuplicateInstructionLines({
-    texts: ['Keep the response grounded in the public exchange.', `Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`],
+    texts: [
+      'Keep the response grounded in the public exchange.',
+      `Open reasoning obligations:\n${repeated}\nMissing warrants:\n${repeated}`,
+    ],
     duplicateInstructionLines: original.duplicateInstructionLines,
   });
   const instructions = recoverTutorStubDuplicateInstructionLines({
@@ -135,10 +135,7 @@ test('speaker prompt recovery discards contaminated advisory and preserves the p
   assert.equal(recovered.promptAudit.ok, true);
   assert.match(recovered.userPrompt, /I am not sure where to begin/u);
   assert.match(recovered.userPrompt, /Character: scene partner/u);
-  assert.doesNotMatch(
-    recovered.userPrompt,
-    new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'),
-  );
+  assert.doesNotMatch(recovered.userPrompt, new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'));
 });
 
 test('speaker prompt recovery can rebuild from the compiled first-draft contract without restoring detailed surfaces', () => {
@@ -176,10 +173,7 @@ test('speaker prompt recovery sanitizes a contaminated retained surface before i
 
   assert.equal(recovered.applied, true);
   assert.equal(recovered.speakerPrivilegeAudit.ok, true);
-  assert.doesNotMatch(
-    recovered.userPrompt,
-    new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'),
-  );
+  assert.doesNotMatch(recovered.userPrompt, new RegExp(futureSurface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'));
 });
 
 test('recovery sanitization removes the three observed private-boundary failure forms', () => {
@@ -420,8 +414,8 @@ process.stdin.on('end', () => {
       [['warm', 1]],
     );
     assert.ok(selection.pre_override_engagement_stance_distribution?.length > 0);
-    const characterStanceDrivers = selection.response_configuration.actorial_part_selection.drivers.filter(
-      (driver) => driver.source.startsWith('stance:'),
+    const characterStanceDrivers = selection.response_configuration.actorial_part_selection.drivers.filter((driver) =>
+      driver.source.startsWith('stance:'),
     );
     assert.ok(characterStanceDrivers.length > 0);
     assert.ok(characterStanceDrivers.every((driver) => driver.source === 'stance:warm'));
@@ -575,7 +569,10 @@ process.stdin.on('end', () => {
       .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
       .filter(Boolean)
       .map((line) => JSON.parse(line));
-    assert.equal(events.some((event) => event.type === 'prompt_audit_failed'), false);
+    assert.equal(
+      events.some((event) => event.type === 'prompt_audit_failed'),
+      false,
+    );
     const secondTutorCall = events.find(
       (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && event.turn === 2,
     );
@@ -594,7 +591,10 @@ process.stdin.on('end', () => {
     const heuristicLine =
       "- means there's more than one culprit. But what is the kettle queue? — classifier marked overreach or answer-seeking before an explicit public warrant was stored";
     assert.equal(thirdTutorPrompt.split(heuristicLine).length - 1, 1);
-    assert.equal(thirdTutorPrompt.split('Two kitchen entries do not establish taking or multiple culprits.').length - 1, 1);
+    assert.equal(
+      thirdTutorPrompt.split('Two kitchen entries do not establish taking or multiple culprits.').length - 1,
+      1,
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

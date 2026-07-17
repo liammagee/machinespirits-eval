@@ -607,10 +607,7 @@ test('scene-term matching recognizes singular and plural lexemes without admitti
   assert.equal(fourthWall.metrics.concreteSceneTermCount, 2);
   assert.equal(fourthWall.axes.scene_immersion.visible, false);
 
-  for (const text of [
-    'A billing rests beside the milestone.',
-    'The shillingsmith checks a touchstonecase.',
-  ]) {
+  for (const text of ['A billing rests beside the milestone.', 'The shillingsmith checks a touchstonecase.']) {
     const unrelated = auditScene(text, 'The shillings and touchstones lie on the assay bench.');
     assert.equal(unrelated.metrics.concreteSceneTermCount, 0, text);
     assert.equal(unrelated.axes.scene_immersion.visible, false, text);

@@ -64,7 +64,10 @@ export function adaptiveStateObservabilityReliabilityV22StaticExecutionContract(
       realizer: benchmarkConfig.realizer_contract,
       analyzer: benchmarkConfig.paid_execution_contract.public_turn_analyzer,
     }),
-    world: aggregateFileHash(benchmarkConfig.critical_path.worlds.map((row) => row.source), repoRoot),
+    world: aggregateFileHash(
+      benchmarkConfig.critical_path.worlds.map((row) => row.source),
+      repoRoot,
+    ),
     config: hashCanonicalJson({
       benchmark: hashFile(path.resolve(benchmarkConfigPath)),
       reliability: hashFile(path.resolve(reliabilityConfigPath)),

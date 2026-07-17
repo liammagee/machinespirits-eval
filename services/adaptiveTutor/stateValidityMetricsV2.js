@@ -386,11 +386,7 @@ export function adaptiveStateValidityV2Contract(config) {
     'analysis.metrics',
   );
   assertExact(config.analysis?.calibration_contract, EXPECTED_CALIBRATION_CONTRACT, 'analysis.calibration_contract');
-  assertExact(
-    config.analysis?.sample_size_contract,
-    EXPECTED_SAMPLE_SIZE_CONTRACT,
-    'analysis.sample_size_contract',
-  );
+  assertExact(config.analysis?.sample_size_contract, EXPECTED_SAMPLE_SIZE_CONTRACT, 'analysis.sample_size_contract');
   assertExact(config.paid_execution_contract, EXPECTED_PAID_EXECUTION_CONTRACT, 'paid execution contract');
   assertExact(config.minimum_useful_effects, { log_loss_nats: 0.05, brier_score: 0.02 }, 'minimum useful effects');
   assertExact(config.gate?.decision_contract, EXPECTED_DECISION_CONTRACT, 'gate.decision_contract');
@@ -795,12 +791,7 @@ function validateReport(report, contract) {
     if (ece < 0 || ece > 1) throw new Error(`stateValidityMetricsV2: ${path}.ece must be in [0, 1]`);
     const key = calibrationKey(row);
     if (calibration.has(key)) throw new Error(`stateValidityMetricsV2: duplicate calibration row ${key}`);
-    const expectedPredictions = expectedPredictionsForLaneLevel(
-      contract,
-      seedsPerCell,
-      row.lane,
-      row.level,
-    );
+    const expectedPredictions = expectedPredictionsForLaneLevel(contract, seedsPerCell, row.lane, row.level);
     if (Number(row.predictions) !== expectedPredictions) {
       throw new Error(`stateValidityMetricsV2: ${path}.predictions does not match its lane-level support`);
     }
@@ -890,14 +881,7 @@ function instrumentGate(indexes, contract) {
   const reasons = [];
   for (const target of contract.targets) {
     for (const baseline of contract.decision.state_blind_baselines) {
-      const comparison = comparisonFrom(
-        indexes.comparisons,
-        'world_transfer',
-        'pooled',
-        target,
-        'oracle',
-        baseline,
-      );
+      const comparison = comparisonFrom(indexes.comparisons, 'world_transfer', 'pooled', target, 'oracle', baseline);
       reasons.push(
         ...superiorityFailures(comparison, contract, {
           practical: false,
@@ -932,14 +916,7 @@ function candidateAdequacy(candidate, indexes, contract) {
   const reasons = [];
   for (const target of contract.targets) {
     for (const baseline of contract.decision.state_blind_baselines) {
-      const comparison = comparisonFrom(
-        indexes.comparisons,
-        'world_transfer',
-        'pooled',
-        target,
-        candidate,
-        baseline,
-      );
+      const comparison = comparisonFrom(indexes.comparisons, 'world_transfer', 'pooled', target, candidate, baseline);
       reasons.push(
         ...superiorityFailures(comparison, contract, {
           practical: baseline === 'no_state',
@@ -1133,9 +1110,7 @@ export function evaluateAdaptiveStateValidityV2(report, config) {
 
   const lean = candidateAdequacy('lean_dag', indexes, contract);
   const dagEligible = lean.passed;
-  const dag = dagEligible
-    ? candidateAdequacy('dag_trajectory', indexes, contract)
-    : notEligibleGate('lean_dag_failed');
+  const dag = dagEligible ? candidateAdequacy('dag_trajectory', indexes, contract) : notEligibleGate('lean_dag_failed');
   const dagRichness = dagEligible
     ? richnessGate('dag_trajectory', 'lean_dag', indexes, contract)
     : notEligibleGate('lean_dag_failed');

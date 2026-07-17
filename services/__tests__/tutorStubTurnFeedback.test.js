@@ -101,14 +101,8 @@ test('bare arrows rate a pending tutor response only from an empty idle prompt',
     enabled: true,
     requested: true,
   };
-  assert.equal(
-    tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'left' }, feedback }),
-    'down',
-  );
-  assert.equal(
-    tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'right' }, feedback }),
-    'up',
-  );
+  assert.equal(tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'left' }, feedback }), 'down');
+  assert.equal(tutorStubTurnFeedbackArrowRating({ line: '', key: { name: 'right' }, feedback }), 'up');
 
   for (const blocked of [
     { line: 'editing a reply', key: { name: 'left' }, feedback },
@@ -159,7 +153,8 @@ test('a down-rating becomes a one-turn observable adaptation contract tied to th
     plan,
     targetTurn,
     currentTurn: {
-      tutor: 'You are right to pause. In plain terms, the ledger only links a tool to the desk; it does not name a person.',
+      tutor:
+        'You are right to pause. In plain terms, the ledger only links a tool to the desk; it does not name a person.',
       responseConfiguration: targetTurn.responseConfiguration,
       responseConfigurationAudit: { axes: {} },
       responseComposition: { uptake: 'You are right to pause.' },

@@ -117,7 +117,8 @@ test('generic public structures recognize direct write uptake and same-turn clos
       {
         turn: 1,
         learner: 'What should I write next?',
-        tutor: 'Write: “The current public record supports only a provisional finding.” Then examine the next public exhibit.',
+        tutor:
+          'Write: “The current public record supports only a provisional finding.” Then examine the next public exhibit.',
         composition: { uptake: '', development: 'Then examine the next public exhibit.' },
         release: { dueNow: [], releasedNow: [], notDeliveredNow: [], direction: 'steady' },
         configuration: { part: 'examiner', stance: 'plain', tactic: 'unadorned_report', realizationRate: 1 },
@@ -130,7 +131,12 @@ test('generic public structures recognize direct write uptake and same-turn clos
         tutor: 'Yes. I enter that supported finding and close the inquiry.',
         composition: { uptake: 'Yes.', development: 'I enter that supported finding and close the inquiry.' },
         release: { dueNow: [], releasedNow: [], notDeliveredNow: [], direction: 'steady' },
-        configuration: { part: 'record_keeper', stance: 'warm', tactic: 'shared_scene_invitation', realizationRate: 0.8 },
+        configuration: {
+          part: 'record_keeper',
+          stance: 'warm',
+          tactic: 'shared_scene_invitation',
+          realizationRate: 0.8,
+        },
         closure: { mandatory: true, closesDialogue: true },
         hardIntegrity: {},
       },
@@ -157,10 +163,7 @@ test('synthetic pace probes remain unobserved development prompts and cannot bec
 
 test('held-out or runtime-gating corpora are rejected', () => {
   const fixture = corpus();
-  assert.throws(
-    () => buildTutorStubTrajectoryShadowReport({ ...fixture, heldOut: true }),
-    /permanently non-held-out/u,
-  );
+  assert.throws(() => buildTutorStubTrajectoryShadowReport({ ...fixture, heldOut: true }), /permanently non-held-out/u);
   assert.throws(
     () => buildTutorStubTrajectoryShadowReport({ ...fixture, runtimeDeliveryGate: true }),
     /cannot be a runtime gate/u,

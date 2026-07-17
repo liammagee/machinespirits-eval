@@ -121,11 +121,7 @@ function typedCausalPerformanceInstruction(causalContract = null) {
   return `Say “The ${subject} did not cause the ${outcome}; actual cause remains open.” Add no third clause or role change.`;
 }
 
-function typedCausalPerformanceEntryInstruction(
-  causalContract = null,
-  stance = 'precise',
-  engagementOperation = null,
-) {
+function typedCausalPerformanceEntryInstruction(causalContract = null, stance = 'precise', engagementOperation = null) {
   const subject = oneLine(causalContract?.subject);
   const outcome = oneLine(causalContract?.outcome);
   if (!subject || !outcome) return null;
@@ -144,9 +140,7 @@ function learnerMoveSurface({ learnerText = '', responseCompositionFrame = null 
 
 function releaseCue(entry, index = 0) {
   const rendered =
-    entry?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA
-      ? entry
-      : renderTutorStubDueSource(entry, index);
+    entry?.schema === TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA ? entry : renderTutorStubDueSource(entry, index);
   const surface = oneLine(rendered.surface);
   if (!surface) return null;
   if (rendered.mode === 'enacted_role') {
@@ -232,9 +226,7 @@ function questionOwnedTacticExecution({ tactic, tacticExecution, progression } =
   const handoff = progression?.handoff_contract || {};
   const delegated = handoff.question_allowed === false || handoff.question_owner === 'handoff';
   if (!delegated) return tacticExecution;
-  const boundary = handoff.question_allowed
-    ? 'Ask no question here; HANDOFF owns it.'
-    : 'Ask no question here.';
+  const boundary = handoff.question_allowed ? 'Ask no question here; HANDOFF owns it.' : 'Ask no question here.';
   if (tactic === 'rapid_handoff') {
     return `Move straight from the named public object or line to one short declarative observation. ${boundary}`;
   }
@@ -261,7 +253,7 @@ function compactUptakeInstruction(contract) {
         ? `Begin exactly “Write:” with this learner-sayable sentence: “The ${subject} did not cause the ${outcome}.” Keep both named roles exact; never widen either role or change cause into prevention.`
         : causalContract
           ? 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.'
-        : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
+          : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
   }
@@ -332,17 +324,16 @@ function compactProgressionHandoffInstruction(contract) {
   const progression = contract.progression;
   const handoff = progression?.handoff_contract;
   const focus = progression?.turn_focus_contract;
-  const settled = handoff?.prohibited_settled_surfaces?.length
-    ? 'Do not reopen the settled point.'
-    : '';
+  const settled = handoff?.prohibited_settled_surfaces?.length ? 'Do not reopen the settled point.' : '';
   const bridge = focus?.sibling_relation_requires_explicit_bridge
     ? 'Connect SOURCE to the learner’s requested relation.'
     : '';
   let action;
   if (handoff?.question_allowed === false) {
-    action = contract.ending?.closure_required || contract.opening?.responsive_repair_required
-      ? compactActionInstruction(contract)
-      : 'State the current public limit through the selected action; ask no question.';
+    action =
+      contract.ending?.closure_required || contract.opening?.responsive_repair_required
+        ? compactActionInstruction(contract)
+        : 'State the current public limit through the selected action; ask no question.';
   } else if (handoff?.question_required === false) {
     action =
       'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.';
@@ -574,11 +565,7 @@ export function buildTutorStubFirstDraftContract({
           },
     )
     .filter((entry) => entry.surface);
-  const committedPublicSurfaces = [
-    ...new Set(
-      committedPublicEntries.map((entry) => entry.surface),
-    ),
-  ];
+  const committedPublicSurfaces = [...new Set(committedPublicEntries.map((entry) => entry.surface))];
   const writableEntryCausalContract = writableEntryRequested
     ? compileTutorStubWritableEntryCausalContract({
         evidence: committedPublicEntries,
@@ -658,11 +645,7 @@ export function buildTutorStubFirstDraftContract({
       causal_relation_contract: writableEntryBeforeDueEvidence ? null : writableEntryCausalContract,
       causal_performance_entry_instruction: writableEntryBeforeDueEvidence
         ? null
-        : typedCausalPerformanceEntryInstruction(
-            writableEntryCausalContract,
-            stance,
-            engagementOperation,
-          ),
+        : typedCausalPerformanceEntryInstruction(writableEntryCausalContract, stance, engagementOperation),
       causal_performance_response_instruction: writableEntryBeforeDueEvidence
         ? null
         : typedCausalPerformanceInstruction(writableEntryCausalContract),
@@ -753,8 +736,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   const source = slotsById.get('source');
   const sourceAccessibility = contract.evidence?.source_accessibility || null;
   const liveCompensation =
-    sourceAccessibility?.effective_mode === 'compensated' &&
-    sourceAccessibility?.owner === 'post_source_sentence';
+    sourceAccessibility?.effective_mode === 'compensated' && sourceAccessibility?.owner === 'post_source_sentence';
   const writableUptake = contract.opening?.writable_entry_requested === true;
   const plainNovice =
     ['adult_novice', 'child'].includes(contract.language?.audience_register) &&

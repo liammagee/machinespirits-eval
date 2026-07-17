@@ -1,9 +1,7 @@
 import { hashCanonicalJson } from '../experimentRunArtifacts.js';
 
-export const ADAPTIVE_STATE_STAGE0_REPORT_V2_SCHEMA =
-  'machinespirits.adaptive-state-stage0-contract-report.v2';
-export const ADAPTIVE_STATE_SPLIT_MANIFEST_V2_SCHEMA =
-  'machinespirits.adaptive-state-split-manifest.v2';
+export const ADAPTIVE_STATE_STAGE0_REPORT_V2_SCHEMA = 'machinespirits.adaptive-state-stage0-contract-report.v2';
+export const ADAPTIVE_STATE_SPLIT_MANIFEST_V2_SCHEMA = 'machinespirits.adaptive-state-split-manifest.v2';
 
 const TARGET_LABELS = Object.freeze({
   next_dag_event_family: Object.freeze(['retract', 'derive', 'adopt', 'none']),
@@ -154,10 +152,7 @@ export function fitAdaptiveStateStage0Head(
   if (!target || !Array.isArray(labels) || labels.length < 2) {
     throw new Error('stateBenchmarkStage0: head needs a target with at least two frozen labels');
   }
-  if (
-    regularizationScaling !== 'lambda_over_training_rows' ||
-    convergenceCriterion !== 'absolute_objective_delta'
-  ) {
+  if (regularizationScaling !== 'lambda_over_training_rows' || convergenceCriterion !== 'absolute_objective_delta') {
     throw new Error('stateBenchmarkStage0: unsupported fixed-head scaling or convergence criterion');
   }
   const encoder = encoderFromTraining(rows, representation);
@@ -173,7 +168,10 @@ export function fitAdaptiveStateStage0Head(
     const gradient = labels.map(() => Array(encoder.featureNames.length).fill(0));
     let dataLoss = 0;
     for (let rowIndex = 0; rowIndex < x.length; rowIndex += 1) {
-      const probabilities = softmax(weights.map((row) => dot(row, x[rowIndex])), probabilityClip);
+      const probabilities = softmax(
+        weights.map((row) => dot(row, x[rowIndex])),
+        probabilityClip,
+      );
       dataLoss -= Math.log(Math.max(probabilityClip, probabilities[y[rowIndex]]));
       for (let labelIndex = 0; labelIndex < labels.length; labelIndex += 1) {
         const error = probabilities[labelIndex] - (y[rowIndex] === labelIndex ? 1 : 0);
@@ -184,10 +182,7 @@ export function fitAdaptiveStateStage0Head(
     }
     const penalty =
       (lambda / (2 * x.length)) *
-      weights.reduce(
-        (total, row) => total + row.slice(1).reduce((sum, weight) => sum + weight * weight, 0),
-        0,
-      );
+      weights.reduce((total, row) => total + row.slice(1).reduce((sum, weight) => sum + weight * weight, 0), 0);
     finalObjective = dataLoss / x.length + penalty;
     if (previousObjective !== null && Math.abs(previousObjective - finalObjective) <= convergenceTolerance) {
       converged = true;
@@ -275,9 +270,7 @@ export function fitAdaptiveStateTrainingFoldClassPrior(
   const counts = Object.fromEntries(labels.map((label) => [label, 0]));
   for (const row of trainingRows) counts[String(row.targets[target])] += 1;
   const denominator = trainingRows.length + alpha * labels.length;
-  const probabilities = Object.fromEntries(
-    labels.map((label) => [label, (counts[label] + alpha) / denominator]),
-  );
+  const probabilities = Object.fromEntries(labels.map((label) => [label, (counts[label] + alpha) / denominator]));
   return {
     schema: 'machinespirits.adaptive-state-training-fold-class-prior.v2.1',
     target,
@@ -385,15 +378,10 @@ export function adaptiveStateStage0PredictionMetrics(predictions, labels) {
     );
     return { ...row, probabilities, predicted: ranked[0][0], confidence: ranked[0][1] };
   });
-  const logLoss = mean(
-    normalized.map((row) => -Math.log(Math.max(1e-12, Number(row.probabilities[row.truth] || 0)))),
-  );
+  const logLoss = mean(normalized.map((row) => -Math.log(Math.max(1e-12, Number(row.probabilities[row.truth] || 0)))));
   const brierScore = mean(
     normalized.map((row) =>
-      labels.reduce(
-        (sum, label) => sum + (row.probabilities[label] - (row.truth === label ? 1 : 0)) ** 2,
-        0,
-      ),
+      labels.reduce((sum, label) => sum + (row.probabilities[label] - (row.truth === label ? 1 : 0)) ** 2, 0),
     ),
   );
   let ece = 0;
@@ -551,11 +539,8 @@ export function auditAdaptiveStateStage0Dataset(dataset, plan, config) {
   }));
   if (
     hashCanonicalJson(targetContracts) !== hashCanonicalJson(EXPECTED_TARGET_CONTRACTS) ||
-    hashCanonicalJson(targetContracts.map((target) => target.id)) !==
-      hashCanonicalJson(plan.co_primary_targets) ||
-    rows.some((row) =>
-      targetContracts.some((target) => !target.labels.includes(String(row.targets?.[target.id]))),
-    )
+    hashCanonicalJson(targetContracts.map((target) => target.id)) !== hashCanonicalJson(plan.co_primary_targets) ||
+    rows.some((row) => targetContracts.some((target) => !target.labels.includes(String(row.targets?.[target.id]))))
   ) {
     failures.push('target_contract_mismatch');
   }
@@ -577,9 +562,7 @@ export function auditAdaptiveStateStage0Dataset(dataset, plan, config) {
     const signatures = new Set(
       [...byRealizer.values()].map((values) =>
         hashCanonicalJson(
-          values
-            .sort((left, right) => left.turn - right.turn)
-            .map((row) => ({ turn: row.turn, targets: row.targets })),
+          values.sort((left, right) => left.turn - right.turn).map((row) => ({ turn: row.turn, targets: row.targets })),
         ),
       ),
     );

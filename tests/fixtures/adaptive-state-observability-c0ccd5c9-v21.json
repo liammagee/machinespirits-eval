@@ -20,41 +20,19 @@
     "learner_text_sha256": "723c5724416a3d3a07fe363b0588dd108f7cead629adfce15b32fbe95e426aee",
     "analyzer_evidence_span": "the hand that holds that seal is the hand that pressed the pass",
     "public_construct": {
-      "released_premise_fact": [
-        "sealMarkOf",
-        "gatePass",
-        "duskSeal"
-      ],
+      "released_premise_fact": ["sealMarkOf", "gatePass", "duskSeal"],
       "released_premise_surface": "Hold the pass to the slant light: under the red wax is a second, older impression, the little dusk-seal used after curfew - a raven's notch under the wing, pressed before the public ribbon was laid across it.",
       "structural_support_rule": {
         "id": "R1_scope",
-        "if": [
-          [
-            "sealMarkOf",
-            "?pass",
-            "?seal"
-          ]
-        ],
-        "then": [
-          [
-            "materialSealAtIssue",
-            "?pass",
-            "?seal"
-          ]
-        ]
+        "if": [["sealMarkOf", "?pass", "?seal"]],
+        "then": [["materialSealAtIssue", "?pass", "?seal"]]
       },
-      "harness_target_fact": [
-        "materialSealAtIssue",
-        "gatePass",
-        "duskSeal"
-      ],
+      "harness_target_fact": ["materialSealAtIssue", "gatePass", "duskSeal"],
       "audit_disposition": "insufficiently_separable_for_event_family_gate_retarget_to_next_relational_fact"
     },
     "realizer_output": {
       "learner_text": "Because the raven's-notch dusk-seal is the operative impression on the pass — pressed before the public ribbon was laid — the hand that holds that seal is the hand that pressed the pass.",
-      "realized_public_event_ids": [
-        "derive:inference_02"
-      ]
+      "realized_public_event_ids": ["derive:inference_02"]
     },
     "realizer_artifact_hashes": {
       "parsed_output_sha256": "a56b6f4013d68aa4ad07ea58acb1d0a154e16134a334e5d51396ad610d0dc51c",
@@ -103,9 +81,7 @@
         "derive": [],
         "human_discourse": {
           "common_sense_bridges": [],
-          "illicit_hidden_premises": [
-            "The dusk-seal is the operative seal on gatePass."
-          ],
+          "illicit_hidden_premises": ["The dusk-seal is the operative seal on gatePass."],
           "implied_public_premises": [],
           "implied_warrants": [],
           "missing_warrants": [

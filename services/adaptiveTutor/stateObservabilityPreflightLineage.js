@@ -1,16 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  assertExperimentRun,
-  hashCanonicalJson,
-  readRunEvents,
-  sha256,
-} from '../experimentRunArtifacts.js';
-import {
-  adaptiveStateStage1StaticExecutionContract,
-  cliFingerprint,
-} from './stateBenchmarkStage1Contracts.js';
+import { assertExperimentRun, hashCanonicalJson, readRunEvents, sha256 } from '../experimentRunArtifacts.js';
+import { adaptiveStateStage1StaticExecutionContract, cliFingerprint } from './stateBenchmarkStage1Contracts.js';
 import {
   buildAdaptiveStateObservabilityPreflightReport,
   validateAdaptiveStateObservabilityPreflightPlan,
@@ -70,7 +62,9 @@ function assertHistoricalCleanGitAttestation(git) {
         untracked: git.untracked,
       })
   ) {
-    throw new Error('stateObservabilityPreflightLineage: preflight lacks a self-consistent historical clean-Git attestation');
+    throw new Error(
+      'stateObservabilityPreflightLineage: preflight lacks a self-consistent historical clean-Git attestation',
+    );
   }
   return true;
 }
@@ -124,11 +118,7 @@ function validateHistoricalAdaptiveStateS0(runDirInput) {
   };
 }
 
-export function resolveAdaptiveStateDiagnosticS0Lineage({
-  stoppedS1ParentRunId,
-  currentS0,
-  diagnosticS0 = null,
-} = {}) {
+export function resolveAdaptiveStateDiagnosticS0Lineage({ stoppedS1ParentRunId, currentS0, diagnosticS0 = null } = {}) {
   if (
     !stoppedS1ParentRunId ||
     !currentS0?.run_id ||
@@ -213,18 +203,13 @@ export function validateAdaptiveStateStoppedS1DiagnosticParent({
   }
   const criticalPlan = readJson(runDir, 'critical-path-plan.json');
   validateAdaptiveStateCriticalPathPlan(criticalPlan);
-  const diagnosticS0 = diagnosticS0ParentRunDir
-    ? validateHistoricalAdaptiveStateS0(diagnosticS0ParentRunDir)
-    : null;
+  const diagnosticS0 = diagnosticS0ParentRunDir ? validateHistoricalAdaptiveStateS0(diagnosticS0ParentRunDir) : null;
   const s0Lineage = resolveAdaptiveStateDiagnosticS0Lineage({
     stoppedS1ParentRunId: plan?.lineage?.parentRunId,
     currentS0: s0Parent,
     diagnosticS0,
   });
-  if (
-    criticalPlan.label !== plan.runId ||
-    criticalPlan.config_sha256 !== s0Lineage.diagnostic_s0_config_sha256
-  ) {
+  if (criticalPlan.label !== plan.runId || criticalPlan.config_sha256 !== s0Lineage.diagnostic_s0_config_sha256) {
     throw new Error('stateObservabilityPreflightLineage: stopped S1 plan differs from its S0 design/config lineage');
   }
   const reason = String(verification.seal.metadata?.reason || '');
@@ -239,7 +224,9 @@ export function validateAdaptiveStateStoppedS1DiagnosticParent({
     Number(partial.call_accounting.failed) < 1 ||
     !diagnosticReason
   ) {
-    throw new Error('stateObservabilityPreflightLineage: stopped S1 does not prove the observability failure this preflight diagnoses');
+    throw new Error(
+      'stateObservabilityPreflightLineage: stopped S1 does not prove the observability failure this preflight diagnoses',
+    );
   }
   return {
     run_id: plan.runId,
@@ -335,8 +322,7 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     result.execution_mode !== 'paid_cli' ||
     result.execution_transaction?.run_id !== verification.plan.runId ||
     result.execution_transaction?.run_plan_sha256 !== verification.seal.planSha256 ||
-    result.execution_transaction?.preflight_hashes_sha256 !==
-      hashCanonicalJson(verification.plan.hashes) ||
+    result.execution_transaction?.preflight_hashes_sha256 !== hashCanonicalJson(verification.plan.hashes) ||
     result.execution_transaction?.s1_relevant_hashes_sha256 !== metadata.s1RelevantHashesSha256 ||
     result.execution_transaction?.cli_fingerprints_sha256 !== metadata.cliFingerprintsSha256 ||
     result.exact_family_matches !== 24 ||
@@ -353,7 +339,9 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     sealMetadata.decision !== 'authorize_full_s1_retry' ||
     Number(sealMetadata.executedCliDispatches) !== 48
   ) {
-    throw new Error('stateObservabilityPreflightLineage: preflight is stale, incomplete, non-passing, or not bound to the current S1 runtime');
+    throw new Error(
+      'stateObservabilityPreflightLineage: preflight is stale, incomplete, non-passing, or not bound to the current S1 runtime',
+    );
   }
   const events = readRunEvents(runDir);
   const observedRoles = events
@@ -377,7 +365,9 @@ export function validateAdaptiveStateObservabilityPreflightParent({
       hashCanonicalJson(['claude_realizer', 'codex_realizer', 'public_turn_analyzer']) ||
     lifecycleTypes.some((type) => lifecycle[type].length !== 48)
   ) {
-    throw new Error('stateObservabilityPreflightLineage: preflight lifecycle is partial, stopped, or multiply evaluated');
+    throw new Error(
+      'stateObservabilityPreflightLineage: preflight lifecycle is partial, stopped, or multiply evaluated',
+    );
   }
   let priorRecordedSequence = 0;
   for (const [index, call] of result.calls.entries()) {

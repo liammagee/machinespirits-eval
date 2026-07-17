@@ -1,47 +1,45 @@
 const CORPUS_SCHEMA = 'machinespirits.tutor-stub.trajectory-dev-corpus.v1';
 const REPORT_SCHEMA = 'machinespirits.tutor-stub.trajectory-shadow-report.v1';
 
-const STOP_WORDS = new Set(
-  [
-    'about',
-    'after',
-    'again',
-    'also',
-    'before',
-    'being',
-    'could',
-    'does',
-    'from',
-    'have',
-    'into',
-    'next',
-    'only',
-    'should',
-    'still',
-    'than',
-    'that',
-    'their',
-    'them',
-    'then',
-    'there',
-    'these',
-    'they',
-    'this',
-    'those',
-    'under',
-    'until',
-    'what',
-    'when',
-    'where',
-    'which',
-    'while',
-    'whose',
-    'with',
-    'would',
-    'write',
-    'your',
-  ],
-);
+const STOP_WORDS = new Set([
+  'about',
+  'after',
+  'again',
+  'also',
+  'before',
+  'being',
+  'could',
+  'does',
+  'from',
+  'have',
+  'into',
+  'next',
+  'only',
+  'should',
+  'still',
+  'than',
+  'that',
+  'their',
+  'them',
+  'then',
+  'there',
+  'these',
+  'they',
+  'this',
+  'those',
+  'under',
+  'until',
+  'what',
+  'when',
+  'where',
+  'which',
+  'while',
+  'whose',
+  'with',
+  'would',
+  'write',
+  'your',
+]);
 
 export const TUTOR_STUB_TRAJECTORY_DEV_CORPUS_SCHEMA = CORPUS_SCHEMA;
 export const TUTOR_STUB_TRAJECTORY_SHADOW_REPORT_SCHEMA = REPORT_SCHEMA;
@@ -179,9 +177,7 @@ function beginsWithDirectEntry(text) {
 }
 
 function contentFreeWriteRequest(text) {
-  const remaining = textTokens(text).filter(
-    (token) => !['first', 'next', 'record', 'enter', 'note'].includes(token),
-  );
+  const remaining = textTokens(text).filter((token) => !['first', 'next', 'record', 'enter', 'note'].includes(token));
   return genericWriteRequest(text) && remaining.length === 0;
 }
 
@@ -300,7 +296,9 @@ export function summarizeTutorStubTrajectoryEpisode(episode) {
   const hardFailureCount = Object.values(integrity).reduce((sum, value) => sum + value, 0);
   const learnerCarryoverEligible = turns.filter((turn) => !contentFreeWriteRequest(turn.learner));
   const learnerCarryoverHits = learnerCarryoverEligible.filter(
-    (turn) => sharesContent(turn.learner, turn.tutor) || (genericWriteRequest(turn.learner) && beginsWithDirectEntry(turn.tutor)),
+    (turn) =>
+      sharesContent(turn.learner, turn.tutor) ||
+      (genericWriteRequest(turn.learner) && beginsWithDirectEntry(turn.tutor)),
   ).length;
   const priorCarryoverHits = turns
     .slice(1)

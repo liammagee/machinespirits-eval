@@ -72,9 +72,7 @@ export function tutorStubAnswerNameIsPublic({ answerTerm = '', publicText = '' }
   const publicWords = new Set(words(publicText));
   return (
     answerWords.length > 0 &&
-    answerWords.every(
-      (word) => publicWords.has(word) || (word.endsWith('s') && publicWords.has(word.slice(0, -1))),
-    )
+    answerWords.every((word) => publicWords.has(word) || (word.endsWith('s') && publicWords.has(word.slice(0, -1))))
   );
 }
 
@@ -103,9 +101,7 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
         words(openingSentence(text)).length >= 6 &&
         normalizedText(openingSentence(previous)) === normalizedText(openingSentence(text)),
       openingSimilarity:
-        words(openingSentence(text)).length >= 6
-          ? similarity(openingSentence(previous), openingSentence(text))
-          : 0,
+        words(openingSentence(text)).length >= 6 ? similarity(openingSentence(previous), openingSentence(text)) : 0,
     }))
     .filter((row) => row.text);
   const repeated = comparisons
@@ -129,35 +125,33 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
         },
       ]
     : repeated.length
-    ? [
-        {
-          type: 'repeated_tutor_response',
-          reason: repeated[0].exact
-            ? 'repeats a recent tutor reply verbatim'
-            : 'substantially repeats a recent tutor reply without adding a new clue or distinction',
-          similarity: repeated[0].similarity,
-          previousText: repeated[0].text,
-          turnsAgo: repeated[0].turnsAgo,
-        },
-      ]
-    : repeatedOpening.length
       ? [
           {
-            type: 'repeated_tutor_opening',
-            reason: 'reuses a substantial recent opening even though the rest of the reply changes',
-            similarity: repeatedOpening[0].openingSimilarity,
-            previousText: repeatedOpening[0].openingText,
-            turnsAgo: repeatedOpening[0].turnsAgo,
+            type: 'repeated_tutor_response',
+            reason: repeated[0].exact
+              ? 'repeats a recent tutor reply verbatim'
+              : 'substantially repeats a recent tutor reply without adding a new clue or distinction',
+            similarity: repeated[0].similarity,
+            previousText: repeated[0].text,
+            turnsAgo: repeated[0].turnsAgo,
           },
         ]
-    : [];
+      : repeatedOpening.length
+        ? [
+            {
+              type: 'repeated_tutor_opening',
+              reason: 'reuses a substantial recent opening even though the rest of the reply changes',
+              similarity: repeatedOpening[0].openingSimilarity,
+              previousText: repeatedOpening[0].openingText,
+              turnsAgo: repeatedOpening[0].turnsAgo,
+            },
+          ]
+        : [];
   return {
     schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA,
     ok: issues.length === 0,
     issues,
-    maxSimilarity: internalRepeat
-      ? 1
-      : comparisons.reduce((max, row) => Math.max(max, row.similarity), 0),
+    maxSimilarity: internalRepeat ? 1 : comparisons.reduce((max, row) => Math.max(max, row.similarity), 0),
   };
 }
 
@@ -170,15 +164,13 @@ function premiseRows(world, premiseIds) {
 }
 
 export function snapshotTutorStubPublicPremiseIds({ committedEvidence = [], dueEvidence = [] } = {}) {
-  return Object.freeze(
-    [
-      ...new Set(
-        [...(committedEvidence || []), ...(dueEvidence || [])]
-          .map((row) => (typeof row === 'string' ? row : row?.premise))
-          .filter(Boolean),
-      ),
-    ],
-  );
+  return Object.freeze([
+    ...new Set(
+      [...(committedEvidence || []), ...(dueEvidence || [])]
+        .map((row) => (typeof row === 'string' ? row : row?.premise))
+        .filter(Boolean),
+    ),
+  ]);
 }
 
 export function auditTutorStubReleaseDelivery({ text = '', world = null, premiseIds = [] } = {}) {
@@ -191,7 +183,7 @@ export function auditTutorStubReleaseDelivery({ text = '', world = null, premise
     const requiredSurfaceMatches = surfaceWords.length <= 1 ? 1 : 2;
     const delivered = Boolean(
       surfaceMatches.length >= requiredSurfaceMatches ||
-        (surfaceMatches.length >= 1 && factMatches.length >= 1 && new Set([...surfaceMatches, ...factMatches]).size >= 2),
+      (surfaceMatches.length >= 1 && factMatches.length >= 1 && new Set([...surfaceMatches, ...factMatches]).size >= 2),
     );
     return {
       premise,
@@ -254,7 +246,8 @@ export function deterministicTutorStubContextualFallback({
   latestEvidence = null,
   recentTutorTexts = [],
 } = {}) {
-  const clue = (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence]).find((row) => clueSurface(row)) ||
+  const clue =
+    (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence]).find((row) => clueSurface(row)) ||
     (clueSurface(latestEvidence) ? latestEvidence : null);
   const surface = clueSurface(clue);
   const ruleGloss = currentRuleGloss(world, clue?.premise);

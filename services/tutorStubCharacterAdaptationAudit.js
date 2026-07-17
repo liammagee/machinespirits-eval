@@ -1,7 +1,6 @@
 import { auditTutorStubClueDeliveryMultiplicity } from './tutorStubDramaticRelease.js';
 
-export const TUTOR_STUB_CHARACTER_ADAPTATION_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.character-adaptation-audit.v1';
+export const TUTOR_STUB_CHARACTER_ADAPTATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.character-adaptation-audit.v1';
 
 const META_PERFORMANCE_PATTERN =
   /\b(?:let(?:[’']s| us)\s+role-play|i(?:[’']ll| will)\s+(?:be|play|take the part)|speaking as|in the role of|back to (?:us|the case)|another piece of information)\b/iu;
@@ -40,15 +39,10 @@ export function auditTutorStubCharacterAdaptationTurns(turnRecords = []) {
   }).length;
   const performanceVisibleTurns = rows.filter((turn) => {
     const axis = turn.responseConfigurationAudit?.axes?.actorial_part;
-    return (
-      axis?.performance_visible === true ||
-      (axis?.performance_visible === undefined && axis?.visible === true)
-    );
+    return axis?.performance_visible === true || (axis?.performance_visible === undefined && axis?.visible === true);
   }).length;
   const metaPerformanceRows = rows.filter((turn) => META_PERFORMANCE_PATTERN.test(oneLine(turn.tutor)));
-  const stageDirectionRows = clueReleaseRows.filter(
-    (turn) => turn.dramaticRelease?.audit?.roleStageDirection === true,
-  );
+  const stageDirectionRows = clueReleaseRows.filter((turn) => turn.dramaticRelease?.audit?.roleStageDirection === true);
   const sourceReplacementRows = rows.filter((turn) => {
     const configuration = turn.responseConfiguration || turn.registerSelection?.response_configuration || {};
     return configuration.actorial_part === 'authored_source';
@@ -61,9 +55,7 @@ export function auditTutorStubCharacterAdaptationTurns(turnRecords = []) {
     hostVisibleTurns,
     hostVisibilityRate: rows.length ? Number((hostVisibleTurns / rows.length).toFixed(3)) : null,
     performanceVisibleTurns,
-    performanceVisibilityRate: rows.length
-      ? Number((performanceVisibleTurns / rows.length).toFixed(3))
-      : null,
+    performanceVisibilityRate: rows.length ? Number((performanceVisibleTurns / rows.length).toFixed(3)) : null,
     distinctHostParts: Object.keys(hostPartCounts).length,
     hostPartCounts,
     metaPerformanceTurns: metaPerformanceRows.length,

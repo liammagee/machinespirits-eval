@@ -102,18 +102,21 @@ function inspectLocalDatabase(localDbPath, canonicalDbPath) {
     if (evaluation.total) {
       const rows = tableExists(db, 'evaluation_runs')
         ? db
-            .prepare(`
+            .prepare(
+              `
               SELECT r.run_id, COALESCE(er.description, '') AS description, COUNT(*) AS rows
               FROM evaluation_results r
               LEFT JOIN evaluation_runs er ON er.id = r.run_id
               GROUP BY r.run_id, er.description
               ORDER BY r.run_id
-            `)
+            `,
+            )
             .all()
         : db.prepare('SELECT run_id, COUNT(*) AS rows FROM evaluation_results GROUP BY run_id').all();
       for (const row of rows) {
         if (TEST_RUN_DESCRIPTIONS.has(String(row.description || ''))) evaluation.testArtifacts += Number(row.rows);
-        else evaluation.unresolvedRuns.push({ runId: row.run_id, description: row.description || null, rows: row.rows });
+        else
+          evaluation.unresolvedRuns.push({ runId: row.run_id, description: row.description || null, rows: row.rows });
       }
       evaluation.unresolvedDurable = evaluation.unresolvedRuns.reduce((sum, row) => sum + Number(row.rows), 0);
     }
@@ -224,18 +227,33 @@ function verifiedClaimSet(spec) {
 function inspectClaimSets(canonicalDbPath, specs) {
   const verified = specs.map(verifiedClaimSet);
   if (!fs.existsSync(canonicalDbPath)) {
-    return verified.map((claim) => ({ id: claim.spec.id, expectedRows: claim.rows.length, importedRows: 0, complete: false }));
+    return verified.map((claim) => ({
+      id: claim.spec.id,
+      expectedRows: claim.rows.length,
+      importedRows: 0,
+      complete: false,
+    }));
   }
   const db = new Database(canonicalDbPath, { readonly: true, fileMustExist: true });
   try {
     if (!tableExists(db, 'tutor_stub_claim_rows')) {
-      return verified.map((claim) => ({ id: claim.spec.id, expectedRows: claim.rows.length, importedRows: 0, complete: false }));
+      return verified.map((claim) => ({
+        id: claim.spec.id,
+        expectedRows: claim.rows.length,
+        importedRows: 0,
+        complete: false,
+      }));
     }
     return verified.map((claim) => {
       const importedRows = Number(
         db.prepare('SELECT COUNT(*) AS n FROM tutor_stub_claim_rows WHERE claim_set_id = ?').get(claim.spec.id).n,
       );
-      return { id: claim.spec.id, expectedRows: claim.rows.length, importedRows, complete: importedRows === claim.rows.length };
+      return {
+        id: claim.spec.id,
+        expectedRows: claim.rows.length,
+        importedRows,
+        complete: importedRows === claim.rows.length,
+      };
     });
   } finally {
     db.close();
@@ -377,7 +395,8 @@ async function main() {
   if (local.evaluationResults.unresolvedDurable) {
     blockers.push(`${local.evaluationResults.unresolvedDurable} evaluation_results rows are not classified as tests`);
   }
-  if (local.tutorStub.sourceMissing) blockers.push(`${local.tutorStub.sourceMissing} tutor-stub source summaries are missing`);
+  if (local.tutorStub.sourceMissing)
+    blockers.push(`${local.tutorStub.sourceMissing} tutor-stub source summaries are missing`);
   for (const claim of claimSets.filter((row) => !row.complete)) {
     blockers.push(`claim set ${claim.id} is only ${claim.importedRows}/${claim.expectedRows} in canonical SQL`);
   }

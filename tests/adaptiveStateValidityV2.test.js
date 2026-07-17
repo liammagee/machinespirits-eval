@@ -433,10 +433,7 @@ test('closed hierarchy returns each of the five and only the five preregistered 
   sealReport(noSensor);
   const noSensorDecision = evaluateAdaptiveStateValidityV2(noSensor, value);
   assert.equal(noSensorDecision.verdict, 'no_sensor');
-  assert.equal(
-    noSensorDecision.bounded_design_interpretation.status,
-    'sensor_not_validated_under_bounded_design',
-  );
+  assert.equal(noSensorDecision.bounded_design_interpretation.status, 'sensor_not_validated_under_bounded_design');
   assert.equal(noSensorDecision.bounded_design_interpretation.null_effect_claim, false);
 
   const noLeanLeapfrog = clone(field);
@@ -449,18 +446,11 @@ test('closed hierarchy returns each of the five and only the five preregistered 
   }
   sealReport(noLeanLeapfrog);
   const noLeanLeapfrogDecision = evaluateAdaptiveStateValidityV2(noLeanLeapfrog, value);
-  assert.equal(
-    noLeanLeapfrogDecision.verdict,
-    'no_sensor',
-    'DAG trajectory may not leapfrog a failed lean-DAG rung',
-  );
+  assert.equal(noLeanLeapfrogDecision.verdict, 'no_sensor', 'DAG trajectory may not leapfrog a failed lean-DAG rung');
   assert.equal(noLeanLeapfrogDecision.gates.adequacy.dag_trajectory.status, 'not_eligible');
   assert.equal(noLeanLeapfrogDecision.gates.adequacy.field_trajectory.status, 'not_eligible');
   assert.equal(noLeanLeapfrogDecision.gates.richness.dag_trajectory_over_lean_dag.status, 'not_eligible');
-  assert.equal(
-    noLeanLeapfrogDecision.gates.richness.field_trajectory_over_dag_trajectory.status,
-    'not_eligible',
-  );
+  assert.equal(noLeanLeapfrogDecision.gates.richness.field_trajectory_over_dag_trajectory.status, 'not_eligible');
   assert.ok(noLeanLeapfrogDecision.reasons.some((row) => /adequacy:lean_dag/u.test(row.context || '')));
   assert.ok(noLeanLeapfrogDecision.reasons.every((row) => !/dag_trajectory/u.test(row.context || '')));
 

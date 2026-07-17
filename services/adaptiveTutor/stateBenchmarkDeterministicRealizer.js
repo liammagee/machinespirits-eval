@@ -1,8 +1,6 @@
-export const ADAPTIVE_STATE_DETERMINISTIC_REALIZER_SCHEMA =
-  'machinespirits.adaptive-state-deterministic-realizer.v2.3';
+export const ADAPTIVE_STATE_DETERMINISTIC_REALIZER_SCHEMA = 'machinespirits.adaptive-state-deterministic-realizer.v2.3';
 
-export const ADAPTIVE_STATE_SEMANTIC_FIDELITY_SCHEMA =
-  'machinespirits.adaptive-state-semantic-fidelity.v2.3';
+export const ADAPTIVE_STATE_SEMANTIC_FIDELITY_SCHEMA = 'machinespirits.adaptive-state-semantic-fidelity.v2.3';
 
 const REALIZERS = new Set(['canonical_template', 'surface_paraphrase']);
 const FORBIDDEN_INPUT_KEY = /(?:^|_)(?:future|target|oracle|answer_key|hidden|private)(?:_|$)/iu;
@@ -56,7 +54,11 @@ function semanticPayload(events) {
     throw new Error('stateBenchmarkRealizer: malformed public semantic payload');
   }
   if (payload.fact !== null) {
-    if (!Array.isArray(payload.fact) || payload.fact.length < 2 || payload.fact.some((value) => typeof value !== 'string')) {
+    if (
+      !Array.isArray(payload.fact) ||
+      payload.fact.length < 2 ||
+      payload.fact.some((value) => typeof value !== 'string')
+    ) {
       throw new Error('stateBenchmarkRealizer: public semantic fact must be an array of strings');
     }
     if (payload.canonical_atom !== JSON.stringify(payload.fact) || payload.object_level_claim !== true) {
@@ -95,8 +97,7 @@ export function assessAdaptiveStateSemanticFidelity({ currentPublicActEnvelope, 
     event_id_absent_from_text: ids.every((id) => !id || !text.includes(id)),
     exact_fact_atom_present:
       payload?.object_level_claim === true ? text.includes(`FACT ${payload.canonical_atom}`) : true,
-    operation_bound:
-      kind === 'none' ? payload === null : Boolean(payload && payload.operation === kind),
+    operation_bound: kind === 'none' ? payload === null : Boolean(payload && payload.operation === kind),
   };
   return {
     schema: ADAPTIVE_STATE_SEMANTIC_FIDELITY_SCHEMA,

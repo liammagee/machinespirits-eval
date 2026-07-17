@@ -16,14 +16,11 @@ import {
   predictAdaptiveStateStage0Head,
 } from './stateBenchmarkStage0Analysis.js';
 import { validateAdaptiveStateStage1DatasetContentSha256 } from './stateBenchmarkStage1Executor.js';
-import {
-  buildAdaptiveStateRepresentationsV2,
-} from './stateBenchmarkV2.js';
+import { buildAdaptiveStateRepresentationsV2 } from './stateBenchmarkV2.js';
 import { buildAdaptiveStateCliRealizerSystemPrompt } from './stateBenchmarkCliRealizer.js';
 import { adaptiveStateTransitionAtomicSurface } from './stateBenchmarkPublicSurface.js';
 
-export const ADAPTIVE_STATE_STAGE1_REPORT_V21_SCHEMA =
-  'machinespirits.adaptive-state-stage1-technical-report.v2.1';
+export const ADAPTIVE_STATE_STAGE1_REPORT_V21_SCHEMA = 'machinespirits.adaptive-state-stage1-technical-report.v2.1';
 export const ADAPTIVE_STATE_STAGE1_SPLIT_MANIFEST_V21_SCHEMA =
   'machinespirits.adaptive-state-stage1-split-manifest.v2.1';
 
@@ -57,7 +54,8 @@ const PUBLIC_INPUT_KEYS = Object.freeze([
   'world',
 ]);
 const PUBLIC_WORLD_KEYS = Object.freeze(['background', 'discipline', 'id', 'question', 'rules', 'setting', 'title']);
-const FORBIDDEN_KEY = /(?:^|_)(?:future|target|oracle|hidden|private|answer_key|event_family|event_ids|required_realizer_output|proof_transition)(?:_|$)/iu;
+const FORBIDDEN_KEY =
+  /(?:^|_)(?:future|target|oracle|hidden|private|answer_key|event_family|event_ids|required_realizer_output|proof_transition)(?:_|$)/iu;
 const FORBIDDEN_NON_ORACLE_KEY = /(?:^|_)(?:future|target|oracle|hidden|private|answer_key)(?:_|$)/iu;
 
 function clone(value) {
@@ -193,86 +191,88 @@ function validateArtifactRecord(call) {
   const failures = [];
   try {
     if (call.role === 'public_turn_analyzer' && call.status === 'success') {
-    const artifacts = call.analyzer_artifacts || {};
-    const expected = {
-      public_model_input_sha256: hashCanonicalJson(call.public_model_input),
-      system_prompt_sha256: sha256(artifacts.system_prompt),
-      prompt_sha256: sha256(artifacts.prompt),
-      output_schema_sha256: hashCanonicalJson(artifacts.output_schema),
-      raw_output_sha256: sha256(artifacts.raw_output),
-      parsed_output_sha256: hashCanonicalJson(artifacts.parsed_output),
-      model_input_envelope_sha256: hashCanonicalJson({
-        systemPrompt: artifacts.system_prompt,
-        prompt: artifacts.prompt,
-        outputSchema: artifacts.output_schema,
-      }),
-      learner_record_update_sha256: hashCanonicalJson(artifacts.learner_record_update),
-      deterministic_update_sha256: hashCanonicalJson(artifacts.deterministic_update),
-    };
-    if (hashCanonicalJson(expected) !== hashCanonicalJson(call.artifact_hashes)) failures.push('analyzer_artifact_hash');
-    try {
-      const input = call.public_model_input;
-      const reconstructedPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
-        learnerText: input.learnerText,
-        topic: input.topic,
-        world: input.world,
-        tutorTurn: input.tutorTurn,
-        currentTutorText: input.currentTutorText,
-        publicTranscript: input.publicTranscript,
-        publicStagedEvidence: input.publicStagedEvidence,
-        priorPublicLearnerState: input.priorPublicLearnerState,
-        includeBenchmarkTransitionEvent: true,
-        strictProviderEnvelope: true,
-      });
+      const artifacts = call.analyzer_artifacts || {};
+      const expected = {
+        public_model_input_sha256: hashCanonicalJson(call.public_model_input),
+        system_prompt_sha256: sha256(artifacts.system_prompt),
+        prompt_sha256: sha256(artifacts.prompt),
+        output_schema_sha256: hashCanonicalJson(artifacts.output_schema),
+        raw_output_sha256: sha256(artifacts.raw_output),
+        parsed_output_sha256: hashCanonicalJson(artifacts.parsed_output),
+        model_input_envelope_sha256: hashCanonicalJson({
+          systemPrompt: artifacts.system_prompt,
+          prompt: artifacts.prompt,
+          outputSchema: artifacts.output_schema,
+        }),
+        learner_record_update_sha256: hashCanonicalJson(artifacts.learner_record_update),
+        deterministic_update_sha256: hashCanonicalJson(artifacts.deterministic_update),
+      };
+      if (hashCanonicalJson(expected) !== hashCanonicalJson(call.artifact_hashes))
+        failures.push('analyzer_artifact_hash');
+      try {
+        const input = call.public_model_input;
+        const reconstructedPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+          learnerText: input.learnerText,
+          topic: input.topic,
+          world: input.world,
+          tutorTurn: input.tutorTurn,
+          currentTutorText: input.currentTutorText,
+          publicTranscript: input.publicTranscript,
+          publicStagedEvidence: input.publicStagedEvidence,
+          priorPublicLearnerState: input.priorPublicLearnerState,
+          includeBenchmarkTransitionEvent: true,
+          strictProviderEnvelope: true,
+        });
+        if (
+          artifacts.system_prompt !== TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT ||
+          artifacts.prompt !== reconstructedPrompt ||
+          hashCanonicalJson(artifacts.output_schema) !==
+            hashCanonicalJson(
+              buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+                includeBenchmarkTransitionEvent: true,
+              }),
+            ) ||
+          hashCanonicalJson(call.provenance?.hashes || {}) !==
+            hashCanonicalJson({
+              input_sha256: expected.model_input_envelope_sha256,
+              system_prompt_sha256: expected.system_prompt_sha256,
+              prompt_sha256: expected.prompt_sha256,
+              output_schema_sha256: expected.output_schema_sha256,
+              raw_output_sha256: expected.raw_output_sha256,
+              parsed_output_sha256: expected.parsed_output_sha256,
+            })
+        ) {
+          failures.push('analyzer_artifact_reconstruction');
+        }
+      } catch {
+        failures.push('analyzer_artifact_reconstruction');
+      }
+    }
+    if (call.role !== 'public_turn_analyzer' && call.status === 'success') {
+      const artifacts = call.realizer_artifacts || {};
+      const expected = {
+        public_input_sha256: hashCanonicalJson(artifacts.public_input),
+        system_prompt_sha256: sha256(artifacts.system_prompt),
+        user_prompt_sha256: sha256(artifacts.user_prompt),
+        raw_output_sha256: sha256(artifacts.raw_output),
+        parsed_output_sha256: hashCanonicalJson(artifacts.parsed_output),
+      };
+      if (hashCanonicalJson(expected) !== hashCanonicalJson(call.artifact_hashes))
+        failures.push('realizer_artifact_hash');
       if (
-        artifacts.system_prompt !== TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT ||
-        artifacts.prompt !== reconstructedPrompt ||
-        hashCanonicalJson(artifacts.output_schema) !==
-          hashCanonicalJson(
-            buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
-              includeBenchmarkTransitionEvent: true,
-            }),
-          ) ||
+        artifacts.system_prompt !== buildAdaptiveStateCliRealizerSystemPrompt() ||
+        artifacts.user_prompt !== canonicalJson(artifacts.public_input) ||
         hashCanonicalJson(call.provenance?.hashes || {}) !==
           hashCanonicalJson({
-            input_sha256: expected.model_input_envelope_sha256,
+            input_sha256: expected.public_input_sha256,
             system_prompt_sha256: expected.system_prompt_sha256,
-            prompt_sha256: expected.prompt_sha256,
-            output_schema_sha256: expected.output_schema_sha256,
+            user_prompt_sha256: expected.user_prompt_sha256,
             raw_output_sha256: expected.raw_output_sha256,
             parsed_output_sha256: expected.parsed_output_sha256,
           })
       ) {
-        failures.push('analyzer_artifact_reconstruction');
+        failures.push('realizer_artifact_reconstruction');
       }
-    } catch {
-      failures.push('analyzer_artifact_reconstruction');
-    }
-    }
-    if (call.role !== 'public_turn_analyzer' && call.status === 'success') {
-    const artifacts = call.realizer_artifacts || {};
-    const expected = {
-      public_input_sha256: hashCanonicalJson(artifacts.public_input),
-      system_prompt_sha256: sha256(artifacts.system_prompt),
-      user_prompt_sha256: sha256(artifacts.user_prompt),
-      raw_output_sha256: sha256(artifacts.raw_output),
-      parsed_output_sha256: hashCanonicalJson(artifacts.parsed_output),
-    };
-    if (hashCanonicalJson(expected) !== hashCanonicalJson(call.artifact_hashes)) failures.push('realizer_artifact_hash');
-    if (
-      artifacts.system_prompt !== buildAdaptiveStateCliRealizerSystemPrompt() ||
-      artifacts.user_prompt !== canonicalJson(artifacts.public_input) ||
-      hashCanonicalJson(call.provenance?.hashes || {}) !==
-        hashCanonicalJson({
-          input_sha256: expected.public_input_sha256,
-          system_prompt_sha256: expected.system_prompt_sha256,
-          user_prompt_sha256: expected.user_prompt_sha256,
-          raw_output_sha256: expected.raw_output_sha256,
-          parsed_output_sha256: expected.parsed_output_sha256,
-        })
-    ) {
-      failures.push('realizer_artifact_reconstruction');
-    }
     }
   } catch {
     failures.push(call.role === 'public_turn_analyzer' ? 'analyzer_artifact_hash' : 'realizer_artifact_hash');
@@ -397,10 +397,7 @@ function scanNonOracleRepresentation(value, localIds, location = 'representation
   if (!value || typeof value !== 'object') return failures;
   for (const [key, child] of Object.entries(value)) {
     if (FORBIDDEN_NON_ORACLE_KEY.test(key)) failures.push(`${location}.${key}`);
-    if (
-      typeof child === 'string' &&
-      [...localIds].some((localId) => child === localId || child.includes(localId))
-    ) {
+    if (typeof child === 'string' && [...localIds].some((localId) => child === localId || child.includes(localId))) {
       failures.push(`${location}.${key}=world_local_id`);
     }
     scanNonOracleRepresentation(child, localIds, `${location}.${key}`, failures);
@@ -428,7 +425,8 @@ function auditMatrix(dialogues, rows, plan) {
     failures.push('crossed_matrix_incomplete');
   }
   const rowsByDialogue = new Map();
-  for (const row of rows) rowsByDialogue.set(row.groups.dialogue_id, (rowsByDialogue.get(row.groups.dialogue_id) || 0) + 1);
+  for (const row of rows)
+    rowsByDialogue.set(row.groups.dialogue_id, (rowsByDialogue.get(row.groups.dialogue_id) || 0) + 1);
   if (
     dialogues.some(
       (dialogue) =>
@@ -485,9 +483,7 @@ function auditCallRoles(calls, plan) {
     failures.push('frozen_call_partition_mismatch');
   }
   if (
-    calls
-      .filter((call) => call.role === 'public_turn_analyzer')
-      .some((call) => call.postprocessor_status !== 'success')
+    calls.filter((call) => call.role === 'public_turn_analyzer').some((call) => call.postprocessor_status !== 'success')
   ) {
     failures.push('analyzer_postprocessor_incomplete');
   }
@@ -623,9 +619,7 @@ function pairedTargetDrift(rows, expectedRealizers) {
     const signatures = new Set(
       [...byRealizer.values()].map((values) =>
         hashCanonicalJson(
-          values
-            .sort((left, right) => left.turn - right.turn)
-            .map((row) => ({ turn: row.turn, targets: row.targets })),
+          values.sort((left, right) => left.turn - right.turn).map((row) => ({ turn: row.turn, targets: row.targets })),
         ),
       ),
     );
@@ -678,10 +672,8 @@ function controlSensitivity(rows, generators, realizers) {
 function analyzerEventFamilyRecovery(rows, config) {
   const floor = config.paid_execution_contract.public_turn_analyzer.recovery_floor;
   const agrees = (row) =>
-    row.descriptive_analyzer_alignment?.analyzer_next_event_family ===
-    row.targets?.next_dag_event_family;
-  const rate = (subset) =>
-    subset.length ? subset.filter(agrees).length / subset.length : 0;
+    row.descriptive_analyzer_alignment?.analyzer_next_event_family === row.targets?.next_dag_event_family;
+  const rate = (subset) => (subset.length ? subset.filter(agrees).length / subset.length : 0);
   const overall = rate(rows);
   const byGenerator = Object.fromEntries(
     config.critical_path.latent_generators.map((generator) => [
@@ -726,9 +718,7 @@ function auditAnalyzerTransitionBindings(rows, dialogues, calls) {
   for (const row of rows) {
     const realizedTurn = Number(row.turn) + 1;
     const dialogue = dialogueById.get(row.groups?.dialogue_id);
-    const observation = dialogue?.observations?.find(
-      (candidate) => Number(candidate?.turn) === realizedTurn,
-    );
+    const observation = dialogue?.observations?.find((candidate) => Number(candidate?.turn) === realizedTurn);
     const analyzerCall = analyzerCallByTurn.get(`${row.groups?.dialogue_id}:${realizedTurn}`);
     const rowFamily = row.descriptive_analyzer_alignment?.analyzer_next_event_family;
     const observationFamily = observation?.benchmark_transition?.family;
@@ -766,9 +756,7 @@ function advancePriorPublicLearnerState(previous, deterministicUpdate) {
   for (const premiseId of accepted.retract || []) adopted.delete(String(premiseId));
   for (const premiseId of accepted.adopt || []) adopted.add(String(premiseId));
   next.adopted_premise_ids = [...adopted].sort();
-  const derived = new Map(
-    (next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]),
-  );
+  const derived = new Map((next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]));
   for (const fact of accepted.derive || []) derived.set(hashCanonicalJson(fact), clone(fact));
   next.voiced_derived_facts = [...derived.values()];
   if (typeof accepted.hypothesis === 'string' && accepted.hypothesis.trim()) {
@@ -800,10 +788,7 @@ function auditPriorPublicLearnerStateSequence(calls) {
       if (hashCanonicalJson(call.public_model_input?.priorPublicLearnerState) !== hashCanonicalJson(expected)) {
         failures.push('prior_public_learner_state_sequence_mismatch');
       }
-      expected = advancePriorPublicLearnerState(
-        expected,
-        call.analyzer_artifacts?.deterministic_update,
-      );
+      expected = advancePriorPublicLearnerState(expected, call.analyzer_artifacts?.deterministic_update);
     }
   }
   return failures;
@@ -823,8 +808,7 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
     dataset.scored_cli_dispatch_count !== 336 ||
     dataset.total_cli_dispatch_count !== 339 ||
     dataset.model_call_count_semantics !== 'cli_process_dispatches_not_backend_requests' ||
-    dataset.deprecated_model_call_count_alias_semantics !==
-      'cli_process_dispatches_not_backend_requests' ||
+    dataset.deprecated_model_call_count_alias_semantics !== 'cli_process_dispatches_not_backend_requests' ||
     dataset.backend_request_count !== 'unknown'
   ) {
     failures.push('cli_dispatch_semantics_mismatch');
@@ -877,24 +861,14 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
 
   const matrix = auditMatrix(dialogues, rows, plan);
   failures.push(...matrix.failures);
-  const representations = auditRepresentations(
-    rows,
-    dialogues,
-    plan,
-    new Set(dataset.world_local_fact_ids || []),
-  );
+  const representations = auditRepresentations(rows, dialogues, plan, new Set(dataset.world_local_fact_ids || []));
   failures.push(...representations.failures);
   const degeneracy = targetDegeneracy(rows, plan);
   if (degeneracy.length) failures.push('target_degenerate_within_axis');
   const targetContracts = frozenTargetContracts(config);
   if (
-    hashCanonicalJson(targetContracts.map((target) => target.id)) !==
-      hashCanonicalJson(plan.co_primary_targets) ||
-    rows.some((row) =>
-      targetContracts.some(
-        (target) => !target.labels.includes(String(row.targets?.[target.id])),
-      ),
-    )
+    hashCanonicalJson(targetContracts.map((target) => target.id)) !== hashCanonicalJson(plan.co_primary_targets) ||
+    rows.some((row) => targetContracts.some((target) => !target.labels.includes(String(row.targets?.[target.id]))))
   ) {
     failures.push('target_contract_mismatch');
   }
@@ -941,7 +915,9 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
       dialogues: dialogues.length,
       independent_latent_clusters: new Set(dialogues.map((row) => row.latent_pair_id)).size,
       transitions: rows.length,
-      expected_cell_counts: Object.fromEntries(stable(matrix.expected.keys()).map((id) => [id, matrix.expected.get(id)])),
+      expected_cell_counts: Object.fromEntries(
+        stable(matrix.expected.keys()).map((id) => [id, matrix.expected.get(id)]),
+      ),
       observed_cell_counts: Object.fromEntries(stable(matrix.actual.keys()).map((id) => [id, matrix.actual.get(id)])),
     },
     calls: clone(accounting),
@@ -955,9 +931,7 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
     public_analyzer_event_family_recovery: recovery,
     donor_use_counts: Object.fromEntries(stable(donorUses.keys()).map((id) => [id, donorUses.get(id)])),
     analyzer_harness_disagreements: rows.filter(
-      (row) =>
-        row.descriptive_analyzer_alignment?.analyzer_next_event_family !==
-        row.targets?.next_dag_event_family,
+      (row) => row.descriptive_analyzer_alignment?.analyzer_next_event_family !== row.targets?.next_dag_event_family,
     ).length,
   };
 }
@@ -1172,8 +1146,7 @@ export function buildAdaptiveStateStage1Report({ dataset, plan, config, splitMan
       target_contracts: frozenTargetContracts(config),
       primary_lane: 'world_transfer',
       gate_eligible: false,
-      note:
-        'S1 is a paid technical observation pilot for the canonical no-memory/no-register sensor only. It can never emit the S2 learner-state validity verdict or claim parity with the live default tutor sensor.',
+      note: 'S1 is a paid technical observation pilot for the canonical no-memory/no-register sensor only. It can never emit the S2 learner-state validity verdict or claim parity with the live default tutor sensor.',
     },
     structural_audit: audit,
     baseline_sanity: baselineSanity,

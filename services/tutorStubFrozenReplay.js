@@ -465,11 +465,7 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
  * prefix. This lets development screens exercise the current generation
  * prompt without rerunning the learner, classifier, DAG, or prior dialogue.
  */
-export function refreshTutorStubFrozenFirstDraftRequest({
-  bundle,
-  world,
-  sourceAccessibilityPolicy = null,
-} = {}) {
+export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceAccessibilityPolicy = null } = {}) {
   if (!bundle || !world) throw new Error('frozen request refresh requires bundle and world');
   const refreshed = clone(bundle);
   const messages = refreshed.request?.messages || [];
@@ -543,8 +539,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({
     questionSupport: bundle.frames?.questionSupport,
     dialogueClosureFrame: bundle.frames?.dialogueClosure,
     performanceObligationContract,
-    sourceAccessibilityPolicy:
-      sourceAccessibilityPolicy || bundle.sourceAccessibilityPolicy || 'direct_only',
+    sourceAccessibilityPolicy: sourceAccessibilityPolicy || bundle.sourceAccessibilityPolicy || 'direct_only',
   });
   latestRequest.content = latestRequest.content.replace(
     FIRST_DRAFT_BLOCK,
@@ -562,8 +557,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({
 function validTutorStubFrozenJointBoundary(composition, candidateText) {
   if (
     composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA ||
-    composition?.sourceAccessibilityAudit?.schema !==
-      TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA ||
+    composition?.sourceAccessibilityAudit?.schema !== TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA ||
     composition?.text !== candidateText ||
     !Array.isArray(composition?.spans)
   ) {
@@ -628,49 +622,46 @@ export function auditTutorStubFrozenCandidate({
       firstDraftContract: bundle.firstDraftContract,
     });
   }
-  const typedJointBoundary = validTutorStubFrozenJointBoundary(
-    jointPerformanceComposition,
-    auditedText,
-  );
+  const typedJointBoundary = validTutorStubFrozenJointBoundary(jointPerformanceComposition, auditedText);
   const typedActorialPerformanceScope = typedJointBoundary
     ? tutorStubJointPerformanceActorialScope(jointPerformanceComposition)
     : null;
-  const liveTurnProgressionAudit = !typedJointBoundary && bundle.firstDraftContract?.progression?.complete === true
-    ? auditTutorStubLiveTurnProgressionV1({
-        contract: bundle.firstDraftContract.progression,
-        text: auditedText,
-        responseComposition: responseCompositionAudit,
-        authoredSourceTexts: (bundle.firstDraftContract.evidence?.sources || []).map(
-          (source) => source?.text,
-        ),
-      })
-    : {
-        schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
-        active: false,
-        ok: true,
-        scope: 'whole_response_terminal_boundary',
-        slot_ownership_inferred: false,
-        reason: typedJointBoundary
-          ? 'typed_joint_performance_audit_owns_progression'
-          : 'turn_progression_contract_inactive',
-        issues: [],
-      };
-  const liveSourceActionAlignmentAudit = !typedJointBoundary && bundle.firstDraftContract
-    ? auditTutorStubLiveSourceActionAlignmentV1({
-        text: auditedText,
-        firstDraftContract: bundle.firstDraftContract,
-      })
-    : {
-        schema: 'machinespirits.tutor-stub.live-source-action-alignment-audit.v1',
-        active: false,
-        ok: true,
-        scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
-        slot_ownership_inferred: false,
-        reason: typedJointBoundary
-          ? 'typed_joint_performance_audit_owns_source_and_compensation'
-          : 'first_draft_contract_inactive',
-        issues: [],
-      };
+  const liveTurnProgressionAudit =
+    !typedJointBoundary && bundle.firstDraftContract?.progression?.complete === true
+      ? auditTutorStubLiveTurnProgressionV1({
+          contract: bundle.firstDraftContract.progression,
+          text: auditedText,
+          responseComposition: responseCompositionAudit,
+          authoredSourceTexts: (bundle.firstDraftContract.evidence?.sources || []).map((source) => source?.text),
+        })
+      : {
+          schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
+          active: false,
+          ok: true,
+          scope: 'whole_response_terminal_boundary',
+          slot_ownership_inferred: false,
+          reason: typedJointBoundary
+            ? 'typed_joint_performance_audit_owns_progression'
+            : 'turn_progression_contract_inactive',
+          issues: [],
+        };
+  const liveSourceActionAlignmentAudit =
+    !typedJointBoundary && bundle.firstDraftContract
+      ? auditTutorStubLiveSourceActionAlignmentV1({
+          text: auditedText,
+          firstDraftContract: bundle.firstDraftContract,
+        })
+      : {
+          schema: 'machinespirits.tutor-stub.live-source-action-alignment-audit.v1',
+          active: false,
+          ok: true,
+          scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
+          slot_ownership_inferred: false,
+          reason: typedJointBoundary
+            ? 'typed_joint_performance_audit_owns_source_and_compensation'
+            : 'first_draft_contract_inactive',
+          issues: [],
+        };
   const leakAudit = guards.leak
     ? auditTutorStubFrozenLeak({
         text: auditedText,
@@ -826,9 +817,7 @@ export function extractTutorStubRegressionFixture({ tracePath, turns = null } = 
 export function summarizeTutorStubFrozenReplay(results = []) {
   const rows = Array.isArray(results) ? results : [];
   const tokenUsage = aggregateTokenUsage(rows);
-  const promptSize = summarizeTutorStubPromptSizeReports(
-    rows.map((row) => row.promptSizeReport).filter(Boolean),
-  );
+  const promptSize = summarizeTutorStubPromptSizeReports(rows.map((row) => row.promptSizeReport).filter(Boolean));
   const strictOriginalAccepted = (audit) => audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = rows.filter((row) => strictOriginalAccepted(row.audit)).length;
   const deterministicAccepted = rows.filter((row) =>

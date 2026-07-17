@@ -31,7 +31,9 @@ if (argv.includes('--json')) {
     for (const issue of row.errors) console.error(`      error [${issue.code}] ${issue.message}`);
     for (const issue of row.warnings) console.log(`      note  [${issue.code}] ${issue.message}`);
   }
-  console.log(`\n${report.ok ? 'QUALITY PASS' : 'QUALITY FAIL'}: ${report.errors.length} errors, ${report.warnings.length} notes`);
+  console.log(
+    `\n${report.ok ? 'QUALITY PASS' : 'QUALITY FAIL'}: ${report.errors.length} errors, ${report.warnings.length} notes`,
+  );
 }
 
 process.exitCode = report.ok ? 0 : 1;

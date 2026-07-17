@@ -40,10 +40,9 @@ test('v2 config freezes the bounded independent axes and two primary targets', (
     ['next_dag_event_family', 'next_proof_trajectory'],
   );
   assert.equal(new Set(value.critical_path.language_realizers.map((row) => row.model_family)).size, 2);
-  assert.deepEqual(
-    value.critical_path.worlds.find((row) => row.id === 'ravensmark').structural_support_rule_ids,
-    ['R1_scope'],
-  );
+  assert.deepEqual(value.critical_path.worlds.find((row) => row.id === 'ravensmark').structural_support_rule_ids, [
+    'R1_scope',
+  ]);
 });
 
 test('S0 builds a balanced free 3 x 2 x 2 x 2 contract matrix', () => {
@@ -74,9 +73,7 @@ test('S0 builds a balanced free 3 x 2 x 2 x 2 contract matrix', () => {
 
   for (const world of plan.axes.worlds) {
     for (const generator of plan.axes.latent_generators) {
-      const block = plan.jobs.filter(
-        (job) => job.world.id === world && job.latent_generator.id === generator,
-      );
+      const block = plan.jobs.filter((job) => job.world.id === world && job.latent_generator.id === generator);
       assert.equal(new Set(block.map((job) => JSON.stringify(job.action_schedule))).size, 1);
       for (const job of block) {
         assert.ok(
@@ -90,9 +87,7 @@ test('S0 builds a balanced free 3 x 2 x 2 x 2 contract matrix', () => {
         );
         const pairedRealizer = block.find(
           (candidate) =>
-            candidate.id !== job.id &&
-            candidate.repetition === job.repetition &&
-            candidate.seed === job.seed,
+            candidate.id !== job.id && candidate.repetition === job.repetition && candidate.seed === job.seed,
         );
         assert.ok(pairedRealizer, `${job.id} needs a paired surface realizer`);
         assert.deepEqual(pairedRealizer.action_schedule, job.action_schedule);
@@ -167,16 +162,10 @@ test('config validator rejects a confounded one-model-family design and complexi
 
   const duplicateStructuralRule = clone(config());
   duplicateStructuralRule.critical_path.worlds[2].structural_support_rule_ids = ['R1_scope', 'R1_scope'];
-  assert.throws(
-    () => validateAdaptiveStateBenchmarkV2Config(duplicateStructuralRule),
-    /structural support rule ids/u,
-  );
+  assert.throws(() => validateAdaptiveStateBenchmarkV2Config(duplicateStructuralRule), /structural support rule ids/u);
   const nonStringStructuralRule = clone(config());
   nonStringStructuralRule.critical_path.worlds[2].structural_support_rule_ids = [1];
-  assert.throws(
-    () => validateAdaptiveStateBenchmarkV2Config(nonStringStructuralRule),
-    /structural support rule ids/u,
-  );
+  assert.throws(() => validateAdaptiveStateBenchmarkV2Config(nonStringStructuralRule), /structural support rule ids/u);
 });
 
 test('plan validation detects semantic tampering and report states the planning-only boundary', () => {

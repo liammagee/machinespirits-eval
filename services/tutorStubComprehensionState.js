@@ -71,8 +71,7 @@ export function detectTutorStubComprehensionRequest({
 } = {}) {
   const requestType = classificationRequestType(classification);
   const terms = explicitTerm ? [normalizeTerm(explicitTerm)].filter(Boolean) : extractedTerms(text);
-  const lexicalSignal =
-    terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by)\b/iu.test(text);
+  const lexicalSignal = terms.length > 0 || /\b(?:what\s+does.+mean|what\s+do\s+you\s+mean\s+by)\b/iu.test(text);
   const classifiedSignal = ['plain_language_request', 'plain_simplification_followup'].includes(requestType);
   const genericClarificationSignal =
     /(?:^|[.!?]\s*)(?:what\??|huh\??|sorry\??)\s*$|\b(?:i (?:am|[’']m) lost|i (?:do not|don[’']t|cannot|can[’']t) (?:follow|understand)|can you (?:make|put|say) (?:that|it) (?:simpler|plainly|in plain (?:english|language|words))|say that (?:again|more simply)|in plain (?:english|language|words)|simpler words?|what are you asking)\b/iu.test(
@@ -81,8 +80,7 @@ export function detectTutorStubComprehensionRequest({
   // A model label is supporting evidence, not authority to manufacture a
   // vocabulary gap. Ordinary declarative evidence can be misclassified as
   // plain-language help, so require a learner-visible clarification signal.
-  const detected =
-    source === 'slash_explain' || lexicalSignal || (classifiedSignal && genericClarificationSignal);
+  const detected = source === 'slash_explain' || lexicalSignal || (classifiedSignal && genericClarificationSignal);
   return {
     schema: 'machinespirits.tutor-stub.comprehension-request.v1',
     advancesLearnerDag: false,

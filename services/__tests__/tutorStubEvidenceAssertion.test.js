@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  auditTutorStubEvidenceAssertions,
-  tutorStubPrivateTokenAlreadyPublic,
-} from '../tutorStubEvidenceAssertion.js';
+import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from '../tutorStubEvidenceAssertion.js';
 
 test('an inflection of a current clue word is not mistaken for future evidence', () => {
   const publicTokens = new Set(['notch', 'mended', 'square']);
@@ -16,8 +13,7 @@ test('an inflection of a current clue word is not mistaken for future evidence',
 test('rejects a newly invented positive match between exhibits', () => {
   const audit = auditTutorStubEvidenceAssertions({
     text: 'I press both streaks to the touchstone; they match, copper-grey and lead-sweated.',
-    permittedText:
-      'The shillings are struck coin of poor dross. The broad graver on Verrell’s bench is his alone.',
+    permittedText: 'The shillings are struck coin of poor dross. The broad graver on Verrell’s bench is his alone.',
   });
 
   assert.equal(audit.ok, false);
@@ -73,10 +69,7 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
 });
 
 test('ignores conversational agreement that is not an exhibit correspondence', () => {
-  assert.equal(
-    auditTutorStubEvidenceAssertions({ text: 'Your answer matches the distinction we entered.' }).ok,
-    true,
-  );
+  assert.equal(auditTutorStubEvidenceAssertions({ text: 'Your answer matches the distinction we entered.' }).ok, true);
 });
 
 test('ignores an attribution conclusion that uses tied to without asserting an exhibit match', () => {
@@ -90,8 +83,7 @@ test('ignores an attribution conclusion that uses tied to without asserting an e
 
 test('allows a public tool-to-person inference without treating it as a new exhibit match', () => {
   const audit = auditTutorStubEvidenceAssertions({
-    text:
-      'Edony’s sole keeping of the sprung-heel burin ties her to cutting the flawed die. The same hand is already tied to the weir-forge blanks.',
+    text: 'Edony’s sole keeping of the sprung-heel burin ties her to cutting the flawed die. The same hand is already tied to the weir-forge blanks.',
     permittedText:
       'That ties the damaged die to Edony’s worn burin, so she likely cut it, though it does not prove she struck the shillings.',
   });
@@ -101,8 +93,7 @@ test('allows a public tool-to-person inference without treating it as a new exhi
 
 test('allows a public job-number entry to support a handling attribution', () => {
   const audit = auditTutorStubEvidenceAssertions({
-    text:
-      'The Wrenfold job number ties that 12:14 entry to their handling of Priya’s lunchbox.',
+    text: 'The Wrenfold job number ties that 12:14 entry to their handling of Priya’s lunchbox.',
     permittedText:
       'Priya’s labelled lunchbox was logged at 12:14, tagged with the Wrenfold job number, with a shelf photo attached.',
   });

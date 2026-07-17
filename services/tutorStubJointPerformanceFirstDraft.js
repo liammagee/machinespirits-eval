@@ -10,10 +10,7 @@ import {
 } from './tutorStubResponseConfiguration.js';
 import { tutorStubGuardIssueRows } from './tutorStubGuardDisposition.js';
 import { tutorStubGuardDeliveryDecision } from './tutorStubGuardRecovery.js';
-import {
-  auditTutorStubDueSourceActionAlignment,
-  renderTutorStubDueSource,
-} from './tutorStubDueSourceRenderer.js';
+import { auditTutorStubDueSourceActionAlignment, renderTutorStubDueSource } from './tutorStubDueSourceRenderer.js';
 import {
   auditTutorStubTurnProgression,
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
@@ -24,10 +21,8 @@ import {
 } from './tutorStubSourceAccessibilityContract.js';
 import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
 
-export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA =
-  'machinespirits.tutor-stub.joint-performance-host-plan.v2';
-export const TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA =
-  'machinespirits.tutor-stub.structured-first-draft.v2';
+export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA = 'machinespirits.tutor-stub.joint-performance-host-plan.v2';
+export const TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA = 'machinespirits.tutor-stub.structured-first-draft.v2';
 export const TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA =
   'machinespirits.tutor-stub.structured-first-draft-composition.v2';
 export const TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA =
@@ -39,7 +34,8 @@ const MODEL_SPAN_IDS = Object.freeze(['uptake', 'performance_entry', 'performanc
 const HOST_PLAN_BLOCK = /\[Tutor-only host plan\][\s\S]*?\[End tutor-only host plan\]/u;
 const RESPONSE_CONFIGURATION_BLOCK =
   /\[Tutor-only response configuration\][\s\S]*?\[End tutor-only response configuration\]/u;
-const SLOT_LABEL_PATTERN = /^(?:uptake|performance(?:\s+(?:entry|response))?|entry|response|source|handoff)\s*(?::|—|-)/iu;
+const SLOT_LABEL_PATTERN =
+  /^(?:uptake|performance(?:\s+(?:entry|response))?|entry|response|source|handoff)\s*(?::|—|-)/iu;
 const NON_UPTAKE_QUOTE_PATTERN = /[“”"]/u;
 const SENTENCE_TERMINATOR_PATTERN = /[.!?](?:[”"'’])?$/u;
 const OUTER_HORIZONTAL_WHITESPACE_PATTERN = /^[\p{Zs}\t\f\v]+|[\p{Zs}\t\f\v]+$/gu;
@@ -108,7 +104,11 @@ function exactOccurrences(text, needle) {
 
 function sourceContentTokens(value) {
   return new Set(
-    (String(value || '').toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]{2,}/gu) || [])
+    (
+      String(value || '')
+        .toLowerCase()
+        .match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]{2,}/gu) || []
+    )
       .map((token) => token.replace(/[’]/gu, "'").replace(/'s$/u, ''))
       .filter((token) => token.length >= 4 && !SOURCE_FINGERPRINT_STOP_WORDS.has(token)),
   );
@@ -120,7 +120,8 @@ function substantialSourceOverlap(slotText, surface) {
   if (sourceTokens.size < 3 || slotTokens.size < 3) return { substantial: false, shared: [] };
   const shared = [...sourceTokens].filter((token) => slotTokens.has(token));
   return {
-    substantial: shared.length >= 3 && (shared.length / sourceTokens.size >= 0.3 || shared.length / slotTokens.size >= 0.45),
+    substantial:
+      shared.length >= 3 && (shared.length / sourceTokens.size >= 0.3 || shared.length / slotTokens.size >= 0.45),
     shared,
   };
 }
@@ -161,12 +162,8 @@ function actionOnlyHandoffInstruction(contract, handoffInstruction) {
 }
 
 function jointPerformanceCompatibility(contract, entryInstruction) {
-  const decisions = Array.isArray(contract?.compatibility?.decisions)
-    ? [...contract.compatibility.decisions]
-    : [];
-  const advocateDelegation = decisions.includes(
-    'advocate_case_delegates_concrete_test_to_final_handoff',
-  );
+  const decisions = Array.isArray(contract?.compatibility?.decisions) ? [...contract.compatibility.decisions] : [];
+  const advocateDelegation = decisions.includes('advocate_case_delegates_concrete_test_to_final_handoff');
   if (!advocateDelegation) {
     return {
       decisions,
@@ -206,10 +203,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
   const source = slots.get('source');
   const sharedSceneInvitation = contract?.performance?.tactic === 'shared_scene_invitation';
   const progression = contract?.progression;
-  if (
-    progression?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA ||
-    progression.complete !== true
-  ) {
+  if (progression?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || progression.complete !== true) {
     throw new Error('joint performance contract invalid: missing_turn_progression_contract');
   }
   const compatibility = jointPerformanceCompatibility(contract, oneLine(slots.get('part').instruction));
@@ -232,15 +226,15 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
     ? tutorStubSourceAccessibilityInstruction(sourceAccessibility)
     : causalPerformanceResponseInstruction
       ? causalPerformanceResponseInstruction
-    : [
-        oneLine(slots.get('tactic').instruction),
-        stanceContract.operation
-          ? `Stance operation (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.operation)}`
-          : null,
-        `Stance here (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.contract)}`,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      : [
+          oneLine(slots.get('tactic').instruction),
+          stanceContract.operation
+            ? `Stance operation (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.operation)}`
+            : null,
+          `Stance here (${oneLine(contract?.performance?.engagement_stance) || 'selected'}): ${oneLine(stanceContract.contract)}`,
+        ]
+          .filter(Boolean)
+          .join(' ');
   return {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA,
     host_sentence_count: 4,
@@ -272,20 +266,20 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
               owner: 'performance_response',
             }
           : sharedSceneInvitation
-          ? progression.handoff_contract?.question_owner === 'performance_response'
-            ? {
-                type: 'open_learner_owned_question',
-                terminal_question: true,
-                explicit_learner_or_shared_address: true,
-                supplied_or_commanded_reading: false,
-              }
-            : {
-                type: 'declarative_shared_attention',
-                terminal_question: false,
-                explicit_learner_or_shared_address: true,
-                question_owner: progression.handoff_contract?.question_owner || null,
-              }
-          : null,
+            ? progression.handoff_contract?.question_owner === 'performance_response'
+              ? {
+                  type: 'open_learner_owned_question',
+                  terminal_question: true,
+                  explicit_learner_or_shared_address: true,
+                  supplied_or_commanded_reading: false,
+                }
+              : {
+                  type: 'declarative_shared_attention',
+                  terminal_question: false,
+                  explicit_learner_or_shared_address: true,
+                  question_owner: progression.handoff_contract?.question_owner || null,
+                }
+            : null,
         joint_instruction: (compensated
           ? [
               'ENTRY alone owns part, tactic, and stance.',
@@ -296,14 +290,11 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
                 'ENTRY owns part and stance; RESPONSE owns the typed causal-boundary tactic.',
                 'Keep both sentences in one causal direction.',
               ]
-          : [
-              'ENTRY owns the part; RESPONSE owns tactic and stance.',
-            ])
+            : ['ENTRY owns the part; RESPONSE owns tactic and stance.']
+        )
           .filter(Boolean)
           .join(' '),
-        engagement_operation_contract: clone(
-          contract?.performance?.engagement_operation_contract || null,
-        ),
+        engagement_operation_contract: clone(contract?.performance?.engagement_operation_contract || null),
       },
       source: source
         ? {
@@ -344,9 +335,7 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
       source_accessibility: compensated ? ['performance_response'] : [],
       action_family: ['handoff'],
     },
-    delegated_axis_prerequisites: compatibility.compositePartOwnership
-      ? { actorial_part: ['handoff'] }
-      : {},
+    delegated_axis_prerequisites: compatibility.compositePartOwnership ? { actorial_part: ['handoff'] } : {},
   };
 }
 
@@ -413,17 +402,15 @@ export function replaceTutorStubFrozenRequestWithJointPerformancePrompt(bundle =
     HOST_PLAN_BLOCK,
     tutorStubJointPerformanceFirstDraftPrompt(refreshed.firstDraftContract),
   );
-  const responseConfigurationMatches = updatedContent.match(
-    new RegExp(RESPONSE_CONFIGURATION_BLOCK.source, 'gu'),
-  ) || [];
+  const responseConfigurationMatches =
+    updatedContent.match(new RegExp(RESPONSE_CONFIGURATION_BLOCK.source, 'gu')) || [];
   if (responseConfigurationMatches.length > 1) {
     throw new Error(
       `joint performance frozen request requires at most one response configuration block; found ${responseConfigurationMatches.length}`,
     );
   }
   if (responseConfigurationMatches.length === 1) {
-    const configuration =
-      refreshed.speakingResponseConfiguration || refreshed.selectedResponseConfiguration;
+    const configuration = refreshed.speakingResponseConfiguration || refreshed.selectedResponseConfiguration;
     if (!configuration) {
       throw new Error('joint performance frozen request cannot rebuild response configuration');
     }
@@ -442,9 +429,7 @@ export function replaceTutorStubFrozenRequestWithJointPerformancePrompt(bundle =
     model_fields: { uptake: 'string', performance: ['entry', 'response'], handoff: 'string' },
     source_owner: 'host',
     source_placement: 'between_performance_entry_and_response',
-    source_accessibility: clone(
-      refreshed.firstDraftContract?.evidence?.source_accessibility || null,
-    ),
+    source_accessibility: clone(refreshed.firstDraftContract?.evidence?.source_accessibility || null),
     host_plan: hostPlan,
   };
   return refreshed;
@@ -480,12 +465,14 @@ function typedPositiveCausalClaimVisible(value = '', causalContract = null) {
   const subject = escapedRolePattern(causalContract?.subject);
   const outcome = escapedRolePattern(causalContract?.outcome);
   if (!subject || !outcome || causalContract?.polarity !== 'negative') return false;
-  const relation = causalContract?.family === 'production'
-    ? '(?:account(?:s|ed|ing)?\\s+for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|produc(?:e|ed|es|ing))'
-    : null;
+  const relation =
+    causalContract?.family === 'production'
+      ? '(?:account(?:s|ed|ing)?\\s+for|caus(?:e|ed|es|ing)|explain(?:ed|s|ing)?|produc(?:e|ed|es|ing))'
+      : null;
   if (!relation) return false;
-  return new RegExp(`\\b(?:the\\s+)?${subject}\\s+${relation}\\s+(?:the\\s+)?${outcome}\\b`, 'iu')
-    .test(String(value || ''));
+  return new RegExp(`\\b(?:the\\s+)?${subject}\\s+${relation}\\s+(?:the\\s+)?${outcome}\\b`, 'iu').test(
+    String(value || ''),
+  );
 }
 
 function normalizeTransportSlot(value, slot, normalizations) {
@@ -533,11 +520,7 @@ export function parseTutorStubJointPerformanceFirstDraft(
       performance:
         value.performance && typeof value.performance === 'object' && !Array.isArray(value.performance)
           ? {
-              entry: normalizeTransportSlot(
-                value.performance.entry,
-                'performance.entry',
-                transportNormalizations,
-              ),
+              entry: normalizeTransportSlot(value.performance.entry, 'performance.entry', transportNormalizations),
               response: normalizeTransportSlot(
                 value.performance.response,
                 'performance.response',
@@ -588,8 +571,8 @@ function jointPerformanceResponseObligation(configuration, response, progression
   const text = String(response || '');
   const declarativeSharedAttention = Boolean(
     progressionContract &&
-      (progressionContract.handoff_contract?.question_allowed === false ||
-        progressionContract.handoff_contract?.question_owner === 'handoff'),
+    (progressionContract.handoff_contract?.question_allowed === false ||
+      progressionContract.handoff_contract?.question_owner === 'handoff'),
   );
   const terminalQuestion = /\?(?:[”"'’])?$/u.test(text);
   const learnerAddress = /\b(?:you|your|we|our)\b/iu.test(text);
@@ -602,13 +585,13 @@ function jointPerformanceResponseObligation(configuration, response, progression
         { id: 'question_delegated_to_handoff', ok: !text.includes('?') },
       ]
     : [
-    { id: 'terminal_direct_question', ok: terminalQuestion && oneQuestion },
-    { id: 'explicit_learner_address', ok: learnerAddress },
-    { id: 'open_interrogative_not_supplied_agreement', ok: openInterrogative },
-    {
-      id: 'learner_owned_not_supplied_or_commanded',
-      ok: terminalQuestion && oneQuestion && learnerAddress && openInterrogative,
-    },
+        { id: 'terminal_direct_question', ok: terminalQuestion && oneQuestion },
+        { id: 'explicit_learner_address', ok: learnerAddress },
+        { id: 'open_interrogative_not_supplied_agreement', ok: openInterrogative },
+        {
+          id: 'learner_owned_not_supplied_or_commanded',
+          ok: terminalQuestion && oneQuestion && learnerAddress && openInterrogative,
+        },
       ];
   return {
     active: true,
@@ -775,7 +758,11 @@ function compositionIntegrityIssues(composition, candidate = null) {
     expectedStart = Number.isInteger(span?.end) ? span.end + 1 : Number.NaN;
   }
   if (spans.map((span) => span?.text).join(' ') !== text) {
-    issues.push({ type: 'invalid_span_reconstruction', span: null, reason: 'saved spans do not reconstruct candidate' });
+    issues.push({
+      type: 'invalid_span_reconstruction',
+      span: null,
+      reason: 'saved spans do not reconstruct candidate',
+    });
   }
   const sources = Array.isArray(composition.sources) ? composition.sources : [];
   if (sources.length !== sourceSpans.length) {
@@ -801,30 +788,19 @@ function compositionIntegrityIssues(composition, candidate = null) {
 }
 
 export function tutorStubJointPerformanceActorialScope(composition = null) {
-  if (
-    composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA ||
-    !Array.isArray(composition?.spans)
-  ) {
+  if (composition?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_COMPOSITION_SCHEMA || !Array.isArray(composition?.spans)) {
     return null;
   }
-  const spans = new Map(
-    composition.spans
-      .filter((span) => span?.owner === 'model')
-      .map((span) => [span.id, span]),
-  );
+  const spans = new Map(composition.spans.filter((span) => span?.owner === 'model').map((span) => [span.id, span]));
   const compensated = composition.sourceAccessibilityAudit?.active === true;
-  const spanIds = compensated
-    ? ['performance_entry']
-    : ['performance_entry', 'performance_response'];
+  const spanIds = compensated ? ['performance_entry'] : ['performance_entry', 'performance_response'];
   const spanTexts = spanIds.map((id) => oneLine(spans.get(id)?.text));
   if (spanTexts.some((text) => !text)) return null;
   return {
     owner: 'performance',
     spanIds,
     spanTexts,
-    excludedSpanIds: composition.spans
-      .filter((span) => span?.owner === 'host')
-      .map((span) => span.id),
+    excludedSpanIds: composition.spans.filter((span) => span?.owner === 'host').map((span) => span.id),
     ownedText: spanTexts.join(' '),
     fullText: oneLine(composition.text),
   };
@@ -879,9 +855,7 @@ export function auditTutorStubJointPerformanceOwnership({
         type: `source_accessibility_${issueType || 'failed'}`,
         axis: 'source_accessibility',
         owner: 'performance_response',
-        reason:
-          (typeof issue === 'object' && issue?.reason) ||
-          'source accessibility compensation failed',
+        reason: (typeof issue === 'object' && issue?.reason) || 'source accessibility compensation failed',
       });
     }
   }
@@ -944,9 +918,7 @@ export function auditTutorStubJointPerformanceOwnership({
       auditedSpanTexts: compensated
         ? [spans.get('performance_entry').text]
         : [spans.get('performance_entry').text, spans.get('performance_response').text],
-      excludedSourceSpanIds: (composition.spans || [])
-        .filter((span) => span?.owner === 'host')
-        .map((span) => span.id),
+      excludedSourceSpanIds: (composition.spans || []).filter((span) => span?.owner === 'host').map((span) => span.id),
     },
   });
   const engagementOperationAudit = performanceAudit?.engagement_operation_realization || null;
@@ -966,11 +938,7 @@ export function auditTutorStubJointPerformanceOwnership({
         requirements: [],
         reason: 'performance_response is reserved for source accessibility compensation',
       }
-    : jointPerformanceResponseObligation(
-        configuration,
-        spans.get('performance_response').text,
-        progressionContract,
-      );
+    : jointPerformanceResponseObligation(configuration, spans.get('performance_response').text, progressionContract);
   const axes = {
     actorial_part: {
       owner: compositePartOwnership.active ? 'composite' : 'performance',
@@ -984,15 +952,11 @@ export function auditTutorStubJointPerformanceOwnership({
     actorial_performance: {
       owner: 'performance',
       selected: configuration.actorial_performance?.id || null,
-      visible:
-        performanceAudit?.axes?.actorial_part?.performance_visible === true && responseObligation.ok,
+      visible: performanceAudit?.axes?.actorial_part?.performance_visible === true && responseObligation.ok,
       realization: clone(performanceAudit?.actorial_performance_realization || null),
     },
     engagement_stance: {
-      owner:
-        engagementOperationAudit.active === true
-          ? engagementOperationAudit.owner
-          : 'performance',
+      owner: engagementOperationAudit.active === true ? engagementOperationAudit.owner : 'performance',
       selected: configuration.engagement_stance,
       visible:
         engagementOperationAudit.active === true
@@ -1066,9 +1030,7 @@ export function auditTutorStubJointPerformanceOwnership({
     issues,
     axes,
     boundaries: {
-      performance: compensated
-        ? ['performance_entry']
-        : ['performance_entry', 'performance_response'],
+      performance: compensated ? ['performance_entry'] : ['performance_entry', 'performance_response'],
       excluded_host_source_spans: (composition.spans || [])
         .filter((span) => span?.owner === 'host')
         .map((span) => span.id),
@@ -1124,8 +1086,7 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
   responseAudit.realization_rate = Number(
     (visibleAxisCount / Math.max(1, responseAudit.axis_count || Object.keys(responseAudit.axes).length)).toFixed(3),
   );
-  responseAudit.transcript_visible =
-    visibleAxisCount >= 5 && responseAudit.metrics?.fourthWallBreak !== true;
+  responseAudit.transcript_visible = visibleAxisCount >= 5 && responseAudit.metrics?.fourthWallBreak !== true;
   responseAudit.visible_signature = String(responseAudit.visible_signature || '').replace(
     /\|part:not_visible\|/u,
     `|part:${responseAudit.axes.actorial_part.selected}|`,
@@ -1137,9 +1098,7 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
   source.deliveryDecision = deliveryDecision;
   source.ok = deliveryDecision.ok;
   source.failureClusters = failureClustersFromAudits(source.audits);
-  source.hardFailureClusters = deliveryDecision.hardIssues.map(
-    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
-  );
+  source.hardFailureClusters = deliveryDecision.hardIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`);
   source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
     (issue) => `${issue.guard}:${issue.type || 'failed'}`,
   );
@@ -1191,9 +1150,7 @@ function applyTypedEngagementOperationRecognition(audit, jointAudit) {
   source.deliveryDecision = deliveryDecision;
   source.ok = deliveryDecision.ok;
   source.failureClusters = failureClustersFromAudits(source.audits);
-  source.hardFailureClusters = deliveryDecision.hardIssues.map(
-    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
-  );
+  source.hardFailureClusters = deliveryDecision.hardIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`);
   source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
     (issue) => `${issue.guard}:${issue.type || 'failed'}`,
   );
@@ -1231,9 +1188,7 @@ function applyDeterministicJointPerformanceRecognition(audit, jointAudit) {
     jointAuditSchema: jointAudit?.schema || null,
     jointAxes: clone(jointAudit?.axes || null),
   };
-  const jointAxesVisible = JOINT_PERFORMANCE_OWNED_AXES.every(
-    (axis) => jointAudit?.axes?.[axis]?.visible === true,
-  );
+  const jointAxesVisible = JOINT_PERFORMANCE_OWNED_AXES.every((axis) => jointAudit?.axes?.[axis]?.visible === true);
   if (jointAudit?.schema !== TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA || jointAudit.ok !== true || !jointAxesVisible) {
     report.reason = 'joint_performance_ownership_not_satisfied';
     return { audit: source, applied: false, reason: report.reason, report };
@@ -1251,9 +1206,7 @@ function applyDeterministicJointPerformanceRecognition(audit, jointAudit) {
   const typedOwnershipProof = {
     schema: TUTOR_STUB_JOINT_PERFORMANCE_AUDIT_SCHEMA,
     ok: true,
-    owned_axes: Object.fromEntries(
-      JOINT_PERFORMANCE_OWNED_AXES.map((axis) => [axis, clone(jointAudit.axes[axis])]),
-    ),
+    owned_axes: Object.fromEntries(JOINT_PERFORMANCE_OWNED_AXES.map((axis) => [axis, clone(jointAudit.axes[axis])])),
   };
   source.audits.actorialRealizationAudit = {
     ...(legacyActorialAudit || {}),
@@ -1266,9 +1219,7 @@ function applyDeterministicJointPerformanceRecognition(audit, jointAudit) {
   source.deliveryDecision = deliveryDecision;
   source.ok = deliveryDecision.ok;
   source.failureClusters = failureClustersFromAudits(source.audits);
-  source.hardFailureClusters = deliveryDecision.hardIssues.map(
-    (issue) => `${issue.guard}:${issue.type || 'failed'}`,
-  );
+  source.hardFailureClusters = deliveryDecision.hardIssues.map((issue) => `${issue.guard}:${issue.type || 'failed'}`);
   source.advisoryFailureClusters = deliveryDecision.advisoryIssues.map(
     (issue) => `${issue.guard}:${issue.type || 'failed'}`,
   );
@@ -1332,7 +1283,8 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
   );
   const hardIssues = jointAudit.issues.map((issue) => ({ guard: 'jointPerformanceAudit', ...issue }));
   const progressionClusters = turnProgressionAudit.issues.map(
-    (issue) => `turnProgressionAudit:${issue.type}${issue.owner ? `:${Array.isArray(issue.owner) ? issue.owner.join('+') : issue.owner}` : ''}`,
+    (issue) =>
+      `turnProgressionAudit:${issue.type}${issue.owner ? `:${Array.isArray(issue.owner) ? issue.owner.join('+') : issue.owner}` : ''}`,
   );
   const progressionHardIssues = turnProgressionAudit.issues.map((issue) => ({
     guard: 'turnProgressionAudit',
@@ -1346,11 +1298,7 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
     deliveryDecision: {
       ...(baseAudit.deliveryDecision || {}),
       ok: baseAudit.deliveryDecision?.ok === true && jointAudit.ok && turnProgressionAudit.ok,
-      hardIssues: [
-        ...(baseAudit.deliveryDecision?.hardIssues || []),
-        ...hardIssues,
-        ...progressionHardIssues,
-      ],
+      hardIssues: [...(baseAudit.deliveryDecision?.hardIssues || []), ...hardIssues, ...progressionHardIssues],
     },
     audits: {
       ...(baseAudit.audits || {}),
@@ -1367,12 +1315,13 @@ export function applyTutorStubJointPerformanceOwnershipAudit({
       reason: typedEngagementRecognized.reason,
     },
     deterministicJointPerformanceRecognition: jointRecognized.report,
-    performanceAdjudicationEligibility: jointAudit.ok && turnProgressionAudit.ok
-      ? baseAudit.performanceAdjudicationEligibility
-      : {
-          eligible: false,
-          reason: turnProgressionAudit.ok ? 'joint_performance_ownership_failed' : 'turn_progression_failed',
-          blockingIssues: [...clusters, ...progressionClusters],
-        },
+    performanceAdjudicationEligibility:
+      jointAudit.ok && turnProgressionAudit.ok
+        ? baseAudit.performanceAdjudicationEligibility
+        : {
+            eligible: false,
+            reason: turnProgressionAudit.ok ? 'joint_performance_ownership_failed' : 'turn_progression_failed',
+            blockingIssues: [...clusters, ...progressionClusters],
+          },
   };
 }

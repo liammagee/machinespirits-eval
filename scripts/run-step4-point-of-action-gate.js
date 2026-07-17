@@ -46,7 +46,11 @@ export const STEP4_POINT_OF_ACTION_SPEC = Object.freeze({
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);
   if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalJson(value[key])]));
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonicalJson(value[key])]),
+    );
   }
   return value;
 }
@@ -300,9 +304,7 @@ export function runStep4ZeroModelFixtures() {
     release_compliance: releaseCompliance?.compliant === true,
     no_release_noncompliance: noReleaseFailure?.compliant === false,
     warrant_compliance: warrantCompliance?.compliant === true,
-    placebo_target_free_and_matched: Object.values(placebo).every(
-      (row) => row.target_free && row.token_count_matched,
-    ),
+    placebo_target_free_and_matched: Object.values(placebo).every((row) => row.target_free && row.token_count_matched),
   };
   return {
     ok: Object.values(checks).every(Boolean),
@@ -316,7 +318,8 @@ function renderMarkdown(artifact, jsonPath) {
   const validationRows = Object.entries(artifact.fixtures.checks)
     .map(([name, passed]) => `| \`${name}\` | ${passed ? 'PASS' : 'FAIL'} |`)
     .join('\n');
-  return `# Step 4 point-of-action zero-model gate\n\n` +
+  return (
+    `# Step 4 point-of-action zero-model gate\n\n` +
     `- Status: **${artifact.ok ? 'PASS' : 'FAIL'}**\n` +
     `- Model calls: **0**\n` +
     `- Planned claim-bearing dialogues: **${artifact.plan.jobs.length}**\n` +
@@ -326,7 +329,8 @@ function renderMarkdown(artifact, jsonPath) {
     `- Paid launch: **locked; requires \`--launch-approved --expected-sha <clean-commit>\`**\n\n` +
     `| Check | Result |\n|---|---|\n${validationRows}\n\n` +
     `All non-speaking seams are fixed to \`${STEP4_POINT_OF_ACTION_SPEC.supportingModel}\`. ` +
-    `The speaking tutor is the only model-family factor.\n`;
+    `The speaking tutor is the only model-family factor.\n`
+  );
 }
 
 function gitOutput(args) {
@@ -373,7 +377,9 @@ async function main() {
     },
   });
   if (values.help) {
-    console.log('Usage: node scripts/run-step4-point-of-action-gate.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>]');
+    console.log(
+      'Usage: node scripts/run-step4-point-of-action-gate.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>]',
+    );
     return;
   }
   if (values['dry-run'] && values['launch-approved']) throw new Error('choose either --dry-run or --launch-approved');

@@ -24,13 +24,7 @@ function tty(columns = 100) {
 }
 
 test('CLI themes expose distinct, readable semantic palettes', () => {
-  assert.deepEqual(TUTOR_STUB_CLI_THEME_IDS, [
-    'nocturne',
-    'ember',
-    'parchment',
-    'high_contrast',
-    'mono',
-  ]);
+  assert.deepEqual(TUTOR_STUB_CLI_THEME_IDS, ['nocturne', 'ember', 'parchment', 'high_contrast', 'mono']);
   assert.equal(tutorStubCliThemeOptions().length, TUTOR_STUB_CLI_THEME_IDS.length);
 
   const nocturne = createTutorStubCliPresentation({

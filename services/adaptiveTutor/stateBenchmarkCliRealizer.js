@@ -5,8 +5,7 @@ import { isolateAdaptiveStatePublicRealizerInput } from './stateBenchmarkPublicS
 
 export { adaptiveStateTransitionAtomicSurface } from './stateBenchmarkPublicSurface.js';
 
-export const ADAPTIVE_STATE_CLI_REALIZER_CALL_SCHEMA =
-  'machinespirits.adaptive-state-cli-realizer-call.v2';
+export const ADAPTIVE_STATE_CLI_REALIZER_CALL_SCHEMA = 'machinespirits.adaptive-state-cli-realizer-call.v2';
 
 export const ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA = Object.freeze({
   type: 'object',
@@ -367,8 +366,7 @@ export async function callAdaptiveStateCliRealizer({
       ...(response?.streamEventTypeCounts || {}),
       ...(response?.streamItemTypeCounts || {}),
     }).filter(
-      ([type, count]) =>
-        Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
+      ([type, count]) => Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
     );
     if (prohibitedStreamActivity.length || Number(response?.prohibitedToolEventCount ?? 0) !== 0) {
       throw new Error(

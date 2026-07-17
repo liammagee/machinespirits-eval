@@ -31,11 +31,19 @@ function events({ turn = 1, outcome = 'guarded_policy_repair_accepted', leakOk =
         },
         finalDelivery: {
           source: outcome.startsWith('guarded_original_accepted') ? 'original_candidate' : 'policy_repair_candidate',
-          candidate: { text: outcome.startsWith('guarded_original_accepted') ? `Original reply ${turn}.` : `Delivered repair ${turn}.` },
+          candidate: {
+            text: outcome.startsWith('guarded_original_accepted')
+              ? `Original reply ${turn}.`
+              : `Delivered repair ${turn}.`,
+          },
         },
       },
     },
-    { type: 'turn_complete', turn, turnRecord: { learner: 'What should I write next?', tutor: `Delivered repair ${turn}.` } },
+    {
+      type: 'turn_complete',
+      turn,
+      turnRecord: { learner: 'What should I write next?', tutor: `Delivered repair ${turn}.` },
+    },
   ];
 }
 
@@ -102,7 +110,10 @@ test('unblinding reports paired quality without changing audit or safety status'
   const report = compileTutorStubFirstDraftBlindReview({ blind, key, ratings });
   assert.equal(report.candidateCount, 6);
   assert.equal(report.pairCount, 2);
-  assert.equal(Object.values(report.bySourceClass).reduce((sum, row) => sum + row.n, 0), 6);
+  assert.equal(
+    Object.values(report.bySourceClass).reduce((sum, row) => sum + row.n, 0),
+    6,
+  );
 });
 
 test('inventory separates evidence safety from trajectory and conversational failures', () => {

@@ -18,8 +18,7 @@ const FIXTURE_PATH = path.join(
   'tutor-stub-first-draft',
   'v33-tallow-answer-seeking-turn-5-request.json',
 );
-const LEARNER_TEXT =
-  'What should I put in the minutes about the chargers being dark during the stocktake?';
+const LEARNER_TEXT = 'What should I put in the minutes about the chargers being dark during the stocktake?';
 const PUBLIC_EVIDENCE = Object.freeze([
   "The depot's six new chargers draw their heaviest current in the evening, when the vans come home to plug in. The meeting noted the coincidence with satisfaction.",
   "The recording ammeter's pen chart for Thursday last, tabled as exhibit one: the streetlamps begin to dim at 18:40. The depot's chargers do not energise until 19:05, when the last van docks. The dip leads its suspect by twenty-five minutes.",
@@ -55,8 +54,7 @@ function v33Bundle(request) {
       },
       performance: {
         engagement_stance: 'charismatic',
-        stance_instruction:
-          'Use sharper contrast, consequence, or challenge while leaving a concrete refusal path.',
+        stance_instruction: 'Use sharper contrast, consequence, or challenge while leaving a concrete refusal path.',
         actorial_part: 'advocate',
         part_instruction:
           'Make the strongest presently licensed case in first person, then hand the learner a concrete way to test, resist, or break it.',
@@ -117,12 +115,7 @@ function v33Bundle(request) {
       schema: 'machinespirits.tutor-stub.structured-first-draft.v2',
       host_plan: {
         schema: 'machinespirits.tutor-stub.joint-performance-host-plan.v2',
-        ordered_surface_ids: [
-          'uptake',
-          'performance_entry',
-          'performance_response',
-          'handoff',
-        ],
+        ordered_surface_ids: ['uptake', 'performance_entry', 'performance_response', 'handoff'],
         slots: {
           uptake: {
             instruction:
@@ -181,21 +174,19 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   for (const [axis, selected] of Object.entries(result.compilation.selectedResponseAxes)) {
     assert.match(latest, new RegExp(`${axis}=${selected}`, 'u'));
   }
-  assert.match(latest, /\{"uptake":"\.\.\.","performance":\{"entry":"\.\.\.","response":"\.\.\."\},"handoff":"\.\.\."\}/u);
-  assert.match(latest, /UPTAKE owns the direct response/iu);
-  assert.match(latest, /PERFORMANCE ENTRY owns the advocate part/iu);
   assert.match(
     latest,
-    /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\)/iu,
+    /\{"uptake":"\.\.\.","performance":\{"entry":"\.\.\.","response":"\.\.\."\},"handoff":"\.\.\."\}/u,
   );
+  assert.match(latest, /UPTAKE owns the direct response/iu);
+  assert.match(latest, /PERFORMANCE ENTRY owns the advocate part/iu);
+  assert.match(latest, /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\)/iu);
   assert.match(latest, /HANDOFF alone owns stage_next_step/iu);
   assert.match(
     latest,
     /HANDOFF FOCUS: Keep both the public subject and its condition visible.*the chargers being dark during the stocktake/iu,
   );
-  const measured = Object.fromEntries(
-    result.compilation.promptSize.sections.map((section) => [section.id, section]),
-  );
+  const measured = Object.fromEntries(result.compilation.promptSize.sections.map((section) => [section.id, section]));
   for (const section of [
     'world_scene',
     'evidence_safety',
@@ -229,20 +220,11 @@ test('typed charismatic ownership stays in PERFORMANCE entry through compact com
   const result = buildTutorStubCompactNoSourceRequest(bundle);
   const latest = result.request.messages.at(-1).content;
 
-  assert.match(
-    latest,
-    /PERFORMANCE ENTRY owns the advocate part and the charismatic stance/iu,
-  );
+  assert.match(latest, /PERFORMANCE ENTRY owns the advocate part and the charismatic stance/iu);
   assert.match(latest, /Say exactly “I set this against the claim:/iu);
   assert.doesNotMatch(latest, /Begin exactly “My case is/iu);
-  assert.match(
-    latest,
-    /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\):/iu,
-  );
-  assert.doesNotMatch(
-    latest,
-    /PERFORMANCE RESPONSE owns[^\n]*charismatic stance/iu,
-  );
+  assert.match(latest, /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\):/iu);
+  assert.doesNotMatch(latest, /PERFORMANCE RESPONSE owns[^\n]*charismatic stance/iu);
 });
 
 test('frozen-bundle replacement is opt-in and preserves the V2 request shape', () => {
@@ -253,10 +235,7 @@ test('frozen-bundle replacement is opt-in and preserves the V2 request shape', (
   assert.notEqual(refreshed, bundle);
   assert.equal(refreshed.compactSpeakingPrompt.mode, 'compact-no-source.v1');
   assert.equal(refreshed.compactSpeakingPrompt.v2OutputShapePreserved, true);
-  assert.deepEqual(
-    refreshed.request.messages.slice(0, -1),
-    bundle.request.messages.slice(0, -1),
-  );
+  assert.deepEqual(refreshed.request.messages.slice(0, -1), bundle.request.messages.slice(0, -1));
   assert.deepEqual(refreshed.request.config, bundle.request.config, 'live request settings and audits stay untouched');
 });
 
@@ -266,9 +245,6 @@ test('compact-no-source.v1 rejects a turn with due evidence before changing the 
   bundle.firstDraftContract.evidence.active = true;
   bundle.firstDraftContract.evidence.sources = [{ surface: 'A new clue.' }];
 
-  assert.throws(
-    () => buildTutorStubCompactNoSourceRequest(bundle),
-    /cannot compile a turn with current due evidence/u,
-  );
+  assert.throws(() => buildTutorStubCompactNoSourceRequest(bundle), /cannot compile a turn with current due evidence/u);
   assert.equal(bundle.request, fixture.request);
 });

@@ -79,9 +79,7 @@ test('V21 Gazette calibration labels separate a structural false negative from a
   ]);
   assert.equal(genuineMiss.calibration.componentEvidence.contrary_evidence, null);
   assert.equal(genuineMiss.calibration.componentEvidence.dramatic_action, null);
-  assert.ok(
-    genuineMiss.originalCandidate.includes(genuineMiss.calibration.componentEvidence.public_pressure_target),
-  );
+  assert.ok(genuineMiss.originalCandidate.includes(genuineMiss.calibration.componentEvidence.public_pressure_target));
   assert.ok(genuineMiss.originalCandidate.includes(genuineMiss.calibration.componentEvidence.learner_handoff));
   assert.equal(genuineMiss.deliveredRecovery.kind, 'plain_recovery_candidate');
 });

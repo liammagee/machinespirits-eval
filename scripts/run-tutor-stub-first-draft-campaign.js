@@ -85,11 +85,13 @@ function commandFailureError({
   execution = null,
   reasonOverride = null,
 }) {
-  const reason = reasonOverride || (cause
-    ? `could not start: ${cause.message}`
-    : signal
-      ? `terminated by signal ${signal}`
-      : `exited with status ${exitCode}`);
+  const reason =
+    reasonOverride ||
+    (cause
+      ? `could not start: ${cause.message}`
+      : signal
+        ? `terminated by signal ${signal}`
+        : `exited with status ${exitCode}`);
   const error = new Error(`${label} ${reason}`);
   if (preflightKind) {
     error.tutorStubPreflightCommandFailure = {
@@ -114,11 +116,13 @@ function parseTapSummary(stdout) {
     const matches = [...text.matchAll(new RegExp(`^# ${name} (\\d+)$`, 'gmu'))];
     return matches.length ? Number(matches.at(-1)[1]) : null;
   };
-  const failureNames = [...new Set(
-    [...text.matchAll(/^\s*not ok \d+ - (.+)$/gmu)]
-      .map((match) => match[1].replace(/\s+#.*$/u, '').trim())
-      .filter(Boolean),
-  )];
+  const failureNames = [
+    ...new Set(
+      [...text.matchAll(/^\s*not ok \d+ - (.+)$/gmu)]
+        .map((match) => match[1].replace(/\s+#.*$/u, '').trim())
+        .filter(Boolean),
+    ),
+  ];
   const durationMatches = [...text.matchAll(/^# duration_ms ([0-9.]+)$/gmu)];
   return {
     tests: metric('tests'),
@@ -144,14 +148,13 @@ function preflightStreamArtifact(buffer, filePath) {
 }
 
 function preflightArtifactStem(order, id) {
-  const safeId = String(id || 'command').replace(/[^a-z0-9_-]+/giu, '-').replace(/^-+|-+$/gu, '');
+  const safeId = String(id || 'command')
+    .replace(/[^a-z0-9_-]+/giu, '-')
+    .replace(/^-+|-+$/gu, '');
   return `${String(order).padStart(2, '0')}-${safeId || 'command'}`;
 }
 
-async function runCommand(
-  argv,
-  { label = 'command', preflightKind = null, capture = null } = {},
-) {
+async function runCommand(argv, { label = 'command', preflightKind = null, capture = null } = {}) {
   console.log(`${label}: ${commandLine(argv)}`);
   const startedAt = new Date();
   return new Promise((resolve, reject) => {
@@ -185,14 +188,8 @@ async function runCommand(
           const stdout = Buffer.concat(stdoutChunks);
           const stderr = Buffer.concat(stderrChunks);
           const stem = preflightArtifactStem(capture.order, capture.id);
-          const stdoutArtifact = preflightStreamArtifact(
-            stdout,
-            path.join(capture.artifactDir, `${stem}.stdout.log`),
-          );
-          const stderrArtifact = preflightStreamArtifact(
-            stderr,
-            path.join(capture.artifactDir, `${stem}.stderr.log`),
-          );
+          const stdoutArtifact = preflightStreamArtifact(stdout, path.join(capture.artifactDir, `${stem}.stdout.log`));
+          const stderrArtifact = preflightStreamArtifact(stderr, path.join(capture.artifactDir, `${stem}.stderr.log`));
           execution = {
             schema: 'machinespirits.tutor-stub.first-draft-preflight-command-execution.v1',
             id: capture.id,
@@ -226,15 +223,17 @@ async function runCommand(
         resolve(execution);
         return;
       }
-      reject(commandFailureError({
-        argv,
-        label,
-        preflightKind,
-        exitCode: code,
-        signal,
-        cause: spawnError,
-        execution,
-      }));
+      reject(
+        commandFailureError({
+          argv,
+          label,
+          preflightKind,
+          exitCode: code,
+          signal,
+          cause: spawnError,
+          execution,
+        }),
+      );
     });
   });
 }
@@ -298,20 +297,16 @@ function deterministicPreflightRuntime() {
     platform: process.platform,
     arch: process.arch,
     environment: Object.fromEntries(
-      ['CI', 'LANG', 'LC_ALL', 'NODE_ENV', 'NODE_OPTIONS'].map((name) => [
-        name,
-        process.env[name] || null,
-      ]),
+      ['CI', 'LANG', 'LC_ALL', 'NODE_ENV', 'NODE_OPTIONS'].map((name) => [name, process.env[name] || null]),
     ),
   };
 }
 
 function gitWorktreeState({ required = false } = {}) {
-  const result = spawnSync(
-    'git',
-    ['status', '--porcelain=v1', '--untracked-files=all'],
-    { cwd: ROOT, encoding: 'utf8' },
-  );
+  const result = spawnSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
   const porcelain = result.status === 0 ? String(result.stdout || '') : '';
   const changeCount = porcelain.split(/\r?\n/u).filter(Boolean).length;
   const clean = result.status === 0 && changeCount === 0;
@@ -365,20 +360,13 @@ function assertFrozenAcceptanceState(frozen) {
   }
 }
 
-async function runWorkingPreflight(
-  config,
-  cellId,
-  iterationRoot,
-  { reportName = 'preflight-execution.json' } = {},
-) {
+async function runWorkingPreflight(config, cellId, iterationRoot, { reportName = 'preflight-execution.json' } = {}) {
   console.log(`preflight before ${cellId}: focused deterministic gates and model-free corpus`);
   const worldQuality = String(config.preflight?.world_quality || '').trim();
   const focusedTests = String(config.preflight?.focused_tests || '').trim();
   const focusedTestSuites = tutorStubFirstDraftFocusedTestSuites(config, { root: ROOT });
   if (!worldQuality || (!focusedTests && !focusedTestSuites.length)) {
-    throw new Error(
-      'working preflight must declare world_quality and focused_tests or focused_test_suites',
-    );
+    throw new Error('working preflight must declare world_quality and focused_tests or focused_test_suites');
   }
   const artifactDir = path.join(iterationRoot, 'preflight');
   const reportPath = path.join(iterationRoot, reportName);
@@ -396,24 +384,20 @@ async function runWorkingPreflight(
           id: `focused-${suite.id}`,
           kind: 'focused_test_suite',
           label: `${cellId} focused test suite ${suite.id}`,
-          argv: [
-            process.execPath,
-            '--test',
-            '--test-concurrency=1',
-            '--test-reporter=tap',
-            ...suite.testFiles,
-          ],
+          argv: [process.execPath, '--test', '--test-concurrency=1', '--test-reporter=tap', ...suite.testFiles],
           tap: true,
           suiteId: suite.id,
         }))
-      : [{
-          id: 'focused-tests-legacy',
-          kind: 'focused_tests',
-          label: `${cellId} focused tests`,
-          argv: ['/bin/sh', '-lc', focusedTests],
-          tap: true,
-          suiteId: null,
-        }]),
+      : [
+          {
+            id: 'focused-tests-legacy',
+            kind: 'focused_tests',
+            label: `${cellId} focused tests`,
+            argv: ['/bin/sh', '-lc', focusedTests],
+            tap: true,
+            suiteId: null,
+          },
+        ]),
     ...(config.preflight?.model_free_fixtures || []).map((fixture, index) => ({
       id: `model-free-fixture-${index + 1}`,
       kind: 'model_free_fixture',
@@ -436,7 +420,8 @@ async function runWorkingPreflight(
     implementationHead: gitHead(),
     runtime: deterministicPreflightRuntime(),
   });
-  const cacheDir = process.env.TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR ||
+  const cacheDir =
+    process.env.TUTOR_STUB_PREFLIGHT_CERTIFICATE_DIR ||
     path.join(ROOT, '.tutor-stub-auto-eval', 'preflight-certificates');
   const certificatePath = tutorStubFirstDraftPreflightCertificatePath({ cacheDir, key });
   if (fs.existsSync(certificatePath)) {
@@ -462,10 +447,7 @@ async function runWorkingPreflight(
       return { report, reportPath, revision: report.preflightRevision };
     }
     fs.mkdirSync(cacheDir, { recursive: true });
-    fs.renameSync(
-      certificatePath,
-      path.join(cacheDir, `${key}.rejected-${Date.now()}.json`),
-    );
+    fs.renameSync(certificatePath, path.join(cacheDir, `${key}.rejected-${Date.now()}.json`));
     console.log(`preflight certificate rejected (${validation.reasons.join(', ')}); executing gates`);
   }
   const executions = [];
@@ -486,11 +468,7 @@ async function runWorkingPreflight(
       });
       if (
         command.kind === 'focused_test_suite' &&
-        (
-          !Number.isInteger(execution?.tap?.tests) ||
-          execution.tap.tests < 1 ||
-          execution.tap.fail !== 0
-        )
+        (!Number.isInteger(execution?.tap?.tests) || execution.tap.tests < 1 || execution.tap.fail !== 0)
       ) {
         const reason =
           execution?.tap?.tests < 1
@@ -555,8 +533,7 @@ async function runWorkingPreflight(
           exitCode: failure.tutorStubPreflightCommandFailure.exitCode,
           signal: failure.tutorStubPreflightCommandFailure.signal,
           reason: failure.tutorStubPreflightCommandFailure.reason,
-          failureKind:
-            failure.tutorStubPreflightCommandFailure.execution?.failureKind || null,
+          failureKind: failure.tutorStubPreflightCommandFailure.execution?.failureKind || null,
         }
       : null,
   };
@@ -595,21 +572,15 @@ function readJson(filePath) {
 }
 
 function workingResultMetrics(result) {
-  const completedTurns = (result?.cells || []).reduce(
-    (sum, cell) => sum + Number(cell.completedTurns || 0),
-    0,
-  );
+  const completedTurns = (result?.cells || []).reduce((sum, cell) => sum + Number(cell.completedTurns || 0), 0);
   const configurationRealizationTotal = (result?.cells || []).reduce(
-    (sum, cell) =>
-      sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
+    (sum, cell) => sum + Number(cell.meanConfigurationRealization || 0) * Number(cell.completedTurns || 0),
     0,
   );
   return {
     completedTurns,
     originalCandidatesAccepted: Number(result?.originalAcceptance || 0),
-    meanConfigurationRealization: completedTurns
-      ? configurationRealizationTotal / completedTurns
-      : null,
+    meanConfigurationRealization: completedTurns ? configurationRealizationTotal / completedTurns : null,
     semanticRecognitionCorrections: Number(result?.semanticRecognitionCorrections || 0),
     safetyFailures: Number(result?.finalSafetyFailures || 0),
     deterministicFallbacks: Number(result?.deterministicFallbacks || 0),
@@ -638,8 +609,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
   const preflightExecutionArtifactPaths = [];
   const preflightRevisions = [];
   assertFrozenDevelopmentState(frozen, loaded);
-  const maximumConsecutiveWithoutImprovement =
-    config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
+  const maximumConsecutiveWithoutImprovement = config.stopping?.maximum_consecutive_iterations_without_improvement || 2;
   const previousMetrics = replayWorkingStoppingHistory({
     artifactRoot: plan.artifactRoot,
     throughIteration: iteration - 1,
@@ -651,9 +621,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
     );
   }
   if (fs.existsSync(plan.iterationRoot)) {
-    const existing = tutorStubFirstDraftUnexpectedIterationArtifacts(
-      fs.readdirSync(plan.iterationRoot),
-    );
+    const existing = tutorStubFirstDraftUnexpectedIterationArtifacts(fs.readdirSync(plan.iterationRoot));
     if (existing.length) {
       throw new Error(
         `iteration ${iteration} already has artifacts at ${plan.iterationRoot}; refusing to duplicate live draws`,
@@ -672,10 +640,10 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
       configSha256,
       sourceTraceSha256: cell.sourceTraceSha256,
       expectedInventory: cell.turns.flatMap((turn) =>
-        Array.from(
-          { length: Number(config.fixed_configuration?.draws_per_turn || 1) },
-          (_, index) => ({ turn: Number(turn), draw: index + 1 }),
-        ),
+        Array.from({ length: Number(config.fixed_configuration?.draws_per_turn || 1) }, (_, index) => ({
+          turn: Number(turn),
+          draw: index + 1,
+        })),
       ),
     });
     let completedNormally = false;
@@ -711,9 +679,10 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
     try {
       return await runCell(cell, options);
     } catch (error) {
-      const reportPath = cell.commands
-        ?.map((command) => command.outputPath)
-        .find((candidate) => fs.existsSync(candidate)) || cell.commands?.[0]?.outputPath || null;
+      const reportPath =
+        cell.commands?.map((command) => command.outputPath).find((candidate) => fs.existsSync(candidate)) ||
+        cell.commands?.[0]?.outputPath ||
+        null;
       return tutorStubFirstDraftInterruptedCellResult({ cell, reportPath, error });
     }
   }
@@ -721,11 +690,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
   const cellResults = [];
   if (config.execution) {
     const execution = tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config });
-    const preflightExecution = await runWorkingPreflight(
-      config,
-      execution.hardCell.id,
-      plan.iterationRoot,
-    );
+    const preflightExecution = await runWorkingPreflight(config, execution.hardCell.id, plan.iterationRoot);
     preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
     preflightRevisions.push(preflightExecution.revision);
     assertFrozenDevelopmentState(frozen, loaded, execution.hardCell);
@@ -733,26 +698,28 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
       stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
     });
     cellResults.push(hardResult);
-    if (tutorStubFirstDraftHardCellBlocksRemaining({
-      execution: config.execution,
-      hardCellStatus: hardResult.status,
-      completeAllCells: args['complete-all-cells'],
-    })) {
-      cellResults.push(...execution.remainingCells.map((cell) => ({
-        id: cell.id,
-        world: cell.world,
-        learnerProfile: cell.learnerProfile,
-        seed: cell.seed,
-        seedDisposition: 'unconsumed',
-        status: 'unstarted_after_hard_cell_failure',
-        completedTurns: 0,
-        unstartedTurns: cell.turns,
-      })));
+    if (
+      tutorStubFirstDraftHardCellBlocksRemaining({
+        execution: config.execution,
+        hardCellStatus: hardResult.status,
+        completeAllCells: args['complete-all-cells'],
+      })
+    ) {
+      cellResults.push(
+        ...execution.remainingCells.map((cell) => ({
+          id: cell.id,
+          world: cell.world,
+          learnerProfile: cell.learnerProfile,
+          seed: cell.seed,
+          seedDisposition: 'unconsumed',
+          status: 'unstarted_after_hard_cell_failure',
+          completedTurns: 0,
+          unstartedTurns: cell.turns,
+        })),
+      );
     } else {
-      const remainingResults = await mapLimit(
-        execution.remainingCells,
-        execution.remainingConcurrency,
-        (cell) => runCellCaptured(cell, {
+      const remainingResults = await mapLimit(execution.remainingCells, execution.remainingConcurrency, (cell) =>
+        runCellCaptured(cell, {
           stopWhenImpossible: execution.stopCellWhenGateMathematicallyImpossible,
         }),
       );
@@ -774,12 +741,9 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
         });
         continue;
       }
-      const preflightExecution = await runWorkingPreflight(
-        config,
-        cell.id,
-        plan.iterationRoot,
-        { reportName: `preflight-execution-${cell.id}.json` },
-      );
+      const preflightExecution = await runWorkingPreflight(config, cell.id, plan.iterationRoot, {
+        reportName: `preflight-execution-${cell.id}.json`,
+      });
       preflightExecutionArtifactPaths.push(preflightExecution.reportPath);
       preflightRevisions.push(preflightExecution.revision);
       const summary = await runCellCaptured(cell);
@@ -800,9 +764,7 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
     workingIteration: iteration,
     frozen,
     preflightExecutionArtifactPath:
-      preflightExecutionArtifactPaths.length === 1
-        ? preflightExecutionArtifactPaths[0]
-        : null,
+      preflightExecutionArtifactPaths.length === 1 ? preflightExecutionArtifactPaths[0] : null,
     preflightExecutionArtifactPaths,
     deterministicPreflight: {
       kind: 'deterministic_preflight_revisions',
@@ -817,18 +779,9 @@ async function runDevelopment(plan, loaded, iteration, frozen) {
       (sum, cell) => sum + Number(cell.semanticRecognitionCorrections || 0),
       0,
     ),
-    mechanicalRepairs: cellResults.reduce(
-      (sum, cell) => sum + Number(cell.mechanicalRepairs || 0),
-      0,
-    ),
-    modelRewrites: cellResults.reduce(
-      (sum, cell) => sum + Number(cell.modelRewrites || 0),
-      0,
-    ),
-    deterministicFallbacks: cellResults.reduce(
-      (sum, cell) => sum + Number(cell.deterministicFallbacks || 0),
-      0,
-    ),
+    mechanicalRepairs: cellResults.reduce((sum, cell) => sum + Number(cell.mechanicalRepairs || 0), 0),
+    modelRewrites: cellResults.reduce((sum, cell) => sum + Number(cell.modelRewrites || 0), 0),
+    deterministicFallbacks: cellResults.reduce((sum, cell) => sum + Number(cell.deterministicFallbacks || 0), 0),
     transportNormalizedOutputs: cellResults.reduce(
       (sum, cell) => sum + Number(cell.transportNormalizedOutputs || 0),
       0,
@@ -1021,9 +974,7 @@ async function main() {
     root: ROOT,
     iteration,
   });
-  const developmentFrozen = plan.kind === 'working_screen'
-    ? freezeDevelopmentState(loaded)
-    : null;
+  const developmentFrozen = plan.kind === 'working_screen' ? freezeDevelopmentState(loaded) : null;
   if (developmentFrozen) {
     plan = applyTutorStubFirstDraftDevelopmentRuntimePreflight({
       plan,
@@ -1034,19 +985,17 @@ async function main() {
     assertTutorStubFirstDraftDevelopmentIterationVacant(plan.iterationRoot);
   }
   const validationArtifactPath = tutorStubFirstDraftCampaignValidationArtifactPath({
-      artifactRoot: plan.artifactRoot,
-      mode,
-      iteration,
-    });
+    artifactRoot: plan.artifactRoot,
+    mode,
+    iteration,
+  });
   const validation = buildTutorStubFirstDraftCampaignValidationReport({
     plan,
     config: loaded.config,
     configPath: loaded.configPath,
     frozen: developmentFrozen,
   });
-  const validationPath = (
-    mode === 'development' ? writeTutorStubFirstDraftJsonExclusive : writeJson
-  )(
+  const validationPath = (mode === 'development' ? writeTutorStubFirstDraftJsonExclusive : writeJson)(
     validationArtifactPath,
     validation,
   );
@@ -1059,13 +1008,7 @@ async function main() {
   if (mode === 'development') {
     if (plan.kind !== 'working_screen') throw new Error('development mode requires a working-screen config');
     if (plan.preflightReady === false) {
-      result = writeDevelopmentPreflightFailure(
-          plan,
-          loaded,
-          iteration,
-          developmentFrozen,
-          validationPath,
-        );
+      result = writeDevelopmentPreflightFailure(plan, loaded, iteration, developmentFrozen, validationPath);
     } else {
       try {
         result = await runDevelopment(plan, loaded, iteration, developmentFrozen);

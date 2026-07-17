@@ -41,28 +41,17 @@ import { loadAdaptiveStateWorldAdapters } from '../services/adaptiveTutor/learne
 const ROOT = path.resolve('.');
 const CONFIG = yaml.parse(fs.readFileSync(path.join(ROOT, 'config/adaptive-state-benchmark-v2.yaml'), 'utf8'));
 const SEMANTIC_REGRESSIONS = JSON.parse(
-  fs.readFileSync(
-    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-5fda0824-v21.json'),
-    'utf8',
-  ),
+  fs.readFileSync(path.join(ROOT, 'tests/fixtures/adaptive-state-observability-5fda0824-v21.json'), 'utf8'),
 );
 const DERIVE_SEMANTIC_REGRESSIONS = JSON.parse(
-  fs.readFileSync(
-    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-8d6d2b22-v21.json'),
-    'utf8',
-  ),
+  fs.readFileSync(path.join(ROOT, 'tests/fixtures/adaptive-state-observability-8d6d2b22-v21.json'), 'utf8'),
 );
 const CONSTRUCT_AUDIT_FIXTURE = JSON.parse(
-  fs.readFileSync(
-    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-c0ccd5c9-v21.json'),
-    'utf8',
-  ),
+  fs.readFileSync(path.join(ROOT, 'tests/fixtures/adaptive-state-observability-c0ccd5c9-v21.json'), 'utf8'),
 );
 
 function label(modelRef) {
-  return modelRef === 'codex.gpt-5.6-terra'
-    ? 'codex/gpt-5.6-terra'
-    : 'claude-code/claude-sonnet-4-6';
+  return modelRef === 'codex.gpt-5.6-terra' ? 'codex/gpt-5.6-terra' : 'claude-code/claude-sonnet-4-6';
 }
 
 function fakeRealizer({ leakEventId = false, failAt = null, capture = null } = {}) {
@@ -201,7 +190,10 @@ test('preflight plan freezes the exact 3 x 4 x 2 matrix and 48 serial dispatches
   assert.equal(plan.jobs.length, 24);
   assert.equal(plan.counts.total_cli_dispatches, 48);
   assert.deepEqual(plan.axes.event_families, ['none', 'adopt', 'derive', 'retract']);
-  assert.equal(new Set(plan.jobs.map((job) => `${job.world.id}|${job.event_family}|${job.language_realizer.id}`)).size, 24);
+  assert.equal(
+    new Set(plan.jobs.map((job) => `${job.world.id}|${job.event_family}|${job.language_realizer.id}`)).size,
+    24,
+  );
   assert.ok(plan.jobs.every((job) => job.claim_eligible === false));
 
   for (const mutate of [
@@ -247,12 +239,7 @@ test('paid preflight is explicitly locked and full S1 cannot bypass its parent',
 
   const bypass = spawnSync(
     process.execPath,
-    [
-      'scripts/execute-adaptive-state-benchmark-v2-s1.js',
-      '--confirm-paid-s1-v2.1',
-      '--s0-parent',
-      '/does-not-matter',
-    ],
+    ['scripts/execute-adaptive-state-benchmark-v2-s1.js', '--confirm-paid-s1-v2.1', '--s0-parent', '/does-not-matter'],
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(bypass.status, 0);
@@ -395,11 +382,7 @@ test('preflight executes 24 isolated public cases and passes only at 24/24', asy
         voicedDerivedFactKeys: [],
         harmfulProofDebt: 0,
       };
-      assert.deepEqual(adapters.get(job.world.id).nextDerivableFact(proof), [
-        'pressedSealFor',
-        'gatePass',
-        'elian',
-      ]);
+      assert.deepEqual(adapters.get(job.world.id).nextDerivableFact(proof), ['pressedSealFor', 'gatePass', 'elian']);
     }
   }
   const report = buildAdaptiveStateObservabilityPreflightReport({ plan, result, config: CONFIG });
@@ -411,10 +394,7 @@ test('preflight executes 24 isolated public cases and passes only at 24/24', asy
 });
 
 test('the five stopped-run outputs remain frozen semantic evidence rather than a runtime lookup', () => {
-  assert.equal(
-    SEMANTIC_REGRESSIONS.schema,
-    'machinespirits.adaptive-state-observability-semantic-regression.v1',
-  );
+  assert.equal(SEMANTIC_REGRESSIONS.schema, 'machinespirits.adaptive-state-observability-semantic-regression.v1');
   assert.equal(
     SEMANTIC_REGRESSIONS.source.cases_file_sha256,
     '5c30eba3207b4df14f5ba76696bafb381a016d355dbc711c028f22fe2e07f28d',
@@ -534,17 +514,10 @@ test('the third-run Ravensmark failure stays frozen as construct-audit evidence,
   assert.equal(row.observed_family, 'none');
   assert.equal(sha256(row.learner_text), row.learner_text_sha256);
   assert.equal(hashCanonicalJson(row.realizer_output), row.realizer_artifact_hashes.parsed_output_sha256);
-  assert.equal(
-    hashCanonicalJson(row.analyzer_parsed_output),
-    row.analyzer_artifact_hashes.parsed_output_sha256,
-  );
+  assert.equal(hashCanonicalJson(row.analyzer_parsed_output), row.analyzer_artifact_hashes.parsed_output_sha256);
   assert.deepEqual(row.public_construct.released_premise_fact, ['sealMarkOf', 'gatePass', 'duskSeal']);
   assert.equal(row.public_construct.structural_support_rule.id, 'R1_scope');
-  assert.deepEqual(row.public_construct.harness_target_fact, [
-    'materialSealAtIssue',
-    'gatePass',
-    'duskSeal',
-  ]);
+  assert.deepEqual(row.public_construct.harness_target_fact, ['materialSealAtIssue', 'gatePass', 'duskSeal']);
   assert.equal(
     row.public_construct.audit_disposition,
     'insufficiently_separable_for_event_family_gate_retarget_to_next_relational_fact',
@@ -583,7 +556,10 @@ test('a complete but wrong-family matrix stops instead of authorizing S1', async
   assert.equal(report.status, 'stop');
   assert.equal(report.decision, 'stop_and_repair_observability_preflight');
   assert.equal(report.s1_retry_eligible, false);
-  assert.deepEqual(report.failures.map((row) => row.id), [wrongJob]);
+  assert.deepEqual(
+    report.failures.map((row) => row.id),
+    [wrongJob],
+  );
 });
 
 test('a sealed passing preflight is a current-runtime S1 prerequisite', async () => {
@@ -858,12 +834,8 @@ test('result validator rejects a rehashed analyzer-input leak', async () => {
   const nestedMutation = structuredClone(result);
   const nestedAnalyzerCall = nestedMutation.calls.find((call) => call.role === 'public_turn_analyzer');
   nestedAnalyzerCall.artifacts.public_input.world.secret = 'hidden fixture secret';
-  nestedAnalyzerCall.artifact_hashes.public_input_sha256 = hashCanonicalJson(
-    nestedAnalyzerCall.artifacts.public_input,
-  );
-  const nestedRow = nestedMutation.cases.find(
-    (item) => item.analyzer_call_id === nestedAnalyzerCall.id,
-  );
+  nestedAnalyzerCall.artifact_hashes.public_input_sha256 = hashCanonicalJson(nestedAnalyzerCall.artifacts.public_input);
+  const nestedRow = nestedMutation.cases.find((item) => item.analyzer_call_id === nestedAnalyzerCall.id);
   nestedRow.analyzer_input_sha256 = nestedAnalyzerCall.artifact_hashes.public_input_sha256;
   nestedMutation.content_sha256 = adaptiveStateObservabilityPreflightResultContentSha256(nestedMutation);
   assert.throws(

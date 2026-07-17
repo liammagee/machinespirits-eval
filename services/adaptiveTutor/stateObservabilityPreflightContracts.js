@@ -59,7 +59,10 @@ export function adaptiveStateObservabilityPreflightStaticExecutionContract({
       realizer: config.realizer_contract,
       analyzer: config.paid_execution_contract.public_turn_analyzer,
     }),
-    world: aggregateFileHash(config.critical_path.worlds.map((row) => row.source), repoRoot),
+    world: aggregateFileHash(
+      config.critical_path.worlds.map((row) => row.source),
+      repoRoot,
+    ),
     config: hashFile(path.resolve(configPath)),
   };
 }

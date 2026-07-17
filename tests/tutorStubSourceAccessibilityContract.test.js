@@ -11,8 +11,7 @@ import {
 
 const RAVENSMARK_SOURCE =
   "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
-const RAVENSMARK_COMPENSATION =
-  'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+const RAVENSMARK_COMPENSATION = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
 
 function configuration(overrides = {}) {
   return {
@@ -192,7 +191,10 @@ test('audit licenses only articles as added grammar without consuming later sour
   const audit = auditText({ contract, compensation: 'Mara filed the seal beside quay.' });
 
   assert.equal(audit.ok, true, audit.issues.join(', '));
-  assert.deepEqual(audit.added_article_tokens.map((row) => row.token), ['the']);
+  assert.deepEqual(
+    audit.added_article_tokens.map((row) => row.token),
+    ['the'],
+  );
 });
 
 test('audit preserves no, only, and may with their source-bound terms', () => {
@@ -218,8 +220,7 @@ test('audit preserves no, only, and may with their source-bound terms', () => {
   assert.ok(lost.issues.includes('source_qualifier_not_preserved'));
 
   const added = auditText({
-    compensation:
-      'Only Elian drew it for curfew warrants and returned it chipped after the coffer left town.',
+    compensation: 'Only Elian drew it for curfew warrants and returned it chipped after the coffer left town.',
   });
   assert.equal(added.ok, false);
   assert.ok(added.issues.includes('compensation_not_ordered_source_subsequence'));
@@ -244,10 +245,7 @@ test('audit rejects a full copy, an over-budget extract, and a generic fragment'
 });
 
 test('ordered noun fragments cannot impersonate a complete source-derived clause', () => {
-  for (const compensation of [
-    'register dusk-seal Elian notary.',
-    'Elian notary curfew warrants.',
-  ]) {
+  for (const compensation of ['register dusk-seal Elian notary.', 'Elian notary curfew warrants.']) {
     const audit = auditText({ compensation });
     assert.equal(audit.ok, false, compensation);
     assert.ok(
@@ -315,8 +313,7 @@ test('audit requires one unquoted declarative sentence directly after the source
   assert.ok(quoted.issues.includes('compensation_must_be_unquoted'));
 
   const question = auditText({
-    compensation:
-      'Elian drew it for curfew warrants and returned it chipped after the coffer left town?',
+    compensation: 'Elian drew it for curfew warrants and returned it chipped after the coffer left town?',
   });
   assert.equal(question.ok, false);
   assert.ok(question.issues.includes('compensation_must_be_declarative'));
@@ -327,8 +324,7 @@ test('audit requires one unquoted declarative sentence directly after the source
 });
 
 test('a curly possessive apostrophe is not mistaken for quotation', () => {
-  const compensation =
-    'Elian drew it for curfew warrants and returned it chipped at the raven’s wing.';
+  const compensation = 'Elian drew it for curfew warrants and returned it chipped at the raven’s wing.';
   const audit = auditText({ compensation });
 
   assert.equal(audit.ok, true, audit.issues.join(', '));

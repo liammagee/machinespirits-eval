@@ -194,9 +194,7 @@ test('malformed, uncertain, and hallucinated adjudications fail closed', () => {
     JSON.stringify({ verdict: 'uncertain', evidence: [], reason: 'unclear' }),
     JSON.stringify({
       verdict: 'realized',
-      evidence: [
-        { obligation_id: 'public_pressure_target', start: 0, end: 9, text: 'not there' },
-      ],
+      evidence: [{ obligation_id: 'public_pressure_target', start: 0, end: 9, text: 'not there' }],
     }),
   ];
   for (const raw of rows) {

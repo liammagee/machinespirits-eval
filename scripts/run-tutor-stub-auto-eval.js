@@ -1257,8 +1257,7 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
       lexicalAccessibility: selection.lexical_accessibility || null,
       sceneImmersion: selection.scene_immersion || null,
       actorialPart: selection.actorial_part || selection.response_configuration?.actorial_part || null,
-      actorialPartLabel:
-        selection.actorial_part_label || selection.response_configuration?.actorial_part_label || null,
+      actorialPartLabel: selection.actorial_part_label || selection.response_configuration?.actorial_part_label || null,
       valence: selection.valence || null,
       probability: roundOptionalField(selection.selected_probability ?? selection.confidence),
       vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
@@ -1851,9 +1850,7 @@ function summarizeTrace(
         (row.repairsApplied || []).some((repair) => String(repair.kind || '').startsWith('mechanical_')),
     ).length,
     modelRepairTurns: guardRows.filter((row) =>
-      (row.repairsApplied || []).some((repair) =>
-        ['model_rewrite', 'model_plain_recovery'].includes(repair.kind),
-      ),
+      (row.repairsApplied || []).some((repair) => ['model_rewrite', 'model_plain_recovery'].includes(repair.kind)),
     ).length,
     repairActionCount: guardRows.reduce((sum, row) => sum + Number(row.repairsApplied?.length || 0), 0),
     deterministicFallbackTurns: guardRows.filter((row) => row.finalDelivery?.deterministicFallback === true).length,
@@ -4721,9 +4718,7 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       leakCount,
       guardTriggeredTurns,
       originalCandidateAcceptedTurns,
-      originalCandidateAcceptanceRate: guardTurns
-        ? roundField(originalCandidateAcceptedTurns / guardTurns)
-        : null,
+      originalCandidateAcceptanceRate: guardTurns ? roundField(originalCandidateAcceptedTurns / guardTurns) : null,
       strictOriginalCandidateAcceptedTurns,
       strictOriginalCandidateAcceptanceRate: guardTurns
         ? roundField(strictOriginalCandidateAcceptedTurns / guardTurns)
@@ -4732,9 +4727,7 @@ function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
       modelRepairTurns,
       deterministicFallbackTurns,
       totalTutorGenerationLatencyMs,
-      meanTutorGenerationLatencyMs: guardTurns
-        ? roundField(totalTutorGenerationLatencyMs / guardTurns)
-        : null,
+      meanTutorGenerationLatencyMs: guardTurns ? roundField(totalTutorGenerationLatencyMs / guardTurns) : null,
       guardExposureRate: guardTurns ? roundField(guardTriggeredTurns / guardTurns) : null,
       repairRate: guardTurns ? roundField(modelRepairTurns / guardTurns) : null,
       deterministicFallbackRate: guardTurns ? roundField(deterministicFallbackTurns / guardTurns) : null,
@@ -4817,8 +4810,7 @@ function adaptationEvidenceForRows(rows = [], summary = {}) {
     const hasContingency =
       row.contingency.stateActionObservations >= 6 && row.contingency.normalizedMutualInformation >= 0.05;
     const hasDramaticContingency =
-      row.contingency.statePartObservations >= 6 &&
-      row.contingency.actorialPartNormalizedMutualInformation >= 0.05;
+      row.contingency.statePartObservations >= 6 && row.contingency.actorialPartNormalizedMutualInformation >= 0.05;
     const hasConsequence = row.consequence.transitionCount >= 3 && Number(row.consequence.meanRewardProxy || 0) > 0;
     let verdict = 'not_established';
     if (row.policy === baselinePolicy) verdict = 'baseline';

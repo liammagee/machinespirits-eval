@@ -81,10 +81,7 @@ export function tutorStubPerformanceAdjudicationEligibility({
   ) {
     reasons.push('counterpressure_obligation_shape_mismatch');
   }
-  if (
-    issueTypes.length !== 1 ||
-    issueTypes[0] !== 'missing_selected_performance_tactic'
-  ) {
+  if (issueTypes.length !== 1 || issueTypes[0] !== 'missing_selected_performance_tactic') {
     reasons.push('not_an_isolated_performance_tactic_miss');
   }
   if (responseAudit?.axes?.actorial_part?.part_visible !== true) {
@@ -119,11 +116,13 @@ export function tutorStubPerformanceAdjudicationSystemPrompt() {
 export function tutorStubPerformanceAdjudicationUserPrompt({ candidate = '', contract = null } = {}) {
   const compactSurfaces = (surfaces) => {
     const rows = Array.isArray(surfaces) ? surfaces : [];
-    return [
-      ...rows.slice(0, 2),
-      ...rows.slice(-3),
-    ]
-      .map((surface) => String(surface || '').replace(/\s+/gu, ' ').trim().slice(0, 360))
+    return [...rows.slice(0, 2), ...rows.slice(-3)]
+      .map((surface) =>
+        String(surface || '')
+          .replace(/\s+/gu, ' ')
+          .trim()
+          .slice(0, 360),
+      )
       .filter(Boolean)
       .filter((surface, index, all) => all.indexOf(surface) === index);
   };
@@ -165,16 +164,12 @@ function jsonObjectFromText(value) {
   }
 }
 
-export function parseTutorStubPerformanceAdjudication({
-  raw = '',
-  candidate = '',
-  contract = null,
-} = {}) {
+export function parseTutorStubPerformanceAdjudication({ raw = '', candidate = '', contract = null } = {}) {
   const parsed = typeof raw === 'object' && raw !== null ? raw : jsonObjectFromText(raw);
-  const verdict = String(parsed?.verdict || '').trim().toLowerCase();
-  const declaredVerdict = ['realized', 'not_realized', 'uncertain'].includes(verdict)
-    ? verdict
-    : 'invalid';
+  const verdict = String(parsed?.verdict || '')
+    .trim()
+    .toLowerCase();
+  const declaredVerdict = ['realized', 'not_realized', 'uncertain'].includes(verdict) ? verdict : 'invalid';
   const evidenceAudit = validateTutorStubPerformanceEvidence({
     contract,
     candidate,
@@ -192,17 +187,16 @@ export function parseTutorStubPerformanceAdjudication({
     verdict: finalVerdict,
     declared_verdict: declaredVerdict,
     recognized,
-    reason: String(parsed?.reason || '').replace(/\s+/gu, ' ').trim() || null,
+    reason:
+      String(parsed?.reason || '')
+        .replace(/\s+/gu, ' ')
+        .trim() || null,
     evidence_audit: evidenceAudit,
     parse_ok: Boolean(parsed) && declaredVerdict !== 'invalid',
   };
 }
 
-export function applyTutorStubPerformanceAdjudication({
-  audits = null,
-  adjudication = null,
-  eligibility = null,
-} = {}) {
+export function applyTutorStubPerformanceAdjudication({ audits = null, adjudication = null, eligibility = null } = {}) {
   const source = clone(audits || {});
   if (eligibility?.eligible !== true) {
     return { applied: false, audits: source, reason: 'ineligible' };

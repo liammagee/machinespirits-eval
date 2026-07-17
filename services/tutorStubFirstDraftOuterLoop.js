@@ -66,9 +66,11 @@ const V27_OPEN_QUALITATIVE_DEBT = Object.freeze({
 });
 
 const V27_ITERATION_1_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/working-screen-result.json',
   runHead: '7fc926a2801f947da056b573a499933dccc71968',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-1/campaign-validation.json',
   campaignValidationSha256: 'a7ade2ebce6d67dbfe9babb73bc52d2def9e396dca5b90d278b989e9c3677d07',
   resultSha256: '970cb051c9335f89ede51d8018002cb90017d42fdbefb79521a7747e6039d435',
   turns: Object.freeze([
@@ -91,11 +93,13 @@ const V27_ITERATION_1_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_2_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/working-screen-result.json',
   runHead: 'bec13717719be76891bf5ece0c1ae94375cdea9a',
   configSha256: '4b71da924e17639a800012ed45f7682a1942eac25356bc7d9450715cc2638ea5',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-2/campaign-validation.json',
   campaignValidationSha256: '7eb96da004326ac21dc0844d23fbf95bb8209bde221e297f47870437946b842d',
   resultSha256: 'a5788cc7cd8aa68d1e540611b457f04d1590f1e3b5f5692663b7a04da186a4fb',
   turns: Object.freeze([
@@ -118,11 +122,13 @@ const V27_ITERATION_2_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_3_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/working-screen-result.json',
   runHead: 'f0df994d1912c3c8b6d6f1b9960b5ef05962f1a6',
   configSha256: 'eac765695c4e10a971cdf9ec95d4e83dd20ea48fdc281487541147e98f996568',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-3/campaign-validation.json',
   campaignValidationSha256: 'd758f789c558e687d60cd97272658f580a1e4bc07d02e07b4592690b1cd77b7d',
   resultSha256: '743a31ae5779930b02e488c6092069fc3a1872ac462af6acee8512f1abd43888',
   turns: Object.freeze([
@@ -135,11 +141,13 @@ const V27_ITERATION_3_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_4_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/working-screen-result.json',
   runHead: 'd048ec273e3a4a4618f51b7b0c999d20542ea14f',
   configSha256: '287169e63d296f311e422933e94af582057716f04f9a8a3ed20a1f7686e5cc38',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-4/campaign-validation.json',
   campaignValidationSha256: '7d36c45d8c3c4a2afc849658674de57c30632f5c282bf1e7621b1582b14a2bcd',
   resultSha256: 'c90dd4a8e785988f7b1d10b888ca9f6a158acc057f6d9f1b853865568ebe1169',
   turns: Object.freeze([
@@ -167,11 +175,13 @@ const V27_ITERATION_4_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_5_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/working-screen-result.json',
   runHead: '965a5708d5acc37a79e51b9f5c813b32336106d2',
   configSha256: '236dbc2b5b9f708a127c73b889b467450b1fc7ad0939e912fdac6533fb5f5c0f',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-5/campaign-validation.json',
   campaignValidationSha256: 'a8807ed6052423eae32332a614f23655ea511a30ddc2219e29c14d08dfe341fd',
   resultSha256: '5dc24a93500b90c291b8a749095ff67824f5f18e70cb66d0d9797972d202f709',
   turns: Object.freeze([
@@ -184,11 +194,13 @@ const V27_ITERATION_5_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_6_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/working-screen-result.json',
   runHead: '1e6ae86ee407ea06258cfc9d013e2eaec5d8bf3a',
   configSha256: 'bc58477b3f3982c742f9d1a18505a956e56726762bfa2645ee80251fd964d928',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-6/campaign-validation.json',
   campaignValidationSha256: '8f4b6aed9dced0bde19b9b4200937b56623a9aa9f62365d54e21ea75f934abbf',
   resultSha256: 'd5fb716abac48df6eba0a2561513d05f954e994108e5074eca3a4781d2d24a3d',
   turns: Object.freeze([
@@ -216,11 +228,13 @@ const V27_ITERATION_6_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_7_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/working-screen-result.json',
   runHead: '20f9cb414a6ef0a225f7e0c0f22674ddffd812f7',
   configSha256: 'ef2789b1eed46e8759f9e04bc9f29cc005d2ed49d1909cbfde6630f412a4109e',
   sourceTraceSha256: 'b6d98928d6042485895fe1e958044d6303f7c600512593876c6c1acd630f127a',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v6/iteration-7/campaign-validation.json',
   campaignValidationSha256: '083af907162898723acac9aadbb79093500b9f124734dc42f24363be65b604ee',
   resultSha256: 'd4b26cf326b8b1b2336e7b7b84762cfcc7ef14ac86500bbba49b5f9da43c31a6',
   turns: Object.freeze([
@@ -248,22 +262,27 @@ const V27_ITERATION_7_RESULT = Object.freeze({
 });
 
 const V27_ITERATION_8_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/working-screen-result.json',
   runHead: '4af6269edc45fef95962026a3b3e7a7ac5a694a9',
   configSha256: '3258a41e4e6324b299b9c529529d99b9aa7e417e874c15f26d6a8c451dab99bf',
   sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/campaign-validation.json',
   campaignValidationSha256: 'ed8bc3b4fae525e489883e0b32e11b8159194d9b6a13f332967acdcc8bc7c9c3',
   resultSha256: '05783cc988308539b05a6934dfbf7654dba79dc7513bb04b1efdcbfb1539e355',
-  turnArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/tallow_answer_seeking/turn-5.json',
+  turnArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v7/iteration-8/tallow_answer_seeking/turn-5.json',
   turnArtifactSha256: '5a5bc1c05a39ad306ecfe6e8db23e8ab549dc2e93462deba0c920479d6ce8a93',
 });
 
 const V28_ITERATION_1_PREFLIGHT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/working-screen-result.json',
   runHead: '223984b981d8413fc9409cd31c2ccf8739889314',
   configSha256: 'ce299510188de85ca8e9820863654d8954cf20130a24d432cc0ba9e5bea016b2',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v8/iteration-1/campaign-validation.json',
   campaignValidationSha256: 'cb41c1f8f6c5babb26c26668bc92fd8f867da6892178f0860b91487aebfa2058',
   resultSha256: 'f6394fc4462f1577a0d9b47d232cd2992c5f39551edd9aedc6d494d1a1bbf65d',
 });
@@ -271,33 +290,42 @@ const V28_ITERATION_1_PREFLIGHT = Object.freeze({
 const V29_ITERATION_1_PREFLIGHT = Object.freeze({
   runHead: 'bfa0b4857a229ddab6a6ba733ba214850c23468b',
   configSha256: '06d0c19ac59eaaabcdf2d5e4cba3c46d3e1fa49d28a485f7c41ced782f7ff7c9',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/campaign-validation.json',
   campaignValidationSha256: '5380f46ce14329222268ee48856f353717e20ecd51947bccab6e8fabd5e55c9c',
-  modelFreeAuditArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/model-free-skyway-audit.json',
+  modelFreeAuditArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v9/iteration-1/model-free-skyway-audit.json',
   modelFreeAuditSha256: '361dd6c0579492f411a18ad49ca975fc6a096b576213f0fe3710f84d54e464b5',
 });
 
 const V31_ITERATION_1_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/working-screen-result.json',
   runHead: '959775961e500dd847fc43f47f86ba60fd9fff82',
   configSha256: 'bae7c07b462a2cf11ba498f4d1001d9eff6490d106539edfe96db842616b8841',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/campaign-validation.json',
   campaignValidationSha256: '55e06a77985e2b8f72d973b6d59f503e627b712bd987a98bfe9e1d80331a0f57',
-  preflightExecutionArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight-execution.json',
+  preflightExecutionArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight-execution.json',
   preflightExecutionSha256: 'a6c936df8593d191943d6c6a4d74b7ede4ba43255172ef53a8e0e1fdfc85f41c',
-  turnArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/tallow_answer_seeking/turn-5.json',
+  turnArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/tallow_answer_seeking/turn-5.json',
   turnArtifactSha256: 'b0c6d9444bc022a94cc4272398c2e051898fad17838dca11516c10d6d316c8a4',
   resultSha256: 'cf0bba78e8ddd209ff59a1a0accf021b4d19776ad6dda7a3d6422a1aee8d1a9a',
 });
 
 const V32_ITERATION_1_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/working-screen-result.json',
   runHead: '8c49f1b9af4678d51af0ab6357c7cf47487b5269',
   configSha256: 'b73a98eb5d855a2010775820dc7410c2607e87c320492b6efcdfe055a5dca18a',
   worktreePorcelainSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/campaign-validation.json',
   campaignValidationSha256: '5df1553cb8b1ce87f3d9b55c36758f563f79c0afdc6af411890988f51487613d',
-  preflightExecutionArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight-execution.json',
+  preflightExecutionArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight-execution.json',
   preflightExecutionSha256: '1132f3c4b24d348a0a250834bc67de9a725f641199934abb72ae9f25e5d25673',
   resultSha256: 'f878860372b0f9a2dc67872bf3601b25b74b27cd0eb66576863728dd27094647',
   turns: Object.freeze([
@@ -317,17 +345,22 @@ const V32_ITERATION_1_RESULT = Object.freeze({
 });
 
 const V33_ITERATION_1_RESULT = Object.freeze({
-  artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/working-screen-result.json',
+  artifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/working-screen-result.json',
   runHead: '45cb13a7f397cbbaecaa0e6ffa609fe764237a9e',
   configSha256: 'e7d76b1707e6514b30ef8d5c3bc0fec9797df1eba673de2159bf3223d70cd440',
   worktreePorcelainSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-  campaignValidationArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/campaign-validation.json',
+  campaignValidationArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/campaign-validation.json',
   campaignValidationSha256: '71bca35b6824c13666ffde5f8240acd4e46a98e7994b194af292bcd4dff43402',
-  preflightExecutionArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight-execution.json',
+  preflightExecutionArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight-execution.json',
   preflightExecutionSha256: '98049ad5bdd5fd06c0b07b989118928c5903f1ff084a4658b69ef8cff1a9eb08',
-  turnArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/tallow_answer_seeking_diagnostic_1/turn-5.json',
+  turnArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/tallow_answer_seeking_diagnostic_1/turn-5.json',
   turnArtifactSha256: '32ce9c0180eb3f6af63bd1711b6e8c5934a9054028f57ac4b6497fd39cbece55',
-  qualitativeReviewArtifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/qualitative-causal-fidelity-review.json',
+  qualitativeReviewArtifact:
+    '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/qualitative-causal-fidelity-review.json',
   qualitativeReviewSha256: '589f945f17be184973532a011c11a70771e844c51abc4406f70921ae6bee3787',
   resultSha256: 'e74a28d04a582a18a3fc8eddcdb2bb1db8bbc0a0f85d44a9a392972fbc093c9e',
   certificateKey: 'f0ba6472cf8ee2c9ea685a72a54118b9b8a7d6c318b6d04bafe657045113aea0',
@@ -369,11 +402,7 @@ function validateV27Iteration1Observation(observation, label) {
   expect(observation?.status, 'fail', `${label} status`);
   expect(observation?.result_artifact, V27_ITERATION_1_RESULT.artifact, `${label} result artifact`);
   expect(observation?.development_seed, 20261500, `${label} development seed`);
-  expect(
-    observation?.seed_disposition,
-    'reusable_non_held_out_development',
-    `${label} seed disposition`,
-  );
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
   expect(observation?.run_head, V27_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
   expect(
     observation?.provenance?.campaign_validation_artifact,
@@ -385,16 +414,8 @@ function validateV27Iteration1Observation(observation, label) {
     V27_ITERATION_1_RESULT.campaignValidationSha256,
     `${label} campaign validation hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V27_ITERATION_1_RESULT.resultSha256,
-    `${label} result hash`,
-  );
-  expectJson(
-    observation?.provenance?.turn_artifacts,
-    V27_ITERATION_1_RESULT.turns,
-    `${label} turn provenance`,
-  );
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_1_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_1_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4, 5, 6], `${label} completed turns`);
   expectJson(observation?.unstarted_turns, [9], `${label} unstarted turns`);
   expect(observation?.original_candidates_accepted, 2, `${label} accepted originals`);
@@ -454,17 +475,9 @@ function validateV27Iteration2Observation(observation, label) {
   expect(observation?.status, 'fail', `${label} status`);
   expect(observation?.result_artifact, V27_ITERATION_2_RESULT.artifact, `${label} result artifact`);
   expect(observation?.development_seed, 20261500, `${label} development seed`);
-  expect(
-    observation?.seed_disposition,
-    'reusable_non_held_out_development',
-    `${label} seed disposition`,
-  );
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
   expect(observation?.run_head, V27_ITERATION_2_RESULT.runHead, `${label} run HEAD`);
-  expect(
-    observation?.run_head_provenance,
-    'launch_log_timeline_confirmed',
-    `${label} run HEAD provenance`,
-  );
+  expect(observation?.run_head_provenance, 'launch_log_timeline_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
   expect(
     observation?.provenance?.working_screen_config_sha256,
@@ -486,30 +499,14 @@ function validateV27Iteration2Observation(observation, label) {
     V27_ITERATION_2_RESULT.campaignValidationSha256,
     `${label} campaign validation hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V27_ITERATION_2_RESULT.resultSha256,
-    `${label} result hash`,
-  );
-  expectJson(
-    observation?.provenance?.turn_artifacts,
-    V27_ITERATION_2_RESULT.turns,
-    `${label} turn provenance`,
-  );
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_2_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_2_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4, 5, 6], `${label} completed turns`);
   expectJson(observation?.unstarted_turns, [9], `${label} unstarted turns`);
   expect(observation?.original_candidates_accepted, 2, `${label} accepted originals`);
   expect(observation?.original_candidates_completed, 3, `${label} completed originals`);
-  expect(
-    observation?.original_candidate_acceptance_rate,
-    0.6666666666666666,
-    `${label} acceptance rate`,
-  );
-  expect(
-    observation?.mean_configuration_realization,
-    0.9443333333333334,
-    `${label} configuration realization`,
-  );
+  expect(observation?.original_candidate_acceptance_rate, 0.6666666666666666, `${label} acceptance rate`);
+  expect(observation?.mean_configuration_realization, 0.9443333333333334, `${label} configuration realization`);
   expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
   expect(
     observation?.maximum_possible_configuration_realization,
@@ -578,11 +575,7 @@ function validateV27Iteration3Observation(observation, label) {
   expect(observation?.status, 'fail', `${label} status`);
   expect(observation?.result_artifact, V27_ITERATION_3_RESULT.artifact, `${label} result artifact`);
   expect(observation?.development_seed, 20261500, `${label} development seed`);
-  expect(
-    observation?.seed_disposition,
-    'reusable_non_held_out_development',
-    `${label} seed disposition`,
-  );
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
   expect(observation?.run_head, V27_ITERATION_3_RESULT.runHead, `${label} run HEAD`);
   expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
@@ -606,16 +599,8 @@ function validateV27Iteration3Observation(observation, label) {
     V27_ITERATION_3_RESULT.campaignValidationSha256,
     `${label} campaign validation hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V27_ITERATION_3_RESULT.resultSha256,
-    `${label} result hash`,
-  );
-  expectJson(
-    observation?.provenance?.turn_artifacts,
-    V27_ITERATION_3_RESULT.turns,
-    `${label} turn provenance`,
-  );
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_3_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_3_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4], `${label} completed turns`);
   expectJson(observation?.unstarted_turns, [5, 6, 9], `${label} unstarted turns`);
   expect(observation?.original_candidates_accepted, 0, `${label} accepted originals`);
@@ -623,11 +608,7 @@ function validateV27Iteration3Observation(observation, label) {
   expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
   expect(observation?.mean_configuration_realization, 0, `${label} configuration realization`);
   expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
-  expect(
-    observation?.maximum_possible_configuration_realization,
-    0.75,
-    `${label} maximum configuration realization`,
-  );
+  expect(observation?.maximum_possible_configuration_realization, 0.75, `${label} maximum configuration realization`);
   for (const field of [
     'final_safety_failures',
     'transcript_specific_uptake_failures',
@@ -678,11 +659,7 @@ function validateV27Iteration4Observation(observation, label) {
   expect(observation?.status, 'fail', `${label} status`);
   expect(observation?.result_artifact, V27_ITERATION_4_RESULT.artifact, `${label} result artifact`);
   expect(observation?.development_seed, 20261500, `${label} development seed`);
-  expect(
-    observation?.seed_disposition,
-    'reusable_non_held_out_development',
-    `${label} seed disposition`,
-  );
+  expect(observation?.seed_disposition, 'reusable_non_held_out_development', `${label} seed disposition`);
   expect(observation?.run_head, V27_ITERATION_4_RESULT.runHead, `${label} run HEAD`);
   expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
@@ -706,16 +683,8 @@ function validateV27Iteration4Observation(observation, label) {
     V27_ITERATION_4_RESULT.campaignValidationSha256,
     `${label} campaign validation hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V27_ITERATION_4_RESULT.resultSha256,
-    `${label} result hash`,
-  );
-  expectJson(
-    observation?.provenance?.turn_artifacts,
-    V27_ITERATION_4_RESULT.turns,
-    `${label} turn provenance`,
-  );
+  expect(observation?.provenance?.result_sha256, V27_ITERATION_4_RESULT.resultSha256, `${label} result hash`);
+  expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_4_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4, 5, 6, 9], `${label} completed turns`);
   expectJson(observation?.unstarted_turns, [], `${label} unstarted turns`);
   expect(observation?.original_candidates_accepted, 3, `${label} accepted originals`);
@@ -810,10 +779,26 @@ function validateV27Iteration5Observation(observation, label) {
   expect(observation?.run_head, V27_ITERATION_5_RESULT.runHead, `${label} run HEAD`);
   expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
-  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_5_RESULT.configSha256, `${label} config hash`);
-  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_5_RESULT.sourceTraceSha256, `${label} source trace hash`);
-  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_5_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
-  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_5_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_5_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.source_trace_sha256,
+    V27_ITERATION_5_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_5_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_5_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
   expect(observation?.provenance?.result_sha256, V27_ITERATION_5_RESULT.resultSha256, `${label} result hash`);
   expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_5_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4], `${label} completed turns`);
@@ -825,11 +810,18 @@ function validateV27Iteration5Observation(observation, label) {
   expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
   expect(observation?.maximum_possible_configuration_realization, 1, `${label} maximum configuration realization`);
   for (const field of [
-    'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
-    'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
-    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-    'transport_normalized_outputs', 'transport_normalization_count',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
   expect(observation?.joint_performance_model_outputs, 1, `${label} joint outputs`);
   expect(observation?.valid_joint_performance_outputs, 1, `${label} valid joint outputs`);
@@ -840,35 +832,43 @@ function validateV27Iteration5Observation(observation, label) {
   expect(observation?.exact_host_source_occurrence_failures, 0, `${label} host source failures`);
   expect(observation?.mean_original_latency_ms, 8122, `${label} mean original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 8122, `${label} mean total latency`);
-  expectJson(observation?.per_turn_latency_and_tokens, [
-    { turn: 4, latency_ms: 8122, input_tokens: 17717, output_tokens: 149, total_tokens: 17866 },
-  ], `${label} per-turn latency and tokens`);
+  expectJson(
+    observation?.per_turn_latency_and_tokens,
+    [{ turn: 4, latency_ms: 8122, input_tokens: 17717, output_tokens: 149, total_tokens: 17866 }],
+    `${label} per-turn latency and tokens`,
+  );
   expectJson(observation?.token_usage, { input: 17717, output: 149, total: 17866 }, `${label} token usage`);
-  expectJson(observation?.dominant_failure_clusters, [
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion', count: 1 },
-  ], `${label} dominant failure clusters`);
-  expectJson(observation?.comparison, {
-    comparison_available: true,
-    compared_to_iteration: 4,
-    comparable_completion: false,
-    measurable_improvement: false,
-    configuration_realization_improved: false,
-    original_candidates_accepted_delta: -3,
-    original_candidate_acceptance_rate_delta: -0.75,
-    mean_configuration_realization_delta: 0.08325,
-    valid_joint_performance_outputs_delta: -3,
-    joint_performance_output_failures_delta: 0,
-    joint_performance_ownership_passes_delta: -3,
-    joint_performance_ownership_failures_delta: 0,
-    exact_host_source_occurrence_passes_delta: -3,
-    exact_host_source_occurrence_failures_delta: 0,
-    mean_original_latency_ms_delta: -2885.25,
-    semantic_recognition_corrections: 0,
-    transport_normalization_count: 0,
-    consecutive_without_improvement: 1,
-    stop: false,
-    reason: 'no_improvement',
-  }, `${label} comparison`);
+  expectJson(
+    observation?.dominant_failure_clusters,
+    [{ cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion', count: 1 }],
+    `${label} dominant failure clusters`,
+  );
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_iteration: 4,
+      comparable_completion: false,
+      measurable_improvement: false,
+      configuration_realization_improved: false,
+      original_candidates_accepted_delta: -3,
+      original_candidate_acceptance_rate_delta: -0.75,
+      mean_configuration_realization_delta: 0.08325,
+      valid_joint_performance_outputs_delta: -3,
+      joint_performance_output_failures_delta: 0,
+      joint_performance_ownership_passes_delta: -3,
+      joint_performance_ownership_failures_delta: 0,
+      exact_host_source_occurrence_passes_delta: -3,
+      exact_host_source_occurrence_failures_delta: 0,
+      mean_original_latency_ms_delta: -2885.25,
+      semantic_recognition_corrections: 0,
+      transport_normalization_count: 0,
+      consecutive_without_improvement: 1,
+      stop: false,
+      reason: 'no_improvement',
+    },
+    `${label} comparison`,
+  );
 }
 
 function validateV27Iteration6Observation(observation, label) {
@@ -881,10 +881,26 @@ function validateV27Iteration6Observation(observation, label) {
   expect(observation?.run_head, V27_ITERATION_6_RESULT.runHead, `${label} run HEAD`);
   expect(observation?.run_head_provenance, 'launch_log_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
-  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_6_RESULT.configSha256, `${label} config hash`);
-  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_6_RESULT.sourceTraceSha256, `${label} source trace hash`);
-  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_6_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
-  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_6_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_6_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.source_trace_sha256,
+    V27_ITERATION_6_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_6_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_6_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
   expect(observation?.provenance?.result_sha256, V27_ITERATION_6_RESULT.resultSha256, `${label} result hash`);
   expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_6_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4, 5, 6, 9], `${label} completed turns`);
@@ -894,13 +910,23 @@ function validateV27Iteration6Observation(observation, label) {
   expect(observation?.original_candidate_acceptance_rate, 0.75, `${label} acceptance rate`);
   expect(observation?.mean_configuration_realization, 0.95825, `${label} configuration realization`);
   expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum accepted`);
-  expect(observation?.maximum_possible_configuration_realization, 0.95825, `${label} maximum configuration realization`);
+  expect(
+    observation?.maximum_possible_configuration_realization,
+    0.95825,
+    `${label} maximum configuration realization`,
+  );
   for (const field of [
-    'final_safety_failures', 'mechanical_repairs', 'model_rewrites',
-    'deterministic_fallbacks', 'semantic_adjudicator_calls',
-    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-    'transport_normalized_outputs', 'transport_normalization_count',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+    'final_safety_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   expect(observation?.transcript_specific_uptake_failures, 1, `${label} uptake failures`);
   expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
   expect(observation?.joint_performance_model_outputs, 4, `${label} joint outputs`);
@@ -912,41 +938,53 @@ function validateV27Iteration6Observation(observation, label) {
   expect(observation?.exact_host_source_occurrence_failures, 0, `${label} host source failures`);
   expect(observation?.mean_original_latency_ms, 9004.75, `${label} mean original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 9004.75, `${label} mean total latency`);
-  expectJson(observation?.per_turn_latency_and_tokens, [
-    { turn: 4, latency_ms: 8885, input_tokens: 15904, output_tokens: 252, total_tokens: 16156 },
-    { turn: 5, latency_ms: 9952, input_tokens: 15978, output_tokens: 353, total_tokens: 16331 },
-    { turn: 6, latency_ms: 8302, input_tokens: 18199, output_tokens: 226, total_tokens: 18425 },
-    { turn: 9, latency_ms: 8880, input_tokens: 16808, output_tokens: 285, total_tokens: 17093 },
-  ], `${label} per-turn latency and tokens`);
+  expectJson(
+    observation?.per_turn_latency_and_tokens,
+    [
+      { turn: 4, latency_ms: 8885, input_tokens: 15904, output_tokens: 252, total_tokens: 16156 },
+      { turn: 5, latency_ms: 9952, input_tokens: 15978, output_tokens: 353, total_tokens: 16331 },
+      { turn: 6, latency_ms: 8302, input_tokens: 18199, output_tokens: 226, total_tokens: 18425 },
+      { turn: 9, latency_ms: 8880, input_tokens: 16808, output_tokens: 285, total_tokens: 17093 },
+    ],
+    `${label} per-turn latency and tokens`,
+  );
   expectJson(observation?.token_usage, { input: 66889, output: 1116, total: 68005 }, `${label} token usage`);
-  expectJson(observation?.dominant_failure_clusters, [
-    { cluster: 'actorialRealizationAudit:missing_selected_performance_tactic', count: 1 },
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance', count: 1 },
-    { cluster: 'responseCompositionAudit:verbatim_learner_echo', count: 1 },
-  ], `${label} dominant failure clusters`);
-  expectJson(observation?.comparison, {
-    comparison_available: true,
-    compared_to_iteration: 5,
-    comparable_completion: true,
-    measurable_improvement: true,
-    configuration_realization_improved: false,
-    original_candidates_accepted_delta: 3,
-    original_candidate_acceptance_rate_delta: 0.75,
-    mean_configuration_realization_delta: -0.04175,
-    valid_joint_performance_outputs_delta: 3,
-    joint_performance_output_failures_delta: 0,
-    joint_performance_ownership_passes_delta: 3,
-    joint_performance_ownership_failures_delta: 0,
-    exact_host_source_occurrence_passes_delta: 3,
-    exact_host_source_occurrence_failures_delta: 0,
-    mean_original_latency_ms_delta: 882.75,
-    semantic_recognition_corrections: 0,
-    transport_normalization_count: 0,
-    consecutive_without_improvement: 0,
-    stop: false,
-    reason: 'improved',
-  }, `${label} comparison`);
+  expectJson(
+    observation?.dominant_failure_clusters,
+    [
+      { cluster: 'actorialRealizationAudit:missing_selected_performance_tactic', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance', count: 1 },
+      { cluster: 'responseCompositionAudit:verbatim_learner_echo', count: 1 },
+    ],
+    `${label} dominant failure clusters`,
+  );
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_iteration: 5,
+      comparable_completion: true,
+      measurable_improvement: true,
+      configuration_realization_improved: false,
+      original_candidates_accepted_delta: 3,
+      original_candidate_acceptance_rate_delta: 0.75,
+      mean_configuration_realization_delta: -0.04175,
+      valid_joint_performance_outputs_delta: 3,
+      joint_performance_output_failures_delta: 0,
+      joint_performance_ownership_passes_delta: 3,
+      joint_performance_ownership_failures_delta: 0,
+      exact_host_source_occurrence_passes_delta: 3,
+      exact_host_source_occurrence_failures_delta: 0,
+      mean_original_latency_ms_delta: 882.75,
+      semantic_recognition_corrections: 0,
+      transport_normalization_count: 0,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'improved',
+    },
+    `${label} comparison`,
+  );
 }
 
 function validateV27Iteration7Observation(observation, label) {
@@ -959,10 +997,26 @@ function validateV27Iteration7Observation(observation, label) {
   expect(observation?.run_head, V27_ITERATION_7_RESULT.runHead, `${label} run HEAD`);
   expect(observation?.run_head_provenance, 'launch_head_confirmed', `${label} run HEAD provenance`);
   expect(observation?.run_head_artifact_embedded, false, `${label} artifact run HEAD flag`);
-  expect(observation?.provenance?.working_screen_config_sha256, V27_ITERATION_7_RESULT.configSha256, `${label} config hash`);
-  expect(observation?.provenance?.source_trace_sha256, V27_ITERATION_7_RESULT.sourceTraceSha256, `${label} source trace hash`);
-  expect(observation?.provenance?.campaign_validation_artifact, V27_ITERATION_7_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
-  expect(observation?.provenance?.campaign_validation_sha256, V27_ITERATION_7_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(
+    observation?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_7_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    observation?.provenance?.source_trace_sha256,
+    V27_ITERATION_7_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_7_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    observation?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_7_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
   expect(observation?.provenance?.result_sha256, V27_ITERATION_7_RESULT.resultSha256, `${label} result hash`);
   expectJson(observation?.provenance?.turn_artifacts, V27_ITERATION_7_RESULT.turns, `${label} turn provenance`);
   expectJson(observation?.completed_turns, [4, 5, 6, 9], `${label} completed turns`);
@@ -974,13 +1028,21 @@ function validateV27Iteration7Observation(observation, label) {
   expect(observation?.maximum_possible_originals_accepted, 4, `${label} maximum accepted`);
   expect(observation?.maximum_possible_configuration_realization, 1, `${label} maximum configuration realization`);
   for (const field of [
-    'final_safety_failures', 'transcript_specific_uptake_failures', 'mechanical_repairs',
-    'model_rewrites', 'deterministic_fallbacks', 'semantic_adjudicator_calls',
-    'semantic_adjudicator_errors', 'semantic_recognition_corrections',
-    'transport_normalized_outputs', 'transport_normalization_count',
-    'joint_performance_output_failures', 'joint_performance_ownership_failures',
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+    'joint_performance_output_failures',
+    'joint_performance_ownership_failures',
     'exact_host_source_occurrence_failures',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   expectJson(observation?.transport_normalizations, [], `${label} transport normalizations`);
   expect(observation?.joint_performance_model_outputs, 4, `${label} joint outputs`);
   expect(observation?.valid_joint_performance_outputs, 4, `${label} valid joint outputs`);
@@ -988,36 +1050,44 @@ function validateV27Iteration7Observation(observation, label) {
   expect(observation?.exact_host_source_occurrence_passes, 4, `${label} host source passes`);
   expect(observation?.mean_original_latency_ms, 8157, `${label} mean original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 8157, `${label} mean total latency`);
-  expectJson(observation?.per_turn_latency_and_tokens, [
-    { turn: 4, latency_ms: 9268, input_tokens: 17715, output_tokens: 273, total_tokens: 17988 },
-    { turn: 5, latency_ms: 7369, input_tokens: 18001, output_tokens: 210, total_tokens: 18211 },
-    { turn: 6, latency_ms: 7475, input_tokens: 16180, output_tokens: 223, total_tokens: 16403 },
-    { turn: 9, latency_ms: 8516, input_tokens: 16806, output_tokens: 276, total_tokens: 17082 },
-  ], `${label} per-turn latency and tokens`);
+  expectJson(
+    observation?.per_turn_latency_and_tokens,
+    [
+      { turn: 4, latency_ms: 9268, input_tokens: 17715, output_tokens: 273, total_tokens: 17988 },
+      { turn: 5, latency_ms: 7369, input_tokens: 18001, output_tokens: 210, total_tokens: 18211 },
+      { turn: 6, latency_ms: 7475, input_tokens: 16180, output_tokens: 223, total_tokens: 16403 },
+      { turn: 9, latency_ms: 8516, input_tokens: 16806, output_tokens: 276, total_tokens: 17082 },
+    ],
+    `${label} per-turn latency and tokens`,
+  );
   expectJson(observation?.token_usage, { input: 68702, output: 982, total: 69684 }, `${label} token usage`);
   expectJson(observation?.dominant_failure_clusters, [], `${label} dominant failure clusters`);
-  expectJson(observation?.comparison, {
-    comparison_available: true,
-    compared_to_iteration: 6,
-    comparable_completion: true,
-    measurable_improvement: true,
-    configuration_realization_improved: true,
-    original_candidates_accepted_delta: 1,
-    original_candidate_acceptance_rate_delta: 0.25,
-    mean_configuration_realization_delta: 0.04175,
-    valid_joint_performance_outputs_delta: 0,
-    joint_performance_output_failures_delta: 0,
-    joint_performance_ownership_passes_delta: 1,
-    joint_performance_ownership_failures_delta: -1,
-    exact_host_source_occurrence_passes_delta: 0,
-    exact_host_source_occurrence_failures_delta: 0,
-    mean_original_latency_ms_delta: -847.75,
-    semantic_recognition_corrections: 0,
-    transport_normalization_count: 0,
-    consecutive_without_improvement: 0,
-    stop: false,
-    reason: 'improved',
-  }, `${label} comparison`);
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_iteration: 6,
+      comparable_completion: true,
+      measurable_improvement: true,
+      configuration_realization_improved: true,
+      original_candidates_accepted_delta: 1,
+      original_candidate_acceptance_rate_delta: 0.25,
+      mean_configuration_realization_delta: 0.04175,
+      valid_joint_performance_outputs_delta: 0,
+      joint_performance_output_failures_delta: 0,
+      joint_performance_ownership_passes_delta: 1,
+      joint_performance_ownership_failures_delta: -1,
+      exact_host_source_occurrence_passes_delta: 0,
+      exact_host_source_occurrence_failures_delta: 0,
+      mean_original_latency_ms_delta: -847.75,
+      semantic_recognition_corrections: 0,
+      transport_normalization_count: 0,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'improved',
+    },
+    `${label} comparison`,
+  );
 }
 
 function validateV27Iteration8Advance(advance, label) {
@@ -1032,13 +1102,33 @@ function validateV27Iteration8Advance(advance, label) {
   expect(advance?.final_iteration, 8, `${label} final iteration`);
   expect(advance?.result_artifact, V27_ITERATION_8_RESULT.artifact, `${label} result artifact`);
   expect(advance?.run_head, V27_ITERATION_8_RESULT.runHead, `${label} run HEAD`);
-  expect(advance?.provenance?.working_screen_config_sha256, V27_ITERATION_8_RESULT.configSha256, `${label} config hash`);
-  expect(advance?.provenance?.source_trace_sha256, V27_ITERATION_8_RESULT.sourceTraceSha256, `${label} source trace hash`);
-  expect(advance?.provenance?.campaign_validation_artifact, V27_ITERATION_8_RESULT.campaignValidationArtifact, `${label} campaign validation artifact`);
-  expect(advance?.provenance?.campaign_validation_sha256, V27_ITERATION_8_RESULT.campaignValidationSha256, `${label} campaign validation hash`);
+  expect(
+    advance?.provenance?.working_screen_config_sha256,
+    V27_ITERATION_8_RESULT.configSha256,
+    `${label} config hash`,
+  );
+  expect(
+    advance?.provenance?.source_trace_sha256,
+    V27_ITERATION_8_RESULT.sourceTraceSha256,
+    `${label} source trace hash`,
+  );
+  expect(
+    advance?.provenance?.campaign_validation_artifact,
+    V27_ITERATION_8_RESULT.campaignValidationArtifact,
+    `${label} campaign validation artifact`,
+  );
+  expect(
+    advance?.provenance?.campaign_validation_sha256,
+    V27_ITERATION_8_RESULT.campaignValidationSha256,
+    `${label} campaign validation hash`,
+  );
   expect(advance?.provenance?.result_sha256, V27_ITERATION_8_RESULT.resultSha256, `${label} result hash`);
   expect(advance?.provenance?.turn_artifact, V27_ITERATION_8_RESULT.turnArtifact, `${label} turn artifact`);
-  expect(advance?.provenance?.turn_artifact_sha256, V27_ITERATION_8_RESULT.turnArtifactSha256, `${label} turn artifact hash`);
+  expect(
+    advance?.provenance?.turn_artifact_sha256,
+    V27_ITERATION_8_RESULT.turnArtifactSha256,
+    `${label} turn artifact hash`,
+  );
   expect(advance?.hard_cell, 'tallow_answer_seeking', `${label} hard cell`);
   expect(advance?.completed_draws, 1, `${label} completed draws`);
   expect(advance?.strict_originals_accepted, 0, `${label} accepted originals`);
@@ -1047,12 +1137,18 @@ function validateV27Iteration8Advance(advance, label) {
   expect(advance?.maximum_possible_originals_accepted, 3, `${label} maximum originals`);
   expect(advance?.maximum_possible_configuration_realization, 0.95825, `${label} maximum realization`);
   for (const field of [
-    'final_safety_failures', 'mechanical_repairs', 'model_rewrites',
-    'deterministic_fallbacks', 'semantic_adjudicator_calls',
-    'semantic_recognition_corrections', 'transport_normalized_outputs',
-    'transport_normalization_count', 'joint_performance_ownership_passes',
+    'final_safety_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+    'joint_performance_ownership_passes',
     'exact_host_source_occurrence_failures',
-  ]) expect(advance?.[field], 0, `${label} ${field}`);
+  ])
+    expect(advance?.[field], 0, `${label} ${field}`);
   expect(advance?.transcript_specific_uptake_failures, 1, `${label} uptake failures`);
   expect(advance?.joint_performance_model_outputs, 1, `${label} joint outputs`);
   expect(advance?.valid_joint_performance_outputs, 1, `${label} valid joint outputs`);
@@ -1061,29 +1157,33 @@ function validateV27Iteration8Advance(advance, label) {
   expect(advance?.mean_original_latency_ms, 7978, `${label} original latency`);
   expect(advance?.mean_total_tutor_latency_ms, 7978, `${label} total latency`);
   expectJson(advance?.token_usage, { input: 15840, output: 136, total: 15976 }, `${label} token usage`);
-  expectJson(advance?.dominant_failure_clusters, [
-    { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
-    { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 1 },
-    { cluster: 'responseCompositionAudit:missing_learner_uptake', count: 1 },
-  ], `${label} failure clusters`);
-  expectJson(advance?.seed_dispositions, [
-    { seed: 20261500, status: 'consumed_development_retired_on_version_advance' },
-    { seed: 20261600, status: 'consumed_development_retired_on_version_advance' },
-    { seed: 20261601, status: 'retired_unstarted_due_to_version_advance' },
-    { seed: 20261602, status: 'retired_unstarted_due_to_version_advance' },
-    { seed: 20261603, status: 'retired_unstarted_due_to_version_advance' },
-  ], `${label} seed dispositions`);
+  expectJson(
+    advance?.dominant_failure_clusters,
+    [
+      { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
+      { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 1 },
+      { cluster: 'responseCompositionAudit:missing_learner_uptake', count: 1 },
+    ],
+    `${label} failure clusters`,
+  );
+  expectJson(
+    advance?.seed_dispositions,
+    [
+      { seed: 20261500, status: 'consumed_development_retired_on_version_advance' },
+      { seed: 20261600, status: 'consumed_development_retired_on_version_advance' },
+      { seed: 20261601, status: 'retired_unstarted_due_to_version_advance' },
+      { seed: 20261602, status: 'retired_unstarted_due_to_version_advance' },
+      { seed: 20261603, status: 'retired_unstarted_due_to_version_advance' },
+    ],
+    `${label} seed dispositions`,
+  );
 }
 
 function validateV28Iteration1Advance(advance, label) {
   expect(advance?.version, 28, `${label} version`);
   expect(advance?.terminal_state, 'development_preflight_failed', `${label} terminal state`);
-  expect(
-    advance?.kind,
-    'deterministic_zero_call_source_accessibility_preflight',
-    `${label} kind`,
-  );
+  expect(advance?.kind, 'deterministic_zero_call_source_accessibility_preflight', `${label} kind`);
   expect(
     advance?.authorized_by,
     'versioning.tuning_after_observation_retires_entire_version',
@@ -1107,33 +1207,37 @@ function validateV28Iteration1Advance(advance, label) {
     V28_ITERATION_1_PREFLIGHT.campaignValidationSha256,
     `${label} validation hash`,
   );
-  expect(
-    advance?.provenance?.result_sha256,
-    V28_ITERATION_1_PREFLIGHT.resultSha256,
-    `${label} result hash`,
-  );
+  expect(advance?.provenance?.result_sha256, V28_ITERATION_1_PREFLIGHT.resultSha256, `${label} result hash`);
   expect(advance?.provenance?.clean_worktree, true, `${label} clean worktree`);
   expect(advance?.model_calls, 0, `${label} model calls`);
   expect(advance?.candidates_generated, 0, `${label} candidates generated`);
   expect(advance?.preflight_ready, false, `${label} preflight readiness`);
-  expectJson(advance?.blocker, {
-    cell: 'ravensmark_affective_resistant',
-    turn: 5,
-    kind: 'source_surface_accessibility',
-    source_words: 36,
-    audience_word_limit: 23,
-    lexical_word_limit: 23,
-    detail: advance?.blocker?.detail,
-  }, `${label} blocker`);
+  expectJson(
+    advance?.blocker,
+    {
+      cell: 'ravensmark_affective_resistant',
+      turn: 5,
+      kind: 'source_surface_accessibility',
+      source_words: 36,
+      audience_word_limit: 23,
+      lexical_word_limit: 23,
+      detail: advance?.blocker?.detail,
+    },
+    `${label} blocker`,
+  );
   if (!/direct-only contract.*fails closed before any model call/isu.test(advance?.blocker?.detail || '')) {
     throw new Error(`${label} blocker must preserve the V28 zero-call reason`);
   }
-  expectJson(advance?.seed_dispositions, [
-    { seed: 20261800, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261801, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261802, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261803, status: 'retired_unconsumed_after_preflight_failure' },
-  ], `${label} seed dispositions`);
+  expectJson(
+    advance?.seed_dispositions,
+    [
+      { seed: 20261800, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261801, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261802, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261803, status: 'retired_unconsumed_after_preflight_failure' },
+    ],
+    `${label} seed dispositions`,
+  );
 }
 
 function validateV29Iteration1Advance(advance, label) {
@@ -1179,33 +1283,37 @@ function validateV29Iteration1Advance(advance, label) {
   expect(advance?.candidates_generated, 0, `${label} candidates generated`);
   expect(advance?.structural_preflight_ready, true, `${label} structural readiness`);
   expect(advance?.deterministic_execution_preflight_passed, false, `${label} execution preflight`);
-  expectJson(advance?.blocker, {
-    fixture: 'tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json',
-    case_id: '2026-07-16T04-44-58-444Z:t003',
-    candidate_kind: 'deterministic_fallback',
-    attempt: 4,
-    kind: 'expected_hard_audit_correction_not_yet_declared',
-    failure_cluster: 'response_composition:verbatim_learner_echo',
-    safety_failures: 0,
-    detail: advance?.blocker?.detail,
-  }, `${label} blocker`);
-  expectJson(advance?.seed_dispositions, [
-    { seed: 20261900, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261901, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261902, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20261903, status: 'retired_unconsumed_after_preflight_failure' },
-  ], `${label} seed dispositions`);
+  expectJson(
+    advance?.blocker,
+    {
+      fixture: 'tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json',
+      case_id: '2026-07-16T04-44-58-444Z:t003',
+      candidate_kind: 'deterministic_fallback',
+      attempt: 4,
+      kind: 'expected_hard_audit_correction_not_yet_declared',
+      failure_cluster: 'response_composition:verbatim_learner_echo',
+      safety_failures: 0,
+      detail: advance?.blocker?.detail,
+    },
+    `${label} blocker`,
+  );
+  expectJson(
+    advance?.seed_dispositions,
+    [
+      { seed: 20261900, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261901, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261902, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20261903, status: 'retired_unconsumed_after_preflight_failure' },
+    ],
+    `${label} seed dispositions`,
+  );
 }
 
 function validateV30Iteration1PreflightObservation(observation, label) {
   expect(observation?.version, 30, `${label} version`);
   expect(observation?.working_iteration, 1, `${label} working iteration`);
   expect(observation?.status, 'development_preflight_failed', `${label} status`);
-  expect(
-    observation?.kind,
-    'deterministic_zero_call_transient_focused_test_preflight',
-    `${label} kind`,
-  );
+  expect(observation?.kind, 'deterministic_zero_call_transient_focused_test_preflight', `${label} kind`);
   expect(
     observation?.result_artifact,
     '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v10/iteration-1/working-screen-result.json',
@@ -1234,38 +1342,52 @@ function validateV30Iteration1PreflightObservation(observation, label) {
   );
   expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
   expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
-  expect(
-    observation?.deterministic_execution_preflight_passed,
-    false,
-    `${label} execution preflight`,
-  );
+  expect(observation?.deterministic_execution_preflight_passed, false, `${label} execution preflight`);
   for (const field of [
-    'model_calls', 'candidates_generated', 'completed_candidates',
-    'completed_turns', 'final_safety_failures',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
-  expectJson(observation?.focused_test_observation?.first_run, {
-    passed: 536, total: 537, exit_code: 1,
-  }, `${label} first focused-test run`);
-  expectJson(observation?.focused_test_observation?.immediate_identical_rerun, {
-    passed: 537, total: 537, exit_code: 0,
-  }, `${label} focused-test rerun`);
+    'model_calls',
+    'candidates_generated',
+    'completed_candidates',
+    'completed_turns',
+    'final_safety_failures',
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
+  expectJson(
+    observation?.focused_test_observation?.first_run,
+    {
+      passed: 536,
+      total: 537,
+      exit_code: 1,
+    },
+    `${label} first focused-test run`,
+  );
+  expectJson(
+    observation?.focused_test_observation?.immediate_identical_rerun,
+    {
+      passed: 537,
+      total: 537,
+      exit_code: 0,
+    },
+    `${label} focused-test rerun`,
+  );
   expect(
     observation?.focused_test_observation?.classification,
     'unclassified_transient_focused_test_failure',
     `${label} focused-test classification`,
   );
   expect(observation?.focused_test_observation?.rerun_artifact, null, `${label} rerun artifact`);
-  if (!/subtest output.*cannot be identified/isu.test(
-    observation?.focused_test_observation?.evidence_gap || '',
-  )) {
+  if (!/subtest output.*cannot be identified/isu.test(observation?.focused_test_observation?.evidence_gap || '')) {
     throw new Error(`${label} must preserve the failed-subtest evidence gap`);
   }
-  expectJson(observation?.seed_dispositions, [
-    { seed: 20262000, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20262001, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20262002, status: 'retired_unconsumed_after_preflight_failure' },
-    { seed: 20262003, status: 'retired_unconsumed_after_preflight_failure' },
-  ], `${label} seed dispositions`);
+  expectJson(
+    observation?.seed_dispositions,
+    [
+      { seed: 20262000, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262001, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262002, status: 'retired_unconsumed_after_preflight_failure' },
+      { seed: 20262003, status: 'retired_unconsumed_after_preflight_failure' },
+    ],
+    `${label} seed dispositions`,
+  );
   expect(observation?.terminal_action?.v31_status, 'not_predeclared', `${label} V31 status`);
   expect(observation?.terminal_action?.generation_claim, 'none', `${label} generation claim`);
 }
@@ -1278,11 +1400,7 @@ function validateV31Iteration1Observation(observation, label) {
   expect(observation?.version, 31, `${label} version`);
   expect(observation?.working_iteration, 1, `${label} working iteration`);
   expect(observation?.status, 'development_hard_cell_failed', `${label} status`);
-  expect(
-    observation?.kind,
-    'non_held_out_hard_cell_first_draft_failure',
-    `${label} kind`,
-  );
+  expect(observation?.kind, 'non_held_out_hard_cell_first_draft_failure', `${label} kind`);
   expect(observation?.result_artifact, V31_ITERATION_1_RESULT.artifact, `${label} result artifact`);
   expect(observation?.run_head, V31_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
   expect(
@@ -1310,28 +1428,16 @@ function validateV31Iteration1Observation(observation, label) {
     V31_ITERATION_1_RESULT.preflightExecutionSha256,
     `${label} preflight execution hash`,
   );
-  expect(
-    observation?.provenance?.turn_artifact,
-    V31_ITERATION_1_RESULT.turnArtifact,
-    `${label} turn artifact`,
-  );
+  expect(observation?.provenance?.turn_artifact, V31_ITERATION_1_RESULT.turnArtifact, `${label} turn artifact`);
   expect(
     observation?.provenance?.turn_artifact_sha256,
     V31_ITERATION_1_RESULT.turnArtifactSha256,
     `${label} turn artifact hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V31_ITERATION_1_RESULT.resultSha256,
-    `${label} result hash`,
-  );
+  expect(observation?.provenance?.result_sha256, V31_ITERATION_1_RESULT.resultSha256, `${label} result hash`);
   expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
   expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
-  expect(
-    observation?.deterministic_execution_preflight_passed,
-    true,
-    `${label} deterministic preflight`,
-  );
+  expect(observation?.deterministic_execution_preflight_passed, true, `${label} deterministic preflight`);
   expect(
     observation?.preflight_observation?.execution,
     'passed_once_without_retry',
@@ -1339,41 +1445,45 @@ function validateV31Iteration1Observation(observation, label) {
   );
   expect(observation?.preflight_observation?.commands, 9, `${label} preflight commands`);
   expect(observation?.preflight_observation?.model_calls, 0, `${label} preflight model calls`);
-  expectJson(observation?.preflight_observation?.suites, [
-    {
-      id: 'audit_contracts',
-      passed: 434,
-      total: 434,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
-      sha256: '86f4a203c0487afc45ed2dbdb5d99ca0d51e2e5acc7fe9451b12ea6b986abf4f',
-    },
-    {
-      id: 'interactive_modes',
-      passed: 24,
-      total: 24,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
-      sha256: '6629246bf354b43fbddb476daabdaa0451aa788e77401c494490fbada342bd6e',
-    },
-    {
-      id: 'adaptive_evidence',
-      passed: 4,
-      total: 4,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
-      sha256: '1041cd9beab2c9b00a976e0d6cc0d94c42d154967817ba6d0efcd4f46747a96a',
-    },
-    {
-      id: 'campaign_orchestration',
-      passed: 81,
-      total: 81,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
-      sha256: 'eaaeefa647a76580b1faae0447433065319d55d6d26817618209ab711e5b0c07',
-    },
-  ], `${label} focused preflight suites`);
-  expect(
-    observation?.preflight_observation?.model_free_fixtures_passed,
-    4,
-    `${label} model-free fixtures`,
+  expectJson(
+    observation?.preflight_observation?.suites,
+    [
+      {
+        id: 'audit_contracts',
+        passed: 434,
+        total: 434,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
+        sha256: '86f4a203c0487afc45ed2dbdb5d99ca0d51e2e5acc7fe9451b12ea6b986abf4f',
+      },
+      {
+        id: 'interactive_modes',
+        passed: 24,
+        total: 24,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
+        sha256: '6629246bf354b43fbddb476daabdaa0451aa788e77401c494490fbada342bd6e',
+      },
+      {
+        id: 'adaptive_evidence',
+        passed: 4,
+        total: 4,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
+        sha256: '1041cd9beab2c9b00a976e0d6cc0d94c42d154967817ba6d0efcd4f46747a96a',
+      },
+      {
+        id: 'campaign_orchestration',
+        passed: 81,
+        total: 81,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v11/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
+        sha256: 'eaaeefa647a76580b1faae0447433065319d55d6d26817618209ab711e5b0c07',
+      },
+    ],
+    `${label} focused preflight suites`,
   );
+  expect(observation?.preflight_observation?.model_free_fixtures_passed, 4, `${label} model-free fixtures`);
   for (const field of ['model_calls', 'candidates_generated', 'completed_candidates', 'completed_turns']) {
     expect(observation?.[field], 1, `${label} ${field}`);
   }
@@ -1384,17 +1494,19 @@ function validateV31Iteration1Observation(observation, label) {
   expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
   expect(observation?.mean_configuration_realization, 0.667, `${label} realization`);
   expect(observation?.maximum_possible_originals_accepted, 3, `${label} maximum originals`);
-  expect(
-    observation?.maximum_possible_configuration_realization,
-    0.91675,
-    `${label} maximum realization`,
-  );
+  expect(observation?.maximum_possible_configuration_realization, 0.91675, `${label} maximum realization`);
   for (const field of [
-    'final_safety_failures', 'transcript_specific_uptake_failures',
-    'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
-    'semantic_adjudicator_calls', 'semantic_recognition_corrections',
-    'transport_normalized_outputs', 'transport_normalization_count',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   expect(observation?.joint_performance_model_outputs, 1, `${label} joint outputs`);
   expect(observation?.valid_joint_performance_outputs, 1, `${label} valid joint outputs`);
   expect(observation?.joint_performance_ownership_passes, 0, `${label} ownership passes`);
@@ -1403,29 +1515,33 @@ function validateV31Iteration1Observation(observation, label) {
   expect(observation?.source_surface_accessibility_failures, 0, `${label} accessibility failures`);
   expect(observation?.mean_original_latency_ms, 9787, `${label} original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 9787, `${label} total tutor latency`);
+  expectJson(observation?.token_usage, { input: 17903, output: 247, total: 18150 }, `${label} token usage`);
   expectJson(
-    observation?.token_usage,
-    { input: 17903, output: 247, total: 18150 },
-    `${label} token usage`,
+    observation?.dominant_failure_clusters,
+    [
+      { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 3 },
+      { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:action_family', count: 1 },
+      { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
+    ],
+    `${label} failure clusters`,
   );
-  expectJson(observation?.dominant_failure_clusters, [
-    { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 3 },
-    { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:action_family', count: 1 },
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
-  ], `${label} failure clusters`);
   expectJson(observation?.attempted_cells, ['tallow_answer_seeking'], `${label} attempted cells`);
-  expectJson(observation?.unstarted_cells, [
-    'ravensmark_affective_resistant',
-    'larkspur_premature_closure',
-    'foxtrot_diligent',
-  ], `${label} unstarted cells`);
-  expectJson(observation?.seed_dispositions, [
-    { seed: 20262100, status: 'consumed_development_failed_retired' },
-    { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
-    { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
-    { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
-  ], `${label} seed dispositions`);
+  expectJson(
+    observation?.unstarted_cells,
+    ['ravensmark_affective_resistant', 'larkspur_premature_closure', 'foxtrot_diligent'],
+    `${label} unstarted cells`,
+  );
+  expectJson(
+    observation?.seed_dispositions,
+    [
+      { seed: 20262100, status: 'consumed_development_failed_retired' },
+      { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+      { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+      { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure' },
+    ],
+    `${label} seed dispositions`,
+  );
   expect(observation?.terminal_action?.v32_status, 'not_predeclared', `${label} V32 status`);
   expect(
     observation?.terminal_action?.generation_claim,
@@ -1437,16 +1553,8 @@ function validateV31Iteration1Observation(observation, label) {
 function validateV32Iteration1Observation(observation, label) {
   expect(observation?.version, 32, `${label} version`);
   expect(observation?.working_iteration, 1, `${label} working iteration`);
-  expect(
-    observation?.status,
-    'development_diagnostic_failed_but_measurably_improved',
-    `${label} status`,
-  );
-  expect(
-    observation?.kind,
-    'non_held_out_staged_diagnostic_first_draft_failure',
-    `${label} kind`,
-  );
+  expect(observation?.status, 'development_diagnostic_failed_but_measurably_improved', `${label} status`);
+  expect(observation?.kind, 'non_held_out_staged_diagnostic_first_draft_failure', `${label} kind`);
   expect(observation?.result_artifact, V32_ITERATION_1_RESULT.artifact, `${label} result artifact`);
   expect(observation?.run_head, V32_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
   expect(
@@ -1479,34 +1587,26 @@ function validateV32Iteration1Observation(observation, label) {
     V32_ITERATION_1_RESULT.preflightExecutionSha256,
     `${label} preflight execution hash`,
   );
-  expectJson(
-    observation?.provenance?.turn_artifacts,
-    V32_ITERATION_1_RESULT.turns,
-    `${label} turn artifacts`,
-  );
-  expect(
-    observation?.provenance?.result_sha256,
-    V32_ITERATION_1_RESULT.resultSha256,
-    `${label} result hash`,
-  );
+  expectJson(observation?.provenance?.turn_artifacts, V32_ITERATION_1_RESULT.turns, `${label} turn artifacts`);
+  expect(observation?.provenance?.result_sha256, V32_ITERATION_1_RESULT.resultSha256, `${label} result hash`);
   expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
-  expectJson(observation?.provenance?.preflight_certificate, {
-    disposition: 'executed',
-    key: 'dc58fa9121070d4f96304fa573a274450161deeffc9b8aeb5e527d164fb73bb5',
-    path: '/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/dc58fa9121070d4f96304fa573a274450161deeffc9b8aeb5e527d164fb73bb5.json',
-    canonical_sha256: '0dec859fc2a305c6d71ee305f8b4146ce4c2db0b31b5f98061fded9ae0a7a8af',
-    file_sha256: '460ffc993909917aaa19842f0bc87c9acfecf419bab18db7c37c0294df2512da',
-    status: 'pass',
-    reusable: true,
-    observed_head: V32_ITERATION_1_RESULT.runHead,
-    result_boundary_disposition: 'frozen_run_evidence_not_reused_after_result_record_changes',
-  }, `${label} preflight certificate`);
-  expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
-  expect(
-    observation?.deterministic_execution_preflight_passed,
-    true,
-    `${label} deterministic preflight`,
+  expectJson(
+    observation?.provenance?.preflight_certificate,
+    {
+      disposition: 'executed',
+      key: 'dc58fa9121070d4f96304fa573a274450161deeffc9b8aeb5e527d164fb73bb5',
+      path: '/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/dc58fa9121070d4f96304fa573a274450161deeffc9b8aeb5e527d164fb73bb5.json',
+      canonical_sha256: '0dec859fc2a305c6d71ee305f8b4146ce4c2db0b31b5f98061fded9ae0a7a8af',
+      file_sha256: '460ffc993909917aaa19842f0bc87c9acfecf419bab18db7c37c0294df2512da',
+      status: 'pass',
+      reusable: true,
+      observed_head: V32_ITERATION_1_RESULT.runHead,
+      result_boundary_disposition: 'frozen_run_evidence_not_reused_after_result_record_changes',
+    },
+    `${label} preflight certificate`,
   );
+  expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
+  expect(observation?.deterministic_execution_preflight_passed, true, `${label} deterministic preflight`);
   expect(
     observation?.preflight_observation?.execution,
     'passed_once_without_retry',
@@ -1515,150 +1615,176 @@ function validateV32Iteration1Observation(observation, label) {
   expect(observation?.preflight_observation?.commands, 9, `${label} preflight commands`);
   expect(observation?.preflight_observation?.model_calls, 0, `${label} preflight model calls`);
   expect(observation?.preflight_observation?.elapsed_ms, 48946, `${label} preflight elapsed time`);
-  expectJson(observation?.preflight_observation?.suites, [
-    {
-      id: 'audit_contracts', passed: 436, total: 436,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
-      sha256: '883ee8fd728447503829a8fc6f8678802fa0310aead52220418aa0731c58e7fe',
-    },
-    {
-      id: 'interactive_modes', passed: 24, total: 24,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
-      sha256: '9932e6b3441c8ec86d33ada7df3d3366906a6f6d5d8d0928a16a968661decc9b',
-    },
-    {
-      id: 'adaptive_evidence', passed: 4, total: 4,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
-      sha256: '2a454b0526f8e198cb500fa947c11e03d9e59a64169d463fe8b9a4a669f9b9b8',
-    },
-    {
-      id: 'campaign_orchestration', passed: 49, total: 49,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
-      sha256: '83914bdbbaa6cbbc5180b6b019cd2c09bfffef512e628c7b9ea28ce299851068',
-    },
-  ], `${label} focused preflight suites`);
-  expect(
-    observation?.preflight_observation?.model_free_fixtures_passed,
-    4,
-    `${label} model-free fixtures`,
+  expectJson(
+    observation?.preflight_observation?.suites,
+    [
+      {
+        id: 'audit_contracts',
+        passed: 436,
+        total: 436,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
+        sha256: '883ee8fd728447503829a8fc6f8678802fa0310aead52220418aa0731c58e7fe',
+      },
+      {
+        id: 'interactive_modes',
+        passed: 24,
+        total: 24,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
+        sha256: '9932e6b3441c8ec86d33ada7df3d3366906a6f6d5d8d0928a16a968661decc9b',
+      },
+      {
+        id: 'adaptive_evidence',
+        passed: 4,
+        total: 4,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
+        sha256: '2a454b0526f8e198cb500fa947c11e03d9e59a64169d463fe8b9a4a669f9b9b8',
+      },
+      {
+        id: 'campaign_orchestration',
+        passed: 49,
+        total: 49,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v12/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
+        sha256: '83914bdbbaa6cbbc5180b6b019cd2c09bfffef512e628c7b9ea28ce299851068',
+      },
+    ],
+    `${label} focused preflight suites`,
   );
+  expect(observation?.preflight_observation?.model_free_fixtures_passed, 4, `${label} model-free fixtures`);
   for (const field of [
-    'model_calls', 'candidates_generated', 'completed_candidates',
-    'completed_turns', 'completed_draws',
-  ]) expect(observation?.[field], 2, `${label} ${field}`);
-  expectJson(observation?.attempted_cells, [
-    'tallow_answer_seeking_diagnostic_1',
-    'tallow_answer_seeking_diagnostic_2',
-  ], `${label} attempted cells`);
+    'model_calls',
+    'candidates_generated',
+    'completed_candidates',
+    'completed_turns',
+    'completed_draws',
+  ])
+    expect(observation?.[field], 2, `${label} ${field}`);
+  expectJson(
+    observation?.attempted_cells,
+    ['tallow_answer_seeking_diagnostic_1', 'tallow_answer_seeking_diagnostic_2'],
+    `${label} attempted cells`,
+  );
   expect(observation?.strict_originals_accepted, 1, `${label} strict originals`);
   expect(observation?.original_candidate_acceptance_rate, 0.5, `${label} acceptance rate`);
   expect(observation?.mean_configuration_realization, 1, `${label} realization`);
   for (const field of [
-    'final_safety_failures', 'transcript_specific_uptake_failures',
-    'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
-    'semantic_adjudicator_calls', 'semantic_adjudicator_errors',
-    'semantic_recognition_corrections', 'transport_normalized_outputs',
-    'transport_normalization_count', 'joint_performance_ownership_failures',
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+    'joint_performance_ownership_failures',
     'source_surface_accessibility_failures',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   for (const field of [
-    'joint_performance_model_outputs', 'valid_joint_performance_outputs',
-    'joint_performance_ownership_passes', 'source_surface_accessibility_passes',
-  ]) expect(observation?.[field], 2, `${label} ${field}`);
+    'joint_performance_model_outputs',
+    'valid_joint_performance_outputs',
+    'joint_performance_ownership_passes',
+    'source_surface_accessibility_passes',
+  ])
+    expect(observation?.[field], 2, `${label} ${field}`);
   expect(observation?.mean_original_latency_ms, 9242, `${label} original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 9242, `${label} total tutor latency`);
+  expectJson(observation?.token_usage, { input: 32458, output: 611, total: 33069 }, `${label} token usage`);
   expectJson(
-    observation?.token_usage,
-    { input: 32458, output: 611, total: 33069 },
-    `${label} token usage`,
+    observation?.cells,
+    [
+      {
+        id: 'tallow_answer_seeking_diagnostic_1',
+        seed: 20262200,
+        status: 'pass',
+        strict_originals_accepted: 1,
+        original_candidate_acceptance_rate: 1,
+        mean_configuration_realization: 1,
+        latency_ms: 12415,
+        token_usage: { input: 16229, output: 451, total: 16680 },
+        dominant_failure_clusters: [],
+      },
+      {
+        id: 'tallow_answer_seeking_diagnostic_2',
+        seed: 20262201,
+        status: 'fail',
+        strict_originals_accepted: 0,
+        original_candidate_acceptance_rate: 0,
+        mean_configuration_realization: 1,
+        latency_ms: 6069,
+        token_usage: { input: 16229, output: 160, total: 16389 },
+        dominant_failure_clusters: [{ cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 }],
+      },
+    ],
+    `${label} cells`,
   );
-  expectJson(observation?.cells, [
-    {
-      id: 'tallow_answer_seeking_diagnostic_1', seed: 20262200, status: 'pass',
-      strict_originals_accepted: 1, original_candidate_acceptance_rate: 1,
-      mean_configuration_realization: 1, latency_ms: 12415,
-      token_usage: { input: 16229, output: 451, total: 16680 },
-      dominant_failure_clusters: [],
-    },
-    {
-      id: 'tallow_answer_seeking_diagnostic_2', seed: 20262201, status: 'fail',
-      strict_originals_accepted: 0, original_candidate_acceptance_rate: 0,
-      mean_configuration_realization: 1, latency_ms: 6069,
-      token_usage: { input: 16229, output: 160, total: 16389 },
-      dominant_failure_clusters: [
-        { cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 },
-      ],
-    },
-  ], `${label} cells`);
-  expectJson(observation?.dominant_failure_clusters, [
-    { cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 },
-  ], `${label} failure clusters`);
+  expectJson(
+    observation?.dominant_failure_clusters,
+    [{ cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 }],
+    `${label} failure clusters`,
+  );
   expect(
     observation?.failure_interpretation?.strict_failure,
     'deterministic_turn_focus_recognition_false_negative',
     `${label} strict failure interpretation`,
   );
-  expect(
-    observation?.failure_interpretation?.generation_regression,
-    false,
-    `${label} generation regression`,
-  );
+  expect(observation?.failure_interpretation?.generation_regression, false, `${label} generation regression`);
   expect(
     observation?.failure_interpretation?.reclassification_of_v32,
     'prohibited',
     `${label} result reclassification`,
   );
-  if (!/dark-charger.*one token.*stocktake/isu.test(
-    observation?.failure_interpretation?.evidence || '',
-  )) throw new Error(`${label} must preserve the hyphenated-compound recognition evidence`);
+  if (!/dark-charger.*one token.*stocktake/isu.test(observation?.failure_interpretation?.evidence || ''))
+    throw new Error(`${label} must preserve the hyphenated-compound recognition evidence`);
   expect(observation?.qualitative_wording_debt?.status, 'open', `${label} wording-debt status`);
-  expect(
-    observation?.qualitative_wording_debt?.id,
-    'did_not_stop_causal_wording',
-    `${label} wording-debt id`,
-  );
-  expect(
-    observation?.qualitative_wording_debt?.strict_gate_effect,
-    'none',
-    `${label} wording-debt gate effect`,
-  );
+  expect(observation?.qualitative_wording_debt?.id, 'did_not_stop_causal_wording', `${label} wording-debt id`);
+  expect(observation?.qualitative_wording_debt?.strict_gate_effect, 'none', `${label} wording-debt gate effect`);
   if (!/did not stop/iu.test(observation?.qualitative_wording_debt?.evidence || '')) {
     throw new Error(`${label} must preserve the separate did-not-stop wording debt`);
   }
-  expectJson(observation?.comparison, {
-    comparison_available: true,
-    compared_to_version: 31,
-    comparable_prefix: true,
-    comparable_completion: false,
-    measurable_improvement: true,
-    strict_original_acceptance_rate_delta: 0.5,
-    strict_original_count_delta: 1,
-    mean_configuration_realization_delta: 0.333,
-    joint_performance_ownership_passes_delta: 2,
-    joint_performance_ownership_failures_delta: -1,
-    final_safety_failures_delta: 0,
-    deterministic_fallbacks_delta: 0,
-    consecutive_without_improvement: 0,
-    stop: false,
-    reason: 'improved',
-  }, `${label} comparison`);
-  expectJson(observation?.seed_dispositions, [
+  expectJson(
+    observation?.comparison,
     {
-      seed: 20262200,
-      artifact_status: 'consumed_development',
-      final_status: 'consumed_development_passed_but_campaign_failed_retired',
+      comparison_available: true,
+      compared_to_version: 31,
+      comparable_prefix: true,
+      comparable_completion: false,
+      measurable_improvement: true,
+      strict_original_acceptance_rate_delta: 0.5,
+      strict_original_count_delta: 1,
+      mean_configuration_realization_delta: 0.333,
+      joint_performance_ownership_passes_delta: 2,
+      joint_performance_ownership_failures_delta: -1,
+      final_safety_failures_delta: 0,
+      deterministic_fallbacks_delta: 0,
+      consecutive_without_improvement: 0,
+      stop: false,
+      reason: 'improved',
     },
-    {
-      seed: 20262201,
-      artifact_status: 'consumed_development',
-      final_status: 'consumed_development_failed_retired',
-    },
-  ], `${label} seed dispositions`);
-  expect(
-    observation?.terminal_action?.v33_status,
-    'strict_confirmation_prohibited',
-    `${label} V33 status`,
+    `${label} comparison`,
   );
+  expectJson(
+    observation?.seed_dispositions,
+    [
+      {
+        seed: 20262200,
+        artifact_status: 'consumed_development',
+        final_status: 'consumed_development_passed_but_campaign_failed_retired',
+      },
+      {
+        seed: 20262201,
+        artifact_status: 'consumed_development',
+        final_status: 'consumed_development_failed_retired',
+      },
+    ],
+    `${label} seed dispositions`,
+  );
+  expect(observation?.terminal_action?.v33_status, 'strict_confirmation_prohibited', `${label} V33 status`);
   expect(
     observation?.terminal_action?.generation_claim,
     'failed_but_measurably_improved_non_held_out_development_evidence',
@@ -1669,16 +1795,8 @@ function validateV32Iteration1Observation(observation, label) {
 function validateV33Iteration1Observation(observation, label) {
   expect(observation?.version, 33, `${label} version`);
   expect(observation?.working_iteration, 1, `${label} working iteration`);
-  expect(
-    observation?.status,
-    'development_diagnostic_failed_architectural_blocker',
-    `${label} status`,
-  );
-  expect(
-    observation?.kind,
-    'non_held_out_hard_cell_first_draft_failure',
-    `${label} kind`,
-  );
+  expect(observation?.status, 'development_diagnostic_failed_architectural_blocker', `${label} status`);
+  expect(observation?.kind, 'non_held_out_hard_cell_first_draft_failure', `${label} kind`);
   expect(observation?.result_artifact, V33_ITERATION_1_RESULT.artifact, `${label} result artifact`);
   expect(observation?.run_head, V33_ITERATION_1_RESULT.runHead, `${label} run HEAD`);
   expect(
@@ -1711,22 +1829,30 @@ function validateV33Iteration1Observation(observation, label) {
     V33_ITERATION_1_RESULT.preflightExecutionSha256,
     `${label} preflight execution hash`,
   );
-  expectJson(observation?.provenance?.preflight_certificate, {
-    disposition: 'executed',
-    key: V33_ITERATION_1_RESULT.certificateKey,
-    path: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/${V33_ITERATION_1_RESULT.certificateKey}.json`,
-    certificate_sha256: V33_ITERATION_1_RESULT.certificateSha256,
-    status: 'pass',
-    reusable: true,
-    observed_head: V33_ITERATION_1_RESULT.runHead,
-    result_boundary_disposition: 'frozen_run_evidence_not_reused_after_result_record_changes',
-  }, `${label} preflight certificate`);
-  expectJson(observation?.provenance?.turn_artifact, {
-    cell: 'tallow_answer_seeking_diagnostic_1',
-    turn: 5,
-    path: V33_ITERATION_1_RESULT.turnArtifact,
-    sha256: V33_ITERATION_1_RESULT.turnArtifactSha256,
-  }, `${label} turn artifact`);
+  expectJson(
+    observation?.provenance?.preflight_certificate,
+    {
+      disposition: 'executed',
+      key: V33_ITERATION_1_RESULT.certificateKey,
+      path: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/preflight-certificates/${V33_ITERATION_1_RESULT.certificateKey}.json`,
+      certificate_sha256: V33_ITERATION_1_RESULT.certificateSha256,
+      status: 'pass',
+      reusable: true,
+      observed_head: V33_ITERATION_1_RESULT.runHead,
+      result_boundary_disposition: 'frozen_run_evidence_not_reused_after_result_record_changes',
+    },
+    `${label} preflight certificate`,
+  );
+  expectJson(
+    observation?.provenance?.turn_artifact,
+    {
+      cell: 'tallow_answer_seeking_diagnostic_1',
+      turn: 5,
+      path: V33_ITERATION_1_RESULT.turnArtifact,
+      sha256: V33_ITERATION_1_RESULT.turnArtifactSha256,
+    },
+    `${label} turn artifact`,
+  );
   expect(
     observation?.provenance?.qualitative_review_artifact,
     V33_ITERATION_1_RESULT.qualitativeReviewArtifact,
@@ -1737,18 +1863,10 @@ function validateV33Iteration1Observation(observation, label) {
     V33_ITERATION_1_RESULT.qualitativeReviewSha256,
     `${label} qualitative review hash`,
   );
-  expect(
-    observation?.provenance?.result_sha256,
-    V33_ITERATION_1_RESULT.resultSha256,
-    `${label} result hash`,
-  );
+  expect(observation?.provenance?.result_sha256, V33_ITERATION_1_RESULT.resultSha256, `${label} result hash`);
   expect(observation?.provenance?.clean_worktree, true, `${label} clean worktree`);
   expect(observation?.structural_preflight_ready, true, `${label} structural readiness`);
-  expect(
-    observation?.deterministic_execution_preflight_passed,
-    true,
-    `${label} deterministic preflight`,
-  );
+  expect(observation?.deterministic_execution_preflight_passed, true, `${label} deterministic preflight`);
   expect(
     observation?.preflight_observation?.execution,
     'passed_once_without_retry',
@@ -1757,126 +1875,153 @@ function validateV33Iteration1Observation(observation, label) {
   expect(observation?.preflight_observation?.commands, 9, `${label} preflight commands`);
   expect(observation?.preflight_observation?.model_calls, 0, `${label} preflight model calls`);
   expect(observation?.preflight_observation?.elapsed_ms, 48405, `${label} preflight elapsed time`);
-  expectJson(observation?.preflight_observation?.suites, [
-    {
-      id: 'audit_contracts', passed: 438, total: 438,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
-      sha256: '1011f1978aaa1ecaed810b4fbaeac14532d7043f9e4a07016f58276bf89814ec',
-    },
-    {
-      id: 'interactive_modes', passed: 24, total: 24,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
-      sha256: '9deaf0b5559e1490804864a1736dc33fefcbb8e83ac8c160cd7eef50e47c65ba',
-    },
-    {
-      id: 'adaptive_evidence', passed: 4, total: 4,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
-      sha256: 'fea0a2e09c0f6b032dd53c7e26faab6f35bc4856c16074ec9475b5547f062325',
-    },
-    {
-      id: 'campaign_orchestration', passed: 52, total: 52,
-      artifact: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
-      sha256: 'd941bec11092fb13774d25b692b9dc8926cf9b171a67c8ca1bcce4c388499685',
-    },
-  ], `${label} focused preflight suites`);
-  expect(
-    observation?.preflight_observation?.model_free_fixtures_passed,
-    4,
-    `${label} model-free fixtures`,
+  expectJson(
+    observation?.preflight_observation?.suites,
+    [
+      {
+        id: 'audit_contracts',
+        passed: 438,
+        total: 438,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/02-focused-audit_contracts.stdout.log',
+        sha256: '1011f1978aaa1ecaed810b4fbaeac14532d7043f9e4a07016f58276bf89814ec',
+      },
+      {
+        id: 'interactive_modes',
+        passed: 24,
+        total: 24,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/03-focused-interactive_modes.stdout.log',
+        sha256: '9deaf0b5559e1490804864a1736dc33fefcbb8e83ac8c160cd7eef50e47c65ba',
+      },
+      {
+        id: 'adaptive_evidence',
+        passed: 4,
+        total: 4,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/04-focused-adaptive_evidence.stdout.log',
+        sha256: 'fea0a2e09c0f6b032dd53c7e26faab6f35bc4856c16074ec9475b5547f062325',
+      },
+      {
+        id: 'campaign_orchestration',
+        passed: 52,
+        total: 52,
+        artifact:
+          '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v13/iteration-1/preflight/05-focused-campaign_orchestration.stdout.log',
+        sha256: 'd941bec11092fb13774d25b692b9dc8926cf9b171a67c8ca1bcce4c388499685',
+      },
+    ],
+    `${label} focused preflight suites`,
   );
+  expect(observation?.preflight_observation?.model_free_fixtures_passed, 4, `${label} model-free fixtures`);
   for (const field of [
-    'model_calls', 'candidates_generated', 'completed_candidates',
-    'completed_turns', 'completed_draws',
-  ]) expect(observation?.[field], 1, `${label} ${field}`);
+    'model_calls',
+    'candidates_generated',
+    'completed_candidates',
+    'completed_turns',
+    'completed_draws',
+  ])
+    expect(observation?.[field], 1, `${label} ${field}`);
   expect(observation?.hard_cell, 'tallow_answer_seeking_diagnostic_1', `${label} hard cell`);
   expect(observation?.hard_cell_turn, 5, `${label} hard-cell turn`);
-  expectJson(
-    observation?.attempted_cells,
-    ['tallow_answer_seeking_diagnostic_1'],
-    `${label} attempted cells`,
-  );
-  expectJson(
-    observation?.unstarted_cells,
-    ['tallow_answer_seeking_diagnostic_2'],
-    `${label} unstarted cells`,
-  );
+  expectJson(observation?.attempted_cells, ['tallow_answer_seeking_diagnostic_1'], `${label} attempted cells`);
+  expectJson(observation?.unstarted_cells, ['tallow_answer_seeking_diagnostic_2'], `${label} unstarted cells`);
   expect(observation?.strict_originals_accepted, 0, `${label} strict originals`);
   expect(observation?.original_candidate_acceptance_rate, 0, `${label} acceptance rate`);
   expect(observation?.mean_configuration_realization, 1, `${label} realization`);
   for (const field of [
-    'final_safety_failures', 'transcript_specific_uptake_failures',
-    'mechanical_repairs', 'model_rewrites', 'deterministic_fallbacks',
-    'semantic_adjudicator_calls', 'semantic_adjudicator_errors',
-    'semantic_recognition_corrections', 'transport_normalized_outputs',
-    'transport_normalization_count', 'joint_performance_ownership_passes',
+    'final_safety_failures',
+    'transcript_specific_uptake_failures',
+    'mechanical_repairs',
+    'model_rewrites',
+    'deterministic_fallbacks',
+    'semantic_adjudicator_calls',
+    'semantic_adjudicator_errors',
+    'semantic_recognition_corrections',
+    'transport_normalized_outputs',
+    'transport_normalization_count',
+    'joint_performance_ownership_passes',
     'source_surface_accessibility_failures',
-  ]) expect(observation?.[field], 0, `${label} ${field}`);
+  ])
+    expect(observation?.[field], 0, `${label} ${field}`);
   for (const field of [
-    'joint_performance_model_outputs', 'valid_joint_performance_outputs',
-    'joint_performance_ownership_failures', 'source_surface_accessibility_passes',
-  ]) expect(observation?.[field], 1, `${label} ${field}`);
+    'joint_performance_model_outputs',
+    'valid_joint_performance_outputs',
+    'joint_performance_ownership_failures',
+    'source_surface_accessibility_passes',
+  ])
+    expect(observation?.[field], 1, `${label} ${field}`);
   expect(observation?.mean_original_latency_ms, 13451, `${label} original latency`);
   expect(observation?.mean_total_tutor_latency_ms, 13451, `${label} total tutor latency`);
   expect(observation?.model, 'codex.gpt-5.6-terra', `${label} model`);
   expect(observation?.effort, 'low', `${label} effort`);
+  expectJson(observation?.token_usage, { input: 16246, output: 517, total: 16763 }, `${label} token usage`);
   expectJson(
-    observation?.token_usage,
-    { input: 16246, output: 517, total: 16763 },
-    `${label} token usage`,
+    observation?.dominant_failure_clusters,
+    [{ cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 }],
+    `${label} failure clusters`,
   );
-  expectJson(observation?.dominant_failure_clusters, [
-    { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
-  ], `${label} failure clusters`);
   expect(
     observation?.qualitative_review?.exact_write_sentence,
     '“The dark chargers did not prevent Tallow Street browning out at 18:40.”',
     `${label} qualitative sentence`,
   );
-  expectJson({
-    status: observation?.qualitative_review?.status,
-    passing_ratings: observation?.qualitative_review?.passing_ratings,
-    total_ratings: observation?.qualitative_review?.total_ratings,
-    required_passing_ratings: observation?.qualitative_review?.required_passing_ratings,
-    verdict: observation?.qualitative_review?.verdict,
-  }, {
-    status: 'unanimous_fail',
-    passing_ratings: 0,
-    total_ratings: 2,
-    required_passing_ratings: 2,
-    verdict: 'fail',
-  }, `${label} qualitative verdict`);
-  if (!/did not prevent.*reverses or misdirects/isu.test(
-    observation?.qualitative_review?.reason || '',
-  )) throw new Error(`${label} must preserve the blinded causal-fidelity failure`);
-  expectJson(observation?.comparison, {
-    comparison_available: true,
-    compared_to_version: 32,
-    comparison_scope: 'causal_role_fidelity_blocker',
-    comparable_prefix: true,
-    comparable_completion: false,
-    measurable_improvement: false,
-    configuration_realization_delta: 0,
-    final_safety_failures_delta: 0,
-    deterministic_fallbacks_delta: 0,
-    shared_failure_cluster: 'causal_role_inversion_in_writable_entry',
-    prior_evidence: '“The dark chargers did not stop Tallow Street’s brownout.”',
-    current_evidence: '“The dark chargers did not prevent Tallow Street browning out at 18:40.”',
-    consecutive_without_improvement: 2,
-    stop: true,
-    reason: 'architectural_blocker_same_causal_role_inversion_cluster',
-  }, `${label} comparison`);
-  expectJson(observation?.seed_dispositions, [
+  expectJson(
     {
-      seed: 20262300,
-      artifact_status: 'consumed_development',
-      final_status: 'consumed_development_failed_retired',
+      status: observation?.qualitative_review?.status,
+      passing_ratings: observation?.qualitative_review?.passing_ratings,
+      total_ratings: observation?.qualitative_review?.total_ratings,
+      required_passing_ratings: observation?.qualitative_review?.required_passing_ratings,
+      verdict: observation?.qualitative_review?.verdict,
     },
     {
-      seed: 20262301,
-      artifact_status: 'unconsumed',
-      final_status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+      status: 'unanimous_fail',
+      passing_ratings: 0,
+      total_ratings: 2,
+      required_passing_ratings: 2,
+      verdict: 'fail',
     },
-  ], `${label} seed dispositions`);
+    `${label} qualitative verdict`,
+  );
+  if (!/did not prevent.*reverses or misdirects/isu.test(observation?.qualitative_review?.reason || ''))
+    throw new Error(`${label} must preserve the blinded causal-fidelity failure`);
+  expectJson(
+    observation?.comparison,
+    {
+      comparison_available: true,
+      compared_to_version: 32,
+      comparison_scope: 'causal_role_fidelity_blocker',
+      comparable_prefix: true,
+      comparable_completion: false,
+      measurable_improvement: false,
+      configuration_realization_delta: 0,
+      final_safety_failures_delta: 0,
+      deterministic_fallbacks_delta: 0,
+      shared_failure_cluster: 'causal_role_inversion_in_writable_entry',
+      prior_evidence: '“The dark chargers did not stop Tallow Street’s brownout.”',
+      current_evidence: '“The dark chargers did not prevent Tallow Street browning out at 18:40.”',
+      consecutive_without_improvement: 2,
+      stop: true,
+      reason: 'architectural_blocker_same_causal_role_inversion_cluster',
+    },
+    `${label} comparison`,
+  );
+  expectJson(
+    observation?.seed_dispositions,
+    [
+      {
+        seed: 20262300,
+        artifact_status: 'consumed_development',
+        final_status: 'consumed_development_failed_retired',
+      },
+      {
+        seed: 20262301,
+        artifact_status: 'unconsumed',
+        final_status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+      },
+    ],
+    `${label} seed dispositions`,
+  );
   expect(
     observation?.terminal_action?.v34_status,
     'not_predeclared_prohibited_pending_architectural_redesign',
@@ -1932,11 +2077,7 @@ function validateStateMachine(manifest) {
   const workingFailureReset = transitions.find(
     (transition) => transition.from === 'retired_after_working_failure' && transition.to === 'working_predeclared',
   );
-  expect(
-    workingFailureReset?.version_action,
-    'increment_by_one',
-    'failed-working-version transition action',
-  );
+  expect(workingFailureReset?.version_action, 'increment_by_one', 'failed-working-version transition action');
 
   return { states, transitions, currentState };
 }
@@ -2051,8 +2192,7 @@ function validateWorkingScreen(manifest, { root }) {
     'first-draft-working-screens-v9',
     'first-draft-working-screens-v10',
     'first-draft-working-screens-v11',
-  ]
-    .includes(config.id);
+  ].includes(config.id);
   const v28StructuralScreen = config.id === 'first-draft-working-screens-v8';
   const v29SourceAccessibilityScreen = config.id === 'first-draft-working-screens-v9';
   const v30RecoveryIntegrationScreen = config.id === 'first-draft-working-screens-v10';
@@ -2072,21 +2212,9 @@ function validateWorkingScreen(manifest, { root }) {
     expect(config.gates_per_cell?.require_exact_source_once, true, 'exact source once gate');
   }
   if (config.fixed_configuration?.joint_performance_generation === true) {
-    expect(
-      config.gates_per_cell?.require_joint_performance_output,
-      true,
-      'joint-performance output gate',
-    );
-    expect(
-      config.gates_per_cell?.require_joint_performance_ownership,
-      true,
-      'joint-performance ownership gate',
-    );
-    expect(
-      config.gates_per_cell?.require_exact_host_source_occurrences,
-      true,
-      'exact host source occurrences gate',
-    );
+    expect(config.gates_per_cell?.require_joint_performance_output, true, 'joint-performance output gate');
+    expect(config.gates_per_cell?.require_joint_performance_ownership, true, 'joint-performance ownership gate');
+    expect(config.gates_per_cell?.require_exact_host_source_occurrences, true, 'exact host source occurrences gate');
   }
   expect(config.gates_per_cell?.required_turns, stagedDiagnosticScreen ? 1 : 4, 'working screen required turns');
   expect(
@@ -2099,9 +2227,12 @@ function validateWorkingScreen(manifest, { root }) {
   expect(config.gates_per_cell?.maximum_safety_failures, 0, 'working screen safety failures');
   if (confirmation || stagedDiagnosticScreen) {
     for (const field of [
-      'maximum_mechanical_repairs', 'maximum_model_rewrites',
-      'maximum_semantic_recognition_corrections', 'maximum_transport_normalizations',
-    ]) expect(config.gates_per_cell?.[field], 0, `confirmation ${field}`);
+      'maximum_mechanical_repairs',
+      'maximum_model_rewrites',
+      'maximum_semantic_recognition_corrections',
+      'maximum_transport_normalizations',
+    ])
+      expect(config.gates_per_cell?.[field], 0, `confirmation ${field}`);
     expect(config.gates_per_cell?.required_prefixes, 1, 'confirmation required prefixes');
     expect(
       config.gates_per_cell?.required_draws_per_prefix,
@@ -2110,20 +2241,23 @@ function validateWorkingScreen(manifest, { root }) {
     );
   }
   if (
-    v28StructuralScreen || v29SourceAccessibilityScreen ||
-    v30RecoveryIntegrationScreen || v31PreflightDiagnosticsScreen || stagedDiagnosticScreen
+    v28StructuralScreen ||
+    v29SourceAccessibilityScreen ||
+    v30RecoveryIntegrationScreen ||
+    v31PreflightDiagnosticsScreen ||
+    stagedDiagnosticScreen
   ) {
     const label = v33DiagnosticScreen
       ? 'V33'
       : v32DiagnosticScreen
         ? 'V32'
-      : v31PreflightDiagnosticsScreen
-        ? 'V31'
-        : v30RecoveryIntegrationScreen
-          ? 'V30'
-          : v29SourceAccessibilityScreen
-            ? 'V29'
-            : 'V28';
+        : v31PreflightDiagnosticsScreen
+          ? 'V31'
+          : v30RecoveryIntegrationScreen
+            ? 'V30'
+            : v29SourceAccessibilityScreen
+              ? 'V29'
+              : 'V28';
     expect(config.fixed_configuration?.adjudication_policy, 'deterministic_only', `${label} adjudication policy`);
     expect(config.fixed_configuration?.semantic_adjudication, false, `${label} semantic adjudication disabled`);
     expect(config.gates_per_cell?.maximum_semantic_adjudicator_calls, 0, `${label} semantic calls`);
@@ -2146,11 +2280,7 @@ function validateWorkingScreen(manifest, { root }) {
   const finalFrontierAttemptIteration = config.stopping?.final_frontier_attempt_iteration;
   if (finalFrontierAttemptIteration != null) {
     integer(finalFrontierAttemptIteration, 'final-frontier attempt iteration', { minimum: 1 });
-    expect(
-      config.stopping?.stop_if_final_frontier_attempt_fails,
-      true,
-      'failed final-frontier attempt stop',
-    );
+    expect(config.stopping?.stop_if_final_frontier_attempt_fails, true, 'failed final-frontier attempt stop');
   }
   const requiredCellCount = stagedDiagnosticScreen ? 2 : confirmation ? 4 : 1;
   if (config.matrix.length !== requiredCellCount) {
@@ -2197,18 +2327,12 @@ function validateWorkingScreen(manifest, { root }) {
       targetBundle: entry.prefix_integrity?.target_bundle || null,
     })),
     confirmation,
-    finalFrontierAttemptIteration:
-      finalFrontierAttemptIteration == null ? null : Number(finalFrontierAttemptIteration),
-    stopIfFinalFrontierAttemptFails:
-      config.stopping?.stop_if_final_frontier_attempt_fails === true,
-    jointPerformanceGeneration:
-      config.fixed_configuration?.joint_performance_generation === true,
-    jointPerformanceSchema:
-      config.fixed_configuration?.joint_performance_schema || null,
-    jointPerformanceCompositionSchema:
-      config.fixed_configuration?.joint_performance_composition_schema || null,
-    jointPerformanceAuditSchema:
-      config.fixed_configuration?.joint_performance_audit_schema || null,
+    finalFrontierAttemptIteration: finalFrontierAttemptIteration == null ? null : Number(finalFrontierAttemptIteration),
+    stopIfFinalFrontierAttemptFails: config.stopping?.stop_if_final_frontier_attempt_fails === true,
+    jointPerformanceGeneration: config.fixed_configuration?.joint_performance_generation === true,
+    jointPerformanceSchema: config.fixed_configuration?.joint_performance_schema || null,
+    jointPerformanceCompositionSchema: config.fixed_configuration?.joint_performance_composition_schema || null,
+    jointPerformanceAuditSchema: config.fixed_configuration?.joint_performance_audit_schema || null,
     adjudicationPolicy: config.fixed_configuration?.adjudication_policy || null,
     iteration2Change: changeConfig.change_log?.iteration_2 || null,
     iteration3Change: changeConfig.change_log?.iteration_3 || null,
@@ -2231,8 +2355,7 @@ function validateWorkingScreen(manifest, { root }) {
     v32DiagnosticScreen,
     v33DiagnosticScreen,
     qualitativeReview: config.qualitative_review || null,
-    sourceAccessibilityPolicy:
-      config.fixed_configuration?.source_accessibility_policy || 'direct_only',
+    sourceAccessibilityPolicy: config.fixed_configuration?.source_accessibility_policy || 'direct_only',
     gates: {
       requiredOriginalsAccepted: Number(config.gates_per_cell?.required_originals_accepted),
       requiredTurns: Number(config.gates_per_cell?.required_turns),
@@ -2243,14 +2366,10 @@ function validateWorkingScreen(manifest, { root }) {
       requireStructuredOutput: config.fixed_configuration?.structured_generation === true,
       requireStructuredSlotOwnership: config.fixed_configuration?.structured_generation === true,
       requireExactSourceOnce: config.fixed_configuration?.structured_generation === true,
-      requireJointPerformanceOutput:
-        config.gates_per_cell?.require_joint_performance_output === true,
-      requireJointPerformanceOwnership:
-        config.gates_per_cell?.require_joint_performance_ownership === true,
-      requireExactHostSourceOccurrences:
-        config.gates_per_cell?.require_exact_host_source_occurrences === true,
-      requireSourceSurfaceAccessibility:
-        config.gates_per_cell?.require_source_surface_accessibility === true,
+      requireJointPerformanceOutput: config.gates_per_cell?.require_joint_performance_output === true,
+      requireJointPerformanceOwnership: config.gates_per_cell?.require_joint_performance_ownership === true,
+      requireExactHostSourceOccurrences: config.gates_per_cell?.require_exact_host_source_occurrences === true,
+      requireSourceSurfaceAccessibility: config.gates_per_cell?.require_source_surface_accessibility === true,
     },
   };
 }
@@ -2288,11 +2407,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
   }
   if (state.currentState === 'stagnated' && currentVersion !== 33) {
     expect(manifest.current?.last_observation?.version, currentVersion, 'terminal observation version');
-    expect(
-      manifest.current?.last_observation?.working_iteration,
-      workingIteration,
-      'terminal observation iteration',
-    );
+    expect(manifest.current?.last_observation?.working_iteration, workingIteration, 'terminal observation iteration');
     expect(manifest.current?.last_observation?.status, 'stagnated', 'terminal observation status');
     expect(
       manifest.current?.last_observation?.comparison?.consecutive_without_improvement,
@@ -2335,17 +2450,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     validateV27Iteration6Observation(workingHistory[5], 'V27 working history iteration 6');
     validateV27Iteration7Observation(workingHistory[6], 'V27 working history iteration 7');
     validateV27Iteration7Observation(manifest.current?.last_observation, 'V27 last observation');
-    expectJson(
-      manifest.current?.last_observation,
-      workingHistory[6],
-      'V27 last observation and working history',
-    );
+    expectJson(manifest.current?.last_observation, workingHistory[6], 'V27 last observation and working history');
     expect(manifest.current?.architectural_reset_from?.version, 26, 'V27 reset source version');
-    expect(
-      manifest.current?.architectural_reset_from?.terminal_state,
-      'stagnated',
-      'V27 reset source state',
-    );
+    expect(manifest.current?.architectural_reset_from?.terminal_state, 'stagnated', 'V27 reset source state');
     expect(manifest.current?.architectural_reset_from?.final_iteration, 3, 'V26 final iteration');
     expect(
       manifest.current?.architectural_reset_from?.provenance?.result_sha256,
@@ -2478,38 +2585,18 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       handoff_selected_action: { owner: 'handoff', slots: ['handoff'], required: true },
     };
     expectJson(composite.requirements, expectedRequirements, 'V27 iteration 3 composite requirements');
-    expect(
-      composite.excluded_span_reporting?.field,
-      'excluded_span_ids',
-      'V27 iteration 3 excluded-span report field',
-    );
+    expect(composite.excluded_span_reporting?.field, 'excluded_span_ids', 'V27 iteration 3 excluded-span report field');
     expect(
       composite.excluded_span_reporting?.require_host_source_excluded,
       true,
       'V27 iteration 3 host source exclusion',
     );
-    expect(
-      composite.excluded_span_reporting?.source_owner,
-      'host',
-      'V27 iteration 3 source owner',
-    );
-    expect(
-      composite.linkage_reporting?.field,
-      'linkage.shared_content_tokens',
-      'V27 iteration 3 linkage report field',
-    );
-    expect(
-      composite.linkage_reporting?.require_nonempty,
-      true,
-      'V27 iteration 3 relevant complement linkage',
-    );
+    expect(composite.excluded_span_reporting?.source_owner, 'host', 'V27 iteration 3 source owner');
+    expect(composite.linkage_reporting?.field, 'linkage.shared_content_tokens', 'V27 iteration 3 linkage report field');
+    expect(composite.linkage_reporting?.require_nonempty, true, 'V27 iteration 3 relevant complement linkage');
     expect(composite.delivery_gates_changed, false, 'V27 iteration 3 delivery gate change');
     expect(workingScreen.iteration4Change?.status, 'predeclared', 'V27 iteration 4 change status');
-    expect(
-      workingScreen.iteration4Change?.bounded_change_owner,
-      'transport',
-      'V27 iteration 4 bounded change owner',
-    );
+    expect(workingScreen.iteration4Change?.bounded_change_owner, 'transport', 'V27 iteration 4 bounded change owner');
     expectJson(
       workingScreen.iteration4Change?.target_failure_clusters,
       ['jointPerformanceGenerationAudit:slot_has_outer_whitespace'],
@@ -2541,16 +2628,8 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expect(transport.preserve_original_candidate_provenance, true, 'V27 iteration 4 candidate provenance');
     expect(transport.reporting?.field, 'transportCanonicalization', 'V27 iteration 4 report field');
     expect(transport.reporting?.applied_field, 'applied', 'V27 iteration 4 applied report');
-    expect(
-      transport.reporting?.canonicalized_slot_ids_field,
-      'canonicalized_slot_ids',
-      'V27 iteration 4 slot report',
-    );
-    expect(
-      transport.reporting?.classification,
-      'transport_canonicalization',
-      'V27 iteration 4 report classification',
-    );
+    expect(transport.reporting?.canonicalized_slot_ids_field, 'canonicalized_slot_ids', 'V27 iteration 4 slot report');
+    expect(transport.reporting?.classification, 'transport_canonicalization', 'V27 iteration 4 report classification');
     expectJson(
       transport.reporting?.separate_from,
       [
@@ -2835,67 +2914,79 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'V27 iteration 7 typed audit-recognition change',
     );
     expect(workingScreen.confirmation, true, 'V27 cross-world confirmation screen');
-    expectJson(workingScreen.cells, [
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20261600,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'ravensmark_affective_resistant',
+          priority: 2,
+          world: 'world_009_ravensmark',
+          learnerProfile: 'affective_resistant',
+          turns: [5],
+          developmentSeed: 20261601,
+          sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        },
+        {
+          id: 'larkspur_premature_closure',
+          priority: 3,
+          world: 'world_028_larkspur_fridge',
+          learnerProfile: 'premature_closure',
+          turns: [2],
+          developmentSeed: 20261602,
+          sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        },
+        {
+          id: 'foxtrot_diligent',
+          priority: 4,
+          world: 'world_022_foxtrot_jukebox',
+          learnerProfile: 'diligent',
+          turns: [4],
+          developmentSeed: 20261603,
+          sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        },
+      ],
+      'V27 confirmation cells',
+    );
+    expectJson(
+      workingScreen.execution,
       {
-        id: 'tallow_answer_seeking',
-        priority: 1,
-        world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking',
-        turns: [5],
-        developmentSeed: 20261600,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking',
+        hard_cell_must_pass_before_remaining: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 3,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
       },
+      'V27 confirmation execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
       {
-        id: 'ravensmark_affective_resistant',
-        priority: 2,
-        world: 'world_009_ravensmark',
-        learnerProfile: 'affective_resistant',
-        turns: [5],
-        developmentSeed: 20261601,
-        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        implementation_change_from_v27_iteration_7: 'none',
+        speaking_changes: [],
+        audit_recognition_changes: [],
+        recovery_changes: [],
+        transport_changes: [],
+        safety_changes: [],
+        semantic_adjudication_changes: [],
+        gate_changes: [],
       },
-      {
-        id: 'larkspur_premature_closure',
-        priority: 3,
-        world: 'world_028_larkspur_fridge',
-        learnerProfile: 'premature_closure',
-        turns: [2],
-        developmentSeed: 20261602,
-        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
-      },
-      {
-        id: 'foxtrot_diligent',
-        priority: 4,
-        world: 'world_022_foxtrot_jukebox',
-        learnerProfile: 'diligent',
-        turns: [4],
-        developmentSeed: 20261603,
-        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
-      },
-    ], 'V27 confirmation cells');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking',
-      hard_cell_must_pass_before_remaining: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 3,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-    }, 'V27 confirmation execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_change_from_v27_iteration_7: 'none',
-      speaking_changes: [],
-      audit_recognition_changes: [],
-      recovery_changes: [],
-      transport_changes: [],
-      safety_changes: [],
-      semantic_adjudication_changes: [],
-      gate_changes: [],
-    }, 'V27 confirmation change control');
+      'V27 confirmation change control',
+    );
     expectJson(
       {
         status: workingScreen.openQualitativeDebt?.status,
@@ -3007,79 +3098,108 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expect(workingScreen.confirmation, true, 'V28 strict multi-cell screen');
     expect(workingScreen.v28StructuralScreen, true, 'V28 structural screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V28 joint-performance generation');
-    expectJson(workingScreen.cells, [
-      {
-        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20261800,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
-      },
-      {
-        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
-        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20261801,
-        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
-      },
-      {
-        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
-        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20261802,
-        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
-      },
-      {
-        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
-        learnerProfile: 'diligent', turns: [4], developmentSeed: 20261803,
-        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
-      },
-    ], 'V28 working cells');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking',
-      hard_cell_must_pass_before_remaining: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 3,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V28 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_change_from_v27_iteration_8: 'coordinated_v28_structural_contracts',
-      speaking_prompt_progression_changes: [
-        'typed_handoff_contract',
-        'cross_slot_progression',
-        'typed_turn_focus_relation',
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20261800,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'ravensmark_affective_resistant',
+          priority: 2,
+          world: 'world_009_ravensmark',
+          learnerProfile: 'affective_resistant',
+          turns: [5],
+          developmentSeed: 20261801,
+          sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        },
+        {
+          id: 'larkspur_premature_closure',
+          priority: 3,
+          world: 'world_028_larkspur_fridge',
+          learnerProfile: 'premature_closure',
+          turns: [2],
+          developmentSeed: 20261802,
+          sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        },
+        {
+          id: 'foxtrot_diligent',
+          priority: 4,
+          world: 'world_022_foxtrot_jukebox',
+          learnerProfile: 'diligent',
+          turns: [4],
+          developmentSeed: 20261803,
+          sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        },
       ],
-      deterministic_host_changes: [
-        'colon_safe_due_source_renderer',
-        'due_source_action_referent_alignment',
-      ],
-      audit_recognition_changes: ['shared_writable_request_classifier'],
-      recovery_changes: [],
-      transport_changes: [],
-      safety_changes: [],
-      semantic_adjudication_changes: ['explicit_deterministic_only_working_screen'],
-      gate_changes: [
-        'per_draw_structural_target_activation',
-        'source_renderer_mode_activation',
-        'due_source_action_alignment_visibility',
-        'source_turn_lexical_accessibility_visibility',
-        'authored_source_sentence_accessibility',
-        'deterministic_only_adjudication_policy',
-        'clean_worktree_provenance_gate',
-      ],
-      delivery_audit_changes: [
-        'turn_progression_audit_is_a_strict_delivery_gate',
-        'due_source_action_alignment_is_a_joint_ownership_gate',
-      ],
-    }, 'V28 change control');
+      'V28 working cells',
+    );
+    expectJson(
+      workingScreen.execution,
+      {
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking',
+        hard_cell_must_pass_before_remaining: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 3,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
+      },
+      'V28 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
+      {
+        implementation_change_from_v27_iteration_8: 'coordinated_v28_structural_contracts',
+        speaking_prompt_progression_changes: [
+          'typed_handoff_contract',
+          'cross_slot_progression',
+          'typed_turn_focus_relation',
+        ],
+        deterministic_host_changes: ['colon_safe_due_source_renderer', 'due_source_action_referent_alignment'],
+        audit_recognition_changes: ['shared_writable_request_classifier'],
+        recovery_changes: [],
+        transport_changes: [],
+        safety_changes: [],
+        semantic_adjudication_changes: ['explicit_deterministic_only_working_screen'],
+        gate_changes: [
+          'per_draw_structural_target_activation',
+          'source_renderer_mode_activation',
+          'due_source_action_alignment_visibility',
+          'source_turn_lexical_accessibility_visibility',
+          'authored_source_sentence_accessibility',
+          'deterministic_only_adjudication_policy',
+          'clean_worktree_provenance_gate',
+        ],
+        delivery_audit_changes: [
+          'turn_progression_audit_is_a_strict_delivery_gate',
+          'due_source_action_alignment_is_a_joint_ownership_gate',
+        ],
+      },
+      'V28 change control',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V28 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v28_targets',
-      source: 'V28_structural_audit_of_v27_iteration_7_and_confirmation_failure',
-      items: V27_OPEN_QUALITATIVE_DEBT.items,
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V28 structural debt targets');
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v28_targets',
+        source: 'V28_structural_audit_of_v27_iteration_7_and_confirmation_failure',
+        items: V27_OPEN_QUALITATIVE_DEBT.items,
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V28 structural debt targets',
+    );
     if (!/pass permits.*held-out predeclaration/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
       throw new Error('V28 structural debt consequence must preserve the development-only boundary');
     }
@@ -3102,13 +3222,36 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20261800, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v8' },
-        { seed: 20261801, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v8' },
-        { seed: 20261802, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v8' },
-        { seed: 20261803, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v8' },
+        {
+          seed: 20261800,
+          status: 'reusable_non_held_out_development',
+          cell: 'tallow_answer_seeking',
+          screen: 'first-draft-working-screens-v8',
+        },
+        {
+          seed: 20261801,
+          status: 'reusable_non_held_out_development',
+          cell: 'ravensmark_affective_resistant',
+          screen: 'first-draft-working-screens-v8',
+        },
+        {
+          seed: 20261802,
+          status: 'reusable_non_held_out_development',
+          cell: 'larkspur_premature_closure',
+          screen: 'first-draft-working-screens-v8',
+        },
+        {
+          seed: 20261803,
+          status: 'reusable_non_held_out_development',
+          cell: 'foxtrot_diligent',
+          screen: 'first-draft-working-screens-v8',
+        },
       ],
       'V28 development seed ledger',
     );
@@ -3125,8 +3268,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         throw new Error(`V28 history must preserve V27 seed ${seed} as ${status}`);
       }
     }
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V28 must leave 202617xx absent and unreserved');
     }
@@ -3157,92 +3301,119 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       manifest.current?.prior_version_last_primary_observation,
       'V29 inherited V27 primary last observation',
     );
-    validateV27Iteration8Advance(
-      manifest.current?.v28_version_advance_from,
-      'V29 inherited V27 confirmation advance',
-    );
+    validateV27Iteration8Advance(manifest.current?.v28_version_advance_from, 'V29 inherited V27 confirmation advance');
     validateV28Iteration1Advance(manifest.current?.version_advance_from, 'V29 version advance');
 
     expect(workingScreen.id, 'first-draft-working-screens-v9', 'V29 screen id');
     expect(workingScreen.confirmation, true, 'V29 strict multi-cell screen');
     expect(workingScreen.v29SourceAccessibilityScreen, true, 'V29 accessibility screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V29 joint-performance generation');
-    expect(
-      workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
-      'V29 source-accessibility policy',
+    expect(workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1', 'V29 source-accessibility policy');
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20261900,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'ravensmark_affective_resistant',
+          priority: 2,
+          world: 'world_009_ravensmark',
+          learnerProfile: 'affective_resistant',
+          turns: [5],
+          developmentSeed: 20261901,
+          sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        },
+        {
+          id: 'larkspur_premature_closure',
+          priority: 3,
+          world: 'world_028_larkspur_fridge',
+          learnerProfile: 'premature_closure',
+          turns: [2],
+          developmentSeed: 20261902,
+          sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        },
+        {
+          id: 'foxtrot_diligent',
+          priority: 4,
+          world: 'world_022_foxtrot_jukebox',
+          learnerProfile: 'diligent',
+          turns: [4],
+          developmentSeed: 20261903,
+          sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        },
+      ],
+      'V29 working cells',
     );
-    expectJson(workingScreen.cells, [
+    expectJson(
+      workingScreen.execution,
       {
-        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20261900,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking',
+        hard_cell_must_pass_before_remaining: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 3,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
       },
+      'V29 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
       {
-        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
-        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20261901,
-        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        implementation_change_from_v28_preflight: 'typed_source_accessibility_compensation_v1',
+        speaking_prompt_changes: [
+          'conditional_compensation_instruction_replaces_direct_only_prohibition',
+          'selected_part_and_tactic_remain_outside_compensation_owner',
+        ],
+        deterministic_host_changes: [],
+        audit_recognition_changes: [],
+        recovery_changes: ['compensation_aware_v1_recovery_and_fallback'],
+        transport_changes: [],
+        safety_changes: [],
+        gate_changes: [
+          'direct_or_compensated_source_accessibility',
+          'exact_adjacent_compensation_owner',
+          'source_grounded_ordered_subsequence',
+          'no_new_content_or_qualifier',
+        ],
+        delivery_audit_changes: [
+          'source_accessibility_is_a_strict_delivery_gate',
+          'duplicate_clue_exception_requires_passing_compensation_audit',
+        ],
       },
-      {
-        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
-        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20261902,
-        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
-      },
-      {
-        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
-        learnerProfile: 'diligent', turns: [4], developmentSeed: 20261903,
-        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
-      },
-    ], 'V29 working cells');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking',
-      hard_cell_must_pass_before_remaining: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 3,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V29 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_change_from_v28_preflight: 'typed_source_accessibility_compensation_v1',
-      speaking_prompt_changes: [
-        'conditional_compensation_instruction_replaces_direct_only_prohibition',
-        'selected_part_and_tactic_remain_outside_compensation_owner',
-      ],
-      deterministic_host_changes: [],
-      audit_recognition_changes: [],
-      recovery_changes: ['compensation_aware_v1_recovery_and_fallback'],
-      transport_changes: [],
-      safety_changes: [],
-      gate_changes: [
-        'direct_or_compensated_source_accessibility',
-        'exact_adjacent_compensation_owner',
-        'source_grounded_ordered_subsequence',
-        'no_new_content_or_qualifier',
-      ],
-      delivery_audit_changes: [
-        'source_accessibility_is_a_strict_delivery_gate',
-        'duplicate_clue_exception_requires_passing_compensation_audit',
-      ],
-    }, 'V29 change control');
+      'V29 change control',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V29 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v29_target',
-      source: 'V28_clean_zero_call_preflight_failure',
-      items: ['inaccessible_single_source_compensation'],
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V29 structural debt target');
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v29_target',
+        source: 'V28_clean_zero_call_preflight_failure',
+        items: ['inaccessible_single_source_compensation'],
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V29 structural debt target',
+    );
     if (!/pass permits.*held-out predeclaration/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
       throw new Error('V29 structural debt consequence must preserve the development-only boundary');
     }
-    if (!String(workingScreen.preflight?.focused_tests || '').includes(
-      'tests/tutorStubSourceAccessibilityContract.test.js',
-    )) {
+    if (
+      !String(workingScreen.preflight?.focused_tests || '').includes(
+        'tests/tutorStubSourceAccessibilityContract.test.js',
+      )
+    ) {
       throw new Error('V29 preflight must include the source-accessibility contract tests');
     }
     expectJson(
@@ -3253,13 +3424,36 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20261900, status: 'reusable_non_held_out_development', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v9' },
-        { seed: 20261901, status: 'reusable_non_held_out_development', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v9' },
-        { seed: 20261902, status: 'reusable_non_held_out_development', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v9' },
-        { seed: 20261903, status: 'reusable_non_held_out_development', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v9' },
+        {
+          seed: 20261900,
+          status: 'reusable_non_held_out_development',
+          cell: 'tallow_answer_seeking',
+          screen: 'first-draft-working-screens-v9',
+        },
+        {
+          seed: 20261901,
+          status: 'reusable_non_held_out_development',
+          cell: 'ravensmark_affective_resistant',
+          screen: 'first-draft-working-screens-v9',
+        },
+        {
+          seed: 20261902,
+          status: 'reusable_non_held_out_development',
+          cell: 'larkspur_premature_closure',
+          screen: 'first-draft-working-screens-v9',
+        },
+        {
+          seed: 20261903,
+          status: 'reusable_non_held_out_development',
+          cell: 'foxtrot_diligent',
+          screen: 'first-draft-working-screens-v9',
+        },
       ],
       'V29 development seed ledger',
     );
@@ -3269,8 +3463,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         throw new Error(`V29 history must preserve V28 seed ${seed} as unconsumed and retired`);
       }
     }
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V29 must leave 202617xx absent and unreserved');
     }
@@ -3284,15 +3479,8 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       throw new Error('V30 active working history must preserve exactly its zero-call preflight');
     }
     validateV30Iteration1PreflightObservation(activeHistory[0], 'V30 active working history');
-    validateV30Iteration1PreflightObservation(
-      manifest.current?.active_last_observation,
-      'V30 active last observation',
-    );
-    expectJson(
-      manifest.current?.active_last_observation,
-      activeHistory[0],
-      'V30 active last observation and history',
-    );
+    validateV30Iteration1PreflightObservation(manifest.current?.active_last_observation, 'V30 active last observation');
+    expectJson(manifest.current?.active_last_observation, activeHistory[0], 'V30 active last observation and history');
     expect(
       manifest.current?.working_history_scope,
       'preserved_v27_primary_history_with_v28_v29_and_v30_zero_call_preflights',
@@ -3313,89 +3501,106 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       manifest.current?.prior_version_last_primary_observation,
       'V30 inherited V27 primary last observation',
     );
-    validateV27Iteration8Advance(
-      manifest.current?.v28_version_advance_from,
-      'V30 inherited V27 confirmation advance',
-    );
-    validateV28Iteration1Advance(
-      manifest.current?.v29_version_advance_from,
-      'V30 inherited V28 preflight advance',
-    );
+    validateV27Iteration8Advance(manifest.current?.v28_version_advance_from, 'V30 inherited V27 confirmation advance');
+    validateV28Iteration1Advance(manifest.current?.v29_version_advance_from, 'V30 inherited V28 preflight advance');
     validateV29Iteration1Advance(manifest.current?.version_advance_from, 'V30 version advance');
 
     expect(workingScreen.id, 'first-draft-working-screens-v10', 'V30 screen id');
     expect(workingScreen.confirmation, true, 'V30 strict multi-cell screen');
     expect(workingScreen.v30RecoveryIntegrationScreen, true, 'V30 recovery screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V30 joint-performance generation');
-    expect(
-      workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
-      'V30 source-accessibility policy',
+    expect(workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1', 'V30 source-accessibility policy');
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262000,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'ravensmark_affective_resistant',
+          priority: 2,
+          world: 'world_009_ravensmark',
+          learnerProfile: 'affective_resistant',
+          turns: [5],
+          developmentSeed: 20262001,
+          sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        },
+        {
+          id: 'larkspur_premature_closure',
+          priority: 3,
+          world: 'world_028_larkspur_fridge',
+          learnerProfile: 'premature_closure',
+          turns: [2],
+          developmentSeed: 20262002,
+          sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        },
+        {
+          id: 'foxtrot_diligent',
+          priority: 4,
+          world: 'world_022_foxtrot_jukebox',
+          learnerProfile: 'diligent',
+          turns: [4],
+          developmentSeed: 20262003,
+          sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        },
+      ],
+      'V30 working cells',
     );
-    expectJson(workingScreen.cells, [
+    expectJson(
+      workingScreen.execution,
       {
-        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262000,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking',
+        hard_cell_must_pass_before_remaining: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 3,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
       },
+      'V30 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
       {
-        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
-        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20262001,
-        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        implementation_change_from_v29_preflight: 'typed_progression_aware_recovery_and_preflight_serialization_v1',
+        speaking_prompt_changes: [],
+        deterministic_host_changes: [],
+        audit_recognition_changes: ['skyway_saved_fallback_verbatim_echo_recorded_as_expected_correction'],
+        recovery_changes: [
+          'reject_uptake_already_failed_by_live_progression',
+          'progression_aware_deterministic_uptake',
+          'ordinary_fallback_uses_typed_terminal_handoff',
+          'deterministic_preflight_failure_writes_zero_call_result',
+        ],
+        transport_changes: [],
+        safety_changes: [],
+        gate_changes: [],
+        delivery_audit_changes: [],
       },
-      {
-        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
-        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20262002,
-        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
-      },
-      {
-        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
-        learnerProfile: 'diligent', turns: [4], developmentSeed: 20262003,
-        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
-      },
-    ], 'V30 working cells');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking',
-      hard_cell_must_pass_before_remaining: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 3,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V30 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_change_from_v29_preflight: 'typed_progression_aware_recovery_and_preflight_serialization_v1',
-      speaking_prompt_changes: [],
-      deterministic_host_changes: [],
-      audit_recognition_changes: [
-        'skyway_saved_fallback_verbatim_echo_recorded_as_expected_correction',
-      ],
-      recovery_changes: [
-        'reject_uptake_already_failed_by_live_progression',
-        'progression_aware_deterministic_uptake',
-        'ordinary_fallback_uses_typed_terminal_handoff',
-        'deterministic_preflight_failure_writes_zero_call_result',
-      ],
-      transport_changes: [],
-      safety_changes: [],
-      gate_changes: [],
-      delivery_audit_changes: [],
-    }, 'V30 change control');
+      'V30 change control',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V30 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v30_target',
-      source: 'V29_model_free_zero_call_preflight_failure',
-      items: [
-        'deterministic_fallback_progression_contract',
-        'complete_preflight_failure_provenance',
-      ],
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V30 structural debt target');
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v30_target',
+        source: 'V29_model_free_zero_call_preflight_failure',
+        items: ['deterministic_fallback_progression_contract', 'complete_preflight_failure_provenance'],
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V30 structural debt target',
+    );
     if (!/pass permits.*held-out predeclaration/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
       throw new Error('V30 structural debt consequence must preserve the development-only boundary');
     }
@@ -3418,13 +3623,36 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20262000, status: 'retired_unconsumed_after_preflight_failure', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v10' },
-        { seed: 20262001, status: 'retired_unconsumed_after_preflight_failure', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v10' },
-        { seed: 20262002, status: 'retired_unconsumed_after_preflight_failure', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v10' },
-        { seed: 20262003, status: 'retired_unconsumed_after_preflight_failure', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v10' },
+        {
+          seed: 20262000,
+          status: 'retired_unconsumed_after_preflight_failure',
+          cell: 'tallow_answer_seeking',
+          screen: 'first-draft-working-screens-v10',
+        },
+        {
+          seed: 20262001,
+          status: 'retired_unconsumed_after_preflight_failure',
+          cell: 'ravensmark_affective_resistant',
+          screen: 'first-draft-working-screens-v10',
+        },
+        {
+          seed: 20262002,
+          status: 'retired_unconsumed_after_preflight_failure',
+          cell: 'larkspur_premature_closure',
+          screen: 'first-draft-working-screens-v10',
+        },
+        {
+          seed: 20262003,
+          status: 'retired_unconsumed_after_preflight_failure',
+          cell: 'foxtrot_diligent',
+          screen: 'first-draft-working-screens-v10',
+        },
       ],
       'V30 development seed ledger',
     );
@@ -3434,8 +3662,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         throw new Error(`V30 history must preserve zero-call seed ${seed} as unconsumed and retired`);
       }
     }
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V30 must leave 202617xx absent and unreserved');
     }
@@ -3449,15 +3678,8 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       throw new Error('V31 active working history must preserve exactly its hard-cell failure');
     }
     validateV31Iteration1Observation(activeHistory[0], 'V31 active working history');
-    validateV31Iteration1Observation(
-      manifest.current?.active_last_observation,
-      'V31 active last observation',
-    );
-    expectJson(
-      manifest.current?.active_last_observation,
-      activeHistory[0],
-      'V31 active last observation and history',
-    );
+    validateV31Iteration1Observation(manifest.current?.active_last_observation, 'V31 active last observation');
+    expectJson(manifest.current?.active_last_observation, activeHistory[0], 'V31 active last observation and history');
     expect(
       manifest.current?.working_history_scope,
       'preserved_v27_primary_history_with_v28_v29_v30_preflights_and_v31_hard_cell_failure',
@@ -3478,18 +3700,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       manifest.current?.prior_version_last_primary_observation,
       'V31 inherited V27 primary last observation',
     );
-    validateV27Iteration8Advance(
-      manifest.current?.v28_version_advance_from,
-      'V31 inherited V27 confirmation advance',
-    );
-    validateV28Iteration1Advance(
-      manifest.current?.v29_version_advance_from,
-      'V31 inherited V28 preflight advance',
-    );
-    validateV29Iteration1Advance(
-      manifest.current?.v30_version_advance_from,
-      'V31 inherited V29 preflight advance',
-    );
+    validateV27Iteration8Advance(manifest.current?.v28_version_advance_from, 'V31 inherited V27 confirmation advance');
+    validateV28Iteration1Advance(manifest.current?.v29_version_advance_from, 'V31 inherited V28 preflight advance');
+    validateV29Iteration1Advance(manifest.current?.v30_version_advance_from, 'V31 inherited V29 preflight advance');
     validateV30Iteration1Advance(manifest.current?.version_advance_from, 'V31 version advance');
     validateV30Iteration1Advance(
       manifest.current?.v30_preflight_observation,
@@ -3505,116 +3718,139 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expect(workingScreen.confirmation, true, 'V31 strict multi-cell screen');
     expect(workingScreen.v31PreflightDiagnosticsScreen, true, 'V31 diagnostics screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V31 joint-performance generation');
-    expect(
-      workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
-      'V31 source-accessibility policy',
+    expect(workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1', 'V31 source-accessibility policy');
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262100,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'ravensmark_affective_resistant',
+          priority: 2,
+          world: 'world_009_ravensmark',
+          learnerProfile: 'affective_resistant',
+          turns: [5],
+          developmentSeed: 20262101,
+          sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        },
+        {
+          id: 'larkspur_premature_closure',
+          priority: 3,
+          world: 'world_028_larkspur_fridge',
+          learnerProfile: 'premature_closure',
+          turns: [2],
+          developmentSeed: 20262102,
+          sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
+        },
+        {
+          id: 'foxtrot_diligent',
+          priority: 4,
+          world: 'world_022_foxtrot_jukebox',
+          learnerProfile: 'diligent',
+          turns: [4],
+          developmentSeed: 20262103,
+          sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
+        },
+      ],
+      'V31 working cells',
     );
-    expectJson(workingScreen.cells, [
+    expectJson(
+      workingScreen.execution,
       {
-        id: 'tallow_answer_seeking', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262100,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking',
+        hard_cell_must_pass_before_remaining: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 3,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
       },
+      'V31 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
       {
-        id: 'ravensmark_affective_resistant', priority: 2, world: 'world_009_ravensmark',
-        learnerProfile: 'affective_resistant', turns: [5], developmentSeed: 20262101,
-        sourceTraceSha256: 'f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92',
+        implementation_change_from_v30_preflight: 'suite_scoped_preflight_execution_and_diagnostics_v1',
+        speaking_prompt_changes: [],
+        deterministic_host_changes: [],
+        audit_recognition_changes: [],
+        recovery_changes: [],
+        preflight_orchestration_changes: [
+          'split_unchanged_focused_test_inventory_into_four_named_suites',
+          'preserve_suite_command_stdout_stderr_and_failed_subtest_diagnostics',
+        ],
+        transport_changes: [],
+        safety_changes: [],
+        gate_changes: [],
+        delivery_audit_changes: [],
       },
-      {
-        id: 'larkspur_premature_closure', priority: 3, world: 'world_028_larkspur_fridge',
-        learnerProfile: 'premature_closure', turns: [2], developmentSeed: 20262102,
-        sourceTraceSha256: '307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820',
-      },
-      {
-        id: 'foxtrot_diligent', priority: 4, world: 'world_022_foxtrot_jukebox',
-        learnerProfile: 'diligent', turns: [4], developmentSeed: 20262103,
-        sourceTraceSha256: 'cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da',
-      },
-    ], 'V31 working cells');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking',
-      hard_cell_must_pass_before_remaining: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 3,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V31 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_change_from_v30_preflight:
-        'suite_scoped_preflight_execution_and_diagnostics_v1',
-      speaking_prompt_changes: [],
-      deterministic_host_changes: [],
-      audit_recognition_changes: [],
-      recovery_changes: [],
-      preflight_orchestration_changes: [
-        'split_unchanged_focused_test_inventory_into_four_named_suites',
-        'preserve_suite_command_stdout_stderr_and_failed_subtest_diagnostics',
-      ],
-      transport_changes: [],
-      safety_changes: [],
-      gate_changes: [],
-      delivery_audit_changes: [],
-    }, 'V31 change control');
+      'V31 change control',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V31 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v31_target',
-      source: 'V30_deterministic_zero_call_transient_focused_test_preflight',
-      items: [
-        'suite_scoped_preflight_execution',
-        'durable_failed_subtest_diagnostics',
-      ],
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V31 structural debt target');
-    if (!/pass permits.*held-out predeclaration/isu.test(
-      workingScreen.structuralDebtTargets?.consequence || '',
-    )) {
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v31_target',
+        source: 'V30_deterministic_zero_call_transient_focused_test_preflight',
+        items: ['suite_scoped_preflight_execution', 'durable_failed_subtest_diagnostics'],
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V31 structural debt target',
+    );
+    if (!/pass permits.*held-out predeclaration/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
       throw new Error('V31 structural debt consequence must preserve the development-only boundary');
     }
-    expectJson(workingScreen.preflight?.focused_test_suites, [
-      {
-        id: 'audit_contracts',
-        test_files: [
-          'tests/tutorStubPromptAudit.test.js',
-          'tests/derivationWorldQuality.test.js',
-          'tests/tutorStubFrozenReplay.test.js',
-          'tests/tutorStubFrozenReplayCheckpoint.test.js',
-          'tests/tutorStubFirstDraftContract.test.js',
-          'tests/tutorStubStructuredFirstDraft.test.js',
-          'tests/tutorStubJointPerformanceFirstDraft.test.js',
-          'tests/tutorStubV27JointPerformanceCalibration.test.js',
-          'tests/tutorStubTypedCompositeAdvocateCalibration.test.js',
-          'tests/tutorStubResponseComposition.test.js',
-          'tests/tutorStubDueSourceRenderer.test.js',
-          'tests/tutorStubSourceAccessibilityContract.test.js',
-          'tests/tutorStubLiveFirstDraftAudit.test.js',
-          'tests/tutorStubTurnProgressionContract.test.js',
-          'tests/tutorStubWorldScaffold.test.js',
-          'tests/tutorStubV27ConfirmationRegression.test.js',
-          'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
-          'tests/tutorStubV25RecognitionFixture.test.js',
-          'services/__tests__/tutorStubPerformanceObligationContract.test.js',
-          'services/__tests__/tutorStubPerformanceAdjudication.test.js',
-          'services/__tests__/tutorStubResponseConfiguration.test.js',
-          'services/__tests__/tutorStubCounterpressure.test.js',
-        ],
-      },
-      { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
-      { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
-      {
-        id: 'campaign_orchestration',
-        test_files: [
-          'tests/tutorStubFirstDraftCampaign.test.js',
-          'tests/tutorStubFirstDraftOuterLoop.test.js',
-        ],
-      },
-    ], 'V31 focused-test suites');
+    expectJson(
+      workingScreen.preflight?.focused_test_suites,
+      [
+        {
+          id: 'audit_contracts',
+          test_files: [
+            'tests/tutorStubPromptAudit.test.js',
+            'tests/derivationWorldQuality.test.js',
+            'tests/tutorStubFrozenReplay.test.js',
+            'tests/tutorStubFrozenReplayCheckpoint.test.js',
+            'tests/tutorStubFirstDraftContract.test.js',
+            'tests/tutorStubStructuredFirstDraft.test.js',
+            'tests/tutorStubJointPerformanceFirstDraft.test.js',
+            'tests/tutorStubV27JointPerformanceCalibration.test.js',
+            'tests/tutorStubTypedCompositeAdvocateCalibration.test.js',
+            'tests/tutorStubResponseComposition.test.js',
+            'tests/tutorStubDueSourceRenderer.test.js',
+            'tests/tutorStubSourceAccessibilityContract.test.js',
+            'tests/tutorStubLiveFirstDraftAudit.test.js',
+            'tests/tutorStubTurnProgressionContract.test.js',
+            'tests/tutorStubWorldScaffold.test.js',
+            'tests/tutorStubV27ConfirmationRegression.test.js',
+            'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
+            'tests/tutorStubV25RecognitionFixture.test.js',
+            'services/__tests__/tutorStubPerformanceObligationContract.test.js',
+            'services/__tests__/tutorStubPerformanceAdjudication.test.js',
+            'services/__tests__/tutorStubResponseConfiguration.test.js',
+            'services/__tests__/tutorStubCounterpressure.test.js',
+          ],
+        },
+        { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
+        { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
+        {
+          id: 'campaign_orchestration',
+          test_files: ['tests/tutorStubFirstDraftCampaign.test.js', 'tests/tutorStubFirstDraftOuterLoop.test.js'],
+        },
+      ],
+      'V31 focused-test suites',
+    );
     expectJson(
       workingScreen.preflight?.structural_regression_fixtures,
       ['tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json'],
@@ -3623,28 +3859,51 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20262100, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262101, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'ravensmark_affective_resistant', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262102, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'larkspur_premature_closure', screen: 'first-draft-working-screens-v11' },
-        { seed: 20262103, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'foxtrot_diligent', screen: 'first-draft-working-screens-v11' },
+        {
+          seed: 20262100,
+          status: 'consumed_development_failed_retired',
+          cell: 'tallow_answer_seeking',
+          screen: 'first-draft-working-screens-v11',
+        },
+        {
+          seed: 20262101,
+          status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+          cell: 'ravensmark_affective_resistant',
+          screen: 'first-draft-working-screens-v11',
+        },
+        {
+          seed: 20262102,
+          status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+          cell: 'larkspur_premature_closure',
+          screen: 'first-draft-working-screens-v11',
+        },
+        {
+          seed: 20262103,
+          status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+          cell: 'foxtrot_diligent',
+          screen: 'first-draft-working-screens-v11',
+        },
       ],
       'V31 development seed ledger',
     );
     for (const seed of [
-      20261800, 20261801, 20261802, 20261803,
-      20261900, 20261901, 20261902, 20261903,
-      20262000, 20262001, 20262002, 20262003,
+      20261800, 20261801, 20261802, 20261803, 20261900, 20261901, 20261902, 20261903, 20262000, 20262001, 20262002,
+      20262003,
     ]) {
       const retired = seeds.historical.find((entry) => Number(entry.seed) === seed);
       if (!retired || retired.status !== 'retired_unconsumed_after_preflight_failure') {
         throw new Error(`V31 history must preserve zero-call seed ${seed} as unconsumed and retired`);
       }
     }
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V31 must leave 202617xx absent and unreserved');
     }
@@ -3658,15 +3917,8 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       throw new Error('V32 active working history must preserve exactly its staged diagnostic result');
     }
     validateV32Iteration1Observation(activeHistory[0], 'V32 active working history');
-    validateV32Iteration1Observation(
-      manifest.current?.active_last_observation,
-      'V32 active last observation',
-    );
-    expectJson(
-      manifest.current?.active_last_observation,
-      activeHistory[0],
-      'V32 active last observation and history',
-    );
+    validateV32Iteration1Observation(manifest.current?.active_last_observation, 'V32 active last observation');
+    expectJson(manifest.current?.active_last_observation, activeHistory[0], 'V32 active last observation and history');
     expect(
       manifest.current?.working_screen_config,
       'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v12.yaml',
@@ -3697,22 +3949,10 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       manifest.current?.prior_version_last_primary_observation,
       'V32 inherited V27 primary last observation',
     );
-    validateV27Iteration8Advance(
-      manifest.current?.v28_version_advance_from,
-      'V32 inherited V27 confirmation advance',
-    );
-    validateV28Iteration1Advance(
-      manifest.current?.v29_version_advance_from,
-      'V32 inherited V28 preflight advance',
-    );
-    validateV29Iteration1Advance(
-      manifest.current?.v30_version_advance_from,
-      'V32 inherited V29 preflight advance',
-    );
-    validateV30Iteration1Advance(
-      manifest.current?.v31_version_advance_from,
-      'V32 inherited V30 preflight advance',
-    );
+    validateV27Iteration8Advance(manifest.current?.v28_version_advance_from, 'V32 inherited V27 confirmation advance');
+    validateV28Iteration1Advance(manifest.current?.v29_version_advance_from, 'V32 inherited V28 preflight advance');
+    validateV29Iteration1Advance(manifest.current?.v30_version_advance_from, 'V32 inherited V29 preflight advance');
+    validateV30Iteration1Advance(manifest.current?.v31_version_advance_from, 'V32 inherited V30 preflight advance');
     validateV30Iteration1Advance(
       manifest.current?.v30_preflight_observation,
       'V32 preserved V30 preflight observation',
@@ -3737,134 +3977,161 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expect(workingScreen.confirmation, false, 'V32 is not the strict multi-cell screen');
     expect(workingScreen.v32DiagnosticScreen, true, 'V32 diagnostic screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V32 joint-performance generation');
-    expect(
-      workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
-      'V32 source-accessibility policy',
+    expect(workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1', 'V32 source-accessibility policy');
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking_diagnostic_1',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262200,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'tallow_answer_seeking_diagnostic_2',
+          priority: 2,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262201,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+      ],
+      'V32 working cells',
     );
-    expectJson(workingScreen.cells, [
-      {
-        id: 'tallow_answer_seeking_diagnostic_1', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262200,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
-      },
-      {
-        id: 'tallow_answer_seeking_diagnostic_2', priority: 2, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262201,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
-      },
-    ], 'V32 working cells');
-    expectJson(workingScreen.targetBundles, [
-      {
-        id: 'tallow_answer_seeking_diagnostic_1',
-        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
-        targetTurn: 5,
-        targetBundle: {
-          turn_id: '2026-07-16T07-03-36-147Z:t005',
-          world: 'world_025_tallow_street',
-          learner_profile: 'answer_seeking',
-          request_model: 'gpt-5.6-terra',
-          request_effort: 'low',
+    expectJson(
+      workingScreen.targetBundles,
+      [
+        {
+          id: 'tallow_answer_seeking_diagnostic_1',
+          sourceTrace:
+            '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+          targetTurn: 5,
+          targetBundle: {
+            turn_id: '2026-07-16T07-03-36-147Z:t005',
+            world: 'world_025_tallow_street',
+            learner_profile: 'answer_seeking',
+            request_model: 'gpt-5.6-terra',
+            request_effort: 'low',
+          },
         },
-      },
-      {
-        id: 'tallow_answer_seeking_diagnostic_2',
-        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
-        targetTurn: 5,
-        targetBundle: {
-          turn_id: '2026-07-16T07-03-36-147Z:t005',
-          world: 'world_025_tallow_street',
-          learner_profile: 'answer_seeking',
-          request_model: 'gpt-5.6-terra',
-          request_effort: 'low',
+        {
+          id: 'tallow_answer_seeking_diagnostic_2',
+          sourceTrace:
+            '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+          targetTurn: 5,
+          targetBundle: {
+            turn_id: '2026-07-16T07-03-36-147Z:t005',
+            world: 'world_025_tallow_street',
+            learner_profile: 'answer_seeking',
+            request_model: 'gpt-5.6-terra',
+            request_effort: 'low',
+          },
         },
+      ],
+      'V32 exact diagnostic target bundles',
+    );
+    expectJson(
+      workingScreen.execution,
+      {
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking_diagnostic_1',
+        hard_cell_must_pass_before_remaining: true,
+        mandatory_stage_dependency: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 1,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
       },
-    ], 'V32 exact diagnostic target bundles');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking_diagnostic_1',
-      hard_cell_must_pass_before_remaining: true,
-      mandatory_stage_dependency: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 1,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V32 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_commit: '10409158ce020860786ed47dc8f949611fc1b449',
-      implementation_change_from_v31_working_failure:
-        'advocate_handoff_operationalization_v1',
-      speaking_prompt_changes: [
-        'require_advocate_performance_entry_to_state_concrete_public_proposition_and_limit_in_same_entry',
-        'require_eligible_declarative_handoff_to_begin_next_or_now_and_name_concrete_operation_on_public_object',
-      ],
-      deterministic_host_changes: [],
-      audit_recognition_changes: [],
-      recovery_changes: [],
-      preflight_orchestration_changes: [
-        'run_outer_loop_governance_tests_separately_at_frozen_config_and_result_boundaries',
-        'exclude_outer_loop_governance_tests_from_reusable_speaking_compiler_preflight_certificate',
-      ],
-      transport_changes: [],
-      safety_changes: [],
-      gate_changes: [],
-      delivery_audit_changes: [],
-    }, 'V32 change control');
+      'V32 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
+      {
+        implementation_commit: '10409158ce020860786ed47dc8f949611fc1b449',
+        implementation_change_from_v31_working_failure: 'advocate_handoff_operationalization_v1',
+        speaking_prompt_changes: [
+          'require_advocate_performance_entry_to_state_concrete_public_proposition_and_limit_in_same_entry',
+          'require_eligible_declarative_handoff_to_begin_next_or_now_and_name_concrete_operation_on_public_object',
+        ],
+        deterministic_host_changes: [],
+        audit_recognition_changes: [],
+        recovery_changes: [],
+        preflight_orchestration_changes: [
+          'run_outer_loop_governance_tests_separately_at_frozen_config_and_result_boundaries',
+          'exclude_outer_loop_governance_tests_from_reusable_speaking_compiler_preflight_certificate',
+        ],
+        transport_changes: [],
+        safety_changes: [],
+        gate_changes: [],
+        delivery_audit_changes: [],
+      },
+      'V32 change control',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V32 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v32_target',
-      source: 'V31_safe_hard_cell_joint_ownership_failure',
-      items: [
-        'advocate_performance_initiation_as_concrete_public_proposition_with_same_entry_limit',
-        'declarative_stage_next_step_handoff_as_concrete_operation_on_named_public_object',
-      ],
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V32 structural debt target');
-    if (!/both passes permit.*V33/isu.test(
-      workingScreen.structuralDebtTargets?.consequence || '',
-    )) {
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v32_target',
+        source: 'V31_safe_hard_cell_joint_ownership_failure',
+        items: [
+          'advocate_performance_initiation_as_concrete_public_proposition_with_same_entry_limit',
+          'declarative_stage_next_step_handoff_as_concrete_operation_on_named_public_object',
+        ],
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V32 structural debt target',
+    );
+    if (!/both passes permit.*V33/isu.test(workingScreen.structuralDebtTargets?.consequence || '')) {
       throw new Error('V32 structural debt consequence must preserve the staged V33 boundary');
     }
-    expectJson(workingScreen.preflight?.focused_test_suites, [
-      {
-        id: 'audit_contracts',
-        test_files: [
-          'tests/tutorStubPromptAudit.test.js',
-          'tests/derivationWorldQuality.test.js',
-          'tests/tutorStubFrozenReplay.test.js',
-          'tests/tutorStubFrozenReplayCheckpoint.test.js',
-          'tests/tutorStubFirstDraftContract.test.js',
-          'tests/tutorStubStructuredFirstDraft.test.js',
-          'tests/tutorStubJointPerformanceFirstDraft.test.js',
-          'tests/tutorStubV27JointPerformanceCalibration.test.js',
-          'tests/tutorStubTypedCompositeAdvocateCalibration.test.js',
-          'tests/tutorStubResponseComposition.test.js',
-          'tests/tutorStubDueSourceRenderer.test.js',
-          'tests/tutorStubSourceAccessibilityContract.test.js',
-          'tests/tutorStubLiveFirstDraftAudit.test.js',
-          'tests/tutorStubTurnProgressionContract.test.js',
-          'tests/tutorStubWorldScaffold.test.js',
-          'tests/tutorStubV27ConfirmationRegression.test.js',
-          'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
-          'tests/tutorStubV25RecognitionFixture.test.js',
-          'services/__tests__/tutorStubPerformanceObligationContract.test.js',
-          'services/__tests__/tutorStubPerformanceAdjudication.test.js',
-          'services/__tests__/tutorStubResponseConfiguration.test.js',
-          'services/__tests__/tutorStubCounterpressure.test.js',
-        ],
-      },
-      { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
-      { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
-      {
-        id: 'campaign_orchestration',
-        test_files: ['tests/tutorStubFirstDraftCampaign.test.js'],
-      },
-    ], 'V32 focused-test suites');
+    expectJson(
+      workingScreen.preflight?.focused_test_suites,
+      [
+        {
+          id: 'audit_contracts',
+          test_files: [
+            'tests/tutorStubPromptAudit.test.js',
+            'tests/derivationWorldQuality.test.js',
+            'tests/tutorStubFrozenReplay.test.js',
+            'tests/tutorStubFrozenReplayCheckpoint.test.js',
+            'tests/tutorStubFirstDraftContract.test.js',
+            'tests/tutorStubStructuredFirstDraft.test.js',
+            'tests/tutorStubJointPerformanceFirstDraft.test.js',
+            'tests/tutorStubV27JointPerformanceCalibration.test.js',
+            'tests/tutorStubTypedCompositeAdvocateCalibration.test.js',
+            'tests/tutorStubResponseComposition.test.js',
+            'tests/tutorStubDueSourceRenderer.test.js',
+            'tests/tutorStubSourceAccessibilityContract.test.js',
+            'tests/tutorStubLiveFirstDraftAudit.test.js',
+            'tests/tutorStubTurnProgressionContract.test.js',
+            'tests/tutorStubWorldScaffold.test.js',
+            'tests/tutorStubV27ConfirmationRegression.test.js',
+            'tests/tutorStubV21PerformanceCalibrationFixture.test.js',
+            'tests/tutorStubV25RecognitionFixture.test.js',
+            'services/__tests__/tutorStubPerformanceObligationContract.test.js',
+            'services/__tests__/tutorStubPerformanceAdjudication.test.js',
+            'services/__tests__/tutorStubResponseConfiguration.test.js',
+            'services/__tests__/tutorStubCounterpressure.test.js',
+          ],
+        },
+        { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
+        { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
+        {
+          id: 'campaign_orchestration',
+          test_files: ['tests/tutorStubFirstDraftCampaign.test.js'],
+        },
+      ],
+      'V32 focused-test suites',
+    );
     expectJson(
       workingScreen.preflight?.structural_regression_fixtures,
       ['tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json'],
@@ -3873,11 +4140,24 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20262200, status: 'consumed_development_passed_but_campaign_failed_retired', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v12' },
-        { seed: 20262201, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v12' },
+        {
+          seed: 20262200,
+          status: 'consumed_development_passed_but_campaign_failed_retired',
+          cell: 'tallow_answer_seeking_diagnostic_1',
+          screen: 'first-draft-diagnostic-screens-v12',
+        },
+        {
+          seed: 20262201,
+          status: 'consumed_development_failed_retired',
+          cell: 'tallow_answer_seeking_diagnostic_2',
+          screen: 'first-draft-diagnostic-screens-v12',
+        },
       ],
       'V32 development seed ledger',
     );
@@ -3897,17 +4177,17 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'V32 historical V31 seed dispositions',
     );
     for (const seed of [
-      20261800, 20261801, 20261802, 20261803,
-      20261900, 20261901, 20261902, 20261903,
-      20262000, 20262001, 20262002, 20262003,
+      20261800, 20261801, 20261802, 20261803, 20261900, 20261901, 20261902, 20261903, 20262000, 20262001, 20262002,
+      20262003,
     ]) {
       const retired = seeds.historical.find((entry) => Number(entry.seed) === seed);
       if (!retired || retired.status !== 'retired_unconsumed_after_preflight_failure') {
         throw new Error(`V32 history must preserve zero-call seed ${seed} as unconsumed and retired`);
       }
     }
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20261700 && seed <= 20261799)) {
       throw new Error('V32 must leave 202617xx absent and unreserved');
     }
@@ -3921,38 +4201,21 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       throw new Error('V33 must preserve exactly one hard-cell diagnostic result');
     }
     validateV33Iteration1Observation(v33History[0], 'V33 result history');
-    validateV33Iteration1Observation(
-      manifest.current?.v33_working_observation,
-      'V33 working observation',
-    );
+    validateV33Iteration1Observation(manifest.current?.v33_working_observation, 'V33 working observation');
     const activeHistory = manifest.current?.active_working_history || [];
     if (activeHistory.length !== 1) {
       throw new Error('V33 active working history must preserve exactly its hard-cell result');
     }
     validateV33Iteration1Observation(activeHistory[0], 'V33 active working history');
-    validateV33Iteration1Observation(
-      manifest.current?.active_last_observation,
-      'V33 active last observation',
-    );
-    validateV33Iteration1Observation(
-      manifest.current?.last_observation,
-      'V33 last observation',
-    );
-    expectJson(
-      manifest.current?.v33_working_observation,
-      v33History[0],
-      'V33 working observation and result history',
-    );
+    validateV33Iteration1Observation(manifest.current?.active_last_observation, 'V33 active last observation');
+    validateV33Iteration1Observation(manifest.current?.last_observation, 'V33 last observation');
+    expectJson(manifest.current?.v33_working_observation, v33History[0], 'V33 working observation and result history');
     expectJson(
       manifest.current?.active_last_observation,
       v33History[0],
       'V33 active last observation and result history',
     );
-    expectJson(
-      manifest.current?.last_observation,
-      v33History[0],
-      'V33 last observation and result history',
-    );
+    expectJson(manifest.current?.last_observation, v33History[0], 'V33 last observation and result history');
     expect(
       manifest.current?.working_screen_config,
       'config/tutor-stub-campaigns/first-draft-diagnostic-screens-v13.yaml',
@@ -3978,20 +4241,9 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       'V33 preserved V32 working observation',
     );
     validateV32Iteration1Observation(manifest.current?.version_advance_from, 'V33 version advance');
-    expectJson(
-      manifest.current?.v32_working_observation,
-      v32History[0],
-      'V33 V32 observation and result history',
-    );
-    expectJson(
-      manifest.current?.version_advance_from,
-      v32History[0],
-      'V33 V32 observation and version advance',
-    );
-    validateV31Iteration1Observation(
-      manifest.current?.v31_version_advance_record,
-      'V33 preserved V31 result record',
-    );
+    expectJson(manifest.current?.v32_working_observation, v32History[0], 'V33 V32 observation and result history');
+    expectJson(manifest.current?.version_advance_from, v32History[0], 'V33 V32 observation and version advance');
+    validateV31Iteration1Observation(manifest.current?.v31_version_advance_record, 'V33 preserved V31 result record');
     validateV31Iteration1Observation(
       manifest.current?.v31_working_observation,
       'V33 preserved V31 working observation',
@@ -4006,158 +4258,196 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expect(workingScreen.confirmation, false, 'V33 is not the strict multi-cell screen');
     expect(workingScreen.v33DiagnosticScreen, true, 'V33 diagnostic screen flag');
     expect(workingScreen.jointPerformanceGeneration, true, 'V33 joint-performance generation');
-    expect(
-      workingScreen.sourceAccessibilityPolicy,
-      'direct_or_compensated_v1',
-      'V33 source-accessibility policy',
+    expect(workingScreen.sourceAccessibilityPolicy, 'direct_or_compensated_v1', 'V33 source-accessibility policy');
+    expectJson(
+      workingScreen.cells,
+      [
+        {
+          id: 'tallow_answer_seeking_diagnostic_1',
+          priority: 1,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262300,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+        {
+          id: 'tallow_answer_seeking_diagnostic_2',
+          priority: 2,
+          world: 'world_025_tallow_street',
+          learnerProfile: 'answer_seeking',
+          turns: [5],
+          developmentSeed: 20262301,
+          sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        },
+      ],
+      'V33 working cells',
     );
-    expectJson(workingScreen.cells, [
+    expectJson(
+      workingScreen.targetBundles,
+      [
+        {
+          id: 'tallow_answer_seeking_diagnostic_1',
+          sourceTrace:
+            '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+          targetTurn: 5,
+          targetBundle: {
+            turn_id: '2026-07-16T07-03-36-147Z:t005',
+            world: 'world_025_tallow_street',
+            learner_profile: 'answer_seeking',
+            request_model: 'gpt-5.6-terra',
+            request_effort: 'low',
+          },
+        },
+        {
+          id: 'tallow_answer_seeking_diagnostic_2',
+          sourceTrace:
+            '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
+          targetTurn: 5,
+          targetBundle: {
+            turn_id: '2026-07-16T07-03-36-147Z:t005',
+            world: 'world_025_tallow_street',
+            learner_profile: 'answer_seeking',
+            request_model: 'gpt-5.6-terra',
+            request_effort: 'low',
+          },
+        },
+      ],
+      'V33 exact diagnostic target bundles',
+    );
+    expectJson(
+      workingScreen.execution,
       {
-        id: 'tallow_answer_seeking_diagnostic_1', priority: 1, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262300,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        hardest_cell_first: true,
+        hard_cell: 'tallow_answer_seeking_diagnostic_1',
+        hard_cell_must_pass_before_remaining: true,
+        mandatory_stage_dependency: true,
+        remaining_cells_execution: 'concurrent',
+        maximum_concurrent_remaining_cells: 1,
+        one_job_per_cell: true,
+        forbid_duplicate_active_or_completed_cells: true,
+        complete_all_cells_after_hard_cell_passes: true,
+        stop_cell_when_gate_mathematically_impossible: true,
+        preserve_unstarted_seeds_as_unconsumed: true,
+        require_exact_target_bundle_binding: true,
+        require_clean_worktree: true,
       },
+      'V33 execution',
+    );
+    expectJson(
+      workingScreen.changeControl,
       {
-        id: 'tallow_answer_seeking_diagnostic_2', priority: 2, world: 'world_025_tallow_street',
-        learnerProfile: 'answer_seeking', turns: [5], developmentSeed: 20262301,
-        sourceTraceSha256: '5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d',
+        implementation_commits: {
+          speaking_and_audit: 'bb42573c26dcab54eca7776cd09ec7140205bfc5',
+          preflight_certificate_scoping: 'd0cd2c12982d7d04538a1a2f0068085b8041d272',
+        },
+        implementation_change_from_v32_failure: 'writable_entry_causal_fidelity_and_hyphen_focus_recognition_v1',
+        speaking_prompt_changes: [
+          'require_writable_entry_to_preserve_public_actors_relation_and_polarity',
+          'forbid_writable_entry_from_reversing_public_cause_or_evidentiary_force',
+        ],
+        deterministic_host_changes: [],
+        audit_recognition_changes: [
+          'split_hyphenated_focus_compounds_into_constituent_terms_before_turn_focus_matching',
+        ],
+        recovery_changes: [],
+        preflight_orchestration_changes: [
+          'scope_certificate_dependencies_to_selected_tests_recursive_local_imports_and_literal_resources',
+          'exclude_unselected_governance_tests_from_certificate_invalidation',
+        ],
+        transport_changes: [],
+        safety_changes: [],
+        gate_changes: [],
+        delivery_audit_changes: [],
       },
-    ], 'V33 working cells');
-    expectJson(workingScreen.targetBundles, [
+      'V33 change control',
+    );
+    expectJson(
+      workingScreen.qualitativeReview,
       {
-        id: 'tallow_answer_seeking_diagnostic_1',
-        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
-        targetTurn: 5,
-        targetBundle: {
-          turn_id: '2026-07-16T07-03-36-147Z:t005',
-          world: 'world_025_tallow_street', learner_profile: 'answer_seeking',
-          request_model: 'gpt-5.6-terra', request_effort: 'low',
+        id: 'minutes_entry_public_causal_fidelity_v1',
+        status: 'predeclared_required_per_draw',
+        scope: 'every_completed_original_draw',
+        subject: 'model_owned_uptake_minutes_entry_after_write_prefix',
+        review_execution: 'external_post_generation_subagent_or_human_review',
+        reviewers_per_draw: 2,
+        independence: 'separate_contexts_without_cross_review_visibility',
+        automatic: false,
+        campaign_repair_call: false,
+        campaign_adjudication_call: false,
+        blinded_review_packet: {
+          includes_only: ['exact_learner_request', 'public_evidence_window', 'exact_write_minutes_entry_sentence'],
+          blind_to: [
+            'deterministic_audit_outcome',
+            'development_seed',
+            'other_candidate',
+            'other_reviewer_verdict_or_rationale',
+          ],
+        },
+        verdicts: ['pass', 'fail'],
+        pass_requires_all: [
+          'preserves_public_actors',
+          'preserves_public_causal_relation',
+          'preserves_public_polarity',
+          'does_not_reverse_cause_or_evidentiary_force',
+        ],
+        evidence_required: [
+          'exact_minutes_entry_text',
+          'public_record_relation_and_polarity',
+          'brief_independent_verdict_rationale',
+        ],
+        aggregation: {
+          required_passing_ratings: 2,
+          required_total_ratings: 2,
+          disagreement_outcome: 'fail',
+        },
+        storage: {
+          separate_from_automatic_status: true,
+          preserve_each_blinded_rating: true,
+        },
+        advancement: {
+          strict_automatic_pass_alone_sufficient: false,
+          require_two_recorded_passing_ratings_per_completed_draw: true,
+          diagnostic_2_still_requires_diagnostic_1_automatic_pass: true,
+          v34_confirmation_requires_both_automatic_and_qualitative_passes: true,
         },
       },
-      {
-        id: 'tallow_answer_seeking_diagnostic_2',
-        sourceTrace: '/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl',
-        targetTurn: 5,
-        targetBundle: {
-          turn_id: '2026-07-16T07-03-36-147Z:t005',
-          world: 'world_025_tallow_street', learner_profile: 'answer_seeking',
-          request_model: 'gpt-5.6-terra', request_effort: 'low',
-        },
-      },
-    ], 'V33 exact diagnostic target bundles');
-    expectJson(workingScreen.execution, {
-      hardest_cell_first: true,
-      hard_cell: 'tallow_answer_seeking_diagnostic_1',
-      hard_cell_must_pass_before_remaining: true,
-      mandatory_stage_dependency: true,
-      remaining_cells_execution: 'concurrent',
-      maximum_concurrent_remaining_cells: 1,
-      one_job_per_cell: true,
-      forbid_duplicate_active_or_completed_cells: true,
-      complete_all_cells_after_hard_cell_passes: true,
-      stop_cell_when_gate_mathematically_impossible: true,
-      preserve_unstarted_seeds_as_unconsumed: true,
-      require_exact_target_bundle_binding: true,
-      require_clean_worktree: true,
-    }, 'V33 execution');
-    expectJson(workingScreen.changeControl, {
-      implementation_commits: {
-        speaking_and_audit: 'bb42573c26dcab54eca7776cd09ec7140205bfc5',
-        preflight_certificate_scoping: 'd0cd2c12982d7d04538a1a2f0068085b8041d272',
-      },
-      implementation_change_from_v32_failure:
-        'writable_entry_causal_fidelity_and_hyphen_focus_recognition_v1',
-      speaking_prompt_changes: [
-        'require_writable_entry_to_preserve_public_actors_relation_and_polarity',
-        'forbid_writable_entry_from_reversing_public_cause_or_evidentiary_force',
-      ],
-      deterministic_host_changes: [],
-      audit_recognition_changes: [
-        'split_hyphenated_focus_compounds_into_constituent_terms_before_turn_focus_matching',
-      ],
-      recovery_changes: [],
-      preflight_orchestration_changes: [
-        'scope_certificate_dependencies_to_selected_tests_recursive_local_imports_and_literal_resources',
-        'exclude_unselected_governance_tests_from_certificate_invalidation',
-      ],
-      transport_changes: [],
-      safety_changes: [],
-      gate_changes: [],
-      delivery_audit_changes: [],
-    }, 'V33 change control');
-    expectJson(workingScreen.qualitativeReview, {
-      id: 'minutes_entry_public_causal_fidelity_v1',
-      status: 'predeclared_required_per_draw',
-      scope: 'every_completed_original_draw',
-      subject: 'model_owned_uptake_minutes_entry_after_write_prefix',
-      review_execution: 'external_post_generation_subagent_or_human_review',
-      reviewers_per_draw: 2,
-      independence: 'separate_contexts_without_cross_review_visibility',
-      automatic: false,
-      campaign_repair_call: false,
-      campaign_adjudication_call: false,
-      blinded_review_packet: {
-        includes_only: [
-          'exact_learner_request',
-          'public_evidence_window',
-          'exact_write_minutes_entry_sentence',
-        ],
-        blind_to: [
-          'deterministic_audit_outcome',
-          'development_seed',
-          'other_candidate',
-          'other_reviewer_verdict_or_rationale',
-        ],
-      },
-      verdicts: ['pass', 'fail'],
-      pass_requires_all: [
-        'preserves_public_actors',
-        'preserves_public_causal_relation',
-        'preserves_public_polarity',
-        'does_not_reverse_cause_or_evidentiary_force',
-      ],
-      evidence_required: [
-        'exact_minutes_entry_text',
-        'public_record_relation_and_polarity',
-        'brief_independent_verdict_rationale',
-      ],
-      aggregation: {
-        required_passing_ratings: 2,
-        required_total_ratings: 2,
-        disagreement_outcome: 'fail',
-      },
-      storage: {
-        separate_from_automatic_status: true,
-        preserve_each_blinded_rating: true,
-      },
-      advancement: {
-        strict_automatic_pass_alone_sufficient: false,
-        require_two_recorded_passing_ratings_per_completed_draw: true,
-        diagnostic_2_still_requires_diagnostic_1_automatic_pass: true,
-        v34_confirmation_requires_both_automatic_and_qualitative_passes: true,
-      },
-    }, 'V33 qualitative review');
+      'V33 qualitative review',
+    );
     expect(workingScreen.adjudicationPolicy, 'deterministic_only', 'V33 adjudication policy');
-    expectJson(workingScreen.structuralDebtTargets, {
-      status: 'active_v33_target',
-      source: 'V32_recognition_false_negative_and_separate_causal_wording_debt',
-      items: [
-        'hyphenated_turn_focus_recognition',
-        'writable_entry_public_causal_relation_and_polarity',
-      ],
-      consequence: workingScreen.structuralDebtTargets?.consequence,
-    }, 'V33 structural debt target');
-    if (!/Both diagnostics.*qualitative.*V34/isu.test(
-      workingScreen.structuralDebtTargets?.consequence || '',
-    )) throw new Error('V33 structural debt consequence must preserve the combined V34 boundary');
+    expectJson(
+      workingScreen.structuralDebtTargets,
+      {
+        status: 'active_v33_target',
+        source: 'V32_recognition_false_negative_and_separate_causal_wording_debt',
+        items: ['hyphenated_turn_focus_recognition', 'writable_entry_public_causal_relation_and_polarity'],
+        consequence: workingScreen.structuralDebtTargets?.consequence,
+      },
+      'V33 structural debt target',
+    );
+    if (!/Both diagnostics.*qualitative.*V34/isu.test(workingScreen.structuralDebtTargets?.consequence || ''))
+      throw new Error('V33 structural debt consequence must preserve the combined V34 boundary');
 
     expectJson(
       seeds.development.map((entry) => ({
-        seed: Number(entry.seed), status: entry.status, cell: entry.cell, screen: entry.screen,
+        seed: Number(entry.seed),
+        status: entry.status,
+        cell: entry.cell,
+        screen: entry.screen,
       })),
       [
-        { seed: 20262300, status: 'consumed_development_failed_retired', cell: 'tallow_answer_seeking_diagnostic_1', screen: 'first-draft-diagnostic-screens-v13' },
-        { seed: 20262301, status: 'retired_unconsumed_unstarted_after_hard_cell_failure', cell: 'tallow_answer_seeking_diagnostic_2', screen: 'first-draft-diagnostic-screens-v13' },
+        {
+          seed: 20262300,
+          status: 'consumed_development_failed_retired',
+          cell: 'tallow_answer_seeking_diagnostic_1',
+          screen: 'first-draft-diagnostic-screens-v13',
+        },
+        {
+          seed: 20262301,
+          status: 'retired_unconsumed_unstarted_after_hard_cell_failure',
+          cell: 'tallow_answer_seeking_diagnostic_2',
+          screen: 'first-draft-diagnostic-screens-v13',
+        },
       ],
       'V33 development seed ledger',
     );
@@ -4174,30 +4464,18 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
       ],
       'V33 historical V32 seed dispositions',
     );
-    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves]
-      .map((entry) => Number(entry.seed));
+    const allSeeds = [...seeds.historical, ...seeds.development, ...seeds.heldOut, ...seeds.reserves].map((entry) =>
+      Number(entry.seed),
+    );
     if (allSeeds.some((seed) => seed >= 20262400 && seed <= 20262499)) {
       throw new Error('V33 must leave 202624xx absent and unreserved');
     }
-    expect(
-      manifest.current?.acceptance_config,
-      null,
-      'V33 acceptance config must remain unpredeclared',
-    );
+    expect(manifest.current?.acceptance_config, null, 'V33 acceptance config must remain unpredeclared');
   }
 
-
   if (state.currentState === 'stagnated' && currentVersion !== 33) {
-    expect(
-      workingScreen.finalFrontierAttemptIteration,
-      workingIteration,
-      'terminal final-frontier attempt iteration',
-    );
-    expect(
-      workingScreen.stopIfFinalFrontierAttemptFails,
-      true,
-      'terminal failed final-frontier stop',
-    );
+    expect(workingScreen.finalFrontierAttemptIteration, workingIteration, 'terminal final-frontier attempt iteration');
+    expect(workingScreen.stopIfFinalFrontierAttemptFails, true, 'terminal failed final-frontier stop');
     expect(
       manifest.current?.last_observation?.final_frontier_attempt?.outcome,
       'failed',
@@ -4220,26 +4498,17 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     );
   }
 
-  const iterationAuthority =
-    manifest.current?.last_observation?.[`iteration_${workingIteration}_authority`];
+  const iterationAuthority = manifest.current?.last_observation?.[`iteration_${workingIteration}_authority`];
   if (iterationAuthority?.attempt === 'final_frontier_attempt') {
     expect(
       workingScreen.finalFrontierAttemptIteration,
       workingIteration,
       'working-screen final-frontier attempt iteration',
     );
-    expect(
-      workingScreen.stopIfFinalFrontierAttemptFails,
-      true,
-      'working-screen failed final-frontier stop',
-    );
+    expect(workingScreen.stopIfFinalFrontierAttemptFails, true, 'working-screen failed final-frontier stop');
     expect(iterationAuthority.speaking_change, 'none', 'final-frontier speaking change');
     expect(iterationAuthority.recovery_change, 'none', 'final-frontier recovery change');
-    expect(
-      iterationAuthority.audit_recognition_change,
-      'none',
-      'final-frontier audit-recognition change',
-    );
+    expect(iterationAuthority.audit_recognition_change, 'none', 'final-frontier audit-recognition change');
   }
 
   expect(manifest.stop_policy?.stagnation?.maximum_consecutive_iterations_without_improvement, 2, 'stagnation limit');

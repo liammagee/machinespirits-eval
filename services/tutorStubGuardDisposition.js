@@ -1,5 +1,4 @@
-export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA =
-  'machinespirits.tutor-stub.guard-disposition.v1';
+export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.guard-disposition.v1';
 export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 1;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
@@ -76,7 +75,7 @@ const RULES = Object.freeze([
     guard: 'dramatic_release',
     type: 'source_perspective_drift',
     category: 'public_evidence_integrity',
-    rationale: 'The speaking source may not inherit another public actor\'s deed, custody, or possession.',
+    rationale: "The speaking source may not inherit another public actor's deed, custody, or possession.",
   }),
 
   // Questions and composition failures that change public meaning remain hard.
@@ -166,7 +165,8 @@ const RULES = Object.freeze([
       type,
       dispositions: STRICT_HARD_SHADOW_ADVISORY,
       category: 'dramatic_realization',
-      rationale: 'The clue form may miss the selected dramatic treatment while content delivery remains separately audited.',
+      rationale:
+        'The clue form may miss the selected dramatic treatment while content delivery remains separately audited.',
     }),
   ),
   ...['missing_selected_actorial_part', 'missing_selected_performance_tactic'].map((type) =>
@@ -184,7 +184,8 @@ const RULES = Object.freeze([
       type,
       dispositions: STRICT_HARD_SHADOW_ADVISORY,
       category: 'learner_response_surface',
-      rationale: 'Surface uptake recognition remains strict pending independent review, while semantic misread checks stay hard.',
+      rationale:
+        'Surface uptake recognition remains strict pending independent review, while semantic misread checks stay hard.',
     }),
   ),
   rule({
@@ -192,7 +193,8 @@ const RULES = Object.freeze([
     type: 'axis_not_visible',
     dispositions: REPORT_IN_STRICT_SHADOW_ADVISORY,
     category: 'trajectory_configuration',
-    rationale: 'Non-actorial configuration axes were never delivery vetoes and remain report-only under the strict policy.',
+    rationale:
+      'Non-actorial configuration axes were never delivery vetoes and remain report-only under the strict policy.',
   }),
 ]);
 
@@ -264,24 +266,17 @@ function decisionFor(dispositions, key) {
 
 export function decideTutorStubGuardDelivery(
   issueRows = [],
-  {
-    allowActorialAdvisory = false,
-    boundaryPolicy = TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict,
-  } = {},
+  { allowActorialAdvisory = false, boundaryPolicy = TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict } = {},
 ) {
   if (!Object.values(TUTOR_STUB_GUARD_BOUNDARY_POLICIES).includes(boundaryPolicy)) {
     throw new Error(`unknown tutor-stub guard boundary policy: ${boundaryPolicy}`);
   }
   const sourceIssues = Array.isArray(issueRows) ? issueRows : [issueRows];
-  const dispositions = sourceIssues.map((issue) =>
-    classifyTutorStubGuardIssue(issue, { allowActorialAdvisory }),
-  );
+  const dispositions = sourceIssues.map((issue) => classifyTutorStubGuardIssue(issue, { allowActorialAdvisory }));
   const strictDecision = decisionFor(dispositions, 'strictDisposition');
   const shadowDecision = decisionFor(dispositions, 'shadowDisposition');
   const effective =
-    boundaryPolicy === TUTOR_STUB_GUARD_BOUNDARY_POLICIES.shadowAdvisory
-      ? shadowDecision
-      : strictDecision;
+    boundaryPolicy === TUTOR_STUB_GUARD_BOUNDARY_POLICIES.shadowAdvisory ? shadowDecision : strictDecision;
   return {
     // Preserve the delivery-decision envelope consumed by existing traces and
     // reports. The issue-level policy and its provenance are versioned

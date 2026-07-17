@@ -49,11 +49,7 @@ export {
 const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'adaptive-state-benchmark-v2.yaml');
-const DEFAULT_RELIABILITY_CONFIG = path.join(
-  ROOT,
-  'config',
-  'adaptive-state-observability-reliability-v2.2.yaml',
-);
+const DEFAULT_RELIABILITY_CONFIG = path.join(ROOT, 'config', 'adaptive-state-observability-reliability-v2.2.yaml');
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'adaptive-state-benchmark-v2');
 
 function arg(argv, name, fallback = null) {
@@ -147,7 +143,9 @@ export function validateAdaptiveStateStage1SupersededStoppedRun({
     String(sealedPlan?.metadata?.benchmarkVersion) !== '2.1' ||
     sealedPlan?.metadata?.paid !== true
   ) {
-    throw new Error('S1 supersedes source must be a sealed stopped paid v2.1 S1 technical pilot, never a completed run');
+    throw new Error(
+      'S1 supersedes source must be a sealed stopped paid v2.1 S1 technical pilot, never a completed run',
+    );
   }
   const criticalPlan = readJson(path.join(runDir, 'critical-path-plan.json'));
   validateAdaptiveStateCriticalPathPlan(criticalPlan);
@@ -169,15 +167,14 @@ export function validateAdaptiveStateStage1SupersededStoppedRun({
     sealedPlan.lineage?.parentRunId !== replacementParent.run_id ||
     sealedPlan.metadata?.parentS0ReportSha256 !== replacementParent.report_sha256
   ) {
-    throw new Error('S1 supersedes source does not share the replacement run\'s sealed S0 parent');
+    throw new Error("S1 supersedes source does not share the replacement run's sealed S0 parent");
   }
   if (
     hashCanonicalJson(stage1SemanticDesignContract(criticalPlan)) !==
       hashCanonicalJson(stage1SemanticDesignContract(replacementPlan)) ||
     criticalPlan.config_sha256 !== replacementPlan.config_sha256 ||
     sealedPlan.hashes?.config !== hashFile(path.resolve(configPath)) ||
-    hashCanonicalJson(stage1MatrixContract(criticalPlan)) !==
-      hashCanonicalJson(stage1MatrixContract(replacementPlan))
+    hashCanonicalJson(stage1MatrixContract(criticalPlan)) !== hashCanonicalJson(stage1MatrixContract(replacementPlan))
   ) {
     throw new Error('S1 supersedes source does not share the replacement v2.1 design, config, and exact matrix');
   }
@@ -300,12 +297,13 @@ async function main(argv = process.argv.slice(2)) {
   const parentArg = arg(argv, 's0-parent');
   const preflightArg = arg(argv, 'preflight-parent');
   if (!parentArg) throw new Error('--s0-parent is required');
-  if (!preflightArg) throw new Error('--preflight-parent is required; full S1 cannot bypass the sealed v2.2 observability reliability gate');
+  if (!preflightArg)
+    throw new Error(
+      '--preflight-parent is required; full S1 cannot bypass the sealed v2.2 observability reliability gate',
+    );
   const parentRunDir = resolveFromRoot(parentArg);
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
-  const reliabilityConfigPath = resolveFromRoot(
-    arg(argv, 'reliability-config', DEFAULT_RELIABILITY_CONFIG),
-  );
+  const reliabilityConfigPath = resolveFromRoot(arg(argv, 'reliability-config', DEFAULT_RELIABILITY_CONFIG));
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
   const supersededArg = arg(argv, 'supersedes-stopped-s1');
   const label = arg(argv, 'label', 'adaptive-state-v2-s1-technical-pilot');
@@ -353,7 +351,10 @@ async function main(argv = process.argv.slice(2)) {
     supersedes: superseded ? [superseded.run_id] : [],
   });
   const created = createRunPlan(runDir, runPlan);
-  writeExclusive(path.join(runDir, 'critical-path-plan.json'), canonicalJson(plan, { space: 2, trailingNewline: true }));
+  writeExclusive(
+    path.join(runDir, 'critical-path-plan.json'),
+    canonicalJson(plan, { space: 2, trailingNewline: true }),
+  );
   appendRunEvent(runDir, {
     type: 'stage1_execution_started',
     plannedScoredCliDispatches: 336,
@@ -464,10 +465,7 @@ async function main(argv = process.argv.slice(2)) {
       calls: [],
       completed_dialogues: [],
     };
-    writeExclusive(
-      path.join(runDir, 'stage1-partial-call-ledger.jsonl'),
-      jsonl(partial.calls),
-    );
+    writeExclusive(path.join(runDir, 'stage1-partial-call-ledger.jsonl'), jsonl(partial.calls));
     writeExclusive(
       path.join(runDir, 'stage1-partial-accounting.json'),
       canonicalJson(partial, { space: 2, trailingNewline: true }),
@@ -516,84 +514,84 @@ async function main(argv = process.argv.slice(2)) {
     assertNotInterrupted();
     validateAdaptiveStateStage1DatasetContentSha256(dataset);
     const datasetFile = writeExclusive(
-    path.join(runDir, 'stage1-dataset.json'),
-    canonicalJson(dataset, { space: 2, trailingNewline: true }),
-  );
+      path.join(runDir, 'stage1-dataset.json'),
+      canonicalJson(dataset, { space: 2, trailingNewline: true }),
+    );
     const ledgerFile = writeExclusive(path.join(runDir, 'stage1-call-ledger.jsonl'), jsonl(dataset.calls));
     const readback = JSON.parse(fs.readFileSync(datasetFile.path, 'utf8'));
     validateAdaptiveStateStage1DatasetContentSha256(readback);
     const ledgerReadback = fs
-    .readFileSync(ledgerFile.path, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => JSON.parse(line));
+      .readFileSync(ledgerFile.path, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
     if (hashCanonicalJson(ledgerReadback) !== hashCanonicalJson(dataset.calls)) {
       throw new Error('S1 call-ledger readback differs from the dataset');
     }
     const splitManifest = buildAdaptiveStateStage1SplitManifest(dataset.rows, config);
     validateAdaptiveStateStage1SplitManifestContentSha256(splitManifest);
     writeExclusive(
-    path.join(runDir, 'stage1-split-manifest.json'),
-    canonicalJson(splitManifest, { space: 2, trailingNewline: true }),
-  );
+      path.join(runDir, 'stage1-split-manifest.json'),
+      canonicalJson(splitManifest, { space: 2, trailingNewline: true }),
+    );
     const report = buildAdaptiveStateStage1Report({
-    dataset,
-    plan,
-    config,
-    splitManifest,
-    repoRoot: ROOT,
-  });
+      dataset,
+      plan,
+      config,
+      splitManifest,
+      repoRoot: ROOT,
+    });
     validateAdaptiveStateStage1ReportContentSha256(report);
     writeExclusive(
-    path.join(runDir, 'stage1-technical-report.json'),
-    canonicalJson(report, { space: 2, trailingNewline: true }),
-  );
+      path.join(runDir, 'stage1-technical-report.json'),
+      canonicalJson(report, { space: 2, trailingNewline: true }),
+    );
     writeExclusive(path.join(runDir, 'stage1-technical-report.md'), renderReport(report));
     appendRunEvent(runDir, {
-    type: 'stage1_technical_evaluated',
-    status: report.status,
-    decision: report.decision,
-    scoredCliDispatches: dataset.scored_cli_dispatch_count,
-    excludedTechnicalCanaryCliDispatches: dataset.excluded_technical_canary_call_count,
-    reportSha256: report.content_sha256,
-  });
+      type: 'stage1_technical_evaluated',
+      status: report.status,
+      decision: report.decision,
+      scoredCliDispatches: dataset.scored_cli_dispatch_count,
+      excludedTechnicalCanaryCliDispatches: dataset.excluded_technical_canary_call_count,
+      reportSha256: report.content_sha256,
+    });
     const complete = report.status === 'pass';
     createRunSeal(runDir, {
-    status: complete ? 'complete' : 'stopped',
-    metadata: {
-      stage: 's1_technical_pilot',
-      stage1DatasetSha256: dataset.content_sha256,
-      stage1CallLedgerSha256: hashCanonicalJson(dataset.calls),
-      stage1SplitManifestSha256: splitManifest.content_sha256,
-      stage1ReportSha256: report.content_sha256,
-      runPlanSha256: created.sha256,
-      s1RelevantHashes: runPlan.hashes,
-      s1RelevantHashesSha256: hashCanonicalJson(runPlan.hashes),
-      cliFingerprints: cliVersions,
-      cliFingerprintsSha256: hashCanonicalJson(cliVersions),
-      historicalCleanGitAttestation: {
-        sha: runPlan.provenance.git.sha,
-        branch: runPlan.provenance.git.branch,
-        dirty: runPlan.provenance.git.dirty,
-        untracked: runPlan.provenance.git.untracked,
-        fingerprintSha256: runPlan.provenance.git.fingerprintSha256,
-        cleanAtS1Execution: runPlan.provenance.git.dirty === false && runPlan.provenance.git.untracked.length === 0,
-        downstreamCurrentRepoShaEqualityRequired: false,
+      status: complete ? 'complete' : 'stopped',
+      metadata: {
+        stage: 's1_technical_pilot',
+        stage1DatasetSha256: dataset.content_sha256,
+        stage1CallLedgerSha256: hashCanonicalJson(dataset.calls),
+        stage1SplitManifestSha256: splitManifest.content_sha256,
+        stage1ReportSha256: report.content_sha256,
+        runPlanSha256: created.sha256,
+        s1RelevantHashes: runPlan.hashes,
+        s1RelevantHashesSha256: hashCanonicalJson(runPlan.hashes),
+        cliFingerprints: cliVersions,
+        cliFingerprintsSha256: hashCanonicalJson(cliVersions),
+        historicalCleanGitAttestation: {
+          sha: runPlan.provenance.git.sha,
+          branch: runPlan.provenance.git.branch,
+          dirty: runPlan.provenance.git.dirty,
+          untracked: runPlan.provenance.git.untracked,
+          fingerprintSha256: runPlan.provenance.git.fingerprintSha256,
+          cleanAtS1Execution: runPlan.provenance.git.dirty === false && runPlan.provenance.git.untracked.length === 0,
+          downstreamCurrentRepoShaEqualityRequired: false,
+        },
+        executedCliDispatches: dataset.total_cli_dispatch_count,
+        scoredCliDispatches: dataset.scored_cli_dispatch_count,
+        backendRequestCount: 'unknown',
+        fixedS2SeedsPerCell: 8,
+        powerClaimMade: false,
+        decision: report.decision,
+        observabilityPreflightRunId: preflight.run_id,
+        observabilityPreflightReportSha256: preflight.report_sha256,
       },
-      executedCliDispatches: dataset.total_cli_dispatch_count,
-      scoredCliDispatches: dataset.scored_cli_dispatch_count,
-      backendRequestCount: 'unknown',
-      fixedS2SeedsPerCell: 8,
-      powerClaimMade: false,
-      decision: report.decision,
-      observabilityPreflightRunId: preflight.run_id,
-      observabilityPreflightReportSha256: preflight.report_sha256,
-    },
-  });
+    });
     const verified = assertExperimentRun(runDir);
     process.stdout.write(
-    `${complete ? 'complete' : 'stopped'}: 24 dialogues, 144 transitions, 336 scored + 3 excluded CLI dispatches\n`,
-  );
+      `${complete ? 'complete' : 'stopped'}: 24 dialogues, 144 transitions, 336 scored + 3 excluded CLI dispatches\n`,
+    );
     process.stdout.write(`${path.relative(ROOT, runDir)}\n`);
     process.stdout.write(`sealed S1 evidence transaction verified: ${verified.inventory.length} artifacts\n`);
     if (!complete) process.exitCode = 2;

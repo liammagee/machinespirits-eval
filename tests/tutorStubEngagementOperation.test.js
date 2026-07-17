@@ -15,14 +15,12 @@ function causalContract(overrides = {}) {
     polarity: 'negative',
     subject: 'depot chargers',
     outcome: 'Tallow Street brownout',
-    public_evidence_surface:
-      'The depot chargers stood dark during stocktake while Tallow Street still browned out.',
+    public_evidence_surface: 'The depot chargers stood dark during stocktake while Tallow Street still browned out.',
     ...overrides,
   };
 }
 
-const BOUNDARY_RESPONSE =
-  'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.';
+const BOUNDARY_RESPONSE = 'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.';
 
 function auditEntry(contract, performanceEntry, performanceResponse = BOUNDARY_RESPONSE) {
   return auditTutorStubEngagementOperation({ contract, performanceEntry, performanceResponse });
@@ -90,8 +88,7 @@ test('binds the same typed operation across an unrelated subject and outcome', (
     causalRelationContract: causalContract({
       subject: 'backup pump',
       outcome: 'basement flood',
-      public_evidence_surface:
-        'The backup pump remained idle while the basement still flooded.',
+      public_evidence_surface: 'The backup pump remained idle while the basement still flooded.',
     }),
   });
   const audit = auditEntry(
@@ -115,8 +112,7 @@ test('binds the clue to the supplied public surface instead of a fixed inactivit
     causalRelationContract: causalContract({
       subject: 'north ventilator',
       outcome: 'gallery haze',
-      public_evidence_surface:
-        'The north ventilator was quiescent during inspection while the gallery haze persisted.',
+      public_evidence_surface: 'The north ventilator was quiescent during inspection while the gallery haze persisted.',
     }),
   });
   const audit = auditEntry(
@@ -147,8 +143,7 @@ test('does not manufacture realization when any typed obligation or concrete ope
   }
   const wrongOwner = auditTutorStubEngagementOperation({
     contract: { ...contract, owner: 'handoff' },
-    performanceEntry:
-      'I set idle depot chargers against the Tallow Street brownout claim.',
+    performanceEntry: 'I set idle depot chargers against the Tallow Street brownout claim.',
     performanceResponse: BOUNDARY_RESPONSE,
   });
   assert.equal(wrongOwner.ok, false);
@@ -160,8 +155,7 @@ test('V47 entry abbreviation binds only through the exact response-owned causal 
     engagementStance: 'charismatic',
     causalRelationContract: causalContract(),
   });
-  const entry =
-    'I set the dark stocktake chargers against the depot accusation and brownout.';
+  const entry = 'I set the dark stocktake chargers against the depot accusation and brownout.';
   const passing = auditEntry(contract, entry);
   assert.equal(passing.ok, true, passing.reason);
   assert.equal(passing.checks.entry_outcome_head_visible, true);
@@ -189,10 +183,7 @@ test('pressure-target recognition is morphological rather than singular-phrase s
     engagementStance: 'charismatic',
     causalRelationContract: causalContract(),
   });
-  const plural = auditEntry(
-    contract,
-    'I set stocktake-dark depot chargers against Tallow Street brownout claims.',
-  );
+  const plural = auditEntry(contract, 'I set stocktake-dark depot chargers against Tallow Street brownout claims.');
   assert.equal(plural.ok, true, plural.reason);
   assert.equal(plural.checks.pressure_target_visible, true);
 

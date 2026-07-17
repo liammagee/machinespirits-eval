@@ -25,9 +25,7 @@ import {
   renderAdaptiveStateCanonicalPilotReport,
   validateAdaptiveStateCanonicalPilotContract,
 } from '../services/adaptiveTutor/stateBenchmarkCanonicalPilot.js';
-import {
-  validateAdaptiveStateStage0SplitManifestContentSha256,
-} from '../services/adaptiveTutor/stateBenchmarkStage0Analysis.js';
+import { validateAdaptiveStateStage0SplitManifestContentSha256 } from '../services/adaptiveTutor/stateBenchmarkStage0Analysis.js';
 import { loadAdaptiveStateStage0Dataset } from '../services/adaptiveTutor/stateBenchmarkStage0Executor.js';
 import { validateAdaptiveStateStage1Parent } from '../services/adaptiveTutor/stateBenchmarkStage1Executor.js';
 

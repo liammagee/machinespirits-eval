@@ -20,25 +20,89 @@
           "profile": "diligent",
           "sourceLeg": "sealed-profile-run",
           "summary": "diligent/auto-eval-2026-07-12T23-47-18-334Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         },
         {
           "profile": "affective_resistant",
           "sourceLeg": "sealed-profile-run",
           "summary": "affective_resistant/auto-eval-2026-07-13T00-36-45-440Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         },
         {
           "profile": "false_memory",
           "sourceLeg": "sealed-profile-run",
           "summary": "false_memory/auto-eval-2026-07-13T01-26-03-688Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         },
         {
           "profile": "proof_skipper",
           "sourceLeg": "sealed-profile-run",
           "summary": "proof_skipper/auto-eval-2026-07-13T02-23-28-900Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         }
       ]
     },
@@ -52,7 +116,23 @@
           "profile": "diligent",
           "sourceLeg": "sealed-profile-run",
           "summary": "diligent/auto-eval-2026-07-13T00-52-45-908Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         },
         {
           "profile": "affective_resistant",
@@ -78,13 +158,45 @@
           "profile": "false_memory",
           "sourceLeg": "sealed-replacement-run",
           "summary": "false_memory/auto-eval-2026-07-13T03-05-32-442Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         },
         {
           "profile": "proof_skipper",
           "sourceLeg": "sealed-replacement-run",
           "summary": "proof_skipper/auto-eval-2026-07-13T08-57-09-553Z.json",
-          "keys": ["bland-r1", "field-r1", "negative-r1", "bland-r2", "field-r2", "negative-r2", "bland-r3", "field-r3", "negative-r3", "bland-r4", "field-r4", "negative-r4", "bland-r5", "field-r5", "negative-r5"]
+          "keys": [
+            "bland-r1",
+            "field-r1",
+            "negative-r1",
+            "bland-r2",
+            "field-r2",
+            "negative-r2",
+            "bland-r3",
+            "field-r3",
+            "negative-r3",
+            "bland-r4",
+            "field-r4",
+            "negative-r4",
+            "bland-r5",
+            "field-r5",
+            "negative-r5"
+          ]
         }
       ]
     }

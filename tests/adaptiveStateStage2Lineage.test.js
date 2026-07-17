@@ -55,9 +55,7 @@ test('S1 lineage accepts a later unrelated Git SHA but rejects S1 source or CLI 
   const sealedPlan = structuredClone(expectedCurrentPlan);
   sealedPlan.createdAt = '2026-07-11T01:00:00.000Z';
   sealedPlan.provenance.git = cleanGitAttestation('e'.repeat(40), 'codex/historical-s1');
-  assert.doesNotThrow(() =>
-    validateAdaptiveStateHistoricalS1RunPlan({ sealedPlan, expectedCurrentPlan }),
-  );
+  assert.doesNotThrow(() => validateAdaptiveStateHistoricalS1RunPlan({ sealedPlan, expectedCurrentPlan }));
 
   const sourceDrift = structuredClone(expectedCurrentPlan);
   sourceDrift.hashes.analyzer = 'f'.repeat(64);
@@ -171,7 +169,10 @@ test('self-consistent claimed S0 hashes cannot authorize S1 without the actual s
 
 test('final S2 path refuses promotion because semantic regeneration is not implemented', () => {
   assert.equal(ADAPTIVE_STATE_S2_SEMANTIC_REGENERATION_IMPLEMENTED, false);
-  assert.match(hashFile(path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage2Lineage.js')), /^[0-9a-f]{64}$/u);
+  assert.match(
+    hashFile(path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage2Lineage.js')),
+    /^[0-9a-f]{64}$/u,
+  );
   assert.equal(typeof validateAdaptiveStateStage2Run, 'function');
 });
 

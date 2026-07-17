@@ -6,12 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import yaml from 'yaml';
 
-import {
-  appendRunEvent,
-  canonicalJson,
-  createRunPlan,
-  createRunSeal,
-} from '../services/experimentRunArtifacts.js';
+import { appendRunEvent, canonicalJson, createRunPlan, createRunSeal } from '../services/experimentRunArtifacts.js';
 import { adaptiveStateStage1ReportContentSha256 } from '../services/adaptiveTutor/stateBenchmarkStage1Analysis.js';
 import { buildAdaptiveStateCriticalPathPlan } from '../services/adaptiveTutor/stateBenchmarkV2.js';
 import {
@@ -49,13 +44,16 @@ function stoppedReport({ status = 'stop', decision = 'stop_and_repair_s1' } = {}
   return report;
 }
 
-function createStoppedFixture(root, {
-  id = 'stopped-s1-v21',
-  sourceParent = parent,
-  sealStatus = 'stopped',
-  report = stoppedReport(),
-  sealDecision = 'stop_and_repair_s1',
-} = {}) {
+function createStoppedFixture(
+  root,
+  {
+    id = 'stopped-s1-v21',
+    sourceParent = parent,
+    sealStatus = 'stopped',
+    report = stoppedReport(),
+    sealDecision = 'stop_and_repair_s1',
+  } = {},
+) {
   const runDir = path.join(root, id);
   const criticalPlan = buildAdaptiveStateCriticalPathPlan(config, {
     stage: 's1_technical_pilot',

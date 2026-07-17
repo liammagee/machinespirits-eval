@@ -183,7 +183,8 @@ test('binds a writable causal entry to the public relation without reversing cau
     responseConfiguration: configuration(),
     committedPublicEvidence: [
       {
-        surface: 'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out at 18:40.',
+        surface:
+          'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out at 18:40.',
         causal_relation: {
           kind: 'inactive_candidate_with_persisting_outcome',
           family: 'production',
@@ -196,17 +197,14 @@ test('binds a writable causal entry to the public relation without reversing cau
   });
   const prompt = tutorStubFirstDraftContractPrompt(contract);
 
-  assert.equal(
-    contract.opening.causal_relation_contract?.licensed_conclusion,
-    'rules_out_candidate_production',
-  );
-  assert.equal(
-    contract.opening.causal_relation_contract?.forbidden_relation,
-    'candidate_failed_to_prevent_outcome',
-  );
+  assert.equal(contract.opening.causal_relation_contract?.licensed_conclusion, 'rules_out_candidate_production');
+  assert.equal(contract.opening.causal_relation_contract?.forbidden_relation, 'candidate_failed_to_prevent_outcome');
   assert.equal(contract.opening.causal_relation_contract?.subject, 'depot chargers');
   assert.equal(contract.opening.causal_relation_contract?.outcome, 'Tallow Street brownout');
-  assert.match(contract.opening.causal_relation_contract?.public_evidence_surface, /stood dark throughout the stocktake/iu);
+  assert.match(
+    contract.opening.causal_relation_contract?.public_evidence_surface,
+    /stood dark throughout the stocktake/iu,
+  );
   assert.equal(contract.performance.engagement_operation_contract, null);
   assert.match(prompt, /The depot chargers did not cause the Tallow Street brownout/iu);
   assert.match(prompt, /Keep both named roles exact/iu);
@@ -216,18 +214,18 @@ test('binds a writable causal entry to the public relation without reversing cau
     /Say “The depot chargers did not cause the Tallow Street brownout; actual cause remains open/iu,
   );
   assert.match(contract.performance.tactic_execution, /Add no third clause or role change/iu);
+  assert.match(contract.opening.causal_performance_entry_instruction, /Begin exactly “My case is this:”/iu);
   assert.match(
     contract.opening.causal_performance_entry_instruction,
-    /Begin exactly “My case is this:”/iu,
+    /depot chargers cannot explain the Tallow Street brownout/iu,
   );
-  assert.match(contract.opening.causal_performance_entry_instruction, /depot chargers cannot explain the Tallow Street brownout/iu);
   assert.match(contract.opening.causal_performance_entry_instruction, /strong, weak, limited, or weakened/iu);
   assert.match(contract.opening.causal_performance_entry_instruction, /Do not repeat the minutes sentence/iu);
-  assert.match(
-    contract.opening.causal_performance_response_instruction,
-    /actual cause remains open/iu,
+  assert.match(contract.opening.causal_performance_response_instruction, /actual cause remains open/iu);
+  assert.ok(
+    wordCount(prompt) <= 250,
+    `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`,
   );
-  assert.ok(wordCount(prompt) <= 250, `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`);
 });
 
 test('charismatic typed causal entry compiles one public-only PERFORMANCE entry operation', () => {
@@ -236,8 +234,7 @@ test('charismatic typed causal entry compiles one public-only PERFORMANCE entry 
     responseConfiguration: configuration({ engagement_stance: 'charismatic' }),
     committedPublicEvidence: [
       {
-        surface:
-          'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out.',
+        surface: 'The depot chargers stood dark throughout the stocktake, yet Tallow Street still browned out.',
         causal_relation: {
           kind: 'inactive_candidate_with_persisting_outcome',
           family: 'production',
@@ -251,10 +248,7 @@ test('charismatic typed causal entry compiles one public-only PERFORMANCE entry 
 
   assert.equal(contract.performance.engagement_operation_contract?.owner, 'performance_entry');
   assert.equal(contract.performance.engagement_operation_contract?.id, 'public_pressure_collision');
-  assert.match(
-    contract.opening.causal_performance_entry_instruction,
-    /Say exactly “I set this against the claim:/iu,
-  );
+  assert.match(contract.opening.causal_performance_entry_instruction, /Say exactly “I set this against the claim:/iu);
   assert.doesNotMatch(contract.opening.causal_performance_entry_instruction, /My case is this/iu);
   assert.equal(
     contract.performance.engagement_operation_contract?.required_entry,

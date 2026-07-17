@@ -98,8 +98,7 @@ test('V27 joint performance recognizes the saved I2 and I3 beats without phrase 
 
 test('V27 joint performance does not let ENTRY mask the saved I1 RESPONSE generation miss', () => {
   const row = {
-    uptake:
-      'Write: “The lead-sweat shows these shillings are newly struck from debased metal, not clipped sterling.”',
+    uptake: 'Write: “The lead-sweat shows these shillings are newly struck from debased metal, not clipped sterling.”',
     entry: 'Together at the touchstone, you and I keep the lead-sweat before us.',
     response: 'Read its grey trace as poor metal, not yet proof of any maker.',
     handoff: 'We may next consider what the touchstone still cannot tell us about the hand.',
@@ -125,8 +124,7 @@ test('V27 joint performance excludes a host-owned SOURCE performance cue', () =>
     premiseById: new Map(),
   };
   const pressureTarget = 'The town has its verdict ready: Verrell struck the false shillings.';
-  const sourceSurface =
-    'The trial-book says the town’s claim now falters because Edony signed for the charcoal.';
+  const sourceSurface = 'The trial-book says the town’s claim now falters because Edony signed for the charcoal.';
   const configuration = {
     engagement_stance: 'charismatic',
     action_family: 'stage_next_step',
@@ -235,13 +233,10 @@ test('V27 addition leaves the v1 structured ownership contract unchanged', () =>
 
   assert.equal(audit.schema, TUTOR_STUB_STRUCTURED_SLOT_AUDIT_SCHEMA);
   assert.equal(audit.ok, true);
-  assert.deepEqual(
-    Object.fromEntries(Object.entries(audit.axes).map(([axis, value]) => [axis, value.owner])),
-    {
-      actorial_part: 'part',
-      actorial_performance: 'tactic',
-      action_family: 'handoff',
-      engagement_stance: 'handoff',
-    },
-  );
+  assert.deepEqual(Object.fromEntries(Object.entries(audit.axes).map(([axis, value]) => [axis, value.owner])), {
+    actorial_part: 'part',
+    actorial_performance: 'tactic',
+    action_family: 'handoff',
+    engagement_stance: 'handoff',
+  });
 });

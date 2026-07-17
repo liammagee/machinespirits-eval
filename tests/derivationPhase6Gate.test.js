@@ -307,12 +307,7 @@ function validK5EvidenceRows() {
 
 function writeSealedCanary(
   root,
-  {
-    mutateReport = (report) => report,
-    mutatePlan = (plan) => plan,
-    seal = true,
-    sealStatus = 'complete',
-  } = {},
+  { mutateReport = (report) => report, mutatePlan = (plan) => plan, seal = true, sealStatus = 'complete' } = {},
 ) {
   const manifest = buildGatePlan({
     label: path.basename(root),
@@ -360,14 +355,11 @@ function writeSealedCanary(
 
 function writeSealedK5Parent(
   root,
-  {
-    contractSha256 = hashFile(CONTRACT_PATH),
-    mutatePlan = (plan) => plan,
-    priorCanary = null,
-  } = {},
+  { contractSha256 = hashFile(CONTRACT_PATH), mutatePlan = (plan) => plan, priorCanary = null } = {},
 ) {
   const canary =
-    priorCanary || loadPriorCanaryReport(writeSealedCanary(path.join(path.dirname(root), `${path.basename(root)}-canary`)));
+    priorCanary ||
+    loadPriorCanaryReport(writeSealedCanary(path.join(path.dirname(root), `${path.basename(root)}-canary`)));
   const rows = validK5EvidenceRows();
   const report = {
     schema: 'machinespirits.derivation.phase6-gate.report.v1',
@@ -463,9 +455,7 @@ test('Phase 6 freezes a deterministic arm-order rotation balanced across worlds 
       tampered.armOrderSchedule[0].arms[1],
       tampered.armOrderSchedule[0].arms[0],
     ];
-    assert.ok(
-      phase6RealGateProtocolBlockers(tampered).some((reason) => reason.includes('balanced rotation')),
-    );
+    assert.ok(phase6RealGateProtocolBlockers(tampered).some((reason) => reason.includes('balanced rotation')));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -1253,11 +1243,7 @@ test('Phase 6 continuation rejects Git, source, model, runtime, and CLI drift fr
     for (const [label, mutate, pattern] of mutations) {
       const changed = structuredClone(manifest);
       mutate(changed);
-      assert.throws(
-        () => assertPhase6ContinuationCompatibility({ manifest: changed, plan }),
-        pattern,
-        label,
-      );
+      assert.throws(() => assertPhase6ContinuationCompatibility({ manifest: changed, plan }), pattern, label);
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

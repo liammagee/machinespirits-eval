@@ -194,17 +194,11 @@ export function sanitizeTutorStubSpeakerAdvisory({ world = null, tutorTurn = 0, 
   if (!world) return sanitized;
   for (const rule of world.rules || []) {
     if (!rule?.id) continue;
-    sanitized = sanitized.replace(
-      new RegExp(escapedLiteral(rule.id), 'gu'),
-      'the relevant public evidence rule',
-    );
+    sanitized = sanitized.replace(new RegExp(escapedLiteral(rule.id), 'gu'), 'the relevant public evidence rule');
   }
   for (const premise of world.premises || []) {
     if (!premise?.id) continue;
-    sanitized = sanitized.replace(
-      new RegExp(escapedLiteral(premise.id), 'gu'),
-      'the relevant public evidence item',
-    );
+    sanitized = sanitized.replace(new RegExp(escapedLiteral(premise.id), 'gu'), 'the relevant public evidence item');
   }
   return sanitized;
 }
@@ -221,9 +215,7 @@ export function auditTutorStubSpeakerPrivilege({
     if (!includesNeedle(inspected, needle)) return;
     issues.push({ code, source, needle: String(needle).trim() });
   };
-  for (const marker of [
-    ...PRIVATE_SPEAKER_MARKERS,
-  ]) {
+  for (const marker of [...PRIVATE_SPEAKER_MARKERS]) {
     add('planner_marker_in_speaker_prompt', 'planner_contract', marker);
   }
   if (world) {

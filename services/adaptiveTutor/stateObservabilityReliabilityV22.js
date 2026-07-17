@@ -159,11 +159,7 @@ export function buildAdaptiveStateObservabilityReliabilityPlan(
   return plan;
 }
 
-export function validateAdaptiveStateObservabilityReliabilityPlan(
-  plan,
-  benchmarkConfig,
-  reliabilityConfig,
-) {
+export function validateAdaptiveStateObservabilityReliabilityPlan(plan, benchmarkConfig, reliabilityConfig) {
   validateAdaptiveStateObservabilityReliabilityConfig(reliabilityConfig);
   if (
     plan?.schema !== ADAPTIVE_STATE_OBSERVABILITY_RELIABILITY_PLAN_SCHEMA ||
@@ -216,7 +212,10 @@ export function validateAdaptiveStateObservabilityReliabilityPlan(
   const observedCells = new Set(
     plan.jobs.map((job) => `${job.draw_id}|${job.world.id}|${job.event_family}|${job.language_realizer.id}`),
   );
-  if (observedCells.size !== 72 || hashCanonicalJson([...observedCells].sort()) !== hashCanonicalJson([...expectedCells].sort())) {
+  if (
+    observedCells.size !== 72 ||
+    hashCanonicalJson([...observedCells].sort()) !== hashCanonicalJson([...expectedCells].sort())
+  ) {
     throw new Error('stateObservabilityReliabilityV22: repeated matrix is incomplete or duplicated');
   }
   return true;
@@ -418,12 +417,7 @@ export async function executeAdaptiveStateObservabilityReliability({
   return result;
 }
 
-export function validateAdaptiveStateObservabilityReliabilityResult(
-  result,
-  plan,
-  benchmarkConfig,
-  reliabilityConfig,
-) {
+export function validateAdaptiveStateObservabilityReliabilityResult(result, plan, benchmarkConfig, reliabilityConfig) {
   validateAdaptiveStateObservabilityReliabilityPlan(plan, benchmarkConfig, reliabilityConfig);
   if (
     result?.schema !== ADAPTIVE_STATE_OBSERVABILITY_RELIABILITY_RESULT_SCHEMA ||

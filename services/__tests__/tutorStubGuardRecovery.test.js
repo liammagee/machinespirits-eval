@@ -47,9 +47,7 @@ test('clarification repair applies only when that affordance is the sole hard fa
   const repaired = repairTutorStubMissingClarificationInvitation({
     text: 'I set the slate between us. Does that distinction fit?',
     deliveryDecision: {
-      hardIssues: [
-        { guard: 'question_support', type: 'missing_clarification_invitation' },
-      ],
+      hardIssues: [{ guard: 'question_support', type: 'missing_clarification_invitation' }],
     },
   });
   assert.equal(repaired.changed, true);
@@ -193,8 +191,7 @@ test('third-person authored-source casting is repaired without changing the quot
 
 test('source repair matches the stable role when authoring adds a descriptive activity', () => {
   const repair = repairTutorStubThirdPersonSourceLeadIn({
-    text:
-      'The building manager reads the notice: “I posted this Monday: Wrenfold may clear appliances.” What changes?',
+    text: 'The building manager reads the notice: “I posted this Monday: Wrenfold may clear appliances.” What changes?',
     dramaticReleaseFrame: {
       entries: [{ mode: 'enacted_role', role: 'building manager reading the lift notice' }],
     },
@@ -240,14 +237,8 @@ test('legacy single repair output remains a policy candidate without inventing a
 });
 
 test('plain-style repair is detected from both public wording and classifier meaning', () => {
-  assert.equal(
-    tutorStubLearnerRequestedPlainStyle('Drop the formality. Talk to me like an equal.'),
-    true,
-  );
-  assert.equal(
-    tutorStubLearnerRequestedPlainStyle("We don't live in a B-grade detective novel."),
-    true,
-  );
+  assert.equal(tutorStubLearnerRequestedPlainStyle('Drop the formality. Talk to me like an equal.'), true);
+  assert.equal(tutorStubLearnerRequestedPlainStyle("We don't live in a B-grade detective novel."), true);
   assert.equal(
     tutorStubLearnerRequestedPlainStyle('Keep going.', {
       turn: {
@@ -269,8 +260,14 @@ test('actorial realization can be advisory without weakening hard public-safety 
   const decision = tutorStubGuardDeliveryDecision(issues, { allowActorialAdvisory: true });
 
   assert.equal(decision.ok, false);
-  assert.deepEqual(decision.advisoryIssues.map((issue) => issue.guard), ['actorial_realization']);
-  assert.deepEqual(decision.hardIssues.map((issue) => issue.guard), ['leak']);
+  assert.deepEqual(
+    decision.advisoryIssues.map((issue) => issue.guard),
+    ['actorial_realization'],
+  );
+  assert.deepEqual(
+    decision.hardIssues.map((issue) => issue.guard),
+    ['leak'],
+  );
 
   const softOnly = tutorStubGuardDeliveryDecision(issues.slice(0, 1), { allowActorialAdvisory: true });
   assert.equal(softOnly.ok, true);
@@ -300,24 +297,30 @@ test('policy recovery may miss only the optional tactic after visibly performing
     },
   };
   assert.equal(
-    tutorStubActorialPerformanceMayBeAdvisory({
-      issues: [{ type: 'missing_selected_performance_tactic' }],
-    }, visibleConfiguration),
+    tutorStubActorialPerformanceMayBeAdvisory(
+      {
+        issues: [{ type: 'missing_selected_performance_tactic' }],
+      },
+      visibleConfiguration,
+    ),
     true,
   );
   assert.equal(
-    tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
-      issues: [{ type: 'missing_selected_performance_tactic' }],
-    }, visibleConfiguration),
+    tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+      {
+        issues: [{ type: 'missing_selected_performance_tactic' }],
+      },
+      visibleConfiguration,
+    ),
     true,
   );
   assert.equal(
-    tutorStubPolicyRecoveryAllowsPerformanceAdvisory({
-      issues: [
-        { type: 'missing_selected_actorial_part' },
-        { type: 'missing_selected_performance_tactic' },
-      ],
-    }, visibleConfiguration),
+    tutorStubPolicyRecoveryAllowsPerformanceAdvisory(
+      {
+        issues: [{ type: 'missing_selected_actorial_part' }, { type: 'missing_selected_performance_tactic' }],
+      },
+      visibleConfiguration,
+    ),
     false,
   );
   assert.equal(tutorStubPolicyRecoveryAllowsPerformanceAdvisory({ issues: [] }, visibleConfiguration), false);
@@ -354,10 +357,7 @@ test('strict plain recovery uses a complete simpler configuration instead of omi
   assert.equal(recovery.scene_immersion, 'grounded');
   assert.equal(recovery.actorial_part, 'examiner');
   assert.equal(recovery.actorial_performance.id, 'unadorned_report');
-  assert.notEqual(
-    recovery.recovery_transition.selected_signature,
-    recovery.recovery_transition.delivered_signature,
-  );
+  assert.notEqual(recovery.recovery_transition.selected_signature, recovery.recovery_transition.delivered_signature);
   assert.equal(recovery.recovery_transition.strategy, 'plain_grounded_unadorned');
 });
 

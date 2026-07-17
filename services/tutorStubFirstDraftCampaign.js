@@ -12,10 +12,7 @@ import {
 } from './tutorStubJointPerformanceFirstDraft.js';
 import { TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA } from './tutorStubCompactSpeakingPrompt.js';
 import { loadWorld } from './dramaticDerivation/world.js';
-import {
-  extractTutorStubFrozenTurn,
-  refreshTutorStubFrozenFirstDraftRequest,
-} from './tutorStubFrozenReplay.js';
+import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubResponseConfiguration.js';
 import {
   TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
@@ -114,25 +111,22 @@ export function tutorStubFirstDraftInterruptedCellResult({ cell, reportPath, err
     world: cell.world,
     learnerProfile: cell.learnerProfile,
     seed: cell.seed,
-    seedDisposition: results.length
-      ? 'consumed_development_incomplete'
-      : 'indeterminate_zero_output_claim_preserved',
+    seedDisposition: results.length ? 'consumed_development_incomplete' : 'indeterminate_zero_output_claim_preserved',
     status: 'infrastructure_error',
     completedTurns: results.length,
-    unstartedTurns: cell.turns.filter(
-      (turn) => !results.some((row) => Number(row.turn) === Number(turn)),
-    ),
+    unstartedTurns: cell.turns.filter((turn) => !results.some((row) => Number(row.turn) === Number(turn))),
     unstartedDraws: expectedInventory.filter((key) => !observed.has(key)),
     error: error instanceof Error ? error.message : String(error),
-    partialCheckpoint: reportPath && (checkpoint || parseError)
-      ? {
-          path: reportPath,
-          schema: checkpoint?.schema || null,
-          completedDraws: results.length,
-          admissionState: checkpoint?.admissionState || null,
-          parseError,
-        }
-      : null,
+    partialCheckpoint:
+      reportPath && (checkpoint || parseError)
+        ? {
+            path: reportPath,
+            schema: checkpoint?.schema || null,
+            completedDraws: results.length,
+            admissionState: checkpoint?.admissionState || null,
+            parseError,
+          }
+        : null,
   };
 }
 
@@ -172,10 +166,7 @@ function priorTutorDeliverySources(tracePath, targetTurn) {
   for (const line of fs.readFileSync(tracePath, 'utf8').split(/\r?\n/u)) {
     if (!line.trim()) continue;
     const event = JSON.parse(line);
-    if (
-      event?.type === 'tutor_response_guard_accounting' &&
-      Number(event.turn) < Number(targetTurn)
-    ) {
+    if (event?.type === 'tutor_response_guard_accounting' && Number(event.turn) < Number(targetTurn)) {
       rows.push({
         turn: Number(event.turn),
         source: event?.accounting?.finalDelivery?.source || null,
@@ -212,17 +203,12 @@ function refreshedCampaignBundle({ root, trace, turn, sourceAccessibilityPolicy 
 
 function sourceAccessibilityContract(bundle, composition = null) {
   const contract =
-    bundle?.firstDraftContract?.evidence?.source_accessibility ||
-    composition?.sourceAccessibilityContract ||
-    null;
-  return contract?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA
-    ? contract
-    : null;
+    bundle?.firstDraftContract?.evidence?.source_accessibility || composition?.sourceAccessibilityContract || null;
+  return contract?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA ? contract : null;
 }
 
 function sourceSurfaceAccessibilityMetrics(bundle) {
-  const configuration =
-    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const configuration = bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
   const sources = bundle?.firstDraftContract?.evidence?.sources || [];
   return sources.map((source) => ({
     id: source?.id || null,
@@ -235,37 +221,29 @@ function sourceSurfaceAccessibilityMetrics(bundle) {
   }));
 }
 
-export function tutorStubSourceSurfaceAccessibilityReady(
-  metrics = [],
-  expectedCount = 0,
-  contract = null,
-) {
+export function tutorStubSourceSurfaceAccessibilityReady(metrics = [], expectedCount = 0, contract = null) {
   const expected = integer(expectedCount, 'expected source accessibility count');
   const exactInventory =
-    Array.isArray(metrics) &&
-    metrics.length === expected &&
-    (!contract || Number(contract.source_count) === expected);
+    Array.isArray(metrics) && metrics.length === expected && (!contract || Number(contract.source_count) === expected);
   if (!exactInventory) return false;
   if (!contract) return metrics.every((metric) => metric?.ok === true);
   if (contract.effective_mode === 'direct') {
-    return contract.ok === true &&
-      contract.direct_accessible === true &&
-      metrics.every((metric) => metric?.ok === true);
+    return (
+      contract.ok === true && contract.direct_accessible === true && metrics.every((metric) => metric?.ok === true)
+    );
   }
   if (contract.effective_mode === 'compensated') {
-    return contract.ok === true &&
+    return (
+      contract.ok === true &&
       contract.direct_accessible === false &&
       contract.compensation_required === true &&
-      contract.compensation_contract_ready === true;
+      contract.compensation_contract_ready === true
+    );
   }
   return false;
 }
 
-export function tutorStubFirstDraftCampaignValidationArtifactPath({
-  artifactRoot,
-  mode,
-  iteration = 1,
-} = {}) {
+export function tutorStubFirstDraftCampaignValidationArtifactPath({ artifactRoot, mode, iteration = 1 } = {}) {
   const root = requiredString(artifactRoot, 'campaign artifact root');
   const normalizedMode = requiredString(mode, 'campaign mode').toLowerCase();
   if (!['validate', 'development', 'acceptance'].includes(normalizedMode)) {
@@ -287,9 +265,7 @@ export function assertTutorStubFirstDraftDevelopmentIterationVacant(iterationRoo
   if (!fs.existsSync(root)) return { vacant: true, existing: [] };
   const existing = fs.readdirSync(root).sort();
   if (existing.length) {
-    throw new Error(
-      `development iteration already has immutable artifacts at ${root}: ${existing.join(', ')}`,
-    );
+    throw new Error(`development iteration already has immutable artifacts at ${root}: ${existing.join(', ')}`);
   }
   return { vacant: true, existing: [] };
 }
@@ -380,10 +356,7 @@ export function tutorStubFirstDraftFocusedTestSuites(config, { root = process.cw
   if (legacyCommand) {
     const legacyInventory = legacyFocusedTestInventory(legacyCommand);
     const structuredInventory = [...testFiles].sort();
-    if (
-      legacyInventory.length === 0 ||
-      JSON.stringify(legacyInventory) !== JSON.stringify(structuredInventory)
-    ) {
+    if (legacyInventory.length === 0 || JSON.stringify(legacyInventory) !== JSON.stringify(structuredInventory)) {
       throw new Error(
         'focused_test_suites inventory must exactly match legacy focused_tests; refusing to shrink or change the deterministic gate',
       );
@@ -397,7 +370,9 @@ function validateWorkingScreen(config, { root }) {
   const developmentCodexInstructionsFile = config.fixed_configuration?.development_codex_instructions_file || null;
   if (developmentCodexInstructionsFile) {
     if (developmentCodexInstructionsFile !== 'config/tutor-stub-codex-speaker-instructions.md') {
-      throw new Error('development Codex base override is restricted to config/tutor-stub-codex-speaker-instructions.md');
+      throw new Error(
+        'development Codex base override is restricted to config/tutor-stub-codex-speaker-instructions.md',
+      );
     }
     if (!fs.existsSync(absolute(root, developmentCodexInstructionsFile))) {
       throw new Error('development Codex base override file is missing');
@@ -446,10 +421,7 @@ function validateWorkingScreen(config, { root }) {
     if (config.fixed_configuration?.joint_performance_generation !== true) {
       throw new Error('compact speaker prompt requires fixed_configuration.joint_performance_generation: true');
     }
-    if (
-      config.fixed_configuration?.compact_speaker_prompt_schema !==
-      TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA
-    ) {
+    if (config.fixed_configuration?.compact_speaker_prompt_schema !== TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA) {
       throw new Error(
         `compact working screen must declare fixed_configuration.compact_speaker_prompt_schema: ${TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA}`,
       );
@@ -459,19 +431,14 @@ function validateWorkingScreen(config, { root }) {
     }
   }
   const cells = Array.isArray(config.matrix) ? config.matrix : [];
-  const sourceAccessibilityPolicy =
-    config.fixed_configuration?.source_accessibility_policy || 'direct_only';
+  const sourceAccessibilityPolicy = config.fixed_configuration?.source_accessibility_policy || 'direct_only';
   if (!['direct_only', 'direct_or_compensated_v1'].includes(sourceAccessibilityPolicy)) {
     throw new Error(`unsupported source accessibility policy ${sourceAccessibilityPolicy}`);
   }
-  if (
-    config.id === 'first-draft-working-screens-v9' &&
-    sourceAccessibilityPolicy !== 'direct_or_compensated_v1'
-  ) {
+  if (config.id === 'first-draft-working-screens-v9' && sourceAccessibilityPolicy !== 'direct_or_compensated_v1') {
     throw new Error('first-draft-working-screens-v9 must use direct_or_compensated_v1');
   }
-  const declaredSourceAccessibilitySchema =
-    config.fixed_configuration?.source_accessibility_schema || null;
+  const declaredSourceAccessibilitySchema = config.fixed_configuration?.source_accessibility_schema || null;
   if (
     declaredSourceAccessibilitySchema !== null &&
     declaredSourceAccessibilitySchema !== TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA
@@ -495,11 +462,9 @@ function validateWorkingScreen(config, { root }) {
     'required draws per prefix',
     { minimum: 1 },
   );
-  const requiredPrefixes = integer(
-    config.gates_per_cell?.required_prefixes ?? requiredTurns,
-    'required prefixes',
-    { minimum: 1 },
-  );
+  const requiredPrefixes = integer(config.gates_per_cell?.required_prefixes ?? requiredTurns, 'required prefixes', {
+    minimum: 1,
+  });
   if (requiredPrefixes * drawsPerPrefix !== requiredTurns) {
     throw new Error('required prefixes multiplied by draws per prefix must equal required turns');
   }
@@ -577,9 +542,7 @@ function validateWorkingScreen(config, { root }) {
       if (
         declaredActivations.length !== structuralTargets.length ||
         declaredActivations.some((target) => !structuralTargets.includes(target)) ||
-        structuralTargets.some(
-          (target) => cell.structural_activation?.[target]?.required !== true,
-        )
+        structuralTargets.some((target) => cell.structural_activation?.[target]?.required !== true)
       ) {
         throw new Error(`${id} structural activation declarations must exactly cover its required targets`);
       }
@@ -630,9 +593,7 @@ function validateWorkingScreen(config, { root }) {
         const activation = cell.structural_activation || {};
         const targets = new Set(structuralTargets);
         const release = bundle.frames?.dramaticRelease || null;
-        const releaseEntries = release?.active === true && Array.isArray(release.entries)
-          ? release.entries
-          : [];
+        const releaseEntries = release?.active === true && Array.isArray(release.entries) ? release.entries : [];
         const sourceModes = releaseEntries.map((entry) => entry?.mode || 'presented_exhibit');
         const progression = bundle.firstDraftContract?.progression || null;
         const sourceAccessibility = sourceSurfaceAccessibilityMetrics(bundle);
@@ -647,10 +608,7 @@ function validateWorkingScreen(config, { root }) {
             throw new Error(`${id} declares source rendering but its frozen turn has no active due source`);
           }
           const expectedModes = activation.deterministic_host_source_renderer?.expected_modes || [];
-          if (
-            !expectedModes.length ||
-            sourceModes.some((mode) => !expectedModes.includes(mode))
-          ) {
+          if (!expectedModes.length || sourceModes.some((mode) => !expectedModes.includes(mode))) {
             throw new Error(`${id} source renderer modes do not match its structural activation declaration`);
           }
           if (
@@ -690,7 +648,9 @@ function validateWorkingScreen(config, { root }) {
           targets.has('shared_writable_request_classifier') &&
           progression?.learner_uptake?.mode !== 'writable_entry'
         ) {
-          throw new Error(`${id} declares writable-request classification but the typed learner mode is not writable_entry`);
+          throw new Error(
+            `${id} declares writable-request classification but the typed learner mode is not writable_entry`,
+          );
         }
         if (targets.has('source_accessibility_compensation')) {
           const declaration = activation.source_accessibility_compensation || {};
@@ -706,24 +666,15 @@ function validateWorkingScreen(config, { root }) {
           ) {
             throw new Error(`${id} source accessibility effective mode does not match its declaration`);
           }
-          if (
-            declaration.expected_owner &&
-            accessibilityContract.owner !== declaration.expected_owner
-          ) {
+          if (declaration.expected_owner && accessibilityContract.owner !== declaration.expected_owner) {
             throw new Error(`${id} source accessibility owner does not match its declaration`);
           }
         }
-        if (
-          releaseEntries.length > 0 &&
-          config.gates_per_cell?.require_structural_target_activation === true
-        ) {
+        if (releaseEntries.length > 0 && config.gates_per_cell?.require_structural_target_activation === true) {
           if (!targets.has('deterministic_host_source_renderer')) {
             throw new Error(`${id} has a due source but does not declare the source renderer target`);
           }
-          if (
-            config.gates_per_cell?.require_source_surface_accessibility === true &&
-            !sourceAccessibilityReady
-          ) {
+          if (config.gates_per_cell?.require_source_surface_accessibility === true && !sourceAccessibilityReady) {
             const summary = sourceAccessibility
               .map(
                 (metric) =>
@@ -739,8 +690,7 @@ function validateWorkingScreen(config, { root }) {
               sources: sourceAccessibility,
               directAccessible: accessibilityContract?.direct_accessible ?? false,
               compensationRequired: accessibilityContract?.compensation_required ?? false,
-              compensationContractReady:
-                accessibilityContract?.compensation_contract_ready ?? false,
+              compensationContractReady: accessibilityContract?.compensation_contract_ready ?? false,
               compensationVisible: null,
               effectiveMode: accessibilityContract?.effective_mode || 'blocked',
               contractIssues: [...(accessibilityContract?.issues || [])],
@@ -751,18 +701,13 @@ function validateWorkingScreen(config, { root }) {
             turn: targetTurn,
             sourceSurfaceAccessibility: sourceAccessibility,
             directAccessible:
-              accessibilityContract?.direct_accessible ??
-              sourceAccessibility.every((metric) => metric?.ok === true),
-            compensationRequired:
-              accessibilityContract?.compensation_required ?? false,
-            compensationContractReady:
-              accessibilityContract?.compensation_contract_ready ?? false,
+              accessibilityContract?.direct_accessible ?? sourceAccessibility.every((metric) => metric?.ok === true),
+            compensationRequired: accessibilityContract?.compensation_required ?? false,
+            compensationContractReady: accessibilityContract?.compensation_contract_ready ?? false,
             // No candidate exists during preflight. Visibility is deliberately
             // unknown until the generated owner span clears the strict audit.
             compensationVisible: null,
-            effectiveMode:
-              accessibilityContract?.effective_mode ||
-              (sourceAccessibilityReady ? 'direct' : 'blocked'),
+            effectiveMode: accessibilityContract?.effective_mode || (sourceAccessibilityReady ? 'direct' : 'blocked'),
             owner: accessibilityContract?.owner || null,
             contractIssues: [...(accessibilityContract?.issues || [])],
             ok: sourceAccessibilityReady,
@@ -808,16 +753,16 @@ function validateWorkingScreen(config, { root }) {
     ]) {
       if (execution[field] !== true) throw new Error(`${label} must be enabled`);
     }
-    if (
-      execution.require_clean_worktree != null &&
-      typeof execution.require_clean_worktree !== 'boolean'
-    ) {
+    if (execution.require_clean_worktree != null && typeof execution.require_clean_worktree !== 'boolean') {
       throw new Error('development clean-worktree requirement must be boolean');
     }
     if (
-      ['first-draft-working-screens-v7', 'first-draft-working-screens-v8', 'first-draft-working-screens-v9'].includes(config.id) &&
+      ['first-draft-working-screens-v7', 'first-draft-working-screens-v8', 'first-draft-working-screens-v9'].includes(
+        config.id,
+      ) &&
       execution.require_exact_target_bundle_binding !== true
-    ) throw new Error(`${config.id} must require exact target bundle binding`);
+    )
+      throw new Error(`${config.id} must require exact target bundle binding`);
     if (
       ['first-draft-working-screens-v8', 'first-draft-working-screens-v9'].includes(config.id) &&
       execution.require_clean_worktree !== true
@@ -969,12 +914,7 @@ function replayCommand({ root, config, cell, turn, outputPath }) {
     command.splice(command.length - 2, 0, '--stop-on-first-rejection');
   }
   if (config.fixed_configuration?.adjudicator_model) {
-    command.splice(
-      command.length - 2,
-      0,
-      '--adjudicator-model',
-      String(config.fixed_configuration.adjudicator_model),
-    );
+    command.splice(command.length - 2, 0, '--adjudicator-model', String(config.fixed_configuration.adjudicator_model));
   }
   if (config.fixed_configuration?.adjudicator_effort) {
     command.splice(
@@ -1108,16 +1048,10 @@ export function expandTutorStubFirstDraftCampaign({ config, root = process.cwd()
   };
 }
 
-export function buildTutorStubFirstDraftCampaignValidationReport({
-  plan,
-  config,
-  configPath,
-  frozen = null,
-} = {}) {
+export function buildTutorStubFirstDraftCampaignValidationReport({ plan, config, configPath, frozen = null } = {}) {
   const jointPerformanceGeneration = config?.fixed_configuration?.joint_performance_generation === true;
   const compactSpeakerPrompt = config?.fixed_configuration?.compact_speaker_prompt === true;
-  const developmentCodexInstructionsFile =
-    config?.fixed_configuration?.development_codex_instructions_file || null;
+  const developmentCodexInstructionsFile = config?.fixed_configuration?.development_codex_instructions_file || null;
   return {
     schema: 'machinespirits.tutor-stub.first-draft-campaign-validation.v1',
     generatedAt: new Date().toISOString(),
@@ -1149,16 +1083,14 @@ export function buildTutorStubFirstDraftCampaignValidationReport({
     ...(jointPerformanceGeneration
       ? {
           jointPerformanceSchema: config.fixed_configuration.joint_performance_schema,
-          jointPerformanceCompositionSchema:
-            config.fixed_configuration.joint_performance_composition_schema,
+          jointPerformanceCompositionSchema: config.fixed_configuration.joint_performance_composition_schema,
           jointPerformanceAuditSchema: config.fixed_configuration.joint_performance_audit_schema,
         }
       : {}),
     ...(compactSpeakerPrompt
       ? {
           compactSpeakerPrompt: true,
-          compactSpeakerPromptSchema:
-            config.fixed_configuration.compact_speaker_prompt_schema,
+          compactSpeakerPromptSchema: config.fixed_configuration.compact_speaker_prompt_schema,
         }
       : {}),
     cells: (plan?.cells || []).map((cell) => ({
@@ -1212,8 +1144,7 @@ export function buildTutorStubFirstDraftPreflightFailureResult({
   commandFailure = null,
 } = {}) {
   const workingIteration = integer(iteration, 'working iteration', { minimum: 1 });
-  const preserveUnstartedSeeds =
-    config?.execution?.preserve_unstarted_seeds_as_unconsumed !== false;
+  const preserveUnstartedSeeds = config?.execution?.preserve_unstarted_seeds_as_unconsumed !== false;
   const seedDisposition = preserveUnstartedSeeds
     ? 'unconsumed_development_preflight_failure'
     : 'retired_development_preflight_failure';
@@ -1271,8 +1202,7 @@ export function buildTutorStubFirstDraftPreflightFailureResult({
     preflightReady: false,
     preflightBlockers: plan?.preflightBlockers || [],
     commandFailure: commandFailure ? structuredClone(commandFailure) : null,
-    preflightExecutionArtifactPath:
-      commandFailure?.preflightExecutionArtifactPath || null,
+    preflightExecutionArtifactPath: commandFailure?.preflightExecutionArtifactPath || null,
     structuralPreflight: plan?.structuralPreflight || [],
     changeControl: structuredClone(config?.change_control || null),
     seedInventory: {
@@ -1306,15 +1236,11 @@ export function tutorStubFirstDraftDevelopmentExecutionPlan({ plan, config } = {
     remainingConcurrency,
     preflightRuns: 1,
     hardCellMustPassBeforeRemaining: execution.hard_cell_must_pass_before_remaining === true,
-    completeAllCellsAfterHardCellPasses:
-      execution.complete_all_cells_after_hard_cell_passes === true,
+    completeAllCellsAfterHardCellPasses: execution.complete_all_cells_after_hard_cell_passes === true,
     oneJobPerCell: execution.one_job_per_cell === true,
-    forbidDuplicateActiveOrCompletedCells:
-      execution.forbid_duplicate_active_or_completed_cells === true,
-    stopCellWhenGateMathematicallyImpossible:
-      execution.stop_cell_when_gate_mathematically_impossible !== false,
-    preserveUnstartedSeedsAsUnconsumed:
-      execution.preserve_unstarted_seeds_as_unconsumed === true,
+    forbidDuplicateActiveOrCompletedCells: execution.forbid_duplicate_active_or_completed_cells === true,
+    stopCellWhenGateMathematicallyImpossible: execution.stop_cell_when_gate_mathematically_impossible !== false,
+    preserveUnstartedSeedsAsUnconsumed: execution.preserve_unstarted_seeds_as_unconsumed === true,
     requireCleanWorktree: execution.require_clean_worktree === true,
   };
 }
@@ -1336,7 +1262,7 @@ export function tutorStubFirstDraftGatePossibility({ accepted = 0, completed = 0
 export function tutorStubStrictOriginalCandidateAccepted(accounting = null) {
   return Boolean(
     accounting?.finalDelivery?.source === 'original_candidate' &&
-      accounting?.originalCandidate?.audits?.actorialRealizationAudit?.ok === true,
+    accounting?.originalCandidate?.audits?.actorialRealizationAudit?.ok === true,
   );
 }
 
@@ -1368,10 +1294,7 @@ function hostSourceOccurrenceMetric({ row, bundle, generationField = 'structured
   const sourceSpanCount = sourceSpans.length;
   const hostOwnedSourceSpanCount = sourceSpans.filter((span) => span?.owner === 'host').length;
   const actualOccurrenceCount = active
-    ? entries.reduce(
-        (sum, entry) => sum + exactTextOccurrences(composition?.text, entry?.surface),
-        0,
-      )
+    ? entries.reduce((sum, entry) => sum + exactTextOccurrences(composition?.text, entry?.surface), 0)
     : sourceSpans.length;
   return {
     turn: Number(row?.turn),
@@ -1386,8 +1309,7 @@ function hostSourceOccurrenceMetric({ row, bundle, generationField = 'structured
       (!active || entries.length > 0) &&
       declaredSourceCount === expectedOccurrenceCount &&
       sourceSpanCount === expectedOccurrenceCount &&
-      (generationField !== 'jointPerformanceGeneration' ||
-        hostOwnedSourceSpanCount === expectedOccurrenceCount) &&
+      (generationField !== 'jointPerformanceGeneration' || hostOwnedSourceSpanCount === expectedOccurrenceCount) &&
       actualOccurrenceCount === expectedOccurrenceCount,
   };
 }
@@ -1438,15 +1360,10 @@ function exactAccessibilityAuditSpans({ contract, composition }) {
   const sourceSpansExact =
     sourceSpans.length === expectedSources.length &&
     sourceSpans.every(
-      (span, index) =>
-        span.owner === 'host' &&
-        exactSpan(span) &&
-        span.text === expectedSources[index]?.text,
+      (span, index) => span.owner === 'host' && exactSpan(span) && span.text === expectedSources[index]?.text,
     );
   const performanceResponseExact =
-    performanceResponse?.kind === 'host' &&
-    performanceResponse?.owner === 'model' &&
-    exactSpan(performanceResponse);
+    performanceResponse?.kind === 'host' && performanceResponse?.owner === 'model' && exactSpan(performanceResponse);
   return {
     ok: sourceSpansExact && performanceResponseExact,
     sourceSpansExact,
@@ -1458,13 +1375,10 @@ function exactAccessibilityAuditSpans({ contract, composition }) {
 
 function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'structuredGeneration' }) {
   const release = bundle?.frames?.dramaticRelease || null;
-  const expectedSourceCount = release?.active === true && Array.isArray(release.entries)
-    ? release.entries.length
-    : 0;
+  const expectedSourceCount = release?.active === true && Array.isArray(release.entries) ? release.entries.length : 0;
   const composition = row?.[generationField]?.composition || null;
   const sources = Array.isArray(composition?.sources) ? composition.sources : [];
-  const configuration =
-    bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
+  const configuration = bundle?.speakingResponseConfiguration || bundle?.selectedResponseConfiguration || {};
   const contract = sourceAccessibilityContract(bundle, composition);
   const rowRecordedAudit = row?.audit?.audits?.sourceAccessibilityAudit || null;
   const compositionRecordedAudit = composition?.sourceAccessibilityAudit || null;
@@ -1484,25 +1398,19 @@ function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'stru
     composition !== null &&
     sources.length === expectedSourceCount &&
     (!contract || Number(contract.source_count) === expectedSourceCount);
-  const directAccessible =
-    contract?.direct_accessible ?? metrics.every((metric) => metric.ok === true);
+  const directAccessible = contract?.direct_accessible ?? metrics.every((metric) => metric.ok === true);
   const compensationRequired = contract?.compensation_required === true;
   const compensationContractReady = contract?.compensation_contract_ready === true;
   const effectiveMode =
-    canonicalAudit?.effective_mode ||
-    contract?.effective_mode ||
-    (directAccessible ? 'direct' : 'blocked');
+    canonicalAudit?.effective_mode || contract?.effective_mode || (directAccessible ? 'direct' : 'blocked');
   const contractOwner = contract?.owner || null;
   const auditOwner = canonicalAudit?.owner || null;
   const candidateAuditRequired = sourceBearing && Boolean(contract);
-  const canonicalAuditSchemaValid =
-    canonicalAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
-  const rowRecordedAuditSchemaValid =
-    rowRecordedAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
+  const canonicalAuditSchemaValid = canonicalAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
+  const rowRecordedAuditSchemaValid = rowRecordedAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
   const compositionRecordedAuditSchemaValid =
     compositionRecordedAudit?.schema === TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA;
-  const rowRecordedAuditConsistent =
-    canonicalAuditSchemaValid && exactlyEqualJson(rowRecordedAudit, canonicalAudit);
+  const rowRecordedAuditConsistent = canonicalAuditSchemaValid && exactlyEqualJson(rowRecordedAudit, canonicalAudit);
   const compositionRecordedAuditConsistent =
     canonicalAuditSchemaValid && exactlyEqualJson(compositionRecordedAudit, canonicalAudit);
   const recordedAuditsConsistent =
@@ -1578,9 +1486,7 @@ function sourceSurfaceAccessibilityMetric({ row, bundle, generationField = 'stru
 function structuralActivationMetric({ target, row, bundle, declaration = {}, generationField }) {
   const composition = row?.[generationField]?.composition || null;
   const release = bundle?.frames?.dramaticRelease || null;
-  const releaseEntries = release?.active === true && Array.isArray(release.entries)
-    ? release.entries
-    : [];
+  const releaseEntries = release?.active === true && Array.isArray(release.entries) ? release.entries : [];
   const sources = Array.isArray(composition?.sources) ? composition.sources : [];
   const progression = bundle?.firstDraftContract?.progression || null;
   const progressionAudit = row?.audit?.audits?.turnProgressionAudit || null;
@@ -1599,8 +1505,7 @@ function structuralActivationMetric({ target, row, bundle, declaration = {}, gen
       bundle,
       generationField,
     });
-    const sourceAccessibilityVisible =
-      !sourceAccessibilityRequired || sourceAccessibility.ok === true;
+    const sourceAccessibilityVisible = !sourceAccessibilityRequired || sourceAccessibility.ok === true;
     return {
       target,
       active,
@@ -1627,19 +1532,14 @@ function structuralActivationMetric({ target, row, bundle, declaration = {}, gen
     const expectedMode = declaration?.expected_effective_mode || 'compensated';
     const expectedOwner = declaration?.expected_owner || 'performance_response';
     const modeMatched = metric.effectiveMode === expectedMode;
-    const ownerMatched =
-      metric.contractOwner === expectedOwner && metric.candidateAuditOwner === expectedOwner;
+    const ownerMatched = metric.contractOwner === expectedOwner && metric.candidateAuditOwner === expectedOwner;
     return {
       target,
       active:
         metric.sourceBearing === true &&
         metric.compensationRequired === true &&
         metric.compensationContractReady === true,
-      visible:
-        metric.ok === true &&
-        metric.compensationVisible === true &&
-        modeMatched &&
-        ownerMatched,
+      visible: metric.ok === true && metric.compensationVisible === true && modeMatched && ownerMatched,
       expectedMode,
       effectiveMode: metric.effectiveMode,
       expectedOwner,
@@ -1655,7 +1555,10 @@ function structuralActivationMetric({ target, row, bundle, declaration = {}, gen
   if (target === 'handoff_contract_and_cross_slot_progression') {
     return {
       target,
-      active: progression?.complete === true && Boolean(progression?.handoff_contract?.mode) && progressionAudit?.active === true,
+      active:
+        progression?.complete === true &&
+        Boolean(progression?.handoff_contract?.mode) &&
+        progressionAudit?.active === true,
       visible: progressionAudit?.ok === true,
       mode: progression?.handoff_contract?.mode || null,
     };
@@ -1689,11 +1592,9 @@ export function tutorStubFirstDraftIterationStopping({
   maximumConsecutiveWithoutImprovement = 2,
   requireWorkingScreenPass = false,
 } = {}) {
-  const maximum = integer(
-    maximumConsecutiveWithoutImprovement,
-    'maximum consecutive iterations without improvement',
-    { minimum: 1 },
-  );
+  const maximum = integer(maximumConsecutiveWithoutImprovement, 'maximum consecutive iterations without improvement', {
+    minimum: 1,
+  });
   if (!previous) {
     return {
       measurableImprovement: null,
@@ -1717,21 +1618,16 @@ export function tutorStubFirstDraftIterationStopping({
     Number.isFinite(currentConfigurationRealization) &&
     Number.isFinite(previousConfigurationRealization) &&
     currentConfigurationRealization > previousConfigurationRealization;
-  const comparableAcceptanceRateImproved =
-    currentCompleted === previousCompleted && currentRate > previousRate;
-  const comparableAcceptedCountImproved =
-    comparableCompletion && currentAccepted > previousAccepted;
+  const comparableAcceptanceRateImproved = currentCompleted === previousCompleted && currentRate > previousRate;
+  const comparableAcceptedCountImproved = comparableCompletion && currentAccepted > previousAccepted;
   const improved =
     comparableAcceptanceRateImproved ||
     comparableAcceptedCountImproved ||
     configurationRealizationImproved ||
-    (comparableCompletion &&
-      Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0)) ||
+    (comparableCompletion && Number(current?.safetyFailures || 0) < Number(previous?.safetyFailures || 0)) ||
     (comparableCompletion &&
       Number(current?.deterministicFallbacks || 0) < Number(previous?.deterministicFallbacks || 0));
-  const consecutive = improved
-    ? 0
-    : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
+  const consecutive = improved ? 0 : Number(previous?.stopping?.consecutiveWithoutImprovement || 0) + 1;
   const requiredPassMissed = requireWorkingScreenPass && current?.workingScreenPassed !== true;
   return {
     measurableImprovement: improved,
@@ -1772,16 +1668,16 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     config.gates_per_cell.required_draws_per_prefix ?? config.fixed_configuration?.draws_per_turn ?? 1,
   );
   const expectedDrawKeys = new Set(
-    cell.turns.flatMap((turn) =>
-      Array.from({ length: drawsPerPrefix }, (_, index) => `${Number(turn)}:${index + 1}`),
-    ),
+    cell.turns.flatMap((turn) => Array.from({ length: drawsPerPrefix }, (_, index) => `${Number(turn)}:${index + 1}`)),
   );
   const observedDrawKeys = results.map((row) => `${Number(row.turn)}:${Number(row.draw ?? 1)}`);
   const uniqueObservedDrawKeys = new Set(observedDrawKeys);
   const drawInventory = {
     expected: [...expectedDrawKeys].sort(),
     observed: [...observedDrawKeys].sort(),
-    duplicateKeys: [...new Set(observedDrawKeys.filter((key, index) => observedDrawKeys.indexOf(key) !== index))].sort(),
+    duplicateKeys: [
+      ...new Set(observedDrawKeys.filter((key, index) => observedDrawKeys.indexOf(key) !== index)),
+    ].sort(),
     missingKeys: [...expectedDrawKeys].filter((key) => !uniqueObservedDrawKeys.has(key)).sort(),
     unexpectedKeys: [...uniqueObservedDrawKeys].filter((key) => !expectedDrawKeys.has(key)).sort(),
     bindingFailures: [],
@@ -1821,12 +1717,9 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       ? summaries.reduce((sum, summary) => sum + Number(summary?.[field] || 0), 0)
       : fallback;
   };
-  const strictlyAccepted = (audit) =>
-    audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
+  const strictlyAccepted = (audit) => audit?.ok === true && audit?.audits?.actorialRealizationAudit?.ok === true;
   const accepted = results.filter((row) => strictlyAccepted(row.audit)).length;
-  const deterministicAccepted = results.filter((row) =>
-    strictlyAccepted(row.deterministicAudit || row.audit),
-  ).length;
+  const deterministicAccepted = results.filter((row) => strictlyAccepted(row.deterministicAudit || row.audit)).length;
   const semanticCorrections = results.filter(
     (row) =>
       row.deterministicAudit?.audits?.actorialRealizationAudit?.ok === false &&
@@ -1840,20 +1733,11 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const configurationRealizationRates = results.map((row) =>
     Number(row.audit?.audits?.responseConfigurationAudit?.realization_rate || 0),
   );
-  const configurationRealizationTotal = configurationRealizationRates.reduce(
-    (sum, rate) => sum + rate,
-    0,
-  );
-  const meanConfigurationRealization = results.length
-    ? configurationRealizationTotal / results.length
-    : null;
-  const minimumConfigurationRealization = Number(
-    config.gates_per_cell.minimum_mean_configuration_realization || 0,
-  );
+  const configurationRealizationTotal = configurationRealizationRates.reduce((sum, rate) => sum + rate, 0);
+  const meanConfigurationRealization = results.length ? configurationRealizationTotal / results.length : null;
+  const minimumConfigurationRealization = Number(config.gates_per_cell.minimum_mean_configuration_realization || 0);
   const configurationRealizationEnforcement =
-    config.gates_per_cell.configuration_realization_enforcement === 'report_only'
-      ? 'report_only'
-      : 'gate';
+    config.gates_per_cell.configuration_realization_enforcement === 'report_only' ? 'report_only' : 'gate';
   const configurationRealizationIsGate = configurationRealizationEnforcement === 'gate';
   const adjudicationRows = results.filter((row) => row.semanticAdjudication?.called === true);
   const successfulAdjudicationRows = results.filter(
@@ -1863,21 +1747,15 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       row.semanticAdjudication?.adjudication,
   );
   const structuredGenerationEnabled = config.fixed_configuration?.structured_generation === true;
-  const jointPerformanceGenerationEnabled =
-    config.fixed_configuration?.joint_performance_generation === true;
-  const compactSpeakerPromptEnabled =
-    config.fixed_configuration?.compact_speaker_prompt === true;
+  const jointPerformanceGenerationEnabled = config.fixed_configuration?.joint_performance_generation === true;
+  const compactSpeakerPromptEnabled = config.fixed_configuration?.compact_speaker_prompt === true;
   const typedGenerationEnabled = structuredGenerationEnabled || jointPerformanceGenerationEnabled;
-  const generationField = jointPerformanceGenerationEnabled
-    ? 'jointPerformanceGeneration'
-    : 'structuredGeneration';
+  const generationField = jointPerformanceGenerationEnabled ? 'jointPerformanceGeneration' : 'structuredGeneration';
   const ownershipAuditField = jointPerformanceGenerationEnabled
     ? 'jointPerformanceAudit'
     : 'structuredSlotOwnershipAudit';
   const validStructuredOutputs = results.filter(
-    (row) =>
-      row?.[generationField]?.ok === true &&
-      row?.[generationField]?.composition !== null,
+    (row) => row?.[generationField]?.ok === true && row?.[generationField]?.composition !== null,
   ).length;
   const structuredSlotOwnershipPasses = results.filter(
     (row) => row.audit?.audits?.[ownershipAuditField]?.ok === true,
@@ -1889,9 +1767,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const sourceSurfaceAccessibilities = resultEntries.map((entry) =>
     sourceSurfaceAccessibilityMetric({ ...entry, generationField }),
   );
-  const sourceSurfaceAccessibilityPasses = sourceSurfaceAccessibilities.filter(
-    (metric) => metric.ok,
-  ).length;
+  const sourceSurfaceAccessibilityPasses = sourceSurfaceAccessibilities.filter((metric) => metric.ok).length;
   const compactSpeakerPrompts = resultEntries.map(({ row, bundle }) => {
     const prompt = bundle?.compactSpeakingPrompt || null;
     const authoredTokens = prompt?.promptSize?.authoredTotal?.estimatedTokens ?? null;
@@ -1928,37 +1804,36 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
   const mechanicalRepairs = reportMetric('mechanicalRepairs');
   const modelRewrites = reportMetric('modelRewrites');
   const deterministicFallbacks = reportMetric('deterministicFallbacks');
-  const reportedTransportNormalizedOutputs = reportMetric(
-    'transportNormalizedOutputs',
-    transportNormalizedOutputs,
-  );
+  const reportedTransportNormalizedOutputs = reportMetric('transportNormalizedOutputs', transportNormalizedOutputs);
   const reportedTransportNormalizationCount = reportMetric(
     'transportNormalizationCount',
     transportNormalizations.length,
   );
   const structuralTargets = cell.structural_targets || [];
-  const structuralTargetActivations = structuralTargets.map((target) => ({
-    target,
-    draws: resultEntries.map(({ row, bundle }) => ({
-      turn: Number(row?.turn),
-      draw: Number(row?.draw ?? 1),
-      ...structuralActivationMetric({
-        target,
-        row,
-        bundle,
-        declaration: cell.structural_activation?.[target] || {},
-        generationField,
-      }),
-    })),
-  })).map((entry) => ({
-    ...entry,
-    activeDraws: entry.draws.filter((draw) => draw.active).length,
-    visibleDraws: entry.draws.filter((draw) => draw.visible).length,
-    ok:
-      entry.draws.length === results.length &&
-      entry.draws.length > 0 &&
-      entry.draws.every((draw) => draw.active && draw.visible),
-  }));
+  const structuralTargetActivations = structuralTargets
+    .map((target) => ({
+      target,
+      draws: resultEntries.map(({ row, bundle }) => ({
+        turn: Number(row?.turn),
+        draw: Number(row?.draw ?? 1),
+        ...structuralActivationMetric({
+          target,
+          row,
+          bundle,
+          declaration: cell.structural_activation?.[target] || {},
+          generationField,
+        }),
+      })),
+    }))
+    .map((entry) => ({
+      ...entry,
+      activeDraws: entry.draws.filter((draw) => draw.active).length,
+      visibleDraws: entry.draws.filter((draw) => draw.visible).length,
+      ok:
+        entry.draws.length === results.length &&
+        entry.draws.length > 0 &&
+        entry.draws.every((draw) => draw.active && draw.visible),
+    }));
   const failureCounts = new Map();
   for (const row of results) {
     // Original-only screening rejects a candidate when semantic recognition
@@ -1986,40 +1861,30 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     requiredMean: minimumConfigurationRealization,
     maximumPossibleMean: configurationMaximumPossibleMean,
     possible: configurationMaximumPossibleMean >= minimumConfigurationRealization,
-    passed:
-      results.length === requiredTurns &&
-      meanConfigurationRealization >= minimumConfigurationRealization,
+    passed: results.length === requiredTurns && meanConfigurationRealization >= minimumConfigurationRealization,
   };
   const possibility = {
     ...originalPossibility,
     originalAcceptance: originalPossibility,
     configurationRealization: configurationPossibility,
-    possible:
-      originalPossibility.possible &&
-      (!configurationRealizationIsGate || configurationPossibility.possible),
+    possible: originalPossibility.possible && (!configurationRealizationIsGate || configurationPossibility.possible),
   };
   const gates = {
     drawInventory: drawInventory.ok,
     originalsAccepted: results.length === requiredTurns && accepted >= requiredAccepted,
-    configurationRealization:
-      !configurationRealizationIsGate || configurationPossibility.passed,
+    configurationRealization: !configurationRealizationIsGate || configurationPossibility.passed,
     safety: safetyFailures <= Number(config.gates_per_cell.maximum_safety_failures || 0),
-    mechanicalRepairs:
-      mechanicalRepairs <= Number(config.gates_per_cell.maximum_mechanical_repairs ?? 0),
-    modelRewrites:
-      modelRewrites <= Number(config.gates_per_cell.maximum_model_rewrites ?? 0),
-    fallbacks:
-      deterministicFallbacks <= Number(config.gates_per_cell.maximum_fallbacks ?? 0),
+    mechanicalRepairs: mechanicalRepairs <= Number(config.gates_per_cell.maximum_mechanical_repairs ?? 0),
+    modelRewrites: modelRewrites <= Number(config.gates_per_cell.maximum_model_rewrites ?? 0),
+    fallbacks: deterministicFallbacks <= Number(config.gates_per_cell.maximum_fallbacks ?? 0),
     semanticRecognitionCorrections:
       semanticCorrections <= Number(config.gates_per_cell.maximum_semantic_recognition_corrections ?? 0),
     semanticAdjudicatorCalls:
-      adjudicationRows.length <= Number(
-        config.gates_per_cell.maximum_semantic_adjudicator_calls ?? Number.MAX_SAFE_INTEGER,
-      ),
+      adjudicationRows.length <=
+      Number(config.gates_per_cell.maximum_semantic_adjudicator_calls ?? Number.MAX_SAFE_INTEGER),
     semanticAdjudicatorErrors:
-      results.filter((row) => row.semanticAdjudication?.error).length <= Number(
-        config.gates_per_cell.maximum_semantic_adjudicator_errors ?? Number.MAX_SAFE_INTEGER,
-      ),
+      results.filter((row) => row.semanticAdjudication?.error).length <=
+      Number(config.gates_per_cell.maximum_semantic_adjudicator_errors ?? Number.MAX_SAFE_INTEGER),
     successfulSemanticAdjudicationPerDraw:
       config.gates_per_cell.require_successful_semantic_adjudication_per_draw !== true ||
       successfulAdjudicationRows.length === results.length,
@@ -2087,48 +1952,28 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     validStructuredOutputs: structuredGenerationEnabled ? validStructuredOutputs : 0,
     structuredOutputFailures: structuredGenerationEnabled ? results.length - validStructuredOutputs : 0,
     structuredSlotOwnershipPasses: structuredGenerationEnabled ? structuredSlotOwnershipPasses : 0,
-    structuredSlotOwnershipFailures: structuredGenerationEnabled
-      ? results.length - structuredSlotOwnershipPasses
-      : 0,
+    structuredSlotOwnershipFailures: structuredGenerationEnabled ? results.length - structuredSlotOwnershipPasses : 0,
     exactSourceOccurrencePasses: structuredGenerationEnabled ? exactSourceOccurrencePasses : 0,
-    exactSourceOccurrenceFailures: structuredGenerationEnabled
-      ? results.length - exactSourceOccurrencePasses
-      : 0,
+    exactSourceOccurrenceFailures: structuredGenerationEnabled ? results.length - exactSourceOccurrencePasses : 0,
     structuredSourceOccurrences: structuredGenerationEnabled ? structuredSourceOccurrences : [],
     jointPerformanceModelOutputs: jointPerformanceGenerationEnabled ? results.length : 0,
     validJointPerformanceOutputs: jointPerformanceGenerationEnabled ? validStructuredOutputs : 0,
-    jointPerformanceOutputFailures: jointPerformanceGenerationEnabled
-      ? results.length - validStructuredOutputs
-      : 0,
-    jointPerformanceOwnershipPasses: jointPerformanceGenerationEnabled
-      ? structuredSlotOwnershipPasses
-      : 0,
+    jointPerformanceOutputFailures: jointPerformanceGenerationEnabled ? results.length - validStructuredOutputs : 0,
+    jointPerformanceOwnershipPasses: jointPerformanceGenerationEnabled ? structuredSlotOwnershipPasses : 0,
     jointPerformanceOwnershipFailures: jointPerformanceGenerationEnabled
       ? results.length - structuredSlotOwnershipPasses
       : 0,
-    compactSpeakerPromptPasses: compactSpeakerPromptEnabled
-      ? compactSpeakerPromptPasses
-      : 0,
-    compactSpeakerPromptFailures: compactSpeakerPromptEnabled
-      ? results.length - compactSpeakerPromptPasses
-      : 0,
+    compactSpeakerPromptPasses: compactSpeakerPromptEnabled ? compactSpeakerPromptPasses : 0,
+    compactSpeakerPromptFailures: compactSpeakerPromptEnabled ? results.length - compactSpeakerPromptPasses : 0,
     compactSpeakerPrompts: compactSpeakerPromptEnabled ? compactSpeakerPrompts : [],
-    exactHostSourceOccurrencePasses: jointPerformanceGenerationEnabled
-      ? exactSourceOccurrencePasses
-      : 0,
+    exactHostSourceOccurrencePasses: jointPerformanceGenerationEnabled ? exactSourceOccurrencePasses : 0,
     exactHostSourceOccurrenceFailures: jointPerformanceGenerationEnabled
       ? results.length - exactSourceOccurrencePasses
       : 0,
     hostSourceOccurrences: typedGenerationEnabled ? structuredSourceOccurrences : [],
-    sourceSurfaceAccessibilityPasses: typedGenerationEnabled
-      ? sourceSurfaceAccessibilityPasses
-      : 0,
-    sourceSurfaceAccessibilityFailures: typedGenerationEnabled
-      ? results.length - sourceSurfaceAccessibilityPasses
-      : 0,
-    sourceSurfaceAccessibilities: typedGenerationEnabled
-      ? sourceSurfaceAccessibilities
-      : [],
+    sourceSurfaceAccessibilityPasses: typedGenerationEnabled ? sourceSurfaceAccessibilityPasses : 0,
+    sourceSurfaceAccessibilityFailures: typedGenerationEnabled ? results.length - sourceSurfaceAccessibilityPasses : 0,
+    sourceSurfaceAccessibilities: typedGenerationEnabled ? sourceSurfaceAccessibilities : [],
     structuralTargetActivations,
     meanConfigurationRealization,
     configurationRealizationEnforcement,
@@ -2137,8 +1982,7 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
       : null,
     meanTotalTutorLatencyMs: originalLatencies.length
       ? results.reduce(
-          (sum, row) =>
-            sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
+          (sum, row) => sum + Number(row.latencyMs || 0) + Number(row.semanticAdjudication?.latencyMs || 0),
           0,
         ) / originalLatencies.length
       : null,
@@ -2147,10 +1991,8 @@ export function summarizeTutorStubWorkingScreen({ cell, reports = [], config } =
     promptSize,
     promptSizeReports,
     meanSemanticAdjudicationLatencyMs: adjudicationRows.length
-      ? adjudicationRows.reduce(
-          (sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0),
-          0,
-        ) / adjudicationRows.length
+      ? adjudicationRows.reduce((sum, row) => sum + Number(row.semanticAdjudication?.latencyMs || 0), 0) /
+        adjudicationRows.length
       : null,
     dominantFailureClusters: [...failureCounts.entries()]
       .map(([cluster, count]) => ({ cluster, count }))

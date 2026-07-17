@@ -72,10 +72,7 @@ test('near closure, close inquiry, glossary pressure, and the turn window suppre
   assert.equal(buildTutorStubPointOfActionTurn({ ...repeated, turn: 25 }).assigned_trigger, null);
   assert.equal(buildTutorStubPointOfActionTurn({ ...repeated, nearClosure: true }).assigned_trigger, null);
   assert.equal(buildTutorStubPointOfActionTurn({ ...repeated, closeInquiry: true }).assigned_trigger, null);
-  assert.equal(
-    buildTutorStubPointOfActionTurn({ ...repeated, unresolvedTerms: ['cupel'] }).assigned_trigger,
-    null,
-  );
+  assert.equal(buildTutorStubPointOfActionTurn({ ...repeated, unresolvedTerms: ['cupel'] }).assigned_trigger, null);
 });
 
 test('compiled constraint overrides only the typed action/release seam', () => {

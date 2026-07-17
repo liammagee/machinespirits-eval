@@ -44,23 +44,15 @@ test('character loop gate passes a clean, visibly adaptive Marrick run', () => {
   assert.deepEqual(
     CHARACTER_ADAPTATION_LOOP_SPEC.targets.transfer.retiredAcceptanceSeeds.map((row) => row.seed),
     [
-      20260716,
-      20260717,
-      20260718,
-      20260719,
-      20260720,
-      20260721,
-      20260722,
-      20260723,
-      20260724,
-      20260725,
-      20260726,
-      20260727,
-      20260728,
+      20260716, 20260717, 20260718, 20260719, 20260720, 20260721, 20260722, 20260723, 20260724, 20260725, 20260726,
+      20260727, 20260728,
     ],
   );
   assert.equal(result.status, 'pass');
-  assert.equal(result.gates.every((gate) => gate.pass), true);
+  assert.equal(
+    result.gates.every((gate) => gate.pass),
+    true,
+  );
 });
 
 test('diagnostic collection reports completion without treating quarantine evidence as acceptance', () => {
@@ -77,10 +69,9 @@ test('diagnostic collection reports completion without treating quarantine evide
     candidates: [],
     failureClusters: [],
   };
-  const result = assessCharacterAdaptationReport(
-    report({ turnCount: 10, diagnosticCollection }),
-    { mode: 'diagnostic' },
-  );
+  const result = assessCharacterAdaptationReport(report({ turnCount: 10, diagnosticCollection }), {
+    mode: 'diagnostic',
+  });
   assert.equal(result.status, 'diagnostic_complete');
   assert.equal(result.gates.length, 0);
   assert.equal(result.observed.quarantineCount, 1);
@@ -120,6 +111,13 @@ test('character loop gate rejects repeated fallback, duplicated clue delivery, a
   assert.equal(result.status, 'fail');
   assert.deepEqual(
     result.gates.filter((gate) => !gate.pass).map((gate) => gate.name),
-    ['bounded safe repair', 'no meta-performance', 'host/source separation', 'single clue delivery', 'host visible', 'host variation'],
+    [
+      'bounded safe repair',
+      'no meta-performance',
+      'host/source separation',
+      'single clue delivery',
+      'host visible',
+      'host variation',
+    ],
   );
 });

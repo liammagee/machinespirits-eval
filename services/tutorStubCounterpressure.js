@@ -18,11 +18,7 @@ function premiseSurface(world, premiseId) {
  * premise must be either already public or due now. Nothing is inferred from
  * learner questions, previous tutor prose, or merely adjacent evidence.
  */
-export function resolveTutorStubPublicCounterpressure({
-  world = null,
-  publicEvidence = [],
-  dueEvidence = [],
-} = {}) {
+export function resolveTutorStubPublicCounterpressure({ world = null, publicEvidence = [], dueEvidence = [] } = {}) {
   if (!world) return null;
   const publicIds = premiseIds(publicEvidence);
   const dueIds = premiseIds(dueEvidence);

@@ -46,17 +46,14 @@ function relevantRuleResolution(world, row) {
   const predicate = predicateOf(row?.fact);
   const rules = Array.isArray(world?.rules) ? world.rules : [];
   const explicitRuleId = oneLine(authoredPublicFocus(row)?.rule_id);
-  const inputMatches = predicate
-    ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'if'))
-    : [];
-  const outputMatches = predicate
-    ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'then'))
-    : [];
+  const inputMatches = predicate ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'if')) : [];
+  const outputMatches = predicate ? rules.filter((rule) => ruleContainsPredicate(rule, predicate, 'then')) : [];
   const candidateRules = [...new Map([...inputMatches, ...outputMatches].map((rule) => [rule.id, rule])).values()];
   const explicitRule = explicitRuleId
     ? candidateRules.find((rule) => oneLine(rule?.id) === explicitRuleId) || null
     : null;
-  const rule = explicitRule ||
+  const rule =
+    explicitRule ||
     (inputMatches.length === 1 ? inputMatches[0] : null) ||
     (inputMatches.length === 0 && outputMatches.length === 1 ? outputMatches[0] : null);
   const strategy = explicitRule

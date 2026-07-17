@@ -575,8 +575,7 @@ export function buildAdaptiveStateCriticalPathPlan(
             // unknown number of provider requests, so this is never a backend
             // request count.
             expected_model_calls: learnerRealizerCalls + publicTurnAnalyzerCalls,
-            expected_model_calls_deprecated_alias_semantics:
-              'cli_process_dispatches_not_backend_requests',
+            expected_model_calls_deprecated_alias_semantics: 'cli_process_dispatches_not_backend_requests',
           });
         }
       }
@@ -588,10 +587,7 @@ export function buildAdaptiveStateCriticalPathPlan(
   if (jobs.length !== expectedJobs) throw new Error('stateBenchmarkV2: internal crossed-plan count mismatch');
   const expectedTransitions = jobs.reduce((sum, job) => sum + job.scored_transitions, 0);
   const expectedLearnerRealizerCalls = jobs.reduce((sum, job) => sum + job.expected_learner_realizer_calls, 0);
-  const expectedPublicTurnAnalyzerCalls = jobs.reduce(
-    (sum, job) => sum + job.expected_public_turn_analyzer_calls,
-    0,
-  );
+  const expectedPublicTurnAnalyzerCalls = jobs.reduce((sum, job) => sum + job.expected_public_turn_analyzer_calls, 0);
   const expectedCalls = jobs.reduce((sum, job) => sum + job.expected_model_calls, 0);
   const generatedLabel = label || `adaptive-state-v2-${stage}`;
   const plan = {
@@ -615,9 +611,10 @@ export function buildAdaptiveStateCriticalPathPlan(
       expected_public_turn_analyzer_calls: expectedPublicTurnAnalyzerCalls,
       expected_cli_process_dispatches: expectedCalls,
       expected_model_calls: expectedCalls,
-      expected_model_calls_deprecated_alias_semantics:
-        'cli_process_dispatches_not_backend_requests',
-      excluded_provider_canary_calls: contract.paid ? Number(config.paid_execution_contract.provider_canaries.calls) : 0,
+      expected_model_calls_deprecated_alias_semantics: 'cli_process_dispatches_not_backend_requests',
+      excluded_provider_canary_calls: contract.paid
+        ? Number(config.paid_execution_contract.provider_canaries.calls)
+        : 0,
       excluded_analyzer_schema_canary_calls: contract.paid
         ? Number(config.paid_execution_contract.analyzer_schema_canary.calls)
         : 0,
@@ -732,8 +729,7 @@ export function validateAdaptiveStateCriticalPathPlan(plan) {
     if (
       Number(job.expected_cli_process_dispatches) !== expectedCalls ||
       Number(job.expected_model_calls) !== expectedCalls ||
-      job.expected_model_calls_deprecated_alias_semantics !==
-        'cli_process_dispatches_not_backend_requests'
+      job.expected_model_calls_deprecated_alias_semantics !== 'cli_process_dispatches_not_backend_requests'
     ) {
       throw new Error(`stateBenchmarkV2: job ${job.id} has an invalid expected CLI-dispatch count`);
     }
@@ -781,10 +777,7 @@ export function validateAdaptiveStateCriticalPathPlan(plan) {
   }
   const expectedDialogueCount = expectedCells.size * Number(plan.counts.seeds_per_cell);
   const expectedTransitions = jobs.reduce((sum, job) => sum + Number(job.scored_transitions), 0);
-  const expectedLearnerRealizerCalls = jobs.reduce(
-    (sum, job) => sum + Number(job.expected_learner_realizer_calls),
-    0,
-  );
+  const expectedLearnerRealizerCalls = jobs.reduce((sum, job) => sum + Number(job.expected_learner_realizer_calls), 0);
   const expectedPublicTurnAnalyzerCalls = jobs.reduce(
     (sum, job) => sum + Number(job.expected_public_turn_analyzer_calls),
     0,
@@ -798,8 +791,7 @@ export function validateAdaptiveStateCriticalPathPlan(plan) {
     Number(plan.counts.expected_public_turn_analyzer_calls) !== expectedPublicTurnAnalyzerCalls ||
     Number(plan.counts.expected_cli_process_dispatches) !== expectedCalls ||
     Number(plan.counts.expected_model_calls) !== expectedCalls ||
-    plan.counts.expected_model_calls_deprecated_alias_semantics !==
-      'cli_process_dispatches_not_backend_requests'
+    plan.counts.expected_model_calls_deprecated_alias_semantics !== 'cli_process_dispatches_not_backend_requests'
   ) {
     throw new Error('stateBenchmarkV2: plan aggregate counts do not match its jobs');
   }

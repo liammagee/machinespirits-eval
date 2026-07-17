@@ -21,9 +21,7 @@ function exactOccurrenceSpans(source, needle) {
 }
 
 function hostWithoutExactSources(text, occurrenceRows) {
-  const spans = occurrenceRows
-    .flatMap((row) => row.spans)
-    .sort((left, right) => right.start - left.start);
+  const spans = occurrenceRows.flatMap((row) => row.spans).sort((left, right) => right.start - left.start);
   let host = text;
   for (const span of spans) host = `${host.slice(0, span.start)} ${host.slice(span.end)}`;
   return host.replace(/\s+/gu, ' ').trim();
@@ -115,9 +113,7 @@ function sourceAccessibilityAudit({ responseText, firstDraftContract, occurrence
     occurrenceRows.find((row) => row.exact_once) ||
     null;
   const sourceSpan = occurrence?.spans?.[0] || null;
-  const compensationSpan = sourceSpan
-    ? firstCompleteSentenceAfterSource(responseText, sourceSpan.end)
-    : null;
+  const compensationSpan = sourceSpan ? firstCompleteSentenceAfterSource(responseText, sourceSpan.end) : null;
   return auditTutorStubSourceAccessibilityCompensation({
     contract,
     text: responseText,
@@ -133,14 +129,9 @@ function sourceAccessibilityAudit({ responseText, firstDraftContract, occurrence
  * nearest real host sentence before that SOURCE. This remains an explicit V1
  * text-boundary audit; it does not infer the structured V2 slot layout.
  */
-export function auditTutorStubLiveSourceActionAlignmentV1({
-  text = '',
-  firstDraftContract = null,
-} = {}) {
+export function auditTutorStubLiveSourceActionAlignmentV1({ text = '', firstDraftContract = null } = {}) {
   const responseText = String(text || '');
-  const sources = Array.isArray(firstDraftContract?.evidence?.sources)
-    ? firstDraftContract.evidence.sources
-    : [];
+  const sources = Array.isArray(firstDraftContract?.evidence?.sources) ? firstDraftContract.evidence.sources : [];
   const occurrenceRows = sources.map((source, sourceIndex) => {
     const expectedText = String(source?.text || '');
     const spans = exactOccurrenceSpans(responseText, expectedText);
@@ -165,11 +156,7 @@ export function auditTutorStubLiveSourceActionAlignmentV1({
       const precedingSourceEnd = exactSpans
         .filter((candidate) => candidate.end <= span.start)
         .reduce((latest, candidate) => Math.max(latest, candidate.end), 0);
-      const boundary = nearestPreSourceHostBoundary(
-        responseText,
-        span.start,
-        precedingSourceEnd,
-      );
+      const boundary = nearestPreSourceHostBoundary(responseText, span.start, precedingSourceEnd);
       const source = sources[row.source_index] || null;
       const alignment = auditTutorStubDueSourceActionAlignment({
         text: boundary.text,
@@ -238,16 +225,12 @@ export function auditTutorStubLiveSourceActionAlignmentV1({
     exact_source_occurrence_failures: occurrenceRows.filter((row) => !row.exact_once).length,
     source_occurrences: occurrenceRows,
     pre_source_boundaries: boundaries,
-    source_spans_removed: occurrenceRows
-      .filter((row) => row.observed_count > 0)
-      .map((row) => row.source),
+    source_spans_removed: occurrenceRows.filter((row) => row.observed_count > 0).map((row) => row.source),
     audited_host_text: hostWithoutExactSources(responseText, occurrenceRows),
     sources: boundaries.flatMap((boundary) => boundary.sources),
     source_accessibility: accessibility,
-    direct_accessible:
-      firstDraftContract?.evidence?.source_accessibility?.direct_accessible ?? true,
-    compensation_required:
-      firstDraftContract?.evidence?.source_accessibility?.compensation_required === true,
+    direct_accessible: firstDraftContract?.evidence?.source_accessibility?.direct_accessible ?? true,
+    compensation_required: firstDraftContract?.evidence?.source_accessibility?.compensation_required === true,
     compensation_contract_ready:
       firstDraftContract?.evidence?.source_accessibility?.compensation_contract_ready === true,
     compensation_visible: accessibility.visible === true,
@@ -270,10 +253,7 @@ function contractSourceId(firstDraftContract) {
  * surrounding sentence boundaries without exposing their tokens to the
  * realization recognizers.
  */
-export function tutorStubLiveResponseConfigurationSurface({
-  text = '',
-  liveSourceActionAlignmentAudit = null,
-} = {}) {
+export function tutorStubLiveResponseConfigurationSurface({ text = '', liveSourceActionAlignmentAudit = null } = {}) {
   const responseText = String(text || '');
   if (liveSourceActionAlignmentAudit?.compensation_required !== true) {
     return {

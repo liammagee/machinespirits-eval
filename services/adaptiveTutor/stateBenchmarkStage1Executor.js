@@ -2,13 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'yaml';
 
-import {
-  canonicalJson,
-  hashCanonicalJson,
-  hashFile,
-  sha256,
-  verifyExperimentRun,
-} from '../experimentRunArtifacts.js';
+import { canonicalJson, hashCanonicalJson, hashFile, sha256, verifyExperimentRun } from '../experimentRunArtifacts.js';
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { buildTutorStubStateObservation } from './tutorStubStateAdapter.js';
 import {
@@ -36,12 +30,9 @@ import {
   isolateAdaptiveStatePublicRealizerInput,
 } from './stateBenchmarkPublicSurface.js';
 
-export const ADAPTIVE_STATE_STAGE1_DATASET_V21_SCHEMA =
-  'machinespirits.adaptive-state-stage1-dataset.v2.1';
-export const ADAPTIVE_STATE_STAGE1_DIALOGUE_V21_SCHEMA =
-  'machinespirits.adaptive-state-stage1-dialogue.v2.1';
-export const ADAPTIVE_STATE_STAGE1_CALL_V21_SCHEMA =
-  'machinespirits.adaptive-state-stage1-call.v2.1';
+export const ADAPTIVE_STATE_STAGE1_DATASET_V21_SCHEMA = 'machinespirits.adaptive-state-stage1-dataset.v2.1';
+export const ADAPTIVE_STATE_STAGE1_DIALOGUE_V21_SCHEMA = 'machinespirits.adaptive-state-stage1-dialogue.v2.1';
+export const ADAPTIVE_STATE_STAGE1_CALL_V21_SCHEMA = 'machinespirits.adaptive-state-stage1-call.v2.1';
 
 const EXPECTED_VERSION = '2.1';
 const S0_REPORT_FILE = 'stage0-contract-report.json';
@@ -103,9 +94,7 @@ function advancePriorPublicLearnerState(previous, analysis) {
   for (const premiseId of accepted.retract || []) adopted.delete(String(premiseId));
   for (const premiseId of accepted.adopt || []) adopted.add(String(premiseId));
   next.adopted_premise_ids = [...adopted].sort();
-  const derived = new Map(
-    (next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]),
-  );
+  const derived = new Map((next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]));
   for (const fact of accepted.derive || []) derived.set(hashCanonicalJson(fact), clone(fact));
   next.voiced_derived_facts = [...derived.values()];
   if (typeof accepted.hypothesis === 'string' && accepted.hypothesis.trim()) {
@@ -168,14 +157,15 @@ function currentStage0Hashes(config, repoRoot) {
     runner: aggregateFileHash([script, executor, benchmark], repoRoot),
     analyzer: aggregateFileHash(ADAPTIVE_STATE_STAGE0_ANALYZER_SOURCE_FILES, repoRoot),
     policy: aggregateFileHash(
-      config.critical_path.latent_generators.flatMap(
-        (row) => adaptiveStateLearnerKernel(row.id).metadata.source_files,
-      ),
+      config.critical_path.latent_generators.flatMap((row) => adaptiveStateLearnerKernel(row.id).metadata.source_files),
       repoRoot,
     ),
     profile: hashCanonicalJson(config.complexity_cap),
     prompt: hashFile(path.resolve(repoRoot, realizer)),
-    world: aggregateFileHash(config.critical_path.worlds.map((row) => row.source), repoRoot),
+    world: aggregateFileHash(
+      config.critical_path.worlds.map((row) => row.source),
+      repoRoot,
+    ),
   };
 }
 
@@ -301,9 +291,7 @@ function rawAnalyzerMetadata(result) {
   if (!supplied) return null;
   const metadata = clone(supplied);
   const reported = metadata.model_attestation_basis;
-  if (
-    ['explicit_cli_model_argument_accepted_bridge_echo', 'explicit_cli_argument_accepted'].includes(reported)
-  ) {
+  if (['explicit_cli_model_argument_accepted_bridge_echo', 'explicit_cli_argument_accepted'].includes(reported)) {
     metadata.bridge_reported_attestation_basis = reported;
     metadata.model_attestation_basis = 'explicit_cli_argument_accepted';
   }
@@ -318,8 +306,10 @@ export function validateAdaptiveStateCallMetadata(metadata, frozen, role) {
   if (!metadata || typeof metadata !== 'object') {
     throw new Error(`stateBenchmarkStage1: ${role} call omitted model provenance`);
   }
-  const resolved = metadata.resolved_model_ref || normalizedModelLabel(metadata.resolved_provider, metadata.resolved_model);
-  const observed = metadata.observed_model_ref || normalizedModelLabel(metadata.observed_provider, metadata.observed_model);
+  const resolved =
+    metadata.resolved_model_ref || normalizedModelLabel(metadata.resolved_provider, metadata.resolved_model);
+  const observed =
+    metadata.observed_model_ref || normalizedModelLabel(metadata.observed_provider, metadata.observed_model);
   const requested = metadata.requested_model_ref;
   const effort = metadata.effort;
   const timeout = Number(metadata.timeout_ms);
@@ -354,8 +344,7 @@ export function validateAdaptiveStateCallMetadata(metadata, frozen, role) {
     !metadata.stream_event_type_counts ||
     !metadata.stream_item_type_counts ||
     Object.entries(streamCounts).some(
-      ([type, count]) =>
-        Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
+      ([type, count]) => Number(count) > 0 && /(?:tool|command|shell|exec|file|web|browser|mcp)/iu.test(String(type)),
     );
   const structuredAudit = metadata.structured_event_audit;
   const structuredAuditInvalid =
@@ -422,13 +411,13 @@ export function validateAdaptiveStateCallMetadata(metadata, frozen, role) {
             raw_output_sha256: metadata.raw_output_sha256,
             parsed_output_sha256: metadata.parsed_output_sha256,
           }
-          : {
-              input_sha256: metadata.input_sha256,
-              system_prompt_sha256: metadata.system_prompt_sha256,
-              user_prompt_sha256: metadata.user_prompt_sha256,
-              raw_output_sha256: metadata.raw_output_sha256,
-              parsed_output_sha256: metadata.output_sha256,
-            },
+        : {
+            input_sha256: metadata.input_sha256,
+            system_prompt_sha256: metadata.system_prompt_sha256,
+            user_prompt_sha256: metadata.user_prompt_sha256,
+            raw_output_sha256: metadata.raw_output_sha256,
+            parsed_output_sha256: metadata.output_sha256,
+          },
   };
 }
 
@@ -623,8 +612,7 @@ function rowFor(dialogue, donor, transitionIndex, version) {
     provenance: {
       prediction_origin: 'after_learner_observation_before_frozen_action',
       observation_source: 'live_public_text_analyzer',
-      oracle_captured_before_sampling:
-        transition.audit_sequence[0] === 'oracle_captured_before_transition_sampling',
+      oracle_captured_before_sampling: transition.audit_sequence[0] === 'oracle_captured_before_transition_sampling',
       transition_plan_sha256: transition.plan_sha256,
       world_sha256: dialogue.adapter.world_sha256,
       transition_kernel_sha256: transition.oracle_before_sample.kernel_provenance.transition_kernel_sha256,
@@ -675,7 +663,8 @@ function createCallBudget(plan) {
     },
     assertExact() {
       const mismatches = Object.keys(cap).filter((key) => used[key] !== cap[key]);
-      if (mismatches.length) throw new Error(`stateBenchmarkStage1: exact call counts not met (${mismatches.join(', ')})`);
+      if (mismatches.length)
+        throw new Error(`stateBenchmarkStage1: exact call counts not met (${mismatches.join(', ')})`);
     },
     snapshot() {
       return { cap: { ...cap }, used: { ...used } };
@@ -734,10 +723,10 @@ function failureCallRecord({ index, role, claimEligible, canary, jobId, turn, fr
         metadata?.observed_model_ref || normalizedModelLabel(metadata?.observed_provider, metadata?.observed_model),
       expected_cli_model_label: frozen.expected_cli_model_label,
       cli_argument_accepted:
-        (metadata?.resolved_model_ref || normalizedModelLabel(metadata?.resolved_provider, metadata?.resolved_model)) ===
+        (metadata?.resolved_model_ref ||
+          normalizedModelLabel(metadata?.resolved_provider, metadata?.resolved_model)) ===
         frozen.expected_cli_model_label,
-      model_attestation_basis:
-        metadata?.model_attestation_basis || metadata?.model_attestation?.basis || null,
+      model_attestation_basis: metadata?.model_attestation_basis || metadata?.model_attestation?.basis || null,
       independently_attested:
         metadata?.model_independently_attested === true || metadata?.model_attestation?.independently_attested === true,
       dispatch_count: dispatchCount,
@@ -804,9 +793,7 @@ function callAccounting(ledger, plan) {
     roles[key] = summary;
   }
   return {
-    planned:
-      Number(plan.counts.expected_cli_process_dispatches) +
-      Number(plan.counts.excluded_technical_canary_calls),
+    planned: Number(plan.counts.expected_cli_process_dispatches) + Number(plan.counts.excluded_technical_canary_calls),
     reached: ledger.length,
     dispatched: ledger.reduce((sum, row) => sum + Number(row.provenance?.dispatch_count || 0), 0),
     completed: ledger.filter((row) => row.status === 'success').length,
@@ -921,8 +908,7 @@ async function runRealizerCall({
     failed.excluded_technical_canary = kind === 'canary_realizer';
     failed.realizer_artifacts = {
       public_input: clone(input),
-      system_prompt:
-        error.callArtifacts?.system_prompt ?? result?.call_artifacts?.system_prompt ?? null,
+      system_prompt: error.callArtifacts?.system_prompt ?? result?.call_artifacts?.system_prompt ?? null,
       user_prompt: error.callArtifacts?.user_prompt ?? result?.call_artifacts?.user_prompt ?? null,
       raw_output: error.raw_output ?? result?.raw_output ?? null,
       parsed_output: clone(result?.output),
@@ -938,9 +924,7 @@ async function runRealizerCall({
           ? sha256(failed.realizer_artifacts.user_prompt)
           : null,
       raw_output_sha256:
-        typeof failed.realizer_artifacts.raw_output === 'string'
-          ? sha256(failed.realizer_artifacts.raw_output)
-          : null,
+        typeof failed.realizer_artifacts.raw_output === 'string' ? sha256(failed.realizer_artifacts.raw_output) : null,
       parsed_output_sha256:
         failed.realizer_artifacts.parsed_output === undefined
           ? null
@@ -955,16 +939,7 @@ async function runRealizerCall({
   return result.output;
 }
 
-async function runAnalyzerCall({
-  analyzePublicText,
-  budget,
-  ledger,
-  kind,
-  frozen,
-  publicModelInput,
-  context,
-  onCall,
-}) {
+async function runAnalyzerCall({ analyzePublicText, budget, ledger, kind, frozen, publicModelInput, context, onCall }) {
   budget.consume(kind);
   assertNoForbiddenAnalyzerInput(publicModelInput);
   const callIndex = ledger.length + 1;
@@ -1011,18 +986,13 @@ async function runAnalyzerCall({
     };
     const artifactHashes = {
       public_model_input_sha256: record.public_model_input_sha256,
-      system_prompt_sha256: result?.rawAnalysis?.systemPrompt
-        ? sha256(result.rawAnalysis.systemPrompt)
-        : null,
+      system_prompt_sha256: result?.rawAnalysis?.systemPrompt ? sha256(result.rawAnalysis.systemPrompt) : null,
       prompt_sha256: result?.rawAnalysis?.prompt ? sha256(result.rawAnalysis.prompt) : null,
       output_schema_sha256: result?.rawAnalysis?.outputSchema
         ? hashCanonicalJson(result.rawAnalysis.outputSchema)
         : null,
-      raw_output_sha256:
-        typeof result?.rawAnalysis?.rawText === 'string' ? sha256(result.rawAnalysis.rawText) : null,
-      parsed_output_sha256: result?.rawAnalysis?.parsed
-        ? hashCanonicalJson(result.rawAnalysis.parsed)
-        : null,
+      raw_output_sha256: typeof result?.rawAnalysis?.rawText === 'string' ? sha256(result.rawAnalysis.rawText) : null,
+      parsed_output_sha256: result?.rawAnalysis?.parsed ? hashCanonicalJson(result.rawAnalysis.parsed) : null,
       model_input_envelope_sha256:
         result?.rawAnalysis?.systemPrompt && result?.rawAnalysis?.prompt && result?.rawAnalysis?.outputSchema
           ? hashCanonicalJson({
@@ -1080,15 +1050,11 @@ async function runAnalyzerCall({
     failed.public_model_input = clone(publicModelInput);
     failed.public_model_input_sha256 = hashCanonicalJson(publicModelInput);
     failed.analyzer_artifacts = {
-      system_prompt:
-        result?.rawAnalysis?.systemPrompt || error.analysisArtifacts?.systemPrompt || null,
+      system_prompt: result?.rawAnalysis?.systemPrompt || error.analysisArtifacts?.systemPrompt || null,
       prompt: result?.rawAnalysis?.prompt || error.analysisArtifacts?.prompt || null,
-      raw_output:
-        result?.rawAnalysis?.rawText ?? error.analysisArtifacts?.rawText ?? error.raw_output ?? null,
+      raw_output: result?.rawAnalysis?.rawText ?? error.analysisArtifacts?.rawText ?? error.raw_output ?? null,
       parsed_output: clone(result?.rawAnalysis?.parsed ?? error.analysisArtifacts?.parsed),
-      output_schema: clone(
-        result?.rawAnalysis?.outputSchema ?? error.analysisArtifacts?.outputSchema,
-      ),
+      output_schema: clone(result?.rawAnalysis?.outputSchema ?? error.analysisArtifacts?.outputSchema),
       learner_record_update: clone(result?.learnerRecordUpdate),
       deterministic_update: null,
     };
@@ -1099,16 +1065,12 @@ async function runAnalyzerCall({
           ? sha256(failed.analyzer_artifacts.system_prompt)
           : null,
       prompt_sha256:
-        typeof failed.analyzer_artifacts.prompt === 'string'
-          ? sha256(failed.analyzer_artifacts.prompt)
-          : null,
+        typeof failed.analyzer_artifacts.prompt === 'string' ? sha256(failed.analyzer_artifacts.prompt) : null,
       output_schema_sha256: failed.analyzer_artifacts.output_schema
         ? hashCanonicalJson(failed.analyzer_artifacts.output_schema)
         : null,
       raw_output_sha256:
-        typeof failed.analyzer_artifacts.raw_output === 'string'
-          ? sha256(failed.analyzer_artifacts.raw_output)
-          : null,
+        typeof failed.analyzer_artifacts.raw_output === 'string' ? sha256(failed.analyzer_artifacts.raw_output) : null,
       parsed_output_sha256: failed.analyzer_artifacts.parsed_output
         ? hashCanonicalJson(failed.analyzer_artifacts.parsed_output)
         : null,
@@ -1323,9 +1285,7 @@ async function runDialogue({
         { turn: row.turn, role: 'learner', text: row.learner },
         { turn: row.turn, role: 'tutor', text: row.tutor },
       ]),
-      ...(pendingLearner
-        ? [{ turn: turn - 1, role: 'learner', text: pendingLearner }]
-        : []),
+      ...(pendingLearner ? [{ turn: turn - 1, role: 'learner', text: pendingLearner }] : []),
     ];
     const output = await runRealizerCall({
       realizeTurn,
@@ -1343,10 +1303,7 @@ async function runDialogue({
       ? materializeAdaptiveStateTransitionTurn({ session, transition, realizerResult: output })
       : materializeAdaptiveStateInitialTurn(session, output);
     const analyzerHistory = pendingLearner
-      ? [
-          ...publicHistory,
-          { turn: turn - 1, learner: pendingLearner, tutor: tutorTurn.text },
-        ]
+      ? [...publicHistory, { turn: turn - 1, learner: pendingLearner, tutor: tutorTurn.text }]
       : publicHistory;
     const publicStagedEvidence = stagedEvidenceForAnalyzer(world, envelope, firstSeenByPremise, turn);
     const publicModelInput = {
@@ -1410,14 +1367,7 @@ async function runDialogue({
       });
     }
     const record = analyzerTurnRecord(analysis, turn, realized.realizer_output.learner_text);
-    const observation = observationFromAnalysis(
-      analysis,
-      record,
-      observations.at(-1),
-      analyzerRecords,
-      job,
-      turn,
-    );
+    const observation = observationFromAnalysis(analysis, record, observations.at(-1), analyzerRecords, job, turn);
     analyzerRecords.push(record);
     observations.push(observation);
     realizedEventIds.push(realized.realizer_output.realized_public_event_ids);

@@ -85,11 +85,10 @@ function firstDraftContract({
   return buildTutorStubFirstDraftContract({
     learnerText,
     responseConfiguration,
-    responseCompositionFrame:
-      responseCompositionFrame || {
-        learner_move: { summary: 'The learner asks how to record the lead-sweat clue.' },
-        scene_action_budget: { saturated: false },
-      },
+    responseCompositionFrame: responseCompositionFrame || {
+      learner_move: { summary: 'The learner asks how to record the lead-sweat clue.' },
+      scene_action_budget: { saturated: false },
+    },
     dramaticReleaseFrame: dramaticReleaseFrame || { active: false, entries: [] },
     dialogueClosureFrame,
     questionSupport,
@@ -195,7 +194,10 @@ test('shared-scene progression delegates the only allowed question to handoff an
     configuration: configuration(),
   });
   assert.equal(legacy.responseObligation.ok, true, JSON.stringify(legacy.responseObligation));
-  assert.equal(legacy.responseObligation.requirements.some((row) => row.id === 'terminal_direct_question'), true);
+  assert.equal(
+    legacy.responseObligation.requirements.some((row) => row.id === 'terminal_direct_question'),
+    true,
+  );
 });
 
 test('v2 prompt drafts below the hard slot limit while the parser retains the exact hard boundary', () => {
@@ -210,17 +212,15 @@ test('v2 prompt drafts below the hard slot limit while the parser retains the ex
   assert.match(prompt, /Draft each sentence at most 14 words, leaving room below the hard 17-word limit/iu);
   assert.match(prompt, /Count every sentence’s words before emitting JSON/iu);
   assert.doesNotThrow(() =>
-    parseTutorStubJointPerformanceFirstDraft(
-      validRaw({ performance: { entry: seventeenWordEntry } }),
-      { maxWordsPerSlot: 17 },
-    ),
+    parseTutorStubJointPerformanceFirstDraft(validRaw({ performance: { entry: seventeenWordEntry } }), {
+      maxWordsPerSlot: 17,
+    }),
   );
   assert.throws(
     () =>
-      parseTutorStubJointPerformanceFirstDraft(
-        validRaw({ performance: { entry: eighteenWordEntry } }),
-        { maxWordsPerSlot: 17 },
-      ),
+      parseTutorStubJointPerformanceFirstDraft(validRaw({ performance: { entry: eighteenWordEntry } }), {
+        maxWordsPerSlot: 17,
+      }),
     /slot_exceeds_word_target:performance\.entry:18>17/u,
   );
 });
@@ -246,16 +246,19 @@ test('typed causal parsing rejects a positive claim that reverses the licensed r
   });
 
   assert.throws(
-    () => parseTutorStubJointPerformanceFirstDraft(reversed, {
+    () =>
+      parseTutorStubJointPerformanceFirstDraft(reversed, {
+        maxWordsPerSlot: 40,
+        causalRelationContract,
+      }),
+    /performance_entry_reverses_typed_causal_polarity/u,
+  );
+  assert.doesNotThrow(() =>
+    parseTutorStubJointPerformanceFirstDraft(coherent, {
       maxWordsPerSlot: 40,
       causalRelationContract,
     }),
-    /performance_entry_reverses_typed_causal_polarity/u,
   );
-  assert.doesNotThrow(() => parseTutorStubJointPerformanceFirstDraft(coherent, {
-    maxWordsPerSlot: 40,
-    causalRelationContract,
-  }));
 });
 
 test('v2 compiles declared advocate delegation into a bounded performance and action-only handoff', () => {
@@ -264,16 +267,18 @@ test('v2 compiles declared advocate delegation into a bounded performance and ac
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
   const prompt = tutorStubJointPerformanceFirstDraftPrompt(contract);
 
-  assert.ok(
-    contract.compatibility.decisions.includes(
-      'advocate_case_delegates_concrete_test_to_final_handoff',
-    ),
-  );
+  assert.ok(contract.compatibility.decisions.includes('advocate_case_delegates_concrete_test_to_final_handoff'));
   assert.equal(contract.compatibility.composite_axis_ownership.mode, 'delegated_complement');
   assert.match(plan.slots.performance.entry_instruction, /state a concrete public proposition/iu);
   assert.match(plan.slots.performance.entry_instruction, /not merely whether the case is strong, weak, or limited/iu);
-  assert.match(plan.slots.performance.entry_instruction, /PERFORMANCE RESPONSE owns the evidence boundary and stance/iu);
-  assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
+  assert.match(
+    plan.slots.performance.entry_instruction,
+    /PERFORMANCE RESPONSE owns the evidence boundary and stance/iu,
+  );
+  assert.doesNotMatch(
+    plan.slots.performance.entry_instruction,
+    /name the evidence and the conclusion it cannot establish/iu,
+  );
   assert.doesNotMatch(plan.slots.performance.entry_instruction, /leave the test for HANDOFF/iu);
   assert.match(plan.slots.performance.response_instruction, /Stance here \(precise\)/iu);
   assert.match(plan.slots.performance.response_instruction, /distinction or warrant cleanly/iu);
@@ -345,8 +350,14 @@ test('evidentiary-boundary speaking contract requires explicit evidence and conc
   const plan = buildTutorStubJointPerformanceHostPlan(contract);
 
   assert.match(plan.slots.performance.response_instruction, /Name the public evidence, what it supports/iu);
-  assert.match(plan.slots.performance.response_instruction, /Keep both conclusions explicit; use no pronoun substitute/iu);
-  assert.doesNotMatch(plan.slots.performance.entry_instruction, /name the evidence and the conclusion it cannot establish/iu);
+  assert.match(
+    plan.slots.performance.response_instruction,
+    /Keep both conclusions explicit; use no pronoun substitute/iu,
+  );
+  assert.doesNotMatch(
+    plan.slots.performance.entry_instruction,
+    /name the evidence and the conclusion it cannot establish/iu,
+  );
   assert.match(plan.slots.performance.response_instruction, /Stance here \(charismatic\)/iu);
   assert.doesNotMatch(plan.slots.performance.response_instruction, /Stance operation \(charismatic\)/iu);
 });
@@ -363,16 +374,12 @@ test('saved V38 original preserves causal boundary but genuinely misses charisma
   const composition = composeTutorStubJointPerformanceFirstDraft({
     structured: parseTutorStubJointPerformanceFirstDraft(
       JSON.stringify({
-        uptake:
-          'Write: “Because the chargers were dark during stocktake, they cannot cause Tallow Street’s brownout.”',
+        uptake: 'Write: “Because the chargers were dark during stocktake, they cannot cause Tallow Street’s brownout.”',
         performance: {
-          entry:
-            'My case is the depot caused brownouts; stocktake cannot establish the depot caused brownouts.',
-          response:
-            'The stocktake’s dark chargers support ruling out chargers, not identifying the supply cause.',
+          entry: 'My case is the depot caused brownouts; stocktake cannot establish the depot caused brownouts.',
+          response: 'The stocktake’s dark chargers support ruling out chargers, not identifying the supply cause.',
         },
-        handoff:
-          'Next, compare the chargers being dark during the stocktake with the 18:40 brownout.',
+        handoff: 'Next, compare the chargers being dark during the stocktake with the 18:40 brownout.',
       }),
       { maxWordsPerSlot: 18 },
     ),
@@ -394,11 +401,7 @@ test('saved V38 original preserves causal boundary but genuinely misses charisma
   assert.equal(audit.axes.action_family.visible, true);
   assert.equal(audit.axes.engagement_stance.visible, false);
   assert.equal(audit.ok, false);
-  assert.ok(
-    audit.issues.some(
-      (issue) => issue.axis === 'engagement_stance' && issue.owner === 'performance',
-    ),
-  );
+  assert.ok(audit.issues.some((issue) => issue.axis === 'engagement_stance' && issue.owner === 'performance'));
 });
 
 test('saved V39 original re-audits as support plus explicit exclusion without changing its historical failure', () => {
@@ -413,15 +416,12 @@ test('saved V39 original re-audits as support plus explicit exclusion without ch
   const composition = composeTutorStubJointPerformanceFirstDraft({
     structured: parseTutorStubJointPerformanceFirstDraft(
       JSON.stringify({
-        uptake:
-          'Write: “The chargers were dark during stocktake, yet brownout occurred, ruling out depot causation.”',
+        uptake: 'Write: “The chargers were dark during stocktake, yet brownout occurred, ruling out depot causation.”',
         performance: {
           entry: 'My case is the depot chargers caused Tallow Street’s Thursday brownouts.',
-          response:
-            'The stocktake evidence supports ruling out depot causation, but establishes no other cause.',
+          response: 'The stocktake evidence supports ruling out depot causation, but establishes no other cause.',
         },
-        handoff:
-          'Next, compare the chargers being dark during stocktake with the 18:40 pen chart.',
+        handoff: 'Next, compare the chargers being dark during stocktake with the 18:40 pen chart.',
       }),
       { maxWordsPerSlot: 18 },
     ),
@@ -462,8 +462,7 @@ test('typed charismatic causal operation has one owner and generic cue words can
   });
   const committedPublicEvidence = [
     {
-      surface:
-        'The depot chargers stood dark during stocktake while Tallow Street still browned out at 18:40.',
+      surface: 'The depot chargers stood dark during stocktake while Tallow Street still browned out at 18:40.',
       causal_relation: {
         kind: 'inactive_candidate_with_persisting_outcome',
         family: 'production',
@@ -494,8 +493,7 @@ test('typed charismatic causal operation has one owner and generic cue words can
         uptake: 'Write: “The depot chargers did not cause the Tallow Street brownout.”',
         performance: {
           entry,
-          response:
-            'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.',
+          response: 'The depot chargers did not cause the Tallow Street brownout; actual cause remains open.',
         },
         handoff: 'Next, compare the dark chargers with the 18:40 brownout.',
       }),
@@ -533,9 +531,7 @@ test('typed charismatic causal operation has one owner and generic cue words can
   assert.equal(performed.spanAudits.performance.axes.engagement_stance.visible, true);
   assert.equal(performed.compositePartOwnership.typed_performance_initiation, true);
   assert.equal(
-    performed.compositePartOwnership.requirements.find(
-      (row) => row.id === 'performance_initiation',
-    )?.ok,
+    performed.compositePartOwnership.requirements.find((row) => row.id === 'performance_initiation')?.ok,
     true,
   );
 
@@ -640,9 +636,8 @@ test('V32 speaking contract rejects the saved V31 static-break shape and preserv
     false,
   );
   assert.equal(
-    v31Failure.compositePartOwnership.requirements.find(
-      (row) => row.id === 'handoff_relevant_delegated_complement',
-    )?.ok,
+    v31Failure.compositePartOwnership.requirements.find((row) => row.id === 'handoff_relevant_delegated_complement')
+      ?.ok,
     false,
   );
   assert.equal(
@@ -661,7 +656,10 @@ test('V32 speaking contract rejects the saved V31 static-break shape and preserv
   assert.equal(compliant.ok, true, JSON.stringify(compliant.issues));
   assert.equal(compliant.axes.actorial_part.visible, true);
   assert.equal(compliant.axes.action_family.visible, true);
-  assert.equal(compliant.compositePartOwnership.requirements.every((row) => row.ok), true);
+  assert.equal(
+    compliant.compositePartOwnership.requirements.every((row) => row.ok),
+    true,
+  );
 });
 
 test('V32 declarative operation wording stays out of closure, direct repair, settled completion, and non-advocate paths', () => {
@@ -703,10 +701,7 @@ test('V32 declarative operation wording stays out of closure, direct repair, set
   }
   for (const contract of [closure, directRepair, settled]) {
     const instruction = buildTutorStubJointPerformanceHostPlan(contract).slots.handoff.instruction;
-    assert.match(
-      instruction,
-      /Make HANDOFF the relevant concrete way to test, resist, or break that case/iu,
-    );
+    assert.match(instruction, /Make HANDOFF the relevant concrete way to test, resist, or break that case/iu);
   }
 });
 
@@ -742,7 +737,10 @@ test('typed advocate ownership accepts a generic relational operation and report
   assert.equal(audit.axes.actorial_part.initiation_owner, 'performance');
   assert.equal(audit.axes.actorial_part.delegated_complement_owner, 'handoff');
   assert.deepEqual(audit.compositePartOwnership.linkage.shared_content_tokens, ['metal']);
-  assert.equal(audit.compositePartOwnership.requirements.every((row) => row.ok), true);
+  assert.equal(
+    audit.compositePartOwnership.requirements.every((row) => row.ok),
+    true,
+  );
   assert.deepEqual(audit.compositePartOwnership.excluded_span_ids, []);
 });
 
@@ -989,10 +987,7 @@ test('v2 frozen replacement recompiles the stance and final host plan while reco
   assert.deepEqual(bundle, original);
   assert.equal(replaced.jointPerformanceFirstDraft.schema, TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA);
   assert.equal(replaced.jointPerformanceFirstDraft.source_owner, 'host');
-  assert.equal(
-    replaced.jointPerformanceFirstDraft.source_placement,
-    'between_performance_entry_and_response',
-  );
+  assert.equal(replaced.jointPerformanceFirstDraft.source_placement, 'between_performance_entry_and_response');
 });
 
 test('v2 parser accepts only the exact nested envelope and one sentence per model span', () => {
@@ -1027,7 +1022,8 @@ test('v2 parser accepts only the exact nested envelope and one sentence per mode
 });
 
 test('v2 parser canonicalizes only I3 outer transport whitespace and preserves the raw draw', () => {
-  const raw = '{"uptake":"Write: “The lead-sweat shows these newly struck shillings are debased, not clipped.”","performance":{"entry":"Together, we hold the shilling against the touchstone’s dark streak.","response":"What does that streak tell you about the coin’s metal? "},"handoff":"Next, compare the shilling’s alloy with crucible leavings."}';
+  const raw =
+    '{"uptake":"Write: “The lead-sweat shows these newly struck shillings are debased, not clipped.”","performance":{"entry":"Together, we hold the shilling against the touchstone’s dark streak.","response":"What does that streak tell you about the coin’s metal? "},"handoff":"Next, compare the shilling’s alloy with crucible leavings."}';
   const parsed = parseTutorStubJointPerformanceFirstDraft(raw);
   const composition = composeTutorStubJointPerformanceFirstDraft({ structured: parsed });
 
@@ -1043,10 +1039,7 @@ test('v2 parser canonicalizes only I3 outer transport whitespace and preserves t
 });
 
 test('v2 transport canonicalization does not admit blank, multiline, bad-punctuation, or over-limit slots', () => {
-  assert.throws(
-    () => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: '   ' })),
-    /slot_is_empty:handoff/u,
-  );
+  assert.throws(() => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: '   ' })), /slot_is_empty:handoff/u);
   assert.throws(
     () => parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: 'First line.\nSecond line.' })),
     /slot_is_multiline:handoff/u,
@@ -1057,10 +1050,9 @@ test('v2 transport canonicalization does not admit blank, multiline, bad-punctua
   );
   assert.throws(
     () =>
-      parseTutorStubJointPerformanceFirstDraft(
-        validRaw({ handoff: 'One two three four five six.' }),
-        { maxWordsPerSlot: 5 },
-      ),
+      parseTutorStubJointPerformanceFirstDraft(validRaw({ handoff: 'One two three four five six.' }), {
+        maxWordsPerSlot: 5,
+      }),
     /slot_exceeds_word_target:handoff:6>5/u,
   );
 });
@@ -1096,9 +1088,7 @@ test('v2 composition inserts exact host-owned SOURCE between joint performance s
 test('v2 composition rejects exact SOURCE copying and substantial SOURCE paraphrase', () => {
   const surface = 'The leat-keeper records that Edony drew the weir crucible and signed for charcoal.';
   const frame = { active: true, entries: [{ mode: 'presented_exhibit', surface }] };
-  const exact = parseTutorStubJointPerformanceFirstDraft(
-    validRaw({ performance: { response: surface } }),
-  );
+  const exact = parseTutorStubJointPerformanceFirstDraft(validRaw({ performance: { response: surface } }));
   assert.throws(
     () => composeTutorStubJointPerformanceFirstDraft({ structured: exact, dramaticReleaseFrame: frame }),
     /source_copied_into_model_slot:performance_response/u,
@@ -1116,8 +1106,7 @@ test('v2 composition rejects exact SOURCE copying and substantial SOURCE paraphr
 test('opt-in V29 compensation keeps exact SOURCE host-owned and reserves performance response for audited accessibility', () => {
   const surface =
     "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
-  const compensation =
-    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const compensation = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
   const contract = firstDraftContract({
     learnerText: 'That register sentence is hard to follow.',
     dramaticReleaseFrame: {
@@ -1195,8 +1184,7 @@ test('opt-in V29 compensation keeps exact SOURCE host-owned and reserves perform
 test('frozen V2 compensated candidate is accepted without V1 owner inference or duplicate-clue rejection', () => {
   const surface =
     "The private-seal register has one entry for the dusk-seal: Elian, night notary of the lower quay, drew it for curfew warrants and returned it chipped at the raven's wing the morning after the coffer left town.";
-  const compensation =
-    'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
+  const compensation = 'Elian drew it for curfew warrants and returned it chipped after the coffer left town.';
   const selectedConfiguration = configuration({ scene_immersion: 'grounded' });
   const dramaticReleaseFrame = {
     active: true,
@@ -1261,20 +1249,16 @@ test('frozen V2 compensated candidate is accepted without V1 owner inference or 
 
   assert.equal(baseAudit.ok, true, JSON.stringify(baseAudit.failureClusters));
   assert.equal(baseAudit.audits.liveTurnProgressionAudit.active, false);
-  assert.equal(
-    baseAudit.audits.liveTurnProgressionAudit.reason,
-    'typed_joint_performance_audit_owns_progression',
-  );
+  assert.equal(baseAudit.audits.liveTurnProgressionAudit.reason, 'typed_joint_performance_audit_owns_progression');
   assert.equal(baseAudit.audits.liveSourceActionAlignmentAudit.active, false);
   assert.equal(
     baseAudit.audits.liveSourceActionAlignmentAudit.reason,
     'typed_joint_performance_audit_owns_source_and_compensation',
   );
   assert.equal(baseAudit.audits.dramaticReleaseAudit.clueDeliveryMultiplicity.ok, true);
-  assert.deepEqual(
-    baseAudit.audits.dramaticReleaseAudit.clueDeliveryMultiplicity.exemptedPassingCompensations,
-    [compensation],
-  );
+  assert.deepEqual(baseAudit.audits.dramaticReleaseAudit.clueDeliveryMultiplicity.exemptedPassingCompensations, [
+    compensation,
+  ]);
   const schemaOnlyAudit = auditTutorStubFrozenCandidate({
     bundle: frozenBundle,
     world,
@@ -1370,8 +1354,7 @@ test('shared-scene response obligation rejects a leading supplied reading', () =
   assert.equal(audit.axes.actorial_performance.visible, false);
   assert.equal(audit.responseObligation.ok, false);
   assert.equal(
-    audit.responseObligation.requirements.find((row) => row.id === 'open_interrogative_not_supplied_agreement')
-      .ok,
+    audit.responseObligation.requirements.find((row) => row.id === 'open_interrogative_not_supplied_agreement').ok,
     false,
   );
   assert.ok(audit.issues.some((issue) => issue.type === 'performance_response_obligation_failed'));
@@ -1508,8 +1491,7 @@ test('I4 judgment-falters recognition is gated by the complete public counterpre
       due_evidence: [{ surface: contrary }],
     },
   });
-  const exactResponse =
-    'Verrell’s ready judgment falters: the weir record points away from his mint-yard crucible.';
+  const exactResponse = 'Verrell’s ready judgment falters: the weir record points away from his mint-yard crucible.';
   const exactHandoff = 'What does this record support about the hand that cast these blanks?';
   const auditFor = ({ response = exactResponse, handoff = exactHandoff, includeSource = true } = {}) => {
     const structured = parseTutorStubJointPerformanceFirstDraft(
@@ -1557,9 +1539,7 @@ test('I4 judgment-falters recognition is gated by the complete public counterpre
   assert.ok(overlaps.pressure_target >= 2);
   assert.ok(overlaps.contrary_evidence > 0);
   assert.ok(overlaps.learner_handoff > 0);
-  assert.deepEqual(exact.spanAudits.performance.publicJudgmentFalterRecognition.excluded_source_span_ids, [
-    'source_1',
-  ]);
+  assert.deepEqual(exact.spanAudits.performance.publicJudgmentFalterRecognition.excluded_source_span_ids, ['source_1']);
 
   const britishSpelling = auditFor({
     response: 'Verrell’s ready judgement falters: the weir record points away from his mint-yard crucible.',
@@ -1749,11 +1729,7 @@ test('I7 exact I6 judgment-meets-evidence event is typed, joint-owned, and contr
       'contrary_evidence_overlap_at_least_two',
     ],
     ['host SOURCE', auditFor({ includeSource: false }), 'exact_contrary_source_present'],
-    [
-      'learner handoff',
-      auditFor({ raw: rawWith({ handoff: 'What should we consider next?' }) }),
-      null,
-    ],
+    ['learner handoff', auditFor({ raw: rawWith({ handoff: 'What should we consider next?' }) }), null],
     ['selected tactic', auditFor({ contract: wrongTacticContract }), 'selected_tactic_matches'],
     [
       'selected part',
@@ -1913,7 +1889,10 @@ test('v1 parser and prompt remain separate and unchanged by the v2 path', () => 
 
   assert.equal(v1.schema, TUTOR_STUB_STRUCTURED_FIRST_DRAFT_SCHEMA);
   assert.match(tutorStubStructuredFirstDraftPrompt(contract), /"part":"\.\.\.","tactic":"\.\.\."/u);
-  assert.match(tutorStubResponseConfigurationPrompt(configuration({ engagement_stance: 'precise' })), /ask for one check/iu);
+  assert.match(
+    tutorStubResponseConfigurationPrompt(configuration({ engagement_stance: 'precise' })),
+    /ask for one check/iu,
+  );
   assert.throws(() => parseTutorStubJointPerformanceFirstDraft(v1Raw), /keys_must_be_exact_and_ordered/u);
   assert.throws(() => parseTutorStubStructuredFirstDraft(validRaw()), /keys_must_be_exact_and_ordered/u);
 });
@@ -1941,11 +1920,10 @@ test('CLI exposes the explicit v2 flag and rejects simultaneous v1/v2 generation
   assert.notEqual(compensationWithoutV2.status, 0);
   assert.match(compensationWithoutV2.stderr, /requires --joint-performance-generation/u);
 
-  const compactWithoutV2 = spawnSync(
-    process.execPath,
-    [REPLAY_SCRIPT, '--compact-speaker-prompt'],
-    { cwd: ROOT, encoding: 'utf8' },
-  );
+  const compactWithoutV2 = spawnSync(process.execPath, [REPLAY_SCRIPT, '--compact-speaker-prompt'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
   assert.notEqual(compactWithoutV2.status, 0);
   assert.match(compactWithoutV2.stderr, /requires --joint-performance-generation/u);
 });

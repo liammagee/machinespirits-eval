@@ -41,9 +41,7 @@ test('zero-call Stage-0 executor seals the 24-dialogue/144-transition analyzer i
       ),
     );
     assert.ok(
-      dataset.rows.every(
-        (row) => row.representations.no_state.common.turn >= 1 && row.provenance.model_calls === 0,
-      ),
+      dataset.rows.every((row) => row.representations.no_state.common.turn >= 1 && row.provenance.model_calls === 0),
     );
     assert.ok(
       dataset.dialogues.every((dialogue) =>
@@ -57,11 +55,7 @@ test('zero-call Stage-0 executor seals the 24-dialogue/144-transition analyzer i
           ),
       ),
     );
-    assert.ok(
-      dataset.rows.every(
-        (row) => Number(row.controls.scramble_donor_seed) !== Number(row.groups.seed),
-      ),
-    );
+    assert.ok(dataset.rows.every((row) => Number(row.controls.scramble_donor_seed) !== Number(row.groups.seed)));
 
     const byPair = new Map();
     for (const dialogue of dataset.dialogues) {
@@ -85,22 +79,16 @@ test('zero-call Stage-0 executor seals the 24-dialogue/144-transition analyzer i
     assert.equal(report.protocol.fixed_head.regularization.scaling, 'lambda_over_training_rows');
     assert.equal(report.protocol.fixed_head.solver.convergence_criterion, 'absolute_objective_delta');
     assert.equal(report.protocol.fixed_head.all_folds_converged, true);
-    assert.ok(
-      Object.values(report.instrument).every((row) => row.oracle_beats_no_state_on_both_metrics === true),
-    );
+    assert.ok(Object.values(report.instrument).every((row) => row.oracle_beats_no_state_on_both_metrics === true));
 
     const plan = verification.plan;
     const boundSources = new Set(
-      ['durable_state', 'dag_dropout'].flatMap(
-        (id) => adaptiveStateLearnerKernel(id).metadata.source_files,
-      ),
+      ['durable_state', 'dag_dropout'].flatMap((id) => adaptiveStateLearnerKernel(id).metadata.source_files),
     );
     assert.ok(boundSources.has('services/adaptiveTutor/learnerKernels/contract.js'));
     assert.ok(boundSources.has('services/adaptiveTutor/learnerKernels/worldAdapter.js'));
     const expectedPolicyHash = hashCanonicalJson(
-      [...boundSources]
-        .sort()
-        .map((file) => ({ path: file, sha256: hashFile(path.join(ROOT, file)) })),
+      [...boundSources].sort().map((file) => ({ path: file, sha256: hashFile(path.join(ROOT, file)) })),
     );
     assert.equal(plan.hashes.policy, expectedPolicyHash);
 

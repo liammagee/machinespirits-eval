@@ -1,17 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  hashCanonicalJson,
-  hashFile,
-  readRunEvents,
-  sha256,
-  verifyExperimentRun,
-} from '../experimentRunArtifacts.js';
-import {
-  buildAdaptiveStateCriticalPathPlan,
-  validateAdaptiveStateCriticalPathPlan,
-} from './stateBenchmarkV2.js';
+import { hashCanonicalJson, hashFile, readRunEvents, sha256, verifyExperimentRun } from '../experimentRunArtifacts.js';
+import { buildAdaptiveStateCriticalPathPlan, validateAdaptiveStateCriticalPathPlan } from './stateBenchmarkV2.js';
 import {
   validateAdaptiveStateStage1DatasetContentSha256,
   validateAdaptiveStateStage1Parent,
@@ -20,23 +11,14 @@ import {
   buildAdaptiveStateStage1Report,
   buildAdaptiveStateStage1SplitManifest,
 } from './stateBenchmarkStage1Analysis.js';
-import {
-  cliFingerprint,
-  executionRunPlan,
-} from '../../scripts/execute-adaptive-state-benchmark-v2-s1.js';
+import { cliFingerprint, executionRunPlan } from '../../scripts/execute-adaptive-state-benchmark-v2-s1.js';
 
-export const ADAPTIVE_STATE_S2_AUTHORIZATION_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-authorization.v2.1';
-export const ADAPTIVE_STATE_S2_DATASET_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-confirmation-dataset.v2.1';
-export const ADAPTIVE_STATE_S2_SPLIT_MANIFEST_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-split-manifest.v2.1';
-export const ADAPTIVE_STATE_S2_PREDICTIONS_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-predictions.v2.1';
-export const ADAPTIVE_STATE_S2_CALL_LEDGER_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-call-ledger.v2.1';
-export const ADAPTIVE_STATE_S2_ANALYSIS_MANIFEST_V21_SCHEMA =
-  'machinespirits.adaptive-state-s2-analysis-manifest.v2.1';
+export const ADAPTIVE_STATE_S2_AUTHORIZATION_V21_SCHEMA = 'machinespirits.adaptive-state-s2-authorization.v2.1';
+export const ADAPTIVE_STATE_S2_DATASET_V21_SCHEMA = 'machinespirits.adaptive-state-s2-confirmation-dataset.v2.1';
+export const ADAPTIVE_STATE_S2_SPLIT_MANIFEST_V21_SCHEMA = 'machinespirits.adaptive-state-s2-split-manifest.v2.1';
+export const ADAPTIVE_STATE_S2_PREDICTIONS_V21_SCHEMA = 'machinespirits.adaptive-state-s2-predictions.v2.1';
+export const ADAPTIVE_STATE_S2_CALL_LEDGER_V21_SCHEMA = 'machinespirits.adaptive-state-s2-call-ledger.v2.1';
+export const ADAPTIVE_STATE_S2_ANALYSIS_MANIFEST_V21_SCHEMA = 'machinespirits.adaptive-state-s2-analysis-manifest.v2.1';
 export const ADAPTIVE_STATE_S2_SEMANTIC_REGENERATION_IMPLEMENTED = false;
 
 export const ADAPTIVE_STATE_S1_FILES = Object.freeze({
@@ -209,7 +191,9 @@ function validateS1Lifecycle(events, calls) {
     const expectedIndex = index + 1;
     const lifecycle = byId.get(call.id);
     if (lifecycleTypes.some((type) => lifecycle[type].length !== 1)) {
-      throw new Error(`stateBenchmarkStage2: call ${call.id} lacks an exact reached/dispatch/finished/recorded lifecycle`);
+      throw new Error(
+        `stateBenchmarkStage2: call ${call.id} lacks an exact reached/dispatch/finished/recorded lifecycle`,
+      );
     }
     for (const type of lifecycleTypes.slice(0, 3)) {
       const event = lifecycle[type][0];
@@ -391,7 +375,9 @@ export function validateAdaptiveStateS1PromotionParent({
     Number(metadata.fixedS2SeedsPerCell) !== 8 ||
     metadata.powerClaimMade !== false
   ) {
-    throw new Error('stateBenchmarkStage2: S1 seal does not bind its recomputed artifacts and fixed-eight no-power boundary');
+    throw new Error(
+      'stateBenchmarkStage2: S1 seal does not bind its recomputed artifacts and fixed-eight no-power boundary',
+    );
   }
   validateCanonicalS1Transaction({
     verification,
