@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.216"
+version: "3.0.217"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3108,7 +3108,7 @@ The register-policy line asked whether a tutor should change its speaking stance
 
 The comparison is deliberately read as a whole-stack boundary, not a tutor-model isolation. Tutor, automated learner, classifier, and learner-record extractor changed together between Terra and Sonnet; the coverage aggregate is deterministic, but the record from which it is computed still passes through an LLM extraction seam. The large cross-stack level difference can therefore arise from tutor conduct, learner conduct, extraction calibration, or their interaction. What closes is the general claim that this adaptive selector produces a profile-contingent fixed-horizon benefit on this apparatus. The register palette remains a useful implementation vocabulary, and Terra's hostile-register collapse remains a safety hypothesis, but neither licenses another selector-rescue block.
 
-*Status and caveats (per §5.12.6).* Pre-registered and complete at $n=5$ per cell; one detective world, simulated contract learners, one operational fixed-horizon endpoint, and no human-learning claim. Terra has complete secondary traces for all 60 selected rows; Sonnet has 60 primary-complete rows, 56 with full secondary closure, and four primary-only rows. Reproduction is zero-call and hash-verified: the explicit final-row selection, 5,000-draw bootstrap (seed 20260713), profile gates, QA matrix, archive lineage, and strict verdict live in `scripts/analyze-register-confirmatory-step2.js`, `exports/register-confirmatory-evidence/final/`, and `config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json`. The next experiment changes both delivery channel and intervention grain: point-of-action coaching and compiled constraints are a successor test, not a retry of the selector.
+*Status and caveats (per §5.12.6).* Pre-registered and complete at $n=5$ per cell; one detective world, simulated contract learners, one operational fixed-horizon endpoint, and no human-learning claim. Terra has complete secondary traces for all 60 selected rows; Sonnet has 60 primary-complete rows, 56 with full secondary closure, and four primary-only rows. One instrument boundary discovered after the fact: the Sonnet family block ran before the safe-mode-v1 claude-CLI context-isolation fix, so its speaking-tutor calls ambiently loaded ~16k tokens of repository context (the codex/Terra path was always isolated). This is a whole-family transport condition, uniform within the block — it cannot manufacture the within-family register contrasts, but it adds one more uncontrolled difference to the already whole-stack Terra-vs-Sonnet comparison above, and Sonnet rows from this block must not be pooled with post-fix runs (check run-header provenance before any cross-run pooling; the §6.18-addendum Step 4 run is entirely post-fix). Reproduction is zero-call and hash-verified: the explicit final-row selection, 5,000-draw bootstrap (seed 20260713), profile gates, QA matrix, archive lineage, and strict verdict live in `scripts/analyze-register-confirmatory-step2.js`, `exports/register-confirmatory-evidence/final/`, and `config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json`. The next experiment changes both delivery channel and intervention grain: point-of-action coaching and compiled constraints are a successor test, not a retry of the selector.
 
 ### 6.18 First-Draft Typed Performance: a Four-Corner Boundary at Utterance Grain (Post-Hoc, Development-Tier)
 
@@ -4425,6 +4425,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.217** (2026-07-18)
+
+:   **§6.17 caveat added --- Sonnet-block transport boundary.** Records in §6.17's status-and-caveats paragraph that the Step 2 Sonnet family block ran before the safe-mode-v1 claude-CLI context-isolation fix (speaking-tutor calls ambiently loaded ~16k tokens of repository context; the codex/Terra path was always isolated). Uniform within the block, so it cannot manufacture the within-family register contrasts; it adds one more uncontrolled difference to the whole-stack Terra-vs-Sonnet comparison and forbids pooling that block's Sonnet rows with post-fix runs. No verdict changes (the family B primary was already a null read as whole-stack). One sentence + this entry; no renumbering.
 
 **v3.0.216** (2026-07-18)
 
