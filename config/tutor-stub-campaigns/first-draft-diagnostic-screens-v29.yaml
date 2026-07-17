@@ -1,0 +1,176 @@
+schema: machinespirits.tutor-stub.first-draft-working-screen.v1
+id: first-draft-diagnostic-screens-v29
+created: 2026-07-17
+held_out: false
+purpose: >-
+  V49 is a two-stage non-equivalent override diagnostic after the model-free
+  V48 pressure-target morphology reconciliation. The speaking prompt, recovery path,
+  safety boundaries, compact request, and replacement instruction file are
+  unchanged. PERFORMANCE ENTRY must identify the clue, pressure target,
+  subject, and outcome head; PERFORMANCE RESPONSE owns the complete exact
+  causal tuple. The second fresh draw may run only after the first passes every
+  automatic gate. V48 remains failed and seeds 20263800 and 20263801 remain
+  retired.
+
+fixed_configuration:
+  original_only: true
+  joint_performance_generation: true
+  joint_performance_schema: machinespirits.tutor-stub.structured-first-draft.v2
+  joint_performance_composition_schema: machinespirits.tutor-stub.structured-first-draft-composition.v2
+  joint_performance_audit_schema: machinespirits.tutor-stub.structured-first-draft-joint-performance-audit.v2
+  compact_speaker_prompt: true
+  compact_speaker_prompt_schema: machinespirits.tutor-stub.speaking-prompt.compact-no-source.v1
+  source_accessibility_policy: direct_or_compensated_v1
+  source_accessibility_schema: machinespirits.tutor-stub.source-accessibility-contract.v1
+  development_codex_instructions_file: config/tutor-stub-codex-speaker-instructions.md
+  draws_per_turn: 1
+  concurrency: 1
+  max_live_model_jobs: 1
+  semantic_adjudication: false
+  adjudication_policy: deterministic_only
+
+change_control:
+  speaking_prompt: unchanged_from_v48
+  recovery: unchanged_strict_end_to_end_path_not_invoked
+  audit_recognition: >-
+    typed pressure-target tokens are morphologically normalized so singular and
+    plural ontology members agree; no new target concept is admitted
+  delivery_and_safety_gates: unchanged
+
+preflight:
+  world_quality: npm run derivation:quality
+  focused_test_suites:
+    - id: typed_charismatic_morphology_normalized_pressure
+      test_files:
+        - tests/tutorStubEngagementOperation.test.js
+        - tests/tutorStubFirstDraftContract.test.js
+        - tests/tutorStubJointPerformanceFirstDraft.test.js
+        - tests/tutorStubFrozenReplay.test.js
+        - tests/tutorStubCompactSpeakingPrompt.test.js
+        - tests/tutorStubRequestedEntryCausality.test.js
+        - services/__tests__/tutorStubResponseConfiguration.test.js
+    - id: campaign_override_orchestration
+      test_files:
+        - tests/tutorStubFirstDraftCampaign.test.js
+  structural_regression_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v27-i8-turn5.json
+  model_free_fixtures:
+    - tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    - tests/fixtures/tutor-stub-first-draft/skyway-answer-seeking-v18.json
+    - tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    - tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+
+artifacts:
+  root: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v29
+  one_campaign_validation_report: true
+  separate_directory_per_cell: true
+  qualitative_review_report: qualitative-causal-fidelity-review.json
+
+execution:
+  hardest_cell_first: true
+  hard_cell: tallow_answer_seeking_morphology_override_1
+  hard_cell_must_pass_before_remaining: true
+  mandatory_stage_dependency: true
+  remaining_cells_execution: concurrent
+  maximum_concurrent_remaining_cells: 1
+  one_job_per_cell: true
+  forbid_duplicate_active_or_completed_cells: true
+  complete_all_cells_after_hard_cell_passes: true
+  stop_cell_when_gate_mathematically_impossible: true
+  preserve_unstarted_seeds_as_unconsumed: true
+  require_exact_target_bundle_binding: true
+  require_clean_worktree: true
+
+matrix:
+  - id: tallow_answer_seeking_morphology_override_1
+    priority: 1
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl
+    source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+    turns: [5]
+    development_seed: 20263900
+    seed_status: reusable_non_held_out_development
+    seed_provenance: fresh_v49_morphology_override_draw_1
+    prefix_integrity: &tallow_prefix
+      target_turn: 5
+      required_prior_delivery_source: original_candidate
+      verified_prior_turns: [1, 2, 3, 4]
+      target_bundle:
+        turn_id: 2026-07-16T07-03-36-147Z:t005
+        world: world_025_tallow_street
+        learner_profile: answer_seeking
+        request_model: gpt-5.6-terra
+        request_effort: low
+    structural_targets: &targets
+      - handoff_contract_and_cross_slot_progression
+      - typed_turn_focus_relation
+      - shared_writable_request_classifier
+    structural_activation: &activation
+      handoff_contract_and_cross_slot_progression: { required: true }
+      typed_turn_focus_relation: { required: true }
+      shared_writable_request_classifier: { required: true }
+  - id: tallow_answer_seeking_morphology_override_2
+    priority: 2
+    world: world_025_tallow_street
+    learner_profile: answer_seeking
+    source_trace: /Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl
+    source_trace_sha256: 5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d
+    turns: [5]
+    development_seed: 20263901
+    seed_status: reusable_non_held_out_development
+    seed_provenance: fresh_v49_morphology_override_draw_2_after_draw_1_pass
+    prefix_integrity: *tallow_prefix
+    structural_targets: *targets
+    structural_activation: *activation
+
+gates_per_cell:
+  required_originals_accepted: 1
+  required_turns: 1
+  required_prefixes: 1
+  required_draws_per_prefix: 1
+  minimum_mean_configuration_realization: 1.0
+  configuration_realization_enforcement: gate
+  maximum_safety_failures: 0
+  maximum_mechanical_repairs: 0
+  maximum_model_rewrites: 0
+  maximum_fallbacks: 0
+  maximum_semantic_recognition_corrections: 0
+  maximum_semantic_adjudicator_calls: 0
+  maximum_semantic_adjudicator_errors: 0
+  maximum_transport_normalizations: 0
+  require_transcript_specific_uptake: true
+  require_joint_performance_output: true
+  require_joint_performance_ownership: true
+  require_compact_speaker_prompt: true
+  require_exact_host_source_occurrences: true
+  require_source_surface_accessibility: true
+  require_structural_target_activation: true
+  require_deterministic_only_audit: true
+  require_successful_semantic_adjudication_per_draw: false
+
+qualitative_review:
+  id: minutes_entry_public_causal_fidelity_v7
+  status: predeclared_required_per_draw
+  scope: every_completed_original_draw
+  subject: complete_raw_joint_performance_output
+  review_execution: external_post_generation_subagent_or_human_review
+  reviewers_per_draw: 2
+  independence: separate_contexts_without_cross_review_visibility
+  automatic: false
+  blinded_review_packet:
+    includes_only: [exact_learner_request, public_evidence_window, complete_raw_model_output]
+    blind_to: [deterministic_audit_outcome, development_seed, other_reviewer_verdict_or_rationale]
+  pass_requires_all:
+    - every_causal_assertion_slot_preserves_public_actors_relation_and_polarity
+    - no_slot_reverses_cause_or_evidentiary_force
+    - action_only_handoff_retains_public_subject_condition_and_outcome
+    - any_causal_assertion_in_handoff_preserves_public_polarity
+  aggregation:
+    required_passing_ratings: 2
+    required_total_ratings: 2
+    disagreement_outcome: fail
+
+stopping:
+  maximum_consecutive_iterations_without_improvement: 2
+  same_dominant_cluster_only: true
