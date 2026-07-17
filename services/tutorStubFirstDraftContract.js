@@ -124,10 +124,8 @@ function typedCausalPerformanceEntryInstruction(causalContract = null, stance = 
   const subject = oneLine(causalContract?.subject);
   const outcome = oneLine(causalContract?.outcome);
   if (!subject || !outcome) return null;
-  const operation = stance === 'charismatic'
-    ? 'put one named public clue directly against the accusation'
-    : 'name one public clue that supports the licensed conclusion';
-  return `Begin “My case is” and ${operation}. Do not repeat the minutes sentence or assert that the ${subject} caused the ${outcome}, even temporarily.`;
+  const pressure = stance === 'charismatic' ? 'Put one named public clue directly against the accusation: ' : '';
+  return `${pressure}Begin exactly “My case is this:” and say why the ${subject} cannot explain the ${outcome}. Do not repeat the minutes sentence or merely call the case strong, weak, limited, or weakened.`;
 }
 
 function definitionContract(definitions, key, fallback = '') {

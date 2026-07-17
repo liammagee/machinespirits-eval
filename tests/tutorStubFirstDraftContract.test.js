@@ -216,8 +216,10 @@ test('binds a writable causal entry to the public relation without reversing cau
   assert.match(contract.performance.tactic_execution, /Add no third clause or role change/iu);
   assert.match(
     contract.opening.causal_performance_entry_instruction,
-    /name one public clue that supports the licensed conclusion/iu,
+    /Begin exactly “My case is this:”/iu,
   );
+  assert.match(contract.opening.causal_performance_entry_instruction, /depot chargers cannot explain the Tallow Street brownout/iu);
+  assert.match(contract.opening.causal_performance_entry_instruction, /strong, weak, limited, or weakened/iu);
   assert.match(contract.opening.causal_performance_entry_instruction, /Do not repeat the minutes sentence/iu);
   assert.match(
     contract.opening.causal_performance_response_instruction,
