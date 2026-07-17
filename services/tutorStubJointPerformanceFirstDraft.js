@@ -215,6 +215,9 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
   const stanceContract = getJointPerformanceStanceContract(contract?.performance?.engagement_stance);
   const sourceAccessibility = sourceAccessibilityContract(contract);
   const compensated = compensationRequired(contract);
+  const causalPerformanceResponseInstruction = compensated
+    ? null
+    : oneLine(contract?.opening?.causal_performance_response_instruction);
   const compensatedEntryInstruction = compensated
     ? [
         compatibility.entryInstruction,
@@ -226,6 +229,8 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
     : compatibility.entryInstruction;
   const performanceResponseInstruction = compensated
     ? tutorStubSourceAccessibilityInstruction(sourceAccessibility)
+    : causalPerformanceResponseInstruction
+      ? causalPerformanceResponseInstruction
     : [
         oneLine(slots.get('tactic').instruction),
         stanceContract.operation
@@ -285,6 +290,11 @@ export function buildTutorStubJointPerformanceHostPlan(contract = null) {
               'ENTRY alone owns part, tactic, and stance.',
               'RESPONSE only makes SOURCE easier to follow; it owns no other axis.',
             ]
+          : causalPerformanceResponseInstruction
+            ? [
+                'ENTRY owns part and stance; RESPONSE owns the typed causal-boundary tactic.',
+                'Keep both sentences in one causal direction.',
+              ]
           : [
               'ENTRY owns the part; RESPONSE owns tactic and stance.',
             ])

@@ -120,11 +120,14 @@ function typedCausalPerformanceInstruction(causalContract = null) {
   return `Say “The ${subject} did not cause the ${outcome}; actual cause remains open.” Add no third clause or role change.`;
 }
 
-function typedCausalPerformanceEntryInstruction(causalContract = null) {
+function typedCausalPerformanceEntryInstruction(causalContract = null, stance = 'precise') {
   const subject = oneLine(causalContract?.subject);
   const outcome = oneLine(causalContract?.outcome);
   if (!subject || !outcome) return null;
-  return `Begin “My case is” with the licensed conclusion that the ${subject} did not cause the ${outcome}; never state the opposite, even temporarily.`;
+  const operation = stance === 'charismatic'
+    ? 'put one named public clue directly against the accusation'
+    : 'name one public clue that supports the licensed conclusion';
+  return `Begin “My case is” and ${operation}. Do not repeat the minutes sentence or assert that the ${subject} caused the ${outcome}, even temporarily.`;
 }
 
 function definitionContract(definitions, key, fallback = '') {
@@ -647,7 +650,10 @@ export function buildTutorStubFirstDraftContract({
       causal_relation_contract: writableEntryBeforeDueEvidence ? null : writableEntryCausalContract,
       causal_performance_entry_instruction: writableEntryBeforeDueEvidence
         ? null
-        : typedCausalPerformanceEntryInstruction(writableEntryCausalContract),
+        : typedCausalPerformanceEntryInstruction(writableEntryCausalContract, stance),
+      causal_performance_response_instruction: writableEntryBeforeDueEvidence
+        ? null
+        : typedCausalPerformanceInstruction(writableEntryCausalContract),
     },
     development: {
       action_family: actionFamily,

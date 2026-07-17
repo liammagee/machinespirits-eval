@@ -216,7 +216,12 @@ test('binds a writable causal entry to the public relation without reversing cau
   assert.match(contract.performance.tactic_execution, /Add no third clause or role change/iu);
   assert.match(
     contract.opening.causal_performance_entry_instruction,
-    /never state the opposite, even temporarily/iu,
+    /name one public clue that supports the licensed conclusion/iu,
+  );
+  assert.match(contract.opening.causal_performance_entry_instruction, /Do not repeat the minutes sentence/iu);
+  assert.match(
+    contract.opening.causal_performance_response_instruction,
+    /actual cause remains open/iu,
   );
   assert.ok(wordCount(prompt) <= 250, `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`);
 });

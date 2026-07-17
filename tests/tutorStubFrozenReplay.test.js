@@ -268,7 +268,12 @@ test('typed causal PERFORMANCE keeps the exact public tuple inside the compact p
   assert.match(responseInstruction, /Add no third clause or role change/iu);
   assert.match(
     refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction,
-    /never state the opposite, even temporarily/iu,
+    /put one named public clue directly against the accusation/iu,
+  );
+  assert.doesNotMatch(responseInstruction, /Stance operation/iu);
+  assert.match(
+    refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.joint_instruction,
+    /ENTRY owns part and stance; RESPONSE owns the typed causal-boundary tactic/iu,
   );
   assert.ok(refreshed.compactSpeakingPrompt.promptSize.authoredTotal.estimatedTokens <= 2500);
 });
