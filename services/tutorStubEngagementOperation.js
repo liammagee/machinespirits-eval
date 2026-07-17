@@ -4,7 +4,14 @@ export const TUTOR_STUB_ENGAGEMENT_OPERATION_SCHEMA =
 export const TUTOR_STUB_ENGAGEMENT_OPERATION_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.engagement-operation-audit.v1';
 
-const PRESSURE_TARGET_PATTERN = /\b(?:accusation|case|charge|claim|conclusion|verdict)\b/iu;
+const PRESSURE_TARGET_TOKENS = new Set([
+  'accusation',
+  'case',
+  'charge',
+  'claim',
+  'conclusion',
+  'verdict',
+]);
 const SET_AGAINST_PATTERN =
   /\bi\s+(?:hold|lay|place|press|set|pit)\b[^.!?]{1,100}\bagainst\b/iu;
 const TYPED_INACTIVITY_CUE_PATTERN =
@@ -71,6 +78,10 @@ function roleHeadVisible(text, role) {
   const expected = [...roleTokens(role)];
   if (expected.length === 0) return false;
   return roleTokens(text).has(expected.at(-1));
+}
+
+function pressureTargetVisible(text) {
+  return [...roleTokens(text)].some((token) => PRESSURE_TARGET_TOKENS.has(token));
 }
 
 function publicEvidenceAnchorTokens(contract = null) {
@@ -169,7 +180,7 @@ export function auditTutorStubEngagementOperation({
     begins_concrete_case: /^My case is this: I set\b/u.test(text),
     first_person_set_against_visible: SET_AGAINST_PATTERN.test(operationBody),
     public_evidence_cue_visible: publicEvidenceCueVisible(operationBody, contract),
-    pressure_target_visible: PRESSURE_TARGET_PATTERN.test(rightOperand),
+    pressure_target_visible: pressureTargetVisible(rightOperand),
     entry_subject_visible: roleVisible(text, relation.subject),
     entry_outcome_head_visible: roleHeadVisible(text, relation.outcome),
     boundary_subject_visible: roleVisible(boundaryText, relation.subject),

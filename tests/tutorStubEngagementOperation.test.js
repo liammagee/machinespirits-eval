@@ -173,6 +173,26 @@ test('V47 entry abbreviation binds only through the exact response-owned causal 
   assert.equal(incompleteBoundary.checks.boundary_outcome_visible, false);
 });
 
+test('pressure-target recognition is morphological rather than singular-phrase specific', () => {
+  const contract = compileTutorStubEngagementOperation({
+    engagementStance: 'charismatic',
+    causalRelationContract: causalContract(),
+  });
+  const plural = auditEntry(
+    contract,
+    'My case is this: I set stocktake-dark depot chargers against Tallow Street brownout claims.',
+  );
+  assert.equal(plural.ok, true, plural.reason);
+  assert.equal(plural.checks.pressure_target_visible, true);
+
+  const claimant = auditEntry(
+    contract,
+    'My case is this: I set stocktake-dark depot chargers against the Tallow Street brownout claimant.',
+  );
+  assert.equal(claimant.ok, false);
+  assert.equal(claimant.checks.pressure_target_visible, false);
+});
+
 test('stays inactive outside the exact typed charismatic causal condition', () => {
   assert.equal(
     compileTutorStubEngagementOperation({
