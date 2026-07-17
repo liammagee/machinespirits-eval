@@ -81,7 +81,7 @@ function v33Bundle(request) {
       development: {
         action_family: 'stage_next_step',
         instruction:
-          'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence. Put that concrete operation in the final handoff after the separate “My case is” sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.',
+          'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence. Put that concrete operation in the final handoff after the separate PERFORMANCE entry sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.',
       },
       language: {
         audience_register: 'adult_novice',
@@ -167,7 +167,7 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   const latest = result.request.messages.at(-1).content;
 
   assert.equal(result.schema, TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA);
-  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2353);
+  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2354);
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens <= 2500);
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens < 4930);
   assert.deepEqual(result.request.messages.slice(0, -1), fixture.request.messages.slice(0, -1));
@@ -224,7 +224,7 @@ test('typed charismatic ownership stays in PERFORMANCE entry through compact com
     owner: 'performance_entry',
   };
   bundle.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction =
-    'Begin exactly “My case is this: I set” and place the public inactivity clue against the named accusation.';
+    'Begin exactly “I set” and place the public inactivity clue against the named accusation.';
 
   const result = buildTutorStubCompactNoSourceRequest(bundle);
   const latest = result.request.messages.at(-1).content;
@@ -233,6 +233,8 @@ test('typed charismatic ownership stays in PERFORMANCE entry through compact com
     latest,
     /PERFORMANCE ENTRY owns the advocate part and the charismatic stance/iu,
   );
+  assert.match(latest, /Begin exactly “I set”/iu);
+  assert.doesNotMatch(latest, /Begin exactly “My case is/iu);
   assert.match(
     latest,
     /PERFORMANCE RESPONSE owns evidentiary_boundary \(evidentiary boundary\):/iu,

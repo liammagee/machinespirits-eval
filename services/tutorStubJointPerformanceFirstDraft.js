@@ -22,6 +22,7 @@ import {
   auditTutorStubSourceAccessibilityCompensation,
   tutorStubSourceAccessibilityInstruction,
 } from './tutorStubSourceAccessibilityContract.js';
+import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
 
 export const TUTOR_STUB_JOINT_PERFORMANCE_HOST_PLAN_SCHEMA =
   'machinespirits.tutor-stub.joint-performance-host-plan.v2';
@@ -916,10 +917,16 @@ export function auditTutorStubJointPerformanceOwnership({
     actorialPartLabel: configuration.actorial_part_label,
     actionFamily: configuration.action_family,
   });
+  const preliminaryEngagementOperationAudit = auditTutorStubEngagementOperation({
+    contract: engagementOperationContract,
+    performanceEntry: spans.get('performance_entry').text,
+    performanceResponse: spans.get('performance_response').text,
+  });
   const compositePartOwnership = auditTutorStubCompositePartOwnership({
     contract: compositePartOwnershipContract,
     composition,
     selectedActionVisible: handoffAudit?.axes?.action_family?.visible === true,
+    typedPerformanceInitiation: preliminaryEngagementOperationAudit,
   });
   const compositeInitiationVisible =
     compositePartOwnership.requirements.find((row) => row.id === 'performance_initiation')?.ok === true;
@@ -943,6 +950,14 @@ export function auditTutorStubJointPerformanceOwnership({
     },
   });
   const engagementOperationAudit = performanceAudit?.engagement_operation_realization || null;
+  if (JSON.stringify(engagementOperationAudit) !== JSON.stringify(preliminaryEngagementOperationAudit)) {
+    issues.push({
+      type: 'engagement_operation_audit_inconsistent',
+      axis: 'engagement_stance',
+      owner: 'performance_entry',
+      reason: 'typed advocate initiation and response-configuration audit disagree',
+    });
+  }
   const responseObligation = compensated
     ? {
         active: false,

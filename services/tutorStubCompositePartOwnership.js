@@ -121,6 +121,7 @@ export function auditTutorStubCompositePartOwnership({
   contract = null,
   composition = null,
   selectedActionVisible = false,
+  typedPerformanceInitiation = null,
 } = {}) {
   if (!contract) {
     return {
@@ -141,10 +142,15 @@ export function auditTutorStubCompositePartOwnership({
   const performanceText = [entry?.text, response?.text].filter(Boolean).join(' ');
   const entryText = oneLine(entry?.text);
   const handoffText = oneLine(handoff?.text);
-  const initiatesCase =
+  const legacyCaseInitiation =
     /^my case (?:is|rests)\b/iu.test(entryText) &&
     !ABSTRACT_CASE_STATUS_PATTERN.test(entryText) &&
     contentTokens(entryText).size >= 2;
+  const typedOperationInitiation =
+    typedPerformanceInitiation?.active === true &&
+    typedPerformanceInitiation?.ok === true &&
+    typedPerformanceInitiation?.owner === 'performance_entry';
+  const initiatesCase = legacyCaseInitiation || typedOperationInitiation;
   const performanceActionAbsent = !performanceIssuesAction(entry, response);
   const performanceTokens = contentTokens(performanceText);
   const handoffTokens = contentTokens(handoffText);
@@ -161,7 +167,9 @@ export function auditTutorStubCompositePartOwnership({
       ok: initiatesCase,
       evidence: initiatesCase ? exactEvidence(entry) : [],
       reason: initiatesCase
-        ? 'PERFORMANCE begins a concrete first-person case.'
+        ? typedOperationInitiation
+          ? 'PERFORMANCE begins with the complete typed first-person advocate operation.'
+          : 'PERFORMANCE begins a concrete first-person case.'
         : 'PERFORMANCE ENTRY must begin a concrete first-person case independently of RESPONSE and HANDOFF.',
     },
     {
@@ -202,6 +210,7 @@ export function auditTutorStubCompositePartOwnership({
     ok: requirements.every((requirement) => requirement.ok),
     selected_part: contract.selected_part,
     mode: contract.mode,
+    typed_performance_initiation: typedOperationInitiation,
     requirements,
     excluded_span_ids: (composition?.spans || [])
       .filter((span) => span?.owner === 'host' || span?.kind === 'source')

@@ -623,7 +623,7 @@ export function buildTutorStubFirstDraftContract({
       : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
   const actionInstruction =
     part === 'advocate' && actionFamily === 'stage_next_step'
-      ? `${baseActionInstruction} Put that concrete operation in the final handoff after the separate “My case is” sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.`
+      ? `${baseActionInstruction} Put that concrete operation in the final handoff after the separate PERFORMANCE entry sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.`
       : baseActionInstruction;
   const progression = compileTutorStubTurnProgressionContract({
     learnerText,

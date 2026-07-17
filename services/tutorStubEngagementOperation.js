@@ -145,7 +145,7 @@ export function compileTutorStubEngagementOperation({
     },
     public_evidence_surface: oneLine(causalRelationContract.public_evidence_surface),
     instruction:
-      `Begin exactly “My case is this: I set” and place the public inactivity clue against the accusation or claim about the ${subject} and the ${outcome}. ` +
+      `Begin exactly “I set” and place the public inactivity clue against the accusation or claim about the ${subject} and the ${outcome}. ` +
       'Keep “I set … against …” in that sentence and name the clue, pressure target, subject, and outcome. Do not merely say the case is weak or that the subject cannot explain the outcome; PERFORMANCE RESPONSE states the exact causal boundary.',
   };
 }
@@ -167,7 +167,7 @@ export function auditTutorStubEngagementOperation({
   }
   const text = oneLine(performanceEntry);
   const boundaryText = oneLine(performanceResponse);
-  const operationBody = text.replace(/^My case is this:\s*/u, '');
+  const operationBody = text;
   const againstIndex = operationBody.toLowerCase().indexOf(' against ');
   const rightOperand = againstIndex >= 0 ? operationBody.slice(againstIndex + ' against '.length) : '';
   const relation = contract?.causal_relation || {};
@@ -177,7 +177,7 @@ export function auditTutorStubEngagementOperation({
     owner_matches: contract?.owner === 'performance_entry',
     boundary_owner_matches: contract?.boundary_owner === 'performance_response',
     operation_matches: contract?.id === 'public_pressure_collision',
-    begins_concrete_case: /^My case is this: I set\b/u.test(text),
+    begins_typed_operation: /^I set\b/u.test(text),
     first_person_set_against_visible: SET_AGAINST_PATTERN.test(operationBody),
     public_evidence_cue_visible: publicEvidenceCueVisible(operationBody, contract),
     pressure_target_visible: pressureTargetVisible(rightOperand),

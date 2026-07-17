@@ -526,11 +526,18 @@ test('typed charismatic causal operation has one owner and generic cue words can
   assert.equal(flat.ok, false);
 
   const { audit: performed, composition: performedComposition } = auditEntry(
-    'My case is this: I set stocktake darkness against the depot-charger Tallow Street brownout accusation.',
+    'I set stocktake darkness against the depot-charger Tallow Street brownout accusation.',
   );
   assert.equal(performed.axes.engagement_stance.visible, true, JSON.stringify(performed.issues));
   assert.equal(performed.axes.engagement_stance.typed_operation.ok, true);
   assert.equal(performed.spanAudits.performance.axes.engagement_stance.visible, true);
+  assert.equal(performed.compositePartOwnership.typed_performance_initiation, true);
+  assert.equal(
+    performed.compositePartOwnership.requirements.find(
+      (row) => row.id === 'performance_initiation',
+    )?.ok,
+    true,
+  );
 
   const wholeResponseConfigurationAudit = auditTutorStubResponseConfiguration({
     text: performedComposition.text,

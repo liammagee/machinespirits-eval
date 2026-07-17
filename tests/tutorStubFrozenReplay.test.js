@@ -272,7 +272,7 @@ test('typed causal PERFORMANCE keeps the exact public tuple inside the compact p
   );
   assert.match(
     refreshed.jointPerformanceFirstDraft.host_plan.slots.performance.entry_instruction,
-    /Begin exactly “My case is this: I set”/iu,
+    /Begin exactly “I set”/iu,
   );
   assert.doesNotMatch(responseInstruction, /Stance operation/iu);
   assert.match(

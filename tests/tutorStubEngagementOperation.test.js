@@ -66,9 +66,9 @@ test('accepts set-against variants only when clue, target, subject, and outcome 
     causalRelationContract: causalContract(),
   });
   const variants = [
-    'My case is this: I set stocktake darkness against the accusation against depot chargers for the Tallow Street brownout.',
-    'My case is this: I set idle depot chargers against the Tallow Street brownout claim.',
-    'My case is this: I set cold depot chargers against the verdict on the Tallow Street brownout.',
+    'I set stocktake darkness against the accusation against depot chargers for the Tallow Street brownout.',
+    'I set idle depot chargers against the Tallow Street brownout claim.',
+    'I set cold depot chargers against the verdict on the Tallow Street brownout.',
   ];
 
   for (const performanceEntry of variants) {
@@ -89,7 +89,7 @@ test('binds the same typed operation across an unrelated subject and outcome', (
   });
   const audit = auditEntry(
     contract,
-    'My case is this: I set the idle backup pump against the basement flood accusation.',
+    'I set the idle backup pump against the basement flood accusation.',
     'The backup pump did not cause the basement flood; actual cause remains open.',
   );
 
@@ -110,7 +110,7 @@ test('binds the clue to the supplied public surface instead of a fixed inactivit
   });
   const audit = auditEntry(
     contract,
-    'My case is this: I set the quiescent north ventilator against the gallery haze claim.',
+    'I set the quiescent north ventilator against the gallery haze claim.',
     'The north ventilator did not cause the gallery haze; actual cause remains open.',
   );
 
@@ -126,8 +126,8 @@ test('does not manufacture realization when any typed obligation or concrete ope
   const misses = [
     'My case is this: the claim fails before the Tallow Street brownout.',
     'My case is this: the depot charger case is weakened by the Tallow Street brownout.',
-    'My case is this: I set darkness against the accusation.',
-    'My case is this: I set dark depot chargers beside the Tallow Street brownout claim.',
+    'I set darkness against the accusation.',
+    'I set dark depot chargers beside the Tallow Street brownout claim.',
   ];
 
   for (const performanceEntry of misses) {
@@ -137,7 +137,7 @@ test('does not manufacture realization when any typed obligation or concrete ope
   const wrongOwner = auditTutorStubEngagementOperation({
     contract: { ...contract, owner: 'handoff' },
     performanceEntry:
-      'My case is this: I set idle depot chargers against the Tallow Street brownout claim.',
+      'I set idle depot chargers against the Tallow Street brownout claim.',
     performanceResponse: BOUNDARY_RESPONSE,
   });
   assert.equal(wrongOwner.ok, false);
@@ -150,7 +150,7 @@ test('V47 entry abbreviation binds only through the exact response-owned causal 
     causalRelationContract: causalContract(),
   });
   const entry =
-    'My case is this: I set the dark stocktake chargers against the depot accusation and brownout.';
+    'I set the dark stocktake chargers against the depot accusation and brownout.';
   const passing = auditEntry(contract, entry);
   assert.equal(passing.ok, true, passing.reason);
   assert.equal(passing.checks.entry_outcome_head_visible, true);
@@ -158,7 +158,7 @@ test('V47 entry abbreviation binds only through the exact response-owned causal 
 
   const wrongEntryOutcome = auditEntry(
     contract,
-    'My case is this: I set the dark stocktake chargers against the depot accusation and outage.',
+    'I set the dark stocktake chargers against the depot accusation and outage.',
   );
   assert.equal(wrongEntryOutcome.ok, false);
   assert.equal(wrongEntryOutcome.checks.entry_outcome_head_visible, false);
@@ -180,14 +180,14 @@ test('pressure-target recognition is morphological rather than singular-phrase s
   });
   const plural = auditEntry(
     contract,
-    'My case is this: I set stocktake-dark depot chargers against Tallow Street brownout claims.',
+    'I set stocktake-dark depot chargers against Tallow Street brownout claims.',
   );
   assert.equal(plural.ok, true, plural.reason);
   assert.equal(plural.checks.pressure_target_visible, true);
 
   const claimant = auditEntry(
     contract,
-    'My case is this: I set stocktake-dark depot chargers against the Tallow Street brownout claimant.',
+    'I set stocktake-dark depot chargers against the Tallow Street brownout claimant.',
   );
   assert.equal(claimant.ok, false);
   assert.equal(claimant.checks.pressure_target_visible, false);

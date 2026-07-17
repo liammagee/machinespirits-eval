@@ -253,8 +253,9 @@ test('charismatic typed causal entry compiles one public-only PERFORMANCE entry 
   assert.equal(contract.performance.engagement_operation_contract?.id, 'public_pressure_collision');
   assert.match(
     contract.opening.causal_performance_entry_instruction,
-    /Begin exactly “My case is this: I set”/iu,
+    /Begin exactly “I set”/iu,
   );
+  assert.doesNotMatch(contract.opening.causal_performance_entry_instruction, /My case is this/iu);
   assert.doesNotMatch(
     JSON.stringify(contract.performance.engagement_operation_contract),
     /premise_id|rule_id|release_schedule|dag/iu,
