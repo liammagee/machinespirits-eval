@@ -69,3 +69,27 @@ dataset if Phase 3 wants a larger general pool. Manifest:
 config/adaptive-tutor-evidence/program-2-dataset-v1.manifest.json; report:
 notes/program-2/2026-07-18-phase0-extraction.md. Next: Phase 1 floor
 (offline grader + untuned base), then the Phase 2 freeze.
+
+2026-07-18 Claude: PHASE 1 COMPLETE — gate passes (floors measured, report
+written: notes/program-2/2026-07-18-phase1-floors.md). Grader
+(scripts/program2-floor-grader.mjs) composes frozen machinery only; fidelity
+by replaying all 645 sealed moments: 99.83% verdict agreement warrant_skip,
+100% stagnant_repeat, residual divergence confined to guards_passed and
+conservative. Four floors, 120 moments x greedy+sampled each, zero endpoint
+errors; held-out greedy: qwen3.5:9b-instruct 0.362, qwen3.5:4b 0.241,
+qwen3:8b (prev gen) 0.121, qwen3.5-9b-base (flattened shape, q8 GGUF via
+ollama after MLX serving proved ~8.8min/gen) 0.103. Readings: one model
+generation tripled the floor (latest-versions rule measured); scale anatomy
+flip (4B misses the cue like the frontier, 9B breaks question discipline);
+base << instruct at floor — the alignment layer CARRIES the warrant move
+pre-training (H1's contest sharpened); thin-ego pathology visible pre-train
+(base guardOk ~0.5). Tuning-stack entrypoint verified (mlx-lm 0.31.3 LoRA
+loads and parses); the 10-example local training smoke was DROPPED after it
+crashed the workstation (MLX training stacked on resident ollama models
+exceeded 36GB RAM) — stack-proof deferred to the Phase 3 training
+environment itself (cloud GPU, already user-approved), where it must be
+demonstrated regardless and proves the environment that actually trains.
+Manifest:
+config/adaptive-tutor-evidence/program-2-floors-v1.manifest.json. Next: the
+Phase 2 prereg freeze (thresholds vs these floors; freeze flattening
+template + serving pin) — user gate.

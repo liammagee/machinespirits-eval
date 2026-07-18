@@ -27,6 +27,7 @@
 //     --dataset ... --step4 ... --base-url http://localhost:11434/v1 \
 //     --model qwen3:8b [--splits dev,heldout] [--json out]
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -282,6 +283,44 @@ function flattenForBase(request) {
   return lines.join('\n');
 }
 
+// Plain node:http POST without socket timeouts — global fetch (undici)
+// enforces a ~5-minute headers timeout, which slow local prefill of the
+// ~10k-token prompts exceeds (observed: MLX server 200s arriving after the
+// client had already given up).
+function postJson(urlString, body) {
+  const url = new URL(urlString);
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname,
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          if (res.statusCode !== 200) {
+            reject(new Error(`endpoint ${res.statusCode}: ${data.slice(0, 200)}`));
+            return;
+          }
+          try {
+            resolve(JSON.parse(data));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      },
+    );
+    req.on('error', reject);
+    req.end(JSON.stringify(body));
+  });
+}
+
 // Two endpoint styles: 'openai' (/chat/completions) and 'ollama' (native
 // /api/chat or /api/generate for the base shape) — the native API is
 // required with ollama because its OpenAI shim ignores num_ctx (silent
@@ -291,76 +330,52 @@ async function callEndpoint({ request, temperature }) {
   if (args['request-shape'] === 'base') {
     const prompt = flattenForBase(request);
     if (args.api === 'ollama') {
-      const res = await fetch(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/generate`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: args.model,
-          prompt,
-          raw: true,
-          stream: false,
-          options: {
-            temperature,
-            num_ctx: Number(args['num-ctx']),
-            num_predict: request.config?.maxTokens || 1024,
-            stop: ['\nLearner:', '\n---'],
-          },
-        }),
-      });
-      if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      const data = await res.json();
-      return data.response ?? '';
-    }
-    const res = await fetch(`${args['base-url']}/completions`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
+      const data = await postJson(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/generate`, {
         model: args.model,
         prompt,
-        temperature,
-        max_tokens: request.config?.maxTokens || 1024,
-        stop: ['\nLearner:', '\n---'],
+        raw: true,
         stream: false,
-      }),
-    });
-    if (!res.ok) throw new Error(`endpoint ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const data = await res.json();
-    return data.choices?.[0]?.text ?? '';
-  }
-  const messages = [{ role: 'system', content: request.systemPrompt }, ...request.messages];
-  if (args.api === 'ollama') {
-    const res = await fetch(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/chat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: args.model,
-        messages,
-        stream: false,
-        think: false,
         options: {
           temperature,
           num_ctx: Number(args['num-ctx']),
           num_predict: request.config?.maxTokens || 1024,
+          stop: ['\nLearner:', '\n---'],
         },
-      }),
-    });
-    if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const data = await res.json();
-    return data.message?.content ?? '';
-  }
-  const res = await fetch(`${args['base-url']}/chat/completions`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
+      });
+      return data.response ?? '';
+    }
+    const data = await postJson(`${args['base-url']}/completions`, {
       model: args.model,
-      messages,
+      prompt,
       temperature,
       max_tokens: request.config?.maxTokens || 1024,
+      stop: ['\nLearner:', '\n---'],
       stream: false,
-    }),
+    });
+    return data.choices?.[0]?.text ?? '';
+  }
+  const messages = [{ role: 'system', content: request.systemPrompt }, ...request.messages];
+  if (args.api === 'ollama') {
+    const data = await postJson(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/chat`, {
+      model: args.model,
+      messages,
+      stream: false,
+      think: false,
+      options: {
+        temperature,
+        num_ctx: Number(args['num-ctx']),
+        num_predict: request.config?.maxTokens || 1024,
+      },
+    });
+    return data.message?.content ?? '';
+  }
+  const data = await postJson(`${args['base-url']}/chat/completions`, {
+    model: args.model,
+    messages,
+    temperature,
+    max_tokens: request.config?.maxTokens || 1024,
+    stream: false,
   });
-  if (!res.ok) throw new Error(`endpoint ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';
 }
 
