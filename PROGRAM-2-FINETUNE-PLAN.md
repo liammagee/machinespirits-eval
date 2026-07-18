@@ -201,10 +201,28 @@ everything SFT adds is visible against it). The blinded-quality gate applies
 per variant (predicted base-arm pathology: thin ego — executes the
 discipline, speaks poorly).
 
+**Seam review (revision 2026-07-18, HANDOFF H3).** The per-turn blinded
+review is structurally blind to register drops at the organ boundary. Add a
+seam variant: blinded judges see three-turn windows (frontier turn,
+candidate turn, frontier turn) where the candidate is either the frontier
+original or the mini generation, and answer (a) was any turn spoken by a
+different tutor, (b) a continuity rating. Seam-detection at chance =
+expressiveness parity at dialogue grain. Report alongside: the mini's
+deterministic guard-trip rate (dramatic-release + response-composition
+audits demand in-scene texture, so trips price flatness for free) against
+the frontier's own baseline (~47% of frontier turns needed repair/fallback
+in Step 4). Escalation ladder if the seam check fails, ordered by least
+concession: (1) larger mini; (2) dataset v2 folding register-archive turns
+into general-SFT so the pool carries voice, not just the move; (3)
+span-gating (frontier writes the turn; mini rewrites only the
+warrant-demand sentences — seam shrinks from turn to sentence). Standing
+order rule regardless: the mini writes last in its spans, never the reverse
+(repair regression, §6.18).
+
 **Thresholds** are deliberately not numbers in this plan: Phase 1 measures
 the untuned floors first, then the prereg freezes the bars (pass margin over
-floor, minimum absolute rate, blind-review non-inferiority) *before* any
-training. No-tune-and-retry applies from that freeze.
+floor, minimum absolute rate, blind-review non-inferiority, seam-detection
+rate) *before* any training. No-tune-and-retry applies from that freeze.
 
 ## 8. Phases and gates
 
@@ -270,6 +288,11 @@ Total cloud spend bounded at US$50 unless re-sanctioned.
 - 2026-07-18 (later): §5 base-model selection resolved by web check —
   Qwen3.5-9B primary, 4B ablation, Gemma 4 fallback, local Qwen3-8B as
   one-generation-back floor point.
+- 2026-07-18 (later still, HANDOFF H3): seam review added to §7 — blinded
+  three-turn-window organ-boundary check + deterministic guard-trip
+  expressiveness proxy + escalation ladder (larger mini / dataset v2 with
+  register-archive voice / span-gating); the mini writes last in its spans.
+  Seam-detection rate joins the Phase 2 frozen bars.
 - 2026-07-18 (later still, HANDOFF H1+H2): two-arm base/instruct design —
   per-variant training order and licensing (≤4 frozen runs), per-variant
   floors and request shapes (base-variant transcript-flattening template
