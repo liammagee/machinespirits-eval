@@ -244,6 +244,65 @@ Whether that distinction is real or merely comfortable is part of what
 committee-level attribution (§6b above) has to answer. The plan's gates are
 this section operationalized.
 
+## 8. Base versus instruct variants: the two-superego reframe
+
+Testing both base and instruct variants of the same model is not a
+hyperparameter sweep — it is a controlled isolation of the alignment layer.
+Base and instruct siblings share architecture and pretraining and differ only
+in preference tuning; identical LoRA data plus identical audits therefore
+separate "language modeling resists the discipline" from "the incumbent
+alignment layer resists it." This converts the fold-week iron-cage question
+(does RLHF lock adaptation?) into a two-arm design:
+
+- discipline trains into base, not instruct → the cage is real and has an
+  address (the preference layer);
+- both train equally well → incumbent attractors were never the binding
+  constraint;
+- both train equally badly → the gap is deeper than adapters reach (the
+  earned version of the glum reading).
+
+**The reframe.** Instruct-tuning is the installation of a dispositional norm
+(be agreeable, be helpful, complete harmoniously) — tonic, in the weights,
+needing no reminder: a **superego that already won**, installed by the lab
+before we arrived. The insight–action gap then has a cleaner description than
+"the model ignores advice": *two norms competed; theirs was dispositional and
+ours episodic; an episodic norm loses every election to a dispositional
+incumbent* (§3b latch logic; the compounding agreeable-completion pull
+measured in the DAG-pinned learner arc was the incumbent at work). Program-2's
+instruct arm is the first weights-versus-weights contest; the base arm
+removes the incumbent to test our norm on unoccupied ground.
+
+**Psychic-architecture placement.** Instruct model = the ego (fluent
+reality-facing mediator, incumbent norm installed). Base model = the
+pre-social continuation reservoir (id-*like*, hedged — it lacks Freud's drive
+structure). Base + our SFT = an ego formed entirely from the corrected
+practice corpus — the purest Bildung arm, with a predictable pathology (thin
+ego: executes the discipline, speaks poorly) that the blinded-quality gate
+exists to catch.
+
+**Correction to "preconscious replacement".** The mini-organ does not replace
+the preconscious. The system's preconscious exists and works: the
+deliberation traces and accurate self-critiques, accessible throughout
+(§1, §5). What failed was the passage from preconscious content to action —
+in Freud's vocabulary, access to *motility*. The mini supplies that passage:
+an acquired structure through which specific preconscious content flows into
+action without per-turn deliberation. Freud's technical name for such an
+acquired structure is **character** — "a precipitate of abandoned
+object-cathexes," the sediment of past identifications and corrections. A
+model tuned on its own corrected episodes is character in the strict sense.
+Committee, relabeled: frontier ego (with incumbent superego), detectors as
+reality-testing, deliberation record as preconscious (unchanged), tuned mini
+as character — the organ the architecture never had.
+
+**Operational notes for Phase 1+.** The variants need different request
+shapes: instruct takes the reconstructed (system prompt + messages)
+natively; base has no chat template and needs the same request flattened to a
+transcript-style completion prompt. Floors must be measured per variant under
+its own shape (the base floor will likely be low and strange — a datum, not a
+nuisance: everything SFT adds is visible against it). Training order
+differs: instruct → SFT then conditional KTO; base → SFT first by
+construction (for the base variant, our SFT *is* its instruction-tuning).
+
 ## Revision log
 
 - 2026-07-18: created (fold-week discussion; sections 1–5 from the
@@ -253,3 +312,7 @@ this section operationalized.
   (amortization, phrasing, p-versus-sampling, trajectory-coherence
   prediction, generalization, monitor retirement; failure modes mapped to
   prereg gates).
+- 2026-07-18 (later still): §8 added — base/instruct as the controlled
+  isolation of the alignment layer; the two-superego reframe; the
+  character-not-preconscious correction; per-variant request shapes and
+  training order.
