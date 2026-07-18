@@ -93,3 +93,23 @@ Manifest:
 config/adaptive-tutor-evidence/program-2-floors-v1.manifest.json. Next: the
 Phase 2 prereg freeze (thresholds vs these floors; freeze flattening
 template + serving pin) — user gate.
+
+2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
+PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
+base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
+prompt/completion so BOTH arms train completion-only loss), the flattening
+template promoted to program2-base-flatten.v1 (unchanged from the
+floor-producing draft), frozen training scripts
+(scripts/program2-train-{sft,kto}.py: LoRA r=32 alpha=64 all-linear, lr
+1e-4, 2 epochs, bf16, seed 20260718; KTO conditional, lr 5e-6, from-SFT
+adapter), <=4 licensed runs, per-arm serving pins matching each floor
+(instruct Q4_K_M chat shape; base q8_0 flattened shape), primary gates
+P1-P4 (floor+0.15 -> instruct >=0.512 / base >=0.253; paired-moment
+bootstrap 5,000 draws seed 20260718 CI>0; absolute >=0.30; leak
+non-inferiority +0.10), blinded-quality gate (20 pairs, sonnet-class
+isolated reviewer, fail at >=2/3 dispreferred), seam bar frozen for the H5
+bake-off (detection <=0.65 at n=40), decision grammar incl. the iron-cage
+table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
+bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
+Lambda per the runbook.
+
