@@ -83,7 +83,7 @@ Add to the plan's Phase 5 (live integration) description:
 
 ## H3 (2026-07-18) — Expressiveness checks: the seam variant + guard-trip proxy
 
-status: pending
+status: done (integrated 15657c73, 2026-07-18: plan §7 seam-review block + frozen-bars list + revision log)
 rationale: user-flagged ("the step (5) draft not being expressive enough");
 the seam is where the committee thesis is tested — §6.18 found apt/checkable/
 attributable don't co-occur in one stream; the architecture bets they co-occur
