@@ -10,7 +10,7 @@ work in — this file is the channel. Check `git status` before touching
 
 ## H1 (2026-07-18) — Base/instruct two-arm design
 
-status: pending
+status: done (integrated 89cdad81, 2026-07-18: plan §5 variants block, §7 per-variant floors/request shapes, §8 Phase 1 row, §9 cross-variant grammar, revision log)
 rationale: `notes/program-2/2026-07-18-dispositional-executive.md` §8
 (user-directed: "update the prereg to include the base/instruct arms")
 
@@ -66,7 +66,7 @@ existing rows apply within each variant):**
 
 ## H2 (2026-07-18) — Phase 5 trajectory-coherence prediction
 
-status: pending
+status: done (integrated 89cdad81, 2026-07-18: plan §8 Phase 5 row addendum)
 rationale: `notes/program-2/2026-07-18-dispositional-executive.md` §7 point 4
 
 Add to the plan's Phase 5 (live integration) description:
