@@ -81,6 +81,38 @@ Add to the plan's Phase 5 (live integration) description:
 
 ---
 
+## H3 (2026-07-18) — Expressiveness checks: the seam variant + guard-trip proxy
+
+status: pending
+rationale: user-flagged ("the step (5) draft not being expressive enough");
+the seam is where the committee thesis is tested — §6.18 found apt/checkable/
+attributable don't co-occur in one stream; the architecture bets they co-occur
+in a system, and the joint between organs is where that bet can fail.
+
+The existing blinded-quality gate covers per-turn flatness only. Add to the
+plan's §7 (and carry into the Phase 2 freeze):
+
+> **Seam review (revision 2026-07-18).** The per-turn blinded review is
+> structurally blind to register drops at the organ boundary. Add a seam
+> variant: blinded judges see three-turn windows (frontier turn, candidate
+> turn, frontier turn) where the candidate is either the frontier original or
+> the mini generation, and answer (a) was any turn spoken by a different
+> tutor, (b) a continuity rating. Seam-detection at chance = expressiveness
+> parity at dialogue grain. Report alongside: the mini's deterministic
+> guard-trip rate (dramatic-release + response-composition audits demand
+> in-scene texture, so trips price flatness for free) against the frontier's
+> own baseline (~47% of frontier turns needed repair/fallback in Step 4).
+>
+> Escalation ladder if the seam check fails, ordered by least concession:
+> (1) larger mini; (2) dataset v2 folding register-archive turns into
+> general-SFT so the pool carries voice, not just the move; (3) span-gating
+> (frontier writes the turn; mini rewrites only the warrant-demand
+> sentences — seam shrinks from turn to sentence). Standing order rule
+> regardless: the mini writes last in its spans, never the reverse (repair
+> regression, §6.18).
+
+---
+
 ## Context for the executing thread
 
 - Theory note (rationale for both items, plus the two-superego reframe and
