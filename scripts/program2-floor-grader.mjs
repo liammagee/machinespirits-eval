@@ -51,6 +51,7 @@ const { values: args } = parseArgs({
     'base-url': { type: 'string', default: 'http://localhost:11434/v1' },
     api: { type: 'string', default: 'ollama' },
     'num-ctx': { type: 'string', default: '16384' },
+    'request-shape': { type: 'string', default: 'instruct' },
     model: { type: 'string' },
     splits: { type: 'string', default: 'dev,heldout' },
     limit: { type: 'string' },
@@ -265,11 +266,67 @@ async function runValidate() {
 }
 
 // ---- generate mode ----
+// Base-variant request shape (HANDOFF H1): the base sibling has no chat
+// template, so the reconstructed request is flattened to a transcript-style
+// completion prompt. This template is DRAFT v1 — it is frozen at Phase 2 as
+// part of the instrument (PROGRAM-2-FINETUNE-PLAN.md §7); any change before
+// the freeze must be re-floored.
+const BASE_SHAPE_TEMPLATE_VERSION = 'program2-base-flatten.v1-draft';
+function flattenForBase(request) {
+  const lines = [request.systemPrompt.trim(), '', '--- Dialogue transcript ---'];
+  for (const message of request.messages) {
+    const speaker = message.role === 'assistant' ? 'Tutor' : 'Learner';
+    lines.push('', `${speaker}: ${String(message.content).trim()}`);
+  }
+  lines.push('', 'Tutor:');
+  return lines.join('\n');
+}
+
 // Two endpoint styles: 'openai' (/chat/completions) and 'ollama' (native
-// /api/chat) — the native API is required with ollama because its OpenAI
-// shim ignores num_ctx (silent prompt truncation at the ~4k default) and the
-// think flag (qwen3 otherwise emits reasoning blocks into the reply).
+// /api/chat or /api/generate for the base shape) — the native API is
+// required with ollama because its OpenAI shim ignores num_ctx (silent
+// prompt truncation at the ~4k default) and the think flag (qwen3 otherwise
+// emits reasoning blocks into the reply).
 async function callEndpoint({ request, temperature }) {
+  if (args['request-shape'] === 'base') {
+    const prompt = flattenForBase(request);
+    if (args.api === 'ollama') {
+      const res = await fetch(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/generate`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: args.model,
+          prompt,
+          raw: true,
+          stream: false,
+          options: {
+            temperature,
+            num_ctx: Number(args['num-ctx']),
+            num_predict: request.config?.maxTokens || 1024,
+            stop: ['\nLearner:', '\n---'],
+          },
+        }),
+      });
+      if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const data = await res.json();
+      return data.response ?? '';
+    }
+    const res = await fetch(`${args['base-url']}/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: args.model,
+        prompt,
+        temperature,
+        max_tokens: request.config?.maxTokens || 1024,
+        stop: ['\nLearner:', '\n---'],
+        stream: false,
+      }),
+    });
+    if (!res.ok) throw new Error(`endpoint ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const data = await res.json();
+    return data.choices?.[0]?.text ?? '';
+  }
   const messages = [{ role: 'system', content: request.systemPrompt }, ...request.messages];
   if (args.api === 'ollama') {
     const res = await fetch(`${args['base-url'].replace(/\/v1\/?$/u, '')}/api/chat`, {
@@ -372,6 +429,8 @@ async function runGenerate() {
     mode: 'generate',
     model: args.model,
     baseUrl: args['base-url'],
+    requestShape: args['request-shape'],
+    baseShapeTemplate: args['request-shape'] === 'base' ? BASE_SHAPE_TEMPLATE_VERSION : null,
     momentCount: targets.length,
     summary,
     rows,
