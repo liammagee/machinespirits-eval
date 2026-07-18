@@ -214,10 +214,14 @@ the frontier's own baseline (~47% of frontier turns needed repair/fallback
 in Step 4). Escalation ladder if the seam check fails, ordered by least
 concession: (1) larger mini; (2) dataset v2 folding register-archive turns
 into general-SFT so the pool carries voice, not just the move; (3)
-span-gating (frontier writes the turn; mini rewrites only the
-warrant-demand sentences — seam shrinks from turn to sentence). Standing
-order rule regardless: the mini writes last in its spans, never the reverse
-(repair regression, §6.18).
+span-gating — *superseded as a ladder step by the coupling-mode comparison
+(HANDOFF H4+H5, §8): span-gating is now one of three compared coupling
+modes, not an escalation*. The seam review itself applies to whichever
+coupling mode is live. Standing order rule, refined by H4: *fluency may
+write last only inside a cage that form owns* (the measured §6.18 repair
+regression damaged voice — uncheckable, so it shipped blind; polish-after-
+mini risks form/stance, which the deterministic battery checks per
+emission).
 
 **Thresholds** are deliberately not numbers in this plan: Phase 1 measures
 the untuned floors first, then the prereg freezes the bars (pass margin over
@@ -242,6 +246,41 @@ of the warrant move itself, it survives training; if it is a property of
 coerced authorship (the model conditioning on turns it did not produce), it
 vanishes when the move is trained. Either answer is informative; a vanishing
 cost dissolves the main liability of the enforcement path.
+
+**Coupling modes (revision 2026-07-18, HANDOFF H4).** Three ways the tuned
+mini couples to the frontier tutor in production, compared before any live
+spend (H5 below): *routing* (mini speaks the whole trigger turn — mini's
+structure, mini's voice, seam risk); *span-gating* (frontier writes the
+turn; mini rewrites only the warrant-demand sentences — frontier's
+structure, demand grafted on); and *protected-span polish* (mode 3): the
+mini produces the load-bearing demand sentence(s), and the frontier composes
+the turn around that span verbatim — the inverse of V53's compiled-entry,
+whose embedding mechanism passed its home cell; what failed there was
+hand-compilation across worlds, here replaced by the trained mini. The
+composed turn re-runs the full deterministic battery fail-closed (protected
+span verbatim, exactly one question, warrant cue, premise lexicons, guards);
+any trip delivers the mini's own unpolished turn, so the polish can only
+improve on a floor it cannot lower. Residual stance risk is pragmatic
+cancellation by the incumbent (hedging/apologizing/paraphrase-supplying
+around an intact span — form checks are necessary, not sufficient):
+mitigated with the de-substitution arc's semantic-release classifier
+(premise-smuggling) plus a small judge-based demand-intact criterion,
+flagged as judge-based. The polish instruction itself is episodic advice to
+the incumbent — best-effort only; the checks are load-bearing. Hygiene:
+polish is Phase 5 production architecture only — Phase 4's offline H-W
+verdict grades RAW mini output. Cost: one extra frontier call on trigger
+turns (~31% of turns in the trap population). Anatomy note for the choice:
+in mode 3 the demand organizes the turn and the frontier voices it — for a
+trigger turn, arguably the correct anatomy rather than a compromise.
+
+**Staged comparison (revision 2026-07-18, HANDOFF H5).** The comparison is
+staged so argument narrows, offline ranks, and live spends on one candidate:
+(1) Phase 4 answers the gating question only — does the discipline train
+(two arms, raw mini output); (2) conditional on a pass, the three coupling
+modes are compared OFFLINE on the same held-out moments — mini output plus
+frontier composition where applicable, deterministic grading plus the H3
+seam review; a handful of frontier calls, no live dialogues; (3) only the
+winning mode goes to live Phase 5.
 
 Phases 0–1 are free and require no further sanction. Phase 3 starts only
 after the Phase 2 freeze and an explicit go.
@@ -288,6 +327,14 @@ Total cloud spend bounded at US$50 unless re-sanctioned.
 - 2026-07-18 (later): §5 base-model selection resolved by web check —
   Qwen3.5-9B primary, 4B ablation, Gemma 4 fallback, local Qwen3-8B as
   one-generation-back floor point.
+- 2026-07-18 (later still, HANDOFF H4+H5): three coupling modes named
+  (routing / span-gating / protected-span polish) with mode 3's fail-closed
+  design (mini's demand span verbatim, frontier composes around it, full
+  battery re-run, any trip delivers the mini's unpolished turn); the H3
+  ladder's span-gating step superseded by the mode comparison; refined
+  order rule ("fluency may write last only inside a cage that form owns");
+  staged sequencing — Phase 4 gates on raw mini output, offline bake-off of
+  the three modes on held-out moments, only the winner goes live.
 - 2026-07-18 (later still, HANDOFF H3): seam review added to §7 — blinded
   three-turn-window organ-boundary check + deterministic guard-trip
   expressiveness proxy + escalation ladder (larger mini / dataset v2 with
