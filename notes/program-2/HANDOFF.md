@@ -113,6 +113,49 @@ plan's §7 (and carry into the Phase 2 freeze):
 
 ---
 
+## H4 (2026-07-18) — Protected-span polish: frontier composes around the mini's demand sentence
+
+status: pending
+rationale: user-proposed refinement ("the frontier model gets to update that
+draft — polish it, without compromising its initial stance"). Supersedes
+H3's escalation-ladder placement of span-gating; H3's seam review remains but
+applies to whichever coupling mode is live.
+
+The repair-regression rule ("mini writes last, never the reverse") refines
+on inspection. The measured regression damaged **voice** — uncheckable, so it
+shipped blind. Frontier-polish-after-mini risks **form/stance** — largely
+checkable, deterministically, per emission. Refined rule: *fluency may write
+last only inside a cage that form owns.* Design, using in-stack parts:
+
+> **Coupling mode 3 — protected-span composition (revision 2026-07-18).**
+> At a trigger turn the mini produces the load-bearing sentence(s) — the
+> warrant demand itself — not a full turn. The frontier composes the turn
+> around that span verbatim (the inverse of V53's compiled-entry, whose
+> embedding mechanism passed its home cell; what failed there was
+> hand-compilation across worlds, here replaced by the trained mini). The
+> composed turn re-runs the full deterministic battery fail-closed: protected
+> span verbatim, exactly one question, warrant cue, premise lexicons, guards.
+> Any trip → deliver the mini's own unpolished turn (the polish can only
+> improve on a floor it cannot lower). Residual stance risk is pragmatic
+> cancellation by the incumbent (hedging/apologizing/paraphrase-supplying
+> around an intact span — form checks are necessary, not sufficient):
+> mitigate with the de-substitution arc's semantic-release classifier
+> (premise-smuggling) plus a small judge-based demand-intact criterion,
+> flagged as judge-based. The polish instruction itself is episodic advice to
+> the incumbent — best-effort only; the checks are load-bearing.
+>
+> Hygiene: polish is Phase 5 production architecture only. Phase 4's offline
+> H-W verdict grades RAW mini output. Cost: one extra frontier call on
+> trigger turns (~31% in the trap population).
+>
+> Comparative anatomy of the three coupling modes, for the Phase 5 choice:
+> routing = mini's structure, mini's voice (seam risk); span-gating =
+> frontier's structure, demand grafted on; protected-span polish = the move
+> as the turn's spine, frontier as its voice — the demand organizes the turn,
+> which for a trigger turn is arguably the correct anatomy, not a compromise.
+
+---
+
 ## Context for the executing thread
 
 - Theory note (rationale for both items, plus the two-superego reframe and
