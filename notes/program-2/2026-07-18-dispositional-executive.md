@@ -196,8 +196,60 @@ and audits run unchanged, producing the next round of training labels →
 periodic consolidation re-tune. Every piece except the mini itself already
 exists in the stack.
 
+## 7. What training offers that the other two selectors cannot (and what it may not)
+
+Enforcement and best-of-K did not fail *at selection* — compliance moved
+under both. They failed on cost, authorship, and transfer. All three paths
+are the same operation (reweighting the behaviour distribution); the location
+of the reweighting is what differs, and training's location buys:
+
+1. **Amortization.** Enforcement and search are taxes levied at every
+   emission forever (override per trigger; K samples + judge per act).
+   Training pays offline once. The other two keep the model a permanent
+   novice with a chaperone; training is the only path where the chaperone can
+   leave.
+2. **Only the generator can phrase.** The compiled arm realized
+   `answer_accountably` on 180/180 warrant turns — perfect action selection —
+   and still missed the surface warrant cue on nearly every non-compliant
+   turn (§6.18-addendum). An override layer can choose an action; it cannot
+   write it in the model's voice. Phrasing is generation; a post-hoc selector
+   must either search the generator's outputs or change the generator.
+3. **It changes p rather than sampling around it.** Best-of-K selects within
+   sampled support; at base compliance ~0.1–0.2 the tail is expensive
+   (d = 0.41 at K=3, ~6×, §6.3.9). Training moves mass so the tail behaviour
+   becomes the mode. Renting the outcome per use versus buying it.
+4. **Trajectory coherence — testable prediction.** Enforced moves leave the
+   model conditioning on text it did not produce (a candidate mechanism for
+   the ~0.13 coverage cost). Trained moves and their follow-through flow from
+   one distribution. Phase 5 can separate: if the coverage cost is a property
+   of the move, it survives training; if of coerced authorship, it vanishes.
+5. **The only possible generalization claim.** Compiled form bound to
+   surfaces (V53 0/3 transfer); search accumulates nothing between acts.
+   Training *can* extract the regularity beneath surfaces — can, not must —
+   which is what the held-out world/family splits test. The other two cannot
+   transfer even in principle.
+6. **The monitor retires.** Enforcement and search need the read-path judge
+   at inference forever. Training consumes the judge's verdicts as labels
+   (the audits) and compiles its history into the write path — Freud's
+   internalization with no metaphorical remainder.
+
+**What it may not buy** (each mapped to a prereg gate): the adapter may lose
+the same per-token elections the instructions lost — LoRA is a low-rank nudge
+against RLHF-carved attractors (= H-0; floor-then-thresholds gate); it may
+pass audits by template collapse (= blinded-quality gate); it may memorize
+surfaces (= held-out splits); and the criterion remains *ours* — training to
+our labels changes the mechanism of ownership (acquired disposition versus
+per-act coercion; Bildung versus command), not the origin of the norm.
+Whether that distinction is real or merely comfortable is part of what
+committee-level attribution (§6b above) has to answer. The plan's gates are
+this section operationalized.
+
 ## Revision log
 
 - 2026-07-18: created (fold-week discussion; sections 1–5 from the
   boundary-map exchange, section 6 from the component-architecture
   exchange).
+- 2026-07-18 (later): §7 added — training versus the other two selectors
+  (amortization, phrasing, p-versus-sampling, trajectory-coherence
+  prediction, generalization, monitor retirement; failure modes mapped to
+  prereg gates).
