@@ -112,12 +112,18 @@ state serializer is needed for v1.
 
 ## 5. Models and method
 
-- **Base**: an open-weights instruct model in the 4–8B class, newest
-  available at execution time (default candidate: Qwen3-8B-Instruct; a 4B
-  sibling as the small ablation). Rationale: large enough to hold the
-  dialogue context, small enough to train and serve trivially, and weak
-  enough that a pass is informative (if an 8B can carry the form, the
-  capacity was reachable).
+- **Base**: an open-weights instruct model in the 4–9B class, newest
+  available at execution time. *(Resolved by web check 2026-07-18: the
+  drafting-time default Qwen3-8B is superseded by **Qwen3.5-9B** — the small
+  series shipped 2026-03-02, dense, Gated DeltaNet hybrid, with MLX-LM LoRA
+  architecture coverage confirmed and ollama serving available — with
+  **Qwen3.5-4B** as the small ablation. Gemma 4 E4B/12B noted as fallback;
+  its effective-parameter and unified-multimodal architecture adds
+  tuning-stack risk for no format-fidelity gain. The already-local Qwen3-8B
+  provides a free one-generation-back floor point.)* Rationale: large enough
+  to hold the dialogue context, small enough to train and serve trivially,
+  and weak enough that a pass is informative (if a ≤9B can carry the form,
+  the capacity was reachable).
 - **Stage 1 — SFT (LoRA)**: rank 16–32, lr ~1e-4, 2–3 epochs over the
   positives (~1.1k Task-A-relevant + up to ~5k general audited-turn
   positives; exact counts frozen in the prereg). Loss on the reply tokens
