@@ -115,7 +115,7 @@ plan's §7 (and carry into the Phase 2 freeze):
 
 ## H4 (2026-07-18) — Protected-span polish: frontier composes around the mini's demand sentence
 
-status: pending
+status: done (integrated e9a513a3, 2026-07-18: plan §8 coupling-modes block, §7 ladder supersession + refined order rule, revision log)
 rationale: user-proposed refinement ("the frontier model gets to update that
 draft — polish it, without compromising its initial stance"). Supersedes
 H3's escalation-ladder placement of span-gating; H3's seam review remains but
@@ -158,7 +158,7 @@ last only inside a cage that form owns.* Design, using in-stack parts:
 
 ## H5 (2026-07-18) — Sequencing: offline coupling-mode bake-off before any live run
 
-status: pending
+status: done (integrated e9a513a3, 2026-07-18: plan §8 staged-comparison block, revision log)
 rationale: user ("at any rate we can compare all these variants") + the
 ablation-creep rule applied to architectures.
 
