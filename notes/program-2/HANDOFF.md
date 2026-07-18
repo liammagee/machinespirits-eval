@@ -156,6 +156,24 @@ last only inside a cage that form owns.* Design, using in-stack parts:
 
 ---
 
+## H5 (2026-07-18) — Sequencing: offline coupling-mode bake-off before any live run
+
+status: pending
+rationale: user ("at any rate we can compare all these variants") + the
+ablation-creep rule applied to architectures.
+
+All variants are commensurable by construction (same frozen graders). Keep
+the comparison staged: (1) Phase 4 answers the gating question only — does
+the disposition train (two arms, raw mini output). (2) Conditional on a
+pass, compare the three coupling modes (routing / span-gating /
+protected-span polish) OFFLINE on the same held-out moments — mini output
+plus frontier composition where applicable, deterministic grading + H3 seam
+review; a handful of frontier calls, no live dialogues. (3) Only the winning
+mode goes to live Phase 5. Argument narrows, offline ranks, live spends on
+one candidate.
+
+---
+
 ## Context for the executing thread
 
 - Theory note (rationale for both items, plus the two-superego reframe and
