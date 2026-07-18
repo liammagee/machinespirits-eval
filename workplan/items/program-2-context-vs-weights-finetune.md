@@ -87,3 +87,22 @@ exports/program2-corpus/; tracked manifest
 config/adaptive-tutor-evidence/program-2-corpus-v1.manifest.json; note
 notes/program-2/2026-07-18-typed-performance-corpus.md. Nothing trains on
 it before the Phase 2 freeze + explicit go.
+
+2026-07-18 Claude: Corpus v2 (pre-training revisions, user-directed). (1)
+Primary format re-rendered into the compact typed-slot contract shape (V53
+screen: UPTAKE/PERFORMANCE/HANDOFF + world/persona conditioning; slot values
+from each turn's recorded classification/responseConfiguration/
+dramaticRelease/pointOfAction records; mean ~2.5k-tok prompts, step4 prompt
+mass -57%); v1 full-apparatus rendering retained as secondary variant files.
+(2) Originals-only filter audited per source: step4 excludes 284
+model-repair + 696 fallback deliveries; V17 excludes 21 repair-channel
+turns; fixtures exclude 42 non-original/rejected candidates. (3) Leakage
+audit over all TRAIN prompts+completions (both formats) against held-out
+world names + world-specific vocabulary (61 terms, dictionary-stemmed
+extraction): 0 hits. (4) Manifest/report now carry pairs + token totals per
+source per format per split. (5) TRAINER-NOTES.md ships with the corpus:
+completion-only loss (prompt-masked SFT) REQUIRED. Totals unchanged: 1,119
+pairs (1,116 train / 3 held-out foxtrot) + 3 eval contexts + 4,697 register
+frames. Manifest: config/adaptive-tutor-evidence/
+program-2-corpus-v2.manifest.json. Still nothing trains before the Phase 2
+freeze + explicit go.
