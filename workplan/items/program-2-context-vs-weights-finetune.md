@@ -106,3 +106,26 @@ pairs (1,116 train / 3 held-out foxtrot) + 3 eval contexts + 4,697 register
 frames. Manifest: config/adaptive-tutor-evidence/
 program-2-corpus-v2.manifest.json. Still nothing trains before the Phase 2
 freeze + explicit go.
+
+2026-07-18 Claude: Faithfulness gate added to corpus v2 (user-directed).
+Matched replay: every pair's completion scored against its own derived slot
+contract with the frozen deterministic audits
+(auditTutorStubResponseConfiguration terminal 6-axis realization;
+auditTutorStubPointOfActionCompliance step4-frozen-2026-07-14.v1;
+dictated-sentence exactness for V52/V53; instrument SHA-256s in the
+manifest). Target MET: matched hard-pass 0.9991 excl. dictated (>=0.95);
+1 drop (v17 sealhouse turn 4, actorial realization fails the terminal
+instrument); dictated 5/5 recall 1.0, reported separately. Render fix: the
+POINT OF ACTION line now appears only where the recorded compliance verdict
+was true (215 over-claiming lines suppressed). Shuffle control (seed
+20260718, within source x kind, completion-side facts never swapped):
+trigger compliance 1.000->0.376, due-evidence delivery 0.923->0.000, v17
+actorial 0.933->0.533, scene immersion 1.000->0.467 — binds on every
+channel whose values vary; flat stance/register/lexical margins traced to
+axis-value homogeneity in the bland-policy step4 source (7.4% identical
+contracts under shuffle; differing-contract restriction barely moves rates),
+recorded in faithfulnessGate.interpretation. Calibration: 141/141 trigger
+replay agreement with recorded verdicts. Both rate tables ship in the
+manifest so the eventual transfer result carries its conditioning-validity
+evidence. Corpus now 1,118 pairs (1,115 train / 3 held-out); leak audit
+still 0 hits; deterministic rerun byte-identical.

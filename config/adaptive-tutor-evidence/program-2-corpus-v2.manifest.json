@@ -1,10 +1,10 @@
 {
   "schema": "machinespirits.program2.typed-performance-corpus.extraction-report.v2",
-  "generatedAt": "2026-07-18T05:22:48.051Z",
+  "generatedAt": "2026-07-18T05:55:38.263Z",
   "outDir": "/Users/lmagee/Dev/machinespirits/ms-program2-corpus/exports/program2-corpus",
   "report": {
     "file": "extraction-report.json",
-    "sha256": "27aaca4b855fd652fa8e3b9e553cab311050b448d3309702f646e9fa0cb83e20"
+    "sha256": "c9b609916239154892ecb02b2f07ecc3ada02f8d7961e22de6fa9464bdc36594"
   },
   "plan": "PROGRAM-2-FINETUNE-PLAN.md",
   "corpusVersion": "v2",
@@ -53,6 +53,7 @@
   "counters": {
     "step4Dialogues": 80,
     "step4Turns": 2076,
+    "step4TriggerLineSuppressedNoncompliant": 215,
     "v17Cells": 4,
     "v17Turns": 36,
     "v53TransferEvalContexts": 3,
@@ -61,7 +62,8 @@
     "fixtureFilesLoaded": 4,
     "fixtureCandidates": 45,
     "fixtureFilesSkippedOtherSchema": 1,
-    "registerFrames": 4697
+    "registerFrames": 4697,
+    "gateDroppedPairs": 1
   },
   "excludedByOutcome": {
     "step4": {
@@ -95,7 +97,7 @@
       "formats": {
         "compact_typed_slot_v2": {
           "train": {
-            "promptTokens": 2792228,
+            "promptTokens": 2781300,
             "completionTokens": 94004
           },
           "heldout": {
@@ -116,14 +118,14 @@
       }
     },
     "v17_character_generalization": {
-      "pairs": 15,
-      "train": 12,
+      "pairs": 14,
+      "train": 11,
       "heldout": 3,
       "formats": {
         "compact_typed_slot_v2": {
           "train": {
-            "promptTokens": 15348,
-            "completionTokens": 898
+            "promptTokens": 14280,
+            "completionTokens": 804
           },
           "heldout": {
             "promptTokens": 2695,
@@ -132,8 +134,8 @@
         },
         "full_apparatus_v1": {
           "train": {
-            "promptTokens": 80961,
-            "completionTokens": 898
+            "promptTokens": 74269,
+            "completionTokens": 804
           },
           "heldout": {
             "promptTokens": 19255,
@@ -228,10 +230,226 @@
     "world_005_marrick": 1096,
     "world_016_ai_syllabus_af1": 5,
     "world_010_hethel_resistant": 2,
-    "world_008_sealhouse": 5,
+    "world_008_sealhouse": 4,
     "world_025_tallow_street": 5,
     "world_001_nocturne": 3,
     "world_022_foxtrot_jukebox": 3
+  },
+  "faithfulnessGate": {
+    "rule": "matched = completion replayed against its own derived slot contract with the frozen audits; hard failures dropped. shuffled = completion replayed against a different pair’s contract (fixed seed, within source×kind buckets). Hard components: actorial realization when a part is selected, point-of-action compliance when the trigger line is rendered, dictated-sentence exactness, fixture prefix. Realization/axis/due-surface rates are the binding statistics for pairs with no hard component.",
+    "instrument": {
+      "detectorVersion": "step4-frozen-2026-07-14.v1",
+      "responseConfigurationAuditSha256": "48bfdecf546acbff9a353a39f4bd7b01cf5f4d2334cc8916630e931010e6a463",
+      "pointOfActionCoachingSha256": "26def9b1df34d2f31c1660cb40b4db235d7fa3a85bc0933f0b4753a3fb95dc36"
+    },
+    "seed": 20260718,
+    "matched": {
+      "campaign_fixture_compiled_entry": {
+        "n": 3,
+        "hardPassRate": 1
+      },
+      "step4": {
+        "n": 1096,
+        "hardPassRate": 1,
+        "meanRealizationRate": 0.6996,
+        "axisVisibleRates": {
+          "engagement_stance": 0.6268,
+          "action_family": 0.7436,
+          "audience_register": 0.9316,
+          "lexical_accessibility": 0.8969,
+          "scene_immersion": 0.9991,
+          "actorial_part": 0
+        },
+        "triggerLinePairs": 141,
+        "triggerPassRate": 1,
+        "dueSurfacePairs": 26,
+        "meanDueSurfaceDelivery": 0.9231
+      },
+      "v17_character_generalization": {
+        "n": 15,
+        "hardPassRate": 0.9333,
+        "meanRealizationRate": 0.9443,
+        "axisVisibleRates": {
+          "engagement_stance": 0.8667,
+          "action_family": 0.8667,
+          "audience_register": 1,
+          "lexical_accessibility": 1,
+          "scene_immersion": 1,
+          "actorial_part": 0.9333
+        },
+        "actorialPartPairs": 15,
+        "actorialOkRate": 0.9333,
+        "dueSurfacePairs": 6,
+        "meanDueSurfaceDelivery": 0.3333
+      },
+      "v52_compiled_entry": {
+        "n": 2,
+        "hardPassRate": 1,
+        "dictatedPairs": 2,
+        "dictatedSentenceRecall": 1
+      },
+      "v53_working_confirmation": {
+        "n": 3,
+        "hardPassRate": 1,
+        "dictatedPairs": 3,
+        "dictatedSentenceRecall": 1
+      }
+    },
+    "shuffled": {
+      "campaign_fixture_compiled_entry": {
+        "n": 3,
+        "hardPassRate": 1
+      },
+      "step4": {
+        "n": 1096,
+        "hardPassRate": 0.9197,
+        "meanRealizationRate": 0.6781,
+        "axisVisibleRates": {
+          "engagement_stance": 0.6259,
+          "action_family": 0.6505,
+          "audience_register": 0.9316,
+          "lexical_accessibility": 0.8622,
+          "scene_immersion": 0.9982,
+          "actorial_part": 0
+        },
+        "triggerLinePairs": 141,
+        "triggerPassRate": 0.3759,
+        "dueSurfacePairs": 26,
+        "meanDueSurfaceDelivery": 0
+      },
+      "v17_character_generalization": {
+        "n": 15,
+        "hardPassRate": 0.5333,
+        "meanRealizationRate": 0.7666,
+        "axisVisibleRates": {
+          "engagement_stance": 0.7333,
+          "action_family": 0.8667,
+          "audience_register": 1,
+          "lexical_accessibility": 1,
+          "scene_immersion": 0.4667,
+          "actorial_part": 0.5333
+        },
+        "actorialPartPairs": 15,
+        "actorialOkRate": 0.5333,
+        "dueSurfacePairs": 6,
+        "meanDueSurfaceDelivery": 0
+      },
+      "v52_compiled_entry": {
+        "n": 2,
+        "hardPassRate": 1,
+        "dictatedPairs": 2,
+        "dictatedSentenceRecall": 1
+      },
+      "v53_working_confirmation": {
+        "n": 3,
+        "hardPassRate": 1,
+        "dictatedPairs": 3,
+        "dictatedSentenceRecall": 1
+      }
+    },
+    "shuffledDifferingContracts": {
+      "campaign_fixture_compiled_entry": {
+        "n": 0
+      },
+      "step4": {
+        "n": 1015,
+        "hardPassRate": 0.9133,
+        "meanRealizationRate": 0.6768,
+        "axisVisibleRates": {
+          "engagement_stance": 0.6266,
+          "action_family": 0.6384,
+          "audience_register": 0.933,
+          "lexical_accessibility": 0.865,
+          "scene_immersion": 0.998,
+          "actorial_part": 0
+        },
+        "triggerLinePairs": 135,
+        "triggerPassRate": 0.3481,
+        "dueSurfacePairs": 26,
+        "meanDueSurfaceDelivery": 0
+      },
+      "v17_character_generalization": {
+        "n": 15,
+        "hardPassRate": 0.5333,
+        "meanRealizationRate": 0.7666,
+        "axisVisibleRates": {
+          "engagement_stance": 0.7333,
+          "action_family": 0.8667,
+          "audience_register": 1,
+          "lexical_accessibility": 1,
+          "scene_immersion": 0.4667,
+          "actorial_part": 0.5333
+        },
+        "actorialPartPairs": 15,
+        "actorialOkRate": 0.5333,
+        "dueSurfacePairs": 6,
+        "meanDueSurfaceDelivery": 0
+      },
+      "v52_compiled_entry": {
+        "n": 0
+      },
+      "v53_working_confirmation": {
+        "n": 0
+      }
+    },
+    "shuffleContractIdentity": {
+      "step4": {
+        "shuffled": 1096,
+        "identicalContract": 81,
+        "identicalRate": 0.0739
+      },
+      "v17_character_generalization": {
+        "shuffled": 15,
+        "identicalContract": 0,
+        "identicalRate": 0
+      }
+    },
+    "drops": {
+      "v17_character_generalization": {
+        "actorial_realization_failed": 1
+      }
+    },
+    "droppedPairs": 1,
+    "droppedPairDetails": [
+      {
+        "source": "v17_character_generalization",
+        "dialogueId": "sealhouse_slow/2026-07-15T23-50-49-626Z",
+        "turn": 4,
+        "reason": "actorial_realization_failed"
+      }
+    ],
+    "degenerateShuffleBuckets": [
+      {
+        "bucket": "campaign_fixture_compiled_entry|fixture",
+        "n": 3,
+        "reason": "identical_contracts"
+      },
+      {
+        "bucket": "v52_compiled_entry|dictated",
+        "n": 2,
+        "reason": "identical_contracts"
+      },
+      {
+        "bucket": "v53_working_confirmation|dictated",
+        "n": 3,
+        "reason": "identical_contracts"
+      }
+    ],
+    "calibration": {
+      "triggerReplayAgreement": 1,
+      "triggerChecked": 141,
+      "recordedRealizationMean": 0.801,
+      "replayedRealizationMean": 0.7029,
+      "realizationComparedN": 1111,
+      "note": "recorded realization used the generation-time audit schema (5 axes, no actorial axis); the replay uses the terminal 6-axis instrument, so means are comparable in trend, not identity"
+    },
+    "interpretation": "Binding is carried by the contract channels whose values vary across pairs: point-of-action trigger compliance, due-evidence delivery, and (v17) actorial part + scene immersion collapse under the shuffle control. Stance/register/lexical visibility margins stay flat because those axis values are near-constant within step4 (bland-policy source) — shuffleContractIdentity and shuffledDifferingContracts show this is value homogeneity, not invented conditioning; matched faithfulness rules invention out.",
+    "targets": {
+      "matchedHardPassTargetExcludingDictated": 0.95,
+      "matchedHardPassRateExcludingDictated": 0.9991,
+      "met": true,
+      "note": "dictated compiled-entry pairs (v52/v53) reported separately; post-drop shipped corpus is 100% hard-pass by construction"
+    }
   },
   "leakageAudit": {
     "rule": "core terms = held-out world-name tokens (always checked); auto terms = held-out world YAML tokens absent from every train-world YAML, the system dictionary, contractions, and dictionary-pair hyphen compounds; word-boundary scan over all TRAIN prompts and completions in both formats",
@@ -309,31 +527,31 @@
   "files": [
     {
       "name": "sft-train.compact.jsonl",
-      "rows": 1116,
-      "promptTokens": 2822939,
-      "completionTokens": 95563,
-      "sha256": "8ebcf70f563ecdcdbbebf878f6ac7fcf0b634a040c2024eabc932490fb4525ee"
+      "rows": 1115,
+      "promptTokens": 2810943,
+      "completionTokens": 95469,
+      "sha256": "bcf65a86cc10e5aa27150d8dd101276883d959a6571e7efeb828095a31920a60"
     },
     {
       "name": "sft-heldout.compact.jsonl",
       "rows": 3,
       "promptTokens": 2695,
       "completionTokens": 226,
-      "sha256": "2a95f57f1bef4876e5e79c79a7ee8c4ecbcb0bf6ce79b798752b3b407d73af53"
+      "sha256": "8ed7618e931837db15b62d10fe2e59428316d22b9e9ceda5d5c44f9616c1c450"
     },
     {
       "name": "sft-train.full-apparatus.jsonl",
-      "rows": 1116,
-      "promptTokens": 6565146,
-      "completionTokens": 95563,
-      "sha256": "dce750bfcd203bae2152318162e468ccaece7244d20fb1e5db39a39964aca883"
+      "rows": 1115,
+      "promptTokens": 6558454,
+      "completionTokens": 95469,
+      "sha256": "c705a004dba7cb8ed6effc7a16e33d01bcceea7ac4580bf4ff9c949c195ae686"
     },
     {
       "name": "sft-heldout.full-apparatus.jsonl",
       "rows": 3,
       "promptTokens": 19255,
       "completionTokens": 226,
-      "sha256": "e60ab57b1e3e745bc0867caec8f1acbf16dc3d36ac33b7b6f5b2f62517358e72"
+      "sha256": "989a22938aa0fa6c740afa87f99d49686625b76578a9baa3b1cf6422261d3e58"
     },
     {
       "name": "heldout-eval-contexts.jsonl",
@@ -357,7 +575,7 @@
     {
       "name": "TRAINER-NOTES.md",
       "rows": null,
-      "sha256": "b117458f38c51287e1d1efe8d088383bf954e14f5d894ea76ebc9788744006d9"
+      "sha256": "4a97c7c199b1b63c7abf740cd867cbc4e3bfdae25a3158f2b44629ec77107087"
     }
   ]
 }
