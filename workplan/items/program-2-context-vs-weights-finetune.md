@@ -69,3 +69,21 @@ dataset if Phase 3 wants a larger general pool. Manifest:
 config/adaptive-tutor-evidence/program-2-dataset-v1.manifest.json; report:
 notes/program-2/2026-07-18-phase0-extraction.md. Next: Phase 1 floor
 (offline grader + untuned base), then the Phase 2 freeze.
+
+2026-07-18 Claude: Typed-performance SFT corpus v1 extracted (engineering
+tier, outside the claim set; Task B data side). Extractor
+scripts/program2-extract-typed-performance-corpus.mjs merges the accepted
+record fail-closed: Step 4 accepted originals (1,096), V17
+character-generalization passing repertoire (15), V52/V53 accepted Tallow
+compiled-entry draws (2 + 3 unique of 4), campaign-fixture compiled-entry
+originals (3) = 1,119 {prompt, completion} pairs with verbatim recorded
+requests; split BY WORLD mirroring V53's transfer matrix (train 1,116;
+heldout = ravensmark/skyway/foxtrot, 3 V17-foxtrot pairs + 3 V53
+transfer-cell eval contexts with saved rejected drafts); aux
+register-outcome frames 4,697. Repair-channel text excluded everywhere per
+the plan's DPO prohibition rationale. Deterministic (rerun byte-identical),
+split-purity and no-target-in-prompt asserted. Dataset machine-local in
+exports/program2-corpus/; tracked manifest
+config/adaptive-tutor-evidence/program-2-corpus-v1.manifest.json; note
+notes/program-2/2026-07-18-typed-performance-corpus.md. Nothing trains on
+it before the Phase 2 freeze + explicit go.

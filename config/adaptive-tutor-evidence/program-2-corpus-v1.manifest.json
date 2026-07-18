@@ -1,0 +1,145 @@
+{
+  "schema": "machinespirits.program2.typed-performance-corpus.extraction-report.v1",
+  "generatedAt": "2026-07-18T04:54:04.938Z",
+  "outDir": "/Users/lmagee/Dev/machinespirits/ms-program2-corpus/exports/program2-corpus",
+  "report": {
+    "file": "extraction-report.json",
+    "sha256": "9356c12161e6e11f971e5d9b1700eedb5a490eb0947ae639eacdbe903d0c70c0"
+  },
+  "plan": "PROGRAM-2-FINETUNE-PLAN.md",
+  "corpusVersion": "v1",
+  "tier": "engineering (outside the paper claim set)",
+  "tokenizer": "utf16-code-units-div-4-ceiling-v1",
+  "split": {
+    "rule": "by world, mirroring the V53 transfer matrix",
+    "heldoutWorlds": ["world_009_ravensmark", "world_022_foxtrot_jukebox", "world_026_skyway_bakery"],
+    "trainWorlds": [
+      "world_001_nocturne",
+      "world_005_marrick",
+      "world_008_sealhouse",
+      "world_010_hethel_resistant",
+      "world_016_ai_syllabus_af1",
+      "world_025_tallow_street"
+    ]
+  },
+  "sources": {
+    "step4": {
+      "root": "/Users/lmagee/.machinespirits-data/step4-claim-runs-2026-07",
+      "expectedGitShaPrefix": "91b8a50e"
+    },
+    "v17": {
+      "root": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/character-adaptation-generalization-v17",
+      "expectedCheckoutSha": "b02e3fac15cadb656858992083cf501005d6e203",
+      "sealVerified": true
+    },
+    "v52": {
+      "root": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-diagnostic-screens-v32/iteration-1",
+      "workingResultSha256": "ebcf6d544ebfbbaf51ee923191dacd1926535556a918469a5ecdd107ce655f59"
+    },
+    "v53": {
+      "root": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-working-screens-v14/iteration-1",
+      "workingResultSha256": "799085c2ab153d650a921cfbaedf9ff2c3d020c3026544276ac589318ae7a4e2"
+    },
+    "campaignFixtures": "config/tutor-stub-campaigns/first-draft-*.yaml -> tests/fixtures/tutor-stub-first-draft/",
+    "registerRoots": [
+      "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/register-confirmatory-terra-n5-live-2026-07-13",
+      "/Users/lmagee/Dev/machinespirits/machinespirits-eval-preconscious/.tutor-stub-auto-eval/register-confirmatory-sonnet5-n5-live-2026-07-13"
+    ]
+  },
+  "counters": {
+    "step4Dialogues": 80,
+    "step4Turns": 2076,
+    "step4NonAcceptedOriginals": 980,
+    "v17Cells": 4,
+    "v17Turns": 36,
+    "v17NonAcceptedOriginals": 21,
+    "v53TransferEvalContexts": 3,
+    "dedupDropped_v53_working_confirmation": 1,
+    "fixtureFilesLoaded": 4,
+    "fixtureCandidates": 45,
+    "fixtureCandidatesNotAccepted": 42,
+    "fixtureFilesSkippedOtherSchema": 1,
+    "registerFrames": 4697
+  },
+  "sourceCounts": {
+    "step4": {
+      "pairs": 1096,
+      "train": 1096,
+      "heldout": 0,
+      "promptTokens": 6468822,
+      "completionTokens": 94004
+    },
+    "v17_character_generalization": {
+      "pairs": 15,
+      "train": 12,
+      "heldout": 3,
+      "promptTokens": 100216,
+      "completionTokens": 1124
+    },
+    "v52_compiled_entry": {
+      "pairs": 2,
+      "train": 2,
+      "heldout": 0,
+      "promptTokens": 4516,
+      "completionTokens": 172
+    },
+    "v53_working_confirmation": {
+      "pairs": 3,
+      "train": 3,
+      "heldout": 0,
+      "promptTokens": 6774,
+      "completionTokens": 255
+    },
+    "campaign_fixture_compiled_entry": {
+      "pairs": 3,
+      "train": 3,
+      "heldout": 0,
+      "promptTokens": 5289,
+      "completionTokens": 234
+    }
+  },
+  "worldCounts": {
+    "world_005_marrick": 1096,
+    "world_016_ai_syllabus_af1": 5,
+    "world_010_hethel_resistant": 2,
+    "world_008_sealhouse": 5,
+    "world_025_tallow_street": 5,
+    "world_001_nocturne": 3,
+    "world_022_foxtrot_jukebox": 3
+  },
+  "files": [
+    {
+      "name": "sft-train.jsonl",
+      "rows": 1116,
+      "promptTokens": 6566362,
+      "completionTokens": 95563,
+      "sha256": "4236c603e81581ce81aadfc573231f284331a55e350bceee94b69bdf8ff03a2a"
+    },
+    {
+      "name": "sft-heldout.jsonl",
+      "rows": 3,
+      "promptTokens": 19255,
+      "completionTokens": 226,
+      "sha256": "b34830f8b334f4062837ad0d422bfeff91f752e8bfd802a59490c082e1ebf7fe"
+    },
+    {
+      "name": "heldout-eval-contexts.jsonl",
+      "rows": 3,
+      "promptTokens": 6573,
+      "completionTokens": 0,
+      "sha256": "e1f7ebe318586094e440718c4e05a4f8d79ec367f22712725d503e3e80b14aff"
+    },
+    {
+      "name": "aux-register-frames.jsonl",
+      "rows": 4697,
+      "promptTokens": 0,
+      "completionTokens": 0,
+      "sha256": "41c9a4878c4c208d977a935b7d1eb0a74596f31ce6fbcf535a0d4e95f56dc631"
+    },
+    {
+      "name": "samples.json",
+      "rows": 3,
+      "sha256": "d991c14994e9e42d6a28d29fde4c29e764f97d210fa60d93710ec6c64f2b2b68"
+    }
+  ]
+}
