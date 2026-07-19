@@ -157,3 +157,40 @@ with the usual claim audit.
 
 None at freeze. No training call has been made. *(Results addendum lands
 here after the licensed runs.)*
+
+### Amendment 1 (2026-07-19): offline coupling probe licensed without a solo pass
+
+H5's sequencing made the coupling-mode comparison conditional on a §5+§6
+pass; neither SFT arm passed. This amendment licenses ONE offline
+protected-span probe anyway, on stated evidence the freeze did not
+anticipate: the failure anatomies are complementary and now measured — the
+tuned instruct arm nearly solved the warrant cue (held-out failures 19→6;
+dev 22→3) with conduct broadly intact (+0.103 net, "partial traction" under
+§8), while the frontier family's Step 4 profile is the mirror (conduct
+intact, cue-poor), and the tuned base arm shows the cue trains but conduct
+collapses without an incumbent alignment layer. Probe design, frozen before
+execution:
+
+- Moments: the same 58 held-out warrant_skip moments, greedy only.
+- Span source: the tuned instruct arm's already-generated held-out replies
+  (`tuned-sft-instruct-v2-q8-ollama.json`); the protected span = the reply's
+  question sentence(s), extracted deterministically (sentences terminating
+  in `?`). Replies with no question → no span → fallback (below).
+- Composer: one sonnet-class frontier call per moment via the isolated CLI
+  bridge (safe-mode-v1), given the identical tutoring context plus the
+  instruction to compose the turn around the span verbatim, add no other
+  question, and introduce no new case facts. The instruction is best-effort;
+  the checks are load-bearing (H4).
+- Fail-closed: composed turns failing span-verbatim containment fall back to
+  the mini's own unpolished reply, which is graded instead (the polish
+  cannot lower the floor).
+- Grading: the same frozen grader on the delivered (composed-or-fallback)
+  texts; primary readout = held-out greedy compliance beside three context
+  lines (tuned solo 0.414, same-lineage floor 0.310, frozen bar 0.460) —
+  exploratory tier, NO H-W claim, no gate; the probe informs only the
+  Phase 5 coupling decision and the KTO-spend decision.
+- Cost bound: ≤65 frontier calls, one attempt, no prompt iteration.
+
+The KTO runs remain licensed and unspent (both SFT arms failed §5); Lambda
+access is unavailable for ~24h at amendment time, which sequences this probe
+first. No other term of the freeze changes.

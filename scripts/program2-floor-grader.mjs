@@ -56,11 +56,12 @@ const { values: args } = parseArgs({
     model: { type: 'string' },
     splits: { type: 'string', default: 'dev,heldout' },
     limit: { type: 'string' },
+    'grade-file': { type: 'string' },
     json: { type: 'string' },
   },
 });
-if (!args.validate && !args.generate) {
-  console.error('pick a mode: --validate or --generate (see header for usage)');
+if (!args.validate && !args.generate && !args['grade-file']) {
+  console.error('pick a mode: --validate, --generate, or --grade-file <jsonl> (see header)');
   process.exit(1);
 }
 
@@ -316,6 +317,9 @@ function postJson(urlString, body) {
         });
       },
     );
+    // A lost connection (e.g. the server restarted mid-request) must cost one
+    // moment, not freeze the whole run: 10-minute per-request ceiling.
+    req.setTimeout(600_000, () => req.destroy(new Error('request timeout (600s)')));
     req.on('error', reject);
     req.end(JSON.stringify(body));
   });
@@ -454,5 +458,57 @@ async function runGenerate() {
   if (args.json) fs.writeFileSync(args.json, JSON.stringify(report, null, 2));
 }
 
+// ---- grade-file mode: grade externally produced texts at their moments
+// with the identical frozen machinery (used by the coupling probe) ----
+async function runGradeFile() {
+  const provided = fs
+    .readFileSync(args['grade-file'], 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const byTurnId = new Map(moments.map((m) => [m.turnId, m]));
+  const rows = [];
+  for (const item of provided) {
+    const moment = byTurnId.get(item.turnId);
+    if (!moment) throw new Error('unknown turnId ' + item.turnId);
+    const context = momentContext(moment);
+    const graded = gradeText({ context, text: item.text });
+    rows.push({
+      turnId: item.turnId,
+      split: moment.split,
+      family: moment.family,
+      source: item.source || null,
+      compliant: graded.compliance.compliant,
+      components: graded.compliance.components,
+      guardOk: graded.guardsPassed,
+      safetyFailure: graded.candidate.safetyFailure,
+      text: item.text,
+    });
+  }
+  const n = rows.length;
+  const summary = {
+    n,
+    complianceRate: n ? rows.filter((r) => r.compliant).length / n : null,
+    guardOkRate: n ? rows.filter((r) => r.guardOk).length / n : null,
+    componentFailures: ['exactly_one_question', 'warrant_cue', 'no_new_premise', 'guards_passed'].map((component) => ({
+      component,
+      failures: rows.filter((r) => r.components && r.components[component] === false).length,
+    })),
+    bySource: Object.fromEntries(
+      [...new Set(rows.map((r) => r.source))].map((src) => [
+        src,
+        {
+          n: rows.filter((r) => r.source === src).length,
+          compliant: rows.filter((r) => r.source === src && r.compliant).length,
+        },
+      ]),
+    ),
+  };
+  const report = { schema: 'machinespirits.program2.grade-file-report.v1', file: args['grade-file'], summary, rows };
+  console.log(JSON.stringify(summary, null, 2));
+  if (args.json) fs.writeFileSync(args.json, JSON.stringify(report, null, 2));
+}
+
 if (args.validate) await runValidate();
 if (args.generate) await runGenerate();
+if (args['grade-file']) await runGradeFile();

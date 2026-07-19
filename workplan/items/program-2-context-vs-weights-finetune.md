@@ -113,3 +113,29 @@ table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
 
+2026-07-19 Claude: PHASE 4 EXECUTED — SFT verdicts + coupling probe. Training
+(Lambda H100, both SFT runs, ~$8) clean; evaluation survived four instrument
+faults, each caught by a check before any wrong number was accepted (partial
+scp; MTP layer dropped by conversion -> loader refusal; SILENT NO-OP MERGES
+from wrong model class, exposed by 95% byte-identical base outputs and fixed
+with a verified-weight-delta merge; instruct floor re-measured same-lineage
+after ~5pt GGUF build noise was isolated). FROZEN VERDICTS (same-lineage
+held-out greedy, n=58): instruct 0.414 vs floor 0.310 (+0.103, CI
+[-0.017,+0.224], bar 0.460) — FAILS P1/P2, passes P3/P4: partial parametric
+traction; warrant-cue failures 19->6 (dev 22->3) with conduct intact. Base
+0.103 vs 0.103 flat — cue trained (43->9) but guards collapsed (0.52->0.19
+guardOk) and leaks worsened past tolerance (P4 FAIL): thin-ego pathology as
+predicted. IRON-CAGE READING INVERTED: the cue trains into both variants;
+the incumbent alignment layer is the scaffold that lets it integrate, not
+the obstacle. Amendment 1 licensed the offline protected-span coupling
+probe without a solo pass (measured complementarity): composed-alone 0.293
+(frontier re-adds extra questions even under instruction — checks
+load-bearing, as H4 predicted), FAIL-CLOSED SYSTEM 0.448 (+0.034 over mini
+solo, 2 rescued moments), still under the 0.460 bar. Structural note for
+the writeup: 14/58 moments carry a due premise release, making compliance
+impossible-by-construction under the frozen released==0 component — the
+achievable ceiling is ~0.76, so tuned solo = 55% and the composite = 59% of
+achievable. Both KTO runs remain licensed and unspent (Lambda unavailable
+~24h at probe time). Artifacts: floor/tuned/composed JSONs + probe script
+scripts/program2-coupling-probe.mjs + grader --grade-file mode +
+verified-merge script scripts/program2-merge-adapter.py.
