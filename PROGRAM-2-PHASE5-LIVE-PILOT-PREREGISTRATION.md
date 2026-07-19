@@ -124,7 +124,33 @@ moment) + ≈ ≤ 1,300 terra CLI calls (supporting seams) + local mini
 codex-family committee, base-arm committee, dataset v2, any tuning, any
 re-run beyond §4's single retry.
 
-## 7. Decision grammar
+## 7. Amendment 1 (2026-07-20, before any sealed pilot data)
+
+**Execution runtime re-pinned.** The launch at branch head b7a619dc
+(main-derived stack) aborted after three consecutive dialogue attempts
+dead-ended at turns 2–3 on `live_turn_progression_v1` guard failures
+(`handoff_loses_turn_focus`, `learner_uptake_not_realized`) that even the
+stub's deterministic fallback could not clear. Zero dialogues sealed — no
+data is discarded by this amendment. Root cause: that guard hardening
+landed 2026-07-17 (the V32–V34 diagnostic arc), postdating the Step 4
+detector freeze (2026-07-14), the claim runs, and the Phase 0 training
+extraction — every reference number in §5 and the training corpus itself
+were produced on the pre-hardening runtime. The claim runs themselves
+executed on the frozen Step-4 runtime branch at 91b8a50e (sealed
+run-header provenance stamps). Execution therefore moves to a worktree at
+91b8a50e with the Phase 5 machinery cherry-picked on top (worktree branch
+`claude/program-2-phase5-pinned-runtime`), with two adaptations to the
+pinned runtime's internals, neither touching frozen semantics: (1) the
+composer call is a direct isolated CLI-bridge request with the composition
+block folded into the speaking prompt — exactly the offline probe's
+measured request shape — rather than routing through the pinned
+prompt-audit path; (2) response envelopes match the pinned pipeline's
+shape. Arms, n, endpoints, bars, seeds, battery, and fallback semantics
+are unchanged. This pin restores the stack match with §5's references and
+the training corpus; the aborted main-stack attempt is retained at
+`exports/program2-live-pilot-aborted-20260720-mainstack/`.
+
+## 8. Decision grammar
 
 | Result | Licensed reading |
 |---|---|
