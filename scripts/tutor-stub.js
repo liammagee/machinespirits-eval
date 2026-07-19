@@ -224,7 +224,16 @@ import {
   normalizeTutorStubPointOfActionArm,
   tutorStubPointOfActionPrompt,
   tutorStubPointOfActionStandingBook,
+  tutorStubPointOfActionTargetText,
 } from '../services/tutorStubPointOfActionCoaching.js';
+import {
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  PROGRAM2_COMMITTEE_SCHEMA,
+  buildCommitteeCompositionBlock,
+  committeeMiniGenerate,
+  committeeQuestionSentences,
+  runCommitteeBattery,
+} from '../services/program2CommitteeEngine.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
@@ -487,6 +496,8 @@ const { values: args, positionals } = parseArgs({
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
     'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
+    'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
+    'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
@@ -570,8 +581,18 @@ Options:
                          examples: openai.mini, openrouter.sonnet-5,
                          codex.gpt-5.6-sol, claude-code.sonnet
                          (default speaking tutor: ${STUB.model})
-  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
-                         frozen final-stretch Step 4 intervention arm
+  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint|committee|silent_control>
+                         frozen final-stretch Step 4 intervention arm, plus
+                         the Phase 5 live-pilot arms: committee (local mini
+                         writes the warrant question, the frontier composes
+                         around it verbatim, fail-closed battery decides) and
+                         silent_control (detector logs only, no intervention)
+  --committee-mini-model <name>
+                         ollama model tag for the committee mini
+                         (default: ${PROGRAM2_COMMITTEE_DEFAULTS.miniModel})
+  --committee-ollama-url <url>
+                         local ollama endpoint for the committee mini
+                         (default: ${PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl})
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -1191,9 +1212,7 @@ function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = nul
 function publicFactsAtTurn(world, tutorTurn, state = null) {
   if (!world) return [];
   const available = candidatePublicPremiseIds({ state, world, tutorTurn });
-  const released = [...available]
-    .map((premiseId) => world.premiseById.get(premiseId)?.fact)
-    .filter(Boolean);
+  const released = [...available].map((premiseId) => world.premiseById.get(premiseId)?.fact).filter(Boolean);
   return [...(world.background || []), ...released];
 }
 
@@ -1215,9 +1234,7 @@ function answerTermForWorld(world) {
 function publicTextForTurn(world, tutorTurn, learnerText = '', state = null) {
   if (!world) return '';
   const available = candidatePublicPremiseIds({ state, world, tutorTurn });
-  const releasedSurface = [...available]
-    .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
-    .join('\n');
+  const releasedSurface = [...available].map((premiseId) => world.premiseById.get(premiseId)?.surface || '').join('\n');
   return [
     world.question,
     world.setting,
@@ -3296,9 +3313,7 @@ function currentReleaseRows(state, tutorTurn) {
               (entry.releasedTurn === null || entry.releasedTurn === undefined),
           )
           .map((entry) => entry.premise)
-    : world.releaseSchedule
-        .filter((entry) => Number(entry.turn) === Number(tutorTurn))
-        .map((entry) => entry.premise);
+    : world.releaseSchedule.filter((entry) => Number(entry.turn) === Number(tutorTurn)).map((entry) => entry.premise);
   return dueIds.map((premiseId) => {
     const premise = world.premiseById.get(premiseId);
     const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
@@ -6119,8 +6134,7 @@ async function analyzeLearnerTurnCombined(
   startInterimAnimation(state, 'analyzing learner', { learnerText, tutorTurn });
 
   try {
-    const raw =
-      precomputedRaw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn, signal }));
+    const raw = precomputedRaw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn, signal }));
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const classification = classificationFromCombinedAnalysis(raw, state);
     const update = learnerRecordFromCombinedAnalysis(raw);
@@ -6199,11 +6213,7 @@ async function analyzeLearnerTurnCombined(
   }
 }
 
-async function analyzeLearnerTurn(
-  learnerText,
-  state,
-  { precomputedRaw = null, signal = null, isCurrent = null } = {},
-) {
+async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null, signal = null, isCurrent = null } = {}) {
   printWithConcurrentTerminal(state, () => printTurnDebugLine(state, state.turns.length + 1));
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   if (state.classifier.enabled && state.learnerDag.enabled && state.world) {
@@ -8899,9 +8909,7 @@ function dagTurnContext(state, tutorTurn, tutorLearnerDagModel = null) {
   if (!world) return '';
   const learnerDagModel = tutorLearnerDagModel?.model || tutorLearnerDagModel || null;
   const learnerGroundedSurfaceKeys = new Set(
-    (learnerDagModel?.learnerRecord?.grounded || [])
-      .map((row) => tutorPromptSurfaceKey(row?.surface))
-      .filter(Boolean),
+    (learnerDagModel?.learnerRecord?.grounded || []).map((row) => tutorPromptSurfaceKey(row?.surface)).filter(Boolean),
   );
   const earlier = committedReleaseRows(state, tutorTurn);
   const dueNow = currentReleaseRows(state, tutorTurn);
@@ -9101,19 +9109,15 @@ async function callTutor({
     dialogueClosure: closureGuardEnabled,
   };
   const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
-  const tutorStreamMode = canStreamTutor
-    ? responseGuardEnabled || deferStreamOutput
-      ? 'buffered'
-      : 'live'
-    : 'none';
+  const tutorStreamMode = canStreamTutor ? (responseGuardEnabled || deferStreamOutput ? 'buffered' : 'live') : 'none';
 
   async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
     const startedAt = new Date().toISOString();
     const instructionTexts = [
-        systemPrompt,
-        dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-        responseCompositionAdvisory,
-        dramaticReleaseAdvisory,
+      systemPrompt,
+      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      responseCompositionAdvisory,
+      dramaticReleaseAdvisory,
       advisory,
       learnerDagAdvisory,
       humanDiscourseAdvisory,
@@ -9483,15 +9487,203 @@ async function callTutor({
     return [String(uptake || '').trim(), String(text || '').trim()].filter(Boolean).join('\n\n');
   }
 
+  // Program-2 Phase 5 committee first draft
+  // (PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md §2): at warrant_skip
+  // moments in the committee arm, the local mini writes the reply, the
+  // frontier composes the turn around the mini's question span verbatim, and
+  // the fail-closed battery decides which text becomes the first draft. The
+  // chosen draft then passes through the standard guard/repair pipeline
+  // below, identical to every other arm.
+  async function invokeCommitteeFirstDraft() {
+    const momentTurn = state.pointOfAction.current;
+    const activation = tutorStubPointOfActionTargetText('warrant_skip');
+    const miniUserPrompt = `${userPrompt}\n\n${activation}`;
+    const miniStartedAt = new Date().toISOString();
+    let miniText = '';
+    let miniLatencyMs = 0;
+    let miniError = null;
+    try {
+      const mini = await committeeMiniGenerate({
+        url: state.committee.ollamaUrl,
+        model: state.committee.miniModel,
+        systemPrompt: effectiveSystemPrompt,
+        messages: [...context, { role: 'user', content: miniUserPrompt }],
+        numCtx: state.committee.numCtx,
+        maxTokens,
+        timeoutMs: state.committee.timeoutMs,
+      });
+      miniText = String(mini.text || '').trim();
+      miniLatencyMs = mini.latencyMs;
+    } catch (err) {
+      miniError = String(err?.message || err).slice(0, 300);
+    }
+    appendTraceEvent(trace, {
+      type: 'model_call',
+      role: `${roleBase}_committee_mini`,
+      turn: tutorTurn,
+      startedAt: miniStartedAt,
+      provider: 'ollama',
+      model: state.committee.miniModel,
+      request: {
+        systemPrompt: effectiveSystemPrompt,
+        messages: [...context, { role: 'user', content: miniUserPrompt }],
+        config: { temperature: 0, numCtx: state.committee.numCtx, maxTokens, think: false },
+      },
+      response: { text: miniText, latencyMs: miniLatencyMs, error: miniError },
+    });
+    const miniResponseEnvelope = () => ({
+      text: miniText,
+      provider: 'ollama',
+      model: state.committee.miniModel,
+      latencyMs: miniLatencyMs,
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+      tokenUsageAvailable: false,
+      promptSnapshot: {
+        systemPrompt: effectiveSystemPrompt,
+        userPrompt: miniUserPrompt,
+        messageHistory: context,
+        role: `${roleBase}_committee_mini`,
+        repairAttempt: 0,
+        config: { temperature: 0, maxTokens, committee: true },
+        promptAudit: null,
+        speakerPrivilegeAudit,
+      },
+    });
+    const moment = {
+      schema: PROGRAM2_COMMITTEE_SCHEMA,
+      turn: tutorTurn,
+      trigger: momentTurn.assigned_trigger,
+      miniModel: state.committee.miniModel,
+      miniLatencyMs,
+      miniError,
+      miniText,
+      span: null,
+      spanSentenceCount: 0,
+      composedText: null,
+      composerLatencyMs: null,
+      composerError: null,
+      battery: null,
+      source: null,
+    };
+    let chosen;
+    if (miniError || !miniText) {
+      moment.source = 'frontier_mini_unavailable';
+      chosen = await invokeTutorAttempt({
+        attemptUserPrompt: userPrompt,
+        role: roleBase,
+        streamMode: tutorStreamMode,
+        repairAttempt: 0,
+      });
+    } else {
+      const spans = committeeQuestionSentences(miniText);
+      moment.spanSentenceCount = spans.length;
+      if (!spans.length) {
+        moment.source = 'fallback_no_span';
+        chosen = miniResponseEnvelope();
+      } else {
+        const span = spans.join(' ');
+        moment.span = span;
+        const compositionBlock = buildCommitteeCompositionBlock(span);
+        // The composer call mirrors the offline coupling probe exactly: a
+        // direct isolated CLI-bridge request with the composition block
+        // folded into the speaking prompt (the probe's measured semantics).
+        // The chosen text still passes the full delivery guard pipeline
+        // below, identical to every other arm.
+        const composerStartedAt = new Date().toISOString();
+        try {
+          if (!isCliProvider(resolved.provider)) {
+            throw new Error(`committee composer requires a CLI provider, got ${resolved.provider}`);
+          }
+          const result = await callAIWithCliBridge(
+            { provider: resolved.provider, model: resolved.model },
+            effectiveSystemPrompt,
+            `${userPrompt}\n\n${compositionBlock}`,
+            `${roleBase}_committee_composer`,
+            { messageHistory: context, effort: cliEffort, signal },
+          );
+          const composedText = String(result.text || '').trim();
+          appendTraceEvent(trace, {
+            type: 'model_call',
+            role: `${roleBase}_committee_composer`,
+            turn: tutorTurn,
+            startedAt: composerStartedAt,
+            provider: result.provider,
+            model: result.model,
+            request: {
+              systemPrompt: effectiveSystemPrompt,
+              messages: [...context, { role: 'user', content: `${userPrompt}\n\n${compositionBlock}` }],
+              config: { committee: true, span },
+            },
+            response: { text: composedText, latencyMs: result.latencyMs, usage: null },
+          });
+          moment.composedText = composedText;
+          moment.composerLatencyMs = result.latencyMs;
+          const battery = runCommitteeBattery({ composedText, span });
+          moment.battery = battery;
+          if (battery.pass) {
+            moment.source = 'composed';
+            chosen = {
+              text: composedText,
+              provider: result.provider,
+              model: result.model,
+              latencyMs: result.latencyMs,
+              usage: {
+                inputTokens: result.inputTokens || 0,
+                outputTokens: result.outputTokens || 0,
+                totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+                cost: result.cost || 0,
+              },
+              tokenUsageAvailable: result.tokenUsageAvailable,
+              promptSnapshot: {
+                systemPrompt: effectiveSystemPrompt,
+                userPrompt: `${userPrompt}\n\n${compositionBlock}`,
+                messageHistory: context,
+                role: `${roleBase}_committee_composer`,
+                repairAttempt: 0,
+                config: { committee: true, span },
+                promptAudit: null,
+                speakerPrivilegeAudit,
+              },
+            };
+          } else {
+            moment.source =
+              battery.failedCheck === 'span_contained'
+                ? 'fallback_span_lost'
+                : battery.failedCheck === 'exactly_one_question'
+                  ? 'fallback_multi_question'
+                  : 'fallback_empty';
+            chosen = miniResponseEnvelope();
+          }
+        } catch (err) {
+          moment.composerError = String(err?.message || err).slice(0, 300);
+          moment.source = 'fallback_error';
+          chosen = miniResponseEnvelope();
+        }
+      }
+    }
+    appendTraceEvent(trace, {
+      type: 'program2_committee_moment',
+      turn: tutorTurn,
+      moment,
+    });
+    chosen.committeeMoment = moment;
+    return chosen;
+  }
+
   try {
     const attempts = [];
     const repairsApplied = [];
-    let response = await invokeTutorAttempt({
-      attemptUserPrompt: userPrompt,
-      role: roleBase,
-      streamMode: tutorStreamMode,
-      repairAttempt: 0,
-    });
+    const committeeMomentActive = Boolean(
+      state?.committee?.enabled && state?.pointOfAction?.current?.assigned_trigger === 'warrant_skip',
+    );
+    let response = committeeMomentActive
+      ? await invokeCommitteeFirstDraft()
+      : await invokeTutorAttempt({
+          attemptUserPrompt: userPrompt,
+          role: roleBase,
+          streamMode: tutorStreamMode,
+          repairAttempt: 0,
+        });
 
     if (!responseGuardEnabled) {
       attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response }));
@@ -9874,9 +10066,7 @@ function automatedLearnerProfileId(profile) {
   const renderedId = learnerProfileIds().find((id) => learnerProfilePrompt(id) === value);
   if (renderedId) return renderedId;
   const legacyMatch = value.match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
-  return legacyMatch
-    ? legacyMatch[1].toLowerCase().replace(/-/gu, '_')
-    : null;
+  return legacyMatch ? legacyMatch[1].toLowerCase().replace(/-/gu, '_') : null;
 }
 
 function resolveAutomatedLearnerProfile(profile) {
@@ -10616,8 +10806,7 @@ async function runOneTurn(
         evidenceUse: classification?.turn?.evidence_use || null,
         unresolvedTerms: comprehensionBeforeTutor?.features?.unresolvedTerms || [],
         nearClosure: dynamicalState?.trajectory?.flags?.nearClosure === true,
-        closeInquiry:
-          registerSelection?.action_family === 'close_inquiry' || dialogueClosureFrame?.mandatory === true,
+        closeInquiry: registerSelection?.action_family === 'close_inquiry' || dialogueClosureFrame?.mandatory === true,
         duePremises: currentReleaseRows(state, tutorTurn).map((row) => row.premise),
       })
     : null;
@@ -12160,6 +12349,13 @@ async function main() {
       current: null,
       history: [],
     },
+    committee: {
+      enabled: pointOfActionArm === 'committee',
+      miniModel: args['committee-mini-model'],
+      ollamaUrl: args['committee-ollama-url'],
+      numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
+      timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
+    },
     experiment: experimentConfig,
     typedActions: {
       enabled: typedActionConfig.enabled,
@@ -12473,9 +12669,7 @@ async function main() {
       `${C.dim}scenario: ${worldBundle.world.id} — ${worldBundle.world.title}${args.dag ? ' | proof map on' : ' | proof map off'}${C.reset}`,
     );
   }
-  console.log(
-    `${C.dim}topic: ${effectiveTopic} | type / for commands | /reset to recover | /quit to exit${C.reset}\n`,
-  );
+  console.log(`${C.dim}topic: ${effectiveTopic} | type / for commands | /reset to recover | /quit to exit${C.reset}\n`);
 
   if (autoLearnerEnabled) {
     const result = await runAutomatedLearnerDialogue({
@@ -13909,9 +14103,7 @@ async function main() {
         id: 'overlay_threshold',
         label: 'Override sensitivity',
         value: String(
-          draft?.overlayThreshold ??
-            state.register?.overlayThreshold ??
-            DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+          draft?.overlayThreshold ?? state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
         ),
         description: 'Lower values react more often; higher values wait for a clearer change.',
       },
@@ -15174,8 +15366,7 @@ async function main() {
       cancelledReason: null,
     };
     activeAutoRun = active;
-    const isCurrent = () =>
-      !exiting && activeAutoRun === active && !active.abortController.signal.aborted;
+    const isCurrent = () => !exiting && activeAutoRun === active && !active.abortController.signal.aborted;
     const capLabel =
       requestedTurns === null
         ? `until grounded · safety cap ${autoSafetyTurns}`
@@ -15473,9 +15664,7 @@ async function main() {
     const autoAttempt = activeAutoRun;
     const clarificationAttempt = clarificationInFlight;
     const queuedLearnerLines = pendingLearnerLines.length;
-    const interrupted = Boolean(
-      learnerAttempt || autoAttempt || clarificationAttempt || duringTurn || processingTurn,
-    );
+    const interrupted = Boolean(learnerAttempt || autoAttempt || clarificationAttempt || duringTurn || processingTurn);
 
     stopInterimAnimation(state);
     if (learnerAttempt) {
@@ -15695,10 +15884,7 @@ async function main() {
     const changes = [];
     if (draft.modelRef !== state.modelRef) changes.push('model');
     if (draft.temperature !== (state.register?.temperature ?? registerTemperature)) changes.push('stance_temp');
-    if (
-      draft.dropoutRate !==
-      (state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE)
-    ) {
+    if (draft.dropoutRate !== (state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE)) {
       changes.push('dropout');
     }
     if (draft.releaseSpeed !== (state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED)) {
@@ -15711,8 +15897,7 @@ async function main() {
       changes.push('overlays');
     }
     if (
-      draft.overlayThreshold !==
-      (state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD)
+      draft.overlayThreshold !== (state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD)
     ) {
       changes.push('overlay_threshold');
     }
@@ -16703,8 +16888,7 @@ async function main() {
 
         try {
           const closureAcknowledgement = Boolean(
-            attemptState.dialogueClosure?.phase === 'awaiting_checkin' &&
-              tutorStubClosureAcknowledgement(learnerText),
+            attemptState.dialogueClosure?.phase === 'awaiting_checkin' && tutorStubClosureAcknowledgement(learnerText),
           );
           const prefetchedAnalysis = closureAcknowledgement
             ? null
@@ -16856,7 +17040,9 @@ async function main() {
               console.log(
                 `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,
               );
-              console.log(`${C.dim}  reply once to revisit a link, or say “no thanks” to close immediately${C.reset}\n`);
+              console.log(
+                `${C.dim}  reply once to revisit a link, or say “no thanks” to close immediately${C.reset}\n`,
+              );
             });
           }
           writeFieldVisualization(state, { reason: completionReason });

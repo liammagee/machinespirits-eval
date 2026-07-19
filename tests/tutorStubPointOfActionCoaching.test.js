@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   TUTOR_STUB_POINT_OF_ACTION_ARMS,
+  TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
   applyTutorStubPointOfActionConstraint,
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
+  normalizeTutorStubPointOfActionArm,
   tutorStubPointOfActionPlaceboAudit,
+  tutorStubPointOfActionTargetText,
 } from '../services/tutorStubPointOfActionCoaching.js';
 
 const BASE = {
@@ -138,4 +141,25 @@ test('compliance audit covers release, no-release, and focused-warrant cases', (
     }).compliant,
     false,
   );
+});
+
+test('Phase 5 arms are additive: frozen registry untouched, no injections, detector unchanged', () => {
+  assert.deepEqual(TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS, ['committee', 'silent_control']);
+  assert.equal(TUTOR_STUB_POINT_OF_ACTION_ARMS.length, 4);
+  for (const arm of TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS) {
+    assert.equal(normalizeTutorStubPointOfActionArm(arm), arm);
+    const turn = buildTutorStubPointOfActionTurn({ ...BASE, arm, evidenceUse: 'omits_warrant' });
+    assert.equal(turn.assigned_trigger, 'warrant_skip');
+    assert.equal(turn.interruption.kind, null);
+    assert.equal(turn.interruption.text, null);
+    assert.equal(turn.compiled_constraint, null);
+    assert.equal(
+      applyTutorStubPointOfActionConstraint({ action_family: 'probe_evidence' }, turn).action_family,
+      'probe_evidence',
+    );
+  }
+  assert.throws(() => normalizeTutorStubPointOfActionArm('committee_v2'));
+  const activation = tutorStubPointOfActionTargetText('warrant_skip');
+  assert.equal(activation.includes('Ask exactly one focused public question'), true);
+  assert.equal(activation.includes('Release no new premise'), true);
 });
