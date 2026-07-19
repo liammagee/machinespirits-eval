@@ -1,0 +1,49 @@
+{
+  "schema": "machinespirits.program2.phase4-results-manifest.v1",
+  "generatedAt": "2026-07-19T07:34:18.743518+00:00",
+  "prereg": "PROGRAM-2-PHASE2-PREREGISTRATION.md",
+  "heldoutGreedy": {
+    "instruct": {
+      "floorSameLineage": 0.31,
+      "tunedSFT": 0.414,
+      "diff": 0.103,
+      "ci95": [-0.017, 0.224],
+      "bar": 0.46,
+      "verdict": "partial_parametric_traction"
+    },
+    "base": {
+      "floor": 0.103,
+      "tunedSFT": 0.103,
+      "diff": 0.0,
+      "verdict": "flat_with_cue_trained_conduct_collapsed"
+    },
+    "couplingFailClosed": 0.448,
+    "composedAlone": 0.293,
+    "frontierHistoricalAtMoments": 0.276,
+    "structuralCeiling": {
+      "unpassableMoments": 14,
+      "of": 58,
+      "achievableCeiling": 0.759
+    }
+  },
+  "warrantCueFailuresHeldout": {
+    "instructFloor": 19,
+    "instructTuned": 6,
+    "baseFloor": 43,
+    "baseTuned": 9
+  },
+  "floorDir": "/Users/lmagee/.machinespirits-data/program-2/floor",
+  "files": {
+    "coupling-probe-delivered.jsonl": "3aa3c24d53e2a41c89aea6afbe5e4957617c1c4d05c3e933f904738433aa44c9",
+    "coupling-probe-graded.json": "15952e94505825bf42c9d96943461ce730c9482c5507d0df2bba772fe18dd66a",
+    "floor-instruct-q8-ollama.json": "c79f8b75fe05ad312740a1430d80428d7d6d600bbd6495e8c5aef2ccfbcce316",
+    "qwen3-8b-instruct-ollama.json": "597470b5485f95be29af391e27d6689e0835e55a5d55e49578af922056a9a076",
+    "qwen3.5-4b-instruct-ollama.json": "ffc08648dcb3e6a210b920e625a8613589912613146506339f8fc4526e58785c",
+    "qwen3.5-9b-base-q8-ollama.json": "d1c09e7b4533a70cf621ecc20a2e33b57228d27007036f811fba875cfcde8787",
+    "qwen3.5-9b-instruct-ollama.json": "5d47b1ddee0eecd0cec020058fb0f2df608fa274a6665565401d334438182dde",
+    "tuned-sft-base-q8-ollama.json": "06a64e96677219d5593d4b60096c638e4c4816732b0c08673b519786a706fde5",
+    "tuned-sft-base-v2-q8-ollama.json": "b2aa3470127700f6a46383d832085ee71cd6b4e3a1e4d351514e4efaa9e40420",
+    "tuned-sft-instruct-q4km-ollama.json": "19e6a28dea2eb7eb1c136c56414fdd99287bd8a92c3f1840b407cdebe631683e",
+    "tuned-sft-instruct-v2-q8-ollama.json": "1d5bf169b2cac34c6ba8094dd938e3fe5c6b62d6c407ae61752b4c5cb217f354"
+  }
+}

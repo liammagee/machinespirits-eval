@@ -194,3 +194,61 @@ execution:
 The KTO runs remain licensed and unspent (both SFT arms failed §5); Lambda
 access is unavailable for ~24h at amendment time, which sequences this probe
 first. No other term of the freeze changes.
+
+### Results addendum (2026-07-19; runs sealed, frozen rules applied)
+
+Both licensed SFT runs executed on one Lambda H100 (~US$8 total; run records
+and logs archived with the adapters). Evaluation survived four instrument
+faults, each caught by a standing check before any wrong number was
+accepted: a partial file copy; the converter dropping the speed-only MTP
+layer while metadata still promised it (loader refusal); silent no-op merges
+from a model-class mismatch (PEFT attached fresh empty adapters — exposed by
+95% byte-identical base outputs and repaired with a merge that asserts
+nonzero weight deltas before saving); and ~5 points of GGUF build-lineage
+noise, removed by re-measuring the instruct floor through the same
+conversion pipeline as its tuned model (0.362 library-build → 0.310
+same-lineage; the §5 bar recomputes to 0.460 from the same-lineage floor
+per the §8 instrument-failure row).
+
+**Verdicts (held-out greedy, n=58, same-lineage pairs):**
+
+- **SFT-instruct: 0.414 vs floor 0.310** (+0.103; paired bootstrap CI95
+  [−0.017, +0.224]; bar 0.460). P1 FAIL, P2 FAIL, P3 PASS, P4 PASS —
+  **partial parametric traction** (§8 row 3). The trained skill's core
+  nearly resolved: warrant-cue failures 19→6 held-out (22→3 dev) with
+  conduct broadly intact (guardOk 0.72→0.67). The residual miss is question
+  discipline and premise handling.
+- **SFT-base: 0.103 vs floor 0.103** (flat). P1–P3 FAIL; **P4 FAIL** (leak
+  rate 0.138 vs floor 0.017+0.10). The cue trained equally strongly (43→9)
+  but conduct collapsed (guardOk 0.52→0.19) — the §8-predicted thin-ego
+  pathology, measured.
+- **Cross-variant (iron-cage) reading — inverted**: the discipline trains
+  into both variants' weights; what the incumbent alignment layer provides
+  is not resistance but the stable conduct that lets the new move integrate.
+  The cage is scaffold. (Neither arm passes, so no H-W claim; both KTO runs
+  remain licensed and unspent.)
+- **Amendment 1 coupling probe**: composed-alone 0.293 (the frontier
+  composer re-adds extra questions even under explicit instruction — the
+  checks, not the instruction, carry the design, as H4 predicted);
+  **fail-closed system 0.448** (+0.034 over the tuned mini solo; 2 rescued
+  moments; never below the mini by construction). Context: the frontier
+  tutors' own live compliance at these exact moments was **0.276** — the
+  fail-closed committee nearly doubles it (deployment-relevant, offline
+  caveat: single-turn regeneration; live coverage cost and seam unmeasured,
+  which is precisely Phase 5's question).
+- **Structural ceiling note (interpretive, not a gate change)**: 14/58
+  held-out moments carry a due premise release and are non-compliant by
+  construction under the frozen `released == 0` component; the achievable
+  ceiling is ≈0.759. Against achievable moments: tuned solo ≈55%, committee
+  ≈59%.
+
+One further tuned-base behaviour, surfaced by the claim audit and disclosed
+as part of the result: empty generations on exactly the 14 held-out moments
+drawn from compiled-constraint dialogues (untuned floor: 0/58) — a
+training-induced degenerate mode on one prompt family, consistent with the
+thin-ego collapse; empty replies grade non-compliant in the stated
+denominators.
+
+Results manifest (artifact SHAs + headline numbers):
+`config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json`.
+Paper landing: §6.20.
