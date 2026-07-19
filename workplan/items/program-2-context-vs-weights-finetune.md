@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-20
 verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
 claim_status: exploratory
 links:
@@ -112,6 +112,29 @@ bake-off (detection <=0.65 at n=40), decision grammar incl. the iron-cage
 table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
+
+2026-07-20 Claude: PHASE 5 FROZEN + MACHINERY LANDED (user go: "Do the live
+pilot"), commit d10d6a9e. PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md
+pins the live committee pilot: committee vs silent_control (2 arms x 2
+profiles x 6 repeats = 24 dialogues, sonnet-family, Step 4 operational spec
+verbatim, seed 20260718); endpoints E1 live warrant compliance (CI>0), E2
+coverage@16 tax vs the frozen -0.05/-0.10 margins, E3 seam at the frozen
+<=0.65 bar; density precondition >=15 warrant opps/arm. Machinery: additive
+Phase 5 arms beside the byte-unchanged Step 4 registry; fail-closed
+committee first draft in the speaking call (local mini on the Phase 2
+serving pin -> question span -> frontier composition -> containment +
+one-question battery -> mini fallback; standard delivery guards identical
+across arms); runner with zero-model gate + sha-pinned launch +
+sealed-trace resume; frozen analyzer. Smoked zero-paid: 24-job plan gate
+PASS, local mini produces the trained move (7s), sonnet + terra CLI probes
+alive. Related-work sweep salvaged in-loop after the workflow's synthesis
+agent died on a spend limit: notes/program-2/2026-07-20-related-work-sweep.md
+(23 verified claims; span-granular composition and verified-exhaust
+distillation precedented as categories — the fail-closed protected-span
+conjunction, failure-anatomy seam placement, and the base-vs-instruct
+conduct decomposition have no found precedent). Launch is human-gated:
+node scripts/run-program2-live-pilot.js --launch-approved --expected-sha
+d10d6a9efd0b9d3516c3acd6f6f528333754f56e.
 
 2026-07-19 Claude: PHASE 4 EXECUTED — SFT verdicts + coupling probe. Training
 (Lambda H100, both SFT runs, ~$8) clean; evaluation survived four instrument
