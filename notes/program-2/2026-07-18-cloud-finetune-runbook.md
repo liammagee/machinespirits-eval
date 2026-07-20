@@ -148,3 +148,38 @@ Give me the instance IP once it's up; everything in §§4–6 is scriptable over
 SSH from this session with the push-milestone regime already armed
 (stack-proof, each checkpoint export, any failure). Alternatively §§4–6
 paste-run in order by hand — every command above is complete.
+
+## Session 2 (prepared 2026-07-20 — run when a Lambda box is available)
+
+Two options, independent; both use the same H100 recipe as Session 1
+(ubuntu box, pip install per §2 including pillow/torchvision, frozen
+scripts at their pinned revisions).
+
+### 2a. KTO runs (LICENSED — Phase 2 prereg, unspent)
+
+Both arms, from the SFT adapters, lr 5e-6, unpaired labels
+(`kto-v1.jsonl`, 1,096 true / 980 false):
+
+```bash
+python3 program2-train-kto.py --variant instruct   # from out-sft-instruct/final
+python3 program2-train-kto.py --variant base       # from out-sft-base/final
+```
+
+Then the standard export path (verified merge via
+scripts/program2-merge-adapter.py — AutoModelForImageTextToText + weight
+delta assertion; zero MTP layer; canonical tokenizer files; q8_0 GGUF; the
+same-lineage floor rule). Gates: the frozen Phase 2 bars (instruct needs
++0.046 over the SFT verdict to clear 0.460).
+
+### 2b. Iterated-exhaust round (NOT licensed — needs its own mini-prereg)
+
+The deployment-interface dataset from the Phase 5 live pilot is extracted
+and hashed at `~/.machinespirits-data/program-2/datasets/phase5-live-v1/`
+(scripts/program2-extract-live-moments.mjs): 75 committee moments with the
+mini's actual live requests (activation block included), 15
+compliant/SFT-eligible targets, 15/60 KTO labels, per-moment battery and
+fallback records. A licensing prereg would need to fix: data mixture (v1
+865 + live delta), whether Phase 5b moments are added when sealed, the
+serving pin, and fresh confirm-run bars. Rationale and the
+distribution-shift reading: Phase 5 results memo
+(notes/program-2/2026-07-20-phase5-live-pilot-results.md).
