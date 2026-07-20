@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   PROGRAM2_COMMITTEE_DEFAULTS,
+  committeeFallbackBatteryPass,
+  trimCommitteeFallback,
   buildCommitteeCompositionBlock,
   committeeQuestionSentences,
   normalizeCommitteeWhitespace,
@@ -68,4 +70,43 @@ test('composition block carries the span verbatim and all four frozen requiremen
   assert.equal(block.includes('Introduce no new case facts, clues, or evidence'), true);
   assert.equal(block.includes('Keep the scene voice and address the learner directly.'), true);
   assert.equal(block.startsWith('--- Composition task (harness instruction) ---'), true);
+});
+
+test('fallback battery: one question plus frozen cue required', () => {
+  assert.equal(committeeFallbackBatteryPass('Look here. Which record shows the weight?'), true);
+  assert.equal(committeeFallbackBatteryPass('Which mark shows the weight?'), false); // no cue word
+  assert.equal(committeeFallbackBatteryPass('Which record shows it? And which rule binds it?'), false); // two questions
+  assert.equal(committeeFallbackBatteryPass('The record is plain.'), false); // no question
+});
+
+test('trim keeps the cue-bearing question — the Phase 5 turn-8 fixture', () => {
+  // Verbatim delivered fallback from p5-05 turn 8 (Phase 5 §9): two
+  // questions, the cue in the second. v1 shipped both and failed
+  // exactly_one_question; the v2 trim must keep the "evidence" question.
+  const turn8 = [
+    "You have made that licensed distinction: the alloy now says its source is the weir-forge crucible, and nothing else in Marrick has ever cast from it — so those blanks are not Verrell's work at all. The town's verdict has lost its metal proof; a coin cannot be moneyer-work when its own blank denies the moneyer.",
+    '',
+    "But an assay never ends with only one route: once the source of the false coin is settled, we must ask what changed for the public question — whose hand struck them now that their blanks are not Verrell's? What evidence has entered the trial-book to answer that?",
+  ].join('\n');
+  const trimmed = trimCommitteeFallback(turn8);
+  assert.equal(trimmed.changed, true);
+  assert.equal(trimmed.keptQuestion.includes('What evidence has entered the trial-book'), true);
+  assert.equal((trimmed.text.match(/\?/gu) || []).length, 1);
+  assert.equal(committeeFallbackBatteryPass(trimmed.text), true);
+});
+
+test('trim falls back to the first question when no question carries a cue', () => {
+  const text = 'First point. Which mark names the hand? And which stroke shows the slip?';
+  const trimmed = trimCommitteeFallback(text);
+  assert.equal(trimmed.changed, true);
+  assert.equal(trimmed.keptQuestion, 'Which mark names the hand?');
+  assert.equal((trimmed.text.match(/\?/gu) || []).length, 1);
+  assert.equal(committeeFallbackBatteryPass(trimmed.text), false); // still no cue — recorded, shipped
+});
+
+test('trim leaves single-question replies unchanged', () => {
+  const text = 'Steady. Which record shows the weight?';
+  const trimmed = trimCommitteeFallback(text);
+  assert.equal(trimmed.changed, false);
+  assert.equal(trimmed.text, text);
 });

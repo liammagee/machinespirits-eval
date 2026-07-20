@@ -19,9 +19,42 @@ export const PROGRAM2_COMMITTEE_DEFAULTS = Object.freeze({
   timeoutMs: 600_000,
 });
 
+// Mirror of the frozen detector's warrant-cue lexicon
+// (services/tutorStubPointOfActionCoaching.js WARRANT_CUE_RE) — the v1
+// instrument, unchanged by user decision 2026-07-20.
+export const PROGRAM2_WARRANT_CUE_RE = /\b(?:evidence|item|test|record|fact|rule)\b/iu;
+
 // Probe-identical: maximal '?'-terminated substrings, trimmed, > 8 chars.
 export function committeeQuestionSentences(text) {
   return (String(text || '').match(/[^.!?\n]+\?/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
+}
+
+// Phase 5b fallback battery (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2):
+// a mini reply is deliverable as-is when it carries exactly one question and
+// the frozen cue somewhere in the turn.
+export function committeeFallbackBatteryPass(text) {
+  const questionCount = (String(text || '').match(/\?/gu) || []).length;
+  return questionCount === 1 && PROGRAM2_WARRANT_CUE_RE.test(String(text || ''));
+}
+
+// Phase 5b §2 step 3: keep the question sentence containing a cue word if
+// one exists (else the first question); delete the other question sentences.
+export function trimCommitteeFallback(text) {
+  const source = String(text || '');
+  const questions = source.match(/[^.!?\n]+\?/gu) || [];
+  if (questions.length <= 1) return { text: source, changed: false, keptQuestion: questions[0]?.trim() || null };
+  const kept = questions.find((q) => PROGRAM2_WARRANT_CUE_RE.test(q)) || questions[0];
+  let trimmed = source;
+  for (const question of questions) {
+    if (question === kept) continue;
+    trimmed = trimmed.replace(question, '');
+  }
+  trimmed = trimmed
+    .replace(/[ \t]+/gu, ' ')
+    .replace(/ +\n/gu, '\n')
+    .replace(/\n{3,}/gu, '\n\n')
+    .trim();
+  return { text: trimmed, changed: true, keptQuestion: kept.trim() };
 }
 
 // Probe-identical whitespace normalization for verbatim containment.
@@ -104,6 +137,7 @@ export async function committeeMiniGenerate({
   numCtx = PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
   maxTokens = 4096,
   timeoutMs = PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
+  temperature = 0,
 }) {
   const startedAt = Date.now();
   const data = await postJson(
@@ -116,7 +150,7 @@ export async function committeeMiniGenerate({
       stream: false,
       think: false,
       options: {
-        temperature: 0,
+        temperature,
         num_ctx: numCtx,
         num_predict: maxTokens,
       },
