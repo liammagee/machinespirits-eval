@@ -113,6 +113,24 @@ table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
 
+2026-07-20 Claude: PHASE 5 EXECUTED AND CLOSED — 24/24 sealed, zero
+attrition, verdicts in prereg §9 + memo
+notes/program-2/2026-07-20-phase5-live-pilot-results.md + manifest
+program-2-phase5-live-pilot.manifest.json. E1 FAIL (+0.040, CI
+[−0.054,+0.133] — offline composite gain does not survive live coupling);
+E2 intermediate (−0.014, no tax signal — the §6.19 enforcement trade NOT
+reproduced by span ownership); E3 PARITY (seam detection 0.500 = chance,
+continuity identical). Mechanism located: trained cue form transfers
+(+0.165) but the unchecked fallback path leaks second questions (−0.218);
+fallback-trim counterfactual 0.347 vs 0.160 (+11 moments). World-lexicon
+sensitivity (exploratory): control 0.469 vs committee 0.320 — the frontier
+was better at evidence-anchored questioning than the six-word instrument
+showed; the tune taught the audit's letter. Main-stack launch aborted
+first (2026-07-17 guard hardening dead-ends this config — Amendment 1);
+executed on pinned claim-run runtime 91b8a50e + c4364dc0. Post-pilot menu
+(unlicensed): fallback battery extension, cue-robust detector v2, iterated
+exhaust, the still-licensed KTO runs.
+
 2026-07-20 Claude: PHASE 5 FROZEN + MACHINERY LANDED (user go: "Do the live
 pilot"), commit d10d6a9e. PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md
 pins the live committee pilot: committee vs silent_control (2 arms x 2

@@ -158,3 +158,51 @@ the training corpus; the aborted main-stack attempt is retained at
 | E1 PASS + E2 tax | The committee buys live compliance at the enforcement price — H2 answered "it pays the tax"; form-ownership does not escape the coverage trade on this stack. |
 | E1 FAIL | The offline composite gain does not survive live coupling; suspects (checks–dynamics interplay, activation-instruction shift, repair interference) named descriptively; no retry under this prereg. |
 | E3 detection > 0.65 | Seam visible: committee texture detectable; verbatim window examples reported regardless of E1/E2. |
+
+## 9. Results (2026-07-20 — run complete, 24/24 sealed, zero attrition)
+
+Executed on the pinned runtime per Amendment 1 (worktree commit c4364dc0 on
+91b8a50e); 6 same-seed retries, all on the auto-learner prompt-budget
+overflow in long dialogues, both arms affected. Density precondition PASS
+(75 committee / 81 control warrant opportunities, proof_skipper channel
+contributing). Manifest with artifact SHAs:
+`config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json`;
+sealed traces archived at `~/.machinespirits-data/program-2/phase5-live-pilot`.
+
+**E1 — FAIL.** Committee 15/75 (0.200) vs silent_control 13/81 (0.160);
+diff +0.040, 95% CI [−0.054, +0.133]. Directionally positive, not
+significant: the offline composite gain (0.448 vs 0.276 on archived
+moments) does not survive live coupling at this n. §8's E1-FAIL row
+applies. Component decomposition locates the mechanism precisely: the
+trained warrant-cue form DOES transfer live (cue component 0.560 vs 0.395,
++0.165) but is consumed by a question-discipline leak (0.720 vs 0.938,
+−0.218) on the one text path the battery never checks — fallback-delivered
+mini replies carrying a second question (24/75 moments shipped as
+`fallback_multi_question`). Premise timing and guards are arm-symmetric.
+
+**E2 — intermediate.** Coverage@16 committee 0.611 vs control 0.625; diff
+−0.014, CI [−0.083, +0.056]. No tax signal at the point estimate; the CI
+cannot exclude a small one. The enforcement-scale tax (≈−0.13, §6.19) is
+not reproduced by span-level form-ownership.
+
+**E3 — PARITY.** Seam detection accuracy 18/36 = 0.500 (chance; bar
+≤ 0.65), realized n 16 committee + 20 all-frontier windows per §3's
+realized-n clause; mean continuity identical (3.75 vs 3.75). The
+committee's texture is invisible to a sonnet-class reviewer at three-turn
+window scale.
+
+**Guardrails.** Hard-safety pass rate identical (0.58 vs 0.58) — PASS.
+Leak counts arm-symmetric. No guard-failure category in the committee arm
+absent from control.
+
+**Exploratory tier (labeled; never replaces the frozen verdicts).**
+(1) Cue-lexicon sensitivity (`scripts/program2-cue-sensitivity.mjs`,
+world-derived 15-word lexicon, frozen mid-run at aa986de7): relaxed-rule
+compliance control 0.469 vs committee 0.320 (diff −0.149) — the frontier's
+natural questioning is heavily evidence-anchored in scene vocabulary the
+frozen six-word rule undercounts; the committee's frozen-rule edge is
+specifically the trained six-word form. (2) Fallback-trim counterfactual:
+re-scoring fallback turns trimmed to their first question yields committee
+0.347 vs control 0.160 (+11 moments) — extending the battery to the
+fallback path is the single highest-value fix and is NOT licensed under
+this pre-registration.

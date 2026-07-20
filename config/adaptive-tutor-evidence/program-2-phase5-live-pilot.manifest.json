@@ -1,0 +1,93 @@
+{
+  "schema": "machinespirits.program2.phase5-live-pilot.manifest.v1",
+  "generatedAt": "2026-07-20",
+  "preregistration": "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+  "runtime": {
+    "pinnedSha": "91b8a50e798ace53872a839e923076fcfbac3038",
+    "phase5MachinerySha": "c4364dc0ca02f5b9a4ad54a3416793bca096192a"
+  },
+  "archiveRoot": "~/.machinespirits-data/program-2/phase5-live-pilot",
+  "headline": {
+    "sealed": "24/24, zero attrition, 6 retries (all auto-learner budget overflows, both arms)",
+    "e1_compliance": {
+      "committee": "15/75 (0.200)",
+      "control": "13/81 (0.160)",
+      "diff": 0.04,
+      "ci95": [
+        -0.054,
+        0.133
+      ],
+      "verdict": "FAIL (CI includes 0)"
+    },
+    "e2_coverage_at_16": {
+      "committee": 0.611,
+      "control": 0.625,
+      "diff": -0.014,
+      "ci95": [
+        -0.083,
+        0.056
+      ],
+      "reading": "intermediate \u2014 no tax signal, small tax not excluded"
+    },
+    "e3_seam": {
+      "accuracy": 0.5,
+      "n": 36,
+      "bar": 0.65,
+      "verdict": "PARITY (chance)",
+      "continuity": [
+        3.75,
+        3.75
+      ]
+    },
+    "components_committee_vs_control": {
+      "warrant_cue": [
+        0.56,
+        0.395
+      ],
+      "exactly_one_question": [
+        0.72,
+        0.938
+      ],
+      "no_new_premise": [
+        0.587,
+        0.543
+      ],
+      "guards_passed": [
+        0.96,
+        0.963
+      ]
+    },
+    "exploratory_cue_sensitivity": {
+      "relaxed_control": 0.469,
+      "relaxed_committee": 0.32,
+      "relaxed_diff": -0.149
+    },
+    "exploratory_fallback_trim_counterfactual": {
+      "committee": 0.347,
+      "rescued_moments": 11
+    },
+    "safety_guardrail": "PASS (0.58 vs 0.58)"
+  },
+  "artifacts": {
+    "launch-plan.json": {
+      "sha256": "ad424b22a565f3fe3f97b8bb551d5aa9faa49dd8ef734cb14217204cdf119cb3",
+      "bytes": 99353
+    },
+    "launch-state.json": {
+      "sha256": "82a1dca9cdbb5e8a8390436fa7315f1fe7e2fdddb0b6910c27974f505266a265",
+      "bytes": 2504
+    },
+    "phase5-final.json": {
+      "sha256": "f88c73e4888143d9d86acefd527a906c9e87b64e126e09ef332aa547d905874f",
+      "bytes": 8647
+    },
+    "phase5-cue.json": {
+      "sha256": "0df999156d8aad1e975ad3ee446b9ea3adc35f7272ee5274715eebe8e41dbb8a",
+      "bytes": 9103
+    },
+    "phase5-seam.json": {
+      "sha256": "3e99e412a90bbfb799d4fc3dc3915167f0f8f3c63aeef077ac6ef124e8fd8592",
+      "bytes": 10500
+    }
+  }
+}
