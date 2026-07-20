@@ -2735,10 +2735,10 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
 }
 
 async function callPromptModel({
-  prompt,
+  prompt: promptInput,
   messageHistory = [],
   resolved,
-  systemPrompt,
+  systemPrompt: systemPromptInput,
   role,
   maxTokens = 700,
   trace = null,
@@ -2747,19 +2747,56 @@ async function callPromptModel({
   turn = null,
   signal = null,
 }) {
+  let prompt = promptInput;
+  let systemPrompt = systemPromptInput;
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && !stream?.deferOutput && providerSupportsStreaming(resolved));
   const publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
     role: message?.role === 'assistant' ? 'assistant' : 'user',
     content: String(message?.content || ''),
   }));
-  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
-  const promptAudit = auditTutorStubPrompt({
+  let promptAudit = auditTutorStubPrompt({
     surface: tutorStubPromptSurfaceForRole(role),
     systemPrompt,
     userPrompt: prompt,
     messageHistory: publicMessageHistory,
   });
+  // Phase 5b Amendment 1: mirror the speaking surface's duplicate-line
+  // recovery on prompt-model surfaces. Endgame dialogue naturally repeats
+  // the verdict sentence across prompt sections; a duplicate-only audit
+  // failure is recoverable by deduplication, exactly as invokeTutorAttempt
+  // recovers, instead of a fatal that kills a nearly-complete dialogue.
+  const duplicateOnlyFailure =
+    !promptAudit.ok &&
+    promptAudit.duplicateInstructionLines?.length > 0 &&
+    promptAudit.violations.every((violation) => violation.code === 'duplicate_instruction_lines');
+  if (duplicateOnlyFailure) {
+    const originalAudit = promptAudit;
+    const recovery = recoverTutorStubDuplicateInstructionLines({
+      texts: [systemPrompt, prompt],
+      duplicateInstructionLines: originalAudit.duplicateInstructionLines,
+    });
+    [systemPrompt, prompt] = recovery.texts;
+    const recoveredAudit = auditTutorStubPrompt({
+      surface: tutorStubPromptSurfaceForRole(role),
+      systemPrompt,
+      userPrompt: prompt,
+      messageHistory: publicMessageHistory,
+    });
+    appendTraceEvent(trace, {
+      type: 'prompt_audit_recovery',
+      role,
+      turn,
+      recovery: {
+        applied: recovery.applied && recoveredAudit.ok,
+        method: 'deduplicate_exact_instruction_lines',
+        originalDuplicateInstructionLines: originalAudit.duplicateInstructionLines,
+        removedPromptLineCount: recovery.removedLines.length,
+      },
+      audit: recoveredAudit,
+    });
+    if (recoveredAudit.ok) promptAudit = { ...recoveredAudit, recovery: { applied: true } };
+  }
   if (!promptAudit.ok) {
     appendTraceEvent(trace, {
       type: 'prompt_audit_failed',
@@ -2771,6 +2808,7 @@ async function callPromptModel({
       `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
     );
   }
+  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
   try {
     let response;
     if (isCliProvider(resolved.provider)) {

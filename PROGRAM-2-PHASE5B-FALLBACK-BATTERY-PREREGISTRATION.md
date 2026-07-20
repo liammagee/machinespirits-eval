@@ -76,7 +76,25 @@ stratified by profile, two-sample)
 | E1b FAIL with committee-v2 ≈ 0.20 | The trim counterfactual was closed-loop-invalid (delivered-text changes moved the learner); strengthens the iterated-exhaust argument; no retry. |
 | Seam detection > 0.65 | Trim texture visible; verbatim windows reported. |
 
-## 6. Cost bound and scope
+## 6. Amendment 1 (2026-07-20, 1 of 18 dialogues sealed)
+
+**Prompt-model surfaces gain the speaking surface's duplicate-line
+recovery.** Two of the first three launch attempts died at turns 19–26 on
+`tutor_stub_learner_analysis: duplicate_instruction_lines` — endgame
+dialogue naturally repeats the verdict sentence ("The verdict is licensed:
+Edony struck the false shillings…") across prompt sections, and the
+pinned runtime's `callPromptModel` audit treated the repeat as fatal while
+the speaking surface (`invokeTutorAttempt`) already deduplicates and
+proceeds. The patch mirrors that existing recovery onto prompt-model
+surfaces (dedup, re-audit, recovery trace event; unrecoverable failures
+still throw). Arm-independent (observed on committee and control attempts
+alike) and comparability-neutral: sealed dialogues by construction never
+hit the fatal, so no sealed content — including Phase 5's pooled controls,
+which never encountered this failure — is affected; the patch only
+converts late-dialogue deaths into recovered turns. The one sealed 5b
+dialogue is retained; the launch resumes with sealed-trace skip.
+
+## 7. Cost bound and scope
 
 ≈ ≤ 700 sonnet CLI calls + ≤ 1,000 terra calls + local mini (resamples
 free). One retry per dialogue; checkpointed; resumable. Out of scope:
