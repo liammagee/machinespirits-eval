@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of 15 Jun – 5 Jul 2026 roundups (no new roundup since)</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .alert { font-size: .9rem; color: #7a2e00; background: #fff4e5; border: 1px solid #e6b26a;
+             padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-20 reviews=2026-06-15,2026-06-16,2026-06-17,2026-06-18,2026-06-20,2026-06-21,2026-06-23,2026-06-24,2026-06-25,2026-06-26,2026-06-27,2026-07-02,2026-07-03,2026-07-05 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 15 Jun – 5 Jul 2026 roundups</small></h1>
+
+<div class="alert">
+  <strong>Feed alert:</strong> no <code>notes/daily-notes/*-research-roundup.html</code> has been committed since
+  <strong>2026-07-05</strong> (#94) — 15 days, across which the project otherwise shipped Program-2 phases 0–4,
+  the tutor-stub V-series, and several paper sections. The last weekly plan (2026-07-06) already reviewed
+  everything through 07-05 in full, so this pass found <strong>zero fresh roundup files</strong>. The daily
+  routine's own capture pipeline is still alive one step downstream — <code>workplan/inbox/</code> gained five
+  new dated captures on <strong>2026-07-07</strong> — but they turned out to be a backfill ingest of two
+  <em>already-existing</em> older roundups (2026-06-20, 2026-06-21) that hadn't been synthesized into a plan yet,
+  not evidence of a new roundup. Recommend checking whatever triggers the daily roundup (cron / scheduled task)
+  before next week's review — if it's silently stopped, that's a bigger gap than any single paper below.
+</div>
+
+<div class="intro-note">
+  <strong>Review → plan.</strong> With no new source material, this pass's plan is built from the five papers
+  in that 07-07 backfill — genuinely un-synthesized in either the 2026-06-22 or 2026-07-06 plans (checked by
+  arXiv-id diff) — plus continuity checks on the two previous plans' still-open items. Two of the three items
+  below explicitly widen last week's still-unactioned P1 (superego incorporation, 2607.02507) and P2 (poetics
+  κ-failure, CASPER/2606.22454) rather than opening new parallel threads — the new papers converge on the same
+  questions with complementary lenses, which is exactly the kind of convergence worth tracking rather than
+  re-deriving. <strong>Implement and evaluate remain human-gated</strong> (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Judge-reliability contagion audit — "Contagion Networks: Evaluator Bias Propagation in Multi-Agent
+    LLM Systems" (2606.20493)</h3>
+  <div class="row"><span class="k">Why:</span> formalizes how one agent's biased judgment contaminates
+    downstream agents that consume it as context, modeling bias spread across agent chains; proposes independent
+    sampling and adversarial-critic-insertion as mitigations. Direct warning for a pipeline that assumes
+    independent judges (<code>analyze-judge-reliability.js</code>'s paired-rejudge methodology) sitting downstream
+    of an Ego→Superego→Ego loop where a biased superego critique could compound across revision rounds — precisely
+    the systematic drift §5.4 tries to detect from the other direction.</div>
+  <div class="row"><span class="k">Do:</span> two-part, both read-only. (1) Code audit: trace the judge-prompt
+    construction path in <code>services/evaluationRunner.js</code> / the rubric evaluators to confirm the judge
+    only ever sees the public <code>suggestions</code> output, never <code>tutor_deliberation_*</code> superego
+    critique text — i.e. no direct contamination channel. (2) If clean, check for the paper's <em>indirect</em>
+    signature instead: does judge-score variance across the divergent-superego family (cells 22-33 — suspicious /
+    adversary / advocate × base/recog) shrink or trend in one direction as the superego framing gets more
+    adversarial, which would look like compounding bias rather than independent judgment even without a literal
+    context leak.</div>
+  <div class="row"><span class="k">Evaluate:</span> a read of the judge-prompt code path, plus a reanalysis of
+    existing rejudged pairs (<code>judge_model</code> column) for cells 22-33 — no new generation or rejudge
+    needed if paired data already exists from a prior reliability pass; a small fresh <code>rejudge</code> would
+    be needed otherwise. <span class="cost">existing data / code audit</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Widen last week's superego-incorporation audit with explicit-adjudication — "Navigating Unreliable
+    Parametric and Contextual Knowledge" / MACR (2606.20245)</h3>
+  <div class="row"><span class="k">Why:</span> MACR rejects the binary "trust the model" / "trust the context"
+    framing and instead surfaces knowledge conflicts explicitly, adjudicating them through a multi-agent process
+    with a distinct arbiter role. That's a formal vocabulary for exactly what cells 93-100's superego-variant
+    ablations do informally — especially <code>cell_98_two_pass</code> and <code>cell_99_coupling</code>, where
+    the conflict between the ego's initial response and the superego's critique is currently resolved by a single
+    revision pass with no explicit adjudication step. This is the same underlying question as last week's still-open
+    P1 (2607.02507's public/private divergence in <code>tutor_deliberation_*</code>) — MACR gives a second, coding
+    lens for it rather than a separate investigation.</div>
+  <div class="row"><span class="k">Do:</span> extend the (still unactioned) 2607.02507 audit of
+    <code>services/dialogueTraceAnalyzer.js</code>'s <code>analyzeSuperegoIncorporation()</code> to also cover
+    cells 93-100 alongside the original 3-4/7-8/22-33 scope, coding each ego/superego exchange as
+    explicit-adjudication vs silent-overwrite (does the ego always defer, never defer, or visibly weigh the
+    conflict) — MACR's three-way conflict typology applied post-hoc to existing deliberation logs.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing <code>tutor_deliberation_*</code>,
+    <code>incorporation_rate</code>, <code>dimension_convergence</code> rows for cells 93-100 (joining the
+    3-4/7-8/22-33 rows already in scope) — one combined analysis script, no new generation.
+    <span class="cost">existing data</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Second mechanism for the poetics κ-failure — DeFAb defeasible-abduction benchmark (2606.18557)</h3>
+  <div class="row"><span class="k">Why:</span> DeFAb finds frontier-model performance on defeasible abduction —
+    drawing a revisable conclusion from incomplete evidence, then retracting it when contradicting evidence
+    arrives — degrades systematically as abductive complexity (revision depth) rises. Recognition-as-belief-revision
+    is structurally the same operation the poetics critic has to detect for <code>anagnorisis</code>: the
+    learner-character retracting an earlier premise. Last week's P2 (still open) already named CASPER's
+    closed-arc bias as one plausible mechanism behind the phase-2 κ = 0.044 failure
+    (<code>DRAMATIC-RECOGNITION-PLAN.md</code> line 18); DeFAb gives a second, orthogonal one — the critic may
+    specifically under-score anagnorisis at higher revision depth, independent of arc-closedness.</div>
+  <div class="row"><span class="k">Do:</span> on the same already-labeled phase-2 calibration sample named in
+    last week's P2 (<code>config/poetics-calibration/phase2-*.yaml</code>), additionally hand-code each
+    recognition event for revision depth using DeFAb's abductive-complexity scheme, then correlate depth against
+    <code>anagnorisis</code> and <code>cathartic_closure</code> scores alongside the CASPER closed/open-arc
+    coding already planned — same sample, two coding passes, one combined correlation.</div>
+  <div class="row"><span class="k">Evaluate:</span> fully read-only hand-coding of the existing labeled sample,
+    same as last week's P2. <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>Equation-to-Behavior Prompting</strong> (2606.17657) — encodes cognitive models (Bayesian updating,
+    motivated updating) as explicit equations/structural rules in the prompt rather than prose description; large
+    models track the equations more faithfully. A candidate for making recognition theory's structure explicit
+    (not just described) in the ego prompt for cells 5-8 / 84-90, piloted via <code>npm run prompt-lab --
+    autotune</code>. <em>Needs paid runs.</em></li>
+  <li><strong>Hierarchical Control in Multi-Agent Games</strong> (2606.20014, WATCH) — slow strategic
+    controller + fast reactive RL skills; a formal grounding for the timescale split already implicit in the
+    cells 110-113 adaptive runner (superego-as-meta-timescale, ego-as-reactive). Background for the §6.8.4
+    cross-architecture discussion, not an experiment on its own.</li>
+  <li><strong>Carried forward from 2026-07-06</strong> (still open, untriaged): MAS-PromptBench (2606.23664),
+    FAPO/APEX/environment-grounded APO (2606.19605, 2606.11459, 2606.17838), ARMOR-MAD (2606.13197),
+    DRIFTLENS (2607.02374), MAGNET/ATLAS (2607.00918), the memory cluster (2606.09900, 2606.13681, 2606.19911).
+    None of these nor last week's P1-P3 (2607.02507, 2606.22454, 2607.01034/2607.02368) have been triaged into
+    a <code>workplan/items/</code> card yet.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  All three items above are existing-data / code-audit, read-only — no paid eval runs, no rejudge spend beyond
+  what may already exist, and nothing lands in the paper without sign-off. The feed-alert (no roundup since
+  07-05) is an operational finding, not a research item — worth the user's attention separately from picking
+  among P1-P3. Backlog items needing fresh paid runs or new cells remain the user's to authorize, given the
+  pre-registration / single-paper discipline.
+</div>
+
+<footer>Generated by <code>ms-research-review</code> · reviewed the 15 Jun – 5 Jul 2026 daily roundups (none newer exist) plus the 2026-07-07 workplan-inbox backfill · reviewed by a human before any implementation.</footer>
+</body>
+</html>
