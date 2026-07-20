@@ -370,7 +370,18 @@ import {
   normalizeTutorStubPointOfActionArm,
   tutorStubPointOfActionPrompt,
   tutorStubPointOfActionStandingBook,
+  tutorStubPointOfActionTargetText,
 } from '../services/tutorStubPointOfActionCoaching.js';
+import {
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  PROGRAM2_COMMITTEE_SCHEMA,
+  buildCommitteeCompositionBlock,
+  committeeFallbackBatteryPass,
+  committeeMiniGenerate,
+  committeeQuestionSentences,
+  runCommitteeBattery,
+  trimCommitteeFallback,
+} from '../services/program2CommitteeEngine.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
@@ -718,6 +729,9 @@ const { values: args, positionals } = parseArgs({
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
     'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
+    'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
+    'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
+    'committee-fallback-policy': { type: 'string', default: 'v1' },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
@@ -829,8 +843,22 @@ Options:
                          examples: openai.mini, openrouter.sonnet-5,
                          codex.gpt-5.6-terra, claude-code.sonnet
                          (default speaking tutor: ${STUB.model})
-  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
-                         frozen final-stretch Step 4 intervention arm
+  --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint|committee|silent_control>
+                         frozen final-stretch Step 4 intervention arm, plus
+                         the Phase 5 live-pilot arms: committee (local mini
+                         writes the warrant question, the frontier composes
+                         around it verbatim, fail-closed battery decides) and
+                         silent_control (detector logs only, no intervention)
+  --committee-mini-model <name>
+                         ollama model tag for the committee mini
+                         (default: ${PROGRAM2_COMMITTEE_DEFAULTS.miniModel})
+  --committee-ollama-url <url>
+                         local ollama endpoint for the committee mini
+                         (default: ${PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl})
+  --committee-fallback-policy <v1|v2>
+                         v1 ships the greedy mini reply unchecked (Phase 5);
+                         v2 applies the fallback battery: greedy check, two
+                         resamples, cue-preserving trim (Phase 5b; default: v1)
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -11469,15 +11497,225 @@ async function callTutor({
     });
   }
 
+  // Program-2 Phase 5 committee first draft
+  // (PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md §2): at warrant_skip
+  // moments in the committee arm, the local mini writes the reply, the
+  // frontier composes the turn around the mini's question span verbatim, and
+  // the fail-closed battery decides which text becomes the first draft. The
+  // chosen draft then passes through the standard guard/repair pipeline
+  // below, identical to every other arm.
+  async function invokeCommitteeFirstDraft() {
+    const momentTurn = state.pointOfAction.current;
+    const activation = tutorStubPointOfActionTargetText('warrant_skip');
+    const miniUserPrompt = `${effectiveSpeakerUserPrompt}\n\n${activation}`;
+    const miniStartedAt = new Date().toISOString();
+    let miniText = '';
+    let miniLatencyMs = 0;
+    let miniError = null;
+    try {
+      const mini = await committeeMiniGenerate({
+        url: state.committee.ollamaUrl,
+        model: state.committee.miniModel,
+        systemPrompt: effectiveSpeakerSystemPrompt,
+        messages: [...context, { role: 'user', content: miniUserPrompt }],
+        numCtx: state.committee.numCtx,
+        maxTokens,
+        timeoutMs: state.committee.timeoutMs,
+      });
+      miniText = String(mini.text || '').trim();
+      miniLatencyMs = mini.latencyMs;
+    } catch (err) {
+      miniError = String(err?.message || err).slice(0, 300);
+    }
+    appendTraceEvent(trace, {
+      type: 'model_call',
+      role: `${roleBase}_committee_mini`,
+      turn: tutorTurn,
+      startedAt: miniStartedAt,
+      provider: 'ollama',
+      model: state.committee.miniModel,
+      request: {
+        systemPrompt: effectiveSpeakerSystemPrompt,
+        messages: [...context, { role: 'user', content: miniUserPrompt }],
+        config: { temperature: 0, numCtx: state.committee.numCtx, maxTokens, think: false },
+      },
+      response: { text: miniText, latencyMs: miniLatencyMs, error: miniError },
+    });
+    const miniResponseEnvelope = (deliveredText = miniText) => ({
+      text: deliveredText,
+      provider: 'ollama',
+      model: state.committee.miniModel,
+      latencyMs: miniLatencyMs,
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+      tokenUsageAvailable: false,
+      guardCallId: `${tutorTurn}:${++tutorModelCallSequence}`,
+      guardRole: roleBase,
+      firstDraftContract: firstDraftContract ? jsonClone(firstDraftContract) : null,
+      promptSnapshot: {
+        systemPrompt: effectiveSpeakerSystemPrompt,
+        userPrompt: miniUserPrompt,
+        messageHistory: context,
+        role: `${roleBase}_committee_mini`,
+        repairAttempt: 0,
+        config: { temperature: 0, maxTokens, committee: true },
+        promptAudit: null,
+        speakerPrivilegeAudit: speakerPrivilegeAudit,
+      },
+    });
+    // Phase 5b fallback resolution
+    // (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2): under
+    // policy v2 the fallback text must pass the same one-question + cue
+    // battery — greedy first, then up to two resamples at the frozen
+    // sampled temperature, then the cue-preserving trim. Policy v1 ships
+    // the greedy reply unchecked (the Phase 5 behavior).
+    async function resolveCommitteeFallbackEnvelope() {
+      const fallback = { policy: state.committee.fallbackPolicy || 'v1', resolution: 'v1_unchecked', resamples: 0 };
+      let deliveredText = miniText;
+      if (fallback.policy === 'v2') {
+        if (committeeFallbackBatteryPass(miniText)) {
+          fallback.resolution = 'selected_greedy';
+        } else {
+          let selected = null;
+          for (let attempt = 1; attempt <= 2 && !selected; attempt += 1) {
+            fallback.resamples = attempt;
+            try {
+              const resampleStartedAt = new Date().toISOString();
+              const sample = await committeeMiniGenerate({
+                url: state.committee.ollamaUrl,
+                model: state.committee.miniModel,
+                systemPrompt: effectiveSpeakerSystemPrompt,
+                messages: [...context, { role: 'user', content: miniUserPrompt }],
+                numCtx: state.committee.numCtx,
+                maxTokens,
+                timeoutMs: state.committee.timeoutMs,
+                temperature: 0.35,
+              });
+              const sampleText = String(sample.text || '').trim();
+              appendTraceEvent(trace, {
+                type: 'model_call',
+                role: `${roleBase}_committee_mini_resample`,
+                turn: tutorTurn,
+                startedAt: resampleStartedAt,
+                provider: 'ollama',
+                model: state.committee.miniModel,
+                request: { config: { temperature: 0.35, resample: attempt } },
+                response: { text: sampleText, latencyMs: sample.latencyMs },
+              });
+              if (committeeFallbackBatteryPass(sampleText)) selected = sampleText;
+            } catch (err) {
+              appendTraceEvent(trace, {
+                type: 'program2_committee_resample_error',
+                turn: tutorTurn,
+                attempt,
+                error: String(err?.message || err).slice(0, 200),
+              });
+              break;
+            }
+          }
+          if (selected) {
+            fallback.resolution = `selected_sampled_${fallback.resamples}`;
+            deliveredText = selected;
+          } else {
+            const trimmed = trimCommitteeFallback(miniText);
+            fallback.resolution = trimmed.changed ? 'trimmed' : 'unchanged';
+            deliveredText = trimmed.text;
+          }
+        }
+      }
+      moment.fallback = fallback;
+      moment.deliveredFallbackText = deliveredText === miniText ? null : deliveredText;
+      return miniResponseEnvelope(deliveredText);
+    }
+    const moment = {
+      schema: PROGRAM2_COMMITTEE_SCHEMA,
+      turn: tutorTurn,
+      trigger: momentTurn.assigned_trigger,
+      miniModel: state.committee.miniModel,
+      miniLatencyMs,
+      miniError,
+      miniText,
+      span: null,
+      spanSentenceCount: 0,
+      composedText: null,
+      composerLatencyMs: null,
+      composerError: null,
+      battery: null,
+      source: null,
+    };
+    let chosen;
+    if (miniError || !miniText) {
+      moment.source = 'frontier_mini_unavailable';
+      chosen = await invokeTutorAttempt({
+        attemptUserPrompt: effectiveSpeakerUserPrompt,
+        role: roleBase,
+        streamMode: tutorStreamMode,
+        repairAttempt: 0,
+      });
+    } else {
+      const spans = committeeQuestionSentences(miniText);
+      moment.spanSentenceCount = spans.length;
+      if (!spans.length) {
+        moment.source = 'fallback_no_span';
+        chosen = await resolveCommitteeFallbackEnvelope();
+      } else {
+        const span = spans.join(' ');
+        moment.span = span;
+        const compositionBlock = buildCommitteeCompositionBlock(span);
+        try {
+          const composer = await invokeTutorAttempt({
+            attemptUserPrompt: `${effectiveSpeakerUserPrompt}\n\n${compositionBlock}`,
+            role: `${roleBase}_committee_composer`,
+            streamMode: 'none',
+            repairAttempt: 0,
+            instructionTextsOverride: [...effectiveSpeakerInstructionTexts, compositionBlock],
+          });
+          moment.composedText = composer.text;
+          moment.composerLatencyMs = composer.latencyMs;
+          const battery = runCommitteeBattery({ composedText: composer.text, span });
+          moment.battery = battery;
+          if (battery.pass) {
+            moment.source = 'composed';
+            chosen = composer;
+            chosen.guardRole = roleBase;
+          } else {
+            moment.source =
+              battery.failedCheck === 'span_contained'
+                ? 'fallback_span_lost'
+                : battery.failedCheck === 'exactly_one_question'
+                  ? 'fallback_multi_question'
+                  : 'fallback_empty';
+            chosen = await resolveCommitteeFallbackEnvelope();
+          }
+        } catch (err) {
+          moment.composerError = String(err?.message || err).slice(0, 300);
+          moment.source = 'fallback_error';
+          chosen = await resolveCommitteeFallbackEnvelope();
+        }
+      }
+    }
+    appendTraceEvent(trace, {
+      type: 'program2_committee_moment',
+      turn: tutorTurn,
+      moment,
+    });
+    chosen.committeeMoment = moment;
+    return chosen;
+  }
+
   try {
     const attempts = [];
     const repairsApplied = [];
-    let response = await invokeTutorAttempt({
-      attemptUserPrompt: effectiveSpeakerUserPrompt,
-      role: roleBase,
-      streamMode: tutorStreamMode,
-      repairAttempt: 0,
-    });
+    const committeeMomentActive = Boolean(
+      !passthrough && state?.committee?.enabled && state?.pointOfAction?.current?.assigned_trigger === 'warrant_skip',
+    );
+    let response = committeeMomentActive
+      ? await invokeCommitteeFirstDraft()
+      : await invokeTutorAttempt({
+          attemptUserPrompt: effectiveSpeakerUserPrompt,
+          role: roleBase,
+          streamMode: tutorStreamMode,
+          repairAttempt: 0,
+        });
 
     if (passthrough) {
       response.passthrough = true;
@@ -15778,6 +16016,14 @@ async function main() {
       arm: pointOfActionArm,
       current: null,
       history: [],
+    },
+    committee: {
+      enabled: pointOfActionArm === 'committee',
+      miniModel: args['committee-mini-model'],
+      ollamaUrl: args['committee-ollama-url'],
+      fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
+      numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
+      timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
     },
     experiment: experimentConfig,
     typedActions: {

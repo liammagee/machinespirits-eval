@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-20
 verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
 claim_status: exploratory
 links:
@@ -112,6 +112,67 @@ bake-off (detection <=0.65 at n=40), decision grammar incl. the iron-cage
 table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
+
+2026-07-20 Claude: PHASE 5B (remedy 1) EXECUTED — E1b PASS. 18/18 sealed
+(12 committee-v2 + 6 fresh controls, pooling licensed), zero attrition.
+Committee-v2 0.386 vs pooled control 0.150, diff +0.236, CI
+[0.128, 0.354] — the frozen bar cleared decisively; live rate matches the
+offline composite (0.448 reference). Mechanism surgical:
+exactly_one_question 0.720→0.976, all other components unmoved; fallback
+ledger 19 resamples + 8 trims + 4 greedy + 1 unchanged. Coverage PASS (no
+tax); seam PARITY (0.600 ≤ 0.65); safety guardrail formally FAILS
+(0.42 vs 0.61) with exonerating anatomy — universal turn-9
+release-schedule leak, all arms both runs, 4/5 committee failures on
+frontier-authored turns. Amendment 1 mid-run (prompt-model dedup
+recovery, fed34fd0) after endgame verdict echoes killed 2 early attempts.
+Prereg §8 + manifest program-2-phase5b.manifest.json + archive
+~/.machinespirits-data/program-2/phase5b-live. Licensed reading: the
+Phase 5 loss WAS the unchecked fallback path; with the battery closed
+over every delivered text, span-level form-ownership beats the frontier
+live at no coverage cost (exploratory, single family/world). Remaining
+menu: KTO (licensed, turnkey), iterated exhaust (dataset ready, needs
+prereg), instrument v2 (parked by user decision).
+
+2026-07-20 Claude: PHASE 5 EXECUTED AND CLOSED — 24/24 sealed, zero
+attrition, verdicts in prereg §9 + memo
+notes/program-2/2026-07-20-phase5-live-pilot-results.md + manifest
+program-2-phase5-live-pilot.manifest.json. E1 FAIL (+0.040, CI
+[−0.054,+0.133] — offline composite gain does not survive live coupling);
+E2 intermediate (−0.014, no tax signal — the §6.19 enforcement trade NOT
+reproduced by span ownership); E3 PARITY (seam detection 0.500 = chance,
+continuity identical). Mechanism located: trained cue form transfers
+(+0.165) but the unchecked fallback path leaks second questions (−0.218);
+fallback-trim counterfactual 0.347 vs 0.160 (+11 moments). World-lexicon
+sensitivity (exploratory): control 0.469 vs committee 0.320 — the frontier
+was better at evidence-anchored questioning than the six-word instrument
+showed; the tune taught the audit's letter. Main-stack launch aborted
+first (2026-07-17 guard hardening dead-ends this config — Amendment 1);
+executed on pinned claim-run runtime 91b8a50e + c4364dc0. Post-pilot menu
+(unlicensed): fallback battery extension, cue-robust detector v2, iterated
+exhaust, the still-licensed KTO runs.
+
+2026-07-20 Claude: PHASE 5 FROZEN + MACHINERY LANDED (user go: "Do the live
+pilot"), commit d10d6a9e. PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md
+pins the live committee pilot: committee vs silent_control (2 arms x 2
+profiles x 6 repeats = 24 dialogues, sonnet-family, Step 4 operational spec
+verbatim, seed 20260718); endpoints E1 live warrant compliance (CI>0), E2
+coverage@16 tax vs the frozen -0.05/-0.10 margins, E3 seam at the frozen
+<=0.65 bar; density precondition >=15 warrant opps/arm. Machinery: additive
+Phase 5 arms beside the byte-unchanged Step 4 registry; fail-closed
+committee first draft in the speaking call (local mini on the Phase 2
+serving pin -> question span -> frontier composition -> containment +
+one-question battery -> mini fallback; standard delivery guards identical
+across arms); runner with zero-model gate + sha-pinned launch +
+sealed-trace resume; frozen analyzer. Smoked zero-paid: 24-job plan gate
+PASS, local mini produces the trained move (7s), sonnet + terra CLI probes
+alive. Related-work sweep salvaged in-loop after the workflow's synthesis
+agent died on a spend limit: notes/program-2/2026-07-20-related-work-sweep.md
+(23 verified claims; span-granular composition and verified-exhaust
+distillation precedented as categories — the fail-closed protected-span
+conjunction, failure-anatomy seam placement, and the base-vs-instruct
+conduct decomposition have no found precedent). Launch is human-gated:
+node scripts/run-program2-live-pilot.js --launch-approved --expected-sha
+d10d6a9efd0b9d3516c3acd6f6f528333754f56e.
 
 2026-07-19 Claude: PHASE 4 EXECUTED — SFT verdicts + coupling probe. Training
 (Lambda H100, both SFT runs, ~$8) clean; evaluation survived four instrument

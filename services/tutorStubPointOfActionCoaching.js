@@ -8,6 +8,16 @@ export const TUTOR_STUB_POINT_OF_ACTION_ARMS = Object.freeze([
   'side_coach',
   'compiled_constraint',
 ]);
+// Phase 5 live-pilot arms (PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md).
+// Additive only: the frozen Step 4 registry above, the detector, and every
+// existing arm's behavior are byte-unchanged. Neither Phase 5 arm ever
+// injects text at trigger time — `committee` intervenes at the generation
+// layer inside the speaking call, `silent_control` observes only.
+export const TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS = Object.freeze(['committee', 'silent_control']);
+const ALL_POINT_OF_ACTION_ARMS = Object.freeze([
+  ...TUTOR_STUB_POINT_OF_ACTION_ARMS,
+  ...TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
+]);
 
 export const TUTOR_STUB_POINT_OF_ACTION_TRIGGERS = Object.freeze(['stagnant_repeat', 'warrant_skip']);
 
@@ -77,9 +87,9 @@ export function normalizeTutorStubPointOfActionArm(value, { allowOff = true } = 
     .toLowerCase()
     .replace(/-/gu, '_');
   if (!arm && allowOff) return null;
-  if (!TUTOR_STUB_POINT_OF_ACTION_ARMS.includes(arm)) {
+  if (!ALL_POINT_OF_ACTION_ARMS.includes(arm)) {
     throw new Error(
-      `Unknown point-of-action arm ${JSON.stringify(value)}; expected ${TUTOR_STUB_POINT_OF_ACTION_ARMS.join(', ')}`,
+      `Unknown point-of-action arm ${JSON.stringify(value)}; expected ${ALL_POINT_OF_ACTION_ARMS.join(', ')}`,
     );
   }
   return arm;
@@ -93,6 +103,14 @@ export function tutorStubPointOfActionStandingBook() {
     'These notes are standing craft guidance only. No trigger-time interruption will repeat them.',
     '[End standing point-of-action book]',
   ].join('\n');
+}
+
+// Phase 5: the committee mini's activation instruction is the frozen
+// side-coach block for the fired trigger — the same text the compliant
+// source turns carried at training time. The composing frontier never
+// receives it.
+export function tutorStubPointOfActionTargetText(trigger) {
+  return TARGET_TEXT[trigger] || null;
 }
 
 function assignedTrigger({
