@@ -113,6 +113,26 @@ table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
 
+2026-07-20 Claude: PHASE 5B (remedy 1) EXECUTED — E1b PASS. 18/18 sealed
+(12 committee-v2 + 6 fresh controls, pooling licensed), zero attrition.
+Committee-v2 0.386 vs pooled control 0.150, diff +0.236, CI
+[0.128, 0.354] — the frozen bar cleared decisively; live rate matches the
+offline composite (0.448 reference). Mechanism surgical:
+exactly_one_question 0.720→0.976, all other components unmoved; fallback
+ledger 19 resamples + 8 trims + 4 greedy + 1 unchanged. Coverage PASS (no
+tax); seam PARITY (0.600 ≤ 0.65); safety guardrail formally FAILS
+(0.42 vs 0.61) with exonerating anatomy — universal turn-9
+release-schedule leak, all arms both runs, 4/5 committee failures on
+frontier-authored turns. Amendment 1 mid-run (prompt-model dedup
+recovery, fed34fd0) after endgame verdict echoes killed 2 early attempts.
+Prereg §8 + manifest program-2-phase5b.manifest.json + archive
+~/.machinespirits-data/program-2/phase5b-live. Licensed reading: the
+Phase 5 loss WAS the unchecked fallback path; with the battery closed
+over every delivered text, span-level form-ownership beats the frontier
+live at no coverage cost (exploratory, single family/world). Remaining
+menu: KTO (licensed, turnkey), iterated exhaust (dataset ready, needs
+prereg), instrument v2 (parked by user decision).
+
 2026-07-20 Claude: PHASE 5 EXECUTED AND CLOSED — 24/24 sealed, zero
 attrition, verdicts in prereg §9 + memo
 notes/program-2/2026-07-20-phase5-live-pilot-results.md + manifest

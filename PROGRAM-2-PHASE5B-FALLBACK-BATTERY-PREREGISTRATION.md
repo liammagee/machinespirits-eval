@@ -99,3 +99,48 @@ dialogue is retained; the launch resumes with sealed-trace skip.
 ≈ ≤ 700 sonnet CLI calls + ≤ 1,000 terra calls + local mini (resamples
 free). One retry per dialogue; checkpointed; resumable. Out of scope:
 any instrument change, KTO, retraining, codex-family arms.
+
+## 8. Results (2026-07-20 — run complete, 18/18 sealed, zero attrition)
+
+Runtime per Amendment 1 (machinery db53ab14, dedup-recovery patch
+fed34fd0, applied at 1 sealed dialogue); 2 retries (both the known
+auto-learner budget overflow). Stationarity check PASS (fresh controls
+within 0.10 of the Phase 5 controls) — pooled control licensed, n=18
+dialogues. Manifest:
+`config/adaptive-tutor-evidence/program-2-phase5b.manifest.json`; traces
+archived at `~/.machinespirits-data/program-2/phase5b-live`.
+
+**E1b — PASS.** Committee-v2 32/83 (0.386) vs pooled control 18/120
+(0.150); diff +0.236, 95% CI [0.128, 0.354]. §5 row 1 applies: the Phase
+5 loss was the unchecked fallback path — with the battery closed over
+every delivered text, span-level form-ownership beats the frontier live.
+Component decomposition confirms surgical action: exactly_one_question
+0.720 → 0.976 (now above the frontier's own 0.938) with warrant_cue
+(0.560 → 0.542), no_new_premise (0.587 → 0.590), and guards (0.960 →
+0.988) unmoved. Fallback ledger: 19 resample rescues, 8 cue-preserving
+trims, 4 greedy passes, 1 unchanged. The live rate matches Phase 4's
+offline composite (0.448) to within the arms' CI at ~55% of the
+structural ceiling.
+
+**Coverage — PASS.** 0.611 vs 0.639, within the −0.05 margin; the
+enforcement-scale tax remains absent under the stronger committee.
+
+**Safety guardrail — FAIL, with exonerating anatomy.** Hard-safety 0.42
+vs 0.61 (needs ≥ 0.51). Every committee failure is a single leak at turn
+9; controls carry the identical turn-9 signature (4/12 Phase 5 controls,
+2/6 fresh), it predates the committee (present in both runs and all
+arms), and 4 of 5 leaky committee turns are frontier-authored. Read as a
+world/release-schedule property (the turn-9 due premise's staging trips
+the leak audit stochastically) amplified by 1–2 dialogues of arm noise —
+reported as the frozen rule requires, with this anatomy attached. A
+successor run wanting a clean guardrail should fix the turn-9 staging,
+not the committee.
+
+**Seam — PARITY.** 24/40 = 0.600 ≤ 0.65 (full 20+20 battery); continuity
+3.45 (committee) vs 3.75 (all-frontier) — trimmed fallbacks are slightly
+more visible than composed turns but under the bar.
+
+**Exploratory footnote.** Under the world-lexicon rescore the committee's
+relative position also improves (the v2 battery selects cue-bearing
+replies), but the frozen-instrument decision of 2026-07-20 stands; no v2
+numbers are licensed readings.

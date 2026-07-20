@@ -1,0 +1,88 @@
+{
+  "schema": "machinespirits.program2.phase5b.manifest.v1",
+  "generatedAt": "2026-07-20",
+  "preregistration": "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+  "runtime": {
+    "pinnedLineage": "91b8a50e",
+    "machinerySha": "db53ab14",
+    "amendment1Sha": "fed34fd0"
+  },
+  "archiveRoot": "~/.machinespirits-data/program-2/phase5b-live",
+  "headline": {
+    "sealed": "18/18, zero attrition, 2 retries; Amendment 1 (prompt-model dedup recovery) at 1 sealed",
+    "e1b": {
+      "committee_v2": "32/83 (0.386)",
+      "pooled_control": "18/120 (0.150)",
+      "diff": 0.236,
+      "ci95": [
+        0.128,
+        0.354
+      ],
+      "verdict": "PASS"
+    },
+    "coverage": {
+      "committee": 0.611,
+      "control": 0.639,
+      "verdict": "PASS (within -0.05)"
+    },
+    "safety": {
+      "committee": 0.42,
+      "control": 0.61,
+      "verdict": "GUARDRAIL FAIL \u2014 anatomy: universal turn-9 release-schedule leak, all arms/both runs, 4/5 committee failures on frontier-authored turns"
+    },
+    "seam": {
+      "accuracy": 0.6,
+      "n": 40,
+      "bar": 0.65,
+      "verdict": "PARITY",
+      "continuity": [
+        3.45,
+        3.75
+      ]
+    },
+    "components_v1_to_v2": {
+      "exactly_one_question": [
+        0.72,
+        0.976
+      ],
+      "warrant_cue": [
+        0.56,
+        0.542
+      ],
+      "no_new_premise": [
+        0.587,
+        0.59
+      ],
+      "guards_passed": [
+        0.96,
+        0.988
+      ]
+    },
+    "fallback_resolutions": {
+      "selected_sampled_1": 15,
+      "selected_sampled_2": 4,
+      "trimmed": 8,
+      "selected_greedy": 4,
+      "unchanged": 1
+    },
+    "stationarity": "pooling licensed (fresh vs archived controls within 0.10)"
+  },
+  "artifacts": {
+    "launch-plan.json": {
+      "sha256": "6133c0ad62a708cc3eacf8218fbd7b814dd6e29144e536892a226a23520722da",
+      "bytes": 75804
+    },
+    "launch-state.json": {
+      "sha256": "a122bcc4ed44946d9dcf03e1282284855955373a8782b4635f6dec3a1b5f2fac",
+      "bytes": 1906
+    },
+    "phase5b-final.json": {
+      "sha256": "35f36e58502de7a019b906ee3cad668ab08a0c7e35836a3248396ec8b5ea3881",
+      "bytes": 1403
+    },
+    "phase5b-seam.json": {
+      "sha256": "05fd07e24ffd245beacc50ff3e898e2739818b493b05491c058a7ddfe7f0cd25",
+      "bytes": 11689
+    }
+  }
+}
