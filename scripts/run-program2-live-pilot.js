@@ -102,7 +102,7 @@ function deterministicShuffle(rows, seed) {
   return result;
 }
 
-function commandForJob(job, outputRoot) {
+function commandForJob(job, outputRoot, { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null } = {}) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
   return [
     process.execPath,
@@ -142,7 +142,7 @@ function commandForJob(job, outputRoot) {
     '--release-speed',
     String(PHASE5_LIVE_PILOT_SPEC.releaseSpeed),
     '--run-seed',
-    String(PHASE5_LIVE_PILOT_SPEC.runSeed),
+    String(runSeed),
     '--eval-repeat',
     String(job.repeat),
     '--eval-job-id',
@@ -159,6 +159,7 @@ function commandForJob(job, outputRoot) {
     PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
+    ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
     '--dag',
     '--no-stream',
     '--no-interim-animation',
@@ -188,6 +189,73 @@ export function buildPhase5LivePilotPlan({ outputRoot = 'exports/program2-live-p
     ordering: 'seeded Fisher-Yates over the complete balanced 2 x 2 x 6 matrix',
     jobs,
   };
+}
+
+// Phase 5b (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md): 12
+// committee dialogues under fallback policy v2 + 6 fresh silent controls,
+// seed 20260720; everything else inherited from the Phase 5 spec.
+export const PHASE5B_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-phase5b-plan.v1',
+  preregistration: 'PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md',
+  runSeed: 20260720,
+  committeeRepeats: 6,
+  controlRepeats: 3,
+  fallbackPolicy: 'v2',
+});
+
+export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5b' } = {}) {
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (let repeat = 1; repeat <= PHASE5B_SPEC.committeeRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'committee' });
+    }
+    for (let repeat = 1; repeat <= PHASE5B_SPEC.controlRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'silent_control' });
+    }
+  }
+  const jobs = deterministicShuffle(cells, PHASE5B_SPEC.runSeed).map((cell, index) => {
+    const id = [`p5b-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: PHASE5B_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? PHASE5B_SPEC.fallbackPolicy : null,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...PHASE5B_SPEC,
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
+    jobs,
+  };
+}
+
+export function validatePhase5bLivePilotPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.arm].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const policy = flagValue(job.command, '--committee-fallback-policy');
+    if (job.arm === 'committee' && policy !== 'v2') errors.push(`${job.id} missing fallback policy v2`);
+    if (job.arm === 'silent_control' && policy !== null) errors.push(`${job.id} control carries fallback policy`);
+    if (flagValue(job.command, '--run-seed') !== String(PHASE5B_SPEC.runSeed))
+      errors.push(`${job.id} run-seed mismatch`);
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily)
+      errors.push(`${job.id} tutor-family mismatch`);
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    if (cellCounts.get(`${profile}|committee`) !== PHASE5B_SPEC.committeeRepeats)
+      errors.push(`${profile} committee cell count mismatch`);
+    if (cellCounts.get(`${profile}|silent_control`) !== PHASE5B_SPEC.controlRepeats)
+      errors.push(`${profile} control cell count mismatch`);
+  }
+  return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
 function flagValue(command, flag) {
@@ -329,6 +397,7 @@ async function main() {
       'launch-approved': { type: 'boolean', default: false },
       'expected-sha': { type: 'string', default: '' },
       'output-dir': { type: 'string', default: '' },
+      plan: { type: 'string', default: '5' },
       'limit-jobs': { type: 'string', default: '' },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -341,12 +410,17 @@ async function main() {
   }
   if (values['dry-run'] && values['launch-approved']) throw new Error('choose either --dry-run or --launch-approved');
   const launch = Boolean(values['launch-approved']);
-  const outputRoot = path.resolve(
-    ROOT,
-    values['output-dir'] || (launch ? 'exports/program2-live-pilot' : 'exports/program2-live-pilot-dry-run'),
-  );
-  const plan = buildPhase5LivePilotPlan({ outputRoot });
-  const validation = validatePhase5LivePilotPlan(plan);
+  const phase5b = values.plan === '5b';
+  const defaultRoot = phase5b
+    ? launch
+      ? 'exports/program2-live-pilot-5b'
+      : 'exports/program2-live-pilot-5b-dry-run'
+    : launch
+      ? 'exports/program2-live-pilot'
+      : 'exports/program2-live-pilot-dry-run';
+  const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
+  const plan = phase5b ? buildPhase5bLivePilotPlan({ outputRoot }) : buildPhase5LivePilotPlan({ outputRoot });
+  const validation = phase5b ? validatePhase5bLivePilotPlan(plan) : validatePhase5LivePilotPlan(plan);
   const fixtures = runPhase5ZeroModelFixtures();
   const artifact = {
     schema: 'machinespirits.tutor-stub.program2-phase5-zero-model-gate.v1',

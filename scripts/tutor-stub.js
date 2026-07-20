@@ -230,9 +230,11 @@ import {
   PROGRAM2_COMMITTEE_DEFAULTS,
   PROGRAM2_COMMITTEE_SCHEMA,
   buildCommitteeCompositionBlock,
+  committeeFallbackBatteryPass,
   committeeMiniGenerate,
   committeeQuestionSentences,
   runCommitteeBattery,
+  trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
@@ -498,6 +500,7 @@ const { values: args, positionals } = parseArgs({
     'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
     'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
     'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
+    'committee-fallback-policy': { type: 'string', default: 'v1' },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
@@ -9531,8 +9534,8 @@ async function callTutor({
       },
       response: { text: miniText, latencyMs: miniLatencyMs, error: miniError },
     });
-    const miniResponseEnvelope = () => ({
-      text: miniText,
+    const miniResponseEnvelope = (deliveredText = miniText) => ({
+      text: deliveredText,
       provider: 'ollama',
       model: state.committee.miniModel,
       latencyMs: miniLatencyMs,
@@ -9549,6 +9552,70 @@ async function callTutor({
         speakerPrivilegeAudit,
       },
     });
+    // Phase 5b fallback resolution
+    // (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2): under
+    // policy v2 the fallback text must pass the same one-question + cue
+    // battery — greedy first, then up to two resamples at the frozen
+    // sampled temperature, then the cue-preserving trim. Policy v1 ships
+    // the greedy reply unchecked (the Phase 5 behavior).
+    async function resolveCommitteeFallbackEnvelope() {
+      const fallback = { policy: state.committee.fallbackPolicy || 'v1', resolution: 'v1_unchecked', resamples: 0 };
+      let deliveredText = miniText;
+      if (fallback.policy === 'v2') {
+        if (committeeFallbackBatteryPass(miniText)) {
+          fallback.resolution = 'selected_greedy';
+        } else {
+          let selected = null;
+          for (let attempt = 1; attempt <= 2 && !selected; attempt += 1) {
+            fallback.resamples = attempt;
+            try {
+              const resampleStartedAt = new Date().toISOString();
+              const sample = await committeeMiniGenerate({
+                url: state.committee.ollamaUrl,
+                model: state.committee.miniModel,
+                systemPrompt: effectiveSystemPrompt,
+                messages: [...context, { role: 'user', content: miniUserPrompt }],
+                numCtx: state.committee.numCtx,
+                maxTokens,
+                timeoutMs: state.committee.timeoutMs,
+                temperature: 0.35,
+              });
+              const sampleText = String(sample.text || '').trim();
+              appendTraceEvent(trace, {
+                type: 'model_call',
+                role: `${roleBase}_committee_mini_resample`,
+                turn: tutorTurn,
+                startedAt: resampleStartedAt,
+                provider: 'ollama',
+                model: state.committee.miniModel,
+                request: { config: { temperature: 0.35, resample: attempt } },
+                response: { text: sampleText, latencyMs: sample.latencyMs },
+              });
+              if (committeeFallbackBatteryPass(sampleText)) selected = sampleText;
+            } catch (err) {
+              appendTraceEvent(trace, {
+                type: 'program2_committee_resample_error',
+                turn: tutorTurn,
+                attempt,
+                error: String(err?.message || err).slice(0, 200),
+              });
+              break;
+            }
+          }
+          if (selected) {
+            fallback.resolution = `selected_sampled_${fallback.resamples}`;
+            deliveredText = selected;
+          } else {
+            const trimmed = trimCommitteeFallback(miniText);
+            fallback.resolution = trimmed.changed ? 'trimmed' : 'unchanged';
+            deliveredText = trimmed.text;
+          }
+        }
+      }
+      moment.fallback = fallback;
+      moment.deliveredFallbackText = deliveredText === miniText ? null : deliveredText;
+      return miniResponseEnvelope(deliveredText);
+    }
     const moment = {
       schema: PROGRAM2_COMMITTEE_SCHEMA,
       turn: tutorTurn,
@@ -9579,7 +9646,7 @@ async function callTutor({
       moment.spanSentenceCount = spans.length;
       if (!spans.length) {
         moment.source = 'fallback_no_span';
-        chosen = miniResponseEnvelope();
+        chosen = await resolveCommitteeFallbackEnvelope();
       } else {
         const span = spans.join(' ');
         moment.span = span;
@@ -9652,12 +9719,12 @@ async function callTutor({
                 : battery.failedCheck === 'exactly_one_question'
                   ? 'fallback_multi_question'
                   : 'fallback_empty';
-            chosen = miniResponseEnvelope();
+            chosen = await resolveCommitteeFallbackEnvelope();
           }
         } catch (err) {
           moment.composerError = String(err?.message || err).slice(0, 300);
           moment.source = 'fallback_error';
-          chosen = miniResponseEnvelope();
+          chosen = await resolveCommitteeFallbackEnvelope();
         }
       }
     }
@@ -12353,6 +12420,7 @@ async function main() {
       enabled: pointOfActionArm === 'committee',
       miniModel: args['committee-mini-model'],
       ollamaUrl: args['committee-ollama-url'],
+      fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
       numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
       timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
     },
