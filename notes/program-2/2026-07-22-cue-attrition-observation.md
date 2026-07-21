@@ -114,3 +114,21 @@ letter, not the teaching: the control specimen stands (a genuinely
 evidence-anchored warrant question containing none of the six words
 scores non-compliant), and any successor writeup should present the
 gain as delivery completeness, not pedagogy.
+
+## 8. Addendum (2026-07-22, later same day) — full replacement census
+
+The §3 count (9 replacements among the 17 cue-failing moments)
+understates the mechanism's scope. Over ALL 83 committee moments, 47
+(56.6%) ship text that differs from the approved envelope: all 34
+due-release turns (the release surface authors those turns — the
+ceiling and the replacement are the same machinery seen from two
+angles) plus 13 clue-staging turns. The committee's approved text ships
+on only 36/83 moments (43%). The same census on the 5c traces answers
+the §6 homework: replacement occurs at the same rate on world_027
+(34/61 = 55.7%; 21 due + 13 clue-staged) but is nearly cost-free there
+(12 of 13 clue-staged achievable moments compliant — gazette staging
+language natively carries the lexicon). The Marrick cost is
+lexicon-specific, not mechanism-specific. Rider drafted accordingly:
+`PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md` (Status
+DRAFT — freezes only on an explicit go; the guard acts on clue-staged
+turns only and never touches premise-release turns).

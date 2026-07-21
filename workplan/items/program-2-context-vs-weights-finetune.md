@@ -110,6 +110,21 @@ the form transfers; 5c's coverage-guardrail point-estimate FAIL travels
 as the open cost question). Nothing licensed yet — rider prereg drafts on
 user go.
 
+2026-07-22 Claude (later): RIDER PREREG DRAFTED on user go —
+PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md (Status DRAFT,
+NOT frozen; freezes on explicit go with SHA/seed pins). Pre-freeze census
+reframed the leak upward: 47/83 5b committee moments (56.6%) ship text ≠
+the approved envelope (all 34 due-release + 13 clue-staged; approved text
+ships on only 36/83), same rate on 5c (34/61) but nearly cost-free there
+(gazette staging language carries the lexicon) — Marrick cost is
+lexicon-specific. Design: committee-v3 = v2 + spanCue.v1 (resample mini
+until the question sentence carries a cue) + deliveryGuard.v1 (clue-staged
+turns only: swap the staged final question for the protected span;
+premise-release turns untouched); 12+6 on marrick, pooling rule over 18
+archived controls; E1d primary + M1/M2 mechanism bars + mandatory seam
+re-check; prediction ≈0.55 registered as descriptive reference. Note
+addendum §8 records the census.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
