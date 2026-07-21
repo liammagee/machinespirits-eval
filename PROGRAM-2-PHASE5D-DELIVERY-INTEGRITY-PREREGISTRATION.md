@@ -136,12 +136,27 @@ byte-unchanged from 5c — neither change adds a prompt surface (spanCue
 re-samples with the existing prompts; deliveryGuard is a deterministic
 text edit).
 
-Launch gates (open — no paid call before all three):
+Launch gates (two of three closed 2026-07-22; no paid call before the
+third):
 
-- [ ] spanCue.v1 + deliveryGuard.v1 implemented on the pinned lineage;
-      machinery SHA recorded here and in the results section.
-- [ ] Zero-paid smoke PASS: plan gate, mini probe, one dry committee
-      moment exercising a staged-turn swap.
+- [x] spanCue.v1 + deliveryGuard.v1 implemented on the pinned lineage —
+      machinery **6423de2f** (branch `claude/program-2-phase5d-machinery`
+      on the 91b8a50e/e9b01bdd lineage; the '5d' plan/launch table added
+      to `run-program2-live-pilot.js`; both policies default OFF, so the
+      5/5b/5c replication paths are byte-unchanged). Recording note:
+      deliveryGuard outcomes land on a dedicated
+      `program2_delivery_guard` trace event — the
+      `program2_committee_moment` event serializes before turn
+      finalization; spanCue is recorded on the moment event as
+      registered.
+- [x] Zero-paid smoke PASS (2026-07-22,
+      `scripts/run-program2-phase5d-smoke.js`): plan gate — 18 jobs,
+      committee-v3 flags on committee arms only; dry committee moment on
+      the real 5b staged texture, the swap re-audited COMPLIANT by the
+      frozen detector; the full skip taxonomy; live mini probe
+      (program2-sft-instruct-v2, greedy 6.1 s / sampled 0.5 s). 10
+      checks, 0 paid calls.
 - [ ] 5c-style launch sequence recorded (zero-model gate, ollama
       preflight, sonnet + terra one-call probes), launch sha-pinned,
-      human-gated.
+      human-gated; `ms-phase5-pinned` fast-forwarded to the machinery
+      SHA at launch.

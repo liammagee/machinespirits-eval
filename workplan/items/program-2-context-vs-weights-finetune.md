@@ -133,6 +133,19 @@ lineage (SHA recorded at launch), zero-paid smoke incl. a dry staged-turn
 swap, 5c-style sha-pinned human-gated launch sequence. No paid call
 before all three.
 
+2026-07-22 Claude (machinery): PHASE 5D MACHINERY LANDED + SMOKE PASS —
+spanCue.v1 + deliveryGuard.v1 + the '5d' plan/launch table implemented on
+the pinned lineage (branch claude/program-2-phase5d-machinery, 6423de2f,
+pushed; policies default OFF so the 5/5b/5c replication paths are
+byte-unchanged). Zero-paid smoke 10/10
+(scripts/run-program2-phase5d-smoke.js): plan gate (18 jobs, committee-v3
+flags on committee arms only), dry committee moment on the real 5b staged
+texture with the swap re-audited COMPLIANT by the frozen detector, full
+skip taxonomy, live mini probe (greedy 6.1s / sampled 0.5s). Prereg §8
+launch gates 1-2 ticked with the SHA; the one remaining gate is the
+sha-pinned human-gated launch sequence (fast-forward ms-phase5-pinned to
+6423de2f, zero-model gate, preflight, probes).
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
