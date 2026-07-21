@@ -94,6 +94,58 @@ config/adaptive-tutor-evidence/program-2-floors-v1.manifest.json. Next: the
 Phase 2 prereg freeze (thresholds vs these floors; freeze flattening
 template + serving pin) — user gate.
 
+2026-07-22 Claude: CUE-ATTRITION DECOMPOSITION + DECISION RECORD
+(notes/program-2/2026-07-22-cue-attrition-observation.md; sealed 5b/5c
+archives read-only). The 92%→38%→54% mini→span→delivered cue attrition
+decomposes over the 17 achievable cue-failing 5b moments: 9 shipped text
+that is NOT the committee-approved envelope (the clue-staging surface
+replaces it after the battery runs; 7 of the 9 approved texts carried the
+cue) and 8 are composed turns that never had the word (no cue check on
+the composed path). Decisions on record: the six-word v1 instrument STAYS
+(user, 2026-07-22); fix order when a rider is licensed = delivered-text
+guard → mini-side span resampling → composed cue check only if needed;
+run shape = small 5b-style prereg rider on the next planned run. The 5c
+gate is RESOLVED in favor of the rider (E1c PASS + zero costume leak =
+the form transfers; 5c's coverage-guardrail point-estimate FAIL travels
+as the open cost question). Nothing licensed yet — rider prereg drafts on
+user go.
+
+2026-07-22 Claude (later): RIDER PREREG DRAFTED on user go —
+PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md (Status DRAFT,
+NOT frozen; freezes on explicit go with SHA/seed pins). Pre-freeze census
+reframed the leak upward: 47/83 5b committee moments (56.6%) ship text ≠
+the approved envelope (all 34 due-release + 13 clue-staged; approved text
+ships on only 36/83), same rate on 5c (34/61) but nearly cost-free there
+(gazette staging language carries the lexicon) — Marrick cost is
+lexicon-specific. Design: committee-v3 = v2 + spanCue.v1 (resample mini
+until the question sentence carries a cue) + deliveryGuard.v1 (clue-staged
+turns only: swap the staged final question for the protected span;
+premise-release turns untouched); 12+6 on marrick, pooling rule over 18
+archived controls; E1d primary + M1/M2 mechanism bars + mandatory seam
+re-check; prediction ≈0.55 registered as descriptive reference. Note
+addendum §8 records the census.
+
+2026-07-22 Claude (freeze): PHASE 5D FROZEN on user go ("freeze it") —
+seed 20260722; lineage 91b8a50e + machinery e9b01bdd; design/endpoints/
+bars/pooling/reading grammar locked. Remaining are launch gates, not
+freeze gates: implement spanCue.v1 + deliveryGuard.v1 on the pinned
+lineage (SHA recorded at launch), zero-paid smoke incl. a dry staged-turn
+swap, 5c-style sha-pinned human-gated launch sequence. No paid call
+before all three.
+
+2026-07-22 Claude (machinery): PHASE 5D MACHINERY LANDED + SMOKE PASS —
+spanCue.v1 + deliveryGuard.v1 + the '5d' plan/launch table implemented on
+the pinned lineage (branch claude/program-2-phase5d-machinery, 6423de2f,
+pushed; policies default OFF so the 5/5b/5c replication paths are
+byte-unchanged). Zero-paid smoke 10/10
+(scripts/run-program2-phase5d-smoke.js): plan gate (18 jobs, committee-v3
+flags on committee arms only), dry committee moment on the real 5b staged
+texture with the swap re-audited COMPLIANT by the frozen detector, full
+skip taxonomy, live mini probe (greedy 6.1s / sampled 0.5s). Prereg §8
+launch gates 1-2 ticked with the SHA; the one remaining gate is the
+sha-pinned human-gated launch sequence (fast-forward ms-phase5-pinned to
+6423de2f, zero-model gate, preflight, probes).
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
