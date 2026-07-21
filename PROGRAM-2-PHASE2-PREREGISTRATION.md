@@ -296,3 +296,32 @@ cue in a dropped statement). The 0.293 / 0.448 numbers are unaffected; the
 composer-added-question rate does exist for the sonnet composer under the
 revised v2 span instruction (3/53; terra 0/54) — bounded and
 battery-caught, not the mechanism this bullet described.
+
+### KTO results (2026-07-21) — both licensed runs spent; behaviorally inert
+
+Training (Lambda H100, ~21 min/arm, ~$2): both runs clean under Amendment
+2; KTO loss flat at 0.5 throughout (the unpaired audit labels supply
+almost no gradient the SFT policies do not already fit). Merges verified
+by the reconstructed script (nonzero lora_B attach + probe deltas —
+instruct and base 0.000488 — asserted before save; one silent no-op from
+the stale pre-fix script was caught by output inspection and deleted,
+and the fixed script is now committed at a05fa3c9). Same-lineage q8_0
+GGUFs served via ollama; graded on the frozen held-out moments, greedy.
+
+**Verdict: byte-identical to SFT — 58/58 generations per arm are exactly
+the SFT outputs, so every gate lands exactly where SFT left it.**
+Instruct 0.414 (bar 0.460: P1 FAIL; P2 vs floor CI [−0.017, +0.224]
+includes 0: FAIL; P3 PASS; P4 trivially non-inferior). Base 0.103 = its
+floor (all gates as SFT). Paired KTO-vs-SFT CI [0.000, 0.000] both arms —
+zero moments flipped in either direction. Reading: at the frozen
+conditional recipe (lr 5e-6, 1 epoch, from-SFT adapter), preference
+tuning on the apparatus's own audit labels produces weight motion below
+the quantized-serving threshold; the offline solo ceiling stands at the
+SFT number. The licensed-run ledger is now fully spent: 2 SFT + 2 KTO
+runs, all executed, merged with verification, and graded. No further
+training is licensed under this document.
+
+Artifacts: floor/tuned-kto-{instruct,base}-q8-ollama.json;
+adapters/out-kto-{instruct,base}-final (+ merge/convert/create logs);
+ollama models program2-kto-{instruct,base}-q8 (retained for provenance;
+behaviorally duplicate the SFT models).
