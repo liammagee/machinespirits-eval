@@ -156,7 +156,23 @@ third):
       frozen detector; the full skip taxonomy; live mini probe
       (program2-sft-instruct-v2, greedy 6.1 s / sampled 0.5 s). 10
       checks, 0 paid calls.
-- [ ] 5c-style launch sequence recorded (zero-model gate, ollama
-      preflight, sonnet + terra one-call probes), launch sha-pinned,
-      human-gated; `ms-phase5-pinned` fast-forwarded to the machinery
-      SHA at launch.
+- [x] Launch sequence executed 2026-07-22 on the user's go ("launch
+      it"): `ms-phase5-pinned` fast-forwarded to the machinery commit;
+      zero-model gate PASS (18 jobs, 0 model calls); sonnet + terra
+      one-call probes through the production bridge PASS (sonnet after
+      Amendment 1's alias fix); ollama preflight in-launcher; launch
+      sha-pinned to **80534e9e19d9a3ce3c7a2e0ddd51651f09a4b0c7**
+      (= Amendment 1 commit; supersedes 6423de2f as the launch pin).
+
+## Amendment 1 (2026-07-22, pre-launch — zero sealed dialogues)
+
+The launch-sequence sonnet probe failed: a claude-CLI update dropped the
+bare `sonnet-5` model alias (the CLI rejects it as unknown; the served
+model is unchanged under its full id `claude-sonnet-5`, verified by a
+direct one-call probe). Fix at the spawn boundary only
+(`CLAUDE_CLI_MODEL_ALIASES` in `services/cliProviderBridge.js`, pinned
+lineage commit 80534e9e), so the frozen spec string
+`claude-code.sonnet-5`, the plan, the job commands, and the recorded
+model strings stay byte-identical to the frozen configuration. The
+terra probe passed unchanged. Arm-independent and
+comparability-neutral; no sealed data existed at fix time.
