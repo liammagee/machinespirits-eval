@@ -60,9 +60,22 @@
     "home_world_costume_saturation": "31.8 leak-set occurrences/1k words on 5b committee spans"
   },
   "artifacts": {
-    "analysis": "phase5c-analysis.json (archived)",
-    "seamReview": "phase5c-seam-review.json (archived)",
-    "launchPlan": "launch-plan.json (archived, planSha256 pinned)",
+    "phase5c-analysis.json": {
+      "sha256": "d2e65e3a574db1ce0517ca1be1ad828bea5678c03735cdc0381bb111c3fd8889",
+      "bytes": 5223
+    },
+    "phase5c-seam-review.json": {
+      "sha256": "577154acb90a3f1e13e39697689d3664ab4621ba0f0802c39826a38304df38ea",
+      "bytes": 9655
+    },
+    "launch-plan.json": {
+      "sha256": "118c4a7fe861d86a6c4da3eb0af95257af63538200d8df0420df0add3c208991",
+      "bytes": 75877
+    },
+    "launch-state.json": {
+      "sha256": "24c6735b8925faaa33e241a48f04f16d6c335b5480c4685e91121402ecb1c039",
+      "bytes": 1972
+    },
     "smoke": "smoke/ (archived, excluded from endpoints)"
   }
 }
