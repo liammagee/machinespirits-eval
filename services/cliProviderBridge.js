@@ -43,6 +43,13 @@ export function normalizeCliEffort(value) {
 export const CLAUDE_CLI_CONTEXT_ISOLATION = 'safe-mode-v1';
 export const CLAUDE_CLI_ISOLATION_ARGS = Object.freeze(['--safe-mode', '--no-session-persistence', '--tools', '']);
 
+// 2026-07-22 (Phase 5d Amendment 1): a claude-CLI update dropped the bare
+// `sonnet-5` model alias (now rejected as unknown); the served model is
+// unchanged under its full id. Map at the spawn boundary only, so pinned
+// specs, plans, job commands, and recorded model strings stay
+// byte-identical to the frozen configuration.
+export const CLAUDE_CLI_MODEL_ALIASES = Object.freeze({ 'sonnet-5': 'claude-sonnet-5' });
+
 export function claudeCliIsolation() {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-claude-cli-'));
   return {
@@ -273,7 +280,7 @@ async function callClaudeCli({
   try {
     return await new Promise((resolve, reject) => {
       const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt, ...isolation.args];
-      if (model) args.push('--model', model);
+      if (model) args.push('--model', CLAUDE_CLI_MODEL_ALIASES[model] || model);
       if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
       if (schema) {
         args.push('--json-schema', JSON.stringify(schema));
