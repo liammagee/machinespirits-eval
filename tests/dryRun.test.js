@@ -89,6 +89,37 @@ describe('mockProvider', () => {
     );
   });
 
+  it('mockJudgeResult orders recognition above base for every seed', async () => {
+    if (!mockProvider) mockProvider = await import('../services/mockProvider.js');
+    // Deterministic seed battery: runner-style seeds (scenarioId:scenarioName),
+    // legacy timestamp-suffixed seeds, degenerate strings, and a generated sweep.
+    const seeds = [
+      '',
+      'stuck_student:Stuck Student',
+      'stuck_student:Stuck Student - Turn 3',
+      'scenario_confused_learner1719268412345',
+      'a',
+      'The quick brown fox jumps over the lazy dog',
+      ...Array.from({ length: 100 }, (_, i) => `seed_${i}`),
+    ];
+    // Raw eval-cell names AND the tutor-core names they remap to — the CLI
+    // dry-run path passes the remapped names (resolveEvalProfile).
+    const pairs = [
+      ['budget', 'recognition'],
+      ['cell_1_base_single_unified', 'cell_5_recog_single_unified'],
+    ];
+    for (const [baseName, recogName] of pairs) {
+      for (const seed of seeds) {
+        const base = mockProvider.mockJudgeResult({ profileName: baseName }, seed);
+        const recog = mockProvider.mockJudgeResult({ profileName: recogName }, seed);
+        assert.ok(
+          recog.overallScore > base.overallScore,
+          `seed "${seed}": ${recogName} (${recog.overallScore}) should beat ${baseName} (${base.overallScore})`,
+        );
+      }
+    }
+  });
+
   it('mockJudgeResult has all 6 dimensions', async () => {
     if (!mockProvider) mockProvider = await import('../services/mockProvider.js');
     const result = mockProvider.mockJudgeResult({ profileName: 'budget' });
@@ -137,16 +168,28 @@ describe('eval-cli --dry-run', () => {
     assert.strictEqual(result.judgeModel, 'dry-run/mock-judge-v1', 'judge model should be dry-run');
   });
 
-  it('quick --dry-run with recognition profile scores higher', async () => {
-    const [baseRun, recogRun] = await Promise.all([
+  it('quick --dry-run with recognition profile scores higher, reproducibly', async () => {
+    const [baseRun, baseRerun, recogRun] = await Promise.all([
+      runCli(['quick', '--dry-run', '--profile', 'cell_1_base_single_unified']),
       runCli(['quick', '--dry-run', '--profile', 'cell_1_base_single_unified']),
       runCli(['quick', '--dry-run', '--profile', 'cell_5_recog_single_unified']),
     ]);
     assert.strictEqual(baseRun.code, 0, 'base should succeed');
+    assert.strictEqual(baseRerun.code, 0, 'base rerun should succeed');
     assert.strictEqual(recogRun.code, 0, 'recog should succeed');
 
     const baseJson = JSON.parse(baseRun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
+    const baseRerunJson = JSON.parse(baseRerun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
     const recogJson = JSON.parse(recogRun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
+
+    // Mock scoring is seeded by stable identifiers only — identical invocations
+    // must score identically (guards against per-invocation entropy like
+    // Date.now() sneaking back into the seed).
+    assert.strictEqual(
+      baseRerunJson.tutorFirstTurnScore,
+      baseJson.tutorFirstTurnScore,
+      'same profile + scenario should score identically across invocations',
+    );
 
     assert.ok(
       recogJson.tutorFirstTurnScore > baseJson.tutorFirstTurnScore,
