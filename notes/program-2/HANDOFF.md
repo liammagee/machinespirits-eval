@@ -218,3 +218,23 @@ into `docs/research/paper-full-2.0.md` plus a subordinate design document
 Scope: paper fold + subordinate doc ONLY — no runs, no model changes;
 never touches `~/.machinespirits-data/program-2/adapters/`. KTO and 5c
 are NOT folded (in flight; they get their own fold when sealed).
+
+---
+
+## H7 (2026-07-21) — Phase 5c dialogues SEALED
+
+status: done (executing thread; results committed with this entry)
+
+Phase 5c sealed 2026-07-21: 17/18 (9 committee-v2 + 8 fresh controls on
+world_027_gazette_recall), 1 attrition (p5c-14, deterministic auto-learner
+budget overflow both attempts — first attrition in the program), no abort.
+E1c PASS: 0.508 vs 0.306, diff +0.202, CI [0.072, 0.338] — the
+Marrick-trained artifact beats the frontier on a world it never saw,
+unchanged. Costume leak ZERO over all 61 delivered committee units
+(control base rate 4x generic "fair"). Seam PARITY (0.515); safety PASS
+(0.89 vs 0.88 — no turn-9 analogue here, confirming 5b's anatomy as a
+Marrick world property); coverage guardrail FAIL by point estimate
+(−0.061 vs −0.05, CI spans zero) — caveat carried, not excused. Archive:
+~/.machinespirits-data/program-2/phase5c-live; manifest
+program-2-phase5c.manifest.json; addendum in the 5c prereg §9. The
+adapters store was never read or written by this run.

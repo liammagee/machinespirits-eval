@@ -113,6 +113,33 @@ table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
 
+2026-07-21 Claude: PHASE 5C (cross-world transfer probe) EXECUTED — E1c
+PASS. Prereg frozen at 4bb1253f
+(PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md), machinery on
+the pinned runtime at e9b01bdd; the 5b-validated artifact
+(program2-sft-instruct-v2, fallback policy v2, no KTO) moved UNCHANGED to
+world_027_gazette_recall — max costume distance among structurally
+comparable siblings (zero derived-lexicon overlap; 022/026/028 floor
+worlds rejected as density gambles). 17/18 sealed (9 committee-v2 + 8
+fresh controls, no pooling with Marrick controls), 1 attrition (p5c-14,
+deterministic auto-learner budget overflow both same-seed attempts —
+first attrition in the program), 1 recovered retry, no abort; smoke GO
+pre-launch. VERDICTS: E1c 0.508 vs 0.306, diff +0.202, CI [0.072, 0.338]
+— the specialist beats the frontier on a world it never saw, above its
+own home-world rate (0.386); costume leak ZERO over all 61 delivered
+committee units (control base 4x generic "fair"; home-world saturation
+reference 31.8/1k words) — the trained warrant move is a form, not a
+costume; seam PARITY (0.515, 13+20 windows realized-n); safety PASS
+(0.89 vs 0.88 — no turn-9 analogue, confirming 5b's anatomy as a Marrick
+world property); coverage guardrail FAIL by point estimate (−0.061 vs
+−0.05 margin, miss 0.011, CI [−0.197, +0.053] spans zero at n=9) —
+caveat carried on the §6 row-1 reading, not excused. LICENSED READING:
+move-library concept live (train once, validate per world, retrain only
+on failure), coverage-caveated, exploratory tier (single family, one
+transfer world). Manifest program-2-phase5c.manifest.json; archive
+~/.machinespirits-data/program-2/phase5c-live (adapters store untouched);
+prereg §9 addendum. Paper fold pending (own fold, per the §6.21 pattern).
+
 2026-07-21 Claude: PHASES 5 + 5B FOLDED INTO THE PAPER as new §6.21
 (v3.0.221, commit 71b063d8 on branch claude/program-2-adaptation-offshoot):
 Phase 5 E1 FAIL (+0.040, CI [−0.054, +0.133]) with the component anatomy

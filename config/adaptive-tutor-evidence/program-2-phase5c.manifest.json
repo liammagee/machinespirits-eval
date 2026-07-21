@@ -1,0 +1,68 @@
+{
+  "schema": "machinespirits.program2.phase5c.manifest.v1",
+  "generatedAt": "2026-07-21",
+  "preregistration": "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
+  "question": "does the Marrick-trained specialist transfer to world_027_gazette_recall unchanged",
+  "runtime": {
+    "pinnedLineage": "91b8a50e",
+    "machinerySha": "e9b01bdd",
+    "preregSha": "4bb1253f",
+    "artifact": "program2-sft-instruct-v2 (Phase 4 verified-merge SFT, q8_0), fallback policy v2, no KTO"
+  },
+  "archiveRoot": "~/.machinespirits-data/program-2/phase5c-live",
+  "headline": {
+    "sealed": "17/18 (9 committee-v2 + 8 fresh controls), 1 attrition (p5c-14, deterministic auto-learner budget overflow on both same-seed attempts), no abort; 1 recovered retry (p5c-12); smoke smoke-01 GO before launch",
+    "e1c": {
+      "committee_v2": "31/61 (0.508)",
+      "fresh_control": "15/49 (0.306)",
+      "diff": 0.202,
+      "ci95": [0.072, 0.338],
+      "verdict": "PASS",
+      "density": "61 committee opportunities (>= 15), proof_skipper contributing"
+    },
+    "costume_leak": {
+      "committee": "0 occurrences over 61 mini-authored delivered units (0.0/1k words, 0 unmistakable-costume)",
+      "control_base_rate": "4 occurrences over 49 turns (0.7/1k words), all the generic word 'fair', 0 unmistakable-costume",
+      "verdict": "ZERO leak — form transferred without costume"
+    },
+    "coverage": {
+      "committee": 0.489,
+      "control": 0.55,
+      "margin": -0.05,
+      "diff_ci95": [-0.197, 0.053],
+      "verdict": "GUARDRAIL FAIL by point estimate (-0.061 vs -0.05 margin, miss 0.011); bootstrap CI spans zero — cannot exclude no-difference at n=9 committee dialogues"
+    },
+    "safety": {
+      "committee": 0.89,
+      "control": 0.88,
+      "verdict": "PASS — no analogue of Marrick's turn-9 release-schedule leak on this world"
+    },
+    "seam": {
+      "accuracy": 0.515,
+      "n": 33,
+      "realized": "13 committee + 20 all-frontier windows (realized-n clause)",
+      "bar": 0.65,
+      "verdict": "PARITY",
+      "continuity": [3.38, 3.45]
+    },
+    "components_committee_vs_control": {
+      "exactly_one_question": [1.0, 0.857],
+      "warrant_cue": [0.754, 0.653],
+      "no_new_premise": [0.623, 0.571],
+      "guards_passed": [1.0, 1.0]
+    },
+    "sources": { "composed": 41, "fallback_multi_question": 16, "fallback_span_lost": 4 },
+    "fallback_resolutions": { "selected_sampled_1": 12, "selected_sampled_2": 1, "trimmed": 4, "selected_greedy": 3 }
+  },
+  "references": {
+    "phase5b_home_world": "committee-v2 0.386 vs pooled control 0.150 on world_005_marrick",
+    "offline_composite": 0.448,
+    "home_world_costume_saturation": "31.8 leak-set occurrences/1k words on 5b committee spans"
+  },
+  "artifacts": {
+    "analysis": "phase5c-analysis.json (archived)",
+    "seamReview": "phase5c-seam-review.json (archived)",
+    "launchPlan": "launch-plan.json (archived, planSha256 pinned)",
+    "smoke": "smoke/ (archived, excluded from endpoints)"
+  }
+}

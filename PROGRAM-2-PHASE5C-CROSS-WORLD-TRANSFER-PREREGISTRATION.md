@@ -142,3 +142,67 @@ mini (free). Checkpoint after every dialogue; resumable. Out of scope: KTO
 artifacts (even if available mid-run), any retraining or tuning, any
 instrument change, pooling with Phase 5/5b controls, codex-family arms,
 additional worlds, any re-run beyond §7's single retry.
+
+## 9. Results (2026-07-21 — run complete, 17/18 sealed)
+
+Executed on the pinned runtime (machinery e9b01bdd on the 91b8a50e
+lineage), launch gated at that SHA after the frozen sequence: zero-model
+gate (18 jobs), ollama preflight, sonnet + terra one-call probes, and the
+§4 smoke (smoke-01: 8 turns, 4 committee moments, 2 composed + 2
+sampled-rescue, coherent gazette-costume spans, zero serving errors — GO).
+17/18 sealed: 9 committee-v2 + 8 fresh controls. One recovered retry
+(p5c-12) and one attrition (p5c-14, committee): both same-seed attempts
+died on the known auto-learner prompt-budget overflow — the first
+attrition in the 5/5b/5c program, deterministic for that seed/profile
+shape, excluded and reported per §7. No abort. Density precondition PASS
+(61 committee opportunities, 6.8/dialogue — matching Marrick's 6.9;
+proof_skipper contributing). Manifest:
+`config/adaptive-tutor-evidence/program-2-phase5c.manifest.json`; traces +
+analysis + seam artifacts archived at
+`~/.machinespirits-data/program-2/phase5c-live`.
+
+**E1c — PASS.** Committee-v2 31/61 (0.508) vs fresh control 15/49
+(0.306); diff +0.202, 95% CI [0.072, 0.338]. The Marrick-trained
+specialist beats the frontier on a world it never saw, unchanged — no
+retraining, no KTO, same serving pin. The live rate exceeds both the
+home-world 5b rate (0.386) and the offline composite reference (0.448).
+Component decomposition: exactly_one_question 1.000 (the v2 battery is
+airtight in the new costume; control 0.857), warrant_cue 0.754 vs 0.653,
+no_new_premise 0.623 vs 0.571, guards 1.000 both arms. Both arms' cue
+rates sit far above their Marrick analogues — newsroom English natively
+speaks the frozen six ("record" above all) — and the committee's edge
+holds on top of the lifted floor. Sources: 41 composed / 16
+fallback_multi_question / 4 fallback_span_lost; fallback ledger 13
+sampled rescues + 4 trims + 3 greedy.
+
+**Costume leak — ZERO.** 0 leak-set occurrences over all 61 mini-authored
+delivered units (0.0/1k words; home-world saturation reference 31.8/1k).
+The control base rate is 4 occurrences over 49 turns (0.7/1k) — all the
+generic word "fair", zero unmistakable-costume words in either arm. The
+mini's delivered spans are cleaner of Marrick vocabulary than the
+frontier's own English on this world. §6 row 1's mechanism reading is
+therefore unambiguous: the trained warrant move is a form, not a costume.
+
+**Coverage guardrail — FAIL by point estimate, with anatomy.**
+Coverage@16 committee 0.489 vs control 0.550: diff −0.061 against the
+frozen −0.05 margin (miss 0.011); the dialogue-cluster bootstrap CI
+[−0.197, +0.053] spans zero, so no-difference cannot be excluded at n=9
+committee dialogues after attrition. Both arms run well below their
+Marrick coverage (0.61–0.64) — a world-pacing property, arm-symmetric.
+Reported as the frozen rule requires; the §6 row-1 reading carries this
+caveat rather than claiming clean guardrails.
+
+**Safety — PASS.** 0.89 vs 0.88 — and far above Marrick's 0.42–0.61:
+world_027 has no analogue of the turn-9 release-schedule leak, confirming
+5b's exonerating anatomy as a world property, not a committee property.
+
+**Seam — PARITY.** 17/33 = 0.515 (bar ≤ 0.65), realized 13 committee + 20
+all-frontier windows per §5's realized-n clause; continuity 3.38 vs 3.45.
+The committee's texture stays invisible in the new costume.
+
+**Licensed reading (§6 row 1, coverage-caveated).** E1c PASS + seam
+parity + safety pass + zero costume leak: the move-library concept is
+live — train once, validate per world, retrain only on failure — with the
+coverage guardrail formally failed by 0.011 at a CI spanning zero, stated
+rather than excused. Exploratory tier: single family, single transfer
+world, n=9/8 dialogues.
