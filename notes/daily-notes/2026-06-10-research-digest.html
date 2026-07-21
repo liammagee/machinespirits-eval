@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Digest — 10 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Digest <small style="font-weight:normal;font-size:.85em">10 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Five papers not yet covered in the
+  <a href="2026-06-09-research-roundup.html">Jun 9 roundup</a>,
+  spanning prompt engineering, agent architecture, dramaturgy/theory of mind, and rhetoric.
+  All <code>2606.xxxxx</code> except the rhetoric entry (April 2026, surfacing now).
+  No notable new ontology papers this precise window — the strongest recent work there
+  remains <a href="https://arxiv.org/abs/2606.03662">TrustModel (2606.03662)</a> from the Jun 9 note.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Youran Sun, Xingyu Ren, Kejia Zhang, Xinpeng Liu, Jiaxuan Guo ·
+    arXiv 2606.08878 · June 7, 2026 ·
+    <a href="https://arxiv.org/abs/2606.08878">https://arxiv.org/abs/2606.08878</a>
+  </div>
+  <p>
+    PerspectiveGap evaluates LLMs' ability to write the <em>orchestration prompt</em> that
+    each sub-agent in a multi-agent pipeline receives — the "what does this role need to know"
+    problem. 110 scenarios across 10 real-world topologies, tested on 27 commercial models from
+    10 companies; GPT-5.5 dominates, while Opus 4.7 shows a surprising weakness despite strong
+    coding scores. The benchmark formalises the <em>Prompt Economy</em> principle: loop-centred
+    orchestrations that maximise utility with minimal role and engineering overhead.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The orchestration-prompting framing maps directly onto how cells 3–4, 7–8, and 22–33 pass
+    context from the ego turn to the superego turn (and back). PerspectiveGap's failure modes
+    — agents receiving too much or too little shared context — are precisely the failure modes
+    the project has observed in cells with high <code>tutor_deliberation_*</code> latency.
+    The benchmark is a ready-made evaluation harness for stress-testing the
+    ego→superego handoff prompt; running it on current cells before the next
+    multi-agent prompt revision would be a concrete unblocking step.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Reasoning Structure of Large Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Frédéric Berdoz, Luca A. Lanzendörfer, Fabian Farestam, Roger Wattenhofer (ETH Zurich) ·
+    arXiv 2606.03883 · June 2, 2026 ·
+    <a href="https://arxiv.org/abs/2606.03883">https://arxiv.org/abs/2606.03883</a>
+  </div>
+  <p>
+    Introduces a pipeline that converts unstructured chain-of-thought traces into
+    <em>verifiable reasoning graphs</em> — directed graphs of claims and dependencies —
+    and a benchmark of logic puzzles designed so graph structure can be checked mechanically.
+    The key finding: models with identical final-answer accuracy and token counts can have
+    fundamentally different reasoning structures; accuracy alone is an unreliable proxy for
+    reasoning quality.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The dialogue-trace analyser (<code>services/dialogueTraceAnalyzer.js</code>) and
+    <code>analyze-mechanism-traces.js</code> both operate on text-surface signals
+    (RevΔ, EgoSpec). Converting ego/superego deliberation turns into claim-dependency graphs
+    would give a structural complement to these surface metrics — the graph topology
+    could distinguish genuine pedagogical reasoning from verbose but shallow responses,
+    a known gap in the current rubric v2.2 scoring.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    A Motivational Architecture for Conversational AGI
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Anna Mikeda (Glass Umbrella), Ben Goertzel (SingularityNet) ·
+    arXiv 2606.05411 · June 3, 2026 · Accepted at AGI-26 ·
+    <a href="https://arxiv.org/abs/2606.05411">https://arxiv.org/abs/2606.05411</a>
+  </div>
+  <p>
+    Recasts motivational homeostasis in dialogue-native terms: instead of regulating bodily
+    needs, a conversational agent regulates <em>competence, uncertainty reduction, affiliation,
+    affinity, legitimacy, nurturing</em>, and <em>aesthetic coherence</em>.
+    Built on the OpenPsi motivational lineage + MetaMo scaffold, the paper proposes a
+    ten-stage motivational processing pipeline separating cognitive modulation from situational
+    appraisal, and a dual decision strategy blending urgency-driven fast response with
+    deliberative multi-goal optimisation.
+    Specialised to CompanionAgent and ResearchAgent examples.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The seven dialogue-native motivational dimensions are a near-exact vocabulary match
+    for the Hegelian recognition dimensions in the project's prompts
+    (<em>legitimacy ≈ recognition of autonomous subject; affiliation ≈ intersubjective bond;
+    nurturing ≈ pedagogical care</em>).
+    The ten-stage pipeline is structurally analogous to the ego→superego→revision loop.
+    This paper offers a formal motivational grounding for the current recognition-enhanced
+    prompts that could sharpen the theoretical framing in Paper 2.0 §3–4,
+    and provides a ready vocabulary for describing what the superego is actually optimising.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Theory of Mind</h2>
+
+<div class="paper hot">
+  <h3>
+    GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence in MLLMs
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Weidong Tang, Jierui Li, Yueling Hou, Zihan Mei, Can Zhang, Xinyan Wan, Zhiyuan Liang,
+    Pengfei Zhou, Yang You, Wangbo Zhao
+    (Xidian U / NUS / UESTC / USTC) ·
+    arXiv 2606.04184 · June 2, 2026 ·
+    <a href="https://arxiv.org/abs/2606.04184">https://arxiv.org/abs/2606.04184</a>
+  </div>
+  <p>
+    The first multimodal benchmark for <em>group-level</em> Theory of Mind. Built around a
+    three-level causal chain: micro (BDI states — belief, desire, intention), meso (group
+    tension and structural constraints), and macro (outcome prediction and mechanistic
+    attribution). Key finding: collective behaviour emerges non-linearly from social tensions
+    and conformity dynamics; it cannot be recovered by summing individual-level ToM scores.
+    Current frontier MLLMs fail substantially at group-level tasks despite near-human
+    individual-level ToM.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Cells 115–123 are the project's bilateral-ToM / P2.1–P2.2 ablation suite.
+    GroupToM-Bench's three-level causal chain (BDI → group tension → outcome) is a
+    principled scaffold for the drama-machine's slot model: the
+    <em>peripeteia</em> moment in poetics rubric maps onto the "group tension"
+    meso level, and <em>anagnorisis</em> onto mechanistic attribution at the macro level.
+    The non-linearity finding also explains why cell 114 (dialogue-engine baseline)
+    underperforms cells 110–113 on trap scenarios — the standard runner lacks the
+    group-dynamics layer entirely.
+    Adapting GroupToM's micro/meso/macro decomposition as an auxiliary scoring dimension
+    in <code>config/evaluation-rubric-poetics.yaml</code> is a concrete next step.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Argumentation</h2>
+
+<div class="paper">
+  <h3>
+    Rhetorical Questions in LLM Representations: A Linear Probing Study
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Louie Hong Yao, Vishesh Anand, Yuan Zhuang, Tianyu Jiang ·
+    arXiv 2604.14128 · April 15, 2026 (v2: April 21) ·
+    <a href="https://arxiv.org/abs/2604.14128">https://arxiv.org/abs/2604.14128</a>
+  </div>
+  <p>
+    Linear probing study showing that rhetorical questions (asked to persuade or signal stance,
+    not to seek information) are <em>linearly separable</em> from genuine information-seeking
+    questions within LLM representation space, with cross-dataset AUROC 0.7–0.8.
+    The rhetorical signal emerges early in the network and is most stably captured by
+    last-token representations.
+    However, probes trained on different data distributions produce substantially different
+    rankings (overlap among top-ranked instances &lt;0.2), implying heterogeneous
+    rhetorical strategies rather than a single latent dimension.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The project's rhetoric workstream (<code>notes/rhetoric/</code>) and the
+    <code>analyze-recognition-lexicon.js</code> script currently work at token surface level.
+    This paper suggests that the tutor's Hegelian "recognition moves" — which are typically
+    rhetorical (acknowledging the learner as subject, not requesting factual answers) — may
+    be detectable via last-token probes at much lower cost than full rubric scoring.
+    The heterogeneous-strategies finding (low probe overlap) is also a warning: a single
+    "recognition score" may be conflating distinct rhetorical modes, which aligns with
+    the multi-dimensional design of rubric v2.2.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Near-misses (June 8–10, not strictly this week's themes)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>InquiTree: Evaluating AI Agents in the Scientific Inquiry Loop with Paper-Derived Research Trees</strong>
+    (arXiv 2606.09550, June 8, 2026) —
+    Formalises scientific inquiry as interactive Research Trees; tests whether LLM agents can
+    navigate dynamic, uncertain discovery. Indirectly relevant to the adaptive runner
+    (cells 110–113) which faces a structurally similar open-ended exploration problem.
+    <a href="https://arxiv.org/abs/2606.09550">arxiv.org/abs/2606.09550</a>
+  </li>
+  <li>
+    <strong>Can LLMs Be Constrained to the Past? Improving Knowledge Cutoff through Recall-Based Prompting</strong>
+    (arXiv 2606.05804, June 4, 2026) —
+    Self-Recall and Question-Recall prompting strategies that force the model to re-state
+    what it knows under a temporal constraint before answering. Relevant to prompt design
+    for learner-model updates in cells 54–59 (otherEgoProfiling), where the ego must reason
+    about an earlier state of the learner.
+    <a href="https://arxiv.org/abs/2606.05804">arxiv.org/abs/2606.05804</a>
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-10 ·
+  Deep-research harness: 5 parallel search angles, 15+ source extractions, adversarial claim verification ·
+  Continues from <a href="2026-06-09-research-roundup.html">2026-06-09-research-roundup.html</a> ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
