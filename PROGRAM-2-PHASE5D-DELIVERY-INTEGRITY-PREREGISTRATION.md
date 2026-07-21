@@ -1,10 +1,13 @@
 # Program-2 Phase 5d — delivery-integrity rider pre-registration
 
-Status: **DRAFT (2026-07-22) — NOT FROZEN.** Drafted on the user's go
-(2026-07-22) from the decision record
-`notes/program-2/2026-07-22-cue-attrition-observation.md` (+ same-day
-census addendum). Freezes only on an explicit user go at commit time;
-seed, machinery SHA, and prompt hashes are pinned then. Parents:
+Status: **FROZEN at commit time (2026-07-22), on the user's go
+("freeze it")**, on branch `claude/program-2-cue-attrition-note`
+(lands on `claude/program-2-adaptation-offshoot` by cherry-pick).
+Drafted the same day from the decision record
+`notes/program-2/2026-07-22-cue-attrition-observation.md` (+ census
+addendum §8). Seed pinned 20260722; runtime lineage pinned in §3; the
+new-machinery SHA is recorded at the sha-pinned launch, per the 5b/5c
+convention (§8 launch gates). Parents:
 `PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md` §8,
 `PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md` §9.
 Exploratory tier. The instrument is UNCHANGED: the frozen v1 six-word
@@ -55,9 +58,11 @@ cost?
 ## 3. Design (18 dialogues, world-005-marrick)
 
 12 committee-v3 (2 profiles × 6 repeats) + 6 fresh silent_control
-(2 × 3), interleaved by seeded shuffle; plan/stub seed = freeze date.
-Runtime: the pinned claim-run lineage (91b8a50e; machinery SHA pinned at
-freeze), new machinery cherry-picked — same convention as 5b/5c. Runner
+(2 × 3), interleaved by seeded shuffle; plan/stub seed **20260722**.
+Runtime: the pinned claim-run lineage (91b8a50e; machinery e9b01bdd —
+the 5c pin), with spanCue.v1 + deliveryGuard.v1 cherry-picked on top;
+their SHA is recorded at the sha-pinned launch and in the results
+section, per the 5b/5c convention. Runner
 gate/launch discipline identical (zero-model gate, sha-pinned launch,
 zero-paid smoke, sealed-trace resume, one same-seed retry,
 3-consecutive-failure abort).
@@ -69,7 +74,7 @@ fresh-only, and says so. Marrick is the venue because that is where the
 headroom is (5c cue floors are world-lifted; its committee already sits
 at ≈82% of its due-release ceiling).
 
-## 4. Endpoints (dialogue-cluster bootstrap, 5,000 draws, seed = freeze date, profile-stratified)
+## 4. Endpoints (dialogue-cluster bootstrap, 5,000 draws, seed 20260722, profile-stratified)
 
 - **E1d (primary):** pooled warrant_skip compliance (frozen v1 audit),
   committee-v3 − pooled control. **PASS = 95% CI > 0.**
@@ -122,12 +127,21 @@ guard's cross-world value is uniformity of form-control, not gazette
 gain. 5b full census: 47/83 replaced (34 due + 13 clue-staged);
 approved text ships on 36/83 (43%).
 
-## 8. Freeze checklist (all pending — this section empties at freeze)
+## 8. Freeze record and launch gates
 
-- [ ] User go to freeze; Status line flipped, this checklist resolved.
-- [ ] Machinery SHA + seed (freeze date) + prompt hashes pinned in §2-§4.
+Frozen 2026-07-22 on the user's go. Pinned at freeze: seed 20260722
+(§3, §4); runtime lineage 91b8a50e + machinery e9b01bdd (§3); design,
+endpoints, bars, pooling rule, and reading grammar (§2-§6). Prompts are
+byte-unchanged from 5c — neither change adds a prompt surface (spanCue
+re-samples with the existing prompts; deliveryGuard is a deterministic
+text edit).
+
+Launch gates (open — no paid call before all three):
+
 - [ ] spanCue.v1 + deliveryGuard.v1 implemented on the pinned lineage;
-      zero-paid smoke (plan gate, mini probe, one dry committee moment
-      with a staged-turn swap) PASS.
-- [ ] 5c-style launch sequence recorded (zero-model gate, preflight,
-      probes) before any paid call.
+      machinery SHA recorded here and in the results section.
+- [ ] Zero-paid smoke PASS: plan gate, mini probe, one dry committee
+      moment exercising a staged-turn swap.
+- [ ] 5c-style launch sequence recorded (zero-model gate, ollama
+      preflight, sonnet + terra one-call probes), launch sha-pinned,
+      human-gated.

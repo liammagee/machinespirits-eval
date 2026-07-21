@@ -125,6 +125,14 @@ archived controls; E1d primary + M1/M2 mechanism bars + mandatory seam
 re-check; prediction ≈0.55 registered as descriptive reference. Note
 addendum §8 records the census.
 
+2026-07-22 Claude (freeze): PHASE 5D FROZEN on user go ("freeze it") —
+seed 20260722; lineage 91b8a50e + machinery e9b01bdd; design/endpoints/
+bars/pooling/reading grammar locked. Remaining are launch gates, not
+freeze gates: implement spanCue.v1 + deliveryGuard.v1 on the pinned
+lineage (SHA recorded at launch), zero-paid smoke incl. a dry staged-turn
+swap, 5c-style sha-pinned human-gated launch sequence. No paid call
+before all three.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
