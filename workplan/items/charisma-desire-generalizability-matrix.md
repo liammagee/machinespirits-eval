@@ -981,3 +981,9 @@ the completed six-arm role-isolation diagnosis
 question-flood subtype promotion for cell 192. The claim remains scope-bound:
 no full-GLM robustness, scripted-control learner-outcome, human-learning,
 deployment, or general charismatic-tutoring claim is promoted.
+
+2026-07-22 Claude: successor gate cross-linked — the held-out artifact quality
+gate that followed this matrix (verdict FAIL_HELDOUT_QUALITY, claim killed) is
+now recorded on main at workplan/items/charisma-desire-heldout-quality-gate.md
+(rescued from the unmerged codex branch during the branch review; machinery on
+tag archive/codex/charisma-desire-heldout-quality-gate).
