@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
-updated: 2026-07-21
+updated: 2026-07-22
 verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
 claim_status: exploratory
 links:
@@ -139,6 +139,23 @@ on failure), coverage-caveated, exploratory tier (single family, one
 transfer world). Manifest program-2-phase5c.manifest.json; archive
 ~/.machinespirits-data/program-2/phase5c-live (adapters store untouched);
 prereg §9 addendum. Paper fold pending (own fold, per the §6.21 pattern).
+
+2026-07-22 Claude: STANDING DECISIONS RECORDED (thread close-out).
+(1) Live terra half-flip: stays SKIPPED (user decisions 2026-07-21 and
+2026-07-22) — the composer-dependence question is answered offline
+(§6.22); a live flip would only widen the already-scoped single-family
+claim. (2) Span-extraction v2 live adoption: SHELVED, no dedicated run —
+KTO came back byte-identical (no new artifact needs a live validation to
+piggyback on) and the arc is closing; v2 stays offline-validated in
+§6.22 with the live machinery untouched (verified: pinned worktree
+program2CommitteeEngine.js still v1). Reopen condition: the next real
+deployment or fresh curriculum adopts v2 live as a 5b-shaped
+single-change run first (sonnet, pooled controls under the stationarity
+check, ~12 committee dialogues), family chosen freely afterward.
+Estimated cost if ever run: live terra flip ≈1,250–1,450 terra calls +
+~40 sonnet (2×6 + smoke + retry headroom); v2-on-sonnet ≈ half that with
+control reuse. Companion doc card committee-architecture-offshoot-doc
+CLOSED (both follow-ups incorporated).
 
 2026-07-21 Claude: PROBES FOLDED INTO THE PAPER as new §6.22 (v3.0.224):
 composer-seat family-invariance (v1: 0.293/0.448 identical both families,

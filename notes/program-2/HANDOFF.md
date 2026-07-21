@@ -289,3 +289,25 @@ second question in 3/53 v2 composed turns, terra 0/54 — the §6.20
 "re-added extra questions" erratum needs both halves. Live machinery
 untouched; v2 adoption live = separate decision. Details in the probe
 note's addendum.
+
+---
+
+## H10 (2026-07-22) — Standing decisions: no live family flip; span-v2 shelved
+
+status: done (decisions record, no executing thread)
+
+Thread close-out decisions, recorded for future threads. (1) The live
+terra half-flip stays SKIPPED: §6.22 answered the composer-dependence
+question offline (family-invariant at the audited letter); the paper's
+live claims are explicitly single-family-scoped, so nothing owes the
+run. (2) Span-extraction v2 live adoption is SHELVED with no dedicated
+run: KTO closed byte-identical (no artifact awaiting live validation)
+and the arc is closing; v2 remains offline-validated (§6.22), the
+pinned live machinery remains v1 (verified in
+program2CommitteeEngine.js). Reopen condition: the next real deployment
+or fresh curriculum adopts v2 as a 5b-shaped single-change run first
+(sonnet, pooled controls under the frozen stationarity check, ~12
+committee dialogues), and picks the composer family freely afterward —
+§6.22's measured fungibility makes that seat a cost decision, not a
+capability one. Never run family flip and v2 adoption in the same
+experiment (no sealed baseline would share either change).

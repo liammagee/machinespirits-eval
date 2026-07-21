@@ -60,17 +60,20 @@ artifact — selection between drafts, resampling, trimming, and the
 placement of checks (§6.21). The weights supplied a capability the
 frontier lacked at these moments; the harness made it deliverable.
 
-The two conditional KTO runs remain licensed — in flight in a separate
-session at the time of writing, and not reported anywhere yet (§6.21's
-status block). Their
-design role, stated here as plan rather than result: SFT trained on the
-audit-passing half of the extraction; KTO is the complementary move that
-also uses the audit-failing drafts as unpaired negatives — pushing the
-specialist's *first* drafts toward deliverable form so that the
-harness's rescues become a second line rather than the working
-mechanism. The same frozen offline bar applies (0.460, §6.20). Until
-those runs are sealed and folded, everything in this document treats the
-Phase-4 SFT artifact as the specialist.
+The two conditional KTO runs have since been spent, and the outcome is
+recorded in the paper: behaviorally inert — held-out generations
+byte-identical to SFT in both arms, every gate landing exactly where SFT
+left it (§6.20 status note; §6.21 status note). Their design role was:
+SFT trained on the audit-passing half of the extraction; KTO was the
+complementary move using the audit-failing drafts as unpaired negatives —
+pushing the specialist's *first* drafts toward deliverable form so that
+the harness's rescues become a second line rather than the working
+mechanism. The recorded result is that the unpaired audit labels supply
+almost no gradient the SFT policies do not already fit (§6.20): the
+weights story ends at SFT, the Phase-2 training ledger is fully spent,
+and the Phase-4 SFT artifact is the programme's final trained
+specialist. Everything after SFT — the live pass, the cross-world
+transfer, the extraction fix — is harness.
 
 ## 2. Adaptation is a system property: routing, not a smarter model
 
@@ -416,12 +419,15 @@ Stated once, plainly, and inherited by every section above:
   formal verdicts are reported as the frozen rules require, not as the
   anatomy might excuse.
 - **Untested surfaces.** Multi-move crowding (several specialists
-  contending for the same turn) and KTO's contribution are unmeasured.
+  contending for the same turn) remains unmeasured. KTO's contribution is
+  now measured and null — held-out generations byte-identical to SFT at
+  the frozen conditional recipe, both arms (§6.20 status note).
   Cross-family dependence is now measured on the composer seat only —
   family-invariant offline across two frontier families (§6.22) — while
   live family dynamics (a second family's own tutor floor, trigger
   density, learner response) remain unmeasured by explicit decision.
-  Cross-world transfer has its registered test (§10 above).
+  Cross-world transfer passed its
+  first test without retraining (§10 above; §6.21).
 - **No human-learning claim.** Simulated learners throughout, inherited
   from the whole programme (§8.1 of the main paper names human
   validation as the binding external limitation).

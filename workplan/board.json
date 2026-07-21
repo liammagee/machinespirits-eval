@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-21T22:58:09.572Z",
+  "generated": "2026-07-21T23:11:43.053Z",
   "counts": {
     "total": 128,
     "byStatus": {
-      "done": 103,
+      "done": 104,
       "blocked": 1,
       "dropped": 2,
       "triaged": 10,
       "review": 2,
-      "active": 6,
+      "active": 5,
       "archived": 4
     },
     "byType": {
@@ -385,7 +385,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-07-18",
-      "updated": "2026-07-21",
+      "updated": "2026-07-22",
       "verification": "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze.",
       "claim_status": "exploratory",
       "links": {
@@ -407,39 +407,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "committee-architecture-offshoot-doc",
-      "title": "Committee-architecture design document (Program-2 offshoot)",
-      "status": "active",
-      "type": "paper",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-21",
-      "updated": "2026-07-21",
-      "verification": "docs/research/committee-architecture.md exists, introduces no original empirical claims (every number cites paper §6.18–§6.21 / §7.11–§7.12; design facts cite the Program-2 preregs), and the repo claim validators pass on the branch that carries it. Updated when the KTO and Phase 5c folds seal (its §1 and §10 point at in-flight work).",
-      "claim_status": "scope-bound",
-      "links": {
-        "paper": "docs/research/paper-full-2.0.md#621-program-2-live",
-        "notes": [
-          "docs/research/committee-architecture.md",
-          "notes/program-2/2026-07-21-adaptation-architecture-offshoot.md",
-          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "committee",
-        "paper-framing"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "claude/program-2-adaptation-offshoot"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -2175,6 +2142,39 @@
         "engagement-routing"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "committee-architecture-offshoot-doc",
+      "title": "Committee-architecture design document (Program-2 offshoot)",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-21",
+      "updated": "2026-07-22",
+      "verification": "docs/research/committee-architecture.md exists, introduces no original empirical claims (every number cites paper §6.18–§6.22 / §7.11–§7.12; design facts cite the Program-2 preregs), and the repo claim validators pass. Both pending folds are now incorporated: §10 carries the Phase 5c pass (§6.21) and §1/§11 carry the KTO spent/byte-identical outcome (§6.20/§6.21 status notes).",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#621-program-2-live",
+        "notes": [
+          "docs/research/committee-architecture.md",
+          "notes/program-2/2026-07-21-adaptation-architecture-offshoot.md",
+          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "paper-framing"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/program-2-adaptation-offshoot"
     },
     {
       "id": "consolidate-logs-db-private-archive",
