@@ -102,7 +102,11 @@ function deterministicShuffle(rows, seed) {
   return result;
 }
 
-function commandForJob(job, outputRoot, { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null } = {}) {
+function commandForJob(
+  job,
+  outputRoot,
+  { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null, world = PHASE5_LIVE_PILOT_SPEC.world } = {},
+) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
   return [
     process.execPath,
@@ -124,7 +128,7 @@ function commandForJob(job, outputRoot, { runSeed = PHASE5_LIVE_PILOT_SPEC.runSe
     learnerProfilePrompt(job.profile),
     '--tutor-learner-dag',
     '--world',
-    PHASE5_LIVE_PILOT_SPEC.world,
+    world,
     '--dag-mode',
     PHASE5_LIVE_PILOT_SPEC.dagMode,
     '--register-policy',
@@ -232,6 +236,83 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
     ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
     jobs,
   };
+}
+
+// Phase 5c (PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md): the
+// Phase 5b-validated committee (fallback policy v2, same artifact, same
+// serving pin) moved unchanged to world_027_gazette_recall — 10 committee-v2
+// + 8 fresh silent controls, seed 20260721. No pooling with Phase 5/5b
+// controls (those are Marrick dialogues).
+export const PHASE5C_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-phase5c-plan.v1',
+  preregistration: 'PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md',
+  runSeed: 20260721,
+  world: 'world_027_gazette_recall',
+  committeeRepeats: 5,
+  controlRepeats: 4,
+  fallbackPolicy: 'v2',
+});
+
+export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5c' } = {}) {
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (let repeat = 1; repeat <= PHASE5C_SPEC.committeeRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'committee' });
+    }
+    for (let repeat = 1; repeat <= PHASE5C_SPEC.controlRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'silent_control' });
+    }
+  }
+  const jobs = deterministicShuffle(cells, PHASE5C_SPEC.runSeed).map((cell, index) => {
+    const id = [`p5c-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: PHASE5C_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? PHASE5C_SPEC.fallbackPolicy : null,
+        world: PHASE5C_SPEC.world,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...PHASE5C_SPEC,
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over 10 committee-v2 + 8 silent_control cells',
+    jobs,
+  };
+}
+
+export function validatePhase5cLivePilotPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.arm].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const policy = flagValue(job.command, '--committee-fallback-policy');
+    if (job.arm === 'committee' && policy !== 'v2') errors.push(`${job.id} missing fallback policy v2`);
+    if (job.arm === 'silent_control' && policy !== null) errors.push(`${job.id} control carries fallback policy`);
+    if (flagValue(job.command, '--world') !== PHASE5C_SPEC.world) errors.push(`${job.id} world mismatch`);
+    if (flagValue(job.command, '--run-seed') !== String(PHASE5C_SPEC.runSeed))
+      errors.push(`${job.id} run-seed mismatch`);
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily)
+      errors.push(`${job.id} tutor-family mismatch`);
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    if (cellCounts.get(`${profile}|committee`) !== PHASE5C_SPEC.committeeRepeats)
+      errors.push(`${profile} committee cell count mismatch`);
+    if (cellCounts.get(`${profile}|silent_control`) !== PHASE5C_SPEC.controlRepeats)
+      errors.push(`${profile} control cell count mismatch`);
+  }
+  return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
 export function validatePhase5bLivePilotPlan(plan) {
@@ -410,17 +491,25 @@ async function main() {
   }
   if (values['dry-run'] && values['launch-approved']) throw new Error('choose either --dry-run or --launch-approved');
   const launch = Boolean(values['launch-approved']);
-  const phase5b = values.plan === '5b';
-  const defaultRoot = phase5b
-    ? launch
-      ? 'exports/program2-live-pilot-5b'
-      : 'exports/program2-live-pilot-5b-dry-run'
-    : launch
-      ? 'exports/program2-live-pilot'
-      : 'exports/program2-live-pilot-dry-run';
+  const planKey = values.plan || '5';
+  const planTable = {
+    5: { root: 'exports/program2-live-pilot', build: buildPhase5LivePilotPlan, validate: validatePhase5LivePilotPlan },
+    '5b': {
+      root: 'exports/program2-live-pilot-5b',
+      build: buildPhase5bLivePilotPlan,
+      validate: validatePhase5bLivePilotPlan,
+    },
+    '5c': {
+      root: 'exports/program2-live-pilot-5c',
+      build: buildPhase5cLivePilotPlan,
+      validate: validatePhase5cLivePilotPlan,
+    },
+  };
+  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
+  const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
-  const plan = phase5b ? buildPhase5bLivePilotPlan({ outputRoot }) : buildPhase5LivePilotPlan({ outputRoot });
-  const validation = phase5b ? validatePhase5bLivePilotPlan(plan) : validatePhase5LivePilotPlan(plan);
+  const plan = planTable[planKey].build({ outputRoot });
+  const validation = planTable[planKey].validate(plan);
   const fixtures = runPhase5ZeroModelFixtures();
   const artifact = {
     schema: 'machinespirits.tutor-stub.program2-phase5-zero-model-gate.v1',
