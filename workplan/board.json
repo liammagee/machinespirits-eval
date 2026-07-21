@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-21T22:41:11.271Z",
+  "generated": "2026-07-21T22:47:11.209Z",
   "counts": {
-    "total": 123,
+    "total": 125,
     "byStatus": {
       "done": 103,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 5,
+      "triaged": 7,
       "review": 2,
       "active": 6,
       "archived": 4
     },
     "byType": {
       "research": 45,
-      "experiment": 44,
+      "experiment": 46,
       "infra": 15,
       "maintenance": 6,
       "content": 2,
@@ -126,6 +126,71 @@
         "effect-estimation",
         "stance-fidelity"
       ]
+    },
+    {
+      "id": "program-2-committee-floor-ablation",
+      "title": "Price the fine-tune: live committee with the untuned mini",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "ablation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "main"
+    },
+    {
+      "id": "program-2-iterated-exhaust-retrain",
+      "title": "Iterated-exhaust retrain: teach the mini its own live moments",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A LoRA retrain whose data mixture adds the live committee's own audit-labeled moments (Phase 5/5b/5c extractions via scripts/program2-extract-live-moments.mjs) to the v1 corpus, run under a fresh frozen prereg (mixture, serving pin, bars fixed before training), then confirmed by a fresh live committee run that beats the 5b reference (0.386 vs pooled control 0.150) with CI separation, at no coverage cost and seam parity.",
+      "claim_status": "planned",
+      "depends_on": [
+        "program-2-committee-floor-ablation"
+      ],
+      "links": {
+        "paper": "§6.21, §7.12",
+        "notes": [
+          "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "distribution-shift"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "main"
     },
     {
       "id": "refusal-cross-stack-adaptive",
