@@ -1,9 +1,9 @@
 # The Committee Architecture as an Adaptation Mechanism
 
 **Status.** Design and synthesis document, subordinate to the main paper
-(`paper-full-2.0.md`, v3.0.221). It introduces **no original empirical
+(`paper-full-2.0.md`, v3.0.224). It introduces **no original empirical
 claims**: every number below traces to a cited section of the main paper
-(§6.18–§6.21, §7.11–§7.12), and design facts trace to the Program-2
+(§6.18–§6.22, §7.11–§7.12), and design facts trace to the Program-2
 pre-registrations at the repository root
 (`PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md`,
 `PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md`, and their
@@ -20,10 +20,12 @@ state; when it fires, a small fine-tuned specialist writes the
 load-bearing sentence; a frontier model composes the visible turn around
 that sentence verbatim; a deterministic battery checks the result before
 delivery; and any failure falls closed to the specialist's own reply.
-Across three pre-registered runs (§6.20, §6.21) this assembly went from
-an offline gain that vanished live, to a live pass, by changing neither
-model nor prompt — only by extending the battery over the one delivered
-text path it did not yet cover. The generalization this document
+Across four pre-registered runs and two offline probes (§6.20–§6.22)
+this assembly went from an offline gain that vanished live, to a live
+pass, to an unchanged-artifact transfer pass on a second world — the
+live flip achieved by changing neither model nor prompt, only by
+extending the battery over the one delivered text path it did not yet
+cover — and its composer seat measured family-invariant. The generalization this document
 develops: in this architecture, adaptation is a property of the routing
 and the checks, not of any single model, and the reliable way to improve
 it is to find the surface the checker does not reach and extend the
@@ -58,7 +60,9 @@ artifact — selection between drafts, resampling, trimming, and the
 placement of checks (§6.21). The weights supplied a capability the
 frontier lacked at these moments; the harness made it deliverable.
 
-The two conditional KTO runs remain licensed and unspent (§6.20). Their
+The two conditional KTO runs remain licensed — in flight in a separate
+session at the time of writing, and not reported anywhere yet (§6.21's
+status block). Their
 design role, stated here as plan rather than result: SFT trained on the
 audit-passing half of the extraction; KTO is the complementary move that
 also uses the audit-failing drafts as unpaired negatives — pushing the
@@ -158,10 +162,12 @@ Five design properties carry the weight:
    (detection at chance in the pilot; §6.21) while still delivering the
    trained form.
 2. **Verbatim containment is checked, not trusted.** The composed turn
-   must contain the span exactly; the offline probe had already shown
-   the frontier re-adds extra questions even under explicit instruction
-   (composed-alone 0.293, below the mini solo; the checks, not the
-   instruction, carry the design; §6.20).
+   must contain the span exactly; composed-alone graded below the mini
+   solo (0.293 vs 0.414, §6.20), and §6.22's decomposition located that
+   penalty in the harness's own span extraction (dropped cue sentences;
+   zero composer-added questions in either family) — the checks, not the
+   instruction, carry the design, and the checks also caught the
+   harness's own defect.
 3. **The battery is deterministic and runs before delivery.** No judge
    model, no drift, no post-hoc scoring: the same class of check that
    produced the training labels gates the live turn.
@@ -190,13 +196,15 @@ this table only arranges them.
 | Phase 4 coupling probe (offline, pre-registered amendment) | Is the mini–frontier complementarity exploitable? | Fail-closed composition beats both members | Composed-alone 0.293; fail-closed system 0.448; frontier live reference at the same moments 0.276 | §6.20 |
 | Phase 5 (live, 24 dialogues) | Does the offline gain survive live coupling, and at what coverage/seam cost? | E1 FAIL; loss located to the one unchecked text path | +0.040, CI [−0.054, +0.133]; cue component +0.165, one-question −0.218; 24/75 moments shipped `fallback_multi_question`; coverage −0.014 (no tax signal); seam 0.500 (bar ≤ 0.65); safety identical (0.58 = 0.58) | §6.21 |
 | Phase 5b (live, 18 dialogues) | Is the unchecked fallback the loss? Same battery, extended over that path | E1b PASS; the moved component is exactly the targeted one | 0.386 vs 0.150, +0.236, CI [0.128, 0.354]; one-question 0.720→0.976 (frontier's own rate 0.938); other components unmoved; coverage within margin (0.611 vs 0.639); seam 0.600 ≤ 0.65; safety guardrail formal FAIL (0.42 vs 0.61) with turn-9 release-schedule anatomy present in all arms of both runs | §6.21 |
+| Phase 5c (live, 18 dialogues, transfer world) | Does the validated system transfer across costume, unchanged? | E1c PASS (coverage-caveated); costume leak zero | 0.508 vs 0.306, +0.202, CI [0.072, 0.338], above the home-world rate; costume-leak 0 across all 61 committee units; seam 0.515 ≤ 0.65; safety 0.89 vs 0.88 (no turn-9 analogue); coverage@16 formal FAIL by point estimate (−0.061 vs −0.05, CI spans zero at n=9) | §6.21 |
+| Offline follow-up probes (post-hoc, no prereg) | Is the composer seat family-bound, and what does composition lose? | Family-invariant; the composed-alone penalty was the harness's own extraction; the v2 fix converts it fully | v1: delivered 0.293 and fail-closed 0.448 identical in both families, 56/58 same verdicts, zero composer-added questions; v2 (cue-preserving extraction): 0.586 sonnet / 0.603 terra, rescued 2 → 10/11, 77–79% of the offline achievable ceiling | §6.22 |
 
 Two features of this record matter for the design argument. First, the
 between-run difference is *pure harness*: same weights, same prompts,
 same world, same detector — only the fallback policy changed, and only
 the component that policy targets moved (§6.21). Second, the costs the
 architecture was expected to pay did not appear: no enforcement-scale
-coverage tax in either run (against the ~0.13 reference of the
+coverage tax in either home-world run (against the ~0.13 reference of the
 §6.18-addendum compiled arm), and no visible seam at the frozen bar
 (§6.21). The one formal guardrail failure (Phase 5b hard-safety) carries
 an anatomy pointing at the world's turn-9 release staging rather than at
@@ -360,24 +368,28 @@ demonstrated the parameterization in its exploratory rescore).
 
 The open question is whether the *weights* transfer: whether the trained
 form is the move or the costume. The generalization ladder, stated as
-design: one-world specialist (the current state) → pooled multi-world
+design: one-world specialist (the trained state; its first per-world
+validation passed without retraining — §10) → pooled multi-world
 exhaust → held-out-world validation. Each rung is a pilot with the same
 frozen shape.
 
-## 10. The registered next test: cross-world transfer (Phase 5c)
+## 10. The first transfer test: cross-world validation (Phase 5c — run and passed)
 
-The first rung of that ladder is already pre-registered and in flight,
-and is deliberately **not** reported here (its fold follows its seal):
-the unchanged Phase-5b-validated mini on a sibling drama-derivation
-world, committee against fresh controls, with the frozen audit unchanged
-and one new descriptive metric — costume leak, counting home-world
-lexicon words that surface in delivered spans on the new world, via the
-mechanical lexicon diff. The reading grammar is fixed in advance: a pass
-puts the move library live at its first reuse; a fail separates
-form-not-transferred from costume-dragging, and either failure mode
-feeds the pooled-exhaust rung rather than ending the line. Design
-details and verdict criteria live in the Phase 5c pre-registration; no
-outcome is claimed or implied here.
+The first rung of that ladder has now run and sealed (§6.21): the
+unchanged Phase-5b-validated mini — same artifact, same serving pin,
+fallback policy v2, an explicit no-KTO clause — moved to a
+maximum-costume-distance sibling world selected under a frozen rule,
+against the new world's own fresh controls, with the frozen audit
+unchanged and one new pre-registered descriptive metric, costume leak
+(home-world lexicon words surfacing in mini-authored delivered text, via
+the mechanical lexicon diff). The pass row applied, coverage-caveated:
+compliance 0.508 vs 0.306 (+0.202, CI [0.072, 0.338]) — above the
+committee's home-world rate — with the costume-leak metric reading zero
+across all 61 delivered committee units, seam and safety within bars,
+and the coverage guardrail formally failing by point estimate (−0.061
+vs the −0.05 margin, interval spanning zero at n = 9), carried as a
+caveat. The reuse policy of §9 is therefore live at exploratory tier:
+the first validation of a new world cost no training at all (§6.21).
 
 ## 11. Bounds
 
@@ -404,10 +416,12 @@ Stated once, plainly, and inherited by every section above:
   formal verdicts are reported as the frozen rules require, not as the
   anatomy might excuse.
 - **Untested surfaces.** Multi-move crowding (several specialists
-  contending for the same turn), cross-family transfer of the committee,
-  KTO's contribution, and cross-world transfer are all unmeasured; the
-  last is registered (§10 above), the others are design speculation
-  until a pre-registration freezes them.
+  contending for the same turn) and KTO's contribution are unmeasured.
+  Cross-family dependence is now measured on the composer seat only —
+  family-invariant offline across two frontier families (§6.22) — while
+  live family dynamics (a second family's own tutor floor, trigger
+  density, learner response) remain unmeasured by explicit decision.
+  Cross-world transfer has its registered test (§10 above).
 - **No human-learning claim.** Simulated learners throughout, inherited
   from the whole programme (§8.1 of the main paper names human
   validation as the binding external limitation).

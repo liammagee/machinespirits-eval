@@ -140,6 +140,22 @@ transfer world). Manifest program-2-phase5c.manifest.json; archive
 ~/.machinespirits-data/program-2/phase5c-live (adapters store untouched);
 prereg §9 addendum. Paper fold pending (own fold, per the §6.21 pattern).
 
+2026-07-21 Claude: PROBES FOLDED INTO THE PAPER as new §6.22 (v3.0.224):
+composer-seat family-invariance (v1: 0.293/0.448 identical both families,
+56/58 agreement, zero composer-added questions), the extraction-dropped-cue
+decomposition, span-v2 conversion (0.586/0.603, rescued 10/11, 77–79% of
+the offline ceiling), and the bounded sonnet added-question asymmetry
+(3/53 vs 0/54). §6.20's "re-added extra questions" attribution corrected
+in place with a dated erratum appended to
+PROGRAM-2-PHASE2-PREREGISTRATION.md; new manifest
+program-2-terra-probe.manifest.json (8 artifact SHAs);
+committee-architecture.md brought consistent (§3/§4 table incl. 5c row/
+§10 5c-passed/§11 bounds; header v3.0.224). Also cherry-picked the ~55%
+ceiling correction onto this branch as v3.0.223 (relabeled from the other
+session's v3.0.222; 5c fold holds that number here). Validators:
+paper-manifest 60/0/0, integrity-audit 17/12/0, provable-discourse
+81/18/0.
+
 2026-07-21 Claude: TERRA COMPOSER PROBE SEALED (offline exploratory, branch
 claude/program-2-terra-composer-probe, ~58 terra calls). The composer seat
 is family-invariant at the audited letter: terra delivered 0.293 /

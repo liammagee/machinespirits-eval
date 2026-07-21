@@ -276,3 +276,23 @@ exists:
 Both corrections are stamped in the script header comments
 (`scripts/program2-train-kto.py`) and were verified live: the assertion
 passed and training stepped normally.
+
+---
+
+## Erratum (2026-07-21, post-hoc; appended outside frozen text)
+
+The §10 Amendment-1 results bullet attributes composed-alone 0.293 to "the
+frontier composer re-adds extra questions even under explicit instruction."
+A 2026-07-21 decomposition of the same archived delivered file
+(`notes/program-2/2026-07-21-terra-composer-probe.md`; paper §6.22;
+manifest `config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json`)
+found **zero composer-added questions**: every composed one-question failure
+traces to the extracted span itself carrying 2–3 questions (the extraction
+joins all of the mini's question sentences), and the operative penalty was
+cue-bearing statement sentences dropped by the question-only extraction
+(composed cue failures 22 vs the mini's 6; 20 of 25 cue-free spans had the
+cue in a dropped statement). The 0.293 / 0.448 numbers are unaffected; the
+"checks, not the instruction, carry the design" clause stands. A small
+composer-added-question rate does exist for the sonnet composer under the
+revised v2 span instruction (3/53; terra 0/54) — bounded and
+battery-caught, not the mechanism this bullet described.
