@@ -153,7 +153,17 @@ clause erratum-track (mechanism attribution, number unaffected);
 cue-preserving span-extraction v2 = highest-value offline lever (13
 cue-only composed failures per family). Note:
 notes/program-2/2026-07-21-terra-composer-probe.md; HANDOFF H9. Live
-half-flip (terra tutoring) remains unlicensed/unrun.
+half-flip (terra tutoring) remains unlicensed/unrun — user decision
+2026-07-21: skipped (composer-dependence was the concern; answered
+offline). SAME DAY, v2 LEG SEALED (user go "go ahead with the extraction
+fix"): cue-preserving span extraction (--span-mode v2, default v1
+byte-preserved) converts the full lever in both families — delivered
+0.293 → 0.586 (sonnet) / 0.603 (terra), fail-closed 0.448 → same,
+rescued 2 → 10/11, 77–79% of the 0.759 achievable ceiling; residual =
+premise/guards (extraction-independent); family-invariance holds (55/58
+agreement); new asymmetry: sonnet adds a 2nd question in 3/53 v2 turns,
+terra 0/54 (erratum nuance). Offline exploratory; live machinery
+untouched; v2 live adoption = separate unlicensed decision.
 
 2026-07-21 Claude: PHASES 5 + 5B FOLDED INTO THE PAPER as new §6.21
 (v3.0.221, commit 71b063d8 on branch claude/program-2-adaptation-offshoot):
