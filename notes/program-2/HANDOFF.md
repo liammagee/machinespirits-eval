@@ -185,3 +185,21 @@ one candidate.
 - The Phase 2 prereg freeze must carry: per-variant request shapes (frozen
   flattening template), per-variant training order and licensing, per-variant
   floors, and the cross-variant decision grammar above.
+
+---
+
+## H6 (2026-07-21) — Phase 5c cross-world dialogues BEGIN
+
+status: live (executing thread)
+
+Phase 5c (cross-world transfer probe, prereg frozen at 4bb1253f) paid
+dialogues begin 2026-07-21: 18 dialogues (10 committee-v2 + 8 fresh
+silent controls) on world_027_gazette_recall, pinned runtime e9b01bdd
+(91b8a50e lineage), plan/stub seed 20260721. Pre-launch gates all passed:
+zero-model gate (18 jobs), ollama preflight (program2-sft-instruct-v2),
+sonnet + terra one-call probes, and the §4 paid smoke (smoke-01 sealed:
+4 committee moments, 2 composed + 2 sampled-rescue, coherent gazette-
+costume spans, zero serving errors — GO). This run reads NOTHING in
+~/.machinespirits-data/program-2/adapters/ (the KTO session owns it) and
+uses no KTO artifact regardless of mid-run availability (prereg §2).
+Seal note follows when 18/18 are sealed.
