@@ -13,7 +13,16 @@
 //
 // Usage:
 //   node scripts/program2-coupling-probe.mjs \
-//     [--tuned <json>] [--out <jsonl>] [--limit N]
+//     [--tuned <json>] [--out <jsonl>] [--limit N] \
+//     [--composer <provider.model>]   (default claude-code.claude-sonnet-5,
+//                                      the Phase 4 pin; split on FIRST dot)
+//
+// 2026-07-21 additions (behavior-preserving under defaults): --composer
+// parameterizes the frontier family (terra cross-family probe); rows now
+// also record the extracted span and the raw composed text even when the
+// battery falls back (additive fields — grade-file mode reads only
+// turnId/text/source); the out file is appended incrementally and already-
+// present turnIds are skipped on re-run (checkpoint/resume).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -36,10 +45,19 @@ const { values: args } = parseArgs({
       default: path.join(os.homedir(), '.machinespirits-data/program-2/floor/coupling-probe-delivered.jsonl'),
     },
     limit: { type: 'string' },
+    composer: { type: 'string', default: 'claude-code.claude-sonnet-5' },
   },
 });
 
-const COMPOSER = { provider: 'claude-code', model: 'claude-sonnet-5' };
+const composerDot = args.composer.indexOf('.');
+if (composerDot <= 0 || composerDot === args.composer.length - 1) {
+  console.error(`--composer must be <provider>.<model> (got "${args.composer}")`);
+  process.exit(1);
+}
+const COMPOSER = {
+  provider: args.composer.slice(0, composerDot),
+  model: args.composer.slice(composerDot + 1),
+};
 
 const tuned = JSON.parse(fs.readFileSync(args.tuned, 'utf8'));
 const miniReplies = new Map(
@@ -65,6 +83,16 @@ function normalize(text) {
 
 let targets = moments;
 if (args.limit) targets = targets.slice(0, Number(args.limit));
+
+// Checkpoint/resume: skip turnIds already present in the out file.
+const alreadyDone = new Set();
+if (fs.existsSync(args.out)) {
+  for (const line of fs.readFileSync(args.out, 'utf8').split('\n').filter(Boolean)) {
+    alreadyDone.add(JSON.parse(line).turnId);
+  }
+}
+if (alreadyDone.size) console.error(`[probe] resuming: ${alreadyDone.size} rows already in ${args.out}`);
+targets = targets.filter((m) => !alreadyDone.has(m.turnId));
 
 const delivered = [];
 let done = 0;
@@ -100,25 +128,38 @@ for (const moment of targets) {
       );
       const composed = (result.text || '').trim();
       if (composed && normalize(composed).includes(normalize(span))) {
-        row = { turnId: moment.turnId, text: composed, source: 'composed' };
+        row = { turnId: moment.turnId, text: composed, source: 'composed', span, rawComposed: composed };
       } else {
-        row = { turnId: moment.turnId, text: miniText, source: composed ? 'fallback_span_lost' : 'fallback_empty' };
+        row = {
+          turnId: moment.turnId,
+          text: miniText,
+          source: composed ? 'fallback_span_lost' : 'fallback_empty',
+          span,
+          rawComposed: composed || null,
+        };
       }
     } catch (err) {
       row = {
         turnId: moment.turnId,
         text: miniText,
         source: 'fallback_error',
+        span,
         error: String(err.message || err).slice(0, 200),
       };
     }
   }
   delivered.push(row);
+  fs.appendFileSync(args.out, JSON.stringify(row) + '\n');
   done += 1;
   if (done % 5 === 0) console.error(`[probe] ${done}/${targets.length}`);
 }
 
-fs.writeFileSync(args.out, delivered.map((r) => JSON.stringify(r)).join('\n') + '\n');
 const bySource = {};
 for (const r of delivered) bySource[r.source] = (bySource[r.source] || 0) + 1;
-console.log(JSON.stringify({ moments: delivered.length, bySource, out: args.out }, null, 2));
+console.log(
+  JSON.stringify(
+    { composer: args.composer, newRows: delivered.length, skippedExisting: alreadyDone.size, bySource, out: args.out },
+    null,
+    2,
+  ),
+);

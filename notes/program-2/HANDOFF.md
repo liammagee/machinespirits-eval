@@ -238,3 +238,27 @@ Marrick world property); coverage guardrail FAIL by point estimate
 ~/.machinespirits-data/program-2/phase5c-live; manifest
 program-2-phase5c.manifest.json; addendum in the 5c prereg §9. The
 adapters store was never read or written by this run.
+
+---
+
+## H9 (2026-07-21) — Terra cross-family composer probe (offline, exploratory)
+
+status: live (executing thread)
+
+New branch `claude/program-2-terra-composer-probe` (from the offshoot
+branch head, post-5c-seal). Scope: the OFFLINE terra flip only — re-run
+the Phase 4 coupling probe on the same archived 58 held-out moments with
+the composer swapped to `codex.gpt-5.6-terra` (~58 terra CLI calls; no
+dialogues, no seams, no ollama, no model changes; never touches
+`~/.machinespirits-data/program-2/adapters/`). Machinery:
+`program2-coupling-probe.mjs` gains `--composer` (default preserved:
+byte-identical sonnet behavior), additive per-row span/rawComposed
+fields, and append-mode resume; new deterministic comparator
+`program2-terra-probe-analyze.mjs`. Pipeline fidelity validated at zero
+cost before launch: mini-solo regrade 0.414, sonnet delivered regrade
+0.293, fail-closed union 0.448 with 2 rescued — all byte-exact against
+the phase4 manifest. Output:
+`~/.machinespirits-data/program-2/floor/coupling-probe-terra-delivered.jsonl`
+(new file; pinned Phase 4 artifacts untouched). Exploratory tier —
+descriptive numbers only, no prereg bar, nothing folds to the paper
+without its own pass. Results note follows.
