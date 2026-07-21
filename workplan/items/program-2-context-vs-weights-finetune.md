@@ -199,6 +199,22 @@ provable-discourse 81/18/0 (pass/warn/fail). Companion subordinate doc:
 docs/research/committee-architecture.md (card
 committee-architecture-offshoot-doc).
 
+2026-07-21 Claude: KTO EXECUTED AND CLOSED — both licensed runs spent,
+verdict BEHAVIORALLY INERT. Training clean (H100, ~21 min/arm, loss flat
+at 0.5); merges verified by the reconstructed script (the Phase 4 fix had
+never been committed — stale copy produced one caught-and-deleted no-op;
+fixed script now at a05fa3c9 with lora_B + probe-delta assertions).
+Graded at the serving pin: 58/58 byte-identical generations to SFT on
+BOTH arms; paired KTO-vs-SFT CI [0.000, 0.000]; every gate lands at the
+SFT numbers (instruct 0.414 vs bar 0.460 P1 FAIL; base 0.103 = floor).
+Reading: the frozen conditional recipe's weight motion is below the
+quantized-serving threshold — the offline solo ceiling stands at SFT.
+Licensed-run ledger fully spent (2 SFT + 2 KTO). Prereg closing addendum
+1fda8f29. The program's positive line remains the live committee
+(5b E1b PASS 0.386 vs 0.150; 5c cross-world PASS 0.508 vs 0.306, other
+thread). Remaining unlicensed options: iterated exhaust (dataset ready),
+instrument v2 (parked by user decision).
+
 2026-07-20 Claude: PHASE 5B (remedy 1) EXECUTED — E1b PASS. 18/18 sealed
 (12 committee-v2 + 6 fresh controls, pooling licensed), zero attrition.
 Committee-v2 0.386 vs pooled control 0.150, diff +0.236, CI
