@@ -14,10 +14,7 @@
       "committee_v2": "32/83 (0.386)",
       "pooled_control": "18/120 (0.150)",
       "diff": 0.236,
-      "ci95": [
-        0.128,
-        0.354
-      ],
+      "ci95": [0.128, 0.354],
       "verdict": "PASS"
     },
     "coverage": {
@@ -35,28 +32,13 @@
       "n": 40,
       "bar": 0.65,
       "verdict": "PARITY",
-      "continuity": [
-        3.45,
-        3.75
-      ]
+      "continuity": [3.45, 3.75]
     },
     "components_v1_to_v2": {
-      "exactly_one_question": [
-        0.72,
-        0.976
-      ],
-      "warrant_cue": [
-        0.56,
-        0.542
-      ],
-      "no_new_premise": [
-        0.587,
-        0.59
-      ],
-      "guards_passed": [
-        0.96,
-        0.988
-      ]
+      "exactly_one_question": [0.72, 0.976],
+      "warrant_cue": [0.56, 0.542],
+      "no_new_premise": [0.587, 0.59],
+      "guards_passed": [0.96, 0.988]
     },
     "fallback_resolutions": {
       "selected_sampled_1": 15,

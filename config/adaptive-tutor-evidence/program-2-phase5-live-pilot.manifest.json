@@ -13,20 +13,14 @@
       "committee": "15/75 (0.200)",
       "control": "13/81 (0.160)",
       "diff": 0.04,
-      "ci95": [
-        -0.054,
-        0.133
-      ],
+      "ci95": [-0.054, 0.133],
       "verdict": "FAIL (CI includes 0)"
     },
     "e2_coverage_at_16": {
       "committee": 0.611,
       "control": 0.625,
       "diff": -0.014,
-      "ci95": [
-        -0.083,
-        0.056
-      ],
+      "ci95": [-0.083, 0.056],
       "reading": "intermediate \u2014 no tax signal, small tax not excluded"
     },
     "e3_seam": {
@@ -34,28 +28,13 @@
       "n": 36,
       "bar": 0.65,
       "verdict": "PARITY (chance)",
-      "continuity": [
-        3.75,
-        3.75
-      ]
+      "continuity": [3.75, 3.75]
     },
     "components_committee_vs_control": {
-      "warrant_cue": [
-        0.56,
-        0.395
-      ],
-      "exactly_one_question": [
-        0.72,
-        0.938
-      ],
-      "no_new_premise": [
-        0.587,
-        0.543
-      ],
-      "guards_passed": [
-        0.96,
-        0.963
-      ]
+      "warrant_cue": [0.56, 0.395],
+      "exactly_one_question": [0.72, 0.938],
+      "no_new_premise": [0.587, 0.543],
+      "guards_passed": [0.96, 0.963]
     },
     "exploratory_cue_sensitivity": {
       "relaxed_control": 0.469,

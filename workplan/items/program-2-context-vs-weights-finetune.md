@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
-updated: 2026-07-20
+updated: 2026-07-21
 verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
 claim_status: exploratory
 links:
@@ -112,6 +112,24 @@ bake-off (detection <=0.65 at n=40), decision grammar incl. the iron-cage
 table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
+
+2026-07-21 Claude: PHASES 5 + 5B FOLDED INTO THE PAPER as new §6.21
+(v3.0.221, commit 71b063d8 on branch claude/program-2-adaptation-offshoot):
+Phase 5 E1 FAIL (+0.040, CI [−0.054, +0.133]) with the component anatomy
+(cue +0.165 / one-question −0.218) and the unchecked-fallback diagnosis;
+Phase 5b battery extension (greedy check → two resamples → cue-preserving
+trim) E1b PASS (0.386 vs 0.150, CI [0.128, 0.354]; exactly_one_question
+0.720→0.976, other components unmoved); coverage no-tax and seam parity in
+both runs (0.500 then 0.600, bar ≤ 0.65); the 5b safety-guardrail formal
+FAIL with the turn-9 release-schedule anatomy; the world-lexicon rescore
+labeled exploratory (frozen six-word instrument stands, decision
+2026-07-20); runtime pin + both amendments recorded as instrument
+provenance. §7.12's successor parenthetical extended; §6.18/§6.19/§6.20
+Phase-4 content untouched; KTO + 5c NOT folded (in flight, own folds when
+sealed). Validators: paper-manifest 60/0/0, integrity-audit 17/12/0,
+provable-discourse 81/18/0 (pass/warn/fail). Companion subordinate doc:
+docs/research/committee-architecture.md (card
+committee-architecture-offshoot-doc).
 
 2026-07-20 Claude: PHASE 5B (remedy 1) EXECUTED — E1b PASS. 18/18 sealed
 (12 committee-v2 + 6 fresh controls, pooling licensed), zero attrition.

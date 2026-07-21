@@ -24,7 +24,10 @@ const REPO_ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 
 const { values: args } = parseArgs({
   options: {
-    'pilot-root': { type: 'string', default: path.resolve(REPO_ROOT, '../ms-phase5-pinned/exports/program2-live-pilot') },
+    'pilot-root': {
+      type: 'string',
+      default: path.resolve(REPO_ROOT, '../ms-phase5-pinned/exports/program2-live-pilot'),
+    },
     live: { type: 'boolean', default: false },
     json: { type: 'string' },
   },
@@ -213,7 +216,9 @@ for (const window of battery) {
 
 const scored = results.filter((r) => r.verdict.different);
 const correct = scored.filter(
-  (r) => (r.label === 'committee' && r.verdict.different === 'yes') || (r.label === 'all_frontier' && r.verdict.different === 'no'),
+  (r) =>
+    (r.label === 'committee' && r.verdict.different === 'yes') ||
+    (r.label === 'all_frontier' && r.verdict.different === 'no'),
 ).length;
 const accuracy = scored.length ? correct / scored.length : null;
 const meanContinuity = (rows) => {
