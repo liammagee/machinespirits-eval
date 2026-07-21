@@ -144,3 +144,20 @@ more visible than composed turns but under the bar.
 relative position also improves (the v2 battery selects cue-bearing
 replies), but the frozen-instrument decision of 2026-07-20 stands; no v2
 numbers are licensed readings.
+
+## Post-hoc annotation (2026-07-21) — structural-ceiling denominator
+
+Appended by the claim audit recorded on PR #140; frozen text above is
+unaltered. The §8 sentence "at ~55% of the structural ceiling" is not
+recomputable from any disclosed denominator and is superseded by this
+annotation. Recomputed from the sealed traces under the frozen
+`released == 0` component: 34 of the 83 committee-v2 warrant moments
+carry a due premise release and are non-compliant by construction, so
+the live structural ceiling is 49/83 ≈ 0.59 and the live rate is
+32/49 ≈ 65% of achievable (≈51% against §6.20's offline ceiling of
+≈0.76; "~55%" matches neither denominator and reproduces §6.20's
+tuned-solo-of-achievable figure). Reference points: pooled control
+54/120 due-release moments (ceiling 0.55; 18/66 ≈ 27% of achievable);
+Phase 5 committee 31/75 (ceiling ≈ 0.59; 15/44 ≈ 34%). Live due-release
+density (41–45%) is roughly double the offline held-out set's (24%), so
+offline ceilings must not be borrowed for live rates.

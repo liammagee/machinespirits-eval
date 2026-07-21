@@ -74,3 +74,10 @@ any successor run must re-pin or reconcile.
 3. Iterated exhaust (DAgger-style): collect the committee's own live
    moments, audit-label, retrain — the distribution-shift fix.
 4. KTO runs (still licensed and unspent from Phase 2, Lambda required).
+
+## Erratum (2026-07-21)
+
+The "§6.19 enforcement trade" reference under "What the pilot actually
+established" (item 1) should read "the §6.18 addendum": the ≈−0.13
+coverage tax is reported in the §6.18 point-of-action addendum
+(compiled-constraint arm), not §6.19 (the sensor-program negative).
