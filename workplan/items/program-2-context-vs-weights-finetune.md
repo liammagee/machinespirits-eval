@@ -94,6 +94,22 @@ config/adaptive-tutor-evidence/program-2-floors-v1.manifest.json. Next: the
 Phase 2 prereg freeze (thresholds vs these floors; freeze flattening
 template + serving pin) — user gate.
 
+2026-07-22 Claude: CUE-ATTRITION DECOMPOSITION + DECISION RECORD
+(notes/program-2/2026-07-22-cue-attrition-observation.md; sealed 5b/5c
+archives read-only). The 92%→38%→54% mini→span→delivered cue attrition
+decomposes over the 17 achievable cue-failing 5b moments: 9 shipped text
+that is NOT the committee-approved envelope (the clue-staging surface
+replaces it after the battery runs; 7 of the 9 approved texts carried the
+cue) and 8 are composed turns that never had the word (no cue check on
+the composed path). Decisions on record: the six-word v1 instrument STAYS
+(user, 2026-07-22); fix order when a rider is licensed = delivered-text
+guard → mini-side span resampling → composed cue check only if needed;
+run shape = small 5b-style prereg rider on the next planned run. The 5c
+gate is RESOLVED in favor of the rider (E1c PASS + zero costume leak =
+the form transfers; 5c's coverage-guardrail point-estimate FAIL travels
+as the open cost question). Nothing licensed yet — rider prereg drafts on
+user go.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
