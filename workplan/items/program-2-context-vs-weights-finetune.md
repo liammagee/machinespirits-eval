@@ -140,6 +140,21 @@ transfer world). Manifest program-2-phase5c.manifest.json; archive
 ~/.machinespirits-data/program-2/phase5c-live (adapters store untouched);
 prereg §9 addendum. Paper fold pending (own fold, per the §6.21 pattern).
 
+2026-07-21 Claude: TERRA COMPOSER PROBE SEALED (offline exploratory, branch
+claude/program-2-terra-composer-probe, ~58 terra calls). The composer seat
+is family-invariant at the audited letter: terra delivered 0.293 /
+fail-closed 0.448 / 2 rescued — byte-identical to the sonnet Phase 4
+references, 56/58 per-moment agreement. Zero composer-added questions in
+either family; the composed-alone penalty is span extraction dropping the
+mini's cue-bearing statement sentences (cue failures 6→22 in both
+families; 20 droppable; 3 restored each). Terra held containment slightly
+better (1 span_lost vs 3). Flags: §6.20's "re-added extra questions"
+clause erratum-track (mechanism attribution, number unaffected);
+cue-preserving span-extraction v2 = highest-value offline lever (13
+cue-only composed failures per family). Note:
+notes/program-2/2026-07-21-terra-composer-probe.md; HANDOFF H9. Live
+half-flip (terra tutoring) remains unlicensed/unrun.
+
 2026-07-21 Claude: PHASES 5 + 5B FOLDED INTO THE PAPER as new §6.21
 (v3.0.221, commit 71b063d8 on branch claude/program-2-adaptation-offshoot):
 Phase 5 E1 FAIL (+0.040, CI [−0.054, +0.133]) with the component anatomy
