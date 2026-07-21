@@ -23,6 +23,17 @@
 // battery falls back (additive fields — grade-file mode reads only
 // turnId/text/source); the out file is appended incrementally and already-
 // present turnIds are skipped on re-run (checkpoint/resume).
+//
+// --span-mode v2 (2026-07-21, terra-probe follow-up; default v1 is the
+// probe-identical rule, byte-preserved): cue-preserving extraction, the
+// span-side analogue of the Phase 5b fallback trim. v2 selects ONE
+// question sentence (preferring one that carries a frozen cue word, else
+// the first), and when no question sentence carries a cue but a statement
+// sentence does, carries that statement into the protected span ahead of
+// the question. Motivated by the terra-probe decomposition: all v1
+// one-question failures were span-borne (multi-question spans) and 20/25
+// cue-free spans had the cue in a dropped statement sentence
+// (notes/program-2/2026-07-21-terra-composer-probe.md).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,8 +57,18 @@ const { values: args } = parseArgs({
     },
     limit: { type: 'string' },
     composer: { type: 'string', default: 'claude-code.claude-sonnet-5' },
+    'span-mode': { type: 'string', default: 'v1' },
   },
 });
+
+const SPAN_MODE = args['span-mode'];
+if (!['v1', 'v2'].includes(SPAN_MODE)) {
+  console.error(`--span-mode must be v1 or v2 (got "${SPAN_MODE}")`);
+  process.exit(1);
+}
+// Frozen six-word warrant cue (probe-local copy of WARRANT_CUE_RE in
+// services/tutorStubPointOfActionCoaching.js:24 — keep in sync).
+const CUE_RE = /\b(?:evidence|item|test|record|fact|rule)\b/iu;
 
 const composerDot = args.composer.indexOf('.');
 if (composerDot <= 0 || composerDot === args.composer.length - 1) {
@@ -77,6 +98,22 @@ const moments = fs
 function questionSentences(text) {
   return (String(text).match(/[^.!?\n]+\?/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
 }
+function statementSentences(text) {
+  return (String(text).match(/[^.!?\n]+[.!]/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
+}
+// v2 span: one question sentence (cue-preferring), with the mini's
+// cue-bearing statement carried ahead of it when no question has a cue.
+// Returns { span, carriedStatement } or null when no question exists.
+function extractSpanV2(text) {
+  const questions = questionSentences(text);
+  if (!questions.length) return null;
+  const cueQuestion = questions.find((q) => CUE_RE.test(q));
+  const chosen = cueQuestion || questions[0];
+  if (cueQuestion) return { span: chosen, carriedStatement: false };
+  const cueStatement = statementSentences(text).find((s) => CUE_RE.test(s));
+  if (cueStatement) return { span: `${cueStatement} ${chosen}`, carriedStatement: true };
+  return { span: chosen, carriedStatement: false };
+}
 function normalize(text) {
   return String(text).replace(/\s+/gu, ' ').trim();
 }
@@ -98,19 +135,35 @@ const delivered = [];
 let done = 0;
 for (const moment of targets) {
   const miniText = miniReplies.get(moment.turnId);
-  const spans = questionSentences(miniText);
+  let span = null;
+  let carriedStatement = false;
+  if (SPAN_MODE === 'v1') {
+    const spans = questionSentences(miniText);
+    if (spans.length) span = spans.join(' ');
+  } else {
+    const v2 = extractSpanV2(miniText);
+    if (v2) ({ span, carriedStatement } = v2);
+  }
   let row;
-  if (!spans.length) {
+  if (!span) {
     row = { turnId: moment.turnId, text: miniText, source: 'fallback_no_span' };
   } else {
-    const span = spans.join(' ');
+    const spanRequirements =
+      SPAN_MODE === 'v1'
+        ? [
+            `1. Include this question VERBATIM, word for word, as the turn's only question: "${span}"`,
+            '2. Ask no other question anywhere in the turn.',
+          ]
+        : [
+            `1. Include this passage VERBATIM, word for word, in your turn: "${span}"`,
+            "2. Its question must be the turn's ONLY question — ask no other question anywhere in the turn.",
+          ];
     const userPrompt = [
       moment.request.messages.at(-1)?.content || '',
       '',
       '--- Composition task (harness instruction) ---',
       'Compose your tutor turn for this moment. Requirements:',
-      `1. Include this question VERBATIM, word for word, as the turn's only question: "${span}"`,
-      '2. Ask no other question anywhere in the turn.',
+      ...spanRequirements,
       '3. Introduce no new case facts, clues, or evidence the dialogue has not already made public.',
       '4. Keep the scene voice and address the learner directly.',
       'Write only the tutor turn.',
@@ -128,13 +181,21 @@ for (const moment of targets) {
       );
       const composed = (result.text || '').trim();
       if (composed && normalize(composed).includes(normalize(span))) {
-        row = { turnId: moment.turnId, text: composed, source: 'composed', span, rawComposed: composed };
+        row = {
+          turnId: moment.turnId,
+          text: composed,
+          source: 'composed',
+          span,
+          carriedStatement,
+          rawComposed: composed,
+        };
       } else {
         row = {
           turnId: moment.turnId,
           text: miniText,
           source: composed ? 'fallback_span_lost' : 'fallback_empty',
           span,
+          carriedStatement,
           rawComposed: composed || null,
         };
       }
@@ -144,6 +205,7 @@ for (const moment of targets) {
         text: miniText,
         source: 'fallback_error',
         span,
+        carriedStatement,
         error: String(err.message || err).slice(0, 200),
       };
     }
@@ -158,7 +220,14 @@ const bySource = {};
 for (const r of delivered) bySource[r.source] = (bySource[r.source] || 0) + 1;
 console.log(
   JSON.stringify(
-    { composer: args.composer, newRows: delivered.length, skippedExisting: alreadyDone.size, bySource, out: args.out },
+    {
+      composer: args.composer,
+      spanMode: SPAN_MODE,
+      newRows: delivered.length,
+      skippedExisting: alreadyDone.size,
+      bySource,
+      out: args.out,
+    },
     null,
     2,
   ),
