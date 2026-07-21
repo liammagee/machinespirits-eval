@@ -262,3 +262,19 @@ the phase4 manifest. Output:
 (new file; pinned Phase 4 artifacts untouched). Exploratory tier —
 descriptive numbers only, no prereg bar, nothing folds to the paper
 without its own pass. Results note follows.
+
+H9 results (2026-07-21, same day — probe sealed): 58/58, zero errors.
+Family-invariant at the audited letter: terra delivered 0.293 /
+fail-closed 0.448 / 2 rescued — identical to the sonnet references, with
+56/58 per-moment verdict agreement (one flip each way). Decomposition:
+zero composer-added questions in EITHER family (all one-question failures
+span-borne); the composed-alone penalty is span extraction dropping the
+mini's cue-bearing statement sentences (cue failures 6 mini → 22 both
+families; 20 droppable; each composer restored it in only 3). Terra held
+verbatim containment slightly better (1 span_lost vs 3). Flags: §6.20's
+"frontier re-added extra questions" clause is not supported by this
+decomposition (erratum-track, with the §6.19-mislabel note); lever =
+cue-preserving span extraction v2 (13 cue-only composed failures per
+family). Note: notes/program-2/2026-07-21-terra-composer-probe.md.
+Status → done. Composer seat measured fungible offline; a live half-flip
+remains the open question and is NOT licensed by this probe.
