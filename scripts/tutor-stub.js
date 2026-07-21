@@ -504,6 +504,8 @@ const { values: args, positionals } = parseArgs({
     'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
     'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
     'committee-fallback-policy': { type: 'string', default: 'v1' },
+    'committee-span-cue': { type: 'string', default: 'off' },
+    'committee-delivery-guard': { type: 'string', default: 'off' },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so

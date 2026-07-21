@@ -23,6 +23,8 @@ import {
 import { auditTutorStubPointOfActionCompliance } from '../services/tutorStubPointOfActionCoaching.js';
 import { buildPhase5dLivePilotPlan, validatePhase5dLivePilotPlan } from './run-program2-live-pilot.js';
 
+import { spawnSync } from 'node:child_process';
+
 const SKIP_MINI = process.argv.includes('--skip-mini');
 const results = [];
 function gate(name, ok, detail) {
@@ -34,6 +36,15 @@ function gate(name, ok, detail) {
 const plan = buildPhase5dLivePilotPlan();
 const validation = validatePhase5dLivePilotPlan(plan);
 gate('plan_gate', validation.ok, `${plan.jobs.length} jobs; errors: ${validation.errors.join('; ') || 'none'}`);
+// Process-level parse gate (added after the 2026-07-22 launch abort: the
+// flags were read but not registered in tutor-stub's parseArgs whitelist,
+// which only a real spawn catches — function-level smoke cannot).
+const parseProbe = spawnSync(
+  process.execPath,
+  ['scripts/tutor-stub.js', '--committee-span-cue', 'v1', '--committee-delivery-guard', 'v1', '--help'],
+  { stdio: 'ignore' },
+);
+gate('tutor_stub_flag_parse', parseProbe.status === 0, 'spawned tutor-stub accepts committee-v3 flags');
 const committeeJob = plan.jobs.find((job) => job.arm === 'committee');
 const controlJob = plan.jobs.find((job) => job.arm === 'silent_control');
 gate(
@@ -79,7 +90,9 @@ const recheck = auditTutorStubPointOfActionCompliance({
 });
 gate(
   'guard_swap_compliant',
-  recheck.compliant === true && recheck.components.warrant_cue === true && recheck.components.exactly_one_question === true,
+  recheck.compliant === true &&
+    recheck.components.warrant_cue === true &&
+    recheck.components.exactly_one_question === true,
   `frozen detector on swapped text: ${JSON.stringify(recheck.components)}`,
 );
 const skipRelease = applyCommitteeDeliveryGuard({
