@@ -278,3 +278,14 @@ cue-preserving span extraction v2 (13 cue-only composed failures per
 family). Note: notes/program-2/2026-07-21-terra-composer-probe.md.
 Status → done. Composer seat measured fungible offline; a live half-flip
 remains the open question and is NOT licensed by this probe.
+
+H9 addendum (2026-07-21, later same day): span-extraction v2 leg SEALED
+(~110 calls, both families). Cue-preserving extraction converts the full
+lever: delivered 0.293 → 0.586 (sonnet) / 0.603 (terra); fail-closed
+0.448 → same; rescued 2 → 10/11; 77–79% of the achievable ceiling; the
+residual failures are premise/guards (extraction-independent).
+Family-invariance holds (55/58 agreement). New asymmetry: sonnet adds a
+second question in 3/53 v2 composed turns, terra 0/54 — the §6.20
+"re-added extra questions" erratum needs both halves. Live machinery
+untouched; v2 adoption live = separate decision. Details in the probe
+note's addendum.

@@ -103,3 +103,44 @@ exploratory rescore applies unchanged); exploratory tier — descriptive
 numbers only. The two flipped moments and the small guard-failure delta
 are unexamined beyond counting. Terra calls used the same isolated CLI
 bridge and `effort: low` as the sonnet probe.
+
+---
+
+## Addendum (same day): span-extraction v2 — the lever converts
+
+`--span-mode v2` (cue-preserving extraction, default v1 byte-preserved;
+regression check: recomputed v1 spans match all 54 archived rows) selects
+one question sentence (cue-preferring) and carries the mini's cue-bearing
+statement when no question has a cue. Zero-cost precheck hit its targets
+exactly: 54/54 single-question spans, cue coverage 29/54 → 49/54, 20
+statements carried. Both families re-composed under v2 (~55 calls each;
+artifacts `coupling-probe-v2span-{sonnet,terra}-{delivered.jsonl,graded.json}`,
+comparison `terra-probe-v2span-comparison.json`).
+
+| | v1 sonnet | v1 terra | v2 sonnet | v2 terra |
+|---|---|---|---|---|
+| Delivered grade | 0.293 | 0.293 | 0.586 | 0.603 |
+| Fail-closed union vs mini 0.414 | 0.448 (2 rescued) | 0.448 (2 rescued) | 0.586 (10 rescued) | 0.603 (11 rescued) |
+| Containment: composed / lost | 51 / 3 | 53 / 1 | 53 / 1 | 54 / 0 |
+| Composed one-question failures | 13 (all span-borne) | 14 (all span-borne) | 3 (composer-added) | 0 |
+| Composed cue failures | 22 | 22 | 4 | 5 |
+| Share of achievable ceiling (0.759) | 59% | 59% | 77% | 79% |
+
+Readings. (1) The lever converts in full: delivered compliance doubles in
+both families and the composite rises from 59% to 77–79% of the
+structural ceiling; residual failure mass sits on premise timing (~11–12)
+and guards (~10–11), surfaces extraction never touches. The delivered
+turns now out-grade the mini solo (0.586/0.603 vs 0.414) — under v1 they
+never did. (2) Family-invariance holds under v2: 55/58 per-moment
+agreement, one net moment apart. (3) One asymmetry appears once span
+noise is gone: sonnet added a second question in 3/53 composed turns
+(span had exactly one; turn had two); terra in 0/54. The §6.20 clause
+("the frontier re-added extra questions") is therefore unsupported for
+the v1 file it described, but a small, sonnet-specific added-question
+rate is real under the v2 instruction — the erratum note should carry
+both halves. (4) Terra under v2 is the cleanest configuration measured:
+zero span losses, zero added questions.
+
+Status: offline exploratory throughout; nothing folds to the paper
+without its own pass; the live machinery (pinned worktree) is untouched —
+adopting v2 extraction live is a separate, unlicensed decision.
