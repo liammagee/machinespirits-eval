@@ -72,8 +72,13 @@ export function mockGenerateResult(resolvedConfig, turnMeta) {
 /**
  * Generate a canned judge rubric result (replaces rubricEvaluator.evaluateSuggestion).
  *
- * Recognition cells score ~87 (±3 jitter), base cells score ~77 (±3 jitter),
- * producing the ~10-point effect documented in the paper.
+ * Recognition cells score ~83 (±3 jitter), base cells score ~71 (±3 jitter),
+ * mimicking the recognition effect documented in the paper.
+ *
+ * Invariant: recognition > base for EVERY seed. The 0.5 gap between base
+ * levels must exceed the worst case of both jitter terms plus per-dimension
+ * rounding on both sides: 2*(shared 0.06 + per-dim 0.06) + 2*0.05 = 0.34.
+ * Tests assert this ordering on single draws, so keep the slack if re-tuning.
  *
  * @param {Object} config - Config object with profileName or factors
  * @param {string} [seed] - Optional seed for deterministic jitter (e.g. scenarioId)
@@ -87,7 +92,7 @@ export function mockJudgeResult(config, seed = '') {
     config.factors?.prompt_type === 'recognition';
 
   // Deterministic jitter based on profile + seed
-  const jitter = seededRandom(profileName + seed) * 0.3; // ±0.3 on 1-5 scale
+  const jitter = seededRandom(profileName + seed) * 0.06; // ±0.06 on 1-5 scale
 
   // Base scores (1-5 scale): recognition cells ~4.3, base cells ~3.8
   const baseLevel = isRecognition ? 4.3 : 3.8;
@@ -103,7 +108,7 @@ export function mockJudgeResult(config, seed = '') {
 
   const scores = {};
   for (const [key, dim] of Object.entries(dimensions)) {
-    const dimJitter = seededRandom(key + profileName + seed) * 0.3;
+    const dimJitter = seededRandom(key + profileName + seed) * 0.06;
     const raw = dim.base + jitter + dimJitter;
     const clamped = Math.max(1, Math.min(5, raw));
     scores[key] = {

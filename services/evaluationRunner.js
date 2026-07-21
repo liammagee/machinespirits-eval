@@ -1989,7 +1989,9 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     let scoringMethod = 'skipped';
     if (!skipRubricEval && suggestion) {
       log('[dry-run] Generating mock judge scores (no API call)', 'info');
-      rubricResult = mockJudgeResult(resolvedConfig, scenarioId + Date.now());
+      // Seed must be stable across invocations so dry-runs are reproducible;
+      // scenarioName embeds the turn index, keeping per-turn scores distinct.
+      rubricResult = mockJudgeResult(resolvedConfig, `${scenarioId}:${turnMeta.scenarioName || ''}`);
       turnScore = rubricResult.overallScore;
       scoringMethod = 'rubric';
     }
