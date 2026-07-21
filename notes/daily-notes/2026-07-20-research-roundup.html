@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 5–20 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-20 window=(2026-07-05,2026-07-20] arxiv=2607.05537,2607.05577,2607.09600,2607.11680,2607.12650,2607.12739 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">5–20 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A 15-day window (the prior note's short 3-day window pulled its window-start forward). Six
+  qualifying papers, spanning prompt engineering (2), agent architecture (2), dramaturgy (1), and
+  rhetoric (1). No qualifying ontology-only paper turned up despite several targeted searches —
+  the closest candidates were general ontology-alignment/KG-construction papers already
+  well-covered by prior surveys and outside this window; reported honestly rather than padded.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    From Prompt Engineering to Epistemic Prompting: Prompt Trajectories as AI-Mediated Problem
+    Framing in Science Education
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Matteo Tuveri ·
+    arXiv 2607.11680 · July 2026 ·
+    <a href="https://arxiv.org/abs/2607.11680">https://arxiv.org/abs/2607.11680</a>
+  </div>
+  <p>
+    Reframes prompting in STEM education as a continuing epistemic practice rather than a
+    one-shot technical skill, introducing a multi-turn "Framing-Prompting Loop" and the notion of
+    a <em>prompt framing trajectory</em>: the sequence of prompts, model responses, learner
+    uptake, disciplinary checks, and reframing moves through which a knowledge task develops
+    across turns.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close conceptual match for cell 21 (dynamic prompt rewriting with the Writing Pad) and the
+    prompt-erosion cells 48-49: both track how the tutor's prompt evolves turn-over-turn as it
+    incorporates learner state, which is exactly the "framing trajectory" this paper formalizes
+    for a human tutor/learner pair. Its trajectory schema (prompt → response → uptake → check →
+    reframe) is a candidate structured unit for
+    <code>services/dialogueTraceAnalyzer.js</code>'s superego-feedback-incorporation analysis, and
+    offers external, education-research-grounded vocabulary for what "prompt evolution" should be
+    measured against rather than only the project's own text-proxy erosion metrics.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Prompt engineering using order-of-addition experiments: An application to generating
+    two-level fractional factorial designs
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Duoduo Danny Ying, Alan R. Vazquez, Hongquan Xu ·
+    arXiv 2607.05537 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05537">https://arxiv.org/abs/2607.05537</a>
+  </div>
+  <p>
+    Addresses LLM order dependency — performance varying with the order phrases appear in a
+    prompt — by borrowing order-of-addition experimental design from statistics to systematically
+    quantify ordering effects and locate the best position for each prompt element, demonstrated
+    on generating fractional factorial designs.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The eval repo already runs a large factorial itself (cells 1-125), so the methodology is a
+    natural fit conceptually, but the application domain is unrelated to tutoring. Background
+    relevance to any future ablation of component <em>order</em> within the ego/superego prompts
+    (e.g. where recognition-theory language or hardwired-rules blocks sit relative to task
+    instructions in cells 13-14) rather than an immediate unblock.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Evidence-Grounded Verified Agentic Reasoning: A Path Toward Eliminating LLM Hallucination in
+    Empirical Inference via Tool-Attested Kernel Proofs
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    arXiv 2607.12650 · July 14, 2026 ·
+    <a href="https://arxiv.org/abs/2607.12650">https://arxiv.org/abs/2607.12650</a>
+  </div>
+  <p>
+    EG-VAR is a Lean 4-based tool-calling architecture where the proof kernel, not the LLM, is the
+    sole minter of "verified" claims: every accepted output must structurally descend from an
+    attested tool call plus a kernel-checked inference chain, or else the system must honestly
+    Abstain with a replayable audit trail. On TableBench numerical reasoning it hits 120/120
+    versus a 95% same-tool baseline; under counterfactual stress tests it stays 100%
+    source-faithful while the same-tool baseline drops to 80-90%.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly on-target for the A13 pre-registration's C4 validator condition (cells 111-113,
+    <code>services/adaptiveTutor/</code>) — EG-VAR is essentially a formalized, kernel-proof
+    version of "programmatic constraints on the tutor's claims," which is what the validator
+    condition approximates with hand-written checks. Its Abstain-over-hallucinate discipline is a
+    plausible upgrade path for <code>policyActions.js</code>: instead of scoring whether the
+    tutor's claim about learner state was validated post hoc, force claims to descend from an
+    attested trace entry or block the turn. Also relevant to reducing false-positive
+    "strategy_shift_correctness" hits in the trap-scenario suite (cells 110-125) if shift claims
+    could be kernel-checked against the persisted state rather than judge-inferred.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Agora: Enhancing LLM Agent Reasoning Via Auction-Based Task Allocation
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    arXiv 2607.09600 · July 2026 ·
+    <a href="https://arxiv.org/abs/2607.09600">https://arxiv.org/abs/2607.09600</a>
+  </div>
+  <p>
+    Treats individual reasoning steps as tradeable items in an incentive-compatible auction:
+    expert models/tools bid on sub-tasks based on rectified (de-overconfidenced) competence
+    estimates, routing critical logic to the most capable solver rather than the most confident
+    one. Improves over matched routing/cascade baselines across five benchmarks with a
+    controllable cost-quality trade-off.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Loosely adjacent to the id-director architecture (cells 101-109,
+    <code>services/idDirectorEngine.js</code>), which already constructs a per-turn persona
+    envelope but does not currently arbitrate between competing mechanism variants by anything
+    like a competence-weighted bid. Background interest for a hypothetical future "mechanism
+    router" across the self-reflective/quantitative/erosion variants in cells 40-59, rather than
+    an immediate fit — the current architecture uses fixed cell assignment, not dynamic
+    allocation.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+
+<div class="paper hot">
+  <h3>
+    Narrative World Model: Narratology-Grounded Writer Memory for Long-Form Fiction
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Mohammad Saifullah, Thomas Kornmaier, Taaha Kazi, Vasu Sharma, Aditya Sanjiv Kanade,
+    Aanand Kumar Yadav ·
+    arXiv 2607.05577 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05577">https://arxiv.org/abs/2607.05577</a>
+  </div>
+  <p>
+    Argues that general-purpose retrieval/agent-memory represents entities and facts but not the
+    narratological structure long-form fiction turns on, and introduces the Narrative World Model
+    (NWM): a typed temporal-state graph paired with query-conditioned hybrid retrieval, built to
+    answer exactly the multi-hop questions that drive plot — who knows a secret and when they
+    learned it, whether an event preceded the narration that revealed it, whether a setup paid
+    off, and how a relationship shifted.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Strikingly close to two pieces of this project's own machinery: the withheld-secret S plus
+    ordered premise ledger that <code>/ms-play-tutor</code> hand-tracks for Oedipus-style
+    guided-discovery scenarios, and the peripeteia/anagnorisis structure that
+    <code>config/evaluation-rubric-poetics.yaml</code> scores at the whole-transcript level. NWM's
+    typed temporal-state graph is essentially a formalized data structure for "who knows what,
+    when" and "did the setup pay off" — the same two questions the poetics rubric and the
+    trap-scenario suite (cells 110-125) are trying to answer by LLM judgment alone. Worth reading
+    for the adaptive tutor's state schema (<code>services/adaptiveTutor/stateSchema.js</code>): a
+    narratology-typed graph could replace or audit the current ad hoc state tracking for
+    counterfactual replay.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric</h2>
+
+<div class="paper">
+  <h3>
+    Epistemic Stance Flexibility Probing: Measuring Prompt-Conditioned Register Shift in Large
+    Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Binwen Liu, Yilin Ren ·
+    arXiv 2607.12739 · July 14, 2026 ·
+    <a href="https://arxiv.org/abs/2607.12739">https://arxiv.org/abs/2607.12739</a>
+  </div>
+  <p>
+    Introduces ESFP, a 104-item behavioral benchmark testing whether a model correctly
+    distinguishes "what do experts believe about X" (neutral attribution register) from "what do
+    you believe about X" (stance-expression register) across six epistemic categories. Finds
+    epistemic flexibility is largely orthogonal to general capability — a 27B open-weight model
+    matches frontier proprietary systems — and that surface markers like "I think" can shift
+    without any corresponding change in actual expressed stance.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Relevant background for the charisma cells (101-109,
+    <code>config/evaluation-rubric-charisma.yaml</code>), where register variants explicitly
+    manipulate how directively/attributively the tutor speaks, and for the divergent-superego
+    cells (22-33), where the superego's critique register (suspicious/adversary/advocate) is
+    supposed to differ systematically from the ego's. ESFP's finding that lexical stance markers
+    can decouple from actual expressed stance is a caution for any future rubric dimension that
+    scores register from surface phrasing alone rather than from the stance-content-density signal
+    the paper finds is the stronger discriminator.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>Ninety-Four Percent, and a Rationale Field Nobody Has Filled In</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-20 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for ontology
+  (no qualifying in-window paper found) ·
+  Window: (2026-07-05, 2026-07-20] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
