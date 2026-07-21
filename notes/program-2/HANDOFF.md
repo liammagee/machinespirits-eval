@@ -221,7 +221,7 @@ are NOT folded (in flight; they get their own fold when sealed).
 
 ---
 
-## H7 (2026-07-21) — Phase 5c dialogues SEALED
+## H8 (2026-07-21) — Phase 5c dialogues SEALED
 
 status: done (executing thread; results committed with this entry)
 
