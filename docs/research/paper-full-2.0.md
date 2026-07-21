@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.224"
+version: "3.0.225"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3167,7 +3167,7 @@ Read together under the pre-registered grammar, the pair licenses one sentence (
 
 ### 6.22 Program-2 Offline Follow-ups: the Composer Seat Is Family-Invariant, and the Protected Span Carries the Audited Outcome (Post-Hoc, Development-Tier)
 
-Two same-day offline probes interrogate the committee from a side the live runs could not: does anything in the §6.20–§6.21 record depend on *which* frontier model sits in the composer seat, and what exactly does the composed turn lose against the mini's own reply? Both reuse the §6.20 coupling-probe apparatus unchanged — the same 58 archived held-out warrant moments, the same sealed tuned-mini greedy replies, the same frozen deterministic grader — with the composer family parameterized (`scripts/program2-coupling-probe.mjs --composer`; the default remains the Phase 4 pin, byte-preserved). Instrument fidelity was re-validated at zero cost before any paid call: the mini-solo regrade, the archived sonnet delivered file, and the fail-closed union reproduce §6.20's 0.414, 0.293, and 0.448-with-2-rescued byte-exactly against the Phase 4 manifest. Roughly 110 frontier calls in total; no pre-registration — every number below is descriptive.
+Two same-day offline probes interrogate the committee from a side the live runs could not: does anything in the §6.20–§6.21 record depend on *which* frontier model sits in the composer seat, and what exactly does the composed turn lose against the mini's own reply? Both reuse the §6.20 coupling-probe apparatus unchanged — the same 58 archived held-out warrant moments, the same sealed tuned-mini greedy replies, the same frozen deterministic grader — with the composer family parameterized (`scripts/program2-coupling-probe.mjs --composer`; the default remains the Phase 4 pin, byte-preserved). Instrument fidelity was re-validated at zero cost before any paid call: the mini-solo regrade, the archived sonnet delivered file, and the fail-closed union reproduce §6.20's 0.414, 0.293, and 0.448-with-2-rescued byte-exactly against the Phase 4 manifest. Roughly 160 frontier calls in total — 54 composer calls per leg across the three paid legs (the v1 terra flip and the two v2 re-compositions; the sonnet v1 reference is a zero-call regrade of the archived Phase 4 file, and the four no-span moments never invoke the composer); no pre-registration — every number below is descriptive.
 
 **The family flip: swapping the composer changes nothing the audit can see.** With the composer moved from sonnet-5 to codex `gpt-5.6-terra` (the family that runs the live seams but had never composed), the headline constructions are identical: delivered grade 0.293 (17/58) in both families, fail-closed union 0.448 (26/58) with 2 rescued in both — and the identity is moment-level, not aggregate coincidence: 56/58 moments receive the same verdict, one flipping each way. Containment differs marginally in terra's favor (1 span lost verbatim vs sonnet's 3; by source 53/1/4 vs 51/3/4), and composed-row component failures are near-identical (one-question 14 vs 13, cue 22 = 22, premise 11 vs 12, guards 11 vs 9).
 
@@ -4493,6 +4493,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.225** (2026-07-21)
+
+:   **§6.22 call-count corrected --- post-fold claim audit.** The independent claim audit of the v3.0.224 fold (all other figures TRACED, several re-derived from raw artifacts) found one drift: "roughly 110 frontier calls in total" undercounted the reconstructable total by a third — it repeated the v2 leg's two-family subtotal (~55 × 2) while omitting the v1 terra-flip leg. Actual composer invocations, derived from the delivered files' bySource counts (composed + span_lost rows call the composer; no-span rows do not; the sonnet v1 reference is a zero-call regrade of the archived Phase 4 file): 54 (v1 terra) + 54 (v2 sonnet) + 54 (v2 terra) = **162**. §6.22's sentence corrected to "roughly 160" with the per-leg arithmetic stated; the v3.0.224 revision entry below retains its original wording as the historical record of that version. The HANDOFF H9 addendum's "~110 calls" is unaffected (it describes the v2 leg alone, which is accurate at 108). No other numbers change; no sections renumbered.
 
 **v3.0.224** (2026-07-21)
 
