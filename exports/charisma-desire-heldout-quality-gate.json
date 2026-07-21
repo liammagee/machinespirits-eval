@@ -1,0 +1,286 @@
+{
+  "generatedAt": "2026-07-21T22:39:31.062Z",
+  "status": "PASS",
+  "gate": {
+    "status": "FAIL_HELDOUT_QUALITY",
+    "reasons": [
+      "heldout_baseline_codex_tutor_codex_learner route-hit rate 70% below 80%",
+      "heldout_tutor_fixed_glm_learner positive outcome rate 20% below 40%",
+      "heldout_tutor_fixed_glm_learner target-match rate 40% below 80%",
+      "heldout_full_glm_reference target-match rate 70% below 80%"
+    ],
+    "advance": "Do not advance; inspect failed arms before opening any promotion or human/hybrid gate."
+  },
+  "heldoutScenarios": [
+    "charisma_desire_heldout_ai_syllabus_boredom",
+    "charisma_desire_heldout_alignment_frustration",
+    "charisma_desire_heldout_community_irrelevance",
+    "charisma_desire_heldout_attention_question_flood",
+    "charisma_desire_heldout_synthesis_rote_parroting"
+  ],
+  "dynamicArms": [
+    {
+      "id": "heldout_baseline_codex_tutor_codex_learner",
+      "profile": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "tutorStack": "codexTutor",
+      "learnerStack": "codexLearner",
+      "repeats": 2,
+      "roleContrast": "heldout_reference",
+      "minPositiveRate": 0.5,
+      "purpose": "Check whether the Codex-stack local signal survives held-out artifacts."
+    },
+    {
+      "id": "heldout_tutor_fixed_glm_learner",
+      "profile": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "tutorStack": "codexTutor",
+      "learnerStack": "glmLearner",
+      "repeats": 2,
+      "roleContrast": "heldout_hold_tutor_fixed_vary_learner",
+      "minPositiveRate": 0.4,
+      "purpose": "Check whether the held-out signal survives when only the dynamic learner stack changes."
+    },
+    {
+      "id": "heldout_learner_fixed_glm_tutor",
+      "profile": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "tutorStack": "glmTutor",
+      "learnerStack": "codexLearner",
+      "repeats": 2,
+      "roleContrast": "heldout_hold_learner_fixed_vary_tutor_id",
+      "minPositiveRate": 0.4,
+      "purpose": "Check whether the held-out signal survives when only the tutor/id stack changes."
+    },
+    {
+      "id": "heldout_full_glm_reference",
+      "profile": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "tutorStack": "glmTutor",
+      "learnerStack": "glmLearner",
+      "repeats": 2,
+      "roleContrast": "heldout_full_glm_reference",
+      "minPositiveRate": 0.3,
+      "purpose": "Check whether full GLM remains above the minimum artifact-level quality floor."
+    }
+  ],
+  "scriptedArms": [
+    {
+      "id": "heldout_scripted_control_codex_tutor",
+      "profile": "cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified",
+      "tutorStack": "codexTutor",
+      "learnerStack": null,
+      "repeats": 1,
+      "roleContrast": "heldout_fixed_resistant_turns_codex_tutor",
+      "maxPositiveRows": 0,
+      "purpose": "Keep fixed scripted turns as a tutor-register control, not learner-outcome evidence."
+    },
+    {
+      "id": "heldout_scripted_control_glm_tutor",
+      "profile": "cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified",
+      "tutorStack": "glmTutor",
+      "learnerStack": null,
+      "repeats": 1,
+      "roleContrast": "heldout_fixed_resistant_turns_glm_tutor",
+      "maxPositiveRows": 0,
+      "purpose": "Verify GLM tutor/id register shape on fixed turns without counting scripted uptake."
+    }
+  ],
+  "plannedRows": 50,
+  "resultRuns": [
+    "eval-2026-07-01-caab0c08",
+    "eval-2026-07-01-0fd5defa",
+    "eval-2026-07-01-6af87b98",
+    "eval-2026-07-01-22e62eb4",
+    "eval-2026-07-01-e42ecc3b",
+    "eval-2026-07-01-fcb7a871"
+  ],
+  "runSummaries": [
+    {
+      "armId": "heldout_baseline_codex_tutor_codex_learner",
+      "runIds": [
+        "eval-2026-07-01-caab0c08"
+      ],
+      "expectedRows": 10,
+      "storedRows": 10,
+      "successfulRows": 10,
+      "failedRows": 0,
+      "requiredPassRows": 10,
+      "forbiddenPassRows": 10,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:2/2",
+        "alignment_frustration:2/2",
+        "community_irrelevance:2/2",
+        "attention_question_flood:2/2",
+        "synthesis_rote_parroting:2/2"
+      ],
+      "status": "complete"
+    },
+    {
+      "armId": "heldout_tutor_fixed_glm_learner",
+      "runIds": [
+        "eval-2026-07-01-0fd5defa"
+      ],
+      "expectedRows": 10,
+      "storedRows": 10,
+      "successfulRows": 10,
+      "failedRows": 0,
+      "requiredPassRows": 9,
+      "forbiddenPassRows": 10,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:2/2",
+        "alignment_frustration:2/2",
+        "community_irrelevance:2/2",
+        "attention_question_flood:2/2",
+        "synthesis_rote_parroting:2/2"
+      ],
+      "status": "complete"
+    },
+    {
+      "armId": "heldout_learner_fixed_glm_tutor",
+      "runIds": [
+        "eval-2026-07-01-6af87b98"
+      ],
+      "expectedRows": 10,
+      "storedRows": 10,
+      "successfulRows": 10,
+      "failedRows": 0,
+      "requiredPassRows": 9,
+      "forbiddenPassRows": 8,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:2/2",
+        "alignment_frustration:2/2",
+        "community_irrelevance:2/2",
+        "attention_question_flood:2/2",
+        "synthesis_rote_parroting:2/2"
+      ],
+      "status": "complete"
+    },
+    {
+      "armId": "heldout_full_glm_reference",
+      "runIds": [
+        "eval-2026-07-01-22e62eb4"
+      ],
+      "expectedRows": 10,
+      "storedRows": 10,
+      "successfulRows": 10,
+      "failedRows": 0,
+      "requiredPassRows": 9,
+      "forbiddenPassRows": 10,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:2/2",
+        "alignment_frustration:2/2",
+        "community_irrelevance:2/2",
+        "attention_question_flood:2/2",
+        "synthesis_rote_parroting:2/2"
+      ],
+      "status": "complete"
+    },
+    {
+      "armId": "heldout_scripted_control_codex_tutor",
+      "runIds": [
+        "eval-2026-07-01-e42ecc3b"
+      ],
+      "expectedRows": 5,
+      "storedRows": 5,
+      "successfulRows": 5,
+      "failedRows": 0,
+      "requiredPassRows": 5,
+      "forbiddenPassRows": 5,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:1/1",
+        "alignment_frustration:1/1",
+        "community_irrelevance:1/1",
+        "attention_question_flood:1/1",
+        "synthesis_rote_parroting:1/1"
+      ],
+      "status": "complete"
+    },
+    {
+      "armId": "heldout_scripted_control_glm_tutor",
+      "runIds": [
+        "eval-2026-07-01-fcb7a871"
+      ],
+      "expectedRows": 5,
+      "storedRows": 5,
+      "successfulRows": 5,
+      "failedRows": 0,
+      "requiredPassRows": 5,
+      "forbiddenPassRows": 5,
+      "scenarioCounts": [
+        "ai_syllabus_boredom:1/1",
+        "alignment_frustration:1/1",
+        "community_irrelevance:1/1",
+        "attention_question_flood:1/1",
+        "synthesis_rote_parroting:1/1"
+      ],
+      "status": "complete"
+    }
+  ],
+  "matrixJsonPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-charisma-heldout-quality-gate/exports/charisma-desire-breakthrough-heldout-matrix.json",
+  "matrixSummaries": [
+    {
+      "armId": "heldout_baseline_codex_tutor_codex_learner",
+      "rows": 10,
+      "positiveOutcomes": 5,
+      "candidates": 4,
+      "routeHits": 7,
+      "targetMatches": 10,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 76
+    },
+    {
+      "armId": "heldout_tutor_fixed_glm_learner",
+      "rows": 10,
+      "positiveOutcomes": 2,
+      "candidates": 2,
+      "routeHits": 9,
+      "targetMatches": 4,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 70.5
+    },
+    {
+      "armId": "heldout_learner_fixed_glm_tutor",
+      "rows": 10,
+      "positiveOutcomes": 5,
+      "candidates": 5,
+      "routeHits": 8,
+      "targetMatches": 10,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 76
+    },
+    {
+      "armId": "heldout_full_glm_reference",
+      "rows": 10,
+      "positiveOutcomes": 6,
+      "candidates": 5,
+      "routeHits": 9,
+      "targetMatches": 7,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 79
+    },
+    {
+      "armId": "heldout_scripted_control_codex_tutor",
+      "rows": 5,
+      "positiveOutcomes": 0,
+      "candidates": 0,
+      "routeHits": 5,
+      "targetMatches": 4,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 75
+    },
+    {
+      "armId": "heldout_scripted_control_glm_tutor",
+      "rows": 5,
+      "positiveOutcomes": 0,
+      "candidates": 0,
+      "routeHits": 5,
+      "targetMatches": 4,
+      "residualFloods": 0,
+      "reopenedCommitments": 0,
+      "meanScore": 75
+    }
+  ],
+  "errors": []
+}

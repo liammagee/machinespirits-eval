@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-21T02:46:15.190Z",
+  "generated": "2026-07-21T22:41:11.271Z",
   "counts": {
-    "total": 122,
+    "total": 123,
     "byStatus": {
-      "done": 102,
+      "done": 103,
       "blocked": 1,
       "dropped": 2,
       "triaged": 5,
@@ -12,7 +12,7 @@
       "archived": 4
     },
     "byType": {
-      "research": 44,
+      "research": 45,
       "experiment": 44,
       "infra": 15,
       "maintenance": 6,
@@ -1990,6 +1990,47 @@
         "engagement-routing",
         "registers",
         "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "charisma-desire-heldout-quality-gate",
+      "title": "Charisma/desire held-out artifact quality gate",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-22",
+      "branch": "codex/charisma-desire-heldout-quality-gate",
+      "verification": "Full 50-row held-out gate completed across six guarded arms; runtime completion passed with zero failed rows and scripted controls stayed negative, but the gate decision is FAIL_HELDOUT_QUALITY because baseline route-hit, GLM-learner positive/target-match, and full-GLM target-match floors failed.",
+      "claim_status": "killed",
+      "links": {
+        "items": [
+          "charisma-desire-generalizability-matrix"
+        ],
+        "runs": [
+          "eval-2026-07-01-caab0c08",
+          "eval-2026-07-01-0fd5defa",
+          "eval-2026-07-01-6af87b98",
+          "eval-2026-07-01-22e62eb4",
+          "eval-2026-07-01-e42ecc3b",
+          "eval-2026-07-01-fcb7a871"
+        ],
+        "exports": [
+          "exports/charisma-desire-heldout-quality-gate-summary.md",
+          "exports/charisma-desire-heldout-quality-gate.json",
+          "exports/charisma-desire-breakthrough-heldout-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-heldout-matrix.json"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "recognition",
+        "heldout",
+        "engagement-routing"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },
