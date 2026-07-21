@@ -203,3 +203,18 @@ costume spans, zero serving errors — GO). This run reads NOTHING in
 ~/.machinespirits-data/program-2/adapters/ (the KTO session owns it) and
 uses no KTO artifact regardless of mid-run availability (prereg §2).
 Seal note follows when 18/18 are sealed.
+
+---
+
+## H7 (2026-07-21) — Paper fold + adaptation-architecture offshoot branch
+
+status: live (writing thread)
+
+New branch `claude/program-2-adaptation-offshoot` (from
+`claude/program-2-phase5-live-pilot`) carries the Phase 5/5b paper fold
+into `docs/research/paper-full-2.0.md` plus a subordinate design document
+(`docs/research/committee-architecture.md`) and the offshoot basis note
+(`notes/program-2/2026-07-21-adaptation-architecture-offshoot.md`).
+Scope: paper fold + subordinate doc ONLY — no runs, no model changes;
+never touches `~/.machinespirits-data/program-2/adapters/`. KTO and 5c
+are NOT folded (in flight; they get their own fold when sealed).
