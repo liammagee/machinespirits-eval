@@ -48,6 +48,33 @@
       "shareOfOfflineAchievableCeiling": "77-79% (ceiling 44/58 ~= 0.759)"
     }
   },
+  "callCounts": {
+    "derivedAt": "2026-07-21T08:48:29Z",
+    "derivation": "composer calls per paid leg = delivered rows with source in {composed, fallback_span_lost} (fallback_no_span rows never invoke the composer), counted from the sha256-pinned delivered files listed under files; the v1 sonnet reference (coupling-probe-delivered.jsonl, pinned in program-2-phase4-results.manifest.json) is a zero-call regrade and contributes no calls",
+    "deliveredBySource": {
+      "v1_terra": {
+        "composed": 53,
+        "fallback_span_lost": 1,
+        "fallback_no_span": 4
+      },
+      "v2_sonnet": {
+        "composed": 53,
+        "fallback_span_lost": 1,
+        "fallback_no_span": 4
+      },
+      "v2_terra": {
+        "composed": 54,
+        "fallback_span_lost": 0,
+        "fallback_no_span": 4
+      }
+    },
+    "composerCallsPerLeg": {
+      "v1_terra": 54,
+      "v2_sonnet": 54,
+      "v2_terra": 54
+    },
+    "paidLegsTotal": 162
+  },
   "floorDir": "/Users/lmagee/.machinespirits-data/program-2/floor",
   "files": {
     "coupling-probe-terra-delivered.jsonl": "796c01860cdb57d317812e34b8d71dff405a760609c7f67e36f94e591f97967e",

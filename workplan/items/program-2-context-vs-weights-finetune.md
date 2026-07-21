@@ -286,3 +286,30 @@ achievable. Both KTO runs remain licensed and unspent (Lambda unavailable
 ~24h at probe time). Artifacts: floor/tuned/composed JSONs + probe script
 scripts/program2-coupling-probe.mjs + grader --grade-file mode +
 verified-merge script scripts/program2-merge-adapter.py.
+
+2026-07-21 Claude: §6.20–§6.22 HEADLINE NUMBERS REGISTERED AS
+MACHINE-CHECKABLE CLAIMS (branch claude/program-2-terra-composer-probe).
+An independent claim audit found none of the three validators
+machine-checked any Program-2 paper content — the "~110 vs 162"
+call-count drift survived all three and was caught only manually. Now:
+35 claims + 2 family-invariance symmetry rules in new
+config/provable-discourse-program2.yaml (epoch "2.0", imported by the
+main spec), anchored to the five checked-in Program-2 manifests via a
+new generic artifact_json evidence type in services/provableDiscourse.js
+(dot-path + capture-pattern extraction; fingerprint carries the artifact
+file's sha256, so any manifest change flags every claim on it as
+stale-claim risk); the 34/83 + 49/83≈0.59 live-ceiling correction
+anchors to the 5b prereg §8 annotation via code_path. The terra manifest
+gained a derived callCounts block (bySource per paid leg recounted from
+the sha256-pinned delivered files: 54+54+54 = 162) so the corrected
+total is artifact-anchored. paper:integrity-audit now prints a
+legacy-scope banner (Paper 2.0 claims → provable-discourse). Registered:
+§6.20 0.414/0.310, 0.293, 0.448, 0.276, 14-of-58 + n=58, ceiling ≈0.76;
+§6.21 P5 rates + +0.040 CI [−0.054,+0.133], 5b rates + +0.236 CI
+[0.128,0.354] + due-release denominators, 5c rates + +0.202 CI
+[0.072,0.338]; §6.22 v1 0.293/0.448 both families (symmetry-ruled), v2
+0.586/0.603, composer calls 54×3 ≈ 160. Snapshot surgically baselined
+(35 new entries only; the 18 pre-existing warns left visible for their
+owners). 6 unit tests added (69/69 pass). Validators: provable-discourse
+118/18/0 full, 136/0/0 smoke; paper-manifest + integrity-audit
+unchanged.

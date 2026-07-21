@@ -1773,3 +1773,107 @@ test('evaluateEvidence: cross_reference to blocked target returns 0', () => {
   assert.equal(cleanWarnResult.value, 1);
   assert.equal(cleanWarnResult.details.target_status, 'warn');
 });
+
+// ── artifact_json adapter ───────────────────────────────────────
+
+function makeArtifactFixture(content) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'artifact-json-'));
+  const file = 'evidence/manifest.json';
+  fs.mkdirSync(path.join(tmpDir, 'evidence'), { recursive: true });
+  fs.writeFileSync(path.join(tmpDir, file), JSON.stringify(content, null, 2));
+  return { tmpDir, file };
+}
+
+test('artifact_json: numeric leaf via dot path', () => {
+  const { tmpDir, file } = makeArtifactFixture({ headline: { instruct: { tunedSFT: 0.414 } } });
+  const result = evaluateEvidence(
+    null,
+    null,
+    { type: 'artifact_json', file, path: 'headline.instruct.tunedSFT' },
+    tmpDir,
+  );
+  assert.equal(result.value, 0.414);
+  assert.equal(result.fingerprint.source, 'artifact_json');
+  assert.equal(result.fingerprint.sha256.length, 64);
+});
+
+test('artifact_json: string leaf with capture pattern extracts embedded rate', () => {
+  const { tmpDir, file } = makeArtifactFixture({ e1b: { committee_v2: '32/83 (0.386)' } });
+  const result = evaluateEvidence(
+    null,
+    null,
+    { type: 'artifact_json', file, path: 'e1b.committee_v2', pattern: '\\(([0-9.]+)\\)' },
+    tmpDir,
+  );
+  assert.equal(result.value, 0.386);
+  assert.equal(result.details.raw_leaf, '32/83 (0.386)');
+});
+
+test('artifact_json: array index paths (bracket and dot forms)', () => {
+  const { tmpDir, file } = makeArtifactFixture({ ci95: [-0.054, 0.133] });
+  const bracket = evaluateEvidence(null, null, { type: 'artifact_json', file, path: 'ci95[0]' }, tmpDir);
+  const dotted = evaluateEvidence(null, null, { type: 'artifact_json', file, path: 'ci95.1' }, tmpDir);
+  assert.equal(bracket.value, -0.054);
+  assert.equal(dotted.value, 0.133);
+});
+
+test('artifact_json: fingerprint sha256 changes when the artifact changes', () => {
+  const { tmpDir, file } = makeArtifactFixture({ rate: 0.448 });
+  const before = evaluateEvidence(null, null, { type: 'artifact_json', file, path: 'rate' }, tmpDir);
+  fs.writeFileSync(path.join(tmpDir, file), JSON.stringify({ rate: 0.448, extra: 'regenerated' }, null, 2));
+  const after = evaluateEvidence(null, null, { type: 'artifact_json', file, path: 'rate' }, tmpDir);
+  assert.equal(before.value, after.value);
+  assert.notEqual(before.fingerprint.sha256, after.fingerprint.sha256);
+});
+
+test('artifact_json: missing path, missing file, and non-capturing pattern throw', () => {
+  const { tmpDir, file } = makeArtifactFixture({ present: 1 });
+  assert.throws(
+    () => evaluateEvidence(null, null, { type: 'artifact_json', file, path: 'absent.leaf' }, tmpDir),
+    /path not found/,
+  );
+  assert.throws(
+    () => evaluateEvidence(null, null, { type: 'artifact_json', file: 'evidence/nope.json', path: 'x' }, tmpDir),
+    /file not found/,
+  );
+  const stringFixture = makeArtifactFixture({ label: 'no numbers here' });
+  assert.throws(
+    () =>
+      evaluateEvidence(
+        null,
+        null,
+        { type: 'artifact_json', file: stringFixture.file, path: 'label', pattern: '\\(([0-9.]+)\\)' },
+        stringFixture.tmpDir,
+      ),
+    /pattern captured nothing/,
+  );
+});
+
+test('artifact_json: end-to-end claim passes audit and records snapshot baseline', () => {
+  const fixture = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.test.artifact_rate',
+        epoch: '2.0',
+        statement: { pattern: 'Paper 2 only proof phrase', min_occurrences: 1 },
+        evidence: { type: 'artifact_json', file: 'artifact.json', path: 'headline.rate' },
+        assertion: { op: 'approx', expected: 0.386, tolerance_abs: 0.0005 },
+      },
+    ],
+  });
+  fs.writeFileSync(path.join(fixture.tmpDir, 'artifact.json'), JSON.stringify({ headline: { rate: 0.386 } }));
+
+  const first = runProvableDiscourseAudit({ rootDir: fixture.tmpDir, specPath: fixture.specPath, epoch: '2.0' });
+  const firstClaim = claimById(first, 'paper2.test.artifact_rate');
+  assert.equal(firstClaim.status, 'warn'); // assertion passes, snapshot baseline missing
+  assert.equal(firstClaim.actual_value, 0.386);
+
+  runProvableDiscourseAudit({
+    rootDir: fixture.tmpDir,
+    specPath: fixture.specPath,
+    epoch: '2.0',
+    refreshSnapshot: true,
+  });
+  const final = runProvableDiscourseAudit({ rootDir: fixture.tmpDir, specPath: fixture.specPath, epoch: '2.0' });
+  assert.equal(claimById(final, 'paper2.test.artifact_rate').status, 'pass');
+});

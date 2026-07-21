@@ -1,0 +1,733 @@
+version: 1
+description: "Program-2 headline claims for Paper 2.0 §6.20–§6.22 — anchored to the checked-in adaptive-tutor-evidence manifests (artifact_json) and the 5b prereg ceiling annotation (code_path). Registered 2026-07-21 after an independent claim audit found no machine-checkable coverage for these sections."
+
+claims:
+  # ── §6.20 Phase 4: context-vs-weights fine-tune (program-2-phase4-results.manifest.json) ──
+
+  - id: paper2.program2.phase4.instruct_tuned_0414
+    epoch: "2.0"
+    description: "§6.20 headline: tuned instruct arm reached 0.414 on held-out greedy grading."
+    source_keys:
+      - "stat|0|program-2 instruct tunedSFT 0.414"
+    statement:
+      pattern: "instruct arm reached \\*\\*0\\.414 against its 0\\.310 floor\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.instruct.tunedSFT
+    assertion:
+      op: approx
+      expected: 0.414
+      tolerance_abs: 0.0005
+    remediation:
+      - "If the Phase 4 manifest changes, re-derive §6.20's instruct-arm rate and update paper + claim together."
+
+  - id: paper2.program2.phase4.instruct_floor_0310
+    epoch: "2.0"
+    description: "§6.20 headline: instruct arm's same-lineage untuned floor is 0.310."
+    source_keys:
+      - "stat|0|program-2 instruct floor 0.310"
+    statement:
+      pattern: "against its 0\\.310 floor"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.instruct.floorSameLineage
+    assertion:
+      op: approx
+      expected: 0.31
+      tolerance_abs: 0.0005
+    remediation:
+      - "Floors are lineage-matched (§6.20's GGUF build-lineage fault); re-floor through the tuned model's own conversion pipeline before updating."
+
+  - id: paper2.program2.phase4.composed_alone_0293
+    epoch: "2.0"
+    description: "§6.20 coupling probe: composed turns alone graded 0.293 (below the mini solo)."
+    source_keys:
+      - "stat|0|program-2 composed-alone 0.293"
+    statement:
+      pattern: "alone graded \\*below\\* the mini \\(0\\.293"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.composedAlone
+    assertion:
+      op: approx
+      expected: 0.293
+      tolerance_abs: 0.0005
+    remediation:
+      - "§6.22 corrected this figure's attribution (span-borne questions, extraction-dropped cues) — keep the number and the corrected reading aligned."
+
+  - id: paper2.program2.phase4.fail_closed_0448
+    epoch: "2.0"
+    description: "§6.20 coupling probe: fail-closed composition reached 0.448."
+    source_keys:
+      - "stat|0|program-2 fail-closed 0.448"
+    statement:
+      pattern: "fail-closed system reached \\*\\*0\\.448\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.couplingFailClosed
+    assertion:
+      op: approx
+      expected: 0.448
+      tolerance_abs: 0.0005
+    remediation:
+      - "0.448 is the offline composite reference cited by §6.21/§6.22 — a change here cascades to those sections."
+
+  - id: paper2.program2.phase4.frontier_live_0276
+    epoch: "2.0"
+    description: "§6.20 deployment contrast: frontier tutors' own live compliance at these moments was 0.276."
+    source_keys:
+      - "stat|0|program-2 frontier historical 0.276"
+    statement:
+      pattern: "own live compliance at these exact moments was \\*\\*0\\.276\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.frontierHistoricalAtMoments
+    assertion:
+      op: approx
+      expected: 0.276
+      tolerance_abs: 0.0005
+    remediation:
+      - "The +62% relative-lift sizing in §6.20 is computed against this reference."
+
+  - id: paper2.program2.phase4.heldout_n58
+    epoch: "2.0"
+    description: "§6.20 denominator: 58 held-out warrant-skip moments."
+    source_keys:
+      - "n|0|program-2 held-out n=58"
+    statement:
+      pattern: "58 held-out warrant-skip moments"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.structuralCeiling.of
+    assertion:
+      op: eq
+      expected: 58
+    remediation:
+      - "All §6.20/§6.22 offline rates share this denominator."
+
+  - id: paper2.program2.phase4.ceiling_unpassable_14
+    epoch: "2.0"
+    description: "§6.20 structural note: 14 of the 58 moments carry a due premise release (non-compliant by construction)."
+    source_keys:
+      - "n|0|program-2 unpassable moments 14"
+    statement:
+      pattern: "14 of the 58 moments carry a due premise release"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.structuralCeiling.unpassableMoments
+    assertion:
+      op: eq
+      expected: 14
+    remediation:
+      - "Derived under the frozen released == 0 component; the achievable ceiling (44/58) follows from it."
+
+  - id: paper2.program2.phase4.achievable_ceiling_076
+    epoch: "2.0"
+    description: "§6.20 structural note: offline achievable ceiling ≈0.76 (44/58 = 0.759 in the manifest)."
+    source_keys:
+      - "stat|0|program-2 achievable ceiling 0.76"
+    statement:
+      pattern: "the achievable ceiling is ≈0\\.76"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+      path: heldoutGreedy.structuralCeiling.achievableCeiling
+    assertion:
+      op: approx
+      expected: 0.76
+      tolerance_abs: 0.005
+    remediation:
+      - "§6.21's ceiling correction warns against borrowing this offline ceiling for live rates (live due-release density differs) — do not reuse it outside §6.20/§6.22."
+
+  # ── §6.21 Phase 5 live pilot (program-2-phase5-live-pilot.manifest.json) ──
+
+  - id: paper2.program2.phase5.e1_committee_rate_0200
+    epoch: "2.0"
+    description: "§6.21 Phase 5 primary endpoint: committee live warrant compliance 0.200 (15/75)."
+    source_keys:
+      - "stat|0|phase5 committee compliance 0.200"
+    statement:
+      pattern: "compliance 0\\.200 \\(15/75\\) committee vs 0\\.160 \\(13/81\\) control"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json
+      path: headline.e1_compliance.committee
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.2
+      tolerance_abs: 0.0005
+    remediation:
+      - "Recompute from the sealed Phase 5 archive with the frozen analyzer before touching this number."
+
+  - id: paper2.program2.phase5.e1_control_rate_0160
+    epoch: "2.0"
+    description: "§6.21 Phase 5 primary endpoint: control live warrant compliance 0.160 (13/81)."
+    source_keys:
+      - "stat|0|phase5 control compliance 0.160"
+    statement:
+      pattern: "compliance 0\\.200 \\(15/75\\) committee vs 0\\.160 \\(13/81\\) control"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json
+      path: headline.e1_compliance.control
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.16
+      tolerance_abs: 0.0005
+    remediation:
+      - "Recompute from the sealed Phase 5 archive with the frozen analyzer before touching this number."
+
+  - id: paper2.program2.phase5.e1_diff_0040
+    epoch: "2.0"
+    description: "§6.21 Phase 5 primary endpoint fails: +0.040 committee-minus-control."
+    source_keys:
+      - "stat|0|phase5 e1 diff +0.040"
+    statement:
+      pattern: "\\+0\\.040, bootstrap CI95 \\[−0\\.054, \\+0\\.133\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json
+      path: headline.e1_compliance.diff
+    assertion:
+      op: approx
+      expected: 0.04
+      tolerance_abs: 0.0005
+    remediation:
+      - "The FAIL verdict (CI straddles zero) is frozen in the prereg results §9 — verdict and number move together."
+
+  - id: paper2.program2.phase5.e1_ci_low
+    epoch: "2.0"
+    description: "§6.21 Phase 5 E1 bootstrap CI95 lower bound −0.054."
+    source_keys:
+      - "stat|0|phase5 e1 ci low -0.054"
+    statement:
+      pattern: "bootstrap CI95 \\[−0\\.054, \\+0\\.133\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json
+      path: headline.e1_compliance.ci95[0]
+    assertion:
+      op: approx
+      expected: -0.054
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  - id: paper2.program2.phase5.e1_ci_high
+    epoch: "2.0"
+    description: "§6.21 Phase 5 E1 bootstrap CI95 upper bound +0.133."
+    source_keys:
+      - "stat|0|phase5 e1 ci high +0.133"
+    statement:
+      pattern: "bootstrap CI95 \\[−0\\.054, \\+0\\.133\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json
+      path: headline.e1_compliance.ci95[1]
+    assertion:
+      op: approx
+      expected: 0.133
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  # ── §6.21 Phase 5b fallback battery (program-2-phase5b.manifest.json) ──
+
+  - id: paper2.program2.phase5b.e1b_committee_rate_0386
+    epoch: "2.0"
+    description: "§6.21 Phase 5b primary endpoint passes: committee-v2 compliance 0.386 (32/83)."
+    source_keys:
+      - "stat|0|phase5b committee-v2 0.386"
+    statement:
+      pattern: "0\\.386 \\(32/83\\) vs 0\\.150 \\(18/120\\)"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5b.manifest.json
+      path: headline.e1b.committee_v2
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.386
+      tolerance_abs: 0.0005
+    remediation:
+      - "The frozen analyzer re-run reproduced 32/83 from the sealed archive (§6.21 revision v3.0.223) — recompute the same way before changing."
+
+  - id: paper2.program2.phase5b.e1b_control_rate_0150
+    epoch: "2.0"
+    description: "§6.21 Phase 5b primary endpoint: pooled control compliance 0.150 (18/120)."
+    source_keys:
+      - "stat|0|phase5b pooled control 0.150"
+    statement:
+      pattern: "0\\.386 \\(32/83\\) vs 0\\.150 \\(18/120\\)"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5b.manifest.json
+      path: headline.e1b.pooled_control
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.15
+      tolerance_abs: 0.0005
+    remediation:
+      - "Pooling of fresh + Phase 5 controls is licensed by the frozen stationarity check — do not repool without it."
+
+  - id: paper2.program2.phase5b.e1b_diff_0236
+    epoch: "2.0"
+    description: "§6.21 Phase 5b primary endpoint: +0.236 committee-minus-control."
+    source_keys:
+      - "stat|0|phase5b e1b diff +0.236"
+    statement:
+      pattern: "\\+0\\.236, CI95 \\[0\\.128, 0\\.354\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5b.manifest.json
+      path: headline.e1b.diff
+    assertion:
+      op: approx
+      expected: 0.236
+      tolerance_abs: 0.0005
+    remediation:
+      - "PASS verdict frozen in 5b prereg results §8; verdict and number move together."
+
+  - id: paper2.program2.phase5b.e1b_ci_low
+    epoch: "2.0"
+    description: "§6.21 Phase 5b E1b CI95 lower bound 0.128."
+    source_keys:
+      - "stat|0|phase5b e1b ci low 0.128"
+    statement:
+      pattern: "CI95 \\[0\\.128, 0\\.354\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5b.manifest.json
+      path: headline.e1b.ci95[0]
+    assertion:
+      op: approx
+      expected: 0.128
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  - id: paper2.program2.phase5b.e1b_ci_high
+    epoch: "2.0"
+    description: "§6.21 Phase 5b E1b CI95 upper bound 0.354."
+    source_keys:
+      - "stat|0|phase5b e1b ci high 0.354"
+    statement:
+      pattern: "CI95 \\[0\\.128, 0\\.354\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5b.manifest.json
+      path: headline.e1b.ci95[1]
+    assertion:
+      op: approx
+      expected: 0.354
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  - id: paper2.program2.phase5b.due_release_34_of_83
+    epoch: "2.0"
+    description: "§6.21 live structural-ceiling correction: 34 of the 83 committee-v2 moments carry a due premise release (recorded in the 5b prereg §8 post-hoc annotation; not in the sealed manifest)."
+    source_keys:
+      - "n|0|phase5b due-release 34 of 83"
+    statement:
+      pattern: "34 of the 83 committee-v2 moments carry a due premise release"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
+      pattern: "34 of the 83 committee-v2 warrant moments"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "The recomputation lives in the claim-audit correction (paper revision v3.0.223, PR #140) and the dated annotation on the 5b prereg §8 — keep paper and prereg annotation in sync."
+
+  - id: paper2.program2.phase5b.live_ceiling_49_of_83
+    epoch: "2.0"
+    description: "§6.21 live structural ceiling: achievable rate capped at 49/83 ≈ 0.59 (recorded in the 5b prereg §8 post-hoc annotation)."
+    source_keys:
+      - "stat|0|phase5b live ceiling 49/83 0.59"
+    statement:
+      pattern: "capping the achievable rate at 49/83 ≈ 0\\.59"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
+      pattern: "49/83 ≈ 0\\.59"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "Never re-cite the retracted '~55% of ceiling' figure — the live rate is 32/49 ≈ 65% of achievable (paper revision v3.0.223)."
+
+  # ── §6.21 Phase 5c cross-world transfer (program-2-phase5c.manifest.json) ──
+
+  - id: paper2.program2.phase5c.e1c_committee_rate_0508
+    epoch: "2.0"
+    description: "§6.21 Phase 5c primary endpoint passes: committee-v2 compliance 0.508 (31/61) on the transfer world."
+    source_keys:
+      - "stat|0|phase5c committee-v2 0.508"
+    statement:
+      pattern: "0\\.508 \\(31/61\\) vs 0\\.306 \\(15/49\\)"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+      path: headline.e1c.committee_v2
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.508
+      tolerance_abs: 0.0005
+    remediation:
+      - "Contrast runs against the new world's own fresh controls only (pooling rule inverted) — do not mix in Marrick controls."
+
+  - id: paper2.program2.phase5c.e1c_control_rate_0306
+    epoch: "2.0"
+    description: "§6.21 Phase 5c primary endpoint: fresh-control compliance 0.306 (15/49)."
+    source_keys:
+      - "stat|0|phase5c fresh control 0.306"
+    statement:
+      pattern: "0\\.508 \\(31/61\\) vs 0\\.306 \\(15/49\\)"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+      path: headline.e1c.fresh_control
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.306
+      tolerance_abs: 0.0005
+    remediation:
+      - "Contrast runs against the new world's own fresh controls only (pooling rule inverted) — do not mix in Marrick controls."
+
+  - id: paper2.program2.phase5c.e1c_diff_0202
+    epoch: "2.0"
+    description: "§6.21 Phase 5c primary endpoint: +0.202 committee-minus-control on the transfer world."
+    source_keys:
+      - "stat|0|phase5c e1c diff +0.202"
+    statement:
+      pattern: "\\+0\\.202, CI95 \\[0\\.072, 0\\.338\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+      path: headline.e1c.diff
+    assertion:
+      op: approx
+      expected: 0.202
+      tolerance_abs: 0.0005
+    remediation:
+      - "PASS verdict frozen in 5c prereg results §9; verdict and number move together."
+
+  - id: paper2.program2.phase5c.e1c_ci_low
+    epoch: "2.0"
+    description: "§6.21 Phase 5c E1c CI95 lower bound 0.072."
+    source_keys:
+      - "stat|0|phase5c e1c ci low 0.072"
+    statement:
+      pattern: "CI95 \\[0\\.072, 0\\.338\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+      path: headline.e1c.ci95[0]
+    assertion:
+      op: approx
+      expected: 0.072
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  - id: paper2.program2.phase5c.e1c_ci_high
+    epoch: "2.0"
+    description: "§6.21 Phase 5c E1c CI95 upper bound 0.338."
+    source_keys:
+      - "stat|0|phase5c e1c ci high 0.338"
+    statement:
+      pattern: "CI95 \\[0\\.072, 0\\.338\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+      path: headline.e1c.ci95[1]
+    assertion:
+      op: approx
+      expected: 0.338
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
+
+  # ── §6.22 Offline follow-ups: composer family flip + span-v2 (program-2-terra-probe.manifest.json) ──
+
+  - id: paper2.program2.terra.v1_sonnet_delivered_0293
+    epoch: "2.0"
+    description: "§6.22 family flip: v1 delivered grade 0.293 (17/58), sonnet composer."
+    source_keys:
+      - "stat|0|terra probe v1 sonnet delivered 0.293"
+    statement:
+      pattern: "delivered grade 0\\.293 \\(17/58\\) in both families"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v1.sonnet.delivered
+    assertion:
+      op: approx
+      expected: 0.293
+      tolerance_abs: 0.0005
+    remediation:
+      - "The sonnet v1 reference is a zero-call regrade of the archived Phase 4 delivered file — verify byte-exact fidelity before changing."
+
+  - id: paper2.program2.terra.v1_terra_delivered_0293
+    epoch: "2.0"
+    description: "§6.22 family flip: v1 delivered grade 0.293 (17/58), terra composer — family-invariant."
+    source_keys:
+      - "stat|0|terra probe v1 terra delivered 0.293"
+    statement:
+      pattern: "delivered grade 0\\.293 \\(17/58\\) in both families"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v1.terra.delivered
+    assertion:
+      op: approx
+      expected: 0.293
+      tolerance_abs: 0.0005
+    remediation:
+      - "Family-invariance is moment-level (56/58 same verdicts), not aggregate coincidence — check per-moment agreement too."
+
+  - id: paper2.program2.terra.v1_sonnet_failclosed_0448
+    epoch: "2.0"
+    description: "§6.22 family flip: v1 fail-closed union 0.448 (26/58), sonnet composer."
+    source_keys:
+      - "stat|0|terra probe v1 sonnet fail-closed 0.448"
+    statement:
+      pattern: "fail-closed union 0\\.448 \\(26/58\\) with 2 rescued in both"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v1.sonnet.failClosed
+    assertion:
+      op: approx
+      expected: 0.448
+      tolerance_abs: 0.0005
+    remediation:
+      - "Must match §6.20's coupling-probe composite (same apparatus, byte-preserved default pin)."
+
+  - id: paper2.program2.terra.v1_terra_failclosed_0448
+    epoch: "2.0"
+    description: "§6.22 family flip: v1 fail-closed union 0.448 (26/58), terra composer — family-invariant."
+    source_keys:
+      - "stat|0|terra probe v1 terra fail-closed 0.448"
+    statement:
+      pattern: "fail-closed union 0\\.448 \\(26/58\\) with 2 rescued in both"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v1.terra.failClosed
+    assertion:
+      op: approx
+      expected: 0.448
+      tolerance_abs: 0.0005
+    remediation:
+      - "Family-invariance is moment-level (56/58 same verdicts), not aggregate coincidence — check per-moment agreement too."
+
+  - id: paper2.program2.terra.v2_sonnet_delivered_0586
+    epoch: "2.0"
+    description: "§6.22 span-v2: delivered compliance 0.586 (34/58), sonnet composer."
+    source_keys:
+      - "stat|0|terra probe v2 sonnet delivered 0.586"
+    statement:
+      pattern: "\\*\\*0\\.586\\*\\* \\(34/58\\) sonnet, \\*\\*0\\.603\\*\\* \\(35/58\\) terra"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v2.sonnet.delivered
+    assertion:
+      op: approx
+      expected: 0.586
+      tolerance_abs: 0.0005
+    remediation:
+      - "v2 extraction exists only in the offline probe — adopting it live is a separate, unlicensed decision (§6.22 caveats)."
+
+  - id: paper2.program2.terra.v2_terra_delivered_0603
+    epoch: "2.0"
+    description: "§6.22 span-v2: delivered compliance 0.603 (35/58), terra composer."
+    source_keys:
+      - "stat|0|terra probe v2 terra delivered 0.603"
+    statement:
+      pattern: "\\*\\*0\\.586\\*\\* \\(34/58\\) sonnet, \\*\\*0\\.603\\*\\* \\(35/58\\) terra"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: headline.v2.terra.delivered
+    assertion:
+      op: approx
+      expected: 0.603
+      tolerance_abs: 0.0005
+    remediation:
+      - "v2 extraction exists only in the offline probe — adopting it live is a separate, unlicensed decision (§6.22 caveats)."
+
+  - id: paper2.program2.terra.calls_v1_terra_54
+    epoch: "2.0"
+    description: "§6.22 call accounting: v1 terra leg made 54 composer calls (composed 53 + span-lost 1, per the delivered file's bySource counts)."
+    source_keys:
+      - "n|0|terra probe v1 terra composer calls 54"
+    statement:
+      pattern: "54 composer calls per leg across the three paid legs"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: callCounts.composerCallsPerLeg.v1_terra
+    assertion:
+      op: eq
+      expected: 54
+    remediation:
+      - "callCounts is derived from the sha256-pinned delivered files (composed + fallback_span_lost rows); recount from the archive if the manifest changes."
+
+  - id: paper2.program2.terra.calls_v2_sonnet_54
+    epoch: "2.0"
+    description: "§6.22 call accounting: v2 sonnet leg made 54 composer calls (per the delivered file's bySource counts)."
+    source_keys:
+      - "n|0|terra probe v2 sonnet composer calls 54"
+    statement:
+      pattern: "54 composer calls per leg across the three paid legs"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: callCounts.composerCallsPerLeg.v2_sonnet
+    assertion:
+      op: eq
+      expected: 54
+    remediation:
+      - "callCounts is derived from the sha256-pinned delivered files (composed + fallback_span_lost rows); recount from the archive if the manifest changes."
+
+  - id: paper2.program2.terra.calls_v2_terra_54
+    epoch: "2.0"
+    description: "§6.22 call accounting: v2 terra leg made 54 composer calls (per the delivered file's bySource counts)."
+    source_keys:
+      - "n|0|terra probe v2 terra composer calls 54"
+    statement:
+      pattern: "54 composer calls per leg across the three paid legs"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: callCounts.composerCallsPerLeg.v2_terra
+    assertion:
+      op: eq
+      expected: 54
+    remediation:
+      - "callCounts is derived from the sha256-pinned delivered files (composed + fallback_span_lost rows); recount from the archive if the manifest changes."
+
+  - id: paper2.program2.terra.calls_total_roughly_160
+    epoch: "2.0"
+    description: "§6.22 call accounting: roughly 160 frontier calls in total across the three paid legs (artifact-derived total: 162). Registered after a manual audit caught '~110' surviving all three validators (paper revision v3.0.225)."
+    source_keys:
+      - "n|0|terra probe frontier calls roughly 160"
+    statement:
+      pattern: "Roughly 160 frontier calls in total — 54 composer calls per leg across the three paid legs"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json
+      path: callCounts.paidLegsTotal
+    assertion:
+      op: approx
+      expected: 160
+      tolerance_abs: 5
+    remediation:
+      - "The exact artifact-derived total is 162 = 3 × 54; the paper states 'roughly 160'. If either side moves outside ±5, recount from the sha256-pinned delivered files and fix the drifting side."
+
+symmetry_rules:
+  - id: symmetry.program2.terra.v1_delivered_family_invariance
+    epoch: "2.0"
+    type: difference_lte
+    left_claim_id: paper2.program2.terra.v1_sonnet_delivered_0293
+    right_claim_id: paper2.program2.terra.v1_terra_delivered_0293
+    threshold: 0.0005
+    remediation:
+      - "§6.22's family-invariance headline requires identical v1 delivered grades across composer families; if they diverge, the 'changes nothing the audit can see' sentence must be rewritten."
+
+  - id: symmetry.program2.terra.v1_failclosed_family_invariance
+    epoch: "2.0"
+    type: difference_lte
+    left_claim_id: paper2.program2.terra.v1_sonnet_failclosed_0448
+    right_claim_id: paper2.program2.terra.v1_terra_failclosed_0448
+    threshold: 0.0005
+    remediation:
+      - "§6.22's family-invariance headline requires identical v1 fail-closed unions across composer families; if they diverge, the 'changes nothing the audit can see' sentence must be rewritten."
