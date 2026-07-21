@@ -159,3 +159,45 @@ export async function committeeMiniGenerate({
   );
   return { text: data.message?.content ?? '', latencyMs: Date.now() - startedAt };
 }
+
+// Phase 5d spanCue.v1 (PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md
+// §2.1): do the extracted question sentences carry the frozen cue?
+export function committeeSpanCarriesCue(spans) {
+  return PROGRAM2_WARRANT_CUE_RE.test((spans || []).join(' '));
+}
+
+// Phase 5d §3 census rule: the text the committee approved for delivery —
+// the composed turn on the composed path, else the resolved fallback text.
+export function committeeApprovedText(moment) {
+  if (!moment) return '';
+  if (moment.source === 'composed') return String(moment.composedText || '');
+  return String(moment.deliveredFallbackText || moment.miniText || '');
+}
+
+// Phase 5d deliveryGuard.v1 (§2.2): when the finalized turn text differs from
+// the committee-approved envelope and the turn commits no premise release,
+// re-impose span ownership by swapping the final question sentence for the
+// protected span, verbatim. The clue body is never edited; premise-release
+// turns are never touched (the caller passes releasedNowCount from the
+// committed pacing); question count is preserved, not repaired.
+export function applyCommitteeDeliveryGuard({ finalText, approvedText, span, releasedNowCount }) {
+  const record = { policy: 'v1', eligible: false, applied: false, reason: null, replacedQuestion: null };
+  const final = String(finalText || '');
+  const skip = (reason) => ({ applied: false, text: final, record: { ...record, reason } });
+  if (!span) return skip('no_span');
+  if ((releasedNowCount || 0) > 0) return skip('premise_release_turn');
+  if (normalizeCommitteeWhitespace(final) === normalizeCommitteeWhitespace(approvedText))
+    return skip('shipped_as_approved');
+  record.eligible = true;
+  if (normalizeCommitteeWhitespace(final).includes(normalizeCommitteeWhitespace(span)))
+    return { applied: false, text: final, record: { ...record, reason: 'span_already_present' } };
+  const questions = committeeQuestionSentences(final);
+  const lastQuestion = questions.at(-1) || null;
+  if (!lastQuestion) return { applied: false, text: final, record: { ...record, reason: 'no_question_sentence' } };
+  const index = final.lastIndexOf(lastQuestion);
+  if (index < 0) return { applied: false, text: final, record: { ...record, reason: 'question_not_locatable' } };
+  const swapped = final.slice(0, index) + span + final.slice(index + lastQuestion.length);
+  record.applied = true;
+  record.replacedQuestion = lastQuestion.trim();
+  return { applied: true, text: swapped, record };
+}

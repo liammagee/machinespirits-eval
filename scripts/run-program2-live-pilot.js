@@ -105,7 +105,13 @@ function deterministicShuffle(rows, seed) {
 function commandForJob(
   job,
   outputRoot,
-  { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null, world = PHASE5_LIVE_PILOT_SPEC.world } = {},
+  {
+    runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed,
+    fallbackPolicy = null,
+    world = PHASE5_LIVE_PILOT_SPEC.world,
+    spanCuePolicy = null,
+    deliveryGuard = null,
+  } = {},
 ) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
   return [
@@ -164,6 +170,8 @@ function commandForJob(
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
+    ...(spanCuePolicy ? ['--committee-span-cue', spanCuePolicy] : []),
+    ...(deliveryGuard ? ['--committee-delivery-guard', deliveryGuard] : []),
     '--dag',
     '--no-stream',
     '--no-interim-animation',
@@ -310,6 +318,89 @@ export function validatePhase5cLivePilotPlan(plan) {
     if (cellCounts.get(`${profile}|committee`) !== PHASE5C_SPEC.committeeRepeats)
       errors.push(`${profile} committee cell count mismatch`);
     if (cellCounts.get(`${profile}|silent_control`) !== PHASE5C_SPEC.controlRepeats)
+      errors.push(`${profile} control cell count mismatch`);
+  }
+  return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
+}
+
+// Phase 5d (PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md): 12
+// committee-v3 dialogues (fallback v2 + spanCue v1 + deliveryGuard v1) + 6
+// fresh silent controls on the home world, seed 20260722; everything else
+// inherited from the Phase 5 spec.
+export const PHASE5D_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-phase5d-plan.v1',
+  preregistration: 'PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md',
+  runSeed: 20260722,
+  committeeRepeats: 6,
+  controlRepeats: 3,
+  fallbackPolicy: 'v2',
+  spanCuePolicy: 'v1',
+  deliveryGuard: 'v1',
+});
+
+export function buildPhase5dLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5d' } = {}) {
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (let repeat = 1; repeat <= PHASE5D_SPEC.committeeRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'committee' });
+    }
+    for (let repeat = 1; repeat <= PHASE5D_SPEC.controlRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'silent_control' });
+    }
+  }
+  const jobs = deterministicShuffle(cells, PHASE5D_SPEC.runSeed).map((cell, index) => {
+    const id = [`p5d-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: PHASE5D_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? PHASE5D_SPEC.fallbackPolicy : null,
+        spanCuePolicy: cell.arm === 'committee' ? PHASE5D_SPEC.spanCuePolicy : null,
+        deliveryGuard: cell.arm === 'committee' ? PHASE5D_SPEC.deliveryGuard : null,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...PHASE5D_SPEC,
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over 12 committee-v3 + 6 silent_control cells',
+    jobs,
+  };
+}
+
+export function validatePhase5dLivePilotPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.arm].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const policy = flagValue(job.command, '--committee-fallback-policy');
+    const spanCue = flagValue(job.command, '--committee-span-cue');
+    const guard = flagValue(job.command, '--committee-delivery-guard');
+    if (job.arm === 'committee' && policy !== 'v2') errors.push(`${job.id} missing fallback policy v2`);
+    if (job.arm === 'committee' && spanCue !== 'v1') errors.push(`${job.id} missing span-cue policy v1`);
+    if (job.arm === 'committee' && guard !== 'v1') errors.push(`${job.id} missing delivery-guard v1`);
+    if (job.arm === 'silent_control' && (policy !== null || spanCue !== null || guard !== null))
+      errors.push(`${job.id} control carries a committee policy flag`);
+    if (flagValue(job.command, '--world') !== PHASE5_LIVE_PILOT_SPEC.world) errors.push(`${job.id} world mismatch`);
+    if (flagValue(job.command, '--run-seed') !== String(PHASE5D_SPEC.runSeed))
+      errors.push(`${job.id} run-seed mismatch`);
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily)
+      errors.push(`${job.id} tutor-family mismatch`);
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    if (cellCounts.get(`${profile}|committee`) !== PHASE5D_SPEC.committeeRepeats)
+      errors.push(`${profile} committee cell count mismatch`);
+    if (cellCounts.get(`${profile}|silent_control`) !== PHASE5D_SPEC.controlRepeats)
       errors.push(`${profile} control cell count mismatch`);
   }
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
@@ -504,8 +595,13 @@ async function main() {
       build: buildPhase5cLivePilotPlan,
       validate: validatePhase5cLivePilotPlan,
     },
+    '5d': {
+      root: 'exports/program2-live-pilot-5d',
+      build: buildPhase5dLivePilotPlan,
+      validate: validatePhase5dLivePilotPlan,
+    },
   };
-  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
+  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, or 5d)`);
   const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });

@@ -229,10 +229,13 @@ import {
 import {
   PROGRAM2_COMMITTEE_DEFAULTS,
   PROGRAM2_COMMITTEE_SCHEMA,
+  applyCommitteeDeliveryGuard,
   buildCommitteeCompositionBlock,
+  committeeApprovedText,
   committeeFallbackBatteryPass,
   committeeMiniGenerate,
   committeeQuestionSentences,
+  committeeSpanCarriesCue,
   runCommitteeBattery,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
@@ -9670,6 +9673,7 @@ async function callTutor({
       battery: null,
       source: null,
     };
+    state.committee.currentMoment = moment;
     let chosen;
     if (miniError || !miniText) {
       moment.source = 'frontier_mini_unavailable';
@@ -9680,8 +9684,63 @@ async function callTutor({
         repairAttempt: 0,
       });
     } else {
-      const spans = committeeQuestionSentences(miniText);
+      let spans = committeeQuestionSentences(miniText);
       moment.spanSentenceCount = spans.length;
+      // Phase 5d spanCue.v1 (PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md
+      // §2.1): if the greedy reply's question sentences carry no frozen cue
+      // word, resample the mini (temperature 0.35, <=2 attempts — the 5b
+      // pins) and let the first cue-bearing reply supply the span and the
+      // fallback base; otherwise keep the greedy reply and record the miss.
+      if (state.committee.spanCuePolicy === 'v1' && spans.length && !committeeSpanCarriesCue(spans)) {
+        moment.miniTextGreedy = miniText;
+        moment.spanCue = { policy: 'v1', attempts: 0, outcome: 'span_cue_miss' };
+        for (let attempt = 1; attempt <= 2; attempt += 1) {
+          moment.spanCue.attempts = attempt;
+          try {
+            const spanCueStartedAt = new Date().toISOString();
+            const sample = await committeeMiniGenerate({
+              url: state.committee.ollamaUrl,
+              model: state.committee.miniModel,
+              systemPrompt: effectiveSystemPrompt,
+              messages: [...context, { role: 'user', content: miniUserPrompt }],
+              numCtx: state.committee.numCtx,
+              maxTokens,
+              timeoutMs: state.committee.timeoutMs,
+              temperature: 0.35,
+            });
+            const sampleText = String(sample.text || '').trim();
+            appendTraceEvent(trace, {
+              type: 'model_call',
+              role: `${roleBase}_committee_mini_spancue`,
+              turn: tutorTurn,
+              startedAt: spanCueStartedAt,
+              provider: 'ollama',
+              model: state.committee.miniModel,
+              request: { config: { temperature: 0.35, spanCueAttempt: attempt } },
+              response: { text: sampleText, latencyMs: sample.latencyMs },
+            });
+            const sampleSpans = committeeQuestionSentences(sampleText);
+            if (sampleSpans.length && committeeSpanCarriesCue(sampleSpans)) {
+              miniText = sampleText;
+              spans = sampleSpans;
+              moment.miniText = miniText;
+              moment.spanSentenceCount = spans.length;
+              moment.spanCue.outcome = `resampled_${attempt}`;
+              break;
+            }
+          } catch (err) {
+            appendTraceEvent(trace, {
+              type: 'program2_spancue_resample_error',
+              turn: tutorTurn,
+              attempt,
+              error: String(err?.message || err).slice(0, 200),
+            });
+            break;
+          }
+        }
+      } else if (state.committee.spanCuePolicy === 'v1' && spans.length) {
+        moment.spanCue = { policy: 'v1', attempts: 0, outcome: 'greedy_ok' };
+      }
       if (!spans.length) {
         moment.source = 'fallback_no_span';
         chosen = await resolveCommitteeFallbackEnvelope();
@@ -11089,6 +11148,36 @@ async function runOneTurn(
     });
   }
 
+  // Phase 5d deliveryGuard.v1 (PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md
+  // §2.2): at a committee moment whose finalized text is not the approved
+  // envelope (the response-guard repair path replaced it) and which commits
+  // no premise release, re-impose span ownership before the compliance
+  // audit reads the shipped text. Premise-release turns are never touched.
+  const committeeGuardMoment = state.committee?.currentMoment;
+  if (
+    state.committee?.deliveryGuard === 'v1' &&
+    committeeGuardMoment &&
+    committeeGuardMoment.turn === tutorTurn &&
+    committeeGuardMoment.span
+  ) {
+    const guardOutcome = applyCommitteeDeliveryGuard({
+      finalText: response.text,
+      approvedText: committeeApprovedText(committeeGuardMoment),
+      span: committeeGuardMoment.span,
+      releasedNowCount: releasePacing?.releasedNow?.length || 0,
+    });
+    committeeGuardMoment.deliveryGuard = guardOutcome.record;
+    appendTraceEvent(state.trace, {
+      type: 'program2_delivery_guard',
+      turn: tutorTurn,
+      turnId,
+      record: guardOutcome.record,
+    });
+    if (guardOutcome.applied) {
+      response.text = guardOutcome.text;
+    }
+  }
+
   const pointOfActionCompliance = auditTutorStubPointOfActionCompliance({
     turn: pointOfAction,
     tutorText: response.text,
@@ -12459,6 +12548,9 @@ async function main() {
       miniModel: args['committee-mini-model'],
       ollamaUrl: args['committee-ollama-url'],
       fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
+      spanCuePolicy: args['committee-span-cue'] === 'v1' ? 'v1' : 'off',
+      deliveryGuard: args['committee-delivery-guard'] === 'v1' ? 'v1' : 'off',
+      currentMoment: null,
       numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
       timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
     },
