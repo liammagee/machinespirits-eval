@@ -161,8 +161,10 @@ third):
       zero-model gate PASS (18 jobs, 0 model calls); sonnet + terra
       one-call probes through the production bridge PASS (sonnet after
       Amendment 1's alias fix); ollama preflight in-launcher; launch
-      sha-pinned to **80534e9e19d9a3ce3c7a2e0ddd51651f09a4b0c7**
-      (= Amendment 1 commit; supersedes 6423de2f as the launch pin).
+      sha-pinned to **27aae3b7b42031251882b559b4b9cf4202e29139**
+      (= Amendment 2 commit; supersedes 80534e9e and 6423de2f as the
+      launch pin; first launch attempt aborted pre-seal, see
+      Amendment 2).
 
 ## Amendment 1 (2026-07-22, pre-launch — zero sealed dialogues)
 
@@ -176,3 +178,18 @@ lineage commit 80534e9e), so the frozen spec string
 model strings stay byte-identical to the frozen configuration. The
 terra probe passed unchanged. Arm-independent and
 comparability-neutral; no sealed data existed at fix time.
+
+## Amendment 2 (2026-07-22, launch attempt 1 aborted — zero sealed dialogues)
+
+Launch attempt 1 died at job 1 (a committee job) before any model call
+on that job: tutor-stub reads the two new flags but they were never
+registered in its parseArgs options whitelist, so the spawn failed at
+argument-parse time. The runner proceeded to job 2 (a control, which
+carries no new flags); it was killed in-flight roughly two minutes in,
+unsealed, and re-runs under sealed-trace resume. Zero dialogues sealed
+in either arm. Fix: register `--committee-span-cue` and
+`--committee-delivery-guard` in the whitelist (pinned commit 27aae3b7),
+and the zero-paid smoke now includes a process-level parse gate (spawn
+tutor-stub with the flags; the earlier function-level smoke could not
+catch a spawn-time failure). Smoke re-run: 11/11 PASS. Launch re-pinned
+to 27aae3b7.
