@@ -1,0 +1,89 @@
+{
+  "schema": "machinespirits.program2.terra-probe-manifest.v1",
+  "generatedAt": "2026-07-21T07:43:57.054Z",
+  "tier": "post-hoc exploratory (no prereg); offline single-turn regeneration at the Phase 4 archived 58 held-out moments",
+  "note": "notes/program-2/2026-07-21-terra-composer-probe.md",
+  "fidelityValidation": {
+    "miniSoloRegrade": 0.414,
+    "sonnetDeliveredRegrade": 0.293,
+    "failClosedUnion": 0.448,
+    "rescued": 2,
+    "against": "program-2-phase4-results.manifest.json (byte-exact)"
+  },
+  "headline": {
+    "v1": {
+      "sonnet": {
+        "delivered": 0.293,
+        "failClosed": 0.448,
+        "rescued": 2,
+        "spanLost": 3
+      },
+      "terra": {
+        "delivered": 0.293,
+        "failClosed": 0.448,
+        "rescued": 2,
+        "spanLost": 1
+      },
+      "perMomentAgreement": "56/58",
+      "composerAddedQuestions": 0,
+      "cueDropMechanism": "25/54 cue-free spans, 20 with cue in a dropped statement sentence; composed cue failures 22 both families vs mini 6"
+    },
+    "v2": {
+      "extraction": "cue-preferring single question + carried cue statement (--span-mode v2); precheck 54/54 single-question, cue coverage 29->49/54, 20 carried",
+      "sonnet": {
+        "delivered": 0.586,
+        "failClosed": 0.586,
+        "rescued": 10,
+        "spanLost": 1,
+        "composerAddedQuestions": 3
+      },
+      "terra": {
+        "delivered": 0.603,
+        "failClosed": 0.603,
+        "rescued": 11,
+        "spanLost": 0,
+        "composerAddedQuestions": 0
+      },
+      "perMomentAgreement": "55/58",
+      "shareOfOfflineAchievableCeiling": "77-79% (ceiling 44/58 ~= 0.759)"
+    }
+  },
+  "callCounts": {
+    "derivedAt": "2026-07-21T08:48:29Z",
+    "derivation": "composer calls per paid leg = delivered rows with source in {composed, fallback_span_lost} (fallback_no_span rows never invoke the composer), counted from the sha256-pinned delivered files listed under files; the v1 sonnet reference (coupling-probe-delivered.jsonl, pinned in program-2-phase4-results.manifest.json) is a zero-call regrade and contributes no calls",
+    "deliveredBySource": {
+      "v1_terra": {
+        "composed": 53,
+        "fallback_span_lost": 1,
+        "fallback_no_span": 4
+      },
+      "v2_sonnet": {
+        "composed": 53,
+        "fallback_span_lost": 1,
+        "fallback_no_span": 4
+      },
+      "v2_terra": {
+        "composed": 54,
+        "fallback_span_lost": 0,
+        "fallback_no_span": 4
+      }
+    },
+    "composerCallsPerLeg": {
+      "v1_terra": 54,
+      "v2_sonnet": 54,
+      "v2_terra": 54
+    },
+    "paidLegsTotal": 162
+  },
+  "floorDir": "/Users/lmagee/.machinespirits-data/program-2/floor",
+  "files": {
+    "coupling-probe-terra-delivered.jsonl": "796c01860cdb57d317812e34b8d71dff405a760609c7f67e36f94e591f97967e",
+    "coupling-probe-terra-graded.json": "62fc64011b0e845f57d774cc23593df7f06b38ac064977923ce3a5e3398cb056",
+    "terra-probe-comparison.json": "576326bb4a4862d01a6d94e65b5ee0f4ef0d89b432e2801ed0c1882303cace74",
+    "coupling-probe-v2span-sonnet-delivered.jsonl": "a231abef923230c9c0fe1d8ac03e5a960c6f14a18bc9f535b9a8968ad90aa82e",
+    "coupling-probe-v2span-sonnet-graded.json": "94596c4cc480f0b856768759f475e729ab92fb61e8d0bca1fb30988c57427d99",
+    "coupling-probe-v2span-terra-delivered.jsonl": "6a2d664e12bc6f2e7430ff428a59c7375ea34b9b9ef86e4732712763aa81465f",
+    "coupling-probe-v2span-terra-graded.json": "5f9abf020fed6458ff99384d45e033d01a19fc5a88fdbdee6bf3a84563e0034c",
+    "terra-probe-v2span-comparison.json": "30bef6b59f080721cee5eeda3d655fdd52bbfd5eb1cc762939f82da9396ebda1"
+  }
+}

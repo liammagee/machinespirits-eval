@@ -1873,6 +1873,86 @@ function evaluateCodePath(evidence, rootDir) {
   };
 }
 
+function resolveJsonPath(root, jsonPath) {
+  const segments = String(jsonPath || '')
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter((segment) => segment.length > 0);
+  let node = root;
+  for (const segment of segments) {
+    if (node == null || typeof node !== 'object') return undefined;
+    node = Array.isArray(node) ? node[Number(segment)] : node[segment];
+  }
+  return node;
+}
+
+/**
+ * artifact_json — read a numeric value out of a checked-in JSON evidence
+ * artifact (e.g. config/adaptive-tutor-evidence/*.manifest.json).
+ *
+ *   evidence:
+ *     type: artifact_json
+ *     file: config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json
+ *     path: heldoutGreedy.instruct.tunedSFT      # dot path; arrays via ci95[0] or ci95.0
+ *     pattern: "\\(([0-9.]+)\\)"                  # optional: capture group 1 extracts the
+ *                                                 # number when the leaf is a string like
+ *                                                 # "32/83 (0.386)"
+ *
+ * The fingerprint carries the artifact file's sha256, so ANY change to the
+ * manifest flips the snapshot fingerprint and surfaces stale-claim risk on
+ * every claim anchored to it.
+ */
+function evaluateArtifactJson(evidence, rootDir) {
+  const { file, path: jsonPath, pattern = null } = evidence;
+  if (!file) throw new Error('artifact_json requires file');
+  if (!jsonPath) throw new Error('artifact_json requires path');
+  const filePath = path.resolve(rootDir || '.', file);
+  if (!fs.existsSync(filePath)) throw new Error(`artifact_json: file not found: ${file}`);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`artifact_json: invalid JSON in ${file}: ${error.message}`);
+  }
+  const leaf = resolveJsonPath(parsed, jsonPath);
+  if (leaf === undefined) throw new Error(`artifact_json: path not found: ${jsonPath} in ${file}`);
+
+  let value;
+  if (typeof leaf === 'number') {
+    value = leaf;
+  } else if (typeof leaf === 'string') {
+    let numericText = leaf;
+    if (pattern) {
+      const match = leaf.match(new RegExp(pattern));
+      if (!match || match[1] === undefined) {
+        throw new Error(`artifact_json: pattern captured nothing from "${leaf}" at ${jsonPath} in ${file}`);
+      }
+      numericText = match[1];
+    }
+    value = Number(numericText);
+    if (!isFiniteNumber(value)) {
+      throw new Error(`artifact_json: non-numeric value "${numericText}" at ${jsonPath} in ${file}`);
+    }
+  } else {
+    throw new Error(
+      `artifact_json: unsupported leaf type ${leaf === null ? 'null' : typeof leaf} at ${jsonPath} in ${file}`,
+    );
+  }
+
+  const sha256 = createHash('sha256').update(raw).digest('hex');
+  const details = { file, path: jsonPath, file_sha256: sha256 };
+  if (pattern) {
+    details.pattern = pattern;
+    details.raw_leaf = leaf;
+  }
+  return {
+    value,
+    details,
+    fingerprint: { source: 'artifact_json', file, path: jsonPath, sha256, value },
+  };
+}
+
 // ── Dependency graph utilities ──────────────────────────────────
 
 /**
@@ -2031,6 +2111,7 @@ export function evaluateEvidence(db, manifest, evidence, rootDir, { claimResults
   if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence, rootDir);
   if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
   if (type === 'code_path') return evaluateCodePath(evidence, rootDir);
+  if (type === 'artifact_json') return evaluateArtifactJson(evidence, rootDir);
   if (type === 'cross_reference') return evaluateCrossReference(evidence, claimResults);
   if (type === 'theoretical') return evaluateTheoretical(evidence);
   if (type === 'jsonl_critique_stats') throw new Error('jsonl_critique_stats requires rootDir context');

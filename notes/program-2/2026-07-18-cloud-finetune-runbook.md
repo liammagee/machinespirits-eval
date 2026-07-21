@@ -49,7 +49,11 @@ freeze itself may treat as environment validation.
 ssh ubuntu@<instance-ip>
 
 python3 -m venv ~/venv && source ~/venv/bin/activate
-pip install "trl>=0.14" peft transformers accelerate datasets bitsandbytes
+pip install "trl>=0.14" peft transformers accelerate datasets bitsandbytes pillow torchvision
+# pillow/torchvision: Qwen3.5's multimodal processor requires them even for
+# text-only training (discovered on first box, 2026-07-18).
+# Optional speed-up for the licensed runs (torch fallback works if the
+# second package fails to build): pip install flash-linear-attention causal-conv1d
 huggingface-cli login   # token needed only to pull Qwen weights
 
 # pull both variants once (~19 GB each, fast pipes)

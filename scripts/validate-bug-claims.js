@@ -4,6 +4,13 @@
  *
  * Research integrity audit for paper/manifest credibility.
  *
+ * SCOPE: legacy Paper 1.0 (docs/research/paper-full.md) + the 2026-02-25 DB
+ * manifest by default (override the manuscript with --paper <path>, but the
+ * manifest/bug-disclosure checks remain legacy-shaped). Paper 2.0
+ * (paper-full-2.0.md) empirical claims are machine-checked by
+ * `npm run paper:provable-discourse` (config/provable-discourse*.yaml),
+ * NOT by this script.
+ *
  * What it checks:
  *  1) Manifest ↔ DB and Paper ↔ Manifest validation (delegates to validate-paper-manifest)
  *  2) Manifest ↔ Logs validation for multi-turn rows
@@ -2619,6 +2626,17 @@ function main() {
     console.log(
       `strict=${strictMode} include_all_runs=${includeAllRuns} skip_command_checks=${skipCommandChecks} skip_claims_suite=${skipClaimsSuite}`,
     );
+    const isLegacyDefault = PAPER_PATH === path.join(ROOT, 'docs', 'research', 'paper-full.md');
+    if (isLegacyDefault) {
+      console.log(
+        paint(
+          'scope: LEGACY Paper 1.0 (docs/research/paper-full.md) + the 2026-02-25 DB manifest. ' +
+            'Paper 2.0 (paper-full-2.0.md) claims are NOT audited here — they are machine-checked by ' +
+            '`npm run paper:provable-discourse` (config/provable-discourse*.yaml ledgers).',
+          ANSI.yellow,
+        ),
+      );
+    }
   }
 
   ensureFile(MANIFEST_PATH);

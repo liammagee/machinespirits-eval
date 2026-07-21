@@ -655,6 +655,389 @@
         "match_count": 1
       },
       "actual_value": 1
+    },
+    "paper2.program2.phase4.instruct_tuned_0414": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.instruct.tunedSFT",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.414
+      },
+      "actual_value": 0.414
+    },
+    "paper2.program2.phase4.instruct_floor_0310": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.instruct.floorSameLineage",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.31
+      },
+      "actual_value": 0.31
+    },
+    "paper2.program2.phase4.composed_alone_0293": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.composedAlone",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.293
+      },
+      "actual_value": 0.293
+    },
+    "paper2.program2.phase4.fail_closed_0448": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.couplingFailClosed",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.448
+      },
+      "actual_value": 0.448
+    },
+    "paper2.program2.phase4.frontier_live_0276": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.frontierHistoricalAtMoments",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.276
+      },
+      "actual_value": 0.276
+    },
+    "paper2.program2.phase4.heldout_n58": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.structuralCeiling.of",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 58
+      },
+      "actual_value": 58
+    },
+    "paper2.program2.phase4.ceiling_unpassable_14": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.structuralCeiling.unpassableMoments",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 14
+      },
+      "actual_value": 14
+    },
+    "paper2.program2.phase4.achievable_ceiling_076": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json",
+        "path": "heldoutGreedy.structuralCeiling.achievableCeiling",
+        "sha256": "8525a7d34d226a79548b035e5288b1a23341b389997f305f9ab1cbfe9c9c2954",
+        "value": 0.759
+      },
+      "actual_value": 0.759
+    },
+    "paper2.program2.phase5.e1_committee_rate_0200": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json",
+        "path": "headline.e1_compliance.committee",
+        "sha256": "de2f806dfbb361bbb38a3577abad66b1960f6c0edfc4501613b61442256b1c24",
+        "value": 0.2
+      },
+      "actual_value": 0.2
+    },
+    "paper2.program2.phase5.e1_control_rate_0160": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json",
+        "path": "headline.e1_compliance.control",
+        "sha256": "de2f806dfbb361bbb38a3577abad66b1960f6c0edfc4501613b61442256b1c24",
+        "value": 0.16
+      },
+      "actual_value": 0.16
+    },
+    "paper2.program2.phase5.e1_diff_0040": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json",
+        "path": "headline.e1_compliance.diff",
+        "sha256": "de2f806dfbb361bbb38a3577abad66b1960f6c0edfc4501613b61442256b1c24",
+        "value": 0.04
+      },
+      "actual_value": 0.04
+    },
+    "paper2.program2.phase5.e1_ci_low": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json",
+        "path": "headline.e1_compliance.ci95[0]",
+        "sha256": "de2f806dfbb361bbb38a3577abad66b1960f6c0edfc4501613b61442256b1c24",
+        "value": -0.054
+      },
+      "actual_value": -0.054
+    },
+    "paper2.program2.phase5.e1_ci_high": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5-live-pilot.manifest.json",
+        "path": "headline.e1_compliance.ci95[1]",
+        "sha256": "de2f806dfbb361bbb38a3577abad66b1960f6c0edfc4501613b61442256b1c24",
+        "value": 0.133
+      },
+      "actual_value": 0.133
+    },
+    "paper2.program2.phase5b.e1b_committee_rate_0386": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5b.manifest.json",
+        "path": "headline.e1b.committee_v2",
+        "sha256": "7e80252922d582a0c69830228112b94bb6184b9d9ba8095ea8f0710dd2dc99d6",
+        "value": 0.386
+      },
+      "actual_value": 0.386
+    },
+    "paper2.program2.phase5b.e1b_control_rate_0150": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5b.manifest.json",
+        "path": "headline.e1b.pooled_control",
+        "sha256": "7e80252922d582a0c69830228112b94bb6184b9d9ba8095ea8f0710dd2dc99d6",
+        "value": 0.15
+      },
+      "actual_value": 0.15
+    },
+    "paper2.program2.phase5b.e1b_diff_0236": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5b.manifest.json",
+        "path": "headline.e1b.diff",
+        "sha256": "7e80252922d582a0c69830228112b94bb6184b9d9ba8095ea8f0710dd2dc99d6",
+        "value": 0.236
+      },
+      "actual_value": 0.236
+    },
+    "paper2.program2.phase5b.e1b_ci_low": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5b.manifest.json",
+        "path": "headline.e1b.ci95[0]",
+        "sha256": "7e80252922d582a0c69830228112b94bb6184b9d9ba8095ea8f0710dd2dc99d6",
+        "value": 0.128
+      },
+      "actual_value": 0.128
+    },
+    "paper2.program2.phase5b.e1b_ci_high": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5b.manifest.json",
+        "path": "headline.e1b.ci95[1]",
+        "sha256": "7e80252922d582a0c69830228112b94bb6184b9d9ba8095ea8f0710dd2dc99d6",
+        "value": 0.354
+      },
+      "actual_value": 0.354
+    },
+    "paper2.program2.phase5b.due_release_34_of_83": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+        "pattern": "34 of the 83 committee-v2 warrant moments",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5b.live_ceiling_49_of_83": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+        "pattern": "49/83 \u2248 0\\.59",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5c.e1c_committee_rate_0508": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+        "path": "headline.e1c.committee_v2",
+        "sha256": "fee9c760987cd773d72d564f7576028cce468216e3648258b4fcb1f469bd4bf0",
+        "value": 0.508
+      },
+      "actual_value": 0.508
+    },
+    "paper2.program2.phase5c.e1c_control_rate_0306": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+        "path": "headline.e1c.fresh_control",
+        "sha256": "fee9c760987cd773d72d564f7576028cce468216e3648258b4fcb1f469bd4bf0",
+        "value": 0.306
+      },
+      "actual_value": 0.306
+    },
+    "paper2.program2.phase5c.e1c_diff_0202": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+        "path": "headline.e1c.diff",
+        "sha256": "fee9c760987cd773d72d564f7576028cce468216e3648258b4fcb1f469bd4bf0",
+        "value": 0.202
+      },
+      "actual_value": 0.202
+    },
+    "paper2.program2.phase5c.e1c_ci_low": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+        "path": "headline.e1c.ci95[0]",
+        "sha256": "fee9c760987cd773d72d564f7576028cce468216e3648258b4fcb1f469bd4bf0",
+        "value": 0.072
+      },
+      "actual_value": 0.072
+    },
+    "paper2.program2.phase5c.e1c_ci_high": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+        "path": "headline.e1c.ci95[1]",
+        "sha256": "fee9c760987cd773d72d564f7576028cce468216e3648258b4fcb1f469bd4bf0",
+        "value": 0.338
+      },
+      "actual_value": 0.338
+    },
+    "paper2.program2.terra.v1_sonnet_delivered_0293": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v1.sonnet.delivered",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.293
+      },
+      "actual_value": 0.293
+    },
+    "paper2.program2.terra.v1_terra_delivered_0293": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v1.terra.delivered",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.293
+      },
+      "actual_value": 0.293
+    },
+    "paper2.program2.terra.v1_sonnet_failclosed_0448": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v1.sonnet.failClosed",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.448
+      },
+      "actual_value": 0.448
+    },
+    "paper2.program2.terra.v1_terra_failclosed_0448": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v1.terra.failClosed",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.448
+      },
+      "actual_value": 0.448
+    },
+    "paper2.program2.terra.v2_sonnet_delivered_0586": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v2.sonnet.delivered",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.586
+      },
+      "actual_value": 0.586
+    },
+    "paper2.program2.terra.v2_terra_delivered_0603": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "headline.v2.terra.delivered",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 0.603
+      },
+      "actual_value": 0.603
+    },
+    "paper2.program2.terra.calls_v1_terra_54": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "callCounts.composerCallsPerLeg.v1_terra",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 54
+      },
+      "actual_value": 54
+    },
+    "paper2.program2.terra.calls_v2_sonnet_54": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "callCounts.composerCallsPerLeg.v2_sonnet",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 54
+      },
+      "actual_value": 54
+    },
+    "paper2.program2.terra.calls_v2_terra_54": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "callCounts.composerCallsPerLeg.v2_terra",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 54
+      },
+      "actual_value": 54
+    },
+    "paper2.program2.terra.calls_total_roughly_160": {
+      "updated_at": "2026-07-21T08:58:44.627Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json",
+        "path": "callCounts.paidLegsTotal",
+        "sha256": "a50e786624d44226ac56dd1d9647d0b43b60c526b48779a691a26cb1a542f907",
+        "value": 162
+      },
+      "actual_value": 162
     }
   }
 }

@@ -15,7 +15,7 @@ import argparse
 
 from datasets import load_dataset
 from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForImageTextToText, AutoTokenizer
 from trl import KTOConfig, KTOTrainer
 
 FROZEN = {
@@ -34,10 +34,23 @@ def main() -> None:
     frozen = FROZEN[args.variant]
 
     tokenizer = AutoTokenizer.from_pretrained(frozen["model"], revision=frozen["revision"])
-    model = AutoModelForCausalLM.from_pretrained(
+    # Forced correction (2026-07-21, first real KTO execution): the SFT
+    # adapters carry the VLM-class module tree (model.language_model.*), so
+    # the base MUST load through the same class the verified merge uses —
+    # AutoModelForCausalLM would silently attach fresh zero adapters (the
+    # documented Phase 4 no-op-merge failure). Assert a trained lora_B is
+    # nonzero after loading: zero-init attach means key mismatch.
+    model = AutoModelForImageTextToText.from_pretrained(
         frozen["model"], revision=frozen["revision"], torch_dtype="bfloat16"
     )
     model = PeftModel.from_pretrained(model, args.from_adapter, is_trainable=True)
+    loaded_b = [
+        p.detach().abs().max().item()
+        for name, p in model.named_parameters()
+        if "lora_B" in name and "language_model" in name
+    ]
+    assert loaded_b and max(loaded_b) > 0, "SFT adapter did not load (zero lora_B — module-tree key mismatch)"
+    print(f"adapter load verified: {len(loaded_b)} language_model lora_B tensors, max |w| = {max(loaded_b):.6f}")
 
     data = load_dataset("json", data_files={"train": f"{args.data_dir}/kto.jsonl"})
 
@@ -48,8 +61,11 @@ def main() -> None:
         args=KTOConfig(
             output_dir=f"out-kto-{args.variant}",
             num_train_epochs=1,
-            per_device_train_batch_size=1,
-            gradient_accumulation_steps=8,
+            # Forced correction (2026-07-21): TRL refuses KTO at actual batch
+            # size 1 (the KL estimate degenerates). 4 x 2 preserves the frozen
+            # effective batch of 8; lr, epochs, seed, data unchanged.
+            per_device_train_batch_size=4,
+            gradient_accumulation_steps=2,
             learning_rate=5e-6,
             bf16=True,
             save_strategy="epoch",

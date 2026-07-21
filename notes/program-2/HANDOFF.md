@@ -185,3 +185,107 @@ one candidate.
 - The Phase 2 prereg freeze must carry: per-variant request shapes (frozen
   flattening template), per-variant training order and licensing, per-variant
   floors, and the cross-variant decision grammar above.
+
+---
+
+## H6 (2026-07-21) — Phase 5c cross-world dialogues BEGIN
+
+status: live (executing thread)
+
+Phase 5c (cross-world transfer probe, prereg frozen at 4bb1253f) paid
+dialogues begin 2026-07-21: 18 dialogues (10 committee-v2 + 8 fresh
+silent controls) on world_027_gazette_recall, pinned runtime e9b01bdd
+(91b8a50e lineage), plan/stub seed 20260721. Pre-launch gates all passed:
+zero-model gate (18 jobs), ollama preflight (program2-sft-instruct-v2),
+sonnet + terra one-call probes, and the §4 paid smoke (smoke-01 sealed:
+4 committee moments, 2 composed + 2 sampled-rescue, coherent gazette-
+costume spans, zero serving errors — GO). This run reads NOTHING in
+~/.machinespirits-data/program-2/adapters/ (the KTO session owns it) and
+uses no KTO artifact regardless of mid-run availability (prereg §2).
+Seal note follows when 18/18 are sealed.
+
+---
+
+## H7 (2026-07-21) — Paper fold + adaptation-architecture offshoot branch
+
+status: live (writing thread)
+
+New branch `claude/program-2-adaptation-offshoot` (from
+`claude/program-2-phase5-live-pilot`) carries the Phase 5/5b paper fold
+into `docs/research/paper-full-2.0.md` plus a subordinate design document
+(`docs/research/committee-architecture.md`) and the offshoot basis note
+(`notes/program-2/2026-07-21-adaptation-architecture-offshoot.md`).
+Scope: paper fold + subordinate doc ONLY — no runs, no model changes;
+never touches `~/.machinespirits-data/program-2/adapters/`. KTO and 5c
+are NOT folded (in flight; they get their own fold when sealed).
+
+---
+
+## H8 (2026-07-21) — Phase 5c dialogues SEALED
+
+status: done (executing thread; results committed with this entry)
+
+Phase 5c sealed 2026-07-21: 17/18 (9 committee-v2 + 8 fresh controls on
+world_027_gazette_recall), 1 attrition (p5c-14, deterministic auto-learner
+budget overflow both attempts — first attrition in the program), no abort.
+E1c PASS: 0.508 vs 0.306, diff +0.202, CI [0.072, 0.338] — the
+Marrick-trained artifact beats the frontier on a world it never saw,
+unchanged. Costume leak ZERO over all 61 delivered committee units
+(control base rate 4x generic "fair"). Seam PARITY (0.515); safety PASS
+(0.89 vs 0.88 — no turn-9 analogue here, confirming 5b's anatomy as a
+Marrick world property); coverage guardrail FAIL by point estimate
+(−0.061 vs −0.05, CI spans zero) — caveat carried, not excused. Archive:
+~/.machinespirits-data/program-2/phase5c-live; manifest
+program-2-phase5c.manifest.json; addendum in the 5c prereg §9. The
+adapters store was never read or written by this run.
+
+---
+
+## H9 (2026-07-21) — Terra cross-family composer probe (offline, exploratory)
+
+status: live (executing thread)
+
+New branch `claude/program-2-terra-composer-probe` (from the offshoot
+branch head, post-5c-seal). Scope: the OFFLINE terra flip only — re-run
+the Phase 4 coupling probe on the same archived 58 held-out moments with
+the composer swapped to `codex.gpt-5.6-terra` (~58 terra CLI calls; no
+dialogues, no seams, no ollama, no model changes; never touches
+`~/.machinespirits-data/program-2/adapters/`). Machinery:
+`program2-coupling-probe.mjs` gains `--composer` (default preserved:
+byte-identical sonnet behavior), additive per-row span/rawComposed
+fields, and append-mode resume; new deterministic comparator
+`program2-terra-probe-analyze.mjs`. Pipeline fidelity validated at zero
+cost before launch: mini-solo regrade 0.414, sonnet delivered regrade
+0.293, fail-closed union 0.448 with 2 rescued — all byte-exact against
+the phase4 manifest. Output:
+`~/.machinespirits-data/program-2/floor/coupling-probe-terra-delivered.jsonl`
+(new file; pinned Phase 4 artifacts untouched). Exploratory tier —
+descriptive numbers only, no prereg bar, nothing folds to the paper
+without its own pass. Results note follows.
+
+H9 results (2026-07-21, same day — probe sealed): 58/58, zero errors.
+Family-invariant at the audited letter: terra delivered 0.293 /
+fail-closed 0.448 / 2 rescued — identical to the sonnet references, with
+56/58 per-moment verdict agreement (one flip each way). Decomposition:
+zero composer-added questions in EITHER family (all one-question failures
+span-borne); the composed-alone penalty is span extraction dropping the
+mini's cue-bearing statement sentences (cue failures 6 mini → 22 both
+families; 20 droppable; each composer restored it in only 3). Terra held
+verbatim containment slightly better (1 span_lost vs 3). Flags: §6.20's
+"frontier re-added extra questions" clause is not supported by this
+decomposition (erratum-track, with the §6.19-mislabel note); lever =
+cue-preserving span extraction v2 (13 cue-only composed failures per
+family). Note: notes/program-2/2026-07-21-terra-composer-probe.md.
+Status → done. Composer seat measured fungible offline; a live half-flip
+remains the open question and is NOT licensed by this probe.
+
+H9 addendum (2026-07-21, later same day): span-extraction v2 leg SEALED
+(~110 calls, both families). Cue-preserving extraction converts the full
+lever: delivered 0.293 → 0.586 (sonnet) / 0.603 (terra); fail-closed
+0.448 → same; rescued 2 → 10/11; 77–79% of the achievable ceiling; the
+residual failures are premise/guards (extraction-independent).
+Family-invariance holds (55/58 agreement). New asymmetry: sonnet adds a
+second question in 3/53 v2 composed turns, terra 0/54 — the §6.20
+"re-added extra questions" erratum needs both halves. Live machinery
+untouched; v2 adoption live = separate decision. Details in the probe
+note's addendum.

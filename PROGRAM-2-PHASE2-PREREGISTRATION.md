@@ -252,3 +252,76 @@ denominators.
 Results manifest (artifact SHAs + headline numbers):
 `config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json`.
 Paper landing: §6.20.
+
+### Amendment 2 (2026-07-21) — KTO forced corrections at first execution
+
+The licensed KTO runs (both variants) hit two execution impossibilities on
+their first real launch; each correction is the minimal change that
+preserves every preservable frozen value, applied before any KTO result
+exists:
+
+1. **Batch geometry.** TRL's `KTOTrainer` refuses `per_device_train_batch_size=1`
+   (the KL term degenerates to the implied reward). Corrected 1×8 → 4×2,
+   preserving the frozen effective batch of 8; lr 5e-6, 1 epoch, seed
+   20260718, and the data file (sha d8e29db8…) unchanged.
+2. **Model class.** The frozen script loaded `AutoModelForCausalLM`, but the
+   SFT adapters it must start from carry the VLM-class module tree
+   (`base_model.model.model.language_model.*`, 496/716 keys) — loading
+   through the causal-LM tree silently attaches fresh zero adapters (the
+   §10 no-op-merge failure, recurring at the load boundary). Corrected to
+   `AutoModelForImageTextToText` with a hard assertion that a trained
+   `lora_B` in the `language_model` tree is nonzero after loading; the run
+   aborts rather than trains-from-nothing on any future key mismatch.
+
+Both corrections are stamped in the script header comments
+(`scripts/program2-train-kto.py`) and were verified live: the assertion
+passed and training stepped normally.
+
+---
+
+## Erratum (2026-07-21, post-hoc; appended outside frozen text)
+
+The §10 Amendment-1 results bullet attributes composed-alone 0.293 to "the
+frontier composer re-adds extra questions even under explicit instruction."
+A 2026-07-21 decomposition of the same archived delivered file
+(`notes/program-2/2026-07-21-terra-composer-probe.md`; paper §6.22;
+manifest `config/adaptive-tutor-evidence/program-2-terra-probe.manifest.json`)
+found **zero composer-added questions**: every composed one-question failure
+traces to the extracted span itself carrying 2–3 questions (the extraction
+joins all of the mini's question sentences), and the operative penalty was
+cue-bearing statement sentences dropped by the question-only extraction
+(composed cue failures 22 vs the mini's 6; 20 of 25 cue-free spans had the
+cue in a dropped statement). The 0.293 / 0.448 numbers are unaffected; the
+"checks, not the instruction, carry the design" clause stands. A small
+composer-added-question rate does exist for the sonnet composer under the
+revised v2 span instruction (3/53; terra 0/54) — bounded and
+battery-caught, not the mechanism this bullet described.
+
+### KTO results (2026-07-21) — both licensed runs spent; behaviorally inert
+
+Training (Lambda H100, ~21 min/arm, ~$2): both runs clean under Amendment
+2; KTO loss flat at 0.5 throughout (the unpaired audit labels supply
+almost no gradient the SFT policies do not already fit). Merges verified
+by the reconstructed script (nonzero lora_B attach + probe deltas —
+instruct and base 0.000488 — asserted before save; one silent no-op from
+the stale pre-fix script was caught by output inspection and deleted,
+and the fixed script is now committed at a05fa3c9). Same-lineage q8_0
+GGUFs served via ollama; graded on the frozen held-out moments, greedy.
+
+**Verdict: byte-identical to SFT — 58/58 generations per arm are exactly
+the SFT outputs, so every gate lands exactly where SFT left it.**
+Instruct 0.414 (bar 0.460: P1 FAIL; P2 vs floor CI [−0.017, +0.224]
+includes 0: FAIL; P3 PASS; P4 trivially non-inferior). Base 0.103 = its
+floor (all gates as SFT). Paired KTO-vs-SFT CI [0.000, 0.000] both arms —
+zero moments flipped in either direction. Reading: at the frozen
+conditional recipe (lr 5e-6, 1 epoch, from-SFT adapter), preference
+tuning on the apparatus's own audit labels produces weight motion below
+the quantized-serving threshold; the offline solo ceiling stands at the
+SFT number. The licensed-run ledger is now fully spent: 2 SFT + 2 KTO
+runs, all executed, merged with verification, and graded. No further
+training is licensed under this document.
+
+Artifacts: floor/tuned-kto-{instruct,base}-q8-ollama.json;
+adapters/out-kto-{instruct,base}-final (+ merge/convert/create logs);
+ollama models program2-kto-{instruct,base}-q8 (retained for provenance;
+behaviorally duplicate the SFT models).

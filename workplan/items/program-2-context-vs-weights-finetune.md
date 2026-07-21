@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
-updated: 2026-07-20
+updated: 2026-07-21
 verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
 claim_status: exploratory
 links:
@@ -113,6 +113,108 @@ table and the base-reaches-0.362 descriptive line. Out of scope: Task B,
 bake-off execution, live Phase 5, dataset v2. Next: user's go to execute on
 Lambda per the runbook.
 
+2026-07-21 Claude: PHASE 5C (cross-world transfer probe) EXECUTED — E1c
+PASS. Prereg frozen at 4bb1253f
+(PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md), machinery on
+the pinned runtime at e9b01bdd; the 5b-validated artifact
+(program2-sft-instruct-v2, fallback policy v2, no KTO) moved UNCHANGED to
+world_027_gazette_recall — max costume distance among structurally
+comparable siblings (zero derived-lexicon overlap; 022/026/028 floor
+worlds rejected as density gambles). 17/18 sealed (9 committee-v2 + 8
+fresh controls, no pooling with Marrick controls), 1 attrition (p5c-14,
+deterministic auto-learner budget overflow both same-seed attempts —
+first attrition in the program), 1 recovered retry, no abort; smoke GO
+pre-launch. VERDICTS: E1c 0.508 vs 0.306, diff +0.202, CI [0.072, 0.338]
+— the specialist beats the frontier on a world it never saw, above its
+own home-world rate (0.386); costume leak ZERO over all 61 delivered
+committee units (control base 4x generic "fair"; home-world saturation
+reference 31.8/1k words) — the trained warrant move is a form, not a
+costume; seam PARITY (0.515, 13+20 windows realized-n); safety PASS
+(0.89 vs 0.88 — no turn-9 analogue, confirming 5b's anatomy as a Marrick
+world property); coverage guardrail FAIL by point estimate (−0.061 vs
+−0.05 margin, miss 0.011, CI [−0.197, +0.053] spans zero at n=9) —
+caveat carried on the §6 row-1 reading, not excused. LICENSED READING:
+move-library concept live (train once, validate per world, retrain only
+on failure), coverage-caveated, exploratory tier (single family, one
+transfer world). Manifest program-2-phase5c.manifest.json; archive
+~/.machinespirits-data/program-2/phase5c-live (adapters store untouched);
+prereg §9 addendum. Paper fold pending (own fold, per the §6.21 pattern).
+
+2026-07-21 Claude: PROBES FOLDED INTO THE PAPER as new §6.22 (v3.0.224):
+composer-seat family-invariance (v1: 0.293/0.448 identical both families,
+56/58 agreement, zero composer-added questions), the extraction-dropped-cue
+decomposition, span-v2 conversion (0.586/0.603, rescued 10/11, 77–79% of
+the offline ceiling), and the bounded sonnet added-question asymmetry
+(3/53 vs 0/54). §6.20's "re-added extra questions" attribution corrected
+in place with a dated erratum appended to
+PROGRAM-2-PHASE2-PREREGISTRATION.md; new manifest
+program-2-terra-probe.manifest.json (8 artifact SHAs);
+committee-architecture.md brought consistent (§3/§4 table incl. 5c row/
+§10 5c-passed/§11 bounds; header v3.0.224). Also cherry-picked the ~55%
+ceiling correction onto this branch as v3.0.223 (relabeled from the other
+session's v3.0.222; 5c fold holds that number here). Validators:
+paper-manifest 60/0/0, integrity-audit 17/12/0, provable-discourse
+81/18/0.
+
+2026-07-21 Claude: TERRA COMPOSER PROBE SEALED (offline exploratory, branch
+claude/program-2-terra-composer-probe, ~58 terra calls). The composer seat
+is family-invariant at the audited letter: terra delivered 0.293 /
+fail-closed 0.448 / 2 rescued — byte-identical to the sonnet Phase 4
+references, 56/58 per-moment agreement. Zero composer-added questions in
+either family; the composed-alone penalty is span extraction dropping the
+mini's cue-bearing statement sentences (cue failures 6→22 in both
+families; 20 droppable; 3 restored each). Terra held containment slightly
+better (1 span_lost vs 3). Flags: §6.20's "re-added extra questions"
+clause erratum-track (mechanism attribution, number unaffected);
+cue-preserving span-extraction v2 = highest-value offline lever (13
+cue-only composed failures per family). Note:
+notes/program-2/2026-07-21-terra-composer-probe.md; HANDOFF H9. Live
+half-flip (terra tutoring) remains unlicensed/unrun — user decision
+2026-07-21: skipped (composer-dependence was the concern; answered
+offline). SAME DAY, v2 LEG SEALED (user go "go ahead with the extraction
+fix"): cue-preserving span extraction (--span-mode v2, default v1
+byte-preserved) converts the full lever in both families — delivered
+0.293 → 0.586 (sonnet) / 0.603 (terra), fail-closed 0.448 → same,
+rescued 2 → 10/11, 77–79% of the 0.759 achievable ceiling; residual =
+premise/guards (extraction-independent); family-invariance holds (55/58
+agreement); new asymmetry: sonnet adds a 2nd question in 3/53 v2 turns,
+terra 0/54 (erratum nuance). Offline exploratory; live machinery
+untouched; v2 live adoption = separate unlicensed decision.
+
+2026-07-21 Claude: PHASES 5 + 5B FOLDED INTO THE PAPER as new §6.21
+(v3.0.221, commit 71b063d8 on branch claude/program-2-adaptation-offshoot):
+Phase 5 E1 FAIL (+0.040, CI [−0.054, +0.133]) with the component anatomy
+(cue +0.165 / one-question −0.218) and the unchecked-fallback diagnosis;
+Phase 5b battery extension (greedy check → two resamples → cue-preserving
+trim) E1b PASS (0.386 vs 0.150, CI [0.128, 0.354]; exactly_one_question
+0.720→0.976, other components unmoved); coverage no-tax and seam parity in
+both runs (0.500 then 0.600, bar ≤ 0.65); the 5b safety-guardrail formal
+FAIL with the turn-9 release-schedule anatomy; the world-lexicon rescore
+labeled exploratory (frozen six-word instrument stands, decision
+2026-07-20); runtime pin + both amendments recorded as instrument
+provenance. §7.12's successor parenthetical extended; §6.18/§6.19/§6.20
+Phase-4 content untouched; KTO + 5c NOT folded (in flight, own folds when
+sealed). Validators: paper-manifest 60/0/0, integrity-audit 17/12/0,
+provable-discourse 81/18/0 (pass/warn/fail). Companion subordinate doc:
+docs/research/committee-architecture.md (card
+committee-architecture-offshoot-doc).
+
+2026-07-21 Claude: KTO EXECUTED AND CLOSED — both licensed runs spent,
+verdict BEHAVIORALLY INERT. Training clean (H100, ~21 min/arm, loss flat
+at 0.5); merges verified by the reconstructed script (the Phase 4 fix had
+never been committed — stale copy produced one caught-and-deleted no-op;
+fixed script now at a05fa3c9 with lora_B + probe-delta assertions).
+Graded at the serving pin: 58/58 byte-identical generations to SFT on
+BOTH arms; paired KTO-vs-SFT CI [0.000, 0.000]; every gate lands at the
+SFT numbers (instruct 0.414 vs bar 0.460 P1 FAIL; base 0.103 = floor).
+Reading: the frozen conditional recipe's weight motion is below the
+quantized-serving threshold — the offline solo ceiling stands at SFT.
+Licensed-run ledger fully spent (2 SFT + 2 KTO). Prereg closing addendum
+1fda8f29. The program's positive line remains the live committee
+(5b E1b PASS 0.386 vs 0.150; 5c cross-world PASS 0.508 vs 0.306, other
+thread). Remaining unlicensed options: iterated exhaust (dataset ready),
+instrument v2 (parked by user decision).
+
 2026-07-20 Claude: PHASE 5B (remedy 1) EXECUTED — E1b PASS. 18/18 sealed
 (12 committee-v2 + 6 fresh controls, pooling licensed), zero attrition.
 Committee-v2 0.386 vs pooled control 0.150, diff +0.236, CI
@@ -200,3 +302,30 @@ achievable. Both KTO runs remain licensed and unspent (Lambda unavailable
 ~24h at probe time). Artifacts: floor/tuned/composed JSONs + probe script
 scripts/program2-coupling-probe.mjs + grader --grade-file mode +
 verified-merge script scripts/program2-merge-adapter.py.
+
+2026-07-21 Claude: §6.20–§6.22 HEADLINE NUMBERS REGISTERED AS
+MACHINE-CHECKABLE CLAIMS (branch claude/program-2-terra-composer-probe).
+An independent claim audit found none of the three validators
+machine-checked any Program-2 paper content — the "~110 vs 162"
+call-count drift survived all three and was caught only manually. Now:
+35 claims + 2 family-invariance symmetry rules in new
+config/provable-discourse-program2.yaml (epoch "2.0", imported by the
+main spec), anchored to the five checked-in Program-2 manifests via a
+new generic artifact_json evidence type in services/provableDiscourse.js
+(dot-path + capture-pattern extraction; fingerprint carries the artifact
+file's sha256, so any manifest change flags every claim on it as
+stale-claim risk); the 34/83 + 49/83≈0.59 live-ceiling correction
+anchors to the 5b prereg §8 annotation via code_path. The terra manifest
+gained a derived callCounts block (bySource per paid leg recounted from
+the sha256-pinned delivered files: 54+54+54 = 162) so the corrected
+total is artifact-anchored. paper:integrity-audit now prints a
+legacy-scope banner (Paper 2.0 claims → provable-discourse). Registered:
+§6.20 0.414/0.310, 0.293, 0.448, 0.276, 14-of-58 + n=58, ceiling ≈0.76;
+§6.21 P5 rates + +0.040 CI [−0.054,+0.133], 5b rates + +0.236 CI
+[0.128,0.354] + due-release denominators, 5c rates + +0.202 CI
+[0.072,0.338]; §6.22 v1 0.293/0.448 both families (symmetry-ruled), v2
+0.586/0.603, composer calls 54×3 ≈ 160. Snapshot surgically baselined
+(35 new entries only; the 18 pre-existing warns left visible for their
+owners). 6 unit tests added (69/69 pass). Validators: provable-discourse
+118/18/0 full, 136/0/0 smoke; paper-manifest + integrity-audit
+unchanged.

@@ -206,3 +206,12 @@ re-scoring fallback turns trimmed to their first question yields committee
 0.347 vs control 0.160 (+11 moments) — extending the battery to the
 fallback path is the single highest-value fix and is NOT licensed under
 this pre-registration.
+
+## Erratum (2026-07-21)
+
+Appended by the claim audit recorded on PR #140; in-place text is
+unaltered. §1 ("the §6.19 enforcement-tax question") and §9 ("The
+enforcement-scale tax (≈−0.13, §6.19)") mis-cite the paper section: the
+≈−0.13 coverage tax is reported in the §6.18 addendum (point-of-action
+coaching, compiled-constraint arm), not §6.19 (the sensor-program
+negative).

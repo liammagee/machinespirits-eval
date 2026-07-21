@@ -31,7 +31,10 @@ const REPO_ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 
 const { values: args } = parseArgs({
   options: {
-    'pilot-root': { type: 'string', default: path.resolve(REPO_ROOT, '../ms-phase5-pinned/exports/program2-live-pilot') },
+    'pilot-root': {
+      type: 'string',
+      default: path.resolve(REPO_ROOT, '../ms-phase5-pinned/exports/program2-live-pilot'),
+    },
     world: {
       type: 'string',
       default: path.resolve(REPO_ROOT, '../ms-phase5-pinned/config/drama-derivation/world-005-marrick.yaml'),
@@ -109,7 +112,10 @@ function rescoreRoot(root, relaxedRe) {
         continue;
       }
       if (event.type === 'turn_complete' && event.turnRecord) {
-        tutorTextByTurn.set(Number(event.turnRecord.turn ?? tutorTextByTurn.size + 1), String(event.turnRecord.tutor || ''));
+        tutorTextByTurn.set(
+          Number(event.turnRecord.turn ?? tutorTextByTurn.size + 1),
+          String(event.turnRecord.tutor || ''),
+        );
       } else if (event.type === 'point_of_action_compliance' && event.compliance?.trigger === 'warrant_skip') {
         verdicts.push(event.compliance);
       }
@@ -153,7 +159,9 @@ const artifact = {
   flips: result.flips,
 };
 
-console.log(`[cue-sensitivity] world ${derivation.worldId}; lexicon (${derivation.lexicon.length}): ${derivation.lexicon.join(', ')}`);
+console.log(
+  `[cue-sensitivity] world ${derivation.worldId}; lexicon (${derivation.lexicon.length}): ${derivation.lexicon.join(', ')}`,
+);
 for (const [arm, cell] of Object.entries(result.perArm)) {
   console.log(
     `  ${arm}: frozen ${cell.frozenComp}/${cell.opp} (${cell.frozenRate?.toFixed(3)}) -> relaxed ${cell.relaxedComp}/${cell.opp} (${cell.relaxedRate?.toFixed(3)}), +${cell.cueOnlyFlips} cue-only flips`,
