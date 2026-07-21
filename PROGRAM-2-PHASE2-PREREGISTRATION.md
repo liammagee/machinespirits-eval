@@ -252,3 +252,27 @@ denominators.
 Results manifest (artifact SHAs + headline numbers):
 `config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json`.
 Paper landing: §6.20.
+
+### Amendment 2 (2026-07-21) — KTO forced corrections at first execution
+
+The licensed KTO runs (both variants) hit two execution impossibilities on
+their first real launch; each correction is the minimal change that
+preserves every preservable frozen value, applied before any KTO result
+exists:
+
+1. **Batch geometry.** TRL's `KTOTrainer` refuses `per_device_train_batch_size=1`
+   (the KL term degenerates to the implied reward). Corrected 1×8 → 4×2,
+   preserving the frozen effective batch of 8; lr 5e-6, 1 epoch, seed
+   20260718, and the data file (sha d8e29db8…) unchanged.
+2. **Model class.** The frozen script loaded `AutoModelForCausalLM`, but the
+   SFT adapters it must start from carry the VLM-class module tree
+   (`base_model.model.model.language_model.*`, 496/716 keys) — loading
+   through the causal-LM tree silently attaches fresh zero adapters (the
+   §10 no-op-merge failure, recurring at the load boundary). Corrected to
+   `AutoModelForImageTextToText` with a hard assertion that a trained
+   `lora_B` in the `language_model` tree is nonzero after loading; the run
+   aborts rather than trains-from-nothing on any future key mismatch.
+
+Both corrections are stamped in the script header comments
+(`scripts/program2-train-kto.py`) and were verified live: the assertion
+passed and training stepped normally.
