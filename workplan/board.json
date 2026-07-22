@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-22T05:23:15.985Z",
+  "generated": "2026-07-22T07:29:55.484Z",
   "counts": {
-    "total": 128,
+    "total": 130,
     "byStatus": {
-      "done": 104,
+      "done": 105,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 9,
-      "review": 3,
+      "triaged": 11,
+      "review": 2,
       "active": 5,
       "archived": 4
     },
     "byType": {
       "research": 45,
-      "experiment": 46,
+      "experiment": 48,
       "infra": 18,
       "maintenance": 6,
       "content": 2,
@@ -191,6 +191,72 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
+    },
+    {
+      "id": "program-2-phase5d-second-transfer-world",
+      "title": "Program-2 Phase 5d: second transfer world (letter-hostile probe)",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1d (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §7.12",
+        "notes": [
+          "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/program-2-terra-composer-probe"
+    },
+    {
+      "id": "program-2-second-trigger-family-stall",
+      "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §6.22, §7.12",
+        "notes": [
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PROGRAM-2-PHASE2-PREREGISTRATION.md",
+          "notes/program-2/2026-07-18-cloud-finetune-runbook.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "stagnant-repeat",
+        "lambda"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/program-2-terra-composer-probe"
     },
     {
       "id": "refusal-cross-stack-adaptive",
@@ -506,32 +572,6 @@
         "refactor",
         "tests"
       ]
-    },
-    {
-      "id": "committee-runtime-main-reconciliation",
-      "title": "Reconcile the committee's pinned runtime with main's guard regime",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The Phase 5 pilot configuration (bland policy, strict_dag, proof_skipper, world-005) seals dialogues on MAIN's tutor-stub — either the 2026-07-17 live_turn_progression guard hardening gains a fix/mode for this configuration or its dead-end behavior is deliberately scoped — and the pinned-runtime-only patches (5b Amendment 1 prompt-model dedup recovery; any successor fixes) are backported so committee work no longer requires the frozen 91b8a50e-lineage worktree.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "runtime",
-        "guards"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2175,6 +2215,32 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "claude/program-2-adaptation-offshoot"
+    },
+    {
+      "id": "committee-runtime-main-reconciliation",
+      "title": "Reconcile the committee's pinned runtime with main's guard regime",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The Phase 5 pilot configuration (bland policy, strict_dag, proof_skipper, world-005) seals dialogues on MAIN's tutor-stub — either the 2026-07-17 live_turn_progression guard hardening gains a fix/mode for this configuration or its dead-end behavior is deliberately scoped — and the pinned-runtime-only patches (5b Amendment 1 prompt-model dedup recovery; any successor fixes) are backported so committee work no longer requires the frozen 91b8a50e-lineage worktree.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "runtime",
+        "guards"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "main"
     },
     {
       "id": "consolidate-logs-db-private-archive",

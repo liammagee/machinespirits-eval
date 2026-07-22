@@ -331,6 +331,17 @@ provable-discourse 81/18/0 (pass/warn/fail). Companion subordinate doc:
 docs/research/committee-architecture.md (card
 committee-architecture-offshoot-doc).
 
+2026-07-22 Claude: SUCCESSOR CARDS FILED (both planned, own preregs +
+own licenses required — this card's run ledger is spent): (1)
+program-2-phase5d-second-transfer-world — letter-hostile third world,
+no training, one evening CLI quota; (2)
+program-2-second-trigger-family-stall — stall-breaking specialist for
+stagnant_repeat (measured density 1.6-2.2/dialogue vs warrant ~15-18,
+~10:1 — feasibility gates first), SFT-only per the KTO inert result,
+one Lambda H100 run < US$15. Step-by-step runbooks on both cards.
+(Preserved onto main 2026-07-22 from the archived phase5d thread's
+terra-composer-probe branch.)
+
 2026-07-21 Claude: KTO EXECUTED AND CLOSED — both licensed runs spent,
 verdict BEHAVIORALLY INERT. Training clean (H100, ~21 min/arm, loss flat
 at 0.5); merges verified by the reconstructed script (the Phase 4 fix had
