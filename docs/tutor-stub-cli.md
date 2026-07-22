@@ -20,6 +20,41 @@ The same choice can be made with `--theme <name>` or `/settings theme <name>`.
 Interactive sessions remember it. `NO_COLOR` and `--no-color` disable color
 without removing labels or hierarchy.
 
+## Reflecting on the workplan through the tutor
+
+Tutor-stub can project the current open workplan cards into a live canonical
+curriculum and load one card as public source material. The projection reads
+`workplan/items/` on every launch, so it does not depend on a stale
+`workplan/board.json` or copied curriculum snapshot.
+
+List the available cards, then launch one:
+
+```bash
+npm run tutor:stub:workplan -- --list-curriculum-modules
+npm run tutor:stub:workplan -- --module blueprint-composition
+```
+
+The selected card becomes a reflective inquiry module: its problem frame,
+dependencies, acceptance details, links, and declared completion gate are
+available to the speaking tutor. The tutor is instructed to test the learner's
+causal model and proposed evidence rather than merely summarize the card. The
+session records the curriculum id, module id, and source hash in dry-run and
+trace metadata.
+
+This mode is deliberately non-DAG. A workplan dependency graph says which work
+precedes other work; it is not a scenario proof DAG, and a card's verification
+line is not a concealed answer. `--curriculum` therefore rejects `--dag`,
+`--tutor-learner-dag`, and an active `--world`. If a particular card warrants a
+staged proof inquiry, hand-author a dramatic-derivation world under the normal
+world-authoring contract and run the proof-world quality gate first.
+
+For inspection or provenance, emit an ignored YAML snapshot without changing
+what tutor-stub loads live:
+
+```bash
+npm run curriculum:compile:workplan
+```
+
 ## Motion
 
 Use `/motion` to inspect the current level and `/motion <level>` to change it:

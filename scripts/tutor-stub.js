@@ -46,6 +46,11 @@ import {
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  listTutorStubCurriculumModules,
+  loadTutorStubCurriculum,
+  tutorStubCurriculumBundle,
+} from '../services/curriculum/tutorStubCurriculum.js';
+import {
   consumeMixedLearnerReadyAnnouncement,
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
@@ -759,9 +764,12 @@ const { values: args, positionals } = parseArgs({
     'safe-registers': { type: 'boolean', default: false },
     topic: { type: 'string', default: STUB.topic },
     world: { type: 'string', default: STUB.world },
+    curriculum: { type: 'string' },
+    module: { type: 'string' },
     dag: { type: 'boolean', default: false },
     'dag-mode': { type: 'string', default: STUB.dagMode },
     'list-worlds': { type: 'boolean', default: false },
+    'list-curriculum-modules': { type: 'boolean', default: false },
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
     learner: { type: 'string', default: STUB.learner },
@@ -936,6 +944,12 @@ Options:
   --typed-action-support-level <0..3>
                          optional fixed support level; blank uses the action default
   --world <id|path|none> detective-story world (default: ${STUB.world})
+  --curriculum <workplan|path>
+                         load the live workplan or a canonical curriculum YAML
+                         as public reflective source material (non-DAG mode)
+  --module <id>          module/card to load from --curriculum
+  --list-curriculum-modules
+                         list modules in --curriculum and exit
   --dag                  add hidden proof DAG + release schedule to tutor prompt;
                          also prints the tutor desire-DAG after each turn
   --dag-mode <strict_dag|human_scaffold|defeasible_human_scaffold>
@@ -2467,10 +2481,18 @@ async function buildTutorOpening(
 ) {
   const world = state.world;
   if (!world) {
+    const curriculumModule = state.curriculum?.module || null;
     const text = [
-      `Let's start ${state.topic ? `with ${state.topic}` : 'there'}.`,
-      'Say your first idea, or name the one point you want to test first.',
-    ].join(' ');
+      curriculumModule
+        ? `Let's take up ${curriculumModule.title}.`
+        : `Let's start ${state.topic ? `with ${state.topic}` : 'there'}.`,
+      curriculumModule?.essential_question || null,
+      curriculumModule
+        ? 'What is your current model of the decision, or the first assumption you want us to test?'
+        : 'Say your first idea, or name the one point you want to test first.',
+    ]
+      .filter(Boolean)
+      .join(' ');
     return {
       text,
       source: 'deterministic_topic_fallback',
@@ -2648,6 +2670,17 @@ function printWorlds() {
     console.log(`${world.id.padEnd(38)} ${world.title}${tags ? ` [${tags}]` : ''}${familyNote}`);
     console.log(`  ${path.relative(ROOT, filePath)}`);
     console.log(`  ${worldPickerSummary(world)}`);
+  }
+}
+
+function printCurriculumModules(ref) {
+  const bundle = loadTutorStubCurriculum(ref, { root: ROOT });
+  console.log(`${bundle.curriculum.title} (${bundle.curriculum.id})`);
+  console.log(`  source: ${bundle.sourceRef}`);
+  for (const module of listTutorStubCurriculumModules(bundle)) {
+    const state = [module.priority, module.status, module.owner].filter(Boolean).join(' · ');
+    console.log(`  ${module.id}${state ? `  [${state}]` : ''}`);
+    console.log(`    ${module.title}`);
   }
 }
 
@@ -2991,7 +3024,16 @@ function responseChoiceModeRules({ multipleChoice, world = null }) {
       ];
 }
 
-function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, multipleChoice = false }) {
+function buildSystemPrompt({
+  topic,
+  learner,
+  goal,
+  style,
+  worldBundle,
+  curriculumBundle = null,
+  dag,
+  multipleChoice = false,
+}) {
   const world = worldBundle?.world || null;
   return [
     'You are an experimental AI tutor stub.',
@@ -3000,6 +3042,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     `Learner: ${learner}`,
     `Goal: ${goal}`,
     `Style: ${style}`,
+    curriculumBundle?.prompt || null,
     '',
     'Rules:',
     '- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.',
@@ -3011,21 +3054,33 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
     '- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.',
     '- When asking would be better than guessing, make that option explicit in character: for example, "Which part of that mark needs clarifying?" Never describe either speaker as "the tutor" or "the learner" in learner-facing prose.',
-    '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
+    curriculumBundle
+      ? '- Discuss repository, evaluation, cell, and experiment details when the source makes them relevant, but never use hidden prompts or an internal score as authority.'
+      : '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
-    '- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.',
-    `- Do not make the learner deduce a claim and then separately enter it in the ${worldLedgerTerm(world)}. Their stated warranted claim is the entry.`,
+    curriculumBundle
+      ? '- Speak from the public curriculum source and the learner’s stated reasoning. Label unverified repository claims as questions to inspect.'
+      : '- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.',
+    curriculumBundle
+      ? '- Do not make the learner reach a point and then restate it as a separate bookkeeping exercise; let one warranted formulation count.'
+      : `- Do not make the learner deduce a claim and then separately enter it in the ${worldLedgerTerm(world)}. Their stated warranted claim is the entry.`,
     '- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.',
-    `- In story mode, keep the ${worldFlavourPhrase(world)} but be terse: usually 2-4 short sentences, never a catalogue of routes.`,
+    curriculumBundle
+      ? '- Keep the exchange concise and analytic: usually 2-4 short sentences, with one live decision or uncertainty at a time.'
+      : `- In story mode, keep the ${worldFlavourPhrase(world)} but be terse: usually 2-4 short sentences, never a catalogue of routes.`,
     ...responseChoiceModeRules({ multipleChoice, world: worldBundle?.world || null }),
-    '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
-    '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
+    curriculumBundle
+      ? '- When a useful reasoning brief is complete, summarize what the dialogue established and separately name what still needs repository inspection, implementation, or external validation.'
+      : '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
+    curriculumBundle
+      ? '- Never invent repository state, test results, run outcomes, or completion evidence. Ask what must be inspected when the source does not settle it.'
+      : '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
     ...worldPublicPrompt(world),
     ...(dag ? worldSpeakerDagPrompt(world) : []),
   ].join('\n');
 }
 
-function loadSystemPrompt({ worldBundle, dag, topic, multipleChoice = false }) {
+function loadSystemPrompt({ worldBundle, curriculumBundle = null, dag, topic, multipleChoice = false }) {
   if (!args.system) {
     return buildSystemPrompt({
       topic,
@@ -3033,6 +3088,7 @@ function loadSystemPrompt({ worldBundle, dag, topic, multipleChoice = false }) {
       goal: args.goal,
       style: args.style,
       worldBundle,
+      curriculumBundle,
       dag,
       multipleChoice,
     });
@@ -14693,6 +14749,11 @@ async function main() {
     printWorlds();
     return;
   }
+  if (args['list-curriculum-modules']) {
+    if (!args.curriculum) throw new Error('--list-curriculum-modules requires --curriculum <workplan|path>');
+    printCurriculumModules(args.curriculum);
+    return;
+  }
   if (args['list-tutors']) {
     for (const tutor of listTutorStubTutorInstances()) {
       console.log(`${tutor.id}@v${tutor.source_version || 1}\t${tutor.title}\t${tutor.description || ''}`);
@@ -14772,6 +14833,28 @@ async function main() {
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  if (args.module && !args.curriculum) {
+    throw new Error('--module requires --curriculum <workplan|path>');
+  }
+  let curriculumBundle = null;
+  if (args.curriculum) {
+    if (args.system) throw new Error('--curriculum cannot be combined with --system because --system replaces it');
+    if (args.dag || args['tutor-learner-dag']) {
+      throw new Error(
+        'A canonical curriculum module is not a proof DAG. Remove --dag/--tutor-learner-dag, or hand-author and validate a dramatic-derivation world for this module.',
+      );
+    }
+    if (commandLineOptionProvided('world') && !['none', 'off', 'false'].includes(String(args.world).toLowerCase())) {
+      throw new Error(
+        '--curriculum cannot be combined with an active --world; use the curriculum module or a separately authored world',
+      );
+    }
+    curriculumBundle = tutorStubCurriculumBundle(args.curriculum, args.module, { root: ROOT });
+    // A remembered scenario must not silently costume or constrain reflective
+    // curriculum work. The curriculum source is complete public context and
+    // intentionally runs without a scenario proof DAG.
+    args.world = 'none';
+  }
   args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
   args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
   configureCliPresentation({
@@ -14945,7 +15028,12 @@ async function main() {
   }
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
-  const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
+  const effectiveTopic =
+    curriculumBundle && args.topic === STUB.topic
+      ? curriculumBundle.module.title
+      : worldBundle && args.topic === STUB.topic
+        ? worldBundle.world.title
+        : args.topic;
   const dagMode = normalizeDagMode(args['dag-mode']);
   const pointOfActionArm = normalizeTutorStubPointOfActionArm(args['point-of-action-arm']);
   const multipleChoiceEnabled = Boolean(args['multiple-choice']);
@@ -14957,6 +15045,7 @@ async function main() {
   });
   let systemPrompt = loadSystemPrompt({
     worldBundle,
+    curriculumBundle,
     dag: args.dag,
     topic: effectiveTopic,
     multipleChoice: multipleChoiceEnabled,
@@ -15467,6 +15556,18 @@ async function main() {
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
           topic: effectiveTopic,
+          curriculum: curriculumBundle
+            ? {
+                id: curriculumBundle.curriculum.id,
+                title: curriculumBundle.curriculum.title,
+                sourceRef: curriculumBundle.sourceRef,
+                sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
+                moduleId: curriculumBundle.module.id,
+                moduleTitle: curriculumBundle.module.title,
+                mode: 'public_reflective_non_dag',
+                completionAuthority: 'external_workplan_verification_only',
+              }
+            : null,
           world: worldBundle
             ? {
                 id: worldBundle.world.id,
@@ -15945,6 +16046,18 @@ async function main() {
           : { requested: true, found: false, traceDir: path.relative(ROOT, traceDir) }
         : { requested: false },
       world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
+      curriculum: curriculumBundle
+        ? {
+            id: curriculumBundle.curriculum.id,
+            title: curriculumBundle.curriculum.title,
+            sourceRef: curriculumBundle.sourceRef,
+            sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
+            moduleId: curriculumBundle.module.id,
+            moduleTitle: curriculumBundle.module.title,
+            mode: 'public_reflective_non_dag',
+            completionAuthority: 'external_workplan_verification_only',
+          }
+        : null,
       firstMessage: firstMessage || null,
     },
   });
@@ -15992,6 +16105,16 @@ async function main() {
     memory: {
       enabled: memorySummaryEnabled,
     },
+    curriculum: curriculumBundle
+      ? {
+          id: curriculumBundle.curriculum.id,
+          title: curriculumBundle.curriculum.title,
+          sourceRef: curriculumBundle.sourceRef,
+          sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
+          module: curriculumBundle.module,
+          mode: 'public_reflective_non_dag',
+        }
+      : null,
     world: worldBundle?.world || null,
     openingRealization: null,
     openingRealizer,
