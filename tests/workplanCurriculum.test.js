@@ -109,6 +109,9 @@ test('tutor-stub curriculum rendering keeps project completion external to dialo
 });
 
 test('tutor-stub dry-run loads a live workplan module without a world or model call', () => {
+  const liveCurriculum = loadTutorStubCurriculum('workplan', { root: ROOT });
+  const moduleId = liveCurriculum.curriculum.modules[0]?.id;
+  assert.ok(moduleId, 'the live workplan should expose at least one open curriculum module');
   const result = spawnSync(
     process.execPath,
     [
@@ -119,7 +122,7 @@ test('tutor-stub dry-run loads a live workplan module without a world or model c
       '--curriculum',
       'workplan',
       '--module',
-      'blueprint-composition',
+      moduleId,
       '--opening-realizer',
       'deterministic',
     ],
@@ -127,7 +130,7 @@ test('tutor-stub dry-run loads a live workplan module without a world or model c
   );
   assert.equal(result.status, 0, result.stderr);
   const dryRun = JSON.parse(result.stdout);
-  assert.equal(dryRun.curriculum.moduleId, 'blueprint-composition');
+  assert.equal(dryRun.curriculum.moduleId, moduleId);
   assert.equal(dryRun.curriculum.mode, 'public_reflective_non_dag');
   assert.equal(dryRun.world, null);
   assert.equal(dryRun.promptArchitecture.planner.modelCall, false);
