@@ -50,6 +50,19 @@ npm run tutor:stub:workplan -- --list-curriculum-modules
 npm run tutor:stub:workplan -- --module blueprint-composition
 ```
 
+Inside any normal tutor-stub session, use the live picker instead:
+
+```text
+/board
+/board blueprint-composition
+```
+
+`/board` opens a scrolling keyboard picker in a TTY; Up/Down, Page Up/Down,
+Home/End, and Enter navigate it, while Escape returns to the current inquiry.
+The direct form works in pipes and scripts. Selecting a card closes the current
+inquiry cleanly and starts a fresh non-DAG reflective inquiry while preserving
+the active learner profile, model routing, and dialogue settings.
+
 The selected card becomes a reflective inquiry module: its problem frame,
 dependencies, acceptance details, links, and declared completion gate are
 available to the speaking tutor. The tutor is instructed to test the learner's

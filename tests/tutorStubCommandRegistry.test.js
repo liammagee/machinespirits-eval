@@ -63,6 +63,7 @@ const NORMAL_COMMANDS = [
   '/hint',
   '/profile',
   '/scenario',
+  '/board',
   '/use',
   '/accept',
   '/regen',
@@ -130,6 +131,7 @@ const SCENE_RETURN_COMMANDS = [
   '/debug-id',
   '/profile',
   '/scenario',
+  '/board',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -165,10 +167,10 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 1);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 37);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 52);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 38);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 53);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 20);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 33);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 34);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);

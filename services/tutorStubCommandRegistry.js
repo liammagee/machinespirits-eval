@@ -271,6 +271,12 @@ const COMMANDS = [
     sceneReturnOrder: 23,
     completion: { normal: { dynamicProviders: ['world_ids'] } },
   }),
+  command({
+    id: 'board',
+    token: '/board',
+    sceneReturnOrder: 24,
+    completion: { normal: { dynamicProviders: ['workplan_module_ids'] } },
+  }),
   command({ id: 'use', token: '/use', aliases: ['/accept'] }),
   command({ id: 'regen', token: '/regen' }),
   command({ id: 'reset', token: '/reset', aliases: ['/clear'], passthroughOrder: 11 }),

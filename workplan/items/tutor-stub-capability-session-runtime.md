@@ -47,6 +47,6 @@ and evaluation adapters rather than forking them.
 
 - 2026-07-22: Added the versioned, frozen command-registry foundation and moved
   the CLI's normal, passthrough, scene-return, and static-completion views onto
-  it. The slice preserves the existing 37 canonical commands and fixes
+  it. The slice preserves the existing 38 canonical commands and fixes
   passthrough completion drift; capability snapshots, generated help, command
   dispatch, and the importable session runtime remain to be extracted.

@@ -1,0 +1,300 @@
+/*
+ * Machine Spirits house style foundation
+ * Schema: machinespirits.house-style.v1
+ *
+ * Local, portable distillation of the sibling website's visual identity.
+ * Canonical guidance and provenance:
+ *   docs/design/machinespirits-house-style.md
+ *
+ * This file is intentionally dependency-free. Generated HTML can inline it
+ * through services/machineSpiritsHouseStyle.js and remain self-contained.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Website foundation */
+  --ms-black: #0a0a0a;
+  --ms-white: #ffffff;
+  --ms-off-white: #fafafa;
+  --ms-red: #e63946;
+  --ms-red-dark: #c1121f;
+  --ms-red-rgb: 230, 57, 70;
+  --ms-text-rgb: 10, 10, 10;
+  --ms-grid: 60px;
+  --ms-grid-large: 180px;
+  --ms-grid-micro: 15px;
+  --ms-slash-angle: -18deg;
+
+  /* Portable surface aliases */
+  --ms-surface: rgba(250, 250, 250, 0.94);
+  --ms-surface-elevated: rgba(255, 255, 255, 0.98);
+  --ms-text: var(--ms-black);
+  --ms-text-muted: rgba(10, 10, 10, 0.58);
+  --ms-border: rgba(10, 10, 10, 0.24);
+  --ms-border-subtle: rgba(10, 10, 10, 0.11);
+
+  /* Techne editorial extension used by atlas, arc, and dense reading views */
+  --ms-paper: #f4eedd;
+  --ms-paper-2: #ece3cb;
+  --ms-paper-3: #f8f2e2;
+  --ms-ink: #14100c;
+  --ms-ink-muted: #5c5040;
+  --ms-linen: #d8c7a9;
+  --ms-moss: #56683a;
+  --ms-moss-deep: #3a4824;
+  --ms-brick: #a53e2e;
+  --ms-brick-dark: #7c2c1f;
+  --ms-ochre: #c08a3e;
+
+  --ms-font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ms-font-mono: "Space Mono", "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --ms-font-reading: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+  --ms-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-ms-theme="dark"] {
+  color-scheme: dark;
+  --ms-black: #e0e0e0;
+  --ms-white: #0a0a0a;
+  --ms-off-white: #111111;
+  --ms-text-rgb: 224, 224, 224;
+  --ms-surface: rgba(17, 17, 17, 0.94);
+  --ms-surface-elevated: rgba(26, 26, 26, 0.98);
+  --ms-text: #e0e0e0;
+  --ms-text-muted: rgba(224, 224, 224, 0.6);
+  --ms-border: rgba(255, 255, 255, 0.22);
+  --ms-border-subtle: rgba(255, 255, 255, 0.1);
+  --ms-paper: #14100c;
+  --ms-paper-2: #1b1612;
+  --ms-paper-3: #1f1a14;
+  --ms-ink: #f4eedd;
+  --ms-ink-muted: #b9ad96;
+  --ms-linen: #3a322a;
+  --ms-moss: #8da868;
+  --ms-moss-deep: #b5cd92;
+  --ms-brick: #e36953;
+  --ms-brick-dark: #f08a75;
+  --ms-ochre: #e6b265;
+}
+
+body.ms-house-style,
+body.ms-house-style *,
+body.ms-house-style *::before,
+body.ms-house-style *::after {
+  box-sizing: border-box;
+}
+
+body.ms-house-style {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--ms-white);
+  color: var(--ms-text);
+  cursor: crosshair;
+  font-family: var(--ms-font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.ms-house-style ::selection {
+  background: var(--ms-red);
+  color: var(--ms-white);
+}
+
+body.ms-house-style button,
+body.ms-house-style input,
+body.ms-house-style select,
+body.ms-house-style textarea {
+  font: inherit;
+}
+
+.ms-house-backdrop,
+.ms-house-grid,
+.ms-house-cuts,
+.ms-house-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ms-house-backdrop {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ms-house-grid--primary {
+  z-index: 1;
+  background-image:
+    linear-gradient(var(--ms-black) 2px, transparent 2px),
+    linear-gradient(90deg, var(--ms-black) 2px, transparent 2px);
+  background-size: var(--ms-grid) var(--ms-grid);
+  opacity: 0.075;
+}
+
+.ms-house-grid--secondary {
+  inset: -100px;
+  z-index: 2;
+  background-image:
+    linear-gradient(var(--ms-red) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--ms-red) 1.5px, transparent 1.5px);
+  background-size: var(--ms-grid-large) var(--ms-grid-large);
+  opacity: 0.07;
+}
+
+.ms-house-grid--micro {
+  z-index: 3;
+  background-image:
+    linear-gradient(rgba(var(--ms-text-rgb), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--ms-text-rgb), 0.04) 1px, transparent 1px);
+  background-size: var(--ms-grid-micro) var(--ms-grid-micro);
+}
+
+.ms-house-cuts {
+  z-index: 4;
+  overflow: hidden;
+}
+
+.ms-house-cut {
+  position: absolute;
+  left: -100%;
+  width: 400%;
+  background: var(--ms-red);
+  transform-origin: center;
+}
+
+.ms-house-cut--one {
+  top: 18%;
+  height: 8px;
+  opacity: 0.16;
+  transform: rotate(var(--ms-slash-angle));
+}
+
+.ms-house-cut--two {
+  top: 62%;
+  height: 4px;
+  opacity: 0.1;
+  transform: rotate(calc(var(--ms-slash-angle) * -0.5));
+}
+
+.ms-house-cut--three {
+  top: 88%;
+  height: 11px;
+  opacity: 0.12;
+  transform: rotate(calc(var(--ms-slash-angle) * 0.8));
+}
+
+.ms-house-noise {
+  z-index: 5;
+  opacity: 0.022;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.ms-page {
+  position: relative;
+  z-index: 10;
+}
+
+.ms-kicker {
+  color: var(--ms-text-muted);
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.ms-display {
+  margin: 0;
+  color: var(--ms-text);
+  font-family: var(--ms-font-sans);
+  font-size: clamp(2.8rem, 8vw, 7.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.84;
+}
+
+.ms-panel {
+  border: 2px solid var(--ms-black);
+  background: var(--ms-surface-elevated);
+  box-shadow: 8px 8px 0 rgba(var(--ms-red-rgb), 0.14);
+}
+
+.ms-label {
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ms-tab,
+.ms-button {
+  border: 2px solid var(--ms-black);
+  border-radius: 0;
+  background: var(--ms-surface-elevated);
+  color: var(--ms-text);
+  cursor: pointer;
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    background 0.18s var(--ms-ease),
+    color 0.18s var(--ms-ease),
+    transform 0.18s var(--ms-ease);
+}
+
+.ms-tab:hover,
+.ms-button:hover,
+.ms-tab:focus-visible,
+.ms-button:focus-visible {
+  background: var(--ms-red);
+  color: #ffffff;
+  outline: 0;
+  transform: translate(-2px, -2px);
+}
+
+.ms-tab[aria-selected="true"],
+.ms-tab.active,
+.ms-button.active {
+  background: var(--ms-black);
+  color: var(--ms-white);
+}
+
+@media (max-width: 760px) {
+  .ms-house-grid--primary,
+  .ms-house-grid--micro {
+    opacity: 0.045;
+  }
+
+  .ms-display {
+    font-size: clamp(2.5rem, 15vw, 5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-tab,
+  .ms-button {
+    transition: none;
+  }
+}
+
+@media print {
+  .ms-house-backdrop {
+    display: none;
+  }
+
+  body.ms-house-style {
+    background: #ffffff;
+    color: #000000;
+    cursor: auto;
+  }
+
+  .ms-panel {
+    box-shadow: none;
+  }
+}
