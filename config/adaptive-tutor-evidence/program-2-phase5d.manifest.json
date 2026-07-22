@@ -1,0 +1,87 @@
+{
+  "schema": "machinespirits.program2.phase5d.manifest.v1",
+  "generatedAt": "2026-07-22",
+  "preregistration": "PROGRAM-2-PHASE5D-DELIVERY-INTEGRITY-PREREGISTRATION.md",
+  "runtime": {
+    "pinnedLineage": "91b8a50e",
+    "machinerySha": "6423de2f",
+    "amendment1Sha": "80534e9e",
+    "amendment2Sha": "27aae3b7",
+    "launchSha": "27aae3b7"
+  },
+  "archiveRoot": "~/.machinespirits-data/program-2/phase5d-live",
+  "headline": {
+    "sealed": "18/18, zero attrition, 2 same-seed retries (auto-learner budget overflow, both sealed on attempt 2)",
+    "e1d": {
+      "committee_v3": "42/88 (0.477)",
+      "pooled_control": "22/162 (0.136)",
+      "diff": 0.341,
+      "ci95": [0.223, 0.457],
+      "verdict": "PASS"
+    },
+    "m1_guard_eligible_cue": {
+      "rate": 0.867,
+      "n": 15,
+      "bar": 0.75,
+      "verdict": "PASS"
+    },
+    "m2_span_cue": {
+      "rate": 0.871,
+      "n": 85,
+      "bar": 0.85,
+      "span_cue_miss": 11,
+      "verdict": "PASS"
+    },
+    "coverage": {
+      "committee": 0.625,
+      "control": 0.632,
+      "verdict": "PASS (within -0.05)"
+    },
+    "safety": {
+      "committee": 0.5,
+      "control": 0.625,
+      "verdict": "GUARDRAIL FAIL \u2014 turn-9 release-schedule leak (5/7 committee + 2/2 control leaks at turn 9), arm-symmetric, marrick world property per 5b/5c"
+    },
+    "seam": "PENDING \u2014 mandatory seam re-check runs as a separate paid harness (prereg \u00a74)",
+    "liveCeiling": {
+      "dueRelease": 33,
+      "moments": 88,
+      "ceiling": 0.625,
+      "rateOfAchievable": 0.764,
+      "prediction": 0.55
+    },
+    "stationarity": "pooling licensed (fresh 0.095 vs archived 0.15, \u0394 0.055 \u2264 0.10); control n=24",
+    "spanCueTally": {
+      "greedy_ok": 44,
+      "absent": 3,
+      "resampled_1": 22,
+      "resampled_2": 8,
+      "span_cue_miss": 11
+    },
+    "guardTally": {
+      "premise_release_turn": 33,
+      "shipped_as_approved": 37,
+      "applied": 15
+    },
+    "fallbackTally": {
+      "selected_sampled_1": 19,
+      "trimmed": 10,
+      "selected_sampled_2": 3,
+      "unchanged": 3
+    }
+  },
+  "artifacts": {
+    "launch-plan.json": {
+      "sha256": "edc2b02c264d5691422db590002a0c844376a834dd64cc593fe326e070f2de46",
+      "bytes": 77132
+    },
+    "launch-state.json": {
+      "sha256": "b0e0569167e3eb9612a8a36692ffda0e3978c81082c7eb1b95ed42cc242695ec",
+      "bytes": 1904
+    },
+    "phase5d-final.json": {
+      "sha256": "dec9171b5ae056484431401a808dbd61802884d4b58c3d977dfa641739b2d9da",
+      "bytes": 2439
+    }
+  }
+}

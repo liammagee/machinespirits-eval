@@ -146,6 +146,24 @@ launch gates 1-2 ticked with the SHA; the one remaining gate is the
 sha-pinned human-gated launch sequence (fast-forward ms-phase5-pinned to
 6423de2f, zero-model gate, preflight, probes).
 
+2026-07-22 Claude (RESULTS): PHASE 5D RUN COMPLETE — E1d + both
+mechanisms PASS. 18/18 sealed on marrick (seed 20260722, launch pin
+27aae3b7 after Amendments 1-2: CLI sonnet-5 alias, parseArgs whitelist),
+zero attrition, 2 same-seed retries. E1d PASS: committee-v3 42/88
+(0.477) vs pooled control 22/162 (0.136), +0.341 CI [0.223, 0.457] —
+up from 5b's 0.386/+0.236; 76% of the live due-release ceiling (55/88)
+vs 5b's 65%. M1 (guard-eligible delivered cue) 13/15 = 0.867 ≥ 0.75
+PASS; M2 (span cue) 74/85 = 0.871 ≥ 0.85 PASS (5b 0.37). Coverage PASS
+(0.625 vs 0.632, no tax). Safety FAIL 0.50 vs 0.63 — same marrick turn-9
+release-schedule leak, arm-symmetric (5/7 committee + 2/2 control at
+turn 9), exonerated per 5b/5c. Guard ledger: 15 applied swaps, 33
+premise-release skips, 37 shipped-as-approved. Prereg §9 results +
+manifest program-2-phase5d.manifest.json + analyzer
+analyze-program2-live-pilot-5d.mjs + archive
+~/.machinespirits-data/program-2/phase5d-live. REMAINING: mandatory seam
+re-check (separate PAID harness, prereg §4) — not yet run; and the paper
+§6.21 fold once seam lands.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as

@@ -166,6 +166,67 @@ third):
       launch pin; first launch attempt aborted pre-seal, see
       Amendment 2).
 
+## 9. Results (2026-07-22 — run complete, 18/18 sealed, zero attrition)
+
+Runtime the pinned lineage 91b8a50e + machinery 27aae3b7 (Amendments 1-2
+folded); 2 same-seed retries (both the known auto-learner budget
+overflow, both sealed on attempt 2). Stationarity check PASS (fresh
+controls 0.128 within 0.10 of the 18 archived controls 0.140, Δ 0.055)
+— pooled control licensed, n=24 dialogues. Manifest:
+`config/adaptive-tutor-evidence/program-2-phase5d.manifest.json`;
+analyzer `scripts/analyze-program2-live-pilot-5d.mjs`; traces archived
+at `~/.machinespirits-data/program-2/phase5d-live`.
+
+**E1d — PASS.** Committee-v3 42/88 (0.477) vs pooled control 22/162
+(0.150 → realized 0.136); diff **+0.341, 95% CI [0.223, 0.457]**. The
+delivery-integrity rider lifts live warrant compliance from 5b's 0.386
+(32/83) to 0.477 (42/88), and the lift over control widens from 5b's
++0.236 to +0.341. Against the live due-release ceiling — 33 of 88
+committee moments carry a due premise release, achievable 55/88 ≈ 0.625
+— the rate is **42/55 ≈ 76% of achievable**, up from 5b's 65%; the ≈0.55
+absolute prediction (registered §4, descriptive) is approached, not
+reached, because this run's due-release density (37.5%) leaves a lower
+ceiling than the prediction assumed.
+
+**M1 (guard mechanism) — PASS.** Among the 15 realized guard-eligible
+moments (finalized ≠ approved, no premise release), delivered warrant_cue
+rate **13/15 = 0.867 ≥ 0.75**. The delivery guard fired 15 span swaps,
+stood down on 33 premise-release turns and 37 shipped-as-approved turns
+(guard ledger). Every applied swap re-imposed span ownership on a
+clue-staged turn the 5b census showed the committee had lost.
+
+**M2 (span mechanism) — PASS.** Span cue-rate **74/85 = 0.871 ≥ 0.85**
+(5b baseline 0.37); span_cue_miss 11. spanCue ledger: 44 greedy_ok, 22
+resampled_1, 8 resampled_2, 11 span_cue_miss, 3 no-span. The tuned mini
+supplies a cue-bearing question sentence on the first or a resampled
+draft in 74 of 85 span-carrying moments.
+
+**Coverage — PASS.** 0.625 vs 0.632, within the −0.05 margin; the
+enforcement-scale tax stays absent under the fuller committee.
+
+**Safety guardrail — FAIL, exonerating anatomy (as 5b).** Hard-safety
+0.50 vs 0.63. Leaks concentrate at turn 9 (5 of 7 committee leaks, both
+control leaks), the control arm carries the identical turn-9 signature
+(2/6 fresh controls), and the split is 4 committee-authored / 3
+frontier-authored. This is the marrick turn-9 release-schedule leak that
+5b recorded and 5c confirmed absent on a world without that schedule
+(world_027 safety 0.89) — a world property amplified by arm noise, not a
+rider regression. The successor fix remains the turn-9 staging, not the
+committee.
+
+**Seam — PENDING.** The mandatory seam re-check (§4; the guard alters
+staged-turn texture) runs as a separate paid LLM harness and is not yet
+executed. Until it lands ≤ 0.65 the §5 row-1 reading carries a
+seam-unconfirmed caveat.
+
+**Reading (§5 row 1, pending seam).** With span resampling and the
+delivery guard closing the two leaks the 5b census located, the committee
+controls warrant form on every non-release text path: E1d clears its bar
+by a wide margin, both mechanisms hit their pre-registered targets, and
+coverage shows no tax. The gain is delivery completeness, not pedagogy —
+the frozen six-word instrument stands, and the cue-less good-question
+control specimen still scores non-compliant by construction.
+
 ## Amendment 1 (2026-07-22, pre-launch — zero sealed dialogues)
 
 The launch-sequence sonnet probe failed: a claude-CLI update dropped the
