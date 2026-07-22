@@ -1,7 +1,7 @@
 ---
 id: committee-runtime-main-reconciliation
 title: "Reconcile the committee's pinned runtime with main's guard regime"
-status: review
+status: done
 type: infra
 priority: P2
 owner: unassigned
@@ -63,3 +63,14 @@ holds the only copy of Phase 5d execution machinery
 — retirement is a port-then-delete owned by the phase5d thread, not a
 delete this thread should perform. HANDOFF numbering error (my duplicate
 H9) corrected to H11.
+
+2026-07-22 Claude: CLOSED. The V32–V34 guard-arc thread was archived
+without recorded objection; the reconciliation shipped (PR #150), passed
+29/29 guard tests, and was live-confirmed on the July dead-end
+configuration — so the review gate is resolved (no reviewer remains, code
+merged + verified). Pinned-runtime retirement COMPLETED: the frozen
+execution lineage (incl. the Phase 5d spanCue.v1/deliveryGuard.v1/5d-smoke
+machinery that lived only there) is preserved immutably in tag
+`archive/program-2-phase5-pinned-runtime` (dereferences to 27aae3b7);
+branches claude/program-2-phase5-pinned-runtime + program-2-phase5d-machinery
+deleted. Main is now the sole committee runtime.

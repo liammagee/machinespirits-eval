@@ -318,7 +318,8 @@ experiment (no sealed baseline would share either change).
 2026-07-21 terra-composer entry already held H9 and H10 existed; renumbered
 to H11 in place. No content change.)
 
-status: pending (V32–V34 guard-arc thread to review; flip to done with the reviewing commit)
+status: DONE (2026-07-22) — guard-arc thread archived without recorded
+objection; reconciliation merged (PR #150), 29/29 guard tests, live-confirmed.
 
 Main can now run the Phase 5 pilot configuration
 (committee-runtime-main-reconciliation card). Two changes, PR from branch
@@ -345,9 +346,9 @@ NOT done here: retiring `claude/program-2-phase5-pinned-runtime` — the
 phase5d thread is mid-run on that lineage; retirement waits until it
 seals and re-pins (or adopts main).
 
-## H12 (2026-07-22) — Pinned-runtime retirement gate re-assessed (still blocked)
+## H12 (2026-07-22) — Pinned-runtime retirement gate re-assessed → COMPLETED
 
-status: pending (phase5d thread's call — machinery port OR keep-as-archive)
+status: DONE (2026-07-22) — phase5d thread archived; retired by this thread.
 
 Phase 5d has sealed and its RESULTS merged to main (PR #151: E1d + M1 + M2
 PASS, seam re-check PARITY 0.550). So the first retirement condition (the
@@ -367,3 +368,14 @@ smoke to main and then delete the branch, or (b) keep the branch as the
 frozen execution archive and mark it so. Deleting it as-is would destroy
 the only copy of the Phase 5d machinery. Left for that thread; this thread
 did not touch the branch.
+
+RETIREMENT COMPLETED (2026-07-22, phase5d thread archived): the frozen
+execution lineage is preserved immutably in tag
+`archive/program-2-phase5-pinned-runtime` (annotated abc14983 →
+27aae3b7), which carries the Phase 5d machinery that lived only on the
+branch. Branches `claude/program-2-phase5-pinned-runtime` and its ancestor
+`claude/program-2-phase5d-machinery` deleted. Nothing lost — retrievable
+via `git checkout archive/program-2-phase5-pinned-runtime`; a future
+5d-style run would port that machinery onto current main. Main is now the
+sole committee runtime (PR #150). Terra-composer-probe's two successor
+cards preserved onto main; that branch retired too.
