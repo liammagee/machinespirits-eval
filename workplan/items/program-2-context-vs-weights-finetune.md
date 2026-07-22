@@ -172,6 +172,26 @@ FAIL. §5 row-1 reading LICENSED. Artifact phase5d-seam-review.json
 (archived + hashed in manifest). ONE REMAINING: paper §6.21 fold (version
 bump) — the complete 5d verdict now available to fold.
 
+2026-07-22 Claude (PAPER FOLD): PHASE 5D FOLDED INTO §6.21 (v3.0.227, on
+the results PR #151). §6.21 gains a Phase 5d paragraph after 5c (census →
+two fixes → E1d/M1/M2/coverage/seam/safety), the header extended, "Status
+and caveats" three runs → four, and a v3.0.227 revision entry. Ran the
+paper-claim-auditor (FAIL on first draft): fixed all it flagged —
+stationarity rates 0.128/0.140 → 0.095/0.150, ceiling-shortfall reasoning
+corrected (rate converted 76% of achievable vs the ≈90% the ≈0.55
+reference assumed; this run's ceiling 0.625 is HIGHER than 5b's 0.59, not
+lower), "§6.20 substitution reading" → §7.11, and the turn-9 leak counts
+now cite a new hashed artifact scripts/program2-phase5d-safety-breakdown.mjs
+→ phase5d-safety-breakdown.json (committee 7 leaks/5 at t9, control 2/both
+t9). Provenance dangle resolved by landing the fold ON the results branch
+so prereg §9 + manifest + analyzer + paper merge together. Validators:
+paper-manifest 60/0/0, provable-discourse 118 pass/18 warn/0 fail (baseline
+preserved), prettier clean. FOLLOW-UP (non-blocking, auditor item 6):
+register paper2.program2.phase5d.* claims in provable-discourse-program2.yaml
++ sync-inventory so future edits to the paragraph are machine-checked like
+5/5b/5c — needs the sync-inventory regeneration step, deferred to its own
+change.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
