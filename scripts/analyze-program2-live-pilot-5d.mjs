@@ -31,7 +31,13 @@ const JSON_OUT = argAfter('--json', null);
 const integrityPath = path.join(REPO_ROOT, 'services/tutorStubEvalIntegrity.js');
 const { summarizeTutorStubFixedHorizon } = await import(pathToFileURL(integrityPath).href);
 const enginePath = path.join(REPO_ROOT, 'services/program2CommitteeEngine.js');
-const { committeeSpanCarriesCue, PROGRAM2_WARRANT_CUE_RE } = await import(pathToFileURL(enginePath).href);
+const { PROGRAM2_WARRANT_CUE_RE } = await import(pathToFileURL(enginePath).href);
+// Self-contained span-cue predicate: does the extracted span carry a frozen
+// cue word? (Equivalent to the pinned-runtime committeeSpanCarriesCue, but
+// depends only on PROGRAM2_WARRANT_CUE_RE, which exists on main — the runtime
+// helper does not, so importing it would break this analyzer off the pinned
+// branch.)
+const spanCarriesCue = (span) => PROGRAM2_WARRANT_CUE_RE.test(String(span || ''));
 
 function mulberry32(seed) {
   let value = seed >>> 0;
@@ -207,7 +213,7 @@ for (const d of committee) {
     spanCueTally[outcome] = (spanCueTally[outcome] || 0) + 1;
     if (moment.span) {
       m2Spans += 1;
-      if (committeeSpanCarriesCue([moment.span])) m2Cue += 1;
+      if (spanCarriesCue(moment.span)) m2Cue += 1;
       else spanCueMiss += 1;
     }
   }

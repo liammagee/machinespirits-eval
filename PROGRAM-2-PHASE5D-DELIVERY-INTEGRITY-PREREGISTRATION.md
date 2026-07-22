@@ -171,7 +171,7 @@ third):
 Runtime the pinned lineage 91b8a50e + machinery 27aae3b7 (Amendments 1-2
 folded); 2 same-seed retries (both the known auto-learner budget
 overflow, both sealed on attempt 2). Stationarity check PASS (fresh
-controls 0.128 within 0.10 of the 18 archived controls 0.140, Δ 0.055)
+controls 0.095 within 0.10 of the 18 archived controls 0.150, Δ 0.055)
 — pooled control licensed, n=24 dialogues. Manifest:
 `config/adaptive-tutor-evidence/program-2-phase5d.manifest.json`;
 analyzer `scripts/analyze-program2-live-pilot-5d.mjs`; traces archived
@@ -185,8 +185,11 @@ delivery-integrity rider lifts live warrant compliance from 5b's 0.386
 committee moments carry a due premise release, achievable 55/88 ≈ 0.625
 — the rate is **42/55 ≈ 76% of achievable**, up from 5b's 65%; the ≈0.55
 absolute prediction (registered §4, descriptive) is approached, not
-reached, because this run's due-release density (37.5%) leaves a lower
-ceiling than the prediction assumed.
+reached, because the committee converted 76% of achievable moments
+rather than the ≈90% the ≈0.55 figure assumed — not because the ceiling
+was lower (this run's ceiling, 55/88 ≈ 0.625, is in fact higher than the
+5b ceiling, 49/83 ≈ 0.59, on which the ≈0.55 figure was built as ≈0.9 of
+achievable).
 
 **M1 (guard mechanism) — PASS.** Among the 15 realized guard-eligible
 moments (finalized ≠ approved, no premise release), delivered warrant_cue

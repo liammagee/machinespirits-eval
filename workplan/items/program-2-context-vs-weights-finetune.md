@@ -192,6 +192,23 @@ register paper2.program2.phase5d.* claims in provable-discourse-program2.yaml
 5/5b/5c — needs the sync-inventory regeneration step, deferred to its own
 change.
 
+2026-07-22 Claude (fold re-audit round 2): the re-audit of the pushed fold
+found four more items, all fixed: (1) leak authorship was INVERTED in the
+paper §6.21 and the manifest note — the truth is 4 committee-authored /
+3 frontier-authored (safety-breakdown.json), not "4 frontier-authored";
+reworded to lean the exoneration on turn-9 concentration + arm symmetry,
+not authorship; (2)+(3) the prereg §9 Results carried the same two errors
+I'd fixed only in the paper (stale stationarity 0.128/0.140 and the
+inverted ceiling reasoning) — brought into line with the artifact
+(0.095/0.150; higher-ceiling/lower-conversion); (4) NEW regression — the
+5d analyzer imported committeeSpanCarriesCue, which exists only on the
+pinned-runtime engine, not on main, so it threw off-branch; rewritten to
+depend only on PROGRAM2_WARRANT_CUE_RE (exported on main) and re-run to
+confirm it reproduces every numeric field of phase5d-final.json exactly.
+Lesson: fold corrections must propagate to the cited authority docs
+(prereg §9), and copied analysis scripts must not import symbols that live
+only on the runtime branch.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
