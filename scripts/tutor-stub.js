@@ -3521,10 +3521,10 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
 }
 
 async function callPromptModel({
-  prompt,
+  prompt: promptInput,
   messageHistory = [],
   resolved,
-  systemPrompt,
+  systemPrompt: systemPromptInput,
   role,
   maxTokens = 700,
   trace = null,
@@ -3533,19 +3533,58 @@ async function callPromptModel({
   turn = null,
   signal = null,
 }) {
+  let prompt = promptInput;
+  let systemPrompt = systemPromptInput;
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && !stream?.deferOutput && providerSupportsStreaming(resolved));
   const publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
     role: message?.role === 'assistant' ? 'assistant' : 'user',
     content: String(message?.content || ''),
   }));
-  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
-  const promptAudit = auditTutorStubPrompt({
+  let promptAudit = auditTutorStubPrompt({
     surface: tutorStubPromptSurfaceForRole(role),
     systemPrompt,
     userPrompt: prompt,
     messageHistory: publicMessageHistory,
   });
+  // Backport of the Phase 5b Amendment-1 pinned-runtime patch
+  // (committee-runtime-main-reconciliation): endgame dialogue naturally
+  // repeats the verdict sentence across prompt sections, and a duplicate-only
+  // audit failure is recoverable by deduplication — exactly as
+  // invokeTutorAttempt already recovers — instead of a fatal that kills a
+  // nearly-complete dialogue.
+  const duplicateOnlyPromptFailure =
+    !promptAudit.ok &&
+    promptAudit.duplicateInstructionLines?.length > 0 &&
+    promptAudit.violations.every((violation) => violation.code === 'duplicate_instruction_lines');
+  if (duplicateOnlyPromptFailure) {
+    const originalAudit = promptAudit;
+    const recovery = recoverTutorStubDuplicateInstructionLines({
+      texts: [systemPrompt, prompt],
+      duplicateInstructionLines: originalAudit.duplicateInstructionLines,
+    });
+    [systemPrompt, prompt] = recovery.texts;
+    const recoveredAudit = auditTutorStubPrompt({
+      surface: tutorStubPromptSurfaceForRole(role),
+      systemPrompt,
+      userPrompt: prompt,
+      messageHistory: publicMessageHistory,
+    });
+    appendTraceEvent(trace, {
+      type: 'prompt_audit_recovery',
+      role,
+      turn,
+      recovery: {
+        applied: recovery.applied && recoveredAudit.ok,
+        method: 'deduplicate_exact_instruction_lines',
+        originalDuplicateInstructionLines: originalAudit.duplicateInstructionLines,
+        removedPromptLineCount: recovery.removedLines.length,
+      },
+      audit: recoveredAudit,
+    });
+    if (recoveredAudit.ok) promptAudit = { ...recoveredAudit, recovery: { applied: true } };
+  }
+  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
   if (!promptAudit.ok) {
     appendTraceEvent(trace, {
       type: 'prompt_audit_failed',
@@ -11435,10 +11474,11 @@ async function callTutor({
 
   function withTutorDeliveryDecision(
     audits,
-    { allowActorialAdvisory = false, advisoryReason = null, role, attempt } = {},
+    { allowActorialAdvisory = false, advisoryReason = null, role, attempt, terminalFallback = false } = {},
   ) {
     const deliveryDecision = tutorStubGuardDeliveryDecision(tutorStubGuardIssueRows(audits), {
       allowActorialAdvisory,
+      terminalFallback,
     });
     const result = {
       ...audits,
@@ -12460,9 +12500,10 @@ async function callTutor({
         fallbackDraftAudits.responseConfigurationAudit,
       ),
       advisoryReason:
-        'the mechanically public-safe fallback performs the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
+        'the deterministic fallback is the terminal safety text — conversational-integrity findings on it are recorded as advisories instead of killing the dialogue; evidence boundaries remain hard',
       role: `${roleBase}_fallback`,
       attempt: fallbackAttempt,
+      terminalFallback: true,
     });
     attachTutorDraftAudits(fallback, fallbackAudits);
     const fallbackRepairSpans = exactTutorRepairSpans(priorAttempt.candidate.text, fallbackText);
