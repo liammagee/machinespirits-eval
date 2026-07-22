@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-22T13:54:44.945Z",
+  "generated": "2026-07-22T14:01:32.207Z",
   "counts": {
-    "total": 142,
+    "total": 147,
     "byStatus": {
       "done": 106,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 21,
+      "triaged": 26,
       "review": 2,
       "active": 6,
       "archived": 4
@@ -14,11 +14,11 @@
     "byType": {
       "research": 45,
       "experiment": 48,
-      "infra": 24,
+      "infra": 28,
       "maintenance": 12,
       "content": 2,
       "paper": 5,
-      "ops": 6
+      "ops": 7
     }
   },
   "items": [
@@ -217,6 +217,129 @@
         "paper-2"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-capability-session-runtime",
+      "title": "Extract a capability-driven tutor-stub session runtime",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "depends_on": [
+        "tutor-stub-register-policy-extraction"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-human-discourse-layer"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "command-registry",
+        "replay"
+      ]
+    },
+    {
+      "id": "tutor-stub-learner-budget-overflow",
+      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Long until-grounded dialogues (affective_resistant, 25+ turns) no longer die on 'tutor_stub_auto_learner: character_budget_exceeded' — the learner seam truncates or summarizes its replayed history budget-aware before the audit — demonstrated by a re-run of a previously-failing seed sealing on first attempt, with a regression test on the truncation rule; fix applied to main and noted for any pinned-runtime successor.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "reliability"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "main"
+    },
+    {
+      "id": "tutor-stub-safe-capability-labs",
+      "title": "Curate safe tutor-stub capability labs and compatibility gates",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Every declarative lab zero-call dry-runs, a representative set completes with the fake provider, invalid combinations fail with actionable guidance, learner-facing labs exclude negative/simulated controls unless explicitly selected as research, generated help stays in sync, and traces record the lab id, maturity tier, resolved capabilities, and cost class.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "consolidated-labelling-game-harness",
+          "tutor-stub-typed-pedagogical-actions"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "presets",
+        "safety",
+        "discoverability"
+      ]
+    },
+    {
+      "id": "tutor-stub-unified-session-surface",
+      "title": "Ship tutor-stub as one shared web and Electron session surface",
+      "status": "triaged",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime",
+        "tutor-stub-safe-capability-labs",
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "notes": [
+          "desktop/ARCHITECTURE.md",
+          "docs/tutor-stub-cli.md"
+        ],
+        "items": [
+          "scriptorium-responsive-shell-navigation",
+          "scriptorium-static-tools-desktop-quality",
+          "scriptorium-ux-safety-net"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "scriptorium",
+        "electron",
+        "accessibility",
+        "voice",
+        "privacy"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "version-symmetric-trace-transformation-pipeline",
@@ -564,29 +687,65 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "tutor-stub-learner-budget-overflow",
-      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
+      "id": "tutor-stub-curriculum-mastery-runtime",
+      "title": "Add curriculum authoring, progression, and mastery to tutor-stub",
       "status": "triaged",
       "type": "infra",
       "priority": "P2",
       "owner": "unassigned",
-      "source": "manual",
+      "source": "review",
       "created": "2026-07-22",
       "updated": "2026-07-22",
-      "verification": "Long until-grounded dialogues (affective_resistant, 25+ turns) no longer die on 'tutor_stub_auto_learner: character_budget_exceeded' — the learner seam truncates or summarizes its replayed history budget-aware before the audit — demonstrated by a re-run of a previously-failing seed sealing on first attempt, with a regression test on the truncation rule; fix applied to main and noted for any pinned-runtime successor.",
-      "claim_status": "planned",
+      "verification": "The existing curriculum builder and a tutor-stub/Scriptorium workbench author, lint, hash, preview without spend, and round-trip one multi-module course; /module, /next, and /progress drive diagnostic, scaffold, independent-check, and transfer phases for two non-detective curricula; public state cannot expose private verifier material; external workplan completion is never inferred from dialogue.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
       "links": {
         "notes": [
-          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+          "docs/tutor-stub-prompt-and-world-authoring.md",
+          "curriculum/CURRICULUM-FORMAT.md"
+        ],
+        "items": [
+          "adaptive-curriculum-memory-controller",
+          "scenario-presentation-variety",
+          "scriptorium-creation-flows"
         ]
       },
       "tags": [
         "tutor-stub",
-        "reliability"
+        "super-app",
+        "curriculum",
+        "mastery",
+        "authoring"
+      ]
+    },
+    {
+      "id": "tutor-stub-session-recipes-explicit-resume",
+      "title": "Add versioned tutor-stub session recipes and explicit resume",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A saved recipe relaunch reproduces the resolved configuration hash and fake-provider decision trace; --resume <run-id|trace-path> wins regardless of mtime; world, prompt, tutor, model, and schema drift fail closed unless explicitly acknowledged; old supported traces migrate read-only; transcript HTML exposes a copyable exact relaunch command.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
       ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
+      "links": {
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "sessions",
+        "resume",
+        "provenance"
+      ]
     },
     {
       "id": "refusal-defense-adjudication",

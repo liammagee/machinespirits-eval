@@ -565,6 +565,7 @@ const SLASH_COMMANDS = [
   '/tune',
   '/settings',
   '/status',
+  '/features',
   '/release-notes',
   '/debug',
   '/mode',
@@ -594,6 +595,7 @@ const PASSTHROUGH_SLASH_COMMANDS = [
   '/motion',
   '/settings',
   '/status',
+  '/features',
   '/release-notes',
   '/transcript',
   '/html',
@@ -619,6 +621,7 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/register',
   '/character',
   '/status',
+  '/features',
   '/release-notes',
   '/debug',
   '/settings',
@@ -773,6 +776,7 @@ const { values: args, positionals } = parseArgs({
     'list-curriculum-modules': { type: 'boolean', default: false },
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
+    features: { type: 'boolean', default: false },
     'labelling-game': { type: 'boolean', default: false },
     'label-dataset': { type: 'string', default: '' },
     'label-coder': { type: 'string', default: '' },
@@ -968,6 +972,7 @@ Options:
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
+  --features             show the tutor-stub capability map and quick starts
   --topic <text>         tutoring topic (default: ${STUB.topic})
   --learner <text>       learner sketch
   --goal <text>          tutor objective
@@ -1094,6 +1099,7 @@ Interactive commands:
   /settings forget       stop using the saved defaults after this session
   /release-notes [hours]
                          show recent tutor-stub changes and their expected effects
+  /features              show the capability map, quick starts, and active mode
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
   /profile               show the active suggested-learner profile
@@ -4369,7 +4375,7 @@ function compactInterimCliHintPanels(active) {
     {
       label: 'CLI hint',
       tone: 'neutral',
-      text: 'type / to browse | type to filter | Tab completes | /help explains',
+      text: 'type / to browse | type to filter | Tab completes | /help groups commands',
     },
   ];
 
@@ -8522,13 +8528,64 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
   }
 }
 
+function printTutorStubFeatureMap(state = null) {
+  const featureRows = [
+    ['participate', 'human learner · private coach · automated learner · mixed AI drafting · guided demo'],
+    ['teach', 'open topics · proof-DAG scenarios · reflective curricula · versioned tutor instances'],
+    ['adapt', 'learner reading · public reasoning map · typed actions · teaching style · clue and memory pacing'],
+    ['control', 'per-role models · live settings · learner profiles · tutor tuning · guarded response checks'],
+    ['access', 'command palette · editable terminal · themes and motion · voice companion · compound turns'],
+    ['inspect', 'plain/technical analysis · field view · transcript/replay · director notes · learning summary'],
+    ['evaluate', 'auto-eval · policy/profile QA matrices · ABM panels · frozen replay · SQL ingest'],
+  ];
+
+  console.log(`${C.brightCyan}${C.bold}tutor-stub capability map${C.reset}`);
+  for (const [label, description] of featureRows) {
+    console.log(`${C.cyan}  ${label.padEnd(11)}${C.reset} ${description}`);
+  }
+
+  console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
+  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub:scaffold:mixed`);
+  console.log(`${C.cyan}  guided tour${C.reset} npm run tutor:stub:demo`);
+  console.log(
+    `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
+  );
+  console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
+  console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
+  console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
+
+  if (state) {
+    const mode = state.passthrough?.enabled ? 'passthrough' : state.interaction?.mode || 'learner';
+    const content = state.curriculum?.module?.title
+      ? `curriculum: ${state.curriculum.module.title}`
+      : state.world?.title
+        ? `scenario: ${state.world.title}`
+        : `topic: ${state.topic}`;
+    const activeMechanisms = state.passthrough?.enabled
+      ? ['speaker-only baseline']
+      : [
+          state.classifier?.enabled ? 'learner reading' : null,
+          state.learnerDag?.enabled ? 'reasoning map' : null,
+          state.register?.enabled ? 'adaptive delivery' : null,
+          state.voice?.enabled ? 'voice on' : null,
+        ].filter(Boolean);
+    console.log(
+      `\n${C.brightGreen}${C.bold}active now >${C.reset} ${mode} · ${content}${activeMechanisms.length ? ` · ${activeMechanisms.join(' · ')}` : ''}`,
+    );
+  }
+
+  console.log(
+    `${C.dim}  use --help for launch flags; inside a session, type / to filter commands or /help for groups${C.reset}\n`,
+  );
+}
+
 function printInteractiveHelp(state = null) {
   if (state?.passthrough?.enabled) {
     console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
     console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
     console.log(`${C.cyan}  model${C.reset}      /settings model [provider.alias]`);
     console.log(
-      `${C.cyan}  inspect${C.reset}    /status · /release-notes · /transcript [no-open] · /voice · /director · /id`,
+      `${C.cyan}  inspect${C.reset}    /status · /features · /release-notes · /transcript [no-open] · /voice · /director · /id`,
     );
     console.log(`${C.cyan}  appearance${C.reset} /theme · /motion`);
     console.log(`${C.cyan}  setup${C.reset}      /scenario · /reset`);
@@ -8549,6 +8606,7 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
   );
+  console.log(`${C.cyan}  discover${C.reset}     /features · /release-notes · /help`);
   console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
   console.log(`${C.cyan}  direct${C.reset}       /register <style> · /character <part> · /random`);
   console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
@@ -14803,6 +14861,10 @@ async function main() {
     printHelp();
     return;
   }
+  if (args.features) {
+    printTutorStubFeatureMap();
+    return;
+  }
   if (args['list-worlds']) {
     printWorlds();
     return;
@@ -17300,8 +17362,8 @@ async function main() {
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
         '/profile list',
-        '/profile stress',
-        '/profile all',
+        '/profile list stress',
+        '/profile list all',
         '/profile example',
         '/profile default',
         '/profile custom ',
@@ -17347,7 +17409,7 @@ async function main() {
         .join('');
       rows.push(`  ${row}`);
     }
-    rows.push(`${C.dim}  keep typing to filter · Tab completes · /help explains each command${C.reset}`);
+    rows.push(`${C.dim}  keep typing to filter · Tab completes · /help shows command groups${C.reset}`);
     return [header, ...rows];
   }
 
@@ -22467,6 +22529,18 @@ async function main() {
       clearStatusLine();
       printInteractiveStatus();
       appendTraceEvent(state.trace, { type: 'interactive_status', turns: state.turns.length, duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/features') {
+      clearStatusLine();
+      printTutorStubFeatureMap(state);
+      appendTraceEvent(state.trace, {
+        type: 'interactive_feature_map',
+        turns: state.turns.length,
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
       finishSlashCommand();
       return true;
     }

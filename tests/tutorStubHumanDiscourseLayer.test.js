@@ -37,6 +37,23 @@ function plainTerminalText(value) {
     .replace(/\r/gu, '');
 }
 
+test('tutor-stub exposes a no-model capability map with practical quick starts', () => {
+  const result = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--features'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: { ...process.env, NO_COLOR: '1' },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /tutor-stub capability map/u);
+  assert.match(result.stdout, /participate\s+human learner.*private coach.*automated learner/su);
+  assert.match(result.stdout, /teach\s+open topics.*proof-DAG scenarios.*reflective curricula/su);
+  assert.match(result.stdout, /evaluate\s+auto-eval.*QA matrices.*ABM panels.*frozen replay/su);
+  assert.match(result.stdout, /npm run tutor:stub:scaffold:mixed/u);
+  assert.match(result.stdout, /curriculum\/ai-foundations\.curriculum\.yaml --module AF1/u);
+  assert.match(result.stdout, /npm run tutor:stub:workplan -- --module <id>/u);
+});
+
 test('tutor-stub dry run exposes human discourse trace schemas', () => {
   const config = tutorStubDryRun(['--dag-mode', 'defeasible-human-scaffold']);
 
@@ -1096,7 +1113,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/release-notes\n/id\n/clarify cupel\n/quit\n',
+      input: '/help\n/features\n/release-notes\n/id\n/clarify cupel\n/quit\n',
       env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
     },
   );
@@ -1108,6 +1125,9 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /\/transcript \[no-open\]/u);
   assert.match(result.stdout, /\/release-notes/u);
+  assert.match(result.stdout, /\/features/u);
+  assert.match(result.stdout, /tutor-stub capability map/u);
+  assert.match(result.stdout, /active now > learner · scenario:/u);
   assert.match(result.stdout, /release notes > last 24 hours/u);
   assert.match(result.stdout, /effect >/u);
   assert.match(result.stdout, /look for >/u);
