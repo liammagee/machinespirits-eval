@@ -160,9 +160,17 @@ turn 9), exonerated per 5b/5c. Guard ledger: 15 applied swaps, 33
 premise-release skips, 37 shipped-as-approved. Prereg §9 results +
 manifest program-2-phase5d.manifest.json + analyzer
 analyze-program2-live-pilot-5d.mjs + archive
-~/.machinespirits-data/program-2/phase5d-live. REMAINING: mandatory seam
-re-check (separate PAID harness, prereg §4) — not yet run; and the paper
-§6.21 fold once seam lands.
+~/.machinespirits-data/program-2/phase5d-live.
+
+2026-07-22 Claude (SEAM): PHASE 5D SEAM — PARITY. Mandatory seam re-check
+run live (scripts/program2-seam-review.mjs --live, 40 sonnet-class
+reviewer calls, seed 20260718): 22/40 = 0.550 detection accuracy ≤ 0.65
+bar; continuity 3.40 committee vs 3.75 all-frontier. The delivery guard's
+span swaps stay invisible at three-turn window scale. All guardrails now
+resolved — E1d/M1/M2/coverage/seam PASS, safety the lone (exonerated)
+FAIL. §5 row-1 reading LICENSED. Artifact phase5d-seam-review.json
+(archived + hashed in manifest). ONE REMAINING: paper §6.21 fold (version
+bump) — the complete 5d verdict now available to fold.
 
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,

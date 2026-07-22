@@ -42,7 +42,15 @@
       "control": 0.625,
       "verdict": "GUARDRAIL FAIL \u2014 turn-9 release-schedule leak (5/7 committee + 2/2 control leaks at turn 9), arm-symmetric, marrick world property per 5b/5c"
     },
-    "seam": "PENDING \u2014 mandatory seam re-check runs as a separate paid harness (prereg \u00a74)",
+    "seam": {
+      "accuracy": 0.55,
+      "n": 40,
+      "correct": 22,
+      "bar": 0.65,
+      "verdict": "PARITY",
+      "continuity": [3.4, 3.75],
+      "reviewer": "claude-sonnet-5"
+    },
     "liveCeiling": {
       "dueRelease": 33,
       "moments": 88,
@@ -82,6 +90,10 @@
     "phase5d-final.json": {
       "sha256": "dec9171b5ae056484431401a808dbd61802884d4b58c3d977dfa641739b2d9da",
       "bytes": 2439
+    },
+    "phase5d-seam-review.json": {
+      "sha256": "99f95c4f43d7a4f98529ce1a00a3d3bb04fc0251828499ee01c3e09121b824db",
+      "bytes": 11690
     }
   }
 }

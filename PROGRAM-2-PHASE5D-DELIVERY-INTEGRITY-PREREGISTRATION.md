@@ -214,18 +214,25 @@ frontier-authored. This is the marrick turn-9 release-schedule leak that
 rider regression. The successor fix remains the turn-9 staging, not the
 committee.
 
-**Seam — PENDING.** The mandatory seam re-check (§4; the guard alters
-staged-turn texture) runs as a separate paid LLM harness and is not yet
-executed. Until it lands ≤ 0.65 the §5 row-1 reading carries a
-seam-unconfirmed caveat.
+**Seam — PARITY.** 22/40 = 0.550 detection accuracy against the frozen
+≤ 0.65 bar (full 20+20 window battery, sonnet-class isolated reviewer,
+seed 20260718); mean continuity 3.40 committee vs 3.75 all-frontier. The
+delivery guard's span swaps do not make committee turns more detectable
+at three-turn window scale — the texture stays at chance despite the
+altered staged-turn phrasing. Artifact
+`~/.machinespirits-data/program-2/phase5d-live/phase5d-seam-review.json`;
+harness `scripts/program2-seam-review.mjs --live`.
 
-**Reading (§5 row 1, pending seam).** With span resampling and the
-delivery guard closing the two leaks the 5b census located, the committee
-controls warrant form on every non-release text path: E1d clears its bar
-by a wide margin, both mechanisms hit their pre-registered targets, and
-coverage shows no tax. The gain is delivery completeness, not pedagogy —
-the frozen six-word instrument stands, and the cue-less good-question
-control specimen still scores non-compliant by construction.
+**Reading (§5 row 1 — LICENSED).** With span resampling and the delivery
+guard closing the two leaks the 5b census located, the committee controls
+warrant form on every non-release text path: E1d clears its bar by a wide
+margin, both mechanisms hit their pre-registered targets, coverage shows
+no tax, and the seam holds at parity. The gain is delivery completeness,
+not pedagogy — the frozen six-word instrument stands, and the cue-less
+good-question control specimen still scores non-compliant by
+construction. The sole guardrail failure is safety, and it is the
+world-bound turn-9 release-schedule leak 5b recorded and 5c confirmed
+absent elsewhere, not a rider regression.
 
 ## Amendment 1 (2026-07-22, pre-launch — zero sealed dialogues)
 
