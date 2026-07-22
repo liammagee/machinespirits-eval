@@ -438,8 +438,8 @@ function perCategoryF1(pairs) {
     let fn = 0;
     for (const pair of pairs) {
       if (pair.ai === id && pair.human === id) tp++;
-      else if (pair.ai !== id && pair.human === id) fp++;
-      else if (pair.ai === id && pair.human !== id) fn++;
+      else if (pair.ai === id && pair.human !== id) fp++;
+      else if (pair.ai !== id && pair.human === id) fn++;
     }
     const precision = tp + fp === 0 ? null : tp / (tp + fp);
     const recall = tp + fn === 0 ? null : tp / (tp + fn);

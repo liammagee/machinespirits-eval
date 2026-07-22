@@ -8,11 +8,15 @@ import { after, before, describe, it } from 'node:test';
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-routes-'));
 const samplePath = path.join(tmpDir, 'human-validation-pilot-sample.csv');
 const outputDir = path.join(tmpDir, 'out');
+const impassePath = path.join(tmpDir, 'impasse-episodes.json');
+const impasseOutputDir = path.join(tmpDir, 'impasse-out');
 
 process.env.HUMAN_CODING_SAMPLE = samplePath;
 process.env.HUMAN_CODING_OUTPUT_DIR = outputDir;
 process.env.HUMAN_CODING_KEY = path.join(tmpDir, 'human-validation-pilot-key.jsonl');
 process.env.HUMAN_CODING_ANALYSIS = path.join(tmpDir, 'human-validation-pilot-analysis.md');
+process.env.LABELLING_GAME_IMPASSE_DATASET = impassePath;
+process.env.LABELLING_GAME_IMPASSE_OUTPUT_DIR = impasseOutputDir;
 
 fs.mkdirSync(tmpDir, { recursive: true });
 fs.writeFileSync(
@@ -30,6 +34,37 @@ fs.writeFileSync(
     '{"item_id":"item-a","llm_primary":"MEMORY_FAILURE","llm_rationale":"history"}',
     '{"item_id":"item-b","llm_primary":"FABRICATION","llm_rationale":"invented metric"}',
   ].join('\n') + '\n',
+  'utf8',
+);
+fs.writeFileSync(
+  impassePath,
+  JSON.stringify({
+    schema: 'test.impasse.v1',
+    episodes: [
+      {
+        episode_id: 'E01',
+        session_date: '2026-07-08 06:33:03',
+        session_file: 'trace-a.jsonl',
+        turn_range: [13, 18],
+        mixed: false,
+        signals_fired: ['h1_clarification[confused]'],
+        core_heuristics: ['h1'],
+        excerpt_turns: [{ turn: 13, learner_text: 'I am confused.', tutor_text: 'Name the person.' }],
+        followup_turns: [{ turn: 14, learner_text: 'Which person?', tutor_text: 'The one in the book.' }],
+      },
+      {
+        episode_id: 'E02',
+        session_date: '2026-07-09 11:00:00',
+        session_file: 'trace-b.jsonl',
+        turn_range: [4, 4],
+        mixed: true,
+        signals_fired: ['h5_stagnation'],
+        core_heuristics: ['h5'],
+        excerpt_turns: [{ turn: 4, learner_text: 'Okay.', tutor_text: 'What follows?' }],
+        followup_turns: [],
+      },
+    ],
+  }),
   'utf8',
 );
 
@@ -91,6 +126,8 @@ describe('human coding dashboard routes', () => {
     delete process.env.HUMAN_CODING_OUTPUT_DIR;
     delete process.env.HUMAN_CODING_KEY;
     delete process.env.HUMAN_CODING_ANALYSIS;
+    delete process.env.LABELLING_GAME_IMPASSE_DATASET;
+    delete process.env.LABELLING_GAME_IMPASSE_OUTPUT_DIR;
   });
 
   it('reports sample status and serves the admin shell', async () => {
@@ -104,7 +141,99 @@ describe('human coding dashboard routes', () => {
     const page = await request(baseUrl, 'GET', '/human-coding-admin/');
     assert.equal(page.status, 200);
     assert.match(page.contentType || '', /text\/html/);
-    assert.match(page.body, /Human Coding/);
+    assert.match(page.body, /Labelling Game/);
+  });
+
+  it('lists both datasets through the consolidated labelling-game API', async () => {
+    const response = await request(baseUrl, 'GET', '/api/human-coding/datasets');
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      response.body.datasets.map((dataset) => [dataset.id, dataset.total]),
+      [
+        ['superego-taxonomy', 2],
+        ['tutor-stub-impasses', 2],
+      ],
+    );
+
+    const taxonomy = await request(
+      baseUrl,
+      'GET',
+      '/api/human-coding/datasets/superego-taxonomy/items?coder_id=rater-B',
+    );
+    assert.equal(taxonomy.status, 200);
+    assert.equal(taxonomy.body.items[0].labelling_complete, false);
+    assert.equal(taxonomy.body.items[0].labelling_summary, 'open');
+  });
+
+  it('loads and saves structured tutor-stub impasse labels', async () => {
+    const items = await request(
+      baseUrl,
+      'GET',
+      '/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=impasse-rater',
+    );
+    assert.equal(items.status, 200);
+    assert.equal(items.body.items.length, 2);
+    assert.equal(items.body.items[0].excerpt_turns[0].learner_text, 'I am confused.');
+    assert.equal(items.body.progress.complete, 0);
+
+    const saved = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E01', {
+      coder_id: 'impasse-rater',
+      impasse: 'yes',
+      impasse_types: ['comprehension', 'pacing-stall'],
+      tutor_addressed: 'partly',
+      resolved_within_2: 'no',
+      notes: 'The learner asks twice for the missing referent.',
+    });
+    assert.equal(saved.status, 200);
+    assert.equal(saved.body.item.labelling_complete, true);
+    assert.deepEqual(saved.body.item.impasse_types, ['comprehension', 'pacing_stall']);
+    assert.equal(saved.body.progress.complete, 1);
+
+    const sidecarPath = path.join(impasseOutputDir, 'impasse-corpus-phase1-rater-impasse-rater.json');
+    const sidecar = JSON.parse(fs.readFileSync(sidecarPath, 'utf8'));
+    assert.equal(sidecar.schema, 'machinespirits.labelling-game.impasse-rater.v1');
+    assert.equal(sidecar.items[0].tutor_addressed, 'partly');
+
+    const unavailable = await request(
+      baseUrl,
+      'GET',
+      '/api/human-coding/datasets/tutor-stub-impasses/comparison?coder_id=impasse-rater',
+    );
+    assert.equal(unavailable.status, 409);
+    assert.equal(unavailable.body.code, 'comparison_unavailable');
+  });
+
+  it('rejects incomplete or unknown impasse labels without writing them', async () => {
+    const missingType = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E02', {
+      coder_id: 'impasse-rater',
+      impasse: 'yes',
+      impasse_types: [],
+      tutor_addressed: 'no',
+      resolved_within_2: 'session ended',
+    });
+    assert.equal(missingType.status, 422);
+    assert.equal(missingType.body.code, 'impasse_type_required');
+
+    const unknownType = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E02', {
+      coder_id: 'impasse-rater',
+      impasse: 'yes',
+      impasse_types: ['not-a-type'],
+      tutor_addressed: 'no',
+      resolved_within_2: 'no',
+    });
+    assert.equal(unknownType.status, 422);
+    assert.equal(unknownType.body.code, 'invalid_impasse_type');
+
+    const unexplainedOther = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E02', {
+      coder_id: 'impasse-rater',
+      impasse: 'yes',
+      impasse_types: ['other'],
+      tutor_addressed: 'no',
+      resolved_within_2: 'no',
+      notes: '',
+    });
+    assert.equal(unexplainedOther.status, 422);
+    assert.equal(unexplainedOther.body.code, 'impasse_other_notes_required');
   });
 
   it('loads a coder packet and writes analyzer-compatible rater CSV rows', async () => {

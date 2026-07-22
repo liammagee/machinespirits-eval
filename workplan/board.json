@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-22T07:29:55.484Z",
+  "generated": "2026-07-22T13:38:31.634Z",
   "counts": {
-    "total": 130,
+    "total": 132,
     "byStatus": {
-      "done": 105,
+      "done": 106,
       "blocked": 1,
       "dropped": 2,
       "triaged": 11,
       "review": 2,
-      "active": 5,
+      "active": 6,
       "archived": 4
     },
     "byType": {
       "research": 45,
       "experiment": 48,
-      "infra": 18,
+      "infra": 20,
       "maintenance": 6,
       "content": 2,
       "paper": 5,
@@ -387,6 +387,36 @@
       "branch": "worktree-blueprint-composition"
     },
     {
+      "id": "consolidated-labelling-game-harness",
+      "title": "Consolidated labelling game for taxonomy and tutor-stub impasse datasets",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Both datasets load and save through /human-coding-admin and the shared terminal flow; tutor-stub launches that flow with --labelling-game; route, store, CLI, syntax, and in-browser checks pass without exposing the taxonomy key early.",
+      "claim_status": "methods",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/research/human-coding-codebook.md",
+          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
+        ],
+        "items": [
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "tutor-stub",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
+    },
+    {
       "id": "impasse-corpus-phase1",
       "title": "Impasse program Phase I: candidate-episode corpus from the user's own sessions",
       "status": "active",
@@ -395,7 +425,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-07-17",
-      "updated": "2026-07-17",
+      "updated": "2026-07-22",
       "verification": "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design.",
       "claim_status": "planned",
       "depends_on": [],
@@ -405,7 +435,8 @@
           "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
         ],
         "items": [
-          "tutor-stub-side-coaching-gate"
+          "tutor-stub-side-coaching-gate",
+          "consolidated-labelling-game-harness"
         ]
       },
       "tags": [
@@ -3410,6 +3441,31 @@
         "governance"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "workplan-reflective-tutor-curriculum",
+      "title": "Load the live workplan as a reflective tutor-stub curriculum",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The live workplan compiler preserves dependency order and source hashes; tutor-stub lists and dry-runs a selected card without a model call or proof-world substitution; focused curriculum tests pass.",
+      "claim_status": "methods",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/tutor-stub-cli.md"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "curriculum",
+        "tutor-stub",
+        "reflective-inquiry"
+      ]
     },
     {
       "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",

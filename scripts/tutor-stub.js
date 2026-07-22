@@ -28,6 +28,7 @@ import { parseArgs } from 'node:util';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
+import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
 import { closure, factKey } from '../services/dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from '../services/dramaticDerivation/learnerDag.js';
@@ -772,6 +773,9 @@ const { values: args, positionals } = parseArgs({
     'list-curriculum-modules': { type: 'boolean', default: false },
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
+    'labelling-game': { type: 'boolean', default: false },
+    'label-dataset': { type: 'string', default: '' },
+    'label-coder': { type: 'string', default: '' },
     learner: { type: 'string', default: STUB.learner },
     goal: { type: 'string', default: STUB.goal },
     style: { type: 'string', default: STUB.style },
@@ -957,6 +961,10 @@ Options:
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
+  --labelling-game       run the consolidated human-labelling harness instead
+                         of starting a tutoring dialogue
+  --label-dataset <id>   superego-taxonomy or tutor-stub-impasses
+  --label-coder <id>     rater id for the labelling output sidecar
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
@@ -14812,6 +14820,13 @@ async function main() {
   }
   if (args['list-learner-profiles']) {
     printAutomatedLearnerProfiles();
+    return;
+  }
+  if (args['labelling-game']) {
+    await runLabellingGameCli({
+      datasetId: args['label-dataset'],
+      coderId: args['label-coder'],
+    });
     return;
   }
 

@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-17
-updated: 2026-07-17
+updated: 2026-07-22
 verification: "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design."
 claim_status: planned
 depends_on: []
@@ -17,6 +17,7 @@ links:
     - notes/impasse/2026-07-17-phase1-labeling-sheet.md
   items:
     - tutor-stub-side-coaching-gate
+    - consolidated-labelling-game-harness
 tags:
   - impasse-program
   - human-sessions

@@ -20,6 +20,22 @@ The same choice can be made with `--theme <name>` or `/settings theme <name>`.
 Interactive sessions remember it. `NO_COLOR` and `--no-color` disable color
 without removing labels or hierarchy.
 
+## Labelling game
+
+The consolidated labelling harness serves both the blinded superego-taxonomy
+packet and the tutor-stub communicative-impasse corpus. Launch it directly or
+through the tutor-stub CLI:
+
+```bash
+npm run labelling-game -- --dataset tutor-stub-impasses --coder rater-A
+npm run tutor:stub -- --labelling-game --label-dataset superego-taxonomy --label-coder rater-A
+```
+
+Omit the dataset and coder flags to choose them interactively. The same packets
+are available in the browser at `http://localhost:8081/human-coding-admin`
+after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
+impasse judgments are stored as structured per-rater JSON sidecars.
+
 ## Reflecting on the workplan through the tutor
 
 Tutor-stub can project the current open workplan cards into a live canonical

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Human Coding · Superego Taxonomy</title>
+    <title>Labelling Game · Machine Spirits</title>
     <link rel="stylesheet" href="/components/techne.css" />
     <style>
       :root {
@@ -45,7 +45,7 @@
       }
       .field-row {
         display: grid;
-        grid-template-columns: minmax(180px, 1fr) auto auto;
+        grid-template-columns: minmax(170px, 0.9fr) minmax(180px, 1fr) auto auto;
         gap: 10px;
         align-items: end;
       }
@@ -281,6 +281,39 @@
         min-height: 92px;
         resize: vertical;
       }
+      .impasse-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .turn-list {
+        display: grid;
+        gap: 9px;
+      }
+      .turn-card {
+        border: 1px solid var(--rule);
+        background: var(--paper);
+      }
+      .turn-line {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 9px;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .turn-line:last-child { border-bottom: 0; }
+      .turn-role {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+      }
+      .turn-text {
+        white-space: pre-wrap;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
       .form-actions {
         display: flex;
         align-items: center;
@@ -478,6 +511,7 @@
         .secondary-grid {
           grid-template-columns: 1fr;
         }
+        .impasse-grid { grid-template-columns: 1fr; }
         .field-row { grid-template-columns: 1fr; }
         .form-actions { align-items: flex-start; flex-direction: column; }
       }
@@ -487,7 +521,7 @@
     <main class="coding-shell">
       <nav class="coding-bar">
         <span class="wordmark">Machine Spirits</span>
-        <span class="tag">human coding · superego taxonomy</span>
+        <span class="tag">labelling game · human datasets</span>
         <span class="spacer"></span>
         <span class="tag" id="sample-tag">loading</span>
       </nav>
@@ -500,6 +534,10 @@
           </div>
           <div class="pane-body">
             <div class="field-row">
+              <label>
+                Dataset
+                <select id="dataset-id"></select>
+              </label>
               <label>
                 Coder ID
                 <input id="coder-id" autocomplete="off" spellcheck="false" placeholder="rater-A" />
@@ -526,7 +564,7 @@
           </div>
           <div class="metric">
             <div class="n" id="metric-low">0</div>
-            <div class="l">low confidence</div>
+            <div class="l" id="metric-low-label">low confidence</div>
           </div>
         </div>
       </section>
@@ -557,15 +595,15 @@
             <div class="task-strip">
               <div>
                 <strong>Object</strong>
-                Label the superego feedback text.
+                <span id="task-object">Select a dataset.</span>
               </div>
               <div>
                 <strong>Not The Task</strong>
-                Do not decide whether the critique is correct.
+                <span id="task-not">Dataset instructions will appear here.</span>
               </div>
               <div>
                 <strong>Rule</strong>
-                Pick one primary label; use secondary labels only for close ties.
+                <span id="task-rule">Human judgments stay sealed from hidden keys.</span>
               </div>
             </div>
 
@@ -575,46 +613,93 @@
                 <span class="pill" id="current-item-id"></span>
                 <span class="pill" id="current-primary-pill">uncoded</span>
               </div>
-              <article class="text-block primary">
-                <h3>Superego Feedback</h3>
-                <div class="content" id="feedback"></div>
-              </article>
-              <article class="text-block">
-                <h3>Ego Initial Response</h3>
-                <div class="content" id="ego-generate"></div>
-              </article>
-              <article class="text-block">
-                <h3>Ego Revised Response</h3>
-                <div class="content" id="ego-revision"></div>
-              </article>
-              <article class="text-block">
-                <h3>Learner Context Snippet</h3>
-                <div class="content" id="learner-context"></div>
-              </article>
+              <div id="taxonomy-item-fields">
+                <article class="text-block primary">
+                  <h3>Superego Feedback</h3>
+                  <div class="content" id="feedback"></div>
+                </article>
+                <article class="text-block">
+                  <h3>Ego Initial Response</h3>
+                  <div class="content" id="ego-generate"></div>
+                </article>
+                <article class="text-block">
+                  <h3>Ego Revised Response</h3>
+                  <div class="content" id="ego-revision"></div>
+                </article>
+                <article class="text-block">
+                  <h3>Learner Context Snippet</h3>
+                  <div class="content" id="learner-context"></div>
+                </article>
+              </div>
+
+              <div id="impasse-item-fields" hidden>
+                <article class="text-block primary">
+                  <h3>Candidate signals</h3>
+                  <div class="signals" id="impasse-signals"></div>
+                </article>
+                <div class="turn-list" id="impasse-turns"></div>
+              </div>
 
               <form class="coding-form" id="coding-form">
-                <div class="control-grid">
+                <div id="taxonomy-controls">
+                  <div class="control-grid">
+                    <label>
+                      Primary label
+                      <select id="human-primary"></select>
+                    </label>
+                    <label>
+                      Confidence
+                      <select id="human-confident">
+                        <option value=""></option>
+                        <option value="1">1 - hard case</option>
+                        <option value="2">2 - plausible</option>
+                        <option value="3">3 - clear</option>
+                      </select>
+                    </label>
+                  </div>
                   <label>
-                    Primary label
-                    <select id="human-primary"></select>
+                    Secondary labels
+                    <div class="secondary-grid" id="secondary-grid"></div>
                   </label>
+                </div>
+
+                <div id="impasse-controls" hidden>
+                  <div class="impasse-grid">
+                    <label>
+                      Communicative impasse
+                      <select id="impasse-value">
+                        <option value=""></option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </label>
+                    <label>
+                      Tutor addressed it
+                      <select id="tutor-addressed">
+                        <option value=""></option>
+                        <option value="yes">Yes</option>
+                        <option value="partly">Partly</option>
+                        <option value="no">No</option>
+                      </select>
+                    </label>
+                    <label>
+                      Resolved within two turns
+                      <select id="resolved-within-2">
+                        <option value=""></option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="session_ended">Session ended</option>
+                      </select>
+                    </label>
+                  </div>
                   <label>
-                    Confidence
-                    <select id="human-confident">
-                      <option value=""></option>
-                      <option value="1">1 - hard case</option>
-                      <option value="2">2 - plausible</option>
-                      <option value="3">3 - clear</option>
-                    </select>
+                    Impasse types (choose one or more when impasse = yes)
+                    <div class="secondary-grid" id="impasse-type-grid"></div>
                   </label>
                 </div>
                 <label>
-                  Secondary labels
-                  <div class="secondary-grid" id="secondary-grid"></div>
-                </label>
-                <label>
                   Notes
-                  <textarea id="human-notes" placeholder="Boundary case, disagreement with critique, or reasoning for the label."></textarea>
+                  <textarea id="human-notes" placeholder="Boundary case, evidence for the label, or other relevant context."></textarea>
                 </label>
                 <div class="form-actions">
                   <div class="left">
@@ -634,27 +719,14 @@
         <aside class="pane">
           <div class="pane-head">
             <h2>Codebook</h2>
-            <span class="small">kappa floor: 0.60</span>
+            <span class="small" id="codebook-subtitle">human judgment</span>
           </div>
           <div class="pane-body">
             <div class="category-list" id="category-list"></div>
             <div class="category-detail" id="category-detail"></div>
             <div class="category-detail">
-              <h3>Decision Order</h3>
-              <ol class="decision-list">
-                <li>Approval with no problem: APPROVAL.</li>
-                <li>Invented fact or metric: FABRICATION.</li>
-                <li>Wrong or unverified content reference: CONTEXT_BLINDNESS.</li>
-                <li>Ignored session history: MEMORY_FAILURE.</li>
-                <li>Ignored affective signal: EMOTIONAL_NEGLECT.</li>
-                <li>Routes away from current struggle: REDIRECTION.</li>
-                <li>Wrong tone or level: REGISTER_MISMATCH.</li>
-                <li>Misreads learner state: PEDAGOGICAL_MISJUDGMENT.</li>
-                <li>Directive with no choice: LACK_OF_AGENCY.</li>
-                <li>Missing concrete detail: VAGUENESS.</li>
-                <li>Intellectual agency is the central issue: RECOGNITION_FAILURE.</li>
-                <li>No fit: OTHER.</li>
-              </ol>
+              <h3 id="decision-title">Decision notes</h3>
+              <ol class="decision-list" id="decision-list"></ol>
             </div>
           </div>
         </aside>
@@ -705,8 +777,11 @@
 
     <script src="/components/rail-inject.js" data-active="human-coding-admin" defer></script>
     <script>
-      const storageKey = 'ms_human_coding_coder_id';
+      const coderStorageKey = 'ms_human_coding_coder_id';
+      const datasetStorageKey = 'ms_labelling_game_dataset_id';
       const state = {
+        datasets: [],
+        datasetId: '',
         status: null,
         codebook: null,
         coderId: '',
@@ -746,14 +821,24 @@
         return (state.codebook?.categories || []).find((entry) => entry.id === id);
       }
 
+      function isTaxonomy() {
+        return state.datasetId === 'superego-taxonomy';
+      }
+
+      function datasetPath(suffix) {
+        return `/api/human-coding/datasets/${encodeURIComponent(state.datasetId)}${suffix}`;
+      }
+
       function currentItem() {
         return state.items.find((item) => item.item_id === state.selectedId) || null;
       }
 
       function filteredItems() {
-        if (state.filter === 'open') return state.items.filter((item) => !item.human_primary);
-        if (state.filter === 'done') return state.items.filter((item) => item.human_primary);
-        if (state.filter === 'low') return state.items.filter((item) => item.human_confident === '1');
+        if (state.filter === 'open') return state.items.filter((item) => !item.labelling_complete);
+        if (state.filter === 'done') return state.items.filter((item) => item.labelling_complete);
+        if (state.filter === 'low') {
+          return isTaxonomy() ? state.items.filter((item) => item.human_confident === '1') : [];
+        }
         return state.items;
       }
 
@@ -766,17 +851,24 @@
       function renderStatus() {
         const status = state.status;
         if (!status) return;
-        text($('sample-tag'), status.sample.exists ? status.sample.path : 'sample missing');
+        const dataset = state.datasets.find((entry) => entry.id === state.datasetId);
+        text($('sample-tag'), status.sample.exists ? dataset?.short_title || status.sample.path : 'dataset missing');
         text($('metric-total'), status.sample.total || 0);
 
         const setup = $('setup-notice');
         if (!status.sample.exists) {
           setup.hidden = false;
           setup.classList.add('error');
-          setup.innerHTML =
-            '<strong>Sample packet missing.</strong> Build it before loading coders.' +
-            '<code class="command"></code>';
-          setup.querySelector('code').textContent = status.commands.build_sample;
+          setup.replaceChildren();
+          const message = document.createElement('strong');
+          message.textContent = 'Dataset packet missing. ';
+          setup.append(message, document.createTextNode(status.sample.path || 'Check the configured source path.'));
+          if (status.commands?.build_sample) {
+            const command = document.createElement('code');
+            command.className = 'command';
+            command.textContent = status.commands.build_sample;
+            setup.append(command);
+          }
         } else {
           setup.hidden = true;
           setup.textContent = '';
@@ -801,15 +893,19 @@
 
       function renderProgress(progress) {
         const total = progress?.total ?? state.items.length;
-        const complete = progress?.complete ?? state.items.filter((item) => item.human_primary).length;
+        const complete = progress?.complete ?? state.items.filter((item) => item.labelling_complete).length;
         const low = progress?.lowConfidence ?? state.items.filter((item) => item.human_confident === '1').length;
         text($('metric-total'), total);
         text($('metric-complete'), complete);
         text($('metric-left'), Math.max(0, total - complete));
         text($('metric-low'), low);
-        const ready = total > 0 && complete === total;
+        text($('metric-low-label'), isTaxonomy() ? 'low confidence' : 'low confidence n/a');
+        const ready = isTaxonomy() && total > 0 && complete === total;
+        $('compare-ai').hidden = !isTaxonomy();
         $('compare-ai').disabled = !ready;
-        $('compare-ai').title = ready ? 'Reveal AI comparison for this completed rater file.' : 'Complete every item before revealing AI labels.';
+        $('compare-ai').title = ready
+          ? 'Reveal AI comparison for this completed rater file.'
+          : 'Complete every taxonomy item before revealing AI labels.';
       }
 
       function renderCategories(activeId) {
@@ -821,13 +917,18 @@
           btn.className = `category-btn ${cat.id === activeId ? 'active' : ''}`;
           btn.textContent = cat.id;
           btn.addEventListener('click', () => {
-            $('human-primary').value = cat.id;
+            if (isTaxonomy()) {
+              $('human-primary').value = cat.id;
+            } else {
+              const checkbox = document.querySelector(`input[name="impasse-type"][value="${cat.id}"]`);
+              if (checkbox) checkbox.checked = !checkbox.checked;
+            }
             renderCategoryDetail(cat.id);
             scheduleSave();
           });
           list.append(btn);
         }
-        renderCategoryDetail(activeId || 'CONTEXT_BLINDNESS');
+        renderCategoryDetail(activeId || state.codebook?.categories?.[0]?.id);
       }
 
       function renderCategoryDetail(categoryId) {
@@ -851,15 +952,21 @@
           span.textContent = signal;
           signals.append(span);
         }
-        const ex = document.createElement('p');
-        ex.className = 'small';
-        ex.innerHTML = '<strong>Example:</strong> ';
-        ex.append(document.createTextNode(cat.example || ''));
-        const boundary = document.createElement('p');
-        boundary.className = 'small';
-        boundary.innerHTML = '<strong>Boundary:</strong> ';
-        boundary.append(document.createTextNode(cat.boundary || ''));
-        wrap.append(h, id, p, signals, ex, boundary);
+        wrap.append(h, id, p, signals);
+        if (cat.example) {
+          const ex = document.createElement('p');
+          ex.className = 'small';
+          ex.innerHTML = '<strong>Example:</strong> ';
+          ex.append(document.createTextNode(cat.example));
+          wrap.append(ex);
+        }
+        if (cat.boundary) {
+          const boundary = document.createElement('p');
+          boundary.className = 'small';
+          boundary.innerHTML = '<strong>Boundary:</strong> ';
+          boundary.append(document.createTextNode(cat.boundary));
+          wrap.append(boundary);
+        }
 
         document.querySelectorAll('.category-btn').forEach((btn) => {
           btn.classList.toggle('active', btn.textContent === cat.id);
@@ -867,6 +974,8 @@
       }
 
       function renderLabelControls() {
+        $('taxonomy-controls').hidden = !isTaxonomy();
+        $('impasse-controls').hidden = isTaxonomy();
         const primary = $('human-primary');
         primary.replaceChildren();
         primary.append(new Option('', ''));
@@ -884,6 +993,48 @@
           label.append(input, document.createTextNode(cat.id));
           secondary.append(label);
         }
+
+        const impasseTypes = $('impasse-type-grid');
+        impasseTypes.replaceChildren();
+        for (const cat of state.codebook?.categories || []) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.value = cat.id;
+          input.name = 'impasse-type';
+          label.append(input, document.createTextNode(cat.name || cat.id));
+          impasseTypes.append(label);
+        }
+      }
+
+      function renderTask() {
+        const task = state.codebook?.task || {};
+        text($('task-object'), task.primary_object || 'Classify the visible item.');
+        text($('task-not'), task.not_the_task || 'Do not infer beyond the supplied evidence.');
+        text($('task-rule'), task.rule || 'Use the codebook and record a human judgment.');
+        text($('codebook-subtitle'), isTaxonomy() ? 'kappa floor: 0.60' : 'multi-field episode coding');
+        text($('decision-title'), isTaxonomy() ? 'Decision notes' : 'Impasse decisions');
+        const lines = isTaxonomy()
+          ? [
+              'Classify the problem named by the critique, not whether the critique is correct.',
+              'Choose one primary label and use secondary labels only for close ties.',
+              'Treat confidence 1 as a hard boundary case worth revisiting.',
+              'The hidden model key stays sealed until every item is complete.',
+            ]
+          : [
+              'Distinguish a communication breakdown from a difficult exchange that is still progressing.',
+              'When an impasse is present, select every type supported by the visible exchange.',
+              'Judge whether the tutor addressed the breakdown, not overall tutor quality.',
+              'Use the supplied follow-up to judge resolution within two turns.',
+            ];
+        const list = $('decision-list');
+        list.replaceChildren();
+        for (const line of lines) {
+          const li = document.createElement('li');
+          li.textContent = line;
+          list.append(li);
+        }
+        document.querySelector('[data-filter="low"]').hidden = !isTaxonomy();
       }
 
       function renderWorklist() {
@@ -895,7 +1046,7 @@
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `item-btn ${item.item_id === state.selectedId ? 'active' : ''} ${
-            item.human_primary ? 'done' : ''
+            item.labelling_complete ? 'done' : ''
           } ${item.human_confident === '1' ? 'low' : ''}`;
           const dot = document.createElement('span');
           dot.className = 'dot';
@@ -904,7 +1055,7 @@
           id.textContent = item.item_id;
           const label = document.createElement('span');
           label.className = 'item-label';
-          label.textContent = item.human_primary || 'open';
+          label.textContent = item.labelling_summary || 'open';
           btn.append(dot, id, label);
           btn.addEventListener('click', () => selectItem(item.item_id));
           list.append(btn);
@@ -934,32 +1085,102 @@
         const index = state.items.findIndex((entry) => entry.item_id === item.item_id);
         text($('item-position'), `${index + 1} of ${state.items.length}`);
         text($('current-item-id'), item.item_id);
-        text($('current-primary-pill'), item.human_primary || 'uncoded');
+        text($('current-primary-pill'), item.labelling_summary || 'uncoded');
+        $('taxonomy-item-fields').hidden = !isTaxonomy();
+        $('impasse-item-fields').hidden = isTaxonomy();
+        if (isTaxonomy()) renderTaxonomyItem(item);
+        else renderImpasseItem(item);
+        setSaveState('');
+      }
+
+      function renderTaxonomyItem(item) {
         text($('feedback'), item.feedback);
         text($('ego-generate'), item.ego_generate);
         text($('ego-revision'), item.ego_revision);
         text($('learner-context'), item.learner_context_snippet);
-
         $('human-primary').value = item.human_primary || '';
         $('human-confident').value = item.human_confident || '';
         $('human-notes').value = item.human_notes || '';
-        const selectedSecondary = new Set(String(item.human_secondary || '').split(',').filter(Boolean));
+        const selectedSecondary = new Set(
+          (Array.isArray(item.human_secondary) ? item.human_secondary : String(item.human_secondary || '').split(','))
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+        );
         document.querySelectorAll('input[name="human-secondary"]').forEach((input) => {
           input.checked = selectedSecondary.has(input.value);
         });
-        renderCategoryDetail(item.human_primary || 'CONTEXT_BLINDNESS');
-        setSaveState('');
+        renderCategoryDetail(item.human_primary || state.codebook?.categories?.[0]?.id);
+      }
+
+      function appendTurnCard(parent, title, turns) {
+        if (!turns?.length) return;
+        const heading = document.createElement('h3');
+        heading.textContent = title;
+        parent.append(heading);
+        for (const turn of turns) {
+          const card = document.createElement('article');
+          card.className = 'turn-card';
+          for (const [role, value] of [
+            [`learner t${turn.turn}`, turn.learner_text],
+            ['tutor', turn.tutor_text],
+          ]) {
+            const line = document.createElement('div');
+            line.className = 'turn-line';
+            const roleEl = document.createElement('div');
+            roleEl.className = 'turn-role';
+            roleEl.textContent = role;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'turn-text';
+            valueEl.textContent = value || '—';
+            line.append(roleEl, valueEl);
+            card.append(line);
+          }
+          parent.append(card);
+        }
+      }
+
+      function renderImpasseItem(item) {
+        const signals = $('impasse-signals');
+        signals.replaceChildren();
+        const metadata = [item.session_date, item.turn_range?.length ? `turns ${item.turn_range.join('–')}` : '', item.mixed ? 'mixed' : '']
+          .filter(Boolean);
+        for (const value of [...metadata, ...(item.signals_fired || [])]) {
+          const chip = document.createElement('span');
+          chip.className = 'signal';
+          chip.textContent = value;
+          signals.append(chip);
+        }
+        const turns = $('impasse-turns');
+        turns.replaceChildren();
+        appendTurnCard(turns, 'Candidate excerpt', item.excerpt_turns || []);
+        appendTurnCard(turns, 'Follow-up (resolution window)', item.followup_turns || []);
+        if (!item.followup_turns?.length) {
+          const notice = document.createElement('div');
+          notice.className = 'notice';
+          notice.textContent = 'No follow-up exchange was captured; use “session ended” when appropriate.';
+          turns.append(notice);
+        }
+        $('impasse-value').value = item.impasse || '';
+        $('tutor-addressed').value = item.tutor_addressed || '';
+        $('resolved-within-2').value = item.resolved_within_2 || '';
+        $('human-notes').value = item.notes || '';
+        const selectedTypes = new Set(item.impasse_types || []);
+        document.querySelectorAll('input[name="impasse-type"]').forEach((input) => {
+          input.checked = selectedTypes.has(input.value);
+        });
+        renderCategoryDetail(item.impasse_types?.[0] || state.codebook?.categories?.[0]?.id);
       }
 
       async function loadStatus() {
-        state.status = await api('/api/human-coding/status');
+        state.status = await api(datasetPath('/status'));
         renderStatus();
       }
 
       async function loadCodebook() {
-        state.codebook = await api('/api/human-coding/codebook');
+        state.codebook = await api(datasetPath('/codebook'));
         renderLabelControls();
         renderCategories();
+        renderTask();
       }
 
       async function loadCoder() {
@@ -969,9 +1190,9 @@
           return;
         }
         state.coderId = coderId;
-        localStorage.setItem(storageKey, coderId);
+        localStorage.setItem(coderStorageKey, coderId);
         try {
-          const body = await api(`/api/human-coding/items?coder_id=${encodeURIComponent(coderId)}`);
+          const body = await api(datasetPath(`/items?coder_id=${encodeURIComponent(coderId)}`));
           state.items = body.items || [];
           state.selectedId = state.items[0]?.item_id || null;
           text($('coder-path'), body.rater_path || '');
@@ -989,6 +1210,18 @@
       }
 
       function formCoding() {
+        if (!isTaxonomy()) {
+          return {
+            coder_id: state.coderId,
+            impasse: $('impasse-value').value,
+            impasse_types: [...document.querySelectorAll('input[name="impasse-type"]:checked')].map(
+              (input) => input.value,
+            ),
+            tutor_addressed: $('tutor-addressed').value,
+            resolved_within_2: $('resolved-within-2').value,
+            notes: $('human-notes').value,
+          };
+        }
         const secondary = [...document.querySelectorAll('input[name="human-secondary"]:checked')].map(
           (input) => input.value,
         );
@@ -1016,7 +1249,7 @@
         state.saving = true;
         setSaveState('saving');
         try {
-          const body = await api(`/api/human-coding/items/${encodeURIComponent(item.item_id)}`, {
+          const body = await api(datasetPath(`/items/${encodeURIComponent(item.item_id)}`), {
             method: 'PUT',
             body: JSON.stringify(formCoding()),
           });
@@ -1034,7 +1267,7 @@
       function scheduleSave() {
         clearTimeout(state.saveTimer);
         setSaveState('unsaved');
-        state.saveTimer = setTimeout(saveCurrent, 700);
+        if (isTaxonomy()) state.saveTimer = setTimeout(saveCurrent, 700);
       }
 
       function move(delta) {
@@ -1193,7 +1426,7 @@
         notice.classList.remove('error');
         notice.textContent = 'Loading comparison...';
         try {
-          const data = await api(`/api/human-coding/comparison?coder_id=${encodeURIComponent(state.coderId)}`);
+          const data = await api(datasetPath(`/comparison?coder_id=${encodeURIComponent(state.coderId)}`));
           renderComparison(data);
         } catch (error) {
           notice.classList.add('error');
@@ -1224,15 +1457,55 @@
         $('human-primary').addEventListener('change', () => renderCategoryDetail($('human-primary').value));
         $('prev-item').addEventListener('click', () => move(-1));
         $('next-item').addEventListener('click', () => move(1));
+        $('dataset-id').addEventListener('change', switchDataset);
+      }
+
+      async function switchDataset() {
+        clearTimeout(state.saveTimer);
+        state.datasetId = $('dataset-id').value;
+        state.items = [];
+        state.selectedId = null;
+        state.status = null;
+        state.codebook = null;
+        state.filter = 'all';
+        localStorage.setItem(datasetStorageKey, state.datasetId);
+        const url = new URL(window.location.href);
+        url.searchParams.set('dataset', state.datasetId);
+        history.replaceState({}, '', url);
+        document.querySelectorAll('[data-filter]').forEach((entry) => {
+          entry.classList.toggle('active', entry.dataset.filter === 'all');
+        });
+        hideComparison();
+        renderWorklist();
+        renderCurrentItem();
+        await loadCodebook();
+        await loadStatus();
+        if (state.status?.sample?.exists) await loadCoder();
+      }
+
+      async function loadDatasets() {
+        const body = await api('/api/human-coding/datasets');
+        state.datasets = body.datasets || [];
+        const select = $('dataset-id');
+        select.replaceChildren();
+        for (const dataset of state.datasets) {
+          select.append(new Option(`${dataset.short_title || dataset.title} (${dataset.total})`, dataset.id));
+        }
+        const requested = new URLSearchParams(window.location.search).get('dataset');
+        const remembered = localStorage.getItem(datasetStorageKey);
+        const chosen = [requested, remembered, state.datasets[0]?.id].find((candidate) =>
+          state.datasets.some((dataset) => dataset.id === candidate),
+        );
+        state.datasetId = chosen || '';
+        select.value = state.datasetId;
       }
 
       async function init() {
         bindEvents();
-        $('coder-id').value = localStorage.getItem(storageKey) || 'rater-A';
+        $('coder-id').value = localStorage.getItem(coderStorageKey) || 'rater-A';
         try {
-          await loadCodebook();
-          await loadStatus();
-          if (state.status?.sample?.exists) await loadCoder();
+          await loadDatasets();
+          await switchDataset();
         } catch (error) {
           const setup = $('setup-notice');
           setup.hidden = false;
