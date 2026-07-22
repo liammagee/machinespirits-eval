@@ -311,3 +311,32 @@ committee dialogues), and picks the composer family freely afterward —
 §6.22's measured fungibility makes that seat a cost decision, not a
 capability one. Never run family flip and v2 adoption in the same
 experiment (no sealed baseline would share either change).
+
+## H9 (2026-07-22) — Committee-runtime reconciliation landed on main; guard-arc review invited
+
+status: pending (V32–V34 guard-arc thread to review; flip to done with the reviewing commit)
+
+Main can now run the Phase 5 pilot configuration
+(committee-runtime-main-reconciliation card). Two changes, PR from branch
+`claude/committee-runtime-reconciliation`:
+
+1. **Terminal-fallback advisory** (services/tutorStubGuardDisposition.js +
+   the fallback delivery site): on the deterministic-fallback attempt ONLY,
+   known conversational-integrity findings deliver as recorded advisories
+   instead of fatals (`terminal_fallback_conversational_advisory`).
+   Evidence/clue-transaction categories and unknown guards remain hard
+   everywhere; draft-level semantics of the 2026-07-17 hardening are
+   untouched — drafts still repair toward the full bar. Rationale: the
+   fallback is the harness's last-resort text; rejecting it kills the
+   dialogue, which is how the pilot config dead-ended at turns 2–3.
+   If the guard thread prefers a different accommodation (e.g., a
+   progression-aware fallback generator that satisfies the contract by
+   construction), this advisory route can be narrowed later — the
+   disposition catalog records every downgrade.
+
+2. **Prompt-model dedup backport** (callPromptModel): the pinned-runtime
+   Amendment-1 recovery (endgame verdict echoes) now on main.
+
+NOT done here: retiring `claude/program-2-phase5-pinned-runtime` — the
+phase5d thread is mid-run on that lineage; retirement waits until it
+seals and re-pins (or adopts main).
