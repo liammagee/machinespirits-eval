@@ -229,13 +229,25 @@ function ruleForIssue(issue) {
   };
 }
 
-export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = false } = {}) {
+export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = false, terminalFallback = false } = {}) {
   const normalized = normalizedIssue(issue);
   const resolved = ruleForIssue(normalized);
-  const strictDisposition =
-    allowActorialAdvisory && resolved.known && normalized.guard === 'actorial_realization'
-      ? ADVISORY
-      : resolved.rule.strict;
+  const actorialOverride = allowActorialAdvisory && resolved.known && normalized.guard === 'actorial_realization';
+  // Terminal-fallback accommodation (committee-runtime-main-reconciliation,
+  // 2026-07-22): the deterministic fallback is the harness's last-resort
+  // safety text. When IT fails a conversational-integrity check there is no
+  // further candidate — rejecting it kills the whole dialogue (the 2026-07-17
+  // hardening dead-ended the Phase 5 pilot configuration at turns 2-3 this
+  // way). On the terminal-fallback attempt only, known conversational-
+  // integrity findings are delivered as recorded advisories instead of
+  // fatals. Evidence, clue-transaction, and every other category — and all
+  // unknown issues — remain hard everywhere.
+  const terminalFallbackOverride =
+    terminalFallback &&
+    resolved.known &&
+    resolved.rule.category === 'conversational_integrity' &&
+    resolved.rule.strict === HARD;
+  const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
   return {
     issue: normalized,
     known: resolved.known,
@@ -245,9 +257,10 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     rationale: resolved.rule.rationale,
     strictDisposition,
     shadowDisposition: resolved.rule.shadow,
-    legacyOverride:
-      allowActorialAdvisory && resolved.known && normalized.guard === 'actorial_realization'
-        ? 'allow_actorial_advisory'
+    legacyOverride: actorialOverride
+      ? 'allow_actorial_advisory'
+      : terminalFallbackOverride
+        ? 'terminal_fallback_conversational_advisory'
         : null,
   };
 }
@@ -266,13 +279,19 @@ function decisionFor(dispositions, key) {
 
 export function decideTutorStubGuardDelivery(
   issueRows = [],
-  { allowActorialAdvisory = false, boundaryPolicy = TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict } = {},
+  {
+    allowActorialAdvisory = false,
+    boundaryPolicy = TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict,
+    terminalFallback = false,
+  } = {},
 ) {
   if (!Object.values(TUTOR_STUB_GUARD_BOUNDARY_POLICIES).includes(boundaryPolicy)) {
     throw new Error(`unknown tutor-stub guard boundary policy: ${boundaryPolicy}`);
   }
   const sourceIssues = Array.isArray(issueRows) ? issueRows : [issueRows];
-  const dispositions = sourceIssues.map((issue) => classifyTutorStubGuardIssue(issue, { allowActorialAdvisory }));
+  const dispositions = sourceIssues.map((issue) =>
+    classifyTutorStubGuardIssue(issue, { allowActorialAdvisory, terminalFallback }),
+  );
   const strictDecision = decisionFor(dispositions, 'strictDisposition');
   const shadowDecision = decisionFor(dispositions, 'shadowDisposition');
   const effective =
@@ -288,6 +307,7 @@ export function decideTutorStubGuardDelivery(
     boundaryPolicy,
     ok: effective.ok,
     allowActorialAdvisory: Boolean(allowActorialAdvisory),
+    terminalFallback: Boolean(terminalFallback),
     hardIssues: effective.hardIssues,
     advisoryIssues: effective.advisoryIssues,
     reportOnlyIssues: effective.reportOnlyIssues,

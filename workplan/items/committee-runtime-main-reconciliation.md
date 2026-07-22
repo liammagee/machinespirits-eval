@@ -1,7 +1,7 @@
 ---
 id: committee-runtime-main-reconciliation
 title: "Reconcile the committee's pinned runtime with main's guard regime"
-status: triaged
+status: review
 type: infra
 priority: P2
 owner: unassigned
@@ -40,3 +40,14 @@ the hardened guards to pass the bland-policy/strict-dag configuration
 and retire the standing worktree so future committee runs execute on a
 current, tested main. Coordinate via notes/program-2/HANDOFF.md — the
 guard arc belongs to another thread.
+
+2026-07-22 Claude: IMPLEMENTED on main (branch
+claude/committee-runtime-reconciliation): terminal-fallback advisory in
+the guard-disposition catalog (conversational-integrity findings deliver
+as recorded advisories on the deterministic-fallback attempt only;
+evidence/unknown stay hard; draft-level 2026-07-17 semantics untouched) +
+callPromptModel dedup backport. 29/29 guard tests incl. new
+tutorStubGuardDisposition.test.js. Live confirm: the July dead-end
+configuration (p5-01 seed) re-run on patched main. Guard-arc review
+invited via HANDOFF H9. Pinned-runtime retirement deferred until the
+phase5d thread seals (it runs on that lineage).
