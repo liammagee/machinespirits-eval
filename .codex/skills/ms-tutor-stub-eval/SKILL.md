@@ -359,6 +359,12 @@ Useful variants:
   retaining the active profile and dialogue settings. At natural closure the
   CLI writes and opens the learning summary, asks whether to do another
   scenario, and opens this picker on `y`; Enter or `n` ends the session.
+- `/board` reads the live `workplan/items/` projection and opens a scrolling
+  workplan-card picker; `/board <item-id>` selects directly in a pipe or script.
+  Selecting one closes the current inquiry and launches a fresh non-DAG
+  reflective curriculum session while retaining the active learner profile,
+  model routing, and dialogue settings. The picker shows each card's current
+  status, essential question, and declared verification gate.
 - Learner suggestions and clarifications are kept inside the dramatic frame,
   and tutor prompts require the same: generated speech addresses the other
   speaker directly and does not say `the tutor`, `the learner`, `the dialogue`,

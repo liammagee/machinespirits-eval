@@ -222,6 +222,15 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /register\.engagementStanceTemperature/u);
   assert.match(html, /0\.85/u);
   assert.match(html, /Does &lt;this&gt; identify the hand\?/u);
+  assert.match(html, /data-machine-spirits-house-style="machinespirits\.house-style\.v1"/u);
+  assert.match(html, /data-machine-spirits-house-backdrop="machinespirits\.house-style\.v1"/u);
+  assert.match(html, /<body class="ms-house-style transcript-page">/u);
+  assert.match(html, /class="hero ms-panel"/u);
+  assert.match(html, /class="eyebrow ms-kicker"/u);
+  assert.match(html, /class="ms-display"/u);
+  assert.match(html, /class="ms-tab active" aria-selected="true"/u);
+  assert.match(html, /class="copy-code ms-button"/u);
+  assert.match(html, /Machine Spirits house style · machinespirits\.house-style\.v1/u);
   assert.doesNotMatch(html, /Does <this> identify the hand\?/u);
   assert.equal((html.match(/data-response-composition="continuous-performance"/gu) || []).length, 2);
   assert.doesNotMatch(html, /<small>responds<\/small>|<small>develops<\/small>/u);

@@ -580,6 +580,7 @@ const SLASH_COMMANDS = [
   '/hint',
   '/profile',
   '/scenario',
+  '/board',
   '/use',
   '/accept',
   '/regen',
@@ -647,6 +648,7 @@ const SCENE_RETURN_SLASH_COMMANDS = new Set([
   '/debug-id',
   '/profile',
   '/scenario',
+  '/board',
 ]);
 
 const SETTINGS_COMPLETIONS = [
@@ -1080,6 +1082,8 @@ Interactive commands:
                          test and explicitly promote or revert a tutor version
   /scenario              choose another scenario and start it as a new inquiry
   /scenario <id>         start a named scenario directly
+  /board                 choose a live workplan card and start a reflective inquiry
+  /board <item-id>       start a named workplan card directly
   /voice                 start or reopen the browser microphone companion
   /voice status|off      inspect or stop the local voice bridge
   /voice model <model>   choose ${TUTOR_STUB_VOICE_MODELS.join(' or ')}
@@ -2807,6 +2811,130 @@ async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
       `${C.dim}  setting > ${oneLine(selectedEntry.description, { max: Math.max(36, width - 12) })}${C.reset}`,
       `${C.dim}  discipline > ${oneLine(selectedEntry.discipline, { max: Math.max(30, width - 15) })}${C.reset}`,
     ];
+    for (const line of lines) output.write(`${line}\n`);
+    renderedLineCount = lines.length;
+  };
+
+  emitKeypressEvents(input);
+  const priorKeypressListeners = input.listeners('keypress');
+  for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
+  const wasRaw = Boolean(input.isRaw);
+  if (!wasRaw) input.setRawMode(true);
+
+  return new Promise((resolve) => {
+    const finish = (selection) => {
+      input.removeListener('keypress', onKeypress);
+      for (const listener of priorKeypressListeners) input.on('keypress', listener);
+      if (!wasRaw) input.setRawMode(false);
+      clearRenderedMenu();
+      resolve(selection);
+    };
+    const moveSelection = (delta) => {
+      selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+      renderMenu();
+    };
+    const onKeypress = (character, key = {}) => {
+      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
+        finish(null);
+        return;
+      }
+      if (key.name === 'up' || character === 'k') {
+        moveSelection(-1);
+        return;
+      }
+      if (key.name === 'down' || character === 'j') {
+        moveSelection(1);
+        return;
+      }
+      if (key.name === 'pageup') {
+        moveSelection(-viewportHeight);
+        return;
+      }
+      if (key.name === 'pagedown') {
+        moveSelection(viewportHeight);
+        return;
+      }
+      if (key.name === 'home') {
+        selectedIndex = 0;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'end') {
+        selectedIndex = entries.length - 1;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+    };
+    input.on('keypress', onKeypress);
+    input.resume();
+    renderMenu();
+  });
+}
+
+async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
+  const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
+  const modulesById = new Map((bundle.curriculum.modules || []).map((module) => [module.id, module]));
+  const entries = listTutorStubCurriculumModules(bundle).map((entry) => ({
+    ...entry,
+    module: modulesById.get(entry.id) || null,
+  }));
+  if (!entries.length) return null;
+
+  let selectedIndex = Math.max(
+    0,
+    entries.findIndex((entry) => entry.id === defaultModuleRef),
+  );
+  const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 9))));
+  let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+  let renderedLineCount = 0;
+
+  const keepSelectionVisible = () => {
+    if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+    if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
+  };
+  const clearRenderedMenu = () => {
+    if (!renderedLineCount) return;
+    moveCursor(output, 0, -renderedLineCount);
+    for (let index = 0; index < renderedLineCount; index += 1) {
+      cursorTo(output, 0);
+      clearLine(output, 0);
+      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+    }
+    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+    renderedLineCount = 0;
+  };
+  const renderMenu = () => {
+    keepSelectionVisible();
+    clearRenderedMenu();
+    const width = Math.max(58, Math.min(Number(output.columns || 100), 150));
+    const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+    const selectedEntry = entries[selectedIndex];
+    const stateLabel = [selectedEntry.priority, selectedEntry.status, selectedEntry.owner].filter(Boolean).join(' · ');
+    const verification = selectedEntry.module?.workplan_binding?.declared_completion_verification || '';
+    const lines = [
+      `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+      ...visible.map((entry, visibleIndex) => {
+        const absoluteIndex = viewportStart + visibleIndex;
+        const selected = absoluteIndex === selectedIndex;
+        const plain = `${selected ? '›' : ' '} ${entry.id.padEnd(38)} ${oneLine(entry.title, {
+          max: Math.max(18, width - 44),
+        })}`;
+        return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+      }),
+      `${C.dim}${
+        viewportStart + viewportHeight < entries.length
+          ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+          : '  '
+      }${C.reset}`,
+      `${C.brightYellow}${C.bold}  inquiry >${C.reset} ${oneLine(selectedEntry.essentialQuestion, {
+        max: Math.max(36, width - 12),
+      })}`,
+      `${C.dim}  state > ${stateLabel || 'open'}${C.reset}`,
+      verification
+        ? `${C.dim}  verifies > ${oneLine(verification, { max: Math.max(34, width - 14) })}${C.reset}`
+        : null,
+    ].filter(Boolean);
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
   };
@@ -8551,6 +8679,7 @@ function printTutorStubFeatureMap(state = null) {
     `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
   );
   console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
+  console.log(`${C.cyan}  board      ${C.reset} /board inside any normal tutor-stub session`);
   console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
   console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
 
@@ -8606,6 +8735,7 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
   );
+  console.log(`${C.cyan}  choose${C.reset}       /scenario · /board [item-id]`);
   console.log(`${C.cyan}  discover${C.reset}     /features · /release-notes · /help`);
   console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
   console.log(`${C.cyan}  direct${C.reset}       /register <style> · /character <part> · /random`);
@@ -8638,6 +8768,9 @@ function printInteractiveHelp(state = null) {
   );
   console.log(
     `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
   );
   console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
 }
@@ -17371,6 +17504,13 @@ async function main() {
       ];
     } else if (trimmed.startsWith('/scenario ')) {
       pool = groupedWorldEntries().map(({ world }) => `/scenario ${world.id}`);
+    } else if (trimmed.startsWith('/board ')) {
+      try {
+        const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
+        pool = listTutorStubCurriculumModules(bundle).map((module) => `/board ${module.id}`);
+      } catch {
+        pool = ['/board'];
+      }
     }
     const matches = pool.filter((candidate) => candidate.startsWith(trimmed));
     return {
@@ -19928,6 +20068,122 @@ async function main() {
     resolveInteractive();
   }
 
+  function relaunchArgumentsForWorkplanModule(moduleId) {
+    const current = process.argv.slice(2);
+    const next = [];
+    const replacedValueOptions = new Set([
+      '--all-models',
+      '--world',
+      '--curriculum',
+      '--module',
+      '--system',
+      '--auto-learner-profile',
+      '--model',
+      '--classifier-model',
+      '--learner-record-model',
+      '--auto-learner-model',
+      '--register-temperature',
+      '--dag-fact-dropout',
+      '--release-speed',
+      '--register-policy',
+      '--register-overlay-threshold',
+    ]);
+    const removedBooleanOptions = new Set([
+      '--resume-last',
+      '--dag',
+      '--tutor-learner-dag',
+      '--list-curriculum-modules',
+    ]);
+    for (let index = 0; index < current.length; index += 1) {
+      const argument = current[index];
+      if ([...removedBooleanOptions].some((option) => argument === option || argument.startsWith(`${option}=`))) {
+        continue;
+      }
+      if (replacedValueOptions.has(argument)) {
+        index += 1;
+        continue;
+      }
+      if ([...replacedValueOptions].some((option) => argument.startsWith(`${option}=`))) continue;
+      next.push(argument);
+    }
+    const modelArguments = state.modelRouting?.allRolesOverrideRef
+      ? ['--all-models', state.modelRouting.allRolesOverrideRef]
+      : [
+          '--model',
+          state.modelRef,
+          '--classifier-model',
+          args['classifier-model'],
+          '--learner-record-model',
+          args['learner-record-model'],
+          '--auto-learner-model',
+          args['auto-learner-model'],
+        ];
+    next.push(
+      '--curriculum',
+      'workplan',
+      '--module',
+      moduleId,
+      '--auto-learner-profile',
+      state.learnerProfileId || state.learnerProfile,
+      ...modelArguments,
+      '--register-temperature',
+      String(state.register?.temperature ?? registerTemperature),
+      '--dag-fact-dropout',
+      String(state.learnerDag?.dropout?.rate ?? dagFactDropoutRate),
+      '--release-speed',
+      String(state.releasePacing?.baseSpeed ?? releaseSpeed),
+      '--register-policy',
+      tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      '--register-overlay-threshold',
+      String(state.register?.overlayThreshold ?? registerOverlayThreshold),
+    );
+    return next;
+  }
+
+  function relaunchWithWorkplanModule(selection, reason = 'board_item_changed') {
+    const moduleId = selection?.id || selection?.module?.id;
+    const title = selection?.title || selection?.module?.title;
+    if (!moduleId || !title) throw new Error('workplan selection is incomplete');
+    appendTraceEvent(state.trace, {
+      type: 'next_curriculum_module_selected',
+      reason,
+      sourceRef: 'workplan:live',
+      previousCurriculumModuleId: state.curriculum?.module?.id || null,
+      previousScenarioId: state.world?.id || null,
+      moduleId,
+      title,
+    });
+    awaitingAnotherScenario = false;
+    exiting = true;
+    stopInterimAnimation(state);
+    concurrentTerminal.close();
+    resetMixedLearnerSuggestion(reason);
+    finalizeInteractive(reason);
+    rl.close();
+    console.log(`${C.brightGreen}${C.bold}next board item >${C.reset} ${moduleId} — ${title}`);
+    console.log(
+      `${C.dim}  starting a fresh reflective inquiry from the live workplan with your learner profile and dialogue settings${C.reset}\n`,
+    );
+    const child = spawnSync(
+      process.execPath,
+      [fileURLToPath(import.meta.url), ...relaunchArgumentsForWorkplanModule(moduleId)],
+      {
+        cwd: process.cwd(),
+        env: process.env,
+        stdio: 'inherit',
+      },
+    );
+    if (child.error) {
+      console.log(`${C.red}board launch error:${C.reset} ${child.error.message}`);
+      process.exitCode = 1;
+    } else if (child.signal) {
+      process.exitCode = 1;
+    } else {
+      process.exitCode = child.status ?? 0;
+    }
+    resolveInteractive();
+  }
+
   async function chooseAnotherScenario(argument = '', { reason = 'scenario_changed', duringTurn = false } = {}) {
     clearStatusLine();
     if (duringTurn || processingTurn) {
@@ -19975,6 +20231,60 @@ async function main() {
       return false;
     }
     relaunchWithScenario(selection, reason);
+    return true;
+  }
+
+  async function chooseWorkplanModule(argument = '', { reason = 'board_item_changed', duringTurn = false } = {}) {
+    clearStatusLine();
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}the board picker is available after the current tutor response completes${C.reset}\n`);
+      return false;
+    }
+    let selection = null;
+    const requested = String(argument || '').trim();
+    if (requested) {
+      try {
+        const selected = tutorStubCurriculumBundle('workplan', requested, { root: ROOT });
+        selection = {
+          id: selected.module.id,
+          title: selected.module.title,
+          module: selected.module,
+        };
+      } catch (error) {
+        console.log(`${C.red}board error:${C.reset} ${error.message}\n`);
+        return false;
+      }
+    } else if (input.isTTY && output.isTTY && typeof input.setRawMode === 'function') {
+      scenarioPickerActive = true;
+      initialSetupStage = 'board';
+      console.log(`${C.cyan}Pick a workplan item${C.reset}`);
+      console.log(
+        `${C.dim}  ↑/↓ scroll · Enter select · highlighted card described below · Esc return · reads workplan/items live${C.reset}`,
+      );
+      try {
+        selection = await pickWorkplanModuleWithKeyboard(state.curriculum?.module?.id || '');
+      } catch (error) {
+        console.log(`${C.red}board error:${C.reset} ${error.message}\n`);
+        return false;
+      } finally {
+        scenarioPickerActive = false;
+        initialSetupStage = 'off';
+      }
+      if (!selection) {
+        rl.setPrompt(
+          awaitingAnotherScenario
+            ? `${C.brightCyan}${C.bold}another scenario? [y/N] >${C.reset} `
+            : mixedLearnerPromptText(),
+        );
+        console.log(`${C.dim}board picker closed; the current inquiry is unchanged${C.reset}\n`);
+        return false;
+      }
+    } else {
+      printCurriculumModules('workplan');
+      console.log(`${C.cyan}board >${C.reset} type /board <item-id> to start a reflective inquiry\n`);
+      return false;
+    }
+    relaunchWithWorkplanModule(selection, reason);
     return true;
   }
 
@@ -22726,6 +23036,14 @@ async function main() {
     if (command === '/scenario') {
       const promise = chooseAnotherScenario(commandArg, {
         reason: awaitingAnotherScenario ? 'next_scenario_after_closure' : 'scenario_changed_by_user',
+        duringTurn,
+      }).finally(finishSlashCommand);
+      promise.tutorStubBlocksPrompt = true;
+      return promise;
+    }
+    if (command === '/board') {
+      const promise = chooseWorkplanModule(commandArg, {
+        reason: 'board_item_changed_by_user',
         duringTurn,
       }).finally(finishSlashCommand);
       promise.tutorStubBlocksPrompt = true;

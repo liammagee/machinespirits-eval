@@ -6,6 +6,11 @@ import {
   summarizeTutorStubLearnerResponseProvenance,
   tutorStubLearnerResponseProvenanceLabel,
 } from './tutorStubLearnerResponseProvenance.js';
+import {
+  MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA,
+  renderMachineSpiritsHouseBackdrop,
+  renderMachineSpiritsHouseStyleTag,
+} from './machineSpiritsHouseStyle.js';
 
 export const TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA = 'machinespirits.tutor-stub.transcript-html.v1';
 
@@ -181,7 +186,7 @@ export function buildTutorStubReplayJavascript(snapshot = {}) {
 function replayView(snapshot) {
   const replay = replayRequestDetails(snapshot);
   return `<div class="replay-view" data-replay-message-count="${escapeHtml(replay.messages.length)}">
-    <div class="replay-head"><div><h2>Public-message replay</h2><p>The <code>messages</code> array preserves the completed public user/assistant sequence exactly as stored. Director notes, hidden prompts, DAG state, analysis, and response checks are intentionally absent.</p></div><button type="button" class="copy-code" data-copy-target="replay-js-code">Copy JavaScript</button></div>
+    <div class="replay-head"><div><h2>Public-message replay</h2><p>The <code>messages</code> array preserves the completed public user/assistant sequence exactly as stored. Director notes, hidden prompts, DAG state, analysis, and response checks are intentionally absent.</p></div><button type="button" class="copy-code ms-button" data-copy-target="replay-js-code">Copy JavaScript</button></div>
     <p class="replay-note"><b>Transport:</b> ${escapeHtml(replay.transportNote)}</p>
     <pre id="replay-js-code" class="replay-code"><code>${escapeHtml(replay.code)}</code></pre>
   </div>`;
@@ -496,16 +501,112 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
   const viewLabels = { replay: 'Replay JS' };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>${escapeHtml(title)} · transcript</title>
-<style>
-:root{--paper:#f5f0e6;--paper2:#fffaf0;--ink:#151515;--muted:#686159;--rule:#b8ad9d;--tutor:#285943;--learner:#a45a24;--accent:#b3261e}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,serif}button,pre,table,.speaker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.shell{max-width:1280px;margin:auto;padding:28px}.hero{border-bottom:3px solid var(--ink);padding-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,5vw,56px);line-height:1;margin:8px 0}.subtitle{color:var(--muted)}.director-ledger{margin:18px 0 0;border:2px solid var(--ink);background:#eee5d5}.director-ledger details{padding:12px 16px}.director-ledger summary{font:800 12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.director-ledger h2{font:800 11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}.director-scope{color:var(--muted);margin:6px 0}.director-note{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid var(--rule)}.director-note div{white-space:pre-wrap}.director-note.release{grid-template-columns:160px minmax(0,1fr)}.tabs{display:flex;flex-wrap:wrap;gap:0;margin:20px 0;border-bottom:2px solid var(--ink)}.tabs button{border:2px solid var(--ink);border-bottom:0;background:var(--paper2);padding:9px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:700}.tabs button+button{border-left:0}.tabs button.active{background:var(--ink);color:var(--paper2)}.view{display:none}.view.active{display:block}.raw-transcript,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper2);border:1px solid var(--rule);padding:16px;max-height:70vh;overflow:auto;font-size:12px}.script-view,.analysis-list{display:grid;gap:12px}.speech-card{border:1px solid var(--rule);border-left:6px solid var(--ink);background:var(--paper2);padding:14px}.speech-card.tutor{border-left-color:var(--tutor)}.speech-card.learner{border-left-color:var(--learner)}.speech-card.stage{border-style:dashed;color:var(--muted);font-style:italic}.speech-head,.analysis-card header{display:flex;justify-content:space-between;gap:12px}.speaker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.speech{white-space:pre-wrap}.turn-feedback,.learner-provenance{margin:-6px 0 8px 16px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.04em}.speech-beat{margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}.speech-beat small{display:block;margin-bottom:4px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.pills span{border:1px solid var(--rule);background:var(--paper2);padding:2px 6px;font:10px ui-monospace,monospace}.swimlanes{display:grid;gap:10px}.swim-guide{margin:0 0 4px;padding:8px 10px;border-left:4px solid var(--ink);background:var(--paper2);color:var(--muted)}.swim-head,.swim-row{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:12px}.swim-head{position:sticky;top:0;background:var(--paper);z-index:2;text-transform:uppercase;font:700 11px ui-monospace,monospace}.swim-head span:last-child{text-align:right}.lane{min-width:0}.lane .speech-card{height:100%}.spine{position:relative}.spine:before{content:"";position:absolute;left:50%;top:-12px;bottom:-12px;width:2px;background:var(--rule)}.spine b{position:relative;display:block;width:30px;height:30px;margin:4px auto;border-radius:50%;background:var(--ink);color:var(--paper);text-align:center;line-height:30px;font:700 11px/30px ui-monospace,monospace}.spine b.opening-badge{width:52px;border-radius:15px}.spine b.reply-badge{background:var(--paper);color:var(--ink);border:2px solid var(--ink);line-height:26px}.prompt-grid,.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prompt,.analysis-card,.settings-grid section{border:1px solid var(--rule);background:var(--paper2);padding:12px}.prompt summary,details summary{cursor:pointer;font-weight:700}.prompt summary small{float:right;color:var(--muted);font-weight:400}.prompt-pair{border-top:3px solid var(--ink);margin-top:18px}.analysis-card{border-left:6px solid var(--accent)}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--rule);padding:7px}th{width:42%}.empty{padding:20px;border:1px dashed var(--rule);color:var(--muted)}@media(max-width:760px){.shell{padding:16px}.prompt-grid,.settings-grid{grid-template-columns:1fr}.director-note,.director-note.release{grid-template-columns:1fr}.swim-head,.swim-row{grid-template-columns:1fr}.spine,.swim-head i{display:none}.swim-head span:last-child{text-align:left}}
-.replay-view{border:1px solid var(--rule);background:var(--paper2);padding:12px}.replay-head{display:flex;justify-content:space-between;gap:12px}.replay-head h2{margin-top:0}.replay-head p{margin-bottom:0;color:var(--muted);max-width:850px}.replay-note{padding:9px 12px;border-left:4px solid var(--tutor);background:var(--paper);color:var(--muted)}.copy-code{align-self:flex-start;border:2px solid var(--ink);background:var(--ink);color:var(--paper2);padding:8px 12px;cursor:pointer;font-weight:700;white-space:nowrap}.copy-code.copied{background:var(--tutor)}.replay-code{max-height:none}@media(max-width:760px){.replay-head{display:block}.copy-code{margin-top:12px}}
-</style></head><body><main class="shell"><header class="hero"><div class="eyebrow">Tutor stub · live transcript snapshot</div><h1>${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml(completionLabel)} · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
+${renderMachineSpiritsHouseStyleTag()}
+<style data-tutor-stub-transcript-style="${TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA}">
+:root {
+  --paper: var(--ms-paper-3);
+  --paper2: var(--ms-surface-elevated);
+  --ink: var(--ms-text);
+  --muted: var(--ms-text-muted);
+  --rule: var(--ms-border);
+  --tutor: var(--ms-moss-deep);
+  --learner: #8c5f1f;
+  --accent: var(--ms-red);
+}
+body.transcript-page { background: var(--ms-off-white); font: 15px/1.58 var(--ms-font-sans); }
+button, pre, table, .speaker, .eyebrow, .subtitle, .colophon { font-family: var(--ms-font-mono); }
+.shell { max-width: 1280px; margin: auto; padding: clamp(18px, 3vw, 42px); }
+.hero { position: relative; overflow: hidden; margin-bottom: 22px; padding: clamp(24px, 5vw, 58px); border-top: 12px solid var(--ms-red); }
+.hero::after { content: ""; position: absolute; right: -7%; bottom: 13%; width: 42%; height: 7px; background: var(--ms-red); opacity: .72; transform: rotate(var(--ms-slash-angle)); }
+.hero .eyebrow { position: relative; z-index: 1; }
+.hero h1 { position: relative; z-index: 1; max-width: 1050px; margin: 18px 0 22px; text-transform: uppercase; }
+.subtitle { position: relative; z-index: 1; max-width: 920px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.director-ledger { margin: 18px 0 0; border: 2px solid var(--ink); background: var(--paper); box-shadow: 6px 6px 0 rgba(var(--ms-red-rgb), .1); }
+.director-ledger details { padding: 14px 18px; }
+.director-ledger summary { font: 800 11px var(--ms-font-mono); letter-spacing: .16em; text-transform: uppercase; }
+.director-ledger h2 { margin: 16px 0 6px; font: 800 10px var(--ms-font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.director-scope { margin: 7px 0; color: var(--muted); }
+.director-note { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.director-note div { white-space: pre-wrap; }
+.director-note.release { grid-template-columns: 160px minmax(0, 1fr); }
+.tabs { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 0; margin: 24px 0; padding-top: 8px; border-bottom: 3px solid var(--ink); background: color-mix(in srgb, var(--ms-off-white) 92%, transparent); backdrop-filter: blur(12px); }
+.tabs button { margin: 0 0 -3px; padding: 10px 14px; border-bottom-width: 3px; }
+.tabs button + button { border-left: 0; }
+.view { display: none; }
+.view.active { display: block; }
+.raw-transcript, pre { max-height: 70vh; overflow: auto; padding: 17px; border: 2px solid var(--ink); border-left: 6px solid var(--accent); background: #0a0a0a; color: #f8f2e2; font-size: 12px; line-height: 1.58; overflow-wrap: anywhere; white-space: pre-wrap; }
+.script-view, .analysis-list { display: grid; gap: 14px; }
+.speech-card { padding: 16px; border: 2px solid var(--ink); border-left: 8px solid var(--ink); background: var(--paper2); box-shadow: 4px 4px 0 var(--ms-border-subtle); }
+.speech-card.tutor { border-left-color: var(--tutor); }
+.speech-card.learner { border-left-color: var(--learner); }
+.speech-card.stage { border-style: dashed; box-shadow: none; color: var(--muted); font-family: var(--ms-font-reading); font-style: italic; }
+.speech-head, .analysis-card header { display: flex; justify-content: space-between; gap: 12px; }
+.speaker { color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.speech-card.tutor .speaker { color: var(--tutor); }
+.speech-card.learner .speaker { color: var(--learner); }
+.speech { max-width: 78ch; white-space: pre-wrap; }
+.turn-feedback, .learner-provenance { margin: -6px 0 9px 18px; color: var(--muted); font: 700 10px var(--ms-font-mono); letter-spacing: .04em; }
+.speech-beat { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); }
+.speech-beat small { display: block; margin-bottom: 4px; color: var(--muted); font: 700 10px var(--ms-font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 7px 0 15px; }
+.pills span { padding: 3px 7px; border: 1px solid var(--ink); background: var(--paper); font: 10px var(--ms-font-mono); }
+.swimlanes { display: grid; gap: 11px; }
+.swim-guide { margin: 0 0 6px; padding: 10px 12px; border: 2px solid var(--ink); border-left: 8px solid var(--accent); background: var(--paper2); color: var(--muted); }
+.swim-head, .swim-row { display: grid; grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr); gap: 12px; }
+.swim-head { position: sticky; top: 52px; z-index: 12; padding: 6px 0; background: var(--ms-off-white); font: 700 10px var(--ms-font-mono); letter-spacing: .16em; text-transform: uppercase; }
+.swim-head span:last-child { text-align: right; }
+.lane { min-width: 0; }
+.lane .speech-card { height: 100%; }
+.spine { position: relative; }
+.spine::before { content: ""; position: absolute; top: -12px; bottom: -12px; left: 50%; width: 2px; background: var(--ink); }
+.spine b { position: relative; display: block; width: 30px; height: 30px; margin: 4px auto; background: var(--ink); color: var(--ms-white); font: 700 11px/30px var(--ms-font-mono); text-align: center; }
+.spine b.opening-badge { width: 52px; }
+.spine b.reply-badge { border: 2px solid var(--ink); background: var(--ms-white); color: var(--ink); line-height: 26px; }
+.prompt-grid, .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.prompt, .analysis-card, .settings-grid section, .replay-view { padding: 14px; border: 2px solid var(--ink); background: var(--paper2); box-shadow: 5px 5px 0 var(--ms-border-subtle); }
+.prompt summary, details summary { cursor: pointer; font-weight: 700; }
+.prompt summary small { float: right; color: var(--muted); font-weight: 400; }
+.prompt-pair { margin-top: 20px; border-top: 6px solid var(--accent); }
+.analysis-card { border-left: 8px solid var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { width: 42%; font-weight: 700; }
+.empty { padding: 22px; border: 2px dashed var(--ink); background: var(--paper2); color: var(--muted); }
+.replay-head { display: flex; justify-content: space-between; gap: 14px; }
+.replay-head h2 { margin-top: 0; }
+.replay-head p { max-width: 850px; margin-bottom: 0; color: var(--muted); }
+.replay-note { padding: 10px 12px; border: 2px solid var(--ink); border-left: 8px solid var(--tutor); background: var(--paper); color: var(--muted); }
+.copy-code { align-self: flex-start; padding: 9px 12px; white-space: nowrap; }
+.copy-code.copied { background: var(--tutor); color: #fff; }
+.replay-code { max-height: none; }
+.colophon { margin: 36px 0 8px; padding: 12px 0 0; border-top: 3px solid var(--ink); color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+@media (max-width: 760px) {
+  .shell { padding: 16px; }
+  .hero { padding: 24px 18px 30px; }
+  .hero h1 { margin-top: 14px; }
+  .prompt-grid, .settings-grid { grid-template-columns: 1fr; }
+  .director-note, .director-note.release { grid-template-columns: 1fr; }
+  .swim-head, .swim-row { grid-template-columns: 1fr; }
+  .spine, .swim-head i { display: none; }
+  .swim-head span:last-child { text-align: left; }
+  .replay-head { display: block; }
+  .copy-code { margin-top: 12px; }
+}
+@media print {
+  .tabs { position: static; }
+  .view { display: block; break-before: page; }
+  .view:first-of-type { break-before: auto; }
+}
+</style></head><body class="ms-house-style transcript-page">
+${renderMachineSpiritsHouseBackdrop()}
+<main class="ms-page shell"><header class="hero ms-panel"><div class="eyebrow ms-kicker">Tutor stub · live transcript snapshot</div><h1 class="ms-display">${escapeHtml(title)}</h1><div class="subtitle">${escapeHtml(snapshot.settings?.world?.question || '')} · ${escapeHtml(completionLabel)} · updated ${escapeHtml(snapshot.generatedAt || '')}</div></header>
 ${directorNotesView(snapshot)}
 <nav class="tabs" aria-label="Transcript views">${Object.keys(views)
     .map(
       (name, index) =>
-        `<button type="button" data-view="${name}" class="${index === 0 ? 'active' : ''}">${viewLabels[name] || name}</button>`,
+        `<button type="button" data-view="${name}" class="ms-tab ${index === 0 ? 'active' : ''}" aria-selected="${index === 0 ? 'true' : 'false'}">${viewLabels[name] || name}</button>`,
     )
     .join('')}</nav>
 ${Object.entries(views)
@@ -514,7 +615,8 @@ ${Object.entries(views)
       `<section class="view ${index === 0 ? 'active' : ''}" data-panel="${name}">${html}</section>`,
   )
   .join('')}
-</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});async function copyReplayText(text){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}document.querySelectorAll('[data-copy-target]').forEach(function(button){button.addEventListener('click',async function(){var target=document.getElementById(button.dataset.copyTarget);if(!target)return;try{await copyReplayText(target.textContent);button.textContent='Copied';button.classList.add('copied');setTimeout(function(){button.textContent='Copy JavaScript';button.classList.remove('copied')},1400)}catch(error){button.textContent='Select code to copy'}})});</script></body></html>`;
+<footer class="colophon">Machine Spirits house style · ${MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA} · self-contained transcript artifact</footer>
+</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active');item.setAttribute('aria-selected','false')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');button.setAttribute('aria-selected','true');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});async function copyReplayText(text){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}document.querySelectorAll('[data-copy-target]').forEach(function(button){button.addEventListener('click',async function(){var target=document.getElementById(button.dataset.copyTarget);if(!target)return;try{await copyReplayText(target.textContent);button.textContent='Copied';button.classList.add('copied');setTimeout(function(){button.textContent='Copy JavaScript';button.classList.remove('copied')},1400)}catch(error){button.textContent='Select code to copy'}})});</script></body></html>`;
 }
 
 export function writeTutorStubTranscriptHtml({ snapshot, filePath }) {
