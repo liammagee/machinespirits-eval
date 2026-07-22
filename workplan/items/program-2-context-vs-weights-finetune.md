@@ -146,6 +146,69 @@ launch gates 1-2 ticked with the SHA; the one remaining gate is the
 sha-pinned human-gated launch sequence (fast-forward ms-phase5-pinned to
 6423de2f, zero-model gate, preflight, probes).
 
+2026-07-22 Claude (RESULTS): PHASE 5D RUN COMPLETE — E1d + both
+mechanisms PASS. 18/18 sealed on marrick (seed 20260722, launch pin
+27aae3b7 after Amendments 1-2: CLI sonnet-5 alias, parseArgs whitelist),
+zero attrition, 2 same-seed retries. E1d PASS: committee-v3 42/88
+(0.477) vs pooled control 22/162 (0.136), +0.341 CI [0.223, 0.457] —
+up from 5b's 0.386/+0.236; 76% of the live due-release ceiling (55/88)
+vs 5b's 65%. M1 (guard-eligible delivered cue) 13/15 = 0.867 ≥ 0.75
+PASS; M2 (span cue) 74/85 = 0.871 ≥ 0.85 PASS (5b 0.37). Coverage PASS
+(0.625 vs 0.632, no tax). Safety FAIL 0.50 vs 0.63 — same marrick turn-9
+release-schedule leak, arm-symmetric (5/7 committee + 2/2 control at
+turn 9), exonerated per 5b/5c. Guard ledger: 15 applied swaps, 33
+premise-release skips, 37 shipped-as-approved. Prereg §9 results +
+manifest program-2-phase5d.manifest.json + analyzer
+analyze-program2-live-pilot-5d.mjs + archive
+~/.machinespirits-data/program-2/phase5d-live.
+
+2026-07-22 Claude (SEAM): PHASE 5D SEAM — PARITY. Mandatory seam re-check
+run live (scripts/program2-seam-review.mjs --live, 40 sonnet-class
+reviewer calls, seed 20260718): 22/40 = 0.550 detection accuracy ≤ 0.65
+bar; continuity 3.40 committee vs 3.75 all-frontier. The delivery guard's
+span swaps stay invisible at three-turn window scale. All guardrails now
+resolved — E1d/M1/M2/coverage/seam PASS, safety the lone (exonerated)
+FAIL. §5 row-1 reading LICENSED. Artifact phase5d-seam-review.json
+(archived + hashed in manifest). ONE REMAINING: paper §6.21 fold (version
+bump) — the complete 5d verdict now available to fold.
+
+2026-07-22 Claude (PAPER FOLD): PHASE 5D FOLDED INTO §6.21 (v3.0.227, on
+the results PR #151). §6.21 gains a Phase 5d paragraph after 5c (census →
+two fixes → E1d/M1/M2/coverage/seam/safety), the header extended, "Status
+and caveats" three runs → four, and a v3.0.227 revision entry. Ran the
+paper-claim-auditor (FAIL on first draft): fixed all it flagged —
+stationarity rates 0.128/0.140 → 0.095/0.150, ceiling-shortfall reasoning
+corrected (rate converted 76% of achievable vs the ≈90% the ≈0.55
+reference assumed; this run's ceiling 0.625 is HIGHER than 5b's 0.59, not
+lower), "§6.20 substitution reading" → §7.11, and the turn-9 leak counts
+now cite a new hashed artifact scripts/program2-phase5d-safety-breakdown.mjs
+→ phase5d-safety-breakdown.json (committee 7 leaks/5 at t9, control 2/both
+t9). Provenance dangle resolved by landing the fold ON the results branch
+so prereg §9 + manifest + analyzer + paper merge together. Validators:
+paper-manifest 60/0/0, provable-discourse 118 pass/18 warn/0 fail (baseline
+preserved), prettier clean. FOLLOW-UP (non-blocking, auditor item 6):
+register paper2.program2.phase5d.* claims in provable-discourse-program2.yaml
++ sync-inventory so future edits to the paragraph are machine-checked like
+5/5b/5c — needs the sync-inventory regeneration step, deferred to its own
+change.
+
+2026-07-22 Claude (fold re-audit round 2): the re-audit of the pushed fold
+found four more items, all fixed: (1) leak authorship was INVERTED in the
+paper §6.21 and the manifest note — the truth is 4 committee-authored /
+3 frontier-authored (safety-breakdown.json), not "4 frontier-authored";
+reworded to lean the exoneration on turn-9 concentration + arm symmetry,
+not authorship; (2)+(3) the prereg §9 Results carried the same two errors
+I'd fixed only in the paper (stale stationarity 0.128/0.140 and the
+inverted ceiling reasoning) — brought into line with the artifact
+(0.095/0.150; higher-ceiling/lower-conversion); (4) NEW regression — the
+5d analyzer imported committeeSpanCarriesCue, which exists only on the
+pinned-runtime engine, not on main, so it threw off-branch; rewritten to
+depend only on PROGRAM2_WARRANT_CUE_RE (exported on main) and re-run to
+confirm it reproduces every numeric field of phase5d-final.json exactly.
+Lesson: fold corrections must propagate to the cited authority docs
+(prereg §9), and copied analysis scripts must not import symbols that live
+only on the runtime branch.
+
 2026-07-18 Claude: PHASE 2 FROZEN on the user's go ("commit the prereg").
 PROGRAM-2-PHASE2-PREREGISTRATION.md pins: HF revisions (instruct c2022362,
 base 68c46c4b), training-data SHAs (865/865/1,676 rows; base re-exported as
