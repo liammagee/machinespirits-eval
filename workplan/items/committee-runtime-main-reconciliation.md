@@ -51,3 +51,15 @@ tutorStubGuardDisposition.test.js. Live confirm: the July dead-end
 configuration (p5-01 seed) re-run on patched main. Guard-arc review
 invited via HANDOFF H9. Pinned-runtime retirement deferred until the
 phase5d thread seals (it runs on that lineage).
+
+2026-07-22 Claude: reconciliation PR #150 MERGED to main — main now runs
+the pilot configuration. Card stays in `review` (code done + merged +
+live-confirmed; only the V32–V34 guard-arc thread's sign-off on HANDOFF
+H11 is outstanding — a cross-thread courtesy this thread cannot
+self-serve). Retirement gate re-assessed (HANDOFF H12): phase5d sealed +
+results merged (#151), but `claude/program-2-phase5-pinned-runtime` still
+holds the only copy of Phase 5d execution machinery
+(program2CommitteeEngine spanCue.v1/deliveryGuard.v1, run-…-phase5d-smoke)
+— retirement is a port-then-delete owned by the phase5d thread, not a
+delete this thread should perform. HANDOFF numbering error (my duplicate
+H9) corrected to H11.
