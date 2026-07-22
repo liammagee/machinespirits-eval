@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-22T14:01:32.207Z",
+  "generated": "2026-07-22T14:18:45.051Z",
   "counts": {
     "total": 147,
     "byStatus": {
       "done": 106,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 26,
+      "triaged": 25,
       "review": 2,
-      "active": 6,
+      "active": 7,
       "archived": 4
     },
     "byType": {
@@ -217,37 +217,6 @@
         "paper-2"
       ],
       "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "tutor-stub-capability-session-runtime",
-      "title": "Extract a capability-driven tutor-stub session runtime",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
-      "depends_on": [
-        "tutor-stub-register-policy-extraction"
-      ],
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
-        ],
-        "items": [
-          "tutor-stub-register-policy-extraction",
-          "tutor-stub-human-discourse-layer"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "runtime",
-        "command-registry",
-        "replay"
-      ]
     },
     {
       "id": "tutor-stub-learner-budget-overflow",
@@ -917,6 +886,38 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
+    },
+    {
+      "id": "tutor-stub-capability-session-runtime",
+      "title": "Extract a capability-driven tutor-stub session runtime",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "depends_on": [
+        "tutor-stub-register-policy-extraction"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-human-discourse-layer"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "command-registry",
+        "replay"
+      ],
+      "branch": "codex/tutor-stub-capability-runtime"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
