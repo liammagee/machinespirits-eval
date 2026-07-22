@@ -1,23 +1,21 @@
 {
-  "generated": "2026-07-22T13:38:31.634Z",
+  "generated": "2026-07-22T13:41:01.559Z",
   "counts": {
-    "total": 132,
+    "total": 134,
     "byStatus": {
-      "done": 106,
-      "blocked": 1,
+      "done": 112,
+      "blocked": 3,
       "dropped": 2,
-      "triaged": 11,
-      "review": 2,
-      "active": 6,
+      "triaged": 13,
       "archived": 4
     },
     "byType": {
-      "research": 45,
+      "research": 46,
       "experiment": 48,
       "infra": 20,
       "maintenance": 6,
       "content": 2,
-      "paper": 5,
+      "paper": 6,
       "ops": 6
     }
   },
@@ -81,6 +79,30 @@
         "pragmatics",
         "ontology"
       ]
+    },
+    {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-07-22",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "negative-register-effect-estimation-grid",
@@ -155,8 +177,7 @@
         "committee",
         "ablation"
       ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -194,15 +215,15 @@
     },
     {
       "id": "program-2-phase5d-second-transfer-world",
-      "title": "Program-2 Phase 5d: second transfer world (letter-hostile probe)",
+      "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
       "status": "triaged",
       "type": "experiment",
       "priority": "P2",
-      "owner": "claude",
+      "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-22",
       "updated": "2026-07-22",
-      "verification": "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1d (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms.",
+      "verification": "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1e (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms.",
       "claim_status": "exploratory",
       "links": {
         "paper": "§6.21, §7.12",
@@ -221,8 +242,7 @@
         "move-library",
         "cross-world-transfer"
       ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "claude/program-2-terra-composer-probe"
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "program-2-second-trigger-family-stall",
@@ -230,7 +250,7 @@
       "status": "triaged",
       "type": "experiment",
       "priority": "P2",
-      "owner": "claude",
+      "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-22",
       "updated": "2026-07-22",
@@ -255,8 +275,7 @@
         "stagnant-repeat",
         "lambda"
       ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "claude/program-2-terra-composer-probe"
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "refusal-cross-stack-adaptive",
@@ -281,6 +300,30 @@
         "langgraph",
         "strategy-refusal",
         "cross-stack"
+      ]
+    },
+    {
+      "id": "scenario-presentation-variety",
+      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-22",
+      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "tutor-stub-headroom-contrast"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "derivation-worlds",
+        "presentation",
+        "authoring"
       ]
     },
     {
@@ -360,174 +403,6 @@
       "branch": "main"
     },
     {
-      "id": "blueprint-composition",
-      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-02",
-      "updated": "2026-07-02",
-      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-07-02-blueprint-composition-plan.md"
-        ]
-      },
-      "tags": [
-        "blueprint",
-        "composition",
-        "id-director",
-        "writing-pad",
-        "adaptation",
-        "evaluation"
-      ],
-      "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "consolidated-labelling-game-harness",
-      "title": "Consolidated labelling game for taxonomy and tutor-stub impasse datasets",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Both datasets load and save through /human-coding-admin and the shared terminal flow; tutor-stub launches that flow with --labelling-game; route, store, CLI, syntax, and in-browser checks pass without exposing the taxonomy key early.",
-      "claim_status": "methods",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/research/human-coding-codebook.md",
-          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
-        ],
-        "items": [
-          "impasse-corpus-phase1"
-        ]
-      },
-      "tags": [
-        "human-labelling",
-        "tutor-stub",
-        "impasse-program",
-        "evaluation-infrastructure"
-      ],
-      "milestone": "impasse-program-v1"
-    },
-    {
-      "id": "impasse-corpus-phase1",
-      "title": "Impasse program Phase I: candidate-episode corpus from the user's own sessions",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-17",
-      "updated": "2026-07-22",
-      "verification": "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-17-continue-or-fold.md",
-          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
-        ],
-        "items": [
-          "tutor-stub-side-coaching-gate",
-          "consolidated-labelling-game-harness"
-        ]
-      },
-      "tags": [
-        "impasse-program",
-        "human-sessions",
-        "tutor-stub",
-        "ground-truth"
-      ],
-      "milestone": "impasse-program-v1"
-    },
-    {
-      "id": "program-2-context-vs-weights-finetune",
-      "title": "Program-2: context-versus-weights fine-tune (form-carrier hypothesis)",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-18",
-      "updated": "2026-07-22",
-      "verification": "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze.",
-      "claim_status": "exploratory",
-      "links": {
-        "paper": "§7.12, §6.18, §6.19",
-        "notes": [
-          "PROGRAM-2-FINETUNE-PLAN.md",
-          "PLAN_4_0/2026-07-17-continue-or-fold.md",
-          "POINT-OF-ACTION-COACHING-PREREGISTRATION.md"
-        ],
-        "items": [
-          "tutor-stub-side-coaching-gate"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "insight-action-gap",
-        "form-carrier"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
-    },
-    {
-      "id": "lean-semantic-web-proof-dag-validation",
-      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
-      "status": "active",
-      "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-24",
-      "updated": "2026-07-02",
-      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
-      "claim_status": "future",
-      "links": {
-        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
-      },
-      "tags": [
-        "proof-dag",
-        "lean",
-        "semantic-web",
-        "provenance",
-        "shacl"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "scenario-presentation-variety",
-      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-12",
-      "updated": "2026-07-12",
-      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "tutor-stub-headroom-contrast"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "derivation-worlds",
-        "presentation",
-        "authoring"
-      ]
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -553,56 +428,69 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "agon-adversarial-game-ledger",
-      "title": "Agon — adversarial tutoring game with an external referee ledger",
-      "status": "review",
-      "type": "experiment",
+      "id": "impasse-corpus-phase1",
+      "title": "Impasse program Phase I: candidate-episode corpus from the user's own sessions",
+      "status": "blocked",
+      "type": "research",
       "priority": "P1",
-      "owner": "claude",
+      "owner": "human",
       "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-agon-game",
-      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": "AGON-GAME-PLAN.md"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "agon",
-        "game",
-        "ledger",
-        "adversarial-learner"
-      ]
-    },
-    {
-      "id": "tutor-stub-register-policy-extraction",
-      "title": "Extract tutor-stub register-policy pipeline into a testable service",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-12",
-      "updated": "2026-07-12",
-      "verification": "node --test tests/tutorStubRegisterPolicy.test.js green; npm run test:hermetic green; tutor-stub --help and a fake-codex interactive turn unchanged; extractor asserts every moved declaration is byte-identical.",
-      "branch": "claude/heuristic-panini-f2d1b9",
+      "created": "2026-07-17",
+      "updated": "2026-07-22",
+      "verification": "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "blocked_by": "User annotation of the generated Phase I impasse labeling sheet",
       "links": {
         "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+          "PLAN_4_0/2026-07-17-continue-or-fold.md",
+          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
         ],
         "items": [
-          "tutor-stub-human-discourse-layer",
-          "continuous-register-policy"
+          "tutor-stub-side-coaching-gate",
+          "consolidated-labelling-game-harness"
         ]
       },
       "tags": [
+        "impasse-program",
+        "human-sessions",
         "tutor-stub",
-        "register-policy",
-        "refactor",
-        "tests"
-      ]
+        "ground-truth"
+      ],
+      "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "superego-taxonomy-human-validation",
+      "title": "Validate the superego taxonomy with independent expert coding",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "paper",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Two independent expert coders complete the frozen 40-item packet; agreement and Cohen's kappa are reported by category and overall; kappa >= 0.60 supports the taxonomy, while lower agreement is preserved as an explicit instability result rather than tuned away.",
+      "claim_status": "planned",
+      "blocked_by": "Two independent expert coders for the frozen 40-item validation packet",
+      "links": {
+        "paper": "§5.3, §8.2, §9",
+        "notes": [
+          "docs/research/human-coding-codebook.md"
+        ],
+        "scripts": [
+          "scripts/human-validation-sample.js",
+          "scripts/human-validation-analyze.js"
+        ],
+        "paths": [
+          "/human-coding-admin"
+        ]
+      },
+      "tags": [
+        "superego-taxonomy",
+        "human-validation",
+        "inter-rater-reliability"
+      ],
+      "milestone": "human-pilot-prep"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -817,6 +705,56 @@
       "milestone": "admin-chat"
     },
     {
+      "id": "agon-adversarial-game-ledger",
+      "title": "Agon — adversarial tutoring game with an external referee ledger",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-22",
+      "branch": "worktree-agon-game",
+      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "AGON-GAME-PLAN.md"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "agon",
+        "game",
+        "ledger",
+        "adversarial-learner"
+      ]
+    },
+    {
+      "id": "blueprint-composition",
+      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-22",
+      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-blueprint-composition-plan.md"
+        ]
+      },
+      "tags": [
+        "blueprint",
+        "composition",
+        "id-director",
+        "writing-pad",
+        "adaptation",
+        "evaluation"
+      ]
+    },
+    {
       "id": "build-workplan-tooling",
       "title": "Build the workplan executable layer (CLI, ingester, dashboard panel, test)",
       "status": "done",
@@ -864,6 +802,36 @@
         "register",
         "dag"
       ]
+    },
+    {
+      "id": "consolidated-labelling-game-harness",
+      "title": "Consolidated labelling game for taxonomy and tutor-stub impasse datasets",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Both datasets load and save through /human-coding-admin and the shared terminal flow; tutor-stub launches that flow with --labelling-game; route, store, CLI, syntax, and in-browser checks pass without exposing the taxonomy key early.",
+      "claim_status": "methods",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/research/human-coding-codebook.md",
+          "notes/impasse/2026-07-17-phase1-labeling-sheet.md"
+        ],
+        "items": [
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "tutor-stub",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
     },
     {
       "id": "content-compulsion-contrast",
@@ -1194,6 +1162,41 @@
       "branch": "worktree-longitudinal-abm"
     },
     {
+      "id": "paper2-priority1-closeout",
+      "title": "Paper 2.0 priority-1 closeout: provenance, agenda, board, and worktrees",
+      "status": "done",
+      "type": "paper",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Paper 2.0 v3.0.228 reconciles §9 with the completed Program-2 arc and live board; Phase 5d headline claims are registered; the 16-module atlas and dramatic-recognition arc use the public-site design and current conversational summaries; workplan, paper-manifest, provable-discourse, artifact builds, visual QA, and paper-claim-auditor checks pass; retired worktrees receive a no-deletion audit.",
+      "claim_status": "methods",
+      "branch": "codex/priority-1-closeout",
+      "links": {
+        "paper": "§9, Appendix F",
+        "notes": [
+          "notes/paper-2-0/drafts/section-9-priority1-closeout.md",
+          "notes/2026-07-22-priority-1-worktree-audit.md",
+          "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
+          "docs/research/atlas/atlas.yaml"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "superego-taxonomy-human-validation",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "paper-2-0",
+        "provenance",
+        "workplan",
+        "closeout"
+      ],
+      "milestone": "paper-2-0"
+    },
+    {
       "id": "plan-mode-stocktake",
       "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
       "status": "done",
@@ -1222,6 +1225,37 @@
         "plan-mode",
         "ego-superego"
       ]
+    },
+    {
+      "id": "program-2-context-vs-weights-finetune",
+      "title": "Program-2: context-versus-weights fine-tune (form-carrier hypothesis)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-18",
+      "updated": "2026-07-22",
+      "verification": "All licensed Program-2 runs are spent and sealed; the Phase 4, 5, 5b, 5c, and 5d manifests and analyzers reproduce; Paper 2.0 §§6.20–6.22 and the Program-2 provable-discourse registry validate; successor causal and transfer questions are tracked as separate cards.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "§7.12, §6.18, §6.19",
+        "notes": [
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PLAN_4_0/2026-07-17-continue-or-fold.md",
+          "POINT-OF-ACTION-COACHING-PREREGISTRATION.md"
+        ],
+        "items": [
+          "tutor-stub-side-coaching-gate"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "insight-action-gap",
+        "form-carrier"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "refusal-stall-trigger-codex",
@@ -1638,6 +1672,34 @@
         "controls"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-register-policy-extraction",
+      "title": "Extract tutor-stub register-policy pipeline into a testable service",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-22",
+      "verification": "node --test tests/tutorStubRegisterPolicy.test.js green; npm run test:hermetic green; tutor-stub --help and a fake-codex interactive turn unchanged; extractor asserts every moved declaration is byte-identical.",
+      "branch": "claude/heuristic-panini-f2d1b9",
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-human-discourse-layer",
+          "continuous-register-policy"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "register-policy",
+        "refactor",
+        "tests"
+      ]
     },
     {
       "id": "tutor-stub-side-coaching-gate",

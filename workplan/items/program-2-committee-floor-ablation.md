@@ -23,7 +23,6 @@ tags:
   - committee
   - ablation
 milestone: adaptive-tutor-evidence-v1
-branch: main
 ---
 
 The one factorial cell the live program never ran: every live committee
@@ -44,8 +43,11 @@ attribution and directly informs whether the iterated-exhaust retrain
 ([[program-2-iterated-exhaust-retrain]]) is worth its run: if the
 harness carries everything, retraining targets the wrong organ.
 
-Design notes carried from 5b: pinned 91b8a50e-lineage runtime; frozen v1
-instrument (user decision 2026-07-20); expect more battery interventions
+Design notes carried from 5b: use current `main` as the sole maintained runtime
+after the Program-2 reconciliation, but preserve the exact committee-v2,
+fallback-v2, frozen-v1 Phase 5b design. The archived 91b8a50e lineage is
+provenance only; Phase 5d's committee-v3 delivery-integrity rider is out of
+scope unless separately preregistered. Expect more battery interventions
 per moment (the untuned model's known question-discipline weakness is
 exactly what the battery repairs), so record the fallbackResolution
 distribution as a primary descriptive alongside E1.

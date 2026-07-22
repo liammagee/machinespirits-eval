@@ -1,15 +1,15 @@
 ---
 id: program-2-context-vs-weights-finetune
 title: "Program-2: context-versus-weights fine-tune (form-carrier hypothesis)"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-18
 updated: 2026-07-22
-verification: "A LoRA-tuned small open model (4-8B), trained on the apparatus's own sealed audit-labeled turns (SFT on audit-passing originals; KTO on unpaired audit labels only if SFT misses), clears pre-registered pass bars on held-out warrant_skip trigger moments graded by the frozen step4-frozen-2026-07-14.v1 deterministic check plus guards and leak audit, AND is non-inferior in a blinded quality review against matched audit-passing originals. Floor (untuned base) measured before thresholds freeze; one SFT + one conditional KTO run licensed; no-tune-and-retry from the Phase 2 freeze."
-claim_status: exploratory
+verification: "All licensed Program-2 runs are spent and sealed; the Phase 4, 5, 5b, 5c, and 5d manifests and analyzers reproduce; Paper 2.0 §§6.20–6.22 and the Program-2 provable-discourse registry validate; successor causal and transfer questions are tracked as separate cards."
+claim_status: scope-bound
 links:
   paper: §7.12, §6.18, §6.19
   notes:
@@ -24,7 +24,6 @@ tags:
   - insight-action-gap
   - form-carrier
 milestone: adaptive-tutor-evidence-v1
-branch: main
 ---
 
 Test the one hypothesis the closed adaptation programme cannot answer from
@@ -472,3 +471,10 @@ legacy-scope banner (Paper 2.0 claims → provable-discourse). Registered:
 owners). 6 unit tests added (69/69 pass). Validators: provable-discourse
 118/18/0 full, 136/0/0 smoke; paper-manifest + integrity-audit
 unchanged.
+
+2026-07-22 Codex: Closed as scope-bound after the Phase 5d delivery-integrity
+rider completed the licensed arc. The offline artifact, live committee,
+fallback-battery, cross-world, delivery-integrity, and span/composer movements
+are all sealed and folded into Paper 2.0 §§6.20–6.22. The trained-versus-untuned
+committee attribution, another transfer world, and another trigger family are
+independent follow-ups with their own cards and authorization gates.

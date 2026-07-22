@@ -1,13 +1,13 @@
 ---
 id: scenario-presentation-variety
 title: "Scenario presentation variety — de-medievalize the derivation-world roster"
-status: active
+status: triaged
 type: infra
 priority: P2
-owner: claude
+owner: unassigned
 source: manual
 created: 2026-07-12
-updated: 2026-07-12
+updated: 2026-07-22
 verification: "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS."
 claim_status: methods
 links:
@@ -67,3 +67,8 @@ Remaining:
   them or author diction variants of them.
 - Author 2-3 more non-period base worlds (clinic, domestic decision,
   collaborative construction) once the first five have smoked clean.
+
+2026-07-22 Codex: Parked in triage. The presentation metadata, generic prompt
+parameterization, grouped picker, audit, and five lint-clean worlds have landed.
+Live smokes, legacy-metadata enrichment, and additional worlds are optional
+content expansion rather than an active implementation stream.

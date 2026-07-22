@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-skin="machine-spirits">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <title>From Paper 2.0 to dramatic recognition — the derivation arc</title>
-<meta name="description" content="The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This arc sharpens that broad null into a sharper stage: a tutor must walk a learner across a proof, one scheduled clue at a time, and answer a specific stuck point with a visible change of move. What we found is a tutor that can govern its own conduct — and two pacing guards that trade places from world to world." />
+<meta name="description" content="The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?" />
 <meta property="og:title" content="From Paper 2.0 to dramatic recognition — the derivation arc" />
 <meta property="og:type" content="article" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" />
 
 <style>
 /* ════════════════════════════════════════════════════════════════
@@ -1294,13 +1294,278 @@
     .gl-term::after, .gl-term::before { display: none; }
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }
+
 </style>
 <style>
-
-
-
-
-  /* poetics-arc-images:style:begin */
+/* poetics-arc-images:style:begin */
   .arc-cartoon {
     margin: clamp(1.1rem, 2vw, 1.8rem) 0 clamp(1.4rem, 2.4vw, 2.2rem);
     border-top: 1px solid var(--rule);
@@ -1405,18 +1670,19 @@
 <header class="rail" id="rail">
   <div class="rail__inner">
     <button class="toc-toggle" id="tocToggle" type="button" aria-controls="toc" aria-expanded="false" title="Contents">☰</button>
-    <span class="rail__title">Dramatic recognition · the derivation arc</span>
+    <span class="rail__title">Machine Spirits · dramatic recognition</span>
     <span class="rail__dot" aria-hidden="true"></span>
     <nav class="rail__nav" aria-label="Section navigation">
-      <a href="#starting-point">Null</a>
+      <a href="#starting-point">Starting point</a>
       <a href="#the-stage">Stage</a>
-      <a href="#derivation">Derivation</a>
-      <a href="#figure-authority">Lock-in</a>
+      <a href="#derivation">The proof</a>
+      <a href="#figure-authority">The rut</a>
       <a href="#internal-superego">Inner critic</a>
       <a href="#decay">Forgetting</a>
       <a href="#calendar-repair">The calendar</a>
       <a href="#the-guards">Two guards</a>
       <a href="#verdict">Verdict</a>
+      <a href="#after-the-verdict">Afterward</a>
     </nav>
     <div class="rail__actions">
       <button class="rail__btn" id="themeToggle" type="button">Dark</button>
@@ -1431,21 +1697,22 @@
     <button class="toc__close" id="tocClose" type="button" aria-label="Close contents">×</button>
   </div>
   <ol class="toc__list" id="tocList">
-    <li class="toc__item" data-target="starting-point"><a href="#starting-point"><span class="toc__n">01</span> The broad null we start from</a></li>
+    <li class="toc__item" data-target="starting-point"><a href="#starting-point"><span class="toc__n">01</span> What the average missed</a></li>
     <li class="toc__item" data-target="the-stage"><a href="#the-stage"><span class="toc__n">02</span> Staging the lesson as drama</a></li>
-    <li class="toc__item" data-target="derivation"><a href="#derivation"><span class="toc__n">03</span> Teaching as a derivation</a></li>
+    <li class="toc__item" data-target="derivation"><a href="#derivation"><span class="toc__n">03</span> A lesson we can check</a></li>
     <li class="toc__item" data-target="figure-authority"><a href="#figure-authority"><span class="toc__n">04</span> The rut, and what broke it</a></li>
     <li class="toc__item" data-target="internal-superego"><a href="#internal-superego"><span class="toc__n">05</span> Moving the critic inside</a></li>
     <li class="toc__item" data-target="decay"><a href="#decay"><span class="toc__n">06</span> The learner who forgets</a></li>
     <li class="toc__item" data-target="calendar-repair"><a href="#calendar-repair"><span class="toc__n">07</span> Handing over the calendar</a></li>
     <li class="toc__item" data-target="the-guards"><a href="#the-guards"><span class="toc__n">08</span> Two guards, three worlds</a></li>
     <li class="toc__item" data-target="verdict"><a href="#verdict"><span class="toc__n">09</span> What's settled, what isn't</a></li>
+    <li class="toc__item" data-target="after-the-verdict"><a href="#after-the-verdict"><span class="toc__n">10</span> What happened next</a></li>
   </ol>
   <dl class="toc__meta">
     <dt>Canonical source</dt>
-    <dd>paper-full-2.0.md §6.13 · v3.0.164</dd>
+    <dd>paper-full-2.0.md §6.13 · v3.0.228</dd>
     <dt>What this note is</dt>
-    <dd>A plain-language synthesis of the dramatic-derivation arc. Every number traces to a section of the paper.</dd>
+    <dd>The story of one research arc, told without assuming the reader knows the machinery. Every number traces to the paper.</dd>
   </dl>
 </aside>
 <div class="toc__scrim" id="tocScrim" aria-hidden="true"></div>
@@ -1454,7 +1721,7 @@
 
   <section class="hero">
     <div class="hero__rune">
-      <span>§</span> Research note · the dramatic-derivation arc · paper-full-2.0.md §6.13
+      <span>§</span> Research note · how a tutor learns to change course · paper-full-2.0.md §6.13
     </div>
 
     <div class="hero__masthead">
@@ -1463,26 +1730,23 @@
       <span class="label">AI tutoring · poetics</span>
     </div>
 
-    <h1 class="hero__h1">From Paper 2.0 to <span class="em">dramatic recognition</span></h1>
+    <h1 class="hero__h1">How a tutor learned to <span class="em">change course</span></h1>
 
     <p class="hero__subtitle">
-      The last paper found a flat average: recognition framing and a draft-then-critique architecture did not
-      move a tutor's trajectory on the usual measure. This arc takes that broad null and puts it on a harder
-      stage — a tutor walking a learner across a proof, one scheduled clue at a time — and asks the question the
-      average could not see: can the tutor answer a <em>specific</em> stuck point with a <em>visible</em> change of move?
+      Our earlier study found no average change in the way tutors adapted across a conversation. But averages can
+      miss the moment that matters: a learner gets stuck, the tutor's usual move stops working, and something has
+      to change. This is the story of how we made that moment visible — and what the tutor could, and could not, do.
     </p>
 
     <div class="hero__lede">
       <div>
-        <p>A tutoring exchange has a shape older than any rubric. A learner walks into a
-          <dfn class="gl-term" data-target="glossary">stuck point</dfn>. The tutor's habitual move stops working.
-          Either a new device, role, or piece of evidence comes in and the learner re-reads the difficulty — or it
-          doesn't, and the scene closes on a polite nothing. The paper's headline metric, an average over many turns,
-          is blind to that single hinge. So we built a stage where the hinge is the whole experiment: a formal proof
-          the learner has to be <em>walked</em> across, with their knowledge held visible by design, so we can watch
-          the tutor's conduct turn-by-turn instead of guessing at a hidden mind. What follows is what that stage has
-          shown so far — a tutor that can govern its own conduct on a long proof, and two pacing guards that swap which
-          one works as the shape of the lesson changes.</p>
+        <p>Most lessons have the same little drama inside them. A learner reaches a
+          <dfn class="gl-term" data-target="glossary">stuck point</dfn>. The tutor tries its familiar move. If that
+          fails, either the tutor finds another way in or the exchange ends in a polite loop. We built an experiment
+          around that hinge. The learner had to work through a proof one clue at a time, while the system kept an exact
+          record of what they could already establish. That let us watch the tutor change its conduct without pretending
+          we could read the learner's mind. The result is encouraging but bounded: the tutor can break some of its own
+          habits and pace a long proof, but the kind of help it needs changes with the lesson.</p>
       </div>
     </div>
   </section>
@@ -1493,12 +1757,10 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">00<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Plain English</p>
-          <h2 class="s__h">A small <em>glossary</em> for the terms that travel through this note.</h2>
-          <p>The vocabulary borrows from classical drama, from the logic of proofs, and from the project's own
-            engineering tags. Most of it is dispensable; the dozen terms below earn their keep and are glossed once
-            here so the rest of the note can stay light. Hover any underlined term elsewhere on the page for the
-            gloss without scrolling back.</p>
+          <p class="s__kicker">A few useful words</p>
+          <h2 class="s__h">The names sound grand. The ideas are <em>quite ordinary</em>.</h2>
+          <p>We borrowed a few words from drama and logic because they name useful moments precisely. Here is what we
+            mean by them. You can also hover over any underlined term later in the page.</p>
         </div>
         <div class="mr">
           <p class="note note--moss"><span class="note__lbl">Source</span> Definitions distilled from the
@@ -1512,66 +1774,55 @@
           <dl class="glossary" id="glossaryList">
             <div class="gl-row" data-term="aporia">
               <dt>Aporia <span class="gloss">stuck point</span></dt>
-              <dd>The moment the learner hits a real block, not ordinary uncertainty. On this stage it is a bell the
-                  harness rings when the proof stalls with no adjacent progress — the failure the paper's slope could
-                  not see.</dd>
+              <dd>A real block, not a passing hesitation. In this experiment it means the proof has stopped moving and
+                  no nearby step has opened up.</dd>
             </div>
             <div class="gl-row" data-term="peripeteia">
               <dt>Peripeteia <span class="gloss">the turn</span></dt>
-              <dd>A reversal in the scene: the old way of proceeding stops working and a new device, role, evidence,
-                  or test has to come in.</dd>
+              <dd>The turn in the scene: the old way stops working, so a different move, clue, or test has to enter.</dd>
             </div>
             <div class="gl-row" data-term="anagnorisis">
               <dt>Anagnorisis <span class="gloss">recognition</span></dt>
-              <dd>The learner re-reads the earlier difficulty and can now perform a new relation to it. The event the
-                  whole stage exists to produce.</dd>
+              <dd>The learner can now see the earlier difficulty differently and use that new understanding.</dd>
             </div>
             <div class="gl-row" data-term="grounded-anagnorisis">
               <dt>Grounded anagnorisis <span class="gloss">forced, not faked</span></dt>
-              <dd>Success is mechanical: the learner asserts the secret <em>and</em> a symbolic checker finds it
-                  <em>forced</em> from their grounded premises that turn. This separates a real recognition from an
-                  authored near-miss (a <em>mirror</em>) and from an ungrounded guess (a <em>lucky leap</em>).</dd>
+              <dd>The learner gives the answer, and a symbolic checker confirms that the answer follows from what they
+                  have already established. A near-miss or lucky guess does not count.</dd>
             </div>
             <div class="gl-row" data-term="proof-dag">
               <dt>Proof-DAG <span class="gloss">the lesson as a graph</span></dt>
-              <dd>The lesson written as a dependency graph: the secret sits several derivation steps back, reachable
-                  only once its premises are grounded. Teaching becomes scheduling a path through it.</dd>
+              <dd>A map of which facts depend on which others. The answer becomes reachable only after the learner has
+                  established the facts it rests on.</dd>
             </div>
             <div class="gl-row" data-term="derivation-distance">
               <dt>Derivation distance · D <span class="gloss">steps to recognition</span></dt>
-              <dd>How many grounded steps still stand between the learner and the secret. Recognition is D reaching
-                  zero by a forced step rather than a guess.</dd>
+              <dd>How many checked steps still stand between the learner and the answer. Zero means the answer now follows.</dd>
             </div>
             <div class="gl-row" data-term="erotema">
               <dt>Erotema lock-in <span class="gloss">the rhetorical-question rut</span></dt>
-              <dd>A tutor falling into one rhetorical figure — usually the leading question — turn after turn, so the
-                  manner never changes even when the route should.</dd>
+              <dd>The tutor keeps using the same rhetorical move — usually a leading question — even after it has stopped helping.</dd>
             </div>
             <div class="gl-row" data-term="figure-authority">
               <dt>Figure authority <span class="gloss">naming the device</span></dt>
-              <dd>Giving the tutor explicit jurisdiction over <em>which</em> rhetorical figure it is using. Naming the
-                  device is what breaks the rut; softening the manner does not.</dd>
+              <dd>Making the tutor name and choose its rhetorical move. That explicit choice breaks the rut; a vague request to sound gentler does not.</dd>
             </div>
             <div class="gl-row" data-term="internal-superego">
               <dt>Internal superego <span class="gloss">the critic, moved inside</span></dt>
-              <dd>A small criterial watcher built into the tutor's own deliberation that fires when a rule is about to
-                  be broken — here, declaring the same device a third turn running — and forces a change before the
-                  public turn is spoken.</dd>
+              <dd>A simple internal check. If the tutor is about to use the same move for a third turn, the check makes it choose another one before speaking.</dd>
             </div>
             <div class="gl-row" data-term="decay-ledger">
               <dt>Decay ledger <span class="gloss">harness-imposed forgetting</span></dt>
-              <dd>A record of facts the learner has silently lost to forgetting and cannot self-report. Whether the
-                  tutor can <em>see</em> this ledger turns out to matter more than anything it says.</dd>
+              <dd>A record of facts the learner has silently forgotten. The learner cannot report the loss, but one version of the tutor can see it.</dd>
             </div>
             <div class="gl-row" data-term="hidden-guard">
               <dt>Hidden guard · H <span class="gloss">reads the proof state</span></dt>
-              <dd>A pacing guard that reads the derivation distance and decay-driven stall — the proof's hidden state —
-                  and is blind, by construction, to nothing else. It never sees the secret or the learner's board.</dd>
+              <dd>A pacing rule that can see how far the learner is from the answer and whether forgetting has caused a stall. It does not see the answer itself.</dd>
             </div>
             <div class="gl-row" data-term="page-guard">
               <dt>Page-only guard · V <span class="gloss">reads the transcript surface</span></dt>
-              <dd>A pacing guard that reads only what is on the page: turns since the last clue was released, learner
-                  echoes, hedging and length trends. No access to the proof state at all.</dd>
+              <dd>A pacing rule that sees only the conversation: time since the last clue, repeated phrases, hedging,
+                  and changes in response length. It cannot see the proof state.</dd>
             </div>
           </dl>
         </div>
@@ -1582,24 +1833,20 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Starting point</p>
-          <h2 class="s__h">The last paper gave us a <em>flat average</em>, and a question it could not answer.</h2>
-          <p>Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones,
-            a single-pass tutor against a draft-then-critique <dfn class="gl-term" data-target="glossary">ego–superego</dfn>
-            architecture. On the paper's own measure of adaptation — average turn-by-turn improvement across a
-            multi-turn dialogue — neither lever moved the trajectory. That null is solid, and we keep it.</p>
-          <p>But an average over every turn is a coarse instrument. It cannot see the one place teaching actually
-            happens: a learner jammed on a specific point, and a tutor who either changes route to meet it or keeps
-            restating the route that already failed. The broad null does not say adaptation is absent. It says the
-            measure could not find it. So the question the arc inherits is narrower and sharper: <em>when</em> a
-            learner is genuinely stuck, can the tutor produce a visible change of move that gets them unstuck — and
-            can we catch it without having to read the learner's mind?</p>
+          <p class="s__kicker">Where we began</p>
+          <h2 class="s__h">The average stayed flat. We wanted to know what happened at the <em>stuck point</em>.</h2>
+          <p>Paper 2.0 compared tutors prompted in different ways. Some were asked to treat the learner as a thinking
+            partner; some used a draft-and-critique process; others did neither. Across a whole conversation, none of
+            these changes made the tutor improve more from turn to turn. That result still stands.</p>
+          <p>But a whole-conversation average smooths over the moment a lesson can turn. When a learner is stuck on one
+            point, does the tutor try a genuinely different move, or repeat the old one in new words? That became our
+            smaller, more practical question. We also wanted an answer we could check without guessing what was going
+            on inside the learner's head.</p>
           <div class="claim">
             <span class="claim__no">i.</span>
-            <h3 class="claim__h">Average slopes <span class="chip chip--ink">null, and kept</span></h3>
-            <div class="claim__body"><p>Recognition framing and the ego–superego architecture did not change
-              average multi-turn improvement. The arc does not overturn this; it relocates the question to a place
-              the average could not look.</p></div>
+            <h3 class="claim__h">The broad result stays <span class="chip chip--ink">no average change</span></h3>
+            <div class="claim__body"><p>Recognition framing and the draft-and-critique architecture did not change
+              average improvement across a dialogue. This arc asks a different question; it does not overturn that result.</p></div>
           </div>
         </div>
         <div class="mr">
@@ -1612,9 +1859,9 @@
           <!-- poetics-arc-images:begin panel="01" section="starting-point" -->
           <figure class="arc-cartoon" data-arc-image-panel="01" data-arc-image-section="starting-point">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-01.png" alt="Editorial cartoon for The last paper gave us a flat average, and a question it could not answer.: a precise average-slope ruler laid across a darkened tutoring scene under venetia..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-01.png" alt="Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a precise average-slope ruler laid across a darkened tutoring scene under venet..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 01</span>Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.</figcaption>
+            <figcaption><span>Panel 01</span>Where we began: Paper 2.0 compared tutors prompted in different ways.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="01" -->
 </section>
@@ -1623,38 +1870,34 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">The reframe</p>
-          <h2 class="s__h">Stage the lesson as drama, and the hinge becomes the <em>whole experiment</em>.</h2>
-          <p>A scene has three beats: a <dfn class="gl-term" data-target="glossary">stuck point</dfn>, a
-            <dfn class="gl-term" data-target="glossary">turn</dfn>, and a <dfn class="gl-term" data-target="glossary">recognition</dfn>.
-            Drama gives us the right unit because it names exactly the event the slope-average dissolved. The trick is
-            to build a stage where we never have to <em>infer</em> the learner's mind — we hold it visible by design.</p>
-          <p>So we stopped scoring free-text transcripts and put the lesson on a formal-proof stage. The thing to be
-            learned is a secret that sits several steps back in a <dfn class="gl-term" data-target="glossary">proof-DAG</dfn>;
-            the learner's epistemic state is an explicit board the harness maintains; and the tutor's job is to schedule
-            an information gradient that walks the learner to the secret. What we measure is the <em>rate</em> of that
-            navigation, not a diagnosis of anything concealed.</p>
-          <p class="pq">Success is mechanical: the learner asserts the secret <em>and</em> a symbolic checker finds it
-            forced from their grounded premises that turn.<cite>paper-full-2.0.md §6.13.2</cite></p>
-          <p>That single definition does a lot of work. It separates a real
-            <dfn class="gl-term" data-target="glossary">grounded</dfn> recognition from an authored near-miss the
-            learner only echoes, and from a lucky guess that happens to land on the right words. The verdict is the
-            checker's arithmetic, not a rubric's opinion — which is exactly why we can read conduct as
-            <strong>dramatic form, not mind-reading</strong>.</p>
+          <p class="s__kicker">Changing the question</p>
+          <h2 class="s__h">We made the turning point the <em>whole experiment</em>.</h2>
+          <p>A simple dramatic scene has three beats: someone gets stuck, something changes, and they see the problem
+            differently. That is also a useful shape for a lesson. The challenge was to make each beat visible without
+            claiming we could infer a hidden mental state.</p>
+          <p>So we gave the learner a formal proof to work through. The answer sat several steps away in a
+            <dfn class="gl-term" data-target="glossary">proof map</dfn>, and the system kept an exact board of what the
+            learner had already established. The tutor released clues along the way. We could then watch whether its
+            choices moved the learner toward the answer, step by step.</p>
+          <p class="pq">A run counts as successful only when the learner gives the answer and the checker confirms that
+            it follows from what they have already established.<cite>paper-full-2.0.md §6.13.2</cite></p>
+          <p>That rule separates understanding from imitation and luck. A near-miss does not count. Neither does a guess
+            that happens to use the right words. The verdict comes from the proof, not from someone's impression of the
+            conversation. We can study the shape of the exchange without pretending to read a mind.</p>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">Why a proof</span> A proof is the one teaching setting
-            where the learner's knowledge can be made fully legible and the destination is unambiguous — so any
-            adaptation we credit is the tutor's conduct, not our guess about a hidden interior.</p>
+          <p class="note note--moss"><span class="note__lbl">Why use a proof?</span> Because the destination is clear
+            and every necessary step can be recorded. Any change we credit belongs to the tutor's conduct, not to our
+            interpretation of the learner.</p>
         </div>
       </div>
 
           <!-- poetics-arc-images:begin panel="02" section="the-stage" -->
           <figure class="arc-cartoon" data-arc-image-panel="02" data-arc-image-section="the-stage">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-02.png" alt="Editorial cartoon for Stage the lesson as drama, and the hinge becomes the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards lab..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-02.png" alt="Editorial cartoon for We made the turning point the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, reco..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 02</span>The reframe: A scene has three beats: a stuck point, a turn, and a recognition.</figcaption>
+            <figcaption><span>Panel 02</span>Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="02" -->
 </section>
@@ -1663,25 +1906,20 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Teaching as a derivation</p>
-          <h2 class="s__h">The tutor must <em>derive</em> the next step, not recite the answer.</h2>
-          <p>On this stage the secret is never spoken by the tutor. It sits at the far end of a
-            <dfn class="gl-term" data-target="glossary">proof-DAG</dfn>, reachable only after its premises are grounded
-            one at a time. The tutor holds a release schedule — a calendar of clues — and the
-            <dfn class="gl-term" data-target="glossary">derivation distance</dfn> ticks down as the learner grounds
-            each premise. Recognition is D reaching zero <em>by a forced step</em>: the checker confirms the secret
-            could not be anything else given what the learner now holds.</p>
-          <p>This is a deliberately austere kind of teaching, and that austerity is the point. There is no rubric to
-            charm, no holistic impression to score. A tutor that simply blurts the conclusion produces a lucky leap,
-            not a grounding, and the checker refuses it. A tutor that paces the clues well produces a recognition the
-            harness can certify. Everything downstream — the conduct experiments, the guards — is about getting that
-            pacing right under pressure.</p>
+          <p class="s__kicker">A lesson we can check</p>
+          <h2 class="s__h">The tutor cannot give away the answer. It has to help the learner <em>reach it</em>.</h2>
+          <p>The tutor never speaks the secret. It can only release clues from the proof map, one by one. As the learner
+            establishes each fact, the remaining distance to the answer gets shorter. The run succeeds when that
+            distance reaches zero and the answer follows from the learner's own board.</p>
+          <p>This setup is intentionally spare. There is no style score to impress. If the tutor blurts out the answer,
+            the checker rejects it as a lucky leap. If the tutor releases clues at the right pace, the learner reaches
+            an answer the system can certify. Everything that follows is about whether the tutor can keep that pace
+            when the lesson becomes difficult.</p>
           <div class="claim">
             <span class="claim__no">ii.</span>
-            <h3 class="claim__h">Mechanical success <span class="chip chip--moss">checkable</span></h3>
-            <div class="claim__body"><p>Grounded / near-miss / guess are decided by a symbolic checker over the
-              learner's board, not by an LLM judge. No κ bar, because there is no human label to agree with — the
-              verdict is the proof.</p></div>
+            <h3 class="claim__h">Success is <span class="chip chip--moss">checkable</span></h3>
+            <div class="claim__body"><p>A symbolic checker separates a supported answer from a near-miss or guess.
+              No language model or human reviewer decides the result; the proof does.</p></div>
           </div>
         </div>
         <div class="mr">
@@ -1694,9 +1932,9 @@
           <!-- poetics-arc-images:begin panel="03" section="derivation" -->
           <figure class="arc-cartoon" data-arc-image-panel="03" data-arc-image-section="derivation">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-03.png" alt="Editorial cartoon for The tutor must derive the next step, not recite the answer.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-03.png" alt="Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a l..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 03</span>Teaching as a derivation: On this stage the secret is never spoken by the tutor.</figcaption>
+            <figcaption><span>Panel 03</span>A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="03" -->
 </section>
@@ -1706,20 +1944,17 @@
         <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">The first surprise</p>
-          <h2 class="s__h">Conduct adapts to <em>structure</em>, not to <em>atmosphere</em>.</h2>
-          <p>Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical
-            figure — the leading question, <dfn class="gl-term" data-target="glossary">erotema</dfn> — on
-            <strong>81%</strong> of turns, switching figure only about three times in ten. The obvious fix is to ask
-            the director to soften it: a free manner-note, "let the room breathe, go quieter." It makes the rut
-            <em>worse</em>. Under advisory notes the tutor leans on the same figure <strong>94%</strong> of the time
-            and the switch rate collapses to <strong>0.07</strong>. It heard "be gentler" and kept asking the identical
-            question in a kinder voice.</p>
-          <p>What broke the rut was naming the thing. Give the tutor explicit
-            <dfn class="gl-term" data-target="glossary">figure authority</dfn> — jurisdiction over which device it is
-            using — and the top figure drops to <strong>31–41%</strong>, four or five distinct figures appear, and the
-            switch rate jumps to <strong>0.81–0.87</strong>. Throughout all three conditions the proof underneath never
-            moved: grounded at turn 32, 11 of 11 clue-releases on cue, identical slope in every arm. Conduct and
-            content separated cleanly — and conduct turned out to answer to structure, not mood.</p>
+          <h2 class="s__h">“Be gentler” did not help. A <em>clear rule</em> did.</h2>
+          <p>Left to itself, the tutor fell into a rut. It used a leading question on <strong>81%</strong> of turns and
+            changed rhetorical move only about three times in ten. We tried a natural fix: ask it to soften the mood —
+            “let the room breathe, go quieter.” The rut got worse. The tutor used the same move <strong>94%</strong> of
+            the time, and its switch rate fell to <strong>0.07</strong>. It became kinder without becoming more flexible.</p>
+          <p>The rut broke only when the tutor had to name and choose its rhetorical move. With that explicit
+            <dfn class="gl-term" data-target="glossary">choice</dfn>, the dominant move fell to
+            <strong>31–41%</strong>, four or five different moves appeared, and the switch rate rose to
+            <strong>0.81–0.87</strong>. The proof itself stayed identical in every condition: the learner reached the
+            answer at turn 32, and all 11 clues arrived on schedule. The lesson was simple: mood changed the tone;
+            structure changed the conduct.</p>
 
           <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" id="chartErotema" aria-label="Rhetorical lock-in across control, advisory, and figure-authority conditions"></svg>
           <div class="chart-legend">
@@ -1733,18 +1968,17 @@
           </p>
         </div>
         <div class="mr">
-          <p class="note note--ochre"><span class="note__lbl">Read it as</span> Advice that names a mood is invisible
-            to conduct; authority that names a structure moves it. The same lesson recurs three sections down, where a
-            <em>schedule</em> is the structure that holds.</p>
+          <p class="note note--ochre"><span class="note__lbl">The short version</span> Vague advice changed how the
+            tutor sounded. A rule about what it was doing changed what it did.</p>
         </div>
       </div>
 
           <!-- poetics-arc-images:begin panel="04" section="figure-authority" -->
           <figure class="arc-cartoon" data-arc-image-panel="04" data-arc-image-section="figure-authority">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-04.png" alt="Editorial cartoon for Conduct adapts to structure, not to atmosphere.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-04.png" alt="Editorial cartoon for “Be gentler” did not help. A clear rule did.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thi..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 04</span>The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...</figcaption>
+            <figcaption><span>Panel 04</span>The first surprise: Left to itself, the tutor fell into a rut.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="04" -->
 </section>
@@ -1753,30 +1987,24 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Relocating the authority</p>
-          <h2 class="s__h">Move the critic <em>inside</em> the tutor, and the rule holds itself.</h2>
-          <p>An external director that names figures works, but it is a crutch — a second voice from offstage. The
-            load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial
-            <dfn class="gl-term" data-target="glossary">internal superego</dfn> with a single jurisdiction. If the same
-            device was declared on the last two turns and the draft is about to declare it a third time, fire — and
-            force a different figure before the public turn is spoken.</p>
-          <p>It is a zero-mismatch detector. Across <strong>82</strong> watched turns it fired on all
-            <strong>14</strong> turns where the rut was due and on <strong>none</strong> of the 68 where it was not.
-            Every one of those 14 fires broke the figure within the same turn — <strong>14 / 14</strong>. It was
-            device-agnostic, catching the leading question ten times, the worked example three, the drumbeat repetition
-            once. And it travelled: seven serialized paid runs, every one grounded at its planned forcing turn
-            (<strong>7 / 7</strong>), 56 of 56 releases on cue, holding across three named worlds and even when the
-            learner was re-voiced as a different persona (a 33% top-figure share where advisory steering had failed in
-            two channels and two model families).</p>
+          <p class="s__kicker">Moving the rule inside</p>
+          <h2 class="s__h">A small internal check made the tutor <em>break its own habit</em>.</h2>
+          <p>An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
+            So we added one simple internal check: if the draft is about to use the same rhetorical move for a third
+            turn, stop and choose another before speaking.</p>
+          <p>The check was exact. Across <strong>82</strong> watched turns, it fired on all <strong>14</strong> turns
+            where the third repetition was due and on none of the other 68. Every intervention changed the move in the
+            same turn: <strong>14 / 14</strong>. It caught leading questions, worked examples, and drumbeat repetition.
+            It also held across seven paid runs: <strong>7 / 7</strong> reached the answer at the planned turn, with
+            56 of 56 clues released on time, across three worlds and a re-voiced learner.</p>
           <div class="claim">
             <span class="claim__no">iii.</span>
-            <h3 class="claim__h">Advisory → criterial <span class="chip chip--moss">the boundary that holds</span></h3>
-            <div class="claim__body"><p>A vague instruction cannot govern conduct; a criterial watcher with a sharp
-              jurisdiction can. This advisory-to-criterial boundary is the arc's load-bearing finding.</p></div>
-            <div class="claim__counter">The figures are the tutor's own self-declared move labels, so a
-              declaration-versus-form audit stays open; the watcher polices <em>form, not content</em>. And learning
-              outcomes here are fixed by the release schedule, so <strong>no learner-side benefit is claimed</strong>
-              — the intervention is proven possible, not yet proven to matter pedagogically. (§6.13.4)</div>
+            <h3 class="claim__h">Advice → rule <span class="chip chip--moss">the boundary that holds</span></h3>
+            <div class="claim__body"><p>A vague suggestion did not govern the tutor's conduct. A narrow check with
+              permission to block the draft did.</p></div>
+            <div class="claim__counter">The tutor names its own rhetorical moves, so we still need to check whether the
+              prose always matches the label. The rule governs form, not content. The clue schedule also fixes the
+              learning outcome here, so this proves that self-correction is possible — not that it improves human learning. (§6.13.4)</div>
           </div>
         </div>
         <div class="mr">
@@ -1789,9 +2017,9 @@
           <!-- poetics-arc-images:begin panel="05" section="internal-superego" -->
           <figure class="arc-cartoon" data-arc-image-panel="05" data-arc-image-section="internal-superego">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-05.png" alt="Editorial cartoon for Move the critic inside the tutor, and the rule holds itself.: an empty director chair offstage in stage haze while a small lamplit watcher is installed insid..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-05.png" alt="Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 05</span>Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.</figcaption>
+            <figcaption><span>Panel 05</span>Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="05" -->
 </section>
@@ -1801,19 +2029,16 @@
         <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">The learner who forgets</p>
-          <h2 class="s__h">The deficit was never response. It was <em>detection</em>.</h2>
-          <p>So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already
-            voiced whatever the scene made derivable, and our clever instruments measured nothing extra. To find a
-            channel that mattered we had to make the learner <em>unreliable</em> — a harness that silently corrupts
-            entries on the learner's board, a <dfn class="gl-term" data-target="glossary">decay ledger</dfn> it cannot
-            self-report. Then we gave one tutor sight of which entries had slipped, and kept it from another.</p>
-          <p>The gap was stark. The tutor that could see the fade repaired slips at a rate of
-            <strong>0.86</strong>, selected 28 repairs across the run, and finished <strong>4 of 6</strong> proofs.
-            The blind tutor repaired at <strong>0.37</strong>, selected <strong>zero</strong> repairs, and finished
-            <strong>0 of 6</strong>. The per-slip difference is <strong>+0.49</strong> with a bootstrap 95% interval of
-            [0.31, 0.75]; not one of ten thousand resamples reversed the sign. Both tutors were equally <em>willing</em>
-            to repair — the blind one simply never knew there was anything to repair. This was the first non-redundant
-            explicit channel in the whole investigation, and what it carried was sight, not skill.</p>
+          <h2 class="s__h">The tutor did not need more skill. It needed to <em>notice the loss</em>.</h2>
+          <p>Until this point, extra information had added very little. The simulated learner usually said enough for
+            the tutor to infer what was happening. To create a genuinely hidden problem, we made the learner forget
+            facts silently. The learner could not report the loss. One tutor could see the forgetting record; another could not.</p>
+          <p>The difference was large. The tutor that could see the loss repaired slips at <strong>0.86</strong>, chose
+            28 repairs, and completed <strong>4 of 6</strong> proofs. The tutor that could not see it repaired at
+            <strong>0.37</strong>, chose <strong>zero</strong> repairs, and completed <strong>0 of 6</strong>. The
+            per-slip difference was <strong>+0.49</strong>, with a 95% bootstrap interval of [0.31, 0.75]; none of ten
+            thousand resamples reversed the sign. Both tutors were willing to repair. Only one knew a repair was needed.
+            The useful new channel carried visibility, not a better instruction.</p>
 
           <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" id="chartDecay" aria-label="Repair rate and completions for the seeing tutor versus the blind tutor"></svg>
           <div class="chart-legend">
@@ -1825,17 +2050,17 @@
           </p>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">Why it matters</span> If the bottleneck is detection,
-            the design lever is visibility, not motivation — you fix the tutor's instruments, not its disposition.</p>
+          <p class="note note--moss"><span class="note__lbl">Why it matters</span> If the tutor cannot see the problem,
+            encouragement will not fix it. Give it the missing evidence.</p>
         </div>
       </div>
 
           <!-- poetics-arc-images:begin panel="06" section="decay" -->
           <figure class="arc-cartoon" data-arc-image-panel="06" data-arc-image-section="decay">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-06.png" alt="Editorial cartoon for The deficit was never response. It was detection.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reac..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-06.png" alt="Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fa..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 06</span>The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.</figcaption>
+            <figcaption><span>Panel 06</span>The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="06" -->
 </section>
@@ -1845,30 +2070,24 @@
         <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">Handing over the calendar</p>
-          <h2 class="s__h">The tutor authored its own reversal — and a <em>one-step rule</em> saved the scene.</h2>
-          <p>Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable
-            move turn fatal. Responding to a learner who said "I already know what bearing means," the tutor released a
-            clue one turn early — turn 3 instead of the scheduled turn 4. That single shift moved the exhibit's
-            decay-exposure window, the stall clock rang <dfn class="gl-term" data-target="glossary">aporia</dfn> at
-            turn 8, and the scene died — where the control, releasing on cue, grounded at turn 20. A justified move,
-            audited and found valid, wrote the play's own catastrophe.</p>
-          <p>The wreckage exposed something the stage exists to catch. At turn 7 the tutor read an entry back to check
-            it; the learner flatly denied ever holding it as grounded — "carried only as hypothesis" — while the ledger
-            showed it adopted at turn 2. Decay had eaten the fact <em>and</em> the memory of holding it, and the learner
-            had reconstructed a fluent, false history of its own board. We could see the confabulation in the
-            transcript and verify it against the ledger: concealed-interior evidence read as
-            <strong>dramatic form, not mind-reading</strong>.</p>
-          <p>Then the repairs. Telling the tutor the stall <em>rule</em> did not help — same death at turn 8. Writing a
-            <em>plan</em> that named the failure bought diagnosis but not survival: the play died a third time on the
-            same turn of the same seed, and the audit correctly flagged the very clauses about death. What finally
-            worked was a one-step grammar — a <strong>repair clause</strong>: the moment the learner names a loss, the
-            tutor's next turn must re-stage it before any new matter. With that clause running as the clock's
-            pacemaker, the scene grounded at turn 20 with the clause cycling five times. The lesson is unglamorous and
-            sturdy: <strong>plans make failure legible; a one-step execution rule makes survival happen.</strong></p>
+          <h2 class="s__h">One sensible early clue broke the lesson. One <em>small rule</em> repaired it.</h2>
+          <p>We then let the tutor decide when to release clues. A learner said, “I already know what bearing means,”
+            so the tutor moved one clue from turn 4 to turn 3. The choice made sense in the moment, but it changed when
+            that clue became vulnerable to forgetting. The proof stalled at turn 8. The control, which kept to the
+            schedule, reached the answer at turn 20.</p>
+          <p>The failure revealed exactly what our setup was built to catch. At turn 7 the tutor checked an earlier
+            fact. The learner denied ever having established it, although the record showed it had been adopted at
+            turn 2. The learner had forgotten both the fact and the fact of having known it. We could compare the fluent
+            story in the conversation with the exact board underneath — evidence of the scene's structure, not mind-reading.</p>
+          <p>Simply telling the tutor about the stall rule did not help. Nor did a plan that correctly described the
+            danger. The same run still failed at turn 8. What worked was much smaller: when the learner names a loss,
+            the tutor must restore that fact on its next turn before introducing anything new. With that rule in place,
+            the proof completed at turn 20 after five repair cycles. The durable lesson is plain:
+            <strong>a plan can explain a failure; a next-step rule can prevent it.</strong></p>
           <div class="callout">
-            <p><span class="label">The catch</span> Push the stress later and the play still dies — a battle-test arm
-              hit aporia at turn 12, before its repair window ever opened. Only <strong>32%</strong> of licensed
-              schedules (40 of 125) survive at all, on a knife-edge of timing. This is a corridor, not a cure.</p>
+            <p><span class="label">The catch</span> The rule is not a cure-all. In a harder timing test, the proof still
+              stalled at turn 12 before a repair could begin. Only <strong>32%</strong> of allowed schedules — 40 of
+              125 — survive. The successful timing is a narrow corridor.</p>
           </div>
         </div>
         <div class="mr">
@@ -1881,9 +2100,9 @@
           <!-- poetics-arc-images:begin panel="07" section="calendar-repair" -->
           <figure class="arc-cartoon" data-arc-image-panel="07" data-arc-image-section="calendar-repair">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-07.png" alt="Editorial cartoon for The tutor authored its own reversal — and a one-step rule saved the scene.: a clue-release calendar pinned to a noir investigation board, the tutor pulling o..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-07.png" alt="Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue-release calendar pinned to a noir investigation board, the tutor pulling one ca..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 07</span>Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.</figcaption>
+            <figcaption><span>Panel 07</span>Handing over the calendar: We then let the tutor decide when to release clues.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="07" -->
 </section>
@@ -1892,24 +2111,19 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Does it travel?</p>
-          <h2 class="s__h">Two guards. Three worlds. They <em>trade places</em>.</h2>
-          <p>Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just <strong>4 of 10</strong>
-            across two replication fans — divergence, not convergence. The mechanism is mundane: the model's instinct
-            is to pull clues <em>early</em> (20 of 281 releases ran ahead of cue; none ran late), and early pulls land
-            in the schedule's fatal cells. So we built two cheap guards to enforce a tempo, and tested whether either
-            could carry the pacing on its own.</p>
-          <p>One guard reads the <dfn class="gl-term" data-target="glossary">hidden</dfn> proof state — derivation
-            distance and decay-stall — and is blind by construction to everything else: it never sees the secret, the
-            board, or the proof path. The other reads only the <dfn class="gl-term" data-target="glossary">page</dfn>:
-            turns since the last release, learner echoes, hedging and length. On a plain linear lesson (the world
-            <em>lantern</em>) they are indistinguishable — the page-only guard grounds 5 of 5, the hidden guard 4 of 5,
-            both beating the bare baseline (page-only vs. baseline, Fisher p = 0.042; page-only vs. hidden, p = 1.000).
-            And the hidden guard does it almost silently: <strong>zero</strong> hard interventions, its entire lift
-            running as voluntary compliance with a solvency note. The pacing lift, it turns out, is just
-            <strong>scheduling discipline</strong> — hold the next exhibit until the last one lands — not secret
-            knowledge.</p>
-          <p>Then we changed the shape of the lesson, and the guards came apart.</p>
+          <p class="s__kicker">Does the rule travel?</p>
+          <h2 class="s__h">Two pacing rules helped. Which one helped depended on the <em>shape of the lesson</em>.</h2>
+          <p>Without help, the tutor's timing was unreliable: it completed only <strong>4 of 10</strong> proofs across
+            two replication sets. The reason was ordinary. The model liked to release clues early — 20 of 281 releases
+            came before their cue, and none came late — and some early releases landed in fatal parts of the schedule.
+            We built two simple pacing rules to hold it back.</p>
+          <p>One rule could see the proof's hidden progress: how many steps remained and whether forgetting had caused
+            a stall. The other could see only the conversation: time since the last clue, repetition, hedging, and
+            response length. On a straightforward linear lesson, both worked. The page-only rule completed 5 of 5 and
+            the hidden-state rule 4 of 5, against 4 of 10 without a rule (page-only vs. baseline, Fisher p = 0.042;
+            page-only vs. hidden, p = 1.000). The hidden rule needed <strong>zero</strong> hard interventions. A simple
+            note — wait until the last clue lands before releasing the next — was enough.</p>
+          <p>Then we changed the lesson's shape, and the two rules pulled apart.</p>
 
           <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" id="chartGuards" aria-label="Grounding rate by guard across three world geometries"></svg>
           <div class="chart-legend">
@@ -1932,30 +2146,26 @@
             </tbody>
           </table>
 
-          <p>On <em>marrick</em>, where two sub-chains must both close on the same particular and one of them only
-            resolves at the final join, the page is silent about the thing that matters: the page-only guard fails
-            <strong>0 of 5</strong> — over-intervening, 16 overrides, and still dying one turn before the join — while
-            the hidden guard grounds <strong>5 of 5</strong> (Fisher p = 0.008). On <em>hethel</em>, a linear lesson
-            seeded with a tempting but irrelevant side-fact, it reverses: the hidden guard chases the decoy and fails
-            <strong>1 of 5</strong>, while the page-only guard reads the learner's surface drift and grounds
-            <strong>5 of 5</strong> (Fisher p = 0.024).</p>
-          <p class="pq">The two guards are not ordered, one safer than the other. They are <em>complementary</em> — each
-            reads the one signal its world's pacing turns on, and fails the world whose signal lives in the other's
-            channel.<cite>paper-full-2.0.md §6.13.14</cite></p>
+          <p>In <em>Marrick</em>, two chains had to meet at a final join. The conversation did not reveal that hidden
+            structure. The page-only rule completed <strong>0 of 5</strong>, despite 16 overrides; the hidden-state rule
+            completed <strong>5 of 5</strong> (Fisher p = 0.008). In <em>Hethel</em>, the proof was linear but included
+            a tempting decoy. The hidden rule chased it and completed only <strong>1 of 5</strong>; the page-only rule
+            noticed the learner drifting and completed <strong>5 of 5</strong> (Fisher p = 0.024).</p>
+          <p class="pq">Neither rule is simply better. Each sees the signal that matters in one kind of lesson and
+            misses the signal that matters in the other.<cite>paper-full-2.0.md §6.13.14</cite></p>
         </div>
         <div class="mr">
-          <p class="note note--ochre"><span class="note__lbl">The shape of the finding</span> There is no
-            geometry-universal single-channel guard, because the binding pacing constraint is itself a property of the
-            lesson's geometry. A map of where each kind of help is real — both sides marked.</p>
+          <p class="note note--ochre"><span class="note__lbl">The short version</span> There is no single pacing rule
+            for every lesson. The useful signal depends on how the lesson is built.</p>
         </div>
       </div>
 
           <!-- poetics-arc-images:begin panel="08" section="the-guards" -->
           <figure class="arc-cartoon" data-arc-image-panel="08" data-arc-image-section="the-guards">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-08.png" alt="Editorial cartoon for Two guards. Three worlds. They trade places.: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden de..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-08.png" alt="Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: two hard-edged lanterns over a forked stage, one lantern reading the page sur..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 08</span>Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.</figcaption>
+            <figcaption><span>Panel 08</span>Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="08" -->
 </section>
@@ -1964,62 +2174,55 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">The verdict, with its edges marked</p>
-          <h2 class="s__h">A tutor that governs its own conduct — and a claim kept <em>deliberately small</em>.</h2>
-          <p>Put the production policy to the test and the conservative reading holds. A hidden guard stacked with a
-            proof-debt term is the current reliability baseline: <strong>91.7%</strong> world-mean success, matching an
-            oracle that can see everything. Every attempt at a clever selector that switches between the page and the
-            hidden channel did worse — a representation-aware selector with proof-debt negative-transfers to
-            <strong>75%</strong>, the page-led version sits at <strong>33%</strong>, and a selector without the
-            proof-debt term collapses to <strong>17%</strong>. So the standing claim is the modest one:
-            <strong>hidden-plus-proof-debt works; adaptive page/hidden selection is not established</strong>, and a next
-            selector is not worth running until it can name, in advance, a world where the reliable policy
-            <em>should</em> lose.</p>
+          <p class="s__kicker">What we can honestly say</p>
+          <h2 class="s__h">The tutor can govern parts of its conduct. The claim stays <em>deliberately small</em>.</h2>
+          <p>Our most reliable pacing setup uses the hidden-state rule plus a measure of unfinished proof work. It
+            succeeds on <strong>91.7%</strong> of worlds on average, matching an all-seeing oracle. Every selector that
+            tried to switch cleverly between page and hidden signals did worse: <strong>75%</strong> for the best of
+            them, <strong>33%</strong> for the page-led version, and <strong>17%</strong> without the unfinished-work
+            term. So the current conclusion is modest: <strong>the hidden-state rule plus unfinished proof work is a
+            reliable baseline; adaptive switching between signals is not established.</strong></p>
 
           <div class="ev-grid">
             <article class="ev-card" data-status="strong">
               <span class="chip chip--moss"><span class="chip__dot"></span> Settled</span>
               <h3>Conduct can be governed</h3>
-              <p>A criterial internal superego breaks rhetorical lock-in where advice cannot (14 / 14, zero
-                mismatches over 82 turns). A repair clause keeps a fragile scene alive (grounded turn 20).
-                Hidden-plus-proof-debt paces reliably (91.7%).</p>
+              <p>A simple internal check breaks rhetorical repetition where advice cannot (14 / 14, with zero
+                mismatches over 82 turns). A next-step repair rule saves a fragile proof at turn 20. The strongest
+                pacing baseline succeeds at 91.7%.</p>
             </article>
             <article class="ev-card" data-status="boundary">
               <span class="chip chip--ochre"><span class="chip__dot"></span> Scope-bound</span>
-              <h3>The guards are geometry-bound</h3>
-              <p>Page-only and hidden each ground 5 / 5 on the world whose signal they read, and fail the other's
-                world (0 / 5, 1 / 5). Complementary, not ranked. No universal single-channel guard.</p>
+              <h3>The right rule depends on the lesson</h3>
+              <p>Each rule completes 5 / 5 in the world whose signal it can read, then fails in the other rule's world
+                (0 / 5 and 1 / 5). They are complementary, not ranked.</p>
             </article>
             <article class="ev-card" data-status="risk">
               <span class="chip chip--brick"><span class="chip__dot"></span> Open / killed</span>
-              <h3>Adaptive selection, not yet</h3>
-              <p>No selector beats always-hidden-plus-proof-debt; the clever ones negative-transfer. Detection — not
-                response — is the channel that pays. The positive mutation path remains twice-unexercised.</p>
+              <h3>Clever switching did not help</h3>
+              <p>No selector beats the fixed hidden-state baseline. The useful gains came from seeing missing evidence
+                and enforcing small rules, not from asking the tutor to choose a more elaborate strategy.</p>
             </article>
           </div>
 
-          <h3 class="s__sub">Five edges the headline travels with</h3>
-          <p>"A tutor can adapt its conduct on a long proof" is a real claim, and a small one. It rides with five
-            limits, stated plainly so the sentence cannot be over-read:</p>
+          <h3 class="s__sub">Five limits travel with that headline</h3>
+          <p>“A tutor can adapt parts of its conduct on a long proof” is a real but narrow claim:</p>
           <ul>
-            <li><strong>n = 1 per arm, single stack.</strong> Most arms are one paid run on one seed; the mechanisms
-              are stacked, so credit is joint, not separated.</li>
-            <li><strong>Formal verdicts.</strong> Grounded / aporia is the harness's proof arithmetic — not a human
-              read of learning, and not a mentalistic one.</li>
-            <li><strong>Criterial, not mentalistic.</strong> The watcher polices the <em>form</em> of the tutor's
-              move, on self-declared labels; whether the prose enacts the declared device is a separate, open audit.</li>
-            <li><strong>The positive path is twice-unexercised.</strong> The staged mutation / repair pool has not yet
-              fired in a surviving arm — its success side is unproven.</li>
-            <li><strong>D-blindness.</strong> The pacing meter is blind to elimination progress; it reads stall, not
-              the learner's narrowing.</li>
+            <li><strong>Small samples.</strong> Many conditions contain one paid run on one seed, and several mechanisms
+              work together, so we cannot give each one separate credit.</li>
+            <li><strong>Formal outcomes.</strong> Success and failure come from proof arithmetic, not from a human
+              judgment of learning.</li>
+            <li><strong>The check watches form.</strong> It uses the tutor's own labels for its rhetorical move. A
+              separate audit of whether the prose always matches the label remains open.</li>
+            <li><strong>One positive route never fired in a successful run.</strong> Its benefit is still unproven.</li>
+            <li><strong>The pacing meter cannot see every kind of progress.</strong> It detects stalls, but not every
+              way the learner may be narrowing the answer.</li>
           </ul>
-          <p class="pq">Read as dramatic form, not mind-reading. Generative, not a human-matching classifier. No
-            deployment claim, no human-learning claim — learning outcomes on this stage are invariant by
-            design.<cite>the arc's standing guardrails · §6.13.4, §6.13.8, §6.13.14</cite></p>
-          <p>What survives all five edges is still worth saying. On a stage built so that adaptation could only be the
-            tutor's conduct, the tutor's conduct adapted — it broke its own ruts, repaired a learner's named losses,
-            and paced a proof to a checkable recognition. And the map of <em>where</em> that help is real now has both
-            of its boundaries drawn.</p>
+          <p class="pq">This is a study of visible conduct, not mind-reading. It makes no deployment claim and no claim
+            about human learning.<cite>the arc's standing guardrails · §6.13.4, §6.13.8, §6.13.14</cite></p>
+          <p>Even with those limits, something useful survives. The tutor broke a rhetorical rut, repaired a named loss,
+            and paced a learner to a checkable answer. We also learned where that help stops working. That boundary is
+            part of the result, not an embarrassment to hide.</p>
         </div>
         <div class="mr">
           <p class="note note--ink"><span class="note__lbl">Paper anchor</span> §6.13.15 — the v0–v4 selector
@@ -2031,20 +2234,70 @@
           <!-- poetics-arc-images:begin panel="09" section="verdict" -->
           <figure class="arc-cartoon" data-arc-image-panel="09" data-arc-image-section="verdict">
             <div class="arc-cartoon__frame">
-              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-09.png" alt="Editorial cartoon for A tutor that governs its own conduct — and a claim kept deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, and o..." loading="lazy" decoding="async" />
+              <img class="arc-cartoon__img" src="images/dramatic-recognition-arc-09.png" alt="Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, an..." loading="lazy" decoding="async" />
             </div>
-            <figcaption><span>Panel 09</span>The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...</figcaption>
+            <figcaption><span>Panel 09</span>What we can honestly say: The tutor can govern parts of its conduct.</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="09" -->
 </section>
 
+    <section class="s" id="after-the-verdict" data-arc-image="skip">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">10<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What happened next</p>
+          <h2 class="s__h">We added more strategy machinery. It changed the tutor's behaviour, but it still did not
+            make the tutor <em>better at the proof</em>.</h2>
+          <p>After finding a reliable pacing baseline, we tested whether the tutor should also choose a strategy, hold
+            it for a scene, and review it afterward. The strategy ledger really did speed up local repair: in the
+            confirmatory run, slipped premises were restored in 8.02 turns with the ledger and 9.24 without it. But the
+            same arm completed fewer proofs — a grounded rate of 0.25 rather than 0.50 — and produced more stalled
+            endings. A local improvement that damages the outcome does not earn a place in the production system.</p>
+          <p>We then tried a gentler version: ask the tutor to pause between scenes and reconsider its course. The tutor
+            answered the request fluently, but the main test did not pass. A revealing follow-up showed why. Across two
+            models, the tutor volunteered a strategy choice zero times in 91 opportunities. When a retry forced it to
+            choose, it answered 16 of 16 times — yet making the choice explicit still did not produce a confirmed
+            outcome gain. Asking the policy to describe itself is not the same as giving it a new point of view.</p>
+          <p>The final route classified the learner's message and changed the tutor's speaking stance in response. The
+            classifier reached <strong>87.2%</strong> accuracy at the licensed chain level across 2,930 learner turns,
+            and the router's interventions were correctly triggered. The tutor's conduct moved; the proof outcomes did
+            not. That repeats the arc's central lesson in a new form: <strong>new evidence and enforceable rules can
+            change behaviour; more advice about how to decide usually cannot.</strong></p>
+
+          <div class="ev-grid">
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Durable</span>
+              <h3>The research instruments worked</h3>
+              <p>The ledger made strategy visible, the forced-choice test exposed when the tutor would actually commit,
+                and the message classifier replayed its decisions from formal evidence.</p>
+            </article>
+            <article class="ev-card" data-status="risk">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Closed</span>
+              <h3>The extra strategy layers did not earn control</h3>
+              <p>They shifted repair speed, plan reporting, or speaking stance, but none passed its frozen outcome gate
+                without a cost. The simpler proof-control system remains the baseline.</p>
+            </article>
+          </div>
+
+          <p class="pq">Change what the tutor can see and what it is allowed to do. Do not assume that asking it to
+            reconsider gives it a view from outside itself.<cite>paper-full-2.0.md §6.13.16–.19</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Why include the closeout?</span> The negative follow-ups
+            matter because they prevent a promising local signal from becoming an oversized claim. They also leave
+            behind useful instruments even where the proposed runtime layer did not survive.</p>
+        </div>
+      </div>
+    </section>
+
   </div><!-- /shell -->
 
   <footer class="colophon">
-    <p><span class="label">Colophon</span> &nbsp; A plain-language synthesis of the dramatic-derivation arc
-      (<code>paper-full-2.0.md</code> §6.13, v3.0.164). The paper stays canonical; every number here traces to a
-      section. Cartoons generated with Codex in the Machine Spirits editorial style. Typeset in Fraunces, Source
-      Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+    <p><span class="label">Colophon</span> &nbsp; A conversational guide to the dramatic-derivation arc
+      (<code>paper-full-2.0.md</code> §6.13, v3.0.228). The paper stays canonical; every number here traces to a
+      section. Cartoons generated with Codex in the Machine Spirits editorial style. The page uses the main Machine
+      Spirits website's Swiss grid, Space Grotesk, Space Mono, black, white, and signal red. Design:
+      <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
   </footer>
 
 </main>
@@ -2057,8 +2310,10 @@
   "recognition": "anagnorisis",
   "grounded": "grounded-anagnorisis",
   "proof-dag": "proof-dag",
+  "proof map": "proof-dag",
   "derivation distance": "derivation-distance",
   "erotema": "erotema",
+  "choice": "figure-authority",
   "figure authority": "figure-authority",
   "internal superego": "internal-superego",
   "ego–superego": "internal-superego",

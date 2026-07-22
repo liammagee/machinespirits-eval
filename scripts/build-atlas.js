@@ -36,14 +36,14 @@ const MODULES_DIR = path.join(BUILD_DIR, 'modules');
 
 // Claim-status grammar (note §"The dossier needs explicit claim-status labels").
 const STATUS = {
-  settled: { tag: 'SETTLED', label: 'Settled within current evidence' },
-  'scope-bound': { tag: 'SCOPE-BOUND', label: 'Supported but scope-bound' },
-  exploratory: { tag: 'EXPLORATORY', label: 'Exploratory' },
-  killed: { tag: 'KILLED', label: 'Killed / closed under a specified gate' },
-  speculative: { tag: 'SPECULATIVE', label: 'Speculative / theoretical' },
-  methods: { tag: 'METHODS', label: 'Methods / apparatus contribution' },
-  planned: { tag: 'PLANNED', label: 'Planned — scaffold, prose pending' },
-  future: { tag: 'FUTURE', label: 'Future empirical agenda' },
+  settled: { tag: 'SUPPORTED', label: 'Supported by the current evidence' },
+  'scope-bound': { tag: 'SCOPE-BOUND', label: 'Supported within a narrow scope' },
+  exploratory: { tag: 'EXPLORING', label: 'Promising, but still exploratory' },
+  killed: { tag: 'CLOSED', label: 'Tested and closed under its stated gate' },
+  speculative: { tag: 'PROPOSITION', label: 'A theoretical proposal, not a result' },
+  methods: { tag: 'METHOD', label: 'A contribution to how the research is done' },
+  planned: { tag: 'PLANNED', label: 'Planned work; evidence still to come' },
+  future: { tag: 'NEXT', label: 'A future empirical question' },
 };
 
 // ---- parsing helpers -------------------------------------------------------
@@ -198,7 +198,7 @@ function buildSpine(man, paper) {
   if (a.subtitle) out.push(`### ${a.subtitle}\n`);
   out.push(
     `> Spine generated from \`paper-full-2.0.md\` v${paper.version}. The statuses and ` +
-      `the evidence map below are projected from \`atlas.yaml\` and stay in sync by construction.\n`,
+      `the evidence map below come from \`atlas.yaml\` and stay in sync automatically.\n`,
   );
   if (a.orientation) out.push('## Orientation\n', `${a.orientation.trim()}\n`);
   if (a.core_idea) out.push('## The core idea\n', `${a.core_idea.trim()}\n`);
@@ -215,7 +215,7 @@ function buildSpine(man, paper) {
     }
   }
 
-  if (a.maps?.methodological) out.push('## How we know it\n', `${a.maps.methodological.trim()}\n`);
+  if (a.maps?.methodological) out.push('## How we checked the work\n', `${a.maps.methodological.trim()}\n`);
 
   out.push('## Evidence map\n');
   if (a.maps?.evidence) out.push(`${a.maps.evidence.trim()}\n`);
@@ -241,7 +241,7 @@ function buildSpine(man, paper) {
     out.push(`*Sources:* ${anchors}\n`);
   }
 
-  out.push('## Claim-status grammar\n');
+  out.push('## How to read the status labels\n');
   for (const k of Object.keys(STATUS)) out.push(`- **[${STATUS[k].tag}]** — ${STATUS[k].label}`);
   out.push('');
 

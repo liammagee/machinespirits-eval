@@ -1,11 +1,11 @@
-generated_at: 2026-06-06T20:47:12.787Z
+generated_at: 2026-07-22T08:24:52.251Z
 source_spec: config/provable-discourse.yaml
 source_inventory: config/provable-claim-inventory.json
 source_db: data/evaluations.db
 totals:
   major_candidates: 206
   exact_unmapped_candidates: 206
-  template_families: 96
+  template_families: 166
   template_section_families: 0
   generated_claims: 6
   generated_from_templates: 2

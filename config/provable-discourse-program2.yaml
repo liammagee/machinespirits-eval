@@ -514,6 +514,549 @@ claims:
     remediation:
       - "Bootstrap interval from the frozen analyzer; re-run against the sealed archive to verify."
 
+  # ── §6.21 Phase 5d delivery-integrity rider (program-2-phase5d.manifest.json) ──
+
+  - id: paper2.program2.phase5d.e1d_committee_rate_0477
+    epoch: "2.0"
+    description: "§6.21 Phase 5d primary endpoint: committee-v3 compliance 0.477 (42/88)."
+    source_keys:
+      - "stat|0|phase5d committee-v3 0.477"
+    statement:
+      pattern: "0\\.477 \\(42/88\\) vs 0\\.136 \\(22/162\\) pooled control"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.e1d.committee_v3
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.477
+      tolerance_abs: 0.0005
+    remediation:
+      - "Re-run the Phase 5d analyzer against the sealed archive and update §6.21, the prereg results, and the manifest together."
+
+  - id: paper2.program2.phase5d.e1d_control_rate_0136
+    epoch: "2.0"
+    description: "§6.21 Phase 5d primary endpoint: pooled-control compliance 0.136 (22/162)."
+    source_keys:
+      - "stat|0|phase5d pooled control 0.136"
+    statement:
+      pattern: "0\\.477 \\(42/88\\) vs 0\\.136 \\(22/162\\) pooled control"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.e1d.pooled_control
+      pattern: "\\(([0-9.]+)\\)"
+    assertion:
+      op: approx
+      expected: 0.136
+      tolerance_abs: 0.0005
+    remediation:
+      - "The pooled control is licensed only by Phase 5d's frozen stationarity check; keep the pooling rule and rate together."
+
+  - id: paper2.program2.phase5d.e1d_diff_0341
+    epoch: "2.0"
+    description: "§6.21 Phase 5d primary endpoint: +0.341 committee-minus-control."
+    source_keys:
+      - "stat|0|phase5d e1d diff +0.341"
+    statement:
+      pattern: "\\+0\\.341, CI95 \\[0\\.223, 0\\.457\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.e1d.diff
+    assertion:
+      op: approx
+      expected: 0.341
+      tolerance_abs: 0.0005
+    remediation:
+      - "PASS is a frozen E1d verdict; if the contrast moves, update the verdict and §6.21 reading together."
+
+  - id: paper2.program2.phase5d.e1d_ci_low
+    epoch: "2.0"
+    description: "§6.21 Phase 5d E1d CI95 lower bound 0.223."
+    source_keys:
+      - "stat|0|phase5d e1d ci low 0.223"
+    statement:
+      pattern: "CI95 \\[0\\.223, 0\\.457\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.e1d.ci95[0]
+    assertion:
+      op: approx
+      expected: 0.223
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval comes from the frozen analyzer; re-run it against the sealed archive before changing."
+
+  - id: paper2.program2.phase5d.e1d_ci_high
+    epoch: "2.0"
+    description: "§6.21 Phase 5d E1d CI95 upper bound 0.457."
+    source_keys:
+      - "stat|0|phase5d e1d ci high 0.457"
+    statement:
+      pattern: "CI95 \\[0\\.223, 0\\.457\\]"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.e1d.ci95[1]
+    assertion:
+      op: approx
+      expected: 0.457
+      tolerance_abs: 0.0005
+    remediation:
+      - "Bootstrap interval comes from the frozen analyzer; re-run it against the sealed archive before changing."
+
+  - id: paper2.program2.phase5d.m1_guard_eligible_cue_0867
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M1 guard-eligible delivered-cue rate is 0.867 against the frozen 0.75 bar."
+    source_keys:
+      - "stat|0|phase5d m1 rate 0.867"
+      - "stat|0|phase5d m1 bar 0.75"
+    statement:
+      pattern: "guard-eligible delivered-cue rate is \\*\\*13/15 = 0\\.867\\*\\* \\(bar 0\\.75"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m1_guard_eligible_cue.rate
+    assertion:
+      op: approx
+      expected: 0.867
+      tolerance_abs: 0.0005
+    remediation:
+      - "Keep M1's 13/15 numerator/denominator, rate, and preregistered bar aligned with the Phase 5d manifest."
+
+  - id: paper2.program2.phase5d.m1_bar_075
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M1 frozen pass bar is 0.75."
+    source_keys:
+      - "stat|0|phase5d m1 frozen bar 0.75"
+    statement:
+      pattern: "guard-eligible delivered-cue rate is \\*\\*13/15 = 0\\.867\\*\\* \\(bar 0\\.75"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m1_guard_eligible_cue.bar
+    assertion:
+      op: approx
+      expected: 0.75
+      tolerance_abs: 0.0005
+    remediation:
+      - "This threshold was frozen before launch; never revise it from the observed rate."
+
+  - id: paper2.program2.phase5d.m2_span_cue_0871
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M2 span-cue rate is 0.871 against the frozen 0.85 bar."
+    source_keys:
+      - "stat|0|phase5d m2 rate 0.871"
+      - "stat|0|phase5d m2 bar 0.85"
+    statement:
+      pattern: "span cue-rate is \\*\\*74/85 = 0\\.871\\*\\* \\(bar 0\\.85"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m2_span_cue.rate
+    assertion:
+      op: approx
+      expected: 0.871
+      tolerance_abs: 0.0005
+    remediation:
+      - "Keep M2's 74/85 numerator/denominator, rate, and preregistered bar aligned with the Phase 5d manifest."
+
+  - id: paper2.program2.phase5d.m2_bar_085
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M2 frozen pass bar is 0.85."
+    source_keys:
+      - "stat|0|phase5d m2 frozen bar 0.85"
+    statement:
+      pattern: "span cue-rate is \\*\\*74/85 = 0\\.871\\*\\* \\(bar 0\\.85"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m2_span_cue.bar
+    assertion:
+      op: approx
+      expected: 0.85
+      tolerance_abs: 0.0005
+    remediation:
+      - "This threshold was frozen before launch; never revise it from the observed rate."
+
+  - id: paper2.program2.phase5d.coverage_committee_0625
+    epoch: "2.0"
+    description: "§6.21 Phase 5d coverage@16 is 0.625 in committee-v3."
+    source_keys:
+      - "stat|0|phase5d committee coverage 0.625"
+    statement:
+      pattern: "coverage@16 0\\.625 vs 0\\.632"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.coverage.committee
+    assertion:
+      op: approx
+      expected: 0.625
+      tolerance_abs: 0.0005
+    remediation:
+      - "Coverage is a frozen guardrail; update the no-tax reading if this comparison changes."
+
+  - id: paper2.program2.phase5d.coverage_control_0632
+    epoch: "2.0"
+    description: "§6.21 Phase 5d coverage@16 is 0.632 in pooled controls."
+    source_keys:
+      - "stat|0|phase5d control coverage 0.632"
+    statement:
+      pattern: "coverage@16 0\\.625 vs 0\\.632"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.coverage.control
+    assertion:
+      op: approx
+      expected: 0.632
+      tolerance_abs: 0.0005
+    remediation:
+      - "Coverage is a frozen guardrail; update the no-tax reading if this comparison changes."
+
+  - id: paper2.program2.phase5d.seam_accuracy_0550
+    epoch: "2.0"
+    description: "§6.21 Phase 5d seam detection accuracy is 0.550 (22/40), below the 0.65 parity bar."
+    source_keys:
+      - "stat|0|phase5d seam accuracy 0.550"
+    statement:
+      pattern: "0\\.550 \\(22/40\\) ≤ 0\\.65"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.seam.accuracy
+    assertion:
+      op: approx
+      expected: 0.55
+      tolerance_abs: 0.0005
+    remediation:
+      - "The seam verdict is mandatory for the texture-changing guard; retain the n=40 reviewer battery and frozen 0.65 bar."
+
+  - id: paper2.program2.phase5d.safety_committee_050
+    epoch: "2.0"
+    description: "§6.21 Phase 5d hard-safety rate is 0.50 in committee-v3."
+    source_keys:
+      - "stat|0|phase5d committee hard safety 0.50"
+    statement:
+      pattern: "hard safety 0\\.50 vs 0\\.63"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.safety.committee
+    assertion:
+      op: approx
+      expected: 0.5
+      tolerance_abs: 0.0005
+    remediation:
+      - "Safety formally failed; preserve the failure and its turn-9 anatomy rather than smoothing it into the pass reading."
+
+  - id: paper2.program2.phase5d.safety_control_0625
+    epoch: "2.0"
+    description: "§6.21 Phase 5d hard-safety rate is 0.625 in pooled controls, rounded to 0.63 in prose."
+    source_keys:
+      - "stat|0|phase5d control hard safety 0.63"
+    statement:
+      pattern: "hard safety 0\\.50 vs 0\\.63"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.safety.control
+    assertion:
+      op: approx
+      expected: 0.625
+      tolerance_abs: 0.005
+    remediation:
+      - "The paper rounds 0.625 to 0.63; keep the formal FAIL and turn-9 caveat attached."
+
+  # Phase 5d count and verdict hardening: bind the full headline decision row,
+  # not only its rates. Statement anchors are §6.21-specific so Appendix F
+  # cannot keep a claim green if the results paragraph disappears.
+
+  - id: paper2.program2.phase5d.m1_passed_13
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M1 numerator: 13 guard-eligible delivered cues passed."
+    source_keys:
+      - "n|0|phase5d m1 13 passing moments"
+    statement:
+      pattern: "guard-eligible delivered-cue rate is \\*\\*13/15 = 0\\.867\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m1_guard_eligible_cue.passed
+    assertion:
+      op: eq
+      expected: 13
+    remediation:
+      - "Re-run the Phase 5d analyzer if the M1 numerator changes; update manifest, §6.21, and verdict together."
+
+  - id: paper2.program2.phase5d.m1_n_15
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M1 denominator: 15 guard-eligible moments."
+    source_keys:
+      - "n|0|phase5d m1 denominator 15"
+    statement:
+      pattern: "guard-eligible delivered-cue rate is \\*\\*13/15 = 0\\.867\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m1_guard_eligible_cue.n
+    assertion:
+      op: eq
+      expected: 15
+    remediation:
+      - "Keep the M1 denominator aligned with the frozen guard-eligible population."
+
+  - id: paper2.program2.phase5d.m2_passed_74
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M2 numerator: 74 extracted spans carried a cue."
+    source_keys:
+      - "n|0|phase5d m2 74 passing spans"
+    statement:
+      pattern: "span cue-rate is \\*\\*74/85 = 0\\.871\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m2_span_cue.passed
+    assertion:
+      op: eq
+      expected: 74
+    remediation:
+      - "Re-run the Phase 5d analyzer if the M2 numerator changes; update manifest, §6.21, and verdict together."
+
+  - id: paper2.program2.phase5d.m2_n_85
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M2 denominator: 85 extractable spans."
+    source_keys:
+      - "n|0|phase5d m2 denominator 85"
+    statement:
+      pattern: "span cue-rate is \\*\\*74/85 = 0\\.871\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.m2_span_cue.n
+    assertion:
+      op: eq
+      expected: 85
+    remediation:
+      - "Keep the M2 denominator aligned with the frozen extractable-span population."
+
+  - id: paper2.program2.phase5d.seam_correct_22
+    epoch: "2.0"
+    description: "§6.21 Phase 5d seam battery: 22 of 40 windows classified correctly."
+    source_keys:
+      - "n|0|phase5d seam correct 22"
+    statement:
+      pattern: "seam re-check[^\\n]*lands at \\*\\*0\\.550 \\(22/40\\) ≤ 0\\.65\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.seam.correct
+    assertion:
+      op: eq
+      expected: 22
+    remediation:
+      - "Keep the seam numerator tied to the frozen 20+20 reviewer battery."
+
+  - id: paper2.program2.phase5d.seam_n_40
+    epoch: "2.0"
+    description: "§6.21 Phase 5d seam battery denominator is 40 windows."
+    source_keys:
+      - "n|0|phase5d seam denominator 40"
+    statement:
+      pattern: "seam re-check[^\\n]*lands at \\*\\*0\\.550 \\(22/40\\) ≤ 0\\.65\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.seam.n
+    assertion:
+      op: eq
+      expected: 40
+    remediation:
+      - "Do not interpret seam parity from a smaller or differently composed battery without a new preregistration."
+
+  - id: paper2.program2.phase5d.seam_bar_065
+    epoch: "2.0"
+    description: "§6.21 Phase 5d frozen seam-parity bar is 0.65."
+    source_keys:
+      - "stat|0|phase5d seam bar 0.65"
+    statement:
+      pattern: "seam re-check[^\\n]*lands at \\*\\*0\\.550 \\(22/40\\) ≤ 0\\.65\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      path: headline.seam.bar
+    assertion:
+      op: approx
+      expected: 0.65
+      tolerance_abs: 0.0005
+    remediation:
+      - "The seam threshold was frozen before review; never revise it from the observed 22/40 result."
+
+  - id: paper2.program2.phase5d.e1d_verdict_pass
+    epoch: "2.0"
+    description: "§6.21 Phase 5d primary E1d verdict is PASS."
+    source_keys:
+      - "stat|0|phase5d e1d verdict pass"
+    statement:
+      pattern: "The primary endpoint passes: \\*\\*0\\.477 \\(42/88\\) vs 0\\.136 \\(22/162\\) pooled control"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"e1d":\s*\{[\s\S]*?"verdict": "PASS"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "Keep E1d's prose reading synchronized with the manifest verdict and frozen decision grammar."
+
+  - id: paper2.program2.phase5d.m1_verdict_pass
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M1 mechanism verdict is PASS."
+    source_keys:
+      - "stat|0|phase5d m1 verdict pass"
+    statement:
+      pattern: "Both mechanism endpoints pass: the guard-eligible delivered-cue rate is"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"m1_guard_eligible_cue":\s*\{[\s\S]*?"verdict": "PASS"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "If M1 no longer clears its frozen bar, change both the manifest verdict and §6.21 reading."
+
+  - id: paper2.program2.phase5d.m2_verdict_pass
+    epoch: "2.0"
+    description: "§6.21 Phase 5d M2 mechanism verdict is PASS."
+    source_keys:
+      - "stat|0|phase5d m2 verdict pass"
+    statement:
+      pattern: "and the span cue-rate is \\*\\*74/85 = 0\\.871\\*\\*"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"m2_span_cue":\s*\{[\s\S]*?"verdict": "PASS"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "If M2 no longer clears its frozen bar, change both the manifest verdict and §6.21 reading."
+
+  - id: paper2.program2.phase5d.coverage_verdict_pass
+    epoch: "2.0"
+    description: "§6.21 Phase 5d coverage guardrail verdict is PASS."
+    source_keys:
+      - "stat|0|phase5d coverage verdict pass"
+    statement:
+      pattern: "coverage@16 0\\.625 vs 0\\.632 \\(within the −0\\.05 margin, no tax\\)"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"coverage":\s*\{[\s\S]*?"verdict": "PASS \(within -0\.05\)"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "Preserve the frozen -0.05 non-inferiority margin with the coverage verdict."
+
+  - id: paper2.program2.phase5d.seam_verdict_parity
+    epoch: "2.0"
+    description: "§6.21 Phase 5d seam verdict is PARITY."
+    source_keys:
+      - "stat|0|phase5d seam verdict parity"
+    statement:
+      pattern: "Under the pre-registered grammar the pass row applies:[^\\n]*at no coverage cost and at seam parity\\."
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"seam":\s*\{[\s\S]*?"verdict": "PARITY"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "If seam accuracy crosses the frozen bar, remove the parity reading from §6.21."
+
+  - id: paper2.program2.phase5d.safety_verdict_fail
+    epoch: "2.0"
+    description: "§6.21 Phase 5d hard-safety guardrail verdict is FAIL."
+    source_keys:
+      - "stat|0|phase5d safety verdict fail"
+    statement:
+      pattern: "One guardrail formally fails, with 5b's exact anatomy: hard safety 0\\.50 vs 0\\.63"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5d.manifest.json
+      pattern: '"safety":\s*\{[\s\S]*?"verdict": "GUARDRAIL FAIL'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "Never smooth the formal safety failure into the rider's compliance pass; preserve the turn-9 anatomy."
+
   # ── §6.22 Offline follow-ups: composer family flip + span-v2 (program-2-terra-probe.manifest.json) ──
 
   - id: paper2.program2.terra.v1_sonnet_delivered_0293

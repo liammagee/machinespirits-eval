@@ -1,7 +1,7 @@
 ---
 id: consolidated-labelling-game-harness
 title: Consolidated labelling game for taxonomy and tutor-stub impasse datasets
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex

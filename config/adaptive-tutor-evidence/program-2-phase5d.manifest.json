@@ -20,12 +20,14 @@
       "verdict": "PASS"
     },
     "m1_guard_eligible_cue": {
+      "passed": 13,
       "rate": 0.867,
       "n": 15,
       "bar": 0.75,
       "verdict": "PASS"
     },
     "m2_span_cue": {
+      "passed": 74,
       "rate": 0.871,
       "n": 85,
       "bar": 0.85,

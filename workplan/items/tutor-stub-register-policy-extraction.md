@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-register-policy-extraction
 title: "Extract tutor-stub register-policy pipeline into a testable service"
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-12
-updated: 2026-07-12
+updated: 2026-07-22
 verification: "node --test tests/tutorStubRegisterPolicy.test.js green; npm run test:hermetic green; tutor-stub --help and a fake-codex interactive turn unchanged; extractor asserts every moved declaration is byte-identical."
 branch: claude/heuristic-panini-f2d1b9
 links:
@@ -61,3 +61,8 @@ Tests (tests/tutorStubRegisterPolicy.test.js):
   sarcastic/face_threat logits (dynamicalGuardAdjustment); a riskRising
   trajectory must not increase face_threat under the trajectory policy.
 - One-way dependency guard: service source contains no scripts/ import.
+
+2026-07-22 Codex: Closed after repository reconciliation. The extraction is
+present on `main` (merge commit `074a397b`, PR #123), the focused register-policy
+test remains the acceptance check, and no further implementation is attached to
+this card. Any future register-policy change should receive its own work item.

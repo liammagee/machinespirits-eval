@@ -1,13 +1,13 @@
 ---
 id: agon-adversarial-game-ledger
 title: Agon — adversarial tutoring game with an external referee ledger
-status: review
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-05
-updated: 2026-07-05
+updated: 2026-07-22
 branch: worktree-agon-game
 verification: "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only."
 claim_status: scope-bound
@@ -76,3 +76,8 @@ claude-CLI hangs at 3-4 calls/turn killed both A1p attempts (deviations
 recorded: 4->2 eps/arm, 300->90s timeouts). Open cells: playbook
 self-repair (does e2's own error-lesson fix e3), weak-ego brief rescue on
 a stable path.
+
+2026-07-22 Codex: Closed as scope-bound. The referee-ledger apparatus, dry and
+live checks, three-arm pilots, XL-board replication, and failed/partial probes
+are all recorded above and folded into Paper 2.0 §6.15. The two unlicensed
+follow-up cells are optional new experiments, not unfinished acceptance work.

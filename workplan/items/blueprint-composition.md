@@ -1,15 +1,15 @@
 ---
 id: blueprint-composition
 title: Blueprint composition — one runnable tutor from the validated mechanisms
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-02
-updated: 2026-07-02
+updated: 2026-07-22
 verification: Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.
-claim_status: planned
+claim_status: scope-bound
 links:
   notes:
     - notes/2026-07-02-blueprint-composition-plan.md
@@ -20,7 +20,6 @@ tags:
   - writing-pad
   - adaptation
   - evaluation
-branch: worktree-blueprint-composition
 ---
 
 Compose the paper's validated mechanisms into one runnable tutor and test
@@ -97,3 +96,10 @@ composability corrections recorded: writing_pad_enabled is dead config (pads
 key on learnerId; only the drama pad lives on this chassis — A7 cross-session
 claim NOT inherited), and the conventional superego structurally conflicts
 with the id-director chassis. No paid run; the §5 matrix awaits a go decision.
+
+2026-07-22 Codex: Closed as scope-bound. The blueprint implementation, paid
+composition matrix, repeats contrast, and pre-registered carry-through decision
+are complete; the final verdict is the documented sub-additivity result with
+the H2 claim dissolved at its stop boundary. The result is folded into Paper
+2.0 §§6.14 and 7.11. The retired implementation worktree is covered by
+`notes/2026-07-22-priority-1-worktree-audit.md`.

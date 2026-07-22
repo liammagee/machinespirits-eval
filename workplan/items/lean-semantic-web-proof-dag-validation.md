@@ -1,13 +1,13 @@
 ---
 id: lean-semantic-web-proof-dag-validation
 title: Evaluate Lean certificates and Semantic Web exports for proof DAGs
-status: active
+status: triaged
 type: research
 priority: P2
-owner: codex
+owner: unassigned
 source: manual
 created: 2026-06-24
-updated: 2026-07-02
+updated: 2026-07-22
 verification: A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.
 claim_status: future
 links:
@@ -61,3 +61,7 @@ check passes for all four authored `world_001_nocturne` proof paths. This
 does not replace the JS runtime chainer; the Lean slice is an authored positive
 certificate only. Remaining work is the RDF/JSON-LD + PROV export and SHACL
 redaction/shape validation.
+
+2026-07-22 Codex: Parked in triage. The Lean certificate slice is complete;
+the RDF/PROV exporter and SHACL boundary checks remain coherent future work,
+but no active branch or near-term paper dependency currently owns them.

@@ -1,16 +1,17 @@
 ---
 id: impasse-corpus-phase1
 title: "Impasse program Phase I: candidate-episode corpus from the user's own sessions"
-status: active
+status: blocked
 type: research
 priority: P1
-owner: claude
+owner: human
 source: manual
 created: 2026-07-17
 updated: 2026-07-22
 verification: "Zero-model-call extraction over the ~25 human + 2 mixed interactive tutor-stub sessions in .tutor-stub-traces/: candidate impasse episodes detected by seven text/state heuristics (clarification markers, /clarify usage, learner restatement, tutor re-gloss, coverage stagnation, comprehension pressure, abrupt exit/abandonment), emitted as a machine sidecar plus a human labeling sheet (impasse y/n; type; tutor-addressed; resolved-within-2) capped at 60 ranked episodes. Phase gate: the sheet is annotated by the user; Phase II then tests the stub's computed signals as impasse detectors against those labels before any repair-move design."
 claim_status: planned
 depends_on: []
+blocked_by: "User annotation of the generated Phase I impasse labeling sheet"
 links:
   notes:
     - PLAN_4_0/2026-07-17-continue-or-fold.md
@@ -46,3 +47,8 @@ which is impasse-blindness in miniature — is Phase III's first target.
 running: seven heuristics, zero model calls, outputs under notes/impasse/.
 Board discipline applied from birth this time — the V-series ran 37 iterations
 without a card; this program will not.
+
+2026-07-22 Codex: Status corrected from active to blocked. The zero-call
+extraction and labeling packet exist; the phase gate is now the user's own
+episode labels. No detector fitting or repair-move design is licensed until
+that human ground truth is returned.
