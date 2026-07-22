@@ -13,6 +13,7 @@ import {
   resolveTutorStubCommandId,
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
+  tutorStubCommandCompletionMetadata,
   tutorStubCommandReturnsToScene,
   tutorStubCommandTokens,
   tutorStubStaticCommandCompletions,
@@ -206,6 +207,13 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(resolveTutorStubCommandId('/a'), 'analysis');
   assert.equal(tutorStubCanonicalCommandToken('/html no-open'), '/transcript');
   assert.equal(resolveTutorStubCommandId('visualization'), 'visualization');
+  assert.equal(resolveTutorStubCommandId('/board'), 'board');
+  assert.equal(tutorStubCommandAvailable('/board'), true);
+  assert.equal(tutorStubCommandAvailable('/board', { mode: 'passthrough' }), false);
+  assert.equal(tutorStubCommandReturnsToScene('/board'), true);
+  assert.deepEqual(tutorStubCommandCompletionMetadata('/board'), {
+    dynamicProviders: ['workplan_module_ids'],
+  });
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
 });
 
