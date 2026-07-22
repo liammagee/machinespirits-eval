@@ -510,6 +510,7 @@ process.stdin.on('end', () => {
       assert.ok(readyIndex > loadingIndex, plain);
       assert.ok(tutorIndex > readyIndex, plain);
       assert.match(plain, /preparing scenario ·\s*0\.[0-9]s/u);
+      assert.match(plain, /CLI hint: type \/ to browse \| type to filter \| Tab completes \| \/help/u);
     } finally {
       terminal.kill();
       fs.rmSync(tmp, { recursive: true, force: true });

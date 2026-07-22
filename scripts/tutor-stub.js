@@ -4354,9 +4354,59 @@ function compactPendingFieldSummary(state, context) {
   ].join(' | ');
 }
 
+function compactInterimCliHintPanels(active) {
+  const state = active.state || {};
+  const phase = String(active.basePhase || active.phase || '').toLowerCase();
+  const hints = [
+    {
+      label: 'CLI hint',
+      tone: 'neutral',
+      text: 'type / to browse | type to filter | Tab completes | /help explains',
+    },
+  ];
+
+  if (state.passthrough?.enabled) {
+    hints.push({
+      label: 'While waiting',
+      tone: 'neutral',
+      text: '/status and /transcript stay live | /scenario changes the case | /reset cancels unfinished work',
+    });
+    return hints;
+  }
+
+  if (phase.includes('scenario') || phase.includes('opening')) {
+    hints.push({
+      label: 'Change setup',
+      tone: 'neutral',
+      text: '/scenario switches case | /profile changes learner | /settings adjusts models and pacing',
+    });
+  } else if (state.interaction?.mode === 'coach') {
+    hints.push({
+      label: 'Coach controls',
+      tone: 'neutral',
+      text: '/coach adds private guidance | /learner returns control | /analysis inspects the exchange',
+    });
+  } else if (state.interaction?.mode === 'auto' || state.interaction?.autoRunning) {
+    hints.push({
+      label: 'Auto controls',
+      tone: 'neutral',
+      text: '/status checks progress | /analysis inspects the exchange | /reset cancels safely',
+    });
+  } else {
+    hints.push({
+      label: 'Next moves',
+      tone: 'neutral',
+      text: '/clue asks for direction | /suggest previews a reply | /coach privately guides the tutor',
+    });
+  }
+
+  return hints;
+}
+
 function compactInterimPanels(active) {
   const context = active.context || {};
   const panels = [
+    ...compactInterimCliHintPanels(active),
     { label: 'Tutor focus', tone: 'focus', text: compactPendingObjectiveSummary(active.state, context) },
     { label: 'Dialogue outlook', tone: 'progress', text: compactPendingFieldSummary(active.state, context) },
     { label: 'Reasoning change', tone: 'progress', text: compactPendingDagMovementSummary(active.state, context) },
