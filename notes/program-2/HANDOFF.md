@@ -312,7 +312,11 @@ committee dialogues), and picks the composer family freely afterward —
 capability one. Never run family flip and v2 adoption in the same
 experiment (no sealed baseline would share either change).
 
-## H9 (2026-07-22) — Committee-runtime reconciliation landed on main; guard-arc review invited
+## H11 (2026-07-22) — Committee-runtime reconciliation landed on main; guard-arc review invited
+
+(numbering correction: this entry was first appended as a second "H9" — the
+2026-07-21 terra-composer entry already held H9 and H10 existed; renumbered
+to H11 in place. No content change.)
 
 status: pending (V32–V34 guard-arc thread to review; flip to done with the reviewing commit)
 
@@ -340,3 +344,26 @@ Main can now run the Phase 5 pilot configuration
 NOT done here: retiring `claude/program-2-phase5-pinned-runtime` — the
 phase5d thread is mid-run on that lineage; retirement waits until it
 seals and re-pins (or adopts main).
+
+## H12 (2026-07-22) — Pinned-runtime retirement gate re-assessed (still blocked)
+
+status: pending (phase5d thread's call — machinery port OR keep-as-archive)
+
+Phase 5d has sealed and its RESULTS merged to main (PR #151: E1d + M1 + M2
+PASS, seam re-check PARITY 0.550). So the first retirement condition (the
+run finishes on that lineage) is met. But the branch is NOT deletable: it
+still holds 8 commits unique to it, and among them is Phase 5d **execution
+machinery that exists nowhere else on main** —
+`services/program2CommitteeEngine.js` `spanCue.v1` + `deliveryGuard.v1`
+(main's engine has zero of these), `scripts/run-program2-phase5d-smoke.js`
+(absent from main), plus the two 5d amendments (CLI sonnet-5 alias map at
+spawn; committee-v3 parseArgs whitelist). Only the 5d *analyzer* + results
++ prereg reached main via #151.
+
+Retirement is therefore a port-then-delete, not a delete, and it is the
+owning (phase5d) thread's decision — now that PR #150 lets main run
+committee configs, either (a) port `spanCue.v1`/`deliveryGuard.v1`/the 5d
+smoke to main and then delete the branch, or (b) keep the branch as the
+frozen execution archive and mark it so. Deleting it as-is would destroy
+the only copy of the Phase 5d machinery. Left for that thread; this thread
+did not touch the branch.
