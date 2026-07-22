@@ -4360,6 +4360,17 @@ function renderInterimStatus(active) {
   ].join('');
 }
 
+function interimConcurrentTerminalIsVisible(active) {
+  const terminal = active.state?.concurrentTerminal;
+  return Boolean(terminal?.enabled && terminal.snapshot?.().surfaceVisible);
+}
+
+function clearRenderedInterimStatus(active) {
+  if (!active?.rendered) return;
+  if (active.renderTarget === 'concurrent') active.state.concurrentTerminal.clearStatus();
+  else clearStatusLine();
+}
+
 function startInterimAnimation(state, phase, context = null) {
   const interim = getInterimState(state);
   stopInterimAnimation(interim, { clear: true });
@@ -4376,15 +4387,20 @@ function startInterimAnimation(state, phase, context = null) {
     interval: null,
     paused: false,
     rendered: false,
+    renderTarget: null,
   };
   active.render = () => {
     if (active.paused) return;
     const rendered = `${renderInterimStatus(active)}${C.reset}`;
-    if (active.state?.concurrentTerminal?.enabled) {
+    if (interimConcurrentTerminalIsVisible(active)) {
+      if (active.renderTarget === 'direct') clearStatusLine();
       active.state.concurrentTerminal.setStatus(rendered);
+      active.renderTarget = 'concurrent';
     } else {
+      if (active.renderTarget === 'concurrent') active.state.concurrentTerminal.clearStatus();
       clearStatusLine();
       process.stdout.write(`${rendered}\r`);
+      active.renderTarget = 'direct';
     }
     active.rendered = true;
   };
@@ -4401,10 +4417,7 @@ function stopInterimAnimation(holder, { clear = true } = {}) {
   if (!active) return false;
   if (active.interval) clearInterval(active.interval);
   interim.active = null;
-  if (clear && active.rendered) {
-    if (active.state?.concurrentTerminal?.enabled) active.state.concurrentTerminal.clearStatus();
-    else clearStatusLine();
-  }
+  if (clear) clearRenderedInterimStatus(active);
   return true;
 }
 
@@ -4442,10 +4455,7 @@ function pauseInterimAnimation(holder) {
   if (active.interval) clearInterval(active.interval);
   active.interval = null;
   active.paused = true;
-  if (active.rendered) {
-    if (active.state?.concurrentTerminal?.enabled) active.state.concurrentTerminal.clearStatus();
-    else clearStatusLine();
-  }
+  clearRenderedInterimStatus(active);
   return true;
 }
 
@@ -23269,7 +23279,14 @@ async function main() {
       refreshPrompt: !deferOpeningForMixedPrelude,
     });
     if (deferOpeningForMixedPrelude) {
-      if (openingPrefetch) await openingPrefetch;
+      if (openingPrefetch) {
+        startInterimAnimation(state, 'preparing scenario', { tutorTurn: state.turns.length + 1 });
+        try {
+          await openingPrefetch;
+        } finally {
+          stopInterimAnimation(state);
+        }
+      }
       printInteractiveTutorOpening(opening);
     }
   } else if (resumedDialogue) {

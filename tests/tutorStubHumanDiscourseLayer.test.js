@@ -403,6 +403,121 @@ process.stdin.on('end', () => {
 });
 
 test(
+  'fresh mixed scenario animates while the opening learner artifacts are loading',
+  { skip: process.platform === 'win32', timeout: 10_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-scenario-loading-'));
+    const fakeCodex = path.join(tmp, 'codex');
+    fs.writeFileSync(
+      fakeCodex,
+      `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('-o');
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  const response = input.includes('# Mixed learner artifacts')
+    ? JSON.stringify({
+        move: 'ask_question',
+        clue: 'Ask which assay record would distinguish the two hands.',
+        answer: 'Which assay record would show whose hand worked the metal?',
+        profile_signal: 'Requests a specific evidentiary basis before making a conclusion.'
+      })
+    : '{}';
+  setTimeout(() => {
+    if (outputPath) fs.writeFileSync(outputPath, response);
+    process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+  }, 450);
+});
+`,
+      'utf8',
+    );
+    fs.chmodSync(fakeCodex, 0o755);
+
+    let terminalOutput = '';
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'continuous_dynamical_system',
+        '--world',
+        'world_005_marrick',
+        '--auto-learner-profile',
+        'diligent',
+        '--register-temperature',
+        '0.15',
+        '--dag-fact-dropout',
+        '0',
+        '--release-speed',
+        '1',
+        '--no-closeout-report',
+        '--no-stream',
+        '--no-trace',
+        '--no-remember-settings',
+      ],
+      {
+        cwd: ROOT,
+        cols: 120,
+        rows: 24,
+        name: 'xterm-color',
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          TERM: 'xterm-color',
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        },
+      },
+    );
+
+    try {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`scenario loading animation test timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 8_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!requestedExit && plain.includes('tutor >')) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`scenario loading animation exited ${exitCode}\n${plainTerminalText(terminalOutput)}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      const modeIndex = plain.indexOf('LEARNER mode');
+      const loadingIndex = plain.indexOf('preparing scenario');
+      const readyIndex = plain.indexOf('learner suggestion ready >');
+      const tutorIndex = plain.indexOf('tutor >');
+      assert.ok(modeIndex >= 0, plain);
+      assert.ok(loadingIndex > modeIndex, plain);
+      assert.ok(readyIndex > loadingIndex, plain);
+      assert.ok(tutorIndex > readyIndex, plain);
+      assert.match(plain, /preparing scenario ·\s*0\.[0-9]s/u);
+    } finally {
+      terminal.kill();
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'fresh TTY scenario and profile pickers scroll with arrow keys and select with Enter',
   { skip: process.platform === 'win32', timeout: 10_000 },
   async () => {
