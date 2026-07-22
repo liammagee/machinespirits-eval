@@ -179,6 +179,17 @@ Transcript and learning-summary HTML label every learner response and show
 session totals. Public tutor/learner speech and replay-JavaScript messages remain
 unchanged.
 
+## Long automated-learner dialogues
+
+Speaking calls normally replay the complete public dialogue in native roles.
+If that full replay would make the automated learner exceed its audited prompt
+budget, the learner call alone falls back to a recent tutor-led window. The
+first retained message states how many older public messages were omitted, and
+the latest tutor message is preserved. `--history-turns` sets the target size
+of this fallback window as well as the raw recent window in compact analysis
+prompts. Short runs, tutor calls, and every non-budget audit failure keep their
+existing behavior; the fallback never introduces private planner state.
+
 ## Terminal compatibility
 
 Color and motion activate only where the terminal supports them. Piped output,

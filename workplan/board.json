@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-22T13:41:01.559Z",
+  "generated": "2026-07-22T13:53:51.543Z",
   "counts": {
     "total": 134,
     "byStatus": {
-      "done": 112,
+      "done": 113,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 13,
+      "triaged": 12,
       "archived": 4
     },
     "byType": {
@@ -325,31 +325,6 @@
         "presentation",
         "authoring"
       ]
-    },
-    {
-      "id": "tutor-stub-learner-budget-overflow",
-      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Long until-grounded dialogues (affective_resistant, 25+ turns) no longer die on 'tutor_stub_auto_learner: character_budget_exceeded' — the learner seam truncates or summarizes its replayed history budget-aware before the audit — demonstrated by a re-run of a previously-failing seed sealing on first attempt, with a regression test on the truncation rule; fix applied to main and noted for any pinned-runtime successor.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "reliability"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
     },
     {
       "id": "refusal-defense-adjudication",
@@ -3405,6 +3380,31 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-learner-budget-overflow",
+      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The archived p5c-14 turn-32 prompt reproduces the exact 24,468-character auto-learner audit failure and re-audits at 6,986 characters after public-only windowing; a 10-turn no-model CLI regression crosses the budget at turn 9, completes with repeated recoveries and zero auto-learner audit failures; short-run full replay remains unchanged; the pinned-runtime successor cherry-pick is explicitly noted.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "reliability"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/steps1-2"
     },
     {
       "id": "unreliable-learner-prereg-completion",

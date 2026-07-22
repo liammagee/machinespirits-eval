@@ -308,6 +308,7 @@ import {
   tutorStubOpeningSystemPrompt,
 } from '../services/tutorStubOpening.js';
 import {
+  compactTutorStubPublicMessagesForBudget,
   tutorStubPublicMessageContext,
   tutorStubPublicMessagesForSpeaker,
 } from '../services/tutorStubPublicHistory.js';
@@ -1039,7 +1040,8 @@ Options:
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
   --history-turns <n>    raw recent turns kept in compact analysis prompts
-                         (speaker calls replay full role history; default: ${STUB.historyTurns})
+                         and the auto-learner overflow fallback (default: ${STUB.historyTurns});
+                         speaker calls otherwise replay full role history
   --show-prompt          print the system prompt before starting
   --dry-run              print resolved config and first payload, but do not call a model
   --help                 show this message
@@ -3596,12 +3598,13 @@ async function callPromptModel({
   cliEffort = null,
   turn = null,
   signal = null,
+  historyTurns = null,
 }) {
   let prompt = promptInput;
   let systemPrompt = systemPromptInput;
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && !stream?.deferOutput && providerSupportsStreaming(resolved));
-  const publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
+  let publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
     role: message?.role === 'assistant' ? 'assistant' : 'user',
     content: String(message?.content || ''),
   }));
@@ -3611,6 +3614,58 @@ async function callPromptModel({
     userPrompt: prompt,
     messageHistory: publicMessageHistory,
   });
+  const budgetViolationCodes = new Set(['character_budget_exceeded', 'approximate_token_budget_exceeded']);
+  const hasBudgetViolation = promptAudit.violations.some((violation) => budgetViolationCodes.has(violation.code));
+  if (role === 'tutor_stub_auto_learner' && hasBudgetViolation && historyTurns !== null) {
+    const originalAudit = promptAudit;
+    const nonHistoryText = [systemPrompt, prompt].filter(Boolean).join('\n\n');
+    const historyBoundaryChars = nonHistoryText ? 2 : 0;
+    const compaction = compactTutorStubPublicMessagesForBudget(publicMessageHistory, {
+      maxHistoryChars: Math.max(0, originalAudit.budget.maxChars - nonHistoryText.length - historyBoundaryChars),
+      recentTurns: historyTurns,
+    });
+    if (compaction.applied) {
+      publicMessageHistory = compaction.messages;
+      const recoveredAudit = auditTutorStubPrompt({
+        surface: tutorStubPromptSurfaceForRole(role),
+        systemPrompt,
+        userPrompt: prompt,
+        messageHistory: publicMessageHistory,
+      });
+      const budgetRecovered = recoveredAudit.violations.every(
+        (violation) => !budgetViolationCodes.has(violation.code),
+      );
+      appendTraceEvent(trace, {
+        type: 'prompt_audit_recovery',
+        role,
+        turn,
+        recovery: {
+          applied: budgetRecovered,
+          method: 'budget_window_public_history',
+          historyMode: compaction.historyMode,
+          availableMessageCount: compaction.availableMessageCount,
+          replayedMessageCount: compaction.replayedMessageCount,
+          omittedMessageCount: compaction.omittedMessageCount,
+          originalHistoryChars: compaction.originalChars,
+          replayedHistoryChars: compaction.replayedChars,
+          recentTurns: compaction.recentTurns,
+          maxHistoryChars: compaction.maxHistoryChars,
+          originalViolations: originalAudit.violations,
+        },
+        audit: recoveredAudit,
+      });
+      if (budgetRecovered) {
+        promptAudit = {
+          ...recoveredAudit,
+          recovery: {
+            applied: true,
+            method: 'budget_window_public_history',
+            omittedMessageCount: compaction.omittedMessageCount,
+          },
+        };
+      }
+    }
+  }
   // Backport of the Phase 5b Amendment-1 pinned-runtime patch
   // (committee-runtime-main-reconciliation): endgame dialogue naturally
   // repeats the verdict sentence across prompt sections, and a duplicate-only
@@ -12987,7 +13042,7 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     '# Dialogue context',
     '',
     hasTutorMessage
-      ? 'The complete public dialogue precedes this task as native chat messages. Tutor speech is `user`; your own earlier learner speech is `assistant`.'
+      ? 'The public dialogue precedes this task as native chat messages. Tutor speech is `user`; your own earlier learner speech is `assistant`. In a long run, an explicit omission marker may replace older turns while preserving the latest tutor-led window.'
       : 'There is no prior tutor message. Start by asking or stating what you would investigate first.',
     '',
     '# Task',
@@ -13028,6 +13083,7 @@ async function generateAutomatedLearnerTurn({
     cliEffort,
     turn: turnNumber,
     signal,
+    historyTurns: state.historyTurns,
   });
   return {
     ...raw,
@@ -13035,7 +13091,7 @@ async function generateAutomatedLearnerTurn({
     promptSnapshot: {
       systemPrompt,
       userPrompt: prompt,
-      messageHistory,
+      messageHistory: raw.promptSnapshot?.messageHistory || messageHistory,
       turn: turnNumber,
       promptAudit: raw.promptAudit,
     },
@@ -15811,6 +15867,13 @@ async function main() {
             roles: ['system', 'user', 'assistant'],
             directApiTransport: 'native_messages',
             cliTransport: 'flattened_at_bridge_boundary',
+            automatedLearnerBudgetFallback: {
+              enabled: true,
+              trigger: 'prompt_audit_budget_violation',
+              mode: 'budget_window_public_replay',
+              recentTurns: historyTurns,
+              publicOnly: true,
+            },
           },
           memorySummary: {
             enabled: memorySummaryEnabled,
@@ -16085,6 +16148,13 @@ async function main() {
         roles: ['system', 'user', 'assistant'],
         directApiTransport: 'native_messages',
         cliTransport: 'flattened_at_bridge_boundary',
+        automatedLearnerBudgetFallback: {
+          enabled: true,
+          trigger: 'prompt_audit_budget_violation',
+          mode: 'budget_window_public_replay',
+          recentTurns: historyTurns,
+          publicOnly: true,
+        },
       },
       opening: openingConfig,
       closeoutReport: { enabled: closeoutReportEnabled },

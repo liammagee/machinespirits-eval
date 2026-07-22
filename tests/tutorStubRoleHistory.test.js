@@ -38,6 +38,36 @@ process.stdin.on('end', () => {
   fs.chmodSync(fakeCodex, 0o755);
 }
 
+function installLongHistoryFakeCodex(tmp) {
+  const fakeCodex = path.join(tmp, 'codex');
+  fs.writeFileSync(
+    fakeCodex,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('-o');
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  const learnerMatch = input.match(/Write learner turn (\\d+)/u);
+  const tutorMatches = [...input.matchAll(/PUBLIC-OBSERVATION-(\\d+)/gu)];
+  const tutorTurn = tutorMatches.at(-1)?.[1] || '0';
+  const response = input.includes('# Public-safe opening frame')
+    ? 'The public inquiry is open. Which visible record should we inspect first?'
+    : learnerMatch
+      ? \`PUBLIC-OBSERVATION-\${learnerMatch[1]}: \${'The visible record remains incomplete and needs one more public check. '.repeat(24)}\`
+      : \`I see public observation \${tutorTurn}. Keep that visible record open while we test one bounded mark. Which public check follows at turn \${tutorTurn}?\`;
+  if (outputPath) fs.writeFileSync(outputPath, response);
+  process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+});
+`,
+    'utf8',
+  );
+  fs.chmodSync(fakeCodex, 0o755);
+}
+
 function traceEvents(tmp) {
   return fs
     .readdirSync(tmp)
@@ -47,7 +77,7 @@ function traceEvents(tmp) {
     .map((line) => JSON.parse(line));
 }
 
-test('automated learner replays the full public dialogue with learner-relative native roles', () => {
+test('short automated learner runs replay the full public dialogue with learner-relative native roles', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learner-role-history-'));
   try {
     installFakeCodex(tmp);
@@ -136,6 +166,80 @@ test('automated learner replays the full public dialogue with learner-relative n
       openingEvent.realization.requirements.map((row) => row.id),
       ['public_situation', 'public_question', 'available_evidence_only', 'observation_or_clarification'],
     );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('long automated learner runs recover budget overflow with a public recent-turn window', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learner-budget-history-'));
+  try {
+    installLongHistoryFakeCodex(tmp);
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--auto-learner',
+        '--auto-turns',
+        '10',
+        '--no-auto-stop-on-grounded',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-remember-settings',
+        '--loop-mode',
+        'diagnostic',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
+        encoding: 'utf8',
+        timeout: 20_000,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const events = traceEvents(tmp);
+    const recoveries = events.filter(
+      (event) =>
+        event.type === 'prompt_audit_recovery' &&
+        event.role === 'tutor_stub_auto_learner' &&
+        event.recovery?.method === 'budget_window_public_history',
+    );
+    assert.ok(recoveries.length >= 1, 'expected a long learner replay to cross the audited budget');
+    assert.equal(recoveries[0].turn, 9);
+    assert.equal(recoveries[0].recovery.applied, true);
+    assert.equal(recoveries[0].recovery.availableMessageCount, 17);
+    assert.equal(recoveries[0].recovery.replayedMessageCount, 9);
+    assert.equal(recoveries[0].recovery.omittedMessageCount, 8);
+    assert.ok(recoveries[0].recovery.originalViolations.some((row) => row.code === 'character_budget_exceeded'));
+    assert.equal(recoveries[0].audit.ok, true);
+    assert.equal(
+      events.some(
+        (event) => event.type === 'prompt_audit_failed' && event.role === 'tutor_stub_auto_learner',
+      ),
+      false,
+    );
+    assert.equal(events.filter((event) => event.type === 'turn_complete').length, 10);
+
+    const recoveredCall = events.find(
+      (event) => event.type === 'model_call' && event.role === 'tutor_stub_auto_learner' && event.turn === 9,
+    );
+    assert.equal(recoveredCall.request.messageHistory.length, 9);
+    assert.match(recoveredCall.request.messageHistory[0].content, /Earlier public dialogue omitted/u);
+    assert.equal(recoveredCall.request.messageHistory.at(-1).role, 'user');
+    assert.equal(recoveredCall.request.promptAudit.recovery.method, 'budget_window_public_history');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
