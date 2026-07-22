@@ -1038,6 +1038,297 @@
         "value": 162
       },
       "actual_value": 162
+    },
+    "paper2.program2.phase5d.e1d_committee_rate_0477": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.e1d.committee_v3",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.477
+      },
+      "actual_value": 0.477
+    },
+    "paper2.program2.phase5d.e1d_control_rate_0136": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.e1d.pooled_control",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.136
+      },
+      "actual_value": 0.136
+    },
+    "paper2.program2.phase5d.e1d_diff_0341": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.e1d.diff",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.341
+      },
+      "actual_value": 0.341
+    },
+    "paper2.program2.phase5d.e1d_ci_low": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.e1d.ci95[0]",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.223
+      },
+      "actual_value": 0.223
+    },
+    "paper2.program2.phase5d.e1d_ci_high": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.e1d.ci95[1]",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.457
+      },
+      "actual_value": 0.457
+    },
+    "paper2.program2.phase5d.m1_guard_eligible_cue_0867": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m1_guard_eligible_cue.rate",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.867
+      },
+      "actual_value": 0.867
+    },
+    "paper2.program2.phase5d.m1_bar_075": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m1_guard_eligible_cue.bar",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.75
+      },
+      "actual_value": 0.75
+    },
+    "paper2.program2.phase5d.m2_span_cue_0871": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m2_span_cue.rate",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.871
+      },
+      "actual_value": 0.871
+    },
+    "paper2.program2.phase5d.m2_bar_085": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m2_span_cue.bar",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.85
+      },
+      "actual_value": 0.85
+    },
+    "paper2.program2.phase5d.coverage_committee_0625": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.coverage.committee",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.625
+      },
+      "actual_value": 0.625
+    },
+    "paper2.program2.phase5d.coverage_control_0632": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.coverage.control",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.632
+      },
+      "actual_value": 0.632
+    },
+    "paper2.program2.phase5d.seam_accuracy_0550": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.seam.accuracy",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.55
+      },
+      "actual_value": 0.55
+    },
+    "paper2.program2.phase5d.safety_committee_050": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.safety.committee",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.5
+      },
+      "actual_value": 0.5
+    },
+    "paper2.program2.phase5d.safety_control_0625": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.safety.control",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.625
+      },
+      "actual_value": 0.625
+    },
+    "paper2.program2.phase5d.m1_passed_13": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m1_guard_eligible_cue.passed",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 13
+      },
+      "actual_value": 13
+    },
+    "paper2.program2.phase5d.m1_n_15": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m1_guard_eligible_cue.n",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 15
+      },
+      "actual_value": 15
+    },
+    "paper2.program2.phase5d.m2_passed_74": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m2_span_cue.passed",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 74
+      },
+      "actual_value": 74
+    },
+    "paper2.program2.phase5d.m2_n_85": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.m2_span_cue.n",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 85
+      },
+      "actual_value": 85
+    },
+    "paper2.program2.phase5d.seam_correct_22": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.seam.correct",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 22
+      },
+      "actual_value": 22
+    },
+    "paper2.program2.phase5d.seam_n_40": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.seam.n",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 40
+      },
+      "actual_value": 40
+    },
+    "paper2.program2.phase5d.seam_bar_065": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "path": "headline.seam.bar",
+        "sha256": "29cccb360425a9670ae01ed9f91eeca781deaf0eba8f6684c7c9c6ed3308e4d0",
+        "value": 0.65
+      },
+      "actual_value": 0.65
+    },
+    "paper2.program2.phase5d.e1d_verdict_pass": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"e1d\":\\s*\\{[\\s\\S]*?\"verdict\": \"PASS\"",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5d.m1_verdict_pass": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"m1_guard_eligible_cue\":\\s*\\{[\\s\\S]*?\"verdict\": \"PASS\"",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5d.m2_verdict_pass": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"m2_span_cue\":\\s*\\{[\\s\\S]*?\"verdict\": \"PASS\"",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5d.coverage_verdict_pass": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"coverage\":\\s*\\{[\\s\\S]*?\"verdict\": \"PASS \\(within -0\\.05\\)\"",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5d.seam_verdict_parity": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"seam\":\\s*\\{[\\s\\S]*?\"verdict\": \"PARITY\"",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5d.safety_verdict_fail": {
+      "updated_at": "2026-07-22T08:23:25.349Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json",
+        "pattern": "\"safety\":\\s*\\{[\\s\\S]*?\"verdict\": \"GUARDRAIL FAIL",
+        "match_count": 1
+      },
+      "actual_value": 1
     }
   }
 }

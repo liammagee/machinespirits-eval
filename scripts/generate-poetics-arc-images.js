@@ -257,6 +257,7 @@ function extractSections(html) {
       closeIndex,
       heading,
       id,
+      imageSkipped: getAttr(tag, 'data-arc-image') === 'skip',
       index: sections.length,
       kicker,
       openIndex: match.index,
@@ -312,7 +313,7 @@ function selectSectionsForPanels(sections, count) {
     for (const section of sections) {
       if (selected.length >= targetCount) break;
       if (selectedIds.has(section.id)) continue;
-      if (section.id === 'glossary') continue;
+      if (section.id === 'glossary' || section.imageSkipped) continue;
       selected.push(section);
     }
   }
@@ -328,7 +329,7 @@ function selectMainNumberedSections(sections) {
   return sections
     .filter((section) => {
       const number = section.sectionNumber;
-      return number && number.number > 0 && number.suffix === '';
+      return number && number.number > 0 && number.suffix === '' && !section.imageSkipped;
     })
     .sort((a, b) => a.openIndex - b.openIndex);
 }
@@ -670,7 +671,8 @@ function stripManagedImageBlocks(html) {
 
 function upsertManagedStyle(html) {
   const styleBlock = buildManagedStyleBlock();
-  const styleRe = /\/\* poetics-arc-images:style:begin \*\/[\s\S]*?\/\* poetics-arc-images:style:end \*\//;
+  const styleRe =
+    /^[ \t]*\/\* poetics-arc-images:style:begin \*\/[\s\S]*?^[ \t]*\/\* poetics-arc-images:style:end \*\/[ \t]*$/m;
   if (styleRe.test(html)) return html.replace(styleRe, styleBlock);
   const closeStyle = html.indexOf('</style>');
   if (closeStyle !== -1) {
@@ -730,7 +732,7 @@ function buildManagedStyleBlock() {
       gap: 0.3em;
     }
   }
-  /* poetics-arc-images:style:end */`.trimEnd();
+  /* poetics-arc-images:style:end */`.trim();
 }
 
 function buildFigureBlock(panel) {

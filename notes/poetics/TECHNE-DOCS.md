@@ -32,6 +32,15 @@ cp notes/poetics/techne-template.html notes/poetics/my-note.html
 Open `my-note.html` and edit the HTML. That's it — no rebuild. Reload the browser.
 Edit **design** in `assets/techne.css`, **behaviour** in `assets/techne.js` (changes apply to every doc).
 
+### Optional public-site skin
+
+Add `data-skin="machine-spirits"` to the root `<html>` element when a public note
+should match the main website's Swiss / neo-brutalist design. The skin uses the
+site's black, white, and `#E63946` red palette, Space Grotesk + Space Mono type,
+hard borders, grid ground, and offset shadows. It is opt-in; notes without the
+attribute keep the parchment editorial skin. The older `data-skin="stark"` skin
+remains available for dashboard framing.
+
 ## View
 
 - **Anywhere / offline**: open the `.html` file directly.

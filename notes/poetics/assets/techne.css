@@ -1277,3 +1277,272 @@
     .gl-term { border-bottom: none; }
     .gl-term::after, .gl-term::before { display: none; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }

@@ -1,26 +1,26 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-06-30T20:43:21.605Z
+Generated at: 2026-07-22T13:05:39.598Z
 Panel count: 9
 Format: png
 
 ## Text Analysis
 
-Title: From Paper 2.0 to dramatic recognition
-Description: The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This arc sharpens that broad null into a sharper stage: a tutor must walk a learner across a proof, one scheduled clue at a time, and answer a specific stuck point with a visible change of move. What we found is a tutor that can govern its own conduct — and two pacing guards that trade places from world to world.
-Top terms: tutor, learner, turn, grounded, hidden, guard, conduct, paper, proof, recognition, figure, move, secret, stage, turns, lesson, pacing, authority
+Title: How a tutor learned to change course
+Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
+Top terms: tutor, learner, rule, proof, answer, turn, lesson, move, hidden, check, completed, without, conduct, across, change, changed, paper, rhetorical
 
 Selected sections:
-- 01 #starting-point: The last paper gave us a flat average, and a question it could not answer. -> notes/poetics/images/dramatic-recognition-arc-01.png
-- 02 #the-stage: Stage the lesson as drama, and the hinge becomes the whole experiment. -> notes/poetics/images/dramatic-recognition-arc-02.png
-- 03 #derivation: The tutor must derive the next step, not recite the answer. -> notes/poetics/images/dramatic-recognition-arc-03.png
-- 04 #figure-authority: Conduct adapts to structure, not to atmosphere. -> notes/poetics/images/dramatic-recognition-arc-04.png
-- 05 #internal-superego: Move the critic inside the tutor, and the rule holds itself. -> notes/poetics/images/dramatic-recognition-arc-05.png
-- 06 #decay: The deficit was never response. It was detection. -> notes/poetics/images/dramatic-recognition-arc-06.png
-- 07 #calendar-repair: The tutor authored its own reversal — and a one-step rule saved the scene. -> notes/poetics/images/dramatic-recognition-arc-07.png
-- 08 #the-guards: Two guards. Three worlds. They trade places. -> notes/poetics/images/dramatic-recognition-arc-08.png
-- 09 #verdict: A tutor that governs its own conduct — and a claim kept deliberately small. -> notes/poetics/images/dramatic-recognition-arc-09.png
+- 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
+- 02 #the-stage: We made the turning point the whole experiment. -> notes/poetics/images/dramatic-recognition-arc-02.png
+- 03 #derivation: The tutor cannot give away the answer. It has to help the learner reach it. -> notes/poetics/images/dramatic-recognition-arc-03.png
+- 04 #figure-authority: “Be gentler” did not help. A clear rule did. -> notes/poetics/images/dramatic-recognition-arc-04.png
+- 05 #internal-superego: A small internal check made the tutor break its own habit. -> notes/poetics/images/dramatic-recognition-arc-05.png
+- 06 #decay: The tutor did not need more skill. It needed to notice the loss. -> notes/poetics/images/dramatic-recognition-arc-06.png
+- 07 #calendar-repair: One sensible early clue broke the lesson. One small rule repaired it. -> notes/poetics/images/dramatic-recognition-arc-07.png
+- 08 #the-guards: Two pacing rules helped. Which one helped depended on the shape of the lesson. -> notes/poetics/images/dramatic-recognition-arc-08.png
+- 09 #verdict: The tutor can govern parts of its conduct. The claim stays deliberately small. -> notes/poetics/images/dramatic-recognition-arc-09.png
 
 ## Prompts
 
@@ -28,8 +28,8 @@ Selected sections:
 
 Target image: notes/poetics/images/dramatic-recognition-arc-01.png
 HTML src: images/dramatic-recognition-arc-01.png
-Caption: Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.
-Alt: Editorial cartoon for The last paper gave us a flat average, and a question it could not answer.: a precise average-slope ruler laid across a darkened tutoring scene under venetia...
+Caption: Where we began: Paper 2.0 compared tutors prompted in different ways.
+Alt: Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a precise average-slope ruler laid across a darkened tutoring scene under venet...
 Visual metaphor: a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
 
 ```
@@ -39,8 +39,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-01.png
 Panel: 1 of 9
 Target article section: #starting-point
-Section heading: The last paper gave us a flat average, and a question it could not answer.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: The average stayed flat. We wanted to know what happened at the stuck point.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-01.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -55,13 +55,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The last paper gave us a flat average, and a question it could not answer. Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture. On the paper's own measure of adaptation — average turn-by-turn improvement across a multi-turn dialogue — neither lever moved the trajectory. It cannot see the one place teaching actually happens: a learner jammed on a specific point, and a tutor who either changes route to meet it or keeps restating the route that already failed.
+Paper 2.0 compared tutors prompted in different ways. Some were asked to treat the learner as a thinking partner; some used a draft-and-critique process; others did neither. Across a whole conversation, none of these changes made the tutor improve more from turn to turn. When a learner is stuck on one point, does the tutor try a genuinely different move, or repeat the old one in new words?
 
 Image concept:
 a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
 
 Caption this image will carry in the page:
-Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.
+Where we began: Paper 2.0 compared tutors prompted in different ways.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -76,8 +76,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-02.png
 HTML src: images/dramatic-recognition-arc-02.png
-Caption: The reframe: A scene has three beats: a stuck point, a turn, and a recognition.
-Alt: Editorial cartoon for Stage the lesson as drama, and the hinge becomes the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards lab...
+Caption: Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.
+Alt: Editorial cartoon for We made the turning point the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, reco...
 Visual metaphor: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
 
 ```
@@ -87,8 +87,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-02.png
 Panel: 2 of 9
 Target article section: #the-stage
-Section heading: Stage the lesson as drama, and the hinge becomes the whole experiment.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: We made the turning point the whole experiment.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-02.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -103,13 +103,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-A scene has three beats: a stuck point, a turn, and a recognition. The trick is to build a stage where we never have to infer the learner's mind — we hold it visible by design. The thing to be learned is a secret that sits several steps back in a proof-DAG; the learner's epistemic state is an explicit board the harness maintains; and the tutor's job is to schedule an information gradient that walks the learner to the secret. Success is mechanical: the learner asserts the secret and a symbolic checker finds it forced from their grounded premises that turn.
+The challenge was to make each beat visible without claiming we could infer a hidden mental state. So we gave the learner a formal proof to work through. The answer sat several steps away in a proof map, and the system kept an exact board of what the learner had already established. We could then watch whether its choices moved the learner toward the answer, step by step.
 
 Image concept:
 a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
 
 Caption this image will carry in the page:
-The reframe: A scene has three beats: a stuck point, a turn, and a recognition.
+Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -124,8 +124,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-03.png
 HTML src: images/dramatic-recognition-arc-03.png
-Caption: Teaching as a derivation: On this stage the secret is never spoken by the tutor.
-Alt: Editorial cartoon for The tutor must derive the next step, not recite the answer.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a...
+Caption: A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.
+Alt: Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a l...
 Visual metaphor: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
 
 ```
@@ -135,8 +135,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-03.png
 Panel: 3 of 9
 Target article section: #derivation
-Section heading: The tutor must derive the next step, not recite the answer.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: The tutor cannot give away the answer. It has to help the learner reach it.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-03.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -151,13 +151,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The tutor must derive the next step, not recite the answer. On this stage the secret is never spoken by the tutor. The tutor holds a release schedule — a calendar of clues — and the derivation distance ticks down as the learner grounds each premise. Recognition is D reaching zero by a forced step: the checker confirms the secret could not be anything else given what the learner now holds.
+As the learner establishes each fact, the remaining distance to the answer gets shorter. The run succeeds when that distance reaches zero and the answer follows from the learner's own board. If the tutor blurts out the answer, the checker rejects it as a lucky leap. If the tutor releases clues at the right pace, the learner reaches an answer the system can certify.
 
 Image concept:
 a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
 
 Caption this image will carry in the page:
-Teaching as a derivation: On this stage the secret is never spoken by the tutor.
+A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -172,8 +172,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-04.png
 HTML src: images/dramatic-recognition-arc-04.png
-Caption: The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...
-Alt: Editorial cartoon for Conduct adapts to structure, not to atmosphere.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only...
+Caption: The first surprise: Left to itself, the tutor fell into a rut.
+Alt: Editorial cartoon for “Be gentler” did not help. A clear rule did.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thi...
 Visual metaphor: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
 
 ```
@@ -183,8 +183,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-04.png
 Panel: 4 of 9
 Target article section: #figure-authority
-Section heading: Conduct adapts to structure, not to atmosphere.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: “Be gentler” did not help. A clear rule did.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-04.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -199,13 +199,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-Conduct adapts to structure, not to atmosphere. Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times in ten. Under advisory notes the tutor leans on the same figure 94% of the time and the switch rate collapses to 0.07. Give the tutor explicit figure authority — jurisdiction over which device it is using — and the top figure drops to 31–41%, four or five distinct figures appear, and the switch rate jumps to 0.81–0.87.
+Left to itself, the tutor fell into a rut. The tutor used the same move 94% of the time, and its switch rate fell to 0.07. The rut broke only when the tutor had to name and choose its rhetorical move. The proof itself stayed identical in every condition: the learner reached the answer at turn 32, and all 11 clues arrived on schedule.
 
 Image concept:
 a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
 
 Caption this image will carry in the page:
-The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...
+The first surprise: Left to itself, the tutor fell into a rut.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -220,8 +220,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-05.png
 HTML src: images/dramatic-recognition-arc-05.png
-Caption: Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.
-Alt: Editorial cartoon for Move the critic inside the tutor, and the rule holds itself.: an empty director chair offstage in stage haze while a small lamplit watcher is installed insid...
+Caption: Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
+Alt: Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside...
 Visual metaphor: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
 
 ```
@@ -231,8 +231,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-05.png
 Panel: 5 of 9
 Target article section: #internal-superego
-Section heading: Move the critic inside the tutor, and the rule holds itself.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: A small internal check made the tutor break its own habit.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-05.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -247,13 +247,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-Move the critic inside the tutor, and the rule holds itself. The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction. And it travelled: seven serialized paid runs, every one grounded at its planned forcing turn (7 / 7), 56 of 56 releases on cue, holding across three named worlds and even when the learner was re-voiced as a different persona (a 33% top-figure share where advisory steering had failed in two channels and two model families). Advisory → criterial the boundary that holds A vague instruction cannot govern conduct; a criterial watcher with a sharp jurisdiction can.
+A small internal check made the tutor break its own habit. An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself. It also held across seven paid runs: 7 / 7 reached the answer at the planned turn, with 56 of 56 clues released on time, across three worlds and a re-voiced learner. Advice → rule the boundary that holds A vague suggestion did not govern the tutor's conduct.
 
 Image concept:
 an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
 
 Caption this image will carry in the page:
-Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.
+Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -268,8 +268,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-06.png
 HTML src: images/dramatic-recognition-arc-06.png
-Caption: The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.
-Alt: Editorial cartoon for The deficit was never response. It was detection.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reac...
+Caption: The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.
+Alt: Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fa...
 Visual metaphor: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
 
 ```
@@ -279,8 +279,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-06.png
 Panel: 6 of 9
 Target article section: #decay
-Section heading: The deficit was never response. It was detection.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: The tutor did not need more skill. It needed to notice the loss.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-06.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -295,13 +295,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra. To find a channel that mattered we had to make the learner unreliable — a harness that silently corrupts entries on the learner's board, a decay ledger it cannot self-report. Then we gave one tutor sight of which entries had slipped, and kept it from another. The tutor that could see the fade repaired slips at a rate of 0.86, selected 28 repairs across the run, and finished 4 of 6 proofs.
+The simulated learner usually said enough for the tutor to infer what was happening. To create a genuinely hidden problem, we made the learner forget facts silently. One tutor could see the forgetting record; another could not. The tutor that could see the loss repaired slips at 0.86, chose 28 repairs, and completed 4 of 6 proofs.
 
 Image concept:
 a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
 
 Caption this image will carry in the page:
-The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.
+The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -316,8 +316,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-07.png
 HTML src: images/dramatic-recognition-arc-07.png
-Caption: Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.
-Alt: Editorial cartoon for The tutor authored its own reversal — and a one-step rule saved the scene.: a clue-release calendar pinned to a noir investigation board, the tutor pulling o...
+Caption: Handing over the calendar: We then let the tutor decide when to release clues.
+Alt: Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue-release calendar pinned to a noir investigation board, the tutor pulling one ca...
 Visual metaphor: a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
 
 ```
@@ -327,8 +327,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-07.png
 Panel: 7 of 9
 Target article section: #calendar-repair
-Section heading: The tutor authored its own reversal — and a one-step rule saved the scene.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: One sensible early clue broke the lesson. One small rule repaired it.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-07.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -343,13 +343,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The tutor authored its own reversal — and a one-step rule saved the scene. Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal. Responding to a learner who said "I already know what bearing means," the tutor released a clue one turn early — turn 3 instead of the scheduled turn 4. That single shift moved the exhibit's decay-exposure window, the stall clock rang aporia at turn 8, and the scene died — where the control, releasing on cue, grounded at turn 20.
+We then let the tutor decide when to release clues. A learner said, “I already know what bearing means,” so the tutor moved one clue from turn 4 to turn 3. The control, which kept to the schedule, reached the answer at turn 20. At turn 7 the tutor checked an earlier fact.
 
 Image concept:
 a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
 
 Caption this image will carry in the page:
-Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.
+Handing over the calendar: We then let the tutor decide when to release clues.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -364,8 +364,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-08.png
 HTML src: images/dramatic-recognition-arc-08.png
-Caption: Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.
-Alt: Editorial cartoon for Two guards. Three worlds. They trade places.: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden de...
+Caption: Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.
+Alt: Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: two hard-edged lanterns over a forked stage, one lantern reading the page sur...
 Visual metaphor: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
 
 ```
@@ -375,8 +375,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-08.png
 Panel: 8 of 9
 Target article section: #the-guards
-Section heading: Two guards. Three worlds. They trade places.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: Two pacing rules helped. Which one helped depended on the shape of the lesson.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-08.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -391,13 +391,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence. The mechanism is mundane: the model's instinct is to pull clues early (20 of 281 releases ran ahead of cue; none ran late), and early pulls land in the schedule's fatal cells. One guard reads the hidden proof state — derivation distance and decay-stall — and is blind by construction to everything else: it never sees the secret, the board, or the proof path. The other reads only the page: turns since the last release, learner echoes, hedging and length.
+Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets. The hidden rule chased it and completed only 1 of 5; the page-only rule noticed the learner drifting and completed 5 of 5 (Fisher p = 0.024). Panel 08 Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets. Which one helped depended on the shape of the lesson.
 
 Image concept:
 two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
 
 Caption this image will carry in the page:
-Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.
+Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -412,8 +412,8 @@ Return a short final note listing the created file.
 
 Target image: notes/poetics/images/dramatic-recognition-arc-09.png
 HTML src: images/dramatic-recognition-arc-09.png
-Caption: The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...
-Alt: Editorial cartoon for A tutor that governs its own conduct — and a claim kept deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, and o...
+Caption: What we can honestly say: The tutor can govern parts of its conduct.
+Alt: Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, an...
 Visual metaphor: a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
 
 ```
@@ -423,8 +423,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-09.png
 Panel: 9 of 9
 Target article section: #verdict
-Section heading: A tutor that governs its own conduct — and a claim kept deliberately small.
-Article title: From Paper 2.0 to dramatic recognition
+Section heading: The tutor can govern parts of its conduct. The claim stays deliberately small.
+Article title: How a tutor learned to change course
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-09.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
@@ -439,13 +439,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-A tutor that governs its own conduct — and a claim kept deliberately small. So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, in advance, a world where the reliable policy should lose. Open / killed Adaptive selection, not yet No selector beats always-hidden-plus-proof-debt; the clever ones negative-transfer. Five edges the headline travels with "A tutor can adapt its conduct on a long proof" is a real claim, and a small one.
+The tutor can govern parts of its conduct. So the current conclusion is modest: the hidden-state rule plus unfinished proof work is a reliable baseline; adaptive switching between signals is not established. The useful gains came from seeing missing evidence and enforcing small rules, not from asking the tutor to choose a more elaborate strategy. Five limits travel with that headline “A tutor can adapt parts of its conduct on a long proof” is a real but narrow claim:.
 
 Image concept:
 a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
 
 Caption this image will carry in the page:
-The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...
+What we can honestly say: The tutor can govern parts of its conduct.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.

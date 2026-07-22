@@ -1,14 +1,14 @@
 ---
 id: program-2-phase5d-second-transfer-world
-title: "Program-2 Phase 5d: second transfer world (letter-hostile probe)"
+title: "Program-2 Phase 5e: second transfer world (letter-hostile probe)"
 status: triaged
 type: experiment
 priority: P2
-owner: claude
+owner: unassigned
 source: manual
 created: 2026-07-22
 updated: 2026-07-22
-verification: "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1d (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms."
+verification: "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1e (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms."
 claim_status: exploratory
 links:
   paper: §6.21, §7.12
@@ -24,7 +24,6 @@ tags:
   - move-library
   - cross-world-transfer
 milestone: adaptive-tutor-evidence-v1
-branch: claude/program-2-terra-composer-probe
 ---
 
 Second point on the transfer curve, aimed at the one live objection 5c
@@ -33,7 +32,7 @@ English natively speaks the frozen six-word cue rule ("record" above
 all), lifting BOTH arms' compliance floors (control 0.306 there vs
 0.150–0.160 on Marrick). The committee's edge held on top, but a skeptic
 can ask whether the specialist wins only on worlds that already talk like
-the audit. Phase 5d picks the *letter-hostile* sibling — minimum native
+the audit. Phase 5e picks the *letter-hostile* sibling — minimum native
 frozen-six density — so the mini must BRING the cue-bearing form rather
 than find the vocabulary lying around. Pass = second zero-retraining
 validation, on hostile ground (move-library concept strengthens from
@@ -52,10 +51,13 @@ at a time; the only moved variable is the world.
 ## Runbook (step-by-step; paid steps gated on the committed prereg)
 
 **0. Preconditions (free).**
-- Check `notes/program-2/HANDOFF.md` for pinned-worktree ownership claims;
-  `git -C ../ms-phase5-pinned status` must be clean, HEAD descended from
-  e9b01bdd (91b8a50e lineage). NEVER run on today's main stack (Phase 5
-  Amendment 1 — guard-regime incompatibility).
+- Create a fresh isolated experiment worktree from then-current `main` and
+  confirm that it contains the post-PR-150 Program-2 runtime reconciliation.
+  The archived Phase 5 runtime is provenance only: do not resurrect
+  `../ms-phase5-pinned` as an execution line. Freeze the fresh worktree's exact
+  SHA before any paid call. This card deliberately reuses the Phase 5b/5c
+  committee-v2 + fallback-v2 design; committee-v3 is out of scope unless a
+  separate preregistration changes the causal question.
 - `claude auth status` — the CLI logged itself out between 5b and 5c;
   probe BEFORE building anything. `codex` probe too at step 6.
 - Confirm ollama serves `program2-sft-instruct-v2`
@@ -70,7 +72,7 @@ at a time; the only moved variable is the world.
 - Letter-hostility metric, mechanical: count frozen-six word-boundary
   matches (evidence|item|test|record|fact|rule, + 's/es suffixes) in the
   full world-YAML prose (stage, glosses, premise text) per 1k words, via
-  a 10-line node script against the pinned worktree's
+  a 10-line node script against the fresh experiment worktree's
   `config/drama-derivation/*.yaml`. Rank ascending. NOTE greyfen-lab is
   likely disqualified ("test" is native lab vocabulary — measure, don't
   assume); gazette scored high on "record", which is the confound this
@@ -83,7 +85,7 @@ at a time; the only moved variable is the world.
   with all measured numbers.
 
 **2. Write + freeze the prereg (free).**
-`PROGRAM-2-PHASE5D-SECOND-TRANSFER-PREREGISTRATION.md`, modeled §-for-§
+`PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md`, modeled §-for-§
 on 5c's: §1 question (letter-hostility), §2 artifact (same clause, KTO
 moot per close-out), §3 world selection (measured table), §4 design —
 10 committee-v2 (2 profiles × 5) + 8 fresh controls (2 × 4), plan/stub
@@ -91,7 +93,7 @@ seed = launch date YYYYMMDD, NO pooling with any prior controls
 (5/5b/5c all excluded — different worlds), same paid-smoke clause
 (`--auto-turns 8`, separate smoke root, GO = ≥1 committee moment with
 non-empty mini + ≥1 extractable span + zero serving errors), §5
-endpoints — E1d frozen v1 audit CI > 0 (dialogue-cluster bootstrap,
+endpoints — E1e frozen v1 audit CI > 0 (dialogue-cluster bootstrap,
 5,000 draws, seed = plan seed, profile-stratified); coverage ≥ control
 − 0.05; safety ≥ control − 0.10; density ≥ 15 committee opportunities
 with proof_skipper contributing; seam harness verbatim ≤ 0.65
@@ -108,31 +110,28 @@ Lambda, no training, out-of-scope list (any artifact change, span-v2,
 pooling, additional worlds).
 
 **3. Machinery (free).**
-- Runner: add `PHASE5D_SPEC` (world, seed, 5+4/4+4 repeats, fallback
-  'v2') + `buildPhase5dLivePilotPlan` + `validatePhase5dLivePilotPlan` +
-  a `'5d'` row in main()'s planTable — the world is already
-  parameterized in `commandForJob` (4bb1253f), so this is the 5c block
-  copied with new constants. Root `exports/program2-live-pilot-5d`.
-- Analyzer: copy `scripts/analyze-program2-live-pilot-5c.mjs` → `-5d.mjs`;
+- Runner: add `PHASE5E_SPEC` (world, seed, 5+4/4+4 repeats, fallback
+  'v2') + `buildPhase5eLivePilotPlan` + `validatePhase5eLivePilotPlan` +
+  a `'5e'` row in main()'s planTable — the world is already
+  parameterized in `commandForJob`, so this is the 5c block copied with new
+  constants. Root `exports/program2-live-pilot-5e`.
+- Analyzer: copy `scripts/analyze-program2-live-pilot-5c.mjs` → `-5e.mjs`;
   change BOOT_SEED (= plan seed), TRANSFER_WORLD default, schema string;
   add the native frozen-six density count. Validate by pointing it at
   the sealed 5c root (extraction paths must reproduce 5c's committee
   31/61 and component rates; CI differs — seed differs — that is
   expected and says so in the validation note).
-- Zero-model gate both checkouts:
-  `node scripts/run-program2-live-pilot.js --dry-run --plan 5d` (main
-  repo, then pinned worktree) — expect 18 jobs, world flag on every
+- Zero-model gate the experiment checkout:
+  `node scripts/run-program2-live-pilot.js --dry-run --plan 5e` — expect 18
+  jobs, world flag on every
   command, fallback v2 on committee only. Regression: rebuild 5/5b/5c
   plans with the same `--output-dir`, planSha256 must be byte-identical
   pre/post change.
 
 **4. Freeze commit (before ANY paid call).**
-Commit prereg + runner + analyzer on the program-2 line; port-commit the
-runner + analyzer in `../ms-phase5-pinned` (branch
-claude/program-2-phase5-pinned-runtime); record the pinned HEAD — that
-SHA is the launch gate. `git pull` before each commit (three sessions
-have switched the shared checkout mid-run; do cross-branch work in temp
-worktrees only).
+Commit prereg + runner + analyzer in the fresh experiment worktree and record
+that exact HEAD — it is the launch gate. Do not port the change to the archived
+Phase 5 runtime. Recheck the worktree branch immediately before committing.
 
 **5. Paid gate sequence (in order; abort on any failure).**
 - ollama preflight (again — the launcher also runs it).
@@ -140,18 +139,18 @@ worktrees only).
   a two-message prompt in the NEW world's register with the side-coach
   warrant block appended; expect exactly-one-question span, ~7–15 s
   (also loads the model into RAM so dialogue 1 avoids a cold start).
-- One-call quota probes via the pinned worktree's
+- One-call quota probes via the experiment worktree's
   `services/cliProviderBridge.js`: claude-code/claude-sonnet-5 and
   codex/gpt-5.6-terra, "Reply OK".
 - Paid smoke: the first committee job's command with `--auto-turns 8`,
   `--eval-job-id smoke-01`, `--trace-dir
-  exports/program2-live-pilot-5d-smoke/traces/smoke-01`; verify GO
+  exports/program2-live-pilot-5e-smoke/traces/smoke-01`; verify GO
   criteria from the trace (parse `program2_committee_moment` events).
   Smoke fail → abort, report; serving fixes only.
 
 **6. Launch (attended).**
-`node scripts/run-program2-live-pilot.js --plan 5d --launch-approved
---expected-sha <pinned HEAD>` in `../ms-phase5-pinned`, backgrounded
+`node scripts/run-program2-live-pilot.js --plan 5e --launch-approved
+--expected-sha <experiment HEAD>` in the fresh experiment worktree, backgrounded
 with a monitor on `^\[phase5\]` log lines (progress N/18, `attempt N
 failed`, abort, `launch pass complete`). HANDOFF begin note when
 dialogues start. Known failure signature: `Prompt audit failed for
@@ -163,11 +162,11 @@ resume on relaunch.
 **7. Close-out.**
 - Analyzer `--json`; seam review from the MAIN repo:
   `node scripts/program2-seam-review.mjs --pilot-root
-  ../ms-phase5-pinned/exports/program2-live-pilot-5d --live --json ...`
+  <experiment-worktree>/exports/program2-live-pilot-5e --live --json ...`
   (40 reviewer calls).
 - Archive `cp -R` the export root + smoke to
-  `~/.machinespirits-data/program-2/phase5d-live/`.
-- Manifest `config/adaptive-tutor-evidence/program-2-phase5d.manifest.json`
+  `~/.machinespirits-data/program-2/phase5e-live/`.
+- Manifest `config/adaptive-tutor-evidence/program-2-phase5e.manifest.json`
   WITH per-artifact sha256+bytes blocks (the 5c claim audit caught the
   missing hashes — sibling convention is mandatory).
 - Results addendum §9 in the prereg; HANDOFF seal note (next free H
@@ -177,6 +176,12 @@ resume on relaunch.
 - Paper fold as its own commit (§6.21 fourth movement or §6.21
   addendum), version bump + revision entry, three validators, then the
   paper-claim-auditor agent on the diff before pushing.
+
+2026-07-22 Codex: Migrated this unstarted probe from the now-completed Phase 5d
+name to Phase 5e and removed the retired pinned-runtime instructions. The
+stable card ID is retained for board links; the title, endpoint, artifacts, and
+runbook now identify Phase 5e. Any launch starts from a fresh current-main
+worktree and requires a new explicit authorization gate.
 
 Cost: one evening of Max-plan sonnet + codex terra quota; local mini
 free; NO Lambda, NO training. Both outcomes land in the paper.

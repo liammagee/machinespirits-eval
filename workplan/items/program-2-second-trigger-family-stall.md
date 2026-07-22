@@ -4,7 +4,7 @@ title: "Program-2: second trigger family — stall-breaking specialist (stagnant
 status: triaged
 type: experiment
 priority: P2
-owner: claude
+owner: unassigned
 source: manual
 created: 2026-07-22
 updated: 2026-07-22
@@ -26,7 +26,6 @@ tags:
   - stagnant-repeat
   - lambda
 milestone: adaptive-tutor-evidence-v1
-branch: claude/program-2-terra-composer-probe
 ---
 
 The move-library's second book. 5c generalized the warrant specialist
@@ -156,9 +155,9 @@ move-not-trainable; either closes the offline question and the card
 reports — no tune-and-retry from the freeze.
 
 **Phase 6 — live wiring + committee-stall pilot (CLI quota; own go).**
-- Stub change in the PINNED worktree lineage: committee activation is
-  hard-gated on `assigned_trigger === 'warrant_skip'` (tutor-stub.js
-  ~line 9782 at fed34fd0/e9b01bdd); add a `--committee-triggers` flag
+- Stub change in a fresh isolated experiment worktree from then-current
+  `main`: locate the committee activation seam by symbol (not an archived line
+  number or SHA). Add a `--committee-triggers` flag
   (default warrant_skip — 5b/5c behavior byte-preserved), the stall
   activation instruction from the coaching service's sha-pinned
   `TARGET_TEXT.stagnant_repeat`, and the span/battery semantics frozen
@@ -194,3 +193,8 @@ the live pilot + everything else local/free. Kill criteria are cheap
 and early (Phase 0 floor, Phase 1 auditability), and every future 5x
 run grows the stall corpus for free — a Phase-0 miss today is not
 permanent.
+
+2026-07-22 Codex: Removed the retired Phase 5 branch assumption. This remains a
+triaged, separately licensed research program; if activated, it starts from a
+fresh isolated current-main worktree and freezes that experiment's SHA. Archive
+tags remain evidence provenance, not a maintained runtime.

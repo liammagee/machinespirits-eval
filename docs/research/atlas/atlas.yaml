@@ -11,7 +11,7 @@
 
 atlas:
   title: "Geist in the Machine"
-  subtitle: "A Research Atlas of Dialectical Agent Pedagogy"
+  subtitle: "What Helps an AI Tutor Teach — and What Doesn't"
   source: paper-full-2.0.md
 
   # PROSE BELOW IS SHARED by two consumers: the web hub
@@ -21,160 +21,131 @@ atlas:
   # (and thus a paper §). Add no new numbers; this is framing, not new evidence.
 
   orientation: |
-    A research programme testing whether an AI tutor teaches better when you change
-    its *inner structure* — not the model it runs on — and sorting which of those
-    structures genuinely help from the ones that only look like they do.
+    This project asks a straightforward question: can an AI tutor teach better if we
+    change how it prepares an answer, rather than simply giving it a larger model?
 
-    Most AI tutors are a single model answering a single prompt. This work gives the
-    tutor an *interior* and watches what changes: a part that drafts a reply, a second
-    part that criticises that draft before the learner ever sees it, and an orientation
-    that treats the learner as a thinking subject to be met rather than a deficit to be
-    filled. The wager is that this internal architecture — dialogue, self-critique,
-    recognition — produces better teaching than raw capability alone.
+    We tried several ways of doing that. We gave the tutor an internal critic. We asked
+    it to treat the learner as a thinking partner rather than an empty vessel. We gave
+    it explicit records, pacing rules, strategy prompts, and — later — a small trained
+    model responsible for one narrow teaching move.
 
-    The atlas is organised around a plain result: some of the architecture works, some
-    of it is redundant, and some of it only looks like it works. Read this page for the
-    whole story in plain terms; open any module below for the detail; or take the
-    consolidated paper for the entire argument, end to end.
+    The answers are mixed, which is exactly why the atlas exists. Some changes help.
+    Some duplicate work the model already knows how to do. Some alter the tutor's
+    behaviour without improving the lesson. This page tells the whole story at a human
+    scale. Open a module when you want the evidence and technical detail.
 
   core_idea: |
-    **An interior for the tutor.** Two ideas, both borrowed from philosophy, do the
-    heavy lifting — and both are easier to grasp from the everyday version first.
+    **Give the tutor a second look.** Two ideas started the programme.
 
-    The first is *self-critique*. Instead of a tutor that says the first thing it
-    generates, picture one with two voices: a drafter that proposes a reply, and an
-    internal critic that reads the draft and asks "is that actually sound? what is it
-    missing?" before anything reaches the learner. We borrow Freud's names — the *ego*
-    (the drafter, which keeps final say) and the *superego* (the critic) — but the
-    mechanism is simply structured self-revision. The same structure can be given to
-    the simulated learner, so both sides of the dialogue deliberate before they speak.
+    The first is self-critique. Instead of sending the first answer it produces, the
+    tutor drafts a reply, lets an internal critic ask what is wrong or missing, and then
+    revises. We use Freud's names — *ego* for the drafter and *superego* for the critic —
+    but the everyday idea is simply “check your work before you speak.”
 
-    The second is *recognition*. A tutor can treat a learner as a container to be
-    filled, or as a thinking subject whose reasoning — including the mistakes — is
-    worth meeting on its own terms. The second stance comes from Hegel's account of
-    *mutual recognition*: one becomes a full subject by being recognised as one. Turned
-    into a prompt, recognition means eliciting and building on the learner's own
-    thinking rather than overwriting it. A central question is whether the philosophical
-    *vocabulary* matters, or whether it is the plain orientation underneath that works.
+    The second is recognition. A tutor can treat a learner as a gap to be filled, or as
+    a person whose reasoning is worth meeting — mistakes included. In practice that
+    means asking for the learner's thinking and building from it, rather than writing
+    over it. The philosophical source is Hegel, but one of our main questions was
+    whether the philosophy words mattered at all.
 
-    Holding both ideas lets us ask precise questions. Does the critic catch real
-    errors, or just add words? Does recognition change the teaching, or only the tone?
-    Does modelling the learner's hidden state help, or is the appearance of
-    "understanding the learner" an artifact of how the dialogue was logged? The three
-    families below are the three answers.
+    From there the questions became concrete. Does the critic catch real mistakes?
+    Does the learner-facing stance improve the answer or merely change the tone? Does a
+    detailed model of the learner add anything the tutor cannot already infer? And when
+    advice fails to change behaviour, can a small model be trained to own one move?
 
   families_intro: |
-    The findings sort into three families. Each carries a *claim-status* — a one-word
-    commitment to how firm the result is (the full grammar is further down). Here is
-    the shape of the results before the detail.
+    The findings fall into three broad families. Each label says how firmly we can hold
+    the result. Here is the short version before the detail.
 
   findings:
-    - family: "Recognition works like calibration"
+    - family: "Meeting the learner raises the floor"
       verdict: settled
       body: |
-        Recognition-oriented prompting behaves like *calibration*: it lifts a tutor's
-        weakest dimensions the most and narrows the variation within a response —
-        raising the floor more than the ceiling. It works with or without the separate
-        critic, and — the part that surprised us — it works just as well when the
-        Hegelian vocabulary is stripped out and replaced with a plainly-worded
-        pedagogical orientation. The active ingredient is the stance, not the
-        theory-words. The critic, for its part, does catch and correct real errors.
+        Asking the tutor to meet the learner's reasoning improves the weakest parts of
+        its answer most and makes the answer more even. The effect remains when the
+        Hegelian vocabulary is replaced with plain teaching language. The useful part
+        is the stance toward the learner, not the theory words. The internal critic also
+        catches and corrects real errors.
       caveat: >-
-        The critic's *extra* benefit beyond recognition is model-dependent: large on
-        weaker models, close to zero on strong ones. On a capable model, recognition
-        alone captures most of the gain.
-    - family: "Drama and charisma — voice as an instrument"
+        The critic adds much more on weaker models than on stronger ones. With a capable
+        model, the learner-facing stance already captures most of the gain.
+    - family: "Voice and drama can help — and crowd the learner out"
       verdict: exploratory
       body: |
-        A parallel line gives the tutor a charismatic, performed voice — a durable
-        "id" that repeatedly authors a fresh speaking persona — and scores it on a
-        separate charisma rubric. It can produce an extraordinary pedagogical presence.
-        The open question is whether *productive internal conflict* can be engineered as
-        a stable source of teaching quality, rather than merely role-played.
+        A parallel line gives the tutor a strong, performed voice and measures that
+        presence separately from ordinary teaching quality. The design can produce a
+        striking tutor voice. We are still testing whether productive internal tension
+        can become a reliable teaching resource rather than just convincing role-play.
       caveat: >-
-        Charismatic voice trades off against recognition-style elicitation — the most
-        charismatic tutors are not the best at drawing the learner out. This family is
-        an active arc, not a settled result; its main section is scaffolded, with prose
-        still landing in the paper.
-    - family: "A rich learner-interior did not help"
+        Strong performance can crowd out the learner: the most charismatic tutors were
+        not the best at drawing out the learner's own thinking. This line remains exploratory.
+    - family: "More machinery often changed behaviour, not outcomes"
       verdict: killed
       body: |
-        The deepest line asks whether the tutor benefits from carrying a rich, explicit
-        model of the learner's hidden interior — externalised state, theory-of-mind
-        elaborations, counterfactual replay of what a different move would have done.
-        The answer, repeatedly, was no: these elaborations came out null against a lean
-        baseline that simply lets the model infer the learner implicitly.
+        We gave the tutor increasingly detailed records of the learner, asked it to
+        imagine alternative moves, prompted it to choose strategies, and routed its
+        speaking stance. These additions often made the tutor act differently, but they
+        did not reliably improve the lesson against a leaner baseline.
       caveat: >-
-        An early apparent win for the structured architecture turned out to be a
-        turn-counting artifact; once it was fixed and the baseline re-run, the gap fell
-        to within noise. The durable contribution from this family is the *method* —
-        the trap scenarios and the adaptive runner — not a modelable interior.
+        One early advantage disappeared after a turn-counting error was fixed. The
+        durable contribution is the testing method — especially the trap scenarios,
+        explicit checks, and delivery audits — rather than a richer model of the learner.
 
   maps:
     methodological: |
-      A claim about a mechanism is only as good as the apparatus that tests it, and
-      several pieces of that apparatus are contributions in their own right.
+      The checking system matters as much as the ideas being tested.
 
-      **Provable discourse.** Every mechanism claim in the paper is machine-checked
-      against the evaluation database before it is allowed to stand: the number in the
-      prose and the number in the data must agree, or the build complains. This atlas is
-      generated from that same source, so it cannot quietly drift from the evidence.
+      **The numbers check themselves.** Important claims in the paper are tied to the
+      stored evidence. If the paper's prose and data disagree, validation fails. This
+      atlas is hand-written from that paper, so every module names its source sections
+      and the empirical wording receives a separate claim audit before release.
 
-      **Process tracing.** Rather than only scoring the final answer, the apparatus
-      records the tutor's internal steps — draft, critique, revision — so we can ask not
-      just whether a method helped but *why*, and watch a critique get incorporated turn
-      by turn.
+      **We keep the working, not just the answer.** Drafts, critiques, revisions, and
+      delivery paths are recorded. That lets us ask why something helped, where it was
+      lost, and whether the learner actually received the text that passed the check.
 
-      **Rubrics as instruments.** The scoring rubric went through four iterations, and
-      we treat that evolution as construct development — working out what "good
-      tutoring" even means to measure — rather than incidental tooling. The same rubric
-      doubles as a signal for automatically tuning prompts, with gains that transfer
-      unevenly across models.
+      **The ruler is part of the research.** The tutoring rubric changed over four
+      versions as we learned what “good tutoring” should mean in measurable terms. We
+      treat that as part of the method, not as background maintenance.
     evidence: |
-      The modules below are slices of the one paper, each tagged with its claim-status.
-      Filter them by status, or open any one as a self-contained PDF. The grid is
-      generated from the manifest, so a status change propagates here automatically.
+      Each module below opens one part of the paper. Filter by status, browse the short
+      summaries, or open a PDF for the full evidence. The page and the PDFs come from
+      the same map, so their labels stay together.
 
   glossary:
     "Ego / superego": >-
-      Two internal voices given to the tutor (and optionally the learner): an *ego*
-      that drafts and keeps final say, and a *superego* that critiques the draft first.
-      Borrowed from Freud as names; mechanically, structured self-revision.
+      Our names for the drafter and the internal critic. The drafter keeps final say;
+      the critic checks the draft before it reaches the learner.
     "Recognition": >-
-      Treating the learner as a thinking subject whose reasoning is worth meeting, not a
-      gap to fill. From Hegel's mutual recognition; in practice, a prompt orientation
-      that elicits and builds on the learner's own thinking.
+      Treating the learner as a thinking partner, not a gap to fill: ask for their
+      reasoning and build on it.
     "Calibration": >-
-      How recognition acts on tutor output: lifting the weakest dimensions and narrowing
-      the variation — raising the floor more than the ceiling.
+      Raising the weakest parts of an answer and making its quality more even — lifting
+      the floor more than the ceiling.
     "Claim-status": >-
-      A one-word commitment to how firm a result is — settled, scope-bound, exploratory,
-      killed, and so on. The full grammar is in the status section.
+      A short label saying how firmly we can hold a result and where its limits begin.
     "Trap suite": >-
-      A set of scenarios engineered to tempt a tutor into a specific pedagogical
-      mistake, used to test whether an architecture changes its move when the situation
-      demands it.
+      A set of lessons designed to tempt the tutor into a known mistake, so we can see
+      whether it notices and changes course.
     "Provable discourse": >-
-      The discipline of machine-checking every empirical claim in the paper against the
-      evaluation database, so the prose and the data cannot disagree.
+      Automatic checks that keep the paper's important numbers tied to the evidence behind them.
     "Id-director": >-
-      The drama/charisma architecture: a durable "id" that repeatedly authors a fresh,
-      performed tutor persona, scored on a separate charisma rubric.
+      A design that gives the tutor a durable source of voice and repeatedly turns it
+      into a fresh speaking persona.
 
   whats_open: |
-    Two limits bound everything above, and they matter as much as the results.
+    Two limits matter as much as the results.
 
-    First, every finding here concerns *tutor output quality as judged by a language
-    model*, interacting with a *simulated* learner. Whether the supported mechanisms —
-    recognition-as-calibration, conditional error correction — improve actual *human*
-    learning is open, and is the next programme rather than a result of this one. A
-    human-learner pilot is built and waiting on the usual approvals.
+    First, these studies mostly judge tutor responses with language models while the
+    tutor speaks to simulated learners. We do not yet know whether the supported changes
+    improve learning for real people. The human pilot is built, but recruitment waits
+    on approval, final consent language, and final learning materials.
 
-    Second, the magnitudes are bounded by model capability. The mechanisms hold across
-    capable models, but how much they buy you scales with the underlying model — the
-    critic's residual value, in particular, can shrink toward nothing on a strong enough
-    model. None of this is a deployment claim or a weight-learning claim; it is a set of
-    carefully scoped findings about agent architecture, with the boundaries marked.
+    Second, a strong base model still sets the ceiling. An internal critic can add a lot
+    to a weaker model and almost nothing to a stronger one. The small-model training
+    programme produced partial traction, and the live committee passed its scoped
+    delivery test only after every text path it owned was checked; the hard-safety
+    guardrail still failed. These are bounded research results, not deployment claims.
 
   # Numbered body sections deliberately not assigned to a module: §1 Introduction
   # and §9 Conclusion are folded into this spine; §2 Related Work is shared context;
@@ -182,245 +153,264 @@ atlas:
   exclude: ["1", "2", "4", "9"]
 
 families:
-  recognition: "Recognition and Pedagogical Calibration"
-  apparatus: "Apparatus as Method"
-  drama-charisma: "Drama and Charisma"
-  ontology-state: "Ontology, State, and the Limits of Interior Modeling"
-  translation: "Translation and Future Programme"
+  recognition: "Meeting the Learner"
+  apparatus: "How We Checked the Work"
+  drama-charisma: "Voice, Drama, and Presence"
+  ontology-state: "What the Tutor Needs to Know"
+  translation: "What Comes Next"
 
 modules:
   - id: recognition-calibration
     n: 1
-    title: "Recognition as Calibration"
+    title: "Meeting the Learner Raises the Floor"
     family: recognition
     status: settled
     claim: >-
-      Recognition-oriented prompts narrow within-response dimension variance, lift
-      the weakest dimensions most, and operate identically without a superego — the
-      active ingredient is intersubjective-pedagogy orientation, not Hegelian vocabulary.
+      Prompts that treat the learner as a thinking partner improve the weakest parts of
+      the tutor's answer most and make quality more even. The effect does not require a
+      separate critic or Hegelian vocabulary.
     abstract: >-
-      The clean prompt-level mechanism: recognition acts as calibration, a floor-lifting
-      and variance-narrowing transformation of tutor output. Includes the A10/A10b
-      matched-pedagogy controls that locate the effect at the orientation-family level.
+      This module follows the programme's clearest prompt-level result: the learner-facing
+      stance raises the floor rather than the ceiling. Matched teaching prompts show that
+      the practical orientation, not the philosophical wording, carries the effect.
     sections: ["3.2", "6.1", "7.9", "7.10"]
     cross_refs: ["superego-error-correction", "adaptive-null", "model-dependence"]
 
   - id: superego-error-correction
     n: 2
-    title: "Superego as Conditional Error Corrector"
+    title: "The Inner Critic Catches Real Mistakes"
     family: recognition
     status: settled
     claim: >-
-      Superego critique corrects errors and interacts with calibration through
-      universal substitution; its residual architectural benefit under recognition
-      is model-dependent (near-zero on strong models, large on weak ones).
+      The internal critic corrects real mistakes. Once the tutor already meets the
+      learner well, however, the critic adds little on strong models and much more on weak ones.
     abstract: >-
-      The architecture-level mechanism: what the superego catches, how critique
-      resolves across deliberation rounds, the factorial interaction, and the
-      ~15–17% additivity deficit consistent across three models.
+      What the critic catches, how the tutor responds, and why two useful mechanisms do
+      not simply add together. Across three models, their combined result falls about
+      15–17% short of simple addition.
     sections: ["6.2", "6.4", "7.3"]
     cross_refs: ["recognition-calibration", "model-dependence"]
 
   - id: adaptive-null
     n: 3
-    title: "The Adaptive-Responsiveness Null"
+    title: "The Tutor Did Not Become More Adaptive"
     family: recognition
     status: killed
     claim: >-
-      No experimental factor modulates within-dialogue trajectories (all d ≤ 0.15,
-      well-powered to detect d ≥ 0.27); the one exploratory single-scenario effect
-      did not survive pre-registered replication.
+      None of the tested changes altered improvement across a dialogue (all d ≤ 0.15,
+      with power to detect d ≥ 0.27). One promising single-scenario result disappeared
+      in a pre-registered replication.
     abstract: >-
-      The third pre-registered mechanism, turned from a failed hypothesis into a
-      substantive well-powered null — including the insight-action gap and the A16
-      cumulative-rewrite pre-registration.
+      A well-powered negative result: better prompts and self-critique improve answer
+      quality, but did not make the tutor change course more effectively from turn to turn.
     sections: ["6.3"]
     cross_refs: ["ontology-state-interior"]
 
   - id: provable-discourse
     n: 4
-    title: "Provable Discourse and Process Tracing for Agent Architectures"
+    title: "How We Checked Every Claim"
     family: apparatus
     status: methods
     claim: >-
-      The evaluation apparatus — process tracing, machine-checked claims, symmetry
-      rules, reproducible provenance — is a transferable method for mechanistic LLM
-      evaluation, not just background infrastructure.
+      Keeping drafts, critiques, revisions, evidence links, and automatic claim checks
+      together is a reusable research method, not just background engineering.
     abstract: >-
-      The apparatus-as-method module: superego-critique taxonomy, the provable-discourse
-      framework that verifies every mechanism claim against data, and the reproducibility
-      chain.
+      A tour of the audit trail: how critiques are classified, how important numbers are
+      checked against stored evidence, and how a result can be reproduced from source to claim.
     sections: ["5.3", "5.9", "5.11", "7.4"]
     cross_refs: ["rubrics-as-instruments"]
 
   - id: drama-machine
     n: 5
-    title: "Drama Machine Pedagogy"
+    title: "Can Productive Tension Improve Teaching?"
     family: drama-charisma
     status: planned
     claim: >-
-      Can productive internal conflict be engineered as a stable source of pedagogical
-      quality, rather than merely simulated as roleplay?
+      Can a tutor use genuine internal disagreement to teach better, rather than merely
+      performing the appearance of conflict?
     abstract: >-
-      An active arc. Develops deliberative tension, role differentiation, and
-      anti-sycophantic friction as a pedagogical architecture extending — but not
-      reducible to — the ego/superego result. Prose lands as a new section of the
-      canonical paper; this module is the scaffold.
+      An active line of work on disagreement, distinct roles, and resistance to easy
+      agreement. The paper section is still being developed; this module remains a scaffold.
     sections: []
     cross_refs: ["superego-error-correction", "id-director-charisma"]
 
   - id: teaching-drama-axiom-transfer
     n: 11
-    title: "Teaching-Drama Axiom Transfer"
+    title: "Can a Teaching Move Travel?"
     family: drama-charisma
     status: scope-bound
     claim: >-
-      Can A18's bounded teacher-as-learner counterfactual replay result be
-      generalized into a reusable, scope-bounded framework for tutor speech
-      policies without drifting into human-learning, deployment, or weight-update
-      claims?
+      Can one bounded replay result become a reusable guide for tutor speaking moves
+      without turning into a claim about human learning, deployment, or changed model weights?
     abstract: >-
-      A scope-bound A19 module. The scaffold defines a protocol,
-      literature-positioning matrix, card-level verdict grammar, attempt-1
-      materializer, blind-adjudication scaffold, and sidecar-paper outline.
-      Section 7.9 is the only current canonical source: A18's 10-of-14 bounded
-      result remains the primary evidence, while A19 now adds a local one-family
-      screen with two n=1 surface-agreement headroom candidates followed by a
-      two-seed stability smoke that fails to replicate either candidate. No
-      pooled A19 rate, stability-confirmed A19 transfer effect, human-learning,
-      deployment, or weight-learning claim is licensed.
+      A18 remains the main evidence: 10 of 14 bounded cases. A19 found two promising
+      n=1 candidates in one model family, but neither repeated in a two-seed stability
+      check. There is no pooled A19 rate or confirmed transfer effect, and no human-learning,
+      deployment, or weight-learning claim.
     sections: ["7.9"]
     cross_refs: ["drama-machine", "adaptive-null", "ontology-state-interior", "provable-discourse"]
 
   - id: id-director-charisma
     n: 6
-    title: "The Id-Director and Charismatic Pedagogy"
+    title: "A Strong Voice Can Crowd Out the Learner"
     family: drama-charisma
     status: exploratory
     claim: >-
-      Id-directed charisma can produce extraordinary pedagogical voice but trades off
-      against recognition-oriented elicitation; c104/c105/c107 are distinct design
-      points rather than one super-cell.
+      A designed charismatic voice can be striking, but it trades off against drawing
+      out the learner's own reasoning. The main variants are different design choices,
+      not pieces of one ideal tutor.
     abstract: >-
-      A parallel architecture family — a transient ego repeatedly authored by a durable
-      id — scored on a Weberian charisma rubric independent of the v2.2 tutor rubric.
+      A parallel family in which a durable source of voice repeatedly creates a fresh
+      speaking persona. Charisma is measured separately from ordinary tutoring quality.
     sections: ["6.7", "8.9"]
     cross_refs: ["drama-machine", "recognition-calibration"]
 
   - id: ontology-state-interior
     n: 7
-    title: "Ontology, State, and the Failure of Rich Learner Interiors"
+    title: "A Bigger Learner Model Did Not Help"
     family: ontology-state
     status: killed
     claim: >-
-      Richer externalised learner state, hand-authored elaborations beyond the lean
-      `state_policy` base (bilateral-ToM, state enrichment, evidence-bound nodes),
-      counterfactual replay, fitted policies, and a logged hidden interior are null
-      relative to the strong implicit base — and the base `state_policy` architecture's
-      apparent advantage over the dialogue-engine floor was a turn-convention artifact:
-      once the convention is fixed and the baseline re-run, the binary gap is ~1.1× on
-      both trap suites, within N≈24 noise (no detectable advantage) — the apparatus is
-      the durable contribution.
+      Detailed learner records, theory-of-mind additions, replay of alternative moves,
+      fitted policies, and a logged hidden interior did not beat a lean baseline. An
+      early advantage also disappeared after a turn-counting error was fixed: the gap
+      was about 1.1× on both trap suites, within N≈24 noise.
     abstract: >-
-      The deepest theoretical arc, mostly negative: the adaptive runner and trap
-      methodology, bilateral-ToM and state-schema ablations, hypothesis tracking, and
-      the concealed-interior signal test. Asks whether there is a modelable interior
-      at all, or whether interiority is an artifact of trace design.
+      A mostly negative arc with a useful by-product: strong trap scenarios and an
+      auditable runner. The tutor did not need a richer written portrait of the learner;
+      the testing apparatus was the durable result.
     sections: ["6.8", "6.9", "6.10"]
     cross_refs: ["adaptive-null", "provable-discourse"]
 
   - id: rubrics-as-instruments
     n: 8
-    title: "Rubrics as Instruments and Optimization Signals"
+    title: "The Ruler Is Part of the Research"
     family: apparatus
     status: methods
     claim: >-
-      Rubric evolution is construct development; the rubric doubles as an optimisation
-      signal for automated prompt tuning, with measurable tuning gains that transfer
-      asymmetrically across models — favourable in one direction, destructive in the
-      other, so optimisation must be model-stratified.
+      Revising the rubric changed how the project defined good tutoring. The same rubric
+      can tune prompts, but those gains transfer unevenly between models — helpful in
+      one direction and harmful in the other.
     abstract: >-
-      Treats the four rubric iterations, the measurement paradox, scoring, and
-      automated prompt tuning as instrument design rather than incidental tooling.
+      Four rubric versions, the problems they exposed, and why prompt tuning must be
+      checked separately for each model family.
     sections: ["5.2", "5.6", "7.7", "7.8"]
     cross_refs: ["provable-discourse"]
 
   - id: human-learning-translation
     n: 9
-    title: "Human Learning Translation Agenda"
+    title: "The Human-Learning Question"
     family: translation
     status: future
     claim: >-
-      All findings concern tutor output quality as judged by LLMs interacting with
-      synthetic learners; whether the supported mechanisms translate to human learning
-      outcomes is open.
+      The studies show differences in tutor output with simulated learners. Whether any
+      supported change improves learning for real people remains open.
     abstract: >-
-      Separates judged tutor quality from human learning outcomes, motivated by the
-      model-dependent tutor-learner asymmetry and the synthetic-learner / LLM-judge
-      limits. The translation programme and its pilot infrastructure.
+      Why better-looking tutor responses are not the same as better human learning, and
+      what the built-but-not-yet-recruited human pilot is meant to test.
     sections: ["6.5", "8.1", "8.2"]
     cross_refs: ["recognition-calibration"]
 
   - id: model-dependence
     n: 10
-    title: "Model Dependence and Mechanism Boundary Conditions"
+    title: "The Model Still Sets the Ceiling"
     family: recognition
     status: settled
     claim: >-
-      The supported mechanisms are model-independent among capable models, but their
-      magnitudes are bounded by generation quality: the superego's residual benefit,
-      the tutor-learner asymmetry, and architecture effects all scale with model
-      capability, and a six-model test (N=947) refutes the Paper 1.0 capability-threshold
-      reading of the bidirectional-profiling prosthesis.
+      The supported mechanisms appear across capable models, but their size depends on
+      generation quality. A six-model test (N=947) also rejects Paper 1.0's proposed
+      capability threshold for bidirectional profiling.
     abstract: >-
-      The cross-cutting boundary-condition result that qualifies both calibration and
-      error correction. Base-tutor capability gaps across the three-model triad, the
-      model-dependent superego residual, the Writing-Pad ablation showing recognition
-      operates at the prompt level rather than through a Freudian memory pad, and the
-      six-model capability-threshold test that does not find the helpful-then-harmful
-      pattern the prosthesis hypothesis predicted.
+      Stronger base models leave less work for the critic. This module follows that
+      pattern across the main model comparisons, the Writing Pad test, and the six-model
+      check that did not find the predicted helpful-then-harmful profiling pattern.
     sections: ["5.7", "5.8", "6.6", "8.3"]
     cross_refs: ["recognition-calibration", "superego-error-correction"]
 
   - id: composition-small-kernel
     n: 12
-    title: "Composition: Instructions Converge, Signal Accumulates"
+    title: "More Layers Do Not Mean More Benefit"
     family: recognition
     status: settled
     claim: >-
-      Composing the validated mechanisms into one tutor is sub-additive: a
-      three-layer kernel (orientation, within-dialogue memory, register routing)
-      matches the full stack on every measured surface, stacking does not harm,
-      and the one suspected local cost of recognition orientation dissolved
-      exactly at its pre-registered boundary — leaving a frustration-subtype
-      caveat and the design rule that instructions converge on the model's
-      existing competence while only new machine-checkable signal accumulates.
+      A three-part tutor — learner-facing stance, conversation memory, and speaking-style
+      routing — matches the full stack on every measured surface. Stacking does not hurt,
+      but it does not add benefit either. Repeated instructions converge; genuinely new,
+      checkable information is what accumulates.
     abstract: >-
-      The pre-registered composition test (blueprint cells 199-200): a
-      registry-declared kernel versus the full mechanism stack across
-      resistance, suggestion, and trap suites, run to a frozen decision at
-      n=6 per cell-scenario. Includes the structural findings (the superego
-      is chassis-excluded on the id-director path; the pacing guard is not
-      portable) and the §7.11 synthesis unifying substitution, redundancy,
-      and straitjacket results under one bottleneck reading.
+      A pre-registered comparison of a small kernel and the full mechanism stack across
+      resistance, suggestion, and trap suites, at n=6 per cell-scenario. It explains why
+      several good instructions often substitute for one another instead of adding up.
     sections: ["6.14", "7.11"]
     cross_refs: ["recognition-calibration", "superego-error-correction", "id-director-charisma", "ontology-state-interior"]
 
   - id: register-selection-boundary
     n: 13
-    title: "Register Selection and the Profile-Contingency Boundary"
+    title: "Adaptive Speaking Style Did Not Hold Up"
     family: ontology-state
     status: scope-bound
     claim: >-
-      A pre-registered two-family test does not confirm a profile-contingent
-      benefit from adaptive register selection: Terra fails the binding
-      profile-manipulation gate, Sonnet passes the gate but returns a null
-      interaction, and the field selector is closed on this evidence.
+      A pre-registered two-family test did not find a reliable benefit from adapting
+      speaking style to the learner profile. Terra failed the profile-manipulation gate;
+      Sonnet passed that gate but returned no interaction.
     abstract: >-
-      A 120-dialogue fixed-horizon confirmatory study and provenance stress test.
-      It separates endpoint level from profile separability, retains a bounded
-      hostile-register safety hypothesis, and limits the result to one simulated
-      detective world and whole-stack model families rather than an isolated
-      tutor-model or human-learning claim.
+      A 120-dialogue confirmatory study in one simulated detective world. It closes this
+      field selector on the present evidence, while keeping the result separate from any
+      claim about an isolated tutor model or human learning.
     sections: ["6.17"]
     cross_refs: ["ontology-state-interior", "adaptive-null", "composition-small-kernel", "provable-discourse"]
+
+  - id: advice-versus-enforcement
+    n: 14
+    title: "Advice, Enforcement, and the Cost of Control"
+    family: ontology-state
+    status: scope-bound
+    claim: >-
+      Standing playbooks, coached reflection, and point-of-action advice did not reliably
+      change the target behaviour. The study's main trigger did not fire often enough for
+      a verdict. On its denser descriptive channel, mechanical enforcement moved macro
+      compliance by +0.452 and +0.420 across the two tutor families, but cost about 0.13
+      of proof coverage.
+    abstract: >-
+      A ladder from “remember this advice” to “do this now” to a compiled constraint.
+      Better-timed information still missed its behavioural bar. Enforcement changed the
+      action by taking the choice away from the model, but that result is descriptive and
+      paid for its control elsewhere.
+    sections: ["6.15", "6.16", "6.18"]
+    cross_refs: ["adaptive-null", "composition-small-kernel", "program2-trained-move"]
+
+  - id: transparent-sensor-boundary
+    n: 15
+    title: "The Hidden State Was Not Actually Hidden"
+    family: apparatus
+    status: killed
+    claim: >-
+      The learner-state sensor programme closed on its current benchmark because an
+      exact filter recovered the authored state from public history with 0.0000 bits of
+      uncertainty at the horizon on every trajectory. There was nothing concealed for a
+      better sensor to discover.
+    abstract: >-
+      A zero-call reanalysis showed that the first negative result was partly a
+      data-starved instrument, then exposed a deeper problem: the synthetic benchmark
+      was fully observable. A future sensor test needs a genuinely ambiguous substrate.
+    sections: ["6.19"]
+    cross_refs: ["ontology-state-interior", "provable-discourse"]
+
+  - id: program2-trained-move
+    n: 16
+    title: "Training One Teaching Move into a Small Model"
+    family: translation
+    status: scope-bound
+    claim: >-
+      Training produced partial traction but no solo arm passed its frozen gates. A live
+      small-model-plus-frontier committee passed its scoped compliance endpoint only
+      after checks covered every delivered-text path it owned; the hard-safety guardrail
+      still failed.
+    abstract: >-
+      The trained model nearly learned the missing warrant cue in its weights. In the
+      final live run, the fully checked committee reached 0.477 (42/88) against 0.136
+      (22/162) for pooled controls, +0.341 with CI95 [0.223, 0.457], at no coverage cost
+      and seam parity. The result is development-tier, one move, two worlds, one live
+      tutor family, simulated learners, and no human-learning or deployment claim.
+    sections: ["6.20", "6.21", "6.22"]
+    cross_refs: ["advice-versus-enforcement", "composition-small-kernel", "human-learning-translation", "provable-discourse"]
