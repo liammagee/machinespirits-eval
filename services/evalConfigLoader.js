@@ -112,8 +112,7 @@ function loadLocalProviderOverrides(forceReload = false) {
 
 // Mtime-based caches (Map<path, {data, mtime}> for multi-version support)
 const rubricCacheMap = new Map();
-let scenariosCache = null;
-let scenariosMtime = null;
+const scenariosCacheMap = new Map();
 let tutorAgentsCache = null;
 let tutorAgentsMtime = null;
 let evalSettingsCache = null;
@@ -184,21 +183,21 @@ export function loadSuggestionScenarios({ forceReload } = {}) {
 
   try {
     const stats = fs.statSync(effectivePath);
-    if (!forceReload && scenariosCache && scenariosMtime === stats.mtimeMs) {
-      return scenariosCache;
+    const cached = scenariosCacheMap.get(effectivePath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    scenariosMtime = stats.mtimeMs;
-  } catch (err) {
-    console.warn('[evalConfigLoader] Suggestion scenarios file not found:', err.message);
-    return null;
-  }
 
-  try {
     const content = fs.readFileSync(effectivePath, 'utf-8');
-    scenariosCache = resolveScenarioExtends(yaml.parse(content));
-    return scenariosCache;
+    const data = resolveScenarioExtends(yaml.parse(content));
+    scenariosCacheMap.set(effectivePath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
-    console.error('[evalConfigLoader] Failed to parse suggestion scenarios:', err.message);
+    if (err.code === 'ENOENT') {
+      console.warn('[evalConfigLoader] Suggestion scenarios file not found:', err.message);
+    } else {
+      console.error('[evalConfigLoader] Failed to parse suggestion scenarios:', err.message);
+    }
     return null;
   }
 }
@@ -490,18 +489,18 @@ export function loadTutorAgents({ forceReload } = {}) {
     if (!forceReload && tutorAgentsCache && tutorAgentsMtime === stats.mtimeMs) {
       return tutorAgentsCache;
     }
-    tutorAgentsMtime = stats.mtimeMs;
-  } catch (err) {
-    console.warn('[evalConfigLoader] Tutor agents file not found:', err.message);
-    return null;
-  }
 
-  try {
     const content = fs.readFileSync(effectivePath, 'utf-8');
-    tutorAgentsCache = yaml.parse(content);
-    return tutorAgentsCache;
+    const data = yaml.parse(content);
+    tutorAgentsCache = data;
+    tutorAgentsMtime = stats.mtimeMs;
+    return data;
   } catch (err) {
-    console.error('[evalConfigLoader] Failed to parse tutor agents:', err.message);
+    if (err.code === 'ENOENT') {
+      console.warn('[evalConfigLoader] Tutor agents file not found:', err.message);
+    } else {
+      console.error('[evalConfigLoader] Failed to parse tutor agents:', err.message);
+    }
     return null;
   }
 }
@@ -656,18 +655,16 @@ export function loadEvalSettings({ forceReload } = {}) {
     if (!forceReload && evalSettingsCache && evalSettingsMtime === stats.mtimeMs) {
       return evalSettingsCache;
     }
-    evalSettingsMtime = stats.mtimeMs;
-  } catch (err) {
-    // File is optional — not a warning
-    return null;
-  }
 
-  try {
     const content = fs.readFileSync(effectivePath, 'utf-8');
-    evalSettingsCache = yaml.parse(content);
-    return evalSettingsCache;
+    const data = yaml.parse(content);
+    evalSettingsCache = data;
+    evalSettingsMtime = stats.mtimeMs;
+    return data;
   } catch (err) {
-    console.error('[evalConfigLoader] Failed to parse eval-settings:', err.message);
+    if (err.code !== 'ENOENT') {
+      console.error('[evalConfigLoader] Failed to parse eval-settings:', err.message);
+    }
     return null;
   }
 }

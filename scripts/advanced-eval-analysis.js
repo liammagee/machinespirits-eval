@@ -363,4 +363,7 @@ The extended scenario results align with our factorial ANOVA findings:
   db.close();
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

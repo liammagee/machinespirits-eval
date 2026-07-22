@@ -308,7 +308,7 @@ Score EACH learner turn listed above independently. For each turn:
 - Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
 
 CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
-conceptual_progression, metacognitive_development), a score of 4 or 5 requires
+conceptual_progression), a score of 4 or 5 requires
 EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
 quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
 the learner's thinking evolved since the previous turn?" A score of 5 requires
@@ -421,7 +421,7 @@ ${targetExternalMessage}
 Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
 
 CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
-conceptual_progression, metacognitive_development), a score of 4 or 5 requires
+conceptual_progression), a score of 4 or 5 requires
 EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
 quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
 the learner's thinking evolved since the previous turn?" A score of 5 requires
@@ -526,7 +526,7 @@ ${fullTranscript}
 Evaluate based on the learner's external messages only.
 
 CROSS-TURN CALIBRATION: When scoring development dimensions (revision_signals,
-conceptual_progression, metacognitive_development), require evidence of CUMULATIVE
+conceptual_progression), require evidence of CUMULATIVE
 change across the full dialogue, not just isolated moments. A score of 5 means the
 learner's trajectory shows clear arc of development from first to last turn.
 

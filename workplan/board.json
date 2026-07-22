@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-22T13:38:31.634Z",
+  "generated": "2026-07-22T13:54:44.945Z",
   "counts": {
-    "total": 132,
+    "total": 142,
     "byStatus": {
       "done": 106,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 11,
+      "triaged": 21,
       "review": 2,
       "active": 6,
       "archived": 4
@@ -14,14 +14,239 @@
     "byType": {
       "research": 45,
       "experiment": 48,
-      "infra": 20,
-      "maintenance": 6,
+      "infra": 24,
+      "maintenance": 12,
       "content": 2,
       "paper": 5,
       "ops": 6
     }
   },
   "items": [
+    {
+      "id": "bound-metered-evaluation-api-requests",
+      "title": "Add admission controls to metered evaluation API requests",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Eval run and comparison routes reject malformed, unknown, or oversized plans before allocation or model calls; accepted plans expose an exact bounded test count and route regressions prove the paid-work ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "routes/evalRoutes.js",
+          "services/evaluationRunner.js"
+        ]
+      },
+      "tags": [
+        "api",
+        "cost-control",
+        "evaluation-infrastructure",
+        "security"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "harden-cli-provider-process-isolation",
+      "title": "Isolate CLI model providers from secrets and fail closed on tool use",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Spawned model CLIs receive only an explicit environment allowlist and any prohibited tool event fails the request; tests prove unrelated API secrets are absent and no successful response survives a policy violation.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/cliProviderBridge.js"
+        ]
+      },
+      "tags": [
+        "security",
+        "providers",
+        "process-isolation",
+        "secrets"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "harden-consolidated-labelling-integrity",
+      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "consolidated-labelling-game-harness",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "data-integrity",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "make-inhoused-tests-and-coverage-first-class",
+      "title": "Make in-housed tutor-core tests and coverage first-class",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A clean root install runs root and in-housed tutor-core suites hermetically, reports coverage for critical services/routes, fails on agreed risk-based floors, and exposes leaked handles without relying globally on forced process exit.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "scripts/run-hermetic-tests.js",
+          "tutor-core/package.json",
+          ".github/workflows/ci.yml"
+        ]
+      },
+      "tags": [
+        "testing",
+        "coverage",
+        "tutor-core",
+        "ci"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "make-pilot-state-writes-atomic",
+      "title": "Make human-pilot artifact writes and state transitions atomic",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "a1-human-learner-validation"
+        ],
+        "code": [
+          "services/pilotStore.js"
+        ]
+      },
+      "tags": [
+        "human-pilot",
+        "transactions",
+        "data-integrity",
+        "concurrency"
+      ],
+      "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "repair-evaluation-store-roundtrip-integrity",
+      "title": "Preserve evaluation provenance and attempt counts across store round trips",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationStore.js"
+        ]
+      },
+      "tags": [
+        "provenance",
+        "rejudging",
+        "resume",
+        "data-integrity"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "test-canonical-posthoc-analysis-pipeline",
+      "title": "Add fixture-to-report tests for the canonical post-hoc analysis pipeline",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Frozen miniature evaluation fixtures exercise every canonical post-hoc script end to end, with schema/version checks and reviewed golden statistics preventing silent empirical-report regressions.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/analysis-toolkit-guide.md"
+        ],
+        "code": [
+          "scripts/analyze-eval-results.js",
+          "scripts/analyze-mechanism-traces.js",
+          "scripts/analyze-trajectory-curves.js",
+          "scripts/analyze-learning-stagnation.js",
+          "scripts/analyze-judge-reliability.js"
+        ]
+      },
+      "tags": [
+        "analysis",
+        "empirical-integrity",
+        "testing",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "version-symmetric-trace-transformation-pipeline",
+      "title": "Version and restore the symmetric trace-transformation pipeline",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Newly generated learner traces emit the canonical initial, review, revision, and final labels; legacy logs remain readable; active-rubric analyzers reject non-finite inputs and pass fixture-to-output regressions.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationRunner.js",
+          "services/learnerTutorInteractionEngine.js",
+          "services/turnComparisonAnalyzer.js",
+          "services/dialogueTraceAnalyzer.js"
+        ]
+      },
+      "tags": [
+        "tutor-learner-symmetry",
+        "traces",
+        "transformation",
+        "rubric-versioning"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "adaptive-curriculum-memory-controller",
       "title": "Evidence-anchored memory and curriculum adaptation controller",
@@ -81,6 +306,35 @@
         "pragmatics",
         "ontology"
       ]
+    },
+    {
+      "id": "decide-rich-learner-memory-service-retention",
+      "title": "Decide and verify the retained rich learner-memory service",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "MEMORY-ARCHITECTURE.md"
+        ],
+        "code": [
+          "services/memory/learnerMemoryService.js"
+        ]
+      },
+      "tags": [
+        "learner-memory",
+        "architecture",
+        "sqlite",
+        "testing"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "negative-register-effect-estimation-grid",
@@ -282,6 +536,32 @@
         "strategy-refusal",
         "cross-stack"
       ]
+    },
+    {
+      "id": "repair-codex-session-capacity-and-cursors",
+      "title": "Repair Codex session capacity and stale-cursor semantics",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/codexSessionService.js"
+        ]
+      },
+      "tags": [
+        "codex-session",
+        "lifecycle",
+        "capacity",
+        "streaming"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-learner-budget-overflow",

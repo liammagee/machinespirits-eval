@@ -225,6 +225,9 @@ describe('pilot routes', () => {
     const noAuth = await request(baseUrl, 'GET', '/api/pilot/admin/counts');
     assert.strictEqual(noAuth.status, 401);
 
+    const queryOnly = await request(baseUrl, 'GET', '/api/pilot/admin/counts?token=test-admin-token');
+    assert.strictEqual(queryOnly.status, 401);
+
     const wrong = await request(baseUrl, 'GET', '/api/pilot/admin/counts', null, {
       'x-pilot-admin-token': 'wrong',
     });

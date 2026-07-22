@@ -7,14 +7,146 @@
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { loadProviders, getProviderConfig, resolveModel } from '../evalConfigLoader.js';
+import {
+  loadProviders,
+  getProviderConfig,
+  resolveModel,
+  loadSuggestionScenarios,
+  loadTutorAgents,
+  loadEvalSettings,
+} from '../evalConfigLoader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_DIR = path.resolve(__dirname, '../../config');
 const _PROVIDERS_PATH = path.join(CONFIG_DIR, 'providers.yaml');
+const TUTOR_AGENTS_PATH = path.join(CONFIG_DIR, 'tutor-agents.yaml');
+const EVAL_SETTINGS_PATH = path.join(CONFIG_DIR, 'eval-settings.yaml');
+
+function restoreEnv(name, value) {
+  if (value === undefined) {
+    delete process.env[name];
+  } else {
+    process.env[name] = value;
+  }
+}
+
+function writeWithMtime(filePath, content, mtimeMs) {
+  fs.writeFileSync(filePath, content, 'utf8');
+  const timestamp = new Date(mtimeMs);
+  fs.utimesSync(filePath, timestamp, timestamp);
+}
+
+// ============================================================================
+// file cache correctness
+// ============================================================================
+
+describe('file cache correctness', () => {
+  it('keys suggestion scenario cache entries by effective file path', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eval-config-scenarios-'));
+    const firstPath = path.join(tempDir, 'first.yaml');
+    const secondPath = path.join(tempDir, 'second.yaml');
+    const sharedMtime = 1_700_000_000_000;
+    const savedOverride = process.env.EVAL_SCENARIOS_FILE;
+
+    try {
+      writeWithMtime(firstPath, 'scenarios:\n  alpha:\n    name: Alpha\n', sharedMtime);
+      writeWithMtime(secondPath, 'scenarios:\n  beta:\n    name: Beta\n', sharedMtime);
+
+      process.env.EVAL_SCENARIOS_FILE = firstPath;
+      const first = loadSuggestionScenarios({ forceReload: true });
+      assert.equal(first.scenarios.alpha.name, 'Alpha');
+
+      process.env.EVAL_SCENARIOS_FILE = secondPath;
+      const second = loadSuggestionScenarios();
+      assert.equal(second.scenarios.beta.name, 'Beta');
+      assert.equal(second.scenarios.alpha, undefined);
+    } finally {
+      restoreEnv('EVAL_SCENARIOS_FILE', savedOverride);
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('does not publish a suggestion-scenario mtime until parsing succeeds', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eval-config-scenarios-'));
+    const scenariosPath = path.join(tempDir, 'scenarios.yaml');
+    const savedOverride = process.env.EVAL_SCENARIOS_FILE;
+    const initialMtime = 1_700_000_010_000;
+    const editedMtime = 1_700_000_020_000;
+
+    try {
+      process.env.EVAL_SCENARIOS_FILE = scenariosPath;
+      writeWithMtime(scenariosPath, 'scenarios:\n  original:\n    name: Original\n', initialMtime);
+      assert.equal(loadSuggestionScenarios({ forceReload: true }).scenarios.original.name, 'Original');
+
+      writeWithMtime(scenariosPath, 'scenarios: [unterminated', editedMtime);
+      assert.equal(loadSuggestionScenarios(), null);
+
+      writeWithMtime(scenariosPath, 'scenarios:\n  repaired:\n    name: Repaired\n', editedMtime);
+      const repaired = loadSuggestionScenarios();
+      assert.equal(repaired.scenarios.repaired.name, 'Repaired');
+      assert.equal(repaired.scenarios.original, undefined);
+    } finally {
+      restoreEnv('EVAL_SCENARIOS_FILE', savedOverride);
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('does not publish the tutor-agent mtime until parsing succeeds', (t) => {
+    const originalStatSync = fs.statSync.bind(fs);
+    const originalReadFileSync = fs.readFileSync.bind(fs);
+    let mtimeMs = 100;
+    let content = 'profiles:\n  original:\n    description: Original\n';
+
+    t.mock.method(fs, 'statSync', (filePath, ...args) =>
+      filePath === TUTOR_AGENTS_PATH ? { mtimeMs } : originalStatSync(filePath, ...args),
+    );
+    t.mock.method(fs, 'readFileSync', (filePath, ...args) =>
+      filePath === TUTOR_AGENTS_PATH ? content : originalReadFileSync(filePath, ...args),
+    );
+    t.mock.method(console, 'error', () => {});
+
+    assert.equal(loadTutorAgents({ forceReload: true }).profiles.original.description, 'Original');
+
+    mtimeMs = 200;
+    content = 'profiles: [unterminated';
+    assert.equal(loadTutorAgents(), null);
+
+    content = 'profiles:\n  repaired:\n    description: Repaired\n';
+    const repaired = loadTutorAgents();
+    assert.equal(repaired.profiles.repaired.description, 'Repaired');
+    assert.equal(repaired.profiles.original, undefined);
+  });
+
+  it('does not publish the eval-settings mtime until parsing succeeds', (t) => {
+    const originalStatSync = fs.statSync.bind(fs);
+    const originalReadFileSync = fs.readFileSync.bind(fs);
+    let mtimeMs = 100;
+    let content = 'content:\n  content_package_path: original\n';
+
+    t.mock.method(fs, 'statSync', (filePath, ...args) =>
+      filePath === EVAL_SETTINGS_PATH ? { mtimeMs } : originalStatSync(filePath, ...args),
+    );
+    t.mock.method(fs, 'readFileSync', (filePath, ...args) =>
+      filePath === EVAL_SETTINGS_PATH ? content : originalReadFileSync(filePath, ...args),
+    );
+    t.mock.method(console, 'error', () => {});
+
+    assert.equal(loadEvalSettings({ forceReload: true }).content.content_package_path, 'original');
+
+    mtimeMs = 200;
+    content = 'content: [unterminated';
+    assert.equal(loadEvalSettings(), null);
+
+    content = 'content:\n  content_package_path: repaired\n';
+    const repaired = loadEvalSettings();
+    assert.equal(repaired.content.content_package_path, 'repaired');
+  });
+});
 
 // ============================================================================
 // loadProviders

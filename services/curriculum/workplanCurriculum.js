@@ -52,15 +52,30 @@ function firstProblemParagraph(body, title) {
 function itemSpecificTasks(body) {
   const tasks = [];
   let current = null;
+  let currentIsAcceptance = false;
+  let inAcceptanceSection = false;
   const flush = () => {
-    if (current) tasks.push(clip(current, 500));
+    if (current) tasks.push({ text: clip(current, 500), acceptance: currentIsAcceptance });
     current = null;
   };
   for (const line of String(body || '').split('\n')) {
+    if (/^\s*(?:#{1,6}\s*)?acceptance(?:\s+boundaries)?\s*:?\s*$/iu.test(line)) {
+      flush();
+      inAcceptanceSection = true;
+      continue;
+    }
+    if (/^\s*(?:#{1,6}\s+|[A-Z][\w -]+:\s*$)/u.test(line)) {
+      flush();
+      inAcceptanceSection = false;
+      continue;
+    }
     const bullet = line.match(/^\s*[-*]\s+(.+)$/u);
     if (bullet) {
       flush();
-      current = bullet[1].trim();
+      const checkbox = bullet[1].trim().match(/^\[([ x])\]\s*(.*)$/iu);
+      if (checkbox?.[1].toLowerCase() === 'x') continue;
+      current = checkbox ? checkbox[2].trim() : bullet[1].trim();
+      currentIsAcceptance = inAcceptanceSection;
       continue;
     }
     if (current && /^\s{2,}\S/u.test(line)) {
@@ -68,10 +83,11 @@ function itemSpecificTasks(body) {
       continue;
     }
     if (current) flush();
-    if (tasks.length >= 5) break;
   }
   flush();
-  return tasks.filter(Boolean).slice(0, 5);
+  const acceptanceTasks = tasks.filter((task) => task.acceptance && task.text).map((task) => task.text);
+  const candidates = acceptanceTasks.length ? acceptanceTasks : tasks.map((task) => task.text);
+  return candidates.filter(Boolean).slice(0, 5);
 }
 
 function statusMisconception(item) {
