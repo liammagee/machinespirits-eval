@@ -88,8 +88,9 @@ test('voice bridge forwards SDP with the standard key only from the local server
     assert.equal(await response.text(), 'v=0\r\no=answer');
     assert.equal(upstreamRequest.url, 'https://api.openai.com/v1/realtime/calls');
     assert.equal(upstreamRequest.options.headers.authorization, 'Bearer server-only-key');
-    assert.equal(upstreamRequest.options.body.get('session') instanceof Blob, true);
-    const session = JSON.parse(await upstreamRequest.options.body.get('session').text());
+    assert.equal(upstreamRequest.options.body.get('sdp'), 'v=0\r\no=offer');
+    assert.equal(typeof upstreamRequest.options.body.get('session'), 'string');
+    const session = JSON.parse(upstreamRequest.options.body.get('session'));
     assert.equal(session.audio.input.turn_detection.create_response, false);
     assert.equal(session.audio.output.voice, 'marin');
   } finally {

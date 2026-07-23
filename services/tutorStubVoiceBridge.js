@@ -224,8 +224,8 @@ export function createTutorStubVoiceBridge({
       return;
     }
     const form = new FormData();
-    form.set('sdp', new Blob([offer], { type: 'application/sdp' }), 'offer.sdp');
-    form.set('session', new Blob([JSON.stringify(session)], { type: 'application/json' }), 'session.json');
+    form.set('sdp', offer);
+    form.set('session', JSON.stringify(session));
     const requestId = randomUUID();
     const upstream = await fetchImpl('https://api.openai.com/v1/realtime/calls', {
       method: 'POST',
