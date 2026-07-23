@@ -6,6 +6,28 @@ the scene, semantic colors distinguish tutor, learner, coach, success, warning,
 and failure states, and the existing one-line progress display carries the only
 animation.
 
+## Default launch
+
+`npm run tutor:stub` now opens the full `mixed_drafting` lab by default: a
+defeasible human scaffold plus inspectable AI learner drafts. Press Tab to
+insert the current draft, or use `/suggest`, `/use`, and `/regen`. The explicit
+equivalent remains:
+
+```bash
+npm run tutor:stub -- --lab mixed_drafting
+```
+
+Inside an older or differently configured session, `/lab mixed_drafting` shows
+that relaunch command. Mixed drafting changes the session architecture, so it
+is deliberately a lab/launch choice rather than an in-place `/mode` switch;
+`/mode` continues to choose the active learner, private coach, or automated
+speaker role. Use `npm run tutor:stub:scaffold` for the same human scaffold
+without AI learner drafting, or `npm run tutor:stub:passthrough` for pure chat.
+
+The default applies only to an ordinary human tutor chat. Explicit curriculum,
+automated-learner, passthrough, RPC, labelling, recipe, and resume launches keep
+their own architecture.
+
 ## Capability-aware commands
 
 Every session resolves a frozen, versioned capability snapshot after launch
