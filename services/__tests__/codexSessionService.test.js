@@ -13,20 +13,28 @@ import {
 
 describe('codexSessionService', () => {
   let mockProcess;
+  let mockProcesses;
 
   beforeEach(() => {
-    mockProcess = {
-      pid: 1234,
-      write: mock.fn(),
-      kill: mock.fn(),
-      onData: mock.fn(),
-      onExit: mock.fn(),
-    };
-
-    mock.method(pty, 'spawn', () => mockProcess);
+    mockProcesses = [];
+    mock.method(pty, 'spawn', () => {
+      mockProcess = {
+        pid: 1234 + mockProcesses.length,
+        write: mock.fn(),
+        kill: mock.fn(),
+        onData: mock.fn(),
+        onExit: mock.fn(),
+      };
+      mockProcesses.push(mockProcess);
+      return mockProcess;
+    });
   });
 
   afterEach(() => {
+    for (const process of mockProcesses) {
+      const onExitCallback = process.onExit.mock.calls[0]?.arguments[0];
+      onExitCallback?.({ exitCode: 0, signal: 0 });
+    }
     mock.restoreAll();
   });
 
@@ -89,5 +97,67 @@ describe('codexSessionService', () => {
 
     assert.throws(() => writeCodexSessionInput(session.id, 123), /must be a string/);
     assert.throws(() => writeCodexSessionInput('missing', 'test'), /not found/);
+  });
+
+  it('reuses capacity immediately after a process exits while retaining its history', () => {
+    const active = Array.from({ length: 8 }, () => createCodexSession());
+    assert.throws(() => createCodexSession(), /live session limit reached \(8\)/);
+
+    const firstExit = mockProcesses[0].onExit.mock.calls[0].arguments[0];
+    firstExit({ exitCode: 0, signal: 0 });
+
+    const replacement = createCodexSession();
+    assert.equal(replacement.status, 'running');
+    assert.equal(getCodexSession(active[0].id).status, 'exited');
+    assert.ok(listCodexSessions().some((session) => session.id === replacement.id));
+  });
+
+  it('marks stale poll cursors when output has been trimmed', () => {
+    const session = createCodexSession();
+    const onData = mockProcess.onData.mock.calls[0].arguments[0];
+    onData('a'.repeat(300_000));
+    onData('b'.repeat(300_000));
+
+    const stalePoll = pollCodexSession(session.id, -1);
+    assert.equal(stalePoll.cursorReset, true);
+    assert.equal(stalePoll.truncated, true);
+    assert.equal(stalePoll.bufferStartCursor, 0);
+    assert.equal(stalePoll.firstRetainedEventIdx, 1);
+    assert.equal(stalePoll.events.length, 1);
+    assert.equal(stalePoll.events[0].idx, 1);
+    assert.equal(stalePoll.nextCursor, 1);
+
+    const currentPoll = pollCodexSession(session.id, stalePoll.bufferStartCursor);
+    assert.equal(currentPoll.cursorReset, false);
+    assert.equal(currentPoll.truncated, false);
+    assert.equal(currentPoll.events.length, 1);
+  });
+
+  it('keeps termination idempotent while process exit is pending', () => {
+    const session = createCodexSession();
+    const terminating = terminateCodexSession(session.id);
+    assert.equal(terminating.status, 'terminating');
+    assert.equal(mockProcess.kill.mock.callCount(), 1);
+
+    const repeated = terminateCodexSession(session.id);
+    assert.equal(repeated.terminationPending, true);
+    assert.equal(mockProcess.kill.mock.callCount(), 1);
+
+    const onExit = mockProcess.onExit.mock.calls[0].arguments[0];
+    onExit({ exitCode: 0, signal: 0 });
+    assert.equal(terminateCodexSession(session.id).alreadyExited, true);
+  });
+
+  it('expires retained history after the retention window', () => {
+    const session = createCodexSession();
+    const onExit = mockProcess.onExit.mock.calls[0].arguments[0];
+    onExit({ exitCode: 0, signal: 0 });
+
+    const exitedAt = Date.parse(getCodexSession(session.id).exitedAt);
+    mock.method(Date, 'now', () => exitedAt + 6 * 60 * 60 * 1000 + 1);
+
+    assert.equal(getCodexSession(session.id), null);
+    assert.equal(pollCodexSession(session.id), null);
+    assert.ok(!listCodexSessions().some((entry) => entry.id === session.id));
   });
 });
