@@ -58,6 +58,16 @@ Key choices and defaults:
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-sol`; automated learner `codex.gpt-5.6-terra`. This intentionally places the stronger model at learner interpretation rather than public response realization.
+- Learned warrant committee: human interactive chat defaults to the local
+  `program2-sft-instruct-v2` Qwen specialist with fallback policy `v2`. It is
+  consulted only on detected `warrant_skip` moments; the frontier tutor still
+  composes the delivered turn, and mini-model unavailability falls back to the
+  frontier path. Use `/committee on|off|status` inside a session (no argument
+  toggles), or `--committee` / `--no-committee` at launch. The preference is
+  remembered. Automated, one-shot, passthrough, and eval runs retain explicit
+  arm selection and do not inherit the human-chat default; use
+  `--point-of-action-arm committee --committee-fallback-policy v2` when an
+  experiment intentionally needs the validated committee path.
 - Browser voice companion: use `/voice` in an interactive session, or launch
   with `--voice`. The default renderer is `gpt-realtime-2.1-mini` with the
   `marin` voice; switch with `/voice model gpt-realtime-2.1` or
@@ -91,7 +101,7 @@ Key choices and defaults:
 - Human interactive sessions remember the selected scenario and learner
   profile (including a custom profile), named tutor instance, tuning mode,
   plus the last speaking-tutor model, Realtime voice model and voice name,
-  terminal theme and motion preference,
+  terminal theme and motion preference, learned-committee preference,
   engagement-stance temperature, DAG-fact dropout rate, clue release speed,
   register primary and overlays, and overlay threshold in
   `.tutor-stub-traces/last-settings.json`.
@@ -654,8 +664,14 @@ Useful variants:
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
   include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
-  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
+  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
+- In an active curriculum session, bare `/translate` renders the canonical
+  module at all four learner-facing language levels: `basic`, `intermediate`,
+  `advanced`, and `proficient`. `/translate <level>` renders one. Translation
+  changes wording only: exact curriculum segment boundaries and verification
+  requirements are preserved, the canonical source remains authoritative, and
+  neither the public transcript nor proof/dialogue state advances.
 - Consecutive public learner lines entered before the tutor reply appears form
   one compound learner turn. Each added line aborts or invalidates the current
   analysis/tutor attempt, every assessment is regenerated from the full input,

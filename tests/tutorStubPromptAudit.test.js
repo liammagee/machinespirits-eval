@@ -51,6 +51,10 @@ test('semantic performance adjudication has its own bounded non-speaking prompt 
   assert.equal(audit.budget.maxApproxTokens, 3000);
 });
 
+test('curriculum translation uses the bounded clarification prompt surface', () => {
+  assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_curriculum_translator'), 'clarifier');
+});
+
 test('exact duplicate-only prompt rows can be compacted and re-audited safely', () => {
   const repeated =
     '- A learner-derived bookkeeping row is repeated across two internal summaries before the speaking tutor is called.';

@@ -109,6 +109,41 @@ Transcript HTML includes a **Relaunch** view with the exact copyable resume (or
 saved-recipe) command and the recipe hash. The command contains no credential;
 provider credentials remain local to the launching process.
 
+## Learned warrant committee
+
+Human tutor-chat sessions start with the validated local Qwen warrant
+specialist enabled. It does not replace the frontier tutor: only when the
+point-of-action detector finds a `warrant_skip` does
+`program2-sft-instruct-v2` propose the warrant question. The frontier tutor
+composes around that question, and the v2 fallback battery keeps the result to
+one cue-bearing question. If Ollama or the local model is unavailable, the
+turn falls back to the ordinary frontier response and records the failure in
+the technical trace.
+
+Use the live switch at any learner prompt:
+
+```text
+/committee status
+/committee off
+/committee on
+```
+
+`/committee` without an argument toggles the current state. The choice is
+remembered with the other interactive settings. At launch, `--committee` and
+`--no-committee` provide explicit overrides; for example:
+
+```bash
+npm run tutor:stub -- --no-committee
+```
+
+The `--committee` shorthand selects the same v2 fallback used by interactive
+chat.
+
+Passthrough, one-shot, automated-learner, and evaluation runs do not acquire
+this interactive default. Existing experiments still opt into an arm with
+`--point-of-action-arm committee`; their historical v1 fallback remains the
+default unless `--committee-fallback-policy v2` is supplied explicitly.
+
 ## Importable session runtime
 
 `services/tutorStubSessionRuntime.js` provides the versioned lifecycle boundary

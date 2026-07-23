@@ -27,6 +27,7 @@ function sampleSettings(overrides = {}) {
     voiceName: 'cedar',
     cliTheme: 'ember',
     motion: 'full',
+    committeeEnabled: true,
     engagementStanceTemperature: 0.4,
     dagFactDropoutRate: 0.15,
     releaseSpeed: 1.4,
@@ -109,6 +110,53 @@ test('invalid remembered settings fail closed without throwing from the reader',
   }
 });
 
+test('legacy settings default the interactive learned committee on and reject invalid preferences', () => {
+  const legacy = sampleSettings();
+  delete legacy.committeeEnabled;
+  assert.equal(
+    writeTutorStubLastSettings(path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`), legacy)
+      .committeeEnabled,
+    true,
+  );
+  assert.throws(
+    () =>
+      writeTutorStubLastSettings(
+        path.join(os.tmpdir(), `tutor-stub-settings-invalid-${process.pid}.json`),
+        sampleSettings({ committeeEnabled: 'yes' }),
+      ),
+    /committee preference must be true or false/u,
+  );
+  fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`), { force: true });
+  fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-${process.pid}.json`), { force: true });
+});
+
+test('human chat defaults to the learned committee without changing automated experiment defaults', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-committee-default-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    const interactive = tutorStubDryRun(filePath, ['--no-remember-settings']);
+    assert.equal(interactive.pointOfAction.arm, 'committee');
+    assert.deepEqual(interactive.pointOfAction.committee, {
+      model: 'program2-sft-instruct-v2',
+      fallbackPolicy: 'v2',
+      control: '/committee on|off|status',
+    });
+
+    const automated = tutorStubDryRun(filePath, ['--auto-learner']);
+    assert.equal(automated.pointOfAction.enabled, false);
+
+    const explicitExperiment = tutorStubDryRun(filePath, ['--auto-learner', '--point-of-action-arm', 'committee']);
+    assert.equal(explicitExperiment.pointOfAction.arm, 'committee');
+    assert.equal(explicitExperiment.pointOfAction.committee.fallbackPolicy, 'v1');
+
+    const easyOptIn = tutorStubDryRun(filePath, ['--auto-learner', '--committee']);
+    assert.equal(easyOptIn.pointOfAction.arm, 'committee');
+    assert.equal(easyOptIn.pointOfAction.committee.fallbackPolicy, 'v2');
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('interactive defaults restore the last settings while explicit launch flags win', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-default-settings-'));
   const filePath = path.join(directory, 'last-settings.json');
@@ -130,6 +178,8 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.voice.voice, 'cedar');
     assert.equal(restored.presentation.theme, 'ember');
     assert.equal(restored.presentation.motion, 'full');
+    assert.equal(restored.pointOfAction.arm, 'committee');
+    assert.equal(restored.pointOfAction.committee.fallbackPolicy, 'v2');
     assert.equal(restored.opening.realization, 'remembered_scenario_instant_opening');
     assert.equal(restored.opening.speakingModelRef, null);
     assert.deepEqual(restored.opening.startup, {
@@ -150,6 +200,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       'realtime_voice_name',
       'terminal_theme',
       'terminal_motion',
+      'committee_mode',
       'engagement_stance_temperature',
       'dag_fact_dropout',
       'clue_release_speed',
@@ -204,6 +255,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       'learner_interpretation_model',
       'learner_reasoning_model',
       'learner_voice_model',
+      'committee_mode',
     ]);
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('scenario'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('learner_profile'));
@@ -211,6 +263,10 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('realtime_voice_name'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_theme'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_motion'));
+
+    const committeeOff = tutorStubDryRun(filePath, ['--no-committee']);
+    assert.equal(committeeOff.pointOfAction.enabled, false);
+    assert.ok(committeeOff.rememberedSettings.skippedExplicitFields.includes('committee_mode'));
 
     const allModels = tutorStubDryRun(filePath, ['--mixed-learner', '--all-models', 'codex.gpt-5.6-terra']);
     assert.equal(allModels.modelRef, 'codex.gpt-5.6-terra');
@@ -353,6 +409,7 @@ test('live settings changes are written for the next interactive session', () =>
         voiceName: loaded.settings.voiceName,
         cliTheme: loaded.settings.cliTheme,
         motion: loaded.settings.motion,
+        committeeEnabled: loaded.settings.committeeEnabled,
         engagementStanceTemperature: loaded.settings.engagementStanceTemperature,
         dagFactDropoutRate: loaded.settings.dagFactDropoutRate,
         releaseSpeed: loaded.settings.releaseSpeed,
@@ -368,6 +425,66 @@ test('live settings changes are written for the next interactive session', () =>
         registerOverlayThreshold: 0.75,
       }),
     );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('/committee switches the learned specialist live and remembers the choice', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-committee-setting-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    const off = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/committee status\n/committee off\n/quit\n',
+        env: {
+          ...process.env,
+          TUTOR_STUB_REMEMBER_SETTINGS: '1',
+          TUTOR_STUB_SETTINGS_FILE: filePath,
+        },
+      },
+    );
+    assert.equal(off.status, 0, off.stderr);
+    assert.match(off.stdout, /learned committee >[^\n]*on/u);
+    assert.match(off.stdout, /learned committee >[^\n]*off/u);
+    assert.equal(readTutorStubLastSettings(filePath).settings.committeeEnabled, false);
+    assert.equal(tutorStubDryRun(filePath).pointOfAction.enabled, false);
+
+    const on = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/committee on\n/quit\n',
+        env: {
+          ...process.env,
+          TUTOR_STUB_REMEMBER_SETTINGS: '1',
+          TUTOR_STUB_SETTINGS_FILE: filePath,
+        },
+      },
+    );
+    assert.equal(on.status, 0, on.stderr);
+    assert.match(on.stdout, /learned committee >[^\n]*on/u);
+    assert.equal(readTutorStubLastSettings(filePath).settings.committeeEnabled, true);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
