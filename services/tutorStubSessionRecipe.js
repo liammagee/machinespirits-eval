@@ -27,6 +27,8 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'register-overlay-threshold',
   'pressure-turns',
   'register-temperature',
+  'light-adaptation',
+  'light-adaptation-threshold',
   'dag-fact-dropout',
   'dag-fact-dropout-seed',
   'release-speed',

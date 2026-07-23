@@ -97,12 +97,14 @@ test('recipe hash is deterministic and ignores creation time and presentation-on
   assert.equal(Object.isFrozen(first), true);
 });
 
-test('recipe captures every semantic committee, pressure, and evaluation identity option', () => {
+test('recipe captures semantic committee, pressure, light-adaptation, and evaluation identity options', () => {
   const semantic = {
     'committee-mini-model': 'llama3.2:3b',
     'committee-ollama-url': 'http://127.0.0.1:11434',
     'committee-fallback-policy': 'v2',
     'pressure-turns': '3,6',
+    'light-adaptation': true,
+    'light-adaptation-threshold': '3',
     'eval-repeat': '4',
     'eval-job-id': 'job-17',
   };

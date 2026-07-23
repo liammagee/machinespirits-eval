@@ -385,6 +385,31 @@ remain active. The compact model line says `random performance`, and transcript
 settings plus JSONL turns retain both seeded draws for exact replay. Changing
 the mode refreshes any prefetched mixed-learner response.
 
+### Light stochastic adaptation
+
+Use `--light-adaptation` at launch or `/light on` during a session for a
+conditional, deliberately shallow alternative to the deeper adaptive teaching
+policies. `/light off` disables it, `/light status` explains the active rule,
+and bare `/light` toggles it. The default trigger is two consecutive learner
+turns showing confusion or frustration; use
+`--light-adaptation-threshold <2..8>` to change that streak length.
+
+When the trigger fires, the next engagement stance and host character are
+chosen by seeded, replayable uniform draws. Each draw excludes the immediately
+previous value when an alternative exists, so the result is an actual visible
+shift rather than a chance repetition. The learner assessment decides only
+whether the streak has reached the trigger; it does not choose the resulting
+style or character. A grounded or explicitly resolved learner turn resets the
+streak.
+
+The light trigger takes priority over `/register`, `/character`, `/random`, and
+the configured deep register policy for those two axes on that turn. It does
+not alter the teaching action, audience level, language accessibility, scene,
+authored evidence, dialogue closure, or response-safety pipeline. A structurally
+licensed closeout character still takes priority. The compact model line says
+`light shift`, while JSONL turns retain the detected signal, streak, trigger,
+excluded previous values, and both seeded draw audits.
+
 ## Returning to a saved scenario
 
 When an interactive session restores a saved scenario and its dialogue

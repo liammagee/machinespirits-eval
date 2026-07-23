@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  TUTOR_STUB_COMMAND_EFFECT_KEYS,
   TUTOR_STUB_COMMAND_REGISTRY,
   TUTOR_STUB_COMMAND_REGISTRY_SCHEMA,
   TUTOR_STUB_COMMAND_REGISTRY_VERSION,
@@ -9,6 +10,7 @@ import {
   TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS,
   TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS,
   assertTutorStubCommandRegistryInvariants,
+  evaluateTutorStubCommandTransportAdmission,
   resolveTutorStubCommand,
   resolveTutorStubCommandId,
   tutorStubCanonicalCommandToken,
@@ -17,6 +19,7 @@ import {
   tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
   tutorStubCommandTokens,
+  tutorStubCommandTransportAdmission,
   tutorStubCommandTransportMetadata,
   tutorStubCommandUnavailableReasons,
   tutorStubStaticCommandCompletions,
@@ -28,6 +31,7 @@ const NORMAL_COMMANDS = [
   '/theme',
   '/motion',
   '/random',
+  '/light',
   '/committee',
   '/register',
   '/character',
@@ -144,6 +148,7 @@ const SCENE_RETURN_COMMANDS = [
   '/board',
   '/lab',
   '/translate',
+  '/light',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -175,14 +180,14 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings policy threshold ',
 ];
 
-test('v1 command registry freezes the three existing slash-token surfaces', () => {
+test('v2 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 1);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 41);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 56);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 2);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 42);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 57);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 21);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 37);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 38);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -199,14 +204,20 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
     assert.equal(Object.isFrozen(definition.availability), true);
     assert.equal(Object.isFrozen(definition.order), true);
     assert.equal(Object.isFrozen(definition.capabilities), true);
+    assert.equal(Object.isFrozen(definition.effects), true);
     assert.equal(Object.isFrozen(definition.transport), true);
+    assert.deepEqual(Object.keys(definition.effects), TUTOR_STUB_COMMAND_EFFECT_KEYS);
+    assert.equal(
+      Object.values(definition.effects).every((value) => typeof value === 'boolean'),
+      true,
+    );
     assert.equal(handlers.has(definition.handler), false, definition.handler);
     assert.equal(traceEvents.has(definition.traceEvent), false, definition.traceEvent);
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 41);
-  assert.equal(traceEvents.size, 41);
+  assert.equal(handlers.size, 42);
+  assert.equal(traceEvents.size, 42);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -236,6 +247,7 @@ test('canonical ids and aliases resolve uniquely', () => {
     '/committee off',
     '/committee status',
   ]);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/light'), ['/light on', '/light off', '/light status']);
   assert.equal(tutorStubCommandAvailable('/board'), true);
   assert.equal(tutorStubCommandAvailable('/board', { mode: 'passthrough' }), false);
   assert.equal(tutorStubCommandReturnsToScene('/board'), true);
@@ -261,6 +273,141 @@ test('transport metadata classifies picker, browser, voice, and relaunch side ef
   assert.deepEqual(tutorStubCommandTransportMetadata('/lab').effects, ['relaunch_instruction']);
   assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'blocked_pending_adapter');
   assert.equal(tutorStubCommandTransportMetadata('/not-a-command'), null);
+});
+
+test('execution effects conservatively classify every command before transport exposure', () => {
+  const commandsWith = (effect) =>
+    TUTOR_STUB_COMMAND_REGISTRY.commands.filter((definition) => definition.effects[effect]).map(({ id }) => id);
+
+  assert.deepEqual(commandsWith('modelCall'), [
+    'demo',
+    'random',
+    'light',
+    'committee',
+    'register',
+    'character',
+    'clarify',
+    'translate',
+    'voice',
+    'settings',
+    'debug',
+    'mode',
+    'coach',
+    'auto',
+    'suggest',
+    'clue',
+    'profile',
+    'use',
+    'regen',
+    'reset',
+  ]);
+  assert.deepEqual(commandsWith('fileWrite'), [
+    'demo',
+    'theme',
+    'motion',
+    'committee',
+    'visualization',
+    'transcript',
+    'voice',
+    'feedback_up',
+    'feedback_down',
+    'feedback',
+    'tune',
+    'settings',
+    'profile',
+    'scenario',
+    'quit',
+  ]);
+  assert.deepEqual(commandsWith('persistentMutation'), [
+    'demo',
+    'theme',
+    'motion',
+    'random',
+    'light',
+    'committee',
+    'register',
+    'character',
+    'clarify',
+    'voice',
+    'feedback_up',
+    'feedback_down',
+    'feedback',
+    'tune',
+    'settings',
+    'debug',
+    'mode',
+    'learner',
+    'coach',
+    'auto',
+    'suggest',
+    'clue',
+    'profile',
+    'scenario',
+    'board',
+    'use',
+    'regen',
+    'reset',
+    'quit',
+  ]);
+  assert.deepEqual(commandsWith('sessionClear'), ['scenario', 'board', 'reset']);
+  assert.deepEqual(commandsWith('processExit'), ['scenario', 'board', 'quit']);
+});
+
+test('process HTTP admission fails closed for missing metadata and disallowed effects', () => {
+  assert.deepEqual(tutorStubCommandTransportAdmission('/status'), {
+    allowed: false,
+    reason: 'adapter_unavailable',
+    commandId: 'status',
+    activeEffects: [],
+    disallowedEffects: [],
+    detail: null,
+  });
+
+  const structuredStatus = {
+    ...resolveTutorStubCommand('/status'),
+    transport: {
+      ...resolveTutorStubCommand('/status').transport,
+      processHttp: 'adapter_available',
+      noninteractiveAdapter: 'structured',
+    },
+  };
+  assert.equal(evaluateTutorStubCommandTransportAdmission(structuredStatus).allowed, true);
+  assert.equal(
+    evaluateTutorStubCommandTransportAdmission({
+      ...structuredStatus,
+      transport: { ...structuredStatus.transport, noninteractiveAdapter: 'none' },
+    }).reason,
+    'adapter_unavailable',
+  );
+
+  const structuredQuit = {
+    ...resolveTutorStubCommand('/quit'),
+    transport: {
+      ...resolveTutorStubCommand('/quit').transport,
+      processHttp: 'adapter_available',
+      noninteractiveAdapter: 'structured',
+    },
+  };
+  assert.deepEqual(evaluateTutorStubCommandTransportAdmission(structuredQuit).disallowedEffects, [
+    'fileWrite',
+    'persistentMutation',
+    'processExit',
+  ]);
+  assert.equal(
+    evaluateTutorStubCommandTransportAdmission(structuredQuit, {
+      allowedEffects: ['fileWrite', 'persistentMutation', 'processExit'],
+    }).allowed,
+    true,
+  );
+
+  const incompleteEffects = { ...structuredStatus, effects: { ...structuredStatus.effects } };
+  delete incompleteEffects.effects.processExit;
+  assert.equal(evaluateTutorStubCommandTransportAdmission(incompleteEffects).reason, 'invalid_effect_metadata');
+  assert.equal(
+    evaluateTutorStubCommandTransportAdmission(structuredStatus, { allowedEffects: ['networkWrite'] }).reason,
+    'invalid_effect_allowlist',
+  );
+  assert.equal(evaluateTutorStubCommandTransportAdmission(null).reason, 'unknown_command');
 });
 
 test('invariants reject duplicate aliases, handlers, and inconsistent mode metadata', () => {
@@ -293,6 +440,22 @@ test('invariants reject duplicate aliases, handlers, and inconsistent mode metad
     ),
   };
   assert.throws(() => assertTutorStubCommandRegistryInvariants(duplicateHandlerRegistry), /duplicate command handler/u);
+
+  const incompleteEffectRegistry = {
+    ...TUTOR_STUB_COMMAND_REGISTRY,
+    commands: TUTOR_STUB_COMMAND_REGISTRY.commands.map((definition, index) =>
+      index === 0
+        ? {
+            ...definition,
+            effects: Object.fromEntries(Object.entries(definition.effects).filter(([key]) => key !== 'modelCall')),
+          }
+        : definition,
+    ),
+  };
+  assert.throws(
+    () => assertTutorStubCommandRegistryInvariants(incompleteEffectRegistry),
+    /invalid execution effects: missing modelCall/u,
+  );
 });
 
 test('scene-return and passthrough views agree for every shared command and alias', () => {
@@ -343,6 +506,7 @@ test('resolved capabilities filter commands, completions, and generated help wit
     responseChecks: true,
   });
   assert.equal(tutorStubCommandAvailable('/random', { capabilities: direct }), true);
+  assert.equal(tutorStubCommandAvailable('/light', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/committee', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/coach', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/suggest', { capabilities: direct }), false);
