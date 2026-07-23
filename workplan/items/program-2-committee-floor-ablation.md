@@ -70,3 +70,8 @@ Log:
   the isolated worktree lacked its dependency path; no trace was created. Add
   a zero-model child-runtime preflight and fail fast on non-retryable process
   errors before restarting the still-unbegun clean cohort.
+- 2026-07-23 — Amendment 1's first real attempt exposed a second terminal
+  composition bug at turn 16: the same long learner focus appeared in both
+  uptake and handoff. No job sealed; the retry was stopped after its opening.
+  Amendment 2 freezes shortest-valid focus composition and a new 30-cell clean
+  restart; see preregistration §9.

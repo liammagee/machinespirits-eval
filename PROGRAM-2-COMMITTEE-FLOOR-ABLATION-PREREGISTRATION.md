@@ -236,3 +236,35 @@ Before the clean cohort starts, the launcher now runs `tutor-stub.js --help` as
 a zero-model child-runtime preflight and aborts immediately on any non-retryable
 child-process or signal failure. The worktree is supplied the existing local
 dependency installation without changing tracked code or the experiment.
+
+## 9. Amendment 2 — bounded terminal focus composition (2026-07-23)
+
+Amendment 1 then began at SHA `a85d63c1`. Its first trained-committee dialogue
+reached turn 16 before terminal recovery failed
+`actorial_realization:missing_selected_performance_tactic`; two non-actorial
+axis findings were report-only. The retry was interrupted after its opening so
+the same known implementation defect would not consume more provider calls.
+No Amendment 1 job sealed.
+
+The trace showed a general composition defect, not a clue-length defect: a
+valid but verbose repaired acknowledgement carried the learner's long request,
+and the deterministic handoff quoted the same long request again. At 87 words,
+the combined terminal fallback missed the selected `unadorned_report` budget
+despite retaining a visible record-keeper action. This was reproduced
+model-free from the exact learner surface.
+
+The second strict repair is fixed before any Amendment 2 dialogue:
+
+- terminal recovery revalidates both the preserved repair opening and the
+  ordinary deterministic opening, then chooses the shortest focus-bearing
+  result; and
+- when the default handoff would lose the typed focus, it uses the shortest
+  bounded focus fragment that still passes the unchanged handoff-coverage
+  audit instead of repeating the complete learner surface.
+
+The reproduced response is 73 words and passes the same strict actorial and
+turn-progression audits. No threshold, disposition, evidence surface, or
+endpoint changes. The whole Amendment 1 runtime-validation directory is
+excluded from W1-W3. Amendment 2 again starts all 30 cells under one new clean
+SHA in `exports/program2-committee-floor-ablation-amendment-2/`, with the
+original seed, order, models, retry rule, and frozen analysis unchanged.

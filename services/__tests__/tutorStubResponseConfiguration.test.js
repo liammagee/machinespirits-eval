@@ -20,6 +20,14 @@ import {
   deterministicTutorStubDramaticReleaseFallback,
 } from '../tutorStubDramaticRelease.js';
 import { compileTutorStubPerformanceObligationContract } from '../tutorStubPerformanceObligationContract.js';
+import {
+  deterministicTutorStubConfiguredContinuationFallback,
+  tutorStubSubstantiveLearnerEcho,
+} from '../tutorStubResponseComposition.js';
+import {
+  compileTutorStubTurnProgressionContract,
+  selectTutorStubDeterministicFallbackUptake,
+} from '../tutorStubTurnProgressionContract.js';
 
 function learnerDag({ bottleneck = 'release_or_pacing_gap', coverage = 0.3 } = {}) {
   return {
@@ -3461,6 +3469,56 @@ test('plain dramatic fallback remains an unadorned report with a long authored M
 
   assert.equal(audit.actorial_realization.ok, true, `${text}\n${JSON.stringify(audit.actorial_realization.issues)}`);
   assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
+test('plain terminal fallback bounds a long learner focus in both uptake and handoff', () => {
+  const learnerText =
+    'I would ask for a record of a prior die or coin whose R bears that same square notch, tied to its maker’s tool.';
+  const responseCompositionFrame = {
+    learner_move: { summary: 'Seeks a prior record tying the square notch to one maker’s tool.' },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [],
+  };
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame,
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: [
+      'I mark your request plain in the trial-book: you seek a prior record — some known die or tool whose R already carries that same square notch, and whose maker is named.',
+      'Your proposed move sets our next public check.',
+    ],
+    recentTutorTexts: ['An earlier tutor turn.'],
+    variationKey: 'floor-ablation-turn-16',
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+  });
+  const configuration = {
+    engagement_stance: 'plain',
+    action_family: 'stage_next_step',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'grounded',
+    actorial_part: 'record_keeper',
+    actorial_part_label: 'record keeper',
+    actorial_host_part: 'record_keeper',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration: configuration,
+    world: testWorld(),
+    learnerText,
+    turnProgressionContract: contract,
+    recentTutorTexts: ['An earlier tutor turn.'],
+    variationKey: 'floor-ablation-turn-16',
+  });
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.ok(audit.metrics.wordCount < 85, `${audit.metrics.wordCount}: ${text}`);
+  assert.equal(audit.actorial_realization.ok, true, JSON.stringify(audit.actorial_realization.issues));
 });
 
 test('learner-responsive action families are audited on uptake rather than clue development', () => {

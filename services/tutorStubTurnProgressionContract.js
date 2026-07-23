@@ -309,6 +309,40 @@ export function deterministicTutorStubTurnProgressionUptake({
   return bounded || fallback;
 }
 
+/**
+ * Terminal recovery may have more than one semantically valid opening: a
+ * preserved repair opening and the ordinary deterministic learner uptake.
+ * Revalidate both through the frozen progression contract, then choose the
+ * shortest passing surface. This keeps a valid but verbose repair draft from
+ * making the whole fallback fail a plain/unadorned performance budget.
+ */
+export function selectTutorStubDeterministicFallbackUptake({
+  contract = null,
+  candidates = [],
+  recentTutorTexts = [],
+  variationKey = '',
+  learnerEchoGuard = null,
+} = {}) {
+  const realized = (Array.isArray(candidates) ? candidates : [candidates])
+    .map((defaultUptake) =>
+      deterministicTutorStubTurnProgressionUptake({
+        contract,
+        defaultUptake,
+        recentTutorTexts,
+        variationKey,
+        learnerEchoGuard,
+      }),
+    )
+    .map(oneLine)
+    .filter(Boolean)
+    .filter((value, index, rows) => rows.indexOf(value) === index)
+    .sort((left, right) => {
+      const wordDelta = contentTerms(left).length - contentTerms(right).length;
+      return wordDelta || left.length - right.length || left.localeCompare(right);
+    });
+  return realized[0] || '';
+}
+
 function stableVariationIndex(value, count) {
   if (count <= 1) return 0;
   let hash = 2166136261;
@@ -677,10 +711,24 @@ function contractAwareFallbackQuestion(contract, defaultQuestion) {
   const handoff = contract?.handoff_contract || {};
   const dueSurfaces = contract?.turn_focus_contract?.due_surfaces || [];
   if (dueSurfaces.length || handoffTargetVisible(handoff, question)) return question;
-  const targetSurface = oneLine(handoff.required_target_surfaces?.[0] || contract?.turn_focus_contract?.primary_surface)
+  const fullTargetSurface = oneLine(
+    handoff.required_target_surfaces?.[0] || contract?.turn_focus_contract?.primary_surface,
+  )
     .replace(/[?]+/gu, '')
     .replace(/[.!]+$/gu, '')
     .trim();
+  const targetSurface = [
+    ...boundedQuotedFocusCandidates(fullTargetSurface),
+    boundedPublicFocus(fullTargetSurface, 72),
+    fullTargetSurface,
+  ]
+    .filter(Boolean)
+    .filter((surface, index, rows) => rows.indexOf(surface) === index)
+    .filter((surface) => handoffTargetVisible(handoff, surface))
+    .sort((left, right) => {
+      const wordDelta = contentTerms(left).length - contentTerms(right).length;
+      return wordDelta || left.length - right.length || left.localeCompare(right);
+    })[0];
   return targetSurface ? `What does that let us carry forward about “${targetSurface}”?` : question;
 }
 

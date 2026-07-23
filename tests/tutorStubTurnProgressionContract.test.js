@@ -8,6 +8,7 @@ import {
   compileTutorStubTurnProgressionContract,
   deterministicTutorStubTurnProgressionHandoff,
   deterministicTutorStubTurnProgressionUptake,
+  selectTutorStubDeterministicFallbackUptake,
   tutorStubLearnerRequestsWritableEntry,
   tutorStubTurnProgressionContractPrompt,
 } from '../services/tutorStubTurnProgressionContract.js';
@@ -969,6 +970,44 @@ test('deterministic declarative recovery keeps an unsupported learner conclusion
     }),
   });
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
+test('terminal recovery chooses the shortest focus-bearing uptake from valid repair candidates', () => {
+  const learnerText =
+    'I would ask for a record of a prior die or coin whose R bears that same square notch, tied to its maker’s tool.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Seeks a prior record tying the square notch to one maker’s tool.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+  const verbosePreserved =
+    'I mark your request plain in the trial-book: you seek a prior record — some known die or tool whose R already carries that same square notch, and whose maker is named.';
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: [verbosePreserved, 'Your proposed move sets our next public check.'],
+    recentTutorTexts: ['An earlier tutor turn.'],
+    variationKey: 'floor-ablation-turn-16',
+  });
+
+  assert.notEqual(uptake, verbosePreserved);
+  assert.ok(uptake.split(/\s+/u).length < verbosePreserved.split(/\s+/u).length, uptake);
+  assert.match(uptake, /record|die|coin|square|notch|maker|tool/iu);
+
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    defaultQuestion: 'What does that let us carry forward?',
+  });
+  assert.ok(handoff.length < learnerText.length, handoff);
+  const handoffAudit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake, handoff }),
+  });
+  assert.equal(handoffAudit.ok, true, JSON.stringify(handoffAudit.issues));
 });
 
 test('deterministic V1 recovery replaces interrogative uptake instead of stripping punctuation', () => {

@@ -198,6 +198,7 @@ import {
 import {
   auditTutorStubLiveTurnProgressionV1,
   deterministicTutorStubTurnProgressionUptake,
+  selectTutorStubDeterministicFallbackUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
 import {
   auditTutorStubLiveSourceActionAlignmentV1,
@@ -13045,12 +13046,12 @@ async function callTutor({
     // losing the learner's typed focus once it is composed into the terminal
     // fallback. Re-run every candidate through the same progression contract
     // here; do not privilege preserved prose over a focus-bearing recovery.
-    const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
+    const deterministicFallbackUptake = selectTutorStubDeterministicFallbackUptake({
       contract: firstDraftContract?.progression || null,
+      candidates: [candidateFallbackUptake, defaultFallbackUptake],
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-      defaultUptake: candidateFallbackUptake,
     });
     const fallbackUptake =
       firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(deterministicFallbackUptake)
