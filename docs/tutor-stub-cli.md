@@ -67,15 +67,27 @@ without removing labels or hierarchy.
 ## Labelling game
 
 The consolidated labelling harness serves both the blinded superego-taxonomy
-packet and the tutor-stub communicative-impasse corpus. Launch it directly or
-through the tutor-stub CLI:
+packet and the tutor-stub communicative-impasse corpus. A plain interactive
+launch now starts with a two-mode keyboard selector:
+
+```bash
+npm run tutor:stub
+```
+
+Choose `Tutor chat` (the default) or `Labelling game` with Up/Down and Enter.
+Quitting the labelling game returns to the selector, so the same terminal can
+switch back to chat. Explicit presets and piped/non-TTY runs skip the selector.
+
+For scripts or direct launches:
 
 ```bash
 npm run labelling-game -- --dataset tutor-stub-impasses --coder rater-A
+npm run tutor:stub -- --launch-mode labelling-game --label-dataset tutor-stub-impasses --label-coder rater-A
 npm run tutor:stub -- --labelling-game --label-dataset superego-taxonomy --label-coder rater-A
 ```
 
-Omit the dataset and coder flags to choose them interactively. The same packets
+`--labelling-game` remains a compatibility alias. Omit the dataset and coder
+flags to choose them interactively. The same packets
 are available in the browser at `http://localhost:8081/human-coding-admin`
 after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
 impasse judgments are stored as structured per-rater JSON sidecars.
