@@ -17,6 +17,7 @@ verification: An importable session runtime and versioned command/capability
 depends_on:
   - tutor-stub-register-policy-extraction
 links:
+  prs: https://github.com/liammagee/machinespirits-eval/pull/155
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
   items:
