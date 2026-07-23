@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-capability-session-runtime
 title: Extract a capability-driven tutor-stub session runtime
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -71,3 +71,5 @@ and evaluation adapters rather than forking them.
   checks, all interactive-mode regressions, lint, formatting, workplan checks,
   derivation quality, and the hermetic suite pass. The item is in review pending
   its integration PR.
+- 2026-07-23: PR #156 merged to `main` with all CI checks green; the versioned
+  session runtime is now the shared boundary for downstream transports.
