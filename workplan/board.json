@@ -1,13 +1,12 @@
 {
-  "generated": "2026-07-23T04:52:25.715Z",
+  "generated": "2026-07-23T07:46:35.155Z",
   "counts": {
     "total": 157,
     "byStatus": {
-      "done": 116,
+      "done": 122,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 26,
-      "review": 5,
+      "triaged": 25,
       "active": 1,
       "archived": 4
     },
@@ -605,32 +604,6 @@
       ]
     },
     {
-      "id": "repair-codex-session-capacity-and-cursors",
-      "title": "Repair Codex session capacity and stale-cursor semantics",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/codexSessionService.js"
-        ]
-      },
-      "tags": [
-        "codex-session",
-        "lifecycle",
-        "capacity",
-        "streaming"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "scenario-presentation-variety",
       "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
       "status": "triaged",
@@ -858,170 +831,6 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "bound-metered-evaluation-api-requests",
-      "title": "Add admission controls to metered evaluation API requests",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "Eval run and comparison routes reject malformed, unknown, or oversized plans before allocation or model calls; accepted plans expose an exact bounded test count and route regressions prove the paid-work ceiling.",
-      "claim_status": "planned",
-      "branch": "codex/tutor-stub-super-app-slices",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "routes/evalRoutes.js",
-          "services/evaluationRunner.js"
-        ],
-        "items": [
-          "bound-remaining-metered-eval-api-surfaces"
-        ]
-      },
-      "tags": [
-        "api",
-        "cost-control",
-        "evaluation-infrastructure",
-        "security"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "harden-cli-provider-process-isolation",
-      "title": "Isolate CLI model providers from secrets and fail closed on tool use",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "Spawned model CLIs receive only an explicit environment allowlist and any prohibited tool event fails the request; tests prove unrelated API secrets are absent and no successful response survives a policy violation.",
-      "claim_status": "planned",
-      "branch": "codex/tutor-stub-super-app-slices",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/cliProviderBridge.js"
-        ],
-        "items": [
-          "isolate-remaining-direct-model-subprocesses"
-        ]
-      },
-      "tags": [
-        "security",
-        "providers",
-        "process-isolation",
-        "secrets"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-safe-capability-labs",
-      "title": "Curate safe tutor-stub capability labs and compatibility gates",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "Every declarative lab zero-call dry-runs, a representative set completes with the fake provider, invalid combinations fail with actionable guidance, learner-facing labs exclude negative/simulated controls unless explicitly selected as research, generated help stays in sync, and traces record the lab id, maturity tier, resolved capabilities, and cost class.",
-      "depends_on": [
-        "tutor-stub-capability-session-runtime"
-      ],
-      "branch": "codex/tutor-stub-super-app-slices",
-      "links": {
-        "items": [
-          "tutor-stub-capability-session-runtime",
-          "tutor-stub-process-session-factory",
-          "consolidated-labelling-game-harness",
-          "tutor-stub-typed-pedagogical-actions"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "presets",
-        "safety",
-        "discoverability"
-      ]
-    },
-    {
-      "id": "tutor-stub-unified-session-surface",
-      "title": "Ship tutor-stub as one shared web and Electron session surface",
-      "status": "review",
-      "type": "ops",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
-      "depends_on": [
-        "tutor-stub-capability-session-runtime",
-        "tutor-stub-headless-session-transport",
-        "tutor-stub-process-session-factory",
-        "tutor-stub-safe-capability-labs",
-        "tutor-stub-session-recipes-explicit-resume"
-      ],
-      "links": {
-        "notes": [
-          "desktop/ARCHITECTURE.md",
-          "docs/tutor-stub-cli.md"
-        ],
-        "items": [
-          "tutor-stub-headless-session-transport",
-          "tutor-stub-process-session-factory",
-          "scriptorium-responsive-shell-navigation",
-          "scriptorium-static-tools-desktop-quality",
-          "scriptorium-ux-safety-net"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "scriptorium",
-        "electron",
-        "accessibility",
-        "voice",
-        "privacy"
-      ],
-      "milestone": "distribution",
-      "branch": "codex/tutor-stub-super-app-slices"
-    },
-    {
-      "id": "tutor-stub-session-recipes-explicit-resume",
-      "title": "Add versioned tutor-stub session recipes and explicit resume",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "A saved recipe relaunch reproduces the resolved configuration hash and fake-provider decision trace; --resume <run-id|trace-path> wins regardless of mtime; world, prompt, tutor, model, and schema drift fail closed unless explicitly acknowledged; old supported traces migrate read-only; transcript HTML exposes a copyable exact relaunch command.",
-      "depends_on": [
-        "tutor-stub-capability-session-runtime"
-      ],
-      "branch": "codex/tutor-stub-super-app-slices",
-      "links": {
-        "items": [
-          "tutor-stub-capability-session-runtime",
-          "adaptive-eval-immutable-provenance"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "sessions",
-        "resume",
-        "provenance"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1284,6 +1093,40 @@
         "adaptation",
         "evaluation"
       ]
+    },
+    {
+      "id": "bound-metered-evaluation-api-requests",
+      "title": "Add admission controls to metered evaluation API requests",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Eval run and comparison routes reject malformed, unknown, or oversized plans before allocation or model calls; accepted plans expose an exact bounded test count and route regressions prove the paid-work ceiling.",
+      "claim_status": "planned",
+      "branch": "codex/tutor-stub-super-app-slices",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159"
+        ],
+        "code": [
+          "routes/evalRoutes.js",
+          "services/evaluationRunner.js"
+        ],
+        "items": [
+          "bound-remaining-metered-eval-api-surfaces"
+        ]
+      },
+      "tags": [
+        "api",
+        "cost-control",
+        "evaluation-infrastructure",
+        "security"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "build-workplan-tooling",
@@ -1583,6 +1426,39 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "harden-cli-provider-process-isolation",
+      "title": "Isolate CLI model providers from secrets and fail closed on tool use",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Spawned model CLIs receive only an explicit environment allowlist and any prohibited tool event fails the request; tests prove unrelated API secrets are absent and no successful response survives a policy violation.",
+      "claim_status": "planned",
+      "branch": "codex/tutor-stub-super-app-slices",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159"
+        ],
+        "code": [
+          "services/cliProviderBridge.js"
+        ],
+        "items": [
+          "isolate-remaining-direct-model-subprocesses"
+        ]
+      },
+      "tags": [
+        "security",
+        "providers",
+        "process-isolation",
+        "secrets"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "layered-decision-loops",
@@ -2367,6 +2243,40 @@
       ]
     },
     {
+      "id": "tutor-stub-safe-capability-labs",
+      "title": "Curate safe tutor-stub capability labs and compatibility gates",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Every declarative lab zero-call dry-runs, a representative set completes with the fake provider, invalid combinations fail with actionable guidance, learner-facing labs exclude negative/simulated controls unless explicitly selected as research, generated help stays in sync, and traces record the lab id, maturity tier, resolved capabilities, and cost class.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "branch": "codex/tutor-stub-super-app-slices",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159"
+        ],
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "tutor-stub-process-session-factory",
+          "consolidated-labelling-game-harness",
+          "tutor-stub-typed-pedagogical-actions"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "presets",
+        "safety",
+        "discoverability"
+      ]
+    },
+    {
       "id": "tutor-stub-side-coaching-gate",
       "title": "Point-of-action coaching gate: compiled constraints + side-coaching (final-stretch Step 4)",
       "status": "done",
@@ -2473,6 +2383,53 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/adaptive-tutor-implementation"
+    },
+    {
+      "id": "tutor-stub-unified-session-surface",
+      "title": "Ship tutor-stub as one shared web and Electron session surface",
+      "status": "done",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime",
+        "tutor-stub-headless-session-transport",
+        "tutor-stub-process-session-factory",
+        "tutor-stub-safe-capability-labs",
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159",
+          "https://github.com/liammagee/machinespirits-eval/pull/161"
+        ],
+        "notes": [
+          "desktop/ARCHITECTURE.md",
+          "docs/tutor-stub-cli.md"
+        ],
+        "items": [
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "scriptorium-responsive-shell-navigation",
+          "scriptorium-static-tools-desktop-quality",
+          "scriptorium-ux-safety-net"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "scriptorium",
+        "electron",
+        "accessibility",
+        "voice",
+        "privacy"
+      ],
+      "milestone": "distribution",
+      "branch": "codex/tutor-stub-super-app-slices"
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
@@ -3824,6 +3781,33 @@
       ]
     },
     {
+      "id": "repair-codex-session-capacity-and-cursors",
+      "title": "Repair Codex session capacity and stale-cursor semantics",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/codexSessionService.js"
+        ]
+      },
+      "tags": [
+        "codex-session",
+        "lifecycle",
+        "capacity",
+        "streaming"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/repair-codex-session-capacity-and-cursors"
+    },
+    {
       "id": "review-ego-superego-internal-history-window",
       "title": "Review configurable ego/superego internal history windows",
       "status": "done",
@@ -4070,6 +4054,38 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-session-recipes-explicit-resume",
+      "title": "Add versioned tutor-stub session recipes and explicit resume",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "A saved recipe relaunch reproduces the resolved configuration hash and fake-provider decision trace; --resume <run-id|trace-path> wins regardless of mtime; world, prompt, tutor, model, and schema drift fail closed unless explicitly acknowledged; old supported traces migrate read-only; transcript HTML exposes a copyable exact relaunch command.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "branch": "codex/tutor-stub-super-app-slices",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159"
+        ],
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "sessions",
+        "resume",
+        "provenance"
+      ]
     },
     {
       "id": "unreliable-learner-prereg-completion",
