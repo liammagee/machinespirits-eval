@@ -13,6 +13,8 @@ branch: codex/tutor-stub-headless-api
 depends_on:
   - tutor-stub-capability-session-runtime
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/157
   notes:
     - docs/tutor-stub-cli.md
   items:
@@ -44,3 +46,4 @@ CLI tutor factory is the next integration boundary.
   validation/conflict responses. Focused runtime, HTTP, server-route, command,
   capability, and interactive suites pass; the final rebased hermetic run passes 6,384
   tests with one skip after granting its localhost voice tests loopback access.
+- 2026-07-23: Opened integration PR #157.
