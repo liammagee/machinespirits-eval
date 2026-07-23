@@ -622,6 +622,21 @@ function ollamaPreflight(url, model) {
   });
 }
 
+function tutorStubRuntimePreflight() {
+  const probe = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--help'], {
+    cwd: ROOT,
+    env: process.env,
+    encoding: 'utf8',
+  });
+  if (probe.error || probe.status !== 0) {
+    const detail = String(probe.stderr || probe.stdout || probe.error?.message || 'unknown startup failure')
+      .replace(/\s+/gu, ' ')
+      .trim()
+      .slice(0, 500);
+    throw new Error(`tutor-stub runtime preflight failed before any job: ${detail}`);
+  }
+}
+
 async function runCommand(command, ordinal, total) {
   console.log(`[phase5] ${ordinal}/${total} ${command[command.indexOf('--eval-job-id') + 1] || ''}`);
   await new Promise((resolve, reject) => {
@@ -674,6 +689,7 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
     return {
       kind: 'deterministic_final_audit',
       countsTowardTransportAbort: false,
+      abortImmediately: false,
       detail,
       turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
       traceFile: traceEvent?.traceFile || null,
@@ -687,6 +703,7 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
     return {
       kind: 'provider_transport',
       countsTowardTransportAbort: true,
+      abortImmediately: false,
       detail,
       turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
       traceFile: traceEvent?.traceFile || null,
@@ -695,6 +712,7 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
   return {
     kind: error?.signal ? 'child_signal' : 'child_process',
     countsTowardTransportAbort: false,
+    abortImmediately: true,
     detail,
     turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
     traceFile: traceEvent?.traceFile || null,
@@ -772,6 +790,7 @@ async function main() {
     return;
   }
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
+  tutorStubRuntimePreflight();
   artifact.launchSha = launchSha;
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   const requiredMiniModels = plan.committeeMiniModels || [PHASE5_LIVE_PILOT_SPEC.committeeMiniModel];
@@ -831,6 +850,13 @@ async function main() {
         console.error(
           `[phase5] ${job.id} attempt ${attempt} failed (${failure.kind}): ${outcome.error}`,
         );
+        if (failure.abortImmediately) {
+          launchState.jobs[job.id] = outcome;
+          launchState.abortedAt = new Date().toISOString();
+          launchState.abortReason = `non-retryable ${failure.kind} failure before a sealed job`;
+          saveState();
+          throw new Error(`aborting launch: non-retryable ${failure.kind} failure`);
+        }
         if (consecutiveTransportFailures >= 3) {
           launchState.jobs[job.id] = outcome;
           launchState.abortedAt = new Date().toISOString();

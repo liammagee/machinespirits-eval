@@ -219,3 +219,20 @@ analysis. A licensed reading still requires 30/30 sealed replacement jobs.
 The original traces and analysis remain untouched under
 `exports/program2-committee-floor-ablation/` and are reported only as the
 reason for this amendment.
+
+### Pre-dialogue startup correction
+
+The first Amendment 1 invocation at SHA `4104dda7` found no installed
+`node_modules` path in the isolated worktree. `tutor-stub.js` therefore failed
+while importing `dotenv`, before trace creation or any provider call. The
+launcher classified these correctly as `child_process` rather than transport,
+but cycled through the plan because non-transport failures did not yet stop the
+outer loop. The resulting launch-state file records 0/30 sealed, no trace
+directory, and no experimental dialogue; it is retained as
+`launch-state-preflight-failure.json` and is not an attempt under the
+one-retry-per-dialogue rule.
+
+Before the clean cohort starts, the launcher now runs `tutor-stub.js --help` as
+a zero-model child-runtime preflight and aborts immediately on any non-retryable
+child-process or signal failure. The worktree is supplied the existing local
+dependency installation without changing tracked code or the experiment.

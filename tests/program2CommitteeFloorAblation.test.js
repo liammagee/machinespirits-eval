@@ -146,8 +146,13 @@ test('launcher distinguishes deterministic final audits from provider transport 
     },
   });
   assert.deepEqual(
-    { kind: auditFailure.kind, counts: auditFailure.countsTowardTransportAbort, turn: auditFailure.turn },
-    { kind: 'deterministic_final_audit', counts: false, turn: 31 },
+    {
+      kind: auditFailure.kind,
+      counts: auditFailure.countsTowardTransportAbort,
+      aborts: auditFailure.abortImmediately,
+      turn: auditFailure.turn,
+    },
+    { kind: 'deterministic_final_audit', counts: false, aborts: false, turn: 31 },
   );
 
   const transportFailure = classifyProgram2LaunchFailure({
@@ -155,7 +160,21 @@ test('launcher distinguishes deterministic final audits from provider transport 
     traceEvent: { turn: 4, error: 'provider transport: HTTP 503 temporarily unavailable' },
   });
   assert.deepEqual(
-    { kind: transportFailure.kind, counts: transportFailure.countsTowardTransportAbort },
-    { kind: 'provider_transport', counts: true },
+    {
+      kind: transportFailure.kind,
+      counts: transportFailure.countsTowardTransportAbort,
+      aborts: transportFailure.abortImmediately,
+    },
+    { kind: 'provider_transport', counts: true, aborts: false },
+  );
+
+  const infrastructureFailure = classifyProgram2LaunchFailure({ error: new Error('child exited 1') });
+  assert.deepEqual(
+    {
+      kind: infrastructureFailure.kind,
+      counts: infrastructureFailure.countsTowardTransportAbort,
+      aborts: infrastructureFailure.abortImmediately,
+    },
+    { kind: 'child_process', counts: false, aborts: true },
   );
 });

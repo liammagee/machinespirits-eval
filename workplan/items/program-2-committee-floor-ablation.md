@@ -66,3 +66,7 @@ Log:
   fallback and failure ledger, then restart a clean 30-dialogue cohort under a
   new pushed SHA. No endpoint, guard disposition, or reading rule changes; see
   preregistration §8.
+- 2026-07-23 — the first amended invocation made zero provider calls because
+  the isolated worktree lacked its dependency path; no trace was created. Add
+  a zero-model child-runtime preflight and fail fast on non-retryable process
+  errors before restarting the still-unbegun clean cohort.
