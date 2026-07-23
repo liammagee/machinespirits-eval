@@ -78,5 +78,13 @@ the two engines are not treated as prompt-compatible implementations.
   id-director representative profiles as the extraction compatibility matrix.
 - 2026-07-23: Extracted prompt lookup into the route-free
   `services/legacyChatPromptLoader.js`; the HTTP route keeps a compatibility
-  re-export while turn execution and curriculum loading remain the next domain
-  functions to move.
+  re-export. Checkpoint `23ee1ec9` is pushed to the convergence branch.
+- 2026-07-23: Completed phase 3 extraction: curriculum/course discovery,
+  compiled scene loading, and director framing now live in
+  `services/legacyChatCurriculum.js`; tutor-turn orchestration plus OpenRouter,
+  Claude CLI, and Codex CLI calls now live in
+  `services/legacyChatTutorEngine.js`. The Express route imports and
+  compatibility-re-exports those domain functions, while the named `cell_lab`
+  boundary has no Express dependency. A focused 123-test route, curriculum,
+  deliberation, live-compose, pilot, and auth suite passes without paid calls;
+  the full hermetic suite passes 6,408 tests with one skip and no failures.

@@ -2,11 +2,9 @@
  * Transitional domain entrypoint for the legacy eval-cell chat engine.
  *
  * Non-route consumers import this module instead of reaching into the Express
- * router. The implementation still lives in routes/chatRoutes.js during the
- * first convergence phase, while prompt lookup has moved to a route-free
- * service. Keeping the remaining dependency in one place lets the next slice
- * move curriculum and turn execution without changing pilot or live-compose
- * callers.
+ * router. Curriculum discovery, prompt lookup, and tutor-turn orchestration now
+ * live in route-free services; the Express route imports the same functions and
+ * keeps compatibility re-exports for older callers.
  *
  * `cell_lab` is deliberately distinct from the learner-safe `tutor_stub`
  * engine. It exposes eval-cell prompts and deliberation to research/admin
@@ -25,5 +23,6 @@ export const LEGACY_CHAT_REPRESENTATIVE_CELLS = Object.freeze([
   'cell_107_id_director_witness_exemplars',
 ]);
 
-export { loadCurriculumContext, runTutorTurn } from '../routes/chatRoutes.js';
+export { loadCurriculumContext } from './legacyChatCurriculum.js';
 export { loadPromptFile } from './legacyChatPromptLoader.js';
+export { runTutorTurn } from './legacyChatTutorEngine.js';
