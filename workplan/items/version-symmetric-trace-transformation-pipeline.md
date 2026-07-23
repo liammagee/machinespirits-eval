@@ -1,15 +1,15 @@
 ---
 id: version-symmetric-trace-transformation-pipeline
 title: Version and restore the symmetric trace-transformation pipeline
-status: triaged
+status: done
 type: maintenance
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
-verification: Newly generated learner traces emit the canonical initial,
-  review, revision, and final labels; legacy logs remain readable; active-rubric
+updated: 2026-07-23
+verification: Newly generated learner traces emit the canonical initial, review,
+  revision, and final labels; legacy logs remain readable; active-rubric
   analyzers reject non-finite inputs and pass fixture-to-output regressions.
 claim_status: planned
 depends_on: []
@@ -25,6 +25,7 @@ tags:
   - transformation
   - rubric-versioning
 milestone: evaluation-infrastructure
+branch: codex/version-symmetric-trace-transformation-pipeline
 ---
 
 Learner deliberation records preserve initial/revision stages internally, but
@@ -48,3 +49,25 @@ Acceptance:
   do.
 - Add generated-trace, legacy-fixture, v2.2-dimension, missing-score, and
   injected-messages regression tests.
+
+Implementation:
+
+- New traces carry schema version `2.0` and emit the learner's initial ego,
+  superego review, ego revision, and public final-output stages distinctly.
+  Shared stage classification keeps historical `learner_ego` traces readable
+  in transcript, projection, and rubric consumers.
+- Transformation analysis now resolves dimensions from the recorded tutor
+  rubric version, excludes non-finite turn and dimension scores, and supports
+  both historical `superego/revise` and canonical rejected
+  `superego/review` interventions.
+- Injected learner model calls receive the same message history as production
+  calls, including the internal ego and superego chain used for revision.
+
+Verification completed 2026-07-23:
+
+- generated-trace, legacy projection, v2.2 dimension, missing-score,
+  intervention, and injected-message regressions pass;
+- evaluation-runner, dialogue-structure, transcript, and rubric compatibility
+  suites pass;
+- lint, Prettier, diff, and workplan checks pass;
+- the full test suite passes: 6,476 passed, 0 failed, 1 skipped.

@@ -130,6 +130,18 @@ describe('analyzeSuperegoIncorporation', () => {
     const result = analyzeSuperegoIncorporation(BASIC_TRACE);
     assert.strictEqual(result.avgConfidence, 0.7);
   });
+
+  it('keeps finite zero confidence and rejects non-finite confidence', () => {
+    const result = analyzeSuperegoIncorporation([
+      { agent: 'superego', action: 'review', confidence: 0, approved: true },
+      { agent: 'superego', action: 'review', confidence: Number.NaN, approved: false },
+    ]);
+    assert.deepEqual(
+      result.confidenceProgression.map((entry) => entry.confidence),
+      [0],
+    );
+    assert.equal(result.avgConfidence, 0);
+  });
 });
 
 // ============================================================================
@@ -298,6 +310,39 @@ describe('analyzeInterventionEffectiveness', () => {
     const result = analyzeInterventionEffectiveness(trace, turnResults);
     assert.strictEqual(result.interventionsByType.enhance.count, 2);
     assert.strictEqual(result.interventionsByType.revise.count, 1);
+  });
+
+  it('accepts canonical superego/review rejections as interventions', () => {
+    const trace = [
+      {
+        agent: 'superego',
+        action: 'review',
+        turnIndex: 1,
+        approved: false,
+        interventionType: 'revise',
+      },
+    ];
+    const result = analyzeInterventionEffectiveness(trace, [
+      { turnIndex: 0, turnScore: 45 },
+      { turnIndex: 1, turnScore: 60 },
+    ]);
+    assert.equal(result.interventionCount, 1);
+    assert.equal(result.scoreImprovementAfterIntervention, 15);
+  });
+
+  it('does not aggregate missing or non-finite turn scores into NaN', () => {
+    const trace = [
+      { agent: 'superego', action: 'review', turnIndex: 1, approved: false },
+      { agent: 'superego', action: 'revise', turnIndex: 2 },
+    ];
+    const result = analyzeInterventionEffectiveness(trace, [
+      { turnIndex: 0, turnScore: undefined },
+      { turnIndex: 1, turnScore: Number.NaN },
+      { turnIndex: 2, turnScore: Number.POSITIVE_INFINITY },
+    ]);
+    assert.equal(result.interventionCount, 2);
+    assert.equal(result.scoreImprovementAfterIntervention, null);
+    assert.doesNotMatch(JSON.stringify(result), /NaN|Infinity/);
   });
 });
 

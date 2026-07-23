@@ -2888,8 +2888,12 @@ export async function generateLearnerResponse(options) {
   // eval (callLearnerAI) paths use the same pipeline.
   // The 5th argument is messageHistory for message chain mode.
   const callLLM = llmCall
-    ? async (agentConfig, systemPrompt, userPrompt, _role, _msgHistory = null) => {
-        const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
+    ? async (agentConfig, systemPrompt, userPrompt, _role, messageHistory = null) => {
+        const messages = [
+          ...(Array.isArray(messageHistory) ? messageHistory : []),
+          { role: 'user', content: userPrompt },
+        ];
+        const response = await llmCall(agentConfig.model, systemPrompt, messages, {
           temperature: getRequiredTemperature(agentConfig, _role || 'learner_agent'),
           maxTokens: getRequiredMaxTokens(agentConfig, _role || 'learner_agent'),
           agentRole: _role,

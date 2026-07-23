@@ -137,6 +137,24 @@ describe('transcriptProjection', () => {
     assert.equal(draftStep.to, 'tutor_superego', 'Draft should route to superego when review follows');
   });
 
+  it('projects historical learner_ego labels as initial and revision stages', () => {
+    const legacyTrace = [
+      { agent: 'learner_ego', action: 'deliberation', turnIndex: 1, detail: 'Initial reaction.' },
+      { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Critique.' },
+      { agent: 'learner_ego', action: 'deliberation', turnIndex: 1, detail: 'Revised reaction.' },
+      { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'Public response.' },
+    ];
+    const steps = traceToSteps(legacyTrace);
+
+    assert.ok(steps.some((step) => step.label === 'Reaction' && step.detail.includes('Initial reaction')));
+    assert.ok(steps.some((step) => step.label === 'Critique' && step.detail.includes('Critique')));
+    assert.equal(
+      steps.some((step) => step.detail.includes('Revised reaction')),
+      false,
+      'revision remains internal to the final learner delivery projection',
+    );
+  });
+
   it('returns unified projection artifacts', () => {
     const projection = projectTranscriptArtifacts({
       trace: sampleTrace,

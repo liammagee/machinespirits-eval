@@ -408,8 +408,10 @@ function formatDialogueTranscript(dialogueContext) {
 
       if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
         lines.push(`[Learner Action] ${truncateForEvaluation(entry.detail || entry.contextSummary, 300)}`);
-      } else if (entry.agent === 'learner_ego') {
+      } else if (entry.agent === 'learner_ego' || entry.agent === 'learner_ego_initial') {
         lines.push(`  (Learner Ego: ${truncateForEvaluation(entry.detail || entry.contextSummary, 200)})`);
+      } else if (entry.agent === 'learner_ego_revision') {
+        lines.push(`  (Learner Ego revised: ${truncateForEvaluation(entry.detail || entry.contextSummary, 200)})`);
       } else if (entry.agent === 'learner_superego') {
         lines.push(`  (Learner Superego: ${truncateForEvaluation(entry.detail || entry.contextSummary, 200)})`);
       } else if (entry.agent === 'learner') {
@@ -2467,6 +2469,7 @@ function _hasDeliberationEntries(trace) {
     'superego_disposition',
     'learner_ego_initial',
     'learner_ego_revision',
+    'learner_ego',
     'learner_superego',
     'learner_synthesis',
     'learner_other_ego',

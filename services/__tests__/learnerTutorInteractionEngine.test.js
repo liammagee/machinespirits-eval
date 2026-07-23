@@ -871,6 +871,27 @@ describe('learner output sanitization', () => {
     assert.ok(serializedRevisionHistory.includes('I think I partly get it.'));
     assert.ok(serializedRevisionHistory.includes('Ask for a concrete example.'));
 
+    assert.deepEqual(
+      llmCalls[0].messages.slice(0, 2).map(({ role, content }) => ({ role, content })),
+      [
+        { role: 'assistant', content: 'I thought it was a compromise.' },
+        { role: 'user', content: 'It is more transformative than that.' },
+      ],
+      'the injected ego call must receive the same external history as the production adapter',
+    );
+    assert.ok(
+      llmCalls[2].messages.some(
+        (message) => message.role === 'assistant' && message.content === 'I think I partly get it.',
+      ),
+      'the injected revision call must receive the ego internal history',
+    );
+    assert.ok(
+      llmCalls[2].messages.some(
+        (message) => message.role === 'user' && message.content.includes('Ask for a concrete example.'),
+      ),
+      'the injected revision call must receive the superego feedback history',
+    );
+
     const serializedPrompts = JSON.stringify(
       llmCalls.map((call) => ({
         systemPrompt: call.systemPrompt,
