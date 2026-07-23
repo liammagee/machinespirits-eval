@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T22:09:55.568Z",
+  "generated": "2026-07-23T22:27:41.099Z",
   "counts": {
     "total": 159,
     "byStatus": {
@@ -672,6 +672,9 @@
       "claim_status": "planned",
       "depends_on": [],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/175"
+        ],
         "notes": [
           "docs/analysis-toolkit-guide.md"
         ],

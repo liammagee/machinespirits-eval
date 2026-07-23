@@ -14,6 +14,8 @@ verification: Frozen miniature evaluation fixtures exercise every canonical
 claim_status: planned
 depends_on: []
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/175
   notes:
     - docs/analysis-toolkit-guide.md
   code:
@@ -51,5 +53,6 @@ Acceptance:
 
 Log:
 
+- 2026-07-24 — Opened PR #175 with the workplan linkage and post-rebase contract, analysis smoke, lint, formatting, and board validation evidence.
 - 2026-07-24 — Added the strict `canonical-posthoc-v1` runner, explicit DB/log/judge seams for all five commands, machine-readable reliability output, and a frozen fixture spanning missing data, repeated judges, three-turn trajectories, and legacy/current cell names.
 - 2026-07-24 — Golden replay passed 5/5 pipeline tests; mixed rubric, unpaired judge, provenance drift, and mixed trace-version mutations all failed closed. Analysis smoke tests passed 14/14; full hermetic suite passed 6,507 with 1 skip; lint and format checks passed.
