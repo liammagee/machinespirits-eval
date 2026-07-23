@@ -493,6 +493,7 @@ function learnerDagSnapshot(tutorLearnerDag = null) {
     missing_premise_count: Number(assessment.missingPremiseCount || 0),
     final_secret_entailed: assessment.finalSecretEntailed === true,
     asserted_secret: assessment.assertedSecret === true,
+    rejected_update_count: Array.isArray(tutorLearnerDag?.rejected) ? tutorLearnerDag.rejected.length : 0,
     learner_advance: advance
       ? {
           pace: advance.pace || null,

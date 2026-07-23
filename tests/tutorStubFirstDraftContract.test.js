@@ -581,6 +581,49 @@ test('rapid handoff is declarative when direct answer, closure, or writable upta
   }
 });
 
+test('first-draft host plan consumes the frozen public claim status', () => {
+  const learnerText = 'I enter: the lead-sweat answers to the weir-forge crucible’s leavings.';
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText,
+    responseConfiguration: configuration({
+      engagement_stance: 'plain',
+      action_family: 'compress_sayback',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'grounded',
+      actorial_performance: {
+        id: 'unadorned_report',
+        label: 'unadorned report',
+        contract: 'State it directly.',
+      },
+    }),
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'Learner adopts the alloy-to-crucible evidence.',
+        evidence_use: 'cites_public_evidence',
+        epistemic_stance: 'grounded',
+      },
+      learner_dag: { learner_advance: { supported_move_count: 0 } },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+      scene_action_budget: { saturated: false },
+    },
+    committedPublicEvidence: [
+      {
+        surface: "The founder's man knows the lead-sweat: it answers to the leavings of the weir-forge crucible.",
+      },
+    ],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const uptake = contract.host_plan.slots.find((slot) => slot.id === 'uptake');
+  const handoff = contract.host_plan.slots.find((slot) => slot.id === 'handoff');
+
+  assert.equal(contract.progression.public_claim_status.status, 'supported');
+  assert.equal(contract.progression.public_claim_status.basis, 'committed_public_evidence');
+  assert.match(uptake.instruction, /supported by the committed public record/iu);
+  assert.match(handoff.instruction, /do not reopen it/iu);
+});
+
 test('fails closed when a supplied typed public obligation contract is incomplete', () => {
   const incomplete = compileTutorStubPerformanceObligationContract({
     responseConfiguration: configuration(),

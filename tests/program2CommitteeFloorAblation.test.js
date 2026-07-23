@@ -11,7 +11,10 @@ import {
   PHASE5_LIVE_PILOT_SPEC,
   validateCommitteeFloorAblationPlan,
 } from '../scripts/run-program2-live-pilot.js';
-import { analyzeFloorAblationRows } from '../scripts/analyze-program2-committee-floor-ablation.mjs';
+import {
+  analyzeFloorAblationRows,
+  summarizeTutorResponseGuard,
+} from '../scripts/analyze-program2-committee-floor-ablation.mjs';
 
 function flagValue(command, flag) {
   const index = command.indexOf(flag);
@@ -43,14 +46,8 @@ test('matched committee jobs differ only at the mini-model and provenance flags'
     const trained = pair.find((job) => job.condition === 'trained_committee');
     const untuned = pair.find((job) => job.condition === 'untuned_committee');
     assert.ok(trained && untuned, `incomplete pair ${pairKey}`);
-    assert.equal(
-      flagValue(trained.command, '--committee-mini-model'),
-      COMMITTEE_FLOOR_ABLATION_SPEC.trainedMiniModel,
-    );
-    assert.equal(
-      flagValue(untuned.command, '--committee-mini-model'),
-      COMMITTEE_FLOOR_ABLATION_SPEC.untunedMiniModel,
-    );
+    assert.equal(flagValue(trained.command, '--committee-mini-model'), COMMITTEE_FLOOR_ABLATION_SPEC.trainedMiniModel);
+    assert.equal(flagValue(untuned.command, '--committee-mini-model'), COMMITTEE_FLOOR_ABLATION_SPEC.untunedMiniModel);
     assert.equal(flagValue(trained.command, '--eval-job-id'), pairKey);
     assert.equal(flagValue(untuned.command, '--eval-job-id'), pairKey);
     const normalized = (command) => {
@@ -102,11 +99,61 @@ function makeRow(condition, profile, repeat, pairKey, comp) {
     job: { id: `${condition}-${profile}-${repeat}`, condition, profile, repeat, pairKey },
     warrant: { opp: 4, comp },
     verdicts: [],
-    moments: condition === 'silent_control' ? [] : [{ source: 'fallback_multi_question', fallback: { resolution: 'trimmed' } }],
+    moments:
+      condition === 'silent_control'
+        ? []
+        : [{ source: 'fallback_multi_question', fallback: { resolution: 'trimmed' } }],
     fixedHorizon: { coverageAtHorizon: 0.8, hardSafetyPassed: true },
     leakTurns: [],
+    responseGuard: {
+      completedTurns: 4,
+      repairedTurns: condition === 'trained_committee' ? 2 : 1,
+      deterministicFallbackTurns: condition === 'trained_committee' ? 1 : 0,
+      totalAttempts: condition === 'trained_committee' ? 8 : 4,
+      outcomeTally: { guarded_original_accepted: condition === 'trained_committee' ? 3 : 4 },
+      guardTriggerTally: condition === 'trained_committee' ? { 'live_turn_progression_v1:test': 1 } : {},
+      publicClaimStatusTally: { supported: 1, unknown: 3 },
+      publicClaimStatusBasisTally: { committed_public_evidence_match: 1, no_material_focus: 3 },
+    },
   };
 }
+
+test('response-guard diagnostic extracts fallback, trigger, and typed claim-status incidence', () => {
+  const summary = summarizeTutorResponseGuard([
+    {
+      tutorResponseRepaired: true,
+      tutorDeterministicFallback: true,
+      tutorGuardAccounting: {
+        outcome: 'guarded_deterministic_fallback',
+        attempts: [{}, {}, {}],
+        repairsApplied: [
+          {
+            triggeredBy: [{ guard: 'live_turn_progression_v1', type: 'supported_public_claim_reopened' }],
+          },
+        ],
+      },
+      firstDraftContract: {
+        progression: {
+          public_claim_status: { status: 'supported', basis: 'committed_public_evidence_match' },
+        },
+      },
+    },
+    {
+      tutorResponseRepaired: false,
+      tutorDeterministicFallback: false,
+      tutorGuardAccounting: { outcome: 'guarded_original_accepted', attempts: [{}], repairsApplied: [] },
+      firstDraftContract: {
+        progression: { public_claim_status: { status: 'unknown', basis: 'partial_public_evidence_match' } },
+      },
+    },
+  ]);
+  assert.equal(summary.completedTurns, 2);
+  assert.equal(summary.deterministicFallbackRate, 0.5);
+  assert.equal(summary.repairRate, 0.5);
+  assert.equal(summary.meanAttempts, 2);
+  assert.equal(summary.guardTriggerTally['live_turn_progression_v1:supported_public_claim_reopened'], 1);
+  assert.deepEqual(summary.publicClaimStatusTally, { supported: 1, unknown: 1 });
+});
 
 test('analysis detects a trained-weights contribution from complete matched blocks', () => {
   const artifact = analyzeFloorAblationRows(makeRows({ trainedComp: 4, untunedComp: 1, controlComp: 0 }), {
@@ -117,6 +164,11 @@ test('analysis detects a trained-weights contribution from complete matched bloc
   assert.equal(artifact.primary.trainingContributionDetected, true);
   assert.equal(artifact.secondary.trainedMinusControl.advantageDetected, true);
   assert.equal(artifact.reading, 'trained_weights_add_live_gain');
+  assert.equal(artifact.responseGuardDiagnostics.role, 'diagnostic_only');
+  assert.equal(artifact.responseGuardDiagnostics.changesConfirmatoryEstimands, false);
+  assert.equal(artifact.responseGuardDiagnostics.byCondition.trained_committee.deterministicFallbackRate, 0.25);
+  assert.equal(artifact.responseGuardDiagnostics.byCondition.untuned_committee.deterministicFallbackRate, 0);
+  assert.equal(artifact.responseGuardDiagnostics.trainedMinusUntunedFallbackRate, 0.25);
 });
 
 test('analysis requires interval equivalence before licensing harness sufficiency', () => {

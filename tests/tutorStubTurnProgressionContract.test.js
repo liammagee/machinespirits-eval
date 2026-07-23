@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA,
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+  auditTutorStubLiveTurnProgressionV1,
   auditTutorStubTurnProgression,
   compileTutorStubTurnProgressionContract,
   deterministicTutorStubTurnProgressionHandoff,
@@ -13,7 +14,11 @@ import {
   tutorStubTurnProgressionContractPrompt,
 } from '../services/tutorStubTurnProgressionContract.js';
 import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
-import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
+import {
+  auditTutorStubResponseComposition,
+  deterministicTutorStubConfiguredContinuationFallback,
+  tutorStubSubstantiveLearnerEcho,
+} from '../services/tutorStubResponseComposition.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
 function composition({
@@ -970,6 +975,175 @@ test('deterministic declarative recovery keeps an unsupported learner conclusion
     }),
   });
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
+test('public claim status carries an established Marrick premise through terminal recovery', () => {
+  const learnerText = 'I enter: the lead-sweat answers to the weir-forge crucible’s leavings.';
+  const committedPublicEvidence = [
+    {
+      surface:
+        "The founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.",
+    },
+  ];
+  const responseCompositionFrame = {
+    active: true,
+    learner_move: {
+      summary: 'Learner adopts the alloy-to-crucible evidence.',
+      evidence_use: 'cites_public_evidence',
+      epistemic_stance: 'grounded',
+    },
+    learner_dag: { learner_advance: { supported_move_count: 0 } },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [],
+    selected_action_family: 'compress_sayback',
+    action_target: 'development',
+    development: { kind: 'pedagogical_continuation' },
+  };
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame,
+    committedPublicEvidence,
+    actionFamily: 'compress_sayback',
+    tactic: 'unadorned_report',
+  });
+
+  assert.equal(contract.public_claim_status.status, 'supported');
+  assert.equal(contract.public_claim_status.basis, 'committed_public_evidence');
+  assert.ok(contract.public_claim_status.group_matches.every((row) => row.recognized));
+
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: ['The public record now supports that finding, with no stronger claim added.'],
+    recentTutorTexts: ['An earlier tutor turn.'],
+    variationKey: 'amendment-2-turn-30',
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+  });
+  assert.match(uptake, /lead-sweat|weir-forge|crucible|leavings/iu);
+  assert.equal(tutorStubSubstantiveLearnerEcho(uptake, learnerText), false);
+
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration: {
+      engagement_stance: 'plain',
+      action_family: 'compress_sayback',
+      actorial_host_part: 'record_keeper',
+      actorial_part: 'record_keeper',
+      actorial_performance: { id: 'unadorned_report' },
+    },
+    world: { title: 'The Light Shillings', question: 'Whose hand struck the false shillings?' },
+    learnerText,
+    turnProgressionContract: contract,
+    recentTutorTexts: ['An earlier tutor turn.'],
+    variationKey: 'amendment-2-turn-30',
+  });
+  assert.match(text, /That public line now stands/iu);
+  assert.doesNotMatch(text, /remains open|until the public evidence supports/iu);
+
+  const compositionAudit = auditTutorStubResponseComposition({
+    text,
+    frame: responseCompositionFrame,
+    learnerText,
+  });
+  assert.equal(compositionAudit.ok, true, `${text}\n${JSON.stringify(compositionAudit.issues)}`);
+  const liveAudit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text,
+    responseComposition: compositionAudit,
+  });
+  assert.equal(liveAudit.ok, true, `${text}\n${JSON.stringify(liveAudit.issues)}`);
+});
+
+test('public claim status accepts validated multi-premise advances without lexical guessing', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText:
+      'The alloy names the weir-forge crucible, and the charcoal book names Edony as its sole caster, tying her to the blank.',
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'Learner combines the crucible and caster branches.',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'grounded',
+      },
+      learner_dag: { rejected_update_count: 0, learner_advance: { supported_move_count: 3 } },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'compress_sayback',
+  });
+
+  assert.equal(contract.public_claim_status.status, 'supported');
+  assert.equal(contract.public_claim_status.basis, 'validated_public_learner_dag_advance');
+  assert.doesNotMatch(deterministicTutorStubTurnProgressionHandoff({ contract }), /remains open/iu);
+});
+
+test('a partial learner-DAG advance does not license a whole mixed claim', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'The alloy names the weir-forge crucible, and an unknown witness says Edony struck the coins.',
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'links_evidence_to_rule', epistemic_stance: 'grounded' },
+      learner_dag: { rejected_update_count: 1, learner_advance: { supported_move_count: 1 } },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'compress_sayback',
+  });
+
+  assert.equal(contract.public_claim_status.status, 'unknown');
+  assert.equal(contract.public_claim_status.whole_focus_validated, false);
+  assert.match(deterministicTutorStubTurnProgressionHandoff({ contract }), /remains open/iu);
+});
+
+test('public claim status keeps overleaps and unknown claims fail-closed', () => {
+  const publicRows = [
+    { surface: 'The assay shows that the false shillings were newly struck from poor alloy.' },
+    { surface: 'The estate inventory leaves the worn burin in Edony’s keeping.' },
+  ];
+  const unsupported = compileTutorStubTurnProgressionContract({
+    learnerText: 'I enter: Edony alone struck the false shillings passed at the Marrick fair.',
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'overleaps_evidence', epistemic_stance: 'overconfident' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    committedPublicEvidence: publicRows,
+    actionFamily: 'answer_accountably',
+  });
+  assert.equal(unsupported.public_claim_status.status, 'unsupported');
+  assert.match(deterministicTutorStubTurnProgressionHandoff({ contract: unsupported }), /remains open/iu);
+
+  const unknown = compileTutorStubTurnProgressionContract({
+    learnerText: 'Perhaps Edony struck them, but I am not sure.',
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'none', epistemic_stance: 'exploratory' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    committedPublicEvidence: publicRows,
+    actionFamily: 'answer_accountably',
+  });
+  assert.equal(unknown.public_claim_status.status, 'unknown');
+  assert.match(deterministicTutorStubTurnProgressionHandoff({ contract: unknown }), /remains open/iu);
+});
+
+test('progression audits reject reopening a claim frozen as publicly supported', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'The lead-sweat answers to the weir-forge crucible.',
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'cites_public_evidence', epistemic_stance: 'grounded' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    committedPublicEvidence: [{ surface: 'The lead-sweat answers to the leavings of the weir-forge crucible.' }],
+    actionFamily: 'compress_sayback',
+  });
+  const handoff = 'That claim remains open until the public evidence supports the weir-forge crucible link.';
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'Your lead-sweat reading names the weir-forge crucible.',
+      handoff,
+    }),
+  });
+  assert.ok(audit.issues.some((issue) => issue.type === 'supported_public_claim_reopened'));
 });
 
 test('terminal recovery chooses the shortest focus-bearing uptake from valid repair candidates', () => {

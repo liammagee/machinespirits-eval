@@ -268,3 +268,66 @@ endpoint changes. The whole Amendment 1 runtime-validation directory is
 excluded from W1-W3. Amendment 2 again starts all 30 cells under one new clean
 SHA in `exports/program2-committee-floor-ablation-amendment-2/`, with the
 original seed, order, models, retry rule, and frozen analysis unchanged.
+
+## 10. Amendment 3 — typed public claim status (2026-07-23)
+
+Amendment 2 began at SHA `0e28b19f`. Its first trained-committee dialogue
+reached turn 30 before terminal recovery contradicted the public state it had
+already computed: the learner's statement that the lead-sweat answered to the
+weir-forge crucible's leavings was supported by committed public evidence and
+accepted by the learner-DAG update, but the fallback called the same statement
+open until public evidence supported it. That contradiction then caused
+`response_composition:generic_learner_uptake` and
+`live_turn_progression_v1:learner_uptake_not_realized`; the configuration-axis
+finding was report-only. The same job's retry was interrupted after its
+opening. No Amendment 2 job sealed.
+
+The defect was a missing state boundary, not another surface-composition case:
+the first-draft contract carried the public evidence and learner-DAG advance,
+but did not compile them into one typed claim status shared by generation,
+recovery, and audit. Amendment 3 adds
+`machinespirits.tutor-stub.public-claim-status.v1` inside the existing
+turn-progression contract. It has exactly three values:
+
+- `supported` when the material learner focus is covered by committed public
+  evidence, or by a whole-focus learner-DAG advance with no rejected update;
+- `unsupported` when the public evidence contract explicitly marks an
+  overleap or distortion; and
+- `unknown` when neither condition is established, including partial or mixed
+  multi-premise advances.
+
+The computation is public-only and fail-closed. Every material focus group
+must be supported; content-term matching preserves exclusivity and negation
+qualifiers. An explicit public-evidence rejection takes precedence over a
+positive match. The first-draft host plan, deterministic recovery, and final
+live-turn-progression audit consume this same frozen status. Supported claims
+are credited and may not be reopened; unsupported or unknown claims remain
+qualified. Reopening a supported claim is the new hard issue
+`live_turn_progression_v1:supported_public_claim_reopened`, including during
+terminal fallback. No safety, evidence, detector, endpoint, bootstrap,
+equivalence, density, retry, or stopping threshold is relaxed.
+
+Before any Amendment 3 provider call, model-free regressions reproduce the
+exact failed Marrick turn and establish the boundary cases: whole-focus
+multi-premise support passes; partial or mixed support stays unknown; explicit
+overleap stays unsupported; unknown claims remain open; and a fallback that
+reopens supported evidence fails the final audit. The response-guard
+disposition catalog advances to version 2 to make the new integrity issue
+explicit.
+
+Amendment 2 is wholly excluded from W1-W3. Amendment 3 restarts all 30 planned
+jobs from the beginning under one new pushed SHA in
+`exports/program2-committee-floor-ablation-amendment-3/`, preserving the
+original seeded order, models, prompts, profiles, mini artifacts, retry rule,
+detector, and confirmatory analysis. No rows are pooled across launch cohorts.
+
+This repair changes the runtime harness, so absolute comparison with the
+earlier Phase 5 and aborted launch cohorts is descriptive and must be
+stratified by harness revision. The contemporaneous Amendment 3
+trained-versus-untuned contrast remains clean because all three arms use the
+same repaired runtime. As a diagnostic only, the analyzer now reports repair
+and deterministic-fallback incidence, guard-trigger tallies, and typed claim
+status by condition. W1-W3 and the reading grammar are unchanged. If an
+apparent W1 difference is confined to unequal deterministic-fallback exposure,
+it is labelled **infrastructure-mediated** and not interpreted as an
+unqualified effect of the mini's weights.

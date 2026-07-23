@@ -94,9 +94,7 @@ export function pairedProfileBootstrap(
   const estimateTrained = pooledWarrantRate(completePairs.map((pair) => pair.trained));
   const estimateUntuned = pooledWarrantRate(completePairs.map((pair) => pair.untuned));
   const estimate =
-    estimateTrained.rate !== null && estimateUntuned.rate !== null
-      ? estimateTrained.rate - estimateUntuned.rate
-      : null;
+    estimateTrained.rate !== null && estimateUntuned.rate !== null ? estimateTrained.rate - estimateUntuned.rate : null;
   if (!completePairs.length || strata.some((rows) => rows.length === 0)) {
     return {
       pairedBlocks: completePairs.length,
@@ -217,6 +215,96 @@ function fallbackSummary(rows) {
   };
 }
 
+function incrementTally(tally, key, count = 1) {
+  const normalized = key || 'null';
+  tally[normalized] = (tally[normalized] || 0) + count;
+}
+
+export function summarizeTutorResponseGuard(turnRecords) {
+  const outcomeTally = {};
+  const guardTriggerTally = {};
+  const publicClaimStatusTally = {};
+  const publicClaimStatusBasisTally = {};
+  let repairedTurns = 0;
+  let deterministicFallbackTurns = 0;
+  let totalAttempts = 0;
+
+  for (const turn of turnRecords) {
+    if (turn?.tutorResponseRepaired === true) repairedTurns += 1;
+    if (turn?.tutorDeterministicFallback === true) deterministicFallbackTurns += 1;
+    const accounting = turn?.tutorGuardAccounting || {};
+    const attempts = Array.isArray(accounting.attempts) ? accounting.attempts : [];
+    totalAttempts += attempts.length;
+    incrementTally(outcomeTally, accounting.outcome);
+    for (const repair of accounting.repairsApplied || []) {
+      for (const issue of repair.triggeredBy || []) {
+        incrementTally(guardTriggerTally, `${issue.guard || 'unknown'}:${issue.type || 'unknown'}`);
+      }
+    }
+    const claimStatus = turn?.firstDraftContract?.progression?.public_claim_status;
+    if (claimStatus?.status) incrementTally(publicClaimStatusTally, claimStatus.status);
+    if (claimStatus?.basis) incrementTally(publicClaimStatusBasisTally, claimStatus.basis);
+  }
+
+  const completedTurns = turnRecords.length;
+  return {
+    completedTurns,
+    repairedTurns,
+    repairRate: completedTurns ? repairedTurns / completedTurns : null,
+    deterministicFallbackTurns,
+    deterministicFallbackRate: completedTurns ? deterministicFallbackTurns / completedTurns : null,
+    totalAttempts,
+    meanAttempts: completedTurns ? totalAttempts / completedTurns : null,
+    outcomeTally,
+    guardTriggerTally,
+    publicClaimStatusTally,
+    publicClaimStatusBasisTally,
+  };
+}
+
+function mergeTallies(target, source) {
+  for (const [key, count] of Object.entries(source || {})) incrementTally(target, key, count);
+}
+
+function responseGuardSummary(rows) {
+  const summary = {
+    dialogues: rows.length,
+    completedTurns: 0,
+    repairedTurns: 0,
+    deterministicFallbackTurns: 0,
+    totalAttempts: 0,
+    outcomeTally: {},
+    guardTriggerTally: {},
+    publicClaimStatusTally: {},
+    publicClaimStatusBasisTally: {},
+  };
+  for (const row of rows) {
+    const guard = row.responseGuard || {};
+    summary.completedTurns += Number(guard.completedTurns || 0);
+    summary.repairedTurns += Number(guard.repairedTurns || 0);
+    summary.deterministicFallbackTurns += Number(guard.deterministicFallbackTurns || 0);
+    summary.totalAttempts += Number(guard.totalAttempts || 0);
+    mergeTallies(summary.outcomeTally, guard.outcomeTally);
+    mergeTallies(summary.guardTriggerTally, guard.guardTriggerTally);
+    mergeTallies(summary.publicClaimStatusTally, guard.publicClaimStatusTally);
+    mergeTallies(summary.publicClaimStatusBasisTally, guard.publicClaimStatusBasisTally);
+  }
+  const fallbackExposed = rows.filter((row) => Number(row.responseGuard?.deterministicFallbackTurns || 0) > 0);
+  const fallbackUnexposed = rows.filter((row) => Number(row.responseGuard?.deterministicFallbackTurns || 0) === 0);
+  return {
+    ...summary,
+    repairRate: summary.completedTurns ? summary.repairedTurns / summary.completedTurns : null,
+    deterministicFallbackRate: summary.completedTurns
+      ? summary.deterministicFallbackTurns / summary.completedTurns
+      : null,
+    meanAttempts: summary.completedTurns ? summary.totalAttempts / summary.completedTurns : null,
+    warrantByFallbackExposure: {
+      exposed: { dialogues: fallbackExposed.length, ...pooledWarrantRate(fallbackExposed) },
+      unexposed: { dialogues: fallbackUnexposed.length, ...pooledWarrantRate(fallbackUnexposed) },
+    },
+  };
+}
+
 function density(rows) {
   const rate = pooledWarrantRate(rows);
   const proofSkipperOpportunities = rows
@@ -262,10 +350,7 @@ function guardrails(rows, controls) {
 
 export function analyzeFloorAblationRows(
   rows,
-  {
-    draws = FLOOR_ABLATION_ANALYSIS_SPEC.bootstrapDraws,
-    seed = FLOOR_ABLATION_ANALYSIS_SPEC.bootstrapSeed,
-  } = {},
+  { draws = FLOOR_ABLATION_ANALYSIS_SPEC.bootstrapDraws, seed = FLOOR_ABLATION_ANALYSIS_SPEC.bootstrapSeed } = {},
 ) {
   const byCondition = Object.fromEntries(
     Object.keys(FLOOR_ABLATION_ANALYSIS_SPEC.expected).map((condition) => [
@@ -276,7 +361,9 @@ export function analyzeFloorAblationRows(
   const trained = byCondition.trained_committee;
   const untuned = byCondition.untuned_committee;
   const controls = byCondition.silent_control;
-  const sealed = Object.fromEntries(Object.entries(byCondition).map(([condition, conditionRows]) => [condition, conditionRows.length]));
+  const sealed = Object.fromEntries(
+    Object.entries(byCondition).map(([condition, conditionRows]) => [condition, conditionRows.length]),
+  );
   const paired = pairedProfileBootstrap(trained, untuned, { draws, seed });
   const untunedControl = independentProfileBootstrap(untuned, controls, { draws, seed });
   const trainedControl = independentProfileBootstrap(trained, controls, { draws, seed });
@@ -285,8 +372,8 @@ export function analyzeFloorAblationRows(
   const trainedNegative = Boolean(ci && ci[1] < 0);
   const equivalent = Boolean(
     ci &&
-      ci[0] >= -FLOOR_ABLATION_ANALYSIS_SPEC.equivalenceMargin &&
-      ci[1] <= FLOOR_ABLATION_ANALYSIS_SPEC.equivalenceMargin,
+    ci[0] >= -FLOOR_ABLATION_ANALYSIS_SPEC.equivalenceMargin &&
+    ci[1] <= FLOOR_ABLATION_ANALYSIS_SPEC.equivalenceMargin,
   );
   const untunedAdvantage = Boolean(untunedControl.bootstrap?.ci95?.[0] > 0);
   const trainedAdvantage = Boolean(trainedControl.bootstrap?.ci95?.[0] > 0);
@@ -309,6 +396,11 @@ export function analyzeFloorAblationRows(
   else if (ready && equivalent && untunedAdvantage) reading = 'harness_sufficient_within_equivalence_margin';
   else if (ready && untunedAdvantage) reading = 'harness_contributes_training_increment_unresolved';
   else if (ready) reading = 'indeterminate';
+  const responseGuardByCondition = Object.fromEntries(
+    Object.entries(byCondition).map(([condition, conditionRows]) => [condition, responseGuardSummary(conditionRows)]),
+  );
+  const trainedFallbackRate = responseGuardByCondition.trained_committee.deterministicFallbackRate;
+  const untunedFallbackRate = responseGuardByCondition.untuned_committee.deterministicFallbackRate;
 
   return {
     schema: FLOOR_ABLATION_ANALYSIS_SPEC.schema,
@@ -336,6 +428,16 @@ export function analyzeFloorAblationRows(
     mechanisms: {
       trained_committee: fallbackSummary(trained),
       untuned_committee: fallbackSummary(untuned),
+    },
+    responseGuardDiagnostics: {
+      role: 'diagnostic_only',
+      changesConfirmatoryEstimands: false,
+      historicalComparisonPolicy: 'stratify_by_harness_revision',
+      interpretationRule:
+        'If an apparent W1 difference is confined to unequal deterministic-fallback exposure, label it infrastructure-mediated.',
+      trainedMinusUntunedFallbackRate:
+        trainedFallbackRate === null || untunedFallbackRate === null ? null : trainedFallbackRate - untunedFallbackRate,
+      byCondition: responseGuardByCondition,
     },
     components: {
       trained_committee: componentRates(trained),
@@ -409,6 +511,7 @@ export function loadSealedFloorAblationRows(root) {
         primaryHorizon: FLOOR_ABLATION_ANALYSIS_SPEC.primaryHorizon,
       }),
       leakTurns: leakTurns(turnRecords),
+      responseGuard: summarizeTutorResponseGuard(turnRecords),
     });
   }
   return { plan, rows };

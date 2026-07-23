@@ -31,6 +31,17 @@ test('evidence boundaries stay hard on the terminal fallback', () => {
   assert.equal(decision.hardIssues.length, 1);
 });
 
+test('reopening a contract-supported public claim stays hard on the terminal fallback', () => {
+  const decision = decideTutorStubGuardDelivery(
+    [{ guard: 'live_turn_progression_v1', type: 'supported_public_claim_reopened' }],
+    { terminalFallback: true },
+  );
+  assert.equal(decision.ok, false);
+  assert.equal(decision.hardIssues.length, 1);
+  assert.equal(decision.dispositions[0].category, 'public_evidence_integrity');
+  assert.equal(decision.dispositions[0].legacyOverride, null);
+});
+
 test('unknown guards fail closed even on the terminal fallback', () => {
   const decision = decideTutorStubGuardDelivery([unknownGuardIssue], { terminalFallback: true });
   assert.equal(decision.ok, false);

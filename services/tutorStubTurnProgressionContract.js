@@ -16,6 +16,13 @@ const BRIDGE_PATTERN =
   /\b(?:before (?:we|you|i)|first\b|to (?:answer|connect|decide|learn|reach|settle|show|test)|because\b|so (?:that|we|you)|which (?:bears on|connects|means|shows)|this (?:bears on|connects to|matters because)|that (?:bears on|connects to|matters because)|with (?:that|this) (?:answered|established|settled))\b/iu;
 const RESPONSIVE_UPTAKE_PATTERN =
   /^(?:yes\b|no\b|right\b|fair\b|exactly\b|not quite\b|you (?:are asking|asked|mean|noticed|point(?:ed)? out|say|want)|your (?:claim|distinction|question|reading|reason|suggestion)|that (?:answer|claim|distinction|question|reading|reason|suggestion)|this (?:answer|claim|distinction|question|reading|reason|suggestion)|i (?:accept|answer|carry|credit|hear|keep|mark|record|see|take)|we (?:accept|carry|keep|mark|record|take))\b/iu;
+const UNSUPPORTED_EVIDENCE_USES = new Set(['distorts_public_evidence', 'overleaps_evidence']);
+const CLAIM_OPEN_PATTERN =
+  /\b(?:claim|conclusion|finding|line|point|reading)\s+(?:remains?|stays?|is)\s+(?:still\s+)?(?:open|provisional|unproved|unsupported|unsettled)|\b(?:claim|conclusion|finding|line|point|reading)\b[^.!?]{0,45}\b(?:not|isn[’']t|is not)\s+yet\s+(?:proved|proven|supported|settled)|\buntil\s+(?:the\s+)?public\s+evidence\s+supports?\b/iu;
+const CLAIM_QUALIFIER_FAMILIES = Object.freeze({
+  exclusive: /\b(?:alone|only|sole(?:ly)?|no other|one hand alone)\b/iu,
+  negative: /\b(?:cannot|can[’']t|does not|doesn[’']t|is not|isn[’']t|never|no|not|without)\b/iu,
+});
 const NO_QUESTION_ACTIONS = new Set([
   'answer_accountably',
   'close_inquiry',
@@ -141,6 +148,7 @@ function hostQuestionPositions(text = '', authoredSourceTexts = []) {
 function normalizeToken(value) {
   const token = String(value || '')
     .toLowerCase()
+    .replace(/[’']s$/u, '')
     .replace(/[’']/gu, '')
     .replace(/(?:ies)$/u, 'y')
     .replace(/(?:ing|ed|es|s)$/u, (suffix) => (String(value || '').length - suffix.length >= 4 ? '' : suffix));
@@ -303,7 +311,12 @@ export function deterministicTutorStubTurnProgressionUptake({
   const visible = (candidate) => substantiveLearnerUptake({ uptake: candidate, focusTerms, acceptedMeaning }).visible;
   const candidate = variants[variantIndex];
   if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
-  const bounded = boundedQuotedFocusCandidates(focus)
+  const typedGroupCandidates = (contract.turn_focus_contract?.primary_groups || []).flatMap((group) => [
+    oneLine(group?.surface),
+    ...boundedQuotedFocusCandidates(group?.surface),
+  ]);
+  const bounded = [...typedGroupCandidates, ...boundedQuotedFocusCandidates(focus)]
+    .filter((value, index, rows) => rows.indexOf(value) === index)
     .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus)[variantIndex])
     .find((row) => !echoes(row) && visible(row));
   return bounded || fallback;
@@ -449,6 +462,99 @@ function focusGroups(surface = '') {
   return groups.slice(0, 3);
 }
 
+function publicEvidenceSurface(entry) {
+  return oneLine(typeof entry === 'string' ? entry : entry?.surface);
+}
+
+function qualifierFamilies(value = '') {
+  return Object.entries(CLAIM_QUALIFIER_FAMILIES)
+    .filter(([, pattern]) => pattern.test(oneLine(value)))
+    .map(([family]) => family);
+}
+
+function publicGroupSupport(group, publicSurfaces = []) {
+  const requiredTerms = group?.terms || [];
+  const requiredQualifiers = qualifierFamilies(group?.surface);
+  let best = {
+    recognized: false,
+    matched_surface: null,
+    matched_terms: [],
+    coverage: 0,
+    qualifier_families: requiredQualifiers,
+  };
+  for (const surface of publicSurfaces) {
+    const matchedTerms = overlap(requiredTerms, contentTerms(surface));
+    const coverage = requiredTerms.length ? matchedTerms.length / requiredTerms.length : 0;
+    const publicQualifiers = new Set(qualifierFamilies(surface));
+    const qualifiersPreserved = requiredQualifiers.every((family) => publicQualifiers.has(family));
+    const recognized = requiredTerms.length >= 2 && matchedTerms.length >= 2 && coverage === 1 && qualifiersPreserved;
+    if (coverage > best.coverage || (coverage === best.coverage && recognized && !best.recognized)) {
+      best = {
+        recognized,
+        matched_surface: surface,
+        matched_terms: matchedTerms,
+        coverage: Number(coverage.toFixed(3)),
+        qualifier_families: requiredQualifiers,
+      };
+    }
+  }
+  return best;
+}
+
+/**
+ * Freeze one public-only support judgment before speaking. Deterministic
+ * lexical recognition is deliberately conservative: every material focus
+ * group must be grounded in one already-committed public surface, including
+ * any exclusivity or negation qualifier. A current learner-DAG advance can
+ * also license support because that advance has already passed the public
+ * preflight and deterministic postprocessor. Explicit distortion/overleap
+ * labels outrank both paths and fail closed.
+ */
+function compilePublicClaimStatus({ focus, responseCompositionFrame = null, committedPublicEvidence = [] } = {}) {
+  const move = responseCompositionFrame?.learner_move || {};
+  const evidenceUse = oneLine(move.evidence_use);
+  const completion = responseCompositionFrame?.conversational_completion || null;
+  const publicSurfaces = [...new Set((committedPublicEvidence || []).map(publicEvidenceSurface).filter(Boolean))];
+  const groups = focusGroups(focus?.surface);
+  const groupMatches = groups.map((group) => ({
+    focus_surface: group.surface,
+    focus_terms: group.terms,
+    ...publicGroupSupport(group, publicSurfaces),
+  }));
+  const supportedMoveCount = Number(responseCompositionFrame?.learner_dag?.learner_advance?.supported_move_count || 0);
+  const rejectedUpdateCount = Number(responseCompositionFrame?.learner_dag?.rejected_update_count || 0);
+  const wholeFocusValidated =
+    supportedMoveCount > 0 && rejectedUpdateCount === 0 && supportedMoveCount >= Math.max(1, groups.length);
+
+  let status = 'unknown';
+  let basis = 'no_conclusive_public_support';
+  if (UNSUPPORTED_EVIDENCE_USES.has(evidenceUse)) {
+    status = 'unsupported';
+    basis = `public_learner_analysis:${evidenceUse}`;
+  } else if (completion?.resolved === true && oneLine(completion?.acceptedMeaning)) {
+    status = 'supported';
+    basis = 'resolved_conversational_completion';
+  } else if (wholeFocusValidated) {
+    status = 'supported';
+    basis = 'validated_public_learner_dag_advance';
+  } else if (groupMatches.length > 0 && groupMatches.every((row) => row.recognized)) {
+    status = 'supported';
+    basis = 'committed_public_evidence';
+  }
+
+  return {
+    schema: 'machinespirits.tutor-stub.public-claim-status.v1',
+    status,
+    basis,
+    public_only: true,
+    evidence_use: evidenceUse || null,
+    supported_move_count: supportedMoveCount,
+    rejected_update_count: rejectedUpdateCount,
+    whole_focus_validated: wholeFocusValidated,
+    group_matches: groupMatches,
+  };
+}
+
 function dueSurfaces({ responseCompositionFrame = null, dramaticReleaseFrame = null } = {}) {
   const frameSurfaces = Array.isArray(responseCompositionFrame?.due_evidence_surfaces)
     ? responseCompositionFrame.due_evidence_surfaces
@@ -531,6 +637,7 @@ export function compileTutorStubTurnProgressionContract({
   questionSupport = null,
   actionFamily = null,
   tactic = null,
+  committedPublicEvidence = [],
 } = {}) {
   const completion = responseCompositionFrame?.conversational_completion || null;
   const focus = focusSurface({ learnerText, responseCompositionFrame });
@@ -558,11 +665,17 @@ export function compileTutorStubTurnProgressionContract({
     dramaticReleaseFrame,
     publicFocusMapping: responseCompositionFrame?.public_focus_mapping,
   });
+  const publicClaimStatus = compilePublicClaimStatus({
+    focus,
+    responseCompositionFrame,
+    committedPublicEvidence,
+  });
   const siblingBridgeRequired = due.length > 0 && focusRelation.kind === 'sibling';
   const contract = {
     schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
     complete: Boolean(focus.surface || due.length || dialogueClosureFrame?.mandatory),
     public_only: true,
+    public_claim_status: publicClaimStatus,
     learner_uptake: {
       required: Boolean(oneLine(learnerText)),
       mode: writableEntryRequested
@@ -679,6 +792,11 @@ function declarativeFallbackFocus(
       .replace(/[?]+/gu, '')
       .replace(/[.!]+$/gu, '')
       .trim();
+    if (contract?.public_claim_status?.status === 'supported') {
+      return boundedClaim
+        ? `That public line now stands: ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)}.`
+        : 'That supported public line now stands.';
+    }
     return boundedClaim
       ? `The claim that ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)} remains open until the public evidence supports it.`
       : 'That claim remains open until the public evidence supports it.';
@@ -776,6 +894,16 @@ function reopensSettledPoint(question = '', surfaces = []) {
       shared >= Math.min(2, settledTerms.length) && shared / Math.min(settledTerms.length, questionTerms.length) >= 0.55
     );
   });
+}
+
+function publicClaimStatusIssue(contract, text, owner) {
+  if (contract?.public_claim_status?.status !== 'supported' || !CLAIM_OPEN_PATTERN.test(oneLine(text))) return null;
+  return {
+    type: 'supported_public_claim_reopened',
+    owner,
+    reason: 'the response marks a learner claim open even though the frozen public claim-status contract supports it',
+    claim_status_basis: contract.public_claim_status.basis,
+  };
 }
 
 export function auditTutorStubTurnProgression({ contract = null, composition = null } = {}) {
@@ -888,6 +1016,9 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
       });
     }
   }
+
+  const claimStatusIssue = publicClaimStatusIssue(contract, modelText, 'model_owned_composition');
+  if (claimStatusIssue) issues.push(claimStatusIssue);
 
   return {
     schema: TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA,
@@ -1052,6 +1183,9 @@ export function auditTutorStubLiveTurnProgressionV1({
       });
     }
   }
+
+  const claimStatusIssue = publicClaimStatusIssue(contract, responseText, 'whole_response');
+  if (claimStatusIssue) issues.push(claimStatusIssue);
 
   return {
     schema: TUTOR_STUB_LIVE_TURN_PROGRESSION_AUDIT_SCHEMA,

@@ -256,6 +256,11 @@ function compactUptakeInstruction(contract) {
           : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
+  } else if (contract.progression?.public_claim_status?.status === 'supported') {
+    instruction =
+      'Credit the learner’s line as supported by the committed public record; do not call it open, provisional, or unproved.';
+  } else if (contract.progression?.public_claim_status?.status === 'unsupported') {
+    instruction = 'Qualify the learner’s line against the committed public record; do not affirm it as established.';
   }
   return [instruction, accelerated, learnerMove].filter(Boolean).join(' ');
 }
@@ -333,7 +338,9 @@ function compactProgressionHandoffInstruction(contract) {
     action =
       contract.ending?.closure_required || contract.opening?.responsive_repair_required
         ? compactActionInstruction(contract)
-        : 'State the current public limit through the selected action; ask no question.';
+        : progression?.public_claim_status?.status === 'supported'
+          ? 'Carry the supported learner finding forward through the selected action; do not reopen it; ask no question.'
+          : 'State the current public limit through the selected action; ask no question.';
   } else if (handoff?.question_required === false) {
     action =
       'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.';
@@ -620,6 +627,7 @@ export function buildTutorStubFirstDraftContract({
     questionSupport,
     actionFamily,
     tactic,
+    committedPublicEvidence: committedPublicEntries,
   });
   const ownedTacticExecution = questionOwnedTacticExecution({
     tactic,

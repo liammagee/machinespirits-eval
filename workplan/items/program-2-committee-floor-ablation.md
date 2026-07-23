@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-07-22
 updated: 2026-07-23
-verification: "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, and fallback-burden diagnostics without historical pooling."
+verification: "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, committee fallback burden, and tutor-response fallback/guard diagnostics without historical pooling."
 branch: codex/program2-committee-floor-ablation
 claim_status: planned
 links:
@@ -20,6 +20,8 @@ links:
   exports:
     - exports/program2-committee-floor-ablation/launch-state.json
     - exports/program2-committee-floor-ablation/analysis.json
+    - exports/program2-committee-floor-ablation-amendment-3/launch-state.json
+    - exports/program2-committee-floor-ablation-amendment-3/analysis.json
   items:
     - program-2-context-vs-weights-finetune
 tags:
@@ -75,3 +77,12 @@ Log:
   uptake and handoff. No job sealed; the retry was stopped after its opening.
   Amendment 2 freezes shortest-valid focus composition and a new 30-cell clean
   restart; see preregistration §9.
+- 2026-07-23 — Amendment 2's first dialogue reached turn 30 before terminal
+  fallback reopened a learner claim already supported by committed public
+  evidence and the learner-DAG update. No job sealed; its retry was stopped
+  after the opening. Amendment 3 compiles one public-only
+  `supported|unsupported|unknown` claim status and makes host planning,
+  recovery, and audit consume it. All Amendment 2 artifacts are excluded.
+  The 30-cell run restarts under a clean SHA; historical absolute comparisons
+  are stratified by harness revision, while trained versus untuned remains a
+  contemporaneous same-harness contrast. See preregistration §10.

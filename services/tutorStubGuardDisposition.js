@@ -1,5 +1,5 @@
 export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.guard-disposition.v1';
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 1;
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 2;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -44,6 +44,12 @@ const RULES = Object.freeze([
     type: 'missing_due_evidence',
     category: 'clue_transaction_integrity',
     rationale: 'A due clue must be present before its release transaction can commit.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'supported_public_claim_reopened',
+    category: 'public_evidence_integrity',
+    rationale: 'A claim licensed by the frozen public support contract cannot be presented as unproved or unsupported.',
   }),
   rule({
     guard: 'live_turn_progression_v1',
