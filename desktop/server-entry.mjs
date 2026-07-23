@@ -83,6 +83,11 @@ process.parentPort?.on('message', async (e) => {
   } catch {
     /* ignore */
   }
+  try {
+    await (app.locals.poeticsApp || app).locals?.tutorStubSessionHost?.closeAll?.('desktop_shutdown');
+  } catch {
+    /* session child cleanup is best-effort during app shutdown */
+  }
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 1500).unref?.();
 });

@@ -12,6 +12,7 @@ verification: "One web-stack /tutor surface starts and resumes sessions in brows
 depends_on:
   - tutor-stub-capability-session-runtime
   - tutor-stub-headless-session-transport
+  - tutor-stub-process-session-factory
   - tutor-stub-safe-capability-labs
   - tutor-stub-session-recipes-explicit-resume
 links:
@@ -20,6 +21,7 @@ links:
     - docs/tutor-stub-cli.md
   items:
     - tutor-stub-headless-session-transport
+    - tutor-stub-process-session-factory
     - scriptorium-responsive-shell-navigation
     - scriptorium-static-tools-desktop-quality
     - scriptorium-ux-safety-net
@@ -48,3 +50,6 @@ and device/provider failures fall back to the same text session.
 - 2026-07-23: The first transport slice is in review: a bounded in-process session
   host and versioned Express router over the shared runtime, with the real tutor
   engine kept behind an injected factory boundary.
+- 2026-07-23: Headless transport PR #157 merged. A process-backed real tutor
+  factory is now in review for the shared web and Electron servers; the visual
+  `/tutor` surface remains downstream of safe lab/command metadata.

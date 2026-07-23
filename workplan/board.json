@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-23T02:35:10.526Z",
+  "generated": "2026-07-23T03:40:58.389Z",
   "counts": {
-    "total": 150,
+    "total": 151,
     "byStatus": {
-      "done": 114,
+      "done": 115,
       "blocked": 3,
       "dropped": 2,
       "triaged": 26,
@@ -13,7 +13,7 @@
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 29,
+      "infra": 30,
       "maintenance": 12,
       "content": 2,
       "paper": 6,
@@ -234,6 +234,7 @@
       "links": {
         "items": [
           "tutor-stub-capability-session-runtime",
+          "tutor-stub-process-session-factory",
           "consolidated-labelling-game-harness",
           "tutor-stub-typed-pedagogical-actions"
         ]
@@ -260,6 +261,7 @@
       "depends_on": [
         "tutor-stub-capability-session-runtime",
         "tutor-stub-headless-session-transport",
+        "tutor-stub-process-session-factory",
         "tutor-stub-safe-capability-labs",
         "tutor-stub-session-recipes-explicit-resume"
       ],
@@ -270,6 +272,7 @@
         ],
         "items": [
           "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
           "scriptorium-responsive-shell-navigation",
           "scriptorium-static-tools-desktop-quality",
           "scriptorium-ux-safety-net"
@@ -879,8 +882,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "tutor-stub-headless-session-transport",
-      "title": "Add a headless transport for tutor-stub sessions",
+      "id": "tutor-stub-process-session-factory",
+      "title": "Mount the real tutor-stub session factory in the shared server",
       "status": "review",
       "type": "infra",
       "priority": "P1",
@@ -888,20 +891,21 @@
       "source": "review",
       "created": "2026-07-23",
       "updated": "2026-07-23",
-      "verification": "A versioned HTTP router drives injected tutor-stub runtimes through create, inspect, list, step, resume, reset, and finalize; two sessions remain isolated, same-session mutations serialize, invalid lifecycle requests return stable errors, and focused plus hermetic suites pass.",
-      "branch": "codex/tutor-stub-headless-api",
+      "verification": "The shared web and Electron stack mounts a lazy process-backed host by default; a fake-model HTTP integration creates a real CLI runtime, completes a learner turn, projects safe state, rejects terminal-only commands, finalizes cleanly, keeps credentials server-side, relocates desktop traces, and passes focused plus hermetic suites.",
+      "branch": "codex/tutor-stub-session-factory",
       "depends_on": [
-        "tutor-stub-capability-session-runtime"
+        "tutor-stub-headless-session-transport"
       ],
       "links": {
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/157"
+          "https://github.com/liammagee/machinespirits-eval/pull/158"
         ],
         "notes": [
           "docs/tutor-stub-cli.md"
         ],
         "items": [
-          "tutor-stub-capability-session-runtime",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-safe-capability-labs",
           "tutor-stub-unified-session-surface"
         ]
       },
@@ -909,7 +913,7 @@
         "tutor-stub",
         "super-app",
         "runtime",
-        "api",
+        "server",
         "electron"
       ],
       "milestone": "distribution"
@@ -1988,6 +1992,42 @@
         "generalization"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-headless-session-transport",
+      "title": "Add a headless transport for tutor-stub sessions",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "A versioned HTTP router drives injected tutor-stub runtimes through create, inspect, list, step, resume, reset, and finalize; two sessions remain isolated, same-session mutations serialize, invalid lifecycle requests return stable errors, and focused plus hermetic suites pass.",
+      "branch": "codex/tutor-stub-headless-api",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/157"
+        ],
+        "notes": [
+          "docs/tutor-stub-cli.md"
+        ],
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "tutor-stub-unified-session-surface"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "api",
+        "electron"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "tutor-stub-headroom-contrast",

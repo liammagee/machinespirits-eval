@@ -177,5 +177,17 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
     finalize(id, reason = 'http_finalize', payload = {}) {
       return queueMutation(id, 'finalize', (runtime) => runtime.finalize(reason, payload));
     },
+    async closeAll(reason = 'host_shutdown') {
+      await Promise.allSettled(
+        [...sessions.values()].map(async (entry) => {
+          await entry.queue;
+          try {
+            if (entry.runtime.status !== 'finalized') await entry.runtime.finalize(reason);
+          } finally {
+            entry.runtime.terminate?.();
+          }
+        }),
+      );
+    },
   });
 }

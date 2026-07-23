@@ -14,6 +14,7 @@ depends_on:
 links:
   items:
     - tutor-stub-capability-session-runtime
+    - tutor-stub-process-session-factory
     - consolidated-labelling-game-harness
     - tutor-stub-typed-pedagogical-actions
 tags:
@@ -33,3 +34,8 @@ prerequisites, conflicts, model calls, expected artifacts, and cost class.
 `--lab`, `--list-labs`, and `/lab` resolve through the capability registry.
 Frozen evaluation controls remain reproducible, but hostile or simulated
 performance modes never enter a learner-facing preset implicitly.
+
+Transport safety is part of the same registry contract. Classify commands that
+open terminal pickers, browsers, voice devices, or relaunch the CLI, and provide
+noninteractive result adapters before the process-backed HTTP host exposes
+them. Until then that host accepts learner turns but rejects slash commands.
