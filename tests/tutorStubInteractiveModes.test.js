@@ -1798,7 +1798,7 @@ test('light adaptation forces a replayable style and character shift after conti
     assert.notEqual(stanceMatches.at(-1)[1], first.engagement_stance);
     assert.notEqual(partMatches.at(-1)[1].trim(), first.actorial_part_label);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
   }
 });
 
