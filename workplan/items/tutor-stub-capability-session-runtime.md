@@ -29,7 +29,7 @@ tags:
   - runtime
   - command-registry
   - replay
-branch: codex/tutor-stub-capability-resolver
+branch: codex/tutor-stub-session-runtime
 ---
 
 `scripts/tutor-stub.js` has become a capable application shell, but session
@@ -58,3 +58,10 @@ and evaluation adapters rather than forking them.
   mixed-drafting and adaptive-performance controls do not masquerade as usable.
   The importable create/load/reset/resume/step/finalize runtime and handler
   extraction remain the next slice.
+- 2026-07-23: Added the importable v1 session runtime with explicit
+  create/load/resume/step/reset/finalize transitions, immutable snapshots,
+  per-instance state isolation, and versioned lifecycle events. All 38
+  canonical commands now own unique handler and trace-event ids in the frozen
+  registry; the CLI routes learner input, commands, resume, reset, and
+  finalization through runtime adapters. Fake-provider fixtures pin equivalent
+  public turns and lifecycle ordering across all six capability modes.

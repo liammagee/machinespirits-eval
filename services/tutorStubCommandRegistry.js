@@ -192,12 +192,23 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
-function command({ id, token, aliases = [], passthroughOrder = null, sceneReturnOrder = null, completion = null }) {
+function command({
+  id,
+  token,
+  aliases = [],
+  passthroughOrder = null,
+  sceneReturnOrder = null,
+  completion = null,
+  handler = id,
+  traceEvent = `interactive_command_${id}`,
+}) {
   const requirements = COMMAND_CAPABILITY_REQUIREMENTS[id] || {};
   return {
     id,
     token,
     aliases,
+    handler,
+    traceEvent,
     availability: {
       normal: true,
       passthrough: Number.isInteger(passthroughOrder),
@@ -613,6 +624,7 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
   }
 
   const ids = new Set();
+  const handlers = new Set();
   const tokens = new Set();
   const definitionsByToken = new Map();
   const orders = { passthrough: new Set(), sceneReturn: new Set() };
@@ -622,6 +634,14 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
     }
     if (ids.has(definition.id)) throw new Error(`duplicate canonical command id: ${definition.id}`);
     ids.add(definition.id);
+    if (!/^[a-z][a-z0-9_]*$/u.test(definition.handler || '')) {
+      throw new Error(`command ${definition.id} has invalid handler id: ${definition.handler}`);
+    }
+    if (handlers.has(definition.handler)) throw new Error(`duplicate command handler: ${definition.handler}`);
+    handlers.add(definition.handler);
+    if (!/^[a-z][a-z0-9_]*$/u.test(definition.traceEvent || '')) {
+      throw new Error(`command ${definition.id} has invalid trace event: ${definition.traceEvent}`);
+    }
 
     const commandTokens = [definition.token, ...(definition.aliases || [])];
     for (const token of commandTokens) {

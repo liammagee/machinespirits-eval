@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T01:25:43.407Z",
+  "generated": "2026-07-23T01:48:45.269Z",
   "counts": {
     "total": 147,
     "byStatus": {
@@ -918,7 +918,7 @@
         "command-registry",
         "replay"
       ],
-      "branch": "codex/tutor-stub-capability-resolver"
+      "branch": "codex/tutor-stub-session-runtime"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",

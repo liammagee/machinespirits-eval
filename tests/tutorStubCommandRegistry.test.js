@@ -183,13 +183,21 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
   assert.equal(Object.isFrozen(TUTOR_STUB_NORMAL_SLASH_COMMANDS), true);
   assert.equal(Object.isFrozen(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS), true);
   assert.equal(Object.isFrozen(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS), true);
+  const handlers = new Set();
+  const traceEvents = new Set();
   for (const definition of TUTOR_STUB_COMMAND_REGISTRY.commands) {
     assert.equal(Object.isFrozen(definition), true);
     assert.equal(Object.isFrozen(definition.aliases), true);
     assert.equal(Object.isFrozen(definition.availability), true);
     assert.equal(Object.isFrozen(definition.order), true);
     assert.equal(Object.isFrozen(definition.capabilities), true);
+    assert.equal(handlers.has(definition.handler), false, definition.handler);
+    assert.equal(traceEvents.has(definition.traceEvent), false, definition.traceEvent);
+    handlers.add(definition.handler);
+    traceEvents.add(definition.traceEvent);
   }
+  assert.equal(handlers.size, 38);
+  assert.equal(traceEvents.size, 38);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -222,7 +230,7 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
 });
 
-test('invariants reject duplicate aliases and inconsistent mode metadata', () => {
+test('invariants reject duplicate aliases, handlers, and inconsistent mode metadata', () => {
   const duplicateAliasRegistry = {
     ...TUTOR_STUB_COMMAND_REGISTRY,
     commands: TUTOR_STUB_COMMAND_REGISTRY.commands.map((definition, index) =>
@@ -243,6 +251,17 @@ test('invariants reject duplicate aliases and inconsistent mode metadata', () =>
   assert.throws(
     () => assertTutorStubCommandRegistryInvariants(inconsistentModeRegistry),
     /passthrough availability\/order drift/u,
+  );
+
+  const duplicateHandlerRegistry = {
+    ...TUTOR_STUB_COMMAND_REGISTRY,
+    commands: TUTOR_STUB_COMMAND_REGISTRY.commands.map((definition, index) =>
+      index === 1 ? { ...definition, handler: TUTOR_STUB_COMMAND_REGISTRY.commands[0].handler } : definition,
+    ),
+  };
+  assert.throws(
+    () => assertTutorStubCommandRegistryInvariants(duplicateHandlerRegistry),
+    /duplicate command handler/u,
   );
 });
 

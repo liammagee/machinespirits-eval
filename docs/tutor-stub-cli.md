@@ -28,6 +28,28 @@ The underlying command and capability registries remain frozen catalogs, so
 tests and future web or Electron adapters can inspect every supported command
 without starting a model-backed session.
 
+## Importable session runtime
+
+`services/tutorStubSessionRuntime.js` provides the versioned lifecycle boundary
+used by the CLI. A runtime instance owns `create`, `load`, `resume`, `step`,
+`reset`, and `finalize` transitions, exposes an immutable snapshot, and keeps
+its counters, projected state, and event sequence isolated from every other
+instance in the process. Provider calls, terminal output, persistence, and
+other effects enter through explicit adapters rather than module globals.
+
+The CLI now routes public learner input and slash commands through this
+runtime. Each canonical command has one registry-owned handler id and one
+registry-owned trace-event id; aliases resolve to the same invocation before
+the CLI adapter runs. Capability rejection therefore occurs before a handler
+can execute. Runtime lifecycle and command events use the versioned
+`machinespirits.tutor-stub.session-event.v1` envelope and are retained in the
+normal JSONL trace without altering the public dialogue.
+
+The runtime accepts fake adapters, so two sessions can be exercised in one
+process without model calls. The regression fixtures run the same learner turn
+through passthrough, direct, scaffold, mixed, auto, and curriculum snapshots
+and pin the public result plus lifecycle event order.
+
 ## Themes
 
 Use `/theme` to preview every theme and `/theme <name>` to switch immediately:
