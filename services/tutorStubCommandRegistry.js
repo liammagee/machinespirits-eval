@@ -19,6 +19,7 @@ export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
 
 const COMMAND_CAPABILITY_REQUIREMENTS = {
   demo: { available: ['guided_demo'] },
+  committee: { available: ['response_checks'] },
   random: { active: ['adaptive_delivery'] },
   register: { active: ['adaptive_delivery'] },
   character: { active: ['adaptive_delivery'] },
@@ -132,6 +133,7 @@ const HELP_GROUPS = [
     label: 'adjust',
     commands: [
       { id: 'profile', arguments: '[id]' },
+      { id: 'committee', arguments: '[on|off|status]' },
       { id: 'settings' },
       { id: 'tune' },
       { id: 'theme' },
@@ -272,6 +274,12 @@ const COMMANDS = [
     id: 'random',
     token: '/random',
     sceneReturnOrder: 3,
+    completion: { normal: { suffixes: ['on', 'off', 'status'] } },
+  }),
+  command({
+    id: 'committee',
+    token: '/committee',
+    sceneReturnOrder: 10,
     completion: { normal: { suffixes: ['on', 'off', 'status'] } },
   }),
   command({

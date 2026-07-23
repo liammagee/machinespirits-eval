@@ -28,6 +28,7 @@ const NORMAL_COMMANDS = [
   '/theme',
   '/motion',
   '/random',
+  '/committee',
   '/register',
   '/character',
   '/analysis',
@@ -115,6 +116,7 @@ const SCENE_RETURN_COMMANDS = [
   '/features',
   '/release-notes',
   '/debug',
+  '/committee',
   '/settings',
   '/transcript',
   '/html',
@@ -175,10 +177,10 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 1);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 39);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 54);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 40);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 55);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 21);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 35);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 36);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -201,8 +203,8 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 39);
-  assert.equal(traceEvents.size, 39);
+  assert.equal(handlers.size, 40);
+  assert.equal(traceEvents.size, 40);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -226,6 +228,12 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(tutorStubCanonicalCommandToken('/html no-open'), '/transcript');
   assert.equal(resolveTutorStubCommandId('visualization'), 'visualization');
   assert.equal(resolveTutorStubCommandId('/board'), 'board');
+  assert.equal(resolveTutorStubCommandId('/committee'), 'committee');
+  assert.deepEqual(tutorStubStaticCommandCompletions('/committee'), [
+    '/committee on',
+    '/committee off',
+    '/committee status',
+  ]);
   assert.equal(tutorStubCommandAvailable('/board'), true);
   assert.equal(tutorStubCommandAvailable('/board', { mode: 'passthrough' }), false);
   assert.equal(tutorStubCommandReturnsToScene('/board'), true);
@@ -326,6 +334,7 @@ test('resolved capabilities filter commands, completions, and generated help wit
     responseChecks: true,
   });
   assert.equal(tutorStubCommandAvailable('/random', { capabilities: direct }), true);
+  assert.equal(tutorStubCommandAvailable('/committee', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/coach', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/suggest', { capabilities: direct }), false);
   assert.deepEqual(tutorStubCommandUnavailableReasons('/suggest', { capabilities: direct }), [
@@ -354,6 +363,7 @@ test('resolved capabilities filter commands, completions, and generated help wit
   assert.ok(tutorStubCommandHelpRows({ capabilities: mixed }).some((row) => row.commands.includes('/profile [id]')));
 
   const passthrough = resolveTutorStubCapabilities({ passthrough: true, trace: true });
+  assert.equal(tutorStubCommandAvailable('/committee', { mode: 'passthrough', capabilities: passthrough }), false);
   assert.deepEqual(tutorStubCommandTokens({ mode: 'passthrough', capabilities: passthrough }), PASSTHROUGH_COMMANDS);
   assert.deepEqual(
     tutorStubCommandHelpRows({ mode: 'passthrough', capabilities: passthrough }).map((row) => row.id),

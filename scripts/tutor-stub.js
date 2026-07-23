@@ -481,6 +481,7 @@ const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-actio
 const DEFAULT_TUTOR_MODEL_REF = 'codex.gpt-5.6-terra';
 const DEFAULT_INTERPRETATION_MODEL_REF = 'codex.gpt-5.6-sol';
 const DEFAULT_AUTO_LEARNER_MODEL_REF = 'codex.gpt-5.6-terra';
+const DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY = 'v2';
 
 const STUB = {
   tutor: process.env.TUTOR_STUB_TUTOR || 'dramatic-detective',
@@ -631,9 +632,14 @@ const { values: args, positionals } = parseArgs({
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
     'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
+    committee: { type: 'boolean', default: false },
+    'no-committee': { type: 'boolean', default: false },
     'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
     'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
-    'committee-fallback-policy': { type: 'string', default: 'v1' },
+    'committee-fallback-policy': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY || 'v1',
+    },
     'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
     // Predeclared pressure probe: at these learner turns the selected
     // register is forced hostile (face_threat) regardless of policy, so
@@ -843,6 +849,10 @@ Options:
                          writes the warrant question, the frontier composes
                          around it verbatim, fail-closed battery decides) and
                          silent_control (detector logs only, no intervention)
+  --committee            use the learned Qwen warrant specialist in human chat
+                         (the interactive default; shorthand for the committee arm)
+  --no-committee         keep human chat on the frontier-only response path;
+                         the choice is remembered and /committee changes it live
   --committee-mini-model <name>
                          ollama model tag for the committee mini
                          (default: ${PROGRAM2_COMMITTEE_DEFAULTS.miniModel})
@@ -852,7 +862,8 @@ Options:
   --committee-fallback-policy <v1|v2>
                          v1 ships the greedy mini reply unchecked (Phase 5);
                          v2 applies the fallback battery: greedy check, two
-                         resamples, cue-preserving trim (Phase 5b; default: v1)
+                         resamples, cue-preserving trim (Phase 5b); human chat
+                         defaults to v2 while explicit eval arms retain v1
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -1359,6 +1370,11 @@ function rememberedSettingExplicitSources() {
     voiceName: commandLineOptionProvided('voice-name') || Boolean(process.env.TUTOR_STUB_VOICE_NAME),
     cliTheme: commandLineOptionProvided('theme') || Boolean(process.env.TUTOR_STUB_CLI_THEME),
     motion: commandLineOptionProvided('motion') || Boolean(process.env.TUTOR_STUB_MOTION),
+    committeeEnabled:
+      commandLineOptionProvided('committee') ||
+      commandLineOptionProvided('no-committee') ||
+      commandLineOptionProvided('point-of-action-arm') ||
+      Boolean(process.env.TUTOR_STUB_POINT_OF_ACTION_ARM),
     engagementStanceTemperature:
       commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
     dagFactDropoutRate:
@@ -1536,6 +1552,13 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   } else {
     args.motion = saved.motion;
     config.appliedFields.push('terminal_motion');
+  }
+
+  if (explicit.committeeEnabled) {
+    config.skippedExplicitFields.push('committee_mode');
+  } else {
+    args['point-of-action-arm'] = saved.committeeEnabled ? 'committee' : '';
+    config.appliedFields.push('committee_mode');
   }
 
   if (explicit.engagementStanceTemperature) {
@@ -8904,6 +8927,11 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
   );
+  if (commandAvailable('/committee')) {
+    console.log(
+      `${C.dim}  The learned Qwen warrant committee is on by default in human chat. /committee toggles it; /committee status shows its model and fallback policy.${C.reset}`,
+    );
+  }
   if (commandAvailable('/random')) {
     console.log(
       `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
@@ -15220,6 +15248,24 @@ async function main() {
     noColor: args['no-color'],
   });
 
+  const explicitPointOfActionArm =
+    commandLineOptionProvided('point-of-action-arm') || Boolean(process.env.TUTOR_STUB_POINT_OF_ACTION_ARM);
+  if (args.committee && args['no-committee']) {
+    throw new Error('--committee and --no-committee cannot be used together');
+  }
+  if (
+    args.committee &&
+    explicitPointOfActionArm &&
+    normalizeTutorStubPointOfActionArm(args['point-of-action-arm']) !== 'committee'
+  ) {
+    throw new Error('--committee conflicts with the explicit --point-of-action-arm value');
+  }
+  if (args['no-committee'] && explicitPointOfActionArm) {
+    throw new Error('--no-committee conflicts with --point-of-action-arm');
+  }
+  if (args.committee) args['point-of-action-arm'] = 'committee';
+  if (args['no-committee']) args['point-of-action-arm'] = '';
+
   const passthroughEnabled = Boolean(args.passthrough);
   if (passthroughEnabled) {
     args.dag = false;
@@ -15280,6 +15326,25 @@ async function main() {
   const rememberedSettings = applyRememberedInteractiveDefaults({
     interactiveSessionEnabled: interactiveSessionIntent,
   });
+  if (
+    interactiveSessionIntent &&
+    !passthroughEnabled &&
+    !explicitRememberedSources.committeeEnabled &&
+    !rememberedSettings.appliedFields.includes('committee_mode')
+  ) {
+    args['point-of-action-arm'] = 'committee';
+  }
+  const committeeFallbackPolicyExplicit =
+    commandLineOptionProvided('committee-fallback-policy') || Boolean(process.env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY);
+  if ((args.committee || (interactiveSessionIntent && !passthroughEnabled)) && !committeeFallbackPolicyExplicit) {
+    args['committee-fallback-policy'] = DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY;
+  }
+  args['committee-fallback-policy'] = String(args['committee-fallback-policy'] || '')
+    .trim()
+    .toLowerCase();
+  if (!['v1', 'v2'].includes(args['committee-fallback-policy'])) {
+    throw new Error('--committee-fallback-policy must be v1 or v2');
+  }
   if (args.module && !args.curriculum) {
     throw new Error('--module requires --curriculum <workplan|path>');
   }
@@ -16297,6 +16362,14 @@ async function main() {
                 detectorVersion: 'step4-frozen-2026-07-14.v1',
                 eligibleTurns: [3, 24],
                 triggerPriority: ['stagnant_repeat', 'warrant_skip'],
+                committee:
+                  pointOfActionArm === 'committee'
+                    ? {
+                        model: args['committee-mini-model'],
+                        fallbackPolicy: args['committee-fallback-policy'],
+                        control: '/committee on|off|status',
+                      }
+                    : null,
               }
             : { enabled: false },
           maxTokens,
@@ -16494,6 +16567,14 @@ async function main() {
             detectorVersion: 'step4-frozen-2026-07-14.v1',
             eligibleTurns: [3, 24],
             triggerPriority: ['stagnant_repeat', 'warrant_skip'],
+            committee:
+              pointOfActionArm === 'committee'
+                ? {
+                    model: args['committee-mini-model'],
+                    fallbackPolicy: args['committee-fallback-policy'],
+                    control: '/committee on|off|status',
+                  }
+                : null,
           }
         : { enabled: false },
       promptArchitecture,
@@ -16889,6 +16970,8 @@ async function main() {
       dialogueClosurePhase: state.dialogueClosure?.phase || null,
       learnerProfileId: state.learnerProfileId || null,
       tutorInstanceRef: state.tuning?.activeRef || state.tutorInstance?.id || null,
+      committeeEnabled: state.committee?.enabled === true,
+      committeeModel: state.committee?.miniModel || null,
     };
   }
 
@@ -16976,6 +17059,7 @@ async function main() {
       voiceName: state.voice?.voice || voiceName,
       cliTheme: cliPresentation.themeId,
       motion: cliPresentation.requestedMotion,
+      committeeEnabled: state.committee?.enabled === true,
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -17900,6 +17984,8 @@ async function main() {
       pool = tutorStubStaticCommandCompletions('/motion', commandOptions);
     } else if (trimmed.startsWith('/random ')) {
       pool = tutorStubStaticCommandCompletions('/random', commandOptions);
+    } else if (trimmed.startsWith('/committee ')) {
+      pool = tutorStubStaticCommandCompletions('/committee', commandOptions);
     } else if (trimmed.startsWith('/register ')) {
       pool = [
         ...tutorStubStaticCommandCompletions('/register', commandOptions),
@@ -20859,6 +20945,13 @@ async function main() {
       }${C.reset}`,
     );
     console.log(
+      `${C.dim}  learned committee: ${
+        state.committee?.enabled
+          ? `on · ${state.committee.miniModel} · warrant-gap trigger · fallback ${state.committee.fallbackPolicy}`
+          : 'off · frontier-only responses'
+      } · /committee${C.reset}`,
+    );
+    console.log(
       `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · separate renderer; /voice${C.reset}`,
     );
     console.log(
@@ -21591,6 +21684,13 @@ async function main() {
     console.log(`${C.dim}  tutor effort: ${state.cliEffort || 'provider default'}${C.reset}`);
     console.log(
       `${C.dim}  appearance: ${cliPresentation.themeLabel} theme; ${cliPresentation.requestedMotion} motion (${cliPresentation.motion} here); change with /theme or /motion${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  learned committee: ${
+        state.committee?.enabled
+          ? `on — ${state.committee.miniModel} supplies warrant-gap questions; fallback ${state.committee.fallbackPolicy}`
+          : 'off — frontier-only responses'
+      }; change with /committee${C.reset}`,
     );
     console.log(
       `${C.dim}  conversation memory: tutor and learner replay all ${
@@ -23018,6 +23118,78 @@ async function main() {
     return true;
   }
 
+  function handleCommitteeCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const action = String(argument || '')
+      .trim()
+      .toLowerCase();
+    if (action && !['on', 'off', 'status'].includes(action)) {
+      console.log(
+        `${C.red}committee error:${C.reset} use /committee, /committee on, /committee off, or /committee status\n`,
+      );
+      return true;
+    }
+    const previous = state.committee?.enabled === true;
+    if (action === 'status') {
+      console.log(`${C.brightMagenta}${C.bold}learned committee >${C.reset} ${previous ? 'on' : 'off'}`);
+      console.log(
+        `${C.dim}  ${
+          previous
+            ? `${state.committee.miniModel} supplies a warrant question only when the detector finds a warrant gap; fallback ${state.committee.fallbackPolicy}`
+            : 'the frontier tutor writes every response without the learned Qwen warrant specialist'
+        } · /committee toggles${C.reset}\n`,
+      );
+      return true;
+    }
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}committee mode can change after the tutor response already in flight completes${C.reset}\n`);
+      return true;
+    }
+    const enabled = action === 'on' ? true : action === 'off' ? false : !previous;
+    if (enabled === previous) {
+      console.log(`${C.brightMagenta}${C.bold}learned committee >${C.reset} already ${enabled ? 'on' : 'off'}\n`);
+      return true;
+    }
+    state.committee.enabled = enabled;
+    state.pointOfAction.enabled = enabled;
+    state.pointOfAction.arm = enabled ? 'committee' : null;
+    state.pointOfAction.current = null;
+    args['point-of-action-arm'] = enabled ? 'committee' : '';
+    const effectiveTurn = state.turns.length + 1;
+    const invalidated = resetMixedLearnerSuggestion('committee_mode_changed');
+    const remembered = persistCurrentInteractiveSettings('committee_mode_changed', { committeeEnabled: enabled });
+    appendTraceEvent(state.trace, {
+      type: 'committee_mode_changed',
+      schema: 'machinespirits.tutor-stub.committee-mode-change.v1',
+      previous,
+      enabled,
+      effectiveTurn,
+      miniModel: state.committee.miniModel,
+      fallbackPolicy: state.committee.fallbackPolicy,
+      cacheRefresh: {
+        priorStateCleared: Boolean(invalidated?.hadState),
+        analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
+        tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
+      },
+      remembered: Boolean(remembered),
+      publicTranscriptChanged: false,
+    });
+    console.log(`${C.brightMagenta}${C.bold}learned committee >${C.reset} ${enabled ? 'on' : 'off'}`);
+    console.log(
+      `${C.dim}  ${
+        enabled
+          ? `${state.committee.miniModel} will supply warrant-gap questions; the frontier composes around them and fallback ${state.committee.fallbackPolicy} remains fail-closed`
+          : 'the frontier tutor will write every response without the learned Qwen specialist'
+      }; applies from turn ${effectiveTurn}${remembered ? ' · remembered for next time' : ' · this session only'}${C.reset}`,
+    );
+    if (mixedLearner.enabled && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('committee_mode_changed');
+      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
+    }
+    console.log();
+    return true;
+  }
+
   function handleExplicitPerformanceDirectiveCommand(axis, argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     const command = axis === 'register' ? '/register' : '/character';
@@ -23247,6 +23419,11 @@ async function main() {
       } catch (error) {
         console.log(`${C.danger}motion error:${C.reset} ${error.message}\n`);
       }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/committee') {
+      handleCommitteeCommand(commandArg, { duringTurn });
       finishSlashCommand();
       return true;
     }

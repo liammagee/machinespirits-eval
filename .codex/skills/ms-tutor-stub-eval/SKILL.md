@@ -58,6 +58,16 @@ Key choices and defaults:
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-sol`; automated learner `codex.gpt-5.6-terra`. This intentionally places the stronger model at learner interpretation rather than public response realization.
+- Learned warrant committee: human interactive chat defaults to the local
+  `program2-sft-instruct-v2` Qwen specialist with fallback policy `v2`. It is
+  consulted only on detected `warrant_skip` moments; the frontier tutor still
+  composes the delivered turn, and mini-model unavailability falls back to the
+  frontier path. Use `/committee on|off|status` inside a session (no argument
+  toggles), or `--committee` / `--no-committee` at launch. The preference is
+  remembered. Automated, one-shot, passthrough, and eval runs retain explicit
+  arm selection and do not inherit the human-chat default; use
+  `--point-of-action-arm committee --committee-fallback-policy v2` when an
+  experiment intentionally needs the validated committee path.
 - Browser voice companion: use `/voice` in an interactive session, or launch
   with `--voice`. The default renderer is `gpt-realtime-2.1-mini` with the
   `marin` voice; switch with `/voice model gpt-realtime-2.1` or
@@ -91,7 +101,7 @@ Key choices and defaults:
 - Human interactive sessions remember the selected scenario and learner
   profile (including a custom profile), named tutor instance, tuning mode,
   plus the last speaking-tutor model, Realtime voice model and voice name,
-  terminal theme and motion preference,
+  terminal theme and motion preference, learned-committee preference,
   engagement-stance temperature, DAG-fact dropout rate, clue release speed,
   register primary and overlays, and overlay threshold in
   `.tutor-stub-traces/last-settings.json`.

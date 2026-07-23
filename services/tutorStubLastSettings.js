@@ -34,6 +34,12 @@ function tuningMode(value) {
   return mode;
 }
 
+function booleanSetting(value, label, defaultValue) {
+  if (value === undefined) return defaultValue;
+  if (typeof value !== 'boolean') throw new Error(`${label} must be true or false`);
+  return value;
+}
+
 export function normalizeTutorStubLastSettings(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('saved settings file must contain a JSON object');
@@ -71,6 +77,7 @@ export function normalizeTutorStubLastSettings(value) {
     voiceName: optionalNonEmptyString(value.voiceName, 'Realtime voice name'),
     cliTheme: normalizeTutorStubCliThemeId(value.cliTheme ?? 'nocturne', { strict: true }),
     motion: normalizeTutorStubCliMotion(value.motion ?? 'auto', { strict: true }),
+    committeeEnabled: booleanSetting(value.committeeEnabled, 'committee preference', true),
     engagementStanceTemperature: boundedNumber(value.engagementStanceTemperature, {
       label: 'teaching-style range',
       min: 0.05,
