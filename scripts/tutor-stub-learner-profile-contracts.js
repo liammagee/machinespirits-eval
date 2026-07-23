@@ -20,6 +20,8 @@ const LEARNER_PROFILE_SPEAKER_LABELS = Object.freeze({
   contradiction_keeper: 'A Contradiction-Keeping Learner',
   affective_resistant: 'An Affectively Resistant Learner',
   low_trust_skeptic: 'A Low-Trust Learner',
+  counterexample_hunter: 'A Counterexample-Hunting Learner',
+  goalpost_shifter: 'A Goalpost-Shifting Learner',
   fast_learner: 'A Fast Learner',
   slow_learner: 'A Slow Learner',
 });
@@ -716,6 +718,121 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'skeptical' },
   }),
 
+  counterexample_hunter: contract({
+    id: 'counterexample_hunter',
+    family: 'stress',
+    shortName: 'Counterexample hunter',
+    failureOperator: 'tries to defeat every proposed rule with a plausible rival case before accepting it',
+    contrastWith: {
+      contradiction_keeper: 'actively generates a counterexample instead of merely holding two readings open',
+      low_trust_skeptic: 'attacks the claim or rule rather than assuming the tutor has hidden evidence',
+      skeptical: 'continues searching after one warrant is made public',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.4,
+      description:
+        'Answer a proposed inference with a public-evidence-compatible counterexample or rival reading before conceding its scope.',
+    },
+    triggers: [
+      {
+        when: 'the tutor proposes a general rule or conclusion',
+        responseBias: 'offer the strongest rival reading that still fits the public record',
+      },
+      {
+        when: 'the tutor directly distinguishes or rules out that rival reading',
+        responseBias: 'concede that local distinction but test the next weak edge rather than closing immediately',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not accept the first adequate explanation without testing a rival.',
+      'Do not invent hidden facts or evidence to manufacture a counterexample.',
+      'Do not turn the challenge into personal distrust of the tutor.',
+    ],
+    signature: {
+      requestType: { conceptual_clarity_request: [0.25, 0.6], authority_refusal_or_status_challenge: [0.1, 0.35] },
+      discourseMove: { challenge: [0.35, 0.7], hypothesis: [0.15, 0.45], question: [0.1, 0.35] },
+      evidenceUse: { cites_public_evidence: [0.25, 0.55], links_evidence_to_rule: [0.1, 0.35] },
+      epistemicStance: { exploratory: [0.25, 0.6], resistant: [0.1, 0.4], reflective: [0.1, 0.35] },
+      agency: { steering: [0.35, 0.7], attempting: [0.1, 0.35] },
+      scoreBands: { conceptualScore: [3, 4.5], epistemicReadinessScore: [3, 4.5] },
+    },
+    dag: {
+      coverageVelocity: 'branching_slow',
+      missingPremiseReduction: 'medium_low',
+      unsupportedAssertionRate: 'low_medium',
+      expectedBottlenecks: ['learner_integration_gap', 'release_or_pacing_gap'],
+    },
+    repair: {
+      firstCorrection: 'concedes only the counterexample that the public evidence actually defeats',
+      repeatedCorrection: 'accepts a tightly scoped rule while testing one remaining edge',
+      maxFullRepairsPer8Turns: 2,
+    },
+    publicRules: [
+      'Make the rival case concrete, for example: “Could the same mark come from the earlier tool instead?”',
+      'When a counterexample is defeated, acknowledge that local result instead of pretending the answer was never given.',
+    ],
+    gate: { maxCosineToDiligent: 0.86, expectedNearestNeighbor: 'skeptical' },
+  }),
+
+  goalpost_shifter: contract({
+    id: 'goalpost_shifter',
+    family: 'stress',
+    shortName: 'Goalpost shifter',
+    failureOperator: 'raises a new evidentiary standard whenever the tutor meets the standard it just requested',
+    contrastWith: {
+      low_trust_skeptic: 'does not settle after evidence and warrant are separated, but demands an additional condition',
+      counterexample_hunter: 'changes the acceptance threshold rather than producing a concrete rival case',
+      answer_seeking: 'withholds acceptance instead of asking the tutor to supply the final answer',
+      skeptical: 'moves the acceptance criterion after a warrant is supplied instead of testing that warrant in place',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.45,
+      description:
+        'Acknowledge an answered challenge only briefly, then demand a fresh condition before allowing the same claim to stand.',
+    },
+    triggers: [
+      {
+        when: 'the tutor supplies the exact warrant or clue requested in the prior turn',
+        responseBias: 'say that it is not sufficient without one further test and name that new test',
+      },
+      {
+        when: 'the tutor publicly fixes the acceptance criterion before answering',
+        responseBias: 'resist once, then accept or reject the claim by that fixed criterion',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not accept a met criterion as sufficient on the first pass.',
+      'Do not repeat the same objection unchanged; move the threshold to a new condition.',
+      'Do not invent hidden evidence or attack the tutor as a person.',
+    ],
+    signature: {
+      requestType: { authority_refusal_or_status_challenge: [0.25, 0.6], conceptual_clarity_request: [0.15, 0.45] },
+      discourseMove: { challenge: [0.35, 0.7], question: [0.15, 0.45], repair_request: [0.05, 0.3] },
+      evidenceUse: { cites_public_evidence: [0.1, 0.35], none: [0.2, 0.5], links_evidence_to_rule: [0.05, 0.25] },
+      epistemicStance: { resistant: [0.35, 0.7], reflective: [0.1, 0.35] },
+      agency: { steering: [0.4, 0.75], attempting: [0.05, 0.25] },
+      scoreBands: { conceptualScore: [2.5, 4.2], epistemicReadinessScore: [2.5, 4.2] },
+    },
+    dag: {
+      coverageVelocity: 'stagnant_threshold_shift',
+      missingPremiseReduction: 'low',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['learner_integration_gap', 'release_or_pacing_gap'],
+    },
+    repair: {
+      firstCorrection: 'acknowledges the answer but adds a new acceptance condition',
+      repeatedCorrection: 'settles only after the acceptance criterion is fixed publicly in advance',
+      maxFullRepairsPer8Turns: 1,
+    },
+    publicRules: [
+      'Make the moved threshold audible, for example: “That answers the mark, but it still does not prove whose hand made it.”',
+      'If the tutor fixes a fair criterion before answering, eventually honor that criterion rather than shifting forever.',
+    ],
+    gate: { maxCosineToDiligent: 0.84, expectedNearestNeighbor: 'skeptical' },
+  }),
+
   fast_learner: contract({
     id: 'fast_learner',
     family: 'stress',
@@ -844,6 +961,8 @@ const STRESS_LEARNER_PROFILE_IDS = Object.freeze([
   'contradiction_keeper',
   'affective_resistant',
   'low_trust_skeptic',
+  'counterexample_hunter',
+  'goalpost_shifter',
   'fast_learner',
   'slow_learner',
 ]);

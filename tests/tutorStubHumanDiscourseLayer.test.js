@@ -399,7 +399,7 @@ process.stdin.on('end', () => {
         if (!browsedStressProfiles && plain.includes('learner profile [diligent] >')) {
           browsedStressProfiles = true;
           child.stdin.write('stress\n');
-        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (8)')) {
+        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (10)')) {
           acceptedDefault = true;
           child.stdin.write('\n');
         } else if (!acceptedTemperature && plain.includes('teaching-style range [0.15; recommended] >')) {
@@ -441,7 +441,7 @@ process.stdin.on('end', () => {
     const tutorIndex = plain.indexOf('tutor >');
     assert.ok(pickerIndex >= 0, plain);
     assert.match(plain, /learner profile \[diligent\] >/u);
-    assert.match(plain, /learner profiles > specialist failure modes \(8\)/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(10\)/u);
     assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
     assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
     // Model selection was removed from first-run setup (2026-07-12): profile
@@ -749,6 +749,7 @@ test(
     assert.match(plain, /Learner interpretation\s+codex\.gpt-5\.6-sol/u);
     assert.match(plain, /Reasoning tracker\s+codex\.gpt-5\.6-sol/u);
     assert.match(plain, /Learner voice\s+codex\.gpt-5\.6-terra/u);
+    assert.match(plain, /Difficulty shift\s+on/u);
     assert.match(plain, /Turn-change override\s+off/u);
     assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc discard changes and return/u);
     assert.match(plain, /Done — apply and return\s+press Enter/u);
@@ -852,6 +853,24 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
   assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
   assert.equal(config.registerSelection.temperatureScope, 'engagement_stance_and_actorial_part');
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
+});
+
+test('light adaptation defaults on for adaptive interactive sessions with explicit research and CLI boundaries', () => {
+  const interactive = tutorStubDryRun();
+  assert.equal(interactive.lightAdaptation.enabled, true);
+  assert.equal(interactive.lightAdaptation.settingsCommand, '/settings light on|off|status');
+  assert.equal(interactive.lightAdaptation.defaultScope, 'adaptive_interactive_sessions');
+  assert.equal(interactive.sessionRecipe.config.options['light-adaptation'], true);
+
+  const disabled = tutorStubDryRun(['--no-light-adaptation']);
+  assert.equal(disabled.lightAdaptation.enabled, false);
+
+  const automated = tutorStubDryRun(['--auto-learner']);
+  assert.equal(automated.lightAdaptation.enabled, false);
+  assert.equal(automated.sessionRecipe.config.options['light-adaptation'], false);
+
+  const explicitAutomated = tutorStubDryRun(['--auto-learner', '--light-adaptation']);
+  assert.equal(explicitAutomated.lightAdaptation.enabled, true);
 });
 
 test('tutor-stub dry run exposes the guided demo launch contract', () => {
@@ -1543,9 +1562,9 @@ test('mixed tutor-stub separates stress profiles from the ordinary interactive l
   );
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /learner profiles > specialist failure modes \(8\)/u);
+  assert.match(result.stdout, /learner profiles > specialist failure modes \(10\)/u);
   assert.match(result.stdout, /premature_closure:/u);
-  assert.match(result.stdout, /learner profiles > complete v3 registry \(14\)/u);
+  assert.match(result.stdout, /learner profiles > complete v3 registry \(16\)/u);
   assert.match(result.stdout, /answer_seeking:/u);
   assert.match(result.stdout, /low_trust_skeptic:/u);
   assert.match(result.stdout, /fast_learner:/u);

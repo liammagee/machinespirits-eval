@@ -170,6 +170,9 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings models learner ',
   '/settings temp ',
   '/settings dropout ',
+  '/settings light on',
+  '/settings light off',
+  '/settings light status',
   '/settings release-speed ',
   '/settings forget',
   '/settings policy add state',
@@ -291,6 +294,7 @@ test('command listings are alphabetical after mode and capability filtering', ()
 
 test('transport metadata classifies picker, browser, voice, and relaunch side effects before HTTP exposure', () => {
   assert.deepEqual(tutorStubCommandTransportMetadata('/settings').effects, ['terminal_picker']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/character').effects, ['terminal_picker']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/transcript').effects, ['browser_open']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/voice').effects, ['browser_open', 'voice_device']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/scenario').effects, ['terminal_picker', 'process_relaunch']);
@@ -516,7 +520,9 @@ test('passthrough settings completions expose only speaker model, theme, and mot
   ]);
   assert.equal(Object.isFrozen(passthrough), true);
   assert.ok(passthrough.every((candidate) => /^\/settings (?:model |theme |motion )/u.test(candidate)));
-  assert.ok(passthrough.every((candidate) => !/(?:models|temp|dropout|release-speed|forget|policy)/u.test(candidate)));
+  assert.ok(
+    passthrough.every((candidate) => !/(?:models|temp|dropout|light|release-speed|forget|policy)/u.test(candidate)),
+  );
 });
 
 test('resolved capabilities filter commands, completions, and generated help without changing frozen catalog views', () => {

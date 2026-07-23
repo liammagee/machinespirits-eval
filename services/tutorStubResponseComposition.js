@@ -1459,6 +1459,11 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
 }
 
 function configuredFallbackHost({ part, object }) {
+  const normalizedPart =
+    {
+      cross_examiner: 'adversarial_teacher',
+      opposing_counsel: 'exacting_schoolmaster',
+    }[part] || part;
   return (
     {
       scene_partner: `I set the ${object} between us so we can test the distinction together.`,
@@ -1466,8 +1471,10 @@ function configuredFallbackHost({ part, object }) {
       record_keeper: `I enter that distinction in the ${object}.`,
       advocate: `I lay the ${object} against the easy case; your limit is where it fails.`,
       skeptic: `Not so fast—I hold that claim against the ${object}.`,
+      adversarial_teacher: `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea?`,
+      exacting_schoolmaster: `Show the working with the ${object}: apply the method one step at a time, name what that step teaches us, then revise precisely.`,
       foreperson: `I keep that finding provisional in the ${object}.`,
-    }[part] || `I set the ${object} under examination and mark the claim’s limit.`
+    }[normalizedPart] || `I set the ${object} under examination and mark the claim’s limit.`
   );
 }
 
