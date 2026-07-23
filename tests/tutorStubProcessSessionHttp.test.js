@@ -219,6 +219,10 @@ test('process factory gives the child one validated absolute resume path', async
 test('process session specification allowlists HTTP labs, enforces their modes, and rejects ambiguous resume selectors', async () => {
   const createSession = createTutorStubProcessSessionFactory({ root: ROOT });
   await assert.rejects(
+    createSession({ id: 'unimplemented-engine', engine: 'cell_lab' }),
+    (error) => error.code === 'invalid_request' && /engine must be one of: tutor_stub/u.test(error.message),
+  );
+  await assert.rejects(
     createSession({ id: 'invalid-lab', lab: 'unbounded_custom_lab' }),
     (error) => error.code === 'invalid_request' && /registered tutor-stub capability lab/u.test(error.message),
   );
@@ -232,6 +236,7 @@ test('process session specification allowlists HTTP labs, enforces their modes, 
   );
   const pure = await createSession({ id: 'derived-pure-chat', lab: 'pure_chat' });
   assert.equal(pure.snapshot().capabilitySnapshot.mode, 'passthrough');
+  assert.equal(pure.snapshot().state.engine, 'tutor_stub');
   pure.terminate('test_cleanup');
   await assert.rejects(
     createSession({ id: 'ambiguous-resume', resume: 'run-1', resumeLast: true }),
@@ -353,6 +358,13 @@ test('shared eval surfaces mount the real tutor-stub host by default without sta
   assert.equal(unknownLab.status, 400);
   assert.equal(unknownLab.body.error.code, 'invalid_request');
 
+  const unavailableEngine = await request(base, '/sessions', {
+    method: 'POST',
+    body: { id: 'unavailable-engine-http', engine: 'cell_lab' },
+  });
+  assert.equal(unavailableEngine.status, 400);
+  assert.equal(unavailableEngine.body.error.code, 'invalid_request');
+
   const ambiguousResume = await request(base, '/sessions', {
     method: 'POST',
     body: { id: 'invalid-resume-http', resume: 'run-1', resumeLast: true },
@@ -407,6 +419,7 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   assert.equal(created.status, 201, JSON.stringify(created.body));
   assert.equal(created.body.session.status, 'active');
   assert.equal(created.body.session.sessionId, 'real-http-session');
+  assert.equal(created.body.session.state.engine, 'tutor_stub');
   assert.equal(created.body.session.capabilitySnapshot.mode, 'direct');
   assert.equal(created.body.session.state.publicMessageCount, 1);
   assert.equal(created.body.session.state.opening.role, 'assistant');

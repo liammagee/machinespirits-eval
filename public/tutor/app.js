@@ -109,7 +109,7 @@ function fallbackCatalog() {
         audience: 'learner_safe',
         maturity: 'stable',
         costClass: 'metered',
-        launch: { mode: 'passthrough', available: true, requiresWorld: false },
+        launch: { engine: 'tutor_stub', mode: 'passthrough', available: true, requiresWorld: false },
       },
       {
         id: 'human_scaffold',
@@ -118,7 +118,7 @@ function fallbackCatalog() {
         audience: 'learner_safe',
         maturity: 'stable',
         costClass: 'metered',
-        launch: { mode: 'scaffold', available: true, requiresWorld: true },
+        launch: { engine: 'tutor_stub', mode: 'scaffold', available: true, requiresWorld: true },
       },
     ],
     worlds: [{ id: 'none', title: 'Open topic (no authored world)' }],
@@ -141,13 +141,20 @@ function renderCatalog(catalog) {
       lab.id,
       `${lab.title || lab.label || lab.id} · ${lab.costClass || 'declared cost'}`,
       {
+        engine: lab.launch?.engine || 'tutor_stub',
         mode: lab.launch?.mode || 'direct',
         requiresWorld: Boolean(lab.launch?.requiresWorld),
       },
     );
     if (lab.launch?.available === false) row.disabled = true;
   }
-  if (!labs.length) option(elements.lab, 'pure_chat', 'Pure chat', { mode: 'passthrough', requiresWorld: false });
+  if (!labs.length) {
+    option(elements.lab, 'pure_chat', 'Pure chat', {
+      engine: 'tutor_stub',
+      mode: 'passthrough',
+      requiresWorld: false,
+    });
+  }
   const defaultLab = catalog.defaults?.lab;
   if (defaultLab && [...elements.lab.options].some((row) => row.value === defaultLab && !row.disabled)) {
     elements.lab.value = defaultLab;
@@ -309,7 +316,9 @@ async function startSession(event) {
   elements.start.disabled = true;
   setStatus('Starting the tutor process…');
   const mode = elements.lab.selectedOptions[0]?.dataset.mode || 'direct';
+  const engine = elements.lab.selectedOptions[0]?.dataset.engine || 'tutor_stub';
   const body = {
+    engine,
     lab: elements.lab.value,
     mode,
     model: elements.model.value,

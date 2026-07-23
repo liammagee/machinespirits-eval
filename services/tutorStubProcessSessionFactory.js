@@ -15,6 +15,7 @@ export const TUTOR_STUB_PROCESS_SESSION_SCHEMA = 'machinespirits.tutor-stub.proc
 export const TUTOR_STUB_PROCESS_SESSION_VERSION = 1;
 
 const SESSION_MODES = new Set(['direct', 'passthrough', 'scaffold', 'mixed', 'curriculum']);
+const SESSION_ENGINES = new Set(['tutor_stub']);
 const PROCESS_SESSION_LAB_MODES = new Map([
   ['pure_chat', 'passthrough'],
   ['human_scaffold', 'scaffold'],
@@ -29,6 +30,7 @@ const SPECIFICATION_FIELDS = new Set([
   'id',
   'label',
   'load',
+  'engine',
   'mode',
   'model',
   'classifierModel',
@@ -69,6 +71,14 @@ function normalizeSpecification(specification) {
     );
   }
   const selectedLab = boundedString(specification.lab, 'lab', 64);
+  const engine = boundedString(specification.engine || 'tutor_stub', 'engine', 32);
+  if (!SESSION_ENGINES.has(engine)) {
+    throw new TutorStubSessionHostError(
+      'invalid_request',
+      `engine must be one of: ${[...SESSION_ENGINES].join(', ')}`,
+      400,
+    );
+  }
   if (selectedLab && !getTutorStubLab(selectedLab)) {
     throw new TutorStubSessionHostError('invalid_request', 'lab must name a registered tutor-stub capability lab', 400);
   }
@@ -97,6 +107,7 @@ function normalizeSpecification(specification) {
   }
   const normalized = {
     id: boundedString(specification.id || `tutor-stub-${randomUUID()}`, 'id', 128),
+    engine,
     mode,
     model: boundedString(specification.model, 'model', 160),
     classifierModel: boundedString(specification.classifierModel, 'classifierModel', 160),
@@ -179,6 +190,7 @@ function provisionalSnapshot(specification) {
     counters: { loads: 0, resumes: 0, resets: 0, steps: 0, commands: 0, learnerSteps: 0 },
     state: {
       transport: TUTOR_STUB_PROCESS_SESSION_SCHEMA,
+      engine: specification.engine,
       mode: specification.mode,
       turnCount: 0,
       publicMessageCount: 0,
@@ -186,6 +198,17 @@ function provisionalSnapshot(specification) {
       publicMessages: [],
     },
     events: [],
+  };
+}
+
+function withSessionEngine(session, engine) {
+  const projected = clone(session);
+  return {
+    ...projected,
+    state: {
+      ...(projected?.state || {}),
+      engine,
+    },
   };
 }
 
@@ -556,7 +579,7 @@ export function createTutorStubProcessSessionFactory({
           }
           if (frame.schema !== TUTOR_STUB_SESSION_RPC_SCHEMA || frame.version !== TUTOR_STUB_SESSION_RPC_VERSION)
             return;
-          if (frame.session) snapshot = clone(frame.session);
+          if (frame.session) snapshot = withSessionEngine(frame.session, specification.engine);
           if (frame.type === 'ready') {
             clearTimeout(startupTimer);
             resolve(snapshot);

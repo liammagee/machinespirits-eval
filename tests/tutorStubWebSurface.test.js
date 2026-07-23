@@ -40,6 +40,7 @@ test('public tutor catalog is an explicit learner-safe projection', () => {
     assert.ok(catalog.labs.some((lab) => lab.id === 'pure_chat' && lab.launch.available));
     assert.ok(catalog.labs.some((lab) => lab.id === 'human_scaffold' && lab.launch.requiresWorld));
     assert.ok(catalog.labs.some((lab) => lab.id === 'mixed_drafting' && !lab.launch.available));
+    assert.ok(catalog.labs.every((lab) => lab.launch.engine === 'tutor_stub'));
     assert.deepEqual(
       catalog.labs.filter((lab) => lab.launch.available).map((lab) => lab.id),
       ['pure_chat', 'human_scaffold'],
@@ -130,6 +131,8 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(html, /Raw audio is not added to the public trace/u);
 
   assert.match(script, /new AbortController\(\)/u);
+  assert.match(script, /engine: lab\.launch\?\.engine \|\| 'tutor_stub'/u);
+  assert.match(script, /const engine = elements\.lab\.selectedOptions\[0\]\?\.dataset\.engine/u);
   assert.match(script, /elements\.micConsent\.checked/u);
   assert.match(script, /SpeechRecognition/u);
   assert.match(script, /event\.key === 'Enter' \|\| event\.key === ' '/u);

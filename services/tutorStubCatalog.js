@@ -13,21 +13,24 @@ export const TUTOR_STUB_PUBLIC_CATALOG_SCHEMA = 'machinespirits.tutor-stub.publi
 export const TUTOR_STUB_PUBLIC_CATALOG_VERSION = 1;
 
 const WEB_LAUNCH = Object.freeze({
-  pure_chat: Object.freeze({ mode: 'passthrough', available: true, requiresWorld: false }),
-  human_scaffold: Object.freeze({ mode: 'scaffold', available: true, requiresWorld: true }),
+  pure_chat: Object.freeze({ engine: 'tutor_stub', mode: 'passthrough', available: true, requiresWorld: false }),
+  human_scaffold: Object.freeze({ engine: 'tutor_stub', mode: 'scaffold', available: true, requiresWorld: true }),
   mixed_drafting: Object.freeze({
+    engine: 'tutor_stub',
     mode: 'mixed',
     available: false,
     requiresWorld: true,
     unavailableReason: 'Draft suggestion, acceptance, and regeneration commands are not available through HTTP yet.',
   }),
   coaching: Object.freeze({
+    engine: 'tutor_stub',
     mode: 'scaffold',
     available: false,
     requiresWorld: true,
     unavailableReason: 'Private coach role switching is not available through the browser transport yet.',
   }),
   voice: Object.freeze({
+    engine: 'tutor_stub',
     mode: 'scaffold',
     available: false,
     requiresWorld: true,
@@ -35,6 +38,7 @@ const WEB_LAUNCH = Object.freeze({
       'The server voice companion is not available here; opt-in browser transcription remains available.',
   }),
   curriculum: Object.freeze({
+    engine: 'tutor_stub',
     mode: 'curriculum',
     available: false,
     requiresWorld: false,
@@ -101,7 +105,14 @@ function listPublicModelAliases() {
 export function buildTutorStubPublicCatalog({ root = DEFAULT_ROOT } = {}) {
   const labs = listTutorStubLabs({ audience: 'learner_safe' }).map((entry) => ({
     ...entry,
-    launch: { ...(WEB_LAUNCH[entry.id] || { mode: 'direct', available: false, requiresWorld: false }) },
+    launch: {
+      ...(WEB_LAUNCH[entry.id] || {
+        engine: 'tutor_stub',
+        mode: 'direct',
+        available: false,
+        requiresWorld: false,
+      }),
+    },
   }));
   const worlds = listProductionWorlds(root);
   const tutors = listPublicTutorInstances(root);
