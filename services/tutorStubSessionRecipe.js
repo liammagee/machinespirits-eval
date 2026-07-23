@@ -417,6 +417,11 @@ export function compareTutorStubResumeRecipe(sourceRecipe, currentRecipe, { extr
       drift.push({ axis, expected: left, actual: right });
     }
   };
+  const compareExact = (axis, left, right) => {
+    if (JSON.stringify(canonicalValue(left)) !== JSON.stringify(canonicalValue(right))) {
+      drift.push({ axis, expected: left, actual: right });
+    }
+  };
   const compareModel = (axis, left, right) => {
     if (left === null || left === undefined || left === '') return;
     if (!modelIdentitiesMatch(left, right)) {
@@ -436,6 +441,10 @@ export function compareTutorStubResumeRecipe(sourceRecipe, currentRecipe, { extr
   if (!expected.prompt?.tutorRole) compare('tutor_prompt', expected.tutorPrompt, actual.tutorPrompt);
   for (const role of ['tutor', 'classifier', 'reasoning', 'learner']) {
     compareModel(`model.${role}`, expected.models?.[role], actual.models?.[role]);
+  }
+  for (const [key, value] of Object.entries(source.config.options || {})) {
+    if (IDENTITY_OPTION_KEYS.has(key)) continue;
+    compareExact(`option.${key}`, value, current.config.options?.[key]);
   }
   return deepFreeze({
     schema: TUTOR_STUB_RESUME_DRIFT_SCHEMA,

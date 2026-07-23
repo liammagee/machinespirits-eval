@@ -418,6 +418,7 @@ async function stopResponse() {
     await refreshCatalogAndSessions();
     setStatus('Session stopped. You can start or explicitly resume another safe lab.');
   } catch (error) {
+    if (sessionId() !== id) return;
     addMessage(
       'system',
       `Stop was not confirmed: ${error.message}. This session remains active here; retry Stop or End session.`,
@@ -479,6 +480,7 @@ async function endSession() {
     await refreshCatalogAndSessions();
     setStatus('Session ended. You can start another safe lab.');
   } catch (error) {
+    if (sessionId() !== id) return;
     addMessage(
       'system',
       `End was not confirmed: ${error.message}. This session remains active here; retry End session or use Stop.`,

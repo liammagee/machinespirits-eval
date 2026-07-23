@@ -141,6 +141,18 @@ test('--write-recipe and --recipe round-trip a deterministic resolved config', (
   assert.equal(Object.hasOwn(second.sessionRecipe.config.identity.models.tutor, 'configured'), false);
   assert.equal(Object.hasOwn(second.sessionRecipe.config.identity.models.tutor, 'apiKeyEnv'), false);
   assert.equal(second.recipeSource.drift.ok, true);
+
+  const semanticDrift = runCli([
+    '--recipe',
+    recipePath,
+    '--pressure-turns',
+    '2,5',
+    '--dry-run',
+    '--no-trace',
+    '--no-remember-settings',
+  ]);
+  assert.equal(semanticDrift.status, 1);
+  assert.match(semanticDrift.stderr, /recipe configuration drift on option\.pressure-turns/u);
 });
 
 test('--resume selects an explicit older trace, fails drift closed, and records acknowledgement', () => {

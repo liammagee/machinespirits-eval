@@ -111,6 +111,13 @@ test('recipe captures every semantic committee, pressure, and evaluation identit
     assert.equal(TUTOR_STUB_RECIPE_OPTION_KEYS.includes(key), true, key);
     assert.equal(built.config.options[key], value, key);
   }
+  const changed = recipe({ args: { ...semantic, 'pressure-turns': '2,5' } });
+  const report = compareTutorStubResumeRecipe(built, changed);
+  assert.equal(report.ok, false);
+  assert.deepEqual(
+    report.drift.map((entry) => entry.axis),
+    ['option.pressure-turns'],
+  );
 });
 
 test('recipe files verify their embedded hash and explicit identity overrides are reported', () => {
