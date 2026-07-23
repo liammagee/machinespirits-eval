@@ -6,6 +6,10 @@ const progressionIssue = {
   guard: 'live_turn_progression_v1',
   type: 'handoff_loses_turn_focus',
 };
+const actorialIssue = {
+  guard: 'actorial_realization',
+  type: 'missing_selected_performance_tactic',
+};
 const leakIssue = { guard: 'leak', type: 'private_evidence_in_public_speech' };
 const unknownGuardIssue = { guard: 'never_seen_guard', type: 'anything' };
 
@@ -23,6 +27,14 @@ test('terminal fallback delivers conversational-integrity findings as advisories
   const row = decision.dispositions[0];
   assert.equal(row.legacyOverride, 'terminal_fallback_conversational_advisory');
   assert.equal(row.category, 'conversational_integrity');
+});
+
+test('terminal fallback delivers optional actorial-realization findings as advisories', () => {
+  const decision = decideTutorStubGuardDelivery([actorialIssue], { terminalFallback: true });
+  assert.equal(decision.ok, true);
+  assert.deepEqual(decision.hardIssues, []);
+  assert.deepEqual(decision.advisoryIssues, [actorialIssue]);
+  assert.equal(decision.dispositions[0].legacyOverride, 'terminal_fallback_actorial_advisory');
 });
 
 test('evidence boundaries stay hard on the terminal fallback', () => {
@@ -45,10 +57,14 @@ test('novel types under a wildcarded conversational guard inherit its category a
 });
 
 test('mixed findings: fallback delivery blocked by the evidence issue alone', () => {
-  const decision = decideTutorStubGuardDelivery([progressionIssue, leakIssue], { terminalFallback: true });
+  const decision = decideTutorStubGuardDelivery([progressionIssue, actorialIssue, leakIssue], {
+    terminalFallback: true,
+  });
   assert.equal(decision.ok, false);
   assert.equal(decision.hardIssues.length, 1);
   assert.equal(decision.hardIssues[0].guard, 'leak');
-  assert.equal(decision.advisoryIssues.length, 1);
-  assert.equal(decision.advisoryIssues[0].guard, 'live_turn_progression_v1');
+  assert.deepEqual(
+    decision.advisoryIssues.map((issue) => issue.guard),
+    ['live_turn_progression_v1', 'actorial_realization'],
+  );
 });

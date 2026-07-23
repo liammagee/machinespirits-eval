@@ -1,5 +1,5 @@
 export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.guard-disposition.v1';
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 1;
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 2;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -235,18 +235,20 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
   const actorialOverride = allowActorialAdvisory && resolved.known && normalized.guard === 'actorial_realization';
   // Terminal-fallback accommodation (committee-runtime-main-reconciliation,
   // 2026-07-22): the deterministic fallback is the harness's last-resort
-  // safety text. When IT fails a conversational-integrity check there is no
-  // further candidate — rejecting it kills the whole dialogue (the 2026-07-17
-  // hardening dead-ended the Phase 5 pilot configuration at turns 2-3 this
-  // way). On the terminal-fallback attempt only, known conversational-
-  // integrity findings are delivered as recorded advisories instead of
-  // fatals. Evidence, clue-transaction, and every other category — and all
-  // unknown issues — remain hard everywhere.
-  const terminalFallbackOverride =
+  // safety text. When it fails a conversational-integrity or optional
+  // actorial-realization check there is no further candidate — rejecting it
+  // kills the whole dialogue. On the terminal-fallback attempt only, those
+  // known surface findings are delivered as recorded advisories instead of
+  // fatals. Evidence, clue-transaction, semantic-closure, pedagogical-support,
+  // and all unknown issues remain hard everywhere.
+  const terminalFallbackConversationalOverride =
     terminalFallback &&
     resolved.known &&
     resolved.rule.category === 'conversational_integrity' &&
     resolved.rule.strict === HARD;
+  const terminalFallbackActorialOverride =
+    terminalFallback && resolved.known && normalized.guard === 'actorial_realization' && resolved.rule.strict === HARD;
+  const terminalFallbackOverride = terminalFallbackConversationalOverride || terminalFallbackActorialOverride;
   const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
   return {
     issue: normalized,
@@ -259,9 +261,11 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     shadowDisposition: resolved.rule.shadow,
     legacyOverride: actorialOverride
       ? 'allow_actorial_advisory'
-      : terminalFallbackOverride
+      : terminalFallbackConversationalOverride
         ? 'terminal_fallback_conversational_advisory'
-        : null,
+        : terminalFallbackActorialOverride
+          ? 'terminal_fallback_actorial_advisory'
+          : null,
   };
 }
 
@@ -349,6 +353,19 @@ export function decideTutorStubGuardDelivery(
         })),
     },
   };
+}
+
+/**
+ * Build the user-facing fatal message from the effective hard boundary only.
+ * Advisory and report-only findings remain in the trace/decision envelope but
+ * must not be presented as causes of a terminal delivery failure.
+ */
+export function tutorStubTerminalFallbackFailureMessage(deliveryDecision = null) {
+  const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
+  const details = hardIssues.length
+    ? hardIssues.map((issue) => `${issue.guard || 'unknown_guard'}:${issue.type || 'unknown_issue'}`).join(', ')
+    : 'unclassified_hard_guard_failure';
+  return `Tutor deterministic fallback failed final audit: ${details}`;
 }
 
 function issueRows(guard, issues) {
