@@ -1,12 +1,13 @@
 {
-  "generated": "2026-07-23T07:16:04.150Z",
+  "generated": "2026-07-23T07:33:46.113Z",
   "counts": {
     "total": 156,
     "byStatus": {
       "done": 122,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 25,
+      "triaged": 24,
+      "review": 1,
       "archived": 4
     },
     "byType": {
@@ -338,18 +339,6 @@
         "pragmatics",
         "ontology"
       ]
-    },
-    {
-      "id": "complete-tutor-stub-command-effect-metadata-before-http-comm",
-      "title": "Complete tutor-stub command effect metadata before HTTP command exposure",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every command declares model-call, file-write, persistent-mutation, session-clear, and process-exit effects; registry invariants and negative transport tests fail closed for any undeclared or disallowed effect."
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -799,6 +788,25 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "complete-tutor-stub-command-effect-metadata-before-http-comm",
+      "title": "Complete tutor-stub command effect metadata before HTTP command exposure",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "Every command declares model-call, file-write, persistent-mutation, session-clear, and process-exit effects; registry invariants and negative transport tests fail closed for any undeclared or disallowed effect.",
+      "branch": "codex/tutor-stub-command-effects",
+      "links": {
+        "code": [
+          "services/tutorStubCommandRegistry.js",
+          "tests/tutorStubCommandRegistry.test.js"
+        ]
+      }
     },
     {
       "id": "adaptive-eval-immutable-provenance",
