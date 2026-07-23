@@ -1,21 +1,24 @@
 ---
 id: harden-cli-provider-process-isolation
 title: Isolate CLI model providers from secrets and fail closed on tool use
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-23
 verification: Spawned model CLIs receive only an explicit environment allowlist
   and any prohibited tool event fails the request; tests prove unrelated API
   secrets are absent and no successful response survives a policy violation.
 claim_status: planned
+branch: codex/tutor-stub-super-app-slices
 depends_on: []
 links:
   code:
     - services/cliProviderBridge.js
+  items:
+    - isolate-remaining-direct-model-subprocesses
 tags:
   - security
   - providers
@@ -38,3 +41,13 @@ Acceptance:
 - Redact sensitive environment values and command payloads from errors/traces.
 - Add stub-child tests for environment isolation and fail-closed tool events on
   every supported CLI event shape.
+
+## Progress
+
+- 2026-07-23: The shared Codex and Claude bridge now constructs a documented
+  provider-specific environment allowlist, strips Node loader flags and
+  unrelated credentials, suppresses raw child output from failures, and rejects
+  prohibited or invalid Codex event streams before any result is returned.
+- 2026-07-23: Secret-canary, event-shape, streaming-boundary, spawn, exit, and
+  existing service-spawn inventory tests pass. Repository-local adapters that
+  still launch model CLIs directly are tracked separately.

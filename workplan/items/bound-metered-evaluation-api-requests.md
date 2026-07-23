@@ -1,22 +1,25 @@
 ---
 id: bound-metered-evaluation-api-requests
 title: Add admission controls to metered evaluation API requests
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-23
 verification: Eval run and comparison routes reject malformed, unknown, or
   oversized plans before allocation or model calls; accepted plans expose an
   exact bounded test count and route regressions prove the paid-work ceiling.
 claim_status: planned
+branch: codex/tutor-stub-super-app-slices
 depends_on: []
 links:
   code:
     - routes/evalRoutes.js
     - services/evaluationRunner.js
+  items:
+    - bound-remaining-metered-eval-api-surfaces
 tags:
   - api
   - cost-control
@@ -39,3 +42,14 @@ Acceptance:
 - Require an explicit privileged override or confirmation for any supported
   high-cost path, and record the admitted plan in run provenance.
 - Add route tests proving invalid and oversized requests cause zero model calls.
+
+## Progress
+
+- 2026-07-23: `/api/eval/run` and `/api/eval/compare` now validate typed unique
+  profile/scenario registries, positive safe-integer repetition counts, exact
+  Cartesian cost, a conservative server ceiling, server-authenticated override,
+  and exact paid-work confirmation before allocating a run.
+- 2026-07-23: The frozen admission plan is persisted in run metadata. Unit and
+  injected-route tests prove malformed, unknown, oversized, and unconfirmed
+  requests make zero runner calls; remaining metered endpoints are tracked in a
+  follow-up card.
