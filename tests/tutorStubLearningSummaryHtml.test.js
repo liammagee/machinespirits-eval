@@ -9,6 +9,7 @@ import {
   renderTutorStubLearningSummaryHtml,
   writeTutorStubLearningSummaryHtml,
 } from '../services/tutorStubLearningSummaryHtml.js';
+import { MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA } from '../services/machineSpiritsHouseStyle.js';
 
 function fixtureSummary() {
   return {
@@ -96,6 +97,16 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   const html = renderTutorStubLearningSummaryHtml(fixtureSummary());
 
   assert.match(html, /^<!doctype html>/u);
+  assert.match(html, new RegExp(`data-machine-spirits-house-style="${MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA}"`, 'u'));
+  assert.match(html, new RegExp(`data-machine-spirits-house-backdrop="${MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA}"`, 'u'));
+  assert.match(
+    html,
+    new RegExp(`data-tutor-stub-learning-summary-style="${TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA}"`, 'u'),
+  );
+  assert.match(html, /<body class="ms-house-style learning-summary-page">/u);
+  assert.match(html, /class="hero ms-panel"/u);
+  assert.match(html, /class="ms-display"/u);
+  assert.match(html, /Machine Spirits house style/u);
   assert.match(html, /The Light Shillings · what we learned/u);
   assert.match(html, /Whose hand struck the false shillings/u);
   assert.match(html, /You chose to end the session here/u);
@@ -116,6 +127,9 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /Human-edited AI learner response/u);
   assert.match(html, /1 human-authored · 0 AI-authored · 1 human-edited AI/u);
   assert.doesNotMatch(html, /The residue matches the <mint crucible>/u);
+  assert.doesNotMatch(html, /--paper:#f4efe4/u);
+  assert.doesNotMatch(html, /font:16px\/1\.55 Georgia/u);
+  assert.doesNotMatch(html, /(?:src|href)=["']https?:\/\//u);
 });
 
 test('learning summary writer creates its destination directory', () => {
