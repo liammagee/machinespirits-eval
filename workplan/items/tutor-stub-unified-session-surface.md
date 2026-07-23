@@ -16,6 +16,8 @@ depends_on:
   - tutor-stub-safe-capability-labs
   - tutor-stub-session-recipes-explicit-resume
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/159
   notes:
     - desktop/ARCHITECTURE.md
     - docs/tutor-stub-cli.md
@@ -62,3 +64,12 @@ and device/provider failures fall back to the same text session.
 - 2026-07-23: Static accessibility/security/parity tests, focused HTTP tests,
   and a live localhost desktop/mobile layout check pass without starting a paid
   tutor session.
+- 2026-07-23: PR #159 merged the shared surface to `main`. Final acceptance
+  passed the 6,477-test hermetic suite, 29 Electron-ABI tests, a signed packaged
+  app smoke (10/10), and a live fake-provider browser flow covering
+  start/reply/reset/end, learner-safe lab gating, text fallback, and clean
+  shutdown with no browser warnings.
+- 2026-07-23: Live consent-revocation testing found and fixed one post-merge UI
+  defect: unchecking consent now disables the permission-triggering voice
+  control while leaving text input available. The regression test passes; this
+  card remains in review until that small follow-up commit is merged.
