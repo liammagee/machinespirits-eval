@@ -1084,105 +1084,105 @@ router.post(
     const startedAt = Date.now();
     try {
       const catalog = buildAssistCatalog();
-    const messages = sanitizeAssistMessages(req.body?.messages || []);
-    const currentConfig =
-      req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
-    const cli = normalizeCli(req.body);
-    const dryRun = req.body?.dryRun === true;
+      const messages = sanitizeAssistMessages(req.body?.messages || []);
+      const currentConfig =
+        req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
+      const cli = normalizeCli(req.body);
+      const dryRun = req.body?.dryRun === true;
 
-    if (!messages.length) {
-      return res.status(400).json({ error: 'messages must include at least one user message' });
-    }
+      if (!messages.length) {
+        return res.status(400).json({ error: 'messages must include at least one user message' });
+      }
 
-    if (dryRun) {
-      return res.json(
-        finalizeAssistResponse({
-          message: 'Dry-run concierge proposal. No model call was made.',
-          rawProposal: dryRunAssistProposal(messages, currentConfig),
+      if (dryRun) {
+        return res.json(
+          finalizeAssistResponse({
+            message: 'Dry-run concierge proposal. No model call was made.',
+            rawProposal: dryRunAssistProposal(messages, currentConfig),
+            currentConfig,
+            catalog,
+          }),
+        );
+      }
+
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      if (!cli.provider && !apiKey) {
+        return res.status(503).json({
+          error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or use dry run.',
+        });
+      }
+
+      const prompt =
+        loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
+      const system = `${prompt}\n\nCATALOG\n${catalog.text}`;
+      const userPayload = JSON.stringify(
+        {
+          messages,
           currentConfig,
-          catalog,
-        }),
-      );
-    }
-
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!cli.provider && !apiKey) {
-      return res.status(503).json({
-        error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or use dry run.',
-      });
-    }
-
-    const prompt =
-      loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
-    const system = `${prompt}\n\nCATALOG\n${catalog.text}`;
-    const userPayload = JSON.stringify(
-      {
-        messages,
-        currentConfig,
-        requiredJsonShape: {
-          message: 'short prose reply',
-          proposal: {
-            features: { approach: 'optional', critic: 'optional', stance: 'optional', learnerModel: 'optional' },
-            topic: 'optional',
-            curriculumRef: 'optional or null',
-            lectureRef: 'optional or null',
-            director: { mode: 'optional', act: 'optional', beat: 'optional', scene: 'optional', note: 'optional' },
-            personaId: 'optional',
-            mode: 'optional human|teacher|auto',
-            action: 'optional none|start_scene|open_batch_launcher',
-            rationale: 'optional string or object',
+          requiredJsonShape: {
+            message: 'short prose reply',
+            proposal: {
+              features: { approach: 'optional', critic: 'optional', stance: 'optional', learnerModel: 'optional' },
+              topic: 'optional',
+              curriculumRef: 'optional or null',
+              lectureRef: 'optional or null',
+              director: { mode: 'optional', act: 'optional', beat: 'optional', scene: 'optional', note: 'optional' },
+              personaId: 'optional',
+              mode: 'optional human|teacher|auto',
+              action: 'optional none|start_scene|open_batch_launcher',
+              rationale: 'optional string or object',
+            },
           },
         },
-      },
-      null,
-      2,
+        null,
+        2,
       );
 
       const call = async (user) => {
-      reserveChatModelCall(req, 'chat_assist');
+        reserveChatModelCall(req, 'chat_assist');
         if (cli.provider) return callCli(cli, { system, user });
         const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
         return callModel(apiKey, {
-        modelId: modelRef.model,
-        system,
-        user,
-        temperature: 0.2,
-        maxTokens: 900,
-      });
-    };
+          modelId: modelRef.model,
+          system,
+          user,
+          temperature: 0.2,
+          maxTokens: 900,
+        });
+      };
 
-    let out = await call(userPayload);
-    let parsed = extractAssistJson(out.content);
-    if (!parsed) {
-      out = await call(`${userPayload}\n\nYour previous response was not valid JSON. Return one JSON object only.`);
-      parsed = extractAssistJson(out.content);
-    }
+      let out = await call(userPayload);
+      let parsed = extractAssistJson(out.content);
+      if (!parsed) {
+        out = await call(`${userPayload}\n\nYour previous response was not valid JSON. Return one JSON object only.`);
+        parsed = extractAssistJson(out.content);
+      }
 
-    if (!parsed) {
-      return res.json({
-        message: compactAssistLine(out.content, 1200) || 'The concierge did not return parseable JSON.',
-        proposal: null,
-        resolved: null,
-        totals: {
-          latencyMs: Date.now() - startedAt,
-          outputTokens: out.outputTokens || 0,
-        },
-      });
-    }
+      if (!parsed) {
+        return res.json({
+          message: compactAssistLine(out.content, 1200) || 'The concierge did not return parseable JSON.',
+          proposal: null,
+          resolved: null,
+          totals: {
+            latencyMs: Date.now() - startedAt,
+            outputTokens: out.outputTokens || 0,
+          },
+        });
+      }
 
-    return res.json(
-      finalizeAssistResponse({
-        message: parsed.message,
-        rawProposal: parsed.proposal,
-        currentConfig,
-        totals: {
-          latencyMs: Date.now() - startedAt,
-          outputTokens: out.outputTokens || 0,
-        },
-        catalog,
-      }),
-    );
-  } catch (err) {
+      return res.json(
+        finalizeAssistResponse({
+          message: parsed.message,
+          rawProposal: parsed.proposal,
+          currentConfig,
+          totals: {
+            latencyMs: Date.now() - startedAt,
+            outputTokens: out.outputTokens || 0,
+          },
+          catalog,
+        }),
+      );
+    } catch (err) {
       console.error('[chat] assist error:', err);
       res.status(500).json({ error: err.message });
     }
@@ -1210,138 +1210,138 @@ router.post(
     const {
       cellName,
       history = [],
-    topic = 'general conversation',
-    lectureRef = null,
-    curriculumRef = null,
-    director = null,
-    personaId = 'eager_novice',
-    dryRun = false,
-  } = req.body || {};
-  const cli = normalizeCli(req.body);
+      topic = 'general conversation',
+      lectureRef = null,
+      curriculumRef = null,
+      director = null,
+      personaId = 'eager_novice',
+      dryRun = false,
+    } = req.body || {};
+    const cli = normalizeCli(req.body);
 
-  if (!cellName) return res.status(400).json({ error: 'cellName is required' });
+    if (!cellName) return res.status(400).json({ error: 'cellName is required' });
 
-  const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[cellName];
-  if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
+    const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[cellName];
+    if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
 
-  const learnerProfileName = profile.learner_architecture || 'unified';
-  const lastTutor = [...history].reverse().find((h) => h.role === 'tutor');
-  const tutorMessage = lastTutor?.content || `Let's begin a conversation about ${topic}. What's on your mind?`;
-  const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
-  const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
+    const learnerProfileName = profile.learner_architecture || 'unified';
+    const lastTutor = [...history].reverse().find((h) => h.role === 'tutor');
+    const tutorMessage = lastTutor?.content || `Let's begin a conversation about ${topic}. What's on your mind?`;
+    const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
+    const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
 
-  if (dryRun === true) {
-    return res.json(buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMessage }));
-  }
+    if (dryRun === true) {
+      return res.json(buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMessage }));
+    }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!cli.provider && !apiKey) {
-    return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
-    });
-  }
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!cli.provider && !apiKey) {
+      return res.status(503).json({
+        error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
+      });
+    }
 
-  // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
+    // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
     // When a CLI substrate is selected, every call routes through the local
     // `claude` or `codex` CLI — same interface, different substrate. Otherwise: OpenRouter.
     const llmCall = async (modelRef, systemPrompt, messages, options = {}) => {
-    reserveChatModelCall(req, options.agentRole || 'learner_turn');
+      reserveChatModelCall(req, options.agentRole || 'learner_turn');
       if (cli.provider) {
         const userPrompt = (messages || []).map((m) => m.content).join('\n\n');
         const out = await callCli(cli, { system: systemPrompt, user: userPrompt });
+        return {
+          content: out.content,
+          usage: { inputTokens: out.inputTokens, outputTokens: out.outputTokens },
+          model: cliModelLabel(cli),
+          provider: `${cli.provider}-cli`,
+          latencyMs: out.latencyMs,
+        };
+      }
+      let modelId = modelRef;
+      if (!modelRef) {
+        modelId = 'nvidia/nemotron-3-nano-30b-a3b';
+      } else if (!modelRef.includes('/') && modelRef.includes('.')) {
+        modelId = evalConfigLoader.resolveModel(modelRef).model;
+      }
+      const start = Date.now();
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'HTTP-Referer': 'http://localhost:8081/chat',
+          'X-Title': 'Machine Spirits Chat (auto-learner)',
+        },
+        body: JSON.stringify({
+          model: modelId,
+          temperature: options.temperature ?? 0.7,
+          max_tokens: Math.max(options.maxTokens ?? CHAT_MIN_MAX_TOKENS, CHAT_MIN_MAX_TOKENS),
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...(messages || []).map((m) => ({
+              role: m.role === 'user' ? 'user' : 'assistant',
+              content: m.content,
+            })),
+          ],
+        }),
+      });
+      const latencyMs = Date.now() - start;
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 200)}`);
+      }
+      const payload = await response.json();
       return {
-        content: out.content,
-        usage: { inputTokens: out.inputTokens, outputTokens: out.outputTokens },
-        model: cliModelLabel(cli),
-        provider: `${cli.provider}-cli`,
-        latencyMs: out.latencyMs,
-      };
-    }
-    let modelId = modelRef;
-    if (!modelRef) {
-      modelId = 'nvidia/nemotron-3-nano-30b-a3b';
-    } else if (!modelRef.includes('/') && modelRef.includes('.')) {
-      modelId = evalConfigLoader.resolveModel(modelRef).model;
-    }
-    const start = Date.now();
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:8081/chat',
-        'X-Title': 'Machine Spirits Chat (auto-learner)',
-      },
-      body: JSON.stringify({
+        content: payload.choices?.[0]?.message?.content || '',
+        usage: {
+          inputTokens: payload.usage?.prompt_tokens || 0,
+          outputTokens: payload.usage?.completion_tokens || 0,
+        },
         model: modelId,
-        temperature: options.temperature ?? 0.7,
-        max_tokens: Math.max(options.maxTokens ?? CHAT_MIN_MAX_TOKENS, CHAT_MIN_MAX_TOKENS),
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...(messages || []).map((m) => ({
-            role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.content,
-          })),
-        ],
-      }),
-    });
-    const latencyMs = Date.now() - start;
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 200)}`);
-    }
-    const payload = await response.json();
-    return {
-      content: payload.choices?.[0]?.message?.content || '',
-      usage: {
-        inputTokens: payload.usage?.prompt_tokens || 0,
-        outputTokens: payload.usage?.completion_tokens || 0,
-      },
-      model: modelId,
-      latencyMs,
+        latencyMs,
+      };
     };
-  };
 
-  const trace = {
-    metrics: {
-      totalInputTokens: 0,
-      totalOutputTokens: 0,
-      learnerInputTokens: 0,
-      learnerOutputTokens: 0,
-      tutorInputTokens: 0,
-      tutorOutputTokens: 0,
-    },
-  };
-
-  try {
-    const result = await interactionEngine.generateLearnerResponse({
-      tutorMessage,
-      topic,
-      conversationHistory: history.map((m) => ({ role: m.role, content: m.content })),
-      learnerProfile: learnerProfileName,
-      personaId,
-      llmCall,
-      memoryContext: null,
-      directorPlan,
-      trace,
-    });
-
-    const deliberation = normalizeLearnerDeliberation(result.internalDeliberation || []);
-    res.json({
-      message: result.externalMessage || '',
-      deliberation,
-      emotionalState: result.emotionalState || null,
-      understandingLevel: result.understandingLevel || null,
-      suggestsEnding: !!result.suggestsEnding,
-      learnerProfile: learnerProfileName,
-      personaId,
-      totals: {
-        inputTokens: trace.metrics.learnerInputTokens,
-        outputTokens: trace.metrics.learnerOutputTokens,
-        latencyMs: deliberation.reduce((s, d) => s + (d.latencyMs || 0), 0),
+    const trace = {
+      metrics: {
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        learnerInputTokens: 0,
+        learnerOutputTokens: 0,
+        tutorInputTokens: 0,
+        tutorOutputTokens: 0,
       },
-    });
-  } catch (err) {
+    };
+
+    try {
+      const result = await interactionEngine.generateLearnerResponse({
+        tutorMessage,
+        topic,
+        conversationHistory: history.map((m) => ({ role: m.role, content: m.content })),
+        learnerProfile: learnerProfileName,
+        personaId,
+        llmCall,
+        memoryContext: null,
+        directorPlan,
+        trace,
+      });
+
+      const deliberation = normalizeLearnerDeliberation(result.internalDeliberation || []);
+      res.json({
+        message: result.externalMessage || '',
+        deliberation,
+        emotionalState: result.emotionalState || null,
+        understandingLevel: result.understandingLevel || null,
+        suggestsEnding: !!result.suggestsEnding,
+        learnerProfile: learnerProfileName,
+        personaId,
+        totals: {
+          inputTokens: trace.metrics.learnerInputTokens,
+          outputTokens: trace.metrics.learnerOutputTokens,
+          latencyMs: deliberation.reduce((s, d) => s + (d.latencyMs || 0), 0),
+        },
+      });
+    } catch (err) {
       console.error('[chat] learner-turn error:', err);
       res.status(500).json({ error: err.message });
     }
@@ -1572,89 +1572,89 @@ router.post(
     const { learnerMessage } = req.body || {};
     const dryRun = req.body?.dryRun || false;
     // Curtain-up turn: the tutor speaks first, with no learner line yet.
-  const instigate = req.body?.instigate === true;
-  const {
-    cellName,
-    history = [],
-    topic = 'general conversation',
-    lectureRef = null,
-    curriculumRef = null,
-    director = null,
-    useClaudeCli = false,
-  } = req.body || {};
-  const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
-  const sampling = normalizeSampling(req.body?.sampling);
-  const cli = normalizeCli(req.body);
+    const instigate = req.body?.instigate === true;
+    const {
+      cellName,
+      history = [],
+      topic = 'general conversation',
+      lectureRef = null,
+      curriculumRef = null,
+      director = null,
+      useClaudeCli = false,
+    } = req.body || {};
+    const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
+    const sampling = normalizeSampling(req.body?.sampling);
+    const cli = normalizeCli(req.body);
 
-  if ((!learnerMessage || !String(learnerMessage).trim()) && !instigate) {
-    return res.status(400).json({ error: 'learnerMessage is required (or set instigate: true)' });
-  }
-
-  if (!cellName) return res.status(400).json({ error: 'cellName is required' });
-
-  const data = evalConfigLoader.loadTutorAgents();
-  const profile = data?.profiles?.[cellName];
-  if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
-  if (!profile.ego) return res.status(400).json({ error: `cell "${cellName}" has no ego config` });
-
-  let egoOverrideRef = null;
-  let superegoOverrideRef = null;
-  if (!cli.provider) {
-    try {
-      const overrides = modelOverrides && typeof modelOverrides === 'object' ? modelOverrides : {};
-      egoOverrideRef = resolveOpenRouterModelOverride(egoModelOverride ?? overrides.ego ?? overrides.tutorEgo);
-      superegoOverrideRef = resolveOpenRouterModelOverride(
-        superegoModelOverride ?? overrides.superego ?? overrides.tutorSuperego,
-      );
-    } catch (err) {
-      return res.status(400).json({ error: err.message });
+    if ((!learnerMessage || !String(learnerMessage).trim()) && !instigate) {
+      return res.status(400).json({ error: 'learnerMessage is required (or set instigate: true)' });
     }
-  }
 
-  if (dryRun === true) {
-    return res.json(
-      buildDryRunTutorTurn({
-        profile,
-        learnerMessage: instigate ? '(curtain rises — the tutor opens the scene)' : String(learnerMessage),
-        topic: String(topic),
-        egoModelOverride: egoOverrideRef,
-        superegoModelOverride: superegoOverrideRef,
-      }),
-    );
-  }
+    if (!cellName) return res.status(400).json({ error: 'cellName is required' });
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!cli.provider && !apiKey) {
-    return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
-    });
-  }
+    const data = evalConfigLoader.loadTutorAgents();
+    const profile = data?.profiles?.[cellName];
+    if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
+    if (!profile.ego) return res.status(400).json({ error: `cell "${cellName}" has no ego config` });
 
-  // Streaming branch: ?stream=1 + single-agent cell + OpenRouter substrate.
-  // Multi-agent cells fall through to the non-streaming path because the
-  // superego review needs the complete ego output before it can begin.
-  // Claude CLI substrate is also non-streaming (the CLI returns once).
-  const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
-  if (wantsStream && !profile.superego && !cli.provider) {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    if (typeof res.flushHeaders === 'function') res.flushHeaders();
-    const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+    let egoOverrideRef = null;
+    let superegoOverrideRef = null;
+    if (!cli.provider) {
+      try {
+        const overrides = modelOverrides && typeof modelOverrides === 'object' ? modelOverrides : {};
+        egoOverrideRef = resolveOpenRouterModelOverride(egoModelOverride ?? overrides.ego ?? overrides.tutorEgo);
+        superegoOverrideRef = resolveOpenRouterModelOverride(
+          superegoModelOverride ?? overrides.superego ?? overrides.tutorSuperego,
+        );
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
 
-    try {
-      const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
-      const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
-      const result = await streamSingleAgentTurn({
-        profile,
-        apiKey,
-        history,
-        learnerMessage: String(learnerMessage),
-        topic: String(topic),
-        curriculum,
-        directorPlan,
-        egoModelOverride: egoOverrideRef,
+    if (dryRun === true) {
+      return res.json(
+        buildDryRunTutorTurn({
+          profile,
+          learnerMessage: instigate ? '(curtain rises — the tutor opens the scene)' : String(learnerMessage),
+          topic: String(topic),
+          egoModelOverride: egoOverrideRef,
+          superegoModelOverride: superegoOverrideRef,
+        }),
+      );
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!cli.provider && !apiKey) {
+      return res.status(503).json({
+        error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
+      });
+    }
+
+    // Streaming branch: ?stream=1 + single-agent cell + OpenRouter substrate.
+    // Multi-agent cells fall through to the non-streaming path because the
+    // superego review needs the complete ego output before it can begin.
+    // Claude CLI substrate is also non-streaming (the CLI returns once).
+    const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
+    if (wantsStream && !profile.superego && !cli.provider) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof res.flushHeaders === 'function') res.flushHeaders();
+      const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+
+      try {
+        const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
+        const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
+        const result = await streamSingleAgentTurn({
+          profile,
+          apiKey,
+          history,
+          learnerMessage: String(learnerMessage),
+          topic: String(topic),
+          curriculum,
+          directorPlan,
+          egoModelOverride: egoOverrideRef,
           temperature: sampling.temperature,
           maxTokens: sampling.maxTokens,
           onDelta: (d) => send({ delta: d }),
@@ -1662,51 +1662,51 @@ router.post(
         });
 
         // Some ego prompts emit JSON suggestion arrays — extract the prose.
-      // If the cleaned text differs, tell the client to replace its
-      // accumulator with the canonical version.
-      const renderableFinal = extractTutorMessage(result.finalMessage) || result.finalMessage;
-      if (renderableFinal !== result.finalMessage) {
-        send({ replace: renderableFinal });
+        // If the cleaned text differs, tell the client to replace its
+        // accumulator with the canonical version.
+        const renderableFinal = extractTutorMessage(result.finalMessage) || result.finalMessage;
+        if (renderableFinal !== result.finalMessage) {
+          send({ replace: renderableFinal });
+        }
+
+        send({
+          done: true,
+          finalMessage: renderableFinal,
+          architecture: {
+            hasSuperego: false,
+            promptType: profile.factors?.prompt_type || null,
+            recognitionMode: !!profile.recognition_mode,
+          },
+          totals: {
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+            latencyMs: result.latencyMs,
+          },
+        });
+      } catch (err) {
+        console.error('[chat] stream turn error:', err);
+        send({ error: err.message });
+      } finally {
+        res.end();
       }
-
-      send({
-        done: true,
-        finalMessage: renderableFinal,
-        architecture: {
-          hasSuperego: false,
-          promptType: profile.factors?.prompt_type || null,
-          recognitionMode: !!profile.recognition_mode,
-        },
-        totals: {
-          inputTokens: result.inputTokens,
-          outputTokens: result.outputTokens,
-          latencyMs: result.latencyMs,
-        },
-      });
-    } catch (err) {
-      console.error('[chat] stream turn error:', err);
-      send({ error: err.message });
-    } finally {
-      res.end();
+      return;
     }
-    return;
-  }
 
-  try {
-    const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
-    const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
-    const trace = await runTutorTurn({
-      profile,
-      apiKey,
-      history,
-      instigate,
-      learnerMessage: String(learnerMessage || ''),
-      topic: String(topic),
-      curriculum,
-      directorPlan,
-      useClaudeCli: !!useClaudeCli,
-      cli,
-      egoModelOverride: egoOverrideRef,
+    try {
+      const curriculum = loadCurriculumContext({ lectureRef, curriculumRef });
+      const directorPlan = buildChatDirectorPlan({ sourceContext: curriculum, director, topic });
+      const trace = await runTutorTurn({
+        profile,
+        apiKey,
+        history,
+        instigate,
+        learnerMessage: String(learnerMessage || ''),
+        topic: String(topic),
+        curriculum,
+        directorPlan,
+        useClaudeCli: !!useClaudeCli,
+        cli,
+        egoModelOverride: egoOverrideRef,
         superegoModelOverride: superegoOverrideRef,
         temperature: sampling.temperature,
         maxTokens: sampling.maxTokens,
@@ -1714,19 +1714,19 @@ router.post(
       });
 
       if (curriculum) {
-      trace.curriculum = {
-        kind: curriculum.kind,
-        courseId: curriculum.courseId,
-        courseTitle: curriculum.courseTitle,
-        lectureRef: curriculum.lectureRef || null,
-        sourceRef: curriculum.sourceRef || curriculum.lectureRef || null,
-        moduleId: curriculum.moduleId || null,
-        title: curriculum.title || null,
-        dramaticShape: curriculum.dramaticShape || null,
-      };
-    }
-    res.json(trace);
-  } catch (err) {
+        trace.curriculum = {
+          kind: curriculum.kind,
+          courseId: curriculum.courseId,
+          courseTitle: curriculum.courseTitle,
+          lectureRef: curriculum.lectureRef || null,
+          sourceRef: curriculum.sourceRef || curriculum.lectureRef || null,
+          moduleId: curriculum.moduleId || null,
+          title: curriculum.title || null,
+          dramaticShape: curriculum.dramaticShape || null,
+        };
+      }
+      res.json(trace);
+    } catch (err) {
       console.error('[chat] turn error:', err);
       res.status(500).json({ error: err.message });
     }

@@ -99,19 +99,25 @@ function attachEvaluationTestBudget(req, admission) {
       throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
     }
     if (used >= admission.plannedTestCount) {
-      throw new EvaluationAdmissionError(409, 'evaluation_test_budget_exhausted', `Test budget exhausted before ${label}`, {
-        plannedTestCount: admission.plannedTestCount,
-        usedTestCount: used,
-      });
+      throw new EvaluationAdmissionError(
+        409,
+        'evaluation_test_budget_exhausted',
+        `Test budget exhausted before ${label}`,
+        {
+          plannedTestCount: admission.plannedTestCount,
+          usedTestCount: used,
+        },
+      );
     }
     used += 1;
     return used;
   };
-  req.evaluationTestBudget = () => Object.freeze({
-    plannedTestCount: admission.plannedTestCount,
-    usedTestCount: used,
-    remainingTestCount: admission.plannedTestCount - used,
-  });
+  req.evaluationTestBudget = () =>
+    Object.freeze({
+      plannedTestCount: admission.plannedTestCount,
+      usedTestCount: used,
+      remainingTestCount: admission.plannedTestCount - used,
+    });
 }
 
 export function createExactEvaluationAdmissionMiddleware({
@@ -760,94 +766,257 @@ router.get('/configurations', (req, res) => {
  *   hyperparameters: null        // Override hyperparameters (optional)
  * }
  */
-router.post('/quick', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/quick',
-  buildInput: (req) => {
-    const body = requireObjectBody(req);
-    return {
-      profiles: [body.profile ?? 'budget'],
-      scenarios: [body.scenario ?? 'new_user_first_visit'],
-      runsPerConfig: 1,
-      skipRubric: body.skipRubric ?? false,
-      dryRun: body.dryRun ?? false,
-      confirmTestCount: body.confirmTestCount,
-      allowOversizedPlan: body.allowOversizedPlan,
-    };
-  },
-}), async (req, res) => {
-  try {
-    const admission = req.evaluationAdmission;
-    const {
-      judgeOverride = null,
-      provider,
-      model,
-      egoModel,
-      superegoStrategy,
-      hyperparameters,
-    } = req.body || {};
-    const profile = admission.profiles[0];
-    const scenario = admission.scenarios[0];
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
+router.post(
+  '/quick',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/quick',
+    buildInput: (req) => {
+      const body = requireObjectBody(req);
+      return {
+        profiles: [body.profile ?? 'budget'],
+        scenarios: [body.scenario ?? 'new_user_first_visit'],
+        runsPerConfig: 1,
+        skipRubric: body.skipRubric ?? false,
+        dryRun: body.dryRun ?? false,
+        confirmTestCount: body.confirmTestCount,
+        allowOversizedPlan: body.allowOversizedPlan,
+      };
+    },
+  }),
+  async (req, res) => {
+    try {
+      const admission = req.evaluationAdmission;
+      const { judgeOverride = null, provider, model, egoModel, superegoStrategy, hyperparameters } = req.body || {};
+      const profile = admission.profiles[0];
+      const scenario = admission.scenarios[0];
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
 
-    // Build config with optional tutor overrides
-    const config = {
-      profileName: profile,
-      ...(provider && { provider }),
-      ...(model && { model }),
-      ...(egoModel && { egoModel }),
-      ...(hyperparameters && { hyperparameters }),
-    };
-
-    // Get scenario name for description
-    const scenarioDetails = evalConfigLoader.getScenario(scenario);
-    const scenarioName = scenarioDetails?.name || scenario;
-
-    // Create a run to persist result to history
-    const run = evaluationStore.createRun({
-      description: scenarioName,
-      totalScenarios: 1,
-      totalConfigurations: 1,
-      metadata: {
-        runType: 'quick',
-        profiles: [profile],
-        scenarios: [scenario],
-        scenarioNames: [scenarioName],
-        judgeOverride: judgeOverride || undefined,
-        dryRun,
-        admissionPlan: admission.admissionPlan,
+      // Build config with optional tutor overrides
+      const config = {
+        profileName: profile,
         ...(provider && { provider }),
         ...(model && { model }),
         ...(egoModel && { egoModel }),
-        ...(superegoStrategy && { superegoStrategy }),
-      },
+        ...(hyperparameters && { hyperparameters }),
+      };
+
+      // Get scenario name for description
+      const scenarioDetails = evalConfigLoader.getScenario(scenario);
+      const scenarioName = scenarioDetails?.name || scenario;
+
+      // Create a run to persist result to history
+      const run = evaluationStore.createRun({
+        description: scenarioName,
+        totalScenarios: 1,
+        totalConfigurations: 1,
+        metadata: {
+          runType: 'quick',
+          profiles: [profile],
+          scenarios: [scenario],
+          scenarioNames: [scenarioName],
+          judgeOverride: judgeOverride || undefined,
+          dryRun,
+          admissionPlan: admission.admissionPlan,
+          ...(provider && { provider }),
+          ...(model && { model }),
+          ...(egoModel && { egoModel }),
+          ...(superegoStrategy && { superegoStrategy }),
+        },
+      });
+
+      req.reserveEvaluationTest(`${profile}:${scenario}`);
+      const result = await evaluationRunner.quickTest(config, {
+        scenarioId: scenario,
+        skipRubricEval: skipRubric,
+        dryRun,
+        verbose: false,
+        judgeOverride,
+        superegoStrategy,
+      });
+
+      // Store result to history
+      evaluationStore.storeResult(run.id, result);
+
+      // Mark run as completed
+      evaluationStore.updateRun(run.id, {
+        status: 'completed',
+        totalTests: 1,
+        completedAt: new Date().toISOString(),
+      });
+
+      res.json({
+        success: true,
+        runId: run.id,
+        admissionPlan: admission.admissionPlan,
+        result: {
+          runId: run.id,
+          scenarioId: result.scenarioId,
+          scenarioName: result.scenarioName,
+          profile: result.profileName,
+          provider: result.provider,
+          model: result.model,
+          passed: result.success,
+          tutorFirstTurnScore: result.tutorFirstTurnScore,
+          latencyMs: result.latencyMs,
+          scores: result.scoresWithReasoning || result.scores, // Prefer detailed scores
+          validation: {
+            passesRequired: result.passesRequired,
+            passesForbidden: result.passesForbidden,
+            requiredMissing: result.requiredMissing,
+            forbiddenFound: result.forbiddenFound,
+          },
+          suggestions: result.suggestions,
+          // Token usage
+          inputTokens: result.inputTokens,
+          outputTokens: result.outputTokens,
+          totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+          apiCalls: result.apiCalls,
+          dialogueRounds: result.dialogueRounds,
+          // Judge reasoning
+          evaluationReasoning: result.evaluationReasoning,
+          judgeModel: result.judgeModel,
+          // Scenario context for display (original user request)
+          scenarioContext: scenarioDetails
+            ? {
+                description: scenarioDetails.description,
+                expectedBehavior: scenarioDetails.expected_behavior,
+                learnerContext: scenarioDetails.learner_context,
+              }
+            : null,
+        },
+      });
+    } catch (error) {
+      console.error('[EvalRoutes] Quick test error:', error);
+      res.status(500).json({ error: 'Failed to run quick test', details: error.message });
+    }
+  },
+);
+
+/**
+ * Run a quick test with SSE streaming for real-time logs
+ * GET /api/eval/stream/quick
+ * Query params: profile, scenario, skipRubric
+ */
+router.get(
+  '/stream/quick',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/stream/quick',
+    buildInput: (req) => ({
+      profiles: [req.query.profile ?? 'budget'],
+      scenarios: [req.query.scenario ?? 'new_user_first_visit'],
+      runsPerConfig: 1,
+      skipRubric: httpBoolean(req.query.skipRubric, false),
+      dryRun: httpBoolean(req.query.dryRun, false),
+      confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+    }),
+  }),
+  async (req, res) => {
+    // Set up SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
     });
 
-    req.reserveEvaluationTest(`${profile}:${scenario}`);
-    const result = await evaluationRunner.quickTest(config, {
-      scenarioId: scenario,
-      skipRubricEval: skipRubric,
-      dryRun,
-      verbose: false,
-      judgeOverride,
-      superegoStrategy,
+    const sendEvent = (type, data) => {
+      // Use named events for addEventListener compatibility
+      res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
+    };
+
+    // Keep-alive to prevent connection timeout
+    const keepAlive = setInterval(() => {
+      res.write(': keepalive\n\n');
+    }, 15000);
+
+    // Register stream for crash protection
+    const streamId = registerStream(res, keepAlive);
+
+    // Clean up on close
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      unregisterStream(streamId);
     });
 
-    // Store result to history
-    evaluationStore.storeResult(run.id, result);
+    try {
+      const admission = req.evaluationAdmission;
+      const profile = admission.profiles[0];
+      const scenario = admission.scenarios[0];
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
+      const outputSize = req.query.outputSize || 'normal'; // compact, normal, expanded
 
-    // Mark run as completed
-    evaluationStore.updateRun(run.id, {
-      status: 'completed',
-      totalTests: 1,
-      completedAt: new Date().toISOString(),
-    });
+      // Get scenario name for description
+      const scenarioDetails = evalConfigLoader.getScenario(scenario);
+      const scenarioName = scenarioDetails?.name || scenario;
 
-    res.json({
-      success: true,
-      runId: run.id,
-      admissionPlan: admission.admissionPlan,
-      result: {
+      // Create a run to persist result to history (status: 'running')
+      const run = evaluationStore.createRun({
+        description: scenarioName,
+        totalScenarios: 1,
+        totalConfigurations: 1,
+        metadata: {
+          runType: 'quick',
+          profiles: [profile],
+          scenarios: [scenario],
+          scenarioNames: [scenarioName],
+          admissionPlan: admission.admissionPlan,
+        },
+      });
+
+      sendEvent('start', {
+        profile,
+        scenario,
+        skipRubric,
+        outputSize,
+        runId: run.id,
+        admissionPlan: admission.admissionPlan,
+        timestamp: new Date().toISOString(),
+      });
+
+      sendEvent('log', { message: `Starting quick test: ${profile} / ${scenario}`, level: 'info' });
+      sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
+      sendEvent('log', { message: `Skip rubric evaluation: ${skipRubric}`, level: 'info' });
+      sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
+
+      const config = { profileName: profile };
+
+      // Create a log callback to stream logs
+      const onLog = (message, level = 'info') => {
+        sendEvent('log', { message, level, timestamp: new Date().toISOString() });
+      };
+
+      sendEvent('log', { message: 'Building learner context...', level: 'info' });
+      sendEvent('progress', { stage: 'context', message: 'Building learner context' });
+
+      req.reserveEvaluationTest(`${profile}:${scenario}`);
+      const result = await evaluationRunner.quickTest(config, {
+        scenarioId: scenario,
+        skipRubricEval: skipRubric,
+        outputSize, // compact, normal, expanded - affects response length
+        dryRun,
+        verbose: true,
+        onLog, // Pass log callback
+      });
+
+      // Store result to history
+      evaluationStore.storeResult(run.id, result);
+
+      // Mark run as completed
+      evaluationStore.updateRun(run.id, {
+        status: 'completed',
+        totalTests: 1,
+        completedAt: new Date().toISOString(),
+      });
+
+      sendEvent('log', {
+        message: `Test completed: score=${result.tutorFirstTurnScore?.toFixed(1) || 'N/A'}`,
+        level: 'success',
+      });
+      sendEvent('log', { message: `Saved to history: ${run.id}`, level: 'info' });
+
+      sendEvent('result', {
         runId: run.id,
         scenarioId: result.scenarioId,
         scenarioName: result.scenarioName,
@@ -865,13 +1034,13 @@ router.post('/quick', createExactEvaluationAdmissionMiddleware({
           forbiddenFound: result.forbiddenFound,
         },
         suggestions: result.suggestions,
-        // Token usage
         inputTokens: result.inputTokens,
         outputTokens: result.outputTokens,
         totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
         apiCalls: result.apiCalls,
         dialogueRounds: result.dialogueRounds,
-        // Judge reasoning
+        dialogueId: result.dialogueId,
+        // Evaluator reasoning
         evaluationReasoning: result.evaluationReasoning,
         judgeModel: result.judgeModel,
         // Scenario context for display (original user request)
@@ -882,181 +1051,19 @@ router.post('/quick', createExactEvaluationAdmissionMiddleware({
               learnerContext: scenarioDetails.learner_context,
             }
           : null,
-      },
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Quick test error:', error);
-    res.status(500).json({ error: 'Failed to run quick test', details: error.message });
-  }
-});
+      });
 
-/**
- * Run a quick test with SSE streaming for real-time logs
- * GET /api/eval/stream/quick
- * Query params: profile, scenario, skipRubric
- */
-router.get('/stream/quick', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/stream/quick',
-  buildInput: (req) => ({
-    profiles: [req.query.profile ?? 'budget'],
-    scenarios: [req.query.scenario ?? 'new_user_first_visit'],
-    runsPerConfig: 1,
-    skipRubric: httpBoolean(req.query.skipRubric, false),
-    dryRun: httpBoolean(req.query.dryRun, false),
-    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
-    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
-  }),
-}), async (req, res) => {
-  // Set up SSE
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
-
-  const sendEvent = (type, data) => {
-    // Use named events for addEventListener compatibility
-    res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
-
-  // Keep-alive to prevent connection timeout
-  const keepAlive = setInterval(() => {
-    res.write(': keepalive\n\n');
-  }, 15000);
-
-  // Register stream for crash protection
-  const streamId = registerStream(res, keepAlive);
-
-  // Clean up on close
-  req.on('close', () => {
-    clearInterval(keepAlive);
-    unregisterStream(streamId);
-  });
-
-  try {
-    const admission = req.evaluationAdmission;
-    const profile = admission.profiles[0];
-    const scenario = admission.scenarios[0];
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
-    const outputSize = req.query.outputSize || 'normal'; // compact, normal, expanded
-
-    // Get scenario name for description
-    const scenarioDetails = evalConfigLoader.getScenario(scenario);
-    const scenarioName = scenarioDetails?.name || scenario;
-
-    // Create a run to persist result to history (status: 'running')
-    const run = evaluationStore.createRun({
-      description: scenarioName,
-      totalScenarios: 1,
-      totalConfigurations: 1,
-      metadata: {
-        runType: 'quick',
-        profiles: [profile],
-        scenarios: [scenario],
-        scenarioNames: [scenarioName],
-        admissionPlan: admission.admissionPlan,
-      },
-    });
-
-    sendEvent('start', {
-      profile,
-      scenario,
-      skipRubric,
-      outputSize,
-      runId: run.id,
-      admissionPlan: admission.admissionPlan,
-      timestamp: new Date().toISOString(),
-    });
-
-    sendEvent('log', { message: `Starting quick test: ${profile} / ${scenario}`, level: 'info' });
-    sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
-    sendEvent('log', { message: `Skip rubric evaluation: ${skipRubric}`, level: 'info' });
-    sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
-
-    const config = { profileName: profile };
-
-    // Create a log callback to stream logs
-    const onLog = (message, level = 'info') => {
-      sendEvent('log', { message, level, timestamp: new Date().toISOString() });
-    };
-
-    sendEvent('log', { message: 'Building learner context...', level: 'info' });
-    sendEvent('progress', { stage: 'context', message: 'Building learner context' });
-
-    req.reserveEvaluationTest(`${profile}:${scenario}`);
-    const result = await evaluationRunner.quickTest(config, {
-      scenarioId: scenario,
-      skipRubricEval: skipRubric,
-      outputSize, // compact, normal, expanded - affects response length
-      dryRun,
-      verbose: true,
-      onLog, // Pass log callback
-    });
-
-    // Store result to history
-    evaluationStore.storeResult(run.id, result);
-
-    // Mark run as completed
-    evaluationStore.updateRun(run.id, {
-      status: 'completed',
-      totalTests: 1,
-      completedAt: new Date().toISOString(),
-    });
-
-    sendEvent('log', {
-      message: `Test completed: score=${result.tutorFirstTurnScore?.toFixed(1) || 'N/A'}`,
-      level: 'success',
-    });
-    sendEvent('log', { message: `Saved to history: ${run.id}`, level: 'info' });
-
-    sendEvent('result', {
-      runId: run.id,
-      scenarioId: result.scenarioId,
-      scenarioName: result.scenarioName,
-      profile: result.profileName,
-      provider: result.provider,
-      model: result.model,
-      passed: result.success,
-      tutorFirstTurnScore: result.tutorFirstTurnScore,
-      latencyMs: result.latencyMs,
-      scores: result.scoresWithReasoning || result.scores, // Prefer detailed scores
-      validation: {
-        passesRequired: result.passesRequired,
-        passesForbidden: result.passesForbidden,
-        requiredMissing: result.requiredMissing,
-        forbiddenFound: result.forbiddenFound,
-      },
-      suggestions: result.suggestions,
-      inputTokens: result.inputTokens,
-      outputTokens: result.outputTokens,
-      totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-      apiCalls: result.apiCalls,
-      dialogueRounds: result.dialogueRounds,
-      dialogueId: result.dialogueId,
-      // Evaluator reasoning
-      evaluationReasoning: result.evaluationReasoning,
-      judgeModel: result.judgeModel,
-      // Scenario context for display (original user request)
-      scenarioContext: scenarioDetails
-        ? {
-            description: scenarioDetails.description,
-            expectedBehavior: scenarioDetails.expected_behavior,
-            learnerContext: scenarioDetails.learner_context,
-          }
-        : null,
-    });
-
-    sendEvent('complete', { success: true, runId: run.id });
-    clearInterval(keepAlive);
-    res.end();
-  } catch (error) {
-    sendEvent('log', { message: `Error: ${error.message}`, level: 'error' });
-    sendEvent('error', { error: error.message });
-    clearInterval(keepAlive);
-    res.end();
-  }
-});
+      sendEvent('complete', { success: true, runId: run.id });
+      clearInterval(keepAlive);
+      res.end();
+    } catch (error) {
+      sendEvent('log', { message: `Error: ${error.message}`, level: 'error' });
+      sendEvent('error', { error: error.message });
+      clearInterval(keepAlive);
+      res.end();
+    }
+  },
+);
 
 // ============================================================================
 // Full Evaluation Endpoints
@@ -1228,454 +1235,468 @@ router.post('/compare', meteredEvaluationHandlers.compare);
  *
  * Returns dimension scores and overall rankings for each profile.
  */
-router.post('/matrix', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/matrix',
-  buildInput: (req) => {
-    const body = requireObjectBody(req);
-    const requested = body.profiles ?? [];
-    const profiles = Array.isArray(requested) && requested.length === 0
-      ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
-        tutorConfigLoader.listProfiles().some((profile) => profile.name === name))
-      : requested;
-    return {
-      profiles,
-      scenarios: body.scenarios ?? 'all',
-      runsPerConfig: 1,
-      skipRubric: body.skipRubric ?? false,
-      dryRun: body.dryRun ?? false,
-      confirmTestCount: body.confirmTestCount,
-      allowOversizedPlan: body.allowOversizedPlan,
-    };
-  },
-}), async (req, res) => {
-  try {
-    const admission = req.evaluationAdmission;
-    const profiles = admission.profiles;
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
+router.post(
+  '/matrix',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/matrix',
+    buildInput: (req) => {
+      const body = requireObjectBody(req);
+      const requested = body.profiles ?? [];
+      const profiles =
+        Array.isArray(requested) && requested.length === 0
+          ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
+              tutorConfigLoader.listProfiles().some((profile) => profile.name === name),
+            )
+          : requested;
+      return {
+        profiles,
+        scenarios: body.scenarios ?? 'all',
+        runsPerConfig: 1,
+        skipRubric: body.skipRubric ?? false,
+        dryRun: body.dryRun ?? false,
+        confirmTestCount: body.confirmTestCount,
+        allowOversizedPlan: body.allowOversizedPlan,
+      };
+    },
+  }),
+  async (req, res) => {
+    try {
+      const admission = req.evaluationAdmission;
+      const profiles = admission.profiles;
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
 
-    // Default profiles if none specified
-    const allProfiles = tutorConfigLoader.listProfiles();
-    // Validate profiles exist
-    const validProfiles = profiles;
-    const invalidProfiles = [];
+      // Default profiles if none specified
+      const allProfiles = tutorConfigLoader.listProfiles();
+      // Validate profiles exist
+      const validProfiles = profiles;
+      const invalidProfiles = [];
 
-    if (validProfiles.length === 0) {
-      return res.status(400).json({
-        error: 'No valid profiles specified',
-        available: allProfiles.map((p) => p.name),
+      if (validProfiles.length === 0) {
+        return res.status(400).json({
+          error: 'No valid profiles specified',
+          available: allProfiles.map((p) => p.name),
+        });
+      }
+
+      // Get scenarios
+      const allScenarios = evalConfigLoader.listScenarios();
+      const admittedScenarioIds = new Set(admission.scenarios);
+      const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
+
+      // Create a run to persist results to history
+      const run = evaluationStore.createRun({
+        description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
+        totalScenarios: scenariosToRun.length,
+        totalConfigurations: validProfiles.length,
+        metadata: {
+          runType: 'matrix',
+          profiles: validProfiles,
+          scenarios: scenariosToRun.map((s) => s.id),
+          scenarioNames: scenariosToRun.map((s) => s.name),
+          skipRubric,
+          dryRun,
+          admissionPlan: admission.admissionPlan,
+        },
       });
-    }
 
-    // Get scenarios
-    const allScenarios = evalConfigLoader.listScenarios();
-    const admittedScenarioIds = new Set(admission.scenarios);
-    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
+      // Run evaluations
+      const results = {};
+      const dimensionScores = {};
+      let totalTests = 0;
 
-    // Create a run to persist results to history
-    const run = evaluationStore.createRun({
-      description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
-      totalScenarios: scenariosToRun.length,
-      totalConfigurations: validProfiles.length,
-      metadata: {
-        runType: 'matrix',
-        profiles: validProfiles,
-        scenarios: scenariosToRun.map((s) => s.id),
-        scenarioNames: scenariosToRun.map((s) => s.name),
-        skipRubric,
-        dryRun,
-        admissionPlan: admission.admissionPlan,
-      },
-    });
+      for (const profileName of validProfiles) {
+        results[profileName] = [];
+        dimensionScores[profileName] = {};
 
-    // Run evaluations
-    const results = {};
-    const dimensionScores = {};
-    let totalTests = 0;
+        for (const scenario of scenariosToRun) {
+          try {
+            const config = { profileName, label: profileName };
+            req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
+            const result = await evaluationRunner.quickTest(config, {
+              scenarioId: scenario.id,
+              verbose: false,
+              skipRubricEval: skipRubric,
+              dryRun,
+              debug: false,
+            });
 
-    for (const profileName of validProfiles) {
-      results[profileName] = [];
-      dimensionScores[profileName] = {};
+            results[profileName].push(result);
+            totalTests++;
 
-      for (const scenario of scenariosToRun) {
-        try {
-          const config = { profileName, label: profileName };
-          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-          const result = await evaluationRunner.quickTest(config, {
-            scenarioId: scenario.id,
-            verbose: false,
-            skipRubricEval: skipRubric,
-            dryRun,
-            debug: false,
-          });
+            // Save result to database
+            evaluationStore.storeResult(run.id, {
+              ...result,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              profileName,
+            });
 
-          results[profileName].push(result);
-          totalTests++;
-
-          // Save result to database
-          evaluationStore.storeResult(run.id, {
-            ...result,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            profileName,
-          });
-
-          // Collect dimension scores
-          if (result.scores) {
-            for (const [dim, score] of Object.entries(result.scores)) {
-              if (!dimensionScores[profileName][dim]) {
-                dimensionScores[profileName][dim] = [];
-              }
-              if (typeof score === 'number') {
-                dimensionScores[profileName][dim].push(score);
+            // Collect dimension scores
+            if (result.scores) {
+              for (const [dim, score] of Object.entries(result.scores)) {
+                if (!dimensionScores[profileName][dim]) {
+                  dimensionScores[profileName][dim] = [];
+                }
+                if (typeof score === 'number') {
+                  dimensionScores[profileName][dim].push(score);
+                }
               }
             }
-          }
-        } catch (e) {
-          const errorResult = {
-            success: false,
-            errorMessage: e.message,
-            scenarioId: scenario.id,
-          };
-          results[profileName].push(errorResult);
-          totalTests++;
+          } catch (e) {
+            const errorResult = {
+              success: false,
+              errorMessage: e.message,
+              scenarioId: scenario.id,
+            };
+            results[profileName].push(errorResult);
+            totalTests++;
 
-          // Save error to database
-          evaluationStore.storeResult(run.id, {
-            ...errorResult,
-            scenarioName: scenario.name,
-            profileName,
-            provider: 'unknown',
-            model: 'unknown',
-          });
+            // Save error to database
+            evaluationStore.storeResult(run.id, {
+              ...errorResult,
+              scenarioName: scenario.name,
+              profileName,
+              provider: 'unknown',
+              model: 'unknown',
+            });
+          }
         }
       }
-    }
 
-    // Update run as completed
-    evaluationStore.updateRun(run.id, {
-      status: 'completed',
-      totalTests,
-      completedAt: new Date().toISOString(),
-    });
+      // Update run as completed
+      evaluationStore.updateRun(run.id, {
+        status: 'completed',
+        totalTests,
+        completedAt: new Date().toISOString(),
+      });
 
-    // Build dimension averages
-    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    const dimensionAverages = {};
-    for (const profile of validProfiles) {
-      dimensionAverages[profile] = {};
-      for (const dim of dimensions) {
-        const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+      // Build dimension averages
+      const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+      const dimensionAverages = {};
+      for (const profile of validProfiles) {
+        dimensionAverages[profile] = {};
+        for (const dim of dimensions) {
+          const scores = dimensionScores[profile]?.[dim] || [];
+          dimensionAverages[profile][dim] =
+            scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+        }
       }
+
+      // Build rankings
+      const rankings = validProfiles
+        .map((profile) => {
+          const profileResults = results[profile] || [];
+          const successCount = profileResults.filter((r) => r.success !== false).length;
+          const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
+          const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+          const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
+          const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
+
+          return {
+            profile,
+            tests: profileResults.length,
+            successes: successCount,
+            avgScore,
+            avgLatency,
+          };
+        })
+        .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+
+      res.json({
+        success: true,
+        runId: run.id, // Include run ID so frontend can navigate to history
+        admissionPlan: admission.admissionPlan,
+        profiles: validProfiles,
+        invalidProfiles: invalidProfiles.length > 0 ? invalidProfiles : undefined,
+        scenariosRun: scenariosToRun.length,
+        dimensionAverages,
+        rankings,
+        results, // Full results for detailed analysis
+      });
+    } catch (error) {
+      console.error('[EvalRoutes] Matrix error:', error);
+      res.status(500).json({ error: 'Failed to run matrix comparison', details: error.message });
     }
-
-    // Build rankings
-    const rankings = validProfiles
-      .map((profile) => {
-        const profileResults = results[profile] || [];
-        const successCount = profileResults.filter((r) => r.success !== false).length;
-        const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
-        const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-        const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
-        const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
-
-        return {
-          profile,
-          tests: profileResults.length,
-          successes: successCount,
-          avgScore,
-          avgLatency,
-        };
-      })
-      .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
-
-    res.json({
-      success: true,
-      runId: run.id, // Include run ID so frontend can navigate to history
-      admissionPlan: admission.admissionPlan,
-      profiles: validProfiles,
-      invalidProfiles: invalidProfiles.length > 0 ? invalidProfiles : undefined,
-      scenariosRun: scenariosToRun.length,
-      dimensionAverages,
-      rankings,
-      results, // Full results for detailed analysis
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Matrix error:', error);
-    res.status(500).json({ error: 'Failed to run matrix comparison', details: error.message });
-  }
-});
+  },
+);
 
 /**
  * Run matrix comparison with SSE streaming for real-time logs
  * GET /api/eval/stream/matrix
  * Query params: profiles, scenarios, skipRubric
  */
-router.get('/stream/matrix', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/stream/matrix',
-  buildInput: (req) => {
-    const requested = httpIdList(req.query.profiles, []);
-    const profiles = Array.isArray(requested) && requested.length === 0
-      ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
-        tutorConfigLoader.listProfiles().some((profile) => profile.name === name))
-      : requested;
-    return {
-      profiles,
-      scenarios: httpIdList(req.query.scenarios, 'all'),
-      runsPerConfig: 1,
-      skipRubric: httpBoolean(req.query.skipRubric, false),
-      dryRun: httpBoolean(req.query.dryRun, false),
-      confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
-      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+router.get(
+  '/stream/matrix',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/stream/matrix',
+    buildInput: (req) => {
+      const requested = httpIdList(req.query.profiles, []);
+      const profiles =
+        Array.isArray(requested) && requested.length === 0
+          ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
+              tutorConfigLoader.listProfiles().some((profile) => profile.name === name),
+            )
+          : requested;
+      return {
+        profiles,
+        scenarios: httpIdList(req.query.scenarios, 'all'),
+        runsPerConfig: 1,
+        skipRubric: httpBoolean(req.query.skipRubric, false),
+        dryRun: httpBoolean(req.query.dryRun, false),
+        confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+        allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+      };
+    },
+  }),
+  async (req, res) => {
+    // Set up SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+
+    const sendEvent = (type, data) => {
+      // Use named events for addEventListener compatibility
+      res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
     };
-  },
-}), async (req, res) => {
-  // Set up SSE
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
 
-  const sendEvent = (type, data) => {
-    // Use named events for addEventListener compatibility
-    res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
+    // Keep-alive to prevent connection timeout
+    const keepAlive = setInterval(() => {
+      res.write(': keepalive\n\n');
+    }, 15000);
 
-  // Keep-alive to prevent connection timeout
-  const keepAlive = setInterval(() => {
-    res.write(': keepalive\n\n');
-  }, 15000);
+    // Register stream for crash protection
+    const streamId = registerStream(res, keepAlive);
 
-  // Register stream for crash protection
-  const streamId = registerStream(res, keepAlive);
-
-  // Clean up on close
-  req.on('close', () => {
-    clearInterval(keepAlive);
-    unregisterStream(streamId);
-  });
-
-  try {
-    const admission = req.evaluationAdmission;
-    const profiles = admission.profiles;
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
-    const outputSize = req.query.outputSize || 'normal';
-
-    // Get all available profiles
-    // Validate profiles
-    const validProfiles = profiles;
-    if (validProfiles.length === 0) {
-      sendEvent('error', { error: 'No valid profiles specified' });
-      return res.end();
-    }
-
-    // Get scenarios
-    const allScenarios = evalConfigLoader.listScenarios();
-    const admittedScenarioIds = new Set(admission.scenarios);
-    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
-
-    const totalTests = validProfiles.length * scenariosToRun.length;
-
-    sendEvent('start', {
-      profiles: validProfiles,
-      scenarioCount: scenariosToRun.length,
-      totalTests,
-      skipRubric,
-      outputSize,
-      admissionPlan: admission.admissionPlan,
-      timestamp: new Date().toISOString(),
+    // Clean up on close
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      unregisterStream(streamId);
     });
 
-    sendEvent('log', {
-      message: `Starting matrix: ${validProfiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
-      level: 'info',
-    });
-    sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
+    try {
+      const admission = req.evaluationAdmission;
+      const profiles = admission.profiles;
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
+      const outputSize = req.query.outputSize || 'normal';
 
-    // Create a run to persist results
-    const run = evaluationStore.createRun({
-      description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
-      totalScenarios: scenariosToRun.length,
-      totalConfigurations: validProfiles.length,
-      metadata: {
-        runType: 'matrix',
+      // Get all available profiles
+      // Validate profiles
+      const validProfiles = profiles;
+      if (validProfiles.length === 0) {
+        sendEvent('error', { error: 'No valid profiles specified' });
+        return res.end();
+      }
+
+      // Get scenarios
+      const allScenarios = evalConfigLoader.listScenarios();
+      const admittedScenarioIds = new Set(admission.scenarios);
+      const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
+
+      const totalTests = validProfiles.length * scenariosToRun.length;
+
+      sendEvent('start', {
         profiles: validProfiles,
-        scenarios: scenariosToRun.map((s) => s.id),
-        scenarioNames: scenariosToRun.map((s) => s.name),
+        scenarioCount: scenariosToRun.length,
+        totalTests,
         skipRubric,
-        dryRun,
+        outputSize,
         admissionPlan: admission.admissionPlan,
-      },
-    });
+        timestamp: new Date().toISOString(),
+      });
 
-    sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
+      sendEvent('log', {
+        message: `Starting matrix: ${validProfiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
+        level: 'info',
+      });
+      sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
-    // Run evaluations
-    const results = {};
-    const dimensionScores = {};
-    let completedTests = 0;
+      // Create a run to persist results
+      const run = evaluationStore.createRun({
+        description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
+        totalScenarios: scenariosToRun.length,
+        totalConfigurations: validProfiles.length,
+        metadata: {
+          runType: 'matrix',
+          profiles: validProfiles,
+          scenarios: scenariosToRun.map((s) => s.id),
+          scenarioNames: scenariosToRun.map((s) => s.name),
+          skipRubric,
+          dryRun,
+          admissionPlan: admission.admissionPlan,
+        },
+      });
 
-    for (const profileName of validProfiles) {
-      results[profileName] = [];
-      dimensionScores[profileName] = {};
+      sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
 
-      sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
+      // Run evaluations
+      const results = {};
+      const dimensionScores = {};
+      let completedTests = 0;
 
-      for (const scenario of scenariosToRun) {
-        completedTests++;
+      for (const profileName of validProfiles) {
+        results[profileName] = [];
+        dimensionScores[profileName] = {};
 
-        sendEvent('progress', {
-          current: completedTests,
-          total: totalTests,
-          profile: profileName,
-          scenario: scenario.name,
-          percentage: Math.round((completedTests / totalTests) * 100),
-        });
+        sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
 
-        sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
+        for (const scenario of scenariosToRun) {
+          completedTests++;
 
-        try {
-          const config = { profileName, label: profileName };
-
-          // Create log callback for this test
-          const onLog = (message, level = 'info') => {
-            sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
-          };
-
-          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-          const result = await evaluationRunner.quickTest(config, {
-            scenarioId: scenario.id,
-            verbose: false,
-            skipRubricEval: skipRubric,
-            dryRun,
-            outputSize,
-            onLog,
+          sendEvent('progress', {
+            current: completedTests,
+            total: totalTests,
+            profile: profileName,
+            scenario: scenario.name,
+            percentage: Math.round((completedTests / totalTests) * 100),
           });
 
-          results[profileName].push(result);
+          sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
 
-          // Save result to database
-          evaluationStore.storeResult(run.id, {
-            ...result,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            profileName,
-          });
+          try {
+            const config = { profileName, label: profileName };
 
-          // Collect dimension scores
-          if (result.scores) {
-            for (const [dim, score] of Object.entries(result.scores)) {
-              if (!dimensionScores[profileName][dim]) {
-                dimensionScores[profileName][dim] = [];
-              }
-              if (typeof score === 'number') {
-                dimensionScores[profileName][dim].push(score);
+            // Create log callback for this test
+            const onLog = (message, level = 'info') => {
+              sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
+            };
+
+            req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
+            const result = await evaluationRunner.quickTest(config, {
+              scenarioId: scenario.id,
+              verbose: false,
+              skipRubricEval: skipRubric,
+              dryRun,
+              outputSize,
+              onLog,
+            });
+
+            results[profileName].push(result);
+
+            // Save result to database
+            evaluationStore.storeResult(run.id, {
+              ...result,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              profileName,
+            });
+
+            // Collect dimension scores
+            if (result.scores) {
+              for (const [dim, score] of Object.entries(result.scores)) {
+                if (!dimensionScores[profileName][dim]) {
+                  dimensionScores[profileName][dim] = [];
+                }
+                if (typeof score === 'number') {
+                  dimensionScores[profileName][dim].push(score);
+                }
               }
             }
+
+            const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
+            const status = result.success !== false ? '✓' : '✗';
+            sendEvent('log', {
+              message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
+              level: result.success !== false ? 'success' : 'warning',
+            });
+
+            sendEvent('result', {
+              profile: profileName,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              passed: result.success !== false,
+              score: result.tutorFirstTurnScore,
+              latencyMs: result.latencyMs,
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
+            });
+          } catch (e) {
+            sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
+
+            const errorResult = {
+              success: false,
+              errorMessage: e.message,
+              scenarioId: scenario.id,
+            };
+            results[profileName].push(errorResult);
+
+            evaluationStore.storeResult(run.id, {
+              ...errorResult,
+              scenarioName: scenario.name,
+              profileName,
+              provider: 'unknown',
+              model: 'unknown',
+            });
           }
-
-          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
-          const status = result.success !== false ? '✓' : '✗';
-          sendEvent('log', {
-            message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
-            level: result.success !== false ? 'success' : 'warning',
-          });
-
-          sendEvent('result', {
-            profile: profileName,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            passed: result.success !== false,
-            score: result.tutorFirstTurnScore,
-            latencyMs: result.latencyMs,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-          });
-        } catch (e) {
-          sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
-
-          const errorResult = {
-            success: false,
-            errorMessage: e.message,
-            scenarioId: scenario.id,
-          };
-          results[profileName].push(errorResult);
-
-          evaluationStore.storeResult(run.id, {
-            ...errorResult,
-            scenarioName: scenario.name,
-            profileName,
-            provider: 'unknown',
-            model: 'unknown',
-          });
         }
       }
-    }
 
-    // Update run as completed
-    evaluationStore.updateRun(run.id, {
-      status: 'completed',
-      totalTests: completedTests,
-      completedAt: new Date().toISOString(),
-    });
+      // Update run as completed
+      evaluationStore.updateRun(run.id, {
+        status: 'completed',
+        totalTests: completedTests,
+        completedAt: new Date().toISOString(),
+      });
 
-    // Build dimension averages
-    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    const dimensionAverages = {};
-    for (const profile of validProfiles) {
-      dimensionAverages[profile] = {};
-      for (const dim of dimensions) {
-        const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+      // Build dimension averages
+      const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+      const dimensionAverages = {};
+      for (const profile of validProfiles) {
+        dimensionAverages[profile] = {};
+        for (const dim of dimensions) {
+          const scores = dimensionScores[profile]?.[dim] || [];
+          dimensionAverages[profile][dim] =
+            scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+        }
       }
+
+      // Build rankings
+      const rankings = validProfiles
+        .map((profile) => {
+          const profileResults = results[profile] || [];
+          const successCount = profileResults.filter((r) => r.success !== false).length;
+          const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
+          const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+          const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
+          const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
+
+          return {
+            profile,
+            tests: profileResults.length,
+            successes: successCount,
+            avgScore,
+            avgLatency,
+          };
+        })
+        .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+
+      sendEvent('log', { message: `\n=== Matrix Complete ===`, level: 'success' });
+      sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
+
+      // Send final complete event with full results
+      sendEvent('complete', {
+        success: true,
+        runId: run.id,
+        profiles: validProfiles,
+        scenariosRun: scenariosToRun.length,
+        dimensionAverages,
+        rankings,
+        results,
+      });
+
+      unregisterStream(streamId);
+      res.end();
+    } catch (error) {
+      sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
+      sendEvent('error', { error: error.message });
+      unregisterStream(streamId);
+      res.end();
     }
-
-    // Build rankings
-    const rankings = validProfiles
-      .map((profile) => {
-        const profileResults = results[profile] || [];
-        const successCount = profileResults.filter((r) => r.success !== false).length;
-        const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
-        const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-        const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
-        const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
-
-        return {
-          profile,
-          tests: profileResults.length,
-          successes: successCount,
-          avgScore,
-          avgLatency,
-        };
-      })
-      .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
-
-    sendEvent('log', { message: `\n=== Matrix Complete ===`, level: 'success' });
-    sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
-
-    // Send final complete event with full results
-    sendEvent('complete', {
-      success: true,
-      runId: run.id,
-      profiles: validProfiles,
-      scenariosRun: scenariosToRun.length,
-      dimensionAverages,
-      rankings,
-      results,
-    });
-
-    unregisterStream(streamId);
-    res.end();
-  } catch (error) {
-    sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
-    sendEvent('error', { error: error.message });
-    unregisterStream(streamId);
-    res.end();
-  }
-});
+  },
+);
 
 /**
  * Run learner-tutor interaction evaluation with SSE streaming
@@ -1688,407 +1709,413 @@ router.get('/stream/matrix', createExactEvaluationAdmissionMiddleware({
  *   - topic: topic for discussion (default: "Hegel's concept of recognition")
  *   - runJudge: whether to run AI judge evaluation (default: true)
  */
-router.get('/stream/interact', createFixedModelCallAdmissionMiddleware({
-  endpoint: '/api/eval/stream/interact',
-  buildInput: (req) => ({
-    dryRun: httpBoolean(req.query.dryRun, false),
-    confirmModelCallLimit: httpPositiveInteger(req.query.confirmModelCallLimit),
-    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
-    turns: httpPositiveInteger(req.query.turns, 5),
-    profile: req.query.profile || 'budget',
-    persona: req.query.persona || 'confused_novice',
-    dialogueEnabled: httpBoolean(req.query.dialogueEnabled, true),
+router.get(
+  '/stream/interact',
+  createFixedModelCallAdmissionMiddleware({
+    endpoint: '/api/eval/stream/interact',
+    buildInput: (req) => ({
+      dryRun: httpBoolean(req.query.dryRun, false),
+      confirmModelCallLimit: httpPositiveInteger(req.query.confirmModelCallLimit),
+      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+      turns: httpPositiveInteger(req.query.turns, 5),
+      profile: req.query.profile || 'budget',
+      persona: req.query.persona || 'confused_novice',
+      dialogueEnabled: httpBoolean(req.query.dialogueEnabled, true),
+    }),
+    plannedModelCallLimit: (_req, input) => {
+      if (!Number.isSafeInteger(input.turns) || input.turns <= 0) {
+        throw new EvaluationAdmissionError(422, 'invalid_request_value', 'turns must be a positive safe integer');
+      }
+      if (typeof input.dialogueEnabled !== 'boolean') {
+        throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'dialogueEnabled must be a boolean');
+      }
+      if (!effectiveEvaluationProfileRegistry().includes(input.profile)) {
+        throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'profile contains an unknown entry', {
+          field: 'profile',
+          unknown: [input.profile],
+        });
+      }
+      const personaIds = learnerConfigLoader.listPersonas().map((persona) => persona.id || persona.name);
+      if (!personaIds.includes(input.persona)) {
+        throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'persona contains an unknown entry', {
+          field: 'persona',
+          unknown: [input.persona],
+        });
+      }
+      // Maximum bilateral path: three calls for the opening learner, then
+      // tutor ego/superego/adjudication + learner ego/superego/adjudication.
+      return 3 + input.turns * 6;
+    },
+    shortCircuitDryRun: true,
   }),
-  plannedModelCallLimit: (_req, input) => {
-    if (!Number.isSafeInteger(input.turns) || input.turns <= 0) {
-      throw new EvaluationAdmissionError(422, 'invalid_request_value', 'turns must be a positive safe integer');
-    }
-    if (typeof input.dialogueEnabled !== 'boolean') {
-      throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'dialogueEnabled must be a boolean');
-    }
-    if (!effectiveEvaluationProfileRegistry().includes(input.profile)) {
-      throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'profile contains an unknown entry', {
-        field: 'profile', unknown: [input.profile],
-      });
-    }
-    const personaIds = learnerConfigLoader.listPersonas().map((persona) => persona.id || persona.name);
-    if (!personaIds.includes(input.persona)) {
-      throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'persona contains an unknown entry', {
-        field: 'persona', unknown: [input.persona],
-      });
-    }
-    // Maximum bilateral path: three calls for the opening learner, then
-    // tutor ego/superego/adjudication + learner ego/superego/adjudication.
-    return 3 + input.turns * 6;
-  },
-  shortCircuitDryRun: true,
-}), async (req, res) => {
-  // Set up SSE
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
-
-  const sendEvent = (type, data) => {
-    res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
-
-  // Keep-alive to prevent connection timeout
-  const keepAlive = setInterval(() => {
-    res.write(': keepalive\n\n');
-  }, 15000);
-
-  // Register stream for crash protection (interaction evals can take a while)
-  const streamId = registerStream(res, keepAlive, { maxDuration: TIMEOUT_WARNING_MS });
-
-  // Clean up on close
-  req.on('close', () => {
-    clearInterval(keepAlive);
-    unregisterStream(streamId);
-  });
-
-  try {
-    const persona = req.modelWorkInput.persona;
-    const tutorProfile = req.modelWorkInput.profile;
-    const maxTurns = req.modelWorkInput.turns;
-    const dialogueEnabled = req.modelWorkInput.dialogueEnabled;
-    const topic = req.query.topic || "Hegel's concept of recognition";
-    const runJudge = req.query.runJudge !== 'false';
-
-    sendEvent('start', {
-      persona,
-      tutorProfile,
-      maxTurns,
-      dialogueEnabled,
-      topic,
-      runJudge,
-      admissionPlan: req.modelWorkAdmission,
-      timestamp: new Date().toISOString(),
+  async (req, res) => {
+    // Set up SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
     });
 
-    sendEvent('log', { message: `Starting interaction evaluation`, level: 'info' });
-    sendEvent('log', { message: `Learner persona: ${persona}`, level: 'info' });
-    sendEvent('log', { message: `Tutor profile: ${tutorProfile}`, level: 'info' });
-    sendEvent('log', { message: `Max turns: ${maxTurns}`, level: 'info' });
-    sendEvent('log', { message: `Dialogue enabled: ${dialogueEnabled}`, level: 'info' });
-    sendEvent('log', { message: `Topic: ${topic}`, level: 'info' });
-
-    // Set up LLM call function using available providers
-    let llmClient = null;
-    let llmProvider = null;
-
-    // Try providers in order of preference
-    const openrouterKey = getApiKey('openrouter');
-    const geminiKey = getApiKey('gemini');
-    const anthropicKey = getApiKey('claude');
-    const openaiKey = getApiKey('openai');
-
-    if (openrouterKey) {
-      llmProvider = 'openrouter';
-      const OpenAI = (await import('openai')).default;
-      llmClient = new OpenAI({
-        apiKey: openrouterKey,
-        baseURL: 'https://openrouter.ai/api/v1',
-      });
-      sendEvent('log', { message: `Using OpenRouter for LLM calls`, level: 'info' });
-    } else if (geminiKey) {
-      llmProvider = 'gemini';
-      const { GoogleGenAI } = await import('@google/genai');
-      llmClient = new GoogleGenAI({ apiKey: geminiKey });
-      sendEvent('log', { message: `Using Gemini for LLM calls`, level: 'info' });
-    } else if (anthropicKey) {
-      llmProvider = 'anthropic';
-      const Anthropic = (await import('@anthropic-ai/sdk')).default;
-      llmClient = new Anthropic({ apiKey: anthropicKey });
-      sendEvent('log', { message: `Using Anthropic for LLM calls`, level: 'info' });
-    } else if (openaiKey) {
-      llmProvider = 'openai';
-      const OpenAI = (await import('openai')).default;
-      llmClient = new OpenAI({ apiKey: openaiKey });
-      sendEvent('log', { message: `Using OpenAI for LLM calls`, level: 'info' });
-    } else {
-      throw new Error(
-        'No LLM API key configured. Set OPENROUTER_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY.',
-      );
-    }
-
-    // Create the llmCall function matching the expected signature
-    const llmCall = async (requestedModel, systemPrompt, messages, options = {}) => {
-      if (req.aborted) {
-        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
-      }
-      req.modelCallBudget.reserve(options.agentRole || 'interaction_model_call');
-      const { temperature = 0.7, maxTokens = 1000 } = options;
-      const model =
-        requestedModel ||
-        getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) ||
-        'deepseek/deepseek-chat';
-
-      try {
-        if (llmProvider === 'openrouter') {
-          const response = await llmClient.chat.completions.create({
-            model,
-            temperature,
-            max_tokens: maxTokens,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              ...messages.map((m) => ({
-                role: m.role === 'user' ? 'user' : 'assistant',
-                content: m.content,
-              })),
-            ],
-          });
-          return {
-            content: response.choices[0]?.message?.content || '',
-            usage: {
-              inputTokens: response.usage?.prompt_tokens || 0,
-              outputTokens: response.usage?.completion_tokens || 0,
-            },
-          };
-        } else if (llmProvider === 'gemini') {
-          const userMessages = messages.map((m) => m.content).join('\n\n');
-          const response = await llmClient.models.generateContent({
-            model,
-            contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessages}` }] }],
-            generationConfig: { temperature, maxOutputTokens: maxTokens },
-          });
-          const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          return {
-            content: text,
-            usage: {
-              inputTokens: Math.ceil((systemPrompt.length + userMessages.length) / 4),
-              outputTokens: Math.ceil(text.length / 4),
-            },
-          };
-        } else if (llmProvider === 'anthropic') {
-          const response = await llmClient.messages.create({
-            model: model || 'claude-3-5-haiku-20241022',
-            max_tokens: maxTokens,
-            system: systemPrompt,
-            messages: messages.map((m) => ({
-              role: m.role === 'user' ? 'user' : 'assistant',
-              content: m.content,
-            })),
-          });
-          return {
-            content: response.content[0]?.text || '',
-            usage: {
-              inputTokens: response.usage?.input_tokens || 0,
-              outputTokens: response.usage?.output_tokens || 0,
-            },
-          };
-        } else if (llmProvider === 'openai') {
-          const response = await llmClient.chat.completions.create({
-            model: model || 'gpt-4o-mini',
-            temperature,
-            max_tokens: maxTokens,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              ...messages.map((m) => ({
-                role: m.role === 'user' ? 'user' : 'assistant',
-                content: m.content,
-              })),
-            ],
-          });
-          return {
-            content: response.choices[0]?.message?.content || '',
-            usage: {
-              inputTokens: response.usage?.prompt_tokens || 0,
-              outputTokens: response.usage?.completion_tokens || 0,
-            },
-          };
-        }
-      } catch (error) {
-        console.error(`[InteractStream] LLM call error:`, error.message);
-        throw error;
-      }
+    const sendEvent = (type, data) => {
+      res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
     };
 
-    // Generate unique learner ID for this eval
-    const learnerId = `eval-learner-${persona}-${Date.now()}`;
-    const evalId = `short-interact-${Date.now()}`;
-    const sessionId = `session-${Date.now()}`;
+    // Keep-alive to prevent connection timeout
+    const keepAlive = setInterval(() => {
+      res.write(': keepalive\n\n');
+    }, 15000);
 
-    sendEvent('log', { message: `Eval ID: ${evalId}`, level: 'info' });
-    sendEvent('progress', { stage: 'setup', message: 'Initializing interaction' });
+    // Register stream for crash protection (interaction evals can take a while)
+    const streamId = registerStream(res, keepAlive, { maxDuration: TIMEOUT_WARNING_MS });
 
-    // Run the interaction
-    sendEvent('log', { message: `\nStarting ${maxTurns}-turn interaction...`, level: 'info' });
-    sendEvent('progress', { stage: 'interaction', message: 'Running learner-tutor dialogue' });
+    // Clean up on close
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      unregisterStream(streamId);
+    });
 
-    const interactionTrace = await interactionEngine.runInteraction(
-      {
+    try {
+      const persona = req.modelWorkInput.persona;
+      const tutorProfile = req.modelWorkInput.profile;
+      const maxTurns = req.modelWorkInput.turns;
+      const dialogueEnabled = req.modelWorkInput.dialogueEnabled;
+      const topic = req.query.topic || "Hegel's concept of recognition";
+      const runJudge = req.query.runJudge !== 'false';
+
+      sendEvent('start', {
+        persona,
+        tutorProfile,
+        maxTurns,
+        dialogueEnabled,
+        topic,
+        runJudge,
+        admissionPlan: req.modelWorkAdmission,
+        timestamp: new Date().toISOString(),
+      });
+
+      sendEvent('log', { message: `Starting interaction evaluation`, level: 'info' });
+      sendEvent('log', { message: `Learner persona: ${persona}`, level: 'info' });
+      sendEvent('log', { message: `Tutor profile: ${tutorProfile}`, level: 'info' });
+      sendEvent('log', { message: `Max turns: ${maxTurns}`, level: 'info' });
+      sendEvent('log', { message: `Dialogue enabled: ${dialogueEnabled}`, level: 'info' });
+      sendEvent('log', { message: `Topic: ${topic}`, level: 'info' });
+
+      // Set up LLM call function using available providers
+      let llmClient = null;
+      let llmProvider = null;
+
+      // Try providers in order of preference
+      const openrouterKey = getApiKey('openrouter');
+      const geminiKey = getApiKey('gemini');
+      const anthropicKey = getApiKey('claude');
+      const openaiKey = getApiKey('openai');
+
+      if (openrouterKey) {
+        llmProvider = 'openrouter';
+        const OpenAI = (await import('openai')).default;
+        llmClient = new OpenAI({
+          apiKey: openrouterKey,
+          baseURL: 'https://openrouter.ai/api/v1',
+        });
+        sendEvent('log', { message: `Using OpenRouter for LLM calls`, level: 'info' });
+      } else if (geminiKey) {
+        llmProvider = 'gemini';
+        const { GoogleGenAI } = await import('@google/genai');
+        llmClient = new GoogleGenAI({ apiKey: geminiKey });
+        sendEvent('log', { message: `Using Gemini for LLM calls`, level: 'info' });
+      } else if (anthropicKey) {
+        llmProvider = 'anthropic';
+        const Anthropic = (await import('@anthropic-ai/sdk')).default;
+        llmClient = new Anthropic({ apiKey: anthropicKey });
+        sendEvent('log', { message: `Using Anthropic for LLM calls`, level: 'info' });
+      } else if (openaiKey) {
+        llmProvider = 'openai';
+        const OpenAI = (await import('openai')).default;
+        llmClient = new OpenAI({ apiKey: openaiKey });
+        sendEvent('log', { message: `Using OpenAI for LLM calls`, level: 'info' });
+      } else {
+        throw new Error(
+          'No LLM API key configured. Set OPENROUTER_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY.',
+        );
+      }
+
+      // Create the llmCall function matching the expected signature
+      const llmCall = async (requestedModel, systemPrompt, messages, options = {}) => {
+        if (req.aborted) {
+          throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
+        }
+        req.modelCallBudget.reserve(options.agentRole || 'interaction_model_call');
+        const { temperature = 0.7, maxTokens = 1000 } = options;
+        const model =
+          requestedModel ||
+          getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) ||
+          'deepseek/deepseek-chat';
+
+        try {
+          if (llmProvider === 'openrouter') {
+            const response = await llmClient.chat.completions.create({
+              model,
+              temperature,
+              max_tokens: maxTokens,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                ...messages.map((m) => ({
+                  role: m.role === 'user' ? 'user' : 'assistant',
+                  content: m.content,
+                })),
+              ],
+            });
+            return {
+              content: response.choices[0]?.message?.content || '',
+              usage: {
+                inputTokens: response.usage?.prompt_tokens || 0,
+                outputTokens: response.usage?.completion_tokens || 0,
+              },
+            };
+          } else if (llmProvider === 'gemini') {
+            const userMessages = messages.map((m) => m.content).join('\n\n');
+            const response = await llmClient.models.generateContent({
+              model,
+              contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessages}` }] }],
+              generationConfig: { temperature, maxOutputTokens: maxTokens },
+            });
+            const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            return {
+              content: text,
+              usage: {
+                inputTokens: Math.ceil((systemPrompt.length + userMessages.length) / 4),
+                outputTokens: Math.ceil(text.length / 4),
+              },
+            };
+          } else if (llmProvider === 'anthropic') {
+            const response = await llmClient.messages.create({
+              model: model || 'claude-3-5-haiku-20241022',
+              max_tokens: maxTokens,
+              system: systemPrompt,
+              messages: messages.map((m) => ({
+                role: m.role === 'user' ? 'user' : 'assistant',
+                content: m.content,
+              })),
+            });
+            return {
+              content: response.content[0]?.text || '',
+              usage: {
+                inputTokens: response.usage?.input_tokens || 0,
+                outputTokens: response.usage?.output_tokens || 0,
+              },
+            };
+          } else if (llmProvider === 'openai') {
+            const response = await llmClient.chat.completions.create({
+              model: model || 'gpt-4o-mini',
+              temperature,
+              max_tokens: maxTokens,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                ...messages.map((m) => ({
+                  role: m.role === 'user' ? 'user' : 'assistant',
+                  content: m.content,
+                })),
+              ],
+            });
+            return {
+              content: response.choices[0]?.message?.content || '',
+              usage: {
+                inputTokens: response.usage?.prompt_tokens || 0,
+                outputTokens: response.usage?.completion_tokens || 0,
+              },
+            };
+          }
+        } catch (error) {
+          console.error(`[InteractStream] LLM call error:`, error.message);
+          throw error;
+        }
+      };
+
+      // Generate unique learner ID for this eval
+      const learnerId = `eval-learner-${persona}-${Date.now()}`;
+      const evalId = `short-interact-${Date.now()}`;
+      const sessionId = `session-${Date.now()}`;
+
+      sendEvent('log', { message: `Eval ID: ${evalId}`, level: 'info' });
+      sendEvent('progress', { stage: 'setup', message: 'Initializing interaction' });
+
+      // Run the interaction
+      sendEvent('log', { message: `\nStarting ${maxTurns}-turn interaction...`, level: 'info' });
+      sendEvent('progress', { stage: 'interaction', message: 'Running learner-tutor dialogue' });
+
+      const interactionTrace = await interactionEngine.runInteraction(
+        {
+          learnerId,
+          personaId: persona,
+          tutorProfile,
+          learnerProfile: dialogueEnabled ? 'ego_superego' : 'unified',
+          topic,
+          scenario: {
+            name: `Interactive Evaluation - ${persona}`,
+          },
+          sessionId,
+        },
+        llmCall,
+        {
+          maxTurns,
+          trace: true,
+          observeInternals: true,
+        },
+      );
+
+      sendEvent('log', { message: `Interaction completed: ${interactionTrace.turns.length} turns`, level: 'success' });
+
+      // Generate sequence diagram and transcript
+      const generateSequenceDiagram = (trace) => {
+        const lines = ['sequenceDiagram'];
+        lines.push('  participant L as Learner');
+        lines.push('  participant T as Tutor');
+
+        for (const turn of trace.turns || []) {
+          const speaker = turn.phase === 'learner' ? 'L' : 'T';
+          const target = turn.phase === 'learner' ? 'T' : 'L';
+          const msg = (turn.externalMessage || '').slice(0, 50).replace(/"/g, "'").replace(/\n/g, ' ');
+          lines.push(`  ${speaker}->>+${target}: ${msg}${msg.length >= 50 ? '...' : ''}`);
+        }
+
+        return lines.join('\n');
+      };
+
+      const generateTranscript = (trace) => {
+        const lines = [];
+        for (const turn of trace.turns || []) {
+          const speaker = turn.phase === 'learner' ? 'LEARNER' : 'TUTOR';
+          lines.push(`[Turn ${turn.turnNumber}] ${speaker}:`);
+          lines.push(turn.externalMessage || '');
+          lines.push('');
+        }
+        return lines.join('\n');
+      };
+
+      // Compile result
+      const result = {
+        evalId,
+        scenarioId: `interact-${persona}`,
+        scenarioName: `Interactive Evaluation - ${persona}`,
+        type: 'short_term',
         learnerId,
         personaId: persona,
         tutorProfile,
+        learnerArchitecture: dialogueEnabled ? 'ego_superego' : 'unified',
         learnerProfile: dialogueEnabled ? 'ego_superego' : 'unified',
         topic,
-        scenario: {
-          name: `Interactive Evaluation - ${persona}`,
-        },
-        sessionId,
-      },
-      llmCall,
-      {
-        maxTurns,
-        trace: true,
-        observeInternals: true,
-      },
-    );
-
-    sendEvent('log', { message: `Interaction completed: ${interactionTrace.turns.length} turns`, level: 'success' });
-
-    // Generate sequence diagram and transcript
-    const generateSequenceDiagram = (trace) => {
-      const lines = ['sequenceDiagram'];
-      lines.push('  participant L as Learner');
-      lines.push('  participant T as Tutor');
-
-      for (const turn of trace.turns || []) {
-        const speaker = turn.phase === 'learner' ? 'L' : 'T';
-        const target = turn.phase === 'learner' ? 'T' : 'L';
-        const msg = (turn.externalMessage || '').slice(0, 50).replace(/"/g, "'").replace(/\n/g, ' ');
-        lines.push(`  ${speaker}->>+${target}: ${msg}${msg.length >= 50 ? '...' : ''}`);
-      }
-
-      return lines.join('\n');
-    };
-
-    const generateTranscript = (trace) => {
-      const lines = [];
-      for (const turn of trace.turns || []) {
-        const speaker = turn.phase === 'learner' ? 'LEARNER' : 'TUTOR';
-        lines.push(`[Turn ${turn.turnNumber}] ${speaker}:`);
-        lines.push(turn.externalMessage || '');
-        lines.push('');
-      }
-      return lines.join('\n');
-    };
-
-    // Compile result
-    const result = {
-      evalId,
-      scenarioId: `interact-${persona}`,
-      scenarioName: `Interactive Evaluation - ${persona}`,
-      type: 'short_term',
-      learnerId,
-      personaId: persona,
-      tutorProfile,
-      learnerArchitecture: dialogueEnabled ? 'ego_superego' : 'unified',
-      learnerProfile: dialogueEnabled ? 'ego_superego' : 'unified',
-      topic,
-      interaction: interactionTrace,
-      turnCount: interactionTrace.turns.length,
-      turns: interactionTrace.turns,
-      sequenceDiagram: generateSequenceDiagram(interactionTrace),
-      formattedTranscript: generateTranscript(interactionTrace),
-      skipJudge: !runJudge,
-      metrics: {
+        interaction: interactionTrace,
         turnCount: interactionTrace.turns.length,
-        totalTokens:
-          (interactionTrace.metrics?.learnerInputTokens || 0) +
-          (interactionTrace.metrics?.learnerOutputTokens || 0) +
-          (interactionTrace.metrics?.tutorInputTokens || 0) +
-          (interactionTrace.metrics?.tutorOutputTokens || 0),
-        learnerTokens:
-          (interactionTrace.metrics?.learnerInputTokens || 0) + (interactionTrace.metrics?.learnerOutputTokens || 0),
-        tutorTokens:
-          (interactionTrace.metrics?.tutorInputTokens || 0) + (interactionTrace.metrics?.tutorOutputTokens || 0),
-        totalLatencyMs: interactionTrace.metrics?.totalLatencyMs || 0,
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    // Store in database
-    sendEvent('progress', { stage: 'storing', message: 'Saving results' });
-
-    // First create a run entry so it appears in History with "Interact" filter
-    let runId = null;
-    try {
-      const runData = evaluationStore.createRun({
-        description: `Interact: ${persona} → ${tutorProfile}`,
-        totalScenarios: 1,
-        metadata: {
-          runType: 'interaction',
-          profiles: [tutorProfile],
-          personaId: persona,
-          learnerArchitecture: dialogueEnabled ? 'ego_superego' : 'unified',
-          topic,
-          fastMode: !runJudge,
-          admissionPlan: req.modelWorkAdmission,
+        turns: interactionTrace.turns,
+        sequenceDiagram: generateSequenceDiagram(interactionTrace),
+        formattedTranscript: generateTranscript(interactionTrace),
+        skipJudge: !runJudge,
+        metrics: {
+          turnCount: interactionTrace.turns.length,
+          totalTokens:
+            (interactionTrace.metrics?.learnerInputTokens || 0) +
+            (interactionTrace.metrics?.learnerOutputTokens || 0) +
+            (interactionTrace.metrics?.tutorInputTokens || 0) +
+            (interactionTrace.metrics?.tutorOutputTokens || 0),
+          learnerTokens:
+            (interactionTrace.metrics?.learnerInputTokens || 0) + (interactionTrace.metrics?.learnerOutputTokens || 0),
+          tutorTokens:
+            (interactionTrace.metrics?.tutorInputTokens || 0) + (interactionTrace.metrics?.tutorOutputTokens || 0),
+          totalLatencyMs: interactionTrace.metrics?.totalLatencyMs || 0,
         },
-      });
-      runId = runData.id;
-      sendEvent('log', { message: `Created run entry: ${runId}`, level: 'info' });
-    } catch (e) {
-      sendEvent('log', { message: `Run entry warning: ${e.message}`, level: 'warning' });
-    }
+        timestamp: new Date().toISOString(),
+      };
 
-    // Now store the interaction evaluation details
-    try {
-      result.runId = runId;
-      evaluationStore.storeInteractionEval(result);
-      sendEvent('log', { message: `Stored in database: ${evalId}`, level: 'success' });
+      // Store in database
+      sendEvent('progress', { stage: 'storing', message: 'Saving results' });
 
-      // Mark the run as completed (don't use completeRun which checks evaluation_results table)
-      if (runId) {
-        evaluationStore.updateRun(runId, {
-          status: 'completed',
-          totalTests: result.metrics?.turnCount || 1,
-          completedAt: new Date().toISOString(),
+      // First create a run entry so it appears in History with "Interact" filter
+      let runId = null;
+      try {
+        const runData = evaluationStore.createRun({
+          description: `Interact: ${persona} → ${tutorProfile}`,
+          totalScenarios: 1,
+          metadata: {
+            runType: 'interaction',
+            profiles: [tutorProfile],
+            personaId: persona,
+            learnerArchitecture: dialogueEnabled ? 'ego_superego' : 'unified',
+            topic,
+            fastMode: !runJudge,
+            admissionPlan: req.modelWorkAdmission,
+          },
+        });
+        runId = runData.id;
+        sendEvent('log', { message: `Created run entry: ${runId}`, level: 'info' });
+      } catch (e) {
+        sendEvent('log', { message: `Run entry warning: ${e.message}`, level: 'warning' });
+      }
+
+      // Now store the interaction evaluation details
+      try {
+        result.runId = runId;
+        evaluationStore.storeInteractionEval(result);
+        sendEvent('log', { message: `Stored in database: ${evalId}`, level: 'success' });
+
+        // Mark the run as completed (don't use completeRun which checks evaluation_results table)
+        if (runId) {
+          evaluationStore.updateRun(runId, {
+            status: 'completed',
+            totalTests: result.metrics?.turnCount || 1,
+            completedAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        sendEvent('log', { message: `Database storage warning: ${e.message}`, level: 'warning' });
+      }
+
+      // Send turn-by-turn summary
+      for (let i = 0; i < interactionTrace.turns.length; i++) {
+        const turn = interactionTrace.turns[i];
+        sendEvent('turn', {
+          turnNumber: turn.turnNumber,
+          phase: turn.phase,
+          message: turn.externalMessage?.slice(0, 100) + (turn.externalMessage?.length > 100 ? '...' : ''),
         });
       }
-    } catch (e) {
-      sendEvent('log', { message: `Database storage warning: ${e.message}`, level: 'warning' });
-    }
 
-    // Send turn-by-turn summary
-    for (let i = 0; i < interactionTrace.turns.length; i++) {
-      const turn = interactionTrace.turns[i];
-      sendEvent('turn', {
-        turnNumber: turn.turnNumber,
-        phase: turn.phase,
-        message: turn.externalMessage?.slice(0, 100) + (turn.externalMessage?.length > 100 ? '...' : ''),
+      sendEvent('log', { message: `\n=== Interaction Complete ===`, level: 'success' });
+      sendEvent('log', { message: `Total turns: ${result.metrics.turnCount}`, level: 'info' });
+      sendEvent('log', { message: `Total tokens: ${result.metrics.totalTokens}`, level: 'info' });
+
+      // Send final result
+      sendEvent('result', {
+        evalId: result.evalId,
+        scenarioName: result.scenarioName,
+        persona: result.personaId,
+        tutorProfile: result.tutorProfile,
+        learnerArchitecture: result.learnerArchitecture,
+        turnCount: result.metrics.turnCount,
+        totalTokens: result.metrics.totalTokens,
+        learnerTokens: result.metrics.learnerTokens,
+        tutorTokens: result.metrics.tutorTokens,
+        latencyMs: result.metrics.totalLatencyMs,
+        passed: true, // No judge score yet
+        tutorFirstTurnScore: null,
+        modelCallBudget: req.modelCallBudget.snapshot(),
       });
+
+      sendEvent('complete', {
+        success: true,
+        evalId: result.evalId,
+      });
+
+      unregisterStream(streamId);
+      res.end();
+    } catch (error) {
+      console.error('[InteractStream] Error:', error);
+      sendEvent('log', { message: `Error: ${error.message}`, level: 'error' });
+      sendEvent('error', { error: error.message });
+      unregisterStream(streamId);
+      res.end();
     }
-
-    sendEvent('log', { message: `\n=== Interaction Complete ===`, level: 'success' });
-    sendEvent('log', { message: `Total turns: ${result.metrics.turnCount}`, level: 'info' });
-    sendEvent('log', { message: `Total tokens: ${result.metrics.totalTokens}`, level: 'info' });
-
-    // Send final result
-    sendEvent('result', {
-      evalId: result.evalId,
-      scenarioName: result.scenarioName,
-      persona: result.personaId,
-      tutorProfile: result.tutorProfile,
-      learnerArchitecture: result.learnerArchitecture,
-      turnCount: result.metrics.turnCount,
-      totalTokens: result.metrics.totalTokens,
-      learnerTokens: result.metrics.learnerTokens,
-      tutorTokens: result.metrics.tutorTokens,
-      latencyMs: result.metrics.totalLatencyMs,
-      passed: true, // No judge score yet
-      tutorFirstTurnScore: null,
-      modelCallBudget: req.modelCallBudget.snapshot(),
-    });
-
-    sendEvent('complete', {
-      success: true,
-      evalId: result.evalId,
-    });
-
-    unregisterStream(streamId);
-    res.end();
-  } catch (error) {
-    console.error('[InteractStream] Error:', error);
-    sendEvent('log', { message: `Error: ${error.message}`, level: 'error' });
-    sendEvent('error', { error: error.message });
-    unregisterStream(streamId);
-    res.end();
-  }
-});
+  },
+);
 
 // ============================================================================
 // Results Endpoints
@@ -2689,169 +2716,173 @@ router.post('/prompts/recommend', createPromptRecommendationAdmissionMiddleware(
  * GET /api/eval/stream/run
  * Query params: profiles, scenarios, skipRubric
  */
-router.get('/stream/run', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/stream/run',
-  buildInput: (req) => ({
-    profiles: httpIdList(req.query.profiles, ['budget']),
-    scenarios: httpIdList(req.query.scenarios, 'all'),
-    runsPerConfig: 1,
-    skipRubric: httpBoolean(req.query.skipRubric, false),
-    dryRun: httpBoolean(req.query.dryRun, false),
-    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
-    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+router.get(
+  '/stream/run',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/stream/run',
+    buildInput: (req) => ({
+      profiles: httpIdList(req.query.profiles, ['budget']),
+      scenarios: httpIdList(req.query.scenarios, 'all'),
+      runsPerConfig: 1,
+      skipRubric: httpBoolean(req.query.skipRubric, false),
+      dryRun: httpBoolean(req.query.dryRun, false),
+      confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+    }),
   }),
-}), async (req, res) => {
-  // Set up SSE
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
-
-  const sendEvent = (type, data) => {
-    res.write(`event: ${type}\n`);
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
-
-  // Keep-alive to prevent connection timeout
-  const keepAlive = setInterval(() => {
-    res.write(': keepalive\n\n');
-  }, 15000);
-
-  // Register stream for crash protection
-  const streamId = registerStream(res, keepAlive);
-
-  // Clean up on close
-  req.on('close', () => {
-    clearInterval(keepAlive);
-    unregisterStream(streamId);
-  });
-
-  try {
-    const admission = req.evaluationAdmission;
-    const profiles = admission.profiles;
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
-    const outputSize = req.query.outputSize || 'normal';
-
-    // Get all scenarios to run
-    const allScenarios = evalConfigLoader.listScenarios();
-    const admittedScenarioIds = new Set(admission.scenarios);
-    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
-
-    const totalTests = profiles.length * scenariosToRun.length;
-    let completedTests = 0;
-
-    sendEvent('start', {
-      profiles,
-      scenarioCount: scenariosToRun.length,
-      totalTests,
-      skipRubric,
-      outputSize,
-      admissionPlan: admission.admissionPlan,
-      timestamp: new Date().toISOString(),
+  async (req, res) => {
+    // Set up SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
     });
 
-    sendEvent('log', {
-      message: `Starting batch run: ${profiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
-      level: 'info',
+    const sendEvent = (type, data) => {
+      res.write(`event: ${type}\n`);
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    // Keep-alive to prevent connection timeout
+    const keepAlive = setInterval(() => {
+      res.write(': keepalive\n\n');
+    }, 15000);
+
+    // Register stream for crash protection
+    const streamId = registerStream(res, keepAlive);
+
+    // Clean up on close
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      unregisterStream(streamId);
     });
-    sendEvent('log', { message: `Fast mode (skip rubric): ${skipRubric}`, level: 'info' });
-    sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
-    const results = [];
+    try {
+      const admission = req.evaluationAdmission;
+      const profiles = admission.profiles;
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
+      const outputSize = req.query.outputSize || 'normal';
 
-    for (const profileName of profiles) {
-      sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
+      // Get all scenarios to run
+      const allScenarios = evalConfigLoader.listScenarios();
+      const admittedScenarioIds = new Set(admission.scenarios);
+      const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
-      for (const scenario of scenariosToRun) {
-        completedTests++;
+      const totalTests = profiles.length * scenariosToRun.length;
+      let completedTests = 0;
 
-        sendEvent('progress', {
-          current: completedTests,
-          total: totalTests,
-          profile: profileName,
-          scenario: scenario.name,
-          percentage: Math.round((completedTests / totalTests) * 100),
-        });
+      sendEvent('start', {
+        profiles,
+        scenarioCount: scenariosToRun.length,
+        totalTests,
+        skipRubric,
+        outputSize,
+        admissionPlan: admission.admissionPlan,
+        timestamp: new Date().toISOString(),
+      });
 
-        sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
+      sendEvent('log', {
+        message: `Starting batch run: ${profiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
+        level: 'info',
+      });
+      sendEvent('log', { message: `Fast mode (skip rubric): ${skipRubric}`, level: 'info' });
+      sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
-        try {
-          const config = { profileName, label: profileName };
+      const results = [];
 
-          // Create log callback for this test
-          const onLog = (message, level = 'info') => {
-            sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
-          };
+      for (const profileName of profiles) {
+        sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
 
-          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-          const result = await evaluationRunner.quickTest(config, {
-            scenarioId: scenario.id,
-            skipRubricEval: skipRubric,
-            outputSize,
-            dryRun,
-            verbose: false,
-            onLog,
-          });
+        for (const scenario of scenariosToRun) {
+          completedTests++;
 
-          results.push(result);
-
-          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
-          const status = result.success !== false ? '✓' : '✗';
-          sendEvent('log', {
-            message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
-            level: result.success !== false ? 'success' : 'warning',
-          });
-
-          sendEvent('result', {
+          sendEvent('progress', {
+            current: completedTests,
+            total: totalTests,
             profile: profileName,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            passed: result.success,
-            score: result.tutorFirstTurnScore,
-            latencyMs: result.latencyMs,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-            totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+            scenario: scenario.name,
+            percentage: Math.round((completedTests / totalTests) * 100),
           });
-        } catch (e) {
-          sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
-          sendEvent('error', {
-            profile: profileName,
-            scenarioId: scenario.id,
-            error: e.message,
-          });
+
+          sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
+
+          try {
+            const config = { profileName, label: profileName };
+
+            // Create log callback for this test
+            const onLog = (message, level = 'info') => {
+              sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
+            };
+
+            req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
+            const result = await evaluationRunner.quickTest(config, {
+              scenarioId: scenario.id,
+              skipRubricEval: skipRubric,
+              outputSize,
+              dryRun,
+              verbose: false,
+              onLog,
+            });
+
+            results.push(result);
+
+            const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
+            const status = result.success !== false ? '✓' : '✗';
+            sendEvent('log', {
+              message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
+              level: result.success !== false ? 'success' : 'warning',
+            });
+
+            sendEvent('result', {
+              profile: profileName,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              passed: result.success,
+              score: result.tutorFirstTurnScore,
+              latencyMs: result.latencyMs,
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
+              totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+            });
+          } catch (e) {
+            sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
+            sendEvent('error', {
+              profile: profileName,
+              scenarioId: scenario.id,
+              error: e.message,
+            });
+          }
         }
       }
+
+      // Calculate summary
+      const successCount = results.filter((r) => r.success !== false).length;
+      const scores = results.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
+      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+
+      sendEvent('log', { message: `\n=== Batch Complete ===`, level: 'success' });
+      sendEvent('log', {
+        message: `Total: ${totalTests}, Passed: ${successCount}, Avg Score: ${avgScore?.toFixed(1) || 'N/A'}`,
+        level: 'info',
+      });
+
+      sendEvent('complete', {
+        totalTests,
+        successfulTests: successCount,
+        averageScore: avgScore,
+      });
+
+      unregisterStream(streamId);
+      res.end();
+    } catch (error) {
+      sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
+      sendEvent('error', { error: error.message });
+      unregisterStream(streamId);
+      res.end();
     }
-
-    // Calculate summary
-    const successCount = results.filter((r) => r.success !== false).length;
-    const scores = results.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
-    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-
-    sendEvent('log', { message: `\n=== Batch Complete ===`, level: 'success' });
-    sendEvent('log', {
-      message: `Total: ${totalTests}, Passed: ${successCount}, Avg Score: ${avgScore?.toFixed(1) || 'N/A'}`,
-      level: 'info',
-    });
-
-    sendEvent('complete', {
-      totalTests,
-      successfulTests: successCount,
-      averageScore: avgScore,
-    });
-
-    unregisterStream(streamId);
-    res.end();
-  } catch (error) {
-    sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
-    sendEvent('error', { error: error.message });
-    unregisterStream(streamId);
-    res.end();
-  }
-});
+  },
+);
 
 // ============================================================================
 // Trajectory and Improvement Cycle Endpoints
@@ -3438,394 +3469,400 @@ router.get('/interactions/:evalId/transcript', (req, res) => {
  * - Delta analysis with statistical significance indicators
  * - Winner badges per dimension
  */
-router.get('/stream/recognition-ab', createExactEvaluationAdmissionMiddleware({
-  endpoint: '/api/eval/stream/recognition-ab',
-  buildInput: (req) => ({
-    profiles: ['baseline', 'recognition'],
-    scenarios: evalConfigLoader.listScenarios()
-      .filter((scenario) => scenario.recognition_test === true)
-      .map((scenario) => scenario.id),
-    runsPerConfig: 1,
-    skipRubric: httpBoolean(req.query.skipRubric, false),
-    dryRun: httpBoolean(req.query.dryRun, false),
-    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
-    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+router.get(
+  '/stream/recognition-ab',
+  createExactEvaluationAdmissionMiddleware({
+    endpoint: '/api/eval/stream/recognition-ab',
+    buildInput: (req) => ({
+      profiles: ['baseline', 'recognition'],
+      scenarios: evalConfigLoader
+        .listScenarios()
+        .filter((scenario) => scenario.recognition_test === true)
+        .map((scenario) => scenario.id),
+      runsPerConfig: 1,
+      skipRubric: httpBoolean(req.query.skipRubric, false),
+      dryRun: httpBoolean(req.query.dryRun, false),
+      confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+    }),
+    minProfiles: 2,
   }),
-  minProfiles: 2,
-}), async (req, res) => {
-  // Set up SSE
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
-
-  const sendEvent = (type, data) => {
-    res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
-
-  // Keep-alive to prevent connection timeout
-  const keepAlive = setInterval(() => {
-    res.write(': keepalive\n\n');
-  }, 15000);
-
-  // Register stream for crash protection
-  const streamId = registerStream(res, keepAlive);
-
-  // Clean up on close
-  req.on('close', () => {
-    clearInterval(keepAlive);
-    unregisterStream(streamId);
-  });
-
-  try {
-    const admission = req.evaluationAdmission;
-    // Fixed profiles for A/B comparison
-    const profiles = admission.profiles;
-    const skipRubric = admission.skipRubric;
-    const dryRun = admission.dryRun;
-    const outputSize = req.query.outputSize || 'normal';
-
-    // Validate profiles exist
-    const allProfiles = tutorConfigLoader.listProfiles();
-    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
-
-    if (validProfiles.length !== 2) {
-      sendEvent('error', {
-        error: 'Recognition A/B requires both baseline and recognition profiles',
-        found: validProfiles,
-        available: allProfiles.map((p) => p.name),
-      });
-      return res.end();
-    }
-
-    // Get only recognition_test scenarios
-    const allScenarios = evalConfigLoader.listScenarios();
-    const recognitionScenarios = allScenarios.filter((s) => s.recognition_test === true);
-
-    if (recognitionScenarios.length === 0) {
-      sendEvent('error', { error: 'No recognition_test scenarios found in config' });
-      return res.end();
-    }
-
-    const totalTests = validProfiles.length * recognitionScenarios.length;
-    const testLearnerId = `eval-recognition-ab-${Date.now()}`;
-
-    sendEvent('start', {
-      profiles: validProfiles,
-      scenarioCount: recognitionScenarios.length,
-      scenarioIds: recognitionScenarios.map((s) => s.id),
-      totalTests,
-      skipRubric,
-      outputSize,
-      testLearnerId,
-      admissionPlan: admission.admissionPlan,
-      timestamp: new Date().toISOString(),
+  async (req, res) => {
+    // Set up SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
     });
 
-    sendEvent('log', {
-      message: `Recognition A/B: baseline vs recognition × ${recognitionScenarios.length} scenarios`,
-      level: 'info',
-    });
-
-    // Create a run to persist results
-    const run = evaluationStore.createRun({
-      description: `Recognition A/B: baseline vs recognition × ${recognitionScenarios.length} scenarios`,
-      totalScenarios: recognitionScenarios.length,
-      totalConfigurations: 2,
-      metadata: {
-        runType: 'recognition-ab',
-        profiles: validProfiles,
-        scenarios: recognitionScenarios.map((s) => s.id),
-        scenarioNames: recognitionScenarios.map((s) => s.name),
-        skipRubric,
-        testLearnerId,
-        dryRun,
-        admissionPlan: admission.admissionPlan,
-      },
-    });
-
-    sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
-
-    // Run evaluations
-    const results = { baseline: [], recognition: [] };
-    const dimensionScores = { baseline: {}, recognition: {} };
-    const recognitionMetrics = {
-      momentsGenerated: 0,
-      dialecticalDepth: [],
-      synthesisStrategies: {
-        ghost_dominates: 0,
-        learner_dominates: 0,
-        dialectical_synthesis: 0,
-      },
+    const sendEvent = (type, data) => {
+      res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
     };
-    let completedTests = 0;
 
-    for (const profileName of validProfiles) {
-      sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
+    // Keep-alive to prevent connection timeout
+    const keepAlive = setInterval(() => {
+      res.write(': keepalive\n\n');
+    }, 15000);
 
-      // Clear writing pad before each profile run for clean comparison
-      try {
-        clearConscious(testLearnerId);
-        sendEvent('log', { message: `  Cleared writing pad for ${testLearnerId}`, level: 'info' });
-      } catch (e) {
-        // Pad may not exist yet, that's fine
-      }
+    // Register stream for crash protection
+    const streamId = registerStream(res, keepAlive);
 
-      for (const scenario of recognitionScenarios) {
-        completedTests++;
-
-        sendEvent('progress', {
-          current: completedTests,
-          total: totalTests,
-          profile: profileName,
-          scenario: scenario.name,
-          percentage: Math.round((completedTests / totalTests) * 100),
-        });
-
-        sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
-
-        try {
-          const config = { profileName, label: profileName };
-
-          // Create log callback for this test
-          const onLog = (message, level = 'info') => {
-            sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
-          };
-
-          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-          const result = await evaluationRunner.quickTest(config, {
-            scenarioId: scenario.id,
-            verbose: false,
-            skipRubricEval: skipRubric,
-            outputSize,
-            onLog,
-            learnerId: testLearnerId,
-            dryRun,
-          });
-
-          results[profileName].push(result);
-
-          // Save result to database
-          evaluationStore.storeResult(run.id, {
-            ...result,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            profileName,
-          });
-
-          // Collect dimension scores
-          if (result.scores) {
-            for (const [dim, score] of Object.entries(result.scores)) {
-              if (!dimensionScores[profileName][dim]) {
-                dimensionScores[profileName][dim] = [];
-              }
-              if (typeof score === 'number') {
-                dimensionScores[profileName][dim].push(score);
-              }
-            }
-          }
-
-          // For recognition profile, collect recognition-specific metrics
-          if (profileName === 'recognition') {
-            try {
-              const pad = getWritingPad(testLearnerId);
-              if (pad) {
-                recognitionMetrics.momentsGenerated = pad.totalRecognitionMoments || 0;
-                if (pad.dialecticalDepth) {
-                  recognitionMetrics.dialecticalDepth.push(pad.dialecticalDepth);
-                }
-                // Aggregate synthesis strategies from pad stats
-                const stats = pad.statistics || {};
-                if (stats.synthesisStrategies) {
-                  recognitionMetrics.synthesisStrategies.ghost_dominates +=
-                    stats.synthesisStrategies.ghost_dominates || 0;
-                  recognitionMetrics.synthesisStrategies.learner_dominates +=
-                    stats.synthesisStrategies.learner_dominates || 0;
-                  recognitionMetrics.synthesisStrategies.dialectical_synthesis +=
-                    stats.synthesisStrategies.dialectical_synthesis || 0;
-                }
-              }
-            } catch (e) {
-              // Recognition metrics collection failed silently
-            }
-          }
-
-          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
-          const status = result.success !== false ? '✓' : '✗';
-          sendEvent('log', {
-            message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
-            level: result.success !== false ? 'success' : 'warning',
-          });
-
-          sendEvent('result', {
-            profile: profileName,
-            scenarioId: scenario.id,
-            scenarioName: scenario.name,
-            passed: result.success !== false,
-            score: result.tutorFirstTurnScore,
-            latencyMs: result.latencyMs,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-          });
-        } catch (e) {
-          sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
-
-          const errorResult = {
-            success: false,
-            errorMessage: e.message,
-            scenarioId: scenario.id,
-          };
-          results[profileName].push(errorResult);
-
-          evaluationStore.storeResult(run.id, {
-            ...errorResult,
-            scenarioName: scenario.name,
-            profileName,
-            provider: 'unknown',
-            model: 'unknown',
-          });
-        }
-      }
-    }
-
-    // Update run as completed
-    evaluationStore.updateRun(run.id, {
-      status: 'completed',
-      totalTests: completedTests,
-      completedAt: new Date().toISOString(),
+    // Clean up on close
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      unregisterStream(streamId);
     });
 
-    // Build dimension averages
-    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    const dimensionAverages = { baseline: {}, recognition: {} };
+    try {
+      const admission = req.evaluationAdmission;
+      // Fixed profiles for A/B comparison
+      const profiles = admission.profiles;
+      const skipRubric = admission.skipRubric;
+      const dryRun = admission.dryRun;
+      const outputSize = req.query.outputSize || 'normal';
 
-    for (const profile of validProfiles) {
-      for (const dim of dimensions) {
-        const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-      }
-    }
+      // Validate profiles exist
+      const allProfiles = tutorConfigLoader.listProfiles();
+      const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
 
-    // Build delta analysis with winner indicators
-    const deltaAnalysis = [];
-    for (const dim of dimensions) {
-      const baselineAvg = dimensionAverages.baseline[dim];
-      const recognitionAvg = dimensionAverages.recognition[dim];
-
-      if (baselineAvg != null && recognitionAvg != null) {
-        const delta = recognitionAvg - baselineAvg;
-        const deltaPercent = baselineAvg > 0 ? (delta / baselineAvg) * 100 : 0;
-
-        // Significance thresholds (on 5-point scale)
-        // * = >5% improvement (delta > 0.25)
-        // ** = >10% improvement (delta > 0.5)
-        let significance = '';
-        let winner = null;
-
-        if (Math.abs(delta) > 0.5) {
-          significance = '**';
-          winner = delta > 0 ? 'recognition' : 'baseline';
-        } else if (Math.abs(delta) > 0.25) {
-          significance = '*';
-          winner = delta > 0 ? 'recognition' : 'baseline';
-        }
-
-        deltaAnalysis.push({
-          dimension: dim,
-          baseline: baselineAvg,
-          recognition: recognitionAvg,
-          delta,
-          deltaPercent,
-          significance,
-          winner,
+      if (validProfiles.length !== 2) {
+        sendEvent('error', {
+          error: 'Recognition A/B requires both baseline and recognition profiles',
+          found: validProfiles,
+          available: allProfiles.map((p) => p.name),
         });
+        return res.end();
       }
-    }
 
-    // Calculate overall scores and winner
-    const baselineResults = results.baseline || [];
-    const recognitionResults = results.recognition || [];
+      // Get only recognition_test scenarios
+      const allScenarios = evalConfigLoader.listScenarios();
+      const recognitionScenarios = allScenarios.filter((s) => s.recognition_test === true);
 
-    const baselineScores = baselineResults
-      .filter((r) => r.tutorFirstTurnScore != null)
-      .map((r) => r.tutorFirstTurnScore);
-    const recognitionScores = recognitionResults
-      .filter((r) => r.tutorFirstTurnScore != null)
-      .map((r) => r.tutorFirstTurnScore);
-
-    const baselineAvgScore =
-      baselineScores.length > 0 ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length : null;
-    const recognitionAvgScore =
-      recognitionScores.length > 0 ? recognitionScores.reduce((a, b) => a + b, 0) / recognitionScores.length : null;
-
-    let overallWinner = null;
-    let overallDelta = null;
-    let overallSignificance = '';
-
-    if (baselineAvgScore != null && recognitionAvgScore != null) {
-      overallDelta = recognitionAvgScore - baselineAvgScore;
-
-      // Overall winner based on score delta > 5 points
-      if (Math.abs(overallDelta) > 10) {
-        overallSignificance = '**';
-        overallWinner = overallDelta > 0 ? 'recognition' : 'baseline';
-      } else if (Math.abs(overallDelta) > 5) {
-        overallSignificance = '*';
-        overallWinner = overallDelta > 0 ? 'recognition' : 'baseline';
+      if (recognitionScenarios.length === 0) {
+        sendEvent('error', { error: 'No recognition_test scenarios found in config' });
+        return res.end();
       }
-    }
 
-    // Calculate average dialectical depth
-    const avgDialecticalDepth =
-      recognitionMetrics.dialecticalDepth.length > 0
-        ? recognitionMetrics.dialecticalDepth.reduce((a, b) => a + b, 0) / recognitionMetrics.dialecticalDepth.length
-        : 0;
+      const totalTests = validProfiles.length * recognitionScenarios.length;
+      const testLearnerId = `eval-recognition-ab-${Date.now()}`;
 
-    sendEvent('log', { message: `\n=== Recognition A/B Complete ===`, level: 'success' });
-    sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
-    sendEvent('log', {
-      message: `Baseline avg: ${baselineAvgScore?.toFixed(1) || 'N/A'} | Recognition avg: ${recognitionAvgScore?.toFixed(1) || 'N/A'}`,
-      level: 'info',
-    });
-    if (overallWinner) {
-      sendEvent('log', {
-        message: `Winner: ${overallWinner.toUpperCase()} (${overallSignificance})`,
-        level: 'success',
+      sendEvent('start', {
+        profiles: validProfiles,
+        scenarioCount: recognitionScenarios.length,
+        scenarioIds: recognitionScenarios.map((s) => s.id),
+        totalTests,
+        skipRubric,
+        outputSize,
+        testLearnerId,
+        admissionPlan: admission.admissionPlan,
+        timestamp: new Date().toISOString(),
       });
+
+      sendEvent('log', {
+        message: `Recognition A/B: baseline vs recognition × ${recognitionScenarios.length} scenarios`,
+        level: 'info',
+      });
+
+      // Create a run to persist results
+      const run = evaluationStore.createRun({
+        description: `Recognition A/B: baseline vs recognition × ${recognitionScenarios.length} scenarios`,
+        totalScenarios: recognitionScenarios.length,
+        totalConfigurations: 2,
+        metadata: {
+          runType: 'recognition-ab',
+          profiles: validProfiles,
+          scenarios: recognitionScenarios.map((s) => s.id),
+          scenarioNames: recognitionScenarios.map((s) => s.name),
+          skipRubric,
+          testLearnerId,
+          dryRun,
+          admissionPlan: admission.admissionPlan,
+        },
+      });
+
+      sendEvent('log', { message: `Run ID: ${run.id}`, level: 'info' });
+
+      // Run evaluations
+      const results = { baseline: [], recognition: [] };
+      const dimensionScores = { baseline: {}, recognition: {} };
+      const recognitionMetrics = {
+        momentsGenerated: 0,
+        dialecticalDepth: [],
+        synthesisStrategies: {
+          ghost_dominates: 0,
+          learner_dominates: 0,
+          dialectical_synthesis: 0,
+        },
+      };
+      let completedTests = 0;
+
+      for (const profileName of validProfiles) {
+        sendEvent('log', { message: `\n=== Profile: ${profileName} ===`, level: 'info' });
+
+        // Clear writing pad before each profile run for clean comparison
+        try {
+          clearConscious(testLearnerId);
+          sendEvent('log', { message: `  Cleared writing pad for ${testLearnerId}`, level: 'info' });
+        } catch (e) {
+          // Pad may not exist yet, that's fine
+        }
+
+        for (const scenario of recognitionScenarios) {
+          completedTests++;
+
+          sendEvent('progress', {
+            current: completedTests,
+            total: totalTests,
+            profile: profileName,
+            scenario: scenario.name,
+            percentage: Math.round((completedTests / totalTests) * 100),
+          });
+
+          sendEvent('log', { message: `[${completedTests}/${totalTests}] ${scenario.name}...`, level: 'info' });
+
+          try {
+            const config = { profileName, label: profileName };
+
+            // Create log callback for this test
+            const onLog = (message, level = 'info') => {
+              sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
+            };
+
+            req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
+            const result = await evaluationRunner.quickTest(config, {
+              scenarioId: scenario.id,
+              verbose: false,
+              skipRubricEval: skipRubric,
+              outputSize,
+              onLog,
+              learnerId: testLearnerId,
+              dryRun,
+            });
+
+            results[profileName].push(result);
+
+            // Save result to database
+            evaluationStore.storeResult(run.id, {
+              ...result,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              profileName,
+            });
+
+            // Collect dimension scores
+            if (result.scores) {
+              for (const [dim, score] of Object.entries(result.scores)) {
+                if (!dimensionScores[profileName][dim]) {
+                  dimensionScores[profileName][dim] = [];
+                }
+                if (typeof score === 'number') {
+                  dimensionScores[profileName][dim].push(score);
+                }
+              }
+            }
+
+            // For recognition profile, collect recognition-specific metrics
+            if (profileName === 'recognition') {
+              try {
+                const pad = getWritingPad(testLearnerId);
+                if (pad) {
+                  recognitionMetrics.momentsGenerated = pad.totalRecognitionMoments || 0;
+                  if (pad.dialecticalDepth) {
+                    recognitionMetrics.dialecticalDepth.push(pad.dialecticalDepth);
+                  }
+                  // Aggregate synthesis strategies from pad stats
+                  const stats = pad.statistics || {};
+                  if (stats.synthesisStrategies) {
+                    recognitionMetrics.synthesisStrategies.ghost_dominates +=
+                      stats.synthesisStrategies.ghost_dominates || 0;
+                    recognitionMetrics.synthesisStrategies.learner_dominates +=
+                      stats.synthesisStrategies.learner_dominates || 0;
+                    recognitionMetrics.synthesisStrategies.dialectical_synthesis +=
+                      stats.synthesisStrategies.dialectical_synthesis || 0;
+                  }
+                }
+              } catch (e) {
+                // Recognition metrics collection failed silently
+              }
+            }
+
+            const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
+            const status = result.success !== false ? '✓' : '✗';
+            sendEvent('log', {
+              message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
+              level: result.success !== false ? 'success' : 'warning',
+            });
+
+            sendEvent('result', {
+              profile: profileName,
+              scenarioId: scenario.id,
+              scenarioName: scenario.name,
+              passed: result.success !== false,
+              score: result.tutorFirstTurnScore,
+              latencyMs: result.latencyMs,
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
+            });
+          } catch (e) {
+            sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
+
+            const errorResult = {
+              success: false,
+              errorMessage: e.message,
+              scenarioId: scenario.id,
+            };
+            results[profileName].push(errorResult);
+
+            evaluationStore.storeResult(run.id, {
+              ...errorResult,
+              scenarioName: scenario.name,
+              profileName,
+              provider: 'unknown',
+              model: 'unknown',
+            });
+          }
+        }
+      }
+
+      // Update run as completed
+      evaluationStore.updateRun(run.id, {
+        status: 'completed',
+        totalTests: completedTests,
+        completedAt: new Date().toISOString(),
+      });
+
+      // Build dimension averages
+      const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+      const dimensionAverages = { baseline: {}, recognition: {} };
+
+      for (const profile of validProfiles) {
+        for (const dim of dimensions) {
+          const scores = dimensionScores[profile]?.[dim] || [];
+          dimensionAverages[profile][dim] =
+            scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+        }
+      }
+
+      // Build delta analysis with winner indicators
+      const deltaAnalysis = [];
+      for (const dim of dimensions) {
+        const baselineAvg = dimensionAverages.baseline[dim];
+        const recognitionAvg = dimensionAverages.recognition[dim];
+
+        if (baselineAvg != null && recognitionAvg != null) {
+          const delta = recognitionAvg - baselineAvg;
+          const deltaPercent = baselineAvg > 0 ? (delta / baselineAvg) * 100 : 0;
+
+          // Significance thresholds (on 5-point scale)
+          // * = >5% improvement (delta > 0.25)
+          // ** = >10% improvement (delta > 0.5)
+          let significance = '';
+          let winner = null;
+
+          if (Math.abs(delta) > 0.5) {
+            significance = '**';
+            winner = delta > 0 ? 'recognition' : 'baseline';
+          } else if (Math.abs(delta) > 0.25) {
+            significance = '*';
+            winner = delta > 0 ? 'recognition' : 'baseline';
+          }
+
+          deltaAnalysis.push({
+            dimension: dim,
+            baseline: baselineAvg,
+            recognition: recognitionAvg,
+            delta,
+            deltaPercent,
+            significance,
+            winner,
+          });
+        }
+      }
+
+      // Calculate overall scores and winner
+      const baselineResults = results.baseline || [];
+      const recognitionResults = results.recognition || [];
+
+      const baselineScores = baselineResults
+        .filter((r) => r.tutorFirstTurnScore != null)
+        .map((r) => r.tutorFirstTurnScore);
+      const recognitionScores = recognitionResults
+        .filter((r) => r.tutorFirstTurnScore != null)
+        .map((r) => r.tutorFirstTurnScore);
+
+      const baselineAvgScore =
+        baselineScores.length > 0 ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length : null;
+      const recognitionAvgScore =
+        recognitionScores.length > 0 ? recognitionScores.reduce((a, b) => a + b, 0) / recognitionScores.length : null;
+
+      let overallWinner = null;
+      let overallDelta = null;
+      let overallSignificance = '';
+
+      if (baselineAvgScore != null && recognitionAvgScore != null) {
+        overallDelta = recognitionAvgScore - baselineAvgScore;
+
+        // Overall winner based on score delta > 5 points
+        if (Math.abs(overallDelta) > 10) {
+          overallSignificance = '**';
+          overallWinner = overallDelta > 0 ? 'recognition' : 'baseline';
+        } else if (Math.abs(overallDelta) > 5) {
+          overallSignificance = '*';
+          overallWinner = overallDelta > 0 ? 'recognition' : 'baseline';
+        }
+      }
+
+      // Calculate average dialectical depth
+      const avgDialecticalDepth =
+        recognitionMetrics.dialecticalDepth.length > 0
+          ? recognitionMetrics.dialecticalDepth.reduce((a, b) => a + b, 0) / recognitionMetrics.dialecticalDepth.length
+          : 0;
+
+      sendEvent('log', { message: `\n=== Recognition A/B Complete ===`, level: 'success' });
+      sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
+      sendEvent('log', {
+        message: `Baseline avg: ${baselineAvgScore?.toFixed(1) || 'N/A'} | Recognition avg: ${recognitionAvgScore?.toFixed(1) || 'N/A'}`,
+        level: 'info',
+      });
+      if (overallWinner) {
+        sendEvent('log', {
+          message: `Winner: ${overallWinner.toUpperCase()} (${overallSignificance})`,
+          level: 'success',
+        });
+      }
+
+      // Send final complete event with full results
+      sendEvent('complete', {
+        success: true,
+        runId: run.id,
+        profiles: validProfiles,
+        scenariosRun: recognitionScenarios.length,
+        dimensionAverages,
+        deltaAnalysis,
+        overallScores: {
+          baseline: baselineAvgScore,
+          recognition: recognitionAvgScore,
+          delta: overallDelta,
+          significance: overallSignificance,
+          winner: overallWinner,
+        },
+        recognitionMetrics: {
+          momentsGenerated: recognitionMetrics.momentsGenerated,
+          avgDialecticalDepth,
+          synthesisStrategies: recognitionMetrics.synthesisStrategies,
+        },
+        results,
+      });
+
+      unregisterStream(streamId);
+      res.end();
+    } catch (error) {
+      sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
+      sendEvent('error', { error: error.message });
+      unregisterStream(streamId);
+      res.end();
     }
-
-    // Send final complete event with full results
-    sendEvent('complete', {
-      success: true,
-      runId: run.id,
-      profiles: validProfiles,
-      scenariosRun: recognitionScenarios.length,
-      dimensionAverages,
-      deltaAnalysis,
-      overallScores: {
-        baseline: baselineAvgScore,
-        recognition: recognitionAvgScore,
-        delta: overallDelta,
-        significance: overallSignificance,
-        winner: overallWinner,
-      },
-      recognitionMetrics: {
-        momentsGenerated: recognitionMetrics.momentsGenerated,
-        avgDialecticalDepth,
-        synthesisStrategies: recognitionMetrics.synthesisStrategies,
-      },
-      results,
-    });
-
-    unregisterStream(streamId);
-    res.end();
-  } catch (error) {
-    sendEvent('log', { message: `Fatal error: ${error.message}`, level: 'error' });
-    sendEvent('error', { error: error.message });
-    unregisterStream(streamId);
-    res.end();
-  }
-});
+  },
+);
 
 export default router;
