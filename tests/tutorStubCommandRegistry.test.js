@@ -264,6 +264,31 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
 });
 
+test('command listings are alphabetical after mode and capability filtering', () => {
+  assert.deepEqual(tutorStubCommandTokens(), NORMAL_COMMANDS.toSorted());
+  assert.deepEqual(tutorStubCommandTokens({ mode: 'passthrough' }), PASSTHROUGH_COMMANDS.toSorted());
+  assert.deepEqual(tutorStubCommandTokens({ sceneReturn: true }), SCENE_RETURN_COMMANDS.toSorted());
+
+  const capabilities = resolveTutorStubCapabilities({
+    passthrough: false,
+    classifier: false,
+    learnerDag: false,
+    registerSelection: false,
+    curriculum: false,
+    interactive: true,
+    automatedLearner: false,
+    mixedLearner: false,
+    tuningMode: 'off',
+    turnFeedback: false,
+    responseChecks: true,
+  });
+  const filtered = tutorStubCommandTokens({ capabilities });
+  assert.deepEqual(filtered, filtered.toSorted());
+  for (const row of tutorStubCommandHelpRows({ capabilities })) {
+    assert.deepEqual(row.commands, row.commands.toSorted(), row.id);
+  }
+});
+
 test('transport metadata classifies picker, browser, voice, and relaunch side effects before HTTP exposure', () => {
   assert.deepEqual(tutorStubCommandTransportMetadata('/settings').effects, ['terminal_picker']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/transcript').effects, ['browser_open']);
@@ -518,7 +543,7 @@ test('resolved capabilities filter commands, completions, and generated help wit
   assert.deepEqual(tutorStubStaticCommandCompletions('/profile', { capabilities: direct }), []);
   assert.ok(tutorStubCommandHelpRows({ capabilities: direct }).some((row) => row.id === 'take_part'));
   assert.ok(!tutorStubCommandHelpRows({ capabilities: direct }).some((row) => row.commands.includes('/profile [id]')));
-  assert.deepEqual(tutorStubCommandTokens(), NORMAL_COMMANDS);
+  assert.deepEqual(tutorStubCommandTokens(), NORMAL_COMMANDS.toSorted());
 
   const mixed = resolveTutorStubCapabilities({
     interactive: true,
@@ -552,7 +577,10 @@ test('resolved capabilities filter commands, completions, and generated help wit
 
   const passthrough = resolveTutorStubCapabilities({ passthrough: true, trace: true });
   assert.equal(tutorStubCommandAvailable('/committee', { mode: 'passthrough', capabilities: passthrough }), false);
-  assert.deepEqual(tutorStubCommandTokens({ mode: 'passthrough', capabilities: passthrough }), PASSTHROUGH_COMMANDS);
+  assert.deepEqual(
+    tutorStubCommandTokens({ mode: 'passthrough', capabilities: passthrough }),
+    PASSTHROUGH_COMMANDS.toSorted(),
+  );
   assert.deepEqual(
     tutorStubCommandHelpRows({ mode: 'passthrough', capabilities: passthrough }).map((row) => row.id),
     ['model', 'inspect', 'appearance', 'setup', 'finish_passthrough'],

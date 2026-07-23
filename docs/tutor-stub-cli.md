@@ -6,6 +6,28 @@ the scene, semantic colors distinguish tutor, learner, coach, success, warning,
 and failure states, and the existing one-line progress display carries the only
 animation.
 
+## Default launch
+
+`npm run tutor:stub` now opens the full `mixed_drafting` lab by default: a
+defeasible human scaffold plus inspectable AI learner drafts. Press Tab to
+insert the current draft, or use `/suggest`, `/use`, and `/regen`. The explicit
+equivalent remains:
+
+```bash
+npm run tutor:stub -- --lab mixed_drafting
+```
+
+Inside an older or differently configured session, `/lab mixed_drafting` shows
+that relaunch command. Mixed drafting changes the session architecture, so it
+is deliberately a lab/launch choice rather than an in-place `/mode` switch;
+`/mode` continues to choose the active learner, private coach, or automated
+speaker role. Use `npm run tutor:stub:scaffold` for the same human scaffold
+without AI learner drafting, or `npm run tutor:stub:passthrough` for pure chat.
+
+The default applies only to an ordinary human tutor chat. Explicit curriculum,
+automated-learner, passthrough, RPC, labelling, recipe, and resume launches keep
+their own architecture.
+
 ## Capability-aware commands
 
 Every session resolves a frozen, versioned capability snapshot after launch
@@ -23,6 +45,8 @@ named explicitly. For example, mixed-drafting commands such as `/suggest` and
 `/use` appear only when mixed drafting is active, while `/random`, `/register`,
 and `/character` require adaptive delivery. Calling `/help` therefore describes
 the command surface that is actually usable rather than a larger global list.
+Palette and completion entries are globally alphabetical; `/help` keeps its
+semantic groups and alphabetizes the commands within each group.
 
 The underlying command and capability registries remain frozen catalogs, so
 tests and future web or Electron adapters can inspect every supported command
@@ -259,7 +283,11 @@ npm run tutor:stub -- --labelling-game --label-dataset superego-taxonomy --label
 ```
 
 `--labelling-game` remains a compatibility alias. Omit the dataset and coder
-flags to choose them interactively. The same packets
+flags to choose them interactively. To keep one local coder identity without
+repeating a flag, add `LABELLING_GAME_CODER=liam` to the ignored `.env` file.
+An explicit `--label-coder` or standalone `--coder` still takes precedence.
+The resolved coder is printed above packet progress so resumed labels cannot
+silently attach to the wrong sidecar. The same packets
 are available in the browser at `http://localhost:8081/human-coding-admin`
 after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
 impasse judgments are stored as structured per-rater JSON sidecars.

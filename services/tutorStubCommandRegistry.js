@@ -726,8 +726,11 @@ export function tutorStubCommandTokens({ mode = 'normal', sceneReturn = false, c
     : normalized === 'passthrough'
       ? TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS
       : TUTOR_STUB_NORMAL_SLASH_COMMANDS;
-  if (!capabilities && (!sceneReturn || normalized === 'normal')) return source;
-  return Object.freeze(source.filter((token) => tutorStubCommandAvailable(token, { mode: normalized, capabilities })));
+  const available =
+    !capabilities && (!sceneReturn || normalized === 'normal')
+      ? source
+      : source.filter((token) => tutorStubCommandAvailable(token, { mode: normalized, capabilities }));
+  return Object.freeze(available.toSorted());
 }
 
 export function tutorStubStaticCommandCompletions(value, { mode = 'normal', capabilities = null } = {}) {
@@ -863,7 +866,8 @@ export function tutorStubCommandHelpRows({ mode = 'normal', capabilities = null 
           const definition = resolveTutorStubCommand(entry.id);
           const tokens = entry.includeAliases ? [definition.token, ...definition.aliases] : [definition.token];
           return tokens.map((token) => `${token}${entry.arguments ? ` ${entry.arguments}` : ''}`);
-        });
+        })
+        .toSorted();
       return commands.length
         ? Object.freeze({
             id: group.id,

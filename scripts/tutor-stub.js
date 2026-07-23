@@ -790,7 +790,25 @@ function prepareTutorStubLaunchConfiguration() {
     }
   }
 
-  const declaredLab = String(args.lab || loadedSessionRecipe?.config?.lab || '').trim();
+  const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
+  const defaultLab = String(process.env.TUTOR_STUB_DEFAULT_LAB || '').trim();
+  const defaultLabEligible = Boolean(
+    defaultLab &&
+    !args.lab &&
+    !args.recipe &&
+    !args.resume &&
+    !args['resume-last'] &&
+    !args.passthrough &&
+    !args['auto-learner'] &&
+    !args.curriculum &&
+    !args.once &&
+    !args['session-rpc'] &&
+    !args['labelling-game'] &&
+    requestedLaunchMode !== 'labelling-game',
+  );
+  const declaredLab = String(
+    args.lab || loadedSessionRecipe?.config?.lab || (defaultLabEligible ? defaultLab : ''),
+  ).trim();
   if (declaredLab) applyTutorStubLabDefaults(declaredLab);
   if (loadedSessionRecipe) {
     loadedRecipeApplication = applyTutorStubRecipeOptions(args, loadedSessionRecipe, {
@@ -841,6 +859,10 @@ function printHelp() {
   console.log(`Usage:
   npm run tutor:stub -- [options]
   node scripts/tutor-stub.js [options] [first learner message]
+
+Default npm launch:
+  mixed_drafting (human scaffold + inspectable AI learner drafts)
+  choose explicitly with --lab mixed_drafting; use --list-labs for alternatives
 
 Options:
   --tutor <id[@vN]>     named, versioned speaking-tutor instance
@@ -985,7 +1007,8 @@ Options:
   --labelling-game       run the consolidated human-labelling harness instead
                          of starting a tutoring dialogue (compatibility alias)
   --label-dataset <id>   superego-taxonomy or tutor-stub-impasses
-  --label-coder <id>     rater id for the labelling output sidecar
+  --label-coder <id>     rater id for the labelling output sidecar;
+                         overrides LABELLING_GAME_CODER from .env
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
@@ -2754,7 +2777,7 @@ const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
   {
     id: 'chat',
     label: 'Tutor chat',
-    description: 'Open the default learner–tutor conversation.',
+    description: 'Open the default mixed human + AI learner-drafting conversation.',
   },
   {
     id: 'labelling-game',
@@ -2823,7 +2846,7 @@ async function pickTutorStubLaunchModeWithKeyboard(defaultMode = 'chat') {
         return active ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
       }),
       `${C.brightYellow}${C.bold}  launches >${C.reset} ${selected.label}`,
-      `${C.dim}  ↑/↓ move · Enter launch · Esc quit · Tutor chat is the default${C.reset}`,
+      `${C.dim}  ↑/↓ move · Enter launch · Esc quit · Mixed tutor chat is the default${C.reset}`,
     ];
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
@@ -9005,7 +9028,7 @@ function printTutorStubFeatureMap(state = null) {
   }
 
   console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
-  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub:scaffold:mixed`);
+  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub`);
   console.log(`${C.cyan}  guided tour${C.reset} npm run tutor:stub:demo`);
   console.log(
     `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
@@ -15446,7 +15469,10 @@ async function main() {
     if (!selection) return;
     launchMode = selection.id;
   }
-  if (launchPickerEnabled) console.log(`${C.cyan}${C.bold}mode >${C.reset} Tutor chat\n`);
+  if (launchPickerEnabled) {
+    const chatMode = args.lab === 'mixed_drafting' ? 'Tutor chat · mixed drafting' : 'Tutor chat';
+    console.log(`${C.cyan}${C.bold}mode >${C.reset} ${chatMode}\n`);
+  }
 
   args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
   args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
@@ -18296,9 +18322,10 @@ async function main() {
         pool = ['/board'];
       }
     }
-    const matches = pool.filter((candidate) => candidate.startsWith(trimmed));
+    const sortedPool = [...new Set(pool)].toSorted();
+    const matches = sortedPool.filter((candidate) => candidate.startsWith(trimmed));
     return {
-      candidates: matches.length || !fallback ? matches : pool,
+      candidates: matches.length || !fallback ? matches : sortedPool,
       replacement: trimmed,
     };
   }
@@ -18308,7 +18335,7 @@ async function main() {
     const trimmed = raw.trimStart();
     if (!trimmed.startsWith('/')) return [];
     const { candidates } = slashCommandCompletionForLine(trimmed);
-    const commands = [...new Set(candidates.map((candidate) => candidate.trimEnd()))];
+    const commands = [...new Set(candidates.map((candidate) => candidate.trimEnd()))].toSorted();
     const terminalWidth = Math.max(48, Number(output.columns) || 100);
     const countLabel =
       trimmed === '/'

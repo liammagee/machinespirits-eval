@@ -49,9 +49,50 @@ test('tutor-stub exposes a no-model capability map with practical quick starts',
   assert.match(result.stdout, /participate\s+human learner.*private coach.*automated learner/su);
   assert.match(result.stdout, /teach\s+open topics.*proof-DAG scenarios.*reflective curricula/su);
   assert.match(result.stdout, /evaluate\s+auto-eval.*QA matrices.*ABM panels.*frozen replay/su);
-  assert.match(result.stdout, /npm run tutor:stub:scaffold:mixed/u);
+  assert.match(result.stdout, /full tutor\s+npm run tutor:stub/u);
   assert.match(result.stdout, /curriculum\/ai-foundations\.curriculum\.yaml --module AF1/u);
   assert.match(result.stdout, /npm run tutor:stub:workplan -- --module <id>/u);
+});
+
+test('the standard npm launcher defaults ordinary tutor chat to mixed drafting', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert.equal(packageJson.scripts['tutor:stub'], 'TUTOR_STUB_DEFAULT_LAB=mixed_drafting node scripts/tutor-stub.js');
+
+  const config = JSON.parse(
+    execFileSync(
+      process.execPath,
+      ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--world', 'world_005_marrick'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        env: { ...process.env, TUTOR_STUB_DEFAULT_LAB: 'mixed_drafting' },
+      },
+    ),
+  );
+
+  assert.equal(config.lab.id, 'mixed_drafting');
+  assert.equal(config.capabilities.mode, 'mixed');
+  assert.equal(config.mixedLearner.enabled, true);
+  assert.equal(config.tutorLearnerDag.preflight.enabled, true);
+  assert.equal(config.humanDiscourse.dagMode, 'defeasible_human_scaffold');
+});
+
+test('the mixed default yields to explicit non-chat architectures', () => {
+  const config = JSON.parse(
+    execFileSync(
+      process.execPath,
+      ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--world', 'world_005_marrick', '--auto-learner'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        env: { ...process.env, TUTOR_STUB_DEFAULT_LAB: 'mixed_drafting' },
+      },
+    ),
+  );
+
+  assert.equal(config.lab, null);
+  assert.equal(config.capabilities.mode, 'auto');
+  assert.equal(config.mixedLearner.enabled, false);
 });
 
 test('tutor-stub dry run exposes human discourse trace schemas', () => {

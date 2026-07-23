@@ -210,7 +210,8 @@ export async function runLabellingGameCli({
     write(output, 'Machine Spirits · Labelling Game');
     write(output, 'Human judgments only. Hidden model keys remain sealed until a packet is complete.');
     const selectedDataset = datasetId || (await chooseDataset(rl, output, env));
-    const selectedCoder = coderId || (await rl.question('Coder ID [rater-A]: ')) || 'rater-A';
+    const configuredCoder = coderId || env.LABELLING_GAME_CODER || '';
+    const selectedCoder = configuredCoder || (await rl.question('Coder ID [rater-A]: ')) || 'rater-A';
     const codebook = getLabellingGameCodebook({ datasetId: selectedDataset, env });
     let packet = getLabellingGameItems({ datasetId: selectedDataset, coderId: selectedCoder, env });
     let index = Math.max(
@@ -218,7 +219,8 @@ export async function runLabellingGameCli({
       packet.items.findIndex((item) => !item.labelling_complete),
     );
 
-    write(output, `\n${packet.dataset_id} · ${packet.progress.complete}/${packet.progress.total} complete`);
+    write(output, `\ncoder > ${packet.coder_id}`);
+    write(output, `${packet.dataset_id} · ${packet.progress.complete}/${packet.progress.total} complete`);
     while (packet.items.length) {
       const item = packet.items[index];
       renderLabellingGameItem(output, packet.dataset_id, item, index, packet.items.length);
