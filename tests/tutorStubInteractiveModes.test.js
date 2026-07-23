@@ -65,6 +65,8 @@ process.stdin.on('end', () => {
         })
       : input.includes('# Explanatory debug task')
       ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
+      : process.env.FAKE_CODEX_LIGHT_RESPONSE === '1' && input.includes('Learner says')
+        ? 'You are frustrated and still comparing the residue, so I set the assay ledger beside the crucible and mark only what the public evidence can support. The residue test asks whether this alloy matches one crucible uniquely; use that single comparison before naming any hand. Which public residue mark can you connect next?'
       : input.includes('Write learner turn')
         ? 'I would compare the metal residues first.'
         : input.includes('[Tutor-only dramatic clue release]')
@@ -1721,6 +1723,78 @@ test('/random samples style and host character independently while preserving th
       'evidence_release',
       'response_safety',
     ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('light adaptation forces a replayable style and character shift after continued learner difficulty', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-light-adaptation-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--light-adaptation',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/debug on technical\n/light off\n/light on\nThe assay still confuses me.\n',
+      followupInputs: [
+        {
+          afterPlainIncludes: 'optional tutor feedback >',
+          text: '/up\nI am frustrated and still do not understand the residue comparison.\n',
+        },
+      ],
+      // Stop once the second register selection is observable; response composition is covered separately.
+      stopWhen: (plain) => plain.includes('light adaptation: continued confusion/frustration streak 2'),
+      timeoutMs: 15_000,
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        FAKE_CODEX_LIGHT_RESPONSE: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /light adaptation > on/u);
+    assert.match(result.plain, /light adaptation: on — seeded style \+ character shift after 2/u);
+    assert.match(result.plain, /source light_stochastic_adaptation/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const turns = events
+      .filter((event) => event.type === 'turn_complete')
+      .map((event) => event.turnRecord)
+      .sort((left, right) => left.turn - right.turn);
+    const modeChanges = events.filter((event) => event.type === 'light_adaptation_mode_changed');
+    assert.deepEqual(
+      modeChanges.map((event) => event.enabled),
+      [false, true],
+    );
+    assert.ok(modeChanges.every((event) => event.threshold === 2));
+    assert.equal(turns.length, 1);
+    const first = turns[0].registerSelection;
+    assert.equal(first.light_adaptation.streak, 1);
+    assert.equal(first.light_adaptation.triggered, false);
+    const stanceMatches = [...result.plain.matchAll(/engagement stance > ([a-z_]+)/gu)];
+    const partMatches = [...result.plain.matchAll(/audience: [^\n]+; part: ([^\n]+)/gu)];
+    assert.ok(stanceMatches.length >= 2, result.plain);
+    assert.ok(partMatches.length >= 2, result.plain);
+    assert.notEqual(stanceMatches.at(-1)[1], first.engagement_stance);
+    assert.notEqual(partMatches.at(-1)[1].trim(), first.actorial_part_label);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

@@ -142,6 +142,12 @@ import {
   normalizeTutorStubEngagementStanceTemperature,
 } from '../services/tutorStubRegisterTemperature.js';
 import {
+  DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD,
+  TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+  buildTutorStubLightAdaptationDecision,
+  normalizeTutorStubLightAdaptationThreshold,
+} from '../services/tutorStubLightAdaptation.js';
+import {
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
   TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
@@ -522,6 +528,9 @@ const STUB = {
     process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD || String(DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
   registerTemperature:
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
+  lightAdaptation: process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1',
+  lightAdaptationThreshold:
+    process.env.TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD || String(DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD),
   dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
   dagFactDropoutSeed: process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
   releaseSpeed: process.env.TUTOR_STUB_RELEASE_SPEED || String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
@@ -654,6 +663,8 @@ const { values: args, positionals } = parseArgs({
     // policy-endogenous one. CSV of learner turn numbers, e.g. "6".
     'pressure-turns': { type: 'string', default: '' },
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
+    'light-adaptation': { type: 'boolean', default: STUB.lightAdaptation },
+    'light-adaptation-threshold': { type: 'string', default: STUB.lightAdaptationThreshold },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
     'release-speed': { type: 'string', default: STUB.releaseSpeed },
@@ -917,6 +928,13 @@ Options:
                          teaching-style range; lower concentrates the strongest
                          style and part, higher mixes in more alternatives (default: ${STUB.registerTemperature};
                          range: ${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})
+  --light-adaptation     after continued learner confusion or frustration,
+                         force one seeded stochastic shift in both teaching
+                         style and host character; deep adaptation resumes as
+                         soon as the difficulty streak clears
+  --light-adaptation-threshold <n>
+                         consecutive difficult learner turns required before
+                         the light shift activates (default: ${STUB.lightAdaptationThreshold}; range: 2-8)
   --dag-fact-dropout <n> probability in [0,1] that previously understood
                          evidence is temporarily forgotten after a learner turn
                          (default: ${STUB.dagFactDropout}; off at 0)
@@ -3531,6 +3549,7 @@ function metadataLine(meta) {
   const performance =
     selection?.actorial_performance?.label || selection?.response_configuration?.actorial_performance?.label || null;
   const randomPerformance = selection?.random_performance?.enabled ? ', random performance' : '';
+  const lightAdaptation = selection?.light_adaptation?.triggered ? ', light shift' : '';
   const directedPerformance = [
     selection?.performance_directives?.register?.applied ? 'style directed' : null,
     selection?.performance_directives?.character?.applied ? 'character directed' : null,
@@ -3548,7 +3567,7 @@ function metadataLine(meta) {
     .map((part) => `, ${part}`)
     .join('');
   const tutor = meta.tutorRef ? `, tutor ${meta.tutorRef}` : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${randomPerformance}${directedPerformance}${pace}${guard}${stream}${cache}${tutor}`;
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${randomPerformance}${lightAdaptation}${directedPerformance}${pace}${guard}${stream}${cache}${tutor}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -6333,17 +6352,27 @@ function explicitPerformanceActorialPartSelection({ inputs, baseSelection, chara
   };
 }
 
-function performanceTemperatureScope({ policy, explicitRegister, explicitCharacter, randomStance, randomCharacter }) {
+function performanceTemperatureScope({
+  policy,
+  explicitRegister,
+  explicitCharacter,
+  randomStance,
+  randomCharacter,
+  lightStance = false,
+  lightCharacter = false,
+}) {
   const axes = [];
-  if (!explicitRegister && !randomStance) axes.push('engagement_stance');
-  if (!explicitCharacter && !randomCharacter) axes.push('actorial_part');
+  if (!explicitRegister && !randomStance && !lightStance) axes.push('engagement_stance');
+  if (!explicitCharacter && !randomCharacter && !lightCharacter) axes.push('actorial_part');
   if (!axes.length) {
     return {
       applied: false,
       scope:
-        randomStance && randomCharacter
-          ? 'bypassed_for_random_engagement_stance_and_actorial_part'
-          : 'bypassed_by_explicit_or_random_directives',
+        lightStance && lightCharacter
+          ? 'bypassed_for_light_adaptation_engagement_stance_and_actorial_part'
+          : randomStance && randomCharacter
+            ? 'bypassed_for_random_engagement_stance_and_actorial_part'
+            : 'bypassed_by_explicit_or_random_directives',
     };
   }
   if (!registerTemperatureApplies(policy)) {
@@ -6355,7 +6384,9 @@ function performanceTemperatureScope({ policy, explicitRegister, explicitCharact
   };
 }
 
-function randomEngagementStanceSelection({ state, classification, performanceMode = false }) {
+function randomEngagementStanceSelection({ state, classification, performanceMode = false, lightAdaptation = null }) {
+  const lightMode = lightAdaptation?.triggered === true;
+  const conditionalPerformanceMode = performanceMode || lightMode;
   const activePalette = state.register?.palette || [];
   const safePalette = activePalette.filter(
     (register) => getEngagementStanceDefinition(register)?.router_selectable === true,
@@ -6365,26 +6396,36 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
     committedReleaseRows(state, tutorTurn).length || currentReleaseRows(state, tutorTurn).length,
   );
   const performanceReadyPalette =
-    performanceMode && !publicEvidenceAvailable
+    conditionalPerformanceMode && !publicEvidenceAvailable
       ? safePalette.filter((register) => ['plain', 'warm'].includes(register))
       : safePalette;
-  const eligiblePalette = performanceMode && performanceReadyPalette.length ? performanceReadyPalette : activePalette;
+  const eligiblePalette =
+    conditionalPerformanceMode && performanceReadyPalette.length ? performanceReadyPalette : activePalette;
   const previousRegister = state.register?.history?.at(-1)?.selected_register || null;
   const palette =
-    performanceMode && eligiblePalette.length > 1
+    conditionalPerformanceMode && eligiblePalette.length > 1
       ? eligiblePalette.filter((register) => register !== previousRegister)
       : eligiblePalette;
   const distribution = uniformEngagementStanceDistribution(palette);
+  const policyId = lightMode ? 'light_adaptation' : performanceMode ? 'random_performance' : null;
   const sampled = sampleTutorStubPolicyDistribution(
     distribution,
     policySamplingContext(
       state,
-      performanceMode ? 'random_performance_engagement_stance' : 'random_engagement_stance',
-      performanceMode ? { policy: 'random_performance' } : {},
+      lightMode
+        ? 'light_adaptation_engagement_stance'
+        : performanceMode
+          ? 'random_performance_engagement_stance'
+          : 'random_engagement_stance',
+      policyId ? { policy: policyId } : {},
     ),
   );
   const selected = sampled.entry?.register || firstAvailableRegister(new Set(palette), ['precise', 'plain', 'brisk']);
-  const requestType = performanceMode ? 'random_performance' : classification?.turn?.request_type || 'random_policy';
+  const requestType = lightMode
+    ? 'continued_learner_difficulty'
+    : performanceMode
+      ? 'random_performance'
+      : classification?.turn?.request_type || 'random_policy';
   return {
     selected_register: selected,
     request_type: requestType,
@@ -6394,11 +6435,17 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
       requestType,
       actionFamily: null,
     }),
-    reviewer_signal: performanceMode ? 'random_performance_mode' : 'random_policy',
-    register_reason: performanceMode
-      ? 'Random performance mode sampled uniformly from the safe active stance palette, excluding the immediately previous stance when alternatives exist. Learner assessment did not influence this choice.'
-      : 'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
-    evidence_span: performanceMode ? '' : classification?.turn?.summary || '',
+    reviewer_signal: lightMode
+      ? 'continued_learner_confusion_or_frustration'
+      : performanceMode
+        ? 'random_performance_mode'
+        : 'random_policy',
+    register_reason: lightMode
+      ? `Light adaptation activated after ${lightAdaptation.streak} consecutive learner-difficulty turns and sampled a different safe stance when possible; the assessment triggered the draw but did not choose its result.`
+      : performanceMode
+        ? 'Random performance mode sampled uniformly from the safe active stance palette, excluding the immediately previous stance when alternatives exist. Learner assessment did not influence this choice.'
+        : 'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
+    evidence_span: conditionalPerformanceMode ? '' : classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move:
       'No register-specific DAG move is predicted; preserve evidence safety while following the sampled register stance.',
@@ -6407,31 +6454,48 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
     expected_progress_marker:
       'Use the next learner turn to observe whether this random register coincides with learner-DAG progress.',
     confidence: null,
-    source: performanceMode ? 'random_performance_mode' : 'random_register_policy',
+    source: lightMode
+      ? 'light_stochastic_adaptation'
+      : performanceMode
+        ? 'random_performance_mode'
+        : 'random_register_policy',
     distribution,
     selected_probability: sampled.entry?.probability ?? null,
     random: sampled.audit,
-    ...(performanceMode
+    ...(lightMode
       ? {
-          random_performance: {
-            enabled: true,
-            assessment_influence: false,
+          light_adaptation: {
+            ...lightAdaptation,
             previous_register_excluded: palette.length < eligiblePalette.length ? previousRegister : null,
             eligible_registers: eligiblePalette,
             public_evidence_available: publicEvidenceAvailable,
             structural_filter: publicEvidenceAvailable ? null : 'no_public_evidence_yet',
           },
         }
-      : {}),
+      : performanceMode
+        ? {
+            random_performance: {
+              enabled: true,
+              assessment_influence: false,
+              previous_register_excluded: palette.length < eligiblePalette.length ? previousRegister : null,
+              eligible_registers: eligiblePalette,
+              public_evidence_available: publicEvidenceAvailable,
+              structural_filter: publicEvidenceAvailable ? null : 'no_public_evidence_yet',
+            },
+          }
+        : {}),
   };
 }
 
-function randomPerformanceActorialPartSelection({ state, inputs, baseSelection }) {
+function randomPerformanceActorialPartSelection({ state, inputs, baseSelection, lightAdaptation = null }) {
+  const lightMode = lightAdaptation?.triggered === true;
+  const modeKey = lightMode ? 'light_adaptation' : 'random_performance';
   if (!baseSelection || baseSelection.locked === true) {
     return baseSelection
       ? {
           ...baseSelection,
-          random_performance: {
+          [modeKey]: {
+            ...(lightMode ? lightAdaptation : {}),
             enabled: true,
             assessment_influence: false,
             outcome: 'structural_lock',
@@ -6447,7 +6511,9 @@ function randomPerformanceActorialPartSelection({ state, inputs, baseSelection }
   const distribution = parts.map((part) => ({ part, weight: 1, probability }));
   const sampled = sampleTutorStubPolicyDistribution(
     distribution.map((row) => ({ register: row.part, weight: row.weight, probability: row.probability })),
-    policySamplingContext(state, 'random_performance_actorial_part', { policy: 'random_performance' }),
+    policySamplingContext(state, lightMode ? 'light_adaptation_actorial_part' : 'random_performance_actorial_part', {
+      policy: modeKey,
+    }),
   );
   const selectedPart = sampled.entry?.register || parts[0] || baseSelection.id;
   const selected = selectTutorStubActorialPart({
@@ -6461,11 +6527,13 @@ function randomPerformanceActorialPartSelection({ state, inputs, baseSelection }
     temperature: null,
     distribution,
     drivers: [],
-    reason:
-      'Random performance mode sampled uniformly from the safe host-character set, excluding the immediately previous part when alternatives exist. Learner assessment did not influence this choice.',
-    selection_method: 'random_performance_seeded_uniform',
+    reason: lightMode
+      ? `Light adaptation activated after ${lightAdaptation.streak} consecutive learner-difficulty turns and sampled a different host character when possible; the assessment triggered the draw but did not choose its result.`
+      : 'Random performance mode sampled uniformly from the safe host-character set, excluding the immediately previous part when alternatives exist. Learner assessment did not influence this choice.',
+    selection_method: lightMode ? 'light_adaptation_seeded_uniform' : 'random_performance_seeded_uniform',
     random: sampled.audit,
-    random_performance: {
+    [modeKey]: {
+      ...(lightMode ? lightAdaptation : {}),
       enabled: true,
       assessment_influence: false,
       previous_part_excluded: parts.length < allParts.length ? previousPart : null,
@@ -7238,11 +7306,21 @@ function normalizeResponseConfigurationSelection(
   const policy = state.register?.policy || 'dynamic';
   const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
   const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
+  const lightAdaptation = buildTutorStubLightAdaptationDecision({
+    enabled: state.lightAdaptation?.enabled === true,
+    threshold: state.lightAdaptation?.threshold,
+    state,
+    classification,
+    learnerText,
+  });
+  const lightAdaptationTriggered = lightAdaptation.triggered === true;
   const randomPerformanceEnabled = state.randomPerformance?.enabled === true;
-  const randomStanceEnabled = randomPerformanceEnabled && !explicitRegister;
-  const randomCharacterEnabled = randomPerformanceEnabled && !explicitCharacter;
-  const externalStanceDirective = Boolean(explicitRegister || randomStanceEnabled);
-  if (explicitRegister) {
+  const randomStanceEnabled = randomPerformanceEnabled && !explicitRegister && !lightAdaptationTriggered;
+  const randomCharacterEnabled = randomPerformanceEnabled && !explicitCharacter && !lightAdaptationTriggered;
+  const externalStanceDirective = Boolean(lightAdaptationTriggered || explicitRegister || randomStanceEnabled);
+  if (lightAdaptationTriggered) {
+    rawSelection = randomEngagementStanceSelection({ state, classification, lightAdaptation });
+  } else if (explicitRegister) {
     rawSelection = explicitEngagementStanceSelection({ classification, stance: explicitRegister });
   } else if (randomStanceEnabled) {
     rawSelection = randomEngagementStanceSelection({ state, classification, performanceMode: true });
@@ -7429,7 +7507,13 @@ function normalizeResponseConfigurationSelection(
     stanceDistribution: source.engagement_stance_distribution || source.distribution || null,
     stanceVector: source.engagement_stance_vector || source.register_vector || null,
     temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    policy: explicitRegister ? 'explicit_register_directive' : randomStanceEnabled ? 'random_performance' : policyStack,
+    policy: lightAdaptationTriggered
+      ? 'light_adaptation'
+      : explicitRegister
+        ? 'explicit_register_directive'
+        : randomStanceEnabled
+          ? 'random_performance'
+          : policyStack,
     learnerText,
     classification,
     tutorLearnerDag,
@@ -7457,7 +7541,19 @@ function normalizeResponseConfigurationSelection(
     dueEvidence: configurationInputs.dueEvidence,
     recentActorialParts: configurationInputs.recentActorialParts,
   };
-  if (explicitCharacter) {
+  if (lightAdaptationTriggered) {
+    const sampledSelection = randomPerformanceActorialPartSelection({
+      state,
+      inputs: actorialInputs,
+      baseSelection: responseConfiguration.actorial_part_selection,
+      lightAdaptation,
+    });
+    responseConfiguration = buildTutorStubResponseConfiguration({
+      ...configurationInputs,
+      actorialPartOverride: sampledSelection,
+    });
+    responseConfiguration.selection_reasons.actorial_part = sampledSelection?.reason || 'structural closeout lock';
+  } else if (explicitCharacter) {
     const directedSelection = explicitPerformanceActorialPartSelection({
       inputs: actorialInputs,
       baseSelection: responseConfiguration.actorial_part_selection,
@@ -7538,21 +7634,49 @@ function normalizeResponseConfigurationSelection(
       hard_constraints_preserved: ['dialogue_closure', 'evidence_release', 'response_safety'],
     };
   }
+  responseConfiguration.light_adaptation = {
+    ...lightAdaptation,
+    engagement_stance_draw: source.light_adaptation || null,
+    actorial_part_draw: responseConfiguration.actorial_part_selection?.light_adaptation || null,
+    engagement_stance_random: lightAdaptationTriggered ? source.random || null : null,
+    actorial_part_random: lightAdaptationTriggered
+      ? responseConfiguration.actorial_part_selection?.random || null
+      : null,
+    applied: lightAdaptationTriggered,
+    applied_axes: lightAdaptationTriggered
+      ? [
+          'engagement_stance',
+          responseConfiguration.actorial_part_selection?.locked === true ? null : 'actorial_part',
+        ].filter(Boolean)
+      : [],
+    overridden_directives: lightAdaptationTriggered
+      ? [
+          explicitRegister ? 'engagement_stance' : null,
+          explicitCharacter ? 'actorial_part' : null,
+          randomPerformanceEnabled ? 'random_performance' : null,
+        ].filter(Boolean)
+      : [],
+  };
   if (explicitRegister || explicitCharacter) {
     responseConfiguration.performance_directives = {
       schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
       register: explicitRegister
         ? {
             value: explicitRegister,
-            applied: true,
+            applied: !lightAdaptationTriggered,
+            outcome: lightAdaptationTriggered ? 'overridden_by_light_adaptation' : 'applied',
             assessment_influence: false,
           }
         : null,
       character: explicitCharacter
         ? {
             value: explicitCharacter,
-            applied: responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
-            outcome: responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
+            applied:
+              !lightAdaptationTriggered &&
+              responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
+            outcome: lightAdaptationTriggered
+              ? 'overridden_by_light_adaptation'
+              : responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
             assessment_influence: false,
           }
         : null,
@@ -7570,6 +7694,8 @@ function normalizeResponseConfigurationSelection(
     explicitCharacter,
     randomStance: randomStanceEnabled,
     randomCharacter: randomCharacterEnabled,
+    lightStance: lightAdaptationTriggered,
+    lightCharacter: lightAdaptationTriggered,
   });
   responseConfiguration.temperature_scope = temperatureSelection.scope;
   const actionFamily = responseConfiguration.action_family;
@@ -7587,11 +7713,13 @@ function normalizeResponseConfigurationSelection(
     policy: policyStack,
     primary_policy: policy,
     overlay_policies: [...(state.register?.overlays || [])],
-    activated_policy: explicitRegister
-      ? 'explicit_register_directive'
-      : randomStanceEnabled
-        ? 'random_performance'
-        : source.policy_composition?.activated_overlay || policy,
+    activated_policy: lightAdaptationTriggered
+      ? 'light_adaptation'
+      : explicitRegister
+        ? 'explicit_register_directive'
+        : randomStanceEnabled
+          ? 'random_performance'
+          : source.policy_composition?.activated_overlay || policy,
     policy_composition: source.policy_composition || null,
     turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     engagement_stance: selected,
@@ -7660,6 +7788,7 @@ function normalizeResponseConfigurationSelection(
     dynamical_system_policy: source.dynamical_system_policy || null,
     continuous_register_policy: source.continuous_register_policy || null,
     response_configuration: responseConfiguration,
+    light_adaptation: responseConfiguration.light_adaptation,
     state_policy: source.state_policy || null,
     source: source.source || 'combined_learner_analysis',
     ...(source.predeclared_pressure === true ? { predeclared_pressure: true } : {}),
@@ -7694,19 +7823,24 @@ function normalizeResponseConfigurationSelection(
       explicitRegister || explicitCharacter
         ? {
             schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
-            precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+            precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
             register: explicitRegister
               ? {
                   value: explicitRegister,
-                  applied: true,
+                  applied: !lightAdaptationTriggered,
+                  outcome: lightAdaptationTriggered ? 'overridden_by_light_adaptation' : 'applied',
                   assessment_influence: false,
                 }
               : null,
             character: explicitCharacter
               ? {
                   value: explicitCharacter,
-                  applied: responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
-                  outcome: responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
+                  applied:
+                    !lightAdaptationTriggered &&
+                    responseConfiguration.actorial_part_selection?.explicit_directive?.applied !== false,
+                  outcome: lightAdaptationTriggered
+                    ? 'overridden_by_light_adaptation'
+                    : responseConfiguration.actorial_part_selection?.explicit_directive?.outcome || 'applied',
                   assessment_influence: false,
                 }
               : null,
@@ -8217,7 +8351,11 @@ function printResponseConfigurationSelection(selection, previousEfficacy = null)
       selection.engagement_stance || selection.selected_register
     }${confidence}${source}${warning}`,
   );
-  if (selection.random_performance?.enabled) {
+  if (selection.light_adaptation?.triggered) {
+    console.log(
+      `${C.dim}  light adaptation: continued confusion/frustration streak ${selection.light_adaptation.streak}; stance and host character shifted with seeded draws${C.reset}`,
+    );
+  } else if (selection.random_performance?.enabled) {
     console.log(
       `${C.dim}  random performance: stance and host character sampled independently of learner assessment; action and safety controls retained${C.reset}`,
     );
@@ -13780,9 +13918,20 @@ function typedActionRegisterSelection({
   let actorialPart = selectTutorStubActorialPart(actorialInputs);
   const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
   const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
-  const randomStanceEnabled = state.randomPerformance?.enabled === true && !explicitRegister;
-  const randomCharacterEnabled = state.randomPerformance?.enabled === true && !explicitCharacter;
-  if (explicitCharacter) {
+  const lightAdaptation = registerSelection?.light_adaptation || baseConfiguration.light_adaptation || null;
+  const lightAdaptationTriggered = lightAdaptation?.triggered === true;
+  const randomStanceEnabled =
+    state.randomPerformance?.enabled === true && !explicitRegister && !lightAdaptationTriggered;
+  const randomCharacterEnabled =
+    state.randomPerformance?.enabled === true && !explicitCharacter && !lightAdaptationTriggered;
+  if (lightAdaptationTriggered) {
+    actorialPart = randomPerformanceActorialPartSelection({
+      state,
+      inputs: actorialInputs,
+      baseSelection: actorialPart,
+      lightAdaptation,
+    });
+  } else if (explicitCharacter) {
     actorialPart = explicitPerformanceActorialPartSelection({
       inputs: actorialInputs,
       baseSelection: actorialPart,
@@ -13828,6 +13977,17 @@ function typedActionRegisterSelection({
     knowledge_component: patch.knowledge_component,
     item_difficulty: patch.item_difficulty,
     typed_action_schema: decision.schema,
+    light_adaptation: lightAdaptation
+      ? {
+          ...lightAdaptation,
+          engagement_stance_random: lightAdaptationTriggered ? registerSelection?.random || null : null,
+          actorial_part_random: lightAdaptationTriggered ? actorialPart.random || null : null,
+          applied: lightAdaptationTriggered,
+          applied_axes: lightAdaptationTriggered
+            ? ['engagement_stance', actorialPart.locked === true ? null : 'actorial_part'].filter(Boolean)
+            : [],
+        }
+      : null,
     random_performance: state.randomPerformance?.enabled
       ? {
           schema: 'machinespirits.tutor-stub.random-performance-selection.v1',
@@ -13855,12 +14015,22 @@ function typedActionRegisterSelection({
       explicitRegister || explicitCharacter
         ? {
             schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
-            register: explicitRegister ? { value: explicitRegister, applied: true, assessment_influence: false } : null,
+            precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
+            register: explicitRegister
+              ? {
+                  value: explicitRegister,
+                  applied: !lightAdaptationTriggered,
+                  outcome: lightAdaptationTriggered ? 'overridden_by_light_adaptation' : 'applied',
+                  assessment_influence: false,
+                }
+              : null,
             character: explicitCharacter
               ? {
                   value: explicitCharacter,
-                  applied: actorialPart.explicit_directive?.applied !== false,
-                  outcome: actorialPart.explicit_directive?.outcome || 'applied',
+                  applied: !lightAdaptationTriggered && actorialPart.explicit_directive?.applied !== false,
+                  outcome: lightAdaptationTriggered
+                    ? 'overridden_by_light_adaptation'
+                    : actorialPart.explicit_directive?.outcome || 'applied',
                   assessment_influence: false,
                 }
               : null,
@@ -13903,6 +14073,7 @@ function typedActionRegisterSelection({
     actorial_part_selection: responseConfiguration.actorial_part_selection,
     actorial_performance: responseConfiguration.actorial_performance,
     unresolved_terms: responseConfiguration.unresolved_terms,
+    light_adaptation: responseConfiguration.light_adaptation,
     performance_directives: responseConfiguration.performance_directives,
     valence: registerSelection?.valence || definition.valence || null,
     request_type:
@@ -15439,6 +15610,14 @@ async function main() {
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
     label: '--register-temperature',
   });
+  const lightAdaptationEnabled = Boolean(args['light-adaptation']);
+  const lightAdaptationThreshold = normalizeTutorStubLightAdaptationThreshold(args['light-adaptation-threshold']);
+  if (lightAdaptationEnabled && passthroughEnabled) {
+    throw new Error('--light-adaptation is unavailable in --passthrough because learner assessment is disabled');
+  }
+  if (lightAdaptationEnabled && args['no-register-selection']) {
+    throw new Error('--light-adaptation requires teaching-style selection; remove --no-register-selection');
+  }
   const dagFactDropoutRate = normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
     label: '--dag-fact-dropout',
   });
@@ -15720,7 +15899,10 @@ async function main() {
   const registerSelectionEnabled = Boolean(
     !args['no-register-selection'] &&
     registerPalette.length &&
-    (combinedLearnerAnalysisEnabled || randomRegisterSelectionEnabled || negativeRegisterSelectionEnabled),
+    (combinedLearnerAnalysisEnabled ||
+      randomRegisterSelectionEnabled ||
+      negativeRegisterSelectionEnabled ||
+      lightAdaptationEnabled),
   );
   let classifierResolved =
     classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
@@ -16282,13 +16464,30 @@ async function main() {
             assessmentInfluence: false,
             preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
           },
+          lightAdaptation: {
+            schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+            available: registerSelectionEnabled,
+            enabled: lightAdaptationEnabled,
+            threshold: lightAdaptationThreshold,
+            slashCommand: '/light on|off|status',
+            trigger: 'continued_learner_confusion_or_frustration',
+            scope: ['engagement_stance', 'actorial_part'],
+            selectionMethod: 'seeded_uniform_excluding_previous',
+            preservedControls: [
+              'action_family',
+              'authored_evidence_source',
+              'evidence_release',
+              'dialogue_closure',
+              'response_safety',
+            ],
+          },
           performanceDirectives: {
             available: registerSelectionEnabled,
             sessionOnly: true,
             register: null,
             character: null,
             slashCommands: ['/register', '/character'],
-            precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+            precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
           },
           promptArchitecture,
           directorContext,
@@ -16589,13 +16788,30 @@ async function main() {
         assessmentInfluence: false,
         preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
       },
+      lightAdaptation: {
+        schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+        available: registerSelectionEnabled,
+        enabled: lightAdaptationEnabled,
+        threshold: lightAdaptationThreshold,
+        slashCommand: '/light on|off|status',
+        trigger: 'continued_learner_confusion_or_frustration',
+        scope: ['engagement_stance', 'actorial_part'],
+        selectionMethod: 'seeded_uniform_excluding_previous',
+        preservedControls: [
+          'action_family',
+          'authored_evidence_source',
+          'evidence_release',
+          'dialogue_closure',
+          'response_safety',
+        ],
+      },
       performanceDirectives: {
         available: registerSelectionEnabled,
         sessionOnly: true,
         register: null,
         character: null,
         slashCommands: ['/register', '/character'],
-        precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+        precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
       },
       pointOfAction: pointOfActionArm
         ? {
@@ -16909,12 +17125,21 @@ async function main() {
       assessmentInfluence: false,
       sessionOnly: true,
     },
+    lightAdaptation: {
+      schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+      enabled: lightAdaptationEnabled,
+      threshold: lightAdaptationThreshold,
+      scope: ['engagement_stance', 'actorial_part'],
+      trigger: 'continued_learner_confusion_or_frustration',
+      selectionMethod: 'seeded_uniform_excluding_previous',
+      sessionOnly: true,
+    },
     performanceDirectives: {
       schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
       register: null,
       character: null,
       sessionOnly: true,
-      precedence: 'explicit_axis_then_random_axis_then_adaptive_policy',
+      precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
     },
     pointOfAction: {
       enabled: Boolean(pointOfActionArm),
@@ -18166,6 +18391,10 @@ async function main() {
       learnerDagPreflightHash: dagPreflight?.contentSha256 || null,
       registerPolicy: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
       randomPerformance: Boolean(state.randomPerformance?.enabled),
+      lightAdaptation: {
+        enabled: Boolean(state.lightAdaptation?.enabled),
+        threshold: state.lightAdaptation?.threshold ?? DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD,
+      },
       performanceDirectives: {
         register: explicitPerformanceDirectiveValue(state, 'register'),
         character: explicitPerformanceDirectiveValue(state, 'character'),
@@ -18200,6 +18429,7 @@ async function main() {
       releasePacing: structuredClone(state.releasePacing),
       register: structuredClone(state.register),
       randomPerformance: structuredClone(state.randomPerformance),
+      lightAdaptation: structuredClone(state.lightAdaptation),
       performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
       coach: structuredClone(state.coach),
@@ -18216,6 +18446,7 @@ async function main() {
       comprehension: structuredClone(state.comprehension),
       releasePacing: structuredClone(state.releasePacing),
       register: structuredClone(state.register),
+      lightAdaptation: structuredClone(state.lightAdaptation),
       randomPerformance: structuredClone(state.randomPerformance),
       performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
@@ -20155,6 +20386,7 @@ async function main() {
           }
         : null,
       randomPerformance: jsonClone(state.randomPerformance),
+      lightAdaptation: jsonClone(state.lightAdaptation),
       performanceDirectives: jsonClone(state.performanceDirectives),
       dialogueClosure: state.dialogueClosure,
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
@@ -20348,6 +20580,7 @@ async function main() {
           empiricalPriorStatus: state.register?.empiricalPriorStatus || null,
         },
         randomPerformance: jsonClone(state.randomPerformance),
+        lightAdaptation: jsonClone(state.lightAdaptation),
         performanceDirectives: jsonClone(state.performanceDirectives),
         rememberedDefaults: {
           enabled: Boolean(state.rememberedSettings?.enabled),
@@ -21005,6 +21238,13 @@ async function main() {
             : 'on — armed; both axes explicitly directed'
           : 'off'
       } · /random${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  light adaptation: ${
+        state.lightAdaptation?.enabled
+          ? `on — seeded style + character shift after ${state.lightAdaptation.threshold} consecutive confused/frustrated turns`
+          : 'off'
+      } · /light${C.reset}`,
     );
     console.log(
       `${C.dim}  directed performance: style ${directedRegister || 'auto'} · character ${directedCharacter || 'auto'} · /register · /character${C.reset}`,
@@ -21911,6 +22151,13 @@ async function main() {
             : 'on — armed; both axes explicitly directed'
           : 'off'
       }; session only; /random toggles${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  light adaptation: ${
+        state.lightAdaptation?.enabled
+          ? `on — after ${state.lightAdaptation.threshold} consecutive confusion/frustration turns, seeded-random style and character replace the prior pair when possible`
+          : 'off'
+      }; session only; /light toggles${C.reset}`,
     );
     console.log(
       `${C.dim}  directed performance: style ${explicitPerformanceDirectiveValue(state, 'register') || 'auto'}; character ${explicitPerformanceDirectiveValue(state, 'character') || 'auto'}; session only; /register and /character${C.reset}`,
@@ -23304,6 +23551,87 @@ async function main() {
     return true;
   }
 
+  function handleLightAdaptationCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const action = String(argument || '')
+      .trim()
+      .toLowerCase();
+    if (!state.register?.enabled) {
+      console.log(`${C.dim}light adaptation is unavailable because teaching-style selection is off${C.reset}`);
+      console.log(`${C.dim}  start without --no-register-selection to use /light${C.reset}\n`);
+      return true;
+    }
+    if (action && !['on', 'off', 'status'].includes(action)) {
+      console.log(`${C.red}light error:${C.reset} use /light, /light on, /light off, or /light status\n`);
+      return true;
+    }
+    const previous = state.lightAdaptation?.enabled === true;
+    const threshold = state.lightAdaptation?.threshold ?? DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD;
+    if (action === 'status') {
+      console.log(`${C.brightMagenta}${C.bold}light adaptation >${C.reset} ${previous ? 'on' : 'off'}`);
+      console.log(
+        `${C.dim}  after ${threshold} consecutive learner turns showing confusion or frustration, style and host character are sampled with seeded replayable draws and must differ from the previous pair when alternatives exist${C.reset}`,
+      );
+      console.log(
+        `${C.dim}  this trigger outranks /register, /character, /random, and the deeper adaptive policy for those two axes only; authored evidence, teaching action, closure, and response safety remain active${C.reset}\n`,
+      );
+      return true;
+    }
+    const enabled = action === 'on' ? true : action === 'off' ? false : !previous;
+    if (enabled === previous) {
+      console.log(`${C.brightMagenta}${C.bold}light adaptation >${C.reset} already ${enabled ? 'on' : 'off'}\n`);
+      return true;
+    }
+    state.lightAdaptation = {
+      ...state.lightAdaptation,
+      schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+      enabled,
+      threshold,
+      scope: ['engagement_stance', 'actorial_part'],
+      trigger: 'continued_learner_confusion_or_frustration',
+      selectionMethod: 'seeded_uniform_excluding_previous',
+      sessionOnly: true,
+    };
+    const turnInProgress = Boolean(duringTurn || processingTurn);
+    const effectiveTurn = state.turns.length + 1;
+    const invalidated = turnInProgress ? null : resetMixedLearnerSuggestion('light_adaptation_mode_changed');
+    appendTraceEvent(state.trace, {
+      type: 'light_adaptation_mode_changed',
+      schema: 'machinespirits.tutor-stub.light-adaptation-mode-change.v1',
+      previous,
+      enabled,
+      threshold,
+      effectiveTurn,
+      effectiveSelection: turnInProgress ? 'next_not_yet_completed_selection' : 'next_selection',
+      duringTurn: turnInProgress,
+      publicTranscriptChanged: false,
+      cacheRefresh: invalidated
+        ? {
+            priorStateCleared: Boolean(invalidated.hadState),
+            analysisDiscarded: Boolean(invalidated.discardedAnalysis),
+            tutorResponseDiscarded: Boolean(invalidated.discardedTutorResponse),
+          }
+        : { deferredUntilCurrentTurnCompletes: turnInProgress },
+    });
+    console.log(`${C.brightMagenta}${C.bold}light adaptation >${C.reset} ${enabled ? 'on' : 'off'}`);
+    console.log(
+      `${C.dim}  ${
+        enabled
+          ? `after ${threshold} consecutive confused/frustrated learner turns, the next style and host character shift stochastically`
+          : `the configured ${plainPolicyLabel(state.register?.policy)} approach now controls adaptation without this unconditional shift`
+      }; applies to the ${turnInProgress ? 'next teaching-style selection not already completed' : `next turn (${effectiveTurn})`}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  seeded draws are replayable; authored evidence, teaching action, dialogue closure, and response safety stay in control${C.reset}`,
+    );
+    if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('light_adaptation_mode_changed');
+      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
+    }
+    console.log();
+    return true;
+  }
+
   function handleCommitteeCommand(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     const action = String(argument || '')
@@ -23615,6 +23943,11 @@ async function main() {
     }
     if (command === '/random') {
       handleRandomPerformanceCommand(commandArg, { duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/light') {
+      handleLightAdaptationCommand(commandArg, { duringTurn });
       finishSlashCommand();
       return true;
     }
