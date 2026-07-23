@@ -3,7 +3,7 @@
  *
  * This is the single served copy of the design tokens + base element styles
  * that the poetics dashboard (scripts/browse-poetics-scripts.js) renders inline.
- * The folded-in static surfaces (/adjudication, /chat, /pilot) link THIS file so
+ * The folded-in static surfaces (/adjudication, /tutor, /pilot) link THIS file so
  * they stop being styled islands and inherit the dashboard's look with one
  * <link rel="stylesheet" href="/components/techne.css">.
  *

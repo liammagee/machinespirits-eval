@@ -5,7 +5,7 @@
  * Walks N synthetic participants through the full pilot flow end-to-end:
  *   enroll → consent → intake → pretest → tutoring → posttest → exit
  *
- * The TUTOR side is real (hits /api/chat/turn against actual OpenRouter
+ * The TUTOR side is real (hits the dedicated /api/pilot session turn adapter
  * models per cell config). The LEARNER side is simulated by a persona-shaped
  * LLM call that produces 1-2 sentence replies in character. Pre/post
  * answers are probabilistic with a condition-modulated boost (cell_5 gets
@@ -314,8 +314,7 @@ async function simulateSession({ baseUrl, condition, personaId, turns, apiKey, a
   const conversation = [];
   let learnerMessage = persona.starter;
   for (let turnIdx = 0; turnIdx < turns; turnIdx++) {
-    const tutorResp = await request(baseUrl, 'POST', '/api/chat/turn', {
-      sessionId,
+    const tutorResp = await request(baseUrl, 'POST', `/api/pilot/session/${sessionId}/turn`, {
       learnerMessage,
     });
     conversation.push({ role: 'learner', content: learnerMessage });

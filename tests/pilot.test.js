@@ -3,7 +3,7 @@
  *
  * Exercises the phase state machine, blinding (condition_cell never echoed
  * to participants), admin auth, and turn persistence. Does NOT call
- * `/api/chat/turn` because that requires an LLM substrate; turn-level
+ * `/api/pilot/session/:id/turn` because that requires an LLM substrate; turn-level
  * persistence is tested by calling `pilotStore.appendTurn` directly.
  *
  * Uses an isolated temp DB via dynamic import so prod data isn't touched.

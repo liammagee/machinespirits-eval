@@ -23,22 +23,31 @@ test('legacy chat has one named domain boundary for non-route consumers', () => 
   assert.equal(typeof loadCurriculumContext, 'function');
   assert.equal(typeof loadPromptFile, 'function');
 
-  for (const relativePath of ['services/pilotAutoplay.js', 'services/poetics/liveCompose.js']) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
-    assert.match(source, /legacyChatEngine\.js/u, `${relativePath} must use the domain entrypoint`);
-    assert.doesNotMatch(source, /routes\/chatRoutes\.js/u, `${relativePath} must not import the Express route`);
-  }
+  const autoplaySource = fs.readFileSync(path.join(ROOT, 'services/pilotAutoplay.js'), 'utf8');
+  const liveComposeSource = fs.readFileSync(path.join(ROOT, 'services/poetics/liveCompose.js'), 'utf8');
+  const liveAdapterSource = fs.readFileSync(path.join(ROOT, 'services/poetics/liveComposeTutorAdapter.js'), 'utf8');
+  assert.match(autoplaySource, /legacyChatEngine\.js/u);
+  assert.match(liveComposeSource, /liveComposeTutorAdapter\.js/u);
+  assert.doesNotMatch(liveComposeSource, /from ['"][^'"]*legacyChatEngine\.js['"]/u);
+  assert.match(liveAdapterSource, /legacyChatEngine\.js/u);
 
   const routeSource = fs.readFileSync(path.join(ROOT, 'routes/chatRoutes.js'), 'utf8');
+  const compatibilitySource = fs.readFileSync(path.join(ROOT, 'services/legacyChatCompatibilityRouter.js'), 'utf8');
   const boundarySource = fs.readFileSync(path.join(ROOT, 'services/legacyChatEngine.js'), 'utf8');
   const curriculumSource = fs.readFileSync(path.join(ROOT, 'services/legacyChatCurriculum.js'), 'utf8');
   const tutorEngineSource = fs.readFileSync(path.join(ROOT, 'services/legacyChatTutorEngine.js'), 'utf8');
-  assert.match(routeSource, /services\/legacyChatCurriculum\.js/u);
-  assert.match(routeSource, /services\/legacyChatPromptLoader\.js/u);
-  assert.match(routeSource, /services\/legacyChatTutorEngine\.js/u);
+  assert.match(routeSource, /legacyChatCompatibilityRouter\.js/u);
+  assert.match(routeSource, /legacyChatEngine\.js/u);
+  assert.ok(routeSource.split('\n').length < 20, 'the legacy route must remain a thin compatibility facade');
+  assert.doesNotMatch(compatibilitySource, /pilotStore|PILOT_STATUSES|sessionId/u);
   assert.doesNotMatch(routeSource, /function loadPromptFile\(/u);
   assert.doesNotMatch(routeSource, /function loadCurriculumContext\(/u);
   assert.doesNotMatch(routeSource, /function runTutorTurn\(/u);
+
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts/chat-cli.js'), 'utf8');
+  assert.match(cliSource, /\/api\/tutor-stub\/sessions/u);
+  assert.match(cliSource, /engine: 'cell_lab'/u);
+  assert.doesNotMatch(cliSource, /api\('POST', '\/api\/chat\/turn'/u);
 
   for (const [name, source] of [
     ['legacyChatEngine', boundarySource],

@@ -1,14 +1,14 @@
 ---
 id: converge-tutor-stub-and-legacy-chat
 title: Converge tutor-stub and the legacy eval-cell chat
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-23
 updated: 2026-07-23
-verification: "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat, /api/chat, and npm run chat are compatibility facades before old assets are removed."
+verification: "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat and npm run chat are compatibility facades, /api/chat is administrator-only compatibility, and the old UI assets are removed."
 branch: codex/chat-tutor-convergence
 links:
   items:
@@ -110,3 +110,19 @@ the two engines are not treated as prompt-compatible implementations.
   Standalone and mounted-poetics browser checks passed with no console warnings;
   focused compatibility coverage passes 149 tests, lint and scoped formatting
   pass, and the full hermetic suite passes 6,464 tests with one skip.
+- 2026-07-23: Completed phase 6. The blinded human pilot now owns a dedicated,
+  server-authoritative tutor-session adapter and `/api/pilot/session/:id/turn`
+  endpoint; participant traffic no longer enters `/api/chat/turn`. Poetics live
+  composition uses its own explicit tutor adapter, and `npm run chat` now creates,
+  steps, inspects, resets, and finalizes `engine: cell_lab` sessions through the
+  versioned tutor-stub API. `/api/chat/*` remains an administrator-only catalogue
+  and older-client compatibility facade.
+- 2026-07-23: Completed phase 7. Removed the legacy `public/chat/` workbench and
+  its UI-only helper tests, reduced `routes/chatRoutes.js` to a thin compatibility
+  facade, and made `/chat` plus `/admin/chat` redirect to
+  `/tutor?mode=research`. Updated standalone, scriptorium, desktop, accessibility,
+  and historical documentation surfaces. Focused integration coverage passes
+  151 tests; Electron-ABI desktop parity passes 29 tests; lint and scoped format
+  checks pass; live standalone browser checks confirm research-mode redirect,
+  safe-mode default, and a clean console; the full hermetic suite passes 6,463
+  tests with one skip and no failures. Ready for final diff review and PR prep.

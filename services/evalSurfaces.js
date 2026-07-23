@@ -50,7 +50,6 @@ const API_ROUTERS = [
 // at mount time so a missing directory is skipped silently rather than erroring.
 const STATIC_SURFACES = [
   ['/tutor', 'public/tutor'], // shared browser + Electron tutor-stub session studio
-  ['/chat', 'public/chat'], // interactive tutor (ego/superego deliberation viewer)
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
   ['/adjudication', 'public/adjudication'], // A19 blinded human-adjudication forms
@@ -82,6 +81,12 @@ export function mountEvalSurfaces(app, { root, tutorStubSessionHost, tutorStubCa
       tutorStubCatalogProvider === undefined ? () => buildTutorStubPublicCatalog({ root }) : tutorStubCatalogProvider;
     app.use('/api/tutor-stub', createTutorStubSessionRouter({ host: sessionHost, catalogProvider }));
   }
+  // Compatibility page only. The legacy eval-cell workbench now lives in the
+  // explicit research mode of the shared tutor shell.
+  app.use('/chat', (req, res) => {
+    const prefix = (req.baseUrl || '').replace(/\/chat$/u, '');
+    res.redirect(302, `${prefix}/tutor?mode=research`);
+  });
   for (const [mount, relDir] of STATIC_SURFACES) {
     const dir = path.join(root, relDir);
     if (existsSync(dir)) app.use(mount, express.static(dir));

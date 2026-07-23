@@ -1,5 +1,12 @@
 # Chat UI Integration Handoff (2026-04-24)
 
+> **Historical handoff.** The legacy `public/chat/` workbench described below
+> was retired in July 2026. Its eval-cell instrument now lives in the research
+> mode of the shared `/tutor` shell, conversations use the versioned
+> `/api/tutor-stub` session protocol with `engine: cell_lab`, and `/api/chat/*`
+> remains an administrator-only compatibility API for catalogues and older
+> clients.
+
 A snapshot of eval-repo and tutor-core changes from the 2026-04-22 → 2026-04-24 critical-review + A10/A10b cycle that may affect the chat UI session. Written for the chat-UI session author to pick up when convenient.
 
 **Bottom line**: the chat UI does not *need* any code changes to keep working — the changes below are mostly automatic pickup (new cells appear in your cell-picker without any edit) plus *optional enhancement opportunities* (pedagogical-orientation grouping, tooltips, effect-size chips). Your session's in-progress files (`server.js` mods, `routes/chatRoutes.js`, `public/chat/*`, `content-*`) remain untracked and are your call on when/how to commit.

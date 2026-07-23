@@ -99,7 +99,7 @@ The lesson for future mechanism isolations: a density control is only informativ
 
 ## For the chat UI
 
-The variants above are registered as tutor-core profiles and mapped to eval cells in `config/tutor-agents.yaml`. The chat UI (`public/chat/`, `routes/chatRoutes.js`) reads cells directly from that YAML and can expose them to users.
+The variants above are registered as tutor-core profiles and mapped to eval cells in `config/tutor-agents.yaml`. The research mode of the shared tutor shell (`public/tutor/`) reads the administrator-only compatibility catalogue and can expose supported cells through `engine: cell_lab` sessions.
 
 ### Structured metadata (added 2026-04-24)
 
@@ -210,7 +210,7 @@ This caveat is not a reason to avoid the A10/A10b comparisons --- it is a reason
 
 ## Cross-references
 
-- Prompts live in `prompts/` (eval-repo) and `node_modules/@machinespirits/tutor-core/prompts/` (tutor-core). The chat router's `loadPromptFile()` at `routes/chatRoutes.js:~38` checks both locations.
+- Prompts live in `prompts/` (eval-repo) and the in-housed `tutor-core/prompts/` tree. `services/legacyChatPromptLoader.js` resolves both locations for the `cell_lab` engine.
 - Cell definitions in `config/tutor-agents.yaml` (eval-repo).
 - Profile definitions in `node_modules/@machinespirits/tutor-core/config/tutor-agents.yaml` (tutor-core).
 - Paper §7.9 discusses the recognition-content-vs-density question.

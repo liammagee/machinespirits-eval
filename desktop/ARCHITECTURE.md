@@ -28,7 +28,7 @@ web app, wearing a native shell.
 
 | To change… | Edit… | Desktop picks it up because… |
 |---|---|---|
-| A page / component / styles | `public/**` (e.g. `public/chat/`, `public/components/techne.css`) | the renderer loads `public/` over loopback — same files |
+| A page / component / styles | `public/**` (e.g. `public/tutor/`, `public/components/techne.css`) | the renderer loads `public/` over loopback — same files |
 | A server-rendered poetics page | the `render*Html()` fns in `scripts/browse-poetics-scripts.js` | the desktop serves that exact app |
 | An API route / behaviour | `routes/**`, `services/**` | mounted by the shared `mountEvalSurfaces` / the factory |
 | What surfaces exist at all | `services/evalSurfaces.js` (shared mounter) | both web servers AND the desktop use it |

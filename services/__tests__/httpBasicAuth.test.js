@@ -146,7 +146,7 @@ function bootRoles(guard) {
   app.get('/api/pilot/admin/counts', ok('pilot-admin')); // admin-only
   app.get('/browse', ok('browse')); // admin-only (researcher dashboard)
   app.get('/pilot/index.html', ok('pilot-ui')); // participant-allowed (static)
-  app.post('/api/chat/turn', ok('turn')); // participant-allowed (metered exception)
+  app.post('/api/pilot/session/abc/turn', ok('turn')); // participant-allowed bounded pilot turn
   app.get('/api/pilot/session/abc/consent', ok('consent')); // participant-allowed
   app.get('/api/a19/adjudication/assignment', ok('adj')); // participant-allowed
   return new Promise((resolve) => {
@@ -198,10 +198,10 @@ describe('httpBasicAuth · makeRoleGate default-deny', () => {
     for (const p of ['/api/eval/runs', '/api/pilot/admin/counts', '/browse', '/pilot/index.html'])
       assert.equal((await req(base, p, ADMIN)).status, 200, `admin → ${p}`);
   });
-  it('participant role reaches ONLY the allowlist (pilot flow, chat/turn, adjudication)', async () => {
+  it('participant role reaches ONLY the allowlist (pilot flow and adjudication)', async () => {
     const base = await bootRoles(roleAuthMiddleware({ admin: ADMIN, participant: PART, realm: 'r' }));
     assert.equal((await req(base, '/pilot/index.html', PART)).status, 200);
-    assert.equal((await req(base, '/api/chat/turn', { ...PART, method: 'POST' })).status, 200);
+    assert.equal((await req(base, '/api/pilot/session/abc/turn', { ...PART, method: 'POST' })).status, 200);
     assert.equal((await req(base, '/api/pilot/session/abc/consent', PART)).status, 200);
     assert.equal((await req(base, '/api/a19/adjudication/assignment', PART)).status, 200);
   });
@@ -237,6 +237,7 @@ describe('httpBasicAuth · PARTICIPANT_ALLOWLIST excludes the danger paths', () 
       '/api/compose/live/turn',
       '/api/chat/learner-turn',
       '/api/chat/cells',
+      '/api/chat/turn',
       '/api/pilot/admin/counts',
     ])
       assert.equal(matches(p), false, `${p} must NOT be participant-allowed`);
@@ -245,7 +246,7 @@ describe('httpBasicAuth · PARTICIPANT_ALLOWLIST excludes the danger paths', () 
     for (const p of [
       '/pilot',
       '/pilot/x.js',
-      '/api/chat/turn',
+      '/api/pilot/session/1/turn',
       '/api/pilot/session/1/consent',
       '/api/a19/adjudication/submissions',
     ])

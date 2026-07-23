@@ -97,6 +97,10 @@ test('shared eval surfaces serve the tutor shell and versioned public catalog', 
   assert.match(shell.headers.get('content-type') || '', /^text\/html/u);
   assert.match(await shell.text(), /Start from a safe lab, then teach in text\./u);
 
+  const legacyChat = await fetch(`${base}/chat/`, { redirect: 'manual' });
+  assert.equal(legacyChat.status, 302);
+  assert.equal(legacyChat.headers.get('location'), '/tutor?mode=research');
+
   const [script, styles, contract, catalog] = await Promise.all([
     fetch(`${base}/tutor/app.js`),
     fetch(`${base}/tutor/styles.css`),
@@ -154,6 +158,7 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(script, /let chatApiBase = `\$\{APP_PREFIX\}\/api\/chat`/u);
   assert.match(script, /payload\?\.adminPath/u);
   assert.match(script, /state\.surfaceMode = research \? 'research' : 'safe'/u);
+  assert.match(script, /new URLSearchParams\(window\.location\.search\)[\s\S]{0,240}mode[\s\S]{0,240}research/u);
   assert.match(script, /chatApi\('\/resolve'/u);
   assert.match(script, /chatApi\('\/assist'/u);
   assert.match(script, /cell\.runner !== 'adaptive'/u);
@@ -162,6 +167,7 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(script, /content\.textContent = safeText\(entry\.content/u);
   assert.match(script, /machinespirits\.cell-lab\.research-export\.v1/u);
   assert.match(script, /privateModelTraceIncluded: false/u);
+  assert.equal(fs.existsSync(path.join(ROOT, 'public', 'chat', 'index.html')), false);
 
   assert.match(styles, /:focus-visible/u);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/u);

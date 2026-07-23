@@ -1146,8 +1146,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   app.use('/chat', (req, res) => {
     const mountPrefix = (req.baseUrl || '').replace(/\/chat$/, '');
-    const url = req.url || '/';
-    return res.redirect(302, `${mountPrefix}/admin/chat${url}`);
+    return res.redirect(302, `${mountPrefix}/tutor?mode=research`);
   });
   const movedAdminPath = (req) => {
     const original = req.originalUrl || req.url || '';
@@ -1168,6 +1167,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       '/api/chat/models',
       '/api/chat/personas',
       '/api/chat/resolve',
+      '/api/chat/turn',
       '/api/tts',
       '/api/labels',
       '/api/review-flags',
@@ -1184,19 +1184,12 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         adminPath: movedAdminPath(req),
       }),
   );
-  // Public /api/chat/turn is retained only for the blinded participant pilot,
-  // whose browser sends a sessionId. All free-form chat/playground turns belong
-  // under /admin/api/chat/turn so they stay authenticated with the workbench.
-  app.use('/api/chat/turn', (req, res, next) => {
-    if (req.body?.sessionId) return next();
-    return res.status(404).json({
-      error: 'admin endpoint moved',
-      adminPath: movedAdminPath(req),
-    });
-  });
   adminRouter.get('/', (req, res) => res.redirect(302, `${req.baseUrl || ''}/runs`));
   adminRouter.use('/api/chat', chatRoutes);
-  adminRouter.use('/chat', express.static(path.resolve(ROOT, 'public/chat')));
+  adminRouter.use('/chat', (req, res) => {
+    const prefix = (req.baseUrl || '').replace(/\/admin\/chat$/u, '');
+    res.redirect(302, `${prefix}/tutor?mode=research`);
+  });
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
@@ -1315,7 +1308,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }),
   );
   app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
-  // Standalone nav fragment so the static tool surfaces (/chat, /adjudication,
+  // Standalone nav fragment so the static tool surfaces (/tutor, /adjudication,
   // /pilot-admin) can fetch + inject the SAME rail the rendered pages carry.
   // railHtml() is the single source of nav truth; `bare: true` drops the bits
   // that belong only to a dashboard-rendered page (the shader canvas, the x-ray
@@ -1881,7 +1874,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
   // Fold in the eval server's surfaces (the four /api/* routers + the public/
-  // UI dirs: /chat, /pilot, /pilot-admin, /adjudication, /components, /docs) so
+  // UI dirs: /tutor, /pilot, /pilot-admin, /adjudication, /components, /docs) so
   // this one port hosts both the poetics scriptorium and the eval app. Shared
   // with server.js via services/evalSurfaces.js — single source, no drift.
   // Mounted AFTER the poetics routes (so /api/* and /compose stay poetics-owned)
@@ -2263,7 +2256,7 @@ function mdLectureToHtml(md) {
 // render these flat: it shows NAV_PRIMARY as plain links and folds the rest into
 // the labelled NAV_GROUPS dropdowns, so the bar stays legible (was 10 flat links
 // crowding one row). The former :8081 eval server's researcher-facing
-// interactive surfaces (/chat, /adjudication) plus the operator console
+// interactive surfaces (/tutor, /adjudication) plus the operator console
 // (/pilot-admin) fold in here as a "tools" group, so the primary bar stays at
 // four. /pilot stays OUT of the rail — it is the participant study surface
 // (reached by a study link), and must not leak researcher chrome to subjects.
@@ -2348,9 +2341,9 @@ const NAV = [
   ],
   [
     'tutor',
-    '/admin/chat',
-    'tutor chat',
-    'Interactive tutor — play the learner &amp; watch the ego/superego deliberation for any cell in tutor-agents.yaml',
+    '/tutor?mode=research',
+    'tutor lab',
+    'Interactive tutor — run safe labs or inspect ego/superego deliberation for any supported cell in tutor-agents.yaml',
   ],
   [
     'adjudicate',
@@ -5747,7 +5740,7 @@ function renderScriptoriumHome(stats = {}) {
         ],
         [
           'The Players',
-          '/chat',
+          '/tutor?mode=research',
           'play',
           'Drive the tutor and watch the ego &amp; superego deliberate before each line.',
         ],

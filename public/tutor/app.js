@@ -1190,6 +1190,10 @@ window.addEventListener('beforeunload', () => {
 setupTheme();
 setupVoice();
 initializeResearchControls();
+if (new URLSearchParams(window.location.search).get('mode') === 'research') {
+  elements.researchMode.checked = true;
+  elements.safeMode.checked = false;
+}
 await refreshCatalogAndSessions();
 syncSurfaceMode();
 let remembered = null;

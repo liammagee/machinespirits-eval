@@ -15,7 +15,7 @@ const DEFAULT_ROUTES = [
   '/admin/compose/live',
   '/admin/runs',
   '/board',
-  '/chat/',
+  '/tutor?mode=research',
   '/adjudication/',
   '/pilot-admin/',
 ];

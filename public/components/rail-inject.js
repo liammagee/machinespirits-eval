@@ -2,7 +2,7 @@
  * rail-inject.js — give the static tool surfaces the dashboard's nav rail.
  *
  * The poetics dashboard (scripts/browse-poetics-scripts.js) server-renders its
- * rail from railHtml(). The folded-in static surfaces (/chat, /adjudication,
+ * rail from railHtml(). The folded-in static surfaces (/tutor, /adjudication,
  * /pilot-admin, /human-coding-admin) are plain files served by
  * services/evalSurfaces.js, so they
  * can't call railHtml() — instead they fetch it from the /_nav.html endpoint
@@ -19,7 +19,7 @@
  *   <script src="/components/rail-inject.js" data-active="tutor" defer></script>
  *   - data-active : NAV key to highlight (tutor | adjudicate | pilot-admin | ...)
  *   - data-compact: drop the rail's ◐ glyph + MMXXVI stamp (for pages whose own
- *                   chrome already carries a brand mark, e.g. /chat)
+ *                   chrome already carries a brand mark, e.g. /tutor)
  */
 (function () {
   // Pick up the dashboard's persisted skin + theme so the injected rail (and any

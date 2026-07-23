@@ -265,9 +265,9 @@ async function fetchNavItems(base) {
 }
 
 // --- Headless helpers (smoke / shots) ----------------------------------------
-async function httpGet(base, p) {
-  const res = await fetch(base + p, { headers: authHeaders() });
-  return { status: res.status, text: await res.text() };
+async function httpGet(base, p, { redirect = 'follow' } = {}) {
+  const res = await fetch(base + p, { headers: authHeaders(), redirect });
+  return { status: res.status, headers: Object.fromEntries(res.headers), text: await res.text() };
 }
 
 async function checkSse(base) {
@@ -316,7 +316,7 @@ async function checkRenderAndCsp(base) {
   });
   let lastTitle = '';
   try {
-    for (const route of ['/browse', '/compose', '/chat/']) {
+    for (const route of ['/browse', '/compose', '/tutor?mode=research']) {
       await withTimeout(win.loadURL(base + route), 12_000, `load ${route}`);
       await new Promise((r) => setTimeout(r, 400));
       lastTitle = await win.webContents.executeJavaScript('document.title');
@@ -343,8 +343,19 @@ async function runSmoke(base, native) {
     `status=${browse.status} bytes=${browse.text.length}`,
   );
 
-  const chat = await httpGet(base, '/chat/');
-  rec('GET /chat/  (static UI surface)', chat.status === 200 && /<\/html>/i.test(chat.text), `status=${chat.status}`);
+  const chat = await httpGet(base, '/chat/', { redirect: 'manual' });
+  rec(
+    'GET /chat/  (compatibility redirect)',
+    chat.status === 302 && chat.headers.location === '/tutor?mode=research',
+    `status=${chat.status} location=${chat.headers.location || 'none'}`,
+  );
+
+  const tutor = await httpGet(base, '/tutor?mode=research');
+  rec(
+    'GET /tutor?mode=research  (canonical research surface)',
+    tutor.status === 200 && /<\/html>/i.test(tutor.text),
+    `status=${tutor.status}`,
+  );
 
   const runs = await httpGet(base, '/api/eval/runs');
   rec('GET /api/eval/runs  (SQLite query)', runs.status === 200, `status=${runs.status}`);
@@ -362,7 +373,7 @@ async function runSmoke(base, native) {
 
   const rc = await checkRenderAndCsp(base);
   rec(
-    'renderer  loads browse/compose/chat',
+    'renderer  loads browse/compose/tutor',
     rc.rendered,
     rc.rendered ? `document.title=${JSON.stringify(rc.title)}` : rc.title,
   );
@@ -383,7 +394,7 @@ async function captureShots(base) {
   fs.mkdirSync(outDir, { recursive: true });
   const surfaces = [
     ['browse', '/browse'],
-    ['chat', '/chat/'],
+    ['tutor-research', '/tutor?mode=research'],
     ['pilot', '/pilot/'],
     ['compose', '/compose'],
   ];

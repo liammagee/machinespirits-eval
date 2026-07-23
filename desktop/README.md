@@ -1,7 +1,7 @@
 # Scriptorium — desktop app
 
 A native desktop wrapper around the Machine Spirits web UX. It runs the entire
-stack locally (the poetics scriptorium, tutor playground, eval API, human-learner
+stack locally (the poetics scriptorium, tutor studio, eval API, human-learner
 pilot, A19 adjudication, and the superego-taxonomy human-coding admin) in one window — no server to deploy, no browser tab. It is
 the **same** UI as the web app by construction (it embeds the unchanged Express app
 and points a window at it), so the two never drift. See
@@ -65,7 +65,7 @@ background process on an ephemeral loopback port; you never manage a port.
 
 - **Surfaces.** Everything the web app exposes: `/browse` (scriptorium), `/compose`
   and `/admin/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`,
-  `/admin/runs`, `/board`, `/derivation`, the tutor playground (`/chat`), the
+  `/admin/runs`, `/board`, `/derivation`, the tutor research lab (`/tutor?mode=research`), the
   participant pilot (`/pilot`), A19 adjudication (`/adjudication`), and the
   superego-taxonomy coding admin (`/human-coding-admin`). Navigate via the in-page nav
   rail (**Board** is a primary, always-visible item), the native **Go** menu
