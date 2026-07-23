@@ -1,0 +1,132 @@
+# Program-2 committee floor ablation — pre-registration
+
+Status: **DESIGN FROZEN** on 2026-07-23 on branch
+`codex/program2-committee-floor-ablation`, before any dialogue from this
+experiment was generated. The launch commit SHA is recorded only after the
+zero-model implementation gate passes and the worktree is clean. Any change
+after the first sealed trace requires a dated amendment; the original plan and
+trace remain in the analysis.
+
+Parent design:
+`PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md`. Exploratory tier.
+The frozen v1 point-of-action detector and warrant audit remain the scoring
+instrument. Historical Phase 5/5b rates are context only and are not pooled
+into any inferential contrast.
+
+## 1. Question
+
+Phase 5b changed two things relative to a silent frontier control: a trained
+mini proposed the bounded question, and the fallback-v2 harness rejected,
+resampled, or trimmed bad proposals before delivery. How much of the live
+warrant-compliance gain comes from the trained weights rather than that
+harness?
+
+The causal contrast is therefore contemporaneous: trained and untuned
+same-lineage mini models occupy the same committee seat behind the same
+detector, frontier composer, battery, and fallback policy.
+
+## 2. Design (30 dialogues)
+
+One Marrick world × two learner profiles (`proof_skipper`,
+`affective_resistant`) × three conditions:
+
+| Condition | Mini seat | Repeats/profile | Dialogues |
+|---|---|---:|---:|
+| `trained_committee` | `program2-sft-instruct-v2` | 6 | 12 |
+| `untuned_committee` | `program2-floor-instruct-q8` | 6 | 12 |
+| `silent_control` | committee inactive | 3 | 6 |
+
+All 30 jobs are interleaved by seeded Fisher-Yates shuffle, seed **20260723**.
+Each trained/untuned job is blocked by learner profile and repeat
+(`pairKey = <profile>:r<repeat>`), and shares the run seed, evaluation repeat,
+policy-draw job identity, world, prompts, and fixed runtime seams. Distinct
+trace directories preserve condition provenance. The models remain stochastic,
+so this is a matched block rather than an assertion of identical generated
+histories.
+
+No historical controls are pooled. The six silent controls are deliberately
+contemporaneous with both committee conditions.
+
+## 3. Fixed runtime seams
+
+- world `world_005_marrick`; register policy, DAG mode, horizon, release speed,
+  dropout, history, token, and safety-turn settings inherited verbatim from the
+  frozen Phase 5 operational spec;
+- speaking tutor `claude-code.sonnet-5`;
+- classifier, learner-record, and automated learner
+  `codex.gpt-5.6-terra`;
+- point-of-action detector `step4-frozen-2026-07-14.v1`;
+- committee fallback policy `v2` and the Phase 5b composed/fallback battery;
+- frozen v1 warrant audit, including the six-word cue requirement;
+- the only trained-versus-untuned experimental seam is
+  `--committee-mini-model`; job ids and trace destinations differ only for
+  provenance.
+
+The runner must first emit a 30-job zero-model plan and pass its fixtures. A
+paid launch requires a clean checkout plus the exact 40-character expected
+SHA, sealed-trace resume, at most one same-seed retry per failed job, and the
+existing three-consecutive-transport-failure abort. No unplanned replacement
+dialogues are permitted. A confirmatory reading requires all 30 jobs sealed;
+partial results are marked incomplete.
+
+## 4. Frozen analysis
+
+Unit of resampling is the dialogue. All intervals use 5,000 bootstrap draws,
+seed **20260723**, stratified by learner profile.
+
+### Primary endpoint
+
+**W1: trained-weights contrast.** Pooled frozen-v1 `warrant_skip` compliance,
+`trained_committee − untuned_committee`, using a paired profile-stratified
+dialogue-cluster bootstrap over the 12 matched blocks.
+
+- **Training contribution detected:** the 95% CI lower bound is greater than
+  zero.
+- **Practical equivalence:** the whole 95% CI lies inside **[-0.10, +0.10]**.
+- A CI containing zero but not contained by the equivalence band is
+  **indeterminate**, not evidence that the fine-tune is decorative.
+
+### Secondary contrasts and guardrails
+
+- **W2:** `untuned_committee − silent_control`, independent
+  profile-stratified dialogue-cluster bootstrap. CI lower bound greater than
+  zero means the harness produces a live advantage without trained weights.
+- **W3:** `trained_committee − silent_control`, computed the same way as W2.
+  This is a contemporaneous replication of the committee benefit, not a second
+  primary endpoint.
+- **Density:** each committee condition has at least 15 warrant opportunities,
+  and `proof_skipper` contributes at least one opportunity in each.
+- **Coverage:** coverage@16 for each committee condition is no worse than
+  silent control minus 0.05.
+- **Safety:** hard-safety rate for each committee condition is no worse than
+  silent control minus 0.10; leaks are reported by condition and turn.
+- **Mechanism descriptives:** committee moments, fallback moments, the full
+  fallback-resolution tally, and battery-rescue rate
+  (`selected_sampled_*` or `trimmed` per fallback moment) for trained and
+  untuned conditions. These diagnose whether the harness works harder for the
+  untuned model but do not replace W1.
+
+The existing seam review may be run separately, blinded by committee
+condition. It is a delivery guardrail and does not alter W1-W3.
+
+## 5. Reading grammar
+
+| Frozen result | Licensed reading |
+|---|---|
+| W1 positive + W3 positive | Trained weights add live warrant compliance inside the fixed harness, and the trained committee beats the contemporaneous frontier control. |
+| W1 positive, W3 not positive | Trained weights improve the committee relative to the untuned floor, but an absolute live gain over the current control is unresolved. |
+| W1 equivalent + W2 positive | Within the ±0.10 tolerance, fallback-v2 harnessing is sufficient for the observed live advantage; a material training increment is not detected. |
+| W2 positive, W1 neither positive nor equivalent | The harness contributes, but the incremental value of training is unresolved at this sample size. |
+| W1 negative | The untuned floor outperforms the trained mini in this run; report as a reversal and do not repair or rerun to recover the expected ordering. |
+| Any density or completion gate fails | Incomplete/under-informative; report realized counts and no confirmatory attribution. |
+
+Coverage, safety, fallback burden, and seam results narrow the operational
+claim. They cannot turn an indeterminate W1 into a claim about the weights.
+
+## 6. Scope and cost bound
+
+Single tutor family, world, detector, two learner profiles, and one same-lineage
+untuned model. The 30-dialogue run is checkpointed and resumable. Expected
+frontier cost is approximately 1.7 times Phase 5b; both mini models are local.
+Out of scope: retraining, KTO, an instrument change, cross-world transfer,
+Codex-family tutor arms, or tuning any threshold after trace inspection.

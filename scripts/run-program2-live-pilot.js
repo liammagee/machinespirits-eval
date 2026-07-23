@@ -105,7 +105,14 @@ function deterministicShuffle(rows, seed) {
 function commandForJob(
   job,
   outputRoot,
-  { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null, world = PHASE5_LIVE_PILOT_SPEC.world } = {},
+  {
+    runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed,
+    fallbackPolicy = null,
+    world = PHASE5_LIVE_PILOT_SPEC.world,
+    committeeMiniModel = PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
+    learnerLabel = null,
+    evalJobId = job.id,
+  } = {},
 ) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
   return [
@@ -150,7 +157,7 @@ function commandForJob(
     '--eval-repeat',
     String(job.repeat),
     '--eval-job-id',
-    job.id,
+    evalJobId,
     '--trace-dir',
     traceDir,
     '--max-tokens',
@@ -160,7 +167,7 @@ function commandForJob(
     '--point-of-action-arm',
     job.arm,
     '--committee-mini-model',
-    PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
+    committeeMiniModel,
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
@@ -168,7 +175,7 @@ function commandForJob(
     '--no-stream',
     '--no-interim-animation',
     '--learner',
-    `Program-2 Phase 5 ${job.profile} repeat ${job.repeat}/${PHASE5_LIVE_PILOT_SPEC.repeats}.`,
+    learnerLabel || `Program-2 Phase 5 ${job.profile} repeat ${job.repeat}/${PHASE5_LIVE_PILOT_SPEC.repeats}.`,
   ];
 }
 
@@ -234,6 +241,80 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
     outputRoot,
     ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
+    jobs,
+  };
+}
+
+// Contemporaneous trained-vs-untuned committee ablation: 12 dialogues with
+// the Phase 5b trained mini, 12 with the same-lineage untuned floor mini, and
+// 6 fresh silent controls. The two committee conditions are blocked on
+// profile + repeat and differ only at --committee-mini-model.
+export const COMMITTEE_FLOOR_ABLATION_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-committee-floor-ablation-plan.v1',
+  preregistration: 'PROGRAM-2-COMMITTEE-FLOOR-ABLATION-PREREGISTRATION.md',
+  runSeed: 20260723,
+  conditions: Object.freeze(['trained_committee', 'untuned_committee', 'silent_control']),
+  committeeRepeats: 6,
+  controlRepeats: 3,
+  fallbackPolicy: 'v2',
+  trainedMiniModel: PROGRAM2_COMMITTEE_DEFAULTS.miniModel,
+  untunedMiniModel: 'program2-floor-instruct-q8',
+});
+
+export function buildCommitteeFloorAblationPlan({
+  outputRoot = 'exports/program2-committee-floor-ablation',
+} = {}) {
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (let repeat = 1; repeat <= COMMITTEE_FLOOR_ABLATION_SPEC.committeeRepeats; repeat += 1) {
+      const pairKey = `${profile}:r${repeat}`;
+      cells.push({ repeat, profile, arm: 'committee', condition: 'trained_committee', pairKey });
+      cells.push({ repeat, profile, arm: 'committee', condition: 'untuned_committee', pairKey });
+    }
+    for (let repeat = 1; repeat <= COMMITTEE_FLOOR_ABLATION_SPEC.controlRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'silent_control', condition: 'silent_control', pairKey: null });
+    }
+  }
+  const miniModelFor = (condition) =>
+    condition === 'untuned_committee'
+      ? COMMITTEE_FLOOR_ABLATION_SPEC.untunedMiniModel
+      : COMMITTEE_FLOOR_ABLATION_SPEC.trainedMiniModel;
+  const jobs = deterministicShuffle(cells, COMMITTEE_FLOOR_ABLATION_SPEC.runSeed).map((cell, index) => {
+    const id = [
+      `p2fa-${String(index + 1).padStart(2, '0')}`,
+      cell.profile,
+      cell.condition,
+      `r${cell.repeat}`,
+    ].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: COMMITTEE_FLOOR_ABLATION_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? COMMITTEE_FLOOR_ABLATION_SPEC.fallbackPolicy : null,
+        committeeMiniModel: miniModelFor(cell.condition),
+        evalJobId: cell.pairKey || job.id,
+        learnerLabel:
+          `Program-2 committee floor ablation ${cell.profile} ` +
+          `repeat ${cell.repeat}/${
+            cell.arm === 'committee'
+              ? COMMITTEE_FLOOR_ABLATION_SPEC.committeeRepeats
+              : COMMITTEE_FLOOR_ABLATION_SPEC.controlRepeats
+          }.`,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...COMMITTEE_FLOOR_ABLATION_SPEC,
+    committeeMiniModels: [
+      COMMITTEE_FLOOR_ABLATION_SPEC.trainedMiniModel,
+      COMMITTEE_FLOOR_ABLATION_SPEC.untunedMiniModel,
+    ],
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over 12 trained_committee + 12 untuned_committee + 6 silent_control cells',
+    blocking: 'trained and untuned committee jobs share profile, repeat, pairKey, run seed, and fixed runtime seams',
     jobs,
   };
 }
@@ -337,6 +418,87 @@ export function validatePhase5bLivePilotPlan(plan) {
       errors.push(`${profile} control cell count mismatch`);
   }
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
+}
+
+export function validateCommitteeFloorAblationPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 30) errors.push(`expected 30 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  const pairs = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.condition].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const fallbackPolicy = flagValue(job.command, '--committee-fallback-policy');
+    const pointOfActionArm = flagValue(job.command, '--point-of-action-arm');
+    const miniModel = flagValue(job.command, '--committee-mini-model');
+    if (pointOfActionArm !== job.arm) errors.push(`${job.id} point-of-action arm mismatch`);
+    if (job.arm === 'committee' && fallbackPolicy !== COMMITTEE_FLOOR_ABLATION_SPEC.fallbackPolicy) {
+      errors.push(`${job.id} missing fallback policy v2`);
+    }
+    if (job.arm === 'silent_control' && fallbackPolicy !== null) errors.push(`${job.id} control carries fallback policy`);
+    if (job.condition === 'trained_committee' && miniModel !== COMMITTEE_FLOOR_ABLATION_SPEC.trainedMiniModel) {
+      errors.push(`${job.id} trained mini-model mismatch`);
+    }
+    if (job.condition === 'untuned_committee' && miniModel !== COMMITTEE_FLOOR_ABLATION_SPEC.untunedMiniModel) {
+      errors.push(`${job.id} untuned mini-model mismatch`);
+    }
+    if (flagValue(job.command, '--run-seed') !== String(COMMITTEE_FLOOR_ABLATION_SPEC.runSeed)) {
+      errors.push(`${job.id} run-seed mismatch`);
+    }
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily) {
+      errors.push(`${job.id} tutor-family mismatch`);
+    }
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+    if (job.arm === 'committee') {
+      if (!job.pairKey) errors.push(`${job.id} missing committee pairKey`);
+      if (flagValue(job.command, '--eval-job-id') !== job.pairKey) {
+        errors.push(`${job.id} does not use pairKey for deterministic policy draws`);
+      }
+      const pairRows = pairs.get(job.pairKey) || [];
+      pairRows.push(job);
+      pairs.set(job.pairKey, pairRows);
+    } else if (job.pairKey !== null) {
+      errors.push(`${job.id} control must not carry pairKey`);
+    }
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (const condition of ['trained_committee', 'untuned_committee']) {
+      if (cellCounts.get(`${profile}|${condition}`) !== COMMITTEE_FLOOR_ABLATION_SPEC.committeeRepeats) {
+        errors.push(`${profile} ${condition} cell count mismatch`);
+      }
+    }
+    if (cellCounts.get(`${profile}|silent_control`) !== COMMITTEE_FLOOR_ABLATION_SPEC.controlRepeats) {
+      errors.push(`${profile} silent_control cell count mismatch`);
+    }
+  }
+  for (const [pairKey, pairRows] of pairs) {
+    const conditions = new Set(pairRows.map((job) => job.condition));
+    const repeats = new Set(pairRows.map((job) => job.repeat));
+    const profiles = new Set(pairRows.map((job) => job.profile));
+    if (
+      pairRows.length !== 2 ||
+      !conditions.has('trained_committee') ||
+      !conditions.has('untuned_committee') ||
+      repeats.size !== 1 ||
+      profiles.size !== 1
+    ) {
+      errors.push(`${pairKey} is not a complete matched trained/untuned block`);
+    }
+  }
+  if (pairs.size !== PHASE5_LIVE_PILOT_SPEC.profiles.length * COMMITTEE_FLOOR_ABLATION_SPEC.committeeRepeats) {
+    errors.push(`expected 12 matched committee blocks, found ${pairs.size}`);
+  }
+  return {
+    ok: errors.length === 0,
+    errors,
+    jobCount: plan.jobs.length,
+    balancedCellCount: cellCounts.size,
+    matchedPairCount: pairs.size,
+  };
 }
 
 function flagValue(command, flag) {
@@ -485,7 +647,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
     );
     return;
   }
@@ -504,8 +666,13 @@ async function main() {
       build: buildPhase5cLivePilotPlan,
       validate: validatePhase5cLivePilotPlan,
     },
+    floor: {
+      root: 'exports/program2-committee-floor-ablation',
+      build: buildCommitteeFloorAblationPlan,
+      validate: validateCommitteeFloorAblationPlan,
+    },
   };
-  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
+  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, or floor)`);
   const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
@@ -539,8 +706,11 @@ async function main() {
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
   artifact.launchSha = launchSha;
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
-  await ollamaPreflight(PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl, PHASE5_LIVE_PILOT_SPEC.committeeMiniModel);
-  console.log(`[phase5] ollama preflight OK: ${PHASE5_LIVE_PILOT_SPEC.committeeMiniModel} present`);
+  const requiredMiniModels = plan.committeeMiniModels || [PHASE5_LIVE_PILOT_SPEC.committeeMiniModel];
+  for (const miniModel of requiredMiniModels) {
+    await ollamaPreflight(PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl, miniModel);
+    console.log(`[phase5] ollama preflight OK: ${miniModel} present`);
+  }
 
   const limit = values['limit-jobs'] ? Number(values['limit-jobs']) : plan.jobs.length;
   const statePath = path.join(outputRoot, 'launch-state.json');
