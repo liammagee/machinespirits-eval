@@ -1,7 +1,7 @@
 ---
 id: complete-tutor-stub-command-effect-metadata-before-http-comm
 title: Complete tutor-stub command effect metadata before HTTP command exposure
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -14,6 +14,8 @@ verification: Every command declares model-call, file-write,
   disallowed effect.
 branch: codex/tutor-stub-command-effects
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/163
   code:
     - services/tutorStubCommandRegistry.js
     - tests/tutorStubCommandRegistry.test.js
@@ -30,3 +32,6 @@ Progress:
   session runtime, and HTTP tests pass (24/24); lint, formatting, workplan check,
   and the full hermetic suite pass. The first sandboxed hermetic run could not
   bind localhost; the permitted rerun passed.
+- 2026-07-23: PR #163 merged to `main` as `cc76302b`; its full GitHub check set
+  passed, and the effect-metadata contract remains covered by the convergence
+  integration tests. The card is complete.

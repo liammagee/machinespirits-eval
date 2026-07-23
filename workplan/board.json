@@ -1,13 +1,12 @@
 {
-  "generated": "2026-07-23T09:14:35.533Z",
+  "generated": "2026-07-23T09:31:20.161Z",
   "counts": {
     "total": 157,
     "byStatus": {
-      "done": 122,
+      "done": 124,
       "blocked": 3,
       "dropped": 2,
       "triaged": 24,
-      "review": 2,
       "archived": 4
     },
     "byType": {
@@ -790,56 +789,6 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "converge-tutor-stub-and-legacy-chat",
-      "title": "Converge tutor-stub and the legacy eval-cell chat",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat and npm run chat are compatibility facades, /api/chat is administrator-only compatibility, and the old UI assets are removed.",
-      "branch": "codex/chat-tutor-convergence",
-      "links": {
-        "items": [
-          "tutor-stub-unified-session-surface",
-          "complete-tutor-stub-command-effect-metadata-before-http-comm"
-        ],
-        "notes": [
-          "docs/tutor-stub-cli.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "chat",
-        "session-runtime",
-        "migration",
-        "pilot",
-        "electron"
-      ],
-      "milestone": "distribution"
-    },
-    {
-      "id": "complete-tutor-stub-command-effect-metadata-before-http-comm",
-      "title": "Complete tutor-stub command effect metadata before HTTP command exposure",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every command declares model-call, file-write, persistent-mutation, session-clear, and process-exit effects; registry invariants and negative transport tests fail closed for any undeclared or disallowed effect.",
-      "branch": "codex/tutor-stub-command-effects",
-      "links": {
-        "code": [
-          "services/tutorStubCommandRegistry.js",
-          "tests/tutorStubCommandRegistry.test.js"
-        ]
-      }
-    },
-    {
       "id": "adaptive-eval-immutable-provenance",
       "title": "Immutable evidence kernel for adaptive-tutor experiments",
       "status": "done",
@@ -1295,6 +1244,40 @@
         "continuous-registers",
         "qa-matrix"
       ]
+    },
+    {
+      "id": "converge-tutor-stub-and-legacy-chat",
+      "title": "Converge tutor-stub and the legacy eval-cell chat",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat and npm run chat are compatibility facades, /api/chat is administrator-only compatibility, and the old UI assets are removed.",
+      "branch": "codex/chat-tutor-convergence",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/164"
+        ],
+        "items": [
+          "tutor-stub-unified-session-surface",
+          "complete-tutor-stub-command-effect-metadata-before-http-comm"
+        ],
+        "notes": [
+          "docs/tutor-stub-cli.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "chat",
+        "session-runtime",
+        "migration",
+        "pilot",
+        "electron"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "cross-model-plan-mode-interaction",
@@ -2963,6 +2946,28 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
+    },
+    {
+      "id": "complete-tutor-stub-command-effect-metadata-before-http-comm",
+      "title": "Complete tutor-stub command effect metadata before HTTP command exposure",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "Every command declares model-call, file-write, persistent-mutation, session-clear, and process-exit effects; registry invariants and negative transport tests fail closed for any undeclared or disallowed effect.",
+      "branch": "codex/tutor-stub-command-effects",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/163"
+        ],
+        "code": [
+          "services/tutorStubCommandRegistry.js",
+          "tests/tutorStubCommandRegistry.test.js"
+        ]
+      }
     },
     {
       "id": "consolidate-logs-db-private-archive",
