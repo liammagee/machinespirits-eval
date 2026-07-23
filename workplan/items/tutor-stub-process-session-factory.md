@@ -13,6 +13,8 @@ branch: codex/tutor-stub-session-factory
 depends_on:
   - tutor-stub-headless-session-transport
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/158
   notes:
     - docs/tutor-stub-cli.md
   items:
@@ -53,3 +55,4 @@ and adapts them for noninteractive transports.
   permission. Plain-Node desktop route/path tests and the packaged Electron
   launch contract pass; the Electron-ABI battery remains isolated to the
   desktop-dev worktree as documented by the repository.
+- 2026-07-23: Opened integration PR #158.

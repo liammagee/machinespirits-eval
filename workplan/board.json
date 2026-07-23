@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T03:37:48.683Z",
+  "generated": "2026-07-23T03:40:58.389Z",
   "counts": {
     "total": 151,
     "byStatus": {
@@ -897,6 +897,9 @@
         "tutor-stub-headless-session-transport"
       ],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/158"
+        ],
         "notes": [
           "docs/tutor-stub-cli.md"
         ],
