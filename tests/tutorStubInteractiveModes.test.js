@@ -310,6 +310,13 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
     assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.ok, true);
     assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.observed.question_count, 1);
     assert.deepEqual(accounting.attempts[2].audits.liveTurnProgressionAudit.issues, []);
+    const failureEvents = events.filter((event) => event.type === 'turn_failure_recorded');
+    assert.ok(failureEvents.some((event) => event.phase === 'incremental' && event.turn === 1));
+    const sealedFailure = failureEvents.find((event) => event.phase === 'sealed' && event.turn === 1);
+    assert.ok(sealedFailure);
+    assert.equal(sealedFailure.record.run.sealed, true);
+    assert.equal(sealedFailure.record.training.trainingLicensed, false);
+    assert.ok(sealedFailure.failureModes.some((mode) => mode.startsWith('guard.live_turn_progression_v1.')));
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
