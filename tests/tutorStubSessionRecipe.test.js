@@ -174,6 +174,41 @@ test('explicit resume selectors beat mtime ordering and preserve trace input rea
   assert.equal(fs.readFileSync(oldFile, 'utf8'), before);
 });
 
+test('resume normalization applies traced tutor-character restatements without rewriting the source', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-restated-resume-'));
+  const filePath = path.join(tmp, 'restated.jsonl');
+  const original = 'Which assay mark should we test first?';
+  const restated = 'Let me rephrase that. Test the same assay choice precisely: which mark comes first?';
+  fs.writeFileSync(
+    filePath,
+    [
+      JSON.stringify({ type: 'run_start', runId: 'restated', metadata: { sessionRecipe: recipe() } }),
+      JSON.stringify({
+        type: 'turn_complete',
+        runId: 'restated',
+        turnRecord: { turn: 1, turnId: 'restated-t1', learner: 'I am unsure.', tutor: original },
+      }),
+      JSON.stringify({
+        type: 'tutor_character_restatement_completed',
+        runId: 'restated',
+        turn: 1,
+        previousText: original,
+        text: restated,
+        characterId: 'exacting_schoolmaster',
+        target: { targetKind: 'tutor_response', targetTurn: 1, targetTurnId: 'restated-t1' },
+        publicTranscriptChanged: true,
+      }),
+      '',
+    ].join('\n'),
+  );
+  const before = fs.readFileSync(filePath, 'utf8');
+  const source = normalizeTutorStubResumeTrace(filePath);
+  assert.equal(source.turns[0].tutorOriginal, original);
+  assert.equal(source.turns[0].tutor, restated);
+  assert.equal(source.turns[0].characterRestatements.length, 1);
+  assert.equal(fs.readFileSync(filePath, 'utf8'), before);
+});
+
 test('legacy traces are normalized in memory without rewriting the source', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-legacy-resume-'));
   const filePath = path.join(tmp, 'legacy.jsonl');

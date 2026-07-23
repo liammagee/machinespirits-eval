@@ -385,20 +385,70 @@ scene. Newly committed changes appear automatically; uncommitted work does not.
 
 ## Directing and randomizing performance
 
-Use `/register <style>` to direct the engagement stance and `/character <part>`
-to direct the tutor's host character. Both commands show their current value
-and available choices when used without an argument, and both autocomplete:
+`/character` is the shared character control. With no argument it reports both
+the current learner behavior profile and the current tutor host part; it does
+not change state or make a model call. Use `/character learner <profile>` for
+the automated or mixed learner and `/character tutor <part>` for the tutor.
+The older `/profile <id>` and `/character <part>` forms remain aliases.
+
+Use `/register <style>` to direct the engagement stance. In an interactive
+terminal, `/character tutor` and `/character learner` open scrolling keyboard
+selectors with the current choice highlighted; Up/Down, Page Up/Down,
+Home/End, Enter, and Escape follow the other CLI pickers. Pipes and scripts
+retain the current-value-and-choice list. All direct forms autocomplete:
 
 ```text
 /register warm
-/character advocate
+/character tutor advocate
+/character learner counterexample_hunter
 /register auto
-/character auto
+/character tutor auto
 ```
 
-`auto` (also accepted as `clear`, `off`, or `reset`) removes only that explicit
-direction. These controls are session-only and survive `/reset`. They do not
-replace the learner analysis: action family, audience, language, scene,
+Launch-time aliases provide the same distinction:
+
+```text
+npm run tutor:stub -- --mixed-learner \
+  --learner-character goalpost_shifter \
+  --tutor-character exacting_schoolmaster
+```
+
+The deliberately adversarial tutor parts `adversarial_teacher` and
+`exacting_schoolmaster` are explicit-only. They can be chosen manually, but are
+not eligible for adaptive selection, `/random`, or light stochastic
+adaptation. The adversarial teacher tests an idea with a subject-native
+counterexample, altered example, or competing solution. The exacting
+schoolmaster requires one discipline-appropriate performance: show the
+working, apply the method, define the term, read the passage, make the
+observation, demonstrate the procedure, or revise precisely. Exactness must
+retain a fair retry and must never become humiliation or personal dominance.
+
+Tutor character follows a **domain-before-metaphor** rule. The active subject's
+objects, concepts, texts, problems, methods, and standards supply the primary
+vocabulary. Legal, dramaturgical, and philosophical metaphors may shape the
+pressure or scene, but they remain subordinate to learning and must not turn an
+ordinary lesson into generic courtroom speech. The old `cross_examiner` and
+`opposing_counsel` ids remain accepted as compatibility aliases for
+`adversarial_teacher` and `exacting_schoolmaster`; new traces and commands use
+the classroom-native ids. The learner stress profiles `counterexample_hunter`
+and `goalpost_shifter` provide corresponding adversarial behavior on the other
+side.
+
+Changing to a specific tutor character after tutor speech is already visible
+performs a bounded public correction instead of replaying the old line. The
+tutor begins with `Let me rephrase that.`, then re-expresses the same intent in
+the newly selected character. The correction replaces the latest tutor text in
+the active public history, so the learner, later tutor calls, transcript, and
+closeout all use the current wording. It may not release evidence, advance the
+proof, change quoted source text, or lose the live question; the original and
+replacement remain joined in the trace. Clearing the character to `auto`,
+changing only the learner profile, viewing status, or cancelling a selector
+does not manufacture a tutor correction.
+
+For tutor character and register controls, `auto` (also accepted as `clear`,
+`off`, or `reset`) removes only that explicit direction. These controls are
+session-only and survive `/reset`. They do not replace the learner analysis:
+action family, audience, language, scene,
 evidence release, and safety continue through the normal pipeline. A due
 authored clue source may still voice its clue, and the structurally licensed
 final closeout character takes priority over a directed host character.
@@ -427,11 +477,16 @@ the mode refreshes any prefetched mixed-learner response.
 
 ### Light stochastic adaptation
 
-Use `--light-adaptation` at launch or `/light on` during a session for a
-conditional, deliberately shallow alternative to the deeper adaptive teaching
-policies. `/light off` disables it, `/light status` explains the active rule,
-and bare `/light` toggles it. The default trigger is two consecutive learner
-turns showing confusion or frustration; use
+Light adaptation is on by default in ordinary adaptive interactive tutor
+sessions. Dedicated automated/control runs, one-shot runs, passthrough, and
+sessions without learner analysis keep it off unless `--light-adaptation` is
+explicitly supplied. Use `--no-light-adaptation` for a clean interactive launch.
+
+During a session, use `/settings light on|off|status`; the keyboard `/settings`
+panel exposes the same **Difficulty shift** toggle and remembers it for the next
+interactive session. `/light on|off|status` remains the short form, and bare
+`/light` toggles it. The default trigger is two consecutive learner turns
+showing confusion or frustration; use
 `--light-adaptation-threshold <2..8>` to change that streak length.
 
 When the trigger fires, the next engagement stance and host character are

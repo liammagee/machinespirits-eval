@@ -700,6 +700,76 @@ test('natural scene-partner, skeptic, and evidentiary-boundary performances are 
   assert.equal(boundary.axes.actorial_part.performance_visible, true);
 });
 
+test('manual adversarial tutor parts have distinct transcript-visible contracts', () => {
+  const base = {
+    engagement_stance: 'precise',
+    action_family: 'clarify_distinction',
+    audience_register: 'domain_apprentice',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'immersive',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const adversarialTeacher = auditTutorStubResponseConfiguration({
+    text: 'Let us test your reading with the marked shilling as a counterexample: what changes, and how would you revise the explanation?',
+    configuration: {
+      ...base,
+      actorial_part: 'adversarial_teacher',
+      actorial_part_label: 'adversarial teacher',
+    },
+    world: { setting: 'The public ledger and marked shilling lie on the assay bench.' },
+  });
+  assert.equal(adversarialTeacher.axes.actorial_part.part_visible, true);
+
+  const exactingSchoolmaster = auditTutorStubResponseConfiguration({
+    text: 'Show the working with the touchstone: apply the method one step at a time, name what that step teaches us, then revise precisely.',
+    configuration: {
+      ...base,
+      actorial_part: 'exacting_schoolmaster',
+      actorial_part_label: 'exacting schoolmaster',
+    },
+    world: { setting: 'The touchstone and marked shilling remain on the assay bench.' },
+  });
+  assert.equal(exactingSchoolmaster.axes.actorial_part.part_visible, true);
+
+  const genericCourtroomTeacher = auditTutorStubResponseConfiguration({
+    text: 'I cross-examine your claim: which public warrant defeats the rival case?',
+    configuration: {
+      ...base,
+      actorial_part: 'adversarial_teacher',
+      actorial_part_label: 'adversarial teacher',
+    },
+    world: { setting: 'The public ledger and marked shilling lie on the assay bench.' },
+  });
+  assert.equal(genericCourtroomTeacher.axes.actorial_part.part_visible, false);
+});
+
+test('deterministic recovery preserves manual adversarial tutor parts', () => {
+  for (const part of ['adversarial_teacher', 'exacting_schoolmaster']) {
+    const configuration = {
+      engagement_stance: 'precise',
+      action_family: 'clarify_distinction',
+      audience_register: 'domain_apprentice',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'immersive',
+      actorial_part: part,
+      actorial_part_label: part.replaceAll('_', ' '),
+      actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+    };
+    const text = deterministicTutorStubConfiguredContinuationFallback({
+      uptake: 'That keeps the hand unproved.',
+      responseConfiguration: configuration,
+      world: { setting: 'The public ledger and marked shilling lie on the assay bench.' },
+      learnerText: 'The mark might name the hand.',
+    });
+    const audit = auditTutorStubResponseConfiguration({
+      text,
+      configuration,
+      world: { setting: 'The public ledger and marked shilling lie on the assay bench.' },
+    });
+    assert.equal(audit.axes.actorial_part.part_visible, true, `${part}: ${text}`);
+  }
+});
+
 test('response composition warns against a fourth repeated exhibit-handling gesture', () => {
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText: 'That leaves Crane unproved.',

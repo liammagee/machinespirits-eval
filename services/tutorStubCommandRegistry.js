@@ -188,11 +188,11 @@ const HELP_GROUPS = [
     label: 'direct',
     commands: [
       { id: 'register', arguments: '<style>' },
-      { id: 'character', arguments: '<part>' },
+      { id: 'character', arguments: '[tutor|learner] [choice]' },
       { id: 'random' },
       { id: 'light', arguments: '[on|off|status]' },
     ],
-    summary: 'direct, randomize, or lightly adapt performance axes without changing evidence',
+    summary: 'choose learner/tutor characters or vary tutor performance without changing evidence',
   },
   {
     id: 'adjust',
@@ -397,7 +397,13 @@ const COMMANDS = [
     id: 'character',
     token: '/character',
     sceneReturnOrder: 5,
-    completion: { normal: { suffixes: ['auto', 'status'], dynamicProviders: ['actorial_parts'] } },
+    completion: {
+      normal: {
+        suffixes: ['status', 'tutor', 'tutor auto', 'tutor status', 'learner', 'learner list', 'learner list stress'],
+        dynamicProviders: ['actorial_parts', 'learner_profile_ids'],
+      },
+    },
+    transportEffects: ['terminal_picker'],
   }),
   command({
     id: 'analysis',
@@ -525,6 +531,9 @@ const COMMANDS = [
           'models learner ',
           'temp ',
           'dropout ',
+          'light on',
+          'light off',
+          'light status',
           'release-speed ',
           'forget',
           'policy add state',

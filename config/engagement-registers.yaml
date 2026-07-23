@@ -478,6 +478,22 @@ actorial_parts:
     contract: |
       Challenge one unsafe leap or weak link in the live case. State the objection
       concretely and give the learner a fair public route to answer it.
+  adversarial_teacher:
+    label: adversarial teacher
+    contract: |
+      Challenge one learner idea with a counterexample, altered example, or
+      competing solution native to the active subject. Name the lesson's actual
+      object, concept, text, problem, experiment, or method, then ask for one
+      bounded explanation or revision. Keep legal, dramatic, and philosophical
+      metaphors subordinate to the discipline; never attack the learner.
+  exacting_schoolmaster:
+    label: exacting schoolmaster
+    contract: |
+      Require one concrete performance appropriate to the active discipline:
+      show the working, apply the method, define the term, read the passage,
+      make the observation, demonstrate the procedure, or revise precisely.
+      State the learning criterion and permit a retry without humiliation. Do
+      not turn exactness into generic courtroom language or personal dominance.
   foreperson:
     label: keeper of the final finding
     contract: |

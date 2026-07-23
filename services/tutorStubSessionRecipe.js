@@ -228,6 +228,19 @@ function turnsFromEvents(events) {
   for (const event of events) {
     if (event?.type === 'history_clear') turns.length = 0;
     else if (event?.type === 'turn_complete' && event.turnRecord) turns.push(event.turnRecord);
+    else if (
+      event?.type === 'tutor_character_restatement_completed' &&
+      event?.target?.targetKind === 'tutor_response' &&
+      typeof event.text === 'string' &&
+      event.text.trim()
+    ) {
+      const targetTurn = Number(event.target.targetTurn ?? event.turn);
+      const turn = [...turns].reverse().find((candidate) => Number(candidate?.turn) === targetTurn);
+      if (!turn) continue;
+      turn.tutorOriginal = turn.tutorOriginal || turn.tutor || event.previousText || null;
+      turn.tutor = event.text;
+      turn.characterRestatements = [...(turn.characterRestatements || []), event];
+    }
   }
   return turns;
 }

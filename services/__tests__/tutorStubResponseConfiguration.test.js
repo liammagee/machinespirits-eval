@@ -9,10 +9,13 @@ import {
 import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
+  normalizeTutorStubActorialPartId,
   selectTutorStubActorialPart,
   selectTutorStubActorialPerformance,
   selectTutorStubActionFamily,
   summarizeTutorStubResponseConfigurationAudits,
+  tutorStubConfigurableActorialPartIds,
+  tutorStubRandomizableActorialPartIds,
   tutorStubResponseConfigurationPrompt,
 } from '../tutorStubResponseConfiguration.js';
 import {
@@ -633,6 +636,15 @@ test('lower adaptive-performance temperature sharpens the actorial-part choice',
   assert.ok(sampled.probability > 0);
 });
 
+test('deliberately adversarial tutor parts are configurable but never sampled automatically', () => {
+  assert.ok(tutorStubConfigurableActorialPartIds().includes('adversarial_teacher'));
+  assert.ok(tutorStubConfigurableActorialPartIds().includes('exacting_schoolmaster'));
+  assert.ok(!tutorStubRandomizableActorialPartIds().includes('adversarial_teacher'));
+  assert.ok(!tutorStubRandomizableActorialPartIds().includes('exacting_schoolmaster'));
+  assert.equal(normalizeTutorStubActorialPartId('cross_examiner'), 'adversarial_teacher');
+  assert.equal(normalizeTutorStubActorialPartId('opposing-counsel'), 'exacting_schoolmaster');
+});
+
 test('unresolved terms select a gloss action, novice audience, plain lexicon, and grounded scene', () => {
   const comprehension = { pressure: 0.85, unresolvedTerms: ['cupel'], recentRequest: true };
   const selected = selectTutorStubActionFamily({
@@ -657,6 +669,7 @@ test('unresolved terms select a gloss action, novice audience, plain lexicon, an
   assert.equal(configuration.scene_immersion, 'grounded');
   assert.deepEqual(configuration.unresolved_terms, ['cupel']);
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /These are independent axes/u);
+  assert.match(tutorStubResponseConfigurationPrompt(configuration), /Domain before metaphor/u);
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Actorial host part: evidence examiner/u);
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Unresolved terms: cupel/u);
 });

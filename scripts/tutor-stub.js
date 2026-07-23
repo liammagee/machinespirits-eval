@@ -93,6 +93,13 @@ import {
   tutorStubPrivateTokenAlreadyPublic,
 } from '../services/tutorStubEvidenceAssertion.js';
 import {
+  TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
+  TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT,
+  auditTutorStubCharacterRestatement,
+  buildTutorStubCharacterRestatementPrompt,
+  cleanTutorStubCharacterRestatement,
+} from '../services/tutorStubCharacterRestatement.js';
+import {
   tutorStubAnswerConclusionAsserted,
   tutorStubSecretConclusionWordPatterns,
 } from '../services/tutorStubConclusionAssertion.js';
@@ -174,9 +181,11 @@ import {
 import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
+  normalizeTutorStubActorialPartId,
   selectTutorStubActorialPart,
   selectTutorStubActorialPerformance,
   summarizeTutorStubResponseConfigurationAudits,
+  tutorStubConfigurableActorialPartIds,
   tutorStubRandomizableActorialPartIds,
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
@@ -671,6 +680,7 @@ const { values: args, positionals } = parseArgs({
     'pressure-turns': { type: 'string', default: '' },
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
     'light-adaptation': { type: 'boolean', default: STUB.lightAdaptation },
+    'no-light-adaptation': { type: 'boolean', default: false },
     'light-adaptation-threshold': { type: 'string', default: STUB.lightAdaptationThreshold },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
@@ -715,6 +725,8 @@ const { values: args, positionals } = parseArgs({
     'auto-learner': { type: 'boolean', default: false },
     'auto-learner-model': { type: 'string', default: STUB.autoLearnerModel },
     'auto-learner-profile': { type: 'string', default: STUB.autoLearnerProfile },
+    'learner-character': { type: 'string', default: '' },
+    'tutor-character': { type: 'string', default: '' },
     'auto-turns': { type: 'string', default: String(STUB.autoTurns) },
     'auto-safety-turns': { type: 'string', default: String(STUB.autoSafetyTurns) },
     'model-call-budget': { type: 'string', default: '' },
@@ -961,10 +973,10 @@ Options:
                          teaching-style range; lower concentrates the strongest
                          style and part, higher mixes in more alternatives (default: ${STUB.registerTemperature};
                          range: ${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})
-  --light-adaptation     after continued learner confusion or frustration,
-                         force one seeded stochastic shift in both teaching
-                         style and host character; deep adaptation resumes as
-                         soon as the difficulty streak clears
+  --light-adaptation     enable seeded style + character shifts after continued
+                         learner confusion or frustration (default in ordinary
+                         adaptive interactive sessions)
+  --no-light-adaptation  disable those difficulty-triggered shifts
   --light-adaptation-threshold <n>
                          consecutive difficult learner turns required before
                          the light shift activates (default: ${STUB.lightAdaptationThreshold}; range: 2-8)
@@ -1040,6 +1052,11 @@ Options:
   --auto-learner-profile <id|text>
                          built-in profile id or custom learner behavior sketch
                          (default: diligent)
+  --learner-character <id|text>
+                         character-facing alias for --auto-learner-profile
+  --tutor-character <part>
+                         lock the tutor host part for this session; includes
+                         explicit-only adversarial parts (see /character tutor)
   --auto-turns <n|until-grounded>
                          maximum learner turns in --auto-learner mode, or
                          until-grounded to stop only at grounded closure
@@ -1166,6 +1183,8 @@ Interactive commands:
                          change one role independently
   /settings temp [n]     adjust or set teaching-style range
   /settings dropout [n]  adjust or set recoverable evidence-memory loss (0-1)
+  /settings light [on|off|status]
+                         configure difficulty-triggered style + character shifts
   /settings release-speed [n]
                          adjust or set clue-release speed (0.5-2)
   /settings forget       stop using the saved defaults after this session
@@ -1175,9 +1194,14 @@ Interactive commands:
   /lab [list|id]         show the active lab or a safe lab's relaunch command
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
+  /character            show learner and tutor character controls
+  /character learner [profile]
+                         choose or switch the mixed learner behavior profile
+  /character tutor [part]
+                         choose and lock the tutor part; restates the last intent
   /profile               show the active suggested-learner profile
   /profile list          list the six ordinary learner profiles
-  /profile list stress   list eight specialist failure-mode profiles
+  /profile list stress   list ten specialist failure-mode profiles
   /profile list all      list the complete v3 profile registry
   /profile example       show a copyable custom-profile example
   /profile <id>          switch profile and regenerate mixed artifacts
@@ -1221,6 +1245,8 @@ Environment:
                          disable optional per-message thumbs feedback
   TUTOR_STUB_DAG_MODE    optional DAG discourse mode: strict_dag,
                          human_scaffold, or defeasible_human_scaffold
+  TUTOR_STUB_LIGHT_ADAPTATION=0|1
+                         disable or explicitly enable difficulty-triggered shifts
   TUTOR_STUB_TRACE_DIR   optional default trace directory
   TUTOR_STUB_SETTINGS_FILE
                          optional remembered-settings file path
@@ -1422,7 +1448,9 @@ function rememberedSettingExplicitSources() {
     tuningMode: commandLineOptionProvided('tuning') || Boolean(process.env.TUTOR_STUB_TUNING),
     scenario: commandLineOptionProvided('world') || Boolean(process.env.TUTOR_STUB_WORLD),
     learnerProfile:
-      commandLineOptionProvided('auto-learner-profile') || Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
+      commandLineOptionProvided('auto-learner-profile') ||
+      commandLineOptionProvided('learner-character') ||
+      Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
     allModelsRef: allModels,
     tutorModelRef: allModels || commandLineOptionProvided('model') || Boolean(process.env.TUTOR_STUB_MODEL),
     classifierModelRef:
@@ -1446,6 +1474,10 @@ function rememberedSettingExplicitSources() {
       Boolean(process.env.TUTOR_STUB_POINT_OF_ACTION_ARM),
     engagementStanceTemperature:
       commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
+    lightAdaptationEnabled:
+      commandLineOptionProvided('light-adaptation') ||
+      commandLineOptionProvided('no-light-adaptation') ||
+      process.env.TUTOR_STUB_LIGHT_ADAPTATION !== undefined,
     dagFactDropoutRate:
       commandLineOptionProvided('dag-fact-dropout') || Boolean(process.env.TUTOR_STUB_DAG_FACT_DROPOUT),
     releaseSpeed: commandLineOptionProvided('release-speed') || Boolean(process.env.TUTOR_STUB_RELEASE_SPEED),
@@ -1635,6 +1667,14 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   } else {
     args['register-temperature'] = String(saved.engagementStanceTemperature);
     config.appliedFields.push('engagement_stance_temperature');
+  }
+
+  if (explicit.lightAdaptationEnabled) {
+    config.skippedExplicitFields.push('light_adaptation');
+  } else {
+    args['light-adaptation'] = saved.lightAdaptationEnabled;
+    args['no-light-adaptation'] = !saved.lightAdaptationEnabled;
+    config.appliedFields.push('light_adaptation');
   }
 
   if (explicit.dagFactDropoutRate) {
@@ -5446,10 +5486,31 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
       (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
       -1,
     );
-    const opening = (resume.events || [])
-      .slice(lastClearIndex + 1)
-      .find((event) => event?.type === 'tutor_opening' && typeof event.text === 'string' && event.text.trim());
-    if (opening) state.history.push({ role: 'assistant', content: opening.text });
+    const activeEvents = (resume.events || []).slice(lastClearIndex + 1);
+    const opening = activeEvents.find(
+      (event) => event?.type === 'tutor_opening' && typeof event.text === 'string' && event.text.trim(),
+    );
+    const openingRestatement = [...activeEvents]
+      .reverse()
+      .find(
+        (event) =>
+          event?.type === 'tutor_character_restatement_completed' &&
+          event?.target?.targetKind === 'opening' &&
+          typeof event.text === 'string' &&
+          event.text.trim(),
+      );
+    if (opening) {
+      state.history.push({ role: 'assistant', content: openingRestatement?.text || opening.text });
+      if (openingRestatement) {
+        state.openingRealization = {
+          schema: 'machinespirits.tutor-stub.resumed-character-restated-opening.v1',
+          originalText: opening.text,
+          text: openingRestatement.text,
+          characterRestatements: [jsonClone(openingRestatement)],
+          source: 'resume_trace',
+        };
+      }
+    }
   }
   for (const turn of turns) {
     if (turn.learner) state.history.push({ role: 'user', content: turn.learner });
@@ -6363,6 +6424,31 @@ function explicitPerformanceDirectiveValue(state, axis) {
   return value || null;
 }
 
+function resolveTutorStubCharacterChoice(value) {
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
+  const normalized = raw.replace(/[\s-]+/gu, '_');
+  const definitions = getActorialPartDefinitions();
+  const options = tutorStubConfigurableActorialPartIds();
+  const byLabel = Object.fromEntries(
+    options.map((id) => [
+      String(definitions[id]?.label || id)
+        .toLowerCase()
+        .replace(/[\s-]+/gu, '_'),
+      id,
+    ]),
+  );
+  return {
+    raw,
+    normalized,
+    definitions,
+    options,
+    clearing: EXPLICIT_PERFORMANCE_CLEAR_WORDS.has(raw),
+    id: normalizeTutorStubActorialPartId(byLabel[normalized] || normalized),
+  };
+}
+
 function explicitEngagementStanceSelection({ classification, stance }) {
   const definition = getEngagementStanceDefinition(stance) || {};
   const distribution = [
@@ -6423,10 +6509,17 @@ function explicitPerformanceActorialPartSelection({ inputs, baseSelection, chara
       },
     };
   }
-  const selected = selectTutorStubActorialPart({
-    ...inputs,
-    selectedPartOverride: character,
-  });
+  const selected = tutorStubRandomizableActorialPartIds().includes(character)
+    ? selectTutorStubActorialPart({
+        ...inputs,
+        selectedPartOverride: character,
+      })
+    : {
+        ...baseSelection,
+        id: character,
+        label: oneLine(getActorialPartDefinitions()[character]?.label) || displayDiagnosticLabel(character),
+        contract: oneLine(getActorialPartDefinitions()[character]?.contract),
+      };
   return {
     ...selected,
     probability: 1,
@@ -9180,7 +9273,7 @@ function printInteractiveHelp(state = null) {
       `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
     );
     console.log(
-      `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
+      `${C.dim}  /character tutor and /character learner open keyboard selectors here; direct ids still work. A changed tutor character says “Let me rephrase that” and restates the latest intent in the new part. Use auto to clear a tutor-axis lock.${C.reset}`,
     );
   }
   if (commandAvailable('/suggest')) {
@@ -15637,6 +15730,15 @@ async function main() {
     args['learner-record-model'] = allModelsOverrideRef;
     args['auto-learner-model'] = allModelsOverrideRef;
   }
+  if (commandLineOptionProvided('learner-character')) {
+    if (
+      commandLineOptionProvided('auto-learner-profile') &&
+      String(args['auto-learner-profile']).trim() !== String(args['learner-character']).trim()
+    ) {
+      throw new Error('--learner-character conflicts with --auto-learner-profile');
+    }
+    args['auto-learner-profile'] = args['learner-character'];
+  }
   const interactiveSessionIntent = Boolean(!args['auto-learner'] && !args.once && !positionals.join(' ').trim());
   const explicitRememberedSources = rememberedSettingExplicitSources();
   const rememberedSettings = applyRememberedInteractiveDefaults({
@@ -15718,12 +15820,38 @@ async function main() {
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
     label: '--register-temperature',
   });
-  const lightAdaptationEnabled = Boolean(args['light-adaptation']);
+  // Recipe replay marks captured options as resolved launch sources, including
+  // an explicitly captured `light-adaptation: false`. Treat the boolean value,
+  // not mere option presence, as the opt-in/opt-out signal so passthrough
+  // recipes remain valid and deterministic.
+  const lightAdaptationCliOptIn = commandLineOptionProvided('light-adaptation') && Boolean(args['light-adaptation']);
+  const lightAdaptationCliOptOut =
+    commandLineOptionProvided('no-light-adaptation') && Boolean(args['no-light-adaptation']);
+  if (lightAdaptationCliOptIn && lightAdaptationCliOptOut) {
+    throw new Error('--light-adaptation cannot be combined with --no-light-adaptation');
+  }
+  const lightAdaptationRemembered = rememberedSettings.appliedFields.includes('light_adaptation');
+  const lightAdaptationRequested = lightAdaptationCliOptOut
+    ? false
+    : lightAdaptationCliOptIn
+      ? true
+      : lightAdaptationRemembered
+        ? Boolean(args['light-adaptation'])
+        : process.env.TUTOR_STUB_LIGHT_ADAPTATION !== undefined
+          ? STUB.lightAdaptation
+          : interactiveSessionIntent && !passthroughEnabled;
+  const lightAdaptationAvailable = Boolean(!passthroughEnabled && !args['no-register-selection']);
+  const lightAdaptationEnabled = Boolean(lightAdaptationRequested && lightAdaptationAvailable);
+  // Session recipes and config hashes record the effective value rather than
+  // the raw parser default, so relaunches reproduce this mode boundary.
+  args['light-adaptation'] = lightAdaptationEnabled;
+  args['no-light-adaptation'] = !lightAdaptationEnabled;
   const lightAdaptationThreshold = normalizeTutorStubLightAdaptationThreshold(args['light-adaptation-threshold']);
-  if (lightAdaptationEnabled && passthroughEnabled) {
+  const lightAdaptationExplicitOptIn = lightAdaptationCliOptIn || process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1';
+  if (lightAdaptationExplicitOptIn && passthroughEnabled) {
     throw new Error('--light-adaptation is unavailable in --passthrough because learner assessment is disabled');
   }
-  if (lightAdaptationEnabled && args['no-register-selection']) {
+  if (lightAdaptationExplicitOptIn && args['no-register-selection']) {
     throw new Error('--light-adaptation requires teaching-style selection; remove --no-register-selection');
   }
   const dagFactDropoutRate = normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
@@ -16012,6 +16140,17 @@ async function main() {
       negativeRegisterSelectionEnabled ||
       lightAdaptationEnabled),
   );
+  const requestedTutorCharacter = resolveTutorStubCharacterChoice(args['tutor-character']);
+  const initialTutorCharacter =
+    requestedTutorCharacter.raw && !requestedTutorCharacter.clearing ? requestedTutorCharacter.id : null;
+  if (initialTutorCharacter && !requestedTutorCharacter.options.includes(initialTutorCharacter)) {
+    throw new Error(`--tutor-character must be one of ${requestedTutorCharacter.options.join(', ')}, or auto`);
+  }
+  if (initialTutorCharacter && !registerSelectionEnabled) {
+    throw new Error(
+      '--tutor-character requires adaptive delivery; remove --no-register-selection and enable learner analysis',
+    );
+  }
   let classifierResolved =
     classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
   let classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
@@ -16579,6 +16718,9 @@ async function main() {
             enabled: lightAdaptationEnabled,
             threshold: lightAdaptationThreshold,
             slashCommand: '/light on|off|status',
+            settingsCommand: '/settings light on|off|status',
+            defaultScope: 'adaptive_interactive_sessions',
+            rememberedPreference: true,
             trigger: 'continued_learner_confusion_or_frustration',
             scope: ['engagement_stance', 'actorial_part'],
             selectionMethod: 'seeded_uniform_excluding_previous',
@@ -16594,7 +16736,7 @@ async function main() {
             available: registerSelectionEnabled,
             sessionOnly: true,
             register: null,
-            character: null,
+            character: initialTutorCharacter,
             slashCommands: ['/register', '/character'],
             precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
           },
@@ -16903,6 +17045,9 @@ async function main() {
         enabled: lightAdaptationEnabled,
         threshold: lightAdaptationThreshold,
         slashCommand: '/light on|off|status',
+        settingsCommand: '/settings light on|off|status',
+        defaultScope: 'adaptive_interactive_sessions',
+        rememberedPreference: true,
         trigger: 'continued_learner_confusion_or_frustration',
         scope: ['engagement_stance', 'actorial_part'],
         selectionMethod: 'seeded_uniform_excluding_previous',
@@ -16918,7 +17063,7 @@ async function main() {
         available: registerSelectionEnabled,
         sessionOnly: true,
         register: null,
-        character: null,
+        character: initialTutorCharacter,
         slashCommands: ['/register', '/character'],
         precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
       },
@@ -17242,12 +17387,12 @@ async function main() {
       scope: ['engagement_stance', 'actorial_part'],
       trigger: 'continued_learner_confusion_or_frustration',
       selectionMethod: 'seeded_uniform_excluding_previous',
-      sessionOnly: true,
+      rememberedPreference: true,
     },
     performanceDirectives: {
       schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
       register: null,
-      character: null,
+      character: initialTutorCharacter,
       sessionOnly: true,
       precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
     },
@@ -17432,6 +17577,7 @@ async function main() {
       cliTheme: cliPresentation.themeId,
       motion: cliPresentation.requestedMotion,
       committeeEnabled: state.committee?.enabled === true,
+      lightAdaptationEnabled: state.lightAdaptation?.enabled === true,
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -18369,7 +18515,9 @@ async function main() {
     } else if (trimmed.startsWith('/character ')) {
       pool = [
         ...tutorStubStaticCommandCompletions('/character', commandOptions),
-        ...tutorStubRandomizableActorialPartIds().map((part) => `/character ${part}`),
+        ...tutorStubConfigurableActorialPartIds().map((part) => `/character ${part}`),
+        ...tutorStubConfigurableActorialPartIds().map((part) => `/character tutor ${part}`),
+        ...learnerProfileIds().map((profileId) => `/character learner ${profileId}`),
       ];
     } else if (trimmed.startsWith('/settings model ')) {
       const modelCompletions = [
@@ -19793,6 +19941,15 @@ async function main() {
           'Set the baseline pace for new clues. The dialogue can still speed up or slow down when the learner asks.',
       },
       {
+        id: 'light_adaptation',
+        label: 'Difficulty shift',
+        value: `${(draft?.lightAdaptationEnabled ?? state.lightAdaptation?.enabled === true) ? 'on' : 'off'}${
+          state.register?.enabled ? '' : ' · inactive'
+        }`,
+        description:
+          'After repeated confusion or frustration, make a replayable shift in tutor style and host character.',
+      },
+      {
         id: 'state_overlay',
         label: 'Turn-change override',
         value: overlays.has('state') ? 'on' : 'off',
@@ -20139,6 +20296,112 @@ async function main() {
       input.on('keypress', onKeypress);
       input.resume();
       renderMenu();
+    });
+  }
+
+  async function pickLiveTutorCharacterWithKeyboard(defaultCharacterId = 'auto') {
+    const definitions = getActorialPartDefinitions();
+    const adaptiveParts = new Set(tutorStubRandomizableActorialPartIds());
+    const entries = [
+      {
+        id: 'auto',
+        label: 'Adaptive selection',
+        group: 'automatic',
+        description:
+          'Return character choice to light adaptation, random performance, or the configured teaching policy.',
+      },
+      ...tutorStubConfigurableActorialPartIds().map((id) => ({
+        id,
+        label: definitions[id]?.label || displayDiagnosticLabel(id),
+        group: adaptiveParts.has(id) ? 'adaptive-safe' : 'explicit-only',
+        description: oneLine(definitions[id]?.contract, { max: 220 }),
+      })),
+    ];
+    let selectedIndex = Math.max(
+      0,
+      entries.findIndex((entry) => entry.id === (defaultCharacterId || 'auto')),
+    );
+    const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Number(output.rows || 24) - 7)));
+    let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+    let renderedLineCount = 0;
+    const keepVisible = () => {
+      if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+      if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
+    };
+    const clearMenu = () => {
+      if (!renderedLineCount) return;
+      moveCursor(output, 0, -renderedLineCount);
+      for (let index = 0; index < renderedLineCount; index += 1) {
+        cursorTo(output, 0);
+        clearLine(output, 0);
+        if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+      }
+      if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+      renderedLineCount = 0;
+    };
+    const render = () => {
+      keepVisible();
+      clearMenu();
+      const width = Math.max(60, Math.min(Number(output.columns || 100), 140));
+      const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+      const selected = entries[selectedIndex];
+      const lines = [
+        `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+        ...visible.map((entry, offset) => {
+          const active = viewportStart + offset === selectedIndex;
+          const plain = `${active ? '›' : ' '} ${entry.id.padEnd(24)} ${oneLine(entry.label, {
+            max: Math.max(12, width - 42),
+          })} [${entry.group}]`;
+          return active ? `${C.brightMagenta}${C.bold}${plain}${C.reset}` : plain;
+        }),
+        `${C.dim}${
+          viewportStart + viewportHeight < entries.length
+            ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+            : '  '
+        }${C.reset}`,
+        `${C.brightYellow}${C.bold}  does >${C.reset} ${oneLine(selected.description, { max: Math.max(36, width - 11) })}`,
+      ];
+      for (const line of lines) output.write(`${line}\n`);
+      renderedLineCount = lines.length;
+    };
+    emitKeypressEvents(input);
+    const priorListeners = input.listeners('keypress');
+    for (const listener of priorListeners) input.removeListener('keypress', listener);
+    const wasRaw = Boolean(input.isRaw);
+    if (!wasRaw) input.setRawMode(true);
+    return new Promise((resolve) => {
+      const finish = (selection) => {
+        input.removeListener('keypress', onKeypress);
+        for (const listener of priorListeners) input.on('keypress', listener);
+        if (!wasRaw) input.setRawMode(false);
+        clearMenu();
+        resolve(selection);
+      };
+      const move = (delta) => {
+        selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+        render();
+      };
+      const onKeypress = (character, key = {}) => {
+        if ((key.ctrl && key.name === 'c') || key.name === 'escape') return finish(null);
+        if (key.name === 'up' || character === 'k') return move(-1);
+        if (key.name === 'down' || character === 'j') return move(1);
+        if (key.name === 'pageup') return move(-viewportHeight);
+        if (key.name === 'pagedown') return move(viewportHeight);
+        if (key.name === 'home') {
+          selectedIndex = 0;
+          render();
+          return;
+        }
+        if (key.name === 'end') {
+          selectedIndex = entries.length - 1;
+          render();
+          return;
+        }
+        if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+      };
+      input.on('keypress', onKeypress);
+      input.resume();
+      render();
     });
   }
 
@@ -22274,7 +22537,7 @@ async function main() {
         state.lightAdaptation?.enabled
           ? `on — after ${state.lightAdaptation.threshold} consecutive confusion/frustration turns, seeded-random style and character replace the prior pair when possible`
           : 'off'
-      }; session only; /light toggles${C.reset}`,
+      }; remembered setting; /settings light or /light changes it${C.reset}`,
     );
     console.log(
       `${C.dim}  directed performance: style ${explicitPerformanceDirectiveValue(state, 'register') || 'auto'}; character ${explicitPerformanceDirectiveValue(state, 'character') || 'auto'}; session only; /register and /character${C.reset}`,
@@ -22296,7 +22559,7 @@ async function main() {
       `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
+      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
     );
   }
 
@@ -22418,6 +22681,7 @@ async function main() {
       temperature: state.register?.temperature ?? registerTemperature,
       dropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+      lightAdaptationEnabled: state.lightAdaptation?.enabled === true,
       overlays: [...(state.register?.overlays || [])],
       overlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
       forgetSavedSettings: false,
@@ -22449,6 +22713,9 @@ async function main() {
     }
     if (draft.releaseSpeed !== (state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED)) {
       changes.push('release_speed');
+    }
+    if (draft.lightAdaptationEnabled !== (state.lightAdaptation?.enabled === true)) {
+      changes.push('light_adaptation');
     }
     if (
       currentOverlays.length !== draft.overlays.length ||
@@ -22484,6 +22751,9 @@ async function main() {
     if (changes.includes('motion')) await handleDialogueSettings(`motion ${draft.motion}`);
     if (changes.includes('dropout')) await handleDialogueSettings(`dropout ${draft.dropoutRate}`);
     if (changes.includes('release_speed')) await handleDialogueSettings(`release-speed ${draft.releaseSpeed}`);
+    if (changes.includes('light_adaptation')) {
+      await handleDialogueSettings(`light ${draft.lightAdaptationEnabled ? 'on' : 'off'}`);
+    }
     if (changes.includes('overlays')) {
       const currentOverlays = [...(state.register?.overlays || [])];
       for (const overlay of currentOverlays.filter((entry) => !draft.overlays.includes(entry))) {
@@ -22616,6 +22886,8 @@ async function main() {
         draft.overlays = draft.overlays.includes(overlay)
           ? draft.overlays.filter((entry) => entry !== overlay)
           : [...draft.overlays, overlay];
+      } else if (action.id === 'light_adaptation') {
+        draft.lightAdaptationEnabled = !draft.lightAdaptationEnabled;
       } else if (action.id === 'forget') {
         draft.forgetSavedSettings = !draft.forgetSavedSettings;
       }
@@ -22655,6 +22927,7 @@ async function main() {
     const temperatureNames = ['temp', 'temperature', 'stance-temp'];
     const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
     const releaseSpeedNames = ['release-speed', 'release_speed', 'pace', 'speed'];
+    const lightAdaptationNames = ['light', 'light-adaptation', 'difficulty-shift'];
     const modelNames = ['model', 'tutor-model'];
     const modelRoleAliases = {
       tutor: 'tutor',
@@ -22723,6 +22996,14 @@ async function main() {
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (lightAdaptationNames.includes(setting)) {
+      if (parts.length > 2) {
+        console.log(`${C.red}settings error:${C.reset} use /settings light, or /settings light on|off|status\n`);
+        return;
+      }
+      handleLightAdaptationCommand(parts[1] || 'status', { duringTurn });
+      return;
+    }
     if (setting === 'theme') {
       if (parts.length === 1) {
         console.log(`${C.accent}${C.bold}themes >${C.reset} current ${cliPresentation.themeLabel}`);
@@ -23042,10 +23323,10 @@ async function main() {
     }
     if (![...temperatureNames, ...dropoutNames, ...releaseSpeedNames].includes(setting) || parts.length !== 2) {
       console.log(
-        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings release-speed <0.5-2>, /settings policy add <state|field>, or /settings forget`,
+        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings light on|off, /settings release-speed <0.5-2>, /settings policy add <state|field>, or /settings forget`,
       );
       console.log(
-        `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings release-speed 1.5${C.reset}\n`,
+        `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings light off | /settings release-speed 1.5${C.reset}\n`,
       );
       return;
     }
@@ -23709,11 +23990,12 @@ async function main() {
       scope: ['engagement_stance', 'actorial_part'],
       trigger: 'continued_learner_confusion_or_frustration',
       selectionMethod: 'seeded_uniform_excluding_previous',
-      sessionOnly: true,
+      rememberedPreference: true,
     };
     const turnInProgress = Boolean(duringTurn || processingTurn);
     const effectiveTurn = state.turns.length + 1;
     const invalidated = turnInProgress ? null : resetMixedLearnerSuggestion('light_adaptation_mode_changed');
+    const remembered = persistCurrentInteractiveSettings('light_adaptation_mode_changed');
     appendTraceEvent(state.trace, {
       type: 'light_adaptation_mode_changed',
       schema: 'machinespirits.tutor-stub.light-adaptation-mode-change.v1',
@@ -23724,6 +24006,7 @@ async function main() {
       effectiveSelection: turnInProgress ? 'next_not_yet_completed_selection' : 'next_selection',
       duringTurn: turnInProgress,
       publicTranscriptChanged: false,
+      rememberedAt: remembered?.updatedAt || null,
       cacheRefresh: invalidated
         ? {
             priorStateCleared: Boolean(invalidated.hadState),
@@ -23743,6 +24026,7 @@ async function main() {
     console.log(
       `${C.dim}  seeded draws are replayable; authored evidence, teaching action, dialogue closure, and response safety stay in control${C.reset}`,
     );
+    if (remembered) console.log(`${C.dim}  remembered as the default for the next interactive session${C.reset}`);
     if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state)) {
       startMixedLearnerPrefetch('light_adaptation_mode_changed');
       console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
@@ -23823,7 +24107,11 @@ async function main() {
     return true;
   }
 
-  function handleExplicitPerformanceDirectiveCommand(axis, argument = '', { duringTurn = false } = {}) {
+  function handleExplicitPerformanceDirectiveCommand(
+    axis,
+    argument = '',
+    { duringTurn = false, deferMixedPrefetch = false } = {},
+  ) {
     clearStatusLine();
     const command = axis === 'register' ? '/register' : '/character';
     const publicAxis = axis === 'register' ? 'teaching style' : 'host character';
@@ -23838,19 +24126,11 @@ async function main() {
       .toLowerCase();
     const normalizedAction = rawAction.replace(/[\s-]+/gu, '_');
     const current = explicitPerformanceDirectiveValue(state, axis);
-    const definitions = getActorialPartDefinitions();
-    const characterOptions = tutorStubRandomizableActorialPartIds();
-    const characterByLabel = Object.fromEntries(
-      characterOptions.map((id) => [
-        String(definitions[id]?.label || id)
-          .toLowerCase()
-          .replace(/[\s-]+/gu, '_'),
-        id,
-      ]),
-    );
+    const characterChoice = resolveTutorStubCharacterChoice(rawAction);
+    const definitions = characterChoice.definitions;
+    const characterOptions = characterChoice.options;
     const resolvedRegister = resolveEngagementStance(normalizedAction)?.register || normalizedAction;
-    const requestedValue =
-      axis === 'register' ? resolvedRegister : characterByLabel[normalizedAction] || normalizedAction;
+    const requestedValue = axis === 'register' ? resolvedRegister : characterChoice.id;
     const options = axis === 'register' ? [...(state.register?.palette || [])] : characterOptions;
 
     if (!rawAction || rawAction === 'status') {
@@ -23930,12 +24210,270 @@ async function main() {
         `${C.dim}  an authored clue source may still speak its due clue, and the final closeout character retains structural priority${C.reset}`,
       );
     }
-    if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state)) {
+    if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state) && !deferMixedPrefetch) {
       startMixedLearnerPrefetch(reason);
       console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response${C.reset}`);
     }
     console.log();
-    return true;
+    return {
+      handled: true,
+      changed: true,
+      axis,
+      previous: current,
+      value: next,
+      reason,
+      turnInProgress,
+      mixedPrefetchDeferred: Boolean(deferMixedPrefetch && mixedLearner.enabled && !turnInProgress),
+    };
+  }
+
+  function deterministicTutorCharacterRestatement(previousText, characterId) {
+    const lead =
+      {
+        scene_partner: 'Let us take the same point together:',
+        examiner: 'Inspect the same point directly:',
+        record_keeper: 'Enter the same point this way:',
+        advocate: 'Here is the strongest form of the same case:',
+        skeptic: 'Test the same point before accepting it:',
+        adversarial_teacher: 'Challenge the same idea within the subject itself:',
+        exacting_schoolmaster: 'Show the same required learning step precisely:',
+      }[characterId] || 'Put the same point another way:';
+    return cleanTutorStubCharacterRestatement(`${lead} ${String(previousText || '').trim()}`);
+  }
+
+  function applyTutorCharacterRestatementToState({ previousText, text, record }) {
+    const historyIndex = [...(state.history || [])]
+      .map((message, index) => ({ message, index }))
+      .reverse()
+      .find(({ message }) => message.role === 'assistant')?.index;
+    if (!Number.isInteger(historyIndex)) return null;
+    state.history[historyIndex] = { ...state.history[historyIndex], content: text };
+
+    const lastTurn = state.turns.at(-1);
+    let targetKind = 'opening';
+    let targetTurn = 0;
+    let targetTurnId = openingDebugId(stateRunDebugId(state));
+    if (lastTurn?.tutor === previousText) {
+      targetKind = 'tutor_response';
+      targetTurn = lastTurn.turn;
+      targetTurnId = lastTurn.turnId || turnDebugId(state, lastTurn.turn);
+      lastTurn.tutorOriginal = lastTurn.tutorOriginal || previousText;
+      lastTurn.tutor = text;
+      lastTurn.characterRestatements = [...(lastTurn.characterRestatements || []), jsonClone(record)];
+    } else if (state.openingRealization) {
+      state.openingRealization = {
+        ...state.openingRealization,
+        originalText: state.openingRealization.originalText || previousText,
+        text,
+        characterRestatements: [...(state.openingRealization.characterRestatements || []), jsonClone(record)],
+      };
+    }
+    return { targetKind, targetTurn, targetTurnId, historyIndex };
+  }
+
+  async function restateLatestTutorForCharacter(characterId, { source = '/character tutor' } = {}) {
+    const previousText = String(latestTutorMessage(state) || '').trim();
+    if (!previousText || !characterId || exiting) return { suppressReprise: false, restated: false };
+    const definitions = getActorialPartDefinitions();
+    const definition = definitions[characterId] || {};
+    const lastTurn = state.turns.at(-1);
+    const tutorTurn = lastTurn?.tutor === previousText ? Number(lastTurn.turn) || state.turns.length : 0;
+    const learnerText = lastTurn?.tutor === previousText ? lastTurn.learner || '' : '';
+    const permittedText = (state.history || []).map((message) => message.content).join('\n');
+    const prompt = buildTutorStubCharacterRestatementPrompt({
+      previousText,
+      characterId,
+      characterLabel: definition.label,
+      characterContract: definition.contract,
+      publicWorld: publicWorldSummary(state.world),
+    });
+    appendTraceEvent(state.trace, {
+      type: 'tutor_character_restatement_started',
+      schema: TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
+      source,
+      turn: tutorTurn,
+      characterId,
+      previousText,
+      publicTranscriptChanged: false,
+    });
+
+    let response = null;
+    let candidate = '';
+    let generationError = null;
+    startInterimAnimation(state, 'rephrasing tutor', { tutorTurn });
+    try {
+      response = await callPromptModel({
+        prompt,
+        resolved: state.resolved,
+        systemPrompt: TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT,
+        role: 'tutor_stub_character_clarifier',
+        maxTokens: Math.min(Number(state.maxTokens) || 420, 420),
+        trace: state.trace,
+        stream: { enabled: false },
+        cliEffort: state.cliEffort,
+        turn: tutorTurn,
+      });
+      candidate = cleanTutorStubCharacterRestatement(response.text);
+    } catch (error) {
+      generationError = error;
+    } finally {
+      stopInterimAnimation(state);
+    }
+
+    let restatementAudit = auditTutorStubCharacterRestatement({
+      previousText,
+      text: candidate,
+      characterId,
+      permittedText,
+    });
+    let leakAudit =
+      candidate && state.dag && state.world
+        ? auditTutorResponseLeak({
+            text: candidate,
+            world: state.world,
+            tutorTurn,
+            learnerText,
+            state,
+          })
+        : { ok: true, leaks: [] };
+    let deterministicFallback = false;
+    if (generationError || !candidate || !restatementAudit.ok || !leakAudit.ok) {
+      deterministicFallback = true;
+      candidate = deterministicTutorCharacterRestatement(previousText, characterId);
+      restatementAudit = auditTutorStubCharacterRestatement({
+        previousText,
+        text: candidate,
+        characterId,
+        permittedText,
+      });
+      leakAudit =
+        state.dag && state.world
+          ? auditTutorResponseLeak({
+              text: candidate,
+              world: state.world,
+              tutorTurn,
+              learnerText,
+              state,
+            })
+          : { ok: true, leaks: [] };
+    }
+
+    const record = {
+      schema: TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
+      source,
+      characterId,
+      characterLabel: definition.label || displayDiagnosticLabel(characterId),
+      previousText,
+      text: candidate,
+      deterministicFallback,
+      generationError: generationError?.message || null,
+      provider: response?.provider || (deterministicFallback ? 'harness' : null),
+      model: response?.model || (deterministicFallback ? 'deterministic-character-restatement-v1' : null),
+      latencyMs: response?.latencyMs || 0,
+      usage: response?.usage || null,
+      promptSnapshot: response?.promptSnapshot || null,
+      audit: {
+        ...restatementAudit,
+        leakAudit,
+        ok: restatementAudit.ok && leakAudit.ok,
+      },
+    };
+    const target = applyTutorCharacterRestatementToState({ previousText, text: candidate, record });
+    appendTraceEvent(state.trace, {
+      type: 'tutor_character_restatement_completed',
+      ...record,
+      target,
+      publicTranscriptChanged: true,
+      transcriptOperation: 'replace_latest_tutor_utterance',
+    });
+    sessionRuntime.sync('tutor_character_restatement_completed');
+    clearStatusLine();
+    console.log(`${C.brightMagenta}${C.bold}tutor ↻ >${C.reset} ${candidate}\n`);
+    publishAcceptedTutorToVoice({
+      text: candidate,
+      turn: target?.targetTurn ?? tutorTurn,
+      turnId: target?.targetTurnId || null,
+      reason: 'accepted_tutor_character_restatement',
+    });
+    printTutorFeedbackRequest(latestTutorFeedbackTarget());
+    if (mixedLearner.enabled && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('explicit_character_directive_changed');
+      console.log(
+        `${C.dim}  rebuilding the learner suggestion and next tutor response from this restatement${C.reset}\n`,
+      );
+    }
+    return { suppressReprise: true, restated: true, record, target };
+  }
+
+  function applyTutorCharacterChoice(argument, { duringTurn = false, source = '/character tutor' } = {}) {
+    const previous = explicitPerformanceDirectiveValue(state, 'character');
+    const canRestate = Boolean(!duringTurn && !processingTurn && latestTutorMessage(state));
+    const result = handleExplicitPerformanceDirectiveCommand('character', argument, {
+      duringTurn,
+      deferMixedPrefetch: canRestate,
+    });
+    const current = explicitPerformanceDirectiveValue(state, 'character');
+    if (current !== previous && current && canRestate) {
+      return restateLatestTutorForCharacter(current, { source });
+    }
+    return result;
+  }
+
+  function handleCharacterCommand(argument = '', { duringTurn = false } = {}) {
+    const requested = String(argument || '').trim();
+    const [target = '', ...rest] = requested.split(/\s+/u);
+    const normalizedTarget = target.toLowerCase();
+    const targetArgument = rest.join(' ');
+
+    if (!requested || normalizedTarget === 'status') {
+      clearStatusLine();
+      const learnerCharacter = mixedLearner.enabled
+        ? mixedLearner.profileId || 'custom'
+        : state.autoLearner?.enabled
+          ? state.autoLearner.profileId || 'custom'
+          : 'human learner';
+      const tutorCharacter = state.register?.enabled
+        ? explicitPerformanceDirectiveValue(state, 'character') || 'auto'
+        : 'adaptive delivery off';
+      console.log(`${C.brightMagenta}${C.bold}character controls >${C.reset}`);
+      console.log(`${C.cyan}  learner character >${C.reset} ${learnerCharacter}`);
+      console.log(`${C.brightMagenta}  tutor character >${C.reset} ${tutorCharacter}`);
+      console.log(
+        `${C.dim}  /character learner [profile] · /character tutor [part] · legacy /profile and /character <part> still work${C.reset}\n`,
+      );
+      return true;
+    }
+    if (normalizedTarget === 'learner') {
+      if (!targetArgument && mixedLearner.enabled && liveSettingsPickerAvailable() && !duringTurn) {
+        clearStatusLine();
+        console.log(`${C.cyan}${C.bold}Learner character · choose with ↑/↓ and Enter${C.reset}`);
+        return pickInitialMixedLearnerProfileWithKeyboard(mixedLearner.profileId || 'custom').then((selection) => {
+          if (!selection) return { suppressReprise: false, selected: false };
+          const requestedProfile = selection.id ? selection.id : `custom ${mixedLearner.profile}`;
+          handleMixedLearnerProfileCommand(requestedProfile, { duringTurn: false });
+          return { suppressReprise: false, selected: true, target: 'learner', value: selection.id || 'custom' };
+        });
+      }
+      handleMixedLearnerProfileCommand(targetArgument, { duringTurn });
+      return true;
+    }
+    if (normalizedTarget === 'tutor') {
+      if (!targetArgument && liveSettingsPickerAvailable() && !duringTurn) {
+        clearStatusLine();
+        console.log(`${C.brightMagenta}${C.bold}Tutor character · choose with ↑/↓ and Enter${C.reset}`);
+        return pickLiveTutorCharacterWithKeyboard(explicitPerformanceDirectiveValue(state, 'character') || 'auto').then(
+          (selection) => {
+            if (!selection) return { suppressReprise: false, selected: false };
+            return applyTutorCharacterChoice(selection.id, {
+              duringTurn: false,
+              source: '/character tutor selector',
+            });
+          },
+        );
+      }
+      return applyTutorCharacterChoice(targetArgument, { duringTurn });
+    }
+    return applyTutorCharacterChoice(requested, { duringTurn, source: '/character legacy' });
   }
 
   function executeSlashCommand({ canonicalToken, argument = '', context = {} }) {
@@ -23962,10 +24500,10 @@ async function main() {
     }
     const pausedInterim = duringTurn ? pauseInterimAnimation(state) : false;
     let slashCommandFinished = false;
-    const finishSlashCommand = () => {
+    const finishSlashCommand = ({ reprise = true } = {}) => {
       if (slashCommandFinished) return;
       slashCommandFinished = true;
-      repriseLatestTutorUtterance(command, { duringTurn });
+      if (reprise) repriseLatestTutorUtterance(command, { duringTurn });
       if (pausedInterim || (duringTurn && state.interim?.active?.paused)) resumeInterimAnimation(state);
     };
     if (command === '/theme') {
@@ -24071,11 +24609,26 @@ async function main() {
       return true;
     }
     if (command === '/register' || command === '/character') {
-      handleExplicitPerformanceDirectiveCommand(command === '/register' ? 'register' : 'character', commandArg, {
-        duringTurn,
-      });
-      finishSlashCommand();
-      return true;
+      const result =
+        command === '/character'
+          ? handleCharacterCommand(commandArg, { duringTurn })
+          : handleExplicitPerformanceDirectiveCommand('register', commandArg, { duringTurn });
+      if (result && typeof result.then === 'function') {
+        const promise = Promise.resolve(result).then(
+          (outcome) => {
+            finishSlashCommand({ reprise: outcome?.suppressReprise !== true });
+            return outcome;
+          },
+          (error) => {
+            finishSlashCommand();
+            throw error;
+          },
+        );
+        promise.tutorStubBlocksPrompt = !duringTurn;
+        return promise;
+      }
+      finishSlashCommand({ reprise: result?.suppressReprise !== true });
+      return result || true;
     }
     if (command === '/up' || command === '/down' || command === '/feedback') {
       const action =

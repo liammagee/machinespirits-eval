@@ -48,8 +48,13 @@ Key choices and defaults:
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Adaptive-performance temperature: default `0.15`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Lower values sharpen the dominant engagement stance and independently selected actorial part; higher values broaden those two distributions. Action family, audience register, lexical accessibility, and scene immersion remain deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
-- Light stochastic adaptation: off by default. Use `--light-adaptation` at
-  launch or `/light on|off|status` in an interactive session. After two
+- Light stochastic adaptation: on by default in ordinary adaptive interactive
+  sessions; dedicated automated/control, one-shot, passthrough, and
+  no-learner-analysis runs remain off unless explicitly opted in. Use
+  `--light-adaptation` or `--no-light-adaptation` at launch, and `/settings
+  light on|off|status` or the shorter `/light on|off|status` interactively.
+  The keyboard settings panel exposes the same remembered `Difficulty shift`
+  toggle. After two
   consecutive public learner turns showing confusion or frustration (adjust
   with `--light-adaptation-threshold <2..8>`), the harness makes seeded,
   replayable uniform draws for engagement stance and actorial host part,
@@ -66,7 +71,7 @@ Key choices and defaults:
 - Tutor openings hardwire only four requirements: enact the public situation, keep the exact public question visible, imply no unavailable evidence, and invite observation or clarification when no clue is available. A world may supply exact public speech in `opening_frame.authored_text` or narrow the public frame with `opening_frame.situation`; otherwise the active speaking tutor model (Terra by default) realizes the setting, question, presentation metadata, and opening-only clue surfaces. Every candidate receives a structural plus evidence-boundary audit before history commit; failures use a world-grounded deterministic fallback rather than the former shared “Keep the case question in view” boilerplate.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic|fast_learner|slow_learner`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter eight are sharper stress profiles. `fast_learner` grounds the current warrant then asks for the next clue; `slow_learner` retains evidence but asks to settle one clue at a time.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic|counterexample_hunter|goalpost_shifter|fast_learner|slow_learner` (or the character-facing alias `--learner-character`), or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter ten are sharper stress profiles. `counterexample_hunter` tests every rule with a counterexample, `goalpost_shifter` raises a new acceptance condition, `fast_learner` grounds the current reasoning link then asks for the next clue, and `slow_learner` retains evidence but asks to settle one clue at a time.
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort; analysis/classifier/DAG `codex.gpt-5.6-sol`; automated learner `codex.gpt-5.6-terra`. This intentionally places the stronger model at learner interpretation rather than public response realization.
@@ -114,7 +119,8 @@ Key choices and defaults:
   profile (including a custom profile), named tutor instance, tuning mode,
   plus the last speaking-tutor model, Realtime voice model and voice name,
   terminal theme and motion preference, learned-committee preference,
-  engagement-stance temperature, DAG-fact dropout rate, clue release speed,
+  light-adaptation preference, engagement-stance temperature, DAG-fact dropout
+  rate, clue release speed,
   register primary and overlays, and overlay threshold in
   `.tutor-stub-traces/last-settings.json`.
   Explicit CLI/environment values win; automated, one-shot, piped, and eval
@@ -451,8 +457,9 @@ Useful variants:
   state, survive `/reset` within the session, appear in status/transcript
   settings and the compact model line, and persist both draw audits on each
   turn. Random mode bypasses engagement-stance/actorial-part temperature.
-- `/light` toggles the conditional light-adaptation overlay; `/light on`,
-  `/light off`, and `/light status` are explicit forms. Unlike `/random`, it
+- `/settings light on|off|status` configures and remembers the conditional
+  light-adaptation overlay; `/light`, `/light on`, `/light off`, and `/light
+  status` remain short forms. Unlike `/random`, it
   draws only after the configured consecutive confusion/frustration threshold.
   On a triggered turn, both engagement stance and host part exclude their
   immediately previous values when possible. The trigger is assessment-led,
@@ -460,10 +467,13 @@ Useful variants:
   evidence, teaching action, licensed closure, and response-safety authority.
   Triggered light adaptation outranks explicit and random performance
   directions for those two axes only; all displaced directions remain visible
-  in the trace.
-- `/register <stance>` and `/character <part>` explicitly direct one
-  performance axis for subsequent tutor turns. With no argument they show the
-  active value and choices; `auto` (plus `clear`, `off`, or `reset`) returns
+  in the trace. The interactive app defaults it on, while dedicated research
+  controls remain opt-in so policy arms are not silently contaminated.
+- `/register <stance>` and `/character tutor <part>` explicitly direct one
+  performance axis for subsequent tutor turns. In a TTY, bare `/character
+  tutor` and `/character learner` open scrolling keyboard selectors with the
+  current choice highlighted; non-TTY callers retain current-value and choice
+  lists. `auto` (plus `clear`, `off`, or `reset`) returns
   that axis to normal selection. An explicit direction outranks `/random` only
   on its own axis, so the other axis may remain random or adaptive. Learner
   analysis still selects the action family, audience, language, and scene;
@@ -472,6 +482,25 @@ Useful variants:
   suggestion/analysis/tutor-prefetch state, survive `/reset` within the
   session, autocomplete from the slash palette, and appear in status,
   transcript settings, compact model output, and turn traces.
+  Changing to a specific tutor character after a tutor utterance is visible
+  replaces the latest public-history tutor text with a bounded restatement:
+  `Let me rephrase that.` followed by the same pedagogical intent realized in
+  the new character. It preserves the live question, quoted source text,
+  public-evidence boundary, and proof position; the trace joins the original
+  and replacement. Clearing to `auto`, changing only the learner, status
+  views, and cancelled selectors retain normal detour behavior.
+- Bare `/character` is a read-only summary of both character axes. Use
+  `/character learner <profile>` (or legacy `/profile <profile>`) for the mixed
+  learner and `/character tutor <part>` (or legacy `/character <part>`) for the
+  tutor. `--learner-character` and `--tutor-character` provide symmetric
+  launch-time controls. `adversarial_teacher` and `exacting_schoolmaster` are
+  deliberately adversarial, explicit-only tutor parts: they never enter
+  adaptive, random, or light-adaptation draws. Both follow domain-before-
+  metaphor discipline: the active subject's objects, concepts, texts, problems,
+  methods, and standards must dominate the teaching move; legal, dramatic, or
+  philosophical metaphors remain subordinate. `cross_examiner` and
+  `opposing_counsel` remain input-only compatibility aliases and normalize to
+  the classroom-native ids.
 - In `defeasible_human_scaffold`, high-confidence adjacent ellipsis such as
   `it will be the same` is resolved against the immediately preceding
   single-referent public question. The strict learner-DAG may retain an audit
@@ -524,7 +553,7 @@ Useful variants:
   turn invalidation, and exit abort stale Codex subprocesses.
 - Change the mixed learner interactively with `/profile <id>`. Use `/profile`
   for the current profile, `/profile list` for the six ordinary/core choices,
-  `/profile list stress` for the eight specialist failure modes, `/profile list
+  `/profile list stress` for the ten specialist failure modes, `/profile list
   all` for the complete v3 registry, `/profile default` to restore the
   launch-time profile, or `/profile custom <description>` for an ad-hoc
   behavior sketch. Switching aborts and clears the old clue, answer, analysis,
@@ -606,8 +635,9 @@ Useful variants:
   idempotent and excludes any tutor turn still in progress.
 - In an interactive TTY, `/settings` opens a keyboard control panel rather than
   a read-only dump. Its public labels are Tutor model, Teaching-style range,
-  Evidence-memory dropout, Turn-change override, Conversation override, and
-  Override sensitivity; the commands and trace schemas retain their technical
+  Evidence-memory dropout, Clue release speed, Difficulty shift, Turn-change
+  override, Conversation override, and Override sensitivity; the commands and
+  trace schemas retain their technical
   names. Up/Down selects one of these or the separated green
   `Done — apply and return` action; Enter opens a model chooser or numeric
   slider, toggles a pending overlay, or applies the panel when that action is selected.
@@ -636,7 +666,9 @@ Useful variants:
   distributions; `/settings stance-temp 1.4` broadens them. No other response
   axis is temperature-scaled. `/settings dropout` likewise opens its slider;
   `/settings release-speed` opens the clue-pacing slider, while `/settings
-  release-speed 1.5` brings the remaining authored clues forward. All direct
+  release-speed 1.5` brings the remaining authored clues forward. `/settings
+  light on|off|status` controls the remembered difficulty-triggered performance
+  shift. All direct
   forms remain available for fast or scripted changes. Interactive
   editing and direct changes are rejected while a tutor turn is in progress so
   each turn has one deterministic setting.

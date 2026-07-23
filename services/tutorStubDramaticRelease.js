@@ -695,8 +695,24 @@ function fallbackStance(responseConfiguration) {
 }
 
 function fallbackHostPart(responseConfiguration) {
-  const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
-  return ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'].includes(part)
+  const rawPart = oneLine(
+    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
+  );
+  const part =
+    {
+      cross_examiner: 'adversarial_teacher',
+      opposing_counsel: 'exacting_schoolmaster',
+    }[rawPart] || rawPart;
+  return [
+    'scene_partner',
+    'examiner',
+    'record_keeper',
+    'advocate',
+    'skeptic',
+    'adversarial_teacher',
+    'exacting_schoolmaster',
+    'foreperson',
+  ].includes(part)
     ? part
     : 'examiner';
 }
@@ -709,6 +725,8 @@ function hostEntrance(part, object) {
       object === 'record' ? 'I mark the live line in the open record' : `I mark the ${object} in the open record`,
     advocate: `I make the strongest case the ${object} can bear; test its limit`,
     skeptic: `Not so fast—I hold the claim against the ${object}`,
+    adversarial_teacher: `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea`,
+    exacting_schoolmaster: `Show the working with the ${object}: apply the method one step at a time, name what that step teaches us, then revise precisely`,
     foreperson: `I enter the ${object} as a provisional finding`,
   }[part];
 }

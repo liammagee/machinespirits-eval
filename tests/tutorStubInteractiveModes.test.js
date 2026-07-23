@@ -63,6 +63,8 @@ process.stdin.on('end', () => {
             notes: 'No proof update.'
           }
         })
+      : input.includes('# Character restatement task')
+        ? 'Let me rephrase that. Challenge the town’s first answer within the assay itself: whose hand struck the false shillings passed at the Marrick fair, and what should we examine first?'
       : input.includes('# Explanatory debug task')
       ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
       : process.env.FAKE_CODEX_LIGHT_RESPONSE === '1' && input.includes('Learner says')
@@ -1339,7 +1341,7 @@ test(
         } else if (!commandSubmitted && plain.includes('A Diligent Learner > /profile list stress')) {
           commandSubmitted = true;
           terminal.write('\r');
-        } else if (!requestedExit && plain.includes('learner profiles > specialist failure modes (8)')) {
+        } else if (!requestedExit && plain.includes('learner profiles > specialist failure modes (10)')) {
           requestedExit = true;
           terminal.write('/quit\r');
         }
@@ -1354,7 +1356,7 @@ test(
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /1 match for \/profile list s/u);
     assert.match(plain, /A Diligent Learner > \/profile list stress/u);
-    assert.match(plain, /learner profiles > specialist failure modes \(8\)/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(10\)/u);
     assert.doesNotMatch(plain, /unknown learner profile/u);
   },
 );
@@ -1803,7 +1805,7 @@ test('light adaptation forces a replayable style and character shift after conti
     assert.notEqual(stanceMatches.at(-1)[1], first.engagement_stance);
     assert.notEqual(partMatches.at(-1)[1].trim(), first.actorial_part_label);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
   }
 });
 
@@ -1879,6 +1881,233 @@ test('/register and /character explicitly direct their own performance axes and 
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('/character configures learner and tutor characters while preserving legacy forms', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--mixed-learner',
+      '--dag',
+      '--tutor-learner-dag',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      input:
+        '/character\n/character tutor\n/character tutor adversarial_teacher\n/character learner counterexample_hunter\n/character\n/character opposing_counsel\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /character controls >/u);
+  assert.match(result.stdout, /learner character > diligent/u);
+  assert.match(result.stdout, /tutor character > auto/u);
+  assert.match(result.stdout, /adversarial_teacher\s+adversarial teacher/u);
+  assert.match(result.stdout, /exacting_schoolmaster\s+exacting schoolmaster/u);
+  assert.match(result.stdout, /host character direction > adversarial_teacher/u);
+  assert.match(result.stdout, /switched to counterexample_hunter: Counterexample hunter/u);
+  assert.match(result.stdout, /learner character > counterexample_hunter/u);
+  assert.match(result.stdout, /tutor character > adversarial_teacher/u);
+  assert.match(result.stdout, /host character direction > exacting_schoolmaster/u);
+});
+
+test('changing the tutor character publicly restates the latest intent and replaces the cached reprise', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-character-restatement-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--no-turn-feedback',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '',
+      followupInputs: [
+        {
+          afterPlainIncludes: 'tutor >',
+          text: '/character tutor adversarial_teacher\n',
+        },
+      ],
+      stopWhen: (plain) => plain.includes('tutor ↻ > Let me rephrase that.'),
+      env: {
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /host character direction > adversarial_teacher/u);
+    assert.match(
+      result.plain,
+      /tutor ↻ > Let me rephrase that\. Challenge the town’s first answer within the assay itself:/u,
+    );
+    assert.ok(
+      (result.plain.match(/Challenge the town’s first answer within the assay itself/gu) || []).length >= 2,
+      result.plain,
+    );
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const completed = events.find((event) => event.type === 'tutor_character_restatement_completed');
+    assert.equal(completed?.characterId, 'adversarial_teacher');
+    assert.equal(completed?.target?.targetKind, 'opening');
+    assert.equal(completed?.transcriptOperation, 'replace_latest_tutor_utterance');
+    assert.equal(completed?.publicTranscriptChanged, true);
+    assert.equal(completed?.deterministicFallback, false);
+    assert.equal(completed?.audit?.ok, true);
+    assert.equal(
+      events.some((event) => event.type === 'tutor_utterance_reprise' && event.command === '/character'),
+      false,
+    );
+    const modelInput = fs.readFileSync(result.logPath, 'utf8');
+    assert.match(modelInput, /# Character restatement task/u);
+    assert.match(modelInput, /Current character id: adversarial_teacher/u);
+    assert.match(modelInput, /Previous tutor utterance/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test(
+  '/character tutor and /character learner open keyboard selectors in a TTY',
+  { skip: process.platform === 'win32', timeout: 12_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-character-selectors-'));
+    installFakeCodex(tmp);
+    let terminalOutput = '';
+    let openedTutor = false;
+    let selectedTutor = false;
+    let openedLearner = false;
+    let selectedLearner = false;
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 110,
+        rows: 28,
+        name: 'xterm-color',
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          TERM: 'xterm-color',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+        },
+      },
+    );
+    try {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`TTY character selectors timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 10_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!openedTutor && plain.includes('A Diligent Learner >')) {
+            openedTutor = true;
+            terminal.write('/character tutor\r');
+          } else if (!selectedTutor && plain.includes('Tutor character · choose with')) {
+            selectedTutor = true;
+            terminal.write('\x1b[F\r');
+          } else if (!openedLearner && plain.includes('host character direction > exacting_schoolmaster')) {
+            openedLearner = true;
+            terminal.write('/character learner\r');
+          } else if (!selectedLearner && plain.includes('Learner character · choose with')) {
+            selectedLearner = true;
+            terminal.write('\x1b[F\r');
+          } else if (!requestedExit && /learner profile > switched to [a-z_]+:/u.test(plain)) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`TTY character selectors exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /Tutor character · choose with ↑\/↓ and Enter/u);
+      assert.match(plain, /exacting_schoolmaster.*explicit-only/u);
+      assert.match(plain, /host character direction > exacting_schoolmaster/u);
+      assert.match(plain, /Learner character · choose with ↑\/↓ and Enter/u);
+      assert.match(plain, /pattern >/u);
+      assert.match(plain, /learner profile > switched to [a-z_]+:/u);
+    } finally {
+      terminal.kill();
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
+
+test('--learner-character and --tutor-character set symmetric launch-time character controls', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--mixed-learner',
+      '--dag',
+      '--tutor-learner-dag',
+      '--learner-character',
+      'goalpost_shifter',
+      '--tutor-character',
+      'opposing_counsel',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      input: '/character\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /learner character > goalpost_shifter/u);
+  assert.match(result.stdout, /tutor character > exacting_schoolmaster/u);
 });
 
 test('/register leaves the undirected character axis available to /random', async () => {

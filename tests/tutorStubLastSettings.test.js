@@ -28,6 +28,7 @@ function sampleSettings(overrides = {}) {
     cliTheme: 'ember',
     motion: 'full',
     committeeEnabled: true,
+    lightAdaptationEnabled: true,
     engagementStanceTemperature: 0.4,
     dagFactDropoutRate: 0.15,
     releaseSpeed: 1.4,
@@ -110,14 +111,14 @@ test('invalid remembered settings fail closed without throwing from the reader',
   }
 });
 
-test('legacy settings default the interactive learned committee on and reject invalid preferences', () => {
+test('legacy settings default the interactive learned committee and light adaptation on', () => {
   const legacy = sampleSettings();
   delete legacy.committeeEnabled;
-  assert.equal(
-    writeTutorStubLastSettings(path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`), legacy)
-      .committeeEnabled,
-    true,
-  );
+  delete legacy.lightAdaptationEnabled;
+  const legacyPath = path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`);
+  const normalized = writeTutorStubLastSettings(legacyPath, legacy);
+  assert.equal(normalized.committeeEnabled, true);
+  assert.equal(normalized.lightAdaptationEnabled, true);
   assert.throws(
     () =>
       writeTutorStubLastSettings(
@@ -126,8 +127,17 @@ test('legacy settings default the interactive learned committee on and reject in
       ),
     /committee preference must be true or false/u,
   );
-  fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`), { force: true });
+  assert.throws(
+    () =>
+      writeTutorStubLastSettings(
+        path.join(os.tmpdir(), `tutor-stub-settings-invalid-light-${process.pid}.json`),
+        sampleSettings({ lightAdaptationEnabled: 'yes' }),
+      ),
+    /light adaptation preference must be true or false/u,
+  );
+  fs.rmSync(legacyPath, { force: true });
   fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-${process.pid}.json`), { force: true });
+  fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-light-${process.pid}.json`), { force: true });
 });
 
 test('human chat defaults to the learned committee without changing automated experiment defaults', () => {
@@ -179,6 +189,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.presentation.theme, 'ember');
     assert.equal(restored.presentation.motion, 'full');
     assert.equal(restored.pointOfAction.arm, 'committee');
+    assert.equal(restored.lightAdaptation.enabled, true);
     assert.equal(restored.pointOfAction.committee.fallbackPolicy, 'v2');
     assert.equal(restored.opening.realization, 'remembered_scenario_instant_opening');
     assert.equal(restored.opening.speakingModelRef, null);
@@ -202,6 +213,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       'terminal_motion',
       'committee_mode',
       'engagement_stance_temperature',
+      'light_adaptation',
       'dag_fact_dropout',
       'clue_release_speed',
       'register_policy',
@@ -223,6 +235,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       'codex.gpt-5.6-terra',
       '--register-temperature',
       '1.2',
+      '--no-light-adaptation',
       '--dag-fact-dropout',
       '0.3',
       '--release-speed',
@@ -243,6 +256,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(explicit.modelRef, 'codex.gpt-5.6-terra');
     assert.equal(explicit.world.id, 'world_005_marrick');
     assert.equal(explicit.registerSelection.temperature, 1.2);
+    assert.equal(explicit.lightAdaptation.enabled, false);
     assert.equal(explicit.dagFactDropout.rate, 0.3);
     assert.equal(explicit.releasePacing.baseSpeed, 1.2);
     assert.equal(explicit.registerSelection.policy, 'field');
@@ -263,6 +277,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('realtime_voice_name'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_theme'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_motion'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('light_adaptation'));
 
     const committeeOff = tutorStubDryRun(filePath, ['--no-committee']);
     assert.equal(committeeOff.pointOfAction.enabled, false);
@@ -387,7 +402,7 @@ test('live settings changes are written for the next interactive session', () =>
         cwd: ROOT,
         encoding: 'utf8',
         input:
-          '/settings model codex.gpt-5.6-luna\n/voice model gpt-realtime-2.1\n/voice speaker cedar\n/theme ember\n/motion full\n/settings temp 0.55\n/settings dropout 0.2\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
+          '/settings model codex.gpt-5.6-luna\n/voice model gpt-realtime-2.1\n/voice speaker cedar\n/theme ember\n/motion full\n/settings temp 0.55\n/settings dropout 0.2\n/settings light off\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
         env: {
           ...process.env,
           TUTOR_STUB_REMEMBER_SETTINGS: '1',
@@ -396,6 +411,7 @@ test('live settings changes are written for the next interactive session', () =>
       },
     );
     assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /light adaptation >[^\n]*off/u);
     const loaded = readTutorStubLastSettings(filePath);
     assert.equal(loaded.status, 'loaded');
     assert.deepEqual(
@@ -410,6 +426,7 @@ test('live settings changes are written for the next interactive session', () =>
         cliTheme: loaded.settings.cliTheme,
         motion: loaded.settings.motion,
         committeeEnabled: loaded.settings.committeeEnabled,
+        lightAdaptationEnabled: loaded.settings.lightAdaptationEnabled,
         engagementStanceTemperature: loaded.settings.engagementStanceTemperature,
         dagFactDropoutRate: loaded.settings.dagFactDropoutRate,
         releaseSpeed: loaded.settings.releaseSpeed,
@@ -419,6 +436,7 @@ test('live settings changes are written for the next interactive session', () =>
       },
       sampleSettings({
         engagementStanceTemperature: 0.55,
+        lightAdaptationEnabled: false,
         dagFactDropoutRate: 0.2,
         releaseSpeed: 1.6,
         registerPolicy: 'dynamic',

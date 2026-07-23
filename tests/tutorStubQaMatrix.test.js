@@ -1075,12 +1075,12 @@ test('qa matrix runner treats all-profile runs as explicit audits', () => {
   assert.equal(plan.policySuite, 'audit');
   assert.deepEqual(plan.policySuiteAliases, ['full', 'all']);
   assert.equal(plan.policySuiteCost, 'expensive');
-  assert.equal(plan.profiles.length, 14);
+  assert.equal(plan.profiles.length, 16);
   assert.equal(plan.policies.length, 11);
-  assert.equal(plan.expectedDialogueRows, 154);
+  assert.equal(plan.expectedDialogueRows, 176);
   assert.ok(plan.warnings.some((warning) => warning.includes('every register policy')));
   assert.ok(plan.warnings.some((warning) => warning.includes('expensive periodic audit')));
-  assert.ok(plan.warnings.some((warning) => warning.includes('154 dialogue rows')));
+  assert.ok(plan.warnings.some((warning) => warning.includes('176 dialogue rows')));
 });
 
 test('qa matrix runner expands pressure policy suite for sentinel checks', () => {
@@ -1150,6 +1150,8 @@ test('auto-eval lists stress learner profiles', () => {
   assert.match(output, /proof_skipper:/);
   assert.match(output, /false_memory:/);
   assert.match(output, /affective_resistant:/);
+  assert.match(output, /counterexample_hunter:/);
+  assert.match(output, /goalpost_shifter:/);
   assert.match(output, /fast_learner:/);
   assert.match(output, /slow_learner:/);
   assert.match(output, /Stress - Proof skipper/);
@@ -1213,6 +1215,14 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   const slowSummary = learnerProfileContractSummary('slow_learner');
   assert.equal(slowSummary.dagSignatureTargets.coverageVelocity, 'slow_safe');
   assert.equal(slowSummary.dagSignatureTargets.unsupportedAssertionRate, 'low');
+
+  const counterexamplePrompt = learnerProfilePrompt('counterexample_hunter');
+  assert.match(counterexamplePrompt, /strongest rival reading|counterexample/iu);
+  assert.match(counterexamplePrompt, /do not invent hidden facts/iu);
+
+  const goalpostPrompt = learnerProfilePrompt('goalpost_shifter');
+  assert.match(goalpostPrompt, /new evidentiary standard|new acceptance condition/iu);
+  assert.match(goalpostPrompt, /eventually honor that criterion/iu);
 });
 
 test('every stress profile explains its boundary against the declared nearest core profile', () => {

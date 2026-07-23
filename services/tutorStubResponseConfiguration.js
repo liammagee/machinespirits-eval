@@ -248,12 +248,32 @@ export function selectTutorStubSceneImmersion({ classification, comprehension, w
 }
 
 const ACTORIAL_PART_IDS = ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'];
+const EXPLICIT_ONLY_ACTORIAL_PART_IDS = ['adversarial_teacher', 'exacting_schoolmaster'];
+const LEGACY_ACTORIAL_PART_ALIASES = Object.freeze({
+  cross_examiner: 'adversarial_teacher',
+  opposing_counsel: 'exacting_schoolmaster',
+});
+
+export function normalizeTutorStubActorialPartId(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/gu, '_');
+  return LEGACY_ACTORIAL_PART_ALIASES[normalized] || normalized;
+}
 
 // These host parts are safe to vary independently of the learner assessment.
 // `foreperson` remains a structural closeout role and is therefore selected
 // only by the normal closure lock.
 export function tutorStubRandomizableActorialPartIds() {
   return ACTORIAL_PART_IDS.filter((part) => part !== 'foreperson');
+}
+
+// Deliberately adversarial parts are available only through an explicit
+// learner/tutor character choice. They must never enter the automatic, random,
+// or light-adaptation distributions without a separate safety decision.
+export function tutorStubConfigurableActorialPartIds() {
+  return [...tutorStubRandomizableActorialPartIds(), ...EXPLICIT_ONLY_ACTORIAL_PART_IDS];
 }
 
 const STANCE_PART_AFFINITY = {
@@ -338,19 +358,22 @@ const ACTORIAL_PERFORMANCE_BY_STANCE = {
 };
 
 export function selectTutorStubActorialPerformance({ engagementStance = 'precise', actorialPart = null } = {}) {
+  const normalizedActorialPart = actorialPart ? normalizeTutorStubActorialPartId(actorialPart) : actorialPart;
   const stanceTactic = ACTORIAL_PERFORMANCE_BY_STANCE[engagementStance] || ACTORIAL_PERFORMANCE_BY_STANCE.precise;
   // A foreperson is selected only for terminal work. Invitation tactics such
   // as warm/shared-scene otherwise conflict with the hard requirement to
   // close without asking for another turn. Keep the stance for voice, but use
   // the closure-compatible evidentiary boundary as the performed tactic.
-  const tactic = actorialPart === 'foreperson' ? ACTORIAL_PERFORMANCE_BY_STANCE.precise : stanceTactic;
+  const tactic = normalizedActorialPart === 'foreperson' ? ACTORIAL_PERFORMANCE_BY_STANCE.precise : stanceTactic;
   return {
     ...tactic,
     engagement_stance: engagementStance,
-    actorial_part: actorialPart,
+    actorial_part: normalizedActorialPart,
     selection_method:
-      actorialPart === 'foreperson' ? 'closure_compatible_stance_realization_contract' : 'stance_realization_contract',
-    displaced_tactic: actorialPart === 'foreperson' ? stanceTactic.id : null,
+      normalizedActorialPart === 'foreperson'
+        ? 'closure_compatible_stance_realization_contract'
+        : 'stance_realization_contract',
+    displaced_tactic: normalizedActorialPart === 'foreperson' ? stanceTactic.id : null,
     forbidden_meta_frames: [
       'let us role-play',
       'I will be the role',
@@ -645,6 +668,10 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const lexicalDefinitions = getLexicalAccessibilityDefinitions();
   const sceneDefinitions = getSceneImmersionDefinitions();
   const actorialDefinitions = getActorialPartDefinitions();
+  const actorialPartId = normalizeTutorStubActorialPartId(configuration.actorial_part);
+  const actorialPartLabel = oneLine(
+    actorialDefinitions[actorialPartId]?.label || configuration.actorial_part_label || actorialPartId,
+  );
   const stance = configuration.engagement_stance;
   const stanceContract = oneLine(stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
@@ -669,10 +696,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       sceneDefinitions,
       configuration.scene_immersion,
     )}`,
-    `Actorial host part: ${configuration.actorial_part_label || configuration.actorial_part}. ${definitionContract(
-      actorialDefinitions,
-      configuration.actorial_part,
-    )}`,
+    `Actorial host part: ${actorialPartLabel}. ${definitionContract(actorialDefinitions, actorialPartId)}`,
     configuration.actorial_part_selection?.authored_role
       ? `Authored public clue source: ${configuration.actorial_part_selection.authored_role}. This source enactment is separate from the adaptive host part. Let the host respond to the learner and frame the encounter, then voice the supplied evidence from inside the source in first person inside quotation marks. Do not prefix the speech with the role name or a stage direction. The source supplies no knowledge beyond the public clue in the current turn context.`
       : null,
@@ -701,6 +725,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
         ? `Clue release: slower at ${configuration.release_pacing.effectiveSpeed}x. Do not add a new clue unless it is already due; consolidate one public step first.`
         : `Clue release: authored pace at ${configuration.release_pacing?.effectiveSpeed ?? 1}x; add no more than one authored clue batch this turn.`,
     'These are independent axes. Perform the action family and visibly take the actorial host part; do not infer either one from the engagement stance or replace it with an authored clue source.',
+    'Domain before metaphor: make the active subject’s objects, concepts, texts, problems, methods, and standards the primary vocabulary of the teaching move. Legal, dramatic, or philosophical metaphors may shape the encounter, but must remain subordinate and must not turn an ordinary lesson into generic courtroom speech.',
     configuration.random_performance?.enabled
       ? 'Random performance mode bypasses temperature for the engagement stance and actorial host part. Do not let that random variation blur the audience, lexical, action, scene, evidence, or safety contracts.'
       : configuration.performance_directives?.register || configuration.performance_directives?.character
@@ -1041,7 +1066,7 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
 }
 
 function actorialPartVisible(configuration, text, metrics) {
-  const part = configuration.actorial_part;
+  const part = normalizeTutorStubActorialPartId(configuration.actorial_part);
   if (!part) return false;
   if (part === 'scene_partner') {
     return (
@@ -1278,6 +1303,42 @@ function actorialPartVisible(configuration, text, metrics) {
       opensWithConcreteBoundary ||
       refusesUnsupportedNameInPublicSpeech ||
       refusesToPlacePersonUnderUnsupportedMark
+    );
+  }
+  if (part === 'adversarial_teacher') {
+    const avoidsGenericCourtroomSpeech =
+      !/\b(?:cross-examin\w*|opposing counsel|courtroom|public warrant|rival case|objection|verdict)\b/iu.test(text);
+    const posesSubjectNativeChallenge =
+      /\b(?:counterexample|altered example|changed example|alternative (?:method|reading|solution)|competing solution|does (?:that|this|your) (?:idea|method|reading|rule|solution) still|test (?:that|this|your) (?:idea|method|reading|rule|solution)|what changes if|try (?:that|this|your) (?:idea|method|reading|rule|solution))\b/iu.test(
+        text,
+      );
+    const namesLearningMaterial =
+      metrics.concreteSceneTermCount > 0 ||
+      /\b(?:concept|definition|equation|example|experiment|method|observation|passage|problem|procedure|rule|solution|text|working)\b/iu.test(
+        text,
+      );
+    const givesBoundedLearningHandoff =
+      metrics.questionCount > 0 && /\b(?:apply|compare|explain|how|revise|show|test|what|which|work)\b/iu.test(text);
+    return (
+      avoidsGenericCourtroomSpeech &&
+      posesSubjectNativeChallenge &&
+      namesLearningMaterial &&
+      givesBoundedLearningHandoff
+    );
+  }
+  if (part === 'exacting_schoolmaster') {
+    const avoidsGenericCourtroomSpeech =
+      !/\b(?:cross-examin\w*|opposing counsel|courtroom|public warrant|rival case|objection|verdict)\b/iu.test(text);
+    const requiresDisciplinaryPerformance =
+      /\b(?:apply the method|calculate|define the term|demonstrate|make the observation|name the step|read the passage|revise precisely|show (?:me )?(?:the )?(?:method|reasoning|step|work|working)|work (?:it|this|that) (?:out|through))\b/iu.test(
+        text,
+      );
+    const keepsARepairPath = /\b(?:again|correct|criterion|method|precisely|retry|revise|step|try)\b/iu.test(text);
+    return (
+      avoidsGenericCourtroomSpeech &&
+      metrics.concreteSceneTermCount > 0 &&
+      requiresDisciplinaryPerformance &&
+      keepsARepairPath
     );
   }
   if (part === 'foreperson') {
