@@ -5,6 +5,8 @@ import path from 'node:path';
 import readline from 'node:readline';
 
 import { resolveTutorStubCapabilities } from './tutorStubCapabilities.js';
+import { createCellLabSessionFactory } from './legacyChatSessionAdapter.js';
+import { LEGACY_CHAT_ENGINE_ID } from './legacyChatEngine.js';
 import { getTutorStubLab } from './tutorStubLabs.js';
 import { createTutorStubSessionHost, TutorStubSessionHostError } from './tutorStubSessionHost.js';
 import { normalizeTutorStubResumeTrace } from './tutorStubSessionRecipe.js';
@@ -16,6 +18,7 @@ export const TUTOR_STUB_PROCESS_SESSION_VERSION = 1;
 
 const SESSION_MODES = new Set(['direct', 'passthrough', 'scaffold', 'mixed', 'curriculum']);
 const SESSION_ENGINES = new Set(['tutor_stub']);
+const SHARED_SESSION_ENGINES = new Set(['tutor_stub', LEGACY_CHAT_ENGINE_ID]);
 const PROCESS_SESSION_LAB_MODES = new Map([
   ['pure_chat', 'passthrough'],
   ['human_scaffold', 'scaffold'],
@@ -755,9 +758,23 @@ export function createTutorStubProcessSessionFactory({
 }
 
 export function createTutorStubProcessSessionHost(options = {}) {
-  const { maxSessions = 32, ...factoryOptions } = options;
+  const { maxSessions = 32, cellLab = {}, ...factoryOptions } = options;
+  const createTutorStubSession = createTutorStubProcessSessionFactory(factoryOptions);
+  const createCellLabSession = createCellLabSessionFactory({
+    env: factoryOptions.env || process.env,
+    ...cellLab,
+  });
   return createTutorStubSessionHost({
-    createSession: createTutorStubProcessSessionFactory(factoryOptions),
+    createSession(specification = {}) {
+      const engine = boundedString(specification.engine || 'tutor_stub', 'engine', 32);
+      if (engine === 'tutor_stub') return createTutorStubSession(specification);
+      if (engine === LEGACY_CHAT_ENGINE_ID) return createCellLabSession(specification);
+      throw new TutorStubSessionHostError(
+        'invalid_request',
+        `engine must be one of: ${[...SHARED_SESSION_ENGINES].join(', ')}`,
+        400,
+      );
+    },
     maxSessions,
   });
 }

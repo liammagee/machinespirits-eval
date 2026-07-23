@@ -125,6 +125,49 @@ test('shared tutor shell and process API require the administrator role', async 
   const catalogAdmin = await request('/api/tutor-stub/catalog', { user: 'admin', pass: 'secret' });
   assert.equal(catalogAdmin.status, 200);
   assert.equal(JSON.parse(catalogAdmin.body).catalog.schema, 'machinespirits.tutor-stub.public-catalog.v1');
+
+  const cellLabParticipant = await request('/api/tutor-stub/sessions', {
+    method: 'POST',
+    user: 'participant',
+    pass: 'participant-secret',
+    body: {
+      id: 'auth-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_7_recog_multi_unified',
+    },
+  });
+  assert.equal(cellLabParticipant.status, 403);
+
+  const cellLabAdmin = await request('/api/tutor-stub/sessions', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: {
+      id: 'auth-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_7_recog_multi_unified',
+    },
+  });
+  assert.equal(cellLabAdmin.status, 201, cellLabAdmin.body);
+  const cellLabPublic = JSON.parse(cellLabAdmin.body).session;
+  assert.equal(cellLabPublic.state.engine, 'cell_lab');
+  assert.doesNotMatch(JSON.stringify(cellLabPublic), /cell_7|configHash|deliberation|prompt_file/iu);
+
+  const researchDenied = await request('/api/tutor-stub/sessions/auth-cell-lab/research');
+  assert.equal(researchDenied.status, 401);
+  const researchParticipant = await request('/api/tutor-stub/sessions/auth-cell-lab/research', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(researchParticipant.status, 403);
+  const researchAdmin = await request('/api/tutor-stub/sessions/auth-cell-lab/research', {
+    user: 'admin',
+    pass: 'secret',
+  });
+  assert.equal(researchAdmin.status, 200, researchAdmin.body);
+  assert.equal(JSON.parse(researchAdmin.body).research.schema, 'machinespirits.cell-lab.research-trace.v1');
 });
 
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {

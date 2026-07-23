@@ -88,3 +88,13 @@ the two engines are not treated as prompt-compatible implementations.
   boundary has no Express dependency. A focused 123-test route, curriculum,
   deliberation, live-compose, pilot, and auth suite passes without paid calls;
   the full hermetic suite passes 6,408 tests with one skip and no failures.
+- 2026-07-23: Completed phase 4's server boundary. The shared session host now
+  dispatches `engine: cell_lab` to an in-process legacy-cell adapter only for
+  administrator or loopback-local requests; participant credentials remain
+  denied. Ordinary create/get/list/step responses contain only lifecycle and
+  public dialogue, while `GET /api/tutor-stub/sessions/:id/research` provides
+  the separate no-store research projection with the preserved configuration
+  hash, cell/source architecture, model accounting, and ego/superego trace.
+  The learner-safe public catalogue remains tutor-stub-only. The focused
+  compatibility slice passes 146 tests; the full hermetic suite passes 6,423
+  tests with one skip and no failures.

@@ -118,6 +118,25 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
     return task;
   };
 
+  const queueResearchProjection = (id) => {
+    const entry = entryFor(id);
+    const task = entry.queue.then(() => {
+      if (typeof entry.runtime.researchSnapshot !== 'function') {
+        throw new TutorStubSessionHostError(
+          'research_projection_unavailable',
+          `tutor-stub session ${entry.runtime.id} does not expose a research projection`,
+          409,
+        );
+      }
+      return clone(entry.runtime.researchSnapshot());
+    });
+    entry.queue = task.then(
+      () => undefined,
+      () => undefined,
+    );
+    return task;
+  };
+
   return Object.freeze({
     schema: TUTOR_STUB_SESSION_HOST_SCHEMA,
     version: TUTOR_STUB_SESSION_HOST_VERSION,
@@ -201,6 +220,9 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
       return [...sessions.values()]
         .map((entry) => snapshotFor(entry))
         .sort((left, right) => left.sessionId.localeCompare(right.sessionId));
+    },
+    research(id) {
+      return queueResearchProjection(id);
     },
     step(id, input, options = {}) {
       return queueMutation(id, 'step', (runtime) => runtime.step(input, options));
