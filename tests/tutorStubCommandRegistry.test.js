@@ -14,10 +14,13 @@ import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
   tutorStubCommandCompletionMetadata,
+  tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
   tutorStubCommandTokens,
+  tutorStubCommandUnavailableReasons,
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
+import { resolveTutorStubCapabilities } from '../services/tutorStubCapabilities.js';
 
 const NORMAL_COMMANDS = [
   '/demo',
@@ -185,7 +188,9 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
     assert.equal(Object.isFrozen(definition.aliases), true);
     assert.equal(Object.isFrozen(definition.availability), true);
     assert.equal(Object.isFrozen(definition.order), true);
+    assert.equal(Object.isFrozen(definition.capabilities), true);
   }
+  assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
 
@@ -275,4 +280,51 @@ test('passthrough settings completions expose only speaker model, theme, and mot
   assert.equal(Object.isFrozen(passthrough), true);
   assert.ok(passthrough.every((candidate) => /^\/settings (?:model |theme |motion )/u.test(candidate)));
   assert.ok(passthrough.every((candidate) => !/(?:models|temp|dropout|release-speed|forget|policy)/u.test(candidate)));
+});
+
+test('resolved capabilities filter commands, completions, and generated help without changing frozen catalog views', () => {
+  const direct = resolveTutorStubCapabilities({
+    interactive: true,
+    world: true,
+    classifier: true,
+    registerSelection: true,
+    turnFeedback: true,
+    trace: true,
+    learningSummary: true,
+    responseChecks: true,
+  });
+  assert.equal(tutorStubCommandAvailable('/random', { capabilities: direct }), true);
+  assert.equal(tutorStubCommandAvailable('/coach', { capabilities: direct }), true);
+  assert.equal(tutorStubCommandAvailable('/suggest', { capabilities: direct }), false);
+  assert.deepEqual(tutorStubCommandUnavailableReasons('/suggest', { capabilities: direct }), [
+    'mixed learner drafting is not active',
+  ]);
+  assert.ok(!tutorStubCommandTokens({ capabilities: direct }).includes('/suggest'));
+  assert.deepEqual(tutorStubStaticCommandCompletions('/profile', { capabilities: direct }), []);
+  assert.ok(tutorStubCommandHelpRows({ capabilities: direct }).some((row) => row.id === 'take_part'));
+  assert.ok(!tutorStubCommandHelpRows({ capabilities: direct }).some((row) => row.commands.includes('/profile [id]')));
+  assert.deepEqual(tutorStubCommandTokens(), NORMAL_COMMANDS);
+
+  const mixed = resolveTutorStubCapabilities({
+    interactive: true,
+    world: true,
+    classifier: true,
+    registerSelection: true,
+    mixedLearner: true,
+    turnFeedback: true,
+    trace: true,
+    learningSummary: true,
+    responseChecks: true,
+  });
+  assert.equal(tutorStubCommandAvailable('/suggest', { capabilities: mixed }), true);
+  assert.equal(tutorStubCommandAvailable('/profile', { capabilities: mixed }), true);
+  assert.ok(tutorStubCommandTokens({ capabilities: mixed }).includes('/accept'));
+  assert.ok(tutorStubCommandHelpRows({ capabilities: mixed }).some((row) => row.commands.includes('/profile [id]')));
+
+  const passthrough = resolveTutorStubCapabilities({ passthrough: true, trace: true });
+  assert.deepEqual(tutorStubCommandTokens({ mode: 'passthrough', capabilities: passthrough }), PASSTHROUGH_COMMANDS);
+  assert.deepEqual(
+    tutorStubCommandHelpRows({ mode: 'passthrough', capabilities: passthrough }).map((row) => row.id),
+    ['model', 'inspect', 'appearance', 'setup', 'finish_passthrough'],
+  );
 });

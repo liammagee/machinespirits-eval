@@ -50,3 +50,10 @@ and evaluation adapters rather than forking them.
   it. The slice preserves the existing 38 canonical commands and fixes
   passthrough completion drift; capability snapshots, generated help, command
   dispatch, and the importable session runtime remain to be extracted.
+- 2026-07-23: Added a frozen 23-capability registry and resolver with explicit
+  available/active states, six resolved session modes, and machine-readable
+  compatibility issues. Dry-run and traces now persist the snapshot; command
+  dispatch, completion, `/help`, and `/features` consume it so inactive
+  mixed-drafting and adaptive-performance controls do not masquerade as usable.
+  The importable create/load/reset/resume/step/finalize runtime and handler
+  extraction remain the next slice.

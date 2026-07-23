@@ -1,9 +1,190 @@
 import { TUTOR_STUB_CLI_MOTION_IDS, TUTOR_STUB_CLI_THEME_IDS } from './tutorStubCliTheme.js';
+import {
+  TUTOR_STUB_CAPABILITY_IDS,
+  tutorStubCapabilityActive,
+  tutorStubCapabilityAvailable,
+} from './tutorStubCapabilities.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
 export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v1';
 export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 1;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
+
+const COMMAND_CAPABILITY_REQUIREMENTS = {
+  demo: { available: ['guided_demo'] },
+  random: { active: ['adaptive_delivery'] },
+  register: { active: ['adaptive_delivery'] },
+  character: { active: ['adaptive_delivery'] },
+  feedback_up: { available: ['turn_feedback'] },
+  feedback_down: { available: ['turn_feedback'] },
+  feedback: { available: ['turn_feedback'] },
+  tune: { available: ['tutor_tuning'] },
+  mode: { available: ['interactive_roles'] },
+  learner: { available: ['interactive_roles'] },
+  coach: { available: ['interactive_roles'] },
+  auto: { available: ['automated_learner'] },
+  suggest: { active: ['mixed_drafting'] },
+  clue: { active: ['mixed_drafting'] },
+  profile: { active: ['mixed_drafting'] },
+  use: { active: ['mixed_drafting'] },
+  regen: { active: ['mixed_drafting'] },
+  board: { available: ['curriculum'] },
+};
+
+const HELP_GROUPS = [
+  {
+    id: 'demonstrate',
+    mode: 'normal',
+    label: 'demonstrate',
+    commands: [{ id: 'demo', arguments: '[turns]' }],
+    summary: 'guided live tour with analysis and HTML evidence',
+  },
+  {
+    id: 'take_part',
+    mode: 'normal',
+    label: 'take part',
+    commands: [
+      { id: 'learner' },
+      { id: 'coach', arguments: '[suggestion]' },
+      { id: 'auto', arguments: '[turns]' },
+      { id: 'mode' },
+    ],
+    summary: 'switch between public learner, private coach, and bounded auto roles',
+  },
+  {
+    id: 'get_help',
+    mode: 'normal',
+    label: 'get help',
+    commands: [
+      { id: 'clue' },
+      { id: 'suggest' },
+      { id: 'use' },
+      { id: 'regen' },
+      { id: 'clarify', arguments: '[phrase]', includeAliases: true },
+    ],
+    summary: 'inspect or use mixed drafts and clarify public wording',
+  },
+  {
+    id: 'understand',
+    mode: 'normal',
+    label: 'understand',
+    commands: [
+      { id: 'analysis', arguments: '[technical]' },
+      { id: 'debug', arguments: 'on|off' },
+      { id: 'status' },
+      { id: 'director' },
+      { id: 'transcript', arguments: '[no-open]' },
+      { id: 'voice' },
+      { id: 'id' },
+    ],
+    summary: 'inspect the current session without changing public dialogue',
+  },
+  {
+    id: 'choose',
+    mode: 'normal',
+    label: 'choose',
+    commands: [
+      { id: 'scenario', arguments: '[id]' },
+      { id: 'board', arguments: '[item-id]' },
+    ],
+    summary: 'start a fresh inquiry from a scenario or live workplan card',
+  },
+  {
+    id: 'discover',
+    mode: 'normal',
+    label: 'discover',
+    commands: [{ id: 'features' }, { id: 'release_notes', arguments: '[hours]' }, { id: 'help' }],
+    summary: 'browse capabilities, recent changes, and command hints',
+  },
+  {
+    id: 'rate_tutor',
+    mode: 'normal',
+    label: 'rate tutor',
+    commands: [
+      { id: 'feedback_up', arguments: '[reason]' },
+      { id: 'feedback_down', arguments: '[reason] [comment]' },
+      { id: 'feedback', arguments: 'on|off|clear' },
+    ],
+    summary: 'record optional human helpfulness feedback',
+  },
+  {
+    id: 'direct',
+    mode: 'normal',
+    label: 'direct',
+    commands: [{ id: 'register', arguments: '<style>' }, { id: 'character', arguments: '<part>' }, { id: 'random' }],
+    summary: 'direct or randomize performance axes without changing evidence',
+  },
+  {
+    id: 'adjust',
+    mode: 'normal',
+    label: 'adjust',
+    commands: [
+      { id: 'profile', arguments: '[id]' },
+      { id: 'settings' },
+      { id: 'tune' },
+      { id: 'theme' },
+      { id: 'motion' },
+    ],
+    summary: 'change session controls, tutor tuning, and presentation',
+  },
+  {
+    id: 'recover',
+    mode: 'normal',
+    label: 'recover',
+    commands: [{ id: 'reset' }],
+    summary: 'cancel unfinished work and restart the same inquiry',
+  },
+  {
+    id: 'finish',
+    mode: 'normal',
+    label: 'finish',
+    commands: [{ id: 'report' }, { id: 'quit' }],
+    summary: 'show the closeout or leave the session',
+  },
+  {
+    id: 'model',
+    mode: 'passthrough',
+    label: 'model',
+    commands: [{ id: 'settings', arguments: 'model [provider.alias]' }],
+    summary: 'change the sole speaking model',
+  },
+  {
+    id: 'inspect',
+    mode: 'passthrough',
+    label: 'inspect',
+    commands: [
+      { id: 'status' },
+      { id: 'features' },
+      { id: 'release_notes', arguments: '[hours]' },
+      { id: 'transcript', arguments: '[no-open]' },
+      { id: 'voice' },
+      { id: 'director' },
+      { id: 'id' },
+    ],
+    summary: 'inspect speaker-only state and artifacts',
+  },
+  {
+    id: 'appearance',
+    mode: 'passthrough',
+    label: 'appearance',
+    commands: [{ id: 'theme' }, { id: 'motion' }],
+    summary: 'change terminal theme or motion',
+  },
+  {
+    id: 'setup',
+    mode: 'passthrough',
+    label: 'setup',
+    commands: [{ id: 'scenario', arguments: '[id]' }, { id: 'reset' }],
+    summary: 'change setup or restart the public history',
+  },
+  {
+    id: 'finish_passthrough',
+    mode: 'passthrough',
+    label: 'finish',
+    commands: [{ id: 'help' }, { id: 'quit' }],
+    summary: 'show these hints or leave the session',
+  },
+];
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
@@ -12,6 +193,7 @@ function deepFreeze(value) {
 }
 
 function command({ id, token, aliases = [], passthroughOrder = null, sceneReturnOrder = null, completion = null }) {
+  const requirements = COMMAND_CAPABILITY_REQUIREMENTS[id] || {};
   return {
     id,
     token,
@@ -25,6 +207,10 @@ function command({ id, token, aliases = [], passthroughOrder = null, sceneReturn
       sceneReturn: sceneReturnOrder,
     },
     sceneReturn: Number.isInteger(sceneReturnOrder),
+    capabilities: {
+      available: requirements.available || [],
+      active: requirements.active || [],
+    },
     completion,
   };
 }
@@ -272,6 +458,7 @@ export const TUTOR_STUB_COMMAND_REGISTRY = deepFreeze({
   schema: TUTOR_STUB_COMMAND_REGISTRY_SCHEMA,
   version: TUTOR_STUB_COMMAND_REGISTRY_VERSION,
   commands: COMMANDS,
+  helpGroups: HELP_GROUPS,
 });
 
 const COMMAND_BY_TOKEN = new Map();
@@ -327,40 +514,91 @@ export function tutorStubCanonicalCommandToken(value) {
   return resolveTutorStubCommand(value)?.token || null;
 }
 
-export function tutorStubCommandAvailable(value, { mode = 'normal' } = {}) {
+export function tutorStubCommandAvailable(value, { mode = 'normal', capabilities = null } = {}) {
   const definition = resolveTutorStubCommand(value);
-  return Boolean(definition?.availability[normalizedMode(mode)]);
+  if (!definition?.availability[normalizedMode(mode)]) return false;
+  if (!capabilities) return true;
+  if (
+    definition.capabilities.available.some((id) => !tutorStubCapabilityAvailable(capabilities, id)) ||
+    definition.capabilities.active.some((id) => !tutorStubCapabilityActive(capabilities, id))
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function tutorStubCommandUnavailableReasons(value, { mode = 'normal', capabilities = null } = {}) {
+  const definition = resolveTutorStubCommand(value);
+  if (!definition) return Object.freeze(['unknown command']);
+  const normalized = normalizedMode(mode);
+  if (!definition.availability[normalized]) {
+    return Object.freeze([`not available in ${normalized} mode`]);
+  }
+  if (!capabilities) return Object.freeze([]);
+  const reasons = [
+    ...definition.capabilities.available
+      .filter((id) => !tutorStubCapabilityAvailable(capabilities, id))
+      .map((id) => `${capabilities.capabilities?.[id]?.label || id} is unavailable`),
+    ...definition.capabilities.active
+      .filter((id) => !tutorStubCapabilityActive(capabilities, id))
+      .map((id) => `${capabilities.capabilities?.[id]?.label || id} is not active`),
+  ];
+  return Object.freeze(reasons);
 }
 
 export function tutorStubCommandReturnsToScene(value) {
   return resolveTutorStubCommand(value)?.sceneReturn === true;
 }
 
-export function tutorStubCommandTokens({ mode = 'normal', sceneReturn = false } = {}) {
+export function tutorStubCommandTokens({ mode = 'normal', sceneReturn = false, capabilities = null } = {}) {
   const normalized = normalizedMode(mode);
   const source = sceneReturn
     ? TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS
     : normalized === 'passthrough'
       ? TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS
       : TUTOR_STUB_NORMAL_SLASH_COMMANDS;
-  if (!sceneReturn || normalized === 'normal') return source;
-  return Object.freeze(source.filter((token) => tutorStubCommandAvailable(token, { mode: normalized })));
+  if (!capabilities && (!sceneReturn || normalized === 'normal')) return source;
+  return Object.freeze(source.filter((token) => tutorStubCommandAvailable(token, { mode: normalized, capabilities })));
 }
 
-export function tutorStubStaticCommandCompletions(value, { mode = 'normal' } = {}) {
+export function tutorStubStaticCommandCompletions(value, { mode = 'normal', capabilities = null } = {}) {
   const normalized = normalizedMode(mode);
   const definition = resolveTutorStubCommand(value);
-  if (!definition?.availability[normalized]) return Object.freeze([]);
+  if (!tutorStubCommandAvailable(value, { mode: normalized, capabilities })) return Object.freeze([]);
   const metadata = definition.completion?.[normalized] || definition.completion?.normal || null;
   const token = commandToken(value);
   return Object.freeze((metadata?.suffixes || []).map((suffix) => `${token} ${suffix}`));
 }
 
-export function tutorStubCommandCompletionMetadata(value, { mode = 'normal' } = {}) {
+export function tutorStubCommandCompletionMetadata(value, { mode = 'normal', capabilities = null } = {}) {
   const normalized = normalizedMode(mode);
   const definition = resolveTutorStubCommand(value);
-  if (!definition?.availability[normalized]) return null;
+  if (!tutorStubCommandAvailable(value, { mode: normalized, capabilities })) return null;
   return definition.completion?.[normalized] || definition.completion?.normal || null;
+}
+
+export function tutorStubCommandHelpRows({ mode = 'normal', capabilities = null } = {}) {
+  const normalized = normalizedMode(mode);
+  const rows = HELP_GROUPS.filter((group) => group.mode === normalized)
+    .map((group) => {
+      const commands = group.commands
+        .filter((entry) => tutorStubCommandAvailable(entry.id, { mode: normalized, capabilities }))
+        .flatMap((entry) => {
+          const definition = resolveTutorStubCommand(entry.id);
+          const tokens = entry.includeAliases ? [definition.token, ...definition.aliases] : [definition.token];
+          return tokens.map((token) => `${token}${entry.arguments ? ` ${entry.arguments}` : ''}`);
+        });
+      return commands.length
+        ? Object.freeze({
+            id: group.id,
+            label: group.label,
+            commands: Object.freeze(commands),
+            summary: group.summary,
+          })
+        : null;
+    })
+    .filter(Boolean);
+  return Object.freeze(rows);
 }
 
 export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_COMMAND_REGISTRY) {
@@ -402,6 +640,14 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
     if (definition.sceneReturn !== Number.isInteger(definition.order?.sceneReturn)) {
       throw new Error(`scene-return flag/order drift for command: ${definition.id}`);
     }
+    for (const capabilityId of [
+      ...(definition.capabilities?.available || []),
+      ...(definition.capabilities?.active || []),
+    ]) {
+      if (!TUTOR_STUB_CAPABILITY_IDS.includes(capabilityId)) {
+        throw new Error(`unknown capability requirement for ${definition.id}: ${capabilityId}`);
+      }
+    }
     for (const orderKey of Object.keys(orders)) {
       const order = definition.order?.[orderKey];
       if (!Number.isInteger(order)) continue;
@@ -424,6 +670,20 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
       const providers = metadata?.dynamicProviders || [];
       if (!Array.isArray(providers) || providers.some((provider) => typeof provider !== 'string' || !provider)) {
         throw new Error(`invalid dynamic completion providers for command: ${definition.id}`);
+      }
+    }
+  }
+
+  const helpGroupIds = new Set();
+  for (const group of registry.helpGroups || []) {
+    if (helpGroupIds.has(group.id)) throw new Error(`duplicate command help group id: ${group.id}`);
+    helpGroupIds.add(group.id);
+    normalizedMode(group.mode);
+    for (const entry of group.commands || []) {
+      if (!ids.has(entry.id)) throw new Error(`unknown command in help group ${group.id}: ${entry.id}`);
+      const definition = registry.commands.find((candidate) => candidate.id === entry.id);
+      if (!definition.availability[group.mode]) {
+        throw new Error(`unavailable ${group.mode} command in help group ${group.id}: ${entry.id}`);
       }
     }
   }

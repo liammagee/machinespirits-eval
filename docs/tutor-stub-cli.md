@@ -6,6 +6,28 @@ the scene, semantic colors distinguish tutor, learner, coach, success, warning,
 and failure states, and the existing one-line progress display carries the only
 animation.
 
+## Capability-aware commands
+
+Every session resolves a frozen, versioned capability snapshot after launch
+configuration has been normalized. The snapshot separates what the current
+mode makes available from what is active now, identifies the resolved mode
+(`passthrough`, `direct`, `scaffold`, `mixed`, `auto`, or `curriculum`), and
+checks machine-readable prerequisites and conflicts before the dialogue starts.
+It is included in `--dry-run`, trace metadata, and a
+`capability_snapshot_resolved` trace event.
+
+The slash-command palette, completions, `/help`, and `/features` read this
+snapshot. Commands that cannot do meaningful work in the current session are
+omitted; a direct attempt is rejected with the missing or inactive capability
+named explicitly. For example, mixed-drafting commands such as `/suggest` and
+`/use` appear only when mixed drafting is active, while `/random`, `/register`,
+and `/character` require adaptive delivery. Calling `/help` therefore describes
+the command surface that is actually usable rather than a larger global list.
+
+The underlying command and capability registries remain frozen catalogs, so
+tests and future web or Electron adapters can inspect every supported command
+without starting a model-backed session.
+
 ## Themes
 
 Use `/theme` to preview every theme and `/theme <name>` to switch immediately:
