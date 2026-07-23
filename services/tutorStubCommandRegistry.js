@@ -11,14 +11,7 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
-function command({
-  id,
-  token,
-  aliases = [],
-  passthroughOrder = null,
-  sceneReturnOrder = null,
-  completion = null,
-}) {
+function command({ id, token, aliases = [], passthroughOrder = null, sceneReturnOrder = null, completion = null }) {
   return {
     id,
     token,
@@ -223,16 +216,7 @@ const COMMANDS = [
     sceneReturnOrder: 9,
     completion: {
       normal: {
-        suffixes: [
-          'on',
-          'on prose',
-          'on technical',
-          'off',
-          'show',
-          'show prose',
-          'show technical',
-          'technical',
-        ],
+        suffixes: ['on', 'on prose', 'on technical', 'off', 'show', 'show prose', 'show technical', 'technical'],
       },
     },
   }),
@@ -298,7 +282,9 @@ for (const definition of TUTOR_STUB_COMMAND_REGISTRY.commands) {
 }
 
 function normalizedMode(mode) {
-  const value = String(mode || 'normal').trim().toLowerCase();
+  const value = String(mode || 'normal')
+    .trim()
+    .toLowerCase();
   if (!TUTOR_STUB_COMMAND_MODES.includes(value)) {
     throw new Error(`command mode must be one of: ${TUTOR_STUB_COMMAND_MODES.join(', ')}`);
   }
@@ -320,9 +306,7 @@ function orderedTokens(definitions, orderKey = null) {
   return ordered.flatMap((definition) => [definition.token, ...definition.aliases]);
 }
 
-export const TUTOR_STUB_NORMAL_SLASH_COMMANDS = Object.freeze(
-  orderedTokens(TUTOR_STUB_COMMAND_REGISTRY.commands),
-);
+export const TUTOR_STUB_NORMAL_SLASH_COMMANDS = Object.freeze(orderedTokens(TUTOR_STUB_COMMAND_REGISTRY.commands));
 export const TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS = Object.freeze(
   orderedTokens(TUTOR_STUB_COMMAND_REGISTRY.commands, 'passthrough'),
 );

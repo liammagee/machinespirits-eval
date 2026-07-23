@@ -475,6 +475,8 @@ process.stdin.on('end', () => {
         '0',
         '--release-speed',
         '1',
+        '--motion',
+        'subtle',
         '--no-closeout-report',
         '--no-stream',
         '--no-trace',

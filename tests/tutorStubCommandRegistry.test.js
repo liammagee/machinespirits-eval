@@ -274,9 +274,5 @@ test('passthrough settings completions expose only speaker model, theme, and mot
   ]);
   assert.equal(Object.isFrozen(passthrough), true);
   assert.ok(passthrough.every((candidate) => /^\/settings (?:model |theme |motion )/u.test(candidate)));
-  assert.ok(
-    passthrough.every(
-      (candidate) => !/(?:models|temp|dropout|release-speed|forget|policy)/u.test(candidate),
-    ),
-  );
+  assert.ok(passthrough.every((candidate) => !/(?:models|temp|dropout|release-speed|forget|policy)/u.test(candidate)));
 });
