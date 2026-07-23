@@ -10,16 +10,20 @@
  * and output patterns. No API calls are made.
  */
 
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const exec = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPTS = path.resolve(__dirname, '..', 'scripts');
+const EXPORTS_TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'analysis-smoke-exports-'));
+after(() => fs.rmSync(EXPORTS_TMP, { recursive: true, force: true }));
 
 /** Run a script with given args, returning { stdout, stderr, code }. */
 async function runScript(scriptName, args = [], timeoutMs = 30000) {
@@ -28,7 +32,7 @@ async function runScript(scriptName, args = [], timeoutMs = 30000) {
     const { stdout, stderr } = await exec('node', [scriptPath, ...args], {
       timeout: timeoutMs,
       maxBuffer: 10 * 1024 * 1024, // 10 MB — some scripts produce large output
-      env: { ...process.env, NODE_NO_WARNINGS: '1' },
+      env: { ...process.env, NODE_NO_WARNINGS: '1', EVAL_EXPORTS_DIR: EXPORTS_TMP },
     });
     return { stdout, stderr, code: 0 };
   } catch (err) {
