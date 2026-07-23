@@ -56,6 +56,17 @@ async function invokeMiddleware(middleware, req) {
   return { req, res, nextCalls };
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function assertRoutePreHandler(source, { method, routePath, middleware }) {
+  const routePattern = new RegExp(
+    `router\\.${method}\\(\\s*['"]${escapeRegExp(routePath)}['"]\\s*,\\s*${escapeRegExp(middleware)}`,
+  );
+  assert.match(source, routePattern, `missing pre-handler admission marker: ${method.toUpperCase()} ${routePath}`);
+}
+
 describe('fixed model-call admission', () => {
   it('rejects malformed, oversized, unconfirmed, and mismatched plans before model allocation', () => {
     const cases = [
@@ -272,17 +283,17 @@ describe('HTTP model-work endpoint inventory', () => {
     ];
     for (const key of discovered) assert.ok(policyKeys.has(key), `direct launch route has no policy: ${key}`);
 
-    for (const marker of [
-      "router.post('/quick', createExactEvaluationAdmissionMiddleware",
-      "router.get('/stream/quick', createExactEvaluationAdmissionMiddleware",
-      "router.post('/matrix', createExactEvaluationAdmissionMiddleware",
-      "router.get('/stream/matrix', createExactEvaluationAdmissionMiddleware",
-      "router.get('/stream/run', createExactEvaluationAdmissionMiddleware",
-      "router.get('/stream/recognition-ab', createExactEvaluationAdmissionMiddleware",
-      "router.get('/stream/interact', createFixedModelCallAdmissionMiddleware",
-      "'/prompts/recommend', createPromptRecommendationAdmissionMiddleware()",
+    for (const [method, routePath, middleware] of [
+      ['post', '/quick', 'createExactEvaluationAdmissionMiddleware'],
+      ['get', '/stream/quick', 'createExactEvaluationAdmissionMiddleware'],
+      ['post', '/matrix', 'createExactEvaluationAdmissionMiddleware'],
+      ['get', '/stream/matrix', 'createExactEvaluationAdmissionMiddleware'],
+      ['get', '/stream/run', 'createExactEvaluationAdmissionMiddleware'],
+      ['get', '/stream/recognition-ab', 'createExactEvaluationAdmissionMiddleware'],
+      ['get', '/stream/interact', 'createFixedModelCallAdmissionMiddleware'],
+      ['post', '/prompts/recommend', 'createPromptRecommendationAdmissionMiddleware()'],
     ]) {
-      assert.ok(evalSource.includes(marker), `missing pre-handler admission marker: ${marker}`);
+      assertRoutePreHandler(evalSource, { method, routePath, middleware });
     }
     for (const marker of [
       "'/assist',\n  createLegacyChatAdmissionMiddleware",
