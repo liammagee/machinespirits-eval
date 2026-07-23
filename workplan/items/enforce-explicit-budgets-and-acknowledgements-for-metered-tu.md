@@ -14,6 +14,8 @@ verification: Every automated_eval or research_controls launch requires a
   rejection tests prove zero model calls.
 branch: codex/tutor-stub-metered-budgets
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/168
   code:
     - services/tutorStubLabs.js
     - services/tutorStubSessionRecipe.js

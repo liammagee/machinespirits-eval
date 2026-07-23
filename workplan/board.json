@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T10:56:41.547Z",
+  "generated": "2026-07-23T11:11:48.472Z",
   "counts": {
     "total": 157,
     "byStatus": {
@@ -790,6 +790,9 @@
       "verification": "Every automated_eval or research_controls launch requires a validated finite model-call budget and, for research controls, an explicit research-use acknowledgement before any provider or child-process call; rejection tests prove zero model calls.",
       "branch": "codex/tutor-stub-metered-budgets",
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/168"
+        ],
         "code": [
           "services/tutorStubLabs.js",
           "services/tutorStubSessionRecipe.js",
