@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T20:43:18.143Z",
+  "generated": "2026-07-23T20:43:57.134Z",
   "counts": {
     "total": 158,
     "byStatus": {
-      "done": 128,
+      "done": 129,
       "blocked": 3,
       "dropped": 2,
       "triaged": 20,
-      "archived": 4,
-      "review": 1
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -690,28 +689,6 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "tutor-stub-terminal-fallback-delivery-boundary",
-      "title": "Keep tutor-stub terminal fallbacks deliverable without weakening evidence safety",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "A regression reproduces the missing_selected_performance_tactic terminal-fallback failure and proves that optional actorial/configuration findings cannot exhaust public delivery, leak/release/unknown findings remain hard, the thrown fatal message contains only hard findings, and the focused tutor-stub plus workplan checks pass.",
-      "branch": "codex/tutor-final-fallback-fix",
-      "depends_on": [
-        "committee-runtime-main-reconciliation"
-      ],
-      "tags": [
-        "tutor-stub",
-        "fallback",
-        "response-guards",
-        "runtime"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2325,6 +2302,33 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "preconscious"
+    },
+    {
+      "id": "tutor-stub-terminal-fallback-delivery-boundary",
+      "title": "Keep tutor-stub terminal fallbacks deliverable without weakening evidence safety",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-23",
+      "updated": "2026-07-24",
+      "verification": "A regression reproduces the missing_selected_performance_tactic terminal-fallback failure and proves that optional actorial/configuration findings cannot exhaust public delivery, leak/release/unknown findings remain hard, the thrown fatal message contains only hard findings, and the focused tutor-stub plus workplan checks pass.",
+      "branch": "codex/tutor-final-fallback-fix",
+      "depends_on": [
+        "committee-runtime-main-reconciliation"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/171"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fallback",
+        "response-guards",
+        "runtime"
+      ]
     },
     {
       "id": "tutor-stub-transition-reward-model",
