@@ -609,6 +609,21 @@ function declarativeFallbackFocus(
       ? 'You can ask me to unpack any word while we slow the pace and take one concrete public step at a time.'
       : 'We will slow the pace and take one concrete public step at a time.';
   }
+  if (boundedChoiceRequired) {
+    const object = oneLine(publicObject) || 'public record';
+    const publicFocus = surface
+      .replace(/^(?:expresses?|signals?|shows?)\s+(?:uncertainty|confusion)\s+(?:about|over)\s+/iu, '')
+      .replace(/^(?:is|seems?)\s+(?:uncertain|unsure|confused)\s+(?:about|over)\s+/iu, '')
+      .replace(/[?]+/gu, '')
+      .replace(/[.!]+$/gu, '')
+      .trim();
+    const focus = publicFocus && !/^(?:not really sure|not sure|unsure|uncertain|confused)$/iu.test(publicFocus)
+      ? publicFocus
+      : `what the ${object} establishes`;
+    return clarificationInvitationRequired
+      ? `Choose one way forward: use the ${object} to decide ${focus}, or leave that reading open until another public fact arrives; you may also ask me to unpack one word or connection.`
+      : `Choose one way forward: use the ${object} to decide ${focus}, or leave that reading open until another public fact arrives.`;
+  }
   if (uptake.mode === 'writable_entry') {
     const ledger = surface.match(
       /\b(?:account|book|journal|ledger|log|minutes|notes?|record|register|trial-book)\b/iu,

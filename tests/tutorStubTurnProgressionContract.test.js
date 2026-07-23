@@ -11,6 +11,7 @@ import {
   tutorStubLearnerRequestsWritableEntry,
   tutorStubTurnProgressionContractPrompt,
 } from '../services/tutorStubTurnProgressionContract.js';
+import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
@@ -808,6 +809,58 @@ test('deterministic V1 recovery makes a bounded pacing choice declarative when q
   assert.doesNotMatch(handoff, /\?/u);
   assert.match(handoff, /slow the pace/iu);
   assert.match(handoff, /either begin with the incident log, or ask me to unpack/iu);
+});
+
+test('deterministic V1 recovery makes ordinary uncertainty a declarative bounded choice', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: true,
+    answerability: 'direction_only_until_evidence_is_public',
+    responsiveRepairRequired: false,
+  };
+  const contract = {
+    schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+    complete: true,
+    public_only: true,
+    learner_uptake: {
+      required: true,
+      mode: 'direct_response',
+      learner_surface: 'Not really sure.',
+      accepted_meaning: null,
+      focus_terms: ['language', 'interface', 'clue'],
+    },
+    turn_focus_contract: {
+      primary_surface: 'Expresses uncertainty about what the language-interface clue shows',
+      primary_terms: ['language', 'interface', 'clue'],
+      due_surfaces: [],
+      due_terms: [],
+    },
+    handoff_contract: {
+      mode: 'declarative_missing_support',
+      question_allowed: false,
+      question_required: false,
+      required_target_surfaces: ['Expresses uncertainty about what the language-interface clue shows'],
+      required_target_terms: ['language', 'interface', 'clue'],
+      prohibited_settled_surfaces: [],
+    },
+  };
+  assert.equal(contract.handoff_contract.mode, 'declarative_missing_support');
+  assert.equal(contract.handoff_contract.question_allowed, false);
+
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    support,
+    defaultQuestion: 'Which reading should we test?',
+    publicObject: 'formulation card',
+  });
+
+  assert.doesNotMatch(handoff, /\?/u);
+  assert.match(handoff, /Choose one way forward/iu);
+  assert.match(handoff, /use the formulation card to decide/iu);
+  assert.match(handoff, /what the language-interface clue shows/iu);
+  assert.match(handoff, /or leave that reading open/iu);
+  assert.equal(auditTutorStubQuestionSupportResponse({ text: handoff, support }).ok, true);
 });
 
 test('deterministic V1 recovery replaces generic uptake with bounded typed learner focus', () => {
