@@ -346,11 +346,14 @@ import {
   tutorStubCapabilityFeatureRows,
 } from '../services/tutorStubCapabilities.js';
 import {
+  MAX_TUTOR_STUB_MODEL_CALL_BUDGET,
   assertTutorStubLabRequirements,
+  createTutorStubModelCallBudget,
   formatTutorStubLabList,
   getTutorStubLab,
   listTutorStubLabs,
   resolveTutorStubLab,
+  resolveTutorStubMeteredLabAdmission,
   tutorStubLabTraceMetadata,
 } from '../services/tutorStubLabs.js';
 import {
@@ -710,6 +713,8 @@ const { values: args, positionals } = parseArgs({
     'auto-learner-profile': { type: 'string', default: STUB.autoLearnerProfile },
     'auto-turns': { type: 'string', default: String(STUB.autoTurns) },
     'auto-safety-turns': { type: 'string', default: String(STUB.autoSafetyTurns) },
+    'model-call-budget': { type: 'string', default: '' },
+    'acknowledge-research-use': { type: 'boolean', default: false },
     'no-auto-stop-on-grounded': { type: 'boolean', default: false },
     'mixed-learner': { type: 'boolean', default: STUB.mixedLearner },
     'mixed-mode': { type: 'boolean', default: false },
@@ -756,6 +761,8 @@ const { values: args, positionals } = parseArgs({
 });
 
 let selectedLabResolution = null;
+let selectedLabAdmission = null;
+let selectedLabModelCallBudget = null;
 let loadedSessionRecipe = null;
 let loadedSessionRecipePath = null;
 let explicitResumeSource = null;
@@ -1036,6 +1043,13 @@ Options:
   --auto-safety-turns <n>
                          runaway guard used when --auto-turns until-grounded
                          (default: ${STUB.autoSafetyTurns})
+  --model-call-budget <n>
+                         required hard cap for automated_eval and research_controls;
+                         every attempted provider call consumes one slot
+                         (range: 1-${MAX_TUTOR_STUB_MODEL_CALL_BUDGET})
+  --acknowledge-research-use
+                         required on every research_controls launch; this consent
+                         flag is deliberately not persisted in session recipes
   --no-auto-stop-on-grounded
                          keep running until --auto-turns even after the
                          learner-DAG reaches grounded asserted-secret closure
@@ -4078,6 +4092,7 @@ async function callPromptModel({
       `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
     );
   }
+  reserveTutorStubMeteredModelCall({ trace, role, turn });
   try {
     let response;
     if (isCliProvider(resolved.provider)) {
@@ -5056,6 +5071,28 @@ function appendTraceEvent(trace, event) {
     entry.turnId = openingDebugId(trace.runId);
   }
   fs.appendFileSync(trace.filePath, `${JSON.stringify(redactTraceSecrets(entry))}\n`);
+}
+
+function reserveTutorStubMeteredModelCall({ trace = null, role = 'unknown', turn = null } = {}) {
+  if (!selectedLabModelCallBudget) return null;
+  try {
+    const reservation = selectedLabModelCallBudget.reserve({ role, turn });
+    appendTraceEvent(trace, {
+      type: 'model_call_budget_reserved',
+      role,
+      turn,
+      admission: reservation,
+    });
+    return reservation;
+  } catch (error) {
+    appendTraceEvent(trace, {
+      type: 'model_call_budget_exhausted',
+      role,
+      turn,
+      admission: selectedLabModelCallBudget.snapshot(),
+    });
+    throw error;
+  }
 }
 
 function stateRunDebugId(state) {
@@ -11697,6 +11734,7 @@ async function callTutor({
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
     const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
+    reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
     let response;
     if (isCliProvider(resolved.provider)) {
       const result = await callAIWithCliBridge(
@@ -12227,6 +12265,7 @@ async function callTutor({
     let miniText = '';
     let miniLatencyMs = 0;
     let miniError = null;
+    reserveTutorStubMeteredModelCall({ trace, role: `${roleBase}_committee_mini`, turn: tutorTurn });
     try {
       const mini = await committeeMiniGenerate({
         url: state.committee.ollamaUrl,
@@ -12293,6 +12332,11 @@ async function callTutor({
           let selected = null;
           for (let attempt = 1; attempt <= 2 && !selected; attempt += 1) {
             fallback.resamples = attempt;
+            reserveTutorStubMeteredModelCall({
+              trace,
+              role: `${roleBase}_committee_mini_resample`,
+              turn: tutorTurn,
+            });
             try {
               const resampleStartedAt = new Date().toISOString();
               const sample = await committeeMiniGenerate({
@@ -15442,7 +15486,11 @@ async function main() {
     printAutomatedLearnerProfiles();
     return;
   }
-  if (selectedLabResolution) assertTutorStubLabRequirements(selectedLabResolution, args);
+  if (selectedLabResolution) {
+    assertTutorStubLabRequirements(selectedLabResolution, args);
+    selectedLabAdmission = resolveTutorStubMeteredLabAdmission(selectedLabResolution, args);
+    selectedLabModelCallBudget = createTutorStubModelCallBudget(selectedLabAdmission);
+  }
   const resumeRequested = Boolean(args.resume || args['resume-last']);
   const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
   if (args['labelling-game'] && requestedLaunchMode && requestedLaunchMode !== 'labelling-game') {
@@ -16303,6 +16351,7 @@ async function main() {
     ? {
         ...tutorStubLabTraceMetadata(selectedLabResolution),
         resolvedCapabilities: [...capabilitySnapshot.active],
+        admission: selectedLabAdmission,
       }
     : null;
   const sessionRecipe = buildTutorStubSessionRecipe({
@@ -24055,7 +24104,13 @@ async function main() {
           console.log(
             `${C.dim}  ${selected.audience} · ${selected.maturity} · ${selected.costClass} cost · ${selected.summary}${C.reset}`,
           );
-          console.log(`${C.dim}  relaunch: npm run tutor:stub -- --lab '${selected.id}'${C.reset}\n`);
+          const admissionFlags =
+            selected.id === 'research_controls'
+              ? ' --model-call-budget 120 --acknowledge-research-use'
+              : selected.id === 'automated_eval'
+                ? ' --model-call-budget 120'
+                : '';
+          console.log(`${C.dim}  relaunch: npm run tutor:stub -- --lab '${selected.id}'${admissionFlags}${C.reset}\n`);
         }
       }
       appendTraceEvent(state.trace, {

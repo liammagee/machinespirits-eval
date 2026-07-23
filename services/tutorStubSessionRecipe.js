@@ -63,6 +63,7 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'auto-learner-profile',
   'auto-turns',
   'auto-safety-turns',
+  'model-call-budget',
   'no-auto-stop-on-grounded',
   'mixed-learner',
   'mixed-mode',

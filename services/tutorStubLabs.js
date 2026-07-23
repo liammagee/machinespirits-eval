@@ -6,6 +6,10 @@ export const TUTOR_STUB_LAB_RESOLUTION_SCHEMA = 'machinespirits.tutor-stub.lab-r
 export const TUTOR_STUB_LAB_CATALOG_VERSION = 1;
 export const TUTOR_STUB_LAB_AUDIENCES = Object.freeze(['learner_safe', 'research', 'internal']);
 export const TUTOR_STUB_LAB_MATURITY = Object.freeze(['stable', 'beta', 'experimental']);
+export const TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA = 'machinespirits.tutor-stub.metered-lab-admission.v1';
+export const MAX_TUTOR_STUB_MODEL_CALL_BUDGET = 10_000;
+
+const METERED_LAB_IDS = new Set(['automated_eval', 'research_controls']);
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
@@ -254,6 +258,7 @@ const LABS = [
       'auto-turns': 'until-grounded',
       'no-turn-feedback': true,
     },
+    requiredOptions: ['model-call-budget'],
   }),
   lab({
     id: 'research_controls',
@@ -287,6 +292,7 @@ const LABS = [
       'no-turn-feedback': true,
       'safe-registers': false,
     },
+    requiredOptions: ['model-call-budget', 'acknowledge-research-use'],
   }),
 ];
 
@@ -412,11 +418,110 @@ function tutorStubLabConflictViolations(entry, options = {}) {
   return violations;
 }
 
+function tutorStubRequiredOptionPresent(value) {
+  if (typeof value === 'boolean') return value;
+  return Boolean(String(value ?? '').trim());
+}
+
+function tutorStubRequiredOptionUsage(key) {
+  return key === 'acknowledge-research-use' ? `--${key}` : `--${key} <value>`;
+}
+
+function tutorStubMeteredLabError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
+export function resolveTutorStubMeteredLabAdmission(resolution, options = {}) {
+  if (resolution?.schema !== TUTOR_STUB_LAB_RESOLUTION_SCHEMA) {
+    throw new Error(`lab resolution must use ${TUTOR_STUB_LAB_RESOLUTION_SCHEMA}`);
+  }
+  if (!METERED_LAB_IDS.has(resolution.lab.id)) {
+    return deepFreeze({
+      schema: TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA,
+      labId: resolution.lab.id,
+      metered: false,
+      modelCallBudget: null,
+      researchUseAcknowledged: false,
+    });
+  }
+
+  const rawBudget = String(options['model-call-budget'] ?? '').trim();
+  if (!/^\d+$/u.test(rawBudget)) {
+    throw tutorStubMeteredLabError(
+      'invalid_model_call_budget',
+      `lab ${resolution.lab.id} requires --model-call-budget <positive integer>`,
+    );
+  }
+  const modelCallBudget = Number(rawBudget);
+  if (
+    !Number.isSafeInteger(modelCallBudget) ||
+    modelCallBudget < 1 ||
+    modelCallBudget > MAX_TUTOR_STUB_MODEL_CALL_BUDGET
+  ) {
+    throw tutorStubMeteredLabError(
+      'invalid_model_call_budget',
+      `--model-call-budget must be an integer from 1 to ${MAX_TUTOR_STUB_MODEL_CALL_BUDGET}`,
+    );
+  }
+  const researchUseAcknowledged = options['acknowledge-research-use'] === true;
+  if (resolution.lab.id === 'research_controls' && !researchUseAcknowledged) {
+    throw tutorStubMeteredLabError(
+      'research_use_acknowledgement_required',
+      'lab research_controls requires --acknowledge-research-use',
+    );
+  }
+  return deepFreeze({
+    schema: TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA,
+    labId: resolution.lab.id,
+    metered: true,
+    modelCallBudget,
+    researchUseAcknowledged,
+  });
+}
+
+export function createTutorStubModelCallBudget(admission) {
+  if (!admission) return null;
+  if (admission.schema !== TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA) {
+    throw new Error(`metered lab admission must use ${TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA}`);
+  }
+  if (admission.metered !== true) return null;
+  let used = 0;
+  return Object.freeze({
+    reserve({ role = 'unknown', turn = null } = {}) {
+      if (used >= admission.modelCallBudget) {
+        throw tutorStubMeteredLabError(
+          'model_call_budget_exhausted',
+          `lab ${admission.labId} exhausted its ${admission.modelCallBudget}-call model budget before ${role}`,
+        );
+      }
+      used += 1;
+      return Object.freeze({
+        labId: admission.labId,
+        role,
+        turn,
+        call: used,
+        limit: admission.modelCallBudget,
+        remaining: admission.modelCallBudget - used,
+      });
+    },
+    snapshot() {
+      return Object.freeze({
+        labId: admission.labId,
+        used,
+        limit: admission.modelCallBudget,
+        remaining: admission.modelCallBudget - used,
+      });
+    },
+  });
+}
+
 export function resolveTutorStubLab(id, { overrides = {} } = {}) {
   const entry = LAB_BY_ID.get(String(id || '').trim());
   if (!entry) throw new Error(`unknown tutor-stub lab "${id}"; use --list-labs`);
   const options = { ...entry.cliDefaults, ...overrides, lab: entry.id };
-  const missingOptions = entry.requiredOptions.filter((key) => !String(options[key] ?? '').trim());
+  const missingOptions = entry.requiredOptions.filter((key) => !tutorStubRequiredOptionPresent(options[key]));
   const conflictViolations = tutorStubLabConflictViolations(entry, options);
   const capabilities = resolveTutorStubCapabilities(capabilityConfig(options));
   return deepFreeze({
@@ -437,9 +542,9 @@ export function assertTutorStubLabRequirements(resolution, options = {}) {
   if (resolution?.schema !== TUTOR_STUB_LAB_RESOLUTION_SCHEMA) {
     throw new Error(`lab resolution must use ${TUTOR_STUB_LAB_RESOLUTION_SCHEMA}`);
   }
-  const missing = resolution.requiredOptions.filter((key) => !String(options[key] ?? '').trim());
+  const missing = resolution.requiredOptions.filter((key) => !tutorStubRequiredOptionPresent(options[key]));
   if (missing.length) {
-    throw new Error(`lab ${resolution.lab.id} requires ${missing.map((key) => `--${key} <value>`).join(', ')}`);
+    throw new Error(`lab ${resolution.lab.id} requires ${missing.map(tutorStubRequiredOptionUsage).join(', ')}`);
   }
   const entry = LAB_BY_ID.get(resolution.lab.id);
   const conflicts = tutorStubLabConflictViolations(entry, { ...resolution.cliOptions, ...options });
@@ -448,6 +553,7 @@ export function assertTutorStubLabRequirements(resolution, options = {}) {
       `lab ${resolution.lab.id} has incompatible options: ${conflicts.map((item) => item.message).join('; ')}`,
     );
   }
+  resolveTutorStubMeteredLabAdmission(resolution, options);
   return true;
 }
 
