@@ -1,14 +1,19 @@
 ---
 id: tutor-stub-unified-session-surface
 title: Ship tutor-stub as one shared web and Electron session surface
-status: review
+status: done
 type: ops
 priority: P1
 owner: codex
 source: review
 created: 2026-07-22
 updated: 2026-07-23
-verification: "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes."
+verification: One web-stack /tutor surface starts and resumes sessions in
+  browser and Electron, exposes safe lab/scenario/profile/model controls plus
+  trace export, keeps credentials server-side, relocates every writable store
+  through desktop path overrides, and passes route-parity, browser,
+  packaged-desktop, keyboard/screen-reader, caption, microphone-consent,
+  interruption, reduced-motion, no-colour, and text-fallback recovery smokes.
 depends_on:
   - tutor-stub-capability-session-runtime
   - tutor-stub-headless-session-transport
@@ -18,6 +23,7 @@ depends_on:
 links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/159
+    - https://github.com/liammagee/machinespirits-eval/pull/161
   notes:
     - desktop/ARCHITECTURE.md
     - docs/tutor-stub-cli.md
@@ -71,5 +77,7 @@ and device/provider failures fall back to the same text session.
   shutdown with no browser warnings.
 - 2026-07-23: Live consent-revocation testing found and fixed one post-merge UI
   defect: unchecking consent now disables the permission-triggering voice
-  control while leaving text input available. The regression test passes; this
-  card remains in review until that small follow-up commit is merged.
+  control while leaving text input available. The regression test passes.
+- 2026-07-23: Follow-up PR #161 merged to `main` with lint, Node 20/22 tests,
+  workplan validation, CI-safe validation, and automated review green. All
+  declared verification gates are complete; the card moved to `done`.
