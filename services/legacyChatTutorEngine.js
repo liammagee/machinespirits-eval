@@ -277,6 +277,7 @@ export async function streamSingleAgentTurn({
   temperature = null,
   maxTokens = null,
   onDelta,
+  beforeModelCall = null,
 }) {
   const conversationContext = recentContext(history);
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
@@ -303,6 +304,7 @@ The learner just said:
 Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words. Provide ONLY the response text (no JSON, no meta-commentary).`;
 
   const start = Date.now();
+  if (typeof beforeModelCall === 'function') await beforeModelCall('tutor_ego_stream');
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -409,6 +411,7 @@ export async function runTutorTurn({
   temperature = null,
   egoModelOverride = null,
   superegoModelOverride = null,
+  beforeModelCall = null,
 }) {
   const conversationContext = recentContext(history);
   const deliberation = [];
@@ -444,6 +447,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
 }${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
 
   const egoUser = instigate ? 'Open the scene now.' : learnerMessage;
+  if (typeof beforeModelCall === 'function') await beforeModelCall('tutor_ego');
   const egoOut = cliCfg
     ? await callCli(cliCfg, { system: egoSystem, user: egoUser })
     : await callModel(apiKey, {
@@ -501,6 +505,7 @@ Format strictly:
 CRITIQUE: [your analysis]
 IMPROVED: [refined response, or "APPROVED"]`;
 
+    if (typeof beforeModelCall === 'function') await beforeModelCall('tutor_superego');
     const superOut = cliCfg
       ? await callCli(cliCfg, { system: superSystem, user: egoDraft })
       : await callModel(apiKey, {

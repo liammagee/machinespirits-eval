@@ -485,6 +485,7 @@ async function draftResearchConfiguration() {
       method: 'POST',
       body: JSON.stringify({
         dryRun: !elements.assistantLive.checked,
+        ...(elements.assistantLive.checked ? { confirmModelCallLimit: 2 } : {}),
         messages: [{ role: 'user', content: request }],
         currentConfig: {
           features: selectedResearchFeatures(),

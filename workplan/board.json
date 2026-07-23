@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T11:11:48.472Z",
+  "generated": "2026-07-23T11:48:36.297Z",
   "counts": {
     "total": 157,
     "byStatus": {
-      "done": 124,
+      "done": 126,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 23,
-      "archived": 4,
-      "review": 1
+      "triaged": 22,
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -32,37 +31,6 @@
       "created": "2026-07-23",
       "updated": "2026-07-23",
       "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts."
-    },
-    {
-      "id": "bound-remaining-metered-eval-api-surfaces",
-      "title": "Extend exact-cost admission to every metered evaluation endpoint",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every HTTP endpoint capable of starting model work resolves an exact bounded plan or a single-call cost class before allocation; malformed, unknown, oversized, or unconfirmed requests produce zero model calls, and an endpoint inventory test prevents unadmitted paid routes from being added.",
-      "depends_on": [
-        "bound-metered-evaluation-api-requests"
-      ],
-      "links": {
-        "code": [
-          "routes/evalRoutes.js",
-          "routes/chatRoutes.js"
-        ],
-        "items": [
-          "bound-metered-evaluation-api-requests"
-        ]
-      },
-      "tags": [
-        "api",
-        "cost-control",
-        "evaluation-infrastructure",
-        "security"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "harden-consolidated-labelling-integrity",
@@ -778,32 +746,6 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
-      "title": "Enforce explicit budgets and acknowledgements for metered tutor-stub labs",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every automated_eval or research_controls launch requires a validated finite model-call budget and, for research controls, an explicit research-use acknowledgement before any provider or child-process call; rejection tests prove zero model calls.",
-      "branch": "codex/tutor-stub-metered-budgets",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/168"
-        ],
-        "code": [
-          "services/tutorStubLabs.js",
-          "services/tutorStubSessionRecipe.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubLabs.test.js",
-          "tests/tutorStubLabsRecipeCli.test.js"
-        ],
-        "notes": "docs/tutor-stub-cli.md"
-      }
-    },
-    {
       "id": "adaptive-eval-immutable-provenance",
       "title": "Immutable evidence kernel for adaptive-tutor experiments",
       "status": "done",
@@ -1100,6 +1042,43 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "bound-remaining-metered-eval-api-surfaces",
+      "title": "Extend exact-cost admission to every metered evaluation endpoint",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "Every HTTP endpoint capable of starting model work resolves an exact bounded plan or a single-call cost class before allocation; malformed, unknown, oversized, or unconfirmed requests produce zero model calls, and an endpoint inventory test prevents unadmitted paid routes from being added.",
+      "depends_on": [
+        "bound-metered-evaluation-api-requests"
+      ],
+      "links": {
+        "code": [
+          "routes/evalRoutes.js",
+          "routes/chatRoutes.js",
+          "services/httpModelWorkAdmission.js",
+          "services/legacyChatCompatibilityRouter.js",
+          "services/legacyChatTutorEngine.js",
+          "tests/httpModelWorkAdmission.test.js"
+        ],
+        "notes": "docs/http-model-work-admission.md",
+        "items": [
+          "bound-metered-evaluation-api-requests"
+        ]
+      },
+      "tags": [
+        "api",
+        "cost-control",
+        "evaluation-infrastructure",
+        "security"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/bound-remaining-metered-eval-api-surfaces"
+    },
+    {
       "id": "build-workplan-tooling",
       "title": "Build the workplan executable layer (CLI, ingester, dashboard panel, test)",
       "status": "done",
@@ -1348,6 +1327,32 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
+      "title": "Enforce explicit budgets and acknowledgements for metered tutor-stub labs",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "Every automated_eval or research_controls launch requires a validated finite model-call budget and, for research controls, an explicit research-use acknowledgement before any provider or child-process call; rejection tests prove zero model calls.",
+      "branch": "codex/tutor-stub-metered-budgets",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/168"
+        ],
+        "code": [
+          "services/tutorStubLabs.js",
+          "services/tutorStubSessionRecipe.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLabs.test.js",
+          "tests/tutorStubLabsRecipeCli.test.js"
+        ],
+        "notes": "docs/tutor-stub-cli.md"
+      }
     },
     {
       "id": "field-planner-acts-safe-promotion-gate",
