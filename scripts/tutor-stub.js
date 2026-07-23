@@ -2790,8 +2790,8 @@ function printAutomatedLearnerProfiles() {
 const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
   {
     id: 'chat',
-    label: 'Tutor chat',
-    description: 'Open the default mixed human + AI learner-drafting conversation.',
+    label: 'Mixed tutor chat',
+    description: 'Open the default human + AI learner-drafting conversation.',
   },
   {
     id: 'labelling-game',
@@ -15518,7 +15518,7 @@ async function main() {
     launchMode = selection.id;
   }
   if (launchPickerEnabled) {
-    const chatMode = args.lab === 'mixed_drafting' ? 'Tutor chat · mixed drafting' : 'Tutor chat';
+    const chatMode = args.lab === 'mixed_drafting' ? 'Mixed tutor chat' : 'Tutor chat';
     console.log(`${C.cyan}${C.bold}mode >${C.reset} ${chatMode}\n`);
   }
 
@@ -21200,6 +21200,7 @@ async function main() {
     const mode = state.interaction?.mode || 'learner';
     if (mode === 'coach') return `${C.brightYellow}${C.bold}COACH${C.reset}`;
     if (mode === 'auto') return `${C.brightBlue}${C.bold}AUTO${C.reset}`;
+    if (mixedLearner.enabled) return `${C.brightGreen}${C.bold}MIXED${C.reset}`;
     return `${C.brightGreen}${C.bold}LEARNER${C.reset}`;
   }
 
@@ -21210,7 +21211,9 @@ async function main() {
         ? 'your lines are private suggestions for the next tutor response'
         : mode === 'auto'
           ? 'the automated learner and tutor now play without intervention'
-          : 'your lines become public learner speech';
+          : mixedLearner.enabled
+            ? 'your lines become public learner speech; AI drafts, clues, and /use are available'
+            : 'your lines become public learner speech';
     console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${description}${C.reset}`);
     if (detail && mode === 'coach') {
       console.log(

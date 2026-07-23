@@ -60,12 +60,12 @@ test('the standard npm launcher defaults ordinary tutor chat to mixed drafting',
 
   const config = JSON.parse(
     execFileSync(
-      process.execPath,
-      ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--world', 'world_005_marrick'],
+      process.platform === 'win32' ? 'npm.cmd' : 'npm',
+      ['run', '--silent', 'tutor:stub', '--', '--dry-run', '--no-trace', '--world', 'world_005_marrick'],
       {
         cwd: ROOT,
         encoding: 'utf8',
-        env: { ...process.env, TUTOR_STUB_DEFAULT_LAB: 'mixed_drafting' },
+        env: { ...process.env },
       },
     ),
   );
@@ -574,7 +574,7 @@ process.stdin.on('end', () => {
       });
 
       const plain = plainTerminalText(terminalOutput);
-      const modeIndex = plain.indexOf('LEARNER mode');
+      const modeIndex = plain.indexOf('MIXED mode');
       const loadingIndex = plain.indexOf('preparing scenario');
       const readyIndex = plain.indexOf('learner suggestion ready >');
       const tutorIndex = plain.indexOf('tutor >');

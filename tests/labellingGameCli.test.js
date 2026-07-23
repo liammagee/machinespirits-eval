@@ -111,7 +111,7 @@ describe('labelling-game CLI integration', () => {
   it('offers labelling beside default chat and returns to the launcher on quit', async () => {
     const fixture = fixtureWorkspace();
     const result = await new Promise((resolve, reject) => {
-      const terminal = pty.spawn(process.execPath, ['scripts/tutor-stub.js'], {
+      const terminal = pty.spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', '--silent', 'tutor:stub'], {
         cwd: ROOT,
         cols: 110,
         rows: 32,
@@ -133,7 +133,7 @@ describe('labelling-game CLI integration', () => {
       terminal.onData((chunk) => {
         output += chunk;
         const plain = plainTerminalText(output);
-        if (stage === 'launcher' && plain.includes('launches > Tutor chat')) {
+        if (stage === 'launcher' && plain.includes('launches > Mixed tutor chat')) {
           stage = 'dataset';
           terminal.write('\u001b[B\r');
         } else if (stage === 'dataset' && plain.includes('Dataset [superego-taxonomy]:')) {
@@ -145,10 +145,10 @@ describe('labelling-game CLI integration', () => {
         } else if (stage === 'game' && plain.includes('E01 · 1/1 · open')) {
           stage = 'returning';
           terminal.write('q\r');
-        } else if (stage === 'returning' && plain.split('launches > Tutor chat').length - 1 >= 2) {
+        } else if (stage === 'returning' && plain.split('launches > Mixed tutor chat').length - 1 >= 2) {
           stage = 'chat';
           terminal.write('\r');
-        } else if (stage === 'chat' && plain.includes('mode > Tutor chat')) {
+        } else if (stage === 'chat' && plain.includes('mode > Mixed tutor chat')) {
           settled = true;
           clearTimeout(timer);
           terminal.kill();
@@ -167,10 +167,10 @@ describe('labelling-game CLI integration', () => {
     });
 
     assert.match(result, /Choose a mode/u);
-    assert.match(result, /Tutor chat/u);
+    assert.match(result, /Mixed tutor chat/u);
     assert.match(result, /Labelling game/u);
     assert.match(result, /mode > Labelling game/u);
-    assert.match(result, /mode > Tutor chat/u);
+    assert.match(result, /mode > Mixed tutor chat/u);
     assert.ok(result.split('Choose a mode').length - 1 >= 2);
     assert.equal(fs.existsSync(fixture.outputDir), false);
   });
