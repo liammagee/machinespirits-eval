@@ -33,14 +33,18 @@ const PREFERRED_PANEL_IDS = [
   'boundary',
 ];
 
+const STYLE_GUIDE_PATH = 'docs/design/machinespirits-house-style.md';
+const STYLE_ID = 'machinespirits-poetics-editorial-cartoon-v2';
+
 const STYLE_GUIDE = `
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 `.trim();
 
 const STOPWORDS = new Set(
@@ -375,34 +379,34 @@ function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
 function inferVisualMetaphor(section) {
   const id = section.id;
   const text = `${section.heading} ${section.text}`.toLowerCase();
-  // Bespoke noir editorial-cartoon metaphors, one per section of the dramatic-derivation
+  // Bespoke house-style editorial-cartoon metaphors, one per section of the dramatic-derivation
   // arc note (the section ids in 2026-05-26-paper-to-dramatic-recognition-arc.html).
   const byId = {
     'starting-point':
-      'a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow',
+      'a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures',
     'the-stage':
-      'a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark',
+      'a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout',
     derivation:
-      'a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain',
+      'a proof map of black nodes and sharp rules that the learner crosses one supported step at a time; one red path advances toward a small D→0 register while the answer node remains covered by an opaque black square',
     'figure-authority':
-      'a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open',
+      'the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged, while one red device card cuts across it and rotates the next mask into a genuinely different move',
     'internal-superego':
-      'an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken',
+      'an empty director chair outside the square frame while a compact black-and-red gate inside the tutor outline catches the third repeated gesture and reroutes it before the speech arrow reaches the learner',
     decay:
-      'a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand',
+      'two matched tutor panels facing the same learner ledger as one established node fades: the first has an open evidence window and restores the node with a red repair bracket; the second has that channel replaced by a blank black square and cannot target the repair',
     'calendar-repair':
-      'a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back',
+      'a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too early and breaks the black proof line; a compact next-step rule snaps the missing fact back into place before the line continues',
     'the-guards':
-      'two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other',
+      'a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner',
     verdict:
-      'a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading',
+      'three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus',
   };
   if (byId[id]) return byId[id];
   if (text.includes('guard') || text.includes('world')) return byId['the-guards'];
   if (text.includes('decay') || text.includes('forget')) return byId.decay;
   if (text.includes('derivation') || text.includes('proof')) return byId.derivation;
   if (text.includes('superego') || text.includes('critic')) return byId['internal-superego'];
-  return 'a noir editorial comic panel translating the section into a tutor-learner mechanism on a lamplit stage';
+  return 'a Swiss-constructivist editorial comic translating the section into one tutor-learner mechanism, with hard noir shadow and a single red causal mark';
 }
 
 function buildCaption(section) {
@@ -445,6 +449,7 @@ ${outputContract}
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
+House-style source: ${STYLE_GUIDE_PATH}
 ${STYLE_GUIDE}
 
 Textual context to complement:
@@ -457,10 +462,11 @@ Caption this image will carry in the page:
 ${caption}
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 `.trim();
@@ -481,6 +487,8 @@ Source HTML: ${relativeToRoot(resolvePath(opts.html))}
 Generated at: ${new Date().toISOString()}
 Panel count: ${panels.length}
 Format: ${opts.format}
+House style: ${STYLE_GUIDE_PATH}
+Prompt style: ${STYLE_ID}
 
 ## Text Analysis
 
@@ -519,7 +527,9 @@ ${panel.codex_prompt}
     image_format: opts.format,
     image_prefix: opts.imagePrefix,
     prompt_file: relativeToRoot(promptFile),
-    style: 'machinespirits-poetics-editorial-cartoon-v1',
+    style: STYLE_ID,
+    style_guide: STYLE_GUIDE_PATH,
+    style_profile: 'editorial',
     title: analysis.title,
     images: panels.map((panel) => ({
       alt: panel.alt,

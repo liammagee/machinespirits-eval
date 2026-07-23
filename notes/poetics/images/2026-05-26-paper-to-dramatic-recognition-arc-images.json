@@ -1,14 +1,16 @@
 {
-  "generated_at": "2026-07-22T13:05:39.599Z",
+  "generated_at": "2026-07-23T03:49:19.750Z",
   "html": "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
   "image_format": "png",
   "image_prefix": "dramatic-recognition-arc",
   "prompt_file": "notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt",
-  "style": "machinespirits-poetics-editorial-cartoon-v1",
+  "style": "machinespirits-poetics-editorial-cartoon-v2",
+  "style_guide": "docs/design/machinespirits-house-style.md",
+  "style_profile": "editorial",
   "title": "How a tutor learned to change course",
   "images": [
     {
-      "alt": "Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a precise average-slope ruler laid across a darkened tutoring scene under venet...",
+      "alt": "Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a long black average-slope ruler crossing an off-white Swiss grid while one dec...",
       "caption": "Where we began: Paper 2.0 compared tutors prompted in different ways.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-01.png",
       "image_src": "images/dramatic-recognition-arc-01.png",
@@ -16,10 +18,10 @@
       "section_heading": "The average stayed flat. We wanted to know what happened at the stuck point.",
       "section_id": "starting-point",
       "section_kicker": "Where we began",
-      "visual_metaphor": "a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow"
+      "visual_metaphor": "a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures"
     },
     {
-      "alt": "Editorial cartoon for We made the turning point the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, reco...",
+      "alt": "Editorial cartoon for We made the turning point the whole experiment.: a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red ch...",
       "caption": "Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-02.png",
       "image_src": "images/dramatic-recognition-arc-02.png",
@@ -27,10 +29,10 @@
       "section_heading": "We made the turning point the whole experiment.",
       "section_id": "the-stage",
       "section_kicker": "Changing the question",
-      "visual_metaphor": "a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark"
+      "visual_metaphor": "a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout"
     },
     {
-      "alt": "Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a l...",
+      "alt": "Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof map of black nodes and sharp rules that the learner crosses one supporte...",
       "caption": "A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-03.png",
       "image_src": "images/dramatic-recognition-arc-03.png",
@@ -38,10 +40,10 @@
       "section_heading": "The tutor cannot give away the answer. It has to help the learner reach it.",
       "section_id": "derivation",
       "section_kicker": "A lesson we can check",
-      "visual_metaphor": "a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain"
+      "visual_metaphor": "a proof map of black nodes and sharp rules that the learner crosses one supported step at a time; one red path advances toward a small D→0 register while the answer node remains covered by an opaque black square"
     },
     {
-      "alt": "Editorial cartoon for “Be gentler” did not help. A clear rule did.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thi...",
+      "alt": "Editorial cartoon for “Be gentler” did not help. A clear rule did.: the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged...",
       "caption": "The first surprise: Left to itself, the tutor fell into a rut.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-04.png",
       "image_src": "images/dramatic-recognition-arc-04.png",
@@ -49,10 +51,10 @@
       "section_heading": "“Be gentler” did not help. A clear rule did.",
       "section_id": "figure-authority",
       "section_kicker": "The first surprise",
-      "visual_metaphor": "a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open"
+      "visual_metaphor": "the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged, while one red device card cuts across it and rotates the next mask into a genuinely different move"
     },
     {
-      "alt": "Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside...",
+      "alt": "Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair outside the square frame while a compact black-and-red gate inside the tu...",
       "caption": "Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-05.png",
       "image_src": "images/dramatic-recognition-arc-05.png",
@@ -60,10 +62,10 @@
       "section_heading": "A small internal check made the tutor break its own habit.",
       "section_id": "internal-superego",
       "section_kicker": "Moving the rule inside",
-      "visual_metaphor": "an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken"
+      "visual_metaphor": "an empty director chair outside the square frame while a compact black-and-red gate inside the tutor outline catches the third repeated gesture and reroutes it before the speech arrow reaches the learner"
     },
     {
-      "alt": "Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fa...",
+      "alt": "Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: two matched tutor panels facing the same learner ledger as one established node fades: the...",
       "caption": "The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-06.png",
       "image_src": "images/dramatic-recognition-arc-06.png",
@@ -71,10 +73,10 @@
       "section_heading": "The tutor did not need more skill. It needed to notice the loss.",
       "section_id": "decay",
       "section_kicker": "The learner who forgets",
-      "visual_metaphor": "a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand"
+      "visual_metaphor": "two matched tutor panels facing the same learner ledger as one established node fades: the first has an open evidence window and restores the node with a red repair bracket; the second has that channel replaced by a blank black square and cannot target the repair"
     },
     {
-      "alt": "Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue-release calendar pinned to a noir investigation board, the tutor pulling one ca...",
+      "alt": "Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too...",
       "caption": "Handing over the calendar: We then let the tutor decide when to release clues.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-07.png",
       "image_src": "images/dramatic-recognition-arc-07.png",
@@ -82,10 +84,10 @@
       "section_heading": "One sensible early clue broke the lesson. One small rule repaired it.",
       "section_id": "calendar-repair",
       "section_kicker": "Handing over the calendar",
-      "visual_metaphor": "a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back"
+      "visual_metaphor": "a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too early and breaks the black proof line; a compact next-step rule snaps the missing fact back into place before the line continues"
     },
     {
-      "alt": "Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: two hard-edged lanterns over a forked stage, one lantern reading the page sur...",
+      "alt": "Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: a split black-rule composition with two sensors labelled V and H: V reads the...",
       "caption": "Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-08.png",
       "image_src": "images/dramatic-recognition-arc-08.png",
@@ -93,10 +95,10 @@
       "section_heading": "Two pacing rules helped. Which one helped depended on the shape of the lesson.",
       "section_id": "the-guards",
       "section_kicker": "Does the rule travel?",
-      "visual_metaphor": "two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other"
+      "visual_metaphor": "a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner"
     },
     {
-      "alt": "Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, an...",
+      "alt": "Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: three square evidence cards locked to one grid—a check, a boundary bracket, a...",
       "caption": "What we can honestly say: The tutor can govern parts of its conduct.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-09.png",
       "image_src": "images/dramatic-recognition-arc-09.png",
@@ -104,7 +106,7 @@
       "section_heading": "The tutor can govern parts of its conduct. The claim stays deliberately small.",
       "section_id": "verdict",
       "section_kicker": "What we can honestly say",
-      "visual_metaphor": "a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading"
+      "visual_metaphor": "three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus"
     }
   ]
 }

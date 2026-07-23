@@ -1,9 +1,11 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-07-22T13:05:39.598Z
+Generated at: 2026-07-23T03:49:19.748Z
 Panel count: 9
 Format: png
+House style: docs/design/machinespirits-house-style.md
+Prompt style: machinespirits-poetics-editorial-cartoon-v2
 
 ## Text Analysis
 
@@ -29,8 +31,8 @@ Selected sections:
 Target image: notes/poetics/images/dramatic-recognition-arc-01.png
 HTML src: images/dramatic-recognition-arc-01.png
 Caption: Where we began: Paper 2.0 compared tutors prompted in different ways.
-Alt: Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a precise average-slope ruler laid across a darkened tutoring scene under venet...
-Visual metaphor: a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
+Alt: Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a long black average-slope ruler crossing an off-white Swiss grid while one dec...
+Visual metaphor: a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -46,28 +48,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-01.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 Paper 2.0 compared tutors prompted in different ways. Some were asked to treat the learner as a thinking partner; some used a draft-and-critique process; others did neither. Across a whole conversation, none of these changes made the tutor improve more from turn to turn. When a learner is stuck on one point, does the tutor try a genuinely different move, or repeat the old one in new words?
 
 Image concept:
-a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
+a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures
 
 Caption this image will carry in the page:
 Where we began: Paper 2.0 compared tutors prompted in different ways.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -77,8 +82,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-02.png
 HTML src: images/dramatic-recognition-arc-02.png
 Caption: Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.
-Alt: Editorial cartoon for We made the turning point the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, reco...
-Visual metaphor: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
+Alt: Editorial cartoon for We made the turning point the whole experiment.: a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red ch...
+Visual metaphor: a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -94,28 +99,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-02.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 The challenge was to make each beat visible without claiming we could infer a hidden mental state. So we gave the learner a formal proof to work through. The answer sat several steps away in a proof map, and the system kept an exact board of what the learner had already established. We could then watch whether its choices moved the learner toward the answer, step by step.
 
 Image concept:
-a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
+a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout
 
 Caption this image will carry in the page:
 Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -125,8 +133,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-03.png
 HTML src: images/dramatic-recognition-arc-03.png
 Caption: A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.
-Alt: Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a l...
-Visual metaphor: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
+Alt: Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof map of black nodes and sharp rules that the learner crosses one supporte...
+Visual metaphor: a proof map of black nodes and sharp rules that the learner crosses one supported step at a time; one red path advances toward a small D→0 register while the answer node remains covered by an opaque black square
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -142,28 +150,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-03.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 As the learner establishes each fact, the remaining distance to the answer gets shorter. The run succeeds when that distance reaches zero and the answer follows from the learner's own board. If the tutor blurts out the answer, the checker rejects it as a lucky leap. If the tutor releases clues at the right pace, the learner reaches an answer the system can certify.
 
 Image concept:
-a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
+a proof map of black nodes and sharp rules that the learner crosses one supported step at a time; one red path advances toward a small D→0 register while the answer node remains covered by an opaque black square
 
 Caption this image will carry in the page:
 A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -173,8 +184,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-04.png
 HTML src: images/dramatic-recognition-arc-04.png
 Caption: The first surprise: Left to itself, the tutor fell into a rut.
-Alt: Editorial cartoon for “Be gentler” did not help. A clear rule did.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thi...
-Visual metaphor: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
+Alt: Editorial cartoon for “Be gentler” did not help. A clear rule did.: the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged...
+Visual metaphor: the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged, while one red device card cuts across it and rotates the next mask into a genuinely different move
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -190,28 +201,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-04.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 Left to itself, the tutor fell into a rut. The tutor used the same move 94% of the time, and its switch rate fell to 0.07. The rut broke only when the tutor had to name and choose its rhetorical move. The proof itself stayed identical in every condition: the learner reached the answer at turn 32, and all 11 clues arrived on schedule.
 
 Image concept:
-a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
+the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged, while one red device card cuts across it and rotates the next mask into a genuinely different move
 
 Caption this image will carry in the page:
 The first surprise: Left to itself, the tutor fell into a rut.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -221,8 +235,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-05.png
 HTML src: images/dramatic-recognition-arc-05.png
 Caption: Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
-Alt: Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside...
-Visual metaphor: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
+Alt: Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair outside the square frame while a compact black-and-red gate inside the tu...
+Visual metaphor: an empty director chair outside the square frame while a compact black-and-red gate inside the tutor outline catches the third repeated gesture and reroutes it before the speech arrow reaches the learner
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -238,28 +252,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-05.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 A small internal check made the tutor break its own habit. An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself. It also held across seven paid runs: 7 / 7 reached the answer at the planned turn, with 56 of 56 clues released on time, across three worlds and a re-voiced learner. Advice → rule the boundary that holds A vague suggestion did not govern the tutor's conduct.
 
 Image concept:
-an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
+an empty director chair outside the square frame while a compact black-and-red gate inside the tutor outline catches the third repeated gesture and reroutes it before the speech arrow reaches the learner
 
 Caption this image will carry in the page:
 Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -269,8 +286,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-06.png
 HTML src: images/dramatic-recognition-arc-06.png
 Caption: The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.
-Alt: Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fa...
-Visual metaphor: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
+Alt: Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: two matched tutor panels facing the same learner ledger as one established node fades: the...
+Visual metaphor: two matched tutor panels facing the same learner ledger as one established node fades: the first has an open evidence window and restores the node with a red repair bracket; the second has that channel replaced by a blank black square and cannot target the repair
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -286,28 +303,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-06.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 The simulated learner usually said enough for the tutor to infer what was happening. To create a genuinely hidden problem, we made the learner forget facts silently. One tutor could see the forgetting record; another could not. The tutor that could see the loss repaired slips at 0.86, chose 28 repairs, and completed 4 of 6 proofs.
 
 Image concept:
-a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
+two matched tutor panels facing the same learner ledger as one established node fades: the first has an open evidence window and restores the node with a red repair bracket; the second has that channel replaced by a blank black square and cannot target the repair
 
 Caption this image will carry in the page:
 The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -317,8 +337,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-07.png
 HTML src: images/dramatic-recognition-arc-07.png
 Caption: Handing over the calendar: We then let the tutor decide when to release clues.
-Alt: Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue-release calendar pinned to a noir investigation board, the tutor pulling one ca...
-Visual metaphor: a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
+Alt: Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too...
+Visual metaphor: a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too early and breaks the black proof line; a compact next-step rule snaps the missing fact back into place before the line continues
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -334,28 +354,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-07.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 We then let the tutor decide when to release clues. A learner said, “I already know what bearing means,” so the tutor moved one clue from turn 4 to turn 3. The control, which kept to the schedule, reached the answer at turn 20. At turn 7 the tutor checked an earlier fact.
 
 Image concept:
-a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
+a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too early and breaks the black proof line; a compact next-step rule snaps the missing fact back into place before the line continues
 
 Caption this image will carry in the page:
 Handing over the calendar: We then let the tutor decide when to release clues.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -365,8 +388,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-08.png
 HTML src: images/dramatic-recognition-arc-08.png
 Caption: Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.
-Alt: Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: two hard-edged lanterns over a forked stage, one lantern reading the page sur...
-Visual metaphor: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
+Alt: Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: a split black-rule composition with two sensors labelled V and H: V reads the...
+Visual metaphor: a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -382,28 +405,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-08.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets. The hidden rule chased it and completed only 1 of 5; the page-only rule noticed the learner drifting and completed 5 of 5 (Fisher p = 0.024). Panel 08 Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets. Which one helped depended on the shape of the lesson.
 
 Image concept:
-two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
+a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner
 
 Caption this image will carry in the page:
 Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
@@ -413,8 +439,8 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-09.png
 HTML src: images/dramatic-recognition-arc-09.png
 Caption: What we can honestly say: The tutor can govern parts of its conduct.
-Alt: Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, an...
-Visual metaphor: a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
+Alt: Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: three square evidence cards locked to one grid—a check, a boundary bracket, a...
+Visual metaphor: three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -430,28 +456,31 @@ Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-09.png
 Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
 
 Art direction:
-Machine Spirits editorial cartoon style, leaning film noir by default:
-- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
-- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
-- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
-- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
 The tutor can govern parts of its conduct. So the current conclusion is modest: the hidden-state rule plus unfinished proof work is a reliable baseline; adaptive switching between signals is not established. The useful gains came from seeing missing evidence and enforcing small rules, not from asking the tutor to choose a more elaborate strategy. Five limits travel with that headline “A tutor can adapt parts of its conduct on a long proof” is a real but narrow claim:.
 
 Image concept:
-a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
+three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus
 
 Caption this image will carry in the page:
 What we can honestly say: The tutor can govern parts of its conduct.
 
 Composition requirements:
-- Landscape editorial cartoon, roughly 16:10.
-- Keep labels sparse and legible: no more than three in-image labels, each under six words.
-- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
-- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
 
 Return a short final note listing the created file.
 ```
