@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T01:52:57.386Z",
+  "generated": "2026-07-23T01:54:38.065Z",
   "counts": {
     "total": 147,
     "byStatus": {
@@ -969,7 +969,10 @@
         "tutor-stub-register-policy-extraction"
       ],
       "links": {
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/155",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/155",
+          "https://github.com/liammagee/machinespirits-eval/pull/156"
+        ],
         "notes": [
           "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
         ],
