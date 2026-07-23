@@ -1,13 +1,14 @@
 {
-  "generated": "2026-07-23T09:31:20.161Z",
+  "generated": "2026-07-23T11:11:48.472Z",
   "counts": {
     "total": 157,
     "byStatus": {
       "done": 124,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 24,
-      "archived": 4
+      "triaged": 23,
+      "archived": 4,
+      "review": 1
     },
     "byType": {
       "research": 46,
@@ -62,18 +63,6 @@
         "security"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
-      "title": "Enforce explicit budgets and acknowledgements for metered tutor-stub labs",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every automated_eval or research_controls launch requires a validated finite model-call budget and, for research controls, an explicit research-use acknowledgement before any provider or child-process call; rejection tests prove zero model calls."
     },
     {
       "id": "harden-consolidated-labelling-integrity",
@@ -787,6 +776,32 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
+      "title": "Enforce explicit budgets and acknowledgements for metered tutor-stub labs",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "Every automated_eval or research_controls launch requires a validated finite model-call budget and, for research controls, an explicit research-use acknowledgement before any provider or child-process call; rejection tests prove zero model calls.",
+      "branch": "codex/tutor-stub-metered-budgets",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/168"
+        ],
+        "code": [
+          "services/tutorStubLabs.js",
+          "services/tutorStubSessionRecipe.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLabs.test.js",
+          "tests/tutorStubLabsRecipeCli.test.js"
+        ],
+        "notes": "docs/tutor-stub-cli.md"
+      }
     },
     {
       "id": "adaptive-eval-immutable-provenance",

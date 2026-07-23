@@ -98,6 +98,18 @@ npm run tutor:stub -- --lab curriculum --curriculum workplan --module blueprint-
 npm run tutor:stub -- --lab labelling --label-dataset tutor-stub-impasses --label-coder rater-A
 ```
 
+The two metered research labs fail before any provider request unless the
+launch declares a finite hard cap. Every attempted provider call consumes one
+slot, including classifier, learner, tutor repair, and committee calls; once
+the cap is exhausted, the next call is rejected. The negative control also
+requires a fresh research-use acknowledgement on every launch. The budget is
+stored in session recipes, but the acknowledgement deliberately is not:
+
+```bash
+npm run tutor:stub -- --lab automated_eval --model-call-budget 120
+npm run tutor:stub -- --lab research_controls --model-call-budget 120 --acknowledge-research-use
+```
+
 ## Session recipes and explicit resume
 
 Each resolved run now has a versioned

@@ -107,12 +107,14 @@ test('recipe captures semantic committee, pressure, light-adaptation, and evalua
     'light-adaptation-threshold': '3',
     'eval-repeat': '4',
     'eval-job-id': 'job-17',
+    'model-call-budget': '12',
   };
-  const built = recipe({ args: semantic });
+  const built = recipe({ args: { ...semantic, 'acknowledge-research-use': true } });
   for (const [key, value] of Object.entries(semantic)) {
     assert.equal(TUTOR_STUB_RECIPE_OPTION_KEYS.includes(key), true, key);
     assert.equal(built.config.options[key], value, key);
   }
+  assert.equal('acknowledge-research-use' in built.config.options, false);
   const changed = recipe({ args: { ...semantic, 'pressure-turns': '2,5' } });
   const report = compareTutorStubResumeRecipe(built, changed);
   assert.equal(report.ok, false);

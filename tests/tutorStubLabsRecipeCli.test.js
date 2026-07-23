@@ -33,6 +33,10 @@ function installFakeCodex(directory) {
     `#!/usr/bin/env node
 const fs = require('node:fs');
 const args = process.argv.slice(2);
+if (args.includes('--version')) {
+  process.stdout.write('codex-cli 0.0.0\\n');
+  process.exit(0);
+}
 const outputIndex = args.indexOf('-o');
 const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
 let input = '';
@@ -105,6 +109,88 @@ test('--list-labs and --lab resolve without any model request', () => {
   assert.equal(resolved.capabilities.active.includes('learner_reasoning'), true);
   assert.equal(resolved.sessionRecipe.config.lab, 'human_scaffold');
   assert.equal(resolved.sessionRecipe.config.options['register-policy'], 'field');
+});
+
+test('metered labs reject missing admission before any provider call and expose valid dry-run admission', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-metered-admission-'));
+  const binDir = path.join(tmp, 'bin');
+  const promptLog = path.join(tmp, 'requests.log');
+  fs.mkdirSync(binDir, { recursive: true });
+  installFakeCodex(binDir);
+  const env = {
+    PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+    FAKE_CODEX_LOG: promptLog,
+    CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+  };
+
+  const missingBudget = runCli(
+    ['--lab', 'automated_eval', '--once', 'Begin.', '--no-opening', '--no-trace', '--no-stream'],
+    env,
+  );
+  assert.equal(missingBudget.status, 1);
+  assert.match(missingBudget.stderr, /--model-call-budget <value>/u);
+  assert.equal(fs.existsSync(promptLog), false);
+
+  const missingAcknowledgement = runCli(
+    [
+      '--lab',
+      'research_controls',
+      '--model-call-budget',
+      '6',
+      '--once',
+      'Begin.',
+      '--no-opening',
+      '--no-trace',
+      '--no-stream',
+    ],
+    env,
+  );
+  assert.equal(missingAcknowledgement.status, 1);
+  assert.match(missingAcknowledgement.stderr, /--acknowledge-research-use/u);
+  assert.equal(fs.existsSync(promptLog), false);
+
+  const capped = runCli(
+    [
+      '--lab',
+      'automated_eval',
+      '--model-call-budget',
+      '1',
+      '--auto-turns',
+      '1',
+      '--once',
+      'Begin.',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-trace',
+      '--no-stream',
+    ],
+    env,
+  );
+  assert.equal(capped.status, 1);
+  assert.match(capped.stderr, /exhausted its 1-call model budget/u);
+  assert.equal((fs.readFileSync(promptLog, 'utf8').match(/---request---/gu) || []).length, 1);
+
+  const admitted = parseDryRun(
+    runCli([
+      '--lab',
+      'research_controls',
+      '--model-call-budget',
+      '6',
+      '--acknowledge-research-use',
+      '--dry-run',
+      '--no-trace',
+      '--no-remember-settings',
+    ]),
+  );
+  assert.equal(admitted.lab.admission.modelCallBudget, 6);
+  assert.equal(admitted.lab.admission.researchUseAcknowledged, true);
+  assert.equal(admitted.sessionRecipe.config.options['model-call-budget'], '6');
+  assert.equal('acknowledge-research-use' in admitted.sessionRecipe.config.options, false);
+  const recipePath = path.join(tmp, 'research-controls.json');
+  fs.writeFileSync(recipePath, `${JSON.stringify(admitted.sessionRecipe, null, 2)}\n`);
+  const unacknowledgedReplay = runCli(['--recipe', recipePath, '--dry-run', '--no-trace', '--no-remember-settings']);
+  assert.equal(unacknowledgedReplay.status, 1);
+  assert.match(unacknowledgedReplay.stderr, /--acknowledge-research-use/u);
 });
 
 test('informational flags bypass missing recipe and resume preparation', () => {
@@ -251,7 +337,16 @@ test('an explicit lab cannot silently relabel a recipe and acknowledged drift is
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-lab-recipe-drift-'));
   const recipePath = path.join(tmp, 'research-controls.json');
   const research = parseDryRun(
-    runCli(['--lab', 'research_controls', '--dry-run', '--no-trace', '--no-remember-settings']),
+    runCli([
+      '--lab',
+      'research_controls',
+      '--model-call-budget',
+      '6',
+      '--acknowledge-research-use',
+      '--dry-run',
+      '--no-trace',
+      '--no-remember-settings',
+    ]),
   );
   fs.writeFileSync(recipePath, `${JSON.stringify(research.sessionRecipe, null, 2)}\n`);
 
