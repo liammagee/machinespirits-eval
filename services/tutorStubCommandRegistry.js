@@ -22,6 +22,7 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   demo: { available: ['guided_demo'] },
   committee: { available: ['response_checks'] },
   random: { active: ['adaptive_delivery'] },
+  light: { active: ['adaptive_delivery'] },
   register: { active: ['adaptive_delivery'] },
   character: { active: ['adaptive_delivery'] },
   feedback_up: { available: ['turn_feedback'] },
@@ -127,8 +128,13 @@ const HELP_GROUPS = [
     id: 'direct',
     mode: 'normal',
     label: 'direct',
-    commands: [{ id: 'register', arguments: '<style>' }, { id: 'character', arguments: '<part>' }, { id: 'random' }],
-    summary: 'direct or randomize performance axes without changing evidence',
+    commands: [
+      { id: 'register', arguments: '<style>' },
+      { id: 'character', arguments: '<part>' },
+      { id: 'random' },
+      { id: 'light', arguments: '[on|off|status]' },
+    ],
+    summary: 'direct, randomize, or lightly adapt performance axes without changing evidence',
   },
   {
     id: 'adjust',
@@ -277,6 +283,12 @@ const COMMANDS = [
     id: 'random',
     token: '/random',
     sceneReturnOrder: 3,
+    completion: { normal: { suffixes: ['on', 'off', 'status'] } },
+  }),
+  command({
+    id: 'light',
+    token: '/light',
+    sceneReturnOrder: 27,
     completion: { normal: { suffixes: ['on', 'off', 'status'] } },
   }),
   command({

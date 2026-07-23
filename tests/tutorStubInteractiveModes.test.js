@@ -65,6 +65,8 @@ process.stdin.on('end', () => {
         })
       : input.includes('# Explanatory debug task')
       ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
+      : process.env.FAKE_CODEX_LIGHT_RESPONSE === '1' && input.includes('Learner says')
+        ? 'You are frustrated and still comparing the residue, so I set the assay ledger beside the crucible and mark only what the public evidence can support. The residue test asks whether this alloy matches one crucible uniquely; use that single comparison before naming any hand. Which public residue mark can you connect next?'
       : input.includes('Write learner turn')
         ? 'I would compare the metal residues first.'
         : input.includes('[Tutor-only dramatic clue release]')
@@ -1717,6 +1719,89 @@ test('/random samples style and host character independently while preserving th
     assert.equal(selection?.random?.decision?.material?.policy, 'random_performance');
     assert.equal(selection?.actorial_part_selection.random?.decision?.material?.policy, 'random_performance');
     assert.deepEqual(selection?.random_performance.hard_constraints_preserved, [
+      'dialogue_closure',
+      'evidence_release',
+      'response_safety',
+    ]);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('light adaptation forces a replayable style and character shift after continued learner difficulty', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-light-adaptation-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'dynamic',
+        '--light-adaptation',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/light off\n/light on\nThe assay still confuses me.\n',
+      followupInputs: [
+        {
+          afterPlainIncludes: 'optional tutor feedback >',
+          text: '/up\nI am frustrated and still do not understand the residue comparison.\n',
+        },
+      ],
+      stopWhen: (plain) => (plain.match(/optional tutor feedback >/gu) || []).length >= 2,
+      timeoutMs: 15_000,
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        FAKE_CODEX_LIGHT_RESPONSE: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /, light shift,/u);
+    assert.match(result.plain, /light adaptation > on/u);
+    assert.match(result.plain, /light adaptation: on — seeded style \+ character shift after 2/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const turns = events
+      .filter((event) => event.type === 'turn_complete')
+      .map((event) => event.turnRecord)
+      .sort((left, right) => left.turn - right.turn);
+    const modeChanges = events.filter((event) => event.type === 'light_adaptation_mode_changed');
+    assert.deepEqual(
+      modeChanges.map((event) => event.enabled),
+      [false, true],
+    );
+    assert.ok(modeChanges.every((event) => event.threshold === 2));
+    assert.equal(turns.length, 2);
+    const first = turns[0].registerSelection;
+    const second = turns[1].registerSelection;
+    assert.equal(first.light_adaptation.streak, 1);
+    assert.equal(first.light_adaptation.triggered, false);
+    assert.equal(second.light_adaptation.streak, 2);
+    assert.equal(second.light_adaptation.triggered, true);
+    assert.equal(second.activated_policy, 'light_adaptation');
+    assert.equal(second.source, 'light_stochastic_adaptation');
+    assert.notEqual(second.engagement_stance, first.engagement_stance);
+    assert.notEqual(second.actorial_part, first.actorial_part);
+    assert.equal(second.random.decision.material.policy, 'light_adaptation');
+    assert.equal(second.actorial_part_selection.random.decision.material.policy, 'light_adaptation');
+    assert.equal(second.actorial_part_selection.selection_method, 'light_adaptation_seeded_uniform');
+    assert.equal(second.temperature_applied, false);
+    assert.match(second.temperature_scope, /bypassed_for_light_adaptation/u);
+    assert.deepEqual(second.light_adaptation.hard_constraints_preserved, [
+      'authored_evidence_source',
       'dialogue_closure',
       'evidence_release',
       'response_safety',

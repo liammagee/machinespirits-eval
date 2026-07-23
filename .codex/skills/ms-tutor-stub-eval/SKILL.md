@@ -48,6 +48,18 @@ Key choices and defaults:
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Adaptive-performance temperature: default `0.15`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Lower values sharpen the dominant engagement stance and independently selected actorial part; higher values broaden those two distributions. Action family, audience register, lexical accessibility, and scene immersion remain deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
+- Light stochastic adaptation: off by default. Use `--light-adaptation` at
+  launch or `/light on|off|status` in an interactive session. After two
+  consecutive public learner turns showing confusion or frustration (adjust
+  with `--light-adaptation-threshold <2..8>`), the harness makes seeded,
+  replayable uniform draws for engagement stance and actorial host part,
+  excluding their immediately previous values when alternatives exist. The
+  learner assessment triggers but does not select the new pair. This shallow
+  trigger outranks `/register`, `/character`, `/random`, and the configured
+  deep register policy for those two axes on that turn; teaching action,
+  audience, lexical accessibility, scene, authored evidence, licensed closure,
+  and response safety remain authoritative. A resolved/grounded learner turn
+  resets the streak. The mode is session-only and survives `/reset`.
 - Accumulated DAG-fact dropout: default `0` (off). Use `--dag-fact-dropout <0..1>` and optional deterministic `--dag-fact-dropout-seed <n>`, or change the live rate with `/settings dropout <0..1>`. Only adopted public premises are eligible; background facts are immune; facts receive two grace turns; at most two may be dropped concurrently. A learner can repair a dropped fact by explicitly using or re-adopting it. The public transcript remains intact, exact dropped premise ids stay in technical traces rather than tutor speech, and `0` stops new losses without silently restoring already dropped facts. Live changes invalidate mixed suggestion analysis/prefetch state.
 - Clue release speed: default `1.0`. Use `--release-speed <0.5..2>` or `/settings release-speed <0.5..2>` (`pace` and `speed` are aliases). `1` follows authored clue timing; lower stretches the remaining schedule and higher compresses it. Explicit public requests such as “move it along” or “one clue at a time” adapt the effective pace further. At most one authored release batch is introduced per tutor turn (a deliberately co-released premise group stays together), and all evidence, question-support, and leak guards remain active. Pace changes are recorded in turn traces, transcript settings, debug explanations, and learning summaries.
 - Every newly available clue is also a visible dramatic beat. After responding to the learner, the tutor lets a character, object, interruption, gesture, or spoken line signal the clue inside the scene; enacts `director` releases as their source (for example a witness or clerk); and handles `tutor` releases as concrete exhibits. It does not announce “let's role-play,” “I'll be the clerk,” or “back to the case.” The selected engagement stance supplies a concrete performance tactic within the selected part, so the same authored source can sound brisk, precise, warm, witnessing, charismatic, or deliberately negative without changing its evidence. The response guard rejects meta-theatrical announcements, opaque clue dumps, missing enactment, merely named characters, unrealized performance tactics, and releases that never hand the evidence to the learner. Worlds may refine the default with `release_schedule[].presentation.mode`, `.role`, and `.cue`; those fields may costume only the linked public premise and must not add evidence.
@@ -439,6 +451,16 @@ Useful variants:
   state, survive `/reset` within the session, appear in status/transcript
   settings and the compact model line, and persist both draw audits on each
   turn. Random mode bypasses engagement-stance/actorial-part temperature.
+- `/light` toggles the conditional light-adaptation overlay; `/light on`,
+  `/light off`, and `/light status` are explicit forms. Unlike `/random`, it
+  draws only after the configured consecutive confusion/frustration threshold.
+  On a triggered turn, both engagement stance and host part exclude their
+  immediately previous values when possible. The trigger is assessment-led,
+  but the two seeded draws are assessment-independent and preserve authored
+  evidence, teaching action, licensed closure, and response-safety authority.
+  Triggered light adaptation outranks explicit and random performance
+  directions for those two axes only; all displaced directions remain visible
+  in the trace.
 - `/register <stance>` and `/character <part>` explicitly direct one
   performance axis for subsequent tutor turns. With no argument they show the
   active value and choices; `auto` (plus `clear`, `off`, or `reset`) returns
@@ -663,7 +685,7 @@ Useful variants:
 - Type `/` during a run to open the live slash-command palette above the
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
-  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
+  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - In an active curriculum session, bare `/translate` renders the canonical
