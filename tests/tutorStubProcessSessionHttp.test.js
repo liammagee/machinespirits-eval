@@ -165,6 +165,61 @@ test('process resume traversal fails closed when trace namespace bounds are exce
   );
 });
 
+function fakeReadyRpcChild(sessionId) {
+  const child = new EventEmitter();
+  const command = new PassThrough();
+  const response = new PassThrough();
+  child.stdout = new PassThrough();
+  child.stderr = new PassThrough();
+  child.stdio = [null, child.stdout, child.stderr, command, response];
+  child.exitCode = null;
+  child.signalCode = null;
+  child.kill = (signal) => {
+    child.signalCode = signal;
+    queueMicrotask(() => child.emit('exit', null, signal));
+    return true;
+  };
+  queueMicrotask(() => {
+    response.write(
+      `${JSON.stringify({
+        schema: TUTOR_STUB_SESSION_RPC_SCHEMA,
+        version: TUTOR_STUB_SESSION_RPC_VERSION,
+        type: 'ready',
+        session: { sessionId, status: 'active', state: { publicMessages: [] } },
+      })}\n`,
+    );
+  });
+  return child;
+}
+
+test('process factory gives the child one validated absolute resume path', async (t) => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-resume-spawn-'));
+  const traceRoot = path.join(tmp, 'traces');
+  const sourcePath = writeResumeTrace(traceRoot, 'source-session', 'source-run');
+  let spawnedArgs = null;
+  let spawnedChild = null;
+  const createSession = createTutorStubProcessSessionFactory({
+    root: ROOT,
+    traceDir: traceRoot,
+    startupTimeoutMs: 100,
+    spawnProcess(_executable, args) {
+      spawnedArgs = args;
+      spawnedChild = fakeReadyRpcChild('new-session');
+      return spawnedChild;
+    },
+  });
+  t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
+
+  const runtime = await createSession({ id: 'new-session', mode: 'direct', resume: 'source-run' });
+  await runtime.load();
+  assert.equal(spawnedArgs.filter((entry) => entry === '--resume').length, 1);
+  assert.equal(spawnedArgs[spawnedArgs.indexOf('--resume') + 1], fs.realpathSync(sourcePath));
+  assert.equal(spawnedArgs.includes('--resume-last'), false);
+  runtime.terminate('test_cleanup');
+  await runtime.closed;
+  assert.equal(spawnedChild.signalCode, 'SIGTERM');
+});
+
 test('process session specification allowlists HTTP labs, enforces their modes, and rejects ambiguous resume selectors', async () => {
   const createSession = createTutorStubProcessSessionFactory({ root: ROOT });
   await assert.rejects(
@@ -195,35 +250,8 @@ test('process session specification allowlists HTTP labs, enforces their modes, 
 test('process termination rejects an in-flight RPC and settles the child lifecycle', async () => {
   let spawnedChild;
   const spawnProcess = () => {
-    const child = new EventEmitter();
-    const command = new PassThrough();
-    const response = new PassThrough();
-    child.stdout = new PassThrough();
-    child.stderr = new PassThrough();
-    child.stdio = [null, child.stdout, child.stderr, command, response];
-    child.exitCode = null;
-    child.signalCode = null;
-    child.kill = (signal) => {
-      child.signalCode = signal;
-      queueMicrotask(() => child.emit('exit', null, signal));
-      return true;
-    };
-    spawnedChild = child;
-    queueMicrotask(() => {
-      response.write(
-        `${JSON.stringify({
-          schema: TUTOR_STUB_SESSION_RPC_SCHEMA,
-          version: TUTOR_STUB_SESSION_RPC_VERSION,
-          type: 'ready',
-          session: {
-            sessionId: 'interrupt-process',
-            status: 'active',
-            state: { publicMessages: [] },
-          },
-        })}\n`,
-      );
-    });
-    return child;
+    spawnedChild = fakeReadyRpcChild('interrupt-process');
+    return spawnedChild;
   };
   const createSession = createTutorStubProcessSessionFactory({
     root: ROOT,
