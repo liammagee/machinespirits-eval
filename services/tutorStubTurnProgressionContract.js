@@ -617,9 +617,10 @@ function declarativeFallbackFocus(
       .replace(/[?]+/gu, '')
       .replace(/[.!]+$/gu, '')
       .trim();
-    const focus = publicFocus && !/^(?:not really sure|not sure|unsure|uncertain|confused)$/iu.test(publicFocus)
-      ? publicFocus
-      : `what the ${object} establishes`;
+    const focus =
+      publicFocus && !/^(?:not really sure|not sure|unsure|uncertain|confused)$/iu.test(publicFocus)
+        ? publicFocus
+        : `what the ${object} establishes`;
     return clarificationInvitationRequired
       ? `Choose one way forward: use the ${object} to decide ${focus}, or leave that reading open until another public fact arrives; you may also ask me to unpack one word or connection.`
       : `Choose one way forward: use the ${object} to decide ${focus}, or leave that reading open until another public fact arrives.`;

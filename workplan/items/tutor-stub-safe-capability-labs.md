@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-safe-capability-labs
 title: Curate safe tutor-stub capability labs and compatibility gates
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -13,6 +13,8 @@ depends_on:
   - tutor-stub-capability-session-runtime
 branch: codex/tutor-stub-super-app-slices
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/159
   items:
     - tutor-stub-capability-session-runtime
     - tutor-stub-process-session-factory
@@ -51,3 +53,6 @@ them. Until then that host accepts learner turns but rejects slash commands.
 - 2026-07-23: Representative pure-chat and human-scaffold labs complete through
   the fake-provider runtime; focused catalog, CLI, trace, command-registry, and
   process-host tests pass.
+- 2026-07-23: PR #159 merged to `main`; the shared `/tutor` catalog exposed only
+  the two transport-ready labs as launchable in live browser acceptance while
+  retaining the other learner-safe labs as visibly unavailable presets.

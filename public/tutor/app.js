@@ -571,7 +571,7 @@ function syncMicrophoneConsent() {
   stopListening();
   state.micEnabled = false;
   elements.talk.disabled = true;
-  elements.enableMic.disabled = !state.recognition;
+  elements.enableMic.disabled = true;
   elements.enableMic.textContent = 'Enable voice input';
   elements.micStatus.textContent = 'Microphone off. Text input is ready.';
 }
