@@ -28,7 +28,7 @@ Options:
   --check             validate and compile in memory without writing
   --help, -h          show this help
 
-The chat backend uses the same compiler live, so npm run chat always sees the
+The tutor research surface and its compatibility CLI use the same compiler live, so both always see the
 current selected workplan items. Snapshots are for inspection and provenance.
 Tutor dialogue is not evidence that a card is complete.`;
 }

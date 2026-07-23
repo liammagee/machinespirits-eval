@@ -112,4 +112,32 @@ describe('admin chat assist API', () => {
     assert.match(body.proposal.topic, /proportional reasoning/i);
     assert.equal(body.proposal.personaId, 'struggling_anxious');
   });
+
+  it('maps an explicit dialectical critic request into the cell resolver', async () => {
+    const { status, body } = await request(baseUrl, '/api/chat/assist', {
+      method: 'POST',
+      body: {
+        dryRun: true,
+        messages: [
+          {
+            role: 'user',
+            content: 'Teach Hegelian recognition with an anxious learner and a dialectical critic.',
+          },
+        ],
+        currentConfig: {
+          features: { approach: 'standard', critic: 'none', stance: 'suspicious', learnerModel: 'surface' },
+          topic: 'general conversation',
+          mode: 'human',
+        },
+      },
+    });
+
+    assert.equal(status, 200);
+    assert.equal(body.proposal.features.approach, 'recognition');
+    assert.equal(body.proposal.features.critic, 'dialectical');
+    assert.equal(body.proposal.features.stance, 'suspicious');
+    assert.equal(body.proposal.personaId, 'struggling_anxious');
+    assert.equal(body.resolved.name, 'cell_29_recog_dialectical_suspicious_unified');
+    assert.equal(body.resolved.matchQuality, 'exact');
+  });
 });

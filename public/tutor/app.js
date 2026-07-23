@@ -1,11 +1,31 @@
-const API = '/api/tutor-stub';
+const tutorMountIndex = window.location.pathname.indexOf('/tutor');
+const APP_PREFIX = tutorMountIndex > 0 ? window.location.pathname.slice(0, tutorMountIndex) : '';
+const API = `${APP_PREFIX}/api/tutor-stub`;
+let chatApiBase = `${APP_PREFIX}/api/chat`;
 const SESSION_KEY = 'machinespirits.tutor.active-session.v1';
+
+const FEATURE_OPTIONS = {
+  approach: ['standard', 'polished', 'recognition', 'placebo', 'minimalist', 'charismatic'],
+  critic: ['none', 'pedagogical', 'dialectical', 'divergent', 'hardwired'],
+  stance: ['suspicious', 'adversary', 'advocate'],
+  learnerModel: ['surface', 'reflective'],
+  charismaVariant: ['generalist', 'v22-specialist', 'charisma-specialist'],
+};
+const DIRECTOR_OPTIONS = {
+  mode: ['off', 'card', 'strict'],
+  act: ['setup', 'complication', 'peripeteia', 'recognition', 'catharsis'],
+  beat: ['opening', 'stock_take', 'route_change', 'action_gate', 'recognition_press', 'closure'],
+};
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
   status: $('#app-status'),
   setupPanel: $('#setup-panel'),
   setupForm: $('#setup-form'),
+  safeMode: $('#safe-mode'),
+  researchMode: $('#research-mode'),
+  safeSetup: $('#safe-setup'),
+  researchSetup: $('#research-setup'),
   start: $('#start-button'),
   refresh: $('#refresh-button'),
   lab: $('#lab-select'),
@@ -14,6 +34,26 @@ const elements = {
   tutor: $('#tutor-select'),
   model: $('#model-select'),
   resume: $('#resume-input'),
+  assistantInput: $('#assistant-input'),
+  assistantLive: $('#assistant-live'),
+  assistantButton: $('#assistant-button'),
+  assistantResult: $('#assistant-result'),
+  researchApproach: $('#research-approach'),
+  researchCritic: $('#research-critic'),
+  researchStance: $('#research-stance'),
+  researchLearnerModel: $('#research-learner-model'),
+  researchCharisma: $('#research-charisma'),
+  resolveCell: $('#resolve-cell-button'),
+  researchCell: $('#research-cell'),
+  researchCellHelp: $('#research-cell-help'),
+  researchTopic: $('#research-topic'),
+  researchCurriculum: $('#research-curriculum'),
+  researchPersona: $('#research-persona'),
+  directorMode: $('#director-mode'),
+  directorAct: $('#director-act'),
+  directorBeat: $('#director-beat'),
+  directorScene: $('#director-scene'),
+  directorNote: $('#director-note'),
   sessions: $('#session-select'),
   reconnect: $('#reconnect-button'),
   sessionPanel: $('#session-panel'),
@@ -27,6 +67,11 @@ const elements = {
   stop: $('#stop-button'),
   reset: $('#reset-button'),
   export: $('#export-button'),
+  researchPanel: $('#research-panel'),
+  researchSummary: $('#research-summary'),
+  researchTurns: $('#research-turns'),
+  refreshResearch: $('#refresh-research-button'),
+  exportResearch: $('#export-research-button'),
   end: $('#end-button'),
   messageTemplate: $('#message-template'),
   micConsent: $('#mic-consent'),
@@ -39,6 +84,10 @@ const elements = {
 
 const state = {
   catalog: null,
+  researchCatalog: null,
+  researchTrace: null,
+  surfaceMode: 'safe',
+  researchLoading: null,
   session: null,
   publicMessages: [],
   request: null,
@@ -80,6 +129,48 @@ async function api(path = '', options = {}) {
   return payload;
 }
 
+async function chatApi(path = '', options = {}) {
+  let response = await fetch(`${chatApiBase}${path}`, {
+    ...options,
+    headers: {
+      accept: 'application/json',
+      ...(options.body ? { 'content-type': 'application/json' } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  if (response.status === 404 && typeof payload?.adminPath === 'string') {
+    const suffix = path.split('?')[0];
+    chatApiBase = payload.adminPath.endsWith(suffix) ? payload.adminPath.slice(0, -suffix.length) : chatApiBase;
+    response = await fetch(`${chatApiBase}${path}`, {
+      ...options,
+      headers: {
+        accept: 'application/json',
+        ...(options.body ? { 'content-type': 'application/json' } : {}),
+        ...(options.headers || {}),
+      },
+    });
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+  }
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message || payload?.error || `Research request failed (${response.status})`,
+    );
+    error.status = response.status;
+    throw error;
+  }
+  return payload;
+}
+
 function option(select, value, label, metadata = {}) {
   const row = document.createElement('option');
   row.value = value;
@@ -109,7 +200,7 @@ function fallbackCatalog() {
         audience: 'learner_safe',
         maturity: 'stable',
         costClass: 'metered',
-        launch: { mode: 'passthrough', available: true, requiresWorld: false },
+        launch: { engine: 'tutor_stub', mode: 'passthrough', available: true, requiresWorld: false },
       },
       {
         id: 'human_scaffold',
@@ -118,7 +209,7 @@ function fallbackCatalog() {
         audience: 'learner_safe',
         maturity: 'stable',
         costClass: 'metered',
-        launch: { mode: 'scaffold', available: true, requiresWorld: true },
+        launch: { engine: 'tutor_stub', mode: 'scaffold', available: true, requiresWorld: true },
       },
     ],
     worlds: [{ id: 'none', title: 'Open topic (no authored world)' }],
@@ -141,13 +232,20 @@ function renderCatalog(catalog) {
       lab.id,
       `${lab.title || lab.label || lab.id} · ${lab.costClass || 'declared cost'}`,
       {
+        engine: lab.launch?.engine || 'tutor_stub',
         mode: lab.launch?.mode || 'direct',
         requiresWorld: Boolean(lab.launch?.requiresWorld),
       },
     );
     if (lab.launch?.available === false) row.disabled = true;
   }
-  if (!labs.length) option(elements.lab, 'pure_chat', 'Pure chat', { mode: 'passthrough', requiresWorld: false });
+  if (!labs.length) {
+    option(elements.lab, 'pure_chat', 'Pure chat', {
+      engine: 'tutor_stub',
+      mode: 'passthrough',
+      requiresWorld: false,
+    });
+  }
   const defaultLab = catalog.defaults?.lab;
   if (defaultLab && [...elements.lab.options].some((row) => row.value === defaultLab && !row.disabled)) {
     elements.lab.value = defaultLab;
@@ -179,6 +277,258 @@ function renderCatalog(catalog) {
   }
   elements.start.disabled = ![...elements.lab.options].some((row) => !row.disabled);
   updateLabHelp();
+}
+
+function humanize(value) {
+  return String(value || '')
+    .replace(/[_-]+/gu, ' ')
+    .replace(/\b\w/gu, (letter) => letter.toUpperCase());
+}
+
+function populateNamedOptions(select, values, selected) {
+  replaceOptions(select);
+  for (const value of values) option(select, value, humanize(value));
+  if (selected && [...select.options].some((row) => row.value === selected)) select.value = selected;
+}
+
+function initializeResearchControls() {
+  populateNamedOptions(elements.researchApproach, FEATURE_OPTIONS.approach, 'standard');
+  populateNamedOptions(elements.researchCritic, FEATURE_OPTIONS.critic, 'none');
+  populateNamedOptions(elements.researchStance, FEATURE_OPTIONS.stance, 'suspicious');
+  populateNamedOptions(elements.researchLearnerModel, FEATURE_OPTIONS.learnerModel, 'surface');
+  populateNamedOptions(elements.researchCharisma, FEATURE_OPTIONS.charismaVariant, 'generalist');
+  populateNamedOptions(elements.directorMode, DIRECTOR_OPTIONS.mode, 'off');
+  populateNamedOptions(elements.directorAct, DIRECTOR_OPTIONS.act, 'setup');
+  populateNamedOptions(elements.directorBeat, DIRECTOR_OPTIONS.beat, 'opening');
+  syncResearchFeatureVisibility();
+}
+
+function syncResearchFeatureVisibility() {
+  const critic = elements.researchCritic.value;
+  elements.researchStance.disabled = critic !== 'dialectical' && critic !== 'divergent';
+  elements.researchCharisma.disabled = elements.researchApproach.value !== 'charismatic';
+}
+
+function selectedResearchFeatures() {
+  return {
+    approach: elements.researchApproach.value,
+    critic: elements.researchCritic.value,
+    stance: elements.researchStance.value,
+    learnerModel: elements.researchLearnerModel.value,
+    charismaVariant: elements.researchCharisma.value,
+  };
+}
+
+function renderResearchCatalog({ cellsPayload, curriculaPayload, personasPayload, assistHealth }) {
+  const cells = (cellsPayload?.cells || []).filter(
+    (cell) => /^cell_\d/u.test(cell.name) && cell.ego && cell.runner !== 'adaptive',
+  );
+  state.researchCatalog = {
+    cells,
+    curricula: curriculaPayload || {},
+    personas: personasPayload?.personas || [],
+    assistHealth: assistHealth || null,
+  };
+
+  replaceOptions(elements.researchCell);
+  for (const cell of cells) {
+    const architecture = [
+      cell.promptType || 'base',
+      cell.superego ? 'ego + superego' : 'ego only',
+      cell.learnerArchitecture || 'unified learner',
+    ].join(' · ');
+    option(elements.researchCell, cell.name, `${cell.name} · ${architecture}`);
+  }
+
+  replaceOptions(elements.researchCurriculum);
+  option(elements.researchCurriculum, '', 'No authored source');
+  for (const pkg of curriculaPayload?.packages || []) {
+    for (const course of pkg.courses || []) {
+      for (const lecture of course.lectures || []) {
+        option(
+          elements.researchCurriculum,
+          lecture.ref,
+          `${pkg.label || pkg.id} · ${course.title || course.id} · ${lecture.title || lecture.ref}`,
+          { sourceType: 'lecture' },
+        );
+      }
+    }
+  }
+  for (const source of curriculaPayload?.sceneSources || []) {
+    option(elements.researchCurriculum, source.ref, `${humanize(source.kind)} · ${source.label || source.ref}`, {
+      sourceType: 'curriculum',
+    });
+  }
+
+  replaceOptions(elements.researchPersona);
+  option(elements.researchPersona, '', 'No persona annotation');
+  for (const persona of personasPayload?.personas || []) {
+    option(
+      elements.researchPersona,
+      persona.id,
+      `${persona.name || humanize(persona.id)}${persona.hint ? ` · ${persona.hint}` : ''}`,
+    );
+  }
+
+  const assistantMode = assistHealth?.ok
+    ? `Live assistant available via ${assistHealth.provider || 'configured provider'} (${assistHealth.model}).`
+    : 'Deterministic preview is available; no live assistant provider is configured.';
+  elements.assistantResult.textContent = assistantMode;
+  elements.start.disabled =
+    state.surfaceMode === 'research' ? cells.length === 0 : ![...elements.lab.options].some((row) => !row.disabled);
+  void resolveResearchCell({ announce: false });
+}
+
+async function loadResearchCatalogs() {
+  if (state.researchCatalog) return state.researchCatalog;
+  if (state.researchLoading) return state.researchLoading;
+  setStatus('Loading administrator research catalogues…');
+  state.researchLoading = Promise.all([
+    chatApi('/cells'),
+    chatApi('/curricula'),
+    chatApi('/personas'),
+    chatApi('/assist/health'),
+  ])
+    .then(([cellsPayload, curriculaPayload, personasPayload, assistHealth]) => {
+      renderResearchCatalog({ cellsPayload, curriculaPayload, personasPayload, assistHealth });
+      if (state.surfaceMode === 'research') {
+        setStatus('Research mode ready. Choose or resolve an eval cell explicitly.');
+      }
+      return state.researchCatalog;
+    })
+    .catch((error) => {
+      if (state.surfaceMode === 'research') elements.start.disabled = true;
+      elements.researchCellHelp.textContent =
+        error.status === 401 || error.status === 403
+          ? 'Administrator credentials are required to load research controls.'
+          : `Research catalogues could not be loaded: ${error.message}`;
+      if (state.surfaceMode === 'research') {
+        setStatus(`Research mode is unavailable: ${error.message}`, 'error');
+      }
+      throw error;
+    })
+    .finally(() => {
+      state.researchLoading = null;
+    });
+  return state.researchLoading;
+}
+
+async function resolveResearchCell({ announce = true } = {}) {
+  if (!state.researchCatalog) return;
+  elements.resolveCell.disabled = true;
+  try {
+    const resolved = await chatApi('/resolve', {
+      method: 'POST',
+      body: JSON.stringify(selectedResearchFeatures()),
+    });
+    const cell = resolved.resolved;
+    if (!cell?.name) throw new Error('The resolver returned no cell');
+    if (![...elements.researchCell.options].some((row) => row.value === cell.name)) {
+      throw new Error(`${cell.name} is not compatible with the cell_lab session adapter`);
+    }
+    elements.researchCell.value = cell.name;
+    const relaxed = (cell.matches || []).filter((match) => !match.match).map((match) => match.dimension);
+    elements.researchCellHelp.textContent = `${resolved.matchQuality} match · ${cell.name} · score ${cell.score}/${resolved.maxScore}${
+      relaxed.length ? ` · relaxed ${relaxed.join(', ')}` : ''
+    }`;
+    if (announce) setStatus(`Resolved ${cell.name} as the closest research cell.`);
+  } catch (error) {
+    elements.researchCellHelp.textContent = `Cell resolution failed: ${error.message}`;
+    if (announce) setStatus(`Cell resolution failed: ${error.message}`, 'error');
+  } finally {
+    elements.resolveCell.disabled = false;
+  }
+}
+
+function applyAssistantProposal(proposal = {}) {
+  const features = proposal.features || {};
+  const featureElements = {
+    approach: elements.researchApproach,
+    critic: elements.researchCritic,
+    stance: elements.researchStance,
+    learnerModel: elements.researchLearnerModel,
+    charismaVariant: elements.researchCharisma,
+  };
+  for (const [key, value] of Object.entries(features)) {
+    const select = featureElements[key];
+    if (select && [...select.options].some((row) => row.value === value)) select.value = value;
+  }
+  if (typeof proposal.topic === 'string') elements.researchTopic.value = proposal.topic;
+  if (typeof proposal.personaId === 'string') elements.researchPersona.value = proposal.personaId;
+  const sourceRef = proposal.curriculumRef || proposal.lectureRef;
+  if (sourceRef && [...elements.researchCurriculum.options].some((row) => row.value === sourceRef)) {
+    elements.researchCurriculum.value = sourceRef;
+  }
+  for (const [key, value] of Object.entries(proposal.director || {})) {
+    const target = {
+      mode: elements.directorMode,
+      act: elements.directorAct,
+      beat: elements.directorBeat,
+      scene: elements.directorScene,
+      note: elements.directorNote,
+    }[key];
+    if (target) target.value = value;
+  }
+  syncResearchFeatureVisibility();
+}
+
+async function draftResearchConfiguration() {
+  const request = elements.assistantInput.value.trim();
+  if (!request) {
+    elements.assistantInput.focus();
+    return;
+  }
+  elements.assistantButton.disabled = true;
+  elements.assistantResult.textContent = 'Drafting a configuration proposal…';
+  try {
+    const payload = await chatApi('/assist', {
+      method: 'POST',
+      body: JSON.stringify({
+        dryRun: !elements.assistantLive.checked,
+        messages: [{ role: 'user', content: request }],
+        currentConfig: {
+          features: selectedResearchFeatures(),
+          topic: elements.researchTopic.value.trim(),
+          personaId: elements.researchPersona.value || null,
+          mode: 'human',
+        },
+      }),
+    });
+    applyAssistantProposal(payload.proposal || {});
+    await resolveResearchCell({ announce: false });
+    elements.assistantResult.textContent = `${payload.message || 'Proposal applied.'}${
+      payload.resolved?.name ? ` Resolved ${payload.resolved.name}.` : ''
+    }`;
+    setStatus('Configuration assistant proposal applied; review every field before starting.');
+  } catch (error) {
+    elements.assistantResult.textContent = `Assistant failed: ${error.message}`;
+    setStatus(`Configuration assistant failed: ${error.message}`, 'error');
+  } finally {
+    elements.assistantButton.disabled = false;
+  }
+}
+
+function syncSurfaceMode() {
+  const research = elements.researchMode.checked;
+  state.surfaceMode = research ? 'research' : 'safe';
+  elements.safeSetup.hidden = research;
+  elements.researchSetup.hidden = !research;
+  elements.start.textContent = research ? 'Start research cell' : 'Start session';
+  elements.researchCell.required = research;
+  if (research) {
+    elements.start.disabled = !state.researchCatalog;
+    void loadResearchCatalogs().catch(() => {});
+  } else {
+    elements.start.disabled = ![...elements.lab.options].some((row) => !row.disabled);
+    setStatus('Ready. Safe labs are resolved by the local server.');
+  }
+}
+
+async function refreshAllCatalogs() {
+  await refreshCatalogAndSessions();
+  if (state.surfaceMode !== 'research') return;
+  state.researchCatalog = null;
+  await loadResearchCatalogs().catch(() => {});
 }
 
 function updateLabHelp() {
@@ -235,6 +585,109 @@ function existingMessages(snapshot) {
     .filter(Boolean);
 }
 
+function isResearchSession(snapshot = state.session) {
+  return snapshot?.state?.engine === 'cell_lab' || snapshot?.capabilitySnapshot?.mode === 'cell_lab';
+}
+
+function appendDefinition(list, term, value) {
+  const dt = document.createElement('dt');
+  dt.textContent = term;
+  const dd = document.createElement('dd');
+  dd.textContent = value == null || value === '' ? '—' : String(value);
+  list.append(dt, dd);
+}
+
+function renderResearchTrace(trace) {
+  state.researchTrace = trace;
+  elements.researchSummary.replaceChildren();
+  appendDefinition(elements.researchSummary, 'Cell', trace?.cell?.name);
+  appendDefinition(elements.researchSummary, 'Configuration hash', trace?.configHash);
+  appendDefinition(elements.researchSummary, 'Prompt family', trace?.cell?.architecture?.promptType);
+  appendDefinition(
+    elements.researchSummary,
+    'Architecture',
+    trace?.cell?.architecture?.hasSuperego ? 'ego + superego' : 'ego only',
+  );
+  appendDefinition(elements.researchSummary, 'Topic', trace?.source?.topic);
+  appendDefinition(
+    elements.researchSummary,
+    'Curriculum',
+    trace?.source?.curriculum?.sourceRef || trace?.source?.curriculumRef,
+  );
+  appendDefinition(elements.researchSummary, 'Persona annotation', trace?.source?.personaId);
+  appendDefinition(elements.researchSummary, 'Input tokens', trace?.totals?.inputTokens ?? 0);
+  appendDefinition(elements.researchSummary, 'Output tokens', trace?.totals?.outputTokens ?? 0);
+  appendDefinition(elements.researchSummary, 'Latency', `${trace?.totals?.latencyMs ?? 0} ms`);
+
+  elements.researchTurns.replaceChildren();
+  const turns = trace?.turns || [];
+  if (!turns.length) {
+    const empty = document.createElement('p');
+    empty.textContent = 'No research turns yet. The inspector will update after each tutor response.';
+    elements.researchTurns.append(empty);
+    return;
+  }
+
+  for (const turn of turns) {
+    const card = document.createElement('article');
+    card.className = 'research-turn';
+    const heading = document.createElement('h3');
+    heading.textContent = `Turn ${turn.turn}`;
+    const learner = document.createElement('p');
+    learner.className = 'research-learner-input';
+    learner.textContent = `Learner: ${turn.learnerMessage || '—'}`;
+    card.append(heading, learner);
+    for (const entry of turn.deliberation || []) {
+      const detail = document.createElement('details');
+      detail.className = 'deliberation-entry';
+      if (turn === turns[turns.length - 1]) detail.open = true;
+      const summary = document.createElement('summary');
+      summary.textContent = entry.label || humanize(entry.role || 'deliberation');
+      const meta = document.createElement('p');
+      meta.className = 'deliberation-meta';
+      meta.textContent = [
+        entry.provider,
+        entry.model,
+        Number.isFinite(entry.inputTokens) ? `${entry.inputTokens} in` : null,
+        Number.isFinite(entry.outputTokens) ? `${entry.outputTokens} out` : null,
+        Number.isFinite(entry.latencyMs) ? `${entry.latencyMs} ms` : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      const content = document.createElement('pre');
+      content.textContent = safeText(entry.content, 'No recorded content.');
+      detail.append(summary, meta, content);
+      card.append(detail);
+    }
+    elements.researchTurns.append(card);
+  }
+}
+
+async function refreshResearchTrace({ quiet = false } = {}) {
+  const id = sessionId();
+  if (!id || state.surfaceMode !== 'research' || !isResearchSession()) {
+    state.researchTrace = null;
+    elements.researchPanel.hidden = true;
+    return null;
+  }
+  elements.researchPanel.hidden = false;
+  if (!quiet) setStatus('Refreshing the private research projection…');
+  try {
+    const payload = await api(`/sessions/${encodeURIComponent(id)}/research`);
+    if (sessionId() !== id) return null;
+    renderResearchTrace(payload.research);
+    if (!quiet) setStatus('Private deliberation inspector refreshed.');
+    return payload.research;
+  } catch (error) {
+    if (sessionId() !== id) return null;
+    const empty = document.createElement('p');
+    empty.textContent = `Research projection unavailable: ${error.message}`;
+    elements.researchTurns.replaceChildren(empty);
+    if (!quiet) setStatus(`Research projection unavailable: ${error.message}`, 'error');
+    return null;
+  }
+}
+
 function addMessage(role, text, { record = true, placeholder = false } = {}) {
   const normalized = safeText(text).trim();
   if (!normalized) return;
@@ -280,6 +733,13 @@ function updateSession(snapshot, { replaceTranscript = false } = {}) {
     renderMessages(messages);
   elements.message.disabled = snapshot.status === 'finalized';
   elements.send.disabled = snapshot.status === 'finalized';
+  if (state.surfaceMode === 'research' && isResearchSession(snapshot)) {
+    elements.researchPanel.hidden = false;
+    void refreshResearchTrace({ quiet: true });
+  } else {
+    state.researchTrace = null;
+    elements.researchPanel.hidden = true;
+  }
 }
 
 async function refreshCatalogAndSessions() {
@@ -308,19 +768,49 @@ async function startSession(event) {
   event.preventDefault();
   elements.start.disabled = true;
   setStatus('Starting the tutor process…');
-  const mode = elements.lab.selectedOptions[0]?.dataset.mode || 'direct';
-  const body = {
-    lab: elements.lab.value,
-    mode,
-    model: elements.model.value,
-    tutor: elements.tutor.value,
-    world: elements.world.value || 'none',
-  };
-  if (elements.resume.value.trim()) body.resume = elements.resume.value.trim();
+  let body;
+  if (state.surfaceMode === 'research') {
+    const selectedSource = elements.researchCurriculum.selectedOptions[0];
+    const sourceRef = selectedSource?.value || '';
+    body = {
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: elements.researchCell.value,
+      topic: elements.researchTopic.value.trim() || 'general conversation',
+      director: {
+        mode: elements.directorMode.value,
+        act: elements.directorAct.value,
+        beat: elements.directorBeat.value,
+        scene: elements.directorScene.value.trim(),
+        note: elements.directorNote.value.trim(),
+      },
+    };
+    if (sourceRef) {
+      if (selectedSource.dataset.sourceType === 'lecture') body.lectureRef = sourceRef;
+      else body.curriculumRef = sourceRef;
+    }
+    if (elements.researchPersona.value) body.personaId = elements.researchPersona.value;
+  } else {
+    const mode = elements.lab.selectedOptions[0]?.dataset.mode || 'direct';
+    const engine = elements.lab.selectedOptions[0]?.dataset.engine || 'tutor_stub';
+    body = {
+      engine,
+      lab: elements.lab.value,
+      mode,
+      model: elements.model.value,
+      tutor: elements.tutor.value,
+      world: elements.world.value || 'none',
+    };
+    if (elements.resume.value.trim()) body.resume = elements.resume.value.trim();
+  }
   try {
     const payload = await api('/sessions', { method: 'POST', body: JSON.stringify(body) });
     updateSession(payload.session, { replaceTranscript: true });
-    setStatus('Session started. Public text is ready.');
+    setStatus(
+      state.surfaceMode === 'research'
+        ? 'Research cell started. Public dialogue and the private inspector are ready.'
+        : 'Session started. Public text is ready.',
+    );
     elements.message.focus();
   } catch (error) {
     setStatus(`Could not start the session: ${error.message}`, 'error');
@@ -466,6 +956,32 @@ function exportPublicTrace() {
   setStatus('Public session trace exported. It contains no raw audio or credentials.');
 }
 
+async function exportResearchTrace() {
+  const id = sessionId();
+  if (!id || state.surfaceMode !== 'research' || !isResearchSession()) return;
+  const trace = state.researchTrace || (await refreshResearchTrace({ quiet: true }));
+  if (!trace) {
+    setStatus('Research trace is unavailable and was not exported.', 'error');
+    return;
+  }
+  const artifact = {
+    schema: 'machinespirits.cell-lab.research-export.v1',
+    exportedAt: new Date().toISOString(),
+    warning: 'Administrator research artifact: may contain private deliberation and model configuration.',
+    research: trace,
+  };
+  const blob = new Blob([`${JSON.stringify(artifact, null, 2)}\n`], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = `${id}-research-trace.json`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+  setStatus('Private research trace exported separately from the public session artifact.');
+}
+
 async function endSession() {
   const id = sessionId();
   if (!id) return;
@@ -493,8 +1009,12 @@ async function endSession() {
 function clearActiveSession() {
   rememberSession(null);
   state.session = null;
+  state.researchTrace = null;
   state.publicMessages = [];
   elements.transcript.replaceChildren();
+  elements.researchSummary.replaceChildren();
+  elements.researchTurns.replaceChildren();
+  elements.researchPanel.hidden = true;
   elements.sessionPanel.hidden = true;
   elements.setupPanel.hidden = false;
 }
@@ -627,8 +1147,14 @@ elements.messageForm.addEventListener('submit', sendMessage);
 elements.message.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) elements.messageForm.requestSubmit();
 });
-elements.refresh.addEventListener('click', refreshCatalogAndSessions);
+elements.refresh.addEventListener('click', refreshAllCatalogs);
 elements.lab.addEventListener('change', updateLabHelp);
+elements.safeMode.addEventListener('change', syncSurfaceMode);
+elements.researchMode.addEventListener('change', syncSurfaceMode);
+elements.researchApproach.addEventListener('change', syncResearchFeatureVisibility);
+elements.researchCritic.addEventListener('change', syncResearchFeatureVisibility);
+elements.resolveCell.addEventListener('click', () => resolveResearchCell());
+elements.assistantButton.addEventListener('click', draftResearchConfiguration);
 elements.sessions.addEventListener('change', () => {
   elements.reconnect.disabled = !elements.sessions.value;
 });
@@ -636,6 +1162,8 @@ elements.reconnect.addEventListener('click', () => reconnect());
 elements.stop.addEventListener('click', stopResponse);
 elements.reset.addEventListener('click', resetSession);
 elements.export.addEventListener('click', exportPublicTrace);
+elements.refreshResearch.addEventListener('click', () => refreshResearchTrace());
+elements.exportResearch.addEventListener('click', exportResearchTrace);
 elements.end.addEventListener('click', endSession);
 elements.enableMic.addEventListener('click', enableMicrophone);
 elements.micConsent.addEventListener('change', syncMicrophoneConsent);
@@ -661,7 +1189,13 @@ window.addEventListener('beforeunload', () => {
 
 setupTheme();
 setupVoice();
+initializeResearchControls();
+if (new URLSearchParams(window.location.search).get('mode') === 'research') {
+  elements.researchMode.checked = true;
+  elements.safeMode.checked = false;
+}
 await refreshCatalogAndSessions();
+syncSurfaceMode();
 let remembered = null;
 try {
   remembered = localStorage.getItem(SESSION_KEY);

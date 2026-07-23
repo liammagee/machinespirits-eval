@@ -172,10 +172,10 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
       <div class="d">Start or resume a safe tutor-stub lab through the shared browser and desktop session surface.</div>
       <div class="cta">/tutor →</div>
     </a>
-    <a class="card panel moss" href="/chat">
-      <div class="t">Tutor playground</div>
-      <div class="d">Explore any cell from <code>tutor-agents.yaml</code> — play the learner and watch the ego / superego deliberation unfold.</div>
-      <div class="cta">/chat →</div>
+    <a class="card panel moss" href="/tutor?mode=research">
+      <div class="t">Tutor research lab</div>
+      <div class="d">Explore supported cells from <code>tutor-agents.yaml</code> and inspect the ego / superego deliberation through the shared session protocol.</div>
+      <div class="cta">/tutor?mode=research →</div>
     </a>
     <a class="card panel indigo" href="/pilot">
       <div class="t">Learner pilot</div>
@@ -209,7 +209,7 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
   </div>
 
   <h2 class="section">Eval API</h2>
-  <p class="section-sub">Mounted under <code>/api/eval</code> · also live: <code>/api/chat</code>, <code>/api/pilot</code>, <code>/api/a19/adjudication</code>, <code>/api/human-coding</code>.</p>
+  <p class="section-sub">Mounted under <code>/api/eval</code> · also live: <code>/api/tutor-stub</code>, the compatibility <code>/api/chat</code> catalogue, <code>/api/pilot</code>, <code>/api/a19/adjudication</code>, and <code>/api/human-coding</code>.</p>
   <div class="api">
     <div class="row"><span class="m get">GET</span><span class="p">/api/eval/scenarios</span><span class="dsc">list evaluation scenarios</span></div>
     <div class="row"><span class="m get">GET</span><span class="p">/api/eval/profiles</span><span class="dsc">list tutor profiles</span></div>
@@ -252,7 +252,7 @@ export function startEvalServer() {
     console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);
     console.log(`[EvalServer] API: http://${HOST}:${PORT}/api/eval`);
-    console.log(`[EvalServer] Chat: http://${HOST}:${PORT}/chat`);
+    console.log(`[EvalServer] Tutor: http://${HOST}:${PORT}/tutor`);
   });
   const shutdown = installApplicationShutdownHandlers({ app, server });
   server.once('close', shutdown.dispose);

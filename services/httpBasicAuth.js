@@ -134,16 +134,11 @@ export function resolveBasicAuthGuard({ env = process.env, prefix, host, realm =
  * path-segment prefix (`entry + '/'`), so '/pilot' allows '/pilot/app.js' but
  * NOT '/pilot-admin'. Deliberately EXCLUDES every metered/admin surface:
  * /api/eval/*, the rest of /api/chat/*, /api/pilot/admin/*, the poetics-native
- * /api/jobs + /api/compose/live/*, the /chat playground, /pilot-admin, and the
- * researcher dashboard. Two endpoints are listed because the participant flow
- * genuinely needs them:
- *   - '/api/chat/turn' — the /pilot tutoring dialogue posts each turn here
- *     (public/pilot/index.html). This is a METERED endpoint; it is opened to the
- *     participant role ON PURPOSE and is the one paid surface a participant can
- *     reach. The rest of /api/chat (cells, resolve, learner-turn, …) stays
- *     admin-only — only the exact '/api/chat/turn' path is allowed.
- *   - '/api/pilot/session' — covers the whole per-session flow
- *     (/session/:id/consent…intake…pretest…tutoring…posttest…exit).
+ * /api/jobs + /api/compose/live/*, every /api/chat/* compatibility endpoint,
+ * /pilot-admin, and the researcher dashboard. The participant's one metered
+ * surface is now part of the bounded pilot session API itself:
+ *   - '/api/pilot/session' — covers the whole per-session flow, including the
+ *     dedicated blinded tutor-turn adapter.
  */
 export const PARTICIPANT_ALLOWLIST = Object.freeze([
   '/health', // server.js liveness (poetics' /healthz is registered pre-guard)
@@ -155,7 +150,6 @@ export const PARTICIPANT_ALLOWLIST = Object.freeze([
   '/api/pilot/config',
   '/api/pilot/enroll',
   '/api/pilot/session', // per-session participant flow
-  '/api/chat/turn', // METERED — required by the pilot tutoring dialogue (see above)
   '/api/a19/adjudication', // assignment + submissions (coder)
 ]);
 

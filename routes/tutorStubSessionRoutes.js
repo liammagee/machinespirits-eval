@@ -114,6 +114,24 @@ function requireJsonSameOrigin(req, _res, next) {
   return next();
 }
 
+function administratorRequest(req) {
+  const requestAuthority = parsedAuthority(req.get('host'));
+  const localOpen = req.evalRole === undefined && requestAuthority && isLocalHost(requestAuthority.hostname);
+  return req.evalRole === 'admin' || localOpen;
+}
+
+function administratorRequired(subject) {
+  return new TutorStubSessionHostError(
+    'administrator_required',
+    `an administrator role is required for ${subject}`,
+    403,
+  );
+}
+
+function requireAdministrator(req, _res, next) {
+  return administratorRequest(req) ? next() : next(administratorRequired('the research projection'));
+}
+
 /**
  * Versioned HTTP transport over an injected tutor-stub session host.
  * The router owns validation and status codes only; tutor behavior stays in
@@ -142,6 +160,7 @@ export function createTutorStubSessionRouter({ host, catalogProvider = null } = 
           'POST /sessions',
           'GET /sessions',
           'GET /sessions/:sessionId',
+          'GET /sessions/:sessionId/research',
           'POST /sessions/:sessionId/steps',
           'POST /sessions/:sessionId/resume',
           'POST /sessions/:sessionId/reset',
@@ -165,7 +184,11 @@ export function createTutorStubSessionRouter({ host, catalogProvider = null } = 
   router.post(
     '/sessions',
     route(async (req, res) => {
-      const session = await host.create(bodyObject(req));
+      const specification = bodyObject(req);
+      if (specification.engine === 'cell_lab' && !administratorRequest(req)) {
+        throw administratorRequired('cell_lab sessions');
+      }
+      const session = await host.create(specification);
       res.status(201).json(envelope({ session }));
     }),
   );
@@ -179,6 +202,22 @@ export function createTutorStubSessionRouter({ host, catalogProvider = null } = 
     '/sessions/:sessionId',
     route(async (req, res) => {
       res.json(envelope({ session: await host.get(req.params.sessionId) }));
+    }),
+  );
+
+  router.get(
+    '/sessions/:sessionId/research',
+    requireAdministrator,
+    route(async (req, res) => {
+      if (typeof host.research !== 'function') {
+        throw new TutorStubSessionHostError(
+          'research_projection_unavailable',
+          'this tutor-stub session host does not expose research projections',
+          409,
+        );
+      }
+      const research = await host.research(req.params.sessionId);
+      res.set('Cache-Control', 'private, no-store').json(envelope({ research }));
     }),
   );
 

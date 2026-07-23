@@ -22,7 +22,7 @@ import {
   buildMockGuideDeps,
   _resetSessionsForTest,
 } from '../services/poetics/liveCompose.js';
-import { loadCurriculumContext } from '../routes/chatRoutes.js';
+import { loadCurriculumContext } from '../services/legacyChatEngine.js';
 
 // Every case runs on mock deps so no LLM is ever called and spend stays zero —
 // the whole point of buildMockDeps(). The store is process-global, so reset it

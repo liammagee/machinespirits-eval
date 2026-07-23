@@ -115,7 +115,7 @@ Not yet run.
 ### C1. Live charisma scoring in the chatbot
 
 **Status:** the chat UI surfaces charisma scores via a static
-`CHARISMA_PROFILES` table in `routes/chatRoutes.js`, sourced from
+`CHARISMA_PROFILES` table in `services/legacyChatCompatibilityRouter.js`, sourced from
 `docs/cell-100-charisma-full-n-update.md`. If new id-director cells land,
 or existing cells get re-judged, the table needs hand-updating.
 

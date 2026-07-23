@@ -1,12 +1,11 @@
 /**
  * Pedagogical Orientation Coverage Test
  *
- * The chat UI (routes/chatRoutes.js + public/chat/) groups cells by pedagogical
- * orientation family using the `pedagogical_orientations:` map at the top of
- * config/tutor-agents.yaml. The map is keyed by `factors.prompt_type` values.
+ * The administrator research picker groups cells by pedagogical orientation
+ * using the `pedagogical_orientations:` map in config/tutor-agents.yaml.
  *
  * If a future cell introduces a new `prompt_type` without registering an entry
- * in the orientations map, the chat UI will silently drop the cell from the
+ * in the orientations map, the compatibility catalogue will silently drop the cell from the
  * family-grouped selector. This test catches that pattern, mirroring bug_007's
  * dispatch-chain coverage check (see tests/regression-bug-007.test.js).
  *
@@ -46,11 +45,11 @@ describe('pedagogical orientation coverage', () => {
     for (const [cellName, profile] of Object.entries(profiles)) {
       if (!cellName.startsWith('cell_')) continue;
       // Cells with an explicit `runner:` field (110-125: the LangGraph adaptive
-      // runner and the dialogue-engine trap baselines) bypass the chat UI and
+      // runner and the dialogue-engine trap baselines) bypass cell_lab and
       // tutor-core's dialogue engine entirely, and use an `adaptive_*`
       // prompt_type namespace that the orientations map deliberately does not
       // cover. The orientations map exists to keep factorial cells visible in
-      // the chat UI — these never appear there.
+      // the research picker — these never appear there.
       if (profile?.runner) continue;
       const promptType = profile?.factors?.prompt_type;
       if (!promptType) continue;

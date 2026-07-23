@@ -25,6 +25,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createHash, randomUUID, randomBytes } from 'crypto';
+import { computeLegacyChatConfigHash } from './legacyChatConfig.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -533,39 +534,15 @@ export function computeConfigHash({
   topic = '',
   lectureText = '',
 }) {
-  const h = createHash('sha256');
-  h.update(cellName || '');
-  h.update('\0');
-  h.update(
-    JSON.stringify({
-      p: egoConfig?.provider || null,
-      m: egoConfig?.model || null,
-      f: egoConfig?.prompt_file || null,
-      t: egoConfig?.hyperparameters?.temperature ?? null,
-    }),
-  );
-  h.update('\0');
-  h.update(egoPromptText);
-  h.update('\0');
-  h.update(
-    JSON.stringify(
-      superegoConfig
-        ? {
-            p: superegoConfig.provider,
-            m: superegoConfig.model,
-            f: superegoConfig.prompt_file || null,
-            t: superegoConfig.hyperparameters?.temperature ?? null,
-          }
-        : null,
-    ),
-  );
-  h.update('\0');
-  h.update(superegoPromptText || '');
-  h.update('\0');
-  h.update(topic || '');
-  h.update('\0');
-  h.update(lectureText || '');
-  return h.digest('hex');
+  return computeLegacyChatConfigHash({
+    cellName,
+    egoConfig,
+    superegoConfig,
+    egoPromptText,
+    superegoPromptText,
+    topic,
+    lectureText,
+  });
 }
 
 function computeDialogueContentHash(turns) {

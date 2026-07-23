@@ -11,6 +11,7 @@ import express from 'express';
 
 import { TUTOR_STUB_SESSION_HTTP_SCHEMA } from '../routes/tutorStubSessionRoutes.js';
 import { mountEvalSurfaces } from '../services/evalSurfaces.js';
+import { CELL_LAB_RESEARCH_TRACE_SCHEMA } from '../services/legacyChatSessionAdapter.js';
 import {
   createTutorStubProcessSessionFactory,
   createTutorStubProcessSessionHost,
@@ -219,6 +220,10 @@ test('process factory gives the child one validated absolute resume path', async
 test('process session specification allowlists HTTP labs, enforces their modes, and rejects ambiguous resume selectors', async () => {
   const createSession = createTutorStubProcessSessionFactory({ root: ROOT });
   await assert.rejects(
+    createSession({ id: 'unimplemented-engine', engine: 'cell_lab' }),
+    (error) => error.code === 'invalid_request' && /engine must be one of: tutor_stub/u.test(error.message),
+  );
+  await assert.rejects(
     createSession({ id: 'invalid-lab', lab: 'unbounded_custom_lab' }),
     (error) => error.code === 'invalid_request' && /registered tutor-stub capability lab/u.test(error.message),
   );
@@ -232,6 +237,7 @@ test('process session specification allowlists HTTP labs, enforces their modes, 
   );
   const pure = await createSession({ id: 'derived-pure-chat', lab: 'pure_chat' });
   assert.equal(pure.snapshot().capabilitySnapshot.mode, 'passthrough');
+  assert.equal(pure.snapshot().state.engine, 'tutor_stub');
   pure.terminate('test_cleanup');
   await assert.rejects(
     createSession({ id: 'ambiguous-resume', resume: 'run-1', resumeLast: true }),
@@ -353,12 +359,136 @@ test('shared eval surfaces mount the real tutor-stub host by default without sta
   assert.equal(unknownLab.status, 400);
   assert.equal(unknownLab.body.error.code, 'invalid_request');
 
+  const unavailableEngine = await request(base, '/sessions', {
+    method: 'POST',
+    body: { id: 'unavailable-engine-http', engine: 'unavailable_engine' },
+  });
+  assert.equal(unavailableEngine.status, 400);
+  assert.equal(unavailableEngine.body.error.code, 'invalid_request');
+
   const ambiguousResume = await request(base, '/sessions', {
     method: 'POST',
     body: { id: 'invalid-resume-http', resume: 'run-1', resumeLast: true },
   });
   assert.equal(ambiguousResume.status, 400);
   assert.equal(ambiguousResume.body.error.code, 'invalid_request');
+});
+
+test('administrator session boundary runs cell_lab with separate public and research projections', async (t) => {
+  const observed = [];
+  const host = createTutorStubProcessSessionHost({
+    root: ROOT,
+    maxSessions: 2,
+    env: { OPENROUTER_API_KEY: 'adapter-test-key' },
+    cellLab: {
+      async runTutorTurnFn(input) {
+        observed.push(input);
+        return {
+          finalMessage: 'Let us test that claim against one concrete case.',
+          wasRevised: true,
+          architecture: { hasSuperego: true, promptType: 'recognition', recognitionMode: true },
+          deliberation: [
+            {
+              role: 'ego',
+              content: 'PRIVATE EGO DRAFT',
+              provider: 'test-provider',
+              model: 'test/ego',
+              inputTokens: 11,
+              outputTokens: 7,
+              latencyMs: 13,
+            },
+            {
+              role: 'superego',
+              content: 'PRIVATE SUPEREGO CRITIQUE',
+              provider: 'test-provider',
+              model: 'test/superego',
+              inputTokens: 9,
+              outputTokens: 5,
+              latencyMs: 8,
+            },
+          ],
+          totals: { inputTokens: 20, outputTokens: 12, latencyMs: 21, costUsd: 0.01 },
+        };
+      },
+    },
+  });
+  t.after(() => host.closeAll('test_cleanup'));
+
+  const app = express();
+  app.use(express.json());
+  mountEvalSurfaces(app, { root: ROOT, tutorStubSessionHost: host });
+  const base = await listen(t, app);
+
+  const adaptiveRejected = await request(base, '/sessions', {
+    method: 'POST',
+    body: {
+      id: 'adaptive-through-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_110_langgraph_adaptive',
+    },
+  });
+  assert.equal(adaptiveRejected.status, 409, JSON.stringify(adaptiveRejected.body));
+  assert.equal(adaptiveRejected.body.error.code, 'cell_lab_runner_unsupported');
+
+  const created = await request(base, '/sessions', {
+    method: 'POST',
+    body: {
+      id: 'cell-lab-http',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_7_recog_multi_unified',
+      topic: 'fraction magnitude',
+      curriculumRef: 'drama:rhetorical#D_AF1_CURRICULUM_ADAPTIVE',
+      personaId: 'struggling_anxious',
+    },
+  });
+  assert.equal(created.status, 201, JSON.stringify(created.body));
+  assert.equal(created.body.session.state.engine, 'cell_lab');
+  assert.equal(created.body.session.capabilitySnapshot.mode, 'cell_lab');
+  assert.equal(created.body.session.state.publicMessageCount, 0);
+  assert.doesNotMatch(
+    JSON.stringify(created.body.session),
+    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego|struggling_anxious/iu,
+  );
+
+  const stepped = await request(base, '/sessions/cell-lab-http/steps', {
+    method: 'POST',
+    body: { input: 'A larger denominator should make the fraction larger.', kind: 'learner' },
+  });
+  assert.equal(stepped.status, 200, JSON.stringify(stepped.body));
+  assert.deepEqual(stepped.body.result, {
+    accepted: true,
+    turn: {
+      learner: 'A larger denominator should make the fraction larger.',
+      tutor: 'Let us test that claim against one concrete case.',
+    },
+  });
+  assert.equal(stepped.body.session.state.publicMessageCount, 2);
+  assert.doesNotMatch(
+    JSON.stringify(stepped.body.session),
+    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego|struggling_anxious/iu,
+  );
+
+  const projected = await request(base, '/sessions/cell-lab-http/research');
+  assert.equal(projected.status, 200, JSON.stringify(projected.body));
+  assert.equal(projected.body.research.schema, CELL_LAB_RESEARCH_TRACE_SCHEMA);
+  assert.equal(projected.body.research.cell.name, 'cell_7_recog_multi_unified');
+  assert.equal(projected.body.research.cell.architecture.hasSuperego, true);
+  assert.match(projected.body.research.configHash, /^[a-f0-9]{64}$/u);
+  assert.equal(projected.body.research.source.curriculum.moduleId, 'AF1');
+  assert.equal(projected.body.research.source.personaId, 'struggling_anxious');
+  assert.equal(projected.body.research.turns[0].deliberation[0].content, 'PRIVATE EGO DRAFT');
+  assert.equal(projected.body.research.turns[0].deliberation[1].model, 'test/superego');
+  assert.deepEqual(projected.body.research.totals, {
+    inputTokens: 20,
+    outputTokens: 12,
+    latencyMs: 21,
+    costUsd: 0.01,
+  });
+  assert.equal(observed.length, 1);
+  assert.equal(observed[0].profile.factors.prompt_type, 'recognition');
+  assert.equal(observed[0].curriculum.moduleId, 'AF1');
 });
 
 test('HTTP learner step traverses the real CLI tutor runtime through a fake model executable', async (t) => {
@@ -407,6 +537,7 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   assert.equal(created.status, 201, JSON.stringify(created.body));
   assert.equal(created.body.session.status, 'active');
   assert.equal(created.body.session.sessionId, 'real-http-session');
+  assert.equal(created.body.session.state.engine, 'tutor_stub');
   assert.equal(created.body.session.capabilitySnapshot.mode, 'direct');
   assert.equal(created.body.session.state.publicMessageCount, 1);
   assert.equal(created.body.session.state.opening.role, 'assistant');

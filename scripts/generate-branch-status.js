@@ -664,7 +664,7 @@ ${nav}
     <li><code>scripts/run-adaptive-cell-smoke.js</code>, <code>scripts/run-adaptive-persistence-smoke.js</code>, <code>scripts/run-langgraph-smoke.js</code> — hermetic smokes against <code>mktemp -d</code> tmp DB + logs with <code>ADAPTIVE_TUTOR_LLM=mock</code>.</li>
     <li><code>scripts/run-id-director-trap-pilot.js</code> — cell_106 (id-director) against the trap suite; N=6 pilot, ready to re-run at N=32.</li>
     <li><code>scripts/launch-p21-fanout.sh</code>, <code>scripts/resume-quota-wall.sh</code> — operational helpers for the long fan-out.</li>
-    <li><code>scripts/chat-cli.js</code> — terminal chat CLI (separate utility, came along on this branch).</li>
+    <li><code>scripts/chat-cli.js</code> — compatibility REPL over the shared tutor-session protocol.</li>
     <li><code>scripts/generate-branch-status.js</code> — generator for this very note.</li>
   </ul>
 

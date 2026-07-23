@@ -127,6 +127,14 @@ describe('GET /api/chat/cells', () => {
     );
   });
 
+  it('declares the runtime runner so the shared tutor can exclude incompatible adaptive cells', async () => {
+    const { body } = await get(baseUrl, '/api/chat/cells');
+    const standard = body.cells.find((cell) => cell.name === 'cell_7_recog_multi_unified');
+    const adaptive = body.cells.find((cell) => cell.name === 'cell_110_langgraph_adaptive');
+    assert.equal(standard?.runner, 'standard');
+    assert.equal(adaptive?.runner, 'adaptive');
+  });
+
   it('effective family is intersubjective for recognition_mode cells, transmission otherwise', async () => {
     // The chat picker's natural-opposite logic depends on this collapse.
     // dialectical_*/divergent_* cells are architectural variants whose

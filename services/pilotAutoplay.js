@@ -3,7 +3,7 @@
  * SAME tutor loop a human participant drives.
  *
  * This is the synthetic twin of the human /pilot path. It reuses, unchanged:
- *   - the tutor engine        → runTutorTurn() from routes/chatRoutes.js
+ *   - the tutor engine        → runTutorTurn() through legacyChatEngine.js
  *   - per-turn persistence     → pilotStore.appendTurn() (same config_hash +
  *                                cumulative dialogue_content_hash discipline)
  * and swaps the human's typed message for the learner ego/superego engine
@@ -25,7 +25,7 @@
 import * as pilotStore from './pilotStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import interactionEngine from './learnerTutorInteractionEngine.js';
-import { runTutorTurn, loadCurriculumContext, loadPromptFile } from '../routes/chatRoutes.js';
+import { runTutorTurn, loadCurriculumContext, loadPromptFile } from './legacyChatEngine.js';
 
 export const DEFAULT_MAX_TURN_PAIRS = 4;
 export const DEFAULT_COST_CAP_USD = 1.0;

@@ -3,10 +3,9 @@
 /**
  * Chat CLI
  *
- * Terminal client for the eval repo's tutor chat API. Talks to a running
- * `npm run dev` server (default http://localhost:8081) so every cell from
- * config/tutor-agents.yaml is reachable without a browser. Same backend
- * the /chat web UI uses — fixes there land here automatically.
+ * Compatibility client for the versioned tutor session API. New users should
+ * prefer `/tutor?mode=research`; this preserves the old eval-cell REPL while
+ * routing conversations through `engine: cell_lab`.
  *
  * Usage:
  *   node scripts/chat-cli.js [--cell <name>] [--topic <s>] [--lecture <ref>]
@@ -69,6 +68,7 @@ const state = {
   useClaudeCli: args.cli,
   history: [],
   cellsCache: null,
+  sessionId: null,
 };
 
 async function api(method, urlPath, body) {
@@ -79,7 +79,8 @@ async function api(method, urlPath, body) {
   if (!res.ok) {
     let msg = text;
     try {
-      msg = JSON.parse(text).error || text;
+      const parsed = JSON.parse(text);
+      msg = parsed?.error?.message || parsed?.error || parsed?.message || text;
     } catch {
       /* keep raw */
     }
@@ -109,6 +110,28 @@ async function loadCells() {
 async function findCell(name) {
   const cells = await loadCells();
   return cells.find((c) => c.name === name);
+}
+
+async function closeSession(reason = 'chat_cli_reconfigure') {
+  if (!state.sessionId) return;
+  const id = state.sessionId;
+  state.sessionId = null;
+  await api('POST', `/api/tutor-stub/sessions/${encodeURIComponent(id)}/finalize`, { reason }).catch(() => null);
+}
+
+async function ensureSession() {
+  if (state.sessionId) return state.sessionId;
+  const specification = {
+    engine: 'cell_lab',
+    mode: 'cell_lab',
+    cell: state.cellName,
+    topic: state.topic,
+  };
+  if (state.lectureRef) specification.lectureRef = state.lectureRef;
+  if (state.useClaudeCli) specification.cli = { provider: 'claude' };
+  const payload = await api('POST', '/api/tutor-stub/sessions', specification);
+  state.sessionId = payload.session.sessionId;
+  return state.sessionId;
 }
 
 function formatCellSummary(cell) {
@@ -200,16 +223,19 @@ const commands = {
       const hint = arg.split('_')[0];
       return console.log(`${C.red}no cell "${arg}"${C.reset} ${C.dim}— try /cells ${hint}${C.reset}`);
     }
+    await closeSession('chat_cli_cell_change');
     state.cellName = arg;
     state.history = [];
     console.log(`${C.dim}→${C.reset} ${arg} ${C.dim}· ${formatCellSummary(cell)}${C.reset}`);
   },
-  topic(arg) {
+  async topic(arg) {
     if (!arg) return console.log(`${C.red}usage: /topic <topic>${C.reset}`);
+    await closeSession('chat_cli_topic_change');
     state.topic = arg;
     console.log(`${C.dim}→ topic · ${arg}${C.reset}`);
   },
-  lecture(arg) {
+  async lecture(arg) {
+    await closeSession('chat_cli_curriculum_change');
     if (!arg || arg === 'none' || arg === 'off') {
       state.lectureRef = null;
       console.log(`${C.dim}→ lecture · cleared${C.reset}`);
@@ -238,33 +264,52 @@ const commands = {
     state.showDeliberation = !state.showDeliberation;
     console.log(`${C.dim}→ trace · ${state.showDeliberation ? 'on' : 'off'}${C.reset}`);
   },
-  cli() {
+  async cli() {
+    await closeSession('chat_cli_provider_change');
     state.useClaudeCli = !state.useClaudeCli;
     console.log(`${C.dim}→ substrate · ${state.useClaudeCli ? 'Claude CLI' : 'OpenRouter'}${C.reset}`);
   },
-  clear() {
+  async clear() {
+    if (state.sessionId) {
+      await api('POST', `/api/tutor-stub/sessions/${encodeURIComponent(state.sessionId)}/reset`, {
+        reason: 'chat_cli_clear',
+      });
+    }
     state.history = [];
     console.log(`${C.dim}→ history cleared${C.reset}`);
   },
-  quit() {
+  async quit() {
+    await closeSession('chat_cli_quit');
     process.exit(0);
   },
-  exit() {
+  async exit() {
+    await closeSession('chat_cli_exit');
     process.exit(0);
   },
 };
 
 async function sendTurn(message) {
-  const trace = await api('POST', '/api/chat/turn', {
-    cellName: state.cellName,
-    history: state.history,
-    learnerMessage: message,
-    topic: state.topic,
-    lectureRef: state.lectureRef,
-    useClaudeCli: state.useClaudeCli,
+  const id = await ensureSession();
+  const operation = await api('POST', `/api/tutor-stub/sessions/${encodeURIComponent(id)}/steps`, {
+    input: message,
+    kind: 'learner',
+    context: { source: 'legacy_chat_cli' },
   });
+  const finalMessage = operation?.result?.turn?.tutor;
+  if (!finalMessage) throw new Error('shared tutor session returned no tutor message');
+  let trace = { finalMessage, deliberation: [], totals: null };
+  if (state.showDeliberation) {
+    const payload = await api('GET', `/api/tutor-stub/sessions/${encodeURIComponent(id)}/research`);
+    const latest = payload?.research?.turns?.at(-1);
+    trace = {
+      finalMessage,
+      deliberation: latest?.deliberation || [],
+      totals: latest?.totals || {},
+      wasRevised: latest?.wasRevised === true,
+    };
+  }
   state.history.push({ role: 'learner', content: message });
-  state.history.push({ role: 'tutor', content: trace.finalMessage });
+  state.history.push({ role: 'tutor', content: finalMessage });
   return trace;
 }
 
@@ -279,8 +324,9 @@ async function main() {
   }
 
   const rl = readline.createInterface({ input, output });
-  rl.on('SIGINT', () => {
+  rl.on('SIGINT', async () => {
     console.log();
+    await closeSession('chat_cli_interrupt');
     process.exit(0);
   });
 
@@ -328,6 +374,7 @@ async function main() {
     }
   }
 
+  await closeSession('chat_cli_input_closed');
   rl.close();
 }
 

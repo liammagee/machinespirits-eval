@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-23T07:33:46.113Z",
+  "generated": "2026-07-23T09:14:35.533Z",
   "counts": {
-    "total": 156,
+    "total": 157,
     "byStatus": {
       "done": 122,
       "blocked": 3,
       "dropped": 2,
       "triaged": 24,
-      "review": 1,
+      "review": 2,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 35,
+      "infra": 36,
       "maintenance": 12,
       "content": 2,
       "paper": 6,
@@ -788,6 +788,37 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "converge-tutor-stub-and-legacy-chat",
+      "title": "Converge tutor-stub and the legacy eval-cell chat",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-23",
+      "updated": "2026-07-23",
+      "verification": "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat and npm run chat are compatibility facades, /api/chat is administrator-only compatibility, and the old UI assets are removed.",
+      "branch": "codex/chat-tutor-convergence",
+      "links": {
+        "items": [
+          "tutor-stub-unified-session-surface",
+          "complete-tutor-stub-command-effect-metadata-before-http-comm"
+        ],
+        "notes": [
+          "docs/tutor-stub-cli.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "chat",
+        "session-runtime",
+        "migration",
+        "pilot",
+        "electron"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "complete-tutor-stub-command-effect-metadata-before-http-comm",

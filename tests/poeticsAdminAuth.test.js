@@ -81,7 +81,7 @@ test('read-only poetics pages stay public on a public-bind app', async () => {
   const nav = await request('/_nav.html?active=tutor');
   assert.equal(nav.status, 200);
   assert.match(nav.body, /Make/);
-  assert.match(nav.body, /href="\/admin\/chat"[^>]*>tutor chat<\/a>/);
+  assert.match(nav.body, /href="\/tutor\?mode=research"[^>]*>tutor lab<\/a>/);
 });
 
 test('admin tool pages require Basic Auth', async () => {
@@ -97,8 +97,8 @@ test('admin tool pages require Basic Auth', async () => {
   assert.equal(chatDenied.status, 401);
 
   const chatAllowed = await request('/admin/chat/', { user: 'admin', pass: 'secret' });
-  assert.equal(chatAllowed.status, 200);
-  assert.match(chatAllowed.body, /Machine Spirits \/ Chat/);
+  assert.equal(chatAllowed.status, 302);
+  assert.equal(chatAllowed.headers.location, '/poetics/tutor?mode=research');
 });
 
 test('shared tutor shell and process API require the administrator role', async () => {
@@ -125,6 +125,49 @@ test('shared tutor shell and process API require the administrator role', async 
   const catalogAdmin = await request('/api/tutor-stub/catalog', { user: 'admin', pass: 'secret' });
   assert.equal(catalogAdmin.status, 200);
   assert.equal(JSON.parse(catalogAdmin.body).catalog.schema, 'machinespirits.tutor-stub.public-catalog.v1');
+
+  const cellLabParticipant = await request('/api/tutor-stub/sessions', {
+    method: 'POST',
+    user: 'participant',
+    pass: 'participant-secret',
+    body: {
+      id: 'auth-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_7_recog_multi_unified',
+    },
+  });
+  assert.equal(cellLabParticipant.status, 403);
+
+  const cellLabAdmin = await request('/api/tutor-stub/sessions', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: {
+      id: 'auth-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_7_recog_multi_unified',
+    },
+  });
+  assert.equal(cellLabAdmin.status, 201, cellLabAdmin.body);
+  const cellLabPublic = JSON.parse(cellLabAdmin.body).session;
+  assert.equal(cellLabPublic.state.engine, 'cell_lab');
+  assert.doesNotMatch(JSON.stringify(cellLabPublic), /cell_7|configHash|deliberation|prompt_file/iu);
+
+  const researchDenied = await request('/api/tutor-stub/sessions/auth-cell-lab/research');
+  assert.equal(researchDenied.status, 401);
+  const researchParticipant = await request('/api/tutor-stub/sessions/auth-cell-lab/research', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(researchParticipant.status, 403);
+  const researchAdmin = await request('/api/tutor-stub/sessions/auth-cell-lab/research', {
+    user: 'admin',
+    pass: 'secret',
+  });
+  assert.equal(researchAdmin.status, 200, researchAdmin.body);
+  assert.equal(JSON.parse(researchAdmin.body).research.schema, 'machinespirits.cell-lab.research-trace.v1');
 });
 
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {
@@ -139,7 +182,7 @@ test('legacy public tool paths redirect pages but do not execute APIs', async ()
 
   const chatPage = await request('/chat/');
   assert.equal(chatPage.status, 302);
-  assert.equal(chatPage.headers.location, '/poetics/admin/chat/');
+  assert.equal(chatPage.headers.location, '/poetics/tutor?mode=research');
 
   const chatCells = await request('/api/chat/cells');
   assert.equal(chatCells.status, 404);
@@ -156,9 +199,11 @@ test('legacy public tool paths redirect pages but do not execute APIs', async ()
   assert.equal(publicChatTurn.status, 404);
   assert.equal(JSON.parse(publicChatTurn.body).adminPath, '/poetics/admin/api/chat/turn');
 
-  const pilotChatTurn = await request('/api/chat/turn', {
+  const pilotChatTurn = await request('/api/pilot/session/missing-session/turn', {
     method: 'POST',
-    body: { sessionId: 'missing-session', learnerMessage: 'hello', dryRun: true },
+    user: 'participant',
+    pass: 'participant-secret',
+    body: { learnerMessage: 'hello' },
   });
   assert.equal(pilotChatTurn.status, 404);
   assert.match(pilotChatTurn.body, /pilot session missing-session not found/);

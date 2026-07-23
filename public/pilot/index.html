@@ -1150,10 +1150,10 @@ function pilotApp() {
       this.pending = true;
 
       try {
-        const res = await fetch('/api/chat/turn?stream=1', {
+        const res = await fetch(`/api/pilot/session/${this.sessionId}/turn?stream=1`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: this.sessionId, learnerMessage: msg }),
+          body: JSON.stringify({ learnerMessage: msg }),
         });
         if (!res.ok || !res.body) {
           // Server returned a JSON error before the stream began.

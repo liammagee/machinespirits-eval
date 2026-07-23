@@ -4,9 +4,8 @@
  * Phase endpoints walk a session through the runbook §2.4 flow:
  *   enroll → consent → intake → pretest → tutoring → posttest → exit
  *
- * Tutor turns themselves go through `/api/chat/turn` with an additional
- * `sessionId` field (chatRoutes handles persistence + 15-min cap when that
- * field is present). This route file does not duplicate the turn logic.
+ * Tutor turns go through the dedicated `/session/:id/turn` adapter. The pilot
+ * row, not the browser, owns condition, curriculum, history, provider, and cap.
  *
  * Blinding: every response uses `pilotStore.getBlindedSessionView(...)` which
  * strips `condition_cell`, `participant_pid`, and `assignment_seed`. The only
@@ -17,6 +16,7 @@ import { Router } from 'express';
 import * as pilotStore from '../services/pilotStore.js';
 import * as pilotItemBank from '../services/pilotItemBank.js';
 import * as pilotAutoplay from '../services/pilotAutoplay.js';
+import { pilotTutorSessionAdapter } from '../services/pilotTutorSessionAdapter.js';
 
 const router = Router();
 
@@ -186,6 +186,42 @@ router.post('/session/:id/tutoring/start', (req, res) => {
     });
   } catch (err) {
     sendError(res, err);
+  }
+});
+
+router.post('/session/:id/turn', async (req, res) => {
+  const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
+  const send = (payload) => res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  try {
+    if (wantsStream) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-store');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    }
+    const result = await pilotTutorSessionAdapter.executeTurn({
+      sessionId: req.params.id,
+      learnerMessage: req.body?.learnerMessage,
+      onDelta: wantsStream ? (delta) => send({ delta }) : null,
+    });
+    const publicResult = {
+      finalMessage: result.finalMessage,
+      sessionId: result.sessionId,
+      turnIndex: result.turnIndex,
+      tutoringTimeRemainingMs: result.tutoringTimeRemainingMs,
+    };
+    if (wantsStream) {
+      send({ done: true, ...publicResult });
+      return res.end();
+    }
+    return res.json(publicResult);
+  } catch (err) {
+    if (wantsStream && res.headersSent) {
+      send({ error: err.message, code: err.code || null });
+      return res.end();
+    }
+    return sendError(res, err);
   }
 });
 
