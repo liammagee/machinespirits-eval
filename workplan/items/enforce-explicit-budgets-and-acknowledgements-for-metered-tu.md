@@ -1,7 +1,7 @@
 ---
 id: enforce-explicit-budgets-and-acknowledgements-for-metered-tu
 title: Enforce explicit budgets and acknowledgements for metered tutor-stub labs
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex

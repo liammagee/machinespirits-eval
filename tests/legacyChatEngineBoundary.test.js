@@ -127,6 +127,7 @@ test('legacy prompt and curriculum loaders preserve both source families', () =>
 test('route-free tutor runner preserves the ego-superego trace and curriculum framing', async () => {
   const curriculum = loadCurriculumContext({ curriculumRef: 'drama:rhetorical#D_AF1_CURRICULUM_ADAPTIVE' });
   const prompts = [];
+  const reservations = [];
   const replies = [
     'Initial draft.',
     'CRITIQUE: Sharpen the evidence request.\nIMPROVED: Revised, evidence-grounded reply.',
@@ -160,6 +161,7 @@ test('route-free tutor runner preserves the ego-superego trace and curriculum fr
       directorPlan: curriculum.directorSeed,
       egoModelOverride: { provider: 'openrouter', model: 'test/ego' },
       superegoModelOverride: { provider: 'openrouter', model: 'test/superego' },
+      beforeModelCall: (label) => reservations.push(label),
     });
 
     assert.equal(result.finalMessage, 'Revised, evidence-grounded reply.');
@@ -171,6 +173,7 @@ test('route-free tutor runner preserves the ego-superego trace and curriculum fr
     assert.equal(result.architecture.hasSuperego, true);
     assert.equal(result.architecture.recognitionMode, true);
     assert.equal(prompts.length, 2);
+    assert.deepEqual(reservations, ['tutor_ego', 'tutor_superego']);
     assert.match(prompts[0].messages[0].content, /CURRICULUM \/ SCENE SOURCE/u);
     assert.match(prompts[0].messages[0].content, /PRIVATE DIRECTOR \/ ACT-SCENE FRAME/u);
     assert.match(prompts[1].messages[0].content, /Initial draft\./u);

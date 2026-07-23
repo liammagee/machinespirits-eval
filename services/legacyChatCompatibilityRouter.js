@@ -34,12 +34,83 @@ import {
   streamSingleAgentTurn,
 } from './legacyChatTutorEngine.js';
 import { DIRECTOR_META, FEATURE_META, normalizeAssistProposal } from './legacyChatAssistProposal.js';
+import { admitFixedModelCalls, createModelCallBudget, resolveHttpMaxModelCalls } from './httpModelWorkAdmission.js';
+import { EvaluationAdmissionError, hasEvalApiPrivilegedOverride } from './evalRequestAdmission.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 
 const router = Router();
+
+function sendChatAdmissionError(res, error) {
+  if (error instanceof EvaluationAdmissionError) {
+    return res.status(error.status).json({
+      error: error.message,
+      code: error.code,
+      ...(error.details === undefined ? {} : { details: error.details }),
+    });
+  }
+  console.error('[chat] admission error:', error);
+  return res.status(500).json({ error: 'Failed to admit model work', details: error.message });
+}
+
+function reserveChatModelCall(req, label) {
+  if (req.aborted) {
+    throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
+  }
+  return req.modelCallBudget.reserve(label);
+}
+
+export function createLegacyChatAdmissionMiddleware({ endpoint, plannedModelCallLimit } = {}) {
+  return (req, res, next) => {
+    try {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before admission');
+      }
+      if (req.modelWorkAdmission) {
+        throw new EvaluationAdmissionError(409, 'duplicate_request_admission', 'Request was already admitted');
+      }
+      const body = req.body;
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'Request body must be a JSON object');
+      }
+      const input = {
+        dryRun: body.dryRun ?? false,
+        confirmModelCallLimit: body.confirmModelCallLimit,
+        allowOversizedPlan: body.allowOversizedPlan,
+      };
+      const limit = plannedModelCallLimit(req);
+      const admissionPlan = admitFixedModelCalls(input, {
+        endpoint,
+        plannedModelCallLimit: limit,
+        maxModelCalls: resolveHttpMaxModelCalls(),
+        privilegedOverride: hasEvalApiPrivilegedOverride(req),
+      });
+      req.modelWorkAdmission = admissionPlan;
+      req.modelCallBudget = createModelCallBudget(admissionPlan);
+
+      // Preserve the deprecated JSON contracts while making the admitted bound
+      // and actual reservation count available to compatibility clients.
+      if (typeof res.json === 'function') {
+        const sendJson = res.json.bind(res);
+        res.json = (payload) =>
+          sendJson(
+            payload && typeof payload === 'object' && !Array.isArray(payload)
+              ? {
+                  ...payload,
+                  modelWorkAdmissionPlan: admissionPlan,
+                  modelCallBudget: req.modelCallBudget.snapshot(),
+                }
+              : payload,
+          );
+      }
+      return next();
+    } catch (error) {
+      return sendChatAdmissionError(res, error);
+    }
+  };
+}
 
 // This adapter serves ONLY compatibility API consumers, never the eval runner.
 // Reasoning models (e.g. kimi-k2.5) spend their token budget on hidden
@@ -1003,10 +1074,16 @@ router.get('/assist/health', (_req, res) => {
   });
 });
 
-router.post('/assist', async (req, res) => {
-  const startedAt = Date.now();
-  try {
-    const catalog = buildAssistCatalog();
+router.post(
+  '/assist',
+  createLegacyChatAdmissionMiddleware({
+    endpoint: '/api/chat/assist',
+    plannedModelCallLimit: () => 2,
+  }),
+  async (req, res) => {
+    const startedAt = Date.now();
+    try {
+      const catalog = buildAssistCatalog();
     const messages = sanitizeAssistMessages(req.body?.messages || []);
     const currentConfig =
       req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
@@ -1059,12 +1136,13 @@ router.post('/assist', async (req, res) => {
       },
       null,
       2,
-    );
+      );
 
-    const call = async (user) => {
-      if (cli.provider) return callCli(cli, { system, user });
-      const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
-      return callModel(apiKey, {
+      const call = async (user) => {
+      reserveChatModelCall(req, 'chat_assist');
+        if (cli.provider) return callCli(cli, { system, user });
+        const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
+        return callModel(apiKey, {
         modelId: modelRef.model,
         system,
         user,
@@ -1105,18 +1183,33 @@ router.post('/assist', async (req, res) => {
       }),
     );
   } catch (err) {
-    console.error('[chat] assist error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      console.error('[chat] assist error:', err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // Generate a learner turn for auto-learner mode. Uses the interaction engine's
 // generateLearnerResponse so when a cell has `learner_architecture: ego_superego`
 // we get the learner's own ego/superego deliberation trace — symmetric to the tutor.
-router.post('/learner-turn', async (req, res) => {
-  const {
-    cellName,
-    history = [],
+router.post(
+  '/learner-turn',
+  createLegacyChatAdmissionMiddleware({
+    endpoint: '/api/chat/learner-turn',
+    plannedModelCallLimit: (req) => {
+      const cellName = req.body?.cellName;
+      if (!cellName) throw new EvaluationAdmissionError(400, 'invalid_request_value', 'cellName is required');
+      const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[cellName];
+      if (!profile) {
+        throw new EvaluationAdmissionError(404, 'unknown_registry_value', `cell "${cellName}" not found`);
+      }
+      return String(profile.learner_architecture || '').startsWith('ego_superego') ? 3 : 1;
+    },
+  }),
+  async (req, res) => {
+    const {
+      cellName,
+      history = [],
     topic = 'general conversation',
     lectureRef = null,
     curriculumRef = null,
@@ -1149,12 +1242,13 @@ router.post('/learner-turn', async (req, res) => {
   }
 
   // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
-  // When a CLI substrate is selected, every call routes through the local
-  // `claude` or `codex` CLI — same interface, different substrate. Otherwise: OpenRouter.
-  const llmCall = async (modelRef, systemPrompt, messages, options = {}) => {
-    if (cli.provider) {
-      const userPrompt = (messages || []).map((m) => m.content).join('\n\n');
-      const out = await callCli(cli, { system: systemPrompt, user: userPrompt });
+    // When a CLI substrate is selected, every call routes through the local
+    // `claude` or `codex` CLI — same interface, different substrate. Otherwise: OpenRouter.
+    const llmCall = async (modelRef, systemPrompt, messages, options = {}) => {
+    reserveChatModelCall(req, options.agentRole || 'learner_turn');
+      if (cli.provider) {
+        const userPrompt = (messages || []).map((m) => m.content).join('\n\n');
+        const out = await callCli(cli, { system: systemPrompt, user: userPrompt });
       return {
         content: out.content,
         usage: { inputTokens: out.inputTokens, outputTokens: out.outputTokens },
@@ -1248,10 +1342,11 @@ router.post('/learner-turn', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('[chat] learner-turn error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      console.error('[chat] learner-turn error:', err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // The engine tags learner deliberation entries as
 // 'ego_initial' / 'superego' / 'ego_revision' (plus sometimes 'unified' for single-agent).
@@ -1459,10 +1554,24 @@ function buildDryRunTutorTurn({
   };
 }
 
-router.post('/turn', async (req, res) => {
-  const { learnerMessage } = req.body || {};
-  const dryRun = req.body?.dryRun || false;
-  // Curtain-up turn: the tutor speaks first, with no learner line yet.
+router.post(
+  '/turn',
+  createLegacyChatAdmissionMiddleware({
+    endpoint: '/api/chat/turn',
+    plannedModelCallLimit: (req) => {
+      const cellName = req.body?.cellName;
+      if (!cellName) throw new EvaluationAdmissionError(400, 'invalid_request_value', 'cellName is required');
+      const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[cellName];
+      if (!profile) {
+        throw new EvaluationAdmissionError(404, 'unknown_registry_value', `cell "${cellName}" not found`);
+      }
+      return profile.superego ? 2 : 1;
+    },
+  }),
+  async (req, res) => {
+    const { learnerMessage } = req.body || {};
+    const dryRun = req.body?.dryRun || false;
+    // Curtain-up turn: the tutor speaks first, with no learner line yet.
   const instigate = req.body?.instigate === true;
   const {
     cellName,
@@ -1546,12 +1655,13 @@ router.post('/turn', async (req, res) => {
         curriculum,
         directorPlan,
         egoModelOverride: egoOverrideRef,
-        temperature: sampling.temperature,
-        maxTokens: sampling.maxTokens,
-        onDelta: (d) => send({ delta: d }),
-      });
+          temperature: sampling.temperature,
+          maxTokens: sampling.maxTokens,
+          onDelta: (d) => send({ delta: d }),
+          beforeModelCall: (label) => reserveChatModelCall(req, label),
+        });
 
-      // Some ego prompts emit JSON suggestion arrays — extract the prose.
+        // Some ego prompts emit JSON suggestion arrays — extract the prose.
       // If the cleaned text differs, tell the client to replace its
       // accumulator with the canonical version.
       const renderableFinal = extractTutorMessage(result.finalMessage) || result.finalMessage;
@@ -1597,12 +1707,13 @@ router.post('/turn', async (req, res) => {
       useClaudeCli: !!useClaudeCli,
       cli,
       egoModelOverride: egoOverrideRef,
-      superegoModelOverride: superegoOverrideRef,
-      temperature: sampling.temperature,
-      maxTokens: sampling.maxTokens,
-    });
+        superegoModelOverride: superegoOverrideRef,
+        temperature: sampling.temperature,
+        maxTokens: sampling.maxTokens,
+        beforeModelCall: (label) => reserveChatModelCall(req, label),
+      });
 
-    if (curriculum) {
+      if (curriculum) {
       trace.curriculum = {
         kind: curriculum.kind,
         courseId: curriculum.courseId,
@@ -1616,10 +1727,11 @@ router.post('/turn', async (req, res) => {
     }
     res.json(trace);
   } catch (err) {
-    console.error('[chat] turn error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      console.error('[chat] turn error:', err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 export default router;
 

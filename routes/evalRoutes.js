@@ -23,6 +23,11 @@ import {
   hasEvalApiPrivilegedOverride,
   resolveEvalApiMaxPlannedTests,
 } from '../services/evalRequestAdmission.js';
+import {
+  admitFixedModelCalls,
+  createModelCallBudget,
+  resolveHttpMaxModelCalls,
+} from '../services/httpModelWorkAdmission.js';
 // Lazy-loaded tutor-core services — resolved on first request so this module
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
@@ -48,6 +53,200 @@ import fs from 'fs';
 import path from 'path';
 
 const router = Router();
+
+function httpBoolean(value, fallback = false) {
+  if (value === undefined) return fallback;
+  if (value === true || value === 'true') return true;
+  if (value === false || value === 'false') return false;
+  return value;
+}
+
+function httpPositiveInteger(value, fallback = undefined) {
+  if (value === undefined || value === '') return fallback;
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && /^[1-9]\d*$/.test(value)) return Number(value);
+  return value;
+}
+
+function httpIdList(value, fallback) {
+  if (value === undefined || value === '') return fallback;
+  if (value === 'all') return 'all';
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return value.split(',');
+  return value;
+}
+
+function requestWithAdmissionBody(req, body) {
+  return {
+    body,
+    headers: req.headers,
+    get: typeof req.get === 'function' ? req.get.bind(req) : undefined,
+  };
+}
+
+function requireObjectBody(req) {
+  const body = req.body === undefined ? {} : req.body;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'Request body must be a JSON object');
+  }
+  return body;
+}
+
+function attachEvaluationTestBudget(req, admission) {
+  let used = 0;
+  req.reserveEvaluationTest = (label = 'evaluation_test') => {
+    if (req.aborted) {
+      throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
+    }
+    if (used >= admission.plannedTestCount) {
+      throw new EvaluationAdmissionError(409, 'evaluation_test_budget_exhausted', `Test budget exhausted before ${label}`, {
+        plannedTestCount: admission.plannedTestCount,
+        usedTestCount: used,
+      });
+    }
+    used += 1;
+    return used;
+  };
+  req.evaluationTestBudget = () => Object.freeze({
+    plannedTestCount: admission.plannedTestCount,
+    usedTestCount: used,
+    remainingTestCount: admission.plannedTestCount - used,
+  });
+}
+
+export function createExactEvaluationAdmissionMiddleware({
+  endpoint,
+  buildInput,
+  minProfiles = 1,
+  profileRegistry = effectiveEvaluationProfileRegistry,
+  scenarioRegistry = effectiveEvaluationScenarioRegistry,
+  maxPlannedTests = () => resolveEvalApiMaxPlannedTests(),
+  privilegedOverride = (req, input) => hasEvalApiPrivilegedOverride(requestWithAdmissionBody(req, input)),
+} = {}) {
+  return (req, res, next) => {
+    try {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before admission');
+      }
+      if (req.evaluationAdmission) {
+        throw new EvaluationAdmissionError(409, 'duplicate_request_admission', 'Request was already admitted');
+      }
+      const input = buildInput(req);
+      req.evaluationAdmission = admitEvaluationRequest(input, {
+        profileRegistry: typeof profileRegistry === 'function' ? profileRegistry() : profileRegistry,
+        scenarioRegistry: typeof scenarioRegistry === 'function' ? scenarioRegistry() : scenarioRegistry,
+        minProfiles,
+        maxPlannedTests: typeof maxPlannedTests === 'function' ? maxPlannedTests() : maxPlannedTests,
+        privilegedOverride:
+          typeof privilegedOverride === 'function' ? privilegedOverride(req, input) : privilegedOverride,
+        endpoint,
+      });
+      attachEvaluationTestBudget(req, req.evaluationAdmission);
+      return next();
+    } catch (error) {
+      return sendEvaluationAdmissionError(res, error, `[EvalRoutes] Admission failed for ${endpoint}:`);
+    }
+  };
+}
+
+export function createFixedModelCallAdmissionMiddleware({
+  endpoint,
+  buildInput,
+  plannedModelCallLimit,
+  maxModelCalls = () => resolveHttpMaxModelCalls(),
+  privilegedOverride = (req, input) => hasEvalApiPrivilegedOverride(requestWithAdmissionBody(req, input)),
+  shortCircuitDryRun = false,
+} = {}) {
+  return (req, res, next) => {
+    try {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before admission');
+      }
+      if (req.modelWorkAdmission) {
+        throw new EvaluationAdmissionError(409, 'duplicate_request_admission', 'Request was already admitted');
+      }
+      const input = buildInput(req);
+      const limit = plannedModelCallLimit(req, input);
+      const admissionPlan = admitFixedModelCalls(input, {
+        endpoint,
+        plannedModelCallLimit: limit,
+        maxModelCalls: typeof maxModelCalls === 'function' ? maxModelCalls() : maxModelCalls,
+        privilegedOverride:
+          typeof privilegedOverride === 'function' ? privilegedOverride(req, input) : privilegedOverride,
+      });
+      req.modelWorkInput = input;
+      req.modelWorkAdmission = admissionPlan;
+      req.modelCallBudget = createModelCallBudget(admissionPlan);
+      if (shortCircuitDryRun && admissionPlan.dryRun) {
+        return res.json({ success: true, dryRun: true, admissionPlan });
+      }
+      return next();
+    } catch (error) {
+      return sendEvaluationAdmissionError(res, error, `[EvalRoutes] Admission failed for ${endpoint}:`);
+    }
+  };
+}
+
+export function createPromptRecommendationAdmissionMiddleware({
+  profileRegistry = effectiveEvaluationProfileRegistry,
+  scenarioRegistry = effectiveEvaluationScenarioRegistry,
+  maxPlannedTests = () => resolveEvalApiMaxPlannedTests(),
+  maxModelCalls = () => resolveHttpMaxModelCalls(),
+} = {}) {
+  return (req, res, next) => {
+    try {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before admission');
+      }
+      if (req.modelWorkAdmission || req.evaluationAdmission) {
+        throw new EvaluationAdmissionError(409, 'duplicate_request_admission', 'Request was already admitted');
+      }
+      const body = req.body;
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'Request body must be a JSON object');
+      }
+      if (!body.runId && !body.profile) {
+        throw new EvaluationAdmissionError(400, 'invalid_request_value', 'Either runId or profile is required');
+      }
+
+      const fixedInput = {
+        dryRun: body.dryRun ?? false,
+        confirmModelCallLimit: body.confirmModelCallLimit,
+        allowOversizedPlan: body.allowOversizedPlan,
+      };
+      req.modelWorkAdmission = admitFixedModelCalls(fixedInput, {
+        endpoint: '/api/eval/prompts/recommend',
+        plannedModelCallLimit: 1,
+        maxModelCalls: typeof maxModelCalls === 'function' ? maxModelCalls() : maxModelCalls,
+        privilegedOverride: hasEvalApiPrivilegedOverride(requestWithAdmissionBody(req, fixedInput)),
+      });
+      req.modelCallBudget = createModelCallBudget(req.modelWorkAdmission);
+
+      if (body.profile && !body.runId) {
+        const evaluationInput = {
+          profiles: [body.profile],
+          scenarios: body.scenarios ?? 'all',
+          runsPerConfig: 1,
+          skipRubric: false,
+          dryRun: body.dryRun ?? false,
+          confirmTestCount: body.confirmTestCount,
+          allowOversizedPlan: body.allowOversizedPlan,
+        };
+        req.evaluationAdmission = admitEvaluationRequest(evaluationInput, {
+          profileRegistry: typeof profileRegistry === 'function' ? profileRegistry() : profileRegistry,
+          scenarioRegistry: typeof scenarioRegistry === 'function' ? scenarioRegistry() : scenarioRegistry,
+          maxPlannedTests: typeof maxPlannedTests === 'function' ? maxPlannedTests() : maxPlannedTests,
+          privilegedOverride: hasEvalApiPrivilegedOverride(requestWithAdmissionBody(req, evaluationInput)),
+          endpoint: '/api/eval/prompts/recommend',
+        });
+        attachEvaluationTestBudget(req, req.evaluationAdmission);
+      }
+      return next();
+    } catch (error) {
+      return sendEvaluationAdmissionError(res, error, '[EvalRoutes] Prompt recommendation admission failed:');
+    }
+  };
+}
 
 function isRunNotFound(error) {
   return /Run not found/i.test(error?.message || '');
@@ -561,20 +760,35 @@ router.get('/configurations', (req, res) => {
  *   hyperparameters: null        // Override hyperparameters (optional)
  * }
  */
-router.post('/quick', async (req, res) => {
+router.post('/quick', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/quick',
+  buildInput: (req) => {
+    const body = requireObjectBody(req);
+    return {
+      profiles: [body.profile ?? 'budget'],
+      scenarios: [body.scenario ?? 'new_user_first_visit'],
+      runsPerConfig: 1,
+      skipRubric: body.skipRubric ?? false,
+      dryRun: body.dryRun ?? false,
+      confirmTestCount: body.confirmTestCount,
+      allowOversizedPlan: body.allowOversizedPlan,
+    };
+  },
+}), async (req, res) => {
   try {
+    const admission = req.evaluationAdmission;
     const {
-      profile = 'budget',
-      scenario = 'new_user_first_visit',
-      skipRubric = false,
-      dryRun = false,
       judgeOverride = null,
       provider,
       model,
       egoModel,
       superegoStrategy,
       hyperparameters,
-    } = req.body;
+    } = req.body || {};
+    const profile = admission.profiles[0];
+    const scenario = admission.scenarios[0];
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
 
     // Build config with optional tutor overrides
     const config = {
@@ -601,6 +815,7 @@ router.post('/quick', async (req, res) => {
         scenarioNames: [scenarioName],
         judgeOverride: judgeOverride || undefined,
         dryRun,
+        admissionPlan: admission.admissionPlan,
         ...(provider && { provider }),
         ...(model && { model }),
         ...(egoModel && { egoModel }),
@@ -608,6 +823,7 @@ router.post('/quick', async (req, res) => {
       },
     });
 
+    req.reserveEvaluationTest(`${profile}:${scenario}`);
     const result = await evaluationRunner.quickTest(config, {
       scenarioId: scenario,
       skipRubricEval: skipRubric,
@@ -630,6 +846,7 @@ router.post('/quick', async (req, res) => {
     res.json({
       success: true,
       runId: run.id,
+      admissionPlan: admission.admissionPlan,
       result: {
         runId: run.id,
         scenarioId: result.scenarioId,
@@ -678,7 +895,18 @@ router.post('/quick', async (req, res) => {
  * GET /api/eval/stream/quick
  * Query params: profile, scenario, skipRubric
  */
-router.get('/stream/quick', async (req, res) => {
+router.get('/stream/quick', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/stream/quick',
+  buildInput: (req) => ({
+    profiles: [req.query.profile ?? 'budget'],
+    scenarios: [req.query.scenario ?? 'new_user_first_visit'],
+    runsPerConfig: 1,
+    skipRubric: httpBoolean(req.query.skipRubric, false),
+    dryRun: httpBoolean(req.query.dryRun, false),
+    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+  }),
+}), async (req, res) => {
   // Set up SSE
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -706,9 +934,11 @@ router.get('/stream/quick', async (req, res) => {
   });
 
   try {
-    const profile = req.query.profile || 'budget';
-    const scenario = req.query.scenario || 'new_user_first_visit';
-    const skipRubric = req.query.skipRubric === 'true';
+    const admission = req.evaluationAdmission;
+    const profile = admission.profiles[0];
+    const scenario = admission.scenarios[0];
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
     const outputSize = req.query.outputSize || 'normal'; // compact, normal, expanded
 
     // Get scenario name for description
@@ -725,6 +955,7 @@ router.get('/stream/quick', async (req, res) => {
         profiles: [profile],
         scenarios: [scenario],
         scenarioNames: [scenarioName],
+        admissionPlan: admission.admissionPlan,
       },
     });
 
@@ -734,6 +965,7 @@ router.get('/stream/quick', async (req, res) => {
       skipRubric,
       outputSize,
       runId: run.id,
+      admissionPlan: admission.admissionPlan,
       timestamp: new Date().toISOString(),
     });
 
@@ -752,10 +984,12 @@ router.get('/stream/quick', async (req, res) => {
     sendEvent('log', { message: 'Building learner context...', level: 'info' });
     sendEvent('progress', { stage: 'context', message: 'Building learner context' });
 
+    req.reserveEvaluationTest(`${profile}:${scenario}`);
     const result = await evaluationRunner.quickTest(config, {
       scenarioId: scenario,
       skipRubricEval: skipRubric,
       outputSize, // compact, normal, expanded - affects response length
+      dryRun,
       verbose: true,
       onLog, // Pass log callback
     });
@@ -994,20 +1228,37 @@ router.post('/compare', meteredEvaluationHandlers.compare);
  *
  * Returns dimension scores and overall rankings for each profile.
  */
-router.post('/matrix', async (req, res) => {
+router.post('/matrix', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/matrix',
+  buildInput: (req) => {
+    const body = requireObjectBody(req);
+    const requested = body.profiles ?? [];
+    const profiles = Array.isArray(requested) && requested.length === 0
+      ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
+        tutorConfigLoader.listProfiles().some((profile) => profile.name === name))
+      : requested;
+    return {
+      profiles,
+      scenarios: body.scenarios ?? 'all',
+      runsPerConfig: 1,
+      skipRubric: body.skipRubric ?? false,
+      dryRun: body.dryRun ?? false,
+      confirmTestCount: body.confirmTestCount,
+      allowOversizedPlan: body.allowOversizedPlan,
+    };
+  },
+}), async (req, res) => {
   try {
-    let { profiles = [] } = req.body;
-    const { scenarios = 'all', skipRubric = false, dryRun = false } = req.body;
+    const admission = req.evaluationAdmission;
+    const profiles = admission.profiles;
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
 
     // Default profiles if none specified
     const allProfiles = tutorConfigLoader.listProfiles();
-    if (profiles.length === 0) {
-      profiles = ['budget', 'experimental', 'default', 'fast'].filter((p) => allProfiles.some((ap) => ap.name === p));
-    }
-
     // Validate profiles exist
-    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
-    const invalidProfiles = profiles.filter((p) => !allProfiles.some((ap) => ap.name === p));
+    const validProfiles = profiles;
+    const invalidProfiles = [];
 
     if (validProfiles.length === 0) {
       return res.status(400).json({
@@ -1018,7 +1269,8 @@ router.post('/matrix', async (req, res) => {
 
     // Get scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
+    const admittedScenarioIds = new Set(admission.scenarios);
+    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
     // Create a run to persist results to history
     const run = evaluationStore.createRun({
@@ -1032,6 +1284,7 @@ router.post('/matrix', async (req, res) => {
         scenarioNames: scenariosToRun.map((s) => s.name),
         skipRubric,
         dryRun,
+        admissionPlan: admission.admissionPlan,
       },
     });
 
@@ -1047,6 +1300,7 @@ router.post('/matrix', async (req, res) => {
       for (const scenario of scenariosToRun) {
         try {
           const config = { profileName, label: profileName };
+          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
           const result = await evaluationRunner.quickTest(config, {
             scenarioId: scenario.id,
             verbose: false,
@@ -1139,6 +1393,7 @@ router.post('/matrix', async (req, res) => {
     res.json({
       success: true,
       runId: run.id, // Include run ID so frontend can navigate to history
+      admissionPlan: admission.admissionPlan,
       profiles: validProfiles,
       invalidProfiles: invalidProfiles.length > 0 ? invalidProfiles : undefined,
       scenariosRun: scenariosToRun.length,
@@ -1157,7 +1412,25 @@ router.post('/matrix', async (req, res) => {
  * GET /api/eval/stream/matrix
  * Query params: profiles, scenarios, skipRubric
  */
-router.get('/stream/matrix', async (req, res) => {
+router.get('/stream/matrix', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/stream/matrix',
+  buildInput: (req) => {
+    const requested = httpIdList(req.query.profiles, []);
+    const profiles = Array.isArray(requested) && requested.length === 0
+      ? ['budget', 'experimental', 'default', 'fast'].filter((name) =>
+        tutorConfigLoader.listProfiles().some((profile) => profile.name === name))
+      : requested;
+    return {
+      profiles,
+      scenarios: httpIdList(req.query.scenarios, 'all'),
+      runsPerConfig: 1,
+      skipRubric: httpBoolean(req.query.skipRubric, false),
+      dryRun: httpBoolean(req.query.dryRun, false),
+      confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+      allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+    };
+  },
+}), async (req, res) => {
   // Set up SSE
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -1185,21 +1458,15 @@ router.get('/stream/matrix', async (req, res) => {
   });
 
   try {
-    const profilesParam = req.query.profiles || '';
-    let profiles = profilesParam ? profilesParam.split(',') : [];
-    const scenariosParam = req.query.scenarios || 'all';
-    const scenarios = scenariosParam === 'all' ? 'all' : scenariosParam.split(',');
-    const skipRubric = req.query.skipRubric === 'true';
+    const admission = req.evaluationAdmission;
+    const profiles = admission.profiles;
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
     const outputSize = req.query.outputSize || 'normal';
 
     // Get all available profiles
-    const allProfiles = tutorConfigLoader.listProfiles();
-    if (profiles.length === 0) {
-      profiles = ['budget', 'experimental', 'default', 'fast'].filter((p) => allProfiles.some((ap) => ap.name === p));
-    }
-
     // Validate profiles
-    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
+    const validProfiles = profiles;
     if (validProfiles.length === 0) {
       sendEvent('error', { error: 'No valid profiles specified' });
       return res.end();
@@ -1207,7 +1474,8 @@ router.get('/stream/matrix', async (req, res) => {
 
     // Get scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
+    const admittedScenarioIds = new Set(admission.scenarios);
+    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
     const totalTests = validProfiles.length * scenariosToRun.length;
 
@@ -1217,6 +1485,7 @@ router.get('/stream/matrix', async (req, res) => {
       totalTests,
       skipRubric,
       outputSize,
+      admissionPlan: admission.admissionPlan,
       timestamp: new Date().toISOString(),
     });
 
@@ -1237,6 +1506,8 @@ router.get('/stream/matrix', async (req, res) => {
         scenarios: scenariosToRun.map((s) => s.id),
         scenarioNames: scenariosToRun.map((s) => s.name),
         skipRubric,
+        dryRun,
+        admissionPlan: admission.admissionPlan,
       },
     });
 
@@ -1274,10 +1545,12 @@ router.get('/stream/matrix', async (req, res) => {
             sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
           };
 
+          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
           const result = await evaluationRunner.quickTest(config, {
             scenarioId: scenario.id,
             verbose: false,
             skipRubricEval: skipRubric,
+            dryRun,
             outputSize,
             onLog,
           });
@@ -1415,7 +1688,41 @@ router.get('/stream/matrix', async (req, res) => {
  *   - topic: topic for discussion (default: "Hegel's concept of recognition")
  *   - runJudge: whether to run AI judge evaluation (default: true)
  */
-router.get('/stream/interact', async (req, res) => {
+router.get('/stream/interact', createFixedModelCallAdmissionMiddleware({
+  endpoint: '/api/eval/stream/interact',
+  buildInput: (req) => ({
+    dryRun: httpBoolean(req.query.dryRun, false),
+    confirmModelCallLimit: httpPositiveInteger(req.query.confirmModelCallLimit),
+    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+    turns: httpPositiveInteger(req.query.turns, 5),
+    profile: req.query.profile || 'budget',
+    persona: req.query.persona || 'confused_novice',
+    dialogueEnabled: httpBoolean(req.query.dialogueEnabled, true),
+  }),
+  plannedModelCallLimit: (_req, input) => {
+    if (!Number.isSafeInteger(input.turns) || input.turns <= 0) {
+      throw new EvaluationAdmissionError(422, 'invalid_request_value', 'turns must be a positive safe integer');
+    }
+    if (typeof input.dialogueEnabled !== 'boolean') {
+      throw new EvaluationAdmissionError(400, 'invalid_request_schema', 'dialogueEnabled must be a boolean');
+    }
+    if (!effectiveEvaluationProfileRegistry().includes(input.profile)) {
+      throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'profile contains an unknown entry', {
+        field: 'profile', unknown: [input.profile],
+      });
+    }
+    const personaIds = learnerConfigLoader.listPersonas().map((persona) => persona.id || persona.name);
+    if (!personaIds.includes(input.persona)) {
+      throw new EvaluationAdmissionError(422, 'unknown_registry_value', 'persona contains an unknown entry', {
+        field: 'persona', unknown: [input.persona],
+      });
+    }
+    // Maximum bilateral path: three calls for the opening learner, then
+    // tutor ego/superego/adjudication + learner ego/superego/adjudication.
+    return 3 + input.turns * 6;
+  },
+  shortCircuitDryRun: true,
+}), async (req, res) => {
   // Set up SSE
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -1442,10 +1749,10 @@ router.get('/stream/interact', async (req, res) => {
   });
 
   try {
-    const persona = req.query.persona || 'confused_novice';
-    const tutorProfile = req.query.profile || 'budget';
-    const maxTurns = parseInt(req.query.turns) || 5;
-    const dialogueEnabled = req.query.dialogueEnabled !== 'false';
+    const persona = req.modelWorkInput.persona;
+    const tutorProfile = req.modelWorkInput.profile;
+    const maxTurns = req.modelWorkInput.turns;
+    const dialogueEnabled = req.modelWorkInput.dialogueEnabled;
     const topic = req.query.topic || "Hegel's concept of recognition";
     const runJudge = req.query.runJudge !== 'false';
 
@@ -1456,6 +1763,7 @@ router.get('/stream/interact', async (req, res) => {
       dialogueEnabled,
       topic,
       runJudge,
+      admissionPlan: req.modelWorkAdmission,
       timestamp: new Date().toISOString(),
     });
 
@@ -1507,6 +1815,10 @@ router.get('/stream/interact', async (req, res) => {
 
     // Create the llmCall function matching the expected signature
     const llmCall = async (requestedModel, systemPrompt, messages, options = {}) => {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
+      }
+      req.modelCallBudget.reserve(options.agentRole || 'interaction_model_call');
       const { temperature = 0.7, maxTokens = 1000 } = options;
       const model =
         requestedModel ||
@@ -1704,6 +2016,7 @@ router.get('/stream/interact', async (req, res) => {
           learnerArchitecture: dialogueEnabled ? 'ego_superego' : 'unified',
           topic,
           fastMode: !runJudge,
+          admissionPlan: req.modelWorkAdmission,
         },
       });
       runId = runData.id;
@@ -1758,6 +2071,7 @@ router.get('/stream/interact', async (req, res) => {
       latencyMs: result.metrics.totalLatencyMs,
       passed: true, // No judge score yet
       tutorFirstTurnScore: null,
+      modelCallBudget: req.modelCallBudget.snapshot(),
     });
 
     sendEvent('complete', {
@@ -2292,9 +2606,9 @@ router.get('/prompts/:name', (req, res) => {
  * Returns recommendations for prompt improvements.
  * Does NOT write to disk - web clients can display these for review.
  */
-router.post('/prompts/recommend', async (req, res) => {
+router.post('/prompts/recommend', createPromptRecommendationAdmissionMiddleware(), async (req, res) => {
   try {
-    const { runId, profile, scenarios = 'all', dryRun = false } = req.body;
+    const { runId, profile, dryRun = false } = req.body;
 
     let results = [];
     let profileName = profile || 'unknown';
@@ -2310,11 +2624,13 @@ router.post('/prompts/recommend', async (req, res) => {
     } else if (profile) {
       // Run fresh evaluations
       const allScenarios = evalConfigLoader.listScenarios();
-      const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
+      const admittedScenarioIds = new Set(req.evaluationAdmission.scenarios);
+      const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
       for (const scenario of scenariosToRun) {
         try {
           const config = { profileName: profile, label: profile };
+          req.reserveEvaluationTest(`${profile}:${scenario.id}`);
           const result = await evaluationRunner.quickTest(config, {
             scenarioId: scenario.id,
             verbose: false,
@@ -2335,6 +2651,12 @@ router.post('/prompts/recommend', async (req, res) => {
     }
 
     // Generate recommendations
+    if (!dryRun) {
+      if (req.aborted) {
+        throw new EvaluationAdmissionError(499, 'client_closed_request', 'Client closed before model work');
+      }
+      req.modelCallBudget.reserve('prompt_recommendation');
+    }
     const recommendations = await promptRecommendationService.generateRecommendations({
       results,
       profileName,
@@ -2347,6 +2669,9 @@ router.post('/prompts/recommend', async (req, res) => {
       // Explicitly note this is read-only
       readOnly: true,
       dryRun,
+      evaluationAdmissionPlan: req.evaluationAdmission?.admissionPlan || null,
+      modelWorkAdmissionPlan: req.modelWorkAdmission,
+      modelCallBudget: req.modelCallBudget.snapshot(),
       note: 'Recommendations are for review only. Use CLI to apply changes.',
     });
   } catch (error) {
@@ -2364,7 +2689,18 @@ router.post('/prompts/recommend', async (req, res) => {
  * GET /api/eval/stream/run
  * Query params: profiles, scenarios, skipRubric
  */
-router.get('/stream/run', async (req, res) => {
+router.get('/stream/run', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/stream/run',
+  buildInput: (req) => ({
+    profiles: httpIdList(req.query.profiles, ['budget']),
+    scenarios: httpIdList(req.query.scenarios, 'all'),
+    runsPerConfig: 1,
+    skipRubric: httpBoolean(req.query.skipRubric, false),
+    dryRun: httpBoolean(req.query.dryRun, false),
+    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+  }),
+}), async (req, res) => {
   // Set up SSE
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -2392,14 +2728,16 @@ router.get('/stream/run', async (req, res) => {
   });
 
   try {
-    const profiles = req.query.profiles ? req.query.profiles.split(',') : ['budget'];
-    const scenarios = req.query.scenarios === 'all' || !req.query.scenarios ? 'all' : req.query.scenarios.split(',');
-    const skipRubric = req.query.skipRubric === 'true';
+    const admission = req.evaluationAdmission;
+    const profiles = admission.profiles;
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
     const outputSize = req.query.outputSize || 'normal';
 
     // Get all scenarios to run
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
+    const admittedScenarioIds = new Set(admission.scenarios);
+    const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
     const totalTests = profiles.length * scenariosToRun.length;
     let completedTests = 0;
@@ -2410,6 +2748,7 @@ router.get('/stream/run', async (req, res) => {
       totalTests,
       skipRubric,
       outputSize,
+      admissionPlan: admission.admissionPlan,
       timestamp: new Date().toISOString(),
     });
 
@@ -2446,10 +2785,12 @@ router.get('/stream/run', async (req, res) => {
             sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
           };
 
+          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
           const result = await evaluationRunner.quickTest(config, {
             scenarioId: scenario.id,
             skipRubricEval: skipRubric,
             outputSize,
+            dryRun,
             verbose: false,
             onLog,
           });
@@ -3097,7 +3438,21 @@ router.get('/interactions/:evalId/transcript', (req, res) => {
  * - Delta analysis with statistical significance indicators
  * - Winner badges per dimension
  */
-router.get('/stream/recognition-ab', async (req, res) => {
+router.get('/stream/recognition-ab', createExactEvaluationAdmissionMiddleware({
+  endpoint: '/api/eval/stream/recognition-ab',
+  buildInput: (req) => ({
+    profiles: ['baseline', 'recognition'],
+    scenarios: evalConfigLoader.listScenarios()
+      .filter((scenario) => scenario.recognition_test === true)
+      .map((scenario) => scenario.id),
+    runsPerConfig: 1,
+    skipRubric: httpBoolean(req.query.skipRubric, false),
+    dryRun: httpBoolean(req.query.dryRun, false),
+    confirmTestCount: httpPositiveInteger(req.query.confirmTestCount),
+    allowOversizedPlan: httpBoolean(req.query.allowOversizedPlan, false),
+  }),
+  minProfiles: 2,
+}), async (req, res) => {
   // Set up SSE
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -3124,9 +3479,11 @@ router.get('/stream/recognition-ab', async (req, res) => {
   });
 
   try {
+    const admission = req.evaluationAdmission;
     // Fixed profiles for A/B comparison
-    const profiles = ['baseline', 'recognition'];
-    const skipRubric = req.query.skipRubric === 'true';
+    const profiles = admission.profiles;
+    const skipRubric = admission.skipRubric;
+    const dryRun = admission.dryRun;
     const outputSize = req.query.outputSize || 'normal';
 
     // Validate profiles exist
@@ -3162,6 +3519,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
       skipRubric,
       outputSize,
       testLearnerId,
+      admissionPlan: admission.admissionPlan,
       timestamp: new Date().toISOString(),
     });
 
@@ -3182,6 +3540,8 @@ router.get('/stream/recognition-ab', async (req, res) => {
         scenarioNames: recognitionScenarios.map((s) => s.name),
         skipRubric,
         testLearnerId,
+        dryRun,
+        admissionPlan: admission.admissionPlan,
       },
     });
 
@@ -3233,6 +3593,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
             sendEvent('log', { message: `  ${message}`, level, timestamp: new Date().toISOString() });
           };
 
+          req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
           const result = await evaluationRunner.quickTest(config, {
             scenarioId: scenario.id,
             verbose: false,
@@ -3240,6 +3601,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
             outputSize,
             onLog,
             learnerId: testLearnerId,
+            dryRun,
           });
 
           results[profileName].push(result);
