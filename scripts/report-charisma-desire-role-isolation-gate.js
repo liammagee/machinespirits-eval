@@ -16,8 +16,11 @@ const ROOT = path.resolve(__dirname, '..');
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const TUTOR_AGENTS_PATH = path.join(ROOT, 'config', 'tutor-agents.yaml');
 const DB_PATH = resolveEvaluationDbPath(ROOT);
-const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate-summary.md');
-const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate.json');
+const EXPORTS_DIR = process.env.EVAL_EXPORTS_DIR
+  ? path.resolve(process.env.EVAL_EXPORTS_DIR)
+  : path.join(ROOT, 'exports');
+const REPORT_PATH = path.join(EXPORTS_DIR, 'charisma-desire-role-isolation-gate-summary.md');
+const JSON_PATH = path.join(EXPORTS_DIR, 'charisma-desire-role-isolation-gate.json');
 
 const CELL_193 = 'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
 const CELL_195 = 'cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified';

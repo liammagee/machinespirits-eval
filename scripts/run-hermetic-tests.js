@@ -16,30 +16,25 @@ const testFiles = ['services/__tests__', 'tests'].flatMap((directory) =>
 const defaults = ['--test', '--test-force-exit', ...testFiles];
 const forwarded = process.argv.slice(2);
 const testArgs = forwarded.length ? ['--test', '--test-force-exit', ...forwarded] : defaults;
-const env = {
-  ...process.env,
+const isolatedPaths = {
   EVAL_DB_PATH: path.join(root, 'evaluations.db'),
   EVAL_LOGS_DIR: path.join(root, 'logs'),
   EVAL_WRITING_PAD_DIR: path.join(root, 'writing-pad'),
   EVAL_EXPORTS_DIR: path.join(root, 'exports'),
   AUTH_DB_PATH: path.join(root, 'auth.db'),
+  TUTOR_CORE_LOG_DIR: path.join(root, 'tutor-core-logs'),
+  TUTOR_STUB_TRACE_DIR: path.join(root, 'tutor-stub-traces'),
+  TUTOR_STUB_EVAL_INDEX_ROOT: path.join(root, 'tutor-stub-auto-eval'),
+  TUTOR_STUB_EVAL_TRACE_DIR: path.join(root, 'tutor-stub-auto-eval'),
+};
+const env = {
+  ...process.env,
+  ...isolatedPaths,
   MACHINESPIRITS_HERMETIC_TEST_ROOT: root,
 };
 
 if (forwarded.length === 1 && forwarded[0] === '--print-env') {
-  console.log(
-    JSON.stringify(
-      {
-        EVAL_DB_PATH: env.EVAL_DB_PATH,
-        EVAL_LOGS_DIR: env.EVAL_LOGS_DIR,
-        EVAL_WRITING_PAD_DIR: env.EVAL_WRITING_PAD_DIR,
-        EVAL_EXPORTS_DIR: env.EVAL_EXPORTS_DIR,
-        AUTH_DB_PATH: env.AUTH_DB_PATH,
-      },
-      null,
-      2,
-    ),
-  );
+  console.log(JSON.stringify(isolatedPaths, null, 2));
   fs.rmSync(root, { recursive: true, force: true });
   process.exit(0);
 }

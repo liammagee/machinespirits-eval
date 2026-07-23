@@ -20,9 +20,20 @@ test('ordinary npm tests receive isolated evaluation data paths', () => {
     encoding: 'utf8',
   });
   const env = JSON.parse(output);
-  for (const value of Object.values(env)) {
-    assert.match(value, /machinespirits-tests-/u);
-    assert.equal(value.startsWith(ROOT), false);
+  assert.deepEqual(Object.keys(env).sort(), [
+    'AUTH_DB_PATH',
+    'EVAL_DB_PATH',
+    'EVAL_EXPORTS_DIR',
+    'EVAL_LOGS_DIR',
+    'EVAL_WRITING_PAD_DIR',
+    'TUTOR_CORE_LOG_DIR',
+    'TUTOR_STUB_EVAL_INDEX_ROOT',
+    'TUTOR_STUB_EVAL_TRACE_DIR',
+    'TUTOR_STUB_TRACE_DIR',
+  ]);
+  for (const [name, value] of Object.entries(env)) {
+    assert.match(value, /machinespirits-tests-/u, `${name} should use the shared temporary root`);
+    assert.equal(value.startsWith(ROOT), false, `${name} should stay outside the repository`);
   }
 });
 

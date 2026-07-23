@@ -28,17 +28,22 @@ describe('charisma desire role-isolation gate', () => {
   });
 
   it('documents an OpenRouter timeout guard for metered role-isolation arms', async () => {
-    const { stdout } = await exec('node', [SCRIPT], {
-      timeout: 15000,
-      env: { ...process.env, NODE_NO_WARNINGS: '1' },
-    });
+    const exportsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'role-isolation-gate-exports-'));
+    try {
+      const { stdout } = await exec('node', [SCRIPT], {
+        timeout: 15000,
+        env: { ...process.env, NODE_NO_WARNINGS: '1', EVAL_EXPORTS_DIR: exportsDir },
+      });
 
-    assert.match(stdout, /Status: PASS/);
+      assert.match(stdout, /Status: PASS/);
 
-    const reportPath = path.resolve(__dirname, '..', 'exports', 'charisma-desire-role-isolation-gate-summary.md');
-    const report = await import('node:fs/promises').then((fs) => fs.readFile(reportPath, 'utf8'));
-    assert.match(report, /OPENROUTER_API_TIMEOUT_MS=600000/);
-    assert.match(report, /EVAL_CAPTURE_API_PAYLOADS=false/);
+      const reportPath = path.join(exportsDir, 'charisma-desire-role-isolation-gate-summary.md');
+      const report = await import('node:fs/promises').then((fs) => fs.readFile(reportPath, 'utf8'));
+      assert.match(report, /OPENROUTER_API_TIMEOUT_MS=600000/);
+      assert.match(report, /EVAL_CAPTURE_API_PAYLOADS=false/);
+    } finally {
+      fs.rmSync(exportsDir, { recursive: true, force: true });
+    }
   });
 
   it('summarizes role-isolation progress from an explicit DB path', async () => {

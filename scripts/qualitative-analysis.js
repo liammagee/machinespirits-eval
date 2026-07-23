@@ -475,8 +475,10 @@ async function main() {
   const epochFilter = getEpochFilter(epoch);
   printEpochBanner(epoch);
 
-  // Ensure exports directory exists
-  const exportsDir = path.join(process.cwd(), 'exports');
+  // Keep report writes relocatable for hermetic tests and packaged runtimes.
+  const exportsDir = process.env.EVAL_EXPORTS_DIR
+    ? path.resolve(process.env.EVAL_EXPORTS_DIR)
+    : path.join(process.cwd(), 'exports');
   if (!fs.existsSync(exportsDir)) {
     fs.mkdirSync(exportsDir, { recursive: true });
   }
