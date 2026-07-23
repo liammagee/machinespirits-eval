@@ -14,6 +14,8 @@
  *                 deliberation within each dialogue turn
  */
 
+import { learnerTraceStage } from './traceSchema.js';
+
 const DEFAULT_WIDTH = 72;
 const INDENT = '    ';
 const ASIDE_INDENT = '        ';
@@ -129,11 +131,13 @@ function buildMetadataLine(entry, detail) {
  */
 function getSpeakerLabel(entry) {
   const { agent, action } = entry;
+  const learnerStage = learnerTraceStage(entry);
 
   // Learner-related entries
   if ((agent === 'learner' || agent === 'user') && action === 'turn_action') return 'LEARNER';
-  if (agent === 'learner_ego' && action === 'deliberation') return 'LEARNER EGO';
-  if (agent === 'learner_superego' && action === 'deliberation') return 'LEARNER SUPEREGO';
+  if (learnerStage === 'initial' && action === 'deliberation') return 'LEARNER EGO (initial)';
+  if (learnerStage === 'review' && action === 'deliberation') return 'LEARNER SUPEREGO';
+  if (learnerStage === 'revision' && action === 'deliberation') return 'LEARNER EGO (revised)';
   if (agent === 'learner' && action === 'final_output') return 'LEARNER';
 
   // Tutor ego/superego
@@ -167,6 +171,7 @@ function getSpeakerLabel(entry) {
  */
 function getStageDirection(entry) {
   const { agent, action } = entry;
+  const learnerStage = learnerTraceStage(entry);
 
   if (agent === 'superego' && action === 'review') {
     return entry.approved ? '[aside, to Ego \u2014 APPROVED]' : '[aside, to Ego]';
@@ -178,8 +183,7 @@ function getStageDirection(entry) {
   if (agent === 'tutor_other_ego' && action === 'profile_learner') return '[profiling learner]';
   if (agent === 'learner_other_ego' && action === 'profile_tutor') return '[profiling tutor]';
   if (agent === 'ego_strategy' && action === 'plan') return '[planning strategy]';
-  if (agent === 'learner_ego' && action === 'deliberation') return '[internal]';
-  if (agent === 'learner_superego' && action === 'deliberation') return '[internal]';
+  if (learnerStage && learnerStage !== 'final' && action === 'deliberation') return '[internal]';
   if (agent === 'behavioral_overrides') return '[system]';
   if (agent === 'rejection_budget') return '[system]';
 

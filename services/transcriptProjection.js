@@ -11,6 +11,7 @@
 
 import { formatTranscript } from './transcriptFormatter.js';
 import { buildDialogueFullTranscript, buildDialoguePublicTranscript } from './rubricEvaluator.js';
+import { learnerTraceStage } from './traceSchema.js';
 
 function safeJson(value) {
   try {
@@ -160,6 +161,7 @@ function isModelCallEntry(entry) {
     'ego:generate_final',
     'ego:incorporate-feedback',
     'superego:review',
+    'learner_ego:deliberation',
     'learner_ego_initial:deliberation',
     'learner_superego:deliberation',
     'learner_ego_revision:deliberation',
@@ -304,7 +306,7 @@ export function traceToSteps(trace) {
 
   const learnerBlockStarts = new Set();
   trace.forEach((e, i) => {
-    if (e.agent === 'learner_ego_initial') learnerBlockStarts.add(i);
+    if (learnerTraceStage(e, trace, i) === 'initial' && e.action === 'deliberation') learnerBlockStarts.add(i);
   });
 
   let needsResponseArrow = false;
@@ -312,6 +314,7 @@ export function traceToSteps(trace) {
   for (let i = 0; i < trace.length; i++) {
     const e = trace[i];
     const { agent, action } = e;
+    const learnerStage = learnerTraceStage(e, trace, i);
 
     if (learnerBlockStarts.has(i) && needsResponseArrow) {
       let responseContent = '';
@@ -469,7 +472,7 @@ export function traceToSteps(trace) {
       continue;
     }
 
-    if (agent === 'learner_ego_initial' && action === 'deliberation') {
+    if (learnerStage === 'initial' && action === 'deliberation') {
       const full = fullContent(e);
       steps.push({
         from: 'learner_ego',
@@ -483,7 +486,7 @@ export function traceToSteps(trace) {
       continue;
     }
 
-    if (agent === 'learner_superego' && action === 'deliberation') {
+    if (learnerStage === 'review' && action === 'deliberation') {
       const full = fullContent(e);
       steps.push({
         from: 'learner_superego',
@@ -497,7 +500,7 @@ export function traceToSteps(trace) {
       continue;
     }
 
-    if (agent === 'learner_ego_revision') continue;
+    if (learnerStage === 'revision') continue;
 
     if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
       const full = fullContent(e);

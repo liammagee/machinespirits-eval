@@ -11,6 +11,18 @@
  * remains one-directional instruction.
  */
 
+function firstFinite(...values) {
+  return values.find((value) => Number.isFinite(value)) ?? null;
+}
+
+function isSuperegoIntervention(entry) {
+  if (entry?.agent !== 'superego') return false;
+  if (entry.action === 'revise') return true; // historical trace action
+  if (entry.action !== 'review') return false;
+  const approved = entry.approved ?? entry.verdict?.approved;
+  return approved === false || ['revise', 'enhance', 'reject'].includes(entry.interventionType);
+}
+
 /**
  * Analyze superego feedback incorporation patterns.
  *
@@ -41,16 +53,17 @@ export function analyzeSuperegoIncorporation(dialogueTrace) {
 
   for (const feedback of superegoFeedback) {
     // Track intervention type
-    const interventionType = feedback.interventionType || feedback.verdict?.interventionType || feedback.action;
+    const interventionType = feedback.interventionType || feedback.verdict?.interventionType || null;
+    const approved = feedback.approved ?? feedback.verdict?.approved;
 
     if (interventionType === 'enhance') feedbackPatterns.enhance++;
     else if (interventionType === 'revise') feedbackPatterns.revise++;
-    else if (feedback.verdict?.approved === true) feedbackPatterns.approve++;
-    else if (feedback.verdict?.approved === false) feedbackPatterns.reject++;
+    else if (approved === true) feedbackPatterns.approve++;
+    else if (approved === false) feedbackPatterns.reject++;
 
     // Track confidence
-    const confidence = feedback.confidence || feedback.verdict?.confidence || feedback.score;
-    if (typeof confidence === 'number') {
+    const confidence = firstFinite(feedback.confidence, feedback.verdict?.confidence, feedback.score);
+    if (confidence !== null) {
       confidenceProgression.push({
         turnIndex: feedback.turnIndex,
         confidence,
@@ -279,7 +292,7 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
     };
   }
 
-  const interventions = dialogueTrace.filter((e) => e.agent === 'superego' && e.action === 'revise');
+  const interventions = dialogueTrace.filter(isSuperegoIntervention);
 
   const interventionsByType = {};
   let totalImprovement = 0;
@@ -287,7 +300,7 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
 
   for (const intervention of interventions) {
     const turnIndex = intervention.turnIndex;
-    const type = intervention.interventionType || 'revise';
+    const type = intervention.interventionType || intervention.verdict?.interventionType || 'revise';
 
     // Track by type
     if (!interventionsByType[type]) {
@@ -299,7 +312,7 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
     const turnBefore = turnResults.find((t) => t.turnIndex === turnIndex - 1);
     const turnAfter = turnResults.find((t) => t.turnIndex === turnIndex);
 
-    if (turnBefore?.turnScore !== null && turnAfter?.turnScore !== null) {
+    if (Number.isFinite(turnBefore?.turnScore) && Number.isFinite(turnAfter?.turnScore)) {
       const improvement = turnAfter.turnScore - turnBefore.turnScore;
       interventionsByType[type].improvements.push(improvement);
       totalImprovement += improvement;

@@ -65,6 +65,7 @@ import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
 import * as learnerConfigLoader from './learnerConfigLoader.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
+import { projectLearnerDeliberationTrace, TRACE_SCHEMA_VERSION } from './traceSchema.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
 import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
@@ -3301,6 +3302,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // P2 Provenance: prompt version metadata
   const promptVersions = collectPromptVersions(config.profileName, resolvedConfig);
+  const activeTutorRubricVersion = evalConfigLoader.loadRubric()?.version || null;
 
   // 2. Build curriculum context — same as single-turn
   const curriculumContext = contentResolver.isConfigured()
@@ -4010,6 +4012,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
       judgeModel: rubricResult?.judgeModel || null,
       evaluationReasoning: rubricResult?.summary || null,
+      rubricVersion: activeTutorRubricVersion,
       turnScore,
       scoringMethod,
       passesRequired: rubricResult?.passesRequired ?? validation.passesRequired,
@@ -4689,40 +4692,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         // ego_superego: multiple deliberation entries (ego_initial, superego, ego_revision)
         // unified: single deliberation entry (unified_learner)
         // Both produce a learner/final_output trace entry for symmetric transcript rendering.
-        if (learnerResponse.internalDeliberation?.length > 0) {
-          for (const delib of learnerResponse.internalDeliberation) {
-            const delibMetrics = delib.metrics || null;
-            consolidatedTrace.push({
-              agent: `learner_${delib.role}`,
-              action: 'deliberation',
-              turnIndex: turnIdx + 1,
-              contextSummary: delib.content.substring(0, 100),
-              detail: delib.content,
-              latencyMs: delibMetrics?.latencyMs ?? null,
-              provider: delibMetrics?.provider || null,
-              metrics: delibMetrics,
-              apiPayload: delib.apiPayload || null,
-              inputMessages: delib.inputMessages || null,
-              timestamp: new Date().toISOString(),
-            });
-          }
-          const finalLearnerDelib =
-            learnerResponse.internalDeliberation[learnerResponse.internalDeliberation.length - 1];
-          const finalLearnerMetrics = finalLearnerDelib?.metrics || null;
-          consolidatedTrace.push({
-            agent: 'learner',
-            action: 'final_output',
+        consolidatedTrace.push(
+          ...projectLearnerDeliberationTrace({
+            internalDeliberation: learnerResponse.internalDeliberation,
+            finalMessage: learnerResponse.message,
             turnIndex: turnIdx + 1,
-            contextSummary: learnerResponse.message.substring(0, 100),
-            detail: learnerResponse.message,
-            latencyMs: finalLearnerMetrics?.latencyMs ?? null,
-            provider: finalLearnerMetrics?.provider || null,
-            metrics: finalLearnerMetrics,
-            apiPayload: finalLearnerDelib?.apiPayload || null,
-            inputMessages: null, // synthesis is not a separate LLM call
-            timestamp: new Date().toISOString(),
-          });
-        }
+          }),
+        );
 
         const archLabel = isEgoSuperegoLearner ? 'ego_superego' : 'unified';
         log(
@@ -4796,7 +4772,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   // 5. Aggregate scores across turns
-  const validTurnScores = turnResults.filter((t) => t.turnScore !== null).map((t) => t.turnScore);
+  const validTurnScores = turnResults.map((turn) => turn.turnScore).filter((score) => Number.isFinite(score));
   const tutorFirstTurnScore =
     validTurnScores.length > 0 ? validTurnScores.reduce((sum, s) => sum + s, 0) / validTurnScores.length : null;
 
@@ -4804,7 +4780,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const allDimKeys = Object.keys(evalConfigLoader.getRubricDimensions());
   const aggregateDimensions = {};
   for (const dim of allDimKeys) {
-    const dimScores = turnResults.filter((t) => t.scores?.[dim] !== undefined).map((t) => t.scores[dim]);
+    const dimScores = turnResults.map((turn) => turn.scores?.[dim]).filter((score) => Number.isFinite(score));
     if (dimScores.length > 0) {
       aggregateDimensions[dim] = dimScores.reduce((sum, s) => sum + s, 0) / dimScores.length;
     }
@@ -4814,7 +4790,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const recognitionScore = rubricEvaluator.calculateRecognitionScore(aggregateDimensions);
 
   const allTurnsPassed = turnResults.every((t) => {
-    if (t.turnScore === null) return false;
+    if (!Number.isFinite(t.turnScore)) return false;
     const threshold = t.minAcceptableScore || fullScenario.min_acceptable_score || 0;
     return t.turnScore >= threshold;
   });
@@ -4869,7 +4845,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   // 5c. Analyze bilateral transformation (tutor + learner evolution)
-  const turnProgressionAnalysis = turnComparisonAnalyzer.analyzeTurnProgression(turnResults);
+  const turnProgressionAnalysis = turnComparisonAnalyzer.analyzeTurnProgression(turnResults, {
+    rubricVersion: activeTutorRubricVersion,
+  });
   const markerDefinitions = fullScenario.transformation_markers || fullScenario.transformationMarkers || null;
   const transformationMarkerAnalysis = markerDefinitions
     ? turnComparisonAnalyzer.analyzeTransformationMarkers(turnResults, markerDefinitions)
@@ -4900,6 +4878,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // 6. Write consolidated dialogue log
   const consolidatedDialogue = {
+    traceSchemaVersion: TRACE_SCHEMA_VERSION,
+    tutorRubricVersion: activeTutorRubricVersion,
     suggestions: turnResults[turnResults.length - 1]?.suggestion
       ? [turnResults[turnResults.length - 1].suggestion]
       : [],

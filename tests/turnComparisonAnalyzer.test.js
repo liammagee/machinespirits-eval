@@ -6,6 +6,7 @@ import {
   calculateLearnerGrowthIndex,
   analyzeFramingShift,
   analyzeTransformationMarkers,
+  resolveAnalyzedDimensions,
 } from '../services/turnComparisonAnalyzer.js';
 
 // ============================================================================
@@ -134,6 +135,76 @@ describe('analyzeTurnProgression', () => {
   it('reports correct turnCount', () => {
     const result = analyzeTurnProgression(THREE_TURNS_EVOLVING);
     assert.strictEqual(result.turnCount, 3);
+  });
+
+  it('uses the recorded v2.2 rubric dimensions rather than legacy hard-coded keys', () => {
+    const turns = [
+      {
+        turnIndex: 0,
+        rubricVersion: '2.2',
+        suggestion: { message: 'First.' },
+        scores: { perception_quality: 3, relevance: 5 },
+        turnScore: 50,
+      },
+      {
+        turnIndex: 1,
+        rubricVersion: '2.2',
+        suggestion: { message: 'Second.' },
+        scores: { perception_quality: 4, relevance: 5 },
+        turnScore: 60,
+      },
+    ];
+    const result = analyzeTurnProgression(turns);
+
+    assert.equal(result.rubricVersion, '2.2');
+    assert.equal(result.dimensionSource, 'recorded_rubric');
+    assert.deepEqual(Object.keys(result.dimensionTrajectories), [
+      'perception_quality',
+      'pedagogical_craft',
+      'elicitation_quality',
+      'adaptive_responsiveness',
+      'recognition_quality',
+      'productive_difficulty',
+      'epistemic_integrity',
+      'content_accuracy',
+    ]);
+    assert.deepEqual(result.dimensionTrajectories.perception_quality, [3, 4]);
+    assert.equal('relevance' in result.dimensionTrajectories, false);
+  });
+
+  it('represents missing and non-finite scores as null and never aggregates NaN', () => {
+    const turns = [
+      {
+        turnIndex: 0,
+        rubricVersion: '2.2',
+        suggestion: { message: 'Same.' },
+        scores: { perception_quality: Number.NaN },
+        turnScore: undefined,
+      },
+      {
+        turnIndex: 1,
+        rubricVersion: '2.2',
+        suggestion: { message: 'Same.' },
+        scores: { perception_quality: Number.POSITIVE_INFINITY },
+        turnScore: Number.NaN,
+      },
+    ];
+    const result = analyzeTurnProgression(turns);
+
+    assert.deepEqual(result.dimensionTrajectories.perception_quality, [null, null]);
+    assert.equal(result.avgScoreImprovement, null);
+    assert.equal(result.dimensionConvergence, null);
+    assert.equal(Number.isFinite(result.bilateralTransformationIndex), true);
+    assert.doesNotMatch(JSON.stringify(result), /NaN|Infinity/);
+  });
+
+  it('falls back to observed dimension keys for pre-version legacy rows', () => {
+    const resolution = resolveAnalyzedDimensions([{ scores: { relevance: 3, learner_growth: 2 } }]);
+    assert.deepEqual(resolution, {
+      rubricVersion: null,
+      source: 'observed_legacy_scores',
+      keys: ['relevance', 'learner_growth'],
+    });
   });
 });
 

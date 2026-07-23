@@ -10,15 +10,78 @@
  * fails to achieve genuine recognition.
  */
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import * as evalConfigLoader from './evalConfigLoader.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const RUBRICS_DIR = path.join(path.resolve(__dirname, '..'), 'config', 'rubrics');
+
+function finiteNumber(value) {
+  return Number.isFinite(value) ? value : null;
+}
+
+function observedDimensionKeys(turnResults) {
+  const keys = new Set();
+  for (const turn of turnResults || []) {
+    if (!turn?.scores || typeof turn.scores !== 'object') continue;
+    for (const key of Object.keys(turn.scores)) keys.add(key);
+  }
+  return [...keys];
+}
+
+/**
+ * Resolve the exact score dimensions analyzed for a set of turns.
+ * Recorded versions are authoritative. Pre-version legacy fixtures fall back
+ * to their observed score keys; scoreless current runs use the active rubric.
+ */
+export function resolveAnalyzedDimensions(turnResults, options = {}) {
+  if (options.rubricDimensions) {
+    const keys = Array.isArray(options.rubricDimensions)
+      ? options.rubricDimensions
+      : Object.keys(options.rubricDimensions);
+    return { rubricVersion: options.rubricVersion || null, source: 'provided', keys: [...new Set(keys)] };
+  }
+
+  const recordedVersion =
+    options.rubricVersion ||
+    (turnResults || []).find((turn) => turn?.rubricVersion || turn?.tutorRubricVersion)?.rubricVersion ||
+    (turnResults || []).find((turn) => turn?.tutorRubricVersion)?.tutorRubricVersion ||
+    null;
+
+  if (recordedVersion) {
+    const version = String(recordedVersion);
+    if (!/^\d+\.\d+$/.test(version)) throw new Error(`Invalid recorded tutor rubric version: ${version}`);
+    const rubricPath = path.join(RUBRICS_DIR, `v${version}`, 'evaluation-rubric.yaml');
+    const rubric = evalConfigLoader.loadRubric({ rubricPath });
+    if (!rubric || String(rubric.version) !== version || !rubric.dimensions) {
+      throw new Error(`Unable to resolve recorded tutor rubric version v${version}`);
+    }
+    return { rubricVersion: version, source: 'recorded_rubric', keys: Object.keys(rubric.dimensions) };
+  }
+
+  const observed = observedDimensionKeys(turnResults);
+  if (observed.length > 0) return { rubricVersion: null, source: 'observed_legacy_scores', keys: observed };
+
+  const activeRubric = evalConfigLoader.loadRubric();
+  return {
+    rubricVersion: activeRubric?.version ? String(activeRubric.version) : null,
+    source: 'active_rubric',
+    keys: Object.keys(activeRubric?.dimensions || {}),
+  };
+}
+
 /**
  * Analyze how tutor responses evolve across turns in a multi-turn scenario.
  *
  * @param {Array} turnResults - Array of turn result objects from runMultiTurnTest
  * @returns {Object} Progression analysis metrics
  */
-export function analyzeTurnProgression(turnResults) {
+export function analyzeTurnProgression(turnResults, options = {}) {
   if (!turnResults || turnResults.length === 0) {
     return {
+      rubricVersion: options.rubricVersion || null,
+      dimensionSource: null,
       dimensionTrajectories: {},
       suggestionTypeProgression: [],
       framingEvolution: null,
@@ -33,23 +96,11 @@ export function analyzeTurnProgression(turnResults) {
 
   // Track dimension score trajectories
   const dimensionTrajectories = {};
-  const allDimensions = [
-    'relevance',
-    'specificity',
-    'pedagogical',
-    'personalization',
-    'actionability',
-    'tone',
-    'mutual_recognition',
-    'dialectical_responsiveness',
-    'memory_integration',
-    'transformative_potential',
-    'tutor_adaptation',
-    'learner_growth',
-  ];
+  const dimensionResolution = resolveAnalyzedDimensions(turnResults, options);
+  const allDimensions = dimensionResolution.keys;
 
   for (const dim of allDimensions) {
-    dimensionTrajectories[dim] = turnResults.map((t) => t.scores?.[dim] ?? null);
+    dimensionTrajectories[dim] = turnResults.map((t) => finiteNumber(t.scores?.[dim]));
   }
 
   // Track suggestion type progression (e.g., lecture -> explore -> continue)
@@ -59,7 +110,7 @@ export function analyzeTurnProgression(turnResults) {
   const framingEvolution = analyzeFramingShift(turnResults);
 
   // Calculate score improvement (first to last turn)
-  const validScores = turnResults.filter((t) => t.turnScore !== null).map((t) => t.turnScore);
+  const validScores = turnResults.map((t) => finiteNumber(t.turnScore)).filter((score) => score !== null);
 
   let avgScoreImprovement = null;
   if (validScores.length >= 2) {
@@ -73,10 +124,12 @@ export function analyzeTurnProgression(turnResults) {
 
   // Calculate bilateral adaptation indices
   const adaptationIndex = calculateAdaptationIndex(turnResults);
-  const learnerGrowthIndex = calculateLearnerGrowthIndex(turnResults);
+  const learnerGrowthIndex = calculateLearnerGrowthIndex(turnResults, { dimensionKeys: allDimensions });
   const bilateralTransformationIndex = (adaptationIndex + learnerGrowthIndex) / 2;
 
   return {
+    rubricVersion: dimensionResolution.rubricVersion,
+    dimensionSource: dimensionResolution.source,
     dimensionTrajectories,
     suggestionTypeProgression,
     framingEvolution,
@@ -130,11 +183,13 @@ export function calculateAdaptationIndex(turnResults) {
  * @param {Array} turnResults - Array of turn result objects
  * @returns {number} Growth index (0-1 scale)
  */
-export function calculateLearnerGrowthIndex(turnResults) {
+export function calculateLearnerGrowthIndex(turnResults, options = {}) {
   if (!turnResults || turnResults.length < 2) return 0;
 
   let totalGrowth = 0;
   let indicators = 0;
+  const dimensionKeys = options.dimensionKeys || resolveAnalyzedDimensions(turnResults).keys;
+  const useLegacyGrowthDimension = dimensionKeys.includes('learner_growth');
 
   // Analyze learner message evolution
   for (let i = 1; i < turnResults.length; i++) {
@@ -163,10 +218,10 @@ export function calculateLearnerGrowthIndex(turnResults) {
     }
 
     // Check for learner_growth dimension scores if available
-    const prevGrowthScore = prev.scores?.learner_growth;
-    const currGrowthScore = curr.scores?.learner_growth;
+    const prevGrowthScore = useLegacyGrowthDimension ? finiteNumber(prev.scores?.learner_growth) : null;
+    const currGrowthScore = useLegacyGrowthDimension ? finiteNumber(curr.scores?.learner_growth) : null;
 
-    if (prevGrowthScore !== undefined && currGrowthScore !== undefined) {
+    if (prevGrowthScore !== null && currGrowthScore !== null) {
       const scoreGrowth = (currGrowthScore - prevGrowthScore) / 5; // Normalize to 0-1
       totalGrowth += Math.max(0, scoreGrowth);
       indicators++;
@@ -406,7 +461,7 @@ function calculateConvergence(trajectories) {
   let measuredDimensions = 0;
 
   for (const [_dim, values] of Object.entries(trajectories)) {
-    const validValues = values.filter((v) => v !== null);
+    const validValues = values.filter((v) => Number.isFinite(v));
     if (validValues.length < 3) continue;
 
     // Compare variance of first half vs second half
@@ -435,10 +490,11 @@ function calculateConvergence(trajectories) {
  * @returns {number} Variance
  */
 function calculateVariance(values) {
-  if (!values || values.length === 0) return 0;
-  const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
-  return squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
+  const finiteValues = (values || []).filter((value) => Number.isFinite(value));
+  if (finiteValues.length === 0) return 0;
+  const mean = finiteValues.reduce((a, b) => a + b, 0) / finiteValues.length;
+  const squaredDiffs = finiteValues.map((v) => Math.pow(v - mean, 2));
+  return squaredDiffs.reduce((a, b) => a + b, 0) / finiteValues.length;
 }
 
 /**
@@ -518,6 +574,7 @@ export function analyzeTransformationMarkers(turnResults, markerDefinitions) {
 
 export default {
   analyzeTurnProgression,
+  resolveAnalyzedDimensions,
   calculateAdaptationIndex,
   calculateLearnerGrowthIndex,
   analyzeFramingShift,
