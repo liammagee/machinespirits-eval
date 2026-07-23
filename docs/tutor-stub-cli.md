@@ -28,6 +28,87 @@ The underlying command and capability registries remain frozen catalogs, so
 tests and future web or Electron adapters can inspect every supported command
 without starting a model-backed session.
 
+Each command also declares transport effects. The registry marks terminal
+pickers (`/settings`, `/scenario`, `/board`), browser opening (`/transcript`,
+`/demo`, `/voice`), voice-device access (`/voice`), and process relaunch
+(`/scenario`, `/board`) explicitly. Process-HTTP exposure remains
+`blocked_pending_adapter` until a structured noninteractive adapter exists;
+catalog metadata alone never turns a terminal side effect into a remote action.
+
+## Versioned capability labs
+
+`services/tutorStubLabs.js` groups safe, repeatable capability combinations
+without hiding their cost or audience. `--list-labs` resolves the catalog and
+exits before any provider request. `--lab <id>` applies the lab defaults;
+explicit CLI settings remain visible overrides. `/lab` reports the current lab,
+`/lab list` shows the catalog, and `/lab <id>` prints the required relaunch
+instead of silently changing a running session's architecture.
+
+| Lab | Audience | Maturity | Cost class | Purpose |
+| --- | --- | --- | --- | --- |
+| `pure_chat` | learner safe | stable | low | one speaking-model call per learner turn |
+| `human_scaffold` | learner safe | stable | medium | human evidence-and-reasoning scaffold |
+| `mixed_drafting` | learner safe | stable | medium | inspectable AI learner drafts with human acceptance |
+| `coaching` | learner safe | beta | medium | private, evidence-bounded coach guidance |
+| `feedback_tuning` | internal | beta | medium | feedback capture and review candidates |
+| `voice` | learner safe | beta | high | consent-gated microphone and accepted-text voice |
+| `curriculum` | learner safe | beta | medium | selected reflective curriculum module |
+| `labelling` | research | stable | none | human coding with explicit dataset and coder |
+| `automated_eval` | research | stable | metered high | bounded simulated-learner evaluation |
+| `research_controls` | research | experimental | metered high | explicit negative lower-bound/control arm |
+
+Every public lab projection includes audience, maturity, prerequisites,
+conflicts, model-call pattern, artifacts, cost class, and terminal/browser/voice
+transport safety. Trace metadata additionally records the lab id and exact
+resolved active capabilities. The catalog invariant rejects any
+`learner_safe` lab that implicitly enables an automated learner, `negative`, or
+`random` control policy; those modes require an explicitly research-facing
+lab.
+
+The curriculum and labelling labs fail before launch when their required
+selection fields are missing. For example:
+
+```bash
+npm run tutor:stub -- --lab human_scaffold --world world_005_marrick
+npm run tutor:stub -- --lab curriculum --curriculum workplan --module blueprint-composition
+npm run tutor:stub -- --lab labelling --label-dataset tutor-stub-impasses --label-coder rater-A
+```
+
+## Session recipes and explicit resume
+
+Each resolved run now has a versioned
+`machinespirits.tutor-stub.session-recipe.v1` envelope. Its canonical
+configuration hash covers the lab, allowlisted launch
+options, runtime schema, selected world, effective prompt hashes, tutor version,
+and four text-model roles. The recipe is present in `--dry-run` and `run_start`
+metadata before the first model request.
+
+Use a saved recipe as an exact, hash-verified launch input:
+
+```bash
+npm run tutor:stub -- --lab human_scaffold --write-recipe .tutor-stub-traces/marrick-session.json --dry-run
+npm run tutor:stub -- --recipe .tutor-stub-traces/marrick-session.json
+```
+
+Use `--resume <run-id|trace-path>` when the source matters. It resolves that
+specific trace and wins even if `--resume-last` is also present; `--resume-last`
+remains the convenient modification-time selector. Supported older traces are
+normalized in memory from their `run_start` metadata and are never rewritten.
+
+Before restoring turns, the CLI compares world, effective prompt, named tutor
+and role-prompt hash, all model roles, and session-runtime schema. Drift fails
+closed. `--acknowledge-drift` is the only bypass, and the exact differences plus
+the acknowledgement are retained in dry-run and trace metadata:
+
+```bash
+npm run tutor:stub -- --resume .tutor-stub-traces/2026-07-23T01-02-03-000Z.jsonl
+npm run tutor:stub -- --resume run-id --model openai.mini --acknowledge-drift
+```
+
+Transcript HTML includes a **Relaunch** view with the exact copyable resume (or
+saved-recipe) command and the recipe hash. The command contains no credential;
+provider credentials remain local to the launching process.
+
 ## Importable session runtime
 
 `services/tutorStubSessionRuntime.js` provides the versioned lifecycle boundary

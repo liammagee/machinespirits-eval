@@ -1,16 +1,17 @@
 ---
 id: tutor-stub-safe-capability-labs
 title: Curate safe tutor-stub capability labs and compatibility gates
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-23
 verification: "Every declarative lab zero-call dry-runs, a representative set completes with the fake provider, invalid combinations fail with actionable guidance, learner-facing labs exclude negative/simulated controls unless explicitly selected as research, generated help stays in sync, and traces record the lab id, maturity tier, resolved capabilities, and cost class."
 depends_on:
   - tutor-stub-capability-session-runtime
+branch: codex/tutor-stub-super-app-slices
 links:
   items:
     - tutor-stub-capability-session-runtime
@@ -39,3 +40,14 @@ Transport safety is part of the same registry contract. Classify commands that
 open terminal pickers, browsers, voice devices, or relaunch the CLI, and provide
 noninteractive result adapters before the process-backed HTTP host exposes
 them. Until then that host accepts learner turns but rejects slash commands.
+
+## Progress
+
+- 2026-07-23: Added ten versioned labs with explicit audience, maturity,
+  prerequisite, conflict, call-pattern, artifact, cost, and transport-safety
+  metadata. Learner-safe projections reject automated learners and negative or
+  random controls, while the CLI exposes model-free `--list-labs`, `--lab`, and
+  `/lab` discovery.
+- 2026-07-23: Representative pure-chat and human-scaffold labs complete through
+  the fake-provider runtime; focused catalog, CLI, trace, command-registry, and
+  process-host tests pass.

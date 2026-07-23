@@ -6,6 +6,88 @@ import { createHash } from 'node:crypto';
 import { recordExternalApiCall } from './apiPayloadCapture.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 
+// Model CLIs are security boundaries. Do not copy process.env into them: the
+// eval process commonly holds credentials for several unrelated providers as
+// well as Node loader flags that can execute code before the CLI starts.
+//
+// The common list is limited to executable discovery, the user's auth/config
+// home, locale, temporary files, and network transport. Provider lists contain
+// only credentials/config understood by that selected CLI. In particular,
+// Claude stays on its authenticated CLI session rather than receiving the
+// Anthropic API key, preserving the bridge's no-API-credit behavior.
+export const CLI_PROVIDER_COMMON_ENV_KEYS = Object.freeze([
+  'PATH',
+  'HOME',
+  'USER',
+  'LOGNAME',
+  'SHELL',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'TERM',
+  'TZ',
+  'TMPDIR',
+  'TMP',
+  'TEMP',
+  'HTTP_PROXY',
+  'HTTPS_PROXY',
+  'ALL_PROXY',
+  'NO_PROXY',
+  'http_proxy',
+  'https_proxy',
+  'all_proxy',
+  'no_proxy',
+  'SSL_CERT_FILE',
+  'SSL_CERT_DIR',
+]);
+
+export const CLI_PROVIDER_ENV_KEYS = Object.freeze({
+  codex: Object.freeze([
+    'CODEX_HOME',
+    'CODEX_API_KEY',
+    'OPENAI_API_KEY',
+    'OPENAI_BASE_URL',
+    'OPENAI_ORG_ID',
+    'OPENAI_ORGANIZATION',
+    'OPENAI_PROJECT_ID',
+  ]),
+  'claude-code': Object.freeze(['CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_OAUTH_TOKEN']),
+});
+
+// Existing integration tests exercise the real process boundary with a fake
+// `codex` executable. Node's test runner marks the process with
+// NODE_TEST_CONTEXT; under that marker only, pass the finite harness contract
+// below. Never accept a FAKE_* wildcard or caller-controlled production list.
+const CLI_PROVIDER_TEST_ENV_KEYS = Object.freeze([
+  'FAKE_CODEX_LOG',
+  'FAKE_CODEX_DELAY_MS',
+  'FAKE_CODEX_VALID_ANALYSIS',
+  'FAKE_CODEX_ANALYSIS_DELAY_MS',
+  'FAKE_CODEX_FIXTURE_MODE',
+]);
+
+export function buildCliProviderEnv(provider, sourceEnv = process.env) {
+  const env = {};
+  const keys = [...CLI_PROVIDER_COMMON_ENV_KEYS, ...(CLI_PROVIDER_ENV_KEYS[provider] || [])];
+  if (sourceEnv?.NODE_TEST_CONTEXT) keys.push(...CLI_PROVIDER_TEST_ENV_KEYS);
+  for (const key of keys) {
+    if (sourceEnv?.[key] !== undefined) env[key] = String(sourceEnv[key]);
+  }
+  return env;
+}
+
+export class CliProviderPolicyError extends Error {
+  constructor(provider, audit) {
+    super(`${provider} CLI response rejected by the no-tools policy`);
+    this.name = 'CliProviderPolicyError';
+    this.code = 'CLI_PROVIDER_POLICY_VIOLATION';
+    this.provider = provider;
+    // `audit` contains counts and allowlisted type labels only. It never holds
+    // raw JSONL events, command arguments, child output, or environment data.
+    this.audit = audit;
+  }
+}
+
 function positiveIntEnv(name, fallback) {
   const raw = process.env[name];
   if (!raw) return fallback;
@@ -21,6 +103,9 @@ const DEFAULT_CODEX_TIMEOUT_MS = positiveIntEnv(
   'CLI_PROVIDER_CODEX_TIMEOUT_MS',
   positiveIntEnv('ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS', 300_000),
 );
+const DEFAULT_CLI_MAX_STDOUT_BYTES = positiveIntEnv('CLI_PROVIDER_MAX_STDOUT_BYTES', 16 * 1024 * 1024);
+const DEFAULT_CLI_MAX_STDERR_BYTES = positiveIntEnv('CLI_PROVIDER_MAX_STDERR_BYTES', 1024 * 1024);
+const DEFAULT_CLI_VERSION_TIMEOUT_MS = positiveIntEnv('CLI_PROVIDER_VERSION_TIMEOUT_MS', 5_000);
 const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
 const CLI_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max', 'config']);
 let cachedCodexCliVersion;
@@ -28,7 +113,12 @@ let cachedCodexCliVersion;
 function codexCliVersion({ enabled = true } = {}) {
   if (!enabled) return null;
   if (cachedCodexCliVersion !== undefined) return cachedCodexCliVersion;
-  const result = spawnSync('codex', ['--version'], { encoding: 'utf8' });
+  const result = spawnSync('codex', ['--version'], {
+    encoding: 'utf8',
+    env: buildCliProviderEnv('codex'),
+    timeout: DEFAULT_CLI_VERSION_TIMEOUT_MS,
+    maxBuffer: DEFAULT_CLI_MAX_STDERR_BYTES,
+  });
   cachedCodexCliVersion = result.status === 0 ? String(result.stdout || '').trim() || null : null;
   return cachedCodexCliVersion;
 }
@@ -60,6 +150,39 @@ function codexCliVersion({ enabled = true } = {}) {
 export const CLAUDE_CLI_CONTEXT_ISOLATION = 'safe-mode-v1';
 export const CLAUDE_CLI_ISOLATION_ARGS = Object.freeze(['--safe-mode', '--no-session-persistence', '--tools', '']);
 
+// `read-only` prevents writes but still allows shell commands to read local
+// files. These switches remove every stable tool-bearing Codex surface before
+// the request reaches the model. `--strict-config` makes an older/incompatible
+// CLI fail closed instead of silently ignoring a control. The JSONL audit
+// below remains a second, post-response boundary.
+export const CODEX_CLI_TOOL_ISOLATION_ARGS = Object.freeze([
+  '--strict-config',
+  '--disable',
+  'shell_tool',
+  '--disable',
+  'unified_exec',
+  '--disable',
+  'apps',
+  '--disable',
+  'multi_agent',
+  '--disable',
+  'browser_use',
+  '--disable',
+  'in_app_browser',
+  '--disable',
+  'computer_use',
+  '--disable',
+  'image_generation',
+  '--disable',
+  'tool_suggest',
+  '--disable',
+  'hooks',
+  '--disable',
+  'shell_snapshot',
+  '-c',
+  'web_search="disabled"',
+]);
+
 /**
  * Per-call isolation bundle for spawning `claude`: the shared flag set plus
  * a fresh empty cwd. Callers spread `args`, spawn with `cwd`, and call
@@ -81,6 +204,19 @@ export function normalizeCliEffort(value) {
     throw new Error(`CLI effort must be low|medium|high|xhigh|max|config (got ${value})`);
   }
   return normalized;
+}
+
+function outputLimitError(provider, stream, maxBytes) {
+  const error = new Error(`${provider} CLI ${stream} exceeded the ${maxBytes}-byte safety limit`);
+  error.code = 'CLI_PROVIDER_OUTPUT_LIMIT';
+  error.provider = provider;
+  error.stream = stream;
+  error.maxBytes = maxBytes;
+  return error;
+}
+
+function positiveLimit(value, fallback) {
+  return Number.isInteger(value) && value > 0 ? value : fallback;
 }
 
 export function resolveCliEffort(provider, explicitEffort = null) {
@@ -198,6 +334,13 @@ function buildCliUserText(userPrompt, messageHistory) {
   return userText;
 }
 
+export function cliProviderNoToolsPromptTail({ structuredOutput = false } = {}) {
+  const outputInstruction = structuredOutput
+    ? ' Return only the requested JSON object.'
+    : ' Return only the requested text response.';
+  return `This is a tool-free model call. No command, filesystem, browser, app, connector, subagent, or other tool is available. Do not attempt any action beyond generating the response.${outputInstruction}`;
+}
+
 export function buildCodexCliPromptText({
   systemPrompt = '',
   userPrompt = '',
@@ -211,9 +354,7 @@ export function buildCodexCliPromptText({
     'User input for this turn:',
     buildCliUserText(userPrompt, messageHistory),
   ].join('\n');
-  return structuredOutput
-    ? `${prompt}\n\nThis is a no-tools structured-output call. Do not run commands, inspect files, browse, call tools, or take any action beyond returning the requested JSON object.`
-    : prompt;
+  return `${prompt}\n\n${cliProviderNoToolsPromptTail({ structuredOutput })}`;
 }
 
 function abortError(role) {
@@ -238,7 +379,7 @@ function cliModelAttestationBasis(model) {
   return model ? 'explicit_cli_model_argument_accepted_bridge_echo' : 'cli_default_not_independently_attested';
 }
 
-const ALLOWED_STRUCTURED_CODEX_EVENT_TYPES = new Set([
+const ALLOWED_CODEX_EVENT_TYPES = new Set([
   'thread.started',
   'turn.started',
   'item.started',
@@ -246,21 +387,38 @@ const ALLOWED_STRUCTURED_CODEX_EVENT_TYPES = new Set([
   'item.completed',
   'turn.completed',
 ]);
-const ALLOWED_STRUCTURED_CODEX_ITEM_TYPES = new Set(['agent_message', 'reasoning']);
+const ALLOWED_CODEX_ITEM_TYPES = new Set(['agent_message', 'reasoning']);
+const KNOWN_PROHIBITED_CODEX_TYPES = new Set([
+  'command_execution',
+  'file_change',
+  'function_call',
+  'mcp_tool_call',
+  'tool_call',
+  'web_search',
+]);
 
-function auditCodexStructuredEvents(events = [], { strict = false, invalidLines = 0 } = {}) {
+function safeCodexTypeLabel(value, allowed) {
+  const label = String(value || 'unknown');
+  if (allowed.has(label) || KNOWN_PROHIBITED_CODEX_TYPES.has(label)) return label;
+  return 'unknown';
+}
+
+function auditCodexStructuredEvents(events = [], { strict = true, invalidLines = 0 } = {}) {
   const eventTypeCounts = {};
   const itemTypeCounts = {};
   const prohibited = [];
   for (const [index, event] of events.entries()) {
-    const eventType = String(event?.type || 'unknown');
-    const itemType = String(event?.item?.type || '');
+    const rawEventType = String(event?.type || 'unknown');
+    const rawItemType = String(event?.item?.type || '');
+    const eventType = safeCodexTypeLabel(rawEventType, ALLOWED_CODEX_EVENT_TYPES);
+    const itemType = rawItemType ? safeCodexTypeLabel(rawItemType, ALLOWED_CODEX_ITEM_TYPES) : '';
     eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
     if (itemType) itemTypeCounts[itemType] = (itemTypeCounts[itemType] || 0) + 1;
     if (
       strict &&
-      (!ALLOWED_STRUCTURED_CODEX_EVENT_TYPES.has(eventType) ||
-        (itemType && !ALLOWED_STRUCTURED_CODEX_ITEM_TYPES.has(itemType)))
+      (!ALLOWED_CODEX_EVENT_TYPES.has(rawEventType) ||
+        (rawEventType.startsWith('item.') && !rawItemType) ||
+        (rawItemType && !ALLOWED_CODEX_ITEM_TYPES.has(rawItemType)))
     ) {
       prohibited.push({ index, event_type: eventType, item_type: itemType || null });
     }
@@ -289,12 +447,16 @@ async function callClaudeCli({
   outputSchema,
   signal,
   spawnImpl = spawn,
+  maxStdoutBytes,
+  maxStderrBytes,
 }) {
   if (signal?.aborted) throw abortError(role);
   const userText = buildCliUserText(userPrompt, messageHistory);
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CLAUDE_TIMEOUT_MS;
   const effectiveEffort = resolveCliEffort('claude-code', effort);
+  const stdoutLimit = positiveLimit(maxStdoutBytes, DEFAULT_CLI_MAX_STDOUT_BYTES);
+  const stderrLimit = positiveLimit(maxStderrBytes, DEFAULT_CLI_MAX_STDERR_BYTES);
   const schema = normalizedOutputSchema(outputSchema);
 
   // Every claude call — schema or not — runs context-isolated (see
@@ -310,14 +472,13 @@ async function callClaudeCli({
       if (schema) {
         args.push('--json-schema', JSON.stringify(schema));
       }
-      const env = { ...process.env };
-      delete env.CLAUDE_CODE;
-      delete env.CLAUDECODE;
-      delete env.ANTHROPIC_API_KEY;
-      delete env.ANTHROPIC_AUTH_TOKEN;
+      const env = buildCliProviderEnv('claude-code');
       const child = spawnImpl('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
       let out = '';
       let err = '';
+      let outBytes = 0;
+      let errBytes = 0;
+      let outputExceeded = false;
       const onAbort = () => {
         try {
           child.kill('SIGKILL');
@@ -336,21 +497,45 @@ async function callClaudeCli({
         reject(new Error(`claude CLI timed out after ${effectiveTimeout}ms (role=${role})`));
       }, effectiveTimeout);
       child.stdout.on('data', (d) => {
+        outBytes += Buffer.byteLength(d);
+        if (outBytes > stdoutLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('claude', 'stdout', stdoutLimit));
+          return;
+        }
         out += d;
       });
       child.stderr.on('data', (d) => {
+        errBytes += Buffer.byteLength(d);
+        if (errBytes > stderrLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('claude', 'stderr', stderrLimit));
+          return;
+        }
         err += d;
       });
       child.on('error', (e) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
-        reject(e);
+        const launchError = new Error(`claude CLI failed to start (${e?.code || 'spawn_error'})`);
+        launchError.code = e?.code || 'CLI_PROVIDER_SPAWN_FAILED';
+        reject(launchError);
       });
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
+        if (outputExceeded) return;
         if (code !== 0) {
-          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
+          const exitError = new Error(`claude CLI exited with code ${code}`);
+          exitError.code = 'CLI_PROVIDER_EXIT_FAILED';
+          exitError.exitCode = code;
+          exitError.stdoutBytes = Buffer.byteLength(out);
+          exitError.stderrBytes = Buffer.byteLength(err);
+          reject(exitError);
         } else {
           resolve({
             text: out.trim(),
@@ -398,6 +583,8 @@ async function callCodexCli({
   allowDevelopmentBaseInstructionsOverride = false,
   modelInstructionsSource = null,
   spawnImpl = spawn,
+  maxStdoutBytes,
+  maxStderrBytes,
 }) {
   if (signal?.aborted) throw abortError(role);
   let replacementInstructionsSourceFile = null;
@@ -429,6 +616,8 @@ async function callCodexCli({
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CODEX_TIMEOUT_MS;
   const effectiveEffort = resolveCliEffort('codex', effort);
+  const stdoutLimit = positiveLimit(maxStdoutBytes, DEFAULT_CLI_MAX_STDOUT_BYTES);
+  const stderrLimit = positiveLimit(maxStderrBytes, DEFAULT_CLI_MAX_STDERR_BYTES);
   const schema = normalizedOutputSchema(outputSchema);
   const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
   if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
@@ -447,6 +636,7 @@ async function callCodexCli({
     return await new Promise((resolve, reject) => {
       const args = [
         'exec',
+        ...CODEX_CLI_TOOL_ISOLATION_ARGS,
         '--skip-git-repo-check',
         '--ephemeral',
         '--ignore-user-config',
@@ -459,7 +649,6 @@ async function callCodexCli({
         'never',
         '--json',
       ];
-      if (replacementInstructionsFile) args.splice(1, 0, '--strict-config');
       if (effectiveEffort && effectiveEffort !== 'config') {
         args.push('-c', `model_reasoning_effort="${effectiveEffort}"`);
       }
@@ -470,10 +659,23 @@ async function callCodexCli({
       if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
-      const child = spawnImpl('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
+      const child = spawnImpl('codex', args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: tmpDir,
+        env: buildCliProviderEnv('codex'),
+      });
       let err = '';
       let stdout = '';
-      const jsonl = createCodexJsonlEventParser(onEvent);
+      let stdoutBytes = 0;
+      let stderrBytes = 0;
+      let outputExceeded = false;
+      const jsonl = createCodexJsonlEventParser((event) => {
+        // Only policy-allowed event shapes may cross the streaming boundary.
+        // Prohibited events stay internal long enough to count and reject;
+        // command payloads are never forwarded into UI/log callbacks.
+        const singleEventAudit = auditCodexStructuredEvents([event]);
+        if (singleEventAudit.prohibited_event_count === 0) onEvent?.(event);
+      });
       const onAbort = () => {
         try {
           child.kill('SIGKILL');
@@ -492,28 +694,56 @@ async function callCodexCli({
         reject(new Error(`codex CLI timed out after ${effectiveTimeout}ms (role=${role})`));
       }, effectiveTimeout);
       child.stderr.on('data', (d) => {
+        stderrBytes += Buffer.byteLength(d);
+        if (stderrBytes > stderrLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('codex', 'stderr', stderrLimit));
+          return;
+        }
         err += d;
       });
       child.stdout.on('data', (data) => {
         const chunk = String(data || '');
+        stdoutBytes += Buffer.byteLength(chunk);
+        if (stdoutBytes > stdoutLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('codex', 'stdout', stdoutLimit));
+          return;
+        }
         stdout += chunk;
         jsonl.push(chunk);
       });
       child.on('error', (e) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
-        reject(e);
+        const launchError = new Error(`codex CLI failed to start (${e?.code || 'spawn_error'})`);
+        launchError.code = e?.code || 'CLI_PROVIDER_SPAWN_FAILED';
+        reject(launchError);
       });
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
+        if (outputExceeded) return;
         const parsedStream = jsonl.end();
         const eventAudit = auditCodexStructuredEvents(parsedStream.events, {
-          strict: Boolean(schema),
+          strict: true,
           invalidLines: parsedStream.invalidLines.length,
         });
+        if (eventAudit.prohibited_event_count > 0) {
+          reject(new CliProviderPolicyError('codex', eventAudit));
+          return;
+        }
         if (code !== 0) {
-          reject(new Error(err.trim() || stdout.trim() || `codex CLI exited with code ${code} (role=${role})`));
+          const exitError = new Error(`codex CLI exited with code ${code}`);
+          exitError.code = 'CLI_PROVIDER_EXIT_FAILED';
+          exitError.exitCode = code;
+          exitError.stdoutBytes = Buffer.byteLength(stdout);
+          exitError.stderrBytes = Buffer.byteLength(err);
+          reject(exitError);
           return;
         }
 
@@ -681,6 +911,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       outputSchema: opts?.outputSchema,
       signal: opts?.signal,
       spawnImpl: opts?.spawnImpl,
+      maxStdoutBytes: opts?.maxStdoutBytes,
+      maxStderrBytes: opts?.maxStderrBytes,
     });
   }
   if (agentConfig?.provider === 'codex') {
@@ -699,6 +931,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       allowDevelopmentBaseInstructionsOverride: opts?.allowDevelopmentBaseInstructionsOverride,
       modelInstructionsSource: opts?.modelInstructionsSource,
       spawnImpl: opts?.spawnImpl,
+      maxStdoutBytes: opts?.maxStdoutBytes,
+      maxStderrBytes: opts?.maxStderrBytes,
     });
   }
   if (!opts?.fallbackCallAI) {

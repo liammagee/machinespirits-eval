@@ -16,7 +16,7 @@ const FIXTURE_PATH = path.join(
   'v33-tallow-answer-seeking-turn-5-request.json',
 );
 const EXPECTED_REQUEST_SHA256 = 'e1b9a59ab8e9285db122cb21472feb0d91f4b891d0d8e7343399d085f155159e';
-const EXPECTED_AUTHORED_ESTIMATED_TOKENS = 4930;
+const EXPECTED_AUTHORED_ESTIMATED_TOKENS = 4985;
 
 test('portable V33 frozen request retains its exact hash and authored prompt-size baseline', () => {
   const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
@@ -28,5 +28,5 @@ test('portable V33 frozen request retains its exact hash and authored prompt-siz
   assert.equal(requestSha256, EXPECTED_REQUEST_SHA256);
   assert.equal(fixture.baselineAuthoredEstimatedTokens, EXPECTED_AUTHORED_ESTIMATED_TOKENS);
   assert.equal(report.authoredTotal.estimatedTokens, EXPECTED_AUTHORED_ESTIMATED_TOKENS);
-  assert.equal(report.authoredTotal.chars, 19718);
+  assert.equal(report.authoredTotal.chars, 19937);
 });

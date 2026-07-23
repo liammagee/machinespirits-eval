@@ -160,9 +160,9 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   const latest = result.request.messages.at(-1).content;
 
   assert.equal(result.schema, TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA);
-  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2354);
+  assert.equal(result.compilation.promptSize.authoredTotal.estimatedTokens, 2409);
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens <= 2500);
-  assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens < 4930);
+  assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens < 4985);
   assert.deepEqual(result.request.messages.slice(0, -1), fixture.request.messages.slice(0, -1));
   assert.deepEqual(bundle, original, 'the opt-in compiler must not mutate its frozen input');
   assert.equal(result.request.provider, fixture.request.provider);

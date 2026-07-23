@@ -1,3 +1,5 @@
+import { cliProviderNoToolsPromptTail } from './cliProviderBridge.js';
+
 export const TUTOR_STUB_PROMPT_SIZE_REPORT_SCHEMA = 'machinespirits.tutor-stub.prompt-size-report.v1';
 
 export const TUTOR_STUB_PROMPT_SIZE_TOKENIZER = Object.freeze({
@@ -29,8 +31,6 @@ export const TUTOR_STUB_PROMPT_SIZE_SECTIONS = Object.freeze([
 const SYSTEM_WORLD_MARKER = '# Detective-story world';
 const SYSTEM_EVIDENCE_MARKER = '# Speaking-tutor evidence contract';
 const SYSTEM_NAMED_TUTOR_MARKER = '[Named tutor instance:';
-const STRUCTURED_NO_TOOLS_TAIL =
-  'This is a no-tools structured-output call. Do not run commands, inspect files, browse, call tools, or take any action beyond returning the requested JSON object.';
 const LATEST_BLOCKS = Object.freeze([
   Object.freeze({
     key: 'publicEvidenceWindow',
@@ -230,7 +230,7 @@ export function tutorStubPromptSizeSectionsFromRequest({
     '\n\nUser input for this turn:\n',
     ...(history.length ? ['Conversation so far:\n', '\n\n'] : []),
     'Latest message:\n',
-    structuredOutput ? `\n\n${STRUCTURED_NO_TOOLS_TAIL}` : '',
+    `\n\n${cliProviderNoToolsPromptTail({ structuredOutput })}`,
   ].join('');
   return {
     ...systemSections(systemPrompt),

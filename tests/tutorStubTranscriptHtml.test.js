@@ -135,6 +135,13 @@ function fixtureSnapshot() {
       },
     ],
     settings: {
+      lab: { id: 'human_scaffold', maturity: 'stable', audience: 'learner_safe' },
+      recipe: {
+        schema: 'machinespirits.tutor-stub.session-recipe.v1',
+        version: 1,
+        configHash: 'recipe-hash-123',
+        relaunchCommand: "npm run tutor:stub -- --resume '.tutor-stub-traces/html-test.jsonl'",
+      },
       world: {
         id: 'world_005_marrick',
         title: 'The Light Shillings',
@@ -200,10 +207,20 @@ function fixtureSnapshot() {
   };
 }
 
-test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings, and replay views', () => {
+test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings, relaunch, and replay views', () => {
   const html = renderTutorStubTranscriptHtml(fixtureSnapshot());
 
-  for (const view of ['raw', 'script', 'swimlanes', 'analysis', 'prompts', 'settings', 'tuning', 'replay']) {
+  for (const view of [
+    'raw',
+    'script',
+    'swimlanes',
+    'analysis',
+    'prompts',
+    'settings',
+    'tuning',
+    'relaunch',
+    'replay',
+  ]) {
     assert.match(html, new RegExp(`data-view="${view}"`, 'u'));
     assert.match(html, new RegExp(`data-panel="${view}"`, 'u'));
   }
@@ -258,6 +275,10 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.ok(swimlane.indexOf('data-swim-role="learner"') < swimlane.indexOf('data-swim-role="tutor-reply"'));
   assert.match(swimlane, /The opening is an unnumbered prelude\./u);
   assert.match(html, />Replay JS<\/button>/u);
+  assert.match(html, />Relaunch<\/button>/u);
+  assert.match(html, /Copy relaunch command/u);
+  assert.match(html, /recipe-hash-123/u);
+  assert.match(html, /npm run tutor:stub -- --resume/u);
   assert.match(html, /data-replay-message-count="3"/u);
   assert.match(html, /https:\/\/api\.openai\.com\/v1\/responses/u);
   assert.match(html, /process\.env\.OPENAI_API_KEY/u);

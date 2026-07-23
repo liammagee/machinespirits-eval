@@ -333,6 +333,25 @@ import {
   tutorStubCapabilityFeatureRows,
 } from '../services/tutorStubCapabilities.js';
 import {
+  assertTutorStubLabRequirements,
+  formatTutorStubLabList,
+  getTutorStubLab,
+  listTutorStubLabs,
+  resolveTutorStubLab,
+  tutorStubLabTraceMetadata,
+} from '../services/tutorStubLabs.js';
+import {
+  applyTutorStubRecipeOptions,
+  assertTutorStubResumeCompatibility,
+  buildTutorStubSessionRecipe,
+  compareTutorStubResumeRecipe,
+  latestTutorStubResumeSource,
+  readTutorStubSessionRecipe,
+  resolveTutorStubResumeSource,
+  tutorStubExactRelaunchCommand,
+  writeTutorStubSessionRecipe,
+} from '../services/tutorStubSessionRecipe.js';
+import {
   TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
   TUTOR_STUB_SESSION_RUNTIME_VERSION,
   createTutorStubCommandHandlers,
@@ -650,6 +669,8 @@ const { values: args, positionals } = parseArgs({
     'list-curriculum-modules': { type: 'boolean', default: false },
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
+    lab: { type: 'string', default: '' },
+    'list-labs': { type: 'boolean', default: false },
     features: { type: 'boolean', default: false },
     'launch-mode': { type: 'string', default: process.env.TUTOR_STUB_LAUNCH_MODE || '' },
     'labelling-game': { type: 'boolean', default: false },
@@ -682,6 +703,10 @@ const { values: args, positionals } = parseArgs({
     },
     'no-trace': { type: 'boolean', default: false },
     'resume-last': { type: 'boolean', default: false },
+    resume: { type: 'string', default: '' },
+    recipe: { type: 'string', default: '' },
+    'write-recipe': { type: 'string', default: '' },
+    'acknowledge-drift': { type: 'boolean', default: false },
     'session-rpc': { type: 'boolean', default: false },
     'session-id': { type: 'string', default: '' },
     'no-stream': { type: 'boolean', default: false },
@@ -705,6 +730,82 @@ const { values: args, positionals } = parseArgs({
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
+
+let selectedLabResolution = null;
+let loadedSessionRecipe = null;
+let loadedSessionRecipePath = null;
+let explicitResumeSource = null;
+let loadedRecipeApplication = null;
+let resumeRecipeApplication = null;
+const resolvedLaunchOptionNames = new Set();
+
+function applyTutorStubLabDefaults(id) {
+  const base = resolveTutorStubLab(id);
+  for (const [key, value] of Object.entries(base.cliOptions)) {
+    if (key === 'lab' || rawCommandLineOptionProvided(key)) continue;
+    args[key] = value;
+    resolvedLaunchOptionNames.add(key);
+  }
+  args.lab = base.lab.id;
+}
+
+function prepareTutorStubLaunchConfiguration() {
+  if (args.resume && args['resume-last']) {
+    throw new Error('--resume and --resume-last are mutually exclusive; select one explicit resume source');
+  }
+
+  if (args.recipe) {
+    loadedSessionRecipe = readTutorStubSessionRecipe(resolveWorkspacePath(args.recipe));
+    loadedSessionRecipePath = loadedSessionRecipe.filePath;
+    const explicitLab = rawCommandLineOptionProvided('lab') ? String(args.lab || '').trim() : '';
+    const recipeLab = String(loadedSessionRecipe.config?.lab || '').trim();
+    if (explicitLab && recipeLab && explicitLab !== recipeLab && !args['acknowledge-drift']) {
+      throw new Error(
+        `recipe lab drift: recipe selects ${recipeLab}, but --lab selects ${explicitLab}; rerun with --acknowledge-drift to inspect the effective lab configuration`,
+      );
+    }
+  }
+
+  const declaredLab = String(args.lab || loadedSessionRecipe?.config?.lab || '').trim();
+  if (declaredLab) applyTutorStubLabDefaults(declaredLab);
+  if (loadedSessionRecipe) {
+    loadedRecipeApplication = applyTutorStubRecipeOptions(args, loadedSessionRecipe, {
+      optionProvided: rawCommandLineOptionProvided,
+    });
+    for (const key of loadedRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
+  }
+
+  if (args.resume) {
+    explicitResumeSource = resolveTutorStubResumeSource(args.resume, {
+      traceDir: resolveWorkspacePath(args['trace-dir']),
+      cwd: ROOT,
+    });
+    if (!loadedSessionRecipe) {
+      const resumeLab = String(args.lab || explicitResumeSource.recipe?.config?.lab || '').trim();
+      if (resumeLab && !declaredLab) applyTutorStubLabDefaults(resumeLab);
+      resumeRecipeApplication = applyTutorStubRecipeOptions(args, explicitResumeSource.recipe, {
+        optionProvided: rawCommandLineOptionProvided,
+      });
+      for (const key of resumeRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
+    }
+  }
+
+  const resolvedLab = String(
+    args.lab || loadedSessionRecipe?.config?.lab || explicitResumeSource?.recipe?.config?.lab || '',
+  ).trim();
+  if (resolvedLab) selectedLabResolution = resolveTutorStubLab(resolvedLab, { overrides: args });
+}
+
+const informationalLaunchRequested = Boolean(
+  args.help ||
+  args['list-labs'] ||
+  args.features ||
+  args['list-worlds'] ||
+  args['list-curriculum-modules'] ||
+  args['list-tutors'] ||
+  args['list-learner-profiles'],
+);
+if (!informationalLaunchRequested) prepareTutorStubLaunchConfiguration();
 
 configureCliPresentation({
   theme: args.theme,
@@ -852,6 +953,9 @@ Options:
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
+  --list-labs            list versioned capability labs and exit without model calls
+  --lab <id>             apply a declared lab configuration; explicit flags win
+                         (use --list-labs for audience, maturity, cost, and safety)
   --features             show the tutor-stub capability map and quick starts
   --topic <text>         tutoring topic (default: ${STUB.topic})
   --learner <text>       learner sketch
@@ -898,6 +1002,11 @@ Options:
                          ignore and do not update the last interactive settings
   --no-trace             disable automatic local tracing
   --resume-last          resume the newest completed dialogue found in trace-dir
+  --resume <run-id|path> resume an explicit trace; this always wins over mtime
+  --recipe <path>        load a versioned, hash-verified session recipe
+  --write-recipe <path>  write the fully resolved recipe before the first model call
+  --acknowledge-drift    explicitly permit recorded world/prompt/tutor/model/schema
+                         drift while resuming; otherwise resume fails closed
   --no-stream            disable token streaming for API-backed model calls
   --no-interim-animation disable the temporary state/field status animation
                          shown while model calls are waiting
@@ -983,6 +1092,7 @@ Interactive commands:
   /release-notes [hours]
                          show recent tutor-stub changes and their expected effects
   /features              show the capability map, quick starts, and active mode
+  /lab [list|id]         show the active lab or a safe lab's relaunch command
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
   /profile               show the active suggested-learner profile
@@ -1216,9 +1326,13 @@ function resolveWorkspacePath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT, value);
 }
 
-function commandLineOptionProvided(name) {
+function rawCommandLineOptionProvided(name) {
   const flag = `--${name}`;
   return process.argv.slice(2).some((argument) => argument === flag || argument.startsWith(`${flag}=`));
+}
+
+function commandLineOptionProvided(name) {
+  return rawCommandLineOptionProvided(name) || resolvedLaunchOptionNames.has(name);
 }
 
 function rememberedSettingExplicitSources() {
@@ -3258,6 +3372,41 @@ function visibleResolvedModel(resolved, providerConfig) {
   };
 }
 
+function safeTutorStubRecipeBaseUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    url.username = '';
+    url.password = '';
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  } catch (_) {
+    return null;
+  }
+}
+
+function tutorStubRecipeModelIdentity(ref, visible = null) {
+  const modelRef = String(ref || '').trim();
+  let route = visible;
+  if (!route && modelRef) {
+    const resolved = resolveModel(modelRef);
+    route = visibleResolvedModel(resolved, getProviderConfig(resolved.provider));
+  }
+  const identity = {
+    ref: modelRef || null,
+    provider: route?.provider || null,
+    model: route?.model || null,
+    baseUrl: safeTutorStubRecipeBaseUrl(route?.baseUrl),
+    cli: typeof route?.cli === 'boolean' ? route.cli : null,
+  };
+  return {
+    ...identity,
+    routingHash: hashCanonicalJson(identity),
+  };
+}
+
 function displayDiagnosticLabel(value) {
   return String(value || '')
     .replace(/[_-]+/gu, ' ')
@@ -4953,56 +5102,6 @@ function assertTutorStubTurnAttemptCurrent({ signal = null, isCurrent = null } =
   }
 }
 
-function readTraceEvents(filePath) {
-  const events = [];
-  const text = fs.readFileSync(filePath, 'utf8');
-  for (const line of text.split(/\r?\n/u)) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (parsed && typeof parsed === 'object') events.push(parsed);
-    } catch (_) {
-      // Ignore damaged trace lines; the next valid event may still be useful.
-    }
-  }
-  return events;
-}
-
-function dialogueTurnsFromTraceEvents(events) {
-  const turns = [];
-  for (const event of events) {
-    if (event?.type === 'history_clear') {
-      turns.length = 0;
-      continue;
-    }
-    if (event?.type !== 'turn_complete' || !event.turnRecord) continue;
-    turns.push(jsonClone(event.turnRecord));
-  }
-  return turns;
-}
-
-function latestDialogueTrace(traceDir) {
-  const dir = resolveWorkspacePath(traceDir);
-  if (!fs.existsSync(dir)) return null;
-  const files = fs
-    .readdirSync(dir)
-    .filter((name) => name.endsWith('.jsonl'))
-    .map((name) => path.join(dir, name))
-    .filter((filePath) => fs.statSync(filePath).isFile())
-    .map((filePath) => ({ filePath, mtimeMs: fs.statSync(filePath).mtimeMs }))
-    .sort((a, b) => b.mtimeMs - a.mtimeMs);
-
-  for (const { filePath } of files) {
-    const events = readTraceEvents(filePath);
-    const turns = dialogueTurnsFromTraceEvents(events);
-    if (!turns.length) continue;
-    const metadata = events.find((event) => event?.type === 'run_start')?.metadata || null;
-    return { filePath, metadata, turns, events };
-  }
-  return null;
-}
-
 function restoreRegisterStateFromTurns(state, turns) {
   if (!state.register?.enabled) return { restored: 0 };
   const byTurn = new Map();
@@ -5190,11 +5289,21 @@ function replayLearnerDagFromTurns(state, turns) {
   return { replayed, skipped };
 }
 
-function restoreDialogueFromTrace(state, resume, { currentWorld }) {
+function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening = false }) {
   if (!resume?.turns?.length) return null;
   const turns = resume.turns.map((turn) => jsonClone(turn));
   state.turns = turns;
   state.history = [];
+  if (restoreOpening) {
+    const lastClearIndex = (resume.events || []).reduce(
+      (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
+      -1,
+    );
+    const opening = (resume.events || [])
+      .slice(lastClearIndex + 1)
+      .find((event) => event?.type === 'tutor_opening' && typeof event.text === 'string' && event.text.trim());
+    if (opening) state.history.push({ role: 'assistant', content: opening.text });
+  }
   for (const turn of turns) {
     if (turn.learner) state.history.push({ role: 'user', content: turn.learner });
     if (turn.tutor) state.history.push({ role: 'assistant', content: turn.tutor });
@@ -15047,6 +15156,10 @@ async function main() {
     printHelp();
     return;
   }
+  if (args['list-labs']) {
+    console.log(formatTutorStubLabList());
+    return;
+  }
   if (args.features) {
     printTutorStubFeatureMap();
     return;
@@ -15070,6 +15183,8 @@ async function main() {
     printAutomatedLearnerProfiles();
     return;
   }
+  if (selectedLabResolution) assertTutorStubLabRequirements(selectedLabResolution, args);
+  const resumeRequested = Boolean(args.resume || args['resume-last']);
   const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
   if (args['labelling-game'] && requestedLaunchMode && requestedLaunchMode !== 'labelling-game') {
     throw new Error('--labelling-game conflicts with --launch-mode chat');
@@ -15325,7 +15440,7 @@ async function main() {
     interactiveSessionEnabled &&
     STUB.opening &&
     !args['no-opening'] &&
-    !args['resume-last'] &&
+    !resumeRequested &&
     launchWorldBundle &&
     !existingScenarioAvailable,
   );
@@ -15573,7 +15688,11 @@ async function main() {
           : interactiveSessionEnabled
             ? 'buffered_for_concurrent_input'
             : 'live';
-  const resumeCandidate = args['resume-last'] ? latestDialogueTrace(args['trace-dir']) : null;
+  const resumeCandidate =
+    explicitResumeSource ||
+    (args['resume-last']
+      ? latestTutorStubResumeSource({ traceDir: resolveWorkspacePath(args['trace-dir']), cwd: ROOT })
+      : null);
   const rememberedDialogueSettingsAvailable = rememberedSettings.status === 'loaded';
   const initialProfilePromptEnabled = Boolean(
     mixedLearnerEnabled &&
@@ -15606,7 +15725,7 @@ async function main() {
     interactiveSessionEnabled &&
     openingEnabled &&
     !firstMessage &&
-    !args['resume-last'] &&
+    !resumeRequested &&
     rememberedScenarioAvailable &&
     rememberedDialogueSettingsAvailable &&
     !initialMixedLearnerSetupEnabled,
@@ -15655,7 +15774,7 @@ async function main() {
       ? 'no_saved_or_explicit_scenario'
       : existingScenarioAvailable
         ? 'existing_scenario_restored_or_explicit'
-        : args['resume-last']
+        : resumeRequested
           ? 'resume_requested'
           : 'not_interactive_opening',
   };
@@ -15870,6 +15989,72 @@ async function main() {
     responseChecks: !passthroughEnabled,
   });
   assertTutorStubCapabilityCompatibility(capabilitySnapshot);
+  const selectedLabMetadata = selectedLabResolution
+    ? {
+        ...tutorStubLabTraceMetadata(selectedLabResolution),
+        resolvedCapabilities: [...capabilitySnapshot.active],
+      }
+    : null;
+  const sessionRecipe = buildTutorStubSessionRecipe({
+    args,
+    lab: selectedLabResolution?.lab?.id || null,
+    identity: {
+      schema: TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
+      world: worldBundle?.world?.id ? { id: worldBundle.world.id } : curriculumBundle ? { id: null } : null,
+      prompt: {
+        systemPromptHash: hashCanonicalJson({ systemPrompt }),
+        tutorRolePromptHash: tutorInstance.rolePromptHash,
+      },
+      tutor: {
+        ref: tuning.activeRef,
+        rolePromptHash: tutorInstance.rolePromptHash,
+      },
+      models: {
+        tutor: tutorStubRecipeModelIdentity(args.model, visibleModel),
+        classifier: tutorStubRecipeModelIdentity(args['classifier-model'], visibleClassifierModel),
+        reasoning: tutorStubRecipeModelIdentity(args['learner-record-model'], visibleLearnerRecordModel),
+        learner: tutorStubRecipeModelIdentity(args['auto-learner-model'], visibleAutoLearnerModel),
+      },
+    },
+  });
+  const recipeDrift = loadedSessionRecipe
+    ? compareTutorStubResumeRecipe(loadedSessionRecipe, sessionRecipe, {
+        extraDrift: (loadedRecipeApplication?.explicitOverrides || []).map((entry) => ({
+          ...entry,
+          axis: `option.${entry.axis}`,
+        })),
+      })
+    : null;
+  if (recipeDrift) {
+    assertTutorStubResumeCompatibility(recipeDrift, {
+      acknowledgeDrift: args['acknowledge-drift'],
+      context: 'recipe',
+    });
+  }
+  const resumeDrift = resumeCandidate
+    ? compareTutorStubResumeRecipe(resumeCandidate.recipe, sessionRecipe, {
+        extraDrift: (resumeRecipeApplication?.explicitOverrides || []).map((entry) => ({
+          ...entry,
+          axis: `option.${entry.axis}`,
+        })),
+      })
+    : null;
+  if (resumeDrift) {
+    assertTutorStubResumeCompatibility(resumeDrift, { acknowledgeDrift: args['acknowledge-drift'] });
+  }
+  const loadedRecipeProvenance = loadedSessionRecipe
+    ? {
+        source: path.relative(ROOT, loadedSessionRecipe.filePath),
+        drift: recipeDrift,
+        driftAcknowledged: Boolean(args['acknowledge-drift'] && !recipeDrift?.ok),
+      }
+    : null;
+  if (args['write-recipe']) {
+    loadedSessionRecipePath = writeTutorStubSessionRecipe({
+      recipe: sessionRecipe,
+      filePath: resolveWorkspacePath(args['write-recipe']),
+    });
+  }
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -15907,6 +16092,20 @@ async function main() {
             authority: 'existing_cli_analysis_dag_register_guard_pipeline',
           },
           rememberedSettings: rememberedSettingsConfig,
+          lab: selectedLabMetadata,
+          sessionRecipe,
+          recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
+          recipeSource: loadedRecipeProvenance,
+          resume: resumeCandidate
+            ? {
+                source: path.relative(ROOT, resumeCandidate.filePath),
+                runId: resumeCandidate.runId,
+                turns: resumeCandidate.turns.length,
+                migration: resumeCandidate.migration,
+                drift: resumeDrift,
+                driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
+              }
+            : { requested: resumeRequested, found: false },
           passthrough: passthroughConfig,
           capabilities: capabilitySnapshot,
           sessionRuntime: {
@@ -16158,7 +16357,7 @@ async function main() {
             automaticAfterTurns: fieldVisualizationEnabled,
             slashCommand: '/viz',
           },
-          resumeLast: args['resume-last']
+          resumeLast: resumeRequested
             ? resumeCandidate
               ? {
                   source: path.relative(ROOT, resumeCandidate.filePath),
@@ -16222,6 +16421,20 @@ async function main() {
       tuning: tutorStubTuningSnapshot(tuning),
       allModelsOverride,
       rememberedSettings: rememberedSettingsConfig,
+      lab: selectedLabMetadata,
+      sessionRecipe,
+      recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
+      recipeSource: loadedRecipeProvenance,
+      resume: resumeCandidate
+        ? {
+            source: path.relative(ROOT, resumeCandidate.filePath),
+            runId: resumeCandidate.runId,
+            turns: resumeCandidate.turns.length,
+            migration: resumeCandidate.migration,
+            drift: resumeDrift,
+            driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
+          }
+        : { requested: resumeRequested, found: false },
       passthrough: passthroughConfig,
       capabilities: capabilitySnapshot,
       humanDiscourse: humanDiscourseConfig,
@@ -16413,7 +16626,7 @@ async function main() {
         automaticAfterTurns: fieldVisualizationEnabled,
         slashCommand: '/viz',
       },
-      resumeLast: args['resume-last']
+      resumeLast: resumeRequested
         ? resumeCandidate
           ? {
               source: path.relative(ROOT, resumeCandidate.filePath),
@@ -16477,6 +16690,18 @@ async function main() {
     },
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
     capabilities: capabilitySnapshot,
+    lab: selectedLabMetadata,
+    sessionRecipe,
+    recipeSource: loadedRecipeProvenance,
+    resume: resumeCandidate
+      ? {
+          source: resumeCandidate.filePath,
+          runId: resumeCandidate.runId,
+          migration: resumeCandidate.migration,
+          drift: resumeDrift,
+          driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
+        }
+      : null,
     passthrough: passthroughConfig,
     learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
     requestedTemperature: temperature,
@@ -16644,6 +16869,14 @@ async function main() {
   };
 
   function sessionRuntimeStateSnapshot() {
+    const publicMessages = state.history.map((message) => ({
+      role: message.role,
+      content: String(message.content || ''),
+    }));
+    const opening =
+      publicMessages.length === state.turns.length * 2 + 1 && publicMessages[0]?.role === 'assistant'
+        ? jsonClone(publicMessages[0])
+        : null;
     return {
       capabilityMode: state.capabilities.mode,
       worldId: state.world?.id || null,
@@ -16651,6 +16884,8 @@ async function main() {
       interactionMode: state.interaction?.mode || null,
       turnCount: state.turns.length,
       publicMessageCount: state.history.length,
+      opening,
+      publicMessages,
       dialogueClosurePhase: state.dialogueClosure?.phase || null,
       learnerProfileId: state.learnerProfileId || null,
       tutorInstanceRef: state.tuning?.activeRef || state.tutorInstance?.id || null,
@@ -16798,8 +17033,11 @@ async function main() {
     return result;
   }
 
-  const resumedDialogue = args['resume-last']
-    ? restoreDialogueFromTrace(state, resumeCandidate, { currentWorld: worldBundle?.world || null })
+  const resumedDialogue = resumeRequested
+    ? restoreDialogueFromTrace(state, resumeCandidate, {
+        currentWorld: worldBundle?.world || null,
+        restoreOpening: Boolean(args['session-rpc']),
+      })
     : null;
   if (resumedDialogue) {
     restoreTutorStubReleasePacingFromTurns({
@@ -16830,13 +17068,13 @@ async function main() {
       dialogueClosure: resumedDialogue.dialogueClosure,
       warnings: resumedDialogue.warnings,
     });
-  } else if (args['resume-last']) {
+  } else if (resumeRequested) {
     appendTraceEvent(state.trace, {
       type: 'resume_empty',
       traceDir: path.relative(ROOT, traceDir),
     });
   }
-  if (args['resume-last']) {
+  if (resumeRequested) {
     sessionRuntime.resume({
       source: resumedDialogue ? path.relative(ROOT, resumedDialogue.source) : null,
       found: Boolean(resumedDialogue),
@@ -17056,7 +17294,7 @@ async function main() {
       } else if (state.dialogueClosure?.phase === 'closed') {
         console.log(`${C.cyan}resume closure >${C.reset} the saved dialogue is already closed`);
       }
-    } else if (args['resume-last']) {
+    } else if (resumeRequested) {
       console.log(`${C.dim}resume: no completed dialogue found in ${path.relative(ROOT, traceDir)}${C.reset}`);
     }
     if (temperature !== effectiveTemperature) {
@@ -17689,6 +17927,11 @@ async function main() {
       pool = tutorStubStaticCommandCompletions(command, commandOptions);
     } else if (trimmed.startsWith('/voice ')) {
       pool = tutorStubStaticCommandCompletions('/voice', commandOptions);
+    } else if (trimmed.startsWith('/lab ')) {
+      pool = [
+        ...tutorStubStaticCommandCompletions('/lab', commandOptions),
+        ...listTutorStubLabs().map((entry) => `/lab ${entry.id}`),
+      ];
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
         ...tutorStubStaticCommandCompletions('/profile', commandOptions),
@@ -19797,6 +20040,8 @@ async function main() {
       coach: jsonClone(state.coach),
       directorContext,
       trace: traceDisplayPath(state.trace),
+      lab: jsonClone(state.lab),
+      sessionRecipe: jsonClone(state.sessionRecipe),
       fieldVisualization: state.fieldViz?.lastWrite || null,
       world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
       turns: state.turns,
@@ -19818,6 +20063,11 @@ async function main() {
         turnId: turn.turnId,
         ...jsonClone(turn.prompts.tutor),
       }));
+    const relaunchCommand = state.trace?.enabled
+      ? tutorStubExactRelaunchCommand({ resume: path.relative(ROOT, state.trace.filePath) })
+      : loadedSessionRecipePath
+        ? tutorStubExactRelaunchCommand({ recipePath: path.relative(ROOT, loadedSessionRecipePath) })
+        : null;
 
     return redactTraceSecrets({
       schema: TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
@@ -19851,6 +20101,19 @@ async function main() {
           completedTurns: state.turns.length,
           mode: interactionMode,
           learnerMode,
+        },
+        lab: jsonClone(state.lab),
+        recipe: {
+          schema: state.sessionRecipe.schema,
+          version: state.sessionRecipe.version,
+          configHash: state.sessionRecipe.configHash,
+          sourceRecipe: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
+          sourceRecipeDrift: jsonClone(state.recipeSource?.drift || null),
+          sourceRecipeDriftAcknowledged: Boolean(state.recipeSource?.driftAcknowledged),
+          resumeSource: state.resume?.source ? path.relative(ROOT, state.resume.source) : null,
+          resumeDrift: jsonClone(state.resume?.drift || null),
+          driftAcknowledged: Boolean(state.resume?.driftAcknowledged),
+          relaunchCommand,
         },
         world: state.world
           ? {
@@ -23042,6 +23305,46 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (command === '/lab') {
+      clearStatusLine();
+      const requested = commandArg.trim();
+      const active = state.lab?.id ? getTutorStubLab(state.lab.id) : null;
+      if (!requested) {
+        console.log(
+          `${C.brightCyan}${C.bold}lab >${C.reset} ${active ? `${active.id} · ${active.title}` : 'custom session (no named lab)'}`,
+        );
+        if (active) {
+          console.log(
+            `${C.dim}  ${active.audience} · ${active.maturity} · ${active.costClass} cost · ${active.summary}${C.reset}`,
+          );
+        }
+        console.log(`${C.dim}  use /lab list to browse; changing labs requires an explicit relaunch${C.reset}\n`);
+      } else if (requested === 'list') {
+        console.log(`${C.brightCyan}${C.bold}capability labs${C.reset}`);
+        console.log(formatTutorStubLabList());
+        console.log('');
+      } else {
+        const selected = getTutorStubLab(requested);
+        if (!selected) {
+          console.log(`${C.red}lab error:${C.reset} unknown lab "${requested}"; use /lab list\n`);
+        } else {
+          console.log(`${C.brightCyan}${C.bold}${selected.title}${C.reset} · ${selected.id}`);
+          console.log(
+            `${C.dim}  ${selected.audience} · ${selected.maturity} · ${selected.costClass} cost · ${selected.summary}${C.reset}`,
+          );
+          console.log(`${C.dim}  relaunch: npm run tutor:stub -- --lab '${selected.id}'${C.reset}\n`);
+        }
+      }
+      appendTraceEvent(state.trace, {
+        type: 'interactive_lab_catalog',
+        requested: requested || null,
+        activeLabId: state.lab?.id || null,
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/release-notes') {
       clearStatusLine();
       try {
@@ -23945,6 +24248,12 @@ async function main() {
     const rpcInput = fs.createReadStream('', { fd: 3, autoClose: false });
     const rpcOutput = fs.createWriteStream('', { fd: 4, autoClose: false });
     try {
+      const opening = await emitOpeningPrompt('session_rpc_start', {
+        display: false,
+        realizer: 'deterministic',
+        deterministicSource: 'session_rpc',
+      });
+      if (opening && sessionRuntime.status === 'active') sessionRuntime.sync('opening_committed');
       await runTutorStubSessionRpc({ input: rpcInput, output: rpcOutput, runtime: sessionRuntime });
     } finally {
       if (sessionRuntime.status === 'active') await sessionRuntime.finalize('session_rpc_closed');

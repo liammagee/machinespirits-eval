@@ -17,6 +17,7 @@ import {
   tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
   tutorStubCommandTokens,
+  tutorStubCommandTransportMetadata,
   tutorStubCommandUnavailableReasons,
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
@@ -76,6 +77,7 @@ const NORMAL_COMMANDS = [
   '/help',
   '/quit',
   '/exit',
+  '/lab',
 ];
 
 const PASSTHROUGH_COMMANDS = [
@@ -99,6 +101,7 @@ const PASSTHROUGH_COMMANDS = [
   '/help',
   '/quit',
   '/exit',
+  '/lab',
 ];
 
 const SCENE_RETURN_COMMANDS = [
@@ -136,6 +139,7 @@ const SCENE_RETURN_COMMANDS = [
   '/profile',
   '/scenario',
   '/board',
+  '/lab',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -171,10 +175,10 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 1);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 38);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 53);
-  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 20);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 34);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 39);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 54);
+  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 21);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 35);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -191,13 +195,14 @@ test('v1 command registry freezes the three existing slash-token surfaces', () =
     assert.equal(Object.isFrozen(definition.availability), true);
     assert.equal(Object.isFrozen(definition.order), true);
     assert.equal(Object.isFrozen(definition.capabilities), true);
+    assert.equal(Object.isFrozen(definition.transport), true);
     assert.equal(handlers.has(definition.handler), false, definition.handler);
     assert.equal(traceEvents.has(definition.traceEvent), false, definition.traceEvent);
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 38);
-  assert.equal(traceEvents.size, 38);
+  assert.equal(handlers.size, 39);
+  assert.equal(traceEvents.size, 39);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -228,6 +233,17 @@ test('canonical ids and aliases resolve uniquely', () => {
     dynamicProviders: ['workplan_module_ids'],
   });
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
+});
+
+test('transport metadata classifies picker, browser, voice, and relaunch side effects before HTTP exposure', () => {
+  assert.deepEqual(tutorStubCommandTransportMetadata('/settings').effects, ['terminal_picker']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/transcript').effects, ['browser_open']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/voice').effects, ['browser_open', 'voice_device']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/scenario').effects, ['terminal_picker', 'process_relaunch']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/board').effects, ['terminal_picker', 'process_relaunch']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/lab').effects, ['relaunch_instruction']);
+  assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'blocked_pending_adapter');
+  assert.equal(tutorStubCommandTransportMetadata('/not-a-command'), null);
 });
 
 test('invariants reject duplicate aliases, handlers, and inconsistent mode metadata', () => {

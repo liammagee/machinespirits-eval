@@ -21,6 +21,7 @@ import 'dotenv/config';
 import express from 'express';
 import { resolveBasicAuthGuard, makeRoleGate } from './services/httpBasicAuth.js';
 import { mountEvalSurfaces } from './services/evalSurfaces.js';
+import { installApplicationShutdownHandlers } from './services/applicationShutdown.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
@@ -166,6 +167,11 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
   <h2 class="section">Interactive</h2>
   <p class="section-sub">Hands-on surfaces — play a role, run a session, code a transcript.</p>
   <div class="grid">
+    <a class="card panel moss" href="/tutor">
+      <div class="t">Tutor studio</div>
+      <div class="d">Start or resume a safe tutor-stub lab through the shared browser and desktop session surface.</div>
+      <div class="cta">/tutor →</div>
+    </a>
     <a class="card panel moss" href="/chat">
       <div class="t">Tutor playground</div>
       <div class="d">Explore any cell from <code>tutor-agents.yaml</code> — play the learner and watch the ego / superego deliberation unfold.</div>
@@ -241,14 +247,21 @@ app.use((err, req, res, _next) => {
   });
 });
 
-// Start server
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  app.listen(PORT, HOST, () => {
+export function startEvalServer() {
+  const server = app.listen(PORT, HOST, () => {
     console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);
     console.log(`[EvalServer] API: http://${HOST}:${PORT}/api/eval`);
     console.log(`[EvalServer] Chat: http://${HOST}:${PORT}/chat`);
   });
+  const shutdown = installApplicationShutdownHandlers({ app, server });
+  server.once('close', shutdown.dispose);
+  return server;
+}
+
+// Start server and install signal handling only for the executable entry point.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  startEvalServer();
 }
 
 export { app };

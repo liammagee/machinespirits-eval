@@ -63,7 +63,21 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
   const pendingIds = new Set();
   let pendingCreates = 0;
 
-  const snapshotFor = (entry) => clone(entry.runtime.snapshot());
+  const snapshotFor = (entry) => {
+    const snapshot = clone(entry.runtime.snapshot());
+    // Runtime events are an internal diagnostic channel and may contain raw
+    // adapter/provider failure messages. Public HTTP consumers need only the
+    // lifecycle, counters, capability projection, and presentation-safe state.
+    if (snapshot && typeof snapshot === 'object') delete snapshot.events;
+    return snapshot;
+  };
+
+  const evict = (id, entry, reason = 'session_evicted') => {
+    if (sessions.get(id) !== entry) return false;
+    sessions.delete(id);
+    entry.runtime.terminate?.(reason);
+    return true;
+  };
 
   const entryFor = (id) => {
     const normalizedId = normalizeSessionId(id);
@@ -84,6 +98,7 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
           session: snapshotFor(entry),
         };
       } catch (error) {
+        if (error?.fatalSession === true) evict(id, entry, error.code || 'fatal_session_error');
         if (error instanceof TutorStubSessionHostError) throw error;
         if (/while status is/u.test(String(error?.message || ''))) {
           throw new TutorStubSessionHostError(
@@ -126,6 +141,7 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
       pendingCreates += 1;
       if (requestedId) pendingIds.add(requestedId);
       let runtime;
+      let adoptedRuntime = false;
       try {
         runtime = assertRuntime(await createSession(spec));
         const runtimeId = normalizeSessionId(runtime.id || runtime.snapshot()?.sessionId);
@@ -142,16 +158,37 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
 
         const entry = { runtime, queue: Promise.resolve() };
         sessions.set(runtimeId, entry);
+        adoptedRuntime = true;
+        if (runtime.closed && typeof runtime.closed.then === 'function') {
+          Promise.resolve(runtime.closed).then(
+            () => evict(runtimeId, entry, 'runtime_closed'),
+            () => evict(runtimeId, entry, 'runtime_closed'),
+          );
+        }
         try {
           if (runtime.status === 'created') {
             const load = isPlainObject(spec.load) ? clone(spec.load) : {};
             await runtime.load({ ...load, source: load.source || 'http_session_create' });
           }
+          // Let a synchronously-settled `closed` watcher run before claiming
+          // creation succeeded. Otherwise a runtime that dies during load can
+          // be returned even though it has already been evicted.
+          await Promise.resolve();
+          if (sessions.get(runtimeId) !== entry) {
+            throw new TutorStubSessionHostError(
+              'session_closed_during_create',
+              `tutor-stub session ${runtimeId} closed during creation`,
+              503,
+            );
+          }
         } catch (error) {
-          sessions.delete(runtimeId);
+          evict(runtimeId, entry, 'session_load_failed');
           throw error;
         }
         return snapshotFor(entry);
+      } catch (error) {
+        if (runtime && !adoptedRuntime) runtime.terminate?.('session_create_failed');
+        throw error;
       } finally {
         pendingCreates -= 1;
         if (requestedId) pendingIds.delete(requestedId);
@@ -174,20 +211,52 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
     reset(id, payload = {}) {
       return queueMutation(id, 'reset', (runtime) => runtime.reset(payload));
     },
-    finalize(id, reason = 'http_finalize', payload = {}) {
-      return queueMutation(id, 'finalize', (runtime) => runtime.finalize(reason, payload));
+    interrupt(id, reason = 'http_interrupt') {
+      const normalizedId = normalizeSessionId(id);
+      const entry = entryFor(normalizedId);
+      if (typeof entry.runtime.terminate !== 'function') {
+        throw new TutorStubSessionHostError(
+          'session_interrupt_unavailable',
+          `tutor-stub session ${normalizedId} does not support interruption`,
+          409,
+        );
+      }
+
+      // Interruption deliberately bypasses the per-session mutation queue: its
+      // job is to stop a model call that may be occupying that queue. Remove
+      // the session first so no new work can be admitted, then terminate the
+      // runtime. Process-backed runtimes synchronously signal the child and
+      // reject their pending RPC before their `closed` promise settles.
+      const session = snapshotFor(entry);
+      sessions.delete(normalizedId);
+      try {
+        const closing = entry.runtime.terminate(reason);
+        Promise.resolve(closing).catch(() => undefined);
+      } catch (error) {
+        throw new TutorStubSessionHostError(
+          'session_interrupt_failed',
+          `failed to interrupt tutor-stub session ${normalizedId}`,
+          500,
+          { cause: error },
+        );
+      }
+      return {
+        result: { sessionId: normalizedId, interrupted: true, reason },
+        session,
+      };
+    },
+    async finalize(id, reason = 'http_finalize', payload = {}) {
+      const normalizedId = normalizeSessionId(id);
+      const entry = entryFor(normalizedId);
+      const operation = await queueMutation(normalizedId, 'finalize', (runtime) => runtime.finalize(reason, payload));
+      evict(normalizedId, entry, 'finalized');
+      return operation;
     },
     async closeAll(reason = 'host_shutdown') {
-      await Promise.allSettled(
-        [...sessions.values()].map(async (entry) => {
-          await entry.queue;
-          try {
-            if (entry.runtime.status !== 'finalized') await entry.runtime.finalize(reason);
-          } finally {
-            entry.runtime.terminate?.();
-          }
-        }),
-      );
+      const entries = [...sessions.entries()];
+      sessions.clear();
+      for (const [, entry] of entries) entry.runtime.terminate?.(reason);
+      await Promise.allSettled(entries.map(([, entry]) => entry.queue));
     },
   });
 }

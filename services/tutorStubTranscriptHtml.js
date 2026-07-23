@@ -192,6 +192,19 @@ function replayView(snapshot) {
   </div>`;
 }
 
+function relaunchView(snapshot) {
+  const recipe = snapshot.settings?.recipe || {};
+  const command = String(recipe.relaunchCommand || '').trim();
+  if (!command) {
+    return '<div class="empty">No exact relaunch command is available because this session has neither a technical trace nor a saved recipe.</div>';
+  }
+  return `<div class="replay-view relaunch-view" data-relaunch-config-hash="${escapeHtml(recipe.configHash || '')}">
+    <div class="replay-head"><div><h2>Exact session relaunch</h2><p>This command selects the exact trace or hash-verified recipe recorded by the session. Explicit resume selection wins over directory modification time, and world, prompt, tutor, model, or runtime-schema drift fails closed unless separately acknowledged.</p></div><button type="button" class="copy-code ms-button" data-copy-target="relaunch-command" data-copy-label="Copy relaunch command">Copy relaunch command</button></div>
+    <p class="replay-note"><b>Recipe hash:</b> ${escapeHtml(recipe.configHash || 'not recorded')} · <b>Lab:</b> ${escapeHtml(snapshot.settings?.lab?.id || 'custom')}</p>
+    <pre id="relaunch-command" class="replay-code"><code>${escapeHtml(command)}</code></pre>
+  </div>`;
+}
+
 function rawView(snapshot) {
   const text = transcriptMessages(snapshot)
     .map((message, index) => {
@@ -496,9 +509,10 @@ export function renderTutorStubTranscriptHtml(snapshot = {}) {
     prompts: promptsView(snapshot),
     settings: settingsView(snapshot),
     tuning: tuningView(snapshot),
+    relaunch: relaunchView(snapshot),
     replay: replayView(snapshot),
   };
-  const viewLabels = { replay: 'Replay JS' };
+  const viewLabels = { relaunch: 'Relaunch', replay: 'Replay JS' };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
@@ -616,7 +630,7 @@ ${Object.entries(views)
   )
   .join('')}
 <footer class="colophon">Machine Spirits house style · ${MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA} · self-contained transcript artifact</footer>
-</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active');item.setAttribute('aria-selected','false')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');button.setAttribute('aria-selected','true');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});async function copyReplayText(text){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}document.querySelectorAll('[data-copy-target]').forEach(function(button){button.addEventListener('click',async function(){var target=document.getElementById(button.dataset.copyTarget);if(!target)return;try{await copyReplayText(target.textContent);button.textContent='Copied';button.classList.add('copied');setTimeout(function(){button.textContent='Copy JavaScript';button.classList.remove('copied')},1400)}catch(error){button.textContent='Select code to copy'}})});</script></body></html>`;
+</main><script>document.querySelectorAll('[data-view]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('[data-view]').forEach(function(item){item.classList.remove('active');item.setAttribute('aria-selected','false')});document.querySelectorAll('[data-panel]').forEach(function(item){item.classList.remove('active')});button.classList.add('active');button.setAttribute('aria-selected','true');document.querySelector('[data-panel="'+button.dataset.view+'"]').classList.add('active')})});async function copyReplayText(text){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove()}document.querySelectorAll('[data-copy-target]').forEach(function(button){button.addEventListener('click',async function(){var target=document.getElementById(button.dataset.copyTarget);if(!target)return;var label=button.dataset.copyLabel||button.textContent||'Copy';try{await copyReplayText(target.textContent);button.textContent='Copied';button.classList.add('copied');setTimeout(function(){button.textContent=label;button.classList.remove('copied')},1400)}catch(error){button.textContent='Select text to copy'}})});</script></body></html>`;
 }
 
 export function writeTutorStubTranscriptHtml({ snapshot, filePath }) {

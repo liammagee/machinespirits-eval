@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-unified-session-surface
 title: Ship tutor-stub as one shared web and Electron session surface
-status: triaged
+status: review
 type: ops
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-23
 verification: "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes."
 depends_on:
   - tutor-stub-capability-session-runtime
@@ -34,6 +34,7 @@ tags:
   - voice
   - privacy
 milestone: distribution
+branch: codex/tutor-stub-super-app-slices
 ---
 
 Expose the importable runtime through the existing Express/public stack so the
@@ -53,3 +54,11 @@ and device/provider failures fall back to the same text session.
 - 2026-07-23: Headless transport PR #157 merged. A process-backed real tutor
   factory is now in review for the shared web and Electron servers; the visual
   `/tutor` surface remains downstream of safe lab/command metadata.
+- 2026-07-23: Process factory PR #158 merged. Added the shared `/tutor` browser
+  and Electron surface, learner-safe catalog, exact resume, reconnect/reset/end
+  lifecycle, public trace export, status and stop-waiting recovery, theme and
+  reduced-motion/forced-colour support, and consent-gated speech-to-editable-text
+  input. The metered surface is administrator-only on public poetics binds.
+- 2026-07-23: Static accessibility/security/parity tests, focused HTTP tests,
+  and a live localhost desktop/mobile layout check pass without starting a paid
+  tutor session.

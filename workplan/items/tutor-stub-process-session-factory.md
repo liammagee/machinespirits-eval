@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-process-session-factory
 title: Mount the real tutor-stub session factory in the shared server
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -56,3 +56,4 @@ and adapts them for noninteractive transports.
   launch contract pass; the Electron-ABI battery remains isolated to the
   desktop-dev worktree as documented by the repository.
 - 2026-07-23: Opened integration PR #158.
+- 2026-07-23: PR #158 merged to `main` with all required checks green.
