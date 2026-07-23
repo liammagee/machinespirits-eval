@@ -156,11 +156,7 @@ test('process resume traversal fails closed when trace namespace bounds are exce
   t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
 
   assert.throws(
-    () =>
-      resolveTutorStubProcessResumePath(
-        { resume: null, resumeLast: true },
-        { root: ROOT, traceDir: traceRoot },
-      ),
+    () => resolveTutorStubProcessResumePath({ resume: null, resumeLast: true }, { root: ROOT, traceDir: traceRoot }),
     (error) => error.code === 'resume_trace_scan_limit' && error.status === 400 && !error.message.includes(tmp),
   );
 });
@@ -485,7 +481,10 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   });
   assert.equal(outsideResume.status, 400);
   assert.equal(outsideResume.body.error.code, 'invalid_resume_source');
-  assert.doesNotMatch(JSON.stringify(outsideResume.body), new RegExp(tmp.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+  assert.doesNotMatch(
+    JSON.stringify(outsideResume.body),
+    new RegExp(tmp.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'),
+  );
 
   const resumedLast = await request(base, '/sessions', {
     method: 'POST',
@@ -566,7 +565,10 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   });
   assert.equal(ambiguousResume.status, 400);
   assert.equal(ambiguousResume.body.error.code, 'ambiguous_resume_source');
-  assert.doesNotMatch(JSON.stringify(ambiguousResume.body), new RegExp(tmp.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+  assert.doesNotMatch(
+    JSON.stringify(ambiguousResume.body),
+    new RegExp(tmp.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'),
+  );
 
   const labSession = await request(base, '/sessions', {
     method: 'POST',

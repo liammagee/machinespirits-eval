@@ -302,7 +302,10 @@ function readBoundedDirectory(directory, counters) {
       if (!entry) break;
       counters.entries += 1;
       if (counters.entries > MAX_RESUME_DIRECTORY_ENTRIES) {
-        throw resumeSourceError('resume_trace_scan_limit', 'configured trace storage exceeds the safe resume scan limit');
+        throw resumeSourceError(
+          'resume_trace_scan_limit',
+          'configured trace storage exceeds the safe resume scan limit',
+        );
       }
       entries.push(entry);
     }
@@ -341,7 +344,10 @@ function collectResumeTraceFiles(traceRoot) {
     } else if (entry.isDirectory()) {
       counters.directories += 1;
       if (counters.directories > MAX_RESUME_TRACE_DIRECTORIES) {
-        throw resumeSourceError('resume_trace_scan_limit', 'configured trace storage exceeds the safe resume scan limit');
+        throw resumeSourceError(
+          'resume_trace_scan_limit',
+          'configured trace storage exceeds the safe resume scan limit',
+        );
       }
       for (const child of readBoundedDirectory(entryPath, counters)) {
         if (!child.isFile() || !child.name.endsWith(RESUME_TRACE_EXTENSION)) continue;
@@ -402,7 +408,10 @@ export function resolveTutorStubProcessResumePath({ resume, resumeLast }, { root
     for (const candidate of ordered) {
       inspectedBytes += candidate.size;
       if (inspectedBytes > MAX_RESUME_TRACE_BYTES) {
-        throw resumeSourceError('resume_trace_scan_limit', 'configured trace storage exceeds the safe resume scan limit');
+        throw resumeSourceError(
+          'resume_trace_scan_limit',
+          'configured trace storage exceeds the safe resume scan limit',
+        );
       }
       if (normalizeSafeResumeCandidate(candidate)) return candidate.filePath;
     }

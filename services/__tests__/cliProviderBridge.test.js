@@ -364,18 +364,12 @@ describe('cliProviderBridge', () => {
     for (const scenario of cases) {
       await assert.rejects(
         () =>
-          callAIWithCliBridge(
-            { provider: scenario.provider, model: 'test-model' },
-            'system',
-            'user',
-            'tutor',
-            {
-              timeoutMs: 1_000,
-              maxStdoutBytes: 32,
-              maxStderrBytes: 32,
-              spawnImpl: scenario.spawnImpl,
-            },
-          ),
+          callAIWithCliBridge({ provider: scenario.provider, model: 'test-model' }, 'system', 'user', 'tutor', {
+            timeoutMs: 1_000,
+            maxStdoutBytes: 32,
+            maxStderrBytes: 32,
+            spawnImpl: scenario.spawnImpl,
+          }),
         (error) => {
           assert.equal(error?.code, 'CLI_PROVIDER_OUTPUT_LIMIT');
           assert.equal(error?.stream, scenario.stream);
