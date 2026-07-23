@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v1';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 1;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v2';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 2;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -17,6 +17,64 @@ export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'process_relaunch',
   'relaunch_instruction',
 ]);
+export const TUTOR_STUB_COMMAND_EFFECT_KEYS = Object.freeze([
+  'modelCall',
+  'fileWrite',
+  'persistentMutation',
+  'sessionClear',
+  'processExit',
+]);
+
+// These declarations are deliberately conservative: an effect is true when any
+// valid form of the command can produce it. modelCall includes non-tutor model
+// roles such as mixed-learner and voice providers. Universal trace logging is
+// not a command-specific fileWrite; direct artifact, preference, feedback,
+// tuning, and finalization writes are. persistentMutation includes durable
+// state and semantic session state that changes how later turns execute.
+const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
+  demo: ['modelCall', 'fileWrite', 'persistentMutation'],
+  theme: ['fileWrite', 'persistentMutation'],
+  motion: ['fileWrite', 'persistentMutation'],
+  random: ['modelCall', 'persistentMutation'],
+  light: ['modelCall', 'persistentMutation'],
+  committee: ['modelCall', 'fileWrite', 'persistentMutation'],
+  register: ['modelCall', 'persistentMutation'],
+  character: ['modelCall', 'persistentMutation'],
+  analysis: [],
+  field: [],
+  visualization: ['fileWrite'],
+  clarify: ['modelCall', 'persistentMutation'],
+  translate: ['modelCall'],
+  report: [],
+  transcript: ['fileWrite'],
+  voice: ['modelCall', 'fileWrite', 'persistentMutation'],
+  director: [],
+  feedback_up: ['fileWrite', 'persistentMutation'],
+  feedback_down: ['fileWrite', 'persistentMutation'],
+  feedback: ['fileWrite', 'persistentMutation'],
+  tune: ['fileWrite', 'persistentMutation'],
+  settings: ['modelCall', 'fileWrite', 'persistentMutation'],
+  status: [],
+  features: [],
+  release_notes: [],
+  debug: ['modelCall', 'persistentMutation'],
+  mode: ['modelCall', 'persistentMutation'],
+  learner: ['persistentMutation'],
+  coach: ['modelCall', 'persistentMutation'],
+  auto: ['modelCall', 'persistentMutation'],
+  id: [],
+  suggest: ['modelCall', 'persistentMutation'],
+  clue: ['modelCall', 'persistentMutation'],
+  profile: ['modelCall', 'fileWrite', 'persistentMutation'],
+  scenario: ['fileWrite', 'persistentMutation', 'sessionClear', 'processExit'],
+  board: ['persistentMutation', 'sessionClear', 'processExit'],
+  use: ['modelCall', 'persistentMutation'],
+  regen: ['modelCall', 'persistentMutation'],
+  reset: ['modelCall', 'persistentMutation', 'sessionClear'],
+  help: [],
+  quit: ['fileWrite', 'persistentMutation', 'processExit'],
+  lab: [],
+});
 
 const COMMAND_CAPABILITY_REQUIREMENTS = {
   demo: { available: ['guided_demo'] },
@@ -216,6 +274,37 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
+function commandEffectMetadataIssue(effects) {
+  if (!effects || typeof effects !== 'object' || Array.isArray(effects)) {
+    return 'effects must be an object';
+  }
+  const keys = Object.keys(effects);
+  const missing = TUTOR_STUB_COMMAND_EFFECT_KEYS.filter((key) => !keys.includes(key));
+  const extra = keys.filter((key) => !TUTOR_STUB_COMMAND_EFFECT_KEYS.includes(key));
+  if (missing.length || extra.length) {
+    return [
+      missing.length ? `missing ${missing.join(', ')}` : null,
+      extra.length ? `unknown ${extra.join(', ')}` : null,
+    ]
+      .filter(Boolean)
+      .join('; ');
+  }
+  const nonBoolean = TUTOR_STUB_COMMAND_EFFECT_KEYS.filter((key) => typeof effects[key] !== 'boolean');
+  return nonBoolean.length ? `non-boolean ${nonBoolean.join(', ')}` : null;
+}
+
+function commandEffectsFor(id) {
+  const declared = COMMAND_EFFECT_DECLARATIONS[id];
+  if (!Array.isArray(declared)) throw new Error(`command ${id} must declare execution effects`);
+  const unknown = declared.filter((key) => !TUTOR_STUB_COMMAND_EFFECT_KEYS.includes(key));
+  if (unknown.length) throw new Error(`command ${id} declares unknown execution effects: ${unknown.join(', ')}`);
+  return Object.fromEntries(TUTOR_STUB_COMMAND_EFFECT_KEYS.map((key) => [key, declared.includes(key)]));
+}
+
+function activeCommandEffects(effects) {
+  return TUTOR_STUB_COMMAND_EFFECT_KEYS.filter((key) => effects?.[key] === true);
+}
+
 function command({
   id,
   token,
@@ -248,6 +337,7 @@ function command({
       available: requirements.available || [],
       active: requirements.active || [],
     },
+    effects: commandEffectsFor(id),
     completion,
     transport: {
       terminal: 'supported',
@@ -660,6 +750,109 @@ export function tutorStubCommandTransportMetadata(value) {
   return resolveTutorStubCommand(value)?.transport || null;
 }
 
+function transportAdmissionResult({
+  allowed,
+  reason,
+  definition = null,
+  activeEffects = [],
+  disallowedEffects = [],
+  detail = null,
+}) {
+  return deepFreeze({
+    allowed,
+    reason,
+    commandId: definition?.id || null,
+    activeEffects,
+    disallowedEffects,
+    detail,
+  });
+}
+
+/**
+ * Evaluate a command definition against an explicit transport effect allowlist.
+ * This is separate from adapter execution so future HTTP command exposure cannot
+ * accidentally treat missing metadata or a newly added effect as harmless.
+ */
+export function evaluateTutorStubCommandTransportAdmission(
+  definition,
+  { transport = 'processHttp', allowedEffects = [] } = {},
+) {
+  if (!definition || typeof definition !== 'object') {
+    return transportAdmissionResult({ allowed: false, reason: 'unknown_command' });
+  }
+  const metadataIssue = commandEffectMetadataIssue(definition.effects);
+  if (metadataIssue) {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'invalid_effect_metadata',
+      definition,
+      detail: metadataIssue,
+    });
+  }
+  if (!Array.isArray(allowedEffects)) {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'invalid_effect_allowlist',
+      definition,
+      activeEffects: activeCommandEffects(definition.effects),
+      detail: 'allowedEffects must be an array',
+    });
+  }
+  const invalidAllowed = allowedEffects.filter((key) => !TUTOR_STUB_COMMAND_EFFECT_KEYS.includes(key));
+  if (invalidAllowed.length) {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'invalid_effect_allowlist',
+      definition,
+      activeEffects: activeCommandEffects(definition.effects),
+      detail: `unknown ${invalidAllowed.join(', ')}`,
+    });
+  }
+  if (transport !== 'processHttp') {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'unsupported_transport',
+      definition,
+      activeEffects: activeCommandEffects(definition.effects),
+      detail: transport,
+    });
+  }
+
+  const activeEffects = activeCommandEffects(definition.effects);
+  if (
+    definition.transport?.processHttp !== 'adapter_available' ||
+    definition.transport?.noninteractiveAdapter !== 'structured'
+  ) {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'adapter_unavailable',
+      definition,
+      activeEffects,
+    });
+  }
+  const allowed = new Set(allowedEffects);
+  const disallowedEffects = activeEffects.filter((key) => !allowed.has(key));
+  if (disallowedEffects.length) {
+    return transportAdmissionResult({
+      allowed: false,
+      reason: 'disallowed_effects',
+      definition,
+      activeEffects,
+      disallowedEffects,
+    });
+  }
+  return transportAdmissionResult({
+    allowed: true,
+    reason: 'admitted',
+    definition,
+    activeEffects,
+  });
+}
+
+export function tutorStubCommandTransportAdmission(value, options = {}) {
+  return evaluateTutorStubCommandTransportAdmission(resolveTutorStubCommand(value), options);
+}
+
 export function tutorStubCommandHelpRows({ mode = 'normal', capabilities = null } = {}) {
   const normalized = normalizedMode(mode);
   const rows = HELP_GROUPS.filter((group) => group.mode === normalized)
@@ -740,11 +933,20 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
         throw new Error(`unknown capability requirement for ${definition.id}: ${capabilityId}`);
       }
     }
+    const effectMetadataIssue = commandEffectMetadataIssue(definition.effects);
+    if (effectMetadataIssue) {
+      throw new Error(`command ${definition.id} has invalid execution effects: ${effectMetadataIssue}`);
+    }
     if (definition.transport?.terminal !== 'supported') {
       throw new Error(`command ${definition.id} has invalid terminal transport state`);
     }
     if (!['none', 'structured'].includes(definition.transport?.noninteractiveAdapter)) {
       throw new Error(`command ${definition.id} has invalid noninteractive adapter state`);
+    }
+    const expectedHttpState =
+      definition.transport.noninteractiveAdapter === 'structured' ? 'adapter_available' : 'blocked_pending_adapter';
+    if (definition.transport?.processHttp !== expectedHttpState) {
+      throw new Error(`command ${definition.id} has inconsistent process HTTP transport state`);
     }
     if (
       !Array.isArray(definition.transport?.effects) ||
