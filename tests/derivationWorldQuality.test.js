@@ -24,6 +24,20 @@ test('the quality gate catches missing public rule language', () => {
   assert.ok(report.errors.some((issue) => issue.code === 'missing_rule_gloss'));
 });
 
+test('the quality gate rejects a deterministic opening that exposes instructional armature', () => {
+  const world = loadWorld(path.join(WORLD_DIR, 'world-000-smoke.yaml'));
+  const mutated = {
+    ...world,
+    setting: `The learner waits beside the evidence table. ${world.setting}`,
+  };
+  const report = auditWorldQuality(mutated);
+  assert.ok(
+    report.errors.some(
+      (issue) => issue.code === 'unsafe_opening_fallback' && issue.message.includes('armature_visible'),
+    ),
+  );
+});
+
 test('period worlds must author their presentation instead of inheriting a language fallback', () => {
   const world = loadWorld(path.join(WORLD_DIR, 'world-000-smoke.yaml'));
   const mutated = {

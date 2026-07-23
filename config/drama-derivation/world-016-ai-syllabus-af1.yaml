@@ -8,7 +8,7 @@ question_pattern: [bestApproach, campusFaq, "?x"]
 
 setting: >-
   A first AI Foundations workshop is reviewing a proposed campus FAQ triage tool.
-  The learner has heard the words "AI assistant" and is tempted to classify the
+  You have heard the words "AI assistant" and may be tempted to classify the
   proposal by its conversational surface. The course requires a problem
   formulation card: task, baseline, data, decision rights, and unacceptable
   failures before any model family is chosen.

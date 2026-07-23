@@ -9,6 +9,11 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  auditTutorStubOpening,
+  buildTutorStubOpeningFrame,
+  deterministicTutorStubOpening,
+} from '../tutorStubOpening.js';
 import { entails, factKey } from './chainer.js';
 import { derivationDistance } from './slope.js';
 import { loadWorld, plotLint, WORLD_ELIGIBILITY_STATUSES } from './world.js';
@@ -192,6 +197,25 @@ export function auditWorldQuality(world, { source = world.id } = {}) {
     if (!String(presentation[field] || '').trim()) {
       addError('missing_presentation', `world needs explicit presentation.${field}`);
     }
+  }
+
+  const openingFrame = buildTutorStubOpeningFrame({
+    world,
+    openingEvidence: world.releaseSchedule
+      .filter((entry) => Number(entry.turn) === 1)
+      .map((entry) => ({
+        premise: entry.premise,
+        via: entry.via,
+        surface: world.premiseById.get(entry.premise)?.surface || '',
+      })),
+  });
+  const openingAudit = auditTutorStubOpening({
+    text: deterministicTutorStubOpening(openingFrame),
+    frame: openingFrame,
+    leakAudit: { ok: true, leaks: [] },
+  });
+  for (const issue of openingAudit.issues) {
+    addError('unsafe_opening_fallback', `deterministic opening fails ${issue.type}: ${issue.reason}`);
   }
 
   return {
