@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-capability-session-runtime
 title: Extract a capability-driven tutor-stub session runtime
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -17,7 +17,9 @@ verification: An importable session runtime and versioned command/capability
 depends_on:
   - tutor-stub-register-policy-extraction
 links:
-  prs: https://github.com/liammagee/machinespirits-eval/pull/155
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/155
+    - https://github.com/liammagee/machinespirits-eval/pull/156
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
   items:
@@ -29,7 +31,7 @@ tags:
   - runtime
   - command-registry
   - replay
-branch: codex/tutor-stub-capability-resolver
+branch: codex/tutor-stub-session-runtime
 ---
 
 `scripts/tutor-stub.js` has become a capable application shell, but session
@@ -58,3 +60,14 @@ and evaluation adapters rather than forking them.
   mixed-drafting and adaptive-performance controls do not masquerade as usable.
   The importable create/load/reset/resume/step/finalize runtime and handler
   extraction remain the next slice.
+- 2026-07-23: Added the importable v1 session runtime with explicit
+  create/load/resume/step/reset/finalize transitions, immutable snapshots,
+  per-instance state isolation, and versioned lifecycle events. All 38
+  canonical commands now own unique handler and trace-event ids in the frozen
+  registry; the CLI routes learner input, commands, resume, reset, and
+  finalization through runtime adapters. Fake-provider fixtures pin equivalent
+  public turns and lifecycle ordering across all six capability modes.
+- 2026-07-23: Verification complete: focused capability/runtime/CLI/labelling
+  checks, all interactive-mode regressions, lint, formatting, workplan checks,
+  derivation quality, and the hermetic suite pass. The item is in review pending
+  its integration PR.

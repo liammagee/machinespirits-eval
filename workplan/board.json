@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T01:57:53.598Z",
+  "generated": "2026-07-23T02:13:21.685Z",
   "counts": {
     "total": 149,
     "byStatus": {
@@ -8,7 +8,7 @@
       "dropped": 2,
       "triaged": 26,
       "archived": 4,
-      "active": 1
+      "review": 1
     },
     "byType": {
       "research": 46,
@@ -787,39 +787,6 @@
       "branch": "main"
     },
     {
-      "id": "tutor-stub-capability-session-runtime",
-      "title": "Extract a capability-driven tutor-stub session runtime",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
-      "depends_on": [
-        "tutor-stub-register-policy-extraction"
-      ],
-      "links": {
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/155",
-        "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
-        ],
-        "items": [
-          "tutor-stub-register-policy-extraction",
-          "tutor-stub-human-discourse-layer"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "runtime",
-        "command-registry",
-        "replay"
-      ],
-      "branch": "codex/tutor-stub-capability-resolver"
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -908,6 +875,42 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "tutor-stub-capability-session-runtime",
+      "title": "Extract a capability-driven tutor-stub session runtime",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "depends_on": [
+        "tutor-stub-register-policy-extraction"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/155",
+          "https://github.com/liammagee/machinespirits-eval/pull/156"
+        ],
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-human-discourse-layer"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "command-registry",
+        "replay"
+      ],
+      "branch": "codex/tutor-stub-session-runtime"
     },
     {
       "id": "adaptive-eval-immutable-provenance",

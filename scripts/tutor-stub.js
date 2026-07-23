@@ -325,7 +325,6 @@ import {
   tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
   tutorStubCommandTokens,
-  tutorStubCommandUnavailableReasons,
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
 import {
@@ -333,6 +332,12 @@ import {
   resolveTutorStubCapabilities,
   tutorStubCapabilityFeatureRows,
 } from '../services/tutorStubCapabilities.js';
+import {
+  TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
+  TUTOR_STUB_SESSION_RUNTIME_VERSION,
+  createTutorStubCommandHandlers,
+  createTutorStubSessionRuntime,
+} from '../services/tutorStubSessionRuntime.js';
 import {
   TUTOR_STUB_CLI_MOTION_IDS,
   TUTOR_STUB_CLI_THEME_IDS,
@@ -15903,6 +15908,14 @@ async function main() {
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
           capabilities: capabilitySnapshot,
+          sessionRuntime: {
+            schema: TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
+            version: TUTOR_STUB_SESSION_RUNTIME_VERSION,
+            lifecycle: ['create', 'load', 'resume', 'step', 'reset', 'finalize'],
+            stateIsolation: 'per_runtime_instance',
+            commandHandlers: 'registry_owned',
+            traceEvents: 'versioned_session_event_envelopes',
+          },
           topic: effectiveTopic,
           curriculum: curriculumBundle
             ? {
@@ -16629,6 +16642,87 @@ async function main() {
     turns: [],
   };
 
+  function sessionRuntimeStateSnapshot() {
+    return {
+      capabilityMode: state.capabilities.mode,
+      worldId: state.world?.id || null,
+      curriculumModuleId: state.curriculum?.module?.id || null,
+      interactionMode: state.interaction?.mode || null,
+      turnCount: state.turns.length,
+      publicMessageCount: state.history.length,
+      dialogueClosurePhase: state.dialogueClosure?.phase || null,
+      learnerProfileId: state.learnerProfileId || null,
+      tutorInstanceRef: state.tuning?.activeRef || state.tutorInstance?.id || null,
+    };
+  }
+
+  function recordSessionRuntimeEvent(event) {
+    appendTraceEvent(state.trace, {
+      type: event.traceEvent || 'session_runtime_event',
+      sessionRuntimeSchema: event.schema,
+      sessionId: event.sessionId,
+      sequence: event.sequence,
+      runtimeEvent: event.event,
+      runtimeStatus: event.status,
+      runtimeRevision: event.revision,
+      at: event.at,
+      details: event.details,
+      publicTranscriptChanged: false,
+    });
+  }
+
+  function rejectUnavailableSessionCommand({ token, reasons, capabilityMode, context }) {
+    clearStatusLine();
+    console.log(
+      `${C.dim}${token} is unavailable in this ${capabilityMode} session${
+        reasons.length ? `: ${reasons.join('; ')}` : ''
+      }; use /help for the active command surface${C.reset}\n`,
+    );
+    appendTraceEvent(state.trace, {
+      type: state.passthrough?.enabled ? 'passthrough_command_rejected' : 'command_capability_rejected',
+      command: token,
+      capabilityMode,
+      reasons,
+      duringTurn: Boolean(context?.duringTurn),
+      publicTranscriptChanged: false,
+    });
+    return true;
+  }
+
+  function handleUnknownSessionCommand({ input: commandInput, context }) {
+    clearStatusLine();
+    console.log(
+      `${C.red}unknown command:${C.reset} ${commandInput}${C.dim} · type / to browse or use /help${C.reset}\n`,
+    );
+    appendTraceEvent(state.trace, {
+      type: 'unknown_slash_command',
+      command: commandInput,
+      duringTurn: Boolean(context?.duringTurn),
+    });
+    return true;
+  }
+
+  const sessionRuntime = createTutorStubSessionRuntime({
+    id: state.debugRunId,
+    capabilities: state.capabilities,
+    initialState: sessionRuntimeStateSnapshot(),
+    commandHandlers: createTutorStubCommandHandlers(executeSlashCommand),
+    onEvent: recordSessionRuntimeEvent,
+    adapters: {
+      snapshot: sessionRuntimeStateSnapshot,
+      step: ({ payload }) =>
+        routeLearnerText(payload.input, {
+          source: payload.context?.source || 'runtime',
+          provenance: payload.context?.provenance || null,
+        }),
+      reset: ({ payload }) => performInteractiveDialogueReset(payload),
+      finalize: ({ payload }) => performInteractiveFinalize(payload.reason),
+      commandUnavailable: rejectUnavailableSessionCommand,
+      unknownCommand: handleUnknownSessionCommand,
+    },
+  });
+  sessionRuntime.load({ source: 'cli_launch', state: sessionRuntimeStateSnapshot() });
+
   function currentRememberedSettingsSnapshot() {
     return {
       scenarioId: state.world?.id || null,
@@ -16738,6 +16832,14 @@ async function main() {
     appendTraceEvent(state.trace, {
       type: 'resume_empty',
       traceDir: path.relative(ROOT, traceDir),
+    });
+  }
+  if (args['resume-last']) {
+    sessionRuntime.resume({
+      source: resumedDialogue ? path.relative(ROOT, resumedDialogue.source) : null,
+      found: Boolean(resumedDialogue),
+      turns: resumedDialogue?.turns || 0,
+      state: sessionRuntimeStateSnapshot(),
     });
   }
   if (output.isTTY) {
@@ -17342,7 +17444,7 @@ async function main() {
             compoundTurnPolicy: 'same_as_typed_learner_input',
             publicTranscriptStatus: 'pending_compound_turn',
           });
-          const routed = routeLearnerText(text, { source: 'voice' });
+          const routed = sessionRuntime.step(text, { kind: 'learner', context: { source: 'voice' } });
           return {
             ...routed,
             turn: activeLearnerTurn?.turn || state.turns.length + 1,
@@ -20006,7 +20108,7 @@ async function main() {
     return { filePath: absolute, launched: Boolean(launchResult), summary };
   }
 
-  function finalizeInteractive(reason) {
+  function performInteractiveFinalize(reason) {
     if (finalized) return;
     finalized = true;
     appendTraceEvent(state.trace, {
@@ -20036,6 +20138,10 @@ async function main() {
       console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
       appendTraceEvent(state.trace, { type: 'learning_summary_error', reason, error: error.message });
     }
+  }
+
+  function finalizeInteractive(reason) {
+    return sessionRuntime.finalize(reason);
   }
 
   function requestExit(reason) {
@@ -21112,7 +21218,7 @@ async function main() {
     };
   }
 
-  async function resetInteractiveDialogue({ command = '/reset', duringTurn = false } = {}) {
+  async function performInteractiveDialogueReset({ command = '/reset', duringTurn = false } = {}) {
     const learnerAttempt = activeLearnerTurn;
     const autoAttempt = activeAutoRun;
     const clarificationAttempt = clarificationInFlight;
@@ -21181,6 +21287,10 @@ async function main() {
     const opening = await emitOpeningPrompt('reset');
     if (opening) startMixedLearnerPrefetch('reset_opening');
     return true;
+  }
+
+  function resetInteractiveDialogue(options = {}) {
+    return sessionRuntime.reset({ reason: 'dialogue_reset', ...options });
   }
 
   function printDialogueSettings() {
@@ -22758,10 +22868,11 @@ async function main() {
     return true;
   }
 
-  function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
-    if (!trimmed.startsWith('/')) return false;
-    const command = trimmed.split(/\s+/u)[0];
-    const commandArg = trimmed.slice(command.length).trim();
+  function executeSlashCommand({ canonicalToken, argument = '', context = {} }) {
+    const duringTurn = Boolean(context.duringTurn);
+    const command = canonicalToken;
+    const commandArg = argument;
+    const trimmed = [command, commandArg].filter(Boolean).join(' ');
     if (trimmed === '/quit' || trimmed === '/exit') {
       if (duringTurn) {
         stopInterimAnimation(state);
@@ -22778,26 +22889,6 @@ async function main() {
     }
     if ((command === '/reset' || command === '/clear') && !commandArg) {
       return resetInteractiveDialogue({ command, duringTurn });
-    }
-    const commandMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
-    const commandOptions = { mode: commandMode, capabilities: state.capabilities };
-    if (tutorStubCanonicalCommandToken(command) && !tutorStubCommandAvailable(command, commandOptions)) {
-      const reasons = tutorStubCommandUnavailableReasons(command, commandOptions);
-      clearStatusLine();
-      console.log(
-        `${C.dim}${command} is unavailable in this ${state.capabilities.mode} session${
-          reasons.length ? `: ${reasons.join('; ')}` : ''
-        }; use /help for the active command surface${C.reset}\n`,
-      );
-      appendTraceEvent(state.trace, {
-        type: state.passthrough?.enabled ? 'passthrough_command_rejected' : 'command_capability_rejected',
-        command,
-        capabilityMode: state.capabilities.mode,
-        reasons,
-        duringTurn,
-        publicTranscriptChanged: false,
-      });
-      return true;
     }
     const pausedInterim = duringTurn ? pauseInterimAnimation(state) : false;
     let slashCommandFinished = false;
@@ -23330,6 +23421,16 @@ async function main() {
     return true;
   }
 
+  function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
+    if (
+      !String(trimmed || '')
+        .trim()
+        .startsWith('/')
+    )
+      return false;
+    return sessionRuntime.step(trimmed, { kind: 'command', context: { duringTurn } });
+  }
+
   function humanLearnerResponseProvenance(source = 'terminal') {
     return createTutorStubLearnerResponseProvenance({
       authorship: 'human',
@@ -23691,6 +23792,7 @@ async function main() {
           }
           writeFieldVisualization(state, { reason: completionReason });
           completedTurn = true;
+          if (sessionRuntime.status === 'active') sessionRuntime.sync('learner_turn_committed');
         } catch (err) {
           stopInterimAnimation(attemptState);
           if (err?.name === 'AbortError' && activeLearnerTurn !== active) {
@@ -23922,7 +24024,10 @@ async function main() {
       }
       return;
     }
-    routeLearnerText(trimmed, { source: 'terminal', provenance: draftProvenance });
+    sessionRuntime.step(trimmed, {
+      kind: 'learner',
+      context: { source: 'terminal', provenance: draftProvenance },
+    });
     promptIfIdle();
   });
 
