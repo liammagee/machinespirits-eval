@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-23T02:13:21.685Z",
+  "generated": "2026-07-23T02:35:10.526Z",
   "counts": {
-    "total": 149,
+    "total": 150,
     "byStatus": {
-      "done": 113,
+      "done": 114,
       "blocked": 3,
       "dropped": 2,
       "triaged": 26,
@@ -13,7 +13,7 @@
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 28,
+      "infra": 29,
       "maintenance": 12,
       "content": 2,
       "paper": 6,
@@ -259,6 +259,7 @@
       "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
       "depends_on": [
         "tutor-stub-capability-session-runtime",
+        "tutor-stub-headless-session-transport",
         "tutor-stub-safe-capability-labs",
         "tutor-stub-session-recipes-explicit-resume"
       ],
@@ -268,6 +269,7 @@
           "docs/tutor-stub-cli.md"
         ],
         "items": [
+          "tutor-stub-headless-session-transport",
           "scriptorium-responsive-shell-navigation",
           "scriptorium-static-tools-desktop-quality",
           "scriptorium-ux-safety-net"
@@ -877,40 +879,40 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "tutor-stub-capability-session-runtime",
-      "title": "Extract a capability-driven tutor-stub session runtime",
+      "id": "tutor-stub-headless-session-transport",
+      "title": "Add a headless transport for tutor-stub sessions",
       "status": "review",
       "type": "infra",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-22",
+      "created": "2026-07-23",
       "updated": "2026-07-23",
-      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "verification": "A versioned HTTP router drives injected tutor-stub runtimes through create, inspect, list, step, resume, reset, and finalize; two sessions remain isolated, same-session mutations serialize, invalid lifecycle requests return stable errors, and focused plus hermetic suites pass.",
+      "branch": "codex/tutor-stub-headless-api",
       "depends_on": [
-        "tutor-stub-register-policy-extraction"
+        "tutor-stub-capability-session-runtime"
       ],
       "links": {
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/155",
-          "https://github.com/liammagee/machinespirits-eval/pull/156"
+          "https://github.com/liammagee/machinespirits-eval/pull/157"
         ],
         "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+          "docs/tutor-stub-cli.md"
         ],
         "items": [
-          "tutor-stub-register-policy-extraction",
-          "tutor-stub-human-discourse-layer"
+          "tutor-stub-capability-session-runtime",
+          "tutor-stub-unified-session-surface"
         ]
       },
       "tags": [
         "tutor-stub",
         "super-app",
         "runtime",
-        "command-registry",
-        "replay"
+        "api",
+        "electron"
       ],
-      "branch": "codex/tutor-stub-session-runtime"
+      "milestone": "distribution"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1916,6 +1918,42 @@
         "strategy-refusal",
         "smoke"
       ]
+    },
+    {
+      "id": "tutor-stub-capability-session-runtime",
+      "title": "Extract a capability-driven tutor-stub session runtime",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "depends_on": [
+        "tutor-stub-register-policy-extraction"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/155",
+          "https://github.com/liammagee/machinespirits-eval/pull/156"
+        ],
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-human-discourse-layer"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "command-registry",
+        "replay"
+      ],
+      "branch": "codex/tutor-stub-session-runtime"
     },
     {
       "id": "tutor-stub-first-draft-series",

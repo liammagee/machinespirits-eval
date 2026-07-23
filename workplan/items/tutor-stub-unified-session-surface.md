@@ -11,6 +11,7 @@ updated: 2026-07-22
 verification: "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes."
 depends_on:
   - tutor-stub-capability-session-runtime
+  - tutor-stub-headless-session-transport
   - tutor-stub-safe-capability-labs
   - tutor-stub-session-recipes-explicit-resume
 links:
@@ -18,6 +19,7 @@ links:
     - desktop/ARCHITECTURE.md
     - docs/tutor-stub-cli.md
   items:
+    - tutor-stub-headless-session-transport
     - scriptorium-responsive-shell-navigation
     - scriptorium-static-tools-desktop-quality
     - scriptorium-ux-safety-net
@@ -40,3 +42,9 @@ Treat voice, accessibility, and privacy as release gates: captions and text
 must remain authoritative, microphone use requires visible consent and mute or
 push-to-talk controls, raw audio and credentials never enter public traces,
 and device/provider failures fall back to the same text session.
+
+## Progress
+
+- 2026-07-23: The first transport slice is in review: a bounded in-process session
+  host and versioned Express router over the shared runtime, with the real tutor
+  engine kept behind an injected factory boundary.

@@ -50,6 +50,36 @@ process without model calls. The regression fixtures run the same learner turn
 through passthrough, direct, scaffold, mixed, auto, and curriculum snapshots
 and pin the public result plus lifecycle event order.
 
+## Headless session transport
+
+`services/tutorStubSessionHost.js` owns multiple runtime instances for a
+non-terminal host and serializes mutations within each session. The host takes
+an injected session factory: real tutor construction remains in the tutor
+engine, while HTTP tests can use a deterministic fake provider. It rejects
+duplicate ids, bounds the number of resident sessions, keeps independent
+session state isolated, and retains finalized snapshots for inspection.
+
+`routes/tutorStubSessionRoutes.js` exposes that host through the versioned
+`machinespirits.tutor-stub.session-http.v1` contract:
+
+```text
+GET  /api/tutor-stub
+POST /api/tutor-stub/sessions
+GET  /api/tutor-stub/sessions
+GET  /api/tutor-stub/sessions/:sessionId
+POST /api/tutor-stub/sessions/:sessionId/steps
+POST /api/tutor-stub/sessions/:sessionId/resume
+POST /api/tutor-stub/sessions/:sessionId/reset
+POST /api/tutor-stub/sessions/:sessionId/finalize
+```
+
+The shared eval-surface mounter accepts `tutorStubSessionHost` and mounts the
+router only when a host supplies one. This keeps the transport importable and
+testable without inventing a second tutor implementation or exposing a toy
+default engine. The next integration slice is to extract the real tutor session
+factory from the CLI and inject it into the browser/Electron server; runtime
+snapshots supplied to HTTP must remain presentation-safe and credential-free.
+
 ## Themes
 
 Use `/theme` to preview every theme and `/theme <name>` to switch immediately:

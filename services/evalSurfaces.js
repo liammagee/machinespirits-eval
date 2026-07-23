@@ -32,6 +32,7 @@ import chatRoutes from '../routes/chatRoutes.js';
 import pilotRoutes from '../routes/pilotRoutes.js';
 import a19AdjudicationRoutes from '../routes/a19AdjudicationRoutes.js';
 import humanCodingRoutes from '../routes/humanCodingRoutes.js';
+import { createTutorStubSessionRouter } from '../routes/tutorStubSessionRoutes.js';
 import { mountSubjectExplorer } from './subjectExplorer.js';
 
 // API routers, in mount order. [mountPath, router].
@@ -59,14 +60,18 @@ const STATIC_SURFACES = [
 /**
  * Mount the eval API routers + static UI surfaces onto an existing Express app.
  * @param {import('express').Express} app  host app (already has auth + json)
- * @param {{ root: string }} opts  root is the repo root used to resolve dirs
+ * @param {{ root: string, tutorStubSessionHost?: object }} opts root resolves
+ * static dirs; an injected tutorStubSessionHost enables the headless API
  * @returns {import('express').Express} the same app, for chaining
  */
-export function mountEvalSurfaces(app, { root } = {}) {
+export function mountEvalSurfaces(app, { root, tutorStubSessionHost = null } = {}) {
   if (!app) throw new Error('mountEvalSurfaces: an Express app is required');
   if (!root) throw new Error('mountEvalSurfaces: { root } is required');
   for (const [mount, router] of API_ROUTERS) {
     app.use(mount, router);
+  }
+  if (tutorStubSessionHost) {
+    app.use('/api/tutor-stub', createTutorStubSessionRouter({ host: tutorStubSessionHost }));
   }
   for (const [mount, relDir] of STATIC_SURFACES) {
     const dir = path.join(root, relDir);
