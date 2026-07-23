@@ -319,6 +319,14 @@ import {
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
 import {
+  TUTOR_STUB_NORMAL_SLASH_COMMANDS as SLASH_COMMANDS,
+  TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS as PASSTHROUGH_SLASH_COMMANDS,
+  tutorStubCanonicalCommandToken,
+  tutorStubCommandAvailable,
+  tutorStubCommandReturnsToScene,
+  tutorStubStaticCommandCompletions,
+} from '../services/tutorStubCommandRegistry.js';
+import {
   TUTOR_STUB_CLI_MOTION_IDS,
   TUTOR_STUB_CLI_THEME_IDS,
   createTutorStubCliPresentation,
@@ -535,156 +543,7 @@ const REGISTER_TEMPERATURE_POLICIES = new Set([
 const DEFAULT_INTERACTIVE_DEMO_TURNS = 3;
 const MAX_INTERACTIVE_DEMO_TURNS = 8;
 
-const SLASH_COMMANDS = [
-  '/demo',
-  '/theme',
-  '/motion',
-  '/random',
-  '/register',
-  '/character',
-  '/analysis',
-  '/a',
-  '/field',
-  '/f',
-  '/viz',
-  '/v',
-  '/visualization',
-  '/clarify',
-  '/explain',
-  '/c',
-  '/report',
-  '/r',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/up',
-  '/down',
-  '/feedback',
-  '/tune',
-  '/settings',
-  '/status',
-  '/features',
-  '/release-notes',
-  '/debug',
-  '/mode',
-  '/learner',
-  '/coach',
-  '/auto',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/suggest',
-  '/clue',
-  '/hint',
-  '/profile',
-  '/scenario',
-  '/board',
-  '/use',
-  '/accept',
-  '/regen',
-  '/reset',
-  '/clear',
-  '/help',
-  '/quit',
-  '/exit',
-];
-
-const PASSTHROUGH_SLASH_COMMANDS = [
-  '/theme',
-  '/motion',
-  '/settings',
-  '/status',
-  '/features',
-  '/release-notes',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/scenario',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/reset',
-  '/clear',
-  '/help',
-  '/quit',
-  '/exit',
-];
-
-const SCENE_RETURN_SLASH_COMMANDS = new Set([
-  '/help',
-  '/theme',
-  '/motion',
-  '/random',
-  '/register',
-  '/character',
-  '/status',
-  '/features',
-  '/release-notes',
-  '/debug',
-  '/settings',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/analysis',
-  '/a',
-  '/field',
-  '/f',
-  '/viz',
-  '/v',
-  '/visualization',
-  '/clarify',
-  '/explain',
-  '/c',
-  '/report',
-  '/r',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/profile',
-  '/scenario',
-  '/board',
-]);
-
-const SETTINGS_COMPLETIONS = [
-  ...TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/settings theme ${theme}`),
-  ...TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/settings motion ${motion}`),
-  '/settings model ',
-  '/settings models',
-  '/settings models all ',
-  '/settings models tutor ',
-  '/settings models classifier ',
-  '/settings models reasoning ',
-  '/settings models learner ',
-  '/settings temp ',
-  '/settings dropout ',
-  '/settings release-speed ',
-  '/settings forget',
-  '/settings policy add state',
-  '/settings policy add field',
-  '/settings policy remove state',
-  '/settings policy remove field',
-  '/settings policy clear',
-  '/settings policy threshold ',
-];
-
-const RANDOM_PERFORMANCE_COMPLETIONS = ['/random on', '/random off', '/random status'];
-
 const EXPLICIT_PERFORMANCE_CLEAR_WORDS = new Set(['auto', 'clear', 'off', 'reset']);
-
-const VOICE_COMPLETIONS = [
-  '/voice on',
-  '/voice open',
-  '/voice status',
-  '/voice off',
-  ...TUTOR_STUB_VOICE_MODELS.map((model) => `/voice model ${model}`),
-  '/voice speaker marin',
-];
 
 const CUSTOM_LEARNER_PROFILE_EXAMPLE =
   'The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.';
@@ -17410,27 +17269,23 @@ async function main() {
     const trimmed = raw.trimStart();
     if (!trimmed.startsWith('/')) return { candidates: [], replacement: raw };
 
-    let pool = state.passthrough?.enabled ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
+    const completionMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const requestedCommand = trimmed.split(/\s+/u)[0];
+    if (
+      tutorStubCanonicalCommandToken(requestedCommand) &&
+      !tutorStubCommandAvailable(requestedCommand, { mode: completionMode })
+    ) {
+      return { candidates: [], replacement: trimmed };
+    }
+
+    let pool = completionMode === 'passthrough' ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
     if (trimmed.startsWith('/mode ')) {
-      pool = ['/mode learner', '/mode coach', '/mode auto'];
+      pool = tutorStubStaticCommandCompletions('/mode', { mode: completionMode });
     } else if (trimmed.startsWith('/debug ')) {
-      pool = [
-        '/debug on',
-        '/debug on prose',
-        '/debug on technical',
-        '/debug off',
-        '/debug show',
-        '/debug show prose',
-        '/debug show technical',
-        '/debug technical',
-      ];
+      pool = tutorStubStaticCommandCompletions('/debug', { mode: completionMode });
     } else if (trimmed.startsWith('/feedback ')) {
       pool = [
-        '/feedback up',
-        '/feedback down',
-        '/feedback clear',
-        '/feedback on',
-        '/feedback off',
+        ...tutorStubStaticCommandCompletions('/feedback', { mode: completionMode }),
         ...Object.keys(TUTOR_STUB_FEEDBACK_REASONS).map((reason) => `/feedback down ${reason}`),
       ];
     } else if (trimmed.startsWith('/down ')) {
@@ -17440,39 +17295,21 @@ async function main() {
         .filter((reason) => reason.startsWith('helpful_') || reason === 'custom')
         .map((reason) => `/up ${reason}`);
     } else if (trimmed.startsWith('/tune ')) {
-      pool = [
-        '/tune status',
-        '/tune on',
-        '/tune capture',
-        '/tune off',
-        '/tune canary',
-        '/tune reasons',
-        '/tune note ',
-        '/tune review',
-        '/tune show ',
-        '/tune approve ',
-        '/tune reject ',
-        '/tune replay ',
-        '/tune validate ',
-        '/tune promote ',
-        '/tune rollback',
-      ];
+      pool = tutorStubStaticCommandCompletions('/tune', { mode: completionMode });
     } else if (trimmed.startsWith('/theme ')) {
-      pool = TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/theme ${theme}`);
+      pool = tutorStubStaticCommandCompletions('/theme', { mode: completionMode });
     } else if (trimmed.startsWith('/motion ')) {
-      pool = TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/motion ${motion}`);
+      pool = tutorStubStaticCommandCompletions('/motion', { mode: completionMode });
     } else if (trimmed.startsWith('/random ')) {
-      pool = RANDOM_PERFORMANCE_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/random', { mode: completionMode });
     } else if (trimmed.startsWith('/register ')) {
       pool = [
-        '/register auto',
-        '/register status',
+        ...tutorStubStaticCommandCompletions('/register', { mode: completionMode }),
         ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
       ];
     } else if (trimmed.startsWith('/character ')) {
       pool = [
-        '/character auto',
-        '/character status',
+        ...tutorStubStaticCommandCompletions('/character', { mode: completionMode }),
         ...tutorStubRandomizableActorialPartIds().map((part) => `/character ${part}`),
       ];
     } else if (trimmed.startsWith('/settings model ')) {
@@ -17482,24 +17319,19 @@ async function main() {
       ];
       pool = trimmed === '/settings model ' ? modelCompletions.slice(0, 16) : modelCompletions;
     } else if (trimmed.startsWith('/settings ')) {
-      pool = SETTINGS_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/settings', { mode: completionMode });
     } else if (trimmed.startsWith('/analysis ')) {
-      pool = ['/analysis technical'];
+      pool = tutorStubStaticCommandCompletions('/analysis', { mode: completionMode });
     } else if (trimmed.startsWith('/demo ')) {
-      pool = ['/demo 1', `/demo ${DEFAULT_INTERACTIVE_DEMO_TURNS}`, '/demo 5'];
+      pool = tutorStubStaticCommandCompletions('/demo', { mode: completionMode });
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
       const command = trimmed.startsWith('/html ') ? '/html' : '/transcript';
-      pool = [`${command} no-open`, `${command} write`];
+      pool = tutorStubStaticCommandCompletions(command, { mode: completionMode });
     } else if (trimmed.startsWith('/voice ')) {
-      pool = VOICE_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/voice', { mode: completionMode });
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
-        '/profile list',
-        '/profile list stress',
-        '/profile list all',
-        '/profile example',
-        '/profile default',
-        '/profile custom ',
+        ...tutorStubStaticCommandCompletions('/profile', { mode: completionMode }),
         ...learnerProfileIds().map((profileId) => `/profile ${profileId}`),
       ];
     } else if (trimmed.startsWith('/scenario ')) {
@@ -22100,7 +21932,7 @@ async function main() {
   }
 
   function repriseLatestTutorUtterance(command, { duringTurn = false } = {}) {
-    if (duringTurn || exiting || !SCENE_RETURN_SLASH_COMMANDS.has(command)) return false;
+    if (duringTurn || exiting || !tutorStubCommandReturnsToScene(command)) return false;
     const utterance = String(latestTutorMessage(state) || '').trim();
     if (!utterance) return false;
     console.log(`${C.brightMagenta}${C.bold}tutor ↻ >${C.reset} ${utterance}\n`);
@@ -22691,7 +22523,7 @@ async function main() {
     if ((command === '/reset' || command === '/clear') && !commandArg) {
       return resetInteractiveDialogue({ command, duringTurn });
     }
-    if (state.passthrough?.enabled && !PASSTHROUGH_SLASH_COMMANDS.includes(command)) {
+    if (state.passthrough?.enabled && !tutorStubCommandAvailable(command, { mode: 'passthrough' })) {
       clearStatusLine();
       console.log(
         `${C.dim}${command} is intentionally unavailable in passthrough mode; use /help for the pure-chat commands${C.reset}\n`,

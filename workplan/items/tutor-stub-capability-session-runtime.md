@@ -1,14 +1,19 @@
 ---
 id: tutor-stub-capability-session-runtime
 title: Extract a capability-driven tutor-stub session runtime
-status: triaged
+status: active
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
 updated: 2026-07-22
-verification: "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass."
+verification: An importable session runtime and versioned command/capability
+  registry drive lifecycle, help, completion, availability, compatibility
+  checks, and trace schemas; two isolated sessions run in one process; golden
+  fake-provider traces for passthrough, direct, scaffold, mixed, auto, and
+  curriculum modes remain semantically equivalent; focused and hermetic suites
+  pass.
 depends_on:
   - tutor-stub-register-policy-extraction
 links:
@@ -23,6 +28,7 @@ tags:
   - runtime
   - command-registry
   - replay
+branch: codex/tutor-stub-capability-runtime
 ---
 
 `scripts/tutor-stub.js` has become a capable application shell, but session
@@ -36,3 +42,11 @@ completion, trace event, and handler exactly once. Capability dependencies and
 conflicts must be machine-readable so new surfaces inherit the same behavior
 instead of reproducing flag logic. Preserve provider, world, proof, curriculum,
 and evaluation adapters rather than forking them.
+
+## Progress
+
+- 2026-07-22: Added the versioned, frozen command-registry foundation and moved
+  the CLI's normal, passthrough, scene-return, and static-completion views onto
+  it. The slice preserves the existing 38 canonical commands and fixes
+  passthrough completion drift; capability snapshots, generated help, command
+  dispatch, and the importable session runtime remain to be extracted.
