@@ -1,7 +1,7 @@
 ---
 id: harden-cli-provider-process-isolation
 title: Isolate CLI model providers from secrets and fail closed on tool use
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -15,6 +15,8 @@ claim_status: planned
 branch: codex/tutor-stub-super-app-slices
 depends_on: []
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/159
   code:
     - services/cliProviderBridge.js
   items:
@@ -51,3 +53,6 @@ Acceptance:
 - 2026-07-23: Secret-canary, event-shape, streaming-boundary, spawn, exit, and
   existing service-spawn inventory tests pass. Repository-local adapters that
   still launch model CLIs directly are tracked separately.
+- 2026-07-23: PR #159 merged to `main`; the final integrated hermetic suite
+  passed 6,477 tests with one intentional skip, with lint, formatting, and
+  focused provider-boundary tests green.

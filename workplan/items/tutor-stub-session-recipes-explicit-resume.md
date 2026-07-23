@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-session-recipes-explicit-resume
 title: Add versioned tutor-stub session recipes and explicit resume
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -13,6 +13,8 @@ depends_on:
   - tutor-stub-capability-session-runtime
 branch: codex/tutor-stub-super-app-slices
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/159
   items:
     - tutor-stub-capability-session-runtime
     - adaptive-eval-immutable-provenance
@@ -40,3 +42,6 @@ weakening public/private replay boundaries.
 - 2026-07-23: Dry-run and trace metadata carry the resolved recipe and lineage;
   transcript HTML exposes the exact credential-free relaunch command. Unit and
   CLI round-trip, explicit-selection, drift, and fake-provider tests pass.
+- 2026-07-23: PR #159 merged to `main`; focused recipe exactness and cross-session
+  run-id/`resumeLast` HTTP tests passed, including fail-closed drift and bounded
+  trace discovery.

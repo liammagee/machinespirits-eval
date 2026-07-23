@@ -1,7 +1,7 @@
 ---
 id: bound-metered-evaluation-api-requests
 title: Add admission controls to metered evaluation API requests
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -15,6 +15,8 @@ claim_status: planned
 branch: codex/tutor-stub-super-app-slices
 depends_on: []
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/159
   code:
     - routes/evalRoutes.js
     - services/evaluationRunner.js
@@ -53,3 +55,5 @@ Acceptance:
   injected-route tests prove malformed, unknown, oversized, and unconfirmed
   requests make zero runner calls; remaining metered endpoints are tracked in a
   follow-up card.
+- 2026-07-23: PR #159 merged to `main`; exact-count and zero-allocation route
+  regressions passed in the 6,477-test hermetic acceptance run.

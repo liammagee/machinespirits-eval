@@ -131,6 +131,11 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
 
   assert.match(script, /new AbortController\(\)/u);
   assert.match(script, /elements\.micConsent\.checked/u);
+  assert.match(
+    script,
+    /state\.micEnabled = false;[\s\S]{0,160}elements\.enableMic\.disabled = true/u,
+    'revoking microphone consent must disable the permission-triggering control',
+  );
   assert.match(script, /SpeechRecognition/u);
   assert.match(script, /event\.key === 'Enter' \|\| event\.key === ' '/u);
   assert.match(script, /role === 'learner' \? 'You' : role === 'tutor' \? 'Tutor' : 'Session'/u);
