@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-headless-session-transport
 title: Add a headless transport for tutor-stub sessions
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -47,3 +47,4 @@ CLI tutor factory is the next integration boundary.
   capability, and interactive suites pass; the final rebased hermetic run passes 6,384
   tests with one skip after granting its localhost voice tests loopback access.
 - 2026-07-23: Opened integration PR #157.
+- 2026-07-23: PR #157 merged to `main` with all required checks green.

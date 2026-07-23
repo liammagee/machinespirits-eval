@@ -15,6 +15,7 @@
 //   TUTOR_CORE_LOG_DIR   tutor-core dialogue/api logs (tutor-core dialogue engine)
 //   GREENROOM_DIR        tutor profiles + prompt books + ledgers (services/greenroom/store)
 //   TUTOR_STUB_TUNING_DIR versioned tutor tuning evidence + candidates + replay plans
+//   TUTOR_STUB_TRACE_DIR  tutor-stub session traces and learning artifacts
 // MS_APP_ROOT carries the resource root for packaged-mode resolution.
 //
 // NOTE for future maintainers: if you add a NEW writable store, give it an env
@@ -36,6 +37,7 @@ export function resolvePaths(electronApp, repoRoot) {
   const tutorCoreLogDir = process.env.TUTOR_CORE_LOG_DIR || path.join(logsDir, 'tutor-core');
   const greenroomDir = process.env.GREENROOM_DIR || path.join(dataDir, 'greenroom');
   const tutorStubTuningDir = process.env.TUTOR_STUB_TUNING_DIR || path.join(dataDir, 'tutor-stub-tuning');
+  const tutorStubTraceDir = process.env.TUTOR_STUB_TRACE_DIR || path.join(logsDir, 'tutor-stub');
 
   for (const d of [
     path.dirname(dbPath),
@@ -46,6 +48,7 @@ export function resolvePaths(electronApp, repoRoot) {
     tutorCoreLogDir,
     greenroomDir,
     tutorStubTuningDir,
+    tutorStubTraceDir,
   ]) {
     fs.mkdirSync(d, { recursive: true });
   }
@@ -61,6 +64,7 @@ export function resolvePaths(electronApp, repoRoot) {
     tutorCoreLogDir,
     greenroomDir,
     tutorStubTuningDir,
+    tutorStubTraceDir,
   };
 }
 
@@ -76,6 +80,7 @@ export function serverEnv(paths) {
     TUTOR_CORE_LOG_DIR: paths.tutorCoreLogDir,
     GREENROOM_DIR: paths.greenroomDir,
     TUTOR_STUB_TUNING_DIR: paths.tutorStubTuningDir,
+    TUTOR_STUB_TRACE_DIR: paths.tutorStubTraceDir,
     MS_APP_ROOT: paths.appRoot,
   };
 }

@@ -338,6 +338,7 @@ import {
   createTutorStubCommandHandlers,
   createTutorStubSessionRuntime,
 } from '../services/tutorStubSessionRuntime.js';
+import { runTutorStubSessionRpc } from '../services/tutorStubSessionRpc.js';
 import {
   TUTOR_STUB_CLI_MOTION_IDS,
   TUTOR_STUB_CLI_THEME_IDS,
@@ -681,6 +682,8 @@ const { values: args, positionals } = parseArgs({
     },
     'no-trace': { type: 'boolean', default: false },
     'resume-last': { type: 'boolean', default: false },
+    'session-rpc': { type: 'boolean', default: false },
+    'session-id': { type: 'string', default: '' },
     'no-stream': { type: 'boolean', default: false },
     'no-interim-animation': { type: 'boolean', default: false },
     'no-memory-summary': { type: 'boolean', default: false },
@@ -16701,7 +16704,7 @@ async function main() {
   }
 
   const sessionRuntime = createTutorStubSessionRuntime({
-    id: state.debugRunId,
+    id: args['session-id'] || state.debugRunId,
     capabilities: state.capabilities,
     initialState: sessionRuntimeStateSnapshot(),
     commandHandlers: createTutorStubCommandHandlers(executeSlashCommand),
@@ -16712,6 +16715,7 @@ async function main() {
         routeLearnerText(payload.input, {
           source: payload.context?.source || 'runtime',
           provenance: payload.context?.provenance || null,
+          awaitCompletion: Boolean(payload.context?.awaitCompletion),
         }),
       reset: ({ payload }) => performInteractiveDialogueReset(payload),
       finalize: ({ payload }) => performInteractiveFinalize(payload.reason),
@@ -23526,7 +23530,11 @@ async function main() {
     return true;
   }
 
-  async function processLearnerLine(initialText, provenance = humanLearnerResponseProvenance()) {
+  async function processLearnerLine(
+    initialText,
+    provenance = humanLearnerResponseProvenance(),
+    { throwOnError = false } = {},
+  ) {
     if (exiting) return;
     if (state.dialogueClosure?.phase === 'closed') {
       offerAnotherScenario('dialogue_grounded_closure');
@@ -23549,6 +23557,7 @@ async function main() {
     activeLearnerTurn = active;
     processingTurn = true;
     let completedTurn = false;
+    let committedTurn = null;
     appendTraceEvent(state.trace, {
       type: 'learner_turn_fragment_received',
       schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
@@ -23790,6 +23799,15 @@ async function main() {
           }
           writeFieldVisualization(state, { reason: completionReason });
           completedTurn = true;
+          committedTurn = {
+            turn: tutorTurn,
+            turnId,
+            learner: learnerInput.combinedText,
+            tutor: response.text,
+            provider: response.provider || state.resolved?.provider || null,
+            model: response.model || state.resolved?.model || null,
+            completionReason,
+          };
           if (sessionRuntime.status === 'active') sessionRuntime.sync('learner_turn_committed');
         } catch (err) {
           stopInterimAnimation(attemptState);
@@ -23826,6 +23844,7 @@ async function main() {
       }
     } catch (err) {
       stopInterimAnimation(state);
+      if (throwOnError) throw err;
       printWithConcurrentTerminal(state, () => {
         clearStatusLine();
         console.error(`${C.red}error:${C.reset} ${err.message}\n`);
@@ -23851,9 +23870,10 @@ async function main() {
         }
       }
     }
+    return committedTurn;
   }
 
-  function routeLearnerText(text, { source = 'terminal', provenance = null } = {}) {
+  function routeLearnerText(text, { source = 'terminal', provenance = null, awaitCompletion = false } = {}) {
     const trimmed = String(text || '').trim();
     if (!trimmed || exiting) return { accepted: false, reason: 'empty_or_exiting' };
     const interactionMode = state.interaction?.mode || 'learner';
@@ -23906,7 +23926,11 @@ async function main() {
       if (pausedInterim) resumeInterimAnimation(state);
       return { accepted: true, route: 'next_learner_turn_queue' };
     }
-    void processLearnerLine(trimmed, learnerResponseProvenance);
+    const pendingTurn = processLearnerLine(trimmed, learnerResponseProvenance, { throwOnError: awaitCompletion });
+    if (awaitCompletion) {
+      return pendingTurn.then((turn) => ({ accepted: true, route: 'new_learner_turn', turn }));
+    }
+    void pendingTurn;
     return { accepted: true, route: 'new_learner_turn' };
   }
 
@@ -23916,6 +23940,20 @@ async function main() {
     return;
   }
   persistCurrentInteractiveSettings(resumedDialogue ? 'resume_loaded' : 'session_ready');
+
+  if (args['session-rpc']) {
+    const rpcInput = fs.createReadStream('', { fd: 3, autoClose: false });
+    const rpcOutput = fs.createWriteStream('', { fd: 4, autoClose: false });
+    try {
+      await runTutorStubSessionRpc({ input: rpcInput, output: rpcOutput, runtime: sessionRuntime });
+    } finally {
+      if (sessionRuntime.status === 'active') await sessionRuntime.finalize('session_rpc_closed');
+      rl.close();
+      rpcInput.destroy();
+      rpcOutput.end();
+    }
+    return;
+  }
 
   if (input.isTTY && output.isTTY) {
     emitKeypressEvents(input, rl);

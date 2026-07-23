@@ -73,12 +73,38 @@ POST /api/tutor-stub/sessions/:sessionId/reset
 POST /api/tutor-stub/sessions/:sessionId/finalize
 ```
 
-The shared eval-surface mounter accepts `tutorStubSessionHost` and mounts the
-router only when a host supplies one. This keeps the transport importable and
-testable without inventing a second tutor implementation or exposing a toy
-default engine. The next integration slice is to extract the real tutor session
-factory from the CLI and inject it into the browser/Electron server; runtime
-snapshots supplied to HTTP must remain presentation-safe and credential-free.
+`services/tutorStubProcessSessionFactory.js` is the default real host in the
+shared eval-surface mounter, so both the standalone web server and the
+poetics/Electron server expose this API. Each HTTP session lazily starts the
+actual tutor-stub CLI engine and controls its importable runtime over a private
+versioned RPC channel. Dedicated file descriptors carry JSON frames; terminal
+stdout and stderr remain diagnostics and can never be mistaken for protocol
+data. Provider credentials stay only in the server child environment, and HTTP
+snapshots expose the runtime's presentation-safe state projection.
+
+Session creation accepts an allowlisted configuration: `id`, `mode`, `model`,
+`classifierModel`, `learnerRecordModel`, `tutor`, `topic`, `world`,
+`curriculum`, `module`, and `resumeLast`. Supported launch modes are `direct`,
+`passthrough`, `scaffold`, `mixed`, and `curriculum`. For example:
+
+```json
+{
+  "id": "fractions-1",
+  "mode": "direct",
+  "world": "world_005_marrick",
+  "model": "codex.gpt-5.6-terra"
+}
+```
+
+The factory disables terminal-only presentation effects, keeps trace writes in
+`TUTOR_STUB_TRACE_DIR`, and closes child sessions with the host. The Electron
+path resolver relocates this trace directory below `userData`. Slash commands
+are temporarily rejected on the process-backed transport: several registered
+commands open terminal pickers, browsers, voice devices, or relaunch the CLI,
+so they need transport-safety metadata and noninteractive result adapters before
+the web surface may expose them. Learner turns, launch-time resume, reset, and
+finalize already traverse the real tutor engine; deterministic fake executables
+cover that full HTTP-to-model path in tests without spending API credits.
 
 ## Themes
 
