@@ -14,6 +14,24 @@ const SENSITIVE_HEADERS = new Set([
   'set-cookie',
 ]);
 
+const SENSITIVE_QUERY_PARAMS = new Set([
+  'access_token',
+  'accesstoken',
+  'api-key',
+  'api_key',
+  'apikey',
+  'authorization',
+  'client-secret',
+  'client_secret',
+  'clientsecret',
+  'key',
+  'password',
+  'secret',
+  'sig',
+  'signature',
+  'token',
+]);
+
 const captureContext = new AsyncLocalStorage();
 let installed = false;
 let originalFetch = null;
@@ -73,6 +91,25 @@ function sanitizeHeaders(headersLike) {
     return out;
   }
   return out;
+}
+
+function sanitizeUrl(url) {
+  if (typeof url !== 'string') return url ?? null;
+  try {
+    const parsed = new URL(url);
+    for (const key of new Set(parsed.searchParams.keys())) {
+      if (SENSITIVE_QUERY_PARAMS.has(key.toLowerCase())) {
+        parsed.searchParams.set(key, '[REDACTED]');
+      }
+    }
+    if (parsed.password) parsed.password = '[REDACTED]';
+    return parsed.toString();
+  } catch {
+    return url.replace(
+      /([?&](?:access[_-]?token|api[_-]?key|authorization|client[_-]?secret|key|password|secret|sig(?:nature)?|token)=)[^&#]*/giu,
+      '$1[REDACTED]',
+    );
+  }
 }
 
 function inferProvider(url) {
@@ -216,7 +253,7 @@ function ensureInstalled() {
         timestamp: new Date().toISOString(),
         durationMs,
         provider: inferProvider(url),
-        url,
+        url: sanitizeUrl(url),
         method,
         generationId,
         request: {
@@ -272,7 +309,7 @@ export function recordExternalApiCall({
     timestamp: new Date().toISOString(),
     durationMs,
     provider: provider || null,
-    url: endpoint || (provider ? `cli://${provider}` : null),
+    url: sanitizeUrl(endpoint || (provider ? `cli://${provider}` : null)),
     method: 'CLI',
     generationId: null,
     source: 'cli_capture',
@@ -350,7 +387,7 @@ function normalizeCapturedRecord(record, reason) {
     capturedAt: record.timestamp,
     durationMs: record.durationMs,
     provider: record.provider,
-    endpoint: record.url,
+    endpoint: sanitizeUrl(record.url),
     generationId: record.generationId || null,
     request: {
       method: record.method,

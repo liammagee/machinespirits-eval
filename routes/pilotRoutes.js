@@ -32,7 +32,7 @@ function requireAdmin(req, res, next) {
   if (!ADMIN_TOKEN) {
     return res.status(503).json({ error: 'PILOT_ADMIN_TOKEN env var not configured' });
   }
-  const provided = req.get('x-pilot-admin-token') || req.query.token;
+  const provided = req.get('x-pilot-admin-token');
   if (provided !== ADMIN_TOKEN) {
     return res.status(401).json({ error: 'invalid admin token' });
   }

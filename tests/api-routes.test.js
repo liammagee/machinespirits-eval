@@ -304,6 +304,18 @@ describe('API routes', () => {
     assert.ok(Array.isArray(body.docs));
   });
 
+  it('file-reading endpoints reject encoded path traversal', async () => {
+    for (const route of [
+      '/api/eval/prompts/..%2FAGENTS',
+      '/api/eval/docs/..%2F..%2FAGENTS',
+      '/api/eval/trajectory/..%2F..%2Fpackage',
+    ]) {
+      const { status, body } = await get(baseUrl, route);
+      assert.strictEqual(status, 400, route);
+      assert.ok(body.error, route);
+    }
+  });
+
   // ── Logs endpoints ──
 
   it('GET /api/eval/logs/dates returns available log dates', async () => {

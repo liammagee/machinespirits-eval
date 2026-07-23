@@ -15,6 +15,10 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
 function writeItem(itemsDir, item) {
   const dependsOn = item.dependsOn?.length
     ? `depends_on:\n${item.dependsOn.map((id) => `  - ${id}`).join('\n')}\n`
@@ -55,6 +59,14 @@ test('workplan projection produces an open, dependency-ordered canonical curricu
     status: 'active',
     priority: 'P1',
     verification: 'The foundation test passes.',
+    body: `Context:
+
+- This background bullet is not an acceptance task.
+
+## Acceptance
+
+- [x] Completed historical cleanup.
+- [ ] Preserve the live inquiry.`,
   });
   writeItem(itemsDir, {
     id: 'dependent-card',
@@ -84,6 +96,14 @@ test('workplan projection produces an open, dependency-ordered canonical curricu
   assert.ok(
     curriculum.modules[0].canonical_tasks.some((task) => task === 'State the mechanism.'),
     'acceptance bullets should remain intact as inquiry tasks',
+  );
+  assert.ok(curriculum.modules[0].canonical_tasks.includes('Preserve the live inquiry.'));
+  assert.equal(
+    curriculum.modules[0].canonical_tasks.some((task) =>
+      /completed historical|background bullet|\[[ x]\]/iu.test(task),
+    ),
+    false,
+    'completed checkboxes, background bullets, and checkbox markers should not become live tasks',
   );
 });
 
@@ -136,4 +156,58 @@ test('tutor-stub dry-run loads a live workplan module without a world or model c
   assert.equal(dryRun.promptArchitecture.planner.modelCall, false);
   assert.equal(dryRun.promptArchitecture.audit.baseSystem.ok, true);
   assert.equal(dryRun.promptArchitecture.audit.baseSpeakerPrivilege.ok, true);
+});
+
+test('tutor-stub exposes the live board picker in its command help', () => {
+  const result = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--help'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /\/board\s+choose a live workplan card/u);
+  assert.match(result.stdout, /\/board <item-id>\s+start a named workplan card directly/u);
+});
+
+test('tutor-stub /board starts a fresh non-DAG inquiry with the selected live workplan card', () => {
+  const liveCurriculum = loadTutorStubCurriculum('workplan', { root: ROOT });
+  const selectedModule = liveCurriculum.curriculum.modules[0];
+  assert.ok(selectedModule, 'the live workplan should expose at least one open curriculum module');
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--no-remember-settings',
+      '--world',
+      'world_005_marrick',
+      '--dag',
+      '--tutor-learner-dag',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: `/board ${selectedModule.id}\n`,
+      env: {
+        ...process.env,
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+      },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    result.stdout,
+    new RegExp(
+      `next board item >.*${escapeRegExp(selectedModule.id)}.*${escapeRegExp(selectedModule.title)}`,
+      'su',
+    ),
+  );
+  assert.match(result.stdout, /starting a fresh reflective inquiry from the live workplan/u);
+  assert.match(result.stdout, new RegExp(`topic: ${escapeRegExp(selectedModule.title)}`, 'u'));
+  assert.doesNotMatch(result.stderr, /cannot be combined|requires --module|Unknown --world/iu);
 });

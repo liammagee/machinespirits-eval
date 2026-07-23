@@ -6,6 +6,28 @@ the scene, semantic colors distinguish tutor, learner, coach, success, warning,
 and failure states, and the existing one-line progress display carries the only
 animation.
 
+## Capability-aware commands
+
+Every session resolves a frozen, versioned capability snapshot after launch
+configuration has been normalized. The snapshot separates what the current
+mode makes available from what is active now, identifies the resolved mode
+(`passthrough`, `direct`, `scaffold`, `mixed`, `auto`, or `curriculum`), and
+checks machine-readable prerequisites and conflicts before the dialogue starts.
+It is included in `--dry-run`, trace metadata, and a
+`capability_snapshot_resolved` trace event.
+
+The slash-command palette, completions, `/help`, and `/features` read this
+snapshot. Commands that cannot do meaningful work in the current session are
+omitted; a direct attempt is rejected with the missing or inactive capability
+named explicitly. For example, mixed-drafting commands such as `/suggest` and
+`/use` appear only when mixed drafting is active, while `/random`, `/register`,
+and `/character` require adaptive delivery. Calling `/help` therefore describes
+the command surface that is actually usable rather than a larger global list.
+
+The underlying command and capability registries remain frozen catalogs, so
+tests and future web or Electron adapters can inspect every supported command
+without starting a model-backed session.
+
 ## Themes
 
 Use `/theme` to preview every theme and `/theme <name>` to switch immediately:
@@ -23,15 +45,27 @@ without removing labels or hierarchy.
 ## Labelling game
 
 The consolidated labelling harness serves both the blinded superego-taxonomy
-packet and the tutor-stub communicative-impasse corpus. Launch it directly or
-through the tutor-stub CLI:
+packet and the tutor-stub communicative-impasse corpus. A plain interactive
+launch now starts with a two-mode keyboard selector:
+
+```bash
+npm run tutor:stub
+```
+
+Choose `Tutor chat` (the default) or `Labelling game` with Up/Down and Enter.
+Quitting the labelling game returns to the selector, so the same terminal can
+switch back to chat. Explicit presets and piped/non-TTY runs skip the selector.
+
+For scripts or direct launches:
 
 ```bash
 npm run labelling-game -- --dataset tutor-stub-impasses --coder rater-A
+npm run tutor:stub -- --launch-mode labelling-game --label-dataset tutor-stub-impasses --label-coder rater-A
 npm run tutor:stub -- --labelling-game --label-dataset superego-taxonomy --label-coder rater-A
 ```
 
-Omit the dataset and coder flags to choose them interactively. The same packets
+`--labelling-game` remains a compatibility alias. Omit the dataset and coder
+flags to choose them interactively. The same packets
 are available in the browser at `http://localhost:8081/human-coding-admin`
 after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
 impasse judgments are stored as structured per-rater JSON sidecars.
@@ -49,6 +83,19 @@ List the available cards, then launch one:
 npm run tutor:stub:workplan -- --list-curriculum-modules
 npm run tutor:stub:workplan -- --module blueprint-composition
 ```
+
+Inside any normal tutor-stub session, use the live picker instead:
+
+```text
+/board
+/board blueprint-composition
+```
+
+`/board` opens a scrolling keyboard picker in a TTY; Up/Down, Page Up/Down,
+Home/End, and Enter navigate it, while Escape returns to the current inquiry.
+The direct form works in pipes and scripts. Selecting a card closes the current
+inquiry cleanly and starts a fresh non-DAG reflective inquiry while preserving
+the active learner profile, model routing, and dialogue settings.
 
 The selected card becomes a reflective inquiry module: its problem frame,
 dependencies, acceptance details, links, and declared completion gate are

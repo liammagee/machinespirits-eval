@@ -62,6 +62,31 @@ npm run seed
 
 ## Usage
 
+### Tutor-stub super app
+
+Tutor-stub is the interactive tutoring workbench: play the learner, coach the
+tutor privately, let an automated learner continue, switch scenarios and
+profiles, use proof-DAG or curriculum modes, speak through the voice companion,
+and inspect the resulting analysis, traces, transcript, replay, and learning
+summary.
+
+```bash
+# No model call: browse capabilities and practical entry points
+npm run tutor:stub -- --features
+
+# Full interactive scaffold with optional AI learner drafts
+npm run tutor:stub:scaffold:mixed
+
+# Guided tour, or reflective tutoring over a live workplan module
+npm run tutor:stub:demo
+npm run tutor:stub:workplan -- --module <workplan-item-id>
+```
+
+See [the terminal guide](docs/tutor-stub-cli.md) for themes, voice, settings,
+commands, saved scenarios, and compatibility details. Inside a session, type
+`/` to filter commands, `/features` for the capability map, or `/help` for
+command groups.
+
 ### CLI (primary interface)
 
 ```bash

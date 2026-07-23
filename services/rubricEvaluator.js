@@ -1051,6 +1051,7 @@ function parseJudgeResponse(responseText) {
 export async function evaluateSuggestion(suggestion, scenario, context = {}, overrides = {}) {
   const startTime = Date.now();
   const judge = getAvailableJudge(overrides);
+  let effectiveJudge = judge;
 
   try {
     const prompt = buildEvaluationPrompt(suggestion, scenario, context);
@@ -1064,6 +1065,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       console.warn('[rubricEvaluator] Primary judge returned empty response, trying fallback...');
       const fallbackConfig = getFallbackJudge();
       if (fallbackConfig) {
+        effectiveJudge = fallbackConfig;
         responseText = await callJudgeModelWithConfig(prompt, fallbackConfig);
         debugLog('[rubricEvaluator] Fallback response (first 300 chars):', responseText.slice(0, 300));
       }
@@ -1080,6 +1082,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       console.warn(`[rubricEvaluator] Parse failed (${parseError.message}), retrying with fallback...`);
       const fallbackConfig = getFallbackJudge();
       if (fallbackConfig) {
+        effectiveJudge = fallbackConfig;
         let retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
         if (retryText && retryText.trim()) {
           try {
@@ -1164,7 +1167,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       requiredMissing: parsed.validation?.required_missing || [],
       forbiddenFound: parsed.validation?.forbidden_found || [],
       summary: parsed.summary,
-      judgeModel: normalizeJudgeLabel(judge.provider, judge.model),
+      judgeModel: normalizeJudgeLabel(effectiveJudge.provider, effectiveJudge.model),
       evaluationTimeMs: Date.now() - startTime,
     };
   } catch (error) {
@@ -1175,7 +1178,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       baseScore: null,
       recognitionScore: null,
       error: error.message,
-      judgeModel: normalizeJudgeLabel(judge.provider, judge.model),
+      judgeModel: normalizeJudgeLabel(effectiveJudge.provider, effectiveJudge.model),
       evaluationTimeMs: Date.now() - startTime,
     };
   }
@@ -3250,7 +3253,7 @@ Score EACH tutor turn listed above independently. For each turn:
 - Consider ONLY the dialogue context up to and including that turn (mentally ignore later turns)
 - Evaluate the suggestion on its own merits within the dialogue so far
 
-CROSS-TURN CALIBRATION: For modulation dimensions (tutor_adaptation, learner_growth, dialectical_responsiveness), a score of 4 or 5 requires EVIDENCE OF CHANGE compared to prior turns — not just presence of adaptive language. At Turn 1, there are no prior turns to compare against, so base your score on the quality of the tutor's initial responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's approach changed since the previous turn? What specific evidence shows adaptation?" A score of 5 requires explicit cross-turn development, not just good single-turn quality.
+CROSS-TURN CALIBRATION: For the cross-turn tutor dimension adaptive_responsiveness, a score of 4 or 5 requires EVIDENCE OF CHANGE compared to prior turns — not just presence of adaptive language. At Turn 1, there are no prior turns to compare against, so base your score on the quality of the tutor's initial responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's approach changed since the previous turn? What specific evidence shows adaptation?" A score of 5 requires explicit cross-turn development, not just good single-turn quality.
 
 For each turn, include:
 - **scores**: 1-5 rating per dimension with brief reasoning
@@ -3332,8 +3335,8 @@ function buildPerTurnTutorEvaluationPrompt(params) {
       `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
       `The dialogue transcript is truncated to this point — you do NOT see future turns. ` +
       `Evaluate this response on its own merits within the dialogue context so far.\n\n` +
-      `CROSS-TURN CALIBRATION: For modulation dimensions (tutor_adaptation, learner_growth, ` +
-      `dialectical_responsiveness), a score of 4 or 5 requires EVIDENCE OF CHANGE compared ` +
+      `CROSS-TURN CALIBRATION: For the cross-turn tutor dimension adaptive_responsiveness, ` +
+      `a score of 4 or 5 requires EVIDENCE OF CHANGE compared ` +
       `to prior turns — not just presence of adaptive language. At Turn 1, there are no prior ` +
       `turns to compare against, so base your score on the quality of the tutor's initial ` +
       `responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's ` +

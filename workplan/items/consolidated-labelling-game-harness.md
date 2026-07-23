@@ -9,9 +9,10 @@ source: manual
 created: 2026-07-22
 updated: 2026-07-22
 verification: Both datasets load and save through /human-coding-admin and the
-  shared terminal flow; tutor-stub launches that flow with --labelling-game;
-  route, store, CLI, syntax, and in-browser checks pass without exposing the
-  taxonomy key early.
+  shared terminal flow; a plain tutor-stub launch switches between default chat
+  and the labelling game, while explicit launch flags remain scriptable; route,
+  store, CLI, syntax, and in-browser checks pass without exposing the taxonomy
+  key early.
 claim_status: methods
 depends_on: []
 links:
@@ -40,6 +41,9 @@ Acceptance boundaries:
 - Human labels remain separate per coder and the taxonomy key remains sealed
   until the original completion gate permits comparison.
 - The tutor-stub CLI can launch the same harness without starting a model call.
+- A plain interactive tutor-stub launch defaults to chat, can switch into the
+  labelling game, and returns to the launcher when the game is quit; explicit
+  presets, flags, and non-TTY runs skip the picker.
 - The impasse form records presence, type(s), tutor response, resolution within
   two turns, and notes against the 29 frozen candidate episodes.
 
@@ -49,3 +53,9 @@ standalone terminal command, and tutor-stub launch flags. Targeted route/store
 and CLI tests, existing tutor-stub interaction tests, ESLint, workplan
 validation, and a live in-app-browser pass over both 40-item and 29-item
 packets passed. No real human labels or hidden-key comparisons were created.
+
+2026-07-22 Codex: Added the top-level tutor-stub mode picker with Tutor chat as
+the default and Labelling game as the alternate, plus the scriptable
+`--launch-mode` option. Quitting the labelling flow returns to the picker so a
+single terminal can switch back into chat. The end-to-end PTY check and the
+broader 72-test interactive tutor-stub suite pass.

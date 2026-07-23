@@ -10,6 +10,7 @@ content/
 public/chat/vendor/
 .test-tmp/
 .codex-tmp/
+tmp/
 PLAN_2_0/
 config/poetics-calibration/**/rendered/
 notes/*.snapshot.json

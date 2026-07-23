@@ -37,9 +37,34 @@ function plainTerminalText(value) {
     .replace(/\r/gu, '');
 }
 
+test('tutor-stub exposes a no-model capability map with practical quick starts', () => {
+  const result = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--features'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: { ...process.env, NO_COLOR: '1' },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /tutor-stub capability map/u);
+  assert.match(result.stdout, /participate\s+human learner.*private coach.*automated learner/su);
+  assert.match(result.stdout, /teach\s+open topics.*proof-DAG scenarios.*reflective curricula/su);
+  assert.match(result.stdout, /evaluate\s+auto-eval.*QA matrices.*ABM panels.*frozen replay/su);
+  assert.match(result.stdout, /npm run tutor:stub:scaffold:mixed/u);
+  assert.match(result.stdout, /curriculum\/ai-foundations\.curriculum\.yaml --module AF1/u);
+  assert.match(result.stdout, /npm run tutor:stub:workplan -- --module <id>/u);
+});
+
 test('tutor-stub dry run exposes human discourse trace schemas', () => {
   const config = tutorStubDryRun(['--dag-mode', 'defeasible-human-scaffold']);
 
+  assert.equal(config.capabilities.schema, 'machinespirits.tutor-stub.capability-snapshot.v1');
+  assert.equal(config.capabilities.registryVersion, 1);
+  assert.equal(config.capabilities.mode, 'scaffold');
+  assert.equal(config.capabilities.compatibility.valid, true);
+  assert.ok(config.capabilities.active.includes('learner_reasoning'));
+  assert.ok(config.capabilities.active.includes('adaptive_delivery'));
+  assert.equal(config.capabilities.capabilities.mixed_drafting.available, true);
+  assert.equal(config.capabilities.capabilities.mixed_drafting.active, false);
   assert.equal(config.humanDiscourse.schema, 'machinespirits.tutor-stub.human-discourse-run-config.v1');
   assert.equal(config.humanDiscourse.dagMode, 'defeasible_human_scaffold');
   assert.equal(config.humanDiscourse.strictAuditDag, true);
@@ -458,6 +483,8 @@ process.stdin.on('end', () => {
         '0',
         '--release-speed',
         '1',
+        '--motion',
+        'subtle',
         '--no-closeout-report',
         '--no-stream',
         '--no-trace',
@@ -1096,7 +1123,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/release-notes\n/id\n/clarify cupel\n/quit\n',
+      input: '/help\n/features\n/release-notes\n/id\n/clarify cupel\n/suggest\n/quit\n',
       env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
     },
   );
@@ -1108,6 +1135,9 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /\/transcript \[no-open\]/u);
   assert.match(result.stdout, /\/release-notes/u);
+  assert.match(result.stdout, /\/features/u);
+  assert.match(result.stdout, /tutor-stub capability map/u);
+  assert.match(result.stdout, /active now > learner · scenario:/u);
   assert.match(result.stdout, /release notes > last 24 hours/u);
   assert.match(result.stdout, /effect >/u);
   assert.match(result.stdout, /look for >/u);
@@ -1115,9 +1145,11 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
   assert.match(result.stdout, /clipboard unavailable/u);
-  assert.match(result.stdout, /\/suggest.*profile expression/u);
-  assert.match(result.stdout, /\/use.*profile expression/u);
+  assert.doesNotMatch(result.stdout, /\/suggest.*profile expression/u);
+  assert.doesNotMatch(result.stdout, /\/use.*profile expression/u);
+  assert.match(result.stdout, /\/transcript opens raw, script, swimlane/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
+  assert.match(result.stdout, /\/suggest is unavailable in this direct session: mixed learner drafting is not active/u);
 });
 
 test('detour slash commands reprise the latest tutor utterance before returning to the scene', () => {
@@ -1180,7 +1212,13 @@ test('tutor-stub /id exposes the local trace path for Codex debugging', () => {
     assert.match(result.stdout, /run id:/u);
     assert.match(result.stdout, new RegExp(`trace: ${tmp.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}`));
     assert.match(result.stdout, /clipboard unavailable/u);
-    assert.ok(fs.readdirSync(tmp).some((name) => name.endsWith('.jsonl')));
+    const traceFiles = fs.readdirSync(tmp).filter((name) => name.endsWith('.jsonl'));
+    assert.ok(traceFiles.length > 0);
+    const traceText = traceFiles.map((name) => fs.readFileSync(path.join(tmp, name), 'utf8')).join('\n');
+    assert.match(traceText, /"type":"capability_snapshot_resolved"/u);
+    assert.match(traceText, /"schema":"machinespirits\.tutor-stub\.capability-snapshot\.v1"/u);
+    assert.match(traceText, /"mode":"direct"/u);
+    assert.match(traceText, /"compatibility":\{"valid":true,"issues":\[\]\}/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

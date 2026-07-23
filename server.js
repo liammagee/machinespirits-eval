@@ -182,8 +182,8 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
       <div class="cta">/adjudication →</div>
     </a>
     <a class="card panel indigo" href="/human-coding-admin">
-      <div class="t">Superego coding admin</div>
-      <div class="d">Code the Paper 2.0 superego critique taxonomy with category guidance and analyzer-compatible rater files.</div>
+      <div class="t">Labelling game</div>
+      <div class="d">Label the blinded superego taxonomy or tutor-stub impasse corpus with dataset-specific guidance and per-rater files.</div>
       <div class="cta">/human-coding-admin →</div>
     </a>
     <a class="card panel" href="/pilot-admin">

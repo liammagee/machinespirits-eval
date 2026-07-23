@@ -5,6 +5,11 @@ against a shared design + behaviour framework. There is **no build step**: the `
 file *is* the source. Design is decoupled from content by living in separate asset files,
 so a content edit can never clobber the design.
 
+Techne is the long-form editorial layer of the broader Machine Spirits visual
+identity. For the shared website-derived palette, Swiss-grid chrome, portable
+embedding helper, and the operational-versus-editorial boundary, see
+`docs/design/machinespirits-house-style.md`.
+
 > Why not a markdown→HTML pipeline? We tried one. These docs are component-heavy
 > (JS charts, filter grids, glossary tooltips, transcripts) — closer to a small
 > dashboard than an essay — so a markdown source ends up ~⅓ raw-HTML islands and

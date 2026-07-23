@@ -141,8 +141,9 @@ function unregisterStream(streamId) {
   }
 }
 
-// Periodic check for hung streams (runs every 5 minutes)
-setInterval(
+// Periodic check for hung streams (runs every 5 minutes). The watchdog must not
+// keep one-shot imports, tests, or CLI processes alive when no streams exist.
+const streamWatchdog = setInterval(
   () => {
     const now = Date.now();
     activeEvalStreams.forEach((stream, streamId) => {
@@ -167,6 +168,7 @@ setInterval(
   },
   5 * 60 * 1000,
 ); // Check every 5 minutes
+streamWatchdog.unref?.();
 
 // Path to prompts directory
 const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
@@ -188,6 +190,11 @@ function parseJsonSafe(value) {
   } catch {
     return null;
   }
+}
+
+function isSafeRouteFileName(value) {
+  if (typeof value !== 'string' || !value || value.includes('\0')) return false;
+  return value === path.basename(value) && value === path.win32.basename(value) && value !== '.' && value !== '..';
 }
 
 function runPaperBugAudit({ cwd, claimReportPath, includeAllRuns = false, strict = false, skipCommandChecks = true }) {
@@ -2171,6 +2178,9 @@ router.get('/prompts', (req, res) => {
  */
 router.get('/prompts/:name', (req, res) => {
   try {
+    if (!isSafeRouteFileName(req.params.name)) {
+      return res.status(400).json({ error: 'Invalid prompt name' });
+    }
     const filename = req.params.name.endsWith('.md') ? req.params.name : `${req.params.name}.md`;
     const filePath = path.join(PROMPTS_DIR, filename);
 
@@ -2442,6 +2452,9 @@ router.get('/stream/run', async (req, res) => {
 router.get('/trajectory/:profile', (req, res) => {
   try {
     const { profile } = req.params;
+    if (!isSafeRouteFileName(profile)) {
+      return res.status(400).json({ error: 'Invalid profile name' });
+    }
     const last = parseInt(req.query.last) || 5;
     const all = req.query.all === 'true';
 
@@ -2714,6 +2727,10 @@ router.get('/docs/:name', (req, res) => {
     if (docName.startsWith('research:')) {
       docName = docName.substring('research:'.length);
       docsDir = RESEARCH_DOCS_DIR;
+    }
+
+    if (!isSafeRouteFileName(docName)) {
+      return res.status(400).json({ error: 'Invalid documentation name' });
     }
 
     const filename = docName.endsWith('.md') ? docName : `${docName}.md`;

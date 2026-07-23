@@ -50,7 +50,7 @@ const STATIC_SURFACES = [
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
   ['/adjudication', 'public/adjudication'], // A19 blinded human-adjudication forms
-  ['/human-coding-admin', 'public/human-coding-admin'], // Paper 2.0 superego-taxonomy coding
+  ['/human-coding-admin', 'public/human-coding-admin'], // consolidated human labelling game
   ['/eval', 'public/eval'], // static research explainers and companion notes
   ['/components', 'public/components'], // shared design system (techne.css) + UI components
   ['/docs', 'docs'], // documentation tree (poetics pre-mounts /docs/research)

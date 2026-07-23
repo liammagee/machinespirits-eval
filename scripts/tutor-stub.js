@@ -320,6 +320,20 @@ import {
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
 import {
+  tutorStubCanonicalCommandToken,
+  tutorStubCommandAvailable,
+  tutorStubCommandHelpRows,
+  tutorStubCommandReturnsToScene,
+  tutorStubCommandTokens,
+  tutorStubCommandUnavailableReasons,
+  tutorStubStaticCommandCompletions,
+} from '../services/tutorStubCommandRegistry.js';
+import {
+  assertTutorStubCapabilityCompatibility,
+  resolveTutorStubCapabilities,
+  tutorStubCapabilityFeatureRows,
+} from '../services/tutorStubCapabilities.js';
+import {
   TUTOR_STUB_CLI_MOTION_IDS,
   TUTOR_STUB_CLI_THEME_IDS,
   createTutorStubCliPresentation,
@@ -536,151 +550,7 @@ const REGISTER_TEMPERATURE_POLICIES = new Set([
 const DEFAULT_INTERACTIVE_DEMO_TURNS = 3;
 const MAX_INTERACTIVE_DEMO_TURNS = 8;
 
-const SLASH_COMMANDS = [
-  '/demo',
-  '/theme',
-  '/motion',
-  '/random',
-  '/register',
-  '/character',
-  '/analysis',
-  '/a',
-  '/field',
-  '/f',
-  '/viz',
-  '/v',
-  '/visualization',
-  '/clarify',
-  '/explain',
-  '/c',
-  '/report',
-  '/r',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/up',
-  '/down',
-  '/feedback',
-  '/tune',
-  '/settings',
-  '/status',
-  '/release-notes',
-  '/debug',
-  '/mode',
-  '/learner',
-  '/coach',
-  '/auto',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/suggest',
-  '/clue',
-  '/hint',
-  '/profile',
-  '/scenario',
-  '/use',
-  '/accept',
-  '/regen',
-  '/reset',
-  '/clear',
-  '/help',
-  '/quit',
-  '/exit',
-];
-
-const PASSTHROUGH_SLASH_COMMANDS = [
-  '/theme',
-  '/motion',
-  '/settings',
-  '/status',
-  '/release-notes',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/scenario',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/reset',
-  '/clear',
-  '/help',
-  '/quit',
-  '/exit',
-];
-
-const SCENE_RETURN_SLASH_COMMANDS = new Set([
-  '/help',
-  '/theme',
-  '/motion',
-  '/random',
-  '/register',
-  '/character',
-  '/status',
-  '/release-notes',
-  '/debug',
-  '/settings',
-  '/transcript',
-  '/html',
-  '/voice',
-  '/director',
-  '/notes',
-  '/analysis',
-  '/a',
-  '/field',
-  '/f',
-  '/viz',
-  '/v',
-  '/visualization',
-  '/clarify',
-  '/explain',
-  '/c',
-  '/report',
-  '/r',
-  '/id',
-  '/turn-id',
-  '/debug-id',
-  '/profile',
-  '/scenario',
-]);
-
-const SETTINGS_COMPLETIONS = [
-  ...TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/settings theme ${theme}`),
-  ...TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/settings motion ${motion}`),
-  '/settings model ',
-  '/settings models',
-  '/settings models all ',
-  '/settings models tutor ',
-  '/settings models classifier ',
-  '/settings models reasoning ',
-  '/settings models learner ',
-  '/settings temp ',
-  '/settings dropout ',
-  '/settings release-speed ',
-  '/settings forget',
-  '/settings policy add state',
-  '/settings policy add field',
-  '/settings policy remove state',
-  '/settings policy remove field',
-  '/settings policy clear',
-  '/settings policy threshold ',
-];
-
-const RANDOM_PERFORMANCE_COMPLETIONS = ['/random on', '/random off', '/random status'];
-
 const EXPLICIT_PERFORMANCE_CLEAR_WORDS = new Set(['auto', 'clear', 'off', 'reset']);
-
-const VOICE_COMPLETIONS = [
-  '/voice on',
-  '/voice open',
-  '/voice status',
-  '/voice off',
-  ...TUTOR_STUB_VOICE_MODELS.map((model) => `/voice model ${model}`),
-  '/voice speaker marin',
-];
 
 const CUSTOM_LEARNER_PROFILE_EXAMPLE =
   'The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.';
@@ -774,6 +644,8 @@ const { values: args, positionals } = parseArgs({
     'list-curriculum-modules': { type: 'boolean', default: false },
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
+    features: { type: 'boolean', default: false },
+    'launch-mode': { type: 'string', default: process.env.TUTOR_STUB_LAUNCH_MODE || '' },
     'labelling-game': { type: 'boolean', default: false },
     'label-dataset': { type: 'string', default: '' },
     'label-coder': { type: 'string', default: '' },
@@ -962,13 +834,17 @@ Options:
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
+  --launch-mode <chat|labelling-game>
+                         choose the top-level launch surface; plain interactive
+                         launches show a keyboard mode picker (default: chat)
   --labelling-game       run the consolidated human-labelling harness instead
-                         of starting a tutoring dialogue
+                         of starting a tutoring dialogue (compatibility alias)
   --label-dataset <id>   superego-taxonomy or tutor-stub-impasses
   --label-coder <id>     rater id for the labelling output sidecar
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
+  --features             show the tutor-stub capability map and quick starts
   --topic <text>         tutoring topic (default: ${STUB.topic})
   --learner <text>       learner sketch
   --goal <text>          tutor objective
@@ -1077,6 +953,8 @@ Interactive commands:
                          test and explicitly promote or revert a tutor version
   /scenario              choose another scenario and start it as a new inquiry
   /scenario <id>         start a named scenario directly
+  /board                 choose a live workplan card and start a reflective inquiry
+  /board <item-id>       start a named workplan card directly
   /voice                 start or reopen the browser microphone companion
   /voice status|off      inspect or stop the local voice bridge
   /voice model <model>   choose ${TUTOR_STUB_VOICE_MODELS.join(' or ')}
@@ -1096,6 +974,7 @@ Interactive commands:
   /settings forget       stop using the saved defaults after this session
   /release-notes [hours]
                          show recent tutor-stub changes and their expected effects
+  /features              show the capability map, quick starts, and active mode
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
   /profile               show the active suggested-learner profile
@@ -2698,6 +2577,136 @@ function printAutomatedLearnerProfiles() {
   console.log(learnerProfileListText());
 }
 
+const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
+  {
+    id: 'chat',
+    label: 'Tutor chat',
+    description: 'Open the default learner–tutor conversation.',
+  },
+  {
+    id: 'labelling-game',
+    label: 'Labelling game',
+    description: 'Human-label the superego taxonomy or tutor-stub impasse corpus.',
+  },
+]);
+
+function normalizeTutorStubLaunchMode(value, { allowEmpty = false } = {}) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/gu, '-');
+  if (!normalized && allowEmpty) return '';
+  const aliases = new Map([
+    ['chat', 'chat'],
+    ['default', 'chat'],
+    ['tutor', 'chat'],
+    ['tutor-chat', 'chat'],
+    ['labelling', 'labelling-game'],
+    ['labeling', 'labelling-game'],
+    ['labelling-game', 'labelling-game'],
+    ['labeling-game', 'labelling-game'],
+  ]);
+  const resolved = aliases.get(normalized);
+  if (!resolved) {
+    throw new Error(`unknown --launch-mode "${value}"; use chat or labelling-game`);
+  }
+  return resolved;
+}
+
+function defaultLaunchModePickerAvailable() {
+  return Boolean(
+    process.argv.slice(2).length === 0 && input.isTTY && output.isTTY && typeof input.setRawMode === 'function',
+  );
+}
+
+async function pickTutorStubLaunchModeWithKeyboard(defaultMode = 'chat') {
+  const defaultId = normalizeTutorStubLaunchMode(defaultMode);
+  let selectedIndex = Math.max(
+    0,
+    TUTOR_STUB_LAUNCH_MODES.findIndex((entry) => entry.id === defaultId),
+  );
+  let renderedLineCount = 0;
+  const clearRenderedMenu = () => {
+    if (!renderedLineCount) return;
+    moveCursor(output, 0, -renderedLineCount);
+    for (let index = 0; index < renderedLineCount; index += 1) {
+      cursorTo(output, 0);
+      clearLine(output, 0);
+      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+    }
+    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+    renderedLineCount = 0;
+  };
+  const renderMenu = () => {
+    clearRenderedMenu();
+    const width = Math.max(58, Math.min(Number(output.columns || 100), 120));
+    const selected = TUTOR_STUB_LAUNCH_MODES[selectedIndex];
+    const lines = [
+      ...TUTOR_STUB_LAUNCH_MODES.map((entry, index) => {
+        const active = index === selectedIndex;
+        const plain = `${active ? '›' : ' '} ${entry.label.padEnd(20)} ${oneLine(entry.description, {
+          max: Math.max(24, width - 26),
+        })}`;
+        return active ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+      }),
+      `${C.brightYellow}${C.bold}  launches >${C.reset} ${selected.label}`,
+      `${C.dim}  ↑/↓ move · Enter launch · Esc quit · Tutor chat is the default${C.reset}`,
+    ];
+    for (const line of lines) output.write(`${line}\n`);
+    renderedLineCount = lines.length;
+  };
+
+  const wasRaw = Boolean(input.isRaw);
+  if (!wasRaw) input.setRawMode(true);
+
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = (selection) => {
+      if (finished) return;
+      finished = true;
+      input.removeListener('data', onData);
+      if (!wasRaw) input.setRawMode(false);
+      clearRenderedMenu();
+      resolve(selection);
+    };
+    const moveSelection = (delta) => {
+      selectedIndex = (selectedIndex + delta + TUTOR_STUB_LAUNCH_MODES.length) % TUTOR_STUB_LAUNCH_MODES.length;
+      renderMenu();
+    };
+    const onData = (chunk) => {
+      const characters = String(chunk || '');
+      for (let index = 0; index < characters.length; index += 1) {
+        const character = characters[index];
+        if (character === '\u0003') return finish(null);
+        if (character === '\u001b') {
+          const arrowPrefix = characters[index + 1];
+          const arrowDirection = characters[index + 2];
+          if ((arrowPrefix === '[' || arrowPrefix === 'O') && ['A', 'B'].includes(arrowDirection)) {
+            moveSelection(arrowDirection === 'A' ? -1 : 1);
+            index += 2;
+            continue;
+          }
+          return finish(null);
+        }
+        if (character === 'k') moveSelection(-1);
+        else if (character === 'j') moveSelection(1);
+        else if (character === '1') {
+          selectedIndex = 0;
+          renderMenu();
+        } else if (character === '2') {
+          selectedIndex = 1;
+          renderMenu();
+        } else if (character === '\r' || character === '\n') {
+          return finish(TUTOR_STUB_LAUNCH_MODES[selectedIndex]);
+        }
+      }
+    };
+    input.on('data', onData);
+    input.resume();
+    renderMenu();
+  });
+}
+
 function resolveWorldRef(ref) {
   if (!ref || ref === 'none' || ref === 'off' || ref === 'false') return null;
 
@@ -2803,6 +2812,130 @@ async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
       `${C.dim}  setting > ${oneLine(selectedEntry.description, { max: Math.max(36, width - 12) })}${C.reset}`,
       `${C.dim}  discipline > ${oneLine(selectedEntry.discipline, { max: Math.max(30, width - 15) })}${C.reset}`,
     ];
+    for (const line of lines) output.write(`${line}\n`);
+    renderedLineCount = lines.length;
+  };
+
+  emitKeypressEvents(input);
+  const priorKeypressListeners = input.listeners('keypress');
+  for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
+  const wasRaw = Boolean(input.isRaw);
+  if (!wasRaw) input.setRawMode(true);
+
+  return new Promise((resolve) => {
+    const finish = (selection) => {
+      input.removeListener('keypress', onKeypress);
+      for (const listener of priorKeypressListeners) input.on('keypress', listener);
+      if (!wasRaw) input.setRawMode(false);
+      clearRenderedMenu();
+      resolve(selection);
+    };
+    const moveSelection = (delta) => {
+      selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+      renderMenu();
+    };
+    const onKeypress = (character, key = {}) => {
+      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
+        finish(null);
+        return;
+      }
+      if (key.name === 'up' || character === 'k') {
+        moveSelection(-1);
+        return;
+      }
+      if (key.name === 'down' || character === 'j') {
+        moveSelection(1);
+        return;
+      }
+      if (key.name === 'pageup') {
+        moveSelection(-viewportHeight);
+        return;
+      }
+      if (key.name === 'pagedown') {
+        moveSelection(viewportHeight);
+        return;
+      }
+      if (key.name === 'home') {
+        selectedIndex = 0;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'end') {
+        selectedIndex = entries.length - 1;
+        renderMenu();
+        return;
+      }
+      if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+    };
+    input.on('keypress', onKeypress);
+    input.resume();
+    renderMenu();
+  });
+}
+
+async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
+  const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
+  const modulesById = new Map((bundle.curriculum.modules || []).map((module) => [module.id, module]));
+  const entries = listTutorStubCurriculumModules(bundle).map((entry) => ({
+    ...entry,
+    module: modulesById.get(entry.id) || null,
+  }));
+  if (!entries.length) return null;
+
+  let selectedIndex = Math.max(
+    0,
+    entries.findIndex((entry) => entry.id === defaultModuleRef),
+  );
+  const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 9))));
+  let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+  let renderedLineCount = 0;
+
+  const keepSelectionVisible = () => {
+    if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+    if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
+  };
+  const clearRenderedMenu = () => {
+    if (!renderedLineCount) return;
+    moveCursor(output, 0, -renderedLineCount);
+    for (let index = 0; index < renderedLineCount; index += 1) {
+      cursorTo(output, 0);
+      clearLine(output, 0);
+      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+    }
+    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+    renderedLineCount = 0;
+  };
+  const renderMenu = () => {
+    keepSelectionVisible();
+    clearRenderedMenu();
+    const width = Math.max(58, Math.min(Number(output.columns || 100), 150));
+    const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+    const selectedEntry = entries[selectedIndex];
+    const stateLabel = [selectedEntry.priority, selectedEntry.status, selectedEntry.owner].filter(Boolean).join(' · ');
+    const verification = selectedEntry.module?.workplan_binding?.declared_completion_verification || '';
+    const lines = [
+      `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+      ...visible.map((entry, visibleIndex) => {
+        const absoluteIndex = viewportStart + visibleIndex;
+        const selected = absoluteIndex === selectedIndex;
+        const plain = `${selected ? '›' : ' '} ${entry.id.padEnd(38)} ${oneLine(entry.title, {
+          max: Math.max(18, width - 44),
+        })}`;
+        return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+      }),
+      `${C.dim}${
+        viewportStart + viewportHeight < entries.length
+          ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+          : '  '
+      }${C.reset}`,
+      `${C.brightYellow}${C.bold}  inquiry >${C.reset} ${oneLine(selectedEntry.essentialQuestion, {
+        max: Math.max(36, width - 12),
+      })}`,
+      `${C.dim}  state > ${stateLabel || 'open'}${C.reset}`,
+      verification
+        ? `${C.dim}  verifies > ${oneLine(verification, { max: Math.max(34, width - 14) })}${C.reset}`
+        : null,
+    ].filter(Boolean);
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
   };
@@ -4424,7 +4557,7 @@ function compactInterimCliHintPanels(active) {
     {
       label: 'CLI hint',
       tone: 'neutral',
-      text: 'type / to browse | type to filter | Tab completes | /help explains',
+      text: 'type / to browse | type to filter | Tab completes | /help groups commands',
     },
   ];
 
@@ -8577,17 +8710,57 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
   }
 }
 
+function printTutorStubFeatureMap(state = null) {
+  const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
+
+  console.log(`${C.brightCyan}${C.bold}tutor-stub capability map${C.reset}`);
+  for (const row of featureRows) {
+    console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.description}`);
+  }
+
+  console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
+  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub:scaffold:mixed`);
+  console.log(`${C.cyan}  guided tour${C.reset} npm run tutor:stub:demo`);
+  console.log(
+    `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
+  );
+  console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
+  console.log(`${C.cyan}  board      ${C.reset} /board inside any normal tutor-stub session`);
+  console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
+  console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
+
+  if (state) {
+    const mode = state.passthrough?.enabled ? 'passthrough' : state.interaction?.mode || 'learner';
+    const content = state.curriculum?.module?.title
+      ? `curriculum: ${state.curriculum.module.title}`
+      : state.world?.title
+        ? `scenario: ${state.world.title}`
+        : `topic: ${state.topic}`;
+    const hiddenAlwaysOnCapabilities = new Set(['public_dialogue', 'presentation', 'transcript']);
+    const activeMechanisms = (state.capabilities?.active || [])
+      .filter((id) => !hiddenAlwaysOnCapabilities.has(id))
+      .map((id) => state.capabilities.capabilities[id]?.label)
+      .filter(Boolean);
+    console.log(
+      `\n${C.brightGreen}${C.bold}active now >${C.reset} ${mode} · ${content}${activeMechanisms.length ? ` · ${activeMechanisms.join(' · ')}` : ''}`,
+    );
+  }
+
+  console.log(
+    `${C.dim}  use --help for launch flags; inside a session, type / to filter commands or /help for groups${C.reset}\n`,
+  );
+}
+
 function printInteractiveHelp(state = null) {
-  if (state?.passthrough?.enabled) {
+  const mode = state?.passthrough?.enabled ? 'passthrough' : 'normal';
+  const commandOptions = { mode, capabilities: state?.capabilities || null };
+  const commandAvailable = (value) => tutorStubCommandAvailable(value, commandOptions);
+  if (mode === 'passthrough') {
     console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
     console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
-    console.log(`${C.cyan}  model${C.reset}      /settings model [provider.alias]`);
-    console.log(
-      `${C.cyan}  inspect${C.reset}    /status · /release-notes · /transcript [no-open] · /voice · /director · /id`,
-    );
-    console.log(`${C.cyan}  appearance${C.reset} /theme · /motion`);
-    console.log(`${C.cyan}  setup${C.reset}      /scenario · /reset`);
-    console.log(`${C.cyan}  finish${C.reset}     /quit`);
+    for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
+      console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
+    }
     console.log(
       `${C.dim}  Each learner line goes directly to the speaker with the unchanged system setup and complete public message history. No classifier, reasoning tracker, register selection, response check, release planner, or auxiliary model call runs.${C.reset}\n`,
     );
@@ -8596,47 +8769,56 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
   );
-  console.log(`${C.cyan}  demonstrate${C.reset}  /demo [turns] · guided live tour with analysis and HTML evidence`);
-  console.log(`${C.cyan}  take part${C.reset}    /learner · /coach [suggestion] · /auto [turns] · /mode`);
-  console.log(
-    `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
-  );
-  console.log(
-    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
-  );
-  console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
-  console.log(`${C.cyan}  direct${C.reset}       /register <style> · /character <part> · /random`);
-  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
-  console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
-  console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
+  for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
+    console.log(`${C.cyan}  ${row.label.padEnd(12)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
+  }
   console.log(
     `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
   );
   console.log(
     `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
   );
-  console.log(
-    `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
-  );
+  if (commandAvailable('/feedback')) {
+    console.log(
+      `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
+    );
+  }
   console.log(
     `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
   );
   console.log(
     `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
   );
-  console.log(
-    `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-  );
+  if (commandAvailable('/random')) {
+    console.log(
+      `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
+    );
+  }
+  if (commandAvailable('/suggest')) {
+    console.log(
+      `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
+    );
+  } else {
+    console.log(
+      `${C.dim}  /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
+    );
+  }
   console.log(
     `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
   );
-  console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
+  if (commandAvailable('/board')) {
+    console.log(
+      `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
+    );
+  }
+  if (state?.capabilities?.capabilities?.learning_summary?.active) {
+    console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
+  } else {
+    console.log();
+  }
 }
 
 function printTutorStubReleaseNotes(hoursArg = '') {
@@ -14859,6 +15041,10 @@ async function main() {
     printHelp();
     return;
   }
+  if (args.features) {
+    printTutorStubFeatureMap();
+    return;
+  }
   if (args['list-worlds']) {
     printWorlds();
     return;
@@ -14878,13 +15064,32 @@ async function main() {
     printAutomatedLearnerProfiles();
     return;
   }
-  if (args['labelling-game']) {
+  const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
+  if (args['labelling-game'] && requestedLaunchMode && requestedLaunchMode !== 'labelling-game') {
+    throw new Error('--labelling-game conflicts with --launch-mode chat');
+  }
+  const launchPickerEnabled = !args['labelling-game'] && !requestedLaunchMode && defaultLaunchModePickerAvailable();
+  let launchMode = args['labelling-game'] ? 'labelling-game' : requestedLaunchMode || 'chat';
+  if (launchPickerEnabled) {
+    console.log(`${C.brightCyan}${C.bold}Machine Spirits${C.reset}`);
+    console.log(`${C.dim}Choose a mode${C.reset}\n`);
+    const selection = await pickTutorStubLaunchModeWithKeyboard('chat');
+    if (!selection) return;
+    launchMode = selection.id;
+  }
+  while (launchMode === 'labelling-game') {
+    if (launchPickerEnabled) console.log(`${C.cyan}${C.bold}mode >${C.reset} Labelling game\n`);
     await runLabellingGameCli({
       datasetId: args['label-dataset'],
       coderId: args['label-coder'],
     });
-    return;
+    if (!launchPickerEnabled) return;
+    console.log(`\n${C.dim}Choose a mode${C.reset}\n`);
+    const selection = await pickTutorStubLaunchModeWithKeyboard('chat');
+    if (!selection) return;
+    launchMode = selection.id;
   }
+  if (launchPickerEnabled) console.log(`${C.cyan}${C.bold}mode >${C.reset} Tutor chat\n`);
 
   args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
   args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
@@ -15638,6 +15843,27 @@ async function main() {
         ]
       : [],
   };
+  const capabilitySnapshot = resolveTutorStubCapabilities({
+    passthrough: passthroughEnabled,
+    interactive: interactiveSessionEnabled,
+    world: Boolean(worldBundle),
+    curriculum: Boolean(curriculumBundle),
+    dag: Boolean(args.dag && worldBundle),
+    learnerDag: tutorLearnerDagEnabled,
+    classifier: classifierEnabled,
+    registerSelection: registerSelectionEnabled,
+    mixedLearner: mixedLearnerEnabled,
+    autoLearner: autoLearnerEnabled,
+    demo: Boolean(args.demo),
+    turnFeedback: turnFeedbackEnabled,
+    tuning: tuningMode !== 'off',
+    voice: voiceLaunchRequested,
+    trace: traceEnabled,
+    fieldVisualization: fieldVisualizationEnabled,
+    learningSummary: learningSummaryReportConfig.enabled,
+    responseChecks: !passthroughEnabled,
+  });
+  assertTutorStubCapabilityCompatibility(capabilitySnapshot);
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -15676,6 +15902,7 @@ async function main() {
           },
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
+          capabilities: capabilitySnapshot,
           topic: effectiveTopic,
           curriculum: curriculumBundle
             ? {
@@ -15982,6 +16209,7 @@ async function main() {
       allModelsOverride,
       rememberedSettings: rememberedSettingsConfig,
       passthrough: passthroughConfig,
+      capabilities: capabilitySnapshot,
       humanDiscourse: humanDiscourseConfig,
       scenarioPicker: initialScenarioPickerConfig,
       comprehensionSideState: {
@@ -16202,6 +16430,16 @@ async function main() {
       ...initialScenarioSelection,
     });
   }
+  appendTraceEvent(trace, {
+    type: 'capability_snapshot_resolved',
+    schema: capabilitySnapshot.schema,
+    registryVersion: capabilitySnapshot.registryVersion,
+    mode: capabilitySnapshot.mode,
+    active: capabilitySnapshot.active,
+    available: capabilitySnapshot.available,
+    compatibility: capabilitySnapshot.compatibility,
+    publicTranscriptChanged: false,
+  });
   const interim = createInterimState({ enabled: interimAnimationEnabled });
 
   const state = {
@@ -16224,6 +16462,7 @@ async function main() {
       savedAt: rememberedSettings.savedAt,
     },
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
+    capabilities: capabilitySnapshot,
     passthrough: passthroughConfig,
     learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
     requestedTemperature: temperature,
@@ -17285,27 +17524,24 @@ async function main() {
     const trimmed = raw.trimStart();
     if (!trimmed.startsWith('/')) return { candidates: [], replacement: raw };
 
-    let pool = state.passthrough?.enabled ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
+    const completionMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const commandOptions = { mode: completionMode, capabilities: state.capabilities };
+    const requestedCommand = trimmed.split(/\s+/u)[0];
+    if (
+      tutorStubCanonicalCommandToken(requestedCommand) &&
+      !tutorStubCommandAvailable(requestedCommand, commandOptions)
+    ) {
+      return { candidates: [], replacement: trimmed };
+    }
+
+    let pool = tutorStubCommandTokens(commandOptions);
     if (trimmed.startsWith('/mode ')) {
-      pool = ['/mode learner', '/mode coach', '/mode auto'];
+      pool = tutorStubStaticCommandCompletions('/mode', commandOptions);
     } else if (trimmed.startsWith('/debug ')) {
-      pool = [
-        '/debug on',
-        '/debug on prose',
-        '/debug on technical',
-        '/debug off',
-        '/debug show',
-        '/debug show prose',
-        '/debug show technical',
-        '/debug technical',
-      ];
+      pool = tutorStubStaticCommandCompletions('/debug', commandOptions);
     } else if (trimmed.startsWith('/feedback ')) {
       pool = [
-        '/feedback up',
-        '/feedback down',
-        '/feedback clear',
-        '/feedback on',
-        '/feedback off',
+        ...tutorStubStaticCommandCompletions('/feedback', commandOptions),
         ...Object.keys(TUTOR_STUB_FEEDBACK_REASONS).map((reason) => `/feedback down ${reason}`),
       ];
     } else if (trimmed.startsWith('/down ')) {
@@ -17315,39 +17551,21 @@ async function main() {
         .filter((reason) => reason.startsWith('helpful_') || reason === 'custom')
         .map((reason) => `/up ${reason}`);
     } else if (trimmed.startsWith('/tune ')) {
-      pool = [
-        '/tune status',
-        '/tune on',
-        '/tune capture',
-        '/tune off',
-        '/tune canary',
-        '/tune reasons',
-        '/tune note ',
-        '/tune review',
-        '/tune show ',
-        '/tune approve ',
-        '/tune reject ',
-        '/tune replay ',
-        '/tune validate ',
-        '/tune promote ',
-        '/tune rollback',
-      ];
+      pool = tutorStubStaticCommandCompletions('/tune', commandOptions);
     } else if (trimmed.startsWith('/theme ')) {
-      pool = TUTOR_STUB_CLI_THEME_IDS.map((theme) => `/theme ${theme}`);
+      pool = tutorStubStaticCommandCompletions('/theme', commandOptions);
     } else if (trimmed.startsWith('/motion ')) {
-      pool = TUTOR_STUB_CLI_MOTION_IDS.map((motion) => `/motion ${motion}`);
+      pool = tutorStubStaticCommandCompletions('/motion', commandOptions);
     } else if (trimmed.startsWith('/random ')) {
-      pool = RANDOM_PERFORMANCE_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/random', commandOptions);
     } else if (trimmed.startsWith('/register ')) {
       pool = [
-        '/register auto',
-        '/register status',
+        ...tutorStubStaticCommandCompletions('/register', commandOptions),
         ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
       ];
     } else if (trimmed.startsWith('/character ')) {
       pool = [
-        '/character auto',
-        '/character status',
+        ...tutorStubStaticCommandCompletions('/character', commandOptions),
         ...tutorStubRandomizableActorialPartIds().map((part) => `/character ${part}`),
       ];
     } else if (trimmed.startsWith('/settings model ')) {
@@ -17357,28 +17575,30 @@ async function main() {
       ];
       pool = trimmed === '/settings model ' ? modelCompletions.slice(0, 16) : modelCompletions;
     } else if (trimmed.startsWith('/settings ')) {
-      pool = SETTINGS_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/settings', commandOptions);
     } else if (trimmed.startsWith('/analysis ')) {
-      pool = ['/analysis technical'];
+      pool = tutorStubStaticCommandCompletions('/analysis', commandOptions);
     } else if (trimmed.startsWith('/demo ')) {
-      pool = ['/demo 1', `/demo ${DEFAULT_INTERACTIVE_DEMO_TURNS}`, '/demo 5'];
+      pool = tutorStubStaticCommandCompletions('/demo', commandOptions);
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
       const command = trimmed.startsWith('/html ') ? '/html' : '/transcript';
-      pool = [`${command} no-open`, `${command} write`];
+      pool = tutorStubStaticCommandCompletions(command, commandOptions);
     } else if (trimmed.startsWith('/voice ')) {
-      pool = VOICE_COMPLETIONS;
+      pool = tutorStubStaticCommandCompletions('/voice', commandOptions);
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
-        '/profile list',
-        '/profile stress',
-        '/profile all',
-        '/profile example',
-        '/profile default',
-        '/profile custom ',
+        ...tutorStubStaticCommandCompletions('/profile', commandOptions),
         ...learnerProfileIds().map((profileId) => `/profile ${profileId}`),
       ];
     } else if (trimmed.startsWith('/scenario ')) {
       pool = groupedWorldEntries().map(({ world }) => `/scenario ${world.id}`);
+    } else if (trimmed.startsWith('/board ')) {
+      try {
+        const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
+        pool = listTutorStubCurriculumModules(bundle).map((module) => `/board ${module.id}`);
+      } catch {
+        pool = ['/board'];
+      }
     }
     const matches = pool.filter((candidate) => candidate.startsWith(trimmed));
     return {
@@ -17417,7 +17637,7 @@ async function main() {
         .join('');
       rows.push(`  ${row}`);
     }
-    rows.push(`${C.dim}  keep typing to filter · Tab completes · /help explains each command${C.reset}`);
+    rows.push(`${C.dim}  keep typing to filter · Tab completes · /help shows command groups${C.reset}`);
     return [header, ...rows];
   }
 
@@ -19936,6 +20156,122 @@ async function main() {
     resolveInteractive();
   }
 
+  function relaunchArgumentsForWorkplanModule(moduleId) {
+    const current = process.argv.slice(2);
+    const next = [];
+    const replacedValueOptions = new Set([
+      '--all-models',
+      '--world',
+      '--curriculum',
+      '--module',
+      '--system',
+      '--auto-learner-profile',
+      '--model',
+      '--classifier-model',
+      '--learner-record-model',
+      '--auto-learner-model',
+      '--register-temperature',
+      '--dag-fact-dropout',
+      '--release-speed',
+      '--register-policy',
+      '--register-overlay-threshold',
+    ]);
+    const removedBooleanOptions = new Set([
+      '--resume-last',
+      '--dag',
+      '--tutor-learner-dag',
+      '--list-curriculum-modules',
+    ]);
+    for (let index = 0; index < current.length; index += 1) {
+      const argument = current[index];
+      if ([...removedBooleanOptions].some((option) => argument === option || argument.startsWith(`${option}=`))) {
+        continue;
+      }
+      if (replacedValueOptions.has(argument)) {
+        index += 1;
+        continue;
+      }
+      if ([...replacedValueOptions].some((option) => argument.startsWith(`${option}=`))) continue;
+      next.push(argument);
+    }
+    const modelArguments = state.modelRouting?.allRolesOverrideRef
+      ? ['--all-models', state.modelRouting.allRolesOverrideRef]
+      : [
+          '--model',
+          state.modelRef,
+          '--classifier-model',
+          args['classifier-model'],
+          '--learner-record-model',
+          args['learner-record-model'],
+          '--auto-learner-model',
+          args['auto-learner-model'],
+        ];
+    next.push(
+      '--curriculum',
+      'workplan',
+      '--module',
+      moduleId,
+      '--auto-learner-profile',
+      state.learnerProfileId || state.learnerProfile,
+      ...modelArguments,
+      '--register-temperature',
+      String(state.register?.temperature ?? registerTemperature),
+      '--dag-fact-dropout',
+      String(state.learnerDag?.dropout?.rate ?? dagFactDropoutRate),
+      '--release-speed',
+      String(state.releasePacing?.baseSpeed ?? releaseSpeed),
+      '--register-policy',
+      tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+      '--register-overlay-threshold',
+      String(state.register?.overlayThreshold ?? registerOverlayThreshold),
+    );
+    return next;
+  }
+
+  function relaunchWithWorkplanModule(selection, reason = 'board_item_changed') {
+    const moduleId = selection?.id || selection?.module?.id;
+    const title = selection?.title || selection?.module?.title;
+    if (!moduleId || !title) throw new Error('workplan selection is incomplete');
+    appendTraceEvent(state.trace, {
+      type: 'next_curriculum_module_selected',
+      reason,
+      sourceRef: 'workplan:live',
+      previousCurriculumModuleId: state.curriculum?.module?.id || null,
+      previousScenarioId: state.world?.id || null,
+      moduleId,
+      title,
+    });
+    awaitingAnotherScenario = false;
+    exiting = true;
+    stopInterimAnimation(state);
+    concurrentTerminal.close();
+    resetMixedLearnerSuggestion(reason);
+    finalizeInteractive(reason);
+    rl.close();
+    console.log(`${C.brightGreen}${C.bold}next board item >${C.reset} ${moduleId} — ${title}`);
+    console.log(
+      `${C.dim}  starting a fresh reflective inquiry from the live workplan with your learner profile and dialogue settings${C.reset}\n`,
+    );
+    const child = spawnSync(
+      process.execPath,
+      [fileURLToPath(import.meta.url), ...relaunchArgumentsForWorkplanModule(moduleId)],
+      {
+        cwd: process.cwd(),
+        env: process.env,
+        stdio: 'inherit',
+      },
+    );
+    if (child.error) {
+      console.log(`${C.red}board launch error:${C.reset} ${child.error.message}`);
+      process.exitCode = 1;
+    } else if (child.signal) {
+      process.exitCode = 1;
+    } else {
+      process.exitCode = child.status ?? 0;
+    }
+    resolveInteractive();
+  }
+
   async function chooseAnotherScenario(argument = '', { reason = 'scenario_changed', duringTurn = false } = {}) {
     clearStatusLine();
     if (duringTurn || processingTurn) {
@@ -19983,6 +20319,60 @@ async function main() {
       return false;
     }
     relaunchWithScenario(selection, reason);
+    return true;
+  }
+
+  async function chooseWorkplanModule(argument = '', { reason = 'board_item_changed', duringTurn = false } = {}) {
+    clearStatusLine();
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}the board picker is available after the current tutor response completes${C.reset}\n`);
+      return false;
+    }
+    let selection = null;
+    const requested = String(argument || '').trim();
+    if (requested) {
+      try {
+        const selected = tutorStubCurriculumBundle('workplan', requested, { root: ROOT });
+        selection = {
+          id: selected.module.id,
+          title: selected.module.title,
+          module: selected.module,
+        };
+      } catch (error) {
+        console.log(`${C.red}board error:${C.reset} ${error.message}\n`);
+        return false;
+      }
+    } else if (input.isTTY && output.isTTY && typeof input.setRawMode === 'function') {
+      scenarioPickerActive = true;
+      initialSetupStage = 'board';
+      console.log(`${C.cyan}Pick a workplan item${C.reset}`);
+      console.log(
+        `${C.dim}  ↑/↓ scroll · Enter select · highlighted card described below · Esc return · reads workplan/items live${C.reset}`,
+      );
+      try {
+        selection = await pickWorkplanModuleWithKeyboard(state.curriculum?.module?.id || '');
+      } catch (error) {
+        console.log(`${C.red}board error:${C.reset} ${error.message}\n`);
+        return false;
+      } finally {
+        scenarioPickerActive = false;
+        initialSetupStage = 'off';
+      }
+      if (!selection) {
+        rl.setPrompt(
+          awaitingAnotherScenario
+            ? `${C.brightCyan}${C.bold}another scenario? [y/N] >${C.reset} `
+            : mixedLearnerPromptText(),
+        );
+        console.log(`${C.dim}board picker closed; the current inquiry is unchanged${C.reset}\n`);
+        return false;
+      }
+    } else {
+      printCurriculumModules('workplan');
+      console.log(`${C.cyan}board >${C.reset} type /board <item-id> to start a reflective inquiry\n`);
+      return false;
+    }
+    relaunchWithWorkplanModule(selection, reason);
     return true;
   }
 
@@ -21798,7 +22188,7 @@ async function main() {
   }
 
   function repriseLatestTutorUtterance(command, { duringTurn = false } = {}) {
-    if (duringTurn || exiting || !SCENE_RETURN_SLASH_COMMANDS.has(command)) return false;
+    if (duringTurn || exiting || !tutorStubCommandReturnsToScene(command)) return false;
     const utterance = String(latestTutorMessage(state) || '').trim();
     if (!utterance) return false;
     console.log(`${C.brightMagenta}${C.bold}tutor ↻ >${C.reset} ${utterance}\n`);
@@ -22389,14 +22779,21 @@ async function main() {
     if ((command === '/reset' || command === '/clear') && !commandArg) {
       return resetInteractiveDialogue({ command, duringTurn });
     }
-    if (state.passthrough?.enabled && !PASSTHROUGH_SLASH_COMMANDS.includes(command)) {
+    const commandMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const commandOptions = { mode: commandMode, capabilities: state.capabilities };
+    if (tutorStubCanonicalCommandToken(command) && !tutorStubCommandAvailable(command, commandOptions)) {
+      const reasons = tutorStubCommandUnavailableReasons(command, commandOptions);
       clearStatusLine();
       console.log(
-        `${C.dim}${command} is intentionally unavailable in passthrough mode; use /help for the pure-chat commands${C.reset}\n`,
+        `${C.dim}${command} is unavailable in this ${state.capabilities.mode} session${
+          reasons.length ? `: ${reasons.join('; ')}` : ''
+        }; use /help for the active command surface${C.reset}\n`,
       );
       appendTraceEvent(state.trace, {
-        type: 'passthrough_command_rejected',
+        type: state.passthrough?.enabled ? 'passthrough_command_rejected' : 'command_capability_rejected',
         command,
+        capabilityMode: state.capabilities.mode,
+        reasons,
         duringTurn,
         publicTranscriptChanged: false,
       });
@@ -22537,6 +22934,18 @@ async function main() {
       clearStatusLine();
       printInteractiveStatus();
       appendTraceEvent(state.trace, { type: 'interactive_status', turns: state.turns.length, duringTurn });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/features') {
+      clearStatusLine();
+      printTutorStubFeatureMap(state);
+      appendTraceEvent(state.trace, {
+        type: 'interactive_feature_map',
+        turns: state.turns.length,
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
       finishSlashCommand();
       return true;
     }
@@ -22722,6 +23131,14 @@ async function main() {
     if (command === '/scenario') {
       const promise = chooseAnotherScenario(commandArg, {
         reason: awaitingAnotherScenario ? 'next_scenario_after_closure' : 'scenario_changed_by_user',
+        duringTurn,
+      }).finally(finishSlashCommand);
+      promise.tutorStubBlocksPrompt = true;
+      return promise;
+    }
+    if (command === '/board') {
+      const promise = chooseWorkplanModule(commandArg, {
+        reason: 'board_item_changed_by_user',
         duringTurn,
       }).finally(finishSlashCommand);
       promise.tutorStubBlocksPrompt = true;

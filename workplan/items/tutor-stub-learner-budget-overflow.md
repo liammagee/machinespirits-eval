@@ -3,7 +3,7 @@ id: tutor-stub-learner-budget-overflow
 title: "Fix the auto-learner prompt-budget overflow in long dialogues"
 status: done
 type: infra
-priority: P2
+priority: P1
 owner: codex
 source: manual
 created: 2026-07-22

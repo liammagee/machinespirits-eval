@@ -15,7 +15,7 @@ test('attachApiPayloadsToTrace attaches payloads by generationId', () => {
       timestamp: '2026-02-25T00:00:00.000Z',
       durationMs: 111,
       provider: 'openrouter',
-      url: 'https://openrouter.ai/api/v1/chat/completions',
+      url: 'https://openrouter.ai/api/v1/chat/completions?token=trace-secret',
       method: 'POST',
       generationId: 'gen-1',
       request: { headers: {}, body: { model: 'nvidia/nemotron-3-nano-30b-a3b' } },
@@ -34,6 +34,8 @@ test('attachApiPayloadsToTrace attaches payloads by generationId', () => {
   assert.equal(enriched[0].apiPayload.matchReason, 'generation_id');
   assert.equal(enriched[0].apiPayload.generationId, 'gen-1');
   assert.equal(enriched[0].apiPayload.request.body.model, 'nvidia/nemotron-3-nano-30b-a3b');
+  assert.doesNotMatch(enriched[0].apiPayload.endpoint, /trace-secret/u);
+  assert.equal(new URL(enriched[0].apiPayload.endpoint).searchParams.get('token'), '[REDACTED]');
 });
 
 test('attachApiPayloadsToTrace falls back to model/provider heuristic', () => {
@@ -64,14 +66,16 @@ test('attachApiPayloadsToTrace falls back to model/provider heuristic', () => {
   assert.equal(enriched[0].apiPayload.provider, 'openrouter');
 });
 
-test('captureApiCalls preserves response body for the caller after snapshotting', async (t) => {
+test('captureApiCalls preserves response body while redacting sensitive URL parameters from records and traces', async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => {
     globalThis.fetch = originalFetch;
   });
 
-  globalThis.fetch = async () =>
-    new Response(
+  let fetchedUrl = null;
+  globalThis.fetch = async (input) => {
+    fetchedUrl = String(input);
+    return new Response(
       JSON.stringify({
         id: 'gen-replay',
         choices: [{ message: { content: 'caller can still read me' } }],
@@ -82,12 +86,16 @@ test('captureApiCalls preserves response body for the caller after snapshotting'
         headers: { 'content-type': 'application/json' },
       },
     );
+  };
 
   const { result, records } = await captureApiCalls(async () => {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      body: JSON.stringify({ model: 'test/model' }),
-    });
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/test:generateContent?alt=json&key=supersecret',
+      {
+        method: 'POST',
+        body: JSON.stringify({ model: 'test/model' }),
+      },
+    );
     const payload = await response.json();
     return payload.choices[0].message.content;
   });
@@ -96,4 +104,20 @@ test('captureApiCalls preserves response body for the caller after snapshotting'
   assert.equal(records.length, 1);
   assert.equal(records[0].generationId, 'gen-replay');
   assert.equal(records[0].response.json.choices[0].message.content, 'caller can still read me');
+  assert.match(fetchedUrl, /key=supersecret/u, 'the original request should still receive the credential');
+  assert.doesNotMatch(records[0].url, /supersecret/u);
+  assert.equal(new URL(records[0].url).searchParams.get('key'), '[REDACTED]');
+
+  const [enriched] = attachApiPayloadsToTrace(
+    [
+      {
+        agent: 'ego',
+        action: 'generate',
+        metrics: { provider: 'gemini', model: 'test/model', generationId: 'gen-replay' },
+      },
+    ],
+    records,
+  );
+  assert.doesNotMatch(enriched.apiPayload.endpoint, /supersecret/u);
+  assert.equal(new URL(enriched.apiPayload.endpoint).searchParams.get('key'), '[REDACTED]');
 });

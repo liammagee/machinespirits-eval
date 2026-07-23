@@ -1,25 +1,318 @@
 {
-  "generated": "2026-07-22T13:53:51.543Z",
+  "generated": "2026-07-23T01:57:53.598Z",
   "counts": {
-    "total": 134,
+    "total": 149,
     "byStatus": {
       "done": 113,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 12,
-      "archived": 4
+      "triaged": 26,
+      "archived": 4,
+      "active": 1
     },
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 20,
-      "maintenance": 6,
+      "infra": 28,
+      "maintenance": 12,
       "content": 2,
       "paper": 6,
-      "ops": 6
+      "ops": 7
     }
   },
   "items": [
+    {
+      "id": "bound-metered-evaluation-api-requests",
+      "title": "Add admission controls to metered evaluation API requests",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Eval run and comparison routes reject malformed, unknown, or oversized plans before allocation or model calls; accepted plans expose an exact bounded test count and route regressions prove the paid-work ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "routes/evalRoutes.js",
+          "services/evaluationRunner.js"
+        ]
+      },
+      "tags": [
+        "api",
+        "cost-control",
+        "evaluation-infrastructure",
+        "security"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "harden-cli-provider-process-isolation",
+      "title": "Isolate CLI model providers from secrets and fail closed on tool use",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Spawned model CLIs receive only an explicit environment allowlist and any prohibited tool event fails the request; tests prove unrelated API secrets are absent and no successful response survives a policy violation.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/cliProviderBridge.js"
+        ]
+      },
+      "tags": [
+        "security",
+        "providers",
+        "process-isolation",
+        "secrets"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "harden-consolidated-labelling-integrity",
+      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "consolidated-labelling-game-harness",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "data-integrity",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "make-inhoused-tests-and-coverage-first-class",
+      "title": "Make in-housed tutor-core tests and coverage first-class",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A clean root install runs root and in-housed tutor-core suites hermetically, reports coverage for critical services/routes, fails on agreed risk-based floors, and exposes leaked handles without relying globally on forced process exit.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "scripts/run-hermetic-tests.js",
+          "tutor-core/package.json",
+          ".github/workflows/ci.yml"
+        ]
+      },
+      "tags": [
+        "testing",
+        "coverage",
+        "tutor-core",
+        "ci"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "make-pilot-state-writes-atomic",
+      "title": "Make human-pilot artifact writes and state transitions atomic",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "a1-human-learner-validation"
+        ],
+        "code": [
+          "services/pilotStore.js"
+        ]
+      },
+      "tags": [
+        "human-pilot",
+        "transactions",
+        "data-integrity",
+        "concurrency"
+      ],
+      "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "repair-evaluation-store-roundtrip-integrity",
+      "title": "Preserve evaluation provenance and attempt counts across store round trips",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationStore.js"
+        ]
+      },
+      "tags": [
+        "provenance",
+        "rejudging",
+        "resume",
+        "data-integrity"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "test-canonical-posthoc-analysis-pipeline",
+      "title": "Add fixture-to-report tests for the canonical post-hoc analysis pipeline",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Frozen miniature evaluation fixtures exercise every canonical post-hoc script end to end, with schema/version checks and reviewed golden statistics preventing silent empirical-report regressions.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/analysis-toolkit-guide.md"
+        ],
+        "code": [
+          "scripts/analyze-eval-results.js",
+          "scripts/analyze-mechanism-traces.js",
+          "scripts/analyze-trajectory-curves.js",
+          "scripts/analyze-learning-stagnation.js",
+          "scripts/analyze-judge-reliability.js"
+        ]
+      },
+      "tags": [
+        "analysis",
+        "empirical-integrity",
+        "testing",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-safe-capability-labs",
+      "title": "Curate safe tutor-stub capability labs and compatibility gates",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Every declarative lab zero-call dry-runs, a representative set completes with the fake provider, invalid combinations fail with actionable guidance, learner-facing labs exclude negative/simulated controls unless explicitly selected as research, generated help stays in sync, and traces record the lab id, maturity tier, resolved capabilities, and cost class.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "consolidated-labelling-game-harness",
+          "tutor-stub-typed-pedagogical-actions"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "presets",
+        "safety",
+        "discoverability"
+      ]
+    },
+    {
+      "id": "tutor-stub-unified-session-surface",
+      "title": "Ship tutor-stub as one shared web and Electron session surface",
+      "status": "triaged",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime",
+        "tutor-stub-safe-capability-labs",
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "notes": [
+          "desktop/ARCHITECTURE.md",
+          "docs/tutor-stub-cli.md"
+        ],
+        "items": [
+          "scriptorium-responsive-shell-navigation",
+          "scriptorium-static-tools-desktop-quality",
+          "scriptorium-ux-safety-net"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "scriptorium",
+        "electron",
+        "accessibility",
+        "voice",
+        "privacy"
+      ],
+      "milestone": "distribution"
+    },
+    {
+      "id": "version-symmetric-trace-transformation-pipeline",
+      "title": "Version and restore the symmetric trace-transformation pipeline",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Newly generated learner traces emit the canonical initial, review, revision, and final labels; legacy logs remain readable; active-rubric analyzers reject non-finite inputs and pass fixture-to-output regressions.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationRunner.js",
+          "services/learnerTutorInteractionEngine.js",
+          "services/turnComparisonAnalyzer.js",
+          "services/dialogueTraceAnalyzer.js"
+        ]
+      },
+      "tags": [
+        "tutor-learner-symmetry",
+        "traces",
+        "transformation",
+        "rubric-versioning"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "adaptive-curriculum-memory-controller",
       "title": "Evidence-anchored memory and curriculum adaptation controller",
@@ -79,6 +372,35 @@
         "pragmatics",
         "ontology"
       ]
+    },
+    {
+      "id": "decide-rich-learner-memory-service-retention",
+      "title": "Decide and verify the retained rich learner-memory service",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "MEMORY-ARCHITECTURE.md"
+        ],
+        "code": [
+          "services/memory/learnerMemoryService.js"
+        ]
+      },
+      "tags": [
+        "learner-memory",
+        "architecture",
+        "sqlite",
+        "testing"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -303,6 +625,32 @@
       ]
     },
     {
+      "id": "repair-codex-session-capacity-and-cursors",
+      "title": "Repair Codex session capacity and stale-cursor semantics",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/codexSessionService.js"
+        ]
+      },
+      "tags": [
+        "codex-session",
+        "lifecycle",
+        "capacity",
+        "streaming"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "scenario-presentation-variety",
       "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
       "status": "triaged",
@@ -324,6 +672,67 @@
         "derivation-worlds",
         "presentation",
         "authoring"
+      ]
+    },
+    {
+      "id": "tutor-stub-curriculum-mastery-runtime",
+      "title": "Add curriculum authoring, progression, and mastery to tutor-stub",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The existing curriculum builder and a tutor-stub/Scriptorium workbench author, lint, hash, preview without spend, and round-trip one multi-module course; /module, /next, and /progress drive diagnostic, scaffold, independent-check, and transfer phases for two non-detective curricula; public state cannot expose private verifier material; external workplan completion is never inferred from dialogue.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-stub-prompt-and-world-authoring.md",
+          "curriculum/CURRICULUM-FORMAT.md"
+        ],
+        "items": [
+          "adaptive-curriculum-memory-controller",
+          "scenario-presentation-variety",
+          "scriptorium-creation-flows"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "curriculum",
+        "mastery",
+        "authoring"
+      ]
+    },
+    {
+      "id": "tutor-stub-session-recipes-explicit-resume",
+      "title": "Add versioned tutor-stub session recipes and explicit resume",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "A saved recipe relaunch reproduces the resolved configuration hash and fake-provider decision trace; --resume <run-id|trace-path> wins regardless of mtime; world, prompt, tutor, model, and schema drift fail closed unless explicitly acknowledged; old supported traces migrate read-only; transcript HTML exposes a copyable exact relaunch command.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-capability-session-runtime",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "sessions",
+        "resume",
+        "provenance"
       ]
     },
     {
@@ -376,6 +785,39 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
+    },
+    {
+      "id": "tutor-stub-capability-session-runtime",
+      "title": "Extract a capability-driven tutor-stub session runtime",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "An importable session runtime and versioned command/capability registry drive lifecycle, help, completion, availability, compatibility checks, and trace schemas; two isolated sessions run in one process; golden fake-provider traces for passthrough, direct, scaffold, mixed, auto, and curriculum modes remain semantically equivalent; focused and hermetic suites pass.",
+      "depends_on": [
+        "tutor-stub-register-policy-extraction"
+      ],
+      "links": {
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/155",
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-human-discourse-layer"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "runtime",
+        "command-registry",
+        "replay"
+      ],
+      "branch": "codex/tutor-stub-capability-resolver"
     },
     {
       "id": "a1-human-learner-validation",
@@ -788,7 +1230,7 @@
       "source": "manual",
       "created": "2026-07-22",
       "updated": "2026-07-22",
-      "verification": "Both datasets load and save through /human-coding-admin and the shared terminal flow; tutor-stub launches that flow with --labelling-game; route, store, CLI, syntax, and in-browser checks pass without exposing the taxonomy key early.",
+      "verification": "Both datasets load and save through /human-coding-admin and the shared terminal flow; a plain tutor-stub launch switches between default chat and the labelling game, while explicit launch flags remain scriptable; route, store, CLI, syntax, and in-browser checks pass without exposing the taxonomy key early.",
       "claim_status": "methods",
       "depends_on": [],
       "links": {
@@ -1563,6 +2005,31 @@
         "proof-debt",
         "side-arcs"
       ]
+    },
+    {
+      "id": "tutor-stub-learner-budget-overflow",
+      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-22",
+      "verification": "The archived p5c-14 turn-32 prompt reproduces the exact 24,468-character auto-learner audit failure and re-audits at 6,986 characters after public-only windowing; a 10-turn no-model CLI regression crosses the budget at turn 9, completes with repeated recoveries and zero auto-learner audit failures; short-run full replay remains unchanged; the pinned-runtime successor cherry-pick is explicitly noted.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "reliability"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/steps1-2"
     },
     {
       "id": "tutor-stub-learner-state-validity",
@@ -3380,31 +3847,6 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "tutor-stub-learner-budget-overflow",
-      "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
-      "status": "done",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The archived p5c-14 turn-32 prompt reproduces the exact 24,468-character auto-learner audit failure and re-audits at 6,986 characters after public-only windowing; a 10-turn no-model CLI regression crosses the budget at turn 9, completes with repeated recoveries and zero auto-learner audit failures; short-run full replay remains unchanged; the pinned-runtime successor cherry-pick is explicitly noted.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "reliability"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "codex/steps1-2"
     },
     {
       "id": "unreliable-learner-prereg-completion",

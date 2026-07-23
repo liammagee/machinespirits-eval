@@ -1277,6 +1277,80 @@ test(
 );
 
 test(
+  'profile palette completes the documented stress-list command',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    let terminalOutput = '';
+    let filterEntered = false;
+    let tabPressed = false;
+    let commandSubmitted = false;
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--no-remember-settings',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 120,
+        rows: 30,
+        name: 'xterm-color',
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+          TUTOR_STUB_REMEMBER_SETTINGS: '0',
+        },
+      },
+    );
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`profile palette terminal timed out\n${plainTerminalText(terminalOutput)}`));
+      }, 12_000);
+      terminal.onData((chunk) => {
+        terminalOutput += chunk;
+        const plain = plainTerminalText(terminalOutput);
+        if (!filterEntered && plain.includes('A Diligent Learner >')) {
+          filterEntered = true;
+          terminal.write('/profile list s');
+        } else if (!tabPressed && plain.includes('1 match for /profile list s')) {
+          tabPressed = true;
+          terminal.write('\t');
+        } else if (!commandSubmitted && plain.includes('A Diligent Learner > /profile list stress')) {
+          commandSubmitted = true;
+          terminal.write('\r');
+        } else if (!requestedExit && plain.includes('learner profiles > specialist failure modes (8)')) {
+          requestedExit = true;
+          terminal.write('/quit\r');
+        }
+      });
+      terminal.onExit(({ exitCode, signal }) => {
+        clearTimeout(timer);
+        if (exitCode === 0) resolve();
+        else reject(new Error(`profile palette terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+      });
+    });
+
+    const plain = plainTerminalText(terminalOutput);
+    assert.match(plain, /1 match for \/profile list s/u);
+    assert.match(plain, /A Diligent Learner > \/profile list stress/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(8\)/u);
+    assert.doesNotMatch(plain, /unknown learner profile/u);
+  },
+);
+
+test(
   'prompt shortcuts select and replace words and whole lines',
   { skip: process.platform === 'win32', timeout: 15_000 },
   async () => {
