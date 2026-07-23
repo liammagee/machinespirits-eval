@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-23T13:28:03.880Z",
+  "generated": "2026-07-23T20:43:18.143Z",
   "counts": {
     "total": 158,
     "byStatus": {
-      "done": 127,
+      "done": 128,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 21,
+      "triaged": 20,
       "archived": 4,
       "review": 1
     },
@@ -148,32 +148,6 @@
         "concurrency"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "repair-evaluation-store-roundtrip-integrity",
-      "title": "Preserve evaluation provenance and attempt counts across store round trips",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/evaluationStore.js"
-        ]
-      },
-      "tags": [
-        "provenance",
-        "rejudging",
-        "resume",
-        "data-integrity"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "test-canonical-posthoc-analysis-pipeline",
@@ -1746,6 +1720,33 @@
         "evaluation"
       ],
       "branch": "codex/negative-register-exemplar-test"
+    },
+    {
+      "id": "repair-evaluation-store-roundtrip-integrity",
+      "title": "Preserve evaluation provenance and attempt counts across store round trips",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationStore.js"
+        ]
+      },
+      "tags": [
+        "provenance",
+        "rejudging",
+        "resume",
+        "data-integrity"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/repair-evaluation-store-roundtrip-integrity"
     },
     {
       "id": "scriptorium-evidence-workbenches",

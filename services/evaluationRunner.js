@@ -2545,22 +2545,25 @@ export async function runEvaluation(options = {}) {
       });
 
       try {
-        const result = await runSingleTest(scenario, config, {
-          skipRubricEval,
-          verbose,
-          judgeOverride,
-          judgeCli: effectiveCliJudge,
-          judgeCliModel: effectiveCliJudgeModel,
-          dryRun,
-          transcriptMode,
-          showMessages,
-          runId: run.id,
-          runNum,
-          liveApiReporter,
-          learnerId: explicitLearnerId,
-          threadNegotiationResolution: explicitThreadNegotiationResolution,
-          externalEgoExtension,
-        });
+        const result = {
+          ...(await runSingleTest(scenario, config, {
+            skipRubricEval,
+            verbose,
+            judgeOverride,
+            judgeCli: effectiveCliJudge,
+            judgeCliModel: effectiveCliJudgeModel,
+            dryRun,
+            transcriptMode,
+            showMessages,
+            runId: run.id,
+            runNum,
+            liveApiReporter,
+            learnerId: explicitLearnerId,
+            threadNegotiationResolution: explicitThreadNegotiationResolution,
+            externalEgoExtension,
+          })),
+          attemptIndex: runNum,
+        };
 
         // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
         evaluationStore.storeResult(run.id, result);
@@ -2656,6 +2659,7 @@ export async function runEvaluation(options = {}) {
                 : null,
             factors: config.factors || null,
             learnerArchitecture: config.learnerArchitecture || null,
+            attemptIndex: runNum,
             success: false,
             errorMessage: error.message,
           };
@@ -2766,11 +2770,15 @@ export async function runEvaluation(options = {}) {
 
 const CHECKPOINT_VERSION = 1;
 
+function checkpointFileName(profileName, scenarioId, attemptIndex = null) {
+  const attemptSuffix = Number.isInteger(attemptIndex) && attemptIndex >= 0 ? `--attempt-${attemptIndex}` : '';
+  return `${profileName}--${scenarioId}${attemptSuffix}`.replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
+}
+
 function writeCheckpoint(runId, scenarioId, profileName, state) {
   const dir = path.join(CHECKPOINTS_DIR, runId);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const filePath = path.join(dir, `${safeName}.json`);
+  const filePath = path.join(dir, checkpointFileName(profileName, scenarioId, state?.attemptIndex));
   const payload = {
     version: CHECKPOINT_VERSION,
     runId,
@@ -2783,21 +2791,24 @@ function writeCheckpoint(runId, scenarioId, profileName, state) {
   return filePath;
 }
 
-function loadCheckpoint(runId, scenarioId, profileName) {
-  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const filePath = path.join(CHECKPOINTS_DIR, runId, `${safeName}.json`);
-  if (!fs.existsSync(filePath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  } catch {
-    return null;
+function loadCheckpoint(runId, scenarioId, profileName, attemptIndex = null) {
+  const dir = path.join(CHECKPOINTS_DIR, runId);
+  const candidates = [path.join(dir, checkpointFileName(profileName, scenarioId, attemptIndex))];
+  if (attemptIndex != null) candidates.push(path.join(dir, checkpointFileName(profileName, scenarioId)));
+  for (const filePath of candidates) {
+    if (!fs.existsSync(filePath)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch {
+      return null;
+    }
   }
+  return null;
 }
 
-function deleteCheckpoint(runId, scenarioId, profileName) {
-  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+function deleteCheckpoint(runId, scenarioId, profileName, attemptIndex = null) {
   const dir = path.join(CHECKPOINTS_DIR, runId);
-  const filePath = path.join(dir, `${safeName}.json`);
+  const filePath = path.join(dir, checkpointFileName(profileName, scenarioId, attemptIndex));
   try {
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
@@ -4714,6 +4725,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Write mid-dialogue checkpoint after each completed turn
     if (runId) {
       writeCheckpoint(runId, scenario.id, config.profileName, {
+        attemptIndex: runNum,
         lastCompletedTurn: turnIdx,
         totalTurns: totalTurnCount,
         dialogueId,
@@ -4749,7 +4761,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // Multi-turn loop completed successfully — clean up checkpoint
   if (runId) {
-    deleteCheckpoint(runId, scenario.id, config.profileName);
+    deleteCheckpoint(runId, scenario.id, config.profileName, runNum);
+    // Legacy checkpoints predate attempt-aware filenames. When one was used
+    // as the fallback for this attempt, remove that exact legacy file too.
+    if (checkpointState && !Number.isInteger(checkpointState.attemptIndex)) {
+      deleteCheckpoint(runId, scenario.id, config.profileName);
+    }
   }
 
   // Clear turn progress from run metadata now that all turns are complete
@@ -5155,28 +5172,16 @@ export async function resumeEvaluation(options = {}) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, learnerSuperegoModelOverride }));
   }
 
-  // 6. Count successful results per (profile, scenario) combo and fill up to runsPerConfig.
-  //    Failed results are excluded so they get retried.
-  const completedCounts = {};
-  for (const result of existingResults) {
-    // Only count successful results — failed ones should be retried
-    if (result.success === false || result.success === 0) continue;
-    const key = `${result.profileName}:${result.scenarioId}`;
-    completedCounts[key] = (completedCounts[key] || 0) + 1;
-  }
-
-  // Build flat list of remaining tests
-  const remainingTests = [];
-  for (const scenario of targetScenarios) {
-    for (const config of targetConfigs) {
-      const key = `${config.profileName}:${scenario.id}`;
-      const done = completedCounts[key] || 0;
-      const needed = runsPerConfig - done;
-      for (let i = 0; i < needed; i++) {
-        remainingTests.push({ config, scenario, runNum: done + i });
-      }
-    }
-  }
+  // 6. Resolve missing repetitions through the store's attempt-aware contract.
+  // Rejudgments share a generation identity and cannot satisfy extra attempts.
+  const incomplete = evaluationStore.getIncompleteTests(runId, profileNames, targetScenarios, { runsPerConfig });
+  const configByName = new Map(targetConfigs.map((config) => [config.profileName, config]));
+  const scenarioById = new Map(targetScenarios.map((scenario) => [scenario.id, scenario]));
+  const remainingTests = incomplete.remainingTests.map((test) => ({
+    config: configByName.get(test.profile),
+    scenario: scenarioById.get(test.scenarioId),
+    runNum: test.attemptIndex,
+  }));
 
   // Scan for mid-dialogue checkpoints
   const checkpoints = listCheckpoints(runId);
@@ -5184,14 +5189,18 @@ export async function resumeEvaluation(options = {}) {
   if (checkpoints.length > 0) {
     const checkpointMap = new Map();
     for (const cp of checkpoints) {
-      checkpointMap.set(`${cp.profileName}:${cp.scenarioId}`, cp);
+      const pair = `${cp.profileName}:${cp.scenarioId}`;
+      const key = Number.isInteger(cp.attemptIndex) ? `${pair}:${cp.attemptIndex}` : pair;
+      checkpointMap.set(key, cp);
     }
     for (const test of remainingTests) {
-      const key = `${test.config.profileName}:${test.scenario.id}`;
-      const cp = checkpointMap.get(key);
+      const pair = `${test.config.profileName}:${test.scenario.id}`;
+      const exactKey = `${pair}:${test.runNum}`;
+      const cp = checkpointMap.get(exactKey) || checkpointMap.get(pair);
       if (cp) {
         test.checkpointState = cp;
-        checkpointMap.delete(key);
+        checkpointMap.delete(exactKey);
+        checkpointMap.delete(pair);
         checkpointCount++;
       }
     }
@@ -5310,7 +5319,7 @@ export async function resumeEvaluation(options = {}) {
 
   const runStartTime = Date.now();
 
-  await processQueue(remainingTests, parallelism, async ({ config, scenario, checkpointState }) => {
+  await processQueue(remainingTests, parallelism, async ({ config, scenario, runNum, checkpointState }) => {
     const profileLabel = config.label || config.profileName || '';
 
     progressLogger.testStart({
@@ -5320,14 +5329,18 @@ export async function resumeEvaluation(options = {}) {
     });
 
     try {
-      const result = await runSingleTest(scenario, config, {
-        skipRubricEval,
-        dryRun,
-        verbose,
-        runId,
-        checkpointState: checkpointState || null,
-        threadNegotiationResolution: threadNegotiationResolution ?? false, // A5: resume-safety (see metadata extraction above)
-      });
+      const result = {
+        ...(await runSingleTest(scenario, config, {
+          skipRubricEval,
+          dryRun,
+          verbose,
+          runId,
+          runNum,
+          checkpointState: checkpointState || null,
+          threadNegotiationResolution: threadNegotiationResolution ?? false, // A5: resume-safety (see metadata extraction above)
+        })),
+        attemptIndex: runNum,
+      };
 
       evaluationStore.storeResult(runId, result);
       results.push(result);
@@ -5416,6 +5429,7 @@ export async function resumeEvaluation(options = {}) {
               : null,
           factors: config.factors || null,
           learnerArchitecture: config.learnerArchitecture || null,
+          attemptIndex: runNum,
           success: false,
           errorMessage: error.message,
         };
