@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T04:45:09.784Z",
+  "generated": "2026-07-23T06:24:49.594Z",
   "counts": {
     "total": 156,
     "byStatus": {
-      "done": 120,
+      "done": 121,
       "blocked": 3,
       "dropped": 2,
       "triaged": 26,
-      "archived": 4,
-      "review": 1
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -826,52 +825,6 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "tutor-stub-unified-session-surface",
-      "title": "Ship tutor-stub as one shared web and Electron session surface",
-      "status": "review",
-      "type": "ops",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
-      "depends_on": [
-        "tutor-stub-capability-session-runtime",
-        "tutor-stub-headless-session-transport",
-        "tutor-stub-process-session-factory",
-        "tutor-stub-safe-capability-labs",
-        "tutor-stub-session-recipes-explicit-resume"
-      ],
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/159"
-        ],
-        "notes": [
-          "desktop/ARCHITECTURE.md",
-          "docs/tutor-stub-cli.md"
-        ],
-        "items": [
-          "tutor-stub-headless-session-transport",
-          "tutor-stub-process-session-factory",
-          "scriptorium-responsive-shell-navigation",
-          "scriptorium-static-tools-desktop-quality",
-          "scriptorium-ux-safety-net"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "scriptorium",
-        "electron",
-        "accessibility",
-        "voice",
-        "privacy"
-      ],
-      "milestone": "distribution",
-      "branch": "codex/tutor-stub-super-app-slices"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2424,6 +2377,53 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/adaptive-tutor-implementation"
+    },
+    {
+      "id": "tutor-stub-unified-session-surface",
+      "title": "Ship tutor-stub as one shared web and Electron session surface",
+      "status": "done",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "One web-stack /tutor surface starts and resumes sessions in browser and Electron, exposes safe lab/scenario/profile/model controls plus trace export, keeps credentials server-side, relocates every writable store through desktop path overrides, and passes route-parity, browser, packaged-desktop, keyboard/screen-reader, caption, microphone-consent, interruption, reduced-motion, no-colour, and text-fallback recovery smokes.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime",
+        "tutor-stub-headless-session-transport",
+        "tutor-stub-process-session-factory",
+        "tutor-stub-safe-capability-labs",
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/159",
+          "https://github.com/liammagee/machinespirits-eval/pull/161"
+        ],
+        "notes": [
+          "desktop/ARCHITECTURE.md",
+          "docs/tutor-stub-cli.md"
+        ],
+        "items": [
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "scriptorium-responsive-shell-navigation",
+          "scriptorium-static-tools-desktop-quality",
+          "scriptorium-ux-safety-net"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "scriptorium",
+        "electron",
+        "accessibility",
+        "voice",
+        "privacy"
+      ],
+      "milestone": "distribution",
+      "branch": "codex/tutor-stub-super-app-slices"
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
