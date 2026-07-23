@@ -1,7 +1,7 @@
 ---
 id: converge-tutor-stub-and-legacy-chat
 title: Converge tutor-stub and the legacy eval-cell chat
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -11,6 +11,8 @@ updated: 2026-07-23
 verification: "The canonical /tutor shell and one versioned session protocol run both learner-safe tutor-stub labs and an admin-only eval-cell lab; representative cell, curriculum, deliberation, pilot, auth, browser/Electron, provider-call, and compatibility tests pass; /chat and npm run chat are compatibility facades, /api/chat is administrator-only compatibility, and the old UI assets are removed."
 branch: codex/chat-tutor-convergence
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/164
   items:
     - tutor-stub-unified-session-surface
     - complete-tutor-stub-command-effect-metadata-before-http-comm
@@ -126,3 +128,6 @@ the two engines are not treated as prompt-compatible implementations.
   checks pass; live standalone browser checks confirm research-mode redirect,
   safe-mode default, and a clean console; the full hermetic suite passes 6,463
   tests with one skip and no failures. Ready for final diff review and PR prep.
+- 2026-07-23: PR #164 merged to `main` as `c9348402` after lint, Node 20/22,
+  validation-framework, workplan, and automated-review checks all passed. The
+  declared seven-phase convergence and verification gates are complete.
