@@ -319,13 +319,19 @@ import {
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
 import {
-  TUTOR_STUB_NORMAL_SLASH_COMMANDS as SLASH_COMMANDS,
-  TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS as PASSTHROUGH_SLASH_COMMANDS,
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
+  tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
+  tutorStubCommandTokens,
+  tutorStubCommandUnavailableReasons,
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
+import {
+  assertTutorStubCapabilityCompatibility,
+  resolveTutorStubCapabilities,
+  tutorStubCapabilityFeatureRows,
+} from '../services/tutorStubCapabilities.js';
 import {
   TUTOR_STUB_CLI_MOTION_IDS,
   TUTOR_STUB_CLI_THEME_IDS,
@@ -8516,19 +8522,11 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 }
 
 function printTutorStubFeatureMap(state = null) {
-  const featureRows = [
-    ['participate', 'human learner · private coach · automated learner · mixed AI drafting · guided demo'],
-    ['teach', 'open topics · proof-DAG scenarios · reflective curricula · versioned tutor instances'],
-    ['adapt', 'learner reading · public reasoning map · typed actions · teaching style · clue and memory pacing'],
-    ['control', 'per-role models · live settings · learner profiles · tutor tuning · guarded response checks'],
-    ['access', 'command palette · editable terminal · themes and motion · voice companion · compound turns'],
-    ['inspect', 'plain/technical analysis · field view · transcript/replay · director notes · learning summary'],
-    ['evaluate', 'auto-eval · policy/profile QA matrices · ABM panels · frozen replay · SQL ingest'],
-  ];
+  const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
 
   console.log(`${C.brightCyan}${C.bold}tutor-stub capability map${C.reset}`);
-  for (const [label, description] of featureRows) {
-    console.log(`${C.cyan}  ${label.padEnd(11)}${C.reset} ${description}`);
+  for (const row of featureRows) {
+    console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.description}`);
   }
 
   console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
@@ -8549,14 +8547,11 @@ function printTutorStubFeatureMap(state = null) {
       : state.world?.title
         ? `scenario: ${state.world.title}`
         : `topic: ${state.topic}`;
-    const activeMechanisms = state.passthrough?.enabled
-      ? ['speaker-only baseline']
-      : [
-          state.classifier?.enabled ? 'learner reading' : null,
-          state.learnerDag?.enabled ? 'reasoning map' : null,
-          state.register?.enabled ? 'adaptive delivery' : null,
-          state.voice?.enabled ? 'voice on' : null,
-        ].filter(Boolean);
+    const hiddenAlwaysOnCapabilities = new Set(['public_dialogue', 'presentation', 'transcript']);
+    const activeMechanisms = (state.capabilities?.active || [])
+      .filter((id) => !hiddenAlwaysOnCapabilities.has(id))
+      .map((id) => state.capabilities.capabilities[id]?.label)
+      .filter(Boolean);
     console.log(
       `\n${C.brightGreen}${C.bold}active now >${C.reset} ${mode} · ${content}${activeMechanisms.length ? ` · ${activeMechanisms.join(' · ')}` : ''}`,
     );
@@ -8568,16 +8563,15 @@ function printTutorStubFeatureMap(state = null) {
 }
 
 function printInteractiveHelp(state = null) {
-  if (state?.passthrough?.enabled) {
+  const mode = state?.passthrough?.enabled ? 'passthrough' : 'normal';
+  const commandOptions = { mode, capabilities: state?.capabilities || null };
+  const commandAvailable = (value) => tutorStubCommandAvailable(value, commandOptions);
+  if (mode === 'passthrough') {
     console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
     console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
-    console.log(`${C.cyan}  model${C.reset}      /settings model [provider.alias]`);
-    console.log(
-      `${C.cyan}  inspect${C.reset}    /status · /features · /release-notes · /transcript [no-open] · /voice · /director · /id`,
-    );
-    console.log(`${C.cyan}  appearance${C.reset} /theme · /motion`);
-    console.log(`${C.cyan}  setup${C.reset}      /scenario · /reset`);
-    console.log(`${C.cyan}  finish${C.reset}     /quit`);
+    for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
+      console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
+    }
     console.log(
       `${C.dim}  Each learner line goes directly to the speaker with the unchanged system setup and complete public message history. No classifier, reasoning tracker, register selection, response check, release planner, or auxiliary model call runs.${C.reset}\n`,
     );
@@ -8586,52 +8580,56 @@ function printInteractiveHelp(state = null) {
   console.log(
     `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
   );
-  console.log(`${C.cyan}  demonstrate${C.reset}  /demo [turns] · guided live tour with analysis and HTML evidence`);
-  console.log(`${C.cyan}  take part${C.reset}    /learner · /coach [suggestion] · /auto [turns] · /mode`);
-  console.log(
-    `${C.cyan}  get help${C.reset}     /clue · /suggest · /use · /regen · /clarify [phrase] · /explain [phrase]`,
-  );
-  console.log(
-    `${C.cyan}  understand${C.reset}   /analysis [technical] · /debug on|off · /status · /release-notes · /director · /transcript [no-open] · /voice · /id`,
-  );
-  console.log(`${C.cyan}  choose${C.reset}       /scenario · /board [item-id]`);
-  console.log(`${C.cyan}  discover${C.reset}     /features · /release-notes · /help`);
-  console.log(`${C.cyan}  rate tutor${C.reset}   empty prompt: ← down · → up · /down [reason] · /tune reasons`);
-  console.log(`${C.cyan}  direct${C.reset}       /register <style> · /character <part> · /random`);
-  console.log(`${C.cyan}  adjust${C.reset}       /profile · /settings · /tune · /theme · /motion`);
-  console.log(`${C.cyan}  recover${C.reset}      /reset (also works while the tutor or auto mode is thinking)`);
-  console.log(`${C.cyan}  finish${C.reset}       /report · /quit`);
+  for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
+    console.log(`${C.cyan}  ${row.label.padEnd(12)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
+  }
   console.log(
     `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
   );
   console.log(
     `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
   );
-  console.log(
-    `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
-  );
+  if (commandAvailable('/feedback')) {
+    console.log(
+      `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
+    );
+  }
   console.log(
     `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
   );
   console.log(
     `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
   );
-  console.log(
-    `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-  );
+  if (commandAvailable('/random')) {
+    console.log(
+      `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  /register warm or /character advocate locks one performance axis. Use auto to clear it. An explicit lock outranks /random only on that axis; the other axis keeps following its own control.${C.reset}`,
+    );
+  }
+  if (commandAvailable('/suggest')) {
+    console.log(
+      `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
+    );
+  } else {
+    console.log(
+      `${C.dim}  /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
+    );
+  }
   console.log(
     `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
   );
-  console.log(
-    `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
-  );
-  console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
+  if (commandAvailable('/board')) {
+    console.log(
+      `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
+    );
+  }
+  if (state?.capabilities?.capabilities?.learning_summary?.active) {
+    console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
+  } else {
+    console.log();
+  }
 }
 
 function printTutorStubReleaseNotes(hoursArg = '') {
@@ -15636,6 +15634,27 @@ async function main() {
         ]
       : [],
   };
+  const capabilitySnapshot = resolveTutorStubCapabilities({
+    passthrough: passthroughEnabled,
+    interactive: interactiveSessionEnabled,
+    world: Boolean(worldBundle),
+    curriculum: Boolean(curriculumBundle),
+    dag: Boolean(args.dag && worldBundle),
+    learnerDag: tutorLearnerDagEnabled,
+    classifier: classifierEnabled,
+    registerSelection: registerSelectionEnabled,
+    mixedLearner: mixedLearnerEnabled,
+    autoLearner: autoLearnerEnabled,
+    demo: Boolean(args.demo),
+    turnFeedback: turnFeedbackEnabled,
+    tuning: tuningMode !== 'off',
+    voice: voiceLaunchRequested,
+    trace: traceEnabled,
+    fieldVisualization: fieldVisualizationEnabled,
+    learningSummary: learningSummaryReportConfig.enabled,
+    responseChecks: !passthroughEnabled,
+  });
+  assertTutorStubCapabilityCompatibility(capabilitySnapshot);
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -15674,6 +15693,7 @@ async function main() {
           },
           rememberedSettings: rememberedSettingsConfig,
           passthrough: passthroughConfig,
+          capabilities: capabilitySnapshot,
           topic: effectiveTopic,
           curriculum: curriculumBundle
             ? {
@@ -15973,6 +15993,7 @@ async function main() {
       allModelsOverride,
       rememberedSettings: rememberedSettingsConfig,
       passthrough: passthroughConfig,
+      capabilities: capabilitySnapshot,
       humanDiscourse: humanDiscourseConfig,
       scenarioPicker: initialScenarioPickerConfig,
       comprehensionSideState: {
@@ -16186,6 +16207,16 @@ async function main() {
       ...initialScenarioSelection,
     });
   }
+  appendTraceEvent(trace, {
+    type: 'capability_snapshot_resolved',
+    schema: capabilitySnapshot.schema,
+    registryVersion: capabilitySnapshot.registryVersion,
+    mode: capabilitySnapshot.mode,
+    active: capabilitySnapshot.active,
+    available: capabilitySnapshot.available,
+    compatibility: capabilitySnapshot.compatibility,
+    publicTranscriptChanged: false,
+  });
   const interim = createInterimState({ enabled: interimAnimationEnabled });
 
   const state = {
@@ -16208,6 +16239,7 @@ async function main() {
       savedAt: rememberedSettings.savedAt,
     },
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
+    capabilities: capabilitySnapshot,
     passthrough: passthroughConfig,
     learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
     requestedTemperature: temperature,
@@ -17270,22 +17302,23 @@ async function main() {
     if (!trimmed.startsWith('/')) return { candidates: [], replacement: raw };
 
     const completionMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const commandOptions = { mode: completionMode, capabilities: state.capabilities };
     const requestedCommand = trimmed.split(/\s+/u)[0];
     if (
       tutorStubCanonicalCommandToken(requestedCommand) &&
-      !tutorStubCommandAvailable(requestedCommand, { mode: completionMode })
+      !tutorStubCommandAvailable(requestedCommand, commandOptions)
     ) {
       return { candidates: [], replacement: trimmed };
     }
 
-    let pool = completionMode === 'passthrough' ? PASSTHROUGH_SLASH_COMMANDS : SLASH_COMMANDS;
+    let pool = tutorStubCommandTokens(commandOptions);
     if (trimmed.startsWith('/mode ')) {
-      pool = tutorStubStaticCommandCompletions('/mode', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/mode', commandOptions);
     } else if (trimmed.startsWith('/debug ')) {
-      pool = tutorStubStaticCommandCompletions('/debug', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/debug', commandOptions);
     } else if (trimmed.startsWith('/feedback ')) {
       pool = [
-        ...tutorStubStaticCommandCompletions('/feedback', { mode: completionMode }),
+        ...tutorStubStaticCommandCompletions('/feedback', commandOptions),
         ...Object.keys(TUTOR_STUB_FEEDBACK_REASONS).map((reason) => `/feedback down ${reason}`),
       ];
     } else if (trimmed.startsWith('/down ')) {
@@ -17295,21 +17328,21 @@ async function main() {
         .filter((reason) => reason.startsWith('helpful_') || reason === 'custom')
         .map((reason) => `/up ${reason}`);
     } else if (trimmed.startsWith('/tune ')) {
-      pool = tutorStubStaticCommandCompletions('/tune', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/tune', commandOptions);
     } else if (trimmed.startsWith('/theme ')) {
-      pool = tutorStubStaticCommandCompletions('/theme', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/theme', commandOptions);
     } else if (trimmed.startsWith('/motion ')) {
-      pool = tutorStubStaticCommandCompletions('/motion', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/motion', commandOptions);
     } else if (trimmed.startsWith('/random ')) {
-      pool = tutorStubStaticCommandCompletions('/random', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/random', commandOptions);
     } else if (trimmed.startsWith('/register ')) {
       pool = [
-        ...tutorStubStaticCommandCompletions('/register', { mode: completionMode }),
+        ...tutorStubStaticCommandCompletions('/register', commandOptions),
         ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
       ];
     } else if (trimmed.startsWith('/character ')) {
       pool = [
-        ...tutorStubStaticCommandCompletions('/character', { mode: completionMode }),
+        ...tutorStubStaticCommandCompletions('/character', commandOptions),
         ...tutorStubRandomizableActorialPartIds().map((part) => `/character ${part}`),
       ];
     } else if (trimmed.startsWith('/settings model ')) {
@@ -17319,19 +17352,19 @@ async function main() {
       ];
       pool = trimmed === '/settings model ' ? modelCompletions.slice(0, 16) : modelCompletions;
     } else if (trimmed.startsWith('/settings ')) {
-      pool = tutorStubStaticCommandCompletions('/settings', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/settings', commandOptions);
     } else if (trimmed.startsWith('/analysis ')) {
-      pool = tutorStubStaticCommandCompletions('/analysis', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/analysis', commandOptions);
     } else if (trimmed.startsWith('/demo ')) {
-      pool = tutorStubStaticCommandCompletions('/demo', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/demo', commandOptions);
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
       const command = trimmed.startsWith('/html ') ? '/html' : '/transcript';
-      pool = tutorStubStaticCommandCompletions(command, { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions(command, commandOptions);
     } else if (trimmed.startsWith('/voice ')) {
-      pool = tutorStubStaticCommandCompletions('/voice', { mode: completionMode });
+      pool = tutorStubStaticCommandCompletions('/voice', commandOptions);
     } else if (trimmed.startsWith('/profile ')) {
       pool = [
-        ...tutorStubStaticCommandCompletions('/profile', { mode: completionMode }),
+        ...tutorStubStaticCommandCompletions('/profile', commandOptions),
         ...learnerProfileIds().map((profileId) => `/profile ${profileId}`),
       ];
     } else if (trimmed.startsWith('/scenario ')) {
@@ -22523,14 +22556,21 @@ async function main() {
     if ((command === '/reset' || command === '/clear') && !commandArg) {
       return resetInteractiveDialogue({ command, duringTurn });
     }
-    if (state.passthrough?.enabled && !tutorStubCommandAvailable(command, { mode: 'passthrough' })) {
+    const commandMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const commandOptions = { mode: commandMode, capabilities: state.capabilities };
+    if (tutorStubCanonicalCommandToken(command) && !tutorStubCommandAvailable(command, commandOptions)) {
+      const reasons = tutorStubCommandUnavailableReasons(command, commandOptions);
       clearStatusLine();
       console.log(
-        `${C.dim}${command} is intentionally unavailable in passthrough mode; use /help for the pure-chat commands${C.reset}\n`,
+        `${C.dim}${command} is unavailable in this ${state.capabilities.mode} session${
+          reasons.length ? `: ${reasons.join('; ')}` : ''
+        }; use /help for the active command surface${C.reset}\n`,
       );
       appendTraceEvent(state.trace, {
-        type: 'passthrough_command_rejected',
+        type: state.passthrough?.enabled ? 'passthrough_command_rejected' : 'command_capability_rejected',
         command,
+        capabilityMode: state.capabilities.mode,
+        reasons,
         duringTurn,
         publicTranscriptChanged: false,
       });
