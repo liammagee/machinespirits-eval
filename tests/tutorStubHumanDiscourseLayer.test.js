@@ -65,6 +65,11 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.ok(config.capabilities.active.includes('adaptive_delivery'));
   assert.equal(config.capabilities.capabilities.mixed_drafting.available, true);
   assert.equal(config.capabilities.capabilities.mixed_drafting.active, false);
+  assert.equal(config.sessionRuntime.schema, 'machinespirits.tutor-stub.session-runtime.v1');
+  assert.equal(config.sessionRuntime.version, 1);
+  assert.deepEqual(config.sessionRuntime.lifecycle, ['create', 'load', 'resume', 'step', 'reset', 'finalize']);
+  assert.equal(config.sessionRuntime.stateIsolation, 'per_runtime_instance');
+  assert.equal(config.sessionRuntime.commandHandlers, 'registry_owned');
   assert.equal(config.humanDiscourse.schema, 'machinespirits.tutor-stub.human-discourse-run-config.v1');
   assert.equal(config.humanDiscourse.dagMode, 'defeasible_human_scaffold');
   assert.equal(config.humanDiscourse.strictAuditDag, true);
@@ -1219,6 +1224,12 @@ test('tutor-stub /id exposes the local trace path for Codex debugging', () => {
     assert.match(traceText, /"schema":"machinespirits\.tutor-stub\.capability-snapshot\.v1"/u);
     assert.match(traceText, /"mode":"direct"/u);
     assert.match(traceText, /"compatibility":\{"valid":true,"issues":\[\]\}/u);
+    assert.match(traceText, /"type":"session_runtime_event"/u);
+    assert.match(traceText, /"sessionRuntimeSchema":"machinespirits\.tutor-stub\.session-event\.v1"/u);
+    assert.match(traceText, /"runtimeEvent":"created"/u);
+    assert.match(traceText, /"runtimeEvent":"load_completed"/u);
+    assert.match(traceText, /"type":"interactive_command_id"/u);
+    assert.match(traceText, /"runtimeEvent":"finalize_completed"/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
