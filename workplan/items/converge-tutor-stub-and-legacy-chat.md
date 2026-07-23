@@ -69,3 +69,14 @@ the two engines are not treated as prompt-compatible implementations.
   across the public catalogue, browser launch request, process specification,
   and public snapshot. Unknown engines remain unavailable until their adapter
   exists; focused catalogue and process-backed HTTP tests pass.
+- 2026-07-23: Froze a 119-test legacy baseline covering chat catalogues and
+  assist, turn routes, curriculum binding, live composition, pilot persistence,
+  participant/admin auth, and deliberation projection without paid model calls.
+- 2026-07-23: Added `services/legacyChatEngine.js` as the named `cell_lab`
+  domain entrypoint, moved pilot autoplay and live composition off direct
+  Express-route imports, and locked single-agent, superego, messages-mode, and
+  id-director representative profiles as the extraction compatibility matrix.
+- 2026-07-23: Extracted prompt lookup into the route-free
+  `services/legacyChatPromptLoader.js`; the HTTP route keeps a compatibility
+  re-export while turn execution and curriculum loading remain the next domain
+  functions to move.

@@ -21,6 +21,7 @@ import YAML from 'yaml';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import interactionEngine, { extractTutorMessage } from '../services/learnerTutorInteractionEngine.js';
+import { loadPromptFile } from '../services/legacyChatPromptLoader.js';
 import * as pilotStore from '../services/pilotStore.js';
 import { FEATURE_META, DIRECTOR_META, normalizeAssistProposal } from '../public/chat/assist-helpers.js';
 
@@ -39,18 +40,7 @@ const router = Router();
 // experiment-load-bearing YAML.
 const CHAT_MIN_MAX_TOKENS = 4000;
 
-const LOCAL_PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
-const CORE_PROMPTS_DIR = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
 const EVAL_DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
-
-function loadPromptFile(filename) {
-  if (!filename) return '';
-  const local = path.join(LOCAL_PROMPTS_DIR, filename);
-  if (fs.existsSync(local)) return fs.readFileSync(local, 'utf8');
-  const core = path.join(CORE_PROMPTS_DIR, filename);
-  if (fs.existsSync(core)) return fs.readFileSync(core, 'utf8');
-  return '';
-}
 
 // Interface affordance prepended to every chat/pilot tutor turn at RUNTIME — it
 // is deliberately NOT baked into the canonical cell prompt files, so the eval
@@ -2936,10 +2926,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
 
 export default router;
 
-// Re-exported for in-process reuse by the pilot autoplay engine
-// (services/pilotAutoplay.js), which drives an llm learner through the SAME
-// tutor loop a human participant drives. These are domain functions — an
-// ego/superego tutor turn and the prompt/curriculum loaders — that live in this
-// route module for historical reasons; the export shares the exact same code
-// path the human /pilot turn uses, so the two learner sources cannot drift.
+// Compatibility exports for services/legacyChatEngine.js. Non-route consumers
+// import that domain entrypoint now; these implementations remain here only
+// until the next extraction slice moves them without changing those callers.
 export { runTutorTurn, loadCurriculumContext, loadPromptFile };
