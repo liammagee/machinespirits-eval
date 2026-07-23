@@ -644,6 +644,7 @@ const { values: args, positionals } = parseArgs({
     'list-tutors': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
     features: { type: 'boolean', default: false },
+    'launch-mode': { type: 'string', default: process.env.TUTOR_STUB_LAUNCH_MODE || '' },
     'labelling-game': { type: 'boolean', default: false },
     'label-dataset': { type: 'string', default: '' },
     'label-coder': { type: 'string', default: '' },
@@ -832,8 +833,11 @@ Options:
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
+  --launch-mode <chat|labelling-game>
+                         choose the top-level launch surface; plain interactive
+                         launches show a keyboard mode picker (default: chat)
   --labelling-game       run the consolidated human-labelling harness instead
-                         of starting a tutoring dialogue
+                         of starting a tutoring dialogue (compatibility alias)
   --label-dataset <id>   superego-taxonomy or tutor-stub-impasses
   --label-coder <id>     rater id for the labelling output sidecar
   --list-tutors          list named, partitioned tutor instances and exit
@@ -2569,6 +2573,136 @@ function printCurriculumModules(ref) {
 
 function printAutomatedLearnerProfiles() {
   console.log(learnerProfileListText());
+}
+
+const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
+  {
+    id: 'chat',
+    label: 'Tutor chat',
+    description: 'Open the default learner–tutor conversation.',
+  },
+  {
+    id: 'labelling-game',
+    label: 'Labelling game',
+    description: 'Human-label the superego taxonomy or tutor-stub impasse corpus.',
+  },
+]);
+
+function normalizeTutorStubLaunchMode(value, { allowEmpty = false } = {}) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/gu, '-');
+  if (!normalized && allowEmpty) return '';
+  const aliases = new Map([
+    ['chat', 'chat'],
+    ['default', 'chat'],
+    ['tutor', 'chat'],
+    ['tutor-chat', 'chat'],
+    ['labelling', 'labelling-game'],
+    ['labeling', 'labelling-game'],
+    ['labelling-game', 'labelling-game'],
+    ['labeling-game', 'labelling-game'],
+  ]);
+  const resolved = aliases.get(normalized);
+  if (!resolved) {
+    throw new Error(`unknown --launch-mode "${value}"; use chat or labelling-game`);
+  }
+  return resolved;
+}
+
+function defaultLaunchModePickerAvailable() {
+  return Boolean(
+    process.argv.slice(2).length === 0 && input.isTTY && output.isTTY && typeof input.setRawMode === 'function',
+  );
+}
+
+async function pickTutorStubLaunchModeWithKeyboard(defaultMode = 'chat') {
+  const defaultId = normalizeTutorStubLaunchMode(defaultMode);
+  let selectedIndex = Math.max(
+    0,
+    TUTOR_STUB_LAUNCH_MODES.findIndex((entry) => entry.id === defaultId),
+  );
+  let renderedLineCount = 0;
+  const clearRenderedMenu = () => {
+    if (!renderedLineCount) return;
+    moveCursor(output, 0, -renderedLineCount);
+    for (let index = 0; index < renderedLineCount; index += 1) {
+      cursorTo(output, 0);
+      clearLine(output, 0);
+      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+    }
+    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+    renderedLineCount = 0;
+  };
+  const renderMenu = () => {
+    clearRenderedMenu();
+    const width = Math.max(58, Math.min(Number(output.columns || 100), 120));
+    const selected = TUTOR_STUB_LAUNCH_MODES[selectedIndex];
+    const lines = [
+      ...TUTOR_STUB_LAUNCH_MODES.map((entry, index) => {
+        const active = index === selectedIndex;
+        const plain = `${active ? '›' : ' '} ${entry.label.padEnd(20)} ${oneLine(entry.description, {
+          max: Math.max(24, width - 26),
+        })}`;
+        return active ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
+      }),
+      `${C.brightYellow}${C.bold}  launches >${C.reset} ${selected.label}`,
+      `${C.dim}  ↑/↓ move · Enter launch · Esc quit · Tutor chat is the default${C.reset}`,
+    ];
+    for (const line of lines) output.write(`${line}\n`);
+    renderedLineCount = lines.length;
+  };
+
+  const wasRaw = Boolean(input.isRaw);
+  if (!wasRaw) input.setRawMode(true);
+
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = (selection) => {
+      if (finished) return;
+      finished = true;
+      input.removeListener('data', onData);
+      if (!wasRaw) input.setRawMode(false);
+      clearRenderedMenu();
+      resolve(selection);
+    };
+    const moveSelection = (delta) => {
+      selectedIndex = (selectedIndex + delta + TUTOR_STUB_LAUNCH_MODES.length) % TUTOR_STUB_LAUNCH_MODES.length;
+      renderMenu();
+    };
+    const onData = (chunk) => {
+      const characters = String(chunk || '');
+      for (let index = 0; index < characters.length; index += 1) {
+        const character = characters[index];
+        if (character === '\u0003') return finish(null);
+        if (character === '\u001b') {
+          const arrowPrefix = characters[index + 1];
+          const arrowDirection = characters[index + 2];
+          if ((arrowPrefix === '[' || arrowPrefix === 'O') && ['A', 'B'].includes(arrowDirection)) {
+            moveSelection(arrowDirection === 'A' ? -1 : 1);
+            index += 2;
+            continue;
+          }
+          return finish(null);
+        }
+        if (character === 'k') moveSelection(-1);
+        else if (character === 'j') moveSelection(1);
+        else if (character === '1') {
+          selectedIndex = 0;
+          renderMenu();
+        } else if (character === '2') {
+          selectedIndex = 1;
+          renderMenu();
+        } else if (character === '\r' || character === '\n') {
+          return finish(TUTOR_STUB_LAUNCH_MODES[selectedIndex]);
+        }
+      }
+    };
+    input.on('data', onData);
+    input.resume();
+    renderMenu();
+  });
 }
 
 function resolveWorldRef(ref) {
@@ -14874,13 +15008,32 @@ async function main() {
     printAutomatedLearnerProfiles();
     return;
   }
-  if (args['labelling-game']) {
+  const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
+  if (args['labelling-game'] && requestedLaunchMode && requestedLaunchMode !== 'labelling-game') {
+    throw new Error('--labelling-game conflicts with --launch-mode chat');
+  }
+  const launchPickerEnabled = !args['labelling-game'] && !requestedLaunchMode && defaultLaunchModePickerAvailable();
+  let launchMode = args['labelling-game'] ? 'labelling-game' : requestedLaunchMode || 'chat';
+  if (launchPickerEnabled) {
+    console.log(`${C.brightCyan}${C.bold}Machine Spirits${C.reset}`);
+    console.log(`${C.dim}Choose a mode${C.reset}\n`);
+    const selection = await pickTutorStubLaunchModeWithKeyboard('chat');
+    if (!selection) return;
+    launchMode = selection.id;
+  }
+  while (launchMode === 'labelling-game') {
+    if (launchPickerEnabled) console.log(`${C.cyan}${C.bold}mode >${C.reset} Labelling game\n`);
     await runLabellingGameCli({
       datasetId: args['label-dataset'],
       coderId: args['label-coder'],
     });
-    return;
+    if (!launchPickerEnabled) return;
+    console.log(`\n${C.dim}Choose a mode${C.reset}\n`);
+    const selection = await pickTutorStubLaunchModeWithKeyboard('chat');
+    if (!selection) return;
+    launchMode = selection.id;
   }
+  if (launchPickerEnabled) console.log(`${C.cyan}${C.bold}mode >${C.reset} Tutor chat\n`);
 
   args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
   args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });

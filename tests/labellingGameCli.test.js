@@ -5,8 +5,16 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import pty from 'node-pty';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function plainTerminalText(value) {
+  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+  return String(value || '')
+    .replace(ansi, '')
+    .replace(/\r/gu, '');
+}
 
 function fixtureWorkspace() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'labelling-game-cli-'));
@@ -38,6 +46,7 @@ describe('labelling-game CLI integration', () => {
       encoding: 'utf8',
     });
     assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /--launch-mode <chat\|labelling-game>/);
     assert.match(result.stdout, /--labelling-game/);
     assert.match(result.stdout, /--label-dataset <id>/);
   });
@@ -48,7 +57,8 @@ describe('labelling-game CLI integration', () => {
       process.execPath,
       [
         'scripts/tutor-stub.js',
-        '--labelling-game',
+        '--launch-mode',
+        'labelling-game',
         '--label-dataset',
         'tutor-stub-impasses',
         '--label-coder',
@@ -69,6 +79,73 @@ describe('labelling-game CLI integration', () => {
     assert.match(result.stdout, /Machine Spirits · Labelling Game/);
     assert.match(result.stdout, /tutor-stub-impasses · 0\/1 complete/);
     assert.match(result.stdout, /E01 · 1\/1 · open/);
+    assert.equal(fs.existsSync(fixture.outputDir), false);
+  });
+
+  it('offers labelling beside default chat and returns to the launcher on quit', async () => {
+    const fixture = fixtureWorkspace();
+    const result = await new Promise((resolve, reject) => {
+      const terminal = pty.spawn(process.execPath, ['scripts/tutor-stub.js'], {
+        cwd: ROOT,
+        cols: 110,
+        rows: 32,
+        env: {
+          ...process.env,
+          LABELLING_GAME_IMPASSE_DATASET: fixture.datasetPath,
+          LABELLING_GAME_IMPASSE_OUTPUT_DIR: fixture.outputDir,
+          TUTOR_STUB_SETTINGS_FILE: path.join(fixture.root, 'settings.json'),
+        },
+      });
+      let output = '';
+      let stage = 'launcher';
+      let settled = false;
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`launch-mode picker timed out at ${stage}\n${plainTerminalText(output)}`));
+      }, 10_000);
+
+      terminal.onData((chunk) => {
+        output += chunk;
+        const plain = plainTerminalText(output);
+        if (stage === 'launcher' && plain.includes('launches > Tutor chat')) {
+          stage = 'dataset';
+          terminal.write('\u001b[B\r');
+        } else if (stage === 'dataset' && plain.includes('Dataset [superego-taxonomy]:')) {
+          stage = 'coder';
+          terminal.write('2\r');
+        } else if (stage === 'coder' && plain.includes('Coder ID [rater-A]:')) {
+          stage = 'game';
+          terminal.write('\r');
+        } else if (stage === 'game' && plain.includes('E01 · 1/1 · open')) {
+          stage = 'returning';
+          terminal.write('q\r');
+        } else if (stage === 'returning' && plain.split('launches > Tutor chat').length - 1 >= 2) {
+          stage = 'chat';
+          terminal.write('\r');
+        } else if (stage === 'chat' && plain.includes('mode > Tutor chat')) {
+          settled = true;
+          clearTimeout(timer);
+          terminal.kill();
+          resolve(plain);
+        }
+      });
+      terminal.onExit(({ exitCode }) => {
+        if (settled) return;
+        clearTimeout(timer);
+        if (exitCode !== 0) {
+          reject(new Error(`launch-mode picker exited ${exitCode}\n${plainTerminalText(output)}`));
+          return;
+        }
+        resolve(plainTerminalText(output));
+      });
+    });
+
+    assert.match(result, /Choose a mode/u);
+    assert.match(result, /Tutor chat/u);
+    assert.match(result, /Labelling game/u);
+    assert.match(result, /mode > Labelling game/u);
+    assert.match(result, /mode > Tutor chat/u);
+    assert.ok(result.split('Choose a mode').length - 1 >= 2);
     assert.equal(fs.existsSync(fixture.outputDir), false);
   });
 });
