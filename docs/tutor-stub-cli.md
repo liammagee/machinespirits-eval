@@ -23,6 +23,8 @@ named explicitly. For example, mixed-drafting commands such as `/suggest` and
 `/use` appear only when mixed drafting is active, while `/random`, `/register`,
 and `/character` require adaptive delivery. Calling `/help` therefore describes
 the command surface that is actually usable rather than a larger global list.
+Palette and completion entries are globally alphabetical; `/help` keeps its
+semantic groups and alphabetizes the commands within each group.
 
 The underlying command and capability registries remain frozen catalogs, so
 tests and future web or Electron adapters can inspect every supported command
@@ -259,7 +261,11 @@ npm run tutor:stub -- --labelling-game --label-dataset superego-taxonomy --label
 ```
 
 `--labelling-game` remains a compatibility alias. Omit the dataset and coder
-flags to choose them interactively. The same packets
+flags to choose them interactively. To keep one local coder identity without
+repeating a flag, add `LABELLING_GAME_CODER=liam` to the ignored `.env` file.
+An explicit `--label-coder` or standalone `--coder` still takes precedence.
+The resolved coder is printed above packet progress so resumed labels cannot
+silently attach to the wrong sidecar. The same packets
 are available in the browser at `http://localhost:8081/human-coding-admin`
 after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
 impasse judgments are stored as structured per-rater JSON sidecars.

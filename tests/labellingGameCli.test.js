@@ -70,6 +70,7 @@ describe('labelling-game CLI integration', () => {
         input: 'q\n',
         env: {
           ...process.env,
+          LABELLING_GAME_CODER: 'ignored-env-coder',
           LABELLING_GAME_IMPASSE_DATASET: fixture.datasetPath,
           LABELLING_GAME_IMPASSE_OUTPUT_DIR: fixture.outputDir,
         },
@@ -77,8 +78,33 @@ describe('labelling-game CLI integration', () => {
     );
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Machine Spirits · Labelling Game/);
+    assert.match(result.stdout, /coder > cli-test/);
     assert.match(result.stdout, /tutor-stub-impasses · 0\/1 complete/);
     assert.match(result.stdout, /E01 · 1\/1 · open/);
+    assert.equal(fs.existsSync(fixture.outputDir), false);
+  });
+
+  it('uses LABELLING_GAME_CODER as the local default without prompting', () => {
+    const fixture = fixtureWorkspace();
+    const result = spawnSync(
+      process.execPath,
+      ['scripts/tutor-stub.js', '--launch-mode', 'labelling-game', '--label-dataset', 'tutor-stub-impasses'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: 'q\n',
+        env: {
+          ...process.env,
+          LABELLING_GAME_CODER: 'env-coder',
+          LABELLING_GAME_IMPASSE_DATASET: fixture.datasetPath,
+          LABELLING_GAME_IMPASSE_OUTPUT_DIR: fixture.outputDir,
+        },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /coder > env-coder/);
+    assert.doesNotMatch(result.stdout, /Coder ID \[rater-A\]:/);
+    assert.match(result.stdout, /tutor-stub-impasses · 0\/1 complete/);
     assert.equal(fs.existsSync(fixture.outputDir), false);
   });
 

@@ -985,7 +985,8 @@ Options:
   --labelling-game       run the consolidated human-labelling harness instead
                          of starting a tutoring dialogue (compatibility alias)
   --label-dataset <id>   superego-taxonomy or tutor-stub-impasses
-  --label-coder <id>     rater id for the labelling output sidecar
+  --label-coder <id>     rater id for the labelling output sidecar;
+                         overrides LABELLING_GAME_CODER from .env
   --list-tutors          list named, partitioned tutor instances and exit
   --list-learner-profiles
                          list built-in automated learner profiles and exit
@@ -18296,9 +18297,10 @@ async function main() {
         pool = ['/board'];
       }
     }
-    const matches = pool.filter((candidate) => candidate.startsWith(trimmed));
+    const sortedPool = [...new Set(pool)].toSorted();
+    const matches = sortedPool.filter((candidate) => candidate.startsWith(trimmed));
     return {
-      candidates: matches.length || !fallback ? matches : pool,
+      candidates: matches.length || !fallback ? matches : sortedPool,
       replacement: trimmed,
     };
   }
@@ -18308,7 +18310,7 @@ async function main() {
     const trimmed = raw.trimStart();
     if (!trimmed.startsWith('/')) return [];
     const { candidates } = slashCommandCompletionForLine(trimmed);
-    const commands = [...new Set(candidates.map((candidate) => candidate.trimEnd()))];
+    const commands = [...new Set(candidates.map((candidate) => candidate.trimEnd()))].toSorted();
     const terminalWidth = Math.max(48, Number(output.columns) || 100);
     const countLabel =
       trimmed === '/'

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { parseArgs } from 'node:util';
 
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
@@ -21,7 +22,9 @@ Datasets:
   tutor-stub-impasses
 
 The same terminal flow is available through:
-  npm run tutor:stub -- --labelling-game [--label-dataset <id>] [--label-coder <id>]`);
+  npm run tutor:stub -- --labelling-game [--label-dataset <id>] [--label-coder <id>]
+
+Set LABELLING_GAME_CODER in .env to use a local default coder id.`);
 } else {
   await runLabellingGameCli({ datasetId: values.dataset, coderId: values.coder });
 }
