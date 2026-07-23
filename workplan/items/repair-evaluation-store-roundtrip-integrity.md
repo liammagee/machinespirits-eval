@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-23
+updated: 2026-07-24
 verification: Store, reload, rejudge, rubric-version clone, completion, and
   resume round trips preserve generation provenance, factor fields, learner and
   id-director identity, total counts, and every expected attempt.
@@ -16,6 +16,8 @@ depends_on: []
 links:
   code:
     - services/evaluationStore.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/173
 tags:
   - provenance
   - rejudging
@@ -55,3 +57,7 @@ attempts, clone idempotence, exports, run totals, and checkpoint isolation.
 Verification: `npm test` (6,469 pass, 0 fail, 1 skipped); focused evaluation
 store/runner/checkpoint/API/prompt suite (239/239 pass); `npm run lint`;
 `node scripts/workplan.js check`; and `git diff --check`.
+
+2026-07-24 Codex: Rebased onto current `origin/main`, regenerated the board,
+and opened ready PR #173. Post-rebase verification passed 293 focused tests
+and the full suite with 6,502 passes, 0 failures, and 1 intentional skip.

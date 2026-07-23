@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T20:43:57.134Z",
+  "generated": "2026-07-23T20:46:43.194Z",
   "counts": {
     "total": 158,
     "byStatus": {
@@ -1707,13 +1707,16 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-22",
-      "updated": "2026-07-23",
+      "updated": "2026-07-24",
       "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
         "code": [
           "services/evaluationStore.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/173"
         ]
       },
       "tags": [
