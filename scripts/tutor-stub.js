@@ -13031,26 +13031,31 @@ async function callTutor({
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
       ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
+    const defaultFallbackUptake = deterministicTutorStubLearnerUptake({
+      learnerText,
+      classification,
+      actionFamily: responseCompositionFrame.selected_action_family || null,
+      recentTutorTexts,
+      world,
+    });
+    const candidateFallbackUptake = fallbackRequiresSpecificUptake
+      ? defaultFallbackUptake
+      : preservableTutorUptake(audits) || firstRepairUptake || defaultFallbackUptake;
+    // A repair candidate can have passed an earlier segmentation while still
+    // losing the learner's typed focus once it is composed into the terminal
+    // fallback. Re-run every candidate through the same progression contract
+    // here; do not privilege preserved prose over a focus-bearing recovery.
     const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
       contract: firstDraftContract?.progression || null,
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-      defaultUptake: deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
-        recentTutorTexts,
-        world,
-      }),
+      defaultUptake: candidateFallbackUptake,
     });
-    const candidateFallbackUptake = fallbackRequiresSpecificUptake
-      ? deterministicFallbackUptake
-      : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const fallbackUptake =
-      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
+      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(deterministicFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
-        : candidateFallbackUptake;
+        : deterministicFallbackUptake;
     const baseFallbackText = closureFallbackSelected
       ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
           responseConfiguration: simplifiedRecoveryConfiguration,

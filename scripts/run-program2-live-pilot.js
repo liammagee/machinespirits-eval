@@ -9,7 +9,9 @@
 // --launch-approved --expected-sha <clean HEAD>. Additions: sealed-trace
 // resume (jobs whose trace already contains run_end are skipped), a local
 // ollama preflight for the committee mini, one same-seed retry per failed
-// job, and an abort after three consecutive failed attempts (prereg §4).
+// job, and an abort after three consecutive provider-transport failures
+// (prereg §3). Deterministic final-audit exits consume the job retry but are
+// recorded as audit attrition rather than being mislabeled as transport.
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -626,11 +628,77 @@ async function runCommand(command, ordinal, total) {
     const child = spawn(command[0], command.slice(1), { cwd: ROOT, env: process.env, stdio: 'inherit' });
     child.on('error', reject);
     child.on('exit', (code, signal) => {
-      if (signal) reject(new Error(`child stopped by ${signal}`));
-      else if (code !== 0) reject(new Error(`child exited ${code}`));
+      if (signal) {
+        const error = new Error(`child stopped by ${signal}`);
+        error.signal = signal;
+        reject(error);
+      } else if (code !== 0) {
+        const error = new Error(`child exited ${code}`);
+        error.exitCode = code;
+        reject(error);
+      }
       else resolve();
     });
   });
+}
+
+function latestJobErrorEvent(outputRoot, job, { sinceMs = 0 } = {}) {
+  const dir = path.join(outputRoot, 'traces', job.id);
+  if (!fs.existsSync(dir)) return null;
+  const files = fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith('.jsonl'))
+    .map((file) => ({ file, mtimeMs: fs.statSync(path.join(dir, file)).mtimeMs }))
+    .filter((entry) => entry.mtimeMs >= sinceMs)
+    .sort((left, right) => right.mtimeMs - left.mtimeMs);
+  for (const { file } of files) {
+    const lines = fs.readFileSync(path.join(dir, file), 'utf8').trim().split('\n');
+    for (let index = lines.length - 1; index >= 0; index -= 1) {
+      try {
+        const event = JSON.parse(lines[index]);
+        if (event?.type === 'model_call_error') return { ...event, traceFile: path.join(dir, file) };
+      } catch {
+        // A child can exit while its final line is incomplete. Earlier sealed
+        // JSON events remain usable for failure classification.
+      }
+    }
+  }
+  return null;
+}
+
+export function classifyProgram2LaunchFailure({ error = null, traceEvent = null } = {}) {
+  const childError = String(error?.message || error || '').trim();
+  const traceError = String(traceEvent?.error || '').trim();
+  const detail = traceError || childError || 'unknown child-process failure';
+  if (/^Tutor deterministic fallback failed final audit:/u.test(detail)) {
+    return {
+      kind: 'deterministic_final_audit',
+      countsTowardTransportAbort: false,
+      detail,
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
+  if (
+    /\b(?:ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|HTTP\s*(?:429|502|503|504))\b|fetch failed|network error|provider transport|rate limit|socket hang up|temporarily unavailable|timed? out|unreachable|overloaded/iu.test(
+      detail,
+    )
+  ) {
+    return {
+      kind: 'provider_transport',
+      countsTowardTransportAbort: true,
+      detail,
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
+  return {
+    kind: error?.signal ? 'child_signal' : 'child_process',
+    countsTowardTransportAbort: false,
+    detail,
+    turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+    traceFile: traceEvent?.traceFile || null,
+  };
 }
 
 async function main() {
@@ -718,7 +786,7 @@ async function main() {
     ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
-  let consecutiveFailures = 0;
+  let consecutiveTransportFailures = 0;
   let executed = 0;
   for (const job of plan.jobs) {
     if (executed >= limit) break;
@@ -730,20 +798,43 @@ async function main() {
     }
     executed += 1;
     let outcome = null;
+    const failures = [];
     for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const attemptStartedAt = Date.now();
       try {
         await runCommand(job.command, job.ordinal, plan.jobs.length);
-        outcome = { status: 'sealed', attempts: attempt };
-        consecutiveFailures = 0;
+        outcome = { status: 'sealed', attempts: attempt, failures };
+        consecutiveTransportFailures = 0;
         break;
       } catch (error) {
-        consecutiveFailures += 1;
-        outcome = { status: 'failed', attempts: attempt, error: String(error.message || error).slice(0, 300) };
-        console.error(`[phase5] ${job.id} attempt ${attempt} failed: ${outcome.error}`);
-        if (consecutiveFailures >= 3) {
+        const failure = classifyProgram2LaunchFailure({
+          error,
+          traceEvent: latestJobErrorEvent(outputRoot, job, { sinceMs: attemptStartedAt }),
+        });
+        failures.push({
+          attempt,
+          kind: failure.kind,
+          detail: failure.detail.slice(0, 500),
+          turn: failure.turn,
+          traceFile: failure.traceFile ? path.relative(ROOT, failure.traceFile) : null,
+        });
+        consecutiveTransportFailures = failure.countsTowardTransportAbort
+          ? consecutiveTransportFailures + 1
+          : 0;
+        outcome = {
+          status: 'failed',
+          attempts: attempt,
+          failureKind: failure.kind,
+          error: failure.detail.slice(0, 300),
+          failures,
+        };
+        console.error(
+          `[phase5] ${job.id} attempt ${attempt} failed (${failure.kind}): ${outcome.error}`,
+        );
+        if (consecutiveTransportFailures >= 3) {
           launchState.jobs[job.id] = outcome;
           launchState.abortedAt = new Date().toISOString();
-          launchState.abortReason = 'three consecutive transport failures (prereg §4)';
+          launchState.abortReason = 'three consecutive transport failures (prereg §3)';
           saveState();
           throw new Error('aborting launch: three consecutive transport failures');
         }

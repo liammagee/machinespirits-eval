@@ -7,6 +7,11 @@ zero-model implementation gate passes and the worktree is clean. Any change
 after the first sealed trace requires a dated amendment; the original plan and
 trace remain in the analysis.
 
+**AMENDMENT 1 FROZEN 2026-07-23** after the failed first launch and before any
+replacement dialogue. Section 8 defines the repair and clean-cohort restart;
+the estimand, 30-dialogue matrix, models, seed, endpoints, and reading grammar
+remain unchanged.
+
 Parent design:
 `PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md`. Exploratory tier.
 The frozen v1 point-of-action detector and warrant audit remain the scoring
@@ -169,3 +174,48 @@ amendment and a new clean SHA after a narrow deterministic-fallback repair. A
 shadow/advisory relaxation is not silently substituted: it would change which
 delivered turns enter the endpoint and therefore needs its own explicit design
 decision.
+
+## 8. Amendment 1 — strict fallback repair and clean-cohort restart (2026-07-23)
+
+The user authorized the best next move after reviewing the abort, and the
+earlier approval to send the 30-dialogue experiment's prompts and transcripts
+to the configured Sonnet and Terra providers remains in force. This amendment
+was written before any replacement dialogue was generated.
+
+The trace anatomy identified three implementation defects rather than a result
+about trained versus untuned weights:
+
+1. terminal recovery could reuse a prior acknowledgement without rechecking
+   that it carried the learner's typed focus;
+2. a declarative handoff could restate an unsupported learner conclusion as a
+   settled point; and
+3. the launcher treated every nonzero child exit as provider transport, even
+   when the trace named a deterministic final-audit rejection.
+
+The strict repair is fixed as follows:
+
+- every preserved or repaired fallback acknowledgement is revalidated against
+  the same turn-progression contract before use;
+- an unsupported learner conclusion is named explicitly as a claim that
+  remains open until public evidence supports it, rather than being repeated
+  as settled;
+- bounded focus acknowledgements are shortened so a long authored clue can
+  still realize the selected plain/unadorned performance without changing or
+  truncating the clue; and
+- launch-state rows record `deterministic_final_audit`, `provider_transport`,
+  or child-process failure from the latest trace event. Only an actual provider
+  transport failure increments the three-consecutive-transport-failure gate.
+  Deterministic audit exits still consume the job's one allowed retry and can
+  still produce attrition; no guard is downgraded.
+
+To avoid mixing runtime versions or granting selective extra attempts, the
+first launch is a diagnostic cohort and is wholly excluded from W1-W3,
+including its one sealed trained dialogue. Amendment 1 restarts all 30 planned
+cells from the beginning under one new clean SHA in
+`exports/program2-committee-floor-ablation-amendment-1/`. It retains the same
+seeded job order, same-seed one-retry limit, models, prompts, profiles, local
+mini artifacts, fixed detector, warrant audit, fallback-v2 policy, and frozen
+analysis. A licensed reading still requires 30/30 sealed replacement jobs.
+The original traces and analysis remain untouched under
+`exports/program2-committee-floor-ablation/` and are reported only as the
+reason for this amendment.

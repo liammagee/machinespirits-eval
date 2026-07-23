@@ -3431,6 +3431,38 @@ test('presented-exhibit fallback preserves the selected part and tactic across e
   }
 });
 
+test('plain dramatic fallback remains an unadorned report with a long authored Marrick clue', () => {
+  const learnerText =
+    'We carry forward only Verrell’s presence at the mint-yard in fair-week; it remains unconnected to these weir-forge shillings.';
+  const dueEvidence = [
+    {
+      surface:
+        'Lay a dozen of the light shillings under the glass and they share one fault to the hair: a broken letter in the legend, the serif of the R struck with a small square notch where the graver slipped and was never mended. One die struck them all.',
+      via: 'tutor',
+      presentation: { mode: 'presented_exhibit' },
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText,
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence,
+    world: testWorld(),
+  });
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake: 'Your point about “Verrell’s presence at the mint-yard in fair-week” stays in view.',
+    responseConfiguration: configuration,
+    variationKey: 'floor-ablation-amendment-1',
+  });
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.actorial_realization.ok, true, `${text}\n${JSON.stringify(audit.actorial_realization.issues)}`);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+});
+
 test('learner-responsive action families are audited on uptake rather than clue development', () => {
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',

@@ -6,6 +6,7 @@ import {
   buildPhase5LivePilotPlan,
   buildPhase5bLivePilotPlan,
   buildPhase5cLivePilotPlan,
+  classifyProgram2LaunchFailure,
   COMMITTEE_FLOOR_ABLATION_SPEC,
   PHASE5_LIVE_PILOT_SPEC,
   validateCommitteeFloorAblationPlan,
@@ -133,4 +134,28 @@ test('analysis refuses a licensed reading when any planned condition is incomple
   const artifact = analyzeFloorAblationRows(rows, { draws: 100 });
   assert.equal(artifact.readyForLicensedReading, false);
   assert.equal(artifact.reading, 'incomplete_or_under_informative');
+});
+
+test('launcher distinguishes deterministic final audits from provider transport failures', () => {
+  const auditFailure = classifyProgram2LaunchFailure({
+    error: new Error('child exited 1'),
+    traceEvent: {
+      turn: 31,
+      error: 'Tutor deterministic fallback failed final audit: response_composition:generic_learner_uptake',
+      traceFile: '/tmp/audit.jsonl',
+    },
+  });
+  assert.deepEqual(
+    { kind: auditFailure.kind, counts: auditFailure.countsTowardTransportAbort, turn: auditFailure.turn },
+    { kind: 'deterministic_final_audit', counts: false, turn: 31 },
+  );
+
+  const transportFailure = classifyProgram2LaunchFailure({
+    error: new Error('child exited 1'),
+    traceEvent: { turn: 4, error: 'provider transport: HTTP 503 temporarily unavailable' },
+  });
+  assert.deepEqual(
+    { kind: transportFailure.kind, counts: transportFailure.countsTowardTransportAbort },
+    { kind: 'provider_transport', counts: true },
+  );
 });

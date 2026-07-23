@@ -221,9 +221,9 @@ function interrogativeUptake(value) {
 
 function realizeTurnProgressionUptakeVariants(quotedFocus) {
   return [
-    `I keep your point about “${quotedFocus}” in view before we develop it.`,
-    `I hear the focus: “${quotedFocus}”; that stays at the centre of this turn.`,
-    `Your point about “${quotedFocus}” is the one I will answer now.`,
+    `I keep your point about “${quotedFocus}” in view.`,
+    `I am answering your point about “${quotedFocus}”.`,
+    `Your point about “${quotedFocus}” stays in view.`,
   ];
 }
 
@@ -637,6 +637,17 @@ function declarativeFallbackFocus(
     return `We will carry this settled point forward: ${oneLine(uptake.accepted_meaning)
       .replace(/[?]+/gu, '')
       .replace(/[.!]+$/gu, '')}.`;
+  }
+  if (focus.primary_source === 'learner_surface' && surface) {
+    const boundedClaim = surface
+      .replace(/^(?:i|we)\s+(?:enter|record|claim|say|think)\s*:?\s*/iu, '')
+      .replace(/^that\s+/iu, '')
+      .replace(/[?]+/gu, '')
+      .replace(/[.!]+$/gu, '')
+      .trim();
+    return boundedClaim
+      ? `The claim that ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)} remains open until the public evidence supports it.`
+      : 'That claim remains open until the public evidence supports it.';
   }
   const focusObject = surface.match(
     /\b(?:badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,

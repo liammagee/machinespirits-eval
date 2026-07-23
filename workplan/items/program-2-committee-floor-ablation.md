@@ -1,16 +1,15 @@
 ---
 id: program-2-committee-floor-ablation
 title: "Price the fine-tune: live committee with the untuned mini"
-status: blocked
+status: active
 type: experiment
 priority: P2
-owner: human
+owner: codex
 source: manual
 created: 2026-07-22
 updated: 2026-07-23
 verification: "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, and fallback-burden diagnostics without historical pooling."
 branch: codex/program2-committee-floor-ablation
-blocked_by: "The frozen launch aborted after three consecutive deterministic final-audit failures (1/30 sealed); continuation requires explicit approval of a dated prereg amendment and a narrow fallback repair on a new clean SHA."
 claim_status: planned
 links:
   paper: §6.21
@@ -62,3 +61,8 @@ Log:
   analyzer returned `incomplete_or_under_informative`; no trained-vs-untuned
   estimate is licensed. Blocked pending an explicit amendment decision; see
   preregistration §7 for the failure anatomy.
+- 2026-07-23 — Amendment 1 activated after user approval: retain the original
+  partial launch as excluded diagnostics, repair the strict deterministic
+  fallback and failure ledger, then restart a clean 30-dialogue cohort under a
+  new pushed SHA. No endpoint, guard disposition, or reading rule changes; see
+  preregistration §8.

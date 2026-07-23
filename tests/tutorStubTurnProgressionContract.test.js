@@ -878,7 +878,7 @@ test('deterministic V1 recovery replaces generic uptake with bounded typed learn
     defaultUptake: 'I hear the point; the next public fact must answer it.',
   });
 
-  assert.equal(uptake, 'I keep your point about “First learner message” in view before we develop it.');
+  assert.equal(uptake, 'I keep your point about “First learner message” in view.');
   assert.doesNotMatch(uptake, /\?/u);
   const audit = auditTutorStubTurnProgression({
     contract,
@@ -938,8 +938,37 @@ test('deterministic V1 recovery bounds the quoted focus below the learner echo a
   // whole surface back — exactly what the response-composition audit rejects
   // as verbatim_learner_echo on the deterministic fallback.
   assert.equal(tutorStubSubstantiveLearnerEcho(unguarded, learnerText), true);
-  assert.equal(uptake, 'I keep your point about “I am not sure, can you just tell” in view before we develop it.');
+  assert.equal(uptake, 'I keep your point about “I am not sure, can you just tell” in view.');
   assert.equal(tutorStubSubstantiveLearnerEcho(uptake, learnerText), false);
+});
+
+test('deterministic declarative recovery keeps an unsupported learner conclusion explicitly open', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'I enter: Edony alone struck the false shillings passed at the Marrick fair.',
+    responseCompositionFrame: {
+      learner_move: { summary: 'Claims Edony alone struck the coins.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'answer_accountably',
+    tactic: 'unadorned_report',
+  });
+  assert.equal(contract.handoff_contract.question_allowed, false);
+
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract });
+
+  assert.equal(
+    handoff,
+    'The claim that edony alone struck the false shillings passed at the Marrick fair remains open until the public evidence supports it.',
+  );
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'Your claim names Edony as the only striking hand.',
+      handoff,
+    }),
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
 });
 
 test('deterministic V1 recovery replaces interrogative uptake instead of stripping punctuation', () => {
