@@ -130,3 +130,42 @@ untuned model. The 30-dialogue run is checkpointed and resumable. Expected
 frontier cost is approximately 1.7 times Phase 5b; both mini models are local.
 Out of scope: retraining, KTO, an instrument change, cross-world transfer,
 Codex-family tutor arms, or tuning any threshold after trace inspection.
+
+## 7. First launch outcome (2026-07-23 — frozen abort, no result)
+
+The pushed launch SHA was
+`8fd08b2a46eef1b238646ff164cae138820ab3d5`. The zero-model gate, Marrick
+world-quality gate, prompt-audit tests, and both Ollama model preflights passed.
+The paid run then stopped at the pre-registered three-consecutive-failure gate
+after one dialogue sealed:
+
+- `trained_committee / affective_resistant / r6` sealed on its first attempt
+  at 22 completed turns;
+- `silent_control / proof_skipper / r1` failed at turn 19 with
+  `leak:private_die_conclusion`, then failed its one allowed retry at turn 31
+  with `response_composition:generic_learner_uptake`,
+  `live_turn_progression_v1:learner_uptake_not_realized`, and a report-only
+  configuration-axis miss;
+- `untuned_committee / affective_resistant / r5` failed its first attempt at
+  turn 13 with `actorial_realization:missing_selected_performance_tactic` plus
+  two report-only configuration-axis misses. This was the third consecutive
+  failed attempt, so the launcher aborted before the job's second attempt.
+
+The launch-state artifact labels the gate `three consecutive transport
+failures`; the trace evidence shows that all three were deterministic final
+audits, not provider transport failures. Artifacts remain under
+`exports/program2-committee-floor-ablation/` in the launch worktree, including
+`launch-state.json`, four JSONL attempts, and `analysis.json`.
+
+The frozen analyzer reports 1/12 trained, 0/12 untuned, and 0/6 control
+dialogues sealed; zero matched blocks; W1–W3 not estimable; and density 3/15 in
+the trained condition and 0/15 in the untuned condition. Its sole licensed
+reading is `incomplete_or_under_informative`. The sealed trained dialogue's
+0/3 compliance and other component values are not interpretable as condition
+estimates and must not be quoted as a weights result.
+
+No resume is licensed by the frozen design. Continuation requires a dated
+amendment and a new clean SHA after a narrow deterministic-fallback repair. A
+shadow/advisory relaxation is not silently substituted: it would change which
+delivered turns enter the endpoint and therefore needs its own explicit design
+decision.

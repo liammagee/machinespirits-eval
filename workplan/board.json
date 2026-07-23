@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T09:21:29.072Z",
+  "generated": "2026-07-23T10:16:23.785Z",
   "counts": {
     "total": 156,
     "byStatus": {
       "done": 121,
-      "blocked": 3,
+      "blocked": 4,
       "dropped": 2,
       "triaged": 25,
-      "archived": 4,
-      "active": 1
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -708,38 +707,6 @@
       "branch": "main"
     },
     {
-      "id": "program-2-committee-floor-ablation",
-      "title": "Price the fine-tune: live committee with the untuned mini",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-23",
-      "verification": "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, and fallback-burden diagnostics without historical pooling.",
-      "branch": "codex/program2-committee-floor-ablation",
-      "claim_status": "planned",
-      "links": {
-        "paper": "§6.21",
-        "notes": [
-          "PROGRAM-2-COMMITTEE-FLOOR-ABLATION-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "committee",
-        "ablation"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -828,6 +795,43 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "program-2-committee-floor-ablation",
+      "title": "Price the fine-tune: live committee with the untuned mini",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, and fallback-burden diagnostics without historical pooling.",
+      "branch": "codex/program2-committee-floor-ablation",
+      "blocked_by": "The frozen launch aborted after three consecutive deterministic final-audit failures (1/30 sealed); continuation requires explicit approval of a dated prereg amendment and a narrow fallback repair on a new clean SHA.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-COMMITTEE-FLOOR-ABLATION-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "exports": [
+          "exports/program2-committee-floor-ablation/launch-state.json",
+          "exports/program2-committee-floor-ablation/analysis.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "ablation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
