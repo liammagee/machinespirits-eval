@@ -472,17 +472,20 @@ function qualifierFamilies(value = '') {
     .map(([family]) => family);
 }
 
-function publicGroupSupport(group, publicSurfaces = []) {
+function publicGroupSupport(group, publicEvidence = []) {
   const requiredTerms = group?.terms || [];
   const requiredQualifiers = qualifierFamilies(group?.surface);
   let best = {
     recognized: false,
     matched_surface: null,
+    matched_premise_id: null,
     matched_terms: [],
     coverage: 0,
     qualifier_families: requiredQualifiers,
   };
-  for (const surface of publicSurfaces) {
+  for (const entry of publicEvidence) {
+    const surface = publicEvidenceSurface(entry);
+    if (!surface) continue;
     const matchedTerms = overlap(requiredTerms, contentTerms(surface));
     const coverage = requiredTerms.length ? matchedTerms.length / requiredTerms.length : 0;
     const publicQualifiers = new Set(qualifierFamilies(surface));
@@ -492,6 +495,7 @@ function publicGroupSupport(group, publicSurfaces = []) {
       best = {
         recognized,
         matched_surface: surface,
+        matched_premise_id: oneLine(typeof entry === 'string' ? '' : entry?.premise || entry?.premise_id) || null,
         matched_terms: matchedTerms,
         coverage: Number(coverage.toFixed(3)),
         qualifier_families: requiredQualifiers,
@@ -499,6 +503,42 @@ function publicGroupSupport(group, publicSurfaces = []) {
     }
   }
   return best;
+}
+
+function publicClaimSignature(surface = '') {
+  return focusGroups(surface)
+    .map((group) => ({
+      terms: [...group.terms].sort(),
+      qualifier_families: qualifierFamilies(group.surface).sort(),
+    }))
+    .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+}
+
+function samePublicClaimSignature(left = [], right = []) {
+  return left.length > 0 && JSON.stringify(left) === JSON.stringify(right);
+}
+
+function normalizedSupportRefs(value = null) {
+  return {
+    premise_ids: [...new Set((value?.premise_ids || []).map(oneLine).filter(Boolean))],
+    derived_fact_ids: [...new Set((value?.derived_fact_ids || []).map(oneLine).filter(Boolean))],
+  };
+}
+
+function persistentPublicClaimMatch({ signature = [], responseCompositionFrame = null } = {}) {
+  const persistent = responseCompositionFrame?.learner_dag?.persistent_public_support || {};
+  const activePremiseIds = new Set(persistent.active_premise_ids || []);
+  const activeDerivedFactIds = new Set(persistent.active_derived_fact_ids || []);
+  for (const claim of persistent.prior_supported_claims || []) {
+    if (!samePublicClaimSignature(signature, claim?.claim_signature || [])) continue;
+    const refs = normalizedSupportRefs(claim?.support_refs);
+    const hasRefs = refs.premise_ids.length > 0 || refs.derived_fact_ids.length > 0;
+    if (!hasRefs) continue;
+    if (!refs.premise_ids.every((id) => activePremiseIds.has(id))) continue;
+    if (!refs.derived_fact_ids.every((id) => activeDerivedFactIds.has(id))) continue;
+    return { matched: true, prior_turn: Number(claim?.turn || 0) || null, support_refs: refs };
+  }
+  return { matched: false, prior_turn: null, support_refs: normalizedSupportRefs() };
 }
 
 /**
@@ -514,20 +554,30 @@ function compilePublicClaimStatus({ focus, responseCompositionFrame = null, comm
   const move = responseCompositionFrame?.learner_move || {};
   const evidenceUse = oneLine(move.evidence_use);
   const completion = responseCompositionFrame?.conversational_completion || null;
-  const publicSurfaces = [...new Set((committedPublicEvidence || []).map(publicEvidenceSurface).filter(Boolean))];
+  const publicEvidence = (committedPublicEvidence || []).filter((entry) => publicEvidenceSurface(entry));
   const groups = focusGroups(focus?.surface);
+  const claimSignature = publicClaimSignature(focus?.surface);
   const groupMatches = groups.map((group) => ({
     focus_surface: group.surface,
     focus_terms: group.terms,
-    ...publicGroupSupport(group, publicSurfaces),
+    ...publicGroupSupport(group, publicEvidence),
   }));
   const supportedMoveCount = Number(responseCompositionFrame?.learner_dag?.learner_advance?.supported_move_count || 0);
   const rejectedUpdateCount = Number(responseCompositionFrame?.learner_dag?.rejected_update_count || 0);
   const wholeFocusValidated =
     supportedMoveCount > 0 && rejectedUpdateCount === 0 && supportedMoveCount >= Math.max(1, groups.length);
+  const validatedUpdate = responseCompositionFrame?.learner_dag?.validated_update || {};
+  const currentSupportRefs = normalizedSupportRefs({
+    premise_ids: validatedUpdate.adopted_premise_ids,
+    derived_fact_ids: (validatedUpdate.derived_facts || []).map((fact) =>
+      Array.isArray(fact) ? JSON.stringify(fact.map((part) => String(part))) : null,
+    ),
+  });
+  const persistentMatch = persistentPublicClaimMatch({ signature: claimSignature, responseCompositionFrame });
 
   let status = 'unknown';
   let basis = 'no_conclusive_public_support';
+  let supportRefs = normalizedSupportRefs();
   if (UNSUPPORTED_EVIDENCE_USES.has(evidenceUse)) {
     status = 'unsupported';
     basis = `public_learner_analysis:${evidenceUse}`;
@@ -537,9 +587,17 @@ function compilePublicClaimStatus({ focus, responseCompositionFrame = null, comm
   } else if (wholeFocusValidated) {
     status = 'supported';
     basis = 'validated_public_learner_dag_advance';
+    supportRefs = currentSupportRefs;
+  } else if (persistentMatch.matched) {
+    status = 'supported';
+    basis = 'persistent_public_learner_record';
+    supportRefs = persistentMatch.support_refs;
   } else if (groupMatches.length > 0 && groupMatches.every((row) => row.recognized)) {
     status = 'supported';
     basis = 'committed_public_evidence';
+    supportRefs = normalizedSupportRefs({
+      premise_ids: groupMatches.map((row) => row.matched_premise_id),
+    });
   }
 
   return {
@@ -551,6 +609,12 @@ function compilePublicClaimStatus({ focus, responseCompositionFrame = null, comm
     supported_move_count: supportedMoveCount,
     rejected_update_count: rejectedUpdateCount,
     whole_focus_validated: wholeFocusValidated,
+    claim_signature: claimSignature,
+    support_refs: supportRefs,
+    persistent_match: {
+      matched: persistentMatch.matched,
+      prior_turn: persistentMatch.prior_turn,
+    },
     group_matches: groupMatches,
   };
 }

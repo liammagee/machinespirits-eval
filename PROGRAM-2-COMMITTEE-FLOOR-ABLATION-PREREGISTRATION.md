@@ -12,6 +12,10 @@ replacement dialogue. Section 8 defines the repair and clean-cohort restart;
 the estimand, 30-dialogue matrix, models, seed, endpoints, and reading grammar
 remain unchanged.
 
+**AMENDMENT 4 FROZEN 2026-07-23** before any replacement dialogue. Section 11
+defines persistent, support-referenced public claim state and a fourth clean
+cohort restart. W1-W3 and every experimental condition remain unchanged.
+
 Parent design:
 `PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md`. Exploratory tier.
 The frozen v1 point-of-action detector and warrant audit remain the scoring
@@ -331,3 +335,48 @@ status by condition. W1-W3 and the reading grammar are unchanged. If an
 apparent W1 difference is confined to unequal deterministic-fallback exposure,
 it is labelled **infrastructure-mediated** and not interpreted as an
 unqualified effect of the mini's weights.
+
+## 11. Amendment 4 — persistent public support ledger (2026-07-23)
+
+Amendment 3 began at SHA `9bbd3b9c`. Its first trained-committee dialogue
+reproduced the intended repair at the original failure boundary, but exposed a
+later state-loss case before sealing. At turn 26 the learner-DAG validated two
+public premises and the frozen claim status correctly marked the learner's
+compound Edony claim `supported`. The automated learner repeated the same
+claim on turn 27. Because no *new* DAG node was added on the repeat, the
+current-turn advance fell to zero; because one verb differed morphologically
+from the authored surface (`drew` / `drawn`), the conservative lexical
+backstop did not recover it. The same established claim therefore reverted to
+`unknown`. The run was interrupted immediately. No Amendment 3 job sealed.
+
+This is repaired as a state-boundary defect, not by adding a phrase-specific
+morphology exception. Each supported claim now freezes:
+
+- a public claim signature built from its material focus groups and explicit
+  exclusivity/negation qualifiers; and
+- the validated public premise IDs or derived public facts that licensed the
+  status.
+
+Later turns may inherit `supported` only when the public claim signature is
+the same and every referenced support remains active in the learner's public
+record. A current retraction or configured fact-dropout removes that license.
+Explicit distortion or overleap still takes precedence and yields
+`unsupported`; partial and mixed claims still fail closed as `unknown`. Thus
+support is monotonic across an exact public repeat while its reasons remain
+active, but it is not an irreversible truth flag.
+
+The completed-turn record now preserves the first-draft contract even when a
+guarded replacement response is delivered. The frozen analyzer also joins the
+authoritative `tutor_first_draft_contract` trace event when the completed turn
+comes from an older fallback path, so claim-status and fallback-exposure
+diagnostics cannot silently read as zero. This changes diagnostic provenance
+only; it does not alter W1-W3.
+
+All Amendment 3 artifacts are excluded from inferential analysis. Amendment 4
+restarts the same 30 jobs from the beginning under one new pushed SHA in
+`exports/program2-committee-floor-ablation-amendment-4/`. The original seed,
+job order, trained and untuned mini artifacts, Sonnet/Terra routing, prompts,
+profiles, retry rule, detector, endpoint, bootstrap, equivalence margin,
+density gate, safety gate, and reading grammar remain unchanged. Historical
+cohorts remain descriptive and stratified by harness revision; the fresh
+trained-versus-untuned comparison remains contemporaneous and same-harness.

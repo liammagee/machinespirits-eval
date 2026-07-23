@@ -241,7 +241,8 @@ export function summarizeTutorResponseGuard(turnRecords) {
         incrementTally(guardTriggerTally, `${issue.guard || 'unknown'}:${issue.type || 'unknown'}`);
       }
     }
-    const claimStatus = turn?.firstDraftContract?.progression?.public_claim_status;
+    const firstDraftContract = turn?.firstDraftContract || turn?.prompts?.tutor?.firstDraftContract || null;
+    const claimStatus = firstDraftContract?.progression?.public_claim_status;
     if (claimStatus?.status) incrementTally(publicClaimStatusTally, claimStatus.status);
     if (claimStatus?.basis) incrementTally(publicClaimStatusBasisTally, claimStatus.basis);
   }
@@ -475,6 +476,7 @@ export function loadSealedFloorAblationRows(root) {
       });
     if (!sealedFile) continue;
     const turnRecords = [];
+    const firstDraftContracts = new Map();
     const verdicts = [];
     const moments = [];
     for (const line of fs.readFileSync(sealedFile, 'utf8').split('\n')) {
@@ -485,8 +487,18 @@ export function loadSealedFloorAblationRows(root) {
       } catch {
         continue;
       }
-      if (event.type === 'turn_complete' && event.turnRecord) turnRecords.push(event.turnRecord);
-      else if (
+      if (event.type === 'tutor_first_draft_contract' && event.contract) {
+        firstDraftContracts.set(Number(event.turn), event.contract);
+      } else if (event.type === 'turn_complete' && event.turnRecord) {
+        const tracedContract = firstDraftContracts.get(Number(event.turn)) || null;
+        turnRecords.push({
+          ...event.turnRecord,
+          firstDraftContract:
+            event.turnRecord.firstDraftContract ||
+            event.turnRecord.prompts?.tutor?.firstDraftContract ||
+            tracedContract,
+        });
+      } else if (
         event.type === 'point_of_action_compliance' &&
         event.compliance?.trigger === FLOOR_ABLATION_ANALYSIS_SPEC.primaryTrigger
       ) {

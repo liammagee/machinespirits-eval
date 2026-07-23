@@ -22,6 +22,8 @@ links:
     - exports/program2-committee-floor-ablation/analysis.json
     - exports/program2-committee-floor-ablation-amendment-3/launch-state.json
     - exports/program2-committee-floor-ablation-amendment-3/analysis.json
+    - exports/program2-committee-floor-ablation-amendment-4/launch-state.json
+    - exports/program2-committee-floor-ablation-amendment-4/analysis.json
   items:
     - program-2-context-vs-weights-finetune
 tags:
@@ -86,3 +88,12 @@ Log:
   The 30-cell run restarts under a clean SHA; historical absolute comparisons
   are stratified by harness revision, while trained versus untuned remains a
   contemporaneous same-harness contrast. See preregistration §10.
+- 2026-07-23 — Amendment 3 correctly credited the original failed relation,
+  then exposed a later state-loss loop: an exact repeated compound claim fell
+  from supported to unknown when its current-turn DAG delta reset to zero.
+  No job sealed and the run was stopped at turn 27. Amendment 4 freezes a
+  public claim signature plus its active premise/fact support, preserves that
+  status across exact repeats only while the support remains active, and makes
+  the analyzer recover first-draft contracts from authoritative trace events.
+  All Amendment 3 artifacts are excluded; the 30 jobs restart cleanly under a
+  new SHA. See preregistration §11.

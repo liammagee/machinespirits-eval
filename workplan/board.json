@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T11:27:13.905Z",
+  "generated": "2026-07-23T12:05:50.707Z",
   "counts": {
     "total": 156,
     "byStatus": {
@@ -731,7 +731,9 @@
           "exports/program2-committee-floor-ablation/launch-state.json",
           "exports/program2-committee-floor-ablation/analysis.json",
           "exports/program2-committee-floor-ablation-amendment-3/launch-state.json",
-          "exports/program2-committee-floor-ablation-amendment-3/analysis.json"
+          "exports/program2-committee-floor-ablation-amendment-3/analysis.json",
+          "exports/program2-committee-floor-ablation-amendment-4/launch-state.json",
+          "exports/program2-committee-floor-ablation-amendment-4/analysis.json"
         ],
         "items": [
           "program-2-context-vs-weights-finetune"

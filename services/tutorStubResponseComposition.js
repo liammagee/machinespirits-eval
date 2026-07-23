@@ -479,10 +479,29 @@ function learnerMove(classification = null) {
   };
 }
 
-function learnerDagSnapshot(tutorLearnerDag = null) {
+function factIdentity(fact) {
+  return Array.isArray(fact) && fact.length ? JSON.stringify(fact.map((part) => String(part))) : null;
+}
+
+function learnerDagSnapshot(tutorLearnerDag = null, priorSupportedClaims = []) {
   const model = tutorLearnerDag?.model || tutorLearnerDag || {};
   const assessment = model.assessment || {};
   const advance = tutorLearnerDag?.advance || model.learnerAdvance || null;
+  const accepted = tutorLearnerDag?.accepted || {};
+  const preflight = tutorLearnerDag?.preflight || {};
+  const activePremiseIds = new Set([
+    ...(Array.isArray(preflight.alreadyAdoptedPremiseIds) ? preflight.alreadyAdoptedPremiseIds : []),
+    ...(Array.isArray(accepted.adopt) ? accepted.adopt : []),
+  ]);
+  for (const premiseId of Array.isArray(accepted.retract) ? accepted.retract : []) {
+    activePremiseIds.delete(premiseId);
+  }
+  const activeDerivedFacts = [
+    ...(Array.isArray(preflight?.priorRecord?.derivableFacts) ? preflight.priorRecord.derivableFacts : []),
+    ...(Array.isArray(accepted.derive) ? accepted.derive : []),
+  ]
+    .map(factIdentity)
+    .filter(Boolean);
   return {
     status: assessment.status || null,
     bottleneck: assessment.bottleneck || null,
@@ -494,6 +513,18 @@ function learnerDagSnapshot(tutorLearnerDag = null) {
     final_secret_entailed: assessment.finalSecretEntailed === true,
     asserted_secret: assessment.assertedSecret === true,
     rejected_update_count: Array.isArray(tutorLearnerDag?.rejected) ? tutorLearnerDag.rejected.length : 0,
+    validated_update: {
+      adopted_premise_ids: Array.isArray(accepted.adopt) ? [...accepted.adopt] : [],
+      retracted_premise_ids: Array.isArray(accepted.retract) ? [...accepted.retract] : [],
+      derived_facts: Array.isArray(accepted.derive) ? accepted.derive.map((fact) => structuredClone(fact)) : [],
+    },
+    persistent_public_support: {
+      active_premise_ids: [...activePremiseIds],
+      active_derived_fact_ids: [...new Set(activeDerivedFacts)],
+      prior_supported_claims: (Array.isArray(priorSupportedClaims) ? priorSupportedClaims : []).map((claim) =>
+        structuredClone(claim),
+      ),
+    },
     learner_advance: advance
       ? {
           pace: advance.pace || null,
@@ -516,10 +547,11 @@ export function buildTutorStubResponseCompositionFrame({
   conversationalCompletion = null,
   publicFocusMapping = null,
   recentTutorTexts = [],
+  priorSupportedClaims = [],
 } = {}) {
   const configuration = registerSelection?.response_configuration || registerSelection || {};
   const move = learnerMove(classification);
-  const dag = learnerDagSnapshot(tutorLearnerDag);
+  const dag = learnerDagSnapshot(tutorLearnerDag, priorSupportedClaims);
   const closurePhase = dialogueClosureFrame?.phase || 'open';
   const actionFamily = configuration.action_family || registerSelection?.action_family || null;
   const actionTarget = LEARNER_RESPONSIVE_ACTION_FAMILIES.has(actionFamily) ? 'uptake' : 'development';

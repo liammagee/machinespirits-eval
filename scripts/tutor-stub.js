@@ -11222,6 +11222,22 @@ function dagTurnContext(state, tutorTurn, tutorLearnerDagModel = null) {
   ].join('\n');
 }
 
+function priorSupportedPublicClaims(state) {
+  return (Array.isArray(state?.turns) ? state.turns : []).flatMap((turn) => {
+    const contract = turn?.firstDraftContract || turn?.prompts?.tutor?.firstDraftContract || null;
+    const progression = contract?.progression || null;
+    const status = progression?.public_claim_status || null;
+    if (status?.status !== 'supported' || !Array.isArray(status?.claim_signature)) return [];
+    return [
+      {
+        turn: Number(turn?.turn || 0) || null,
+        claim_signature: jsonClone(status.claim_signature),
+        support_refs: jsonClone(status.support_refs || { premise_ids: [], derived_fact_ids: [] }),
+      },
+    ];
+  });
+}
+
 function tutorCoachGuidanceEntries(state, tutorTurn = null) {
   const effectiveTurn = tutorTurn ?? (state?.turns?.length || 0) + 1;
   return Array.isArray(state?.coach?.pending)
@@ -11369,6 +11385,7 @@ async function callTutor({
         conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
         publicFocusMapping: humanDiscourseFrame?.scaffoldState?.branch?.publicRelationMap || null,
         recentTutorTexts,
+        priorSupportedClaims: priorSupportedPublicClaims(state),
       });
   const firstDraftContract = passthrough
     ? null
@@ -13054,7 +13071,8 @@ async function callTutor({
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
     });
     const fallbackUptake =
-      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(deterministicFallbackUptake)
+      firstDraftContract?.opening?.writable_entry_requested === true &&
+      !/^Write:\s*[“"]/u.test(deterministicFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : deterministicFallbackUptake;
     const baseFallbackText = closureFallbackSelected
@@ -14835,7 +14853,7 @@ async function runOneTurn(
     responseConfigurationTransition: jsonClone(response.responseConfigurationTransition || null),
     selectedResponseConfigurationAudit,
     responseConfigurationAudit,
-    firstDraftContract: jsonClone(response.firstDraftContract || null),
+    firstDraftContract: jsonClone(response.firstDraftContract || response.promptSnapshot?.firstDraftContract || null),
     feedbackAdaptationPlan,
     feedbackAdaptationAudit,
     feedbackObservation,

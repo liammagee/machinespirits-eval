@@ -1075,6 +1075,102 @@ test('public claim status accepts validated multi-premise advances without lexic
   assert.doesNotMatch(deterministicTutorStubTurnProgressionHandoff({ contract }), /remains open/iu);
 });
 
+test('a supported public claim remains supported on an exact later repeat while its support stays active', () => {
+  const learnerText = 'I enter: Edony alone drew the weir crucible and kept the worn, sprung-heel burin.';
+  const current = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'cites_public_evidence', epistemic_stance: 'grounded' },
+      learner_dag: {
+        rejected_update_count: 0,
+        learner_advance: { supported_move_count: 2 },
+        validated_update: {
+          adopted_premise_ids: ['p_caster', 'p_holder'],
+          derived_facts: [],
+        },
+        persistent_public_support: {
+          active_premise_ids: ['p_caster', 'p_holder'],
+          active_derived_fact_ids: [],
+          prior_supported_claims: [],
+        },
+      },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'compress_sayback',
+  });
+  assert.equal(current.public_claim_status.status, 'supported');
+  assert.deepEqual(current.public_claim_status.support_refs.premise_ids, ['p_caster', 'p_holder']);
+
+  const repeatedFrame = {
+    learner_move: { evidence_use: 'cites_public_evidence', epistemic_stance: 'grounded' },
+    learner_dag: {
+      rejected_update_count: 0,
+      learner_advance: { supported_move_count: 0 },
+      validated_update: { adopted_premise_ids: [], derived_facts: [] },
+      persistent_public_support: {
+        active_premise_ids: ['p_caster', 'p_holder'],
+        active_derived_fact_ids: [],
+        prior_supported_claims: [
+          {
+            turn: 26,
+            claim_signature: current.public_claim_status.claim_signature,
+            support_refs: current.public_claim_status.support_refs,
+          },
+        ],
+      },
+    },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [],
+  };
+  const repeated = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: repeatedFrame,
+    committedPublicEvidence: [
+      {
+        premise: 'p_caster',
+        surface: 'One hand alone has drawn the weir crucible and signed for its charcoal: Edony.',
+      },
+      {
+        premise: 'p_holder',
+        surface: 'The worn burin with the sprung heel was kept in Edony’s keeping.',
+      },
+    ],
+    actionFamily: 'compress_sayback',
+  });
+  assert.equal(repeated.public_claim_status.status, 'supported');
+  assert.equal(repeated.public_claim_status.basis, 'persistent_public_learner_record');
+  assert.deepEqual(repeated.public_claim_status.persistent_match, { matched: true, prior_turn: 26 });
+  assert.doesNotMatch(deterministicTutorStubTurnProgressionHandoff({ contract: repeated }), /remains open/iu);
+
+  const dropped = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      ...repeatedFrame,
+      learner_dag: {
+        ...repeatedFrame.learner_dag,
+        persistent_public_support: {
+          ...repeatedFrame.learner_dag.persistent_public_support,
+          active_premise_ids: ['p_caster'],
+        },
+      },
+    },
+    actionFamily: 'compress_sayback',
+  });
+  assert.equal(dropped.public_claim_status.status, 'unknown');
+  assert.equal(dropped.public_claim_status.persistent_match.matched, false);
+
+  const rejected = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      ...repeatedFrame,
+      learner_move: { evidence_use: 'overleaps_evidence', epistemic_stance: 'overconfident' },
+    },
+    actionFamily: 'compress_sayback',
+  });
+  assert.equal(rejected.public_claim_status.status, 'unsupported');
+});
+
 test('a partial learner-DAG advance does not license a whole mixed claim', () => {
   const contract = compileTutorStubTurnProgressionContract({
     learnerText: 'The alloy names the weir-forge crucible, and an unknown witness says Edony struck the coins.',

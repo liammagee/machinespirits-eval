@@ -913,6 +913,35 @@ test('response composition maps the selected action to uptake and the DAG move t
   assert.doesNotMatch(prompt, /p_noon|p_crew/u);
 });
 
+test('response composition freezes active public support separately from the current-turn delta', () => {
+  const priorClaim = {
+    turn: 26,
+    claim_signature: [{ terms: ['burin', 'edony'], qualifier_families: [] }],
+    support_refs: { premise_ids: ['p_holder'], derived_fact_ids: [] },
+  };
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText: 'Edony kept the burin.',
+    classification: { turn: { summary: 'Restates the established holder premise.' } },
+    tutorLearnerDag: {
+      model: { assessment: {}, metrics: {}, learnerAdvance: { supportedMoveCount: 0 } },
+      preflight: {
+        alreadyAdoptedPremiseIds: ['p_caster', 'p_holder'],
+        priorRecord: { derivableFacts: [['castBlankFor', 'falseShilling', 'edony']] },
+      },
+      accepted: { adopt: [], retract: ['p_caster'], derive: [] },
+      rejected: [],
+    },
+    priorSupportedClaims: [priorClaim],
+  });
+
+  assert.deepEqual(frame.learner_dag.persistent_public_support.active_premise_ids, ['p_holder']);
+  assert.deepEqual(frame.learner_dag.persistent_public_support.active_derived_fact_ids, [
+    '["castBlankFor","falseShilling","edony"]',
+  ]);
+  assert.deepEqual(frame.learner_dag.persistent_public_support.prior_supported_claims, [priorClaim]);
+  assert.equal(frame.learner_dag.learner_advance.supported_move_count, 0);
+});
+
 test('a DAG-progression action is realized in development while uptake remains learner-responsive', () => {
   const frame = buildTutorStubResponseCompositionFrame({
     learnerText: 'I follow the first clue. What comes next?',

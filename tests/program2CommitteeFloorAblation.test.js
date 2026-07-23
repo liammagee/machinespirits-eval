@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import {
@@ -13,6 +16,7 @@ import {
 } from '../scripts/run-program2-live-pilot.js';
 import {
   analyzeFloorAblationRows,
+  loadSealedFloorAblationRows,
   summarizeTutorResponseGuard,
 } from '../scripts/analyze-program2-committee-floor-ablation.mjs';
 
@@ -142,8 +146,12 @@ test('response-guard diagnostic extracts fallback, trigger, and typed claim-stat
       tutorResponseRepaired: false,
       tutorDeterministicFallback: false,
       tutorGuardAccounting: { outcome: 'guarded_original_accepted', attempts: [{}], repairsApplied: [] },
-      firstDraftContract: {
-        progression: { public_claim_status: { status: 'unknown', basis: 'partial_public_evidence_match' } },
+      prompts: {
+        tutor: {
+          firstDraftContract: {
+            progression: { public_claim_status: { status: 'unknown', basis: 'partial_public_evidence_match' } },
+          },
+        },
       },
     },
   ]);
@@ -153,6 +161,47 @@ test('response-guard diagnostic extracts fallback, trigger, and typed claim-stat
   assert.equal(summary.meanAttempts, 2);
   assert.equal(summary.guardTriggerTally['live_turn_progression_v1:supported_public_claim_reopened'], 1);
   assert.deepEqual(summary.publicClaimStatusTally, { supported: 1, unknown: 1 });
+});
+
+test('sealed-trace loading joins authoritative first-draft contract events to completed fallback turns', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-floor-loader-'));
+  try {
+    const job = { id: 'fixture-job', condition: 'trained_committee', profile: 'proof_skipper', pairKey: 'p:r1' };
+    fs.writeFileSync(path.join(root, 'launch-plan.json'), JSON.stringify({ plan: { jobs: [job] } }));
+    const traceDir = path.join(root, 'traces', job.id);
+    fs.mkdirSync(traceDir, { recursive: true });
+    const trace = [
+      {
+        type: 'tutor_first_draft_contract',
+        turn: 1,
+        contract: {
+          progression: {
+            public_claim_status: { status: 'supported', basis: 'persistent_public_learner_record' },
+          },
+        },
+      },
+      {
+        type: 'turn_complete',
+        turn: 1,
+        turnRecord: {
+          turn: 1,
+          tutorGuardAccounting: { outcome: 'guarded_deterministic_fallback', attempts: [], repairsApplied: [] },
+          tutorDeterministicFallback: true,
+        },
+      },
+      { type: 'run_end' },
+    ];
+    fs.writeFileSync(path.join(traceDir, 'fixture.jsonl'), `${trace.map((row) => JSON.stringify(row)).join('\n')}\n`);
+
+    const loaded = loadSealedFloorAblationRows(root);
+    assert.equal(loaded.rows.length, 1);
+    assert.deepEqual(loaded.rows[0].responseGuard.publicClaimStatusTally, { supported: 1 });
+    assert.deepEqual(loaded.rows[0].responseGuard.publicClaimStatusBasisTally, {
+      persistent_public_learner_record: 1,
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('analysis detects a trained-weights contribution from complete matched blocks', () => {
