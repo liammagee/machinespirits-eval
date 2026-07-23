@@ -2246,6 +2246,7 @@ export async function runEvaluation(options = {}) {
     learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
     threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution: carry negotiated resolution into the delivered suggestion across revision rounds (OR'd with the profile-level thread_negotiation_resolution flag in runMultiTurnTest)
     externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
+    admissionPlan = null, // HTTP metered-work admission snapshot; absent on CLI/direct callers
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -2440,6 +2441,7 @@ export async function runEvaluation(options = {}) {
       // the isolation and saw ~16k tokens of ambient repo context (CLAUDE.md,
       // skills, hooks, MCP) in every claude-code call, judges included.
       claudeCliContextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
+      ...(admissionPlan ? { admissionPlan: JSON.parse(JSON.stringify(admissionPlan)) } : {}),
       pid: process.pid,
     },
   });
@@ -5532,7 +5534,14 @@ export async function resumeEvaluation(options = {}) {
  * Compare two or more configurations
  */
 export async function compareConfigurations(configs, options = {}) {
-  const { scenarios = 'all', runsPerConfig = 1, verbose = false, dryRun = false } = options;
+  const {
+    scenarios = 'all',
+    runsPerConfig = 1,
+    verbose = false,
+    dryRun = false,
+    skipRubricEval = false,
+    admissionPlan = null,
+  } = options;
 
   // Run evaluation with specified configs
   const result = await runEvaluation({
@@ -5541,6 +5550,8 @@ export async function compareConfigurations(configs, options = {}) {
     runsPerConfig,
     verbose,
     dryRun,
+    skipRubricEval,
+    admissionPlan,
     description: `Comparison: ${configs.map((c) => c.label || c.profileName || `${c.provider}/${c.model}`).join(' vs ')}`,
   });
 

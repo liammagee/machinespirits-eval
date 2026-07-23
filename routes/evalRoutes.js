@@ -17,6 +17,12 @@ import * as promptRecommendationService from '../services/promptRecommendationSe
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as codexSessionService from '../services/codexSessionService.js';
+import {
+  admitEvaluationRequest,
+  EvaluationAdmissionError,
+  hasEvalApiPrivilegedOverride,
+  resolveEvalApiMaxPlannedTests,
+} from '../services/evalRequestAdmission.js';
 // Lazy-loaded tutor-core services — resolved on first request so this module
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
@@ -822,6 +828,135 @@ router.get('/stream/quick', async (req, res) => {
 // Full Evaluation Endpoints
 // ============================================================================
 
+function effectiveEvaluationProfileRegistry() {
+  const names = new Set();
+  for (const profile of tutorConfigLoader.listProfiles()) {
+    if (profile?.name) names.add(profile.name);
+  }
+  // Eval-only cells are intentionally absent from tutor-core's public profile
+  // registry, but are valid runEvaluation configurations.
+  for (const profile of evalConfigLoader.listTutorProfiles()) {
+    if (profile?.name) names.add(profile.name);
+  }
+  return [...names];
+}
+
+function effectiveEvaluationScenarioRegistry() {
+  return evalConfigLoader.listScenarios().map((scenario) => scenario.id);
+}
+
+function sendEvaluationAdmissionError(res, error, logPrefix) {
+  if (error instanceof EvaluationAdmissionError) {
+    return res.status(error.status).json({
+      error: error.message,
+      code: error.code,
+      ...(error.details === undefined ? {} : { details: error.details }),
+    });
+  }
+  console.error(logPrefix, error);
+  return res.status(500).json({ error: 'Failed to run evaluation', details: error.message });
+}
+
+export function createMeteredEvaluationHandlers({
+  runner = evaluationRunner,
+  profileRegistry = effectiveEvaluationProfileRegistry,
+  scenarioRegistry = effectiveEvaluationScenarioRegistry,
+  maxPlannedTests = () => resolveEvalApiMaxPlannedTests(),
+  privilegedOverride = (req) => hasEvalApiPrivilegedOverride(req),
+} = {}) {
+  const admit = (req, endpoint, minProfiles, defaults = {}) => {
+    const rawBody = req.body;
+    const body =
+      rawBody === undefined
+        ? { ...defaults }
+        : rawBody && typeof rawBody === 'object' && !Array.isArray(rawBody)
+          ? { ...defaults, ...rawBody }
+          : rawBody;
+    return admitEvaluationRequest(body, {
+      profileRegistry: typeof profileRegistry === 'function' ? profileRegistry() : profileRegistry,
+      scenarioRegistry: typeof scenarioRegistry === 'function' ? scenarioRegistry() : scenarioRegistry,
+      minProfiles,
+      maxPlannedTests: typeof maxPlannedTests === 'function' ? maxPlannedTests() : maxPlannedTests,
+      privilegedOverride: typeof privilegedOverride === 'function' ? privilegedOverride(req) : privilegedOverride,
+      endpoint,
+    });
+  };
+
+  return {
+    run: async (req, res) => {
+      try {
+        const admission = admit(req, '/api/eval/run', 1, {
+          profiles: ['budget'],
+          scenarios: 'all',
+          runsPerConfig: 1,
+          skipRubric: false,
+          dryRun: false,
+        });
+        const configurations = admission.profiles.map((profileName) => ({ profileName, label: profileName }));
+        const result = await runner.runEvaluation({
+          scenarios: admission.scenarios,
+          configurations,
+          runsPerConfig: admission.runsPerConfig,
+          skipRubricEval: admission.skipRubric,
+          dryRun: admission.dryRun,
+          description: req.body?.description,
+          admissionPlan: admission.admissionPlan,
+          verbose: false,
+        });
+
+        return res.json({
+          success: true,
+          runId: result.runId,
+          totalTests: result.totalTests,
+          plannedTestCount: admission.plannedTestCount,
+          admissionPlan: admission.admissionPlan,
+          successfulTests: result.successfulTests,
+          stats: result.stats,
+          scenarioStats: result.scenarioStats,
+        });
+      } catch (error) {
+        return sendEvaluationAdmissionError(res, error, '[EvalRoutes] Run evaluation error:');
+      }
+    },
+
+    compare: async (req, res) => {
+      try {
+        const admission = admit(req, '/api/eval/compare', 2, {
+          scenarios: 'all',
+          runsPerConfig: 1,
+          dryRun: false,
+        });
+        const configurations = admission.profiles.map((profileName) => ({ profileName, label: profileName }));
+        const result = await runner.compareConfigurations(configurations, {
+          scenarios: admission.scenarios,
+          runsPerConfig: admission.runsPerConfig,
+          dryRun: admission.dryRun,
+          skipRubricEval: admission.skipRubric,
+          admissionPlan: admission.admissionPlan,
+          verbose: false,
+        });
+
+        return res.json({
+          success: true,
+          runId: result.runId,
+          plannedTestCount: admission.plannedTestCount,
+          admissionPlan: admission.admissionPlan,
+          rankings: result.rankings,
+          scenarioBreakdown: result.scenarioBreakdown,
+        });
+      } catch (error) {
+        if (!(error instanceof EvaluationAdmissionError)) {
+          console.error('[EvalRoutes] Compare error:', error);
+          return res.status(500).json({ error: 'Failed to compare configurations', details: error.message });
+        }
+        return sendEvaluationAdmissionError(res, error, '[EvalRoutes] Compare error:');
+      }
+    },
+  };
+}
+
+const meteredEvaluationHandlers = createMeteredEvaluationHandlers();
+
 /**
  * Run a full evaluation
  * POST /api/eval/run
@@ -833,43 +968,7 @@ router.get('/stream/quick', async (req, res) => {
  *   skipRubric: false             // Use AI judge
  * }
  */
-router.post('/run', async (req, res) => {
-  try {
-    const {
-      profiles = ['budget'],
-      scenarios = 'all',
-      runsPerConfig = 1,
-      skipRubric = false,
-      dryRun = false,
-      description,
-    } = req.body;
-
-    // Build configurations from profiles
-    const configurations = profiles.map((p) => ({ profileName: p, label: p }));
-
-    const result = await evaluationRunner.runEvaluation({
-      scenarios,
-      configurations,
-      runsPerConfig,
-      skipRubricEval: skipRubric,
-      dryRun,
-      description,
-      verbose: false,
-    });
-
-    res.json({
-      success: true,
-      runId: result.runId,
-      totalTests: result.totalTests,
-      successfulTests: result.successfulTests,
-      stats: result.stats,
-      scenarioStats: result.scenarioStats,
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Run evaluation error:', error);
-    res.status(500).json({ error: 'Failed to run evaluation', details: error.message });
-  }
-});
+router.post('/run', meteredEvaluationHandlers.run);
 
 /**
  * Compare multiple configurations
@@ -881,34 +980,7 @@ router.post('/run', async (req, res) => {
  *   runsPerConfig: 1
  * }
  */
-router.post('/compare', async (req, res) => {
-  try {
-    const { profiles, scenarios = 'all', runsPerConfig = 1, dryRun = false } = req.body;
-
-    if (!profiles || profiles.length < 2) {
-      return res.status(400).json({ error: 'At least 2 profiles required for comparison' });
-    }
-
-    const configs = profiles.map((p) => ({ profileName: p, label: p }));
-
-    const result = await evaluationRunner.compareConfigurations(configs, {
-      scenarios,
-      runsPerConfig,
-      dryRun,
-      verbose: false,
-    });
-
-    res.json({
-      success: true,
-      runId: result.runId,
-      rankings: result.rankings,
-      scenarioBreakdown: result.scenarioBreakdown,
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Compare error:', error);
-    res.status(500).json({ error: 'Failed to compare configurations', details: error.message });
-  }
-});
+router.post('/compare', meteredEvaluationHandlers.compare);
 
 /**
  * Matrix comparison of multiple profiles with dimension breakdowns

@@ -171,6 +171,12 @@ describe('API routes', () => {
     assert.strictEqual(run.status, 200);
     assert.strictEqual(run.body.success, true);
     assert.ok(run.body.runId, 'run dryRun should return a run id');
+    assert.strictEqual(run.body.plannedTestCount, 1);
+    assert.strictEqual(run.body.admissionPlan.confirmation, 'dry_run_exempt');
+    const persistedRun = await get(baseUrl, `/api/eval/runs/${run.body.runId}`);
+    assert.strictEqual(persistedRun.status, 200);
+    assert.strictEqual(persistedRun.body.run.metadata.admissionPlan.plannedTestCount, 1);
+    assert.strictEqual(persistedRun.body.run.metadata.admissionPlan.requestHash, run.body.admissionPlan.requestHash);
 
     const compare = await post(baseUrl, '/api/eval/compare', {
       profiles: [profileA, profileB],
@@ -181,6 +187,7 @@ describe('API routes', () => {
     assert.strictEqual(compare.status, 200);
     assert.strictEqual(compare.body.success, true);
     assert.ok(compare.body.runId, 'compare dryRun should return a run id');
+    assert.strictEqual(compare.body.plannedTestCount, 2);
 
     const matrix = await post(baseUrl, '/api/eval/matrix', {
       profiles: [profileA],
