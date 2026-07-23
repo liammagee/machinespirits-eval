@@ -54,25 +54,25 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const repaired = input.includes('[Tutor-only repair instruction]');
-  const response = process.env.TUTOR_GUARD_FAKE_MODE === 'performance-advisory' && repaired
+  const response = process.env.FAKE_CODEX_FIXTURE_MODE === 'performance-advisory' && repaired
     ? ${JSON.stringify(HOST_PART_ONLY_RECOVERY)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'paired-plain' && repaired
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'paired-plain' && repaired
     ? ${JSON.stringify(SINGLE_PLAIN_RECOVERY)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'soft-style'
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'preserve-uptake'
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'preserve-uptake'
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'terse-uptake'
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'duplicate-repair' && repaired
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'duplicate-repair' && repaired
       ? ${JSON.stringify(COMPLEMENTARY_WRITE_REPAIR)}
-    : process.env.TUTOR_GUARD_FAKE_MODE === 'duplicate-repair'
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'duplicate-repair'
       ? ${JSON.stringify(DUPLICATE_CLUE_DRAFT)}
-    : ['repair', 'meta-repair', 'tactic-repair'].includes(process.env.TUTOR_GUARD_FAKE_MODE) && repaired
+    : ['repair', 'meta-repair', 'tactic-repair'].includes(process.env.FAKE_CODEX_FIXTURE_MODE) && repaired
       ? ${JSON.stringify(SAFE_REPAIR)}
-      : process.env.TUTOR_GUARD_FAKE_MODE === 'meta-repair'
+      : process.env.FAKE_CODEX_FIXTURE_MODE === 'meta-repair'
         ? ${JSON.stringify(META_THEATRICAL_DRAFT)}
-        : process.env.TUTOR_GUARD_FAKE_MODE === 'tactic-repair'
+        : process.env.FAKE_CODEX_FIXTURE_MODE === 'tactic-repair'
           ? ${JSON.stringify(FLAT_CHARACTER_DRAFT)}
         : ${JSON.stringify(UNSAFE_DRAFT)};
   if (outputPath) fs.writeFileSync(outputPath, response);
@@ -126,7 +126,7 @@ process.stdin.on('end', () => {
       ...process.env,
       PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
       CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
-      TUTOR_GUARD_FAKE_MODE: mode,
+      FAKE_CODEX_FIXTURE_MODE: mode,
     },
   });
   if (result.status !== 0) {

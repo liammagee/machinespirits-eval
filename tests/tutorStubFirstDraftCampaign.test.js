@@ -1395,19 +1395,15 @@ test(
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-preflight-'));
-    const testFile = path.join(repoRoot, 'tests', `generated-preflight-failure-${process.pid}-${Date.now()}.test.js`);
+    const testFile = path.join(
+      repoRoot,
+      'tests',
+      'fixtures',
+      'tutor-stub-first-draft',
+      'captured-deterministic-failure.test.js',
+    );
     try {
       const relativeTestFile = path.relative(repoRoot, testFile);
-      fs.writeFileSync(
-        testFile,
-        [
-          "import test from 'node:test';",
-          "test('captured deterministic failure sentinel', () => {",
-          "  throw new Error('captured deterministic failure body');",
-          '});',
-          '',
-        ].join('\n'),
-      );
       const binDir = path.join(root, 'bin');
       const artifactRoot = path.join(root, 'artifacts');
       const configPath = path.join(root, 'campaign.yaml');
@@ -1487,7 +1483,6 @@ test(
       assert.ok(result.cells.every((cell) => cell.completedCandidates === 0));
       assert.ok(result.cells.every((cell) => cell.seedDisposition === 'unconsumed_development_preflight_failure'));
     } finally {
-      fs.rmSync(testFile, { force: true });
       fs.rmSync(root, { recursive: true, force: true });
     }
   },

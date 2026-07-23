@@ -22,7 +22,7 @@ const fs = require('node:fs');
 const args = process.argv.slice(2);
 const outputIndex = args.indexOf('-o');
 const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
-const logPath = process.env.TUTOR_STUB_PROMPT_BEHAVIOR_LOG;
+const logPath = process.env.FAKE_CODEX_LOG;
 let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
@@ -84,7 +84,7 @@ function runTutorStub({ tmp, args }) {
       ...process.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
       CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
-      TUTOR_STUB_PROMPT_BEHAVIOR_LOG: promptLog,
+      FAKE_CODEX_LOG: promptLog,
       TUTOR_STUB_SUMMARY_OPEN: '0',
     },
   });
