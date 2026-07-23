@@ -24,6 +24,7 @@
  *   node scripts/analyze-trajectory-curves.js <runId> [<runId> ...]
  *   node scripts/analyze-trajectory-curves.js --all-multiturn
  *   node scripts/analyze-trajectory-curves.js <runId> --json exports/trajectory-curves.json
+ *   node scripts/analyze-trajectory-curves.js <runId> --judge <model>
  *   node scripts/analyze-trajectory-curves.js <runId> --min-turns 3
  */
 
@@ -42,7 +43,7 @@ function parseCliArgs(argv) {
   const options = {};
   const flags = new Set();
   const runIds = [];
-  const valueOpts = new Set(['db', 'json', 'min-turns', 'max-turn-position', 'epoch']);
+  const valueOpts = new Set(['db', 'json', 'judge', 'min-turns', 'max-turn-position', 'epoch']);
 
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
@@ -64,6 +65,7 @@ const { options: cliOpts, flags: cliFlags, runIds: cliRunIds } = parseCliArgs(pr
 
 const dbPath = cliOpts.db || path.join(ROOT_DIR, 'data', 'evaluations.db');
 const jsonOut = cliOpts.json || null;
+const judge = cliOpts.judge || null;
 const minTurns = parseInt(cliOpts['min-turns'] || '3', 10);
 const maxTurnPosition = parseInt(cliOpts['max-turn-position'] || '10', 10);
 const allMultiturn = cliFlags.has('all-multiturn');
@@ -265,6 +267,10 @@ function fetchMultiturnRows() {
   if (!allMultiturn && cliRunIds.length > 0) {
     whereClause += ` AND r.run_id IN (${cliRunIds.map(() => '?').join(',')})`;
     params.push(...cliRunIds);
+  }
+  if (judge) {
+    whereClause += ' AND r.judge_model = ?';
+    params.push(judge);
   }
 
   const sql = `

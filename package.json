@@ -277,6 +277,7 @@
     "probe:plan3-dag-sfs": "node scripts/run-plan3-dag-sfs-audit.js",
     "test": "node scripts/run-hermetic-tests.js",
     "test:hermetic": "node scripts/run-hermetic-tests.js",
+    "test:posthoc-pipeline": "node --test tests/canonicalPosthocPipeline.test.js",
     "eval:canonical": "node scripts/with-canonical-eval-data.js",
     "db:closeout": "node scripts/closeout-worktree-db.js",
     "merge:preflight": "node scripts/closeout-worktree-db.js --check",

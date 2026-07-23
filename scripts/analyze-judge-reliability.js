@@ -22,9 +22,12 @@
  * Usage:
  *   node scripts/analyze-judge-reliability.js                # All data
  *   node scripts/analyze-judge-reliability.js --run <runId>  # Specific run
+ *   node scripts/analyze-judge-reliability.js --db <path> --json <path>
  *   node scripts/analyze-judge-reliability.js --verbose      # Show disagreements
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
@@ -37,6 +40,8 @@ const getOption = (name) => {
 const hasFlag = (name) => args.includes(`--${name}`);
 
 const runIdFilter = getOption('run');
+const dbOverride = getOption('db');
+const jsonOutPath = getOption('json');
 const verbose = hasFlag('verbose');
 
 // Statistics helpers
@@ -138,7 +143,7 @@ function simpleHash(str) {
 
 // Main analysis
 function analyzeJudgeReliability() {
-  const { db, dbPath, reason } = openEvaluationDbReadonly();
+  const { db, dbPath, reason } = openEvaluationDbReadonly(undefined, { explicitPath: dbOverride });
   if (!db) {
     console.log(describeMissingEvaluationDb(dbPath, reason));
     process.exit(0);
@@ -153,16 +158,22 @@ function analyzeJudgeReliability() {
   console.log('');
 
   // Find all judge models
+  let judgesWhere = `WHERE judge_model IS NOT NULL ${epochFilter.and}`;
+  const judgesParams = [];
+  if (runIdFilter) {
+    judgesWhere += ' AND run_id = ?';
+    judgesParams.push(runIdFilter);
+  }
   const judges = db
     .prepare(
       `
     SELECT DISTINCT judge_model
     FROM evaluation_results
-    WHERE judge_model IS NOT NULL
-    ${epochFilter.and}
+    ${judgesWhere}
+    ORDER BY judge_model
   `,
     )
-    .all()
+    .all(...judgesParams)
     .map((r) => r.judge_model);
 
   console.log(`Judges found: ${judges.join(', ')}`);
@@ -171,8 +182,10 @@ function analyzeJudgeReliability() {
   // Find paired judgments - must be SAME response content judged by different models
   // Match on suggestions content (the actual tutor response), not just scenario/profile
   let whereClause = `WHERE judge_model IS NOT NULL AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL ${epochFilter.and}`;
+  const pairedParams = [];
   if (runIdFilter) {
-    whereClause += ` AND run_id = '${runIdFilter}'`;
+    whereClause += ' AND run_id = ?';
+    pairedParams.push(runIdFilter);
   }
 
   const pairedQuery = `
@@ -194,7 +207,7 @@ function analyzeJudgeReliability() {
     ORDER BY suggestions, judge_model
   `;
 
-  const results = db.prepare(pairedQuery).all();
+  const results = db.prepare(pairedQuery).all(...pairedParams);
 
   // Group by RESPONSE CONTENT (suggestions hash) - not scenario/profile
   // This ensures we only compare when the exact same response was judged multiple times
@@ -309,6 +322,7 @@ function analyzeJudgeReliability() {
   const overallScores1 = [];
   const overallScores2 = [];
   const allDisagreements = [];
+  const pairSummaries = [];
 
   for (const [pairKey, pairs] of judgePairs) {
     const [judge1, judge2] = pairKey.split('|');
@@ -334,6 +348,7 @@ function analyzeJudgeReliability() {
 
     // Per-dimension analysis
     const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+    const dimensionCorrelations = {};
     console.log('\n  Per-dimension correlations:');
 
     for (const dim of dimensions) {
@@ -342,6 +357,7 @@ function analyzeJudgeReliability() {
 
       if (d1.length >= 3 && d2.length >= 3) {
         const r = pearsonCorrelation(d1, d2);
+        dimensionCorrelations[dim] = r;
         console.log(`    ${dim.padEnd(16)} r = ${r !== null ? r.toFixed(3) : 'N/A'}`);
       }
     }
@@ -358,6 +374,24 @@ function analyzeJudgeReliability() {
         }
       }
     }
+
+    pairSummaries.push({
+      judge1,
+      judge2,
+      pairedResponses: n,
+      pearson,
+      spearman,
+      meanAbsoluteDifference: mad,
+      meanScores: [mean(scores1), mean(scores2)],
+      dimensionCorrelations,
+      majorDisagreements: bigDisagreements.map((entry) => ({
+        scenario: entry.scenario,
+        profile: entry.profile,
+        score1: entry.score1,
+        score2: entry.score2,
+        difference: entry.diff,
+      })),
+    });
   }
 
   // Overall summary
@@ -395,6 +429,26 @@ function analyzeJudgeReliability() {
 
   if (allDisagreements.length > 0) {
     console.log(`  ${allDisagreements.length} major disagreements (>20 pts) found`);
+  }
+
+  if (jsonOutPath) {
+    const output = {
+      runId: runIdFilter,
+      judges,
+      responsesWithMultipleJudges,
+      pairSummaries,
+      overall: {
+        totalPairs,
+        pearson: overallPearson,
+        spearman: overallSpearman,
+        meanAbsoluteDifference: overallMAD,
+        majorDisagreements: allDisagreements.length,
+      },
+    };
+    const outputDir = path.dirname(jsonOutPath);
+    if (outputDir && !fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    fs.writeFileSync(jsonOutPath, `${JSON.stringify(output, null, 2)}\n`);
+    console.log(`JSON output written to ${jsonOutPath}`);
   }
 
   console.log('');

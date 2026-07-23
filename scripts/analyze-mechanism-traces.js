@@ -19,6 +19,9 @@
  *   node scripts/analyze-mechanism-traces.js <runId> [options]
  *
  * Options:
+ *   --db <path>        Evaluation database override
+ *   --logs <path>      Dialogue-log root or tutor-dialogues directory
+ *   --judge <model>    Restrict rows to one judge model
  *   --output <path>    Output file path (default: exports/mechanism-traces-<runId>.md)
  *   --json             Also output JSON data
  *   --verbose          Print per-dialogue details
@@ -28,10 +31,10 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 // ── Text Similarity ─────────────────────────────────────────────────────
 
@@ -432,10 +435,23 @@ function measureBehavioralEvolution(trace) {
 
 // ── Data Loading ────────────────────────────────────────────────────────
 
-function loadDialogueTrace(dialogueId) {
-  const data = evaluationStore.loadDialogueLog(dialogueId);
-  if (!data) return null;
-  return data.dialogueTrace || [];
+function loadDialogueTrace(dialogueId, logsDir) {
+  let logPath = path.join(logsDir, `${dialogueId}.json`);
+  if (!fs.existsSync(logPath)) {
+    try {
+      const legacyMatch = fs.readdirSync(logsDir).find((name) => name.includes(dialogueId) && name.endsWith('.json'));
+      if (!legacyMatch) return null;
+      logPath = path.join(logsDir, legacyMatch);
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const data = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+    return data.dialogueTrace || [];
+  } catch {
+    return null;
+  }
 }
 
 // ── Aggregation ─────────────────────────────────────────────────────────
@@ -688,29 +704,39 @@ function main() {
   const args = process.argv.slice(2);
   const runId = args.find((a) => !a.startsWith('--'));
   if (!runId) {
-    console.error('Usage: node scripts/analyze-mechanism-traces.js <runId> [--output <path>] [--json] [--verbose]');
+    console.error(
+      'Usage: node scripts/analyze-mechanism-traces.js <runId> [--db <path>] [--logs <path>] [--judge <model>] [--output <path>] [--json] [--verbose]',
+    );
     process.exit(1);
   }
 
-  const outputPath = args.includes('--output')
-    ? args[args.indexOf('--output') + 1]
-    : `exports/mechanism-traces-${runId}.md`;
+  const getOption = (name) => {
+    const index = args.indexOf(`--${name}`);
+    return index >= 0 ? args[index + 1] : null;
+  };
+
+  const outputPath = getOption('output') || `exports/mechanism-traces-${runId}.md`;
   const outputJson = args.includes('--json');
   const verbose = args.includes('--verbose');
+  const judge = getOption('judge');
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR, getOption('db'));
+  const logsDir = resolveTutorDialoguesDir(ROOT_DIR, getOption('logs'));
 
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(dbPath, { readonly: true, fileMustExist: true });
 
   // Load multi-turn results with dialogue IDs
-  const rows = db
-    .prepare(
-      `
+  let query = `
     SELECT id, scenario_id, profile_name, tutor_first_turn_score, dialogue_id, dialogue_rounds
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
-    ORDER BY profile_name, scenario_id
-  `,
-    )
-    .all(runId);
+  `;
+  const queryParams = [runId];
+  if (judge) {
+    query += ' AND judge_model = ?';
+    queryParams.push(judge);
+  }
+  query += ' ORDER BY profile_name, scenario_id';
+  const rows = db.prepare(query).all(...queryParams);
 
   console.log(`Found ${rows.length} multi-turn dialogues for ${runId}`);
 
@@ -724,7 +750,7 @@ function main() {
   let skipped = 0;
 
   for (const row of rows) {
-    const trace = loadDialogueTrace(row.dialogue_id);
+    const trace = loadDialogueTrace(row.dialogue_id, logsDir);
     if (!trace || trace.length === 0) {
       skipped++;
       continue;

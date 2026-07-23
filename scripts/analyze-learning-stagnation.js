@@ -11,6 +11,7 @@
  *   node scripts/analyze-learning-stagnation.js <runId> [<runId> ...]
  *   node scripts/analyze-learning-stagnation.js --db data/evaluations.db <runId>
  *   node scripts/analyze-learning-stagnation.js <runId> --json exports/stagnation.json
+ *   node scripts/analyze-learning-stagnation.js <runId> --judge <model>
  *   node scripts/analyze-learning-stagnation.js <runId> --strict
  */
 
@@ -25,6 +26,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const KNOWN_VALUE_OPTIONS = new Set([
   'db',
   'logs',
+  'judge',
   'metric-version',
   'json',
   'strict-min-rows',
@@ -107,6 +109,7 @@ function getFlag(name, defaultValue = false) {
 
 const dbOverride = getOption('db');
 const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
+const judge = getOption('judge');
 const metricVersion = getOption('metric-version', 'within-test-v2-aligned-proxy');
 const jsonOutPath = getOption('json');
 const strictMode = getFlag('strict', false);
@@ -623,9 +626,7 @@ if (runIds.length === 0) {
 }
 
 const placeholders = runIds.map(() => '?').join(', ');
-const sourceRows = db
-  .prepare(
-    `
+let sourceQuery = `
       SELECT
         id,
         run_id,
@@ -642,10 +643,14 @@ const sourceRows = db
       WHERE success = 1
         AND dialogue_id IS NOT NULL
         AND run_id IN (${placeholders})
-      ORDER BY created_at
-    `,
-  )
-  .all(...runIds);
+`;
+const sourceParams = [...runIds];
+if (judge) {
+  sourceQuery += ' AND judge_model = ?';
+  sourceParams.push(judge);
+}
+sourceQuery += ' ORDER BY created_at';
+const sourceRows = db.prepare(sourceQuery).all(...sourceParams);
 
 if (sourceRows.length === 0) {
   console.log(`No multi-turn rows found for run(s): ${runIds.join(', ')}`);

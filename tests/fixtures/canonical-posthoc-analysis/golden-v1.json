@@ -1,0 +1,600 @@
+{
+  "manifest": {
+    "contractVersion": "canonical-posthoc-v1",
+    "runId": "fixture-posthoc-v1",
+    "primaryJudge": "judge.alpha",
+    "rowCounts": {
+      "total": 13,
+      "scored": 12,
+      "primary": 6,
+      "ignoredMissingOrFailed": 1
+    },
+    "boundaries": {
+      "tutorRubricVersion": "2.2",
+      "learnerRubricVersion": "2.2",
+      "judges": ["judge.alpha", "judge.beta"],
+      "pairedResponses": 6,
+      "provenanceFields": ["config_hash", "dialogue_content_hash", "prompt_content_hash"],
+      "traceSchemaVersion": 5,
+      "dialogueCount": 6
+    },
+    "outputs": {
+      "effects": "effects.json",
+      "traces": "mechanism-traces.json",
+      "trajectories": "trajectories.json",
+      "stagnation": "stagnation.json",
+      "reliability": "reliability.json"
+    }
+  },
+  "effects": {
+    "profiles": {
+      "cell_1": {
+        "n": 3,
+        "mean": 60,
+        "sdInputs": [50, 60, 70]
+      },
+      "cell_5_recog_single_unified": {
+        "n": 3,
+        "mean": 75,
+        "sdInputs": [65, 75, 85]
+      }
+    },
+    "comparisons": [
+      {
+        "p1": "cell_1",
+        "p2": "cell_5_recog_single_unified",
+        "diff": -15,
+        "d": -1.5,
+        "effectLabel": "large",
+        "t": -1.837117307,
+        "p": 0.140065985
+      }
+    ],
+    "dimensions": [
+      {
+        "dimension": "Elicitation",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Prod. Difficulty",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Perception",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Adaptation",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Epist. Integrity",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Pedagogy",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Recognition",
+        "d": -1.349688439,
+        "effect": "large"
+      },
+      {
+        "dimension": "Content Accuracy",
+        "d": -1.349688439,
+        "effect": "large"
+      }
+    ]
+  },
+  "traces": {
+    "summary": [
+      {
+        "mechanism": "unknown",
+        "condition": "base",
+        "n": 3,
+        "revision": {
+          "count": 9,
+          "avgEditDist": 0.1996633,
+          "sdEditDist": 0.031389407
+        },
+        "egoReflection": {
+          "count": 9,
+          "avgSpecificity": 1,
+          "avgWordCount": 12
+        },
+        "superegoReflection": {
+          "count": 9,
+          "avgSpecificity": 0.666666667,
+          "avgWordCount": 15
+        },
+        "adaptation": {
+          "count": 6,
+          "avgEditDist": 0.916666667,
+          "sdEditDist": 0.129099445
+        },
+        "profiles": {
+          "count": 0,
+          "avgWordCount": 0,
+          "avgDimensions": 0,
+          "evolutionCount": 0,
+          "avgEvolutionDist": 0
+        },
+        "intersubjective": {
+          "count": 0,
+          "avgDisagreement": 0,
+          "avgWordCount": 0
+        },
+        "behavioral": {
+          "evolutionCount": 0,
+          "avgThresholdDelta": 0,
+          "avgCriteriaChanged": 0
+        },
+        "betweenRunVariance": {
+          "pairCount": 3,
+          "avgPairwiseDist": 0.827924078
+        }
+      },
+      {
+        "mechanism": "unknown",
+        "condition": "recog",
+        "n": 3,
+        "revision": {
+          "count": 9,
+          "avgEditDist": 0.165963666,
+          "sdEditDist": 0.012175528
+        },
+        "egoReflection": {
+          "count": 9,
+          "avgSpecificity": 1,
+          "avgWordCount": 12
+        },
+        "superegoReflection": {
+          "count": 9,
+          "avgSpecificity": 0.666666667,
+          "avgWordCount": 15
+        },
+        "adaptation": {
+          "count": 6,
+          "avgEditDist": 0.907323232,
+          "sdEditDist": 0.099790491
+        },
+        "profiles": {
+          "count": 0,
+          "avgWordCount": 0,
+          "avgDimensions": 0,
+          "evolutionCount": 0,
+          "avgEvolutionDist": 0
+        },
+        "intersubjective": {
+          "count": 0,
+          "avgDisagreement": 0,
+          "avgWordCount": 0
+        },
+        "behavioral": {
+          "evolutionCount": 0,
+          "avgThresholdDelta": 0,
+          "avgCriteriaChanged": 0
+        },
+        "betweenRunVariance": {
+          "pairCount": 3,
+          "avgPairwiseDist": 0.883586382
+        }
+      }
+    ],
+    "dialogueIds": [
+      "dialogue-base-1",
+      "dialogue-base-2",
+      "dialogue-base-3",
+      "dialogue-recog-1",
+      "dialogue-recog-2",
+      "dialogue-recog-3"
+    ]
+  },
+  "trajectories": {
+    "config": {
+      "minTurns": 3,
+      "maxTurnPosition": 10,
+      "runIds": ["fixture-posthoc-v1"]
+    },
+    "summary": {
+      "totalDialogues": 6,
+      "recognitionN": 3,
+      "baselineN": 3,
+      "runs": ["fixture-posthoc-v1"]
+    },
+    "calibration": {
+      "varianceByCondition": {
+        "recognition": {
+          "n": 3,
+          "meanVariance": 0.006964286,
+          "sdVariance": 0
+        },
+        "baseline": {
+          "n": 3,
+          "meanVariance": 0.006964286,
+          "sdVariance": 0
+        }
+      },
+      "varianceCohensD": -1.043686499,
+      "dimensionDiscrimination": {}
+    },
+    "meanOverallTrajectories": {
+      "recognition": {
+        "n": 3,
+        "tutor": [65, 75, 85],
+        "learner": [55, 65, 75]
+      },
+      "baseline": {
+        "n": 3,
+        "tutor": [55, 60, 65],
+        "learner": [50, 51, 52]
+      }
+    },
+    "hypothesisTests": {
+      "tutorPerceptionSlope": {
+        "recogN": 3,
+        "baseN": 3,
+        "recogMeanSlope": 0.7,
+        "baseMeanSlope": 0.5,
+        "delta": 0.2,
+        "cohensD": 2.529822128,
+        "welchT": 3.098386677,
+        "df": 2.941176471,
+        "pValue": 0.054786766,
+        "significant": false
+      },
+      "learnerEngagementSlope": {
+        "recogN": 3,
+        "baseN": 3,
+        "recogMeanSlope": 0.75,
+        "baseMeanSlope": 0.1,
+        "delta": 0.65,
+        "cohensD": 2.549509757,
+        "welchT": 3.122498999,
+        "df": 2,
+        "pValue": 0.08907342,
+        "significant": false
+      },
+      "asymmetry": {
+        "recognition": {
+          "n": 3,
+          "meanGap": 0,
+          "sd": 0,
+          "se": 0,
+          "tValue": null,
+          "pValue": null,
+          "gapPositiveRate": 0
+        },
+        "baseline": {
+          "n": 3,
+          "meanGap": 4,
+          "sd": 3.605551275,
+          "se": 2.081665999,
+          "tValue": 1.921537846,
+          "pValue": 0.194612734,
+          "gapPositiveRate": 0.666666667
+        },
+        "comparison": {
+          "recogMeanGap": 0,
+          "baseMeanGap": 4,
+          "gapDelta": -4,
+          "cohensD": -1.568929081,
+          "welchT": {
+            "t": -1.921537846,
+            "df": 2,
+            "p": 0.194612734
+          }
+        }
+      },
+      "overallSlope": {
+        "tutor": {
+          "recogN": 3,
+          "baseN": 3,
+          "recogMeanSlope": 10,
+          "baseMeanSlope": 5,
+          "delta": 5,
+          "cohensD": null,
+          "welchT": {
+            "t": null,
+            "df": null,
+            "p": null
+          }
+        },
+        "learner": {
+          "recogN": 3,
+          "baseN": 3,
+          "recogMeanSlope": 10,
+          "baseMeanSlope": 1,
+          "delta": 9,
+          "cohensD": 3.530090432,
+          "welchT": {
+            "t": 4.323460153,
+            "df": 2,
+            "p": 0.049554986
+          }
+        }
+      }
+    },
+    "dialogueSlopes": [
+      {
+        "dialogueId": "dialogue-base-1",
+        "condition": "baseline",
+        "tutorOverallSlope": 5,
+        "learnerOverallSlope": 5
+      },
+      {
+        "dialogueId": "dialogue-base-2",
+        "condition": "baseline",
+        "tutorOverallSlope": 5,
+        "learnerOverallSlope": 0
+      },
+      {
+        "dialogueId": "dialogue-base-3",
+        "condition": "baseline",
+        "tutorOverallSlope": 5,
+        "learnerOverallSlope": -2
+      },
+      {
+        "dialogueId": "dialogue-recog-1",
+        "condition": "recognition",
+        "tutorOverallSlope": 10,
+        "learnerOverallSlope": 10
+      },
+      {
+        "dialogueId": "dialogue-recog-2",
+        "condition": "recognition",
+        "tutorOverallSlope": 10,
+        "learnerOverallSlope": 10
+      },
+      {
+        "dialogueId": "dialogue-recog-3",
+        "condition": "recognition",
+        "tutorOverallSlope": 10,
+        "learnerOverallSlope": 10
+      }
+    ]
+  },
+  "stagnation": {
+    "runs": ["fixture-posthoc-v1"],
+    "metricVersion": "within-test-v2-aligned-proxy",
+    "coverage": {
+      "rows": 6,
+      "missingLogs": 0,
+      "metricFromStore": 6,
+      "metricFromFallback": 0
+    },
+    "runSummaries": [
+      {
+        "runId": "fixture-posthoc-v1",
+        "n": 6,
+        "model": "fixture.model",
+        "learnerTurnBase": 52,
+        "learnerTurnRecog": 75,
+        "learnerHolBase": 52,
+        "learnerHolRecog": 75,
+        "tutorBase": 60,
+        "tutorRecog": 75,
+        "deltaBase": 2,
+        "deltaRecog": 20,
+        "nonPosRateBase": 0.666666667,
+        "nonPosRateRecog": 0
+      }
+    ],
+    "recognitionEffects": [
+      {
+        "label": "Learner turn score",
+        "diff": 23,
+        "t": 3.764258607,
+        "df": 2.47318612,
+        "cohenD": 3.073504282
+      },
+      {
+        "label": "Learner holistic score",
+        "diff": 23,
+        "t": 3.764258607,
+        "df": 2.47318612,
+        "cohenD": 3.073504282
+      },
+      {
+        "label": "Tutor score",
+        "diff": 15,
+        "t": 1.837117307,
+        "df": 4,
+        "cohenD": 1.5
+      }
+    ],
+    "featureMeansByDelta": [
+      {
+        "group": "delta>0",
+        "n": 4,
+        "turnCount": 3,
+        "learnerWordsPerTurn": 5.416666667,
+        "learnerQuestionsPerTurn": 0,
+        "tutorQuestionsPerTurn": 0,
+        "tutorLearnerOverlap": 0.199777537,
+        "learnerAdjacentSimilarity": 0.079766414,
+        "learnerFirstLastSimilarity": 0.022727273,
+        "learnerTypeTokenRatio": 0.907965686,
+        "helpMarkers": 0.25,
+        "reflectMarkers": 0,
+        "commitMarkers": 0,
+        "gratitudeMarkers": 0,
+        "tutorAbstractMarkers": 0,
+        "tutorConcreteMarkers": 0
+      },
+      {
+        "group": "delta<=0",
+        "n": 2,
+        "turnCount": 3,
+        "learnerWordsPerTurn": 5.166666667,
+        "learnerQuestionsPerTurn": 0,
+        "tutorQuestionsPerTurn": 0,
+        "tutorLearnerOverlap": 0.318650794,
+        "learnerAdjacentSimilarity": 0.111111111,
+        "learnerFirstLastSimilarity": 0.055555556,
+        "learnerTypeTokenRatio": 0.870833333,
+        "helpMarkers": 0.5,
+        "reflectMarkers": 0,
+        "commitMarkers": 0,
+        "gratitudeMarkers": 0,
+        "tutorAbstractMarkers": 0,
+        "tutorConcreteMarkers": 0
+      }
+    ],
+    "featureMeansByRecognition": [
+      {
+        "group": "recog=0",
+        "n": 3,
+        "turnCount": 3,
+        "learnerWordsPerTurn": 5.333333333,
+        "learnerQuestionsPerTurn": 0,
+        "tutorQuestionsPerTurn": 0,
+        "tutorLearnerOverlap": 0.269532628,
+        "learnerAdjacentSimilarity": 0.107744108,
+        "learnerFirstLastSimilarity": 0.037037037,
+        "learnerTypeTokenRatio": 0.874673203,
+        "helpMarkers": 0.333333333,
+        "reflectMarkers": 0,
+        "commitMarkers": 0,
+        "gratitudeMarkers": 0,
+        "tutorAbstractMarkers": 0,
+        "tutorConcreteMarkers": 0
+      },
+      {
+        "group": "recog=1",
+        "n": 3,
+        "turnCount": 3,
+        "learnerWordsPerTurn": 5.333333333,
+        "learnerQuestionsPerTurn": 0,
+        "tutorQuestionsPerTurn": 0,
+        "tutorLearnerOverlap": 0.209271284,
+        "learnerAdjacentSimilarity": 0.072685185,
+        "learnerFirstLastSimilarity": 0.03030303,
+        "learnerTypeTokenRatio": 0.916503268,
+        "helpMarkers": 0.333333333,
+        "reflectMarkers": 0,
+        "commitMarkers": 0,
+        "gratitudeMarkers": 0,
+        "tutorAbstractMarkers": 0,
+        "tutorConcreteMarkers": 0
+      }
+    ],
+    "tailFailureStats": {
+      "flagged": {
+        "n": 0,
+        "deltaMean": null,
+        "nonPosRate": null,
+        "holMean": null
+      },
+      "unflagged": {
+        "n": 6,
+        "deltaMean": 11,
+        "nonPosRate": 0.333333333,
+        "holMean": 63.5
+      }
+    },
+    "worst": [
+      {
+        "scenarioId": "scenario-c",
+        "profileName": "cell_1",
+        "delta": -4
+      },
+      {
+        "scenarioId": "scenario-b",
+        "profileName": "cell_1",
+        "delta": 0
+      },
+      {
+        "scenarioId": "scenario-a",
+        "profileName": "cell_1",
+        "delta": 10
+      },
+      {
+        "scenarioId": "scenario-a",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      },
+      {
+        "scenarioId": "scenario-b",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      },
+      {
+        "scenarioId": "scenario-c",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      }
+    ],
+    "best": [
+      {
+        "scenarioId": "scenario-a",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      },
+      {
+        "scenarioId": "scenario-b",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      },
+      {
+        "scenarioId": "scenario-c",
+        "profileName": "cell_5_recog_single_unified",
+        "delta": 20
+      },
+      {
+        "scenarioId": "scenario-a",
+        "profileName": "cell_1",
+        "delta": 10
+      },
+      {
+        "scenarioId": "scenario-b",
+        "profileName": "cell_1",
+        "delta": 0
+      },
+      {
+        "scenarioId": "scenario-c",
+        "profileName": "cell_1",
+        "delta": -4
+      }
+    ]
+  },
+  "reliability": {
+    "runId": "fixture-posthoc-v1",
+    "judges": ["judge.alpha", "judge.beta"],
+    "responsesWithMultipleJudges": 6,
+    "pairSummaries": [
+      {
+        "judge1": "judge.alpha",
+        "judge2": "judge.beta",
+        "pairedResponses": 6,
+        "pearson": 0.984568595,
+        "spearman": 1,
+        "meanAbsoluteDifference": 2.166666667,
+        "meanScores": [67.5, 68.333333333],
+        "dimensionCorrelations": {
+          "relevance": 0.984568595,
+          "specificity": 0.984568595,
+          "pedagogical": 0.984568595,
+          "personalization": 0.984568595,
+          "actionability": 0.984568595,
+          "tone": 0.984568595
+        },
+        "majorDisagreements": []
+      }
+    ],
+    "overall": {
+      "totalPairs": 6,
+      "pearson": 0.984568595,
+      "spearman": 1,
+      "meanAbsoluteDifference": 2.166666667,
+      "majorDisagreements": 0
+    }
+  }
+}

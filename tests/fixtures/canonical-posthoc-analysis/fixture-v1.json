@@ -1,0 +1,141 @@
+{
+  "fixtureSchemaVersion": "canonical-posthoc-fixture-v1",
+  "runId": "fixture-posthoc-v1",
+  "primaryJudge": "judge.alpha",
+  "secondaryJudge": "judge.beta",
+  "traceSchemaVersion": 5,
+  "dialogues": [
+    {
+      "id": "dialogue-base-1",
+      "scenarioId": "scenario-a",
+      "profileName": "cell_1",
+      "recognition": false,
+      "primaryScore": 50,
+      "secondaryScore": 52,
+      "tutorScores": [45, 50, 55],
+      "learnerScores": [40, 45, 50],
+      "tutorDimensionScores": [2.0, 2.4, 3.0],
+      "learnerDimensionScores": [2.0, 2.5, 3.0],
+      "tutorMessages": [
+        "Name the first constraint before proposing a solution.",
+        "Compare that constraint with the evidence you already have.",
+        "State the smallest defensible conclusion and one remaining doubt."
+      ],
+      "learnerMessages": [
+        "I think the first constraint is limited evidence.",
+        "The evidence supports only a narrow conclusion.",
+        "I can defend the narrow claim while keeping one doubt open."
+      ]
+    },
+    {
+      "id": "dialogue-base-2",
+      "scenarioId": "scenario-b",
+      "profileName": "cell_1",
+      "recognition": false,
+      "primaryScore": 60,
+      "secondaryScore": 58,
+      "tutorScores": [55, 60, 65],
+      "learnerScores": [50, 50, 50],
+      "tutorDimensionScores": [2.5, 3.0, 3.3],
+      "learnerDimensionScores": [2.5, 2.5, 2.5],
+      "tutorMessages": [
+        "Separate the observation from the explanation.",
+        "Test whether the explanation predicts the second observation.",
+        "Revise the explanation only where the prediction failed."
+      ],
+      "learnerMessages": [
+        "The observation is clear but my explanation is tentative.",
+        "My explanation does not predict the second observation.",
+        "I changed one clause but the overall account is still uncertain."
+      ]
+    },
+    {
+      "id": "dialogue-base-3",
+      "scenarioId": "scenario-c",
+      "profileName": "cell_1",
+      "recognition": false,
+      "primaryScore": 70,
+      "secondaryScore": 72,
+      "tutorScores": [65, 70, 75],
+      "learnerScores": [60, 58, 56],
+      "tutorDimensionScores": [3.0, 3.4, 4.2],
+      "learnerDimensionScores": [3.0, 2.8, 2.6],
+      "tutorMessages": [
+        "Write the claim in a form that could be disproved.",
+        "Identify which counterexample would matter most.",
+        "Explain why the surviving claim is weaker but more reliable."
+      ],
+      "learnerMessages": [
+        "The claim could be disproved by a clear counterexample.",
+        "I am less sure which counterexample matters most.",
+        "The weaker claim feels harder to explain than the original."
+      ]
+    },
+    {
+      "id": "dialogue-recog-1",
+      "scenarioId": "scenario-a",
+      "profileName": "cell_5_recog_single_unified",
+      "recognition": true,
+      "primaryScore": 65,
+      "secondaryScore": 67,
+      "tutorScores": [55, 65, 75],
+      "learnerScores": [45, 55, 65],
+      "tutorDimensionScores": [2.5, 3.1, 4.0],
+      "learnerDimensionScores": [2.25, 3.0, 3.75],
+      "tutorMessages": [
+        "Choose which uncertainty you want us to investigate first.",
+        "Use your chosen uncertainty to test both of our assumptions.",
+        "Decide which conclusion you can now own without borrowing mine."
+      ],
+      "learnerMessages": [
+        "I want to investigate whether the evidence is representative.",
+        "That uncertainty exposes an assumption in both accounts.",
+        "I can own the limited conclusion because I tested the assumption."
+      ]
+    },
+    {
+      "id": "dialogue-recog-2",
+      "scenarioId": "scenario-b",
+      "profileName": "cell_5_recog_single_unified",
+      "recognition": true,
+      "primaryScore": 75,
+      "secondaryScore": 73,
+      "tutorScores": [65, 75, 85],
+      "learnerScores": [55, 65, 75],
+      "tutorDimensionScores": [3.0, 3.6, 4.3],
+      "learnerDimensionScores": [2.75, 3.5, 4.25],
+      "tutorMessages": [
+        "Tell me which distinction in your account deserves to survive.",
+        "Challenge my reading using that distinction as your criterion.",
+        "Rebuild the account so the distinction does real explanatory work."
+      ],
+      "learnerMessages": [
+        "The distinction between cause and correlation should survive.",
+        "Your reading collapses that distinction too quickly.",
+        "My revised account uses the distinction to explain the second case."
+      ]
+    },
+    {
+      "id": "dialogue-recog-3",
+      "scenarioId": "scenario-c",
+      "profileName": "cell_5_recog_single_unified",
+      "recognition": true,
+      "primaryScore": 85,
+      "secondaryScore": 88,
+      "tutorScores": [75, 85, 95],
+      "learnerScores": [65, 75, 85],
+      "tutorDimensionScores": [3.5, 4.3, 4.9],
+      "learnerDimensionScores": [3.25, 4.0, 4.75],
+      "tutorMessages": [
+        "Set the standard by which you want your claim judged.",
+        "Apply that standard to my objection and your original claim alike.",
+        "Give the conclusion in your own terms and name its exact limit."
+      ],
+      "learnerMessages": [
+        "The standard should be explanatory reach without hidden exceptions.",
+        "That standard weakens my claim and also limits your objection.",
+        "My conclusion explains both cases but does not settle the third."
+      ]
+    }
+  ]
+}
