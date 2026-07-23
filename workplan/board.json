@@ -1,18 +1,19 @@
 {
-  "generated": "2026-07-23T20:46:43.194Z",
+  "generated": "2026-07-23T21:03:31.270Z",
   "counts": {
-    "total": 158,
+    "total": 159,
     "byStatus": {
       "done": 129,
       "blocked": 3,
       "dropped": 2,
       "triaged": 20,
-      "archived": 4
+      "archived": 4,
+      "review": 1
     },
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 36,
+      "infra": 37,
       "maintenance": 13,
       "content": 2,
       "paper": 6,
@@ -689,6 +690,35 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "tutor-stub-turn-failure-backfill",
+      "title": "Backfill turn-level tutor-stub failure labels for corrective training",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-23",
+      "updated": "2026-07-24",
+      "verification": "Versioned zero-model-call records are emitted incrementally and at trace seal, backfilled from current and legacy-compatible JSONL, and ingested idempotently into namespaced SQLite tables/views; targeted tests cover guards and repairs, point-of-action triggers, immediate and next-turn human feedback versus ground-truth validation, next-turn outcomes, seal/quarantine exclusions, mode filtering, fail-closed malformed input, SQL replacement, and the permanent training-license gate; workplan validation passes.",
+      "branch": "codex/turn-failure-backfill",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "impasse-corpus-phase1",
+          "program-2-iterated-exhaust-retrain"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/174"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "turn-level-labels",
+        "fine-tuning",
+        "backfill"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",

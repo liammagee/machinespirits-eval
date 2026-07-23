@@ -248,6 +248,7 @@ import {
   createTutorStubLearnerResponseProvenance,
   summarizeTutorStubLearnerResponseProvenance,
 } from '../services/tutorStubLearnerResponseProvenance.js';
+import { buildTutorStubTurnFailureTraceEvents } from '../services/tutorStubTurnFailureBackfill.js';
 import {
   TUTOR_STUB_TRANSCRIPT_HTML_SCHEMA,
   launchTutorStubTranscriptHtml,
@@ -5046,16 +5047,18 @@ function createTraceState({ enabled, traceDir, metadata }) {
   const runId = safeTimestampForFile();
   const filePath = path.join(dir, `${runId}.jsonl`);
   fs.mkdirSync(dir, { recursive: true });
+  const enrichedMetadata = { ...(metadata || {}), provenance: captureTraceProvenance(metadata) };
   const trace = {
     enabled: true,
     dir,
     filePath,
     runId,
     seq: 0,
+    metadata: enrichedMetadata,
   };
   appendTraceEvent(trace, {
     type: 'run_start',
-    metadata: { ...(metadata || {}), provenance: captureTraceProvenance(metadata) },
+    metadata: enrichedMetadata,
   });
   return trace;
 }
@@ -5074,6 +5077,35 @@ function appendTraceEvent(trace, event) {
     entry.turnId = openingDebugId(trace.runId);
   }
   fs.appendFileSync(trace.filePath, `${JSON.stringify(redactTraceSecrets(entry))}\n`);
+}
+
+function appendTutorStubTurnFailureTraceRecords(state, { sealed = false } = {}) {
+  if (!state?.trace?.enabled || !state.turns?.length) return [];
+  try {
+    const events = buildTutorStubTurnFailureTraceEvents({
+      runStart: {
+        runId: state.trace.runId,
+        metadata: state.trace.metadata || {},
+      },
+      turnRecords: state.turns,
+      tracePath: traceDisplayPath(state.trace),
+      traceSealed: sealed,
+      opening: state.openingRealization?.text || '',
+      phase: sealed ? 'sealed' : 'incremental',
+      feedbackRecords: state.turnFailureFeedbackRecords || [],
+    });
+    for (const event of events) appendTraceEvent(state.trace, event);
+    return events;
+  } catch (error) {
+    appendTraceEvent(state.trace, {
+      type: 'turn_failure_recording_error',
+      phase: sealed ? 'sealed' : 'incremental',
+      turn: state.turns.at(-1)?.turn ?? null,
+      error: String(error?.message || error),
+      publicTranscriptChanged: false,
+    });
+    return [];
+  }
 }
 
 function reserveTutorStubMeteredModelCall({ trace = null, role = 'unknown', turn = null } = {}) {
@@ -14382,6 +14414,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     turn: tutorTurn,
     turnRecord,
   });
+  appendTutorStubTurnFailureTraceRecords(state);
   return {
     ...response,
     passthrough: true,
@@ -14975,6 +15008,7 @@ async function runOneTurn(
     turn: tutorTurn,
     turnRecord,
   });
+  appendTutorStubTurnFailureTraceRecords(state);
   return {
     ...response,
     dagSnapshot,
@@ -15223,6 +15257,7 @@ function commitTutorStubQuarantinedTurn({ state, learnerText, learnerInput = nul
     turnId,
     turnRecord,
   });
+  appendTutorStubTurnFailureTraceRecords(state);
   return {
     text,
     provider: 'harness',
@@ -17112,6 +17147,7 @@ async function main() {
       : null,
     passthrough: passthroughConfig,
     learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
+    turnFailureFeedbackRecords: [],
     requestedTemperature: temperature,
     temperature: effectiveTemperature,
     maxTokens,
@@ -17745,6 +17781,7 @@ async function main() {
       cliEffort,
     });
     appendTraceEvent(state.trace, { type: 'run_end', reason: result.reason, turns: state.turns.length });
+    appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
     if (args.save) {
       saveTranscript(args.save, {
         ...visibleModel,
@@ -17850,6 +17887,7 @@ async function main() {
     await printExplanatoryDebugTurn(state);
     writeFieldVisualization(state, { reason: 'once' });
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
+    appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
     if (args.save) {
       saveTranscript(args.save, {
         ...visibleModel,
@@ -20822,6 +20860,7 @@ async function main() {
       mixedLearnerCache: { ...mixedLearner.cacheStats },
       learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(state.turns),
     });
+    appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
     if (closeoutReportEnabled) {
       const report = printDialogueCloseout(state, { reason, trace: state.trace });
       appendTraceEvent(state.trace, { type: 'closeout_report', reason, report });
@@ -23345,6 +23384,7 @@ async function main() {
       publicTranscriptChanged: false,
     });
     if (ratingRecord) {
+      state.turnFailureFeedbackRecords.push(ratingRecord);
       appendTraceEvent(state.trace, {
         type: 'tutor_feedback_rating_recorded',
         turn: feedback.targetTutorTurn,
@@ -23352,6 +23392,7 @@ async function main() {
         record: ratingRecord,
         publicTranscriptChanged: false,
       });
+      appendTutorStubTurnFailureTraceRecords(state);
       const ratedPromptSnapshot =
         feedbackTargetTurn?.prompts?.tutor ||
         (feedback.targetKind === 'opening' ? state.openingRealization?.promptSnapshot || null : null);

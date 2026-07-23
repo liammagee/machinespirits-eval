@@ -42,6 +42,8 @@
     "tutor:stub:qa": "node scripts/run-tutor-stub-qa-matrix.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
     "tutor:stub:ingest": "node scripts/ingest-tutor-stub-auto-evals.js",
+    "tutor:stub:backfill-failures": "node scripts/backfill-tutor-stub-turn-failures.js",
+    "tutor:stub:ingest-failures": "node scripts/ingest-tutor-stub-turn-failures.js",
     "tutor:stub:register-priors": "node scripts/build-tutor-stub-register-priors.js",
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",

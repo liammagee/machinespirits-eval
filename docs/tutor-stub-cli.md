@@ -496,6 +496,38 @@ of this fallback window as well as the raw recent window in compact analysis
 prompts. Short runs, tutor calls, and every non-budget audit failure keep their
 existing behavior; the fallback never introduces private planner state.
 
+## Turn-level failure records
+
+Completed tutor turns now add deterministic `turn_failure_recorded` events to
+the technical JSONL trace when an existing response check, point-of-action
+compliance check, learner rating, next-turn outcome, or runtime quarantine
+identifies a failure. The event is incremental during the dialogue and receives
+a sealed revision after `run_end`. It makes no additional model call and does
+not alter the public transcript.
+
+Backfill older traces into a local review dataset without writing SQLite:
+
+```bash
+npm run tutor:stub:backfill-failures -- --trace-root .tutor-stub-traces --dry-run
+```
+
+Ingest the same normalized records into the namespaced tutor-stub tables in the
+evaluation database:
+
+```bash
+npm run tutor:stub:ingest-failures -- --trace-root .tutor-stub-traces
+```
+
+Use `--db /tmp/turn-failures.db` for an isolated database. Query
+`v_tutor_stub_turn_failures` for one row per failure label and
+`v_tutor_stub_corrective_candidates` for review candidates. An unsealed or
+quarantined turn cannot become a corrective candidate. Human feedback remains
+separate from human ground-truth validation, and every row has
+`training_licensed = 0` until a later review process explicitly produces a
+different, versioned artifact.
+Malformed JSONL is summarized by `--dry-run` but fails closed before SQL
+replacement. Use `--allow-malformed` only after inspecting the affected trace.
+
 ## Terminal compatibility
 
 Color and motion activate only where the terminal supports them. Piped output,
