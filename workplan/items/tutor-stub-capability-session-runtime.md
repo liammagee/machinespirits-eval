@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-23
 verification: An importable session runtime and versioned command/capability
   registry drive lifecycle, help, completion, availability, compatibility
   checks, and trace schemas; two isolated sessions run in one process; golden
@@ -28,7 +28,7 @@ tags:
   - runtime
   - command-registry
   - replay
-branch: codex/tutor-stub-capability-runtime
+branch: codex/tutor-stub-capability-resolver
 ---
 
 `scripts/tutor-stub.js` has become a capable application shell, but session
