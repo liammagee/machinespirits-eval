@@ -259,10 +259,7 @@ test('invariants reject duplicate aliases, handlers, and inconsistent mode metad
       index === 1 ? { ...definition, handler: TUTOR_STUB_COMMAND_REGISTRY.commands[0].handler } : definition,
     ),
   };
-  assert.throws(
-    () => assertTutorStubCommandRegistryInvariants(duplicateHandlerRegistry),
-    /duplicate command handler/u,
-  );
+  assert.throws(() => assertTutorStubCommandRegistryInvariants(duplicateHandlerRegistry), /duplicate command handler/u);
 });
 
 test('scene-return and passthrough views agree for every shared command and alias', () => {

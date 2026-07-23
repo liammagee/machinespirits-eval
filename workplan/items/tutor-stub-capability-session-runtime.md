@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-capability-session-runtime
 title: Extract a capability-driven tutor-stub session runtime
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -65,3 +65,7 @@ and evaluation adapters rather than forking them.
   registry; the CLI routes learner input, commands, resume, reset, and
   finalization through runtime adapters. Fake-provider fixtures pin equivalent
   public turns and lifecycle ordering across all six capability modes.
+- 2026-07-23: Verification complete: focused capability/runtime/CLI/labelling
+  checks, all interactive-mode regressions, lint, formatting, workplan checks,
+  derivation quality, and the hermetic suite pass. The item is in review pending
+  its integration PR.
