@@ -3770,9 +3770,7 @@ async function callPromptModel({
         userPrompt: prompt,
         messageHistory: publicMessageHistory,
       });
-      const budgetRecovered = recoveredAudit.violations.every(
-        (violation) => !budgetViolationCodes.has(violation.code),
-      );
+      const budgetRecovered = recoveredAudit.violations.every((violation) => !budgetViolationCodes.has(violation.code));
       appendTraceEvent(trace, {
         type: 'prompt_audit_recovery',
         role,

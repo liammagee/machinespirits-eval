@@ -226,9 +226,7 @@ test('long automated learner runs recover budget overflow with a public recent-t
     assert.ok(recoveries[0].recovery.originalViolations.some((row) => row.code === 'character_budget_exceeded'));
     assert.equal(recoveries[0].audit.ok, true);
     assert.equal(
-      events.some(
-        (event) => event.type === 'prompt_audit_failed' && event.role === 'tutor_stub_auto_learner',
-      ),
+      events.some((event) => event.type === 'prompt_audit_failed' && event.role === 'tutor_stub_auto_learner'),
       false,
     );
     assert.equal(events.filter((event) => event.type === 'turn_complete').length, 10);

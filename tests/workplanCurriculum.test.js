@@ -202,10 +202,7 @@ test('tutor-stub /board starts a fresh non-DAG inquiry with the selected live wo
   assert.equal(result.status, 0, result.stderr);
   assert.match(
     result.stdout,
-    new RegExp(
-      `next board item >.*${escapeRegExp(selectedModule.id)}.*${escapeRegExp(selectedModule.title)}`,
-      'su',
-    ),
+    new RegExp(`next board item >.*${escapeRegExp(selectedModule.id)}.*${escapeRegExp(selectedModule.title)}`, 'su'),
   );
   assert.match(result.stdout, /starting a fresh reflective inquiry from the live workplan/u);
   assert.match(result.stdout, new RegExp(`topic: ${escapeRegExp(selectedModule.title)}`, 'u'));

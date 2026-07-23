@@ -49,10 +49,7 @@ function budgetOmissionMarker(omittedMessageCount) {
  * mark how much public context was omitted. The marker contains no private
  * state and the latest tutor message is retained whenever any history fits.
  */
-export function compactTutorStubPublicMessagesForBudget(
-  messages,
-  { maxHistoryChars = 0, recentTurns = 4 } = {},
-) {
+export function compactTutorStubPublicMessagesForBudget(messages, { maxHistoryChars = 0, recentTurns = 4 } = {}) {
   const publicMessages = normalizedPublicMessages(messages);
   const originalChars = publicHistoryChars(publicMessages);
   const safeMaxChars = Math.max(0, Math.floor(Number(maxHistoryChars) || 0));
@@ -88,10 +85,7 @@ export function compactTutorStubPublicMessagesForBudget(
   const withMarker = () => {
     if (!retained.length || omittedMessageCount === 0) return retained;
     const marker = budgetOmissionMarker(omittedMessageCount);
-    return [
-      { ...retained[0], content: `${marker}\n\n${retained[0].content}` },
-      ...retained.slice(1),
-    ];
+    return [{ ...retained[0], content: `${marker}\n\n${retained[0].content}` }, ...retained.slice(1)];
   };
 
   while (retained.length > 1 && publicHistoryChars(withMarker()) > safeMaxChars) {
