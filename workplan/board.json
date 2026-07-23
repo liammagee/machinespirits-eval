@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T23:34:24.385Z",
+  "generated": "2026-07-23T23:48:25.325Z",
   "counts": {
     "total": 159,
     "byStatus": {
-      "done": 131,
+      "done": 132,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
-      "archived": 4,
-      "active": 1
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -539,35 +538,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "make-inhoused-tests-and-coverage-first-class",
-      "title": "Make in-housed tutor-core tests and coverage first-class",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-24",
-      "verification": "A clean root install runs root and in-housed tutor-core suites hermetically, reports coverage for critical services/routes, fails on agreed risk-based floors, and exposes leaked handles without relying globally on forced process exit.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "scripts/run-hermetic-tests.js",
-          "tutor-core/package.json",
-          ".github/workflows/test.yml"
-        ]
-      },
-      "tags": [
-        "testing",
-        "coverage",
-        "tutor-core",
-        "ci"
-      ],
-      "milestone": "evaluation-infrastructure",
-      "branch": "codex/make-inhoused-tests-and-coverage-first-class"
     },
     {
       "id": "a1-human-learner-validation",
@@ -1491,6 +1461,37 @@
         "evaluation"
       ],
       "branch": "worktree-longitudinal-abm"
+    },
+    {
+      "id": "make-inhoused-tests-and-coverage-first-class",
+      "title": "Make in-housed tutor-core tests and coverage first-class",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "A clean root install runs root and in-housed tutor-core suites hermetically, reports coverage for critical services/routes, fails on agreed risk-based floors, and exposes leaked handles without relying globally on forced process exit.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "scripts/run-hermetic-tests.js",
+          "scripts/run-risk-coverage.js",
+          "config/coverage-risk-floors.json",
+          "tutor-core/package.json",
+          ".github/workflows/test.yml"
+        ]
+      },
+      "tags": [
+        "testing",
+        "coverage",
+        "tutor-core",
+        "ci"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/make-inhoused-tests-and-coverage-first-class"
     },
     {
       "id": "paper2-priority1-closeout",

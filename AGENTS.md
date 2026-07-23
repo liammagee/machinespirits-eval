@@ -167,6 +167,7 @@ Cells with `factors.id_director: true` use `services/idDirectorEngine.js`. Per t
 `EVAL_DB_PATH` and `EVAL_LOGS_DIR` override the default DB / logs locations (`services/evaluationStore.js`, `services/adaptiveTutor/persistence.js`). Used by:
 - `npm run test:hermetic` — runs the root Node suites and in-housed `tutor-core` Vitest suites against one `mktemp -d` environment so production DBs and logs are never touched
 - `npm run test:root:handles` — runs the root suite without Node's legacy forced-exit flag to expose open-handle debt; the normal root phase remains explicitly force-exited until that debt is closed
+- `npm run test:coverage:risk` — on Node 22.10+, runs the configured store, admin/auth, evaluator-provenance, labelling-save-state, and tutor-core recognition/memory groups without forced exit; emits LCOV plus JSON/Markdown under ignored `coverage/risk/` and fails below `config/coverage-risk-floors.json`
 - Adaptive smoke scripts (combined with `ADAPTIVE_TUTOR_LLM=mock` for fully self-contained, no-cost runs)
 - Any test that needs full DB+logs isolation
 
@@ -416,6 +417,9 @@ npm run test:core
 
 # Root handle-leak audit (no forced exit)
 npm run test:root:handles
+
+# Risk-based coverage gate and LCOV/JSON/Markdown report (Node 22.10+)
+npm run test:coverage:risk
 
 # Adaptive cell smoke (no paid API calls)
 ADAPTIVE_TUTOR_LLM=mock node scripts/run-adaptive-cell-smoke.js
