@@ -781,7 +781,8 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     shortName: 'Goalpost shifter',
     failureOperator: 'raises a new evidentiary standard whenever the tutor meets the standard it just requested',
     contrastWith: {
-      low_trust_skeptic: 'does not settle after evidence and warrant are separated, but demands an additional condition',
+      low_trust_skeptic:
+        'does not settle after evidence and warrant are separated, but demands an additional condition',
       counterexample_hunter: 'changes the acceptance threshold rather than producing a concrete rival case',
       answer_seeking: 'withholds acceptance instead of asking the tutor to supply the final answer',
       skeptical: 'moves the acceptance criterion after a warrant is supplied instead of testing that warrant in place',

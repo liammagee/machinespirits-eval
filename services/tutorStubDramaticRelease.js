@@ -695,7 +695,9 @@ function fallbackStance(responseConfiguration) {
 }
 
 function fallbackHostPart(responseConfiguration) {
-  const rawPart = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
+  const rawPart = oneLine(
+    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner',
+  );
   const part =
     {
       cross_examiner: 'adversarial_teacher',

@@ -669,7 +669,9 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const sceneDefinitions = getSceneImmersionDefinitions();
   const actorialDefinitions = getActorialPartDefinitions();
   const actorialPartId = normalizeTutorStubActorialPartId(configuration.actorial_part);
-  const actorialPartLabel = oneLine(actorialDefinitions[actorialPartId]?.label || configuration.actorial_part_label || actorialPartId);
+  const actorialPartLabel = oneLine(
+    actorialDefinitions[actorialPartId]?.label || configuration.actorial_part_label || actorialPartId,
+  );
   const stance = configuration.engagement_stance;
   const stanceContract = oneLine(stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
@@ -1317,7 +1319,12 @@ function actorialPartVisible(configuration, text, metrics) {
       );
     const givesBoundedLearningHandoff =
       metrics.questionCount > 0 && /\b(?:apply|compare|explain|how|revise|show|test|what|which|work)\b/iu.test(text);
-    return avoidsGenericCourtroomSpeech && posesSubjectNativeChallenge && namesLearningMaterial && givesBoundedLearningHandoff;
+    return (
+      avoidsGenericCourtroomSpeech &&
+      posesSubjectNativeChallenge &&
+      namesLearningMaterial &&
+      givesBoundedLearningHandoff
+    );
   }
   if (part === 'exacting_schoolmaster') {
     const avoidsGenericCourtroomSpeech =
@@ -1327,7 +1334,12 @@ function actorialPartVisible(configuration, text, metrics) {
         text,
       );
     const keepsARepairPath = /\b(?:again|correct|criterion|method|precisely|retry|revise|step|try)\b/iu.test(text);
-    return avoidsGenericCourtroomSpeech && metrics.concreteSceneTermCount > 0 && requiresDisciplinaryPerformance && keepsARepairPath;
+    return (
+      avoidsGenericCourtroomSpeech &&
+      metrics.concreteSceneTermCount > 0 &&
+      requiresDisciplinaryPerformance &&
+      keepsARepairPath
+    );
   }
   if (part === 'foreperson') {
     return (

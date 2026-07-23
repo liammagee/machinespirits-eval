@@ -15790,8 +15790,7 @@ async function main() {
   // an explicitly captured `light-adaptation: false`. Treat the boolean value,
   // not mere option presence, as the opt-in/opt-out signal so passthrough
   // recipes remain valid and deterministic.
-  const lightAdaptationCliOptIn =
-    commandLineOptionProvided('light-adaptation') && Boolean(args['light-adaptation']);
+  const lightAdaptationCliOptIn = commandLineOptionProvided('light-adaptation') && Boolean(args['light-adaptation']);
   const lightAdaptationCliOptOut =
     commandLineOptionProvided('no-light-adaptation') && Boolean(args['no-light-adaptation']);
   if (lightAdaptationCliOptIn && lightAdaptationCliOptOut) {
@@ -15814,8 +15813,7 @@ async function main() {
   args['light-adaptation'] = lightAdaptationEnabled;
   args['no-light-adaptation'] = !lightAdaptationEnabled;
   const lightAdaptationThreshold = normalizeTutorStubLightAdaptationThreshold(args['light-adaptation-threshold']);
-  const lightAdaptationExplicitOptIn =
-    lightAdaptationCliOptIn || process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1';
+  const lightAdaptationExplicitOptIn = lightAdaptationCliOptIn || process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1';
   if (lightAdaptationExplicitOptIn && passthroughEnabled) {
     throw new Error('--light-adaptation is unavailable in --passthrough because learner assessment is disabled');
   }
@@ -16109,16 +16107,15 @@ async function main() {
       lightAdaptationEnabled),
   );
   const requestedTutorCharacter = resolveTutorStubCharacterChoice(args['tutor-character']);
-  const initialTutorCharacter = requestedTutorCharacter.raw && !requestedTutorCharacter.clearing
-    ? requestedTutorCharacter.id
-    : null;
+  const initialTutorCharacter =
+    requestedTutorCharacter.raw && !requestedTutorCharacter.clearing ? requestedTutorCharacter.id : null;
   if (initialTutorCharacter && !requestedTutorCharacter.options.includes(initialTutorCharacter)) {
-    throw new Error(
-      `--tutor-character must be one of ${requestedTutorCharacter.options.join(', ')}, or auto`,
-    );
+    throw new Error(`--tutor-character must be one of ${requestedTutorCharacter.options.join(', ')}, or auto`);
   }
   if (initialTutorCharacter && !registerSelectionEnabled) {
-    throw new Error('--tutor-character requires adaptive delivery; remove --no-register-selection and enable learner analysis');
+    throw new Error(
+      '--tutor-character requires adaptive delivery; remove --no-register-selection and enable learner analysis',
+    );
   }
   let classifierResolved =
     classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
@@ -19909,7 +19906,7 @@ async function main() {
       {
         id: 'light_adaptation',
         label: 'Difficulty shift',
-        value: `${(draft?.lightAdaptationEnabled ?? (state.lightAdaptation?.enabled === true)) ? 'on' : 'off'}${
+        value: `${(draft?.lightAdaptationEnabled ?? state.lightAdaptation?.enabled === true) ? 'on' : 'off'}${
           state.register?.enabled ? '' : ' · inactive'
         }`,
         description:
@@ -24361,7 +24358,9 @@ async function main() {
     printTutorFeedbackRequest(latestTutorFeedbackTarget());
     if (mixedLearner.enabled && latestTutorMessage(state)) {
       startMixedLearnerPrefetch('explicit_character_directive_changed');
-      console.log(`${C.dim}  rebuilding the learner suggestion and next tutor response from this restatement${C.reset}\n`);
+      console.log(
+        `${C.dim}  rebuilding the learner suggestion and next tutor response from this restatement${C.reset}\n`,
+      );
     }
     return { suppressReprise: true, restated: true, record, target };
   }
@@ -24422,15 +24421,15 @@ async function main() {
       if (!targetArgument && liveSettingsPickerAvailable() && !duringTurn) {
         clearStatusLine();
         console.log(`${C.brightMagenta}${C.bold}Tutor character · choose with ↑/↓ and Enter${C.reset}`);
-        return pickLiveTutorCharacterWithKeyboard(
-          explicitPerformanceDirectiveValue(state, 'character') || 'auto',
-        ).then((selection) => {
-          if (!selection) return { suppressReprise: false, selected: false };
-          return applyTutorCharacterChoice(selection.id, {
-            duringTurn: false,
-            source: '/character tutor selector',
-          });
-        });
+        return pickLiveTutorCharacterWithKeyboard(explicitPerformanceDirectiveValue(state, 'character') || 'auto').then(
+          (selection) => {
+            if (!selection) return { suppressReprise: false, selected: false };
+            return applyTutorCharacterChoice(selection.id, {
+              duringTurn: false,
+              source: '/character tutor selector',
+            });
+          },
+        );
       }
       return applyTutorCharacterChoice(targetArgument, { duringTurn });
     }

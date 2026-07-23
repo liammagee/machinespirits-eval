@@ -1971,9 +1971,7 @@ test('changing the tutor character publicly restates the latest intent and repla
     assert.equal(completed?.deterministicFallback, false);
     assert.equal(completed?.audit?.ok, true);
     assert.equal(
-      events.some(
-        (event) => event.type === 'tutor_utterance_reprise' && event.command === '/character',
-      ),
+      events.some((event) => event.type === 'tutor_utterance_reprise' && event.command === '/character'),
       false,
     );
     const modelInput = fs.readFileSync(result.logPath, 'utf8');

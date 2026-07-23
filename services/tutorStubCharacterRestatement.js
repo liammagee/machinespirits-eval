@@ -1,10 +1,8 @@
 import { auditTutorStubEvidenceAssertions } from './tutorStubEvidenceAssertion.js';
 import { cleanTutorStubStageSpeech } from './tutorStubStageSpeech.js';
 
-export const TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA =
-  'machinespirits.tutor-stub.character-restatement.v1';
-export const TUTOR_STUB_CHARACTER_RESTATEMENT_AUDIT_SCHEMA =
-  'machinespirits.tutor-stub.character-restatement-audit.v1';
+export const TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA = 'machinespirits.tutor-stub.character-restatement.v1';
+export const TUTOR_STUB_CHARACTER_RESTATEMENT_AUDIT_SCHEMA = 'machinespirits.tutor-stub.character-restatement-audit.v1';
 export const TUTOR_STUB_CHARACTER_RESTATEMENT_BRIDGE = 'Let me rephrase that.';
 
 export const TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT = [
@@ -30,9 +28,7 @@ function normalizedComparisonText(value) {
 }
 
 function quotedSpans(value) {
-  return [...String(value || '').matchAll(/[“"]([^”"]{4,})[”"]/gu)]
-    .map((match) => oneLine(match[1]))
-    .filter(Boolean);
+  return [...String(value || '').matchAll(/[“"]([^”"]{4,})[”"]/gu)].map((match) => oneLine(match[1])).filter(Boolean);
 }
 
 export function buildTutorStubCharacterRestatementPrompt({
@@ -83,12 +79,7 @@ export function cleanTutorStubCharacterRestatement(text) {
     : TUTOR_STUB_CHARACTER_RESTATEMENT_BRIDGE;
 }
 
-export function auditTutorStubCharacterRestatement({
-  previousText,
-  text,
-  characterId,
-  permittedText = '',
-} = {}) {
+export function auditTutorStubCharacterRestatement({ previousText, text, characterId, permittedText = '' } = {}) {
   const previous = oneLine(previousText);
   const candidate = oneLine(text);
   const body = candidate.replace(/^let me rephrase that[.!:]?\s*/iu, '').trim();

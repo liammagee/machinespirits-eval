@@ -38,8 +38,7 @@ test('character-restatement audit requires changed wording, the live question, a
   const previousText = 'Read this public entry: “The cupel kept a dark ring.” Which assay claim follows?';
   const valid = auditTutorStubCharacterRestatement({
     previousText,
-    text:
-      'Let me rephrase that. As an exacting assay teacher, use “The cupel kept a dark ring.” Which assay claim can you now defend?',
+    text: 'Let me rephrase that. As an exacting assay teacher, use “The cupel kept a dark ring.” Which assay claim can you now defend?',
     characterId: 'exacting_schoolmaster',
     permittedText: previousText,
   });
