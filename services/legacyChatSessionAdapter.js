@@ -25,6 +25,7 @@ const SPECIFICATION_FIELDS = new Set([
   'topic',
   'lectureRef',
   'curriculumRef',
+  'personaId',
   'director',
   'cli',
   'useClaudeCli',
@@ -116,6 +117,7 @@ function normalizeSpecification(specification) {
     topic: boundedString(specification.topic || 'general conversation', 'topic', 512, { required: true }),
     lectureRef: boundedString(specification.lectureRef, 'lectureRef', 240),
     curriculumRef: boundedString(specification.curriculumRef, 'curriculumRef', 240),
+    personaId: boundedString(specification.personaId, 'personaId', 160),
     director: specification.director ? clone(specification.director) : null,
     cli: normalizeCli({ cli: specification.cli, useClaudeCli: specification.useClaudeCli === true }),
     sampling: normalizeSampling(specification.sampling),
@@ -182,6 +184,13 @@ export function createCellLabSessionFactory({
         404,
       );
     }
+    if (profile.runner === 'adaptive') {
+      throw new TutorStubSessionHostError(
+        'cell_lab_runner_unsupported',
+        `cell_lab cannot execute adaptive runner cell: ${specification.cellName}`,
+        409,
+      );
+    }
     if (!profile.ego) throw invalid(`cell_lab cell ${specification.cellName} has no ego configuration`);
 
     const curriculum = loadCurriculumContextFn({
@@ -210,6 +219,7 @@ export function createCellLabSessionFactory({
       superegoPromptText,
       topic: specification.topic,
       lectureText: curriculum?.text || '',
+      personaId: specification.personaId,
     });
 
     const createdAt = now().toISOString();
@@ -280,6 +290,7 @@ export function createCellLabSessionFactory({
         topic: specification.topic,
         lectureRef: specification.lectureRef,
         curriculumRef: specification.curriculumRef,
+        personaId: specification.personaId,
         curriculum: curriculumProjection(curriculum),
         director: clone(directorPlan),
       },

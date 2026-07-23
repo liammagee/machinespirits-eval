@@ -18,11 +18,12 @@
 
     <main id="session-main" class="shell">
       <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">one tutor · one public conversation</p>
+        <p class="eyebrow">one shell · two explicit instruments</p>
         <h1 id="page-title">Start from a safe lab, then teach in text.</h1>
         <p>
           The browser and desktop app use the same tutor runtime. Model credentials stay in the local server process;
-          this page receives only the public conversation and operational status.
+          learner mode receives only the public conversation and operational status. Administrators can explicitly
+          enter research mode to run an eval cell and inspect its private deliberation trace.
         </p>
       </section>
 
@@ -38,38 +39,124 @@
         </div>
 
         <form id="setup-form" class="setup-form">
-          <label>
-            <span>Lab</span>
-            <select id="lab-select" name="lab" required></select>
-            <small id="lab-help">A bounded preset with declared capabilities and cost.</small>
-          </label>
-
-          <label>
-            <span>Scenario</span>
-            <select id="world-select" name="world"></select>
-            <small>Only production-ready worlds appear here.</small>
-          </label>
-
-          <label>
-            <span>Tutor profile</span>
-            <select id="tutor-select" name="tutor"></select>
-            <small>A named speaking role; private instructions remain server-side.</small>
-          </label>
-
-          <label>
-            <span>Model route</span>
-            <select id="model-select" name="model"></select>
-            <small>Provider aliases only. Keys and login state never enter the page.</small>
-          </label>
-
-          <details class="advanced">
-            <summary>Resume an exact saved session</summary>
-            <label>
-              <span>Run id or trace path</span>
-              <input id="resume-input" name="resume" autocomplete="off" spellcheck="false" />
-              <small>Explicit resume wins over recency. Drift is rejected by default.</small>
+          <fieldset class="mode-picker">
+            <legend>Session instrument</legend>
+            <label class="mode-card">
+              <input id="safe-mode" type="radio" name="session-mode" value="safe" checked />
+              <span><strong>Safe tutor</strong><small>Learner-facing labs and public dialogue only.</small></span>
             </label>
-          </details>
+            <label class="mode-card research-mode-card">
+              <input id="research-mode" type="radio" name="session-mode" value="research" />
+              <span><strong>Research cell lab</strong><small>Administrator-only configuration and deliberation.</small></span>
+            </label>
+          </fieldset>
+
+          <div id="safe-setup" class="setup-subgrid">
+            <label>
+              <span>Lab</span>
+              <select id="lab-select" name="lab" required></select>
+              <small id="lab-help">A bounded preset with declared capabilities and cost.</small>
+            </label>
+
+            <label>
+              <span>Scenario</span>
+              <select id="world-select" name="world"></select>
+              <small>Only production-ready worlds appear here.</small>
+            </label>
+
+            <label>
+              <span>Tutor profile</span>
+              <select id="tutor-select" name="tutor"></select>
+              <small>A named speaking role; private instructions remain server-side.</small>
+            </label>
+
+            <label>
+              <span>Model route</span>
+              <select id="model-select" name="model"></select>
+              <small>Provider aliases only. Keys and login state never enter the page.</small>
+            </label>
+
+            <details class="advanced">
+              <summary>Resume an exact saved session</summary>
+              <label>
+                <span>Run id or trace path</span>
+                <input id="resume-input" name="resume" autocomplete="off" spellcheck="false" />
+                <small>Explicit resume wins over recency. Drift is rejected by default.</small>
+              </label>
+            </details>
+          </div>
+
+          <section id="research-setup" class="research-setup" aria-labelledby="research-setup-title" hidden>
+            <div class="research-boundary">
+              <p class="eyebrow">administrator instrument</p>
+              <h3 id="research-setup-title">Configure an eval cell</h3>
+              <p>
+                Research mode can expose private prompts, models, configuration, and ego/superego deliberation. It is
+                never entered implicitly and its trace is not included in the public export.
+              </p>
+            </div>
+
+            <div class="assistant-box">
+              <label for="assistant-input"><span>Configuration assistant</span></label>
+              <textarea
+                id="assistant-input"
+                rows="3"
+                placeholder="For example: a recognition-oriented tutor with a dialectical critic, teaching proportional reasoning."
+              ></textarea>
+              <div class="assistant-actions">
+                <label class="inline-check">
+                  <input id="assistant-live" type="checkbox" />
+                  <span>Use the configured model/CLI instead of deterministic preview</span>
+                </label>
+                <button id="assistant-button" class="quiet-button" type="button">Draft configuration</button>
+              </div>
+              <p id="assistant-result" class="assistant-result" role="status">No proposal yet.</p>
+            </div>
+
+            <fieldset class="feature-grid">
+              <legend>Resolve by teaching features</legend>
+              <label><span>Approach</span><select id="research-approach"></select></label>
+              <label><span>Critic</span><select id="research-critic"></select></label>
+              <label><span>Critic stance</span><select id="research-stance"></select></label>
+              <label><span>Learner model</span><select id="research-learner-model"></select></label>
+              <label><span>Charisma target</span><select id="research-charisma"></select></label>
+              <button id="resolve-cell-button" class="quiet-button" type="button">Resolve closest cell</button>
+            </fieldset>
+
+            <div class="research-grid">
+              <label>
+                <span>Resolved or direct cell</span>
+                <select id="research-cell" required></select>
+                <small id="research-cell-help">Load the administrator catalogue to choose a cell.</small>
+              </label>
+              <label>
+                <span>Topic</span>
+                <input id="research-topic" value="general conversation" maxlength="512" />
+                <small>The public subject of the dialogue.</small>
+              </label>
+              <label>
+                <span>Curriculum or dramatic source</span>
+                <select id="research-curriculum"></select>
+                <small>Optional lecture, module, world, drama, or dramatic plan.</small>
+              </label>
+              <label>
+                <span>Learner persona annotation</span>
+                <select id="research-persona"></select>
+                <small>Research metadata only; the human learner remains in control.</small>
+              </label>
+            </div>
+
+            <details class="advanced director-controls">
+              <summary>Director frame</summary>
+              <div class="research-grid">
+                <label><span>Mode</span><select id="director-mode"></select></label>
+                <label><span>Act</span><select id="director-act"></select></label>
+                <label><span>Beat</span><select id="director-beat"></select></label>
+                <label><span>Scene</span><input id="director-scene" maxlength="160" /></label>
+                <label class="wide-field"><span>Director note</span><textarea id="director-note" rows="2" maxlength="320"></textarea></label>
+              </div>
+            </details>
+          </section>
 
           <div class="setup-actions">
             <button id="start-button" class="primary-button" type="submit">Start session</button>
@@ -159,6 +246,23 @@
           <p class="privacy-note">
             If speech recognition is unavailable or fails, nothing about the session changes: keep using the text box.
           </p>
+        </aside>
+
+        <aside id="research-panel" class="panel research-panel" aria-labelledby="research-title" hidden>
+          <p class="eyebrow">private administrator projection</p>
+          <h2 id="research-title">Deliberation inspector</h2>
+          <p>
+            This view is deliberately separate from the learner-safe transcript. It may contain private drafts,
+            critiques, provider details, prompts, and research configuration.
+          </p>
+          <dl id="research-summary" class="research-summary"></dl>
+          <div class="research-inspector-actions">
+            <button id="refresh-research-button" class="quiet-button" type="button">Refresh inspector</button>
+            <button id="export-research-button" class="quiet-button" type="button">Export research trace</button>
+          </div>
+          <div id="research-turns" class="research-turns" aria-live="polite">
+            <p>No research turns yet.</p>
+          </div>
         </aside>
       </section>
     </main>

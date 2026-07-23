@@ -17,6 +17,7 @@ export function computeLegacyChatConfigHash({
   superegoPromptText = '',
   topic = '',
   lectureText = '',
+  personaId = '',
 }) {
   const hash = createHash('sha256');
   hash.update(cellName || '');
@@ -50,6 +51,10 @@ export function computeLegacyChatConfigHash({
   hash.update(topic || '');
   hash.update('\0');
   hash.update(lectureText || '');
+  if (personaId) {
+    hash.update('\0');
+    hash.update(personaId);
+  }
   return hash.digest('hex');
 }
 

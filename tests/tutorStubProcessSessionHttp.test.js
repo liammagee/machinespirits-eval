@@ -419,6 +419,18 @@ test('administrator session boundary runs cell_lab with separate public and rese
   mountEvalSurfaces(app, { root: ROOT, tutorStubSessionHost: host });
   const base = await listen(t, app);
 
+  const adaptiveRejected = await request(base, '/sessions', {
+    method: 'POST',
+    body: {
+      id: 'adaptive-through-cell-lab',
+      engine: 'cell_lab',
+      mode: 'cell_lab',
+      cell: 'cell_110_langgraph_adaptive',
+    },
+  });
+  assert.equal(adaptiveRejected.status, 409, JSON.stringify(adaptiveRejected.body));
+  assert.equal(adaptiveRejected.body.error.code, 'cell_lab_runner_unsupported');
+
   const created = await request(base, '/sessions', {
     method: 'POST',
     body: {
@@ -428,6 +440,7 @@ test('administrator session boundary runs cell_lab with separate public and rese
       cell: 'cell_7_recog_multi_unified',
       topic: 'fraction magnitude',
       curriculumRef: 'drama:rhetorical#D_AF1_CURRICULUM_ADAPTIVE',
+      personaId: 'struggling_anxious',
     },
   });
   assert.equal(created.status, 201, JSON.stringify(created.body));
@@ -436,7 +449,7 @@ test('administrator session boundary runs cell_lab with separate public and rese
   assert.equal(created.body.session.state.publicMessageCount, 0);
   assert.doesNotMatch(
     JSON.stringify(created.body.session),
-    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego/iu,
+    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego|struggling_anxious/iu,
   );
 
   const stepped = await request(base, '/sessions/cell-lab-http/steps', {
@@ -454,7 +467,7 @@ test('administrator session boundary runs cell_lab with separate public and rese
   assert.equal(stepped.body.session.state.publicMessageCount, 2);
   assert.doesNotMatch(
     JSON.stringify(stepped.body.session),
-    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego/iu,
+    /cell_7|configHash|deliberation|PRIVATE|prompt_file|test-provider|test\/ego|struggling_anxious/iu,
   );
 
   const projected = await request(base, '/sessions/cell-lab-http/research');
@@ -464,6 +477,7 @@ test('administrator session boundary runs cell_lab with separate public and rese
   assert.equal(projected.body.research.cell.architecture.hasSuperego, true);
   assert.match(projected.body.research.configHash, /^[a-f0-9]{64}$/u);
   assert.equal(projected.body.research.source.curriculum.moduleId, 'AF1');
+  assert.equal(projected.body.research.source.personaId, 'struggling_anxious');
   assert.equal(projected.body.research.turns[0].deliberation[0].content, 'PRIVATE EGO DRAFT');
   assert.equal(projected.body.research.turns[0].deliberation[1].model, 'test/superego');
   assert.deepEqual(projected.body.research.totals, {

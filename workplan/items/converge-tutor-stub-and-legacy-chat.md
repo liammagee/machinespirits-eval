@@ -98,3 +98,15 @@ the two engines are not treated as prompt-compatible implementations.
   The learner-safe public catalogue remains tutor-stub-only. The focused
   compatibility slice passes 146 tests; the full hermetic suite passes 6,423
   tests with one skip and no failures.
+- 2026-07-23: Completed phase 5 in the shared `/tutor` shell. Learner-safe mode
+  remains the checked default and reconnects `cell_lab` sessions through their
+  public projection only. Explicit administrator research mode now brings in
+  the legacy compatibility catalogues for feature-to-cell resolution, direct
+  cell selection, curriculum/drama sources, persona annotations, and the
+  deterministic-or-live configuration assistant; all conversations still run
+  through the shared session host. A separate inspector fetches and exports the
+  private research projection without changing the ordinary public export.
+  Adaptive-runner cells are filtered and rejected fail-closed by `cell_lab`.
+  Standalone and mounted-poetics browser checks passed with no console warnings;
+  focused compatibility coverage passes 149 tests, lint and scoped formatting
+  pass, and the full hermetic suite passes 6,464 tests with one skip.

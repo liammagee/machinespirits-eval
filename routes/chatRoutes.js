@@ -413,6 +413,7 @@ function summarizeCell(name, profile, orientations = {}, resultStats = null) {
     learnerArchitecture: profile.learner_architecture || null,
     recognitionMode: !!profile.recognition_mode,
     conversationMode: profile.conversation_mode || null,
+    runner: profile.runner || 'standard',
     dialogueEnabled: !!profile.dialogue?.enabled,
     maxRounds: profile.dialogue?.max_rounds ?? 0,
     // id-director extension: cells 101-109 use a back-stage id agent to author
@@ -937,6 +938,30 @@ function dryRunAssistProposal(messages = [], currentConfig = {}) {
   } else if (text.includes('minimal') || text.includes('naive')) {
     proposal.features.approach = 'minimalist';
     proposal.rationale['features.approach'] = 'The request asks for a minimal baseline.';
+  }
+
+  if (text.includes('dialectical critic')) {
+    proposal.features.critic = 'dialectical';
+    proposal.features.stance = text.includes('advocate')
+      ? 'advocate'
+      : text.includes('adversar')
+        ? 'adversary'
+        : 'suspicious';
+    proposal.rationale['features.critic'] = 'The request asks for a dialectical critic.';
+  } else if (text.includes('divergent critic')) {
+    proposal.features.critic = 'divergent';
+    proposal.features.stance = text.includes('advocate')
+      ? 'advocate'
+      : text.includes('adversar')
+        ? 'adversary'
+        : 'suspicious';
+    proposal.rationale['features.critic'] = 'The request asks for a divergent critic.';
+  } else if (text.includes('pedagogical critic')) {
+    proposal.features.critic = 'pedagogical';
+    proposal.rationale['features.critic'] = 'The request asks for a pedagogical critic.';
+  } else if (text.includes('hardwired critic')) {
+    proposal.features.critic = 'hardwired';
+    proposal.rationale['features.critic'] = 'The request asks for hardwired critique.';
   }
 
   if (text.includes('anxious')) {

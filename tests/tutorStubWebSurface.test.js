@@ -104,7 +104,7 @@ test('shared eval surfaces serve the tutor shell and versioned public catalog', 
     fetch(`${base}/api/tutor-stub/catalog`),
   ]);
   assert.equal(script.status, 200);
-  assert.match(await script.text(), /const API = '\/api\/tutor-stub'/u);
+  assert.match(await script.text(), /const API = `\$\{APP_PREFIX\}\/api\/tutor-stub`/u);
   assert.equal(styles.status, 200);
   assert.match(await styles.text(), /prefers-reduced-motion/u);
   assert.equal(contract.status, 200);
@@ -130,6 +130,15 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(html, /id="caption-text" aria-live="polite"/u);
   assert.match(html, /Raw audio is not added to the public trace/u);
 
+  assert.match(html, /id="safe-mode"[^>]*value="safe" checked/u);
+  assert.match(html, /id="research-mode"[^>]*value="research"/u);
+  assert.match(html, /id="research-setup"[^>]*hidden/u);
+  assert.match(html, /id="research-panel"[^>]*hidden/u);
+  assert.match(html, /Learner persona annotation/u);
+  assert.match(html, /Research metadata only; the human learner remains in control/u);
+  assert.match(html, /id="assistant-input"[\s\S]*id="resolve-cell-button"/u);
+  assert.match(html, /id="research-summary"[\s\S]*id="research-turns"/u);
+
   assert.match(script, /new AbortController\(\)/u);
   assert.match(script, /engine: lab\.launch\?\.engine \|\| 'tutor_stub'/u);
   assert.match(script, /const engine = elements\.lab\.selectedOptions\[0\]\?\.dataset\.engine/u);
@@ -137,9 +146,21 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(script, /SpeechRecognition/u);
   assert.match(script, /event\.key === 'Enter' \|\| event\.key === ' '/u);
   assert.match(script, /role === 'learner' \? 'You' : role === 'tutor' \? 'Tutor' : 'Session'/u);
+  assert.match(script, /let chatApiBase = `\$\{APP_PREFIX\}\/api\/chat`/u);
+  assert.match(script, /payload\?\.adminPath/u);
+  assert.match(script, /state\.surfaceMode = research \? 'research' : 'safe'/u);
+  assert.match(script, /chatApi\('\/resolve'/u);
+  assert.match(script, /chatApi\('\/assist'/u);
+  assert.match(script, /cell\.runner !== 'adaptive'/u);
+  assert.match(script, /engine: 'cell_lab'[\s\S]*mode: 'cell_lab'/u);
+  assert.match(script, /state\.surfaceMode !== 'research' \|\| !isResearchSession\(\)/u);
+  assert.match(script, /content\.textContent = safeText\(entry\.content/u);
+  assert.match(script, /machinespirits\.cell-lab\.research-export\.v1/u);
+  assert.match(script, /privateModelTraceIncluded: false/u);
 
   assert.match(styles, /:focus-visible/u);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/u);
   assert.match(styles, /@media \(forced-colors: active\)/u);
   assert.match(styles, /border-(?:left|right): 4px/u);
+  assert.match(styles, /\.research-panel/u);
 });
