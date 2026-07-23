@@ -7,13 +7,18 @@ import {
   TUTOR_STUB_GUARD_BOUNDARY_POLICIES,
   tutorStubGuardDispositionCatalog,
   tutorStubGuardIssueRows,
+  tutorStubTerminalFallbackFailureMessage,
 } from '../tutorStubGuardDisposition.js';
 import {
   advanceTutorStubReleasePacing,
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
 } from '../tutorStubReleasePacing.js';
+import { auditTutorStubResponseConfiguration } from '../tutorStubResponseConfiguration.js';
 import { auditTutorStubReleaseDelivery } from '../tutorStubResponseGuard.js';
+
+const LIVE_TERMINAL_FALLBACK =
+  'I hear the focus: “for a simple explanation because they are lost”; that stays at the centre of this turn. I clear a new space on the table for this point before testing its limit. I set the tool under examination and mark the claim’s limit. Keep only what the public evidence already shows. Choose one way forward: use the tool to decide for a simple explanation because they are lost, or leave that reading open until another public fact arrives; you may also ask me to unpack one word or connection.';
 
 test('every hard veto wins the cartesian product with every proposed advisory issue', () => {
   const catalog = tutorStubGuardDispositionCatalog();
@@ -80,6 +85,73 @@ test('the existing actorial advisory override cannot override an independent har
   assert.equal(mixed.ok, false);
   assert.deepEqual(mixed.hardIssues, [leak]);
   assert.deepEqual(mixed.advisoryIssues, [actorial]);
+});
+
+test('the live terminal fallback cannot exhaust delivery on optional actorial and configuration realization', () => {
+  const responseConfigurationAudit = auditTutorStubResponseConfiguration({
+    text: LIVE_TERMINAL_FALLBACK,
+    configuration: {
+      engagement_stance: 'plain',
+      action_family: 'clarify_term',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'grounded',
+      actorial_part: 'examiner',
+      actorial_part_label: 'evidence examiner',
+      actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+    },
+    world: { setting: 'The campus FAQ tool and formulation card are on the table.' },
+  });
+  assert.equal(responseConfigurationAudit.actorial_realization.ok, false);
+  assert.deepEqual(
+    responseConfigurationAudit.actorial_realization.issues.map((issue) => issue.type),
+    ['missing_selected_performance_tactic'],
+  );
+
+  const rows = tutorStubGuardIssueRows({
+    actorialRealizationAudit: responseConfigurationAudit.actorial_realization,
+    responseConfigurationAudit,
+  });
+  assert.deepEqual(
+    rows.filter((row) => row.guard === 'response_configuration').map((row) => row.axis),
+    ['engagement_stance', 'action_family'],
+  );
+
+  const decision = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
+  assert.equal(decision.ok, true);
+  assert.equal(decision.catalogVersion, 2);
+  assert.deepEqual(decision.hardIssues, []);
+  assert.deepEqual(
+    decision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
+    ['actorial_realization:missing_selected_performance_tactic'],
+  );
+  assert.deepEqual(
+    decision.reportOnlyIssues.map((issue) => `${issue.guard}:${issue.type}:${issue.axis}`),
+    [
+      'response_configuration:axis_not_visible:engagement_stance',
+      'response_configuration:axis_not_visible:action_family',
+    ],
+  );
+  assert.equal(
+    decision.dispositions.find((row) => row.issue.guard === 'actorial_realization')?.legacyOverride,
+    'terminal_fallback_actorial_advisory',
+  );
+});
+
+test('terminal fallback fatal messages contain only the hard issue that blocked delivery', () => {
+  const issues = [
+    { guard: 'actorial_realization', type: 'missing_selected_performance_tactic' },
+    { guard: 'response_configuration', type: 'axis_not_visible', axis: 'engagement_stance' },
+    { guard: 'response_configuration', type: 'axis_not_visible', axis: 'action_family' },
+    { guard: 'leak', type: 'private_evidence_in_public_speech' },
+  ];
+  const decision = decideTutorStubGuardDelivery(issues, { terminalFallback: true });
+  assert.equal(decision.ok, false);
+  assert.deepEqual(decision.hardIssues, [{ guard: 'leak', type: 'private_evidence_in_public_speech' }]);
+  assert.equal(
+    tutorStubTerminalFallbackFailureMessage(decision),
+    'Tutor deterministic fallback failed final audit: leak:private_evidence_in_public_speech',
+  );
 });
 
 test('unknown and malformed findings fail closed under every boundary policy', () => {

@@ -206,7 +206,10 @@ import {
 import { compileTutorStubPerformanceObligationContract } from '../services/tutorStubPerformanceObligationContract.js';
 import { projectTutorStubSpeakerPublicPremise } from '../services/tutorStubSpeakerPublicPremise.js';
 import { resolveTutorStubPublicCounterpressure } from '../services/tutorStubCounterpressure.js';
-import { tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
+import {
+  tutorStubGuardIssueRows,
+  tutorStubTerminalFallbackFailureMessage,
+} from '../services/tutorStubGuardDisposition.js';
 import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
@@ -13219,7 +13222,7 @@ async function callTutor({
         fallbackDraftAudits.responseConfigurationAudit,
       ),
       advisoryReason:
-        'the deterministic fallback is the terminal safety text — conversational-integrity findings on it are recorded as advisories instead of killing the dialogue; evidence boundaries remain hard',
+        'the deterministic fallback is the terminal safety text — known conversational-integrity and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence boundaries remain hard',
       role: `${roleBase}_fallback`,
       attempt: fallbackAttempt,
       terminalFallback: true,
@@ -13270,11 +13273,7 @@ async function callTutor({
         accounting: exhaustedAccounting,
         publicDelivery: null,
       });
-      const error = new Error(
-        `Tutor deterministic fallback failed final audit: ${rejectedIssues
-          .map((issue) => `${issue.guard}:${issue.type}`)
-          .join(', ')}`,
-      );
+      const error = new Error(tutorStubTerminalFallbackFailureMessage(fallbackAudits.deliveryDecision));
       error.code = 'TUTOR_FALLBACK_AUDIT_FAILED';
       error.tutorGuardAccounting = exhaustedAccounting;
       throw error;
