@@ -235,6 +235,30 @@ describe('Checkpoint helpers', () => {
       const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
       assert.strictEqual(loaded.lastCompletedTurn, 2, 'Should reflect latest write');
     });
+
+    it('keeps repeated-attempt checkpoints distinct for the same profile and scenario', () => {
+      writeCheckpoint(
+        TEST_RUN_ID,
+        TEST_SCENARIO_ID,
+        TEST_PROFILE_NAME,
+        makeTestState({ attemptIndex: 0, dialogueId: 'attempt-zero' }),
+      );
+      writeCheckpoint(
+        TEST_RUN_ID,
+        TEST_SCENARIO_ID,
+        TEST_PROFILE_NAME,
+        makeTestState({ attemptIndex: 1, dialogueId: 'attempt-one' }),
+      );
+
+      assert.equal(listCheckpoints(TEST_RUN_ID).length, 2);
+      assert.equal(loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 0).dialogueId, 'attempt-zero');
+      assert.equal(loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 1).dialogueId, 'attempt-one');
+
+      deleteCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 0);
+      assert.equal(loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 0), null);
+      assert.equal(loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 1).dialogueId, 'attempt-one');
+      deleteCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, 1);
+    });
   });
 
   describe('loadCheckpoint returns null for missing', () => {

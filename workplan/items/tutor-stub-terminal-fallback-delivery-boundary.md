@@ -1,17 +1,20 @@
 ---
 id: tutor-stub-terminal-fallback-delivery-boundary
 title: "Keep tutor-stub terminal fallbacks deliverable without weakening evidence safety"
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-23
-updated: 2026-07-23
+updated: 2026-07-24
 verification: "A regression reproduces the missing_selected_performance_tactic terminal-fallback failure and proves that optional actorial/configuration findings cannot exhaust public delivery, leak/release/unknown findings remain hard, the thrown fatal message contains only hard findings, and the focused tutor-stub plus workplan checks pass."
 branch: codex/tutor-final-fallback-fix
 depends_on:
   - committee-runtime-main-reconciliation
+links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/171
 tags:
   - tutor-stub
   - fallback
@@ -48,3 +51,7 @@ formatting now reads only the effective `hardIssues`. Verification passed: 27
 guard/accounting tests, two deterministic-fallback CLI tests, 29/29 derivation
 worlds, targeted ESLint and Prettier, and the 158-item workplan check. Card moved
 to review pending commit/merge.
+
+2026-07-24 Codex: PR #171 merged to `main` with lint, formatting, workplan,
+validation-framework, Node 20, Node 22, and Claude-review checks passing. Card
+moved from review to done.

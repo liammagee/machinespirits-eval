@@ -3335,9 +3335,11 @@ router.get('/runs/:runId/resume-status', (req, res) => {
     }
 
     // Get profiles and scenarios from query or run metadata
-    const metadata = run.metadata ? JSON.parse(run.metadata) : {};
-    const profiles = req.query.profiles ? req.query.profiles.split(',') : metadata.profiles || [];
-    const scenariosParam = req.query.scenarios || metadata.scenarios || 'all';
+    const metadata = run.metadata || {};
+    const profiles = req.query.profiles
+      ? req.query.profiles.split(',')
+      : metadata.profileNames || metadata.profiles || [];
+    const scenariosParam = req.query.scenarios || metadata.scenarioIds || metadata.scenarios || 'all';
 
     if (profiles.length === 0) {
       return res.status(400).json({

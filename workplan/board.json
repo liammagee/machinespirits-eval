@@ -1,14 +1,13 @@
 {
-  "generated": "2026-07-23T13:28:03.880Z",
+  "generated": "2026-07-23T20:46:43.194Z",
   "counts": {
     "total": 158,
     "byStatus": {
-      "done": 127,
+      "done": 129,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 21,
-      "archived": 4,
-      "review": 1
+      "triaged": 20,
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -148,32 +147,6 @@
         "concurrency"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "repair-evaluation-store-roundtrip-integrity",
-      "title": "Preserve evaluation provenance and attempt counts across store round trips",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/evaluationStore.js"
-        ]
-      },
-      "tags": [
-        "provenance",
-        "rejudging",
-        "resume",
-        "data-integrity"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "test-canonical-posthoc-analysis-pipeline",
@@ -716,28 +689,6 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "tutor-stub-terminal-fallback-delivery-boundary",
-      "title": "Keep tutor-stub terminal fallbacks deliverable without weakening evidence safety",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "A regression reproduces the missing_selected_performance_tactic terminal-fallback failure and proves that optional actorial/configuration findings cannot exhaust public delivery, leak/release/unknown findings remain hard, the thrown fatal message contains only hard findings, and the focused tutor-stub plus workplan checks pass.",
-      "branch": "codex/tutor-final-fallback-fix",
-      "depends_on": [
-        "committee-runtime-main-reconciliation"
-      ],
-      "tags": [
-        "tutor-stub",
-        "fallback",
-        "response-guards",
-        "runtime"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1748,6 +1699,36 @@
       "branch": "codex/negative-register-exemplar-test"
     },
     {
+      "id": "repair-evaluation-store-roundtrip-integrity",
+      "title": "Preserve evaluation provenance and attempt counts across store round trips",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Store, reload, rejudge, rubric-version clone, completion, and resume round trips preserve generation provenance, factor fields, learner and id-director identity, total counts, and every expected attempt.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/evaluationStore.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/173"
+        ]
+      },
+      "tags": [
+        "provenance",
+        "rejudging",
+        "resume",
+        "data-integrity"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/repair-evaluation-store-roundtrip-integrity"
+    },
+    {
       "id": "scriptorium-evidence-workbenches",
       "title": "Scriptorium evidence workbenches for scripts, proof runs, and replays",
       "status": "done",
@@ -2324,6 +2305,33 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "preconscious"
+    },
+    {
+      "id": "tutor-stub-terminal-fallback-delivery-boundary",
+      "title": "Keep tutor-stub terminal fallbacks deliverable without weakening evidence safety",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-23",
+      "updated": "2026-07-24",
+      "verification": "A regression reproduces the missing_selected_performance_tactic terminal-fallback failure and proves that optional actorial/configuration findings cannot exhaust public delivery, leak/release/unknown findings remain hard, the thrown fatal message contains only hard findings, and the focused tutor-stub plus workplan checks pass.",
+      "branch": "codex/tutor-final-fallback-fix",
+      "depends_on": [
+        "committee-runtime-main-reconciliation"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/171"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fallback",
+        "response-guards",
+        "runtime"
+      ]
     },
     {
       "id": "tutor-stub-transition-reward-model",

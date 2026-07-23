@@ -396,6 +396,10 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN prompt_content_hash 
 // Session ordering is derived: ROW_NUMBER() OVER (PARTITION BY learner_id ORDER BY created_at).
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_id TEXT`, 'learner_id');
 db.exec(`CREATE INDEX IF NOT EXISTS idx_results_learner ON evaluation_results(learner_id)`);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN attempt_index INTEGER`, 'attempt_index');
+db.exec(
+  `CREATE INDEX IF NOT EXISTS idx_results_attempt ON evaluation_results(run_id, profile_name, scenario_id, attempt_index)`,
+);
 
 // P0 Provenance: score audit trail (append-only)
 db.exec(`
@@ -626,6 +630,215 @@ export function getScoreAuditByRun(runId) {
     .all(runId);
 }
 
+const GENERATION_PROVENANCE_COLUMNS = Object.freeze([
+  'run_id',
+  'scenario_id',
+  'scenario_name',
+  'scenario_type',
+  'provider',
+  'model',
+  'profile_name',
+  'hyperparameters',
+  'prompt_id',
+  'ego_model',
+  'superego_model',
+  'suggestions',
+  'raw_response',
+  'latency_ms',
+  'input_tokens',
+  'output_tokens',
+  'cost',
+  'dialogue_rounds',
+  'deliberation_rounds',
+  'api_calls',
+  'dialogue_id',
+  'attempt_index',
+  'factor_recognition',
+  'factor_multi_agent_tutor',
+  'factor_multi_agent_learner',
+  'learner_architecture',
+  'scoring_method',
+  'conversation_mode',
+  'dialogue_content_hash',
+  'config_hash',
+  'tutor_ego_prompt_version',
+  'tutor_superego_prompt_version',
+  'learner_prompt_version',
+  'prompt_content_hash',
+  'learner_id',
+  'id_construction_trace',
+]);
+
+function parseJsonValue(value, fallback) {
+  if (value == null || value === '') return fallback;
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function serializeJsonValue(value, fallback) {
+  if (typeof value === 'string') {
+    try {
+      JSON.parse(value);
+      return value;
+    } catch {
+      return JSON.stringify(value);
+    }
+  }
+  return JSON.stringify(value ?? fallback);
+}
+
+function booleanToDb(value) {
+  return value == null ? null : value ? 1 : 0;
+}
+
+function normalizeAttemptIndex(value) {
+  if (value == null || value === '') return null;
+  const attemptIndex = Number(value);
+  return Number.isInteger(attemptIndex) && attemptIndex >= 0 ? attemptIndex : null;
+}
+
+function generationProvenanceRecord(result, runId = result.runId) {
+  const factors = result.factors || {};
+  return {
+    run_id: runId,
+    scenario_id: result.scenarioId,
+    scenario_name: result.scenarioName ?? null,
+    scenario_type: result.scenarioType || 'suggestion',
+    provider: result.provider,
+    model: result.model,
+    profile_name: result.profileName ?? null,
+    hyperparameters: serializeJsonValue(result.hyperparameters, {}),
+    prompt_id: result.promptId ?? null,
+    ego_model: result.egoModel ?? null,
+    superego_model: result.superegoModel ?? null,
+    suggestions: serializeJsonValue(result.suggestions, []),
+    raw_response: result.rawResponse ?? null,
+    latency_ms: result.latencyMs ?? null,
+    input_tokens: result.inputTokens ?? null,
+    output_tokens: result.outputTokens ?? null,
+    cost: result.cost ?? null,
+    dialogue_rounds: result.dialogueRounds ?? null,
+    deliberation_rounds: result.deliberationRounds ?? null,
+    api_calls: result.apiCalls ?? null,
+    dialogue_id: result.dialogueId ?? null,
+    attempt_index: normalizeAttemptIndex(result.attemptIndex ?? result.runNum),
+    factor_recognition: booleanToDb(result.factorRecognition ?? factors.recognition),
+    factor_multi_agent_tutor: booleanToDb(result.factorMultiAgentTutor ?? factors.multi_agent_tutor),
+    factor_multi_agent_learner: booleanToDb(result.factorMultiAgentLearner ?? factors.multi_agent_learner),
+    learner_architecture: result.learnerArchitecture ?? null,
+    scoring_method: result.scoringMethod ?? null,
+    conversation_mode: result.conversationMode ?? null,
+    dialogue_content_hash: result.dialogueContentHash ?? null,
+    config_hash: result.configHash ?? null,
+    tutor_ego_prompt_version: result.tutorEgoPromptVersion ?? null,
+    tutor_superego_prompt_version: result.tutorSuperegoPromptVersion ?? null,
+    learner_prompt_version: result.learnerPromptVersion ?? null,
+    prompt_content_hash: result.promptContentHash ?? null,
+    learner_id: result.learnerId ?? null,
+    id_construction_trace:
+      result.idConstructionTrace == null ? null : serializeJsonValue(result.idConstructionTrace, null),
+  };
+}
+
+function generationProvenanceValues(result, runId = result.runId) {
+  const record = generationProvenanceRecord(result, runId);
+  return GENERATION_PROVENANCE_COLUMNS.map((column) => record[column]);
+}
+
+function parseGenerationProvenance(row) {
+  const factorsPresent =
+    row.factor_recognition != null || row.factor_multi_agent_tutor != null || row.factor_multi_agent_learner != null;
+  const factors = factorsPresent
+    ? {
+        recognition: Boolean(row.factor_recognition),
+        multi_agent_tutor: Boolean(row.factor_multi_agent_tutor),
+        multi_agent_learner: Boolean(row.factor_multi_agent_learner),
+      }
+    : null;
+
+  return {
+    runId: row.run_id,
+    scenarioId: row.scenario_id,
+    scenarioName: row.scenario_name,
+    scenarioType: row.scenario_type || 'suggestion',
+    provider: row.provider,
+    model: row.model,
+    profileName: row.profile_name,
+    hyperparameters: parseJsonValue(row.hyperparameters, {}),
+    promptId: row.prompt_id,
+    egoModel: row.ego_model,
+    superegoModel: row.superego_model,
+    suggestions: parseJsonValue(row.suggestions, []),
+    rawResponse: row.raw_response ?? null,
+    latencyMs: row.latency_ms,
+    inputTokens: row.input_tokens,
+    outputTokens: row.output_tokens,
+    cost: row.cost,
+    dialogueRounds: row.dialogue_rounds,
+    deliberationRounds: row.deliberation_rounds ?? null,
+    apiCalls: row.api_calls,
+    dialogueId: row.dialogue_id,
+    attemptIndex: normalizeAttemptIndex(row.attempt_index),
+    factors,
+    factorRecognition: factorsPresent ? row.factor_recognition : null,
+    factorMultiAgentTutor: factorsPresent ? row.factor_multi_agent_tutor : null,
+    factorMultiAgentLearner: factorsPresent ? row.factor_multi_agent_learner : null,
+    learnerArchitecture: row.learner_architecture || null,
+    scoringMethod: row.scoring_method || null,
+    conversationMode: row.conversation_mode || null,
+    dialogueContentHash: row.dialogue_content_hash || null,
+    configHash: row.config_hash || null,
+    tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
+    tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
+    learnerPromptVersion: row.learner_prompt_version || null,
+    promptContentHash: row.prompt_content_hash || null,
+    learnerId: row.learner_id || null,
+    idConstructionTrace: parseJsonValue(row.id_construction_trace, null),
+  };
+}
+
+function expectedTestsForRun(run) {
+  if (Number.isInteger(run?.totalTests) && run.totalTests > 0) return run.totalTests;
+  const runsPerConfig = Number(run?.metadata?.runsPerConfig) || 1;
+  return (run?.totalScenarios || 0) * (run?.totalConfigurations || 0) * runsPerConfig;
+}
+
+function generationIdentity(result) {
+  const attemptIndex = normalizeAttemptIndex(result.attemptIndex ?? result.runNum);
+  const pair = `${result.profileName || ''}:${result.scenarioId || ''}`;
+  if (attemptIndex != null) return `${pair}:attempt:${attemptIndex}`;
+  if (result.dialogueId) return `${pair}:dialogue:${result.dialogueId}`;
+  if (result.dialogueContentHash) return `${pair}:dialogue-hash:${result.dialogueContentHash}`;
+
+  const legacyPayload = JSON.stringify({
+    provider: result.provider || null,
+    model: result.model || null,
+    profileName: result.profileName || null,
+    scenarioId: result.scenarioId || null,
+    configHash: result.configHash || null,
+    promptContentHash: result.promptContentHash || null,
+    suggestions: result.suggestions || [],
+    rawResponse: result.rawResponse || null,
+  });
+  return `${pair}:legacy:${createHash('sha256').update(legacyPayload).digest('hex')}`;
+}
+
+function uniqueGenerationResults(results) {
+  const byIdentity = new Map();
+  for (const result of results) {
+    // Failed attempt rows are retry evidence, not completed generations. Keep
+    // them in stored-row counts, but never let them satisfy run completion.
+    if (result.success === false || result.success === 0) continue;
+    const identity = generationIdentity(result);
+    if (!byIdentity.has(identity)) byIdentity.set(identity, result);
+  }
+  return [...byIdentity.values()];
+}
+
 /**
  * Create a new evaluation run
  *
@@ -678,23 +891,22 @@ export function updateRun(runId, updates) {
     stmt.run(JSON.stringify(mergedMetadata), runId);
   }
 
-  if (status === 'completed') {
-    const stmt = db.prepare(`
-      UPDATE evaluation_runs
-      SET status = ?, completed_at = ?
-      WHERE id = ?
-    `);
-    stmt.run(status, completedAt || new Date().toISOString(), runId);
-  } else if (status && totalTests != null) {
-    const stmt = db.prepare(`
-      UPDATE evaluation_runs SET status = ?, total_tests = ? WHERE id = ?
-    `);
-    stmt.run(status, totalTests, runId);
-  } else if (status) {
-    const stmt = db.prepare(`
-      UPDATE evaluation_runs SET status = ? WHERE id = ?
-    `);
-    stmt.run(status, runId);
+  const assignments = [];
+  const values = [];
+  if (status) {
+    assignments.push('status = ?');
+    values.push(status);
+  }
+  if (totalTests != null) {
+    assignments.push('total_tests = ?');
+    values.push(totalTests);
+  }
+  if (status === 'completed' || completedAt != null) {
+    assignments.push('completed_at = ?');
+    values.push(completedAt || new Date().toISOString());
+  }
+  if (assignments.length > 0) {
+    db.prepare(`UPDATE evaluation_runs SET ${assignments.join(', ')} WHERE id = ?`).run(...values, runId);
   }
 }
 
@@ -708,73 +920,26 @@ export function updateRun(runId, updates) {
 export function storeResult(runId, result) {
   const stmt = db.prepare(`
     INSERT INTO evaluation_results (
-      run_id, scenario_id, scenario_name, scenario_type,
-      provider, model, profile_name, hyperparameters, prompt_id,
-      ego_model, superego_model,
-      suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
+      ${GENERATION_PROVENANCE_COLUMNS.join(', ')},
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
-      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
-      scoring_method,
-      conversation_mode,
-      dialogue_content_hash,
-      config_hash,
-      tutor_ego_prompt_version,
-      tutor_superego_prompt_version,
-      learner_prompt_version,
-      prompt_content_hash,
-      learner_id,
-      id_construction_trace,
       created_at
     ) VALUES (
-      ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?,
-      ?, ?,
-      ?, ?, ?, ?, ?, ?, ?, ?,
+      ${GENERATION_PROVENANCE_COLUMNS.map(() => '?').join(', ')},
       ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?,
-      ?,
-      ?,
-      ?,
-      ?, ?, ?, ?,
-      ?,
-      ?,
       ?
     )
   `);
 
   const info = stmt.run(
-    runId,
-    result.scenarioId,
-    result.scenarioName,
-    result.scenarioType || 'suggestion',
-    result.provider,
-    result.model,
-    result.profileName,
-    JSON.stringify(result.hyperparameters || {}),
-    result.promptId,
-    result.egoModel || null,
-    result.superegoModel || null,
-    JSON.stringify(result.suggestions || []),
-    result.rawResponse,
-    result.latencyMs,
-    result.inputTokens,
-    result.outputTokens,
-    result.cost,
-    result.dialogueRounds,
-    result.deliberationRounds ?? null,
-    result.apiCalls,
-    result.dialogueId,
+    ...generationProvenanceValues(result, runId),
     result.scores?.relevance,
     result.scores?.specificity,
     result.scores?.pedagogical,
@@ -794,20 +959,6 @@ export function storeResult(runId, result) {
     result.scoresWithReasoning ? JSON.stringify(result.scoresWithReasoning) : null,
     result.success ? 1 : 0,
     result.errorMessage,
-    result.factors?.recognition != null ? (result.factors.recognition ? 1 : 0) : null,
-    result.factors?.multi_agent_tutor != null ? (result.factors.multi_agent_tutor ? 1 : 0) : null,
-    result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
-    result.learnerArchitecture || null,
-    result.scoringMethod || null,
-    result.conversationMode || null,
-    result.dialogueContentHash || null,
-    result.configHash || null,
-    result.tutorEgoPromptVersion || null,
-    result.tutorSuperegoPromptVersion || null,
-    result.learnerPromptVersion || null,
-    result.promptContentHash || null,
-    result.learnerId || null,
-    result.idConstructionTrace == null ? null : JSON.stringify(result.idConstructionTrace),
     new Date().toISOString(),
   );
 
@@ -1116,7 +1267,7 @@ function buildTransientPlaceholderMap(runId, existingResults = null) {
   if (profileNames.length === 0 || scenarioIds.length === 0) return new Map();
 
   const storedCounts = new Map();
-  for (const result of results) {
+  for (const result of uniqueGenerationResults(results)) {
     const key = `${result.scenarioId}|${result.profileName}`;
     storedCounts.set(key, (storedCounts.get(key) || 0) + 1);
   }
@@ -1488,6 +1639,26 @@ export function exportToCsv(runId) {
     'passes_required',
     'passes_forbidden',
     'success',
+    'attempt_index',
+    'profile_name',
+    'prompt_id',
+    'ego_model',
+    'superego_model',
+    'factor_recognition',
+    'factor_multi_agent_tutor',
+    'factor_multi_agent_learner',
+    'learner_architecture',
+    'learner_id',
+    'conversation_mode',
+    'dialogue_id',
+    'dialogue_content_hash',
+    'config_hash',
+    'tutor_ego_prompt_version',
+    'tutor_superego_prompt_version',
+    'learner_prompt_version',
+    'prompt_content_hash',
+    'id_construction_trace',
+    'raw_response',
   ];
 
   const rows = results.map((r) => [
@@ -1508,6 +1679,26 @@ export function exportToCsv(runId) {
     r.passesRequired ? 1 : 0,
     r.passesForbidden ? 1 : 0,
     r.success ? 1 : 0,
+    r.attemptIndex,
+    r.profileName,
+    r.promptId,
+    r.egoModel,
+    r.superegoModel,
+    r.factors?.recognition == null ? null : r.factors.recognition ? 1 : 0,
+    r.factors?.multi_agent_tutor == null ? null : r.factors.multi_agent_tutor ? 1 : 0,
+    r.factors?.multi_agent_learner == null ? null : r.factors.multi_agent_learner ? 1 : 0,
+    r.learnerArchitecture,
+    r.learnerId,
+    r.conversationMode,
+    r.dialogueId,
+    r.dialogueContentHash,
+    r.configHash,
+    r.tutorEgoPromptVersion,
+    r.tutorSuperegoPromptVersion,
+    r.learnerPromptVersion,
+    r.promptContentHash,
+    r.idConstructionTrace == null ? null : JSON.stringify(r.idConstructionTrace),
+    r.rawResponse,
   ]);
 
   const escapeCsvField = (value) => {
@@ -1563,8 +1754,14 @@ function writeRunManifest(runId, run, results, completedAt) {
         configHash: r.configHash || null,
         profileName: r.profileName || null,
         scenarioId: r.scenarioId || null,
+        attemptIndex: r.attemptIndex ?? null,
+        learnerId: r.learnerId || null,
         judgeModel: r.judgeModel || null,
         tutorRubricVersion: rubricVersionMap[rowIdStr] || null,
+        promptContentHash: r.promptContentHash || null,
+        tutorEgoPromptVersion: r.tutorEgoPromptVersion || null,
+        tutorSuperegoPromptVersion: r.tutorSuperegoPromptVersion || null,
+        learnerPromptVersion: r.learnerPromptVersion || null,
       };
 
       if (r.configHash && r.profileName) {
@@ -1585,7 +1782,8 @@ function writeRunManifest(runId, run, results, completedAt) {
       package_version: run.packageVersion || null,
       description: run.description || null,
       total_rows: results.length,
-      expected_tests: (run.totalScenarios || 0) * (run.totalConfigurations || 0),
+      total_generations: uniqueGenerationResults(results).length,
+      expected_tests: expectedTestsForRun(run),
       profiles: [...profiles].sort(),
       scenarios: [...scenarios].sort(),
       judge_models: [...judgeModels].sort(),
@@ -1624,12 +1822,14 @@ export function completeRun(runId) {
 
   // Get all results for this run
   const results = getResults(runId);
+  const generationResults = uniqueGenerationResults(results);
+  const expectedTests = expectedTestsForRun(run);
 
   if (results.length === 0) {
     // No results at all - mark as failed
     updateRun(runId, {
       status: 'failed',
-      totalTests: 0,
+      totalTests: expectedTests,
       completedAt: new Date().toISOString(),
     });
 
@@ -1638,7 +1838,8 @@ export function completeRun(runId) {
       status: 'failed',
       message: 'No results found - marked as failed',
       resultsFound: 0,
-      expectedTests: run.totalScenarios * run.totalConfigurations,
+      storedRows: 0,
+      expectedTests,
     };
   }
 
@@ -1653,17 +1854,16 @@ export function completeRun(runId) {
   // Update run as completed with partial results
   updateRun(runId, {
     status: 'completed',
-    totalTests: results.length,
+    totalTests: expectedTests,
     completedAt,
   });
 
   // Calculate completion percentage
-  const expectedTests = run.totalScenarios * run.totalConfigurations;
-  const completionRate = expectedTests > 0 ? (results.length / expectedTests) * 100 : 0;
+  const completionRate = expectedTests > 0 ? (generationResults.length / expectedTests) * 100 : 0;
 
   // Get profile breakdown
   const profileBreakdown = {};
-  for (const result of results) {
+  for (const result of generationResults) {
     const profile = result.profileName || 'unknown';
     if (!profileBreakdown[profile]) {
       profileBreakdown[profile] = 0;
@@ -1678,12 +1878,13 @@ export function completeRun(runId) {
     runId,
     status: 'completed',
     message: 'Run marked as completed with partial results',
-    resultsFound: results.length,
+    resultsFound: generationResults.length,
+    storedRows: results.length,
     expectedTests,
     completionRate: Math.round(completionRate),
     completedAt,
     profileBreakdown,
-    wasPartial: results.length < expectedTests,
+    wasPartial: generationResults.length < expectedTests,
   };
 }
 
@@ -1708,8 +1909,8 @@ export function findIncompleteRuns(options = {}) {
   const rows = stmt.all(cutoffTime);
 
   return rows.map((row) => {
-    const resultsStmt = db.prepare('SELECT COUNT(*) as count FROM evaluation_results WHERE run_id = ?');
-    const resultsCount = resultsStmt.get(row.id).count;
+    const storedResults = getResults(row.id);
+    const resultsCount = uniqueGenerationResults(storedResults).length;
     const metadata = JSON.parse(row.metadata || '{}');
     const pid = metadata?.pid;
 
@@ -1719,8 +1920,10 @@ export function findIncompleteRuns(options = {}) {
       description: row.description,
       totalScenarios: row.total_scenarios,
       totalConfigurations: row.total_configurations,
-      expectedTests: row.total_scenarios * row.total_configurations,
+      expectedTests:
+        row.total_tests || row.total_scenarios * row.total_configurations * (Number(metadata.runsPerConfig) || 1),
       resultsFound: resultsCount,
+      storedRows: storedResults.length,
       ageMinutes: Math.round((Date.now() - new Date(row.created_at).getTime()) / 60000),
       metadata,
       pid,
@@ -1823,42 +2026,69 @@ export function deleteRun(runId) {
  * @param {string} runId - The run ID
  * @param {Array} profiles - Array of profile names
  * @param {Array} scenarios - Array of scenario objects with { id, name }
+ * @param {Object} [options]
+ * @param {number} [options.runsPerConfig] - Override the persisted repetition count
  * @returns {Object} { completed, remaining, progress }
  */
-export function getIncompleteTests(runId, profiles, scenarios) {
+export function getIncompleteTests(runId, profiles, scenarios, options = {}) {
   const run = getRun(runId);
   if (!run) {
     throw new Error(`Run not found: ${runId}`);
   }
 
-  // Get all completed tests for this run
-  const results = getResults(runId);
-  const completedSet = new Set();
-
-  // Build set of completed (profile, scenarioId) pairs — only count successes
-  for (const result of results) {
-    if (result.success === false || result.success === 0) continue;
-    const key = `${result.profileName}:${result.scenarioId}`;
-    completedSet.add(key);
+  const runsPerConfigValue = options.runsPerConfig ?? run.metadata?.runsPerConfig ?? 1;
+  const runsPerConfig = Number(runsPerConfigValue);
+  if (!Number.isInteger(runsPerConfig) || runsPerConfig < 1) {
+    throw new Error(`Invalid runsPerConfig for ${runId}: ${runsPerConfigValue}`);
   }
 
-  // Build list of all expected tests
+  // Exact attempt indices are authoritative for current rows. Legacy rows have
+  // no attempt index, so de-duplicate rejudgments by generation identity and
+  // conservatively assign each distinct generation to the lowest open slot.
+  const completedAttempts = new Map();
+  const legacyGenerations = new Map();
+  for (const result of getResults(runId)) {
+    if (result.success === false || result.success === 0) continue;
+    const pair = `${result.profileName}:${result.scenarioId}`;
+    const attemptIndex = normalizeAttemptIndex(result.attemptIndex);
+    if (attemptIndex != null && attemptIndex < runsPerConfig) {
+      if (!completedAttempts.has(pair)) completedAttempts.set(pair, new Set());
+      completedAttempts.get(pair).add(attemptIndex);
+      continue;
+    }
+    if (!legacyGenerations.has(pair)) legacyGenerations.set(pair, new Set());
+    legacyGenerations.get(pair).add(generationIdentity(result));
+  }
+
+  for (const [pair, identities] of legacyGenerations.entries()) {
+    if (!completedAttempts.has(pair)) completedAttempts.set(pair, new Set());
+    const attempts = completedAttempts.get(pair);
+    for (const _identity of identities) {
+      const openAttempt = Array.from({ length: runsPerConfig }, (_, index) => index).find(
+        (index) => !attempts.has(index),
+      );
+      if (openAttempt == null) break;
+      attempts.add(openAttempt);
+    }
+  }
+
   const allTests = [];
   const remainingTests = [];
 
   for (const profile of profiles) {
     for (const scenario of scenarios) {
-      const testKey = `${profile}:${scenario.id}`;
-      const test = {
-        profile,
-        scenarioId: scenario.id,
-        scenarioName: scenario.name,
-      };
-
-      allTests.push(test);
-
-      if (!completedSet.has(testKey)) {
-        remainingTests.push(test);
+      const pair = `${profile}:${scenario.id}`;
+      const attempts = completedAttempts.get(pair) || new Set();
+      for (let attemptIndex = 0; attemptIndex < runsPerConfig; attemptIndex++) {
+        const test = {
+          profile,
+          scenarioId: scenario.id,
+          scenarioName: scenario.name,
+          attemptIndex,
+          runNum: attemptIndex,
+        };
+        allTests.push(test);
+        if (!attempts.has(attemptIndex)) remainingTests.push(test);
       }
     }
   }
@@ -1874,6 +2104,7 @@ export function getIncompleteTests(runId, profiles, scenarios) {
     remaining: remainingTests.length,
     progress: Math.round(progress),
     remainingTests,
+    runsPerConfig,
     status: run.status,
     canResume: remainingTests.length > 0 && run.status === 'running',
   };
@@ -1971,26 +2202,7 @@ function parseResultRow(row) {
 
   return {
     id: row.id,
-    runId: row.run_id,
-    scenarioId: row.scenario_id,
-    scenarioName: row.scenario_name,
-    scenarioType: row.scenario_type || 'suggestion',
-    provider: row.provider,
-    model: row.model,
-    profileName: row.profile_name,
-    egoModel: row.ego_model,
-    superegoModel: row.superego_model,
-    hyperparameters: JSON.parse(row.hyperparameters || '{}'),
-    promptId: row.prompt_id,
-    suggestions: JSON.parse(row.suggestions || '[]'),
-    latencyMs: row.latency_ms,
-    inputTokens: row.input_tokens,
-    outputTokens: row.output_tokens,
-    cost: row.cost,
-    dialogueRounds: row.dialogue_rounds,
-    deliberationRounds: row.deliberation_rounds ?? null,
-    apiCalls: row.api_calls,
-    dialogueId: row.dialogue_id,
+    ...parseGenerationProvenance(row),
     scores,
     tutorFirstTurnScore: row.tutor_first_turn_score ?? row.overall_score ?? null,
     overallScore: row.tutor_first_turn_score ?? row.overall_score ?? null, // DEPRECATED alias
@@ -2006,15 +2218,6 @@ function parseResultRow(row) {
     success: Boolean(row.success),
     errorMessage: row.error_message,
     createdAt: row.created_at,
-    factors:
-      row.factor_recognition != null || row.factor_multi_agent_tutor != null || row.factor_multi_agent_learner != null
-        ? {
-            recognition: Boolean(row.factor_recognition),
-            multi_agent_tutor: Boolean(row.factor_multi_agent_tutor),
-            multi_agent_learner: Boolean(row.factor_multi_agent_learner),
-          }
-        : null,
-    learnerArchitecture: row.learner_architecture || null,
     learnerScores: row.learner_scores ? JSON.parse(row.learner_scores) : null,
     learnerOverallScore: row.learner_overall_score != null ? row.learner_overall_score : null,
     learnerJudgeModel: row.learner_judge_model || null,
@@ -2031,9 +2234,6 @@ function parseResultRow(row) {
     dialogueQualityInternalScore:
       row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
-    conversationMode: row.conversation_mode || null,
-    dialogueContentHash: row.dialogue_content_hash || null,
-    configHash: row.config_hash || null,
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
     tutorHolisticScores: row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null,
@@ -2046,12 +2246,6 @@ function parseResultRow(row) {
     tutorCharismaRubricVersion: row.tutor_charisma_rubric_version || null,
     tutorCharismaJudgeModel: row.tutor_charisma_judge_model || null,
     tutorRegisterScores: row.tutor_register_scores ? JSON.parse(row.tutor_register_scores) : null,
-    // Prompt versioning
-    tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
-    tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
-    learnerPromptVersion: row.learner_prompt_version || null,
-    promptContentHash: row.prompt_content_hash || null,
-    idConstructionTrace: row.id_construction_trace ? JSON.parse(row.id_construction_trace) : null,
   };
 }
 
@@ -2288,45 +2482,24 @@ export function getFactorialCellData(runId, options = {}) {
 export function storeRejudgment(originalResult, evaluation) {
   const stmt = db.prepare(`
     INSERT INTO evaluation_results (
-      run_id, scenario_id, scenario_name, scenario_type,
-      provider, model, profile_name, hyperparameters, prompt_id,
-      ego_model, superego_model,
-      suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
+      ${GENERATION_PROVENANCE_COLUMNS.join(', ')},
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
-      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
-      scoring_method,
-      conversation_mode,
-      dialogue_content_hash,
-      config_hash,
       judge_latency_ms,
       tutor_rubric_version,
-      tutor_ego_prompt_version,
-      tutor_superego_prompt_version,
-      learner_prompt_version,
-      prompt_content_hash,
       created_at
     ) VALUES (
-      ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?,
-      ?, ?,
-      ?, ?, ?, ?, ?, ?, ?, ?,
+      ${GENERATION_PROVENANCE_COLUMNS.map(() => '?').join(', ')},
       ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?,
-      ?, ?, ?,
       ?,
       ?,
-      ?, ?, ?, ?,
       ?
     )
   `);
@@ -2335,31 +2508,7 @@ export function storeRejudgment(originalResult, evaluation) {
   const firstTurnScore = evaluation.tutorFirstTurnScore ?? evaluation.overallScore ?? null;
 
   const bindArgs = [
-    originalResult.runId,
-    originalResult.scenarioId,
-    originalResult.scenarioName,
-    originalResult.scenarioType || 'suggestion',
-    originalResult.provider,
-    originalResult.model,
-    originalResult.profileName,
-    typeof originalResult.hyperparameters === 'string'
-      ? originalResult.hyperparameters
-      : JSON.stringify(originalResult.hyperparameters || {}),
-    originalResult.promptId,
-    originalResult.egoModel || null,
-    originalResult.superegoModel || null,
-    typeof originalResult.suggestions === 'string'
-      ? originalResult.suggestions
-      : JSON.stringify(originalResult.suggestions || []),
-    originalResult.rawResponse,
-    originalResult.latencyMs,
-    originalResult.inputTokens,
-    originalResult.outputTokens,
-    originalResult.cost,
-    originalResult.dialogueRounds,
-    originalResult.deliberationRounds ?? null,
-    originalResult.apiCalls,
-    originalResult.dialogueId,
+    ...generationProvenanceValues({ ...originalResult, scoringMethod: 'rubric' }),
     // New scores from the new judge
     scores.relevance?.score ?? scores.relevance ?? null,
     scores.specificity?.score ?? scores.specificity ?? null,
@@ -2380,21 +2529,8 @@ export function storeRejudgment(originalResult, evaluation) {
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     1, // success
     null, // error_message
-    originalResult.factorRecognition ?? null,
-    originalResult.factorMultiAgentTutor ?? null,
-    originalResult.factorMultiAgentLearner ?? null,
-    originalResult.learnerArchitecture || null,
-    'rubric', // Rejudgments only store successful rubric evaluations
-    originalResult.conversationMode || null,
-    originalResult.dialogueContentHash || null,
-    originalResult.configHash || null,
     evaluation.judgeLatencyMs ?? null,
     getTutorRubricVersion(),
-    // Propagate prompt versions from original result (rejudging doesn't change prompts)
-    originalResult.tutorEgoPromptVersion || null,
-    originalResult.tutorSuperegoPromptVersion || null,
-    originalResult.learnerPromptVersion || null,
-    originalResult.promptContentHash || null,
     new Date().toISOString(),
   ];
   const info = stmt.run(...bindArgs);
@@ -3165,15 +3301,18 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
     const sourceRun = getRun(sourceRunId);
     const now = new Date().toISOString();
     const meta = {
+      ...(sourceRun?.metadata || {}),
       sourceRunId,
       rubricVersion,
       derivedFrom: 'rubric-version-comparison',
-      ...(sourceRun?.metadata || {}),
     };
     db.prepare(
       `
-      INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'running')
+      INSERT INTO evaluation_runs (
+        id, created_at, description, total_scenarios, total_configurations, total_tests,
+        metadata, status, git_commit, package_version
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'running', ?, ?)
     `,
     ).run(
       derivedRunId,
@@ -3181,79 +3320,42 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
       `Rubric v${rubricVersion} re-score of ${sourceRunId}`,
       sourceRun?.totalScenarios || 0,
       sourceRun?.totalConfigurations || 0,
+      sourceRun?.totalTests || expectedTestsForRun(sourceRun),
       JSON.stringify(meta),
+      sourceRun?.gitCommit || null,
+      sourceRun?.packageVersion || null,
     );
   }
 
-  // Check for existing clones (idempotent: skip rows already cloned)
-  const existingDialogueIds = new Set(
-    db
-      .prepare('SELECT dialogue_id FROM evaluation_results WHERE run_id = ?')
-      .all(derivedRunId)
-      .map((r) => r.dialogue_id),
-  );
+  // Check for existing clones by generation identity. Rejudged rows share the
+  // same identity and must not be mistaken for independent attempts.
+  const existingGenerations = new Set(getResults(derivedRunId).map(generationIdentity));
 
   const clonedIds = [];
   const insertStmt = db.prepare(`
     INSERT INTO evaluation_results (
-      run_id, scenario_id, scenario_name, scenario_type,
-      provider, model, profile_name, hyperparameters, prompt_id,
-      ego_model, superego_model,
-      suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
+      ${GENERATION_PROVENANCE_COLUMNS.join(', ')},
       success, error_message,
-      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
-      scoring_method, conversation_mode,
       created_at
     ) VALUES (
-      ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?,
-      ?, ?,
-      ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, ?,
-      ?, ?, ?, ?,
+      ${GENERATION_PROVENANCE_COLUMNS.map(() => '?').join(', ')},
       ?, ?,
       ?
     )
   `);
 
   for (const r of sourceResults) {
-    if (existingDialogueIds.has(r.dialogueId)) continue;
+    const identity = generationIdentity(r);
+    if (existingGenerations.has(identity)) continue;
 
     const info = insertStmt.run(
-      derivedRunId,
-      r.scenarioId,
-      r.scenarioName,
-      r.scenarioType || 'suggestion',
-      r.provider,
-      r.model,
-      r.profileName,
-      JSON.stringify(r.hyperparameters || {}),
-      r.promptId,
-      r.egoModel || null,
-      r.superegoModel || null,
-      JSON.stringify(r.suggestions || []),
-      r.rawResponse,
-      r.latencyMs,
-      r.inputTokens,
-      r.outputTokens,
-      r.cost,
-      r.dialogueRounds,
-      r.deliberationRounds ?? null,
-      r.apiCalls,
-      r.dialogueId,
+      ...generationProvenanceValues(r, derivedRunId),
       r.success ? 1 : 0,
       r.errorMessage || null,
-      r.factors?.recognition != null ? (r.factors.recognition ? 1 : 0) : null,
-      r.factors?.multi_agent_tutor != null ? (r.factors.multi_agent_tutor ? 1 : 0) : null,
-      r.factors?.multi_agent_learner != null ? (r.factors.multi_agent_learner ? 1 : 0) : null,
-      r.learnerArchitecture || null,
-      r.scoringMethod || null,
-      r.conversationMode || null,
       new Date().toISOString(),
     );
     clonedIds.push(info.lastInsertRowid);
+    existingGenerations.add(identity);
   }
 
   return { derivedRunId, clonedIds };
