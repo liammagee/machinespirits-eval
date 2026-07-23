@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-23T06:24:49.594Z",
+  "generated": "2026-07-23T07:16:04.150Z",
   "counts": {
     "total": 156,
     "byStatus": {
-      "done": 121,
+      "done": 122,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 26,
+      "triaged": 25,
       "archived": 4
     },
     "byType": {
@@ -601,32 +601,6 @@
         "strategy-refusal",
         "cross-stack"
       ]
-    },
-    {
-      "id": "repair-codex-session-capacity-and-cursors",
-      "title": "Repair Codex session capacity and stale-cursor semantics",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/codexSessionService.js"
-        ]
-      },
-      "tags": [
-        "codex-session",
-        "lifecycle",
-        "capacity",
-        "streaming"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "scenario-presentation-variety",
@@ -3773,6 +3747,33 @@
         "register",
         "frontier"
       ]
+    },
+    {
+      "id": "repair-codex-session-capacity-and-cursors",
+      "title": "Repair Codex session capacity and stale-cursor semantics",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-23",
+      "verification": "Exited sessions no longer consume live capacity, stale output cursors receive an explicit reset/truncation signal, and lifecycle tests cover capacity reuse, retention cleanup, and polling after buffer trimming.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/codexSessionService.js"
+        ]
+      },
+      "tags": [
+        "codex-session",
+        "lifecycle",
+        "capacity",
+        "streaming"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/repair-codex-session-capacity-and-cursors"
     },
     {
       "id": "review-ego-superego-internal-history-window",

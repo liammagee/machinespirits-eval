@@ -10,6 +10,10 @@ const STALE_SESSION_MS = 6 * 60 * 60 * 1000; // 6h
 const sessions = new Map();
 let sessionCounter = 0;
 
+function isLiveSession(session) {
+  return session.status === 'running' || session.status === 'terminating';
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -86,7 +90,7 @@ function sessionSummary(session) {
 function cleanupStaleSessions() {
   const now = Date.now();
   for (const session of sessions.values()) {
-    if (session.status === 'running') continue;
+    if (isLiveSession(session)) continue;
     const endedAtMs = session.exitedAt ? new Date(session.exitedAt).getTime() : now;
     if (now - endedAtMs > STALE_SESSION_MS) {
       sessions.delete(session.id);
@@ -94,10 +98,19 @@ function cleanupStaleSessions() {
   }
 }
 
+function getRetainedBufferState(session) {
+  const firstRetainedEventIdx = session.events[0]?.idx ?? session.nextEventIdx;
+  return {
+    firstRetainedEventIdx,
+    bufferStartCursor: firstRetainedEventIdx - 1,
+  };
+}
+
 export function createCodexSession(options = {}) {
   cleanupStaleSessions();
-  if (sessions.size >= MAX_SESSIONS) {
-    throw new Error(`session limit reached (${MAX_SESSIONS})`);
+  const liveSessionCount = [...sessions.values()].filter(isLiveSession).length;
+  if (liveSessionCount >= MAX_SESSIONS) {
+    throw new Error(`live session limit reached (${MAX_SESSIONS})`);
   }
 
   const command = 'codex';
@@ -162,23 +175,32 @@ export function listCodexSessions() {
 }
 
 export function getCodexSession(sessionId) {
+  cleanupStaleSessions();
   const session = sessions.get(sessionId);
   if (!session) return null;
   return sessionSummary(session);
 }
 
 export function pollCodexSession(sessionId, cursor = -1) {
+  cleanupStaleSessions();
   const session = sessions.get(sessionId);
   if (!session) return null;
 
   const fromIdx = Number.isFinite(cursor) ? Number(cursor) : -1;
-  const events = session.events.filter((event) => event.idx > fromIdx);
-  const nextCursor = events.length > 0 ? events[events.length - 1].idx : fromIdx;
+  const { firstRetainedEventIdx, bufferStartCursor } = getRetainedBufferState(session);
+  const cursorReset = fromIdx < bufferStartCursor;
+  const effectiveCursor = cursorReset ? bufferStartCursor : fromIdx;
+  const events = session.events.filter((event) => event.idx > effectiveCursor);
+  const nextCursor = events.length > 0 ? events[events.length - 1].idx : effectiveCursor;
 
   return {
     session: sessionSummary(session),
     cursor: fromIdx,
     nextCursor,
+    cursorReset,
+    truncated: cursorReset,
+    bufferStartCursor,
+    firstRetainedEventIdx,
     events,
   };
 }
@@ -202,15 +224,26 @@ export function writeCodexSessionInput(sessionId, input, appendNewline = true) {
 }
 
 export function terminateCodexSession(sessionId, signal = 'SIGTERM') {
+  cleanupStaleSessions();
   const session = sessions.get(sessionId);
   if (!session) return null;
 
-  if (session.status !== 'running') {
+  if (session.status === 'exited') {
     return {
       ...sessionSummary(session),
       alreadyExited: true,
     };
   }
+
+  if (session.status === 'terminating') {
+    return {
+      ...sessionSummary(session),
+      terminationPending: true,
+    };
+  }
+
+  session.status = 'terminating';
+  session.lastActivityAt = nowIso();
 
   try {
     session.process.kill(signal);
@@ -218,8 +251,8 @@ export function terminateCodexSession(sessionId, signal = 'SIGTERM') {
     addOutput(session, 'stderr', `[terminate-error] ${error.message}\n`);
   }
 
-  setTimeout(() => {
-    if (session.status === 'running') {
+  const hardKillTimer = setTimeout(() => {
+    if (session.status === 'terminating') {
       try {
         session.process.kill('SIGKILL');
       } catch {
@@ -227,6 +260,7 @@ export function terminateCodexSession(sessionId, signal = 'SIGTERM') {
       }
     }
   }, HARD_KILL_DELAY_MS);
+  hardKillTimer.unref?.();
 
   return sessionSummary(session);
 }
