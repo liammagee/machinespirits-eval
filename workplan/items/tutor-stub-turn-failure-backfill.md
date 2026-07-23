@@ -1,14 +1,20 @@
 ---
 id: tutor-stub-turn-failure-backfill
-title: "Backfill turn-level tutor-stub failure labels for corrective training"
-status: review
+title: Backfill turn-level tutor-stub failure labels for corrective training
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-23
 updated: 2026-07-24
-verification: "Versioned zero-model-call records are emitted incrementally and at trace seal, backfilled from current and legacy-compatible JSONL, and ingested idempotently into namespaced SQLite tables/views; targeted tests cover guards and repairs, point-of-action triggers, immediate and next-turn human feedback versus ground-truth validation, next-turn outcomes, seal/quarantine exclusions, mode filtering, fail-closed malformed input, SQL replacement, and the permanent training-license gate; workplan validation passes."
+verification: Versioned zero-model-call records are emitted incrementally and at
+  trace seal, backfilled from current and legacy-compatible JSONL, and ingested
+  idempotently into namespaced SQLite tables/views; targeted tests cover guards
+  and repairs, point-of-action triggers, immediate and next-turn human feedback
+  versus ground-truth validation, next-turn outcomes, seal/quarantine
+  exclusions, mode filtering, fail-closed malformed input, SQL replacement, and
+  the permanent training-license gate; workplan validation passes.
 branch: codex/turn-failure-backfill
 depends_on: []
 links:
@@ -47,3 +53,6 @@ for branch handoff.
 
 2026-07-24 Codex: Rebased the implementation onto current `origin/main`, reran
 the focused and full test suites, and opened PR #174 for review.
+
+2026-07-24 Codex: PR #174 merged as `5c07d2cb` with lint, validation,
+workplan, Node 20, Node 22, and review checks passing; moved to done.

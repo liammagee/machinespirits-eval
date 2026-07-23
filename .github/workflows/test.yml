@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 22
 
-      - run: npm install
+      - run: npm ci
 
       - run: npm run lint
       - run: npm run format:check
@@ -35,10 +35,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: npm install
-
-      - name: Install tutor-core peer dependency
-        run: npm install @machinespirits/tutor-core@0.5.2
+      - run: npm ci
 
       - name: Create data directory and initialize empty database
         run: mkdir -p data && node --input-type=module -e "import './services/evaluationStore.js'"

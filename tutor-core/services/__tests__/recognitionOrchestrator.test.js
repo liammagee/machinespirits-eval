@@ -14,6 +14,14 @@ vi.mock('../dbService.js', () => ({
   _setDbForTesting: vi.fn(),
 }));
 
+// writingPadService imports tutorDialogueEngine, whose dialectical engine
+// imports aiService. Keep that true model boundary out of this DB-backed
+// orchestrator test so aiConfigService cannot read the database before
+// beforeEach has installed the in-memory fixture.
+vi.mock('../aiService.js', () => ({
+  generateText: vi.fn(),
+}));
+
 // We test the orchestrator with real service implementations where possible,
 // but mock the services that have complex DB interactions at module load time.
 // For a true integration test, we use the real writingPadService and learnerIntegrationService

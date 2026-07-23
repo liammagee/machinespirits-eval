@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 22
 
-      - run: npm install
+      - run: npm ci
 
       - name: Content-package validation
         run: npm run content:validate

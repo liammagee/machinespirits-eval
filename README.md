@@ -259,8 +259,16 @@ Skills with a `description` field (`ms-analyze-run`, `ms-check-models`, `ms-quer
 ## Running Tests
 
 ```bash
-npm test
+npm test                   # root Node suites, then in-housed tutor-core Vitest suites
+npm run test:root          # root Node suites only
+npm run test:core          # in-housed tutor-core suites only
+npm run test:root:handles  # root suites without forced exit, for handle-leak audits
 ```
+
+All four commands use isolated temporary database, log, export, writing-pad,
+and tutor-stub paths. The legacy root suite still uses Node's forced-exit mode
+while its open-handle debt is audited; the in-housed core suite always tears
+down naturally.
 
 ## Known Deferred Risks
 

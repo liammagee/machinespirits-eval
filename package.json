@@ -277,6 +277,9 @@
     "probe:plan3-dag-sfs": "node scripts/run-plan3-dag-sfs-audit.js",
     "test": "node scripts/run-hermetic-tests.js",
     "test:hermetic": "node scripts/run-hermetic-tests.js",
+    "test:root": "node scripts/run-hermetic-tests.js --suite root",
+    "test:root:handles": "node scripts/run-hermetic-tests.js --suite root --no-force-exit",
+    "test:core": "node scripts/run-hermetic-tests.js --suite core",
     "test:posthoc-pipeline": "node --test tests/canonicalPosthocPipeline.test.js",
     "eval:canonical": "node scripts/with-canonical-eval-data.js",
     "db:closeout": "node scripts/closeout-worktree-db.js",
@@ -348,7 +351,8 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "vitest": "^4.0.0"
   },
   "engines": {
     "node": ">=20.0.0"
