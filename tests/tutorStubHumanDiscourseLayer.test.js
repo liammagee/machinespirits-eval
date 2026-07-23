@@ -1155,6 +1155,35 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/transcript opens raw, script, swimlane/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
   assert.match(result.stdout, /\/suggest is unavailable in this direct session: mixed learner drafting is not active/u);
+  assert.doesNotMatch(result.stdout, /\/translate \[level\]/u);
+});
+
+test('curriculum sessions expose translation levels without changing the curriculum source', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--no-remember-settings',
+      '--curriculum',
+      'curriculum/ai-foundations.curriculum.yaml',
+      '--module',
+      'AF1',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/help\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /\/translate \[level\]/u);
+  assert.match(result.stdout, /topic: AI systems, tasks, and agents/u);
 });
 
 test('detour slash commands reprise the latest tutor utterance before returning to the scene', () => {

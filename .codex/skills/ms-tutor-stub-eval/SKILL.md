@@ -664,8 +664,14 @@ Useful variants:
   editable prompt. Keep typing to filter it and press Tab to complete; the
   palette remains usable while tutor or learner generation continues. Commands
   include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
-  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
+  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
+- In an active curriculum session, bare `/translate` renders the canonical
+  module at all four learner-facing language levels: `basic`, `intermediate`,
+  `advanced`, and `proficient`. `/translate <level>` renders one. Translation
+  changes wording only: exact curriculum segment boundaries and verification
+  requirements are preserved, the canonical source remains authoritative, and
+  neither the public transcript nor proof/dialogue state advances.
 - Consecutive public learner lines entered before the tutor reply appears form
   one compound learner turn. Each added line aborts or invalidates the current
   analysis/tutor attempt, every assessment is regenerated from the full input,

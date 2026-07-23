@@ -4,6 +4,7 @@ import {
   tutorStubCapabilityActive,
   tutorStubCapabilityAvailable,
 } from './tutorStubCapabilities.js';
+import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
 export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v1';
@@ -37,6 +38,7 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   use: { active: ['mixed_drafting'] },
   regen: { active: ['mixed_drafting'] },
   board: { available: ['curriculum'] },
+  translate: { active: ['curriculum'] },
 };
 
 const HELP_GROUPS = [
@@ -81,6 +83,7 @@ const HELP_GROUPS = [
       { id: 'debug', arguments: 'on|off' },
       { id: 'status' },
       { id: 'director' },
+      { id: 'translate', arguments: '[level]' },
       { id: 'transcript', arguments: '[no-open]' },
       { id: 'voice' },
       { id: 'id' },
@@ -313,6 +316,12 @@ const COMMANDS = [
     token: '/clarify',
     aliases: ['/explain', '/c'],
     sceneReturnOrder: 19,
+  }),
+  command({
+    id: 'translate',
+    token: '/translate',
+    sceneReturnOrder: 26,
+    completion: { normal: { suffixes: ['all', ...TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS] } },
   }),
   command({ id: 'report', token: '/report', aliases: ['/r'], sceneReturnOrder: 20 }),
   command({
