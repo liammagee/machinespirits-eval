@@ -1755,6 +1755,7 @@ test('light adaptation forces a replayable style and character shift after conti
           text: '/up\nI am frustrated and still do not understand the residue comparison.\n',
         },
       ],
+      // Stop once the second register selection is observable; response composition is covered separately.
       stopWhen: (plain) => plain.includes('light adaptation: continued confusion/frustration streak 2'),
       timeoutMs: 15_000,
       env: {
