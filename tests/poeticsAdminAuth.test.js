@@ -12,6 +12,8 @@ const dbPath = path.join(tmp, 'evaluations.db');
 let createPoeticsBrowserApp;
 let oldUser;
 let oldPass;
+let oldParticipantUser;
+let oldParticipantPass;
 let app;
 let poeticsApp;
 let server;
@@ -20,8 +22,12 @@ let baseUrl;
 before(async () => {
   oldUser = process.env.POETICS_AUTH_USER;
   oldPass = process.env.POETICS_AUTH_PASS;
+  oldParticipantUser = process.env.POETICS_PARTICIPANT_USER;
+  oldParticipantPass = process.env.POETICS_PARTICIPANT_PASS;
   process.env.POETICS_AUTH_USER = 'admin';
   process.env.POETICS_AUTH_PASS = 'secret';
+  process.env.POETICS_PARTICIPANT_USER = 'participant';
+  process.env.POETICS_PARTICIPANT_PASS = 'participant-secret';
   ({ createPoeticsBrowserApp } = await import('../scripts/browse-poetics-scripts.js'));
   app = express();
   poeticsApp = createPoeticsBrowserApp({ dbPath, host: '0.0.0.0' });
@@ -34,10 +40,15 @@ before(async () => {
 after(async () => {
   await new Promise((resolve) => server?.close(resolve));
   poeticsApp?.locals?.db?.close?.();
+  await poeticsApp?.locals?.tutorStubSessionHost?.closeAll?.('test_cleanup');
   if (oldUser == null) delete process.env.POETICS_AUTH_USER;
   else process.env.POETICS_AUTH_USER = oldUser;
   if (oldPass == null) delete process.env.POETICS_AUTH_PASS;
   else process.env.POETICS_AUTH_PASS = oldPass;
+  if (oldParticipantUser == null) delete process.env.POETICS_PARTICIPANT_USER;
+  else process.env.POETICS_PARTICIPANT_USER = oldParticipantUser;
+  if (oldParticipantPass == null) delete process.env.POETICS_PARTICIPANT_PASS;
+  else process.env.POETICS_PARTICIPANT_PASS = oldParticipantPass;
 });
 
 function request(pathname, { method = 'GET', user, pass, body } = {}) {
@@ -88,6 +99,32 @@ test('admin tool pages require Basic Auth', async () => {
   const chatAllowed = await request('/admin/chat/', { user: 'admin', pass: 'secret' });
   assert.equal(chatAllowed.status, 200);
   assert.match(chatAllowed.body, /Machine Spirits \/ Chat/);
+});
+
+test('shared tutor shell and process API require the administrator role', async () => {
+  const shellDenied = await request('/tutor/');
+  assert.equal(shellDenied.status, 401);
+
+  const shellParticipant = await request('/tutor/', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(shellParticipant.status, 403);
+
+  const shellAdmin = await request('/tutor/', { user: 'admin', pass: 'secret' });
+  assert.equal(shellAdmin.status, 200);
+  assert.match(shellAdmin.body, /Start from a safe lab/u);
+
+  const catalogDenied = await request('/api/tutor-stub/catalog');
+  assert.equal(catalogDenied.status, 401);
+  const catalogParticipant = await request('/api/tutor-stub/catalog', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(catalogParticipant.status, 403);
+  const catalogAdmin = await request('/api/tutor-stub/catalog', { user: 'admin', pass: 'secret' });
+  assert.equal(catalogAdmin.status, 200);
+  assert.equal(JSON.parse(catalogAdmin.body).catalog.schema, 'machinespirits.tutor-stub.public-catalog.v1');
 });
 
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {

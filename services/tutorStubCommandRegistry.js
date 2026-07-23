@@ -9,6 +9,13 @@ import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v1';
 export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 1;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
+export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
+  'terminal_picker',
+  'browser_open',
+  'voice_device',
+  'process_relaunch',
+  'relaunch_instruction',
+]);
 
 const COMMAND_CAPABILITY_REQUIREMENTS = {
   demo: { available: ['guided_demo'] },
@@ -93,8 +100,13 @@ const HELP_GROUPS = [
     id: 'discover',
     mode: 'normal',
     label: 'discover',
-    commands: [{ id: 'features' }, { id: 'release_notes', arguments: '[hours]' }, { id: 'help' }],
-    summary: 'browse capabilities, recent changes, and command hints',
+    commands: [
+      { id: 'features' },
+      { id: 'lab', arguments: '[list|id]' },
+      { id: 'release_notes', arguments: '[hours]' },
+      { id: 'help' },
+    ],
+    summary: 'browse capabilities, safe labs, recent changes, and command hints',
   },
   {
     id: 'rate_tutor',
@@ -155,6 +167,7 @@ const HELP_GROUPS = [
     commands: [
       { id: 'status' },
       { id: 'features' },
+      { id: 'lab', arguments: '[list|id]' },
       { id: 'release_notes', arguments: '[hours]' },
       { id: 'transcript', arguments: '[no-open]' },
       { id: 'voice' },
@@ -201,6 +214,8 @@ function command({
   completion = null,
   handler = id,
   traceEvent = `interactive_command_${id}`,
+  transportEffects = [],
+  noninteractiveAdapter = 'none',
 }) {
   const requirements = COMMAND_CAPABILITY_REQUIREMENTS[id] || {};
   return {
@@ -223,11 +238,22 @@ function command({
       active: requirements.active || [],
     },
     completion,
+    transport: {
+      terminal: 'supported',
+      processHttp: noninteractiveAdapter === 'structured' ? 'adapter_available' : 'blocked_pending_adapter',
+      noninteractiveAdapter,
+      effects: transportEffects,
+    },
   };
 }
 
 const COMMANDS = [
-  command({ id: 'demo', token: '/demo', completion: { normal: { suffixes: ['1', '3', '5'] } } }),
+  command({
+    id: 'demo',
+    token: '/demo',
+    completion: { normal: { suffixes: ['1', '3', '5'] } },
+    transportEffects: ['browser_open'],
+  }),
   command({
     id: 'theme',
     token: '/theme',
@@ -288,6 +314,7 @@ const COMMANDS = [
     passthroughOrder: 6,
     sceneReturnOrder: 12,
     completion: { normal: { suffixes: ['no-open', 'write'] } },
+    transportEffects: ['browser_open'],
   }),
   command({
     id: 'voice',
@@ -306,6 +333,7 @@ const COMMANDS = [
         ],
       },
     },
+    transportEffects: ['browser_open', 'voice_device'],
   }),
   command({
     id: 'director',
@@ -398,6 +426,7 @@ const COMMANDS = [
         dynamicProviders: ['tutor_model_refs'],
       },
     },
+    transportEffects: ['terminal_picker'],
   }),
   command({ id: 'status', token: '/status', passthroughOrder: 3, sceneReturnOrder: 6 }),
   command({ id: 'features', token: '/features', passthroughOrder: 4, sceneReturnOrder: 7 }),
@@ -451,18 +480,28 @@ const COMMANDS = [
     passthroughOrder: 9,
     sceneReturnOrder: 23,
     completion: { normal: { dynamicProviders: ['world_ids'] } },
+    transportEffects: ['terminal_picker', 'process_relaunch'],
   }),
   command({
     id: 'board',
     token: '/board',
     sceneReturnOrder: 24,
     completion: { normal: { dynamicProviders: ['workplan_module_ids'] } },
+    transportEffects: ['terminal_picker', 'process_relaunch'],
   }),
   command({ id: 'use', token: '/use', aliases: ['/accept'] }),
   command({ id: 'regen', token: '/regen' }),
   command({ id: 'reset', token: '/reset', aliases: ['/clear'], passthroughOrder: 11 }),
   command({ id: 'help', token: '/help', passthroughOrder: 12, sceneReturnOrder: 0 }),
   command({ id: 'quit', token: '/quit', aliases: ['/exit'], passthroughOrder: 13 }),
+  command({
+    id: 'lab',
+    token: '/lab',
+    passthroughOrder: 14,
+    sceneReturnOrder: 25,
+    completion: { normal: { suffixes: ['list'], dynamicProviders: ['lab_ids'] } },
+    transportEffects: ['relaunch_instruction'],
+  }),
 ];
 
 export const TUTOR_STUB_COMMAND_REGISTRY = deepFreeze({
@@ -588,6 +627,10 @@ export function tutorStubCommandCompletionMetadata(value, { mode = 'normal', cap
   return definition.completion?.[normalized] || definition.completion?.normal || null;
 }
 
+export function tutorStubCommandTransportMetadata(value) {
+  return resolveTutorStubCommand(value)?.transport || null;
+}
+
 export function tutorStubCommandHelpRows({ mode = 'normal', capabilities = null } = {}) {
   const normalized = normalizedMode(mode);
   const rows = HELP_GROUPS.filter((group) => group.mode === normalized)
@@ -667,6 +710,18 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
       if (!TUTOR_STUB_CAPABILITY_IDS.includes(capabilityId)) {
         throw new Error(`unknown capability requirement for ${definition.id}: ${capabilityId}`);
       }
+    }
+    if (definition.transport?.terminal !== 'supported') {
+      throw new Error(`command ${definition.id} has invalid terminal transport state`);
+    }
+    if (!['none', 'structured'].includes(definition.transport?.noninteractiveAdapter)) {
+      throw new Error(`command ${definition.id} has invalid noninteractive adapter state`);
+    }
+    if (
+      !Array.isArray(definition.transport?.effects) ||
+      definition.transport.effects.some((effect) => !TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS.includes(effect))
+    ) {
+      throw new Error(`command ${definition.id} has invalid transport effects`);
     }
     for (const orderKey of Object.keys(orders)) {
       const order = definition.order?.[orderKey];

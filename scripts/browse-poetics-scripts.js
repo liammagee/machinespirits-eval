@@ -19,6 +19,7 @@ import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
 import { mountEvalSurfaces } from '../services/evalSurfaces.js';
+import { installApplicationShutdownHandlers } from '../services/applicationShutdown.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
@@ -1116,6 +1117,14 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.use(express.json({ limit: '256kb' }));
   if (adminAuthGuard) {
     adminRouter.use(adminAuthGuard);
+    // The tutor surface can start model-backed processes, so protect its
+    // shared web path and API with the same administrator credential even
+    // though the surrounding poetics reading surfaces remain public.
+    // The auth guard may recognize a participant credential too; apply the
+    // default-deny role gate at these mounts so only an administrator reaches
+    // the metered tutor runtime.
+    app.use('/tutor', adminAuthGuard, makeRoleGate());
+    app.use('/api/tutor-stub', adminAuthGuard, makeRoleGate());
     console.log('[poetics] admin basic-auth ENABLED (/admin requires credentials)');
   }
   // Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
@@ -13192,12 +13201,8 @@ function main() {
     console.log(`poetics script browser: ${url}`);
     if (args.open) exec(`open ${JSON.stringify(url)}`);
   });
-  const close = () => {
-    app.locals.db?.close();
-    server.close(() => process.exit(0));
-  };
-  process.on('SIGINT', close);
-  process.on('SIGTERM', close);
+  const shutdown = installApplicationShutdownHandlers({ app, server });
+  server.once('close', shutdown.dispose);
 }
 
 if (path.resolve(process.argv[1] || '') === __filename) {

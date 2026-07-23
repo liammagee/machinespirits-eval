@@ -74,3 +74,34 @@ test('production build ships no /__smoke probe routes', () => {
     closeApp(desktop);
   }
 });
+
+test('desktop and web both serve the byte-identical shared tutor shell', async () => {
+  const web = createPoeticsBrowserApp({ dbPath: DB(), host: HOST });
+  const desktop = buildDesktopApp({ smoke: false, dbPath: DB(), host: HOST });
+  const webServer = web.listen(0, HOST);
+  const desktopServer = desktop.listen(0, HOST);
+  try {
+    await Promise.all([
+      new Promise((resolve) => webServer.once('listening', resolve)),
+      new Promise((resolve) => desktopServer.once('listening', resolve)),
+    ]);
+    const [webResponse, desktopResponse] = await Promise.all([
+      fetch(`http://${HOST}:${webServer.address().port}/tutor/`),
+      fetch(`http://${HOST}:${desktopServer.address().port}/tutor/`),
+    ]);
+    assert.equal(webResponse.status, 200);
+    assert.equal(desktopResponse.status, 200);
+    assert.equal(await desktopResponse.text(), await webResponse.text());
+  } finally {
+    await Promise.all([
+      new Promise((resolve) => webServer.close(resolve)),
+      new Promise((resolve) => desktopServer.close(resolve)),
+    ]);
+    await Promise.all([
+      web.locals.tutorStubSessionHost?.closeAll?.('test_cleanup'),
+      desktop.locals.tutorStubSessionHost?.closeAll?.('test_cleanup'),
+    ]);
+    closeApp(web);
+    closeApp(desktop);
+  }
+});

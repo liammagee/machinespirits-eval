@@ -88,6 +88,89 @@ async function request(base, path = '', { method = 'GET', body } = {}) {
   return { status: response.status, body: await response.json() };
 }
 
+test('headless HTTP mutations reject form posts and cross-origin JSON before allocating a session', async (t) => {
+  const base = await withServer(t);
+  const formResponse = await fetch(`${base}/sessions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: 'id=foreign-form',
+  });
+  const formBody = await formResponse.json();
+  assert.equal(formResponse.status, 415);
+  assert.equal(formBody.error.code, 'invalid_content_type');
+
+  const crossOriginResponse = await fetch(`${base}/sessions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin: 'https://foreign.example' },
+    body: JSON.stringify({ id: 'foreign-json' }),
+  });
+  const crossOriginBody = await crossOriginResponse.json();
+  assert.equal(crossOriginResponse.status, 403);
+  assert.equal(crossOriginBody.error.code, 'cross_origin_request_denied');
+
+  const { port } = new URL(base);
+  const rebindingResponse = await fetch(`${base}/sessions`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      host: `evil.example:${port}`,
+      origin: `http://evil.example:${port}`,
+    },
+    body: JSON.stringify({ id: 'dns-rebinding-json' }),
+  });
+  const rebindingBody = await rebindingResponse.json();
+  assert.equal(rebindingResponse.status, 403);
+  assert.equal(rebindingBody.error.code, 'cross_origin_request_denied');
+
+  const list = await request(base, '/sessions');
+  assert.equal(list.body.count, 0);
+});
+
+test('headless HTTP transport redacts unexpected runtime diagnostics', async (t) => {
+  const secretCanary = 'PRIVATE-PROVIDER-STDERR-CANARY';
+  const createSession = (specification) => {
+    let status = 'created';
+    return {
+      id: specification.id,
+      get status() {
+        return status;
+      },
+      load() {
+        status = 'active';
+      },
+      resume() {},
+      reset() {},
+      step() {
+        throw new Error(secretCanary);
+      },
+      finalize() {},
+      snapshot() {
+        return {
+          sessionId: specification.id,
+          status,
+          state: {},
+          events: [{ type: 'adapter_error', error: secretCanary }],
+        };
+      },
+    };
+  };
+  const base = await withServer(t, createSession);
+  await request(base, '/sessions', { method: 'POST', body: { id: 'redacted-runtime' } });
+  const failed = await request(base, '/sessions/redacted-runtime/steps', {
+    method: 'POST',
+    body: { input: 'trigger failure' },
+  });
+  assert.equal(failed.status, 500);
+  assert.equal(failed.body.error.code, 'session_internal_error');
+  assert.doesNotMatch(JSON.stringify(failed.body), new RegExp(secretCanary, 'u'));
+
+  const fetched = await request(base, '/sessions/redacted-runtime');
+  const listed = await request(base, '/sessions');
+  assert.equal('events' in fetched.body.session, false);
+  assert.equal('events' in listed.body.sessions[0], false);
+  assert.doesNotMatch(JSON.stringify({ fetched: fetched.body, listed: listed.body }), new RegExp(secretCanary, 'u'));
+});
+
 test('headless HTTP transport exposes the versioned lifecycle contract', async (t) => {
   const base = await withServer(t);
 
@@ -133,7 +216,8 @@ test('headless HTTP transport exposes the versioned lifecycle contract', async (
   assert.equal(finalized.body.session.state.finalizedReason, 'http_test_complete');
 
   const fetched = await request(base, '/sessions/alpha');
-  assert.equal(fetched.body.session.lifecycle.finalizedReason, 'http_test_complete');
+  assert.equal(fetched.status, 404);
+  assert.equal(fetched.body.error.code, 'session_not_found');
 });
 
 test('headless HTTP sessions remain isolated and listable', async (t) => {
@@ -199,6 +283,196 @@ test('headless HTTP transport returns stable validation and lifecycle errors', a
 
   await request(base, '/sessions/alpha/finalize', { method: 'POST', body: {} });
   const conflict = await request(base, '/sessions/alpha/steps', { method: 'POST', body: { input: 'too late' } });
-  assert.equal(conflict.status, 409);
-  assert.equal(conflict.body.error.code, 'session_state_conflict');
+  assert.equal(conflict.status, 404);
+  assert.equal(conflict.body.error.code, 'session_not_found');
+});
+
+test('headless host shutdown interrupts in-flight work and releases capacity', async () => {
+  let status = 'created';
+  let rejectStep;
+  let terminated = 0;
+  let state = { turnCount: 0 };
+  const createSession = () => ({
+    id: 'interruptible',
+    get status() {
+      return status;
+    },
+    load() {
+      status = 'active';
+      return this.snapshot();
+    },
+    resume() {},
+    reset() {},
+    step() {
+      return new Promise((_resolve, reject) => {
+        rejectStep = reject;
+      });
+    },
+    finalize() {
+      status = 'finalized';
+      return this.snapshot();
+    },
+    snapshot() {
+      return { sessionId: 'interruptible', status, state };
+    },
+    terminate(reason) {
+      terminated += 1;
+      state = { ...state, terminationReason: reason };
+      const error = new Error(`terminated: ${reason}`);
+      error.fatalSession = true;
+      rejectStep?.(error);
+    },
+  });
+  const host = createTutorStubSessionHost({ createSession, maxSessions: 1 });
+  await host.create({ id: 'interruptible' });
+  const pendingStep = host.step('interruptible', 'never completes');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  await host.closeAll('test_shutdown');
+  await assert.rejects(pendingStep, /terminated: test_shutdown/u);
+  assert.equal(terminated, 1);
+  assert.deepEqual(host.list(), []);
+
+  const replacement = await host.create({ id: 'interruptible' });
+  assert.equal(replacement.status, 'active');
+  await host.closeAll('replacement_cleanup');
+});
+
+test('headless HTTP interruption bypasses an in-flight mutation, evicts the session, and releases capacity', async (t) => {
+  let rejectStep;
+  let signalStepStarted;
+  const stepStarted = new Promise((resolve) => {
+    signalStepStarted = resolve;
+  });
+  let terminationReason = null;
+  const createSession = (specification) => {
+    let status = 'created';
+    return {
+      id: specification.id,
+      get status() {
+        return status;
+      },
+      load() {
+        status = 'active';
+      },
+      resume() {},
+      reset() {},
+      step() {
+        return new Promise((_resolve, reject) => {
+          rejectStep = reject;
+          signalStepStarted();
+        });
+      },
+      finalize() {},
+      snapshot() {
+        return { sessionId: specification.id, status, state: {} };
+      },
+      terminate(reason) {
+        terminationReason = reason;
+        const error = new Error(`terminated: ${reason}`);
+        error.fatalSession = true;
+        rejectStep?.(error);
+      },
+    };
+  };
+  const base = await withServer(t, createSession);
+  await request(base, '/sessions', { method: 'POST', body: { id: 'interrupt-http' } });
+  const pendingStep = request(base, '/sessions/interrupt-http/steps', {
+    method: 'POST',
+    body: { input: 'wait forever' },
+  });
+  await stepStarted;
+
+  const interrupted = await request(base, '/sessions/interrupt-http/interrupt', {
+    method: 'POST',
+    body: { reason: 'browser_stop' },
+  });
+  assert.equal(interrupted.status, 200);
+  assert.deepEqual(interrupted.body.result, {
+    sessionId: 'interrupt-http',
+    interrupted: true,
+    reason: 'browser_stop',
+  });
+  assert.equal(terminationReason, 'browser_stop');
+  assert.equal((await request(base, '/sessions/interrupt-http')).status, 404);
+  assert.equal((await request(base, '/sessions', { method: 'POST', body: { id: 'interrupt-http' } })).status, 201);
+
+  const terminatedStep = await pendingStep;
+  assert.equal(terminatedStep.status, 500);
+  assert.deepEqual(terminatedStep.body.error, {
+    code: 'session_internal_error',
+    message: 'Tutor-stub session operation failed',
+  });
+  assert.doesNotMatch(JSON.stringify(terminatedStep.body), /terminated: browser_stop/u);
+});
+
+test('headless host evicts a process-like runtime when its closed signal settles', async () => {
+  let status = 'created';
+  let closeRuntime;
+  let terminated = 0;
+  const closed = new Promise((resolve) => {
+    closeRuntime = resolve;
+  });
+  const runtime = {
+    id: 'crashable',
+    get status() {
+      return status;
+    },
+    closed,
+    load() {
+      status = 'active';
+    },
+    resume() {},
+    reset() {},
+    step() {},
+    finalize() {
+      status = 'finalized';
+    },
+    snapshot() {
+      return { sessionId: 'crashable', status, state: {} };
+    },
+    terminate() {
+      terminated += 1;
+    },
+  };
+  const host = createTutorStubSessionHost({ createSession: () => runtime });
+  await host.create({ id: 'crashable' });
+  closeRuntime({ reason: 'process_exit' });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(host.list(), []);
+  assert.equal(terminated, 1);
+});
+
+test('headless host rejects a runtime that closes during creation', async () => {
+  let status = 'created';
+  let terminated = 0;
+  const runtime = {
+    id: 'closed-during-create',
+    get status() {
+      return status;
+    },
+    closed: Promise.resolve({ reason: 'startup_failure' }),
+    load() {
+      status = 'active';
+    },
+    resume() {},
+    reset() {},
+    step() {},
+    finalize() {},
+    snapshot() {
+      return { sessionId: 'closed-during-create', status, state: {} };
+    },
+    terminate() {
+      terminated += 1;
+    },
+  };
+  const host = createTutorStubSessionHost({ createSession: () => runtime });
+
+  await assert.rejects(
+    host.create({ id: 'closed-during-create' }),
+    (error) => error?.code === 'session_closed_during_create' && error?.status === 503,
+  );
+  assert.deepEqual(host.list(), []);
+  assert.equal(terminated, 1);
 });

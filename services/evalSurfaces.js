@@ -35,6 +35,7 @@ import humanCodingRoutes from '../routes/humanCodingRoutes.js';
 import { createTutorStubSessionRouter } from '../routes/tutorStubSessionRoutes.js';
 import { mountSubjectExplorer } from './subjectExplorer.js';
 import { createTutorStubProcessSessionHost } from './tutorStubProcessSessionFactory.js';
+import { buildTutorStubPublicCatalog } from './tutorStubCatalog.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -48,6 +49,7 @@ const API_ROUTERS = [
 // Static UI surfaces: [mountPath, dirRelativeToRoot]. Each is existsSync-guarded
 // at mount time so a missing directory is skipped silently rather than erroring.
 const STATIC_SURFACES = [
+  ['/tutor', 'public/tutor'], // shared browser + Electron tutor-stub session studio
   ['/chat', 'public/chat'], // interactive tutor (ego/superego deliberation viewer)
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
@@ -61,12 +63,12 @@ const STATIC_SURFACES = [
 /**
  * Mount the eval API routers + static UI surfaces onto an existing Express app.
  * @param {import('express').Express} app  host app (already has auth + json)
- * @param {{ root: string, tutorStubSessionHost?: object|false }} opts root resolves
+ * @param {{ root: string, tutorStubSessionHost?: object|false, tutorStubCatalogProvider?: Function|false }} opts root resolves
  * static dirs; the real process-backed host is the default, while tests may
  * inject a host and narrow embedders may explicitly pass false
  * @returns {import('express').Express} the same app, for chaining
  */
-export function mountEvalSurfaces(app, { root, tutorStubSessionHost } = {}) {
+export function mountEvalSurfaces(app, { root, tutorStubSessionHost, tutorStubCatalogProvider } = {}) {
   if (!app) throw new Error('mountEvalSurfaces: an Express app is required');
   if (!root) throw new Error('mountEvalSurfaces: { root } is required');
   for (const [mount, router] of API_ROUTERS) {
@@ -76,7 +78,9 @@ export function mountEvalSurfaces(app, { root, tutorStubSessionHost } = {}) {
     tutorStubSessionHost === undefined ? createTutorStubProcessSessionHost({ root }) : tutorStubSessionHost;
   if (sessionHost) {
     app.locals.tutorStubSessionHost = sessionHost;
-    app.use('/api/tutor-stub', createTutorStubSessionRouter({ host: sessionHost }));
+    const catalogProvider =
+      tutorStubCatalogProvider === undefined ? () => buildTutorStubPublicCatalog({ root }) : tutorStubCatalogProvider;
+    app.use('/api/tutor-stub', createTutorStubSessionRouter({ host: sessionHost, catalogProvider }));
   }
   for (const [mount, relDir] of STATIC_SURFACES) {
     const dir = path.join(root, relDir);
