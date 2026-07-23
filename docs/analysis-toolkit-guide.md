@@ -20,6 +20,24 @@ node scripts/analyze-trajectory-curves.js <runId>
 node scripts/analyze-within-test-change.js <runId>
 ```
 
+For claim-bearing runs, the strict wrapper binds every command to the same
+database, dialogue-log directory, run, and primary judge before executing it:
+
+```bash
+node scripts/run-canonical-posthoc-pipeline.js \
+  --db <evaluations.db> \
+  --logs <logs-or-tutor-dialogues-dir> \
+  --run-id <runId> \
+  --judge <primaryJudge> \
+  --output-dir <outputDir>
+```
+
+The wrapper refuses mixed tutor/learner rubric versions, unpaired judge rows,
+missing or drifting provenance hashes, and mixed/legacy dialogue-trace schemas.
+It produces one JSON artifact per canonical command plus a boundary manifest.
+`npm run test:posthoc-pipeline` replays the same path against the frozen v1
+fixture and reviewed golden statistics without network or model calls.
+
 ## Cross-Judge Validation
 
 ```

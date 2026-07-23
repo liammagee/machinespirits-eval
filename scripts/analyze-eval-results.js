@@ -282,8 +282,10 @@ function extractDimensionScores(row) {
 function parseArgs() {
   const args = process.argv.slice(2);
   const options = {
+    db: null,
     profiles: [],
     runId: null,
+    judge: null,
     scenarios: [],
     dimensions: [
       'tutor_first_turn_score',
@@ -301,10 +303,14 @@ function parseArgs() {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--profiles' && args[i + 1]) {
+    if (arg === '--db' && args[i + 1]) {
+      options.db = args[++i];
+    } else if (arg === '--profiles' && args[i + 1]) {
       options.profiles = args[++i].split(',');
     } else if (arg === '--run-id' && args[i + 1]) {
       options.runId = args[++i];
+    } else if (arg === '--judge' && args[i + 1]) {
+      options.judge = args[++i];
     } else if (arg === '--scenarios' && args[i + 1]) {
       options.scenarios = args[++i].split(',');
     } else if (arg === '--dimensions' && args[i + 1]) {
@@ -325,8 +331,10 @@ Usage:
   node scripts/analyze-eval-results.js [options]
 
 Options:
+  --db <path>             Evaluation database override
   --profiles <p1,p2,...>   Compare specific profiles (e.g., baseline,recognition)
   --run-id <id>            Analyze specific evaluation run
+  --judge <model>          Restrict rows to one judge model
   --scenarios <s1,s2,...>  Filter to specific scenarios
   --dimensions <d1,d2,...> Specify dimensions to analyze
   --epoch <epoch>          Data epoch: pilot, 2.0 (default), or all
@@ -349,7 +357,7 @@ Examples:
 
 // Main analysis function
 async function analyzeResults(options) {
-  const { db, dbPath, reason } = openEvaluationDbReadonly();
+  const { db, dbPath, reason } = openEvaluationDbReadonly(undefined, { explicitPath: options.db });
   if (!db) {
     console.log(describeMissingEvaluationDb(dbPath, reason));
     process.exit(0);
@@ -363,8 +371,10 @@ async function analyzeResults(options) {
   // Build query
   let query = `
     SELECT
+      run_id,
       profile_name,
       scenario_id,
+      judge_model,
       tutor_first_turn_score,
       score_relevance,
       score_specificity,
@@ -386,6 +396,11 @@ async function analyzeResults(options) {
   if (options.runId) {
     query += ' AND run_id = ?';
     params.push(options.runId);
+  }
+
+  if (options.judge) {
+    query += ' AND judge_model = ?';
+    params.push(options.judge);
   }
 
   if (options.profiles.length > 0) {

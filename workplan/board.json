@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-23T21:03:31.270Z",
+  "generated": "2026-07-23T22:27:41.099Z",
   "counts": {
     "total": 159,
     "byStatus": {
       "done": 129,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 20,
+      "triaged": 19,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 46,
@@ -148,39 +148,6 @@
         "concurrency"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "test-canonical-posthoc-analysis-pipeline",
-      "title": "Add fixture-to-report tests for the canonical post-hoc analysis pipeline",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Frozen miniature evaluation fixtures exercise every canonical post-hoc script end to end, with schema/version checks and reviewed golden statistics preventing silent empirical-report regressions.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/analysis-toolkit-guide.md"
-        ],
-        "code": [
-          "scripts/analyze-eval-results.js",
-          "scripts/analyze-mechanism-traces.js",
-          "scripts/analyze-trajectory-curves.js",
-          "scripts/analyze-learning-stagnation.js",
-          "scripts/analyze-judge-reliability.js"
-        ]
-      },
-      "tags": [
-        "analysis",
-        "empirical-integrity",
-        "testing",
-        "paper-2"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "adaptive-curriculum-memory-controller",
@@ -690,6 +657,46 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "test-canonical-posthoc-analysis-pipeline",
+      "title": "Add fixture-to-report tests for the canonical post-hoc analysis pipeline",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Frozen miniature evaluation fixtures exercise every canonical post-hoc script end to end, with schema/version checks and reviewed golden statistics preventing silent empirical-report regressions.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/175"
+        ],
+        "notes": [
+          "docs/analysis-toolkit-guide.md"
+        ],
+        "code": [
+          "scripts/analyze-eval-results.js",
+          "scripts/analyze-mechanism-traces.js",
+          "scripts/analyze-trajectory-curves.js",
+          "scripts/analyze-learning-stagnation.js",
+          "scripts/analyze-judge-reliability.js",
+          "scripts/run-canonical-posthoc-pipeline.js",
+          "services/canonicalPosthocContract.js",
+          "tests/canonicalPosthocPipeline.test.js"
+        ]
+      },
+      "tags": [
+        "analysis",
+        "empirical-integrity",
+        "testing",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/test-canonical-posthoc-analysis-pipeline"
     },
     {
       "id": "tutor-stub-turn-failure-backfill",
