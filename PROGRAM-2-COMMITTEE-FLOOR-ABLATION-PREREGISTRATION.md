@@ -380,3 +380,30 @@ profiles, retry rule, detector, endpoint, bootstrap, equivalence margin,
 density gate, safety gate, and reading grammar remain unchanged. Historical
 cohorts remain descriptive and stratified by harness revision; the fresh
 trained-versus-untuned comparison remains contemporaneous and same-harness.
+
+## 12. Amendment 5 — finalized-attrition resume boundary (2026-07-24)
+
+Amendment 4 reached 10 terminal planned jobs: nine sealed dialogues and one
+two-attempt deterministic-audit attrition. The launcher then exited during
+unsealed job 11 after a provider call stalled. On restart, sealed-trace resume
+correctly skipped the nine sealed jobs but treated the finalized attrition as
+pending because it had no `run_end`. A third attempt began and was interrupted
+before the first learner turn. That incomplete opening trace is not a planned
+attempt, is not sealed, and is excluded from every analysis.
+
+Before another provider call, resume is narrowed so a prior launch-state entry
+is terminal when and only when it has `status: failed`, `attrition: true`, and
+at least two attempts. Such a job is skipped without rewriting its recorded
+failure state. Sealed-trace detection is unchanged; incomplete jobs remain
+pending and restart from their original command. A model-free regression
+covers one-attempt failure, finalized attrition, malformed non-attrition, an
+incomplete trace, and sealed-trace precedence.
+
+This is an orchestration-only amendment. It changes no tutor-stub source, job
+command, seed, order, model, prompt, learner profile, committee artifact,
+fallback policy, retry limit, stopping rule, audit, estimator, or reading
+grammar. Jobs 1-10 retain their original Amendment 4 outcomes; job 11 restarts
+from the beginning, and the remaining jobs continue in the frozen order. The
+post-repair commit SHA therefore marks launcher provenance only, not a change
+of experimental treatment, and the Amendment 4 cohort remains the sole
+inferential cohort.

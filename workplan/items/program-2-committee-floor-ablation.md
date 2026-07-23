@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-23
+updated: 2026-07-24
 verification: "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, committee fallback burden, and tutor-response fallback/guard diagnostics without historical pooling."
 branch: codex/program2-committee-floor-ablation
 claim_status: planned
@@ -97,3 +97,11 @@ Log:
   the analyzer recover first-draft contracts from authoritative trace events.
   All Amendment 3 artifacts are excluded; the 30 jobs restart cleanly under a
   new SHA. See preregistration §11.
+- 2026-07-24 — after 10 terminal Amendment 4 jobs (nine sealed, one finalized
+  two-attempt attrition), the launcher exited during unsealed job 11. The
+  existing resume path skipped sealed traces but began an invalid third attempt
+  of the attrition job; it was stopped before the first learner turn. Amendment
+  5 makes finalized attrition terminal for resume while leaving incomplete jobs
+  pending. This is launcher-only provenance: job commands, runtime treatment,
+  retry limit, estimands, and reading rules are unchanged. See preregistration
+  §12.

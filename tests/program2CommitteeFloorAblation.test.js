@@ -10,6 +10,7 @@ import {
   buildPhase5bLivePilotPlan,
   buildPhase5cLivePilotPlan,
   classifyProgram2LaunchFailure,
+  classifyProgram2ResumeDisposition,
   COMMITTEE_FLOOR_ABLATION_SPEC,
   PHASE5_LIVE_PILOT_SPEC,
   validateCommitteeFloorAblationPlan,
@@ -278,4 +279,53 @@ test('launcher distinguishes deterministic final audits from provider transport 
     },
     { kind: 'child_process', counts: false, aborts: true },
   );
+});
+
+test('launcher resume skips finalized attrition without treating incomplete traces as sealed', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-floor-resume-'));
+  const job = { id: 'fixture-job' };
+  const traceDir = path.join(root, 'traces', job.id);
+  fs.mkdirSync(traceDir, { recursive: true });
+  try {
+    fs.writeFileSync(
+      path.join(traceDir, 'incomplete.jsonl'),
+      `${JSON.stringify({ type: 'model_call_error', turn: 3, error: 'fixture failure' })}\n`,
+    );
+    assert.equal(
+      classifyProgram2ResumeDisposition({
+        outputRoot: root,
+        job,
+        priorOutcome: { status: 'failed', attempts: 1, attrition: false },
+      }),
+      'pending',
+    );
+    assert.equal(
+      classifyProgram2ResumeDisposition({
+        outputRoot: root,
+        job,
+        priorOutcome: { status: 'failed', attempts: 2, attrition: true },
+      }),
+      'finalized_attrition',
+    );
+    assert.equal(
+      classifyProgram2ResumeDisposition({
+        outputRoot: root,
+        job,
+        priorOutcome: { status: 'failed', attempts: 2, attrition: false },
+      }),
+      'pending',
+    );
+
+    fs.writeFileSync(path.join(traceDir, 'sealed.jsonl'), `${JSON.stringify({ type: 'run_end' })}\n`);
+    assert.equal(
+      classifyProgram2ResumeDisposition({
+        outputRoot: root,
+        job,
+        priorOutcome: { status: 'failed', attempts: 2, attrition: true },
+      }),
+      'sealed',
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

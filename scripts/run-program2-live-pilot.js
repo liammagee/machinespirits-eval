@@ -598,6 +598,19 @@ function jobSealed(outputRoot, job) {
     .some((file) => fs.readFileSync(path.join(dir, file), 'utf8').includes('"type":"run_end"'));
 }
 
+export function classifyProgram2ResumeDisposition({ outputRoot, job, priorOutcome = null } = {}) {
+  if (jobSealed(outputRoot, job)) return 'sealed';
+  if (
+    priorOutcome?.status === 'failed' &&
+    priorOutcome?.attrition === true &&
+    Number.isInteger(priorOutcome?.attempts) &&
+    priorOutcome.attempts >= 2
+  ) {
+    return 'finalized_attrition';
+  }
+  return 'pending';
+}
+
 function ollamaPreflight(url, model) {
   return new Promise((resolve, reject) => {
     const target = new URL(`${String(url).replace(/\/$/u, '')}/api/tags`);
@@ -809,10 +822,21 @@ async function main() {
   let executed = 0;
   for (const job of plan.jobs) {
     if (executed >= limit) break;
-    if (jobSealed(outputRoot, job)) {
+    const resumeDisposition = classifyProgram2ResumeDisposition({
+      outputRoot,
+      job,
+      priorOutcome: launchState.jobs[job.id] || null,
+    });
+    if (resumeDisposition === 'sealed') {
       launchState.jobs[job.id] = { status: 'sealed', skipped: true };
       saveState();
       console.log(`[phase5] ${job.ordinal}/${plan.jobs.length} ${job.id} already sealed — skipping`);
+      continue;
+    }
+    if (resumeDisposition === 'finalized_attrition') {
+      console.log(
+        `[phase5] ${job.ordinal}/${plan.jobs.length} ${job.id} already finalized as attrition — skipping`,
+      );
       continue;
     }
     executed += 1;
