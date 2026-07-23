@@ -42,5 +42,5 @@ CLI tutor factory is the next integration boundary.
 - 2026-07-23: Added the bounded multi-session host, per-session mutation queue,
   versioned HTTP lifecycle router, optional shared-surface mount, and stable
   validation/conflict responses. Focused runtime, HTTP, server-route, command,
-  capability, and interactive suites pass; the full hermetic run passes 6,399
+  capability, and interactive suites pass; the final rebased hermetic run passes 6,384
   tests with one skip after granting its localhost voice tests loopback access.
