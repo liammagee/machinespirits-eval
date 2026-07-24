@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -15,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
@@ -37,21 +43,24 @@ jobs:
     strategy:
       matrix:
         node-version: [20, 22]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
-      - name: Create data directory and initialize empty database
-        run: mkdir -p data && node --input-type=module -e "import './services/evaluationStore.js'"
+      - name: Run root test shard ${{ matrix.shard }}/2
+        run: npm run test:root -- --shard=${{ matrix.shard }}/2 --quiet
 
-      - run: npm test
+      - name: Run the in-housed tutor-core suite once per Node version
+        if: matrix.shard == 1
+        run: npm run test:core -- --quiet
 
   pty-concurrency:
     name: PTY / loopback concurrency
@@ -63,6 +72,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
@@ -73,12 +84,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
