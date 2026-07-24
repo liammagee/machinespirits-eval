@@ -24340,6 +24340,26 @@ async function main() {
     return true;
   }
 
+  function tutorCharacterDisplayLabel(characterId, definitions = getActorialPartDefinitions()) {
+    if (!characterId) return 'Automatic';
+    const label = definitions[characterId]?.label || displayDiagnosticLabel(characterId);
+    return String(label || '').replace(/^./u, (character) => character.toUpperCase());
+  }
+
+  function tutorCharacterPlainEffect(characterId) {
+    return (
+      {
+        scene_partner: 'work through the problem alongside you',
+        examiner: 'ask you to inspect and test the evidence',
+        record_keeper: 'organize the shared record and keep its distinctions clear',
+        advocate: 'present the strongest version of the live case',
+        skeptic: 'test claims before accepting them',
+        adversarial_teacher: 'actively test your ideas with subject-based counterexamples or alternatives',
+        exacting_schoolmaster: 'ask for one precise, subject-appropriate piece of work',
+      }[characterId] || 'use the selected character'
+    );
+  }
+
   function handleExplicitPerformanceDirectiveCommand(
     axis,
     argument = '',
@@ -24347,7 +24367,7 @@ async function main() {
   ) {
     clearStatusLine();
     const command = axis === 'register' ? '/register' : '/character';
-    const publicAxis = axis === 'register' ? 'teaching style' : 'host character';
+    const publicAxis = axis === 'register' ? 'teaching style' : 'tutor character';
     if (!state.register?.enabled) {
       console.log(`${C.dim}${publicAxis} direction is unavailable because teaching-style selection is off${C.reset}`);
       console.log(`${C.dim}  start without --no-register-selection to use ${command}${C.reset}\n`);
@@ -24390,7 +24410,8 @@ async function main() {
     }
     const next = clearing ? null : requestedValue;
     if (next === current) {
-      console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} already ${next || 'auto'}\n`);
+      const displayValue = axis === 'character' ? tutorCharacterDisplayLabel(next, definitions) : next || 'auto';
+      console.log(`${C.brightMagenta}${C.bold}${publicAxis} >${C.reset} already ${displayValue}\n`);
       return true;
     }
 
@@ -24427,20 +24448,37 @@ async function main() {
       publicTranscriptChanged: false,
     });
 
-    console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${next || 'auto'}`);
-    console.log(
-      `${C.dim}  ${
-        next
-          ? `${publicAxis} is locked for subsequent tutor turns`
-          : `${publicAxis} returns to ${state.randomPerformance?.enabled ? 'the /random draw' : plainPolicyLabel(state.register?.policy)}`
-      }; applies to the ${turnInProgress ? 'next selection not already completed' : `next turn (${effectiveTurn})`}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  the other performance axis still follows its own command, /random, or the adaptive policy; evidence, closure, and response safety remain active${C.reset}`,
-    );
     if (axis === 'character') {
       console.log(
-        `${C.dim}  an authored clue source may still speak its due clue, and the final closeout character retains structural priority${C.reset}`,
+        `${C.brightMagenta}${C.bold}tutor character >${C.reset} ${tutorCharacterDisplayLabel(next, definitions)}`,
+      );
+      if (next) {
+        console.log(`${C.dim}  Tutor replies will ${tutorCharacterPlainEffect(next)}.${C.reset}`);
+        console.log(`${C.dim}  Clue-givers and the closing scene may temporarily use another character.${C.reset}`);
+        console.log(
+          `${C.dim}  Choose Tutor → Auto, or type /character tutor auto, to return to adaptive selection.${C.reset}`,
+        );
+      } else {
+        console.log(
+          `${C.dim}  The tutor can now choose its character ${
+            state.randomPerformance?.enabled ? 'through random variation' : 'as the conversation changes'
+          }.${C.reset}`,
+        );
+      }
+      if (turnInProgress) {
+        console.log(`${C.dim}  This starts after the current tutor reply.${C.reset}`);
+      }
+    } else {
+      console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${next || 'auto'}`);
+      console.log(
+        `${C.dim}  ${
+          next
+            ? `${publicAxis} is locked for subsequent tutor turns`
+            : `${publicAxis} returns to ${state.randomPerformance?.enabled ? 'the /random draw' : plainPolicyLabel(state.register?.policy)}`
+        }; applies to the ${turnInProgress ? 'next selection not already completed' : `next turn (${effectiveTurn})`}${C.reset}`,
+      );
+      console.log(
+        `${C.dim}  the tutor character still follows its own command, /random, or the adaptive policy; evidence, closure, and response safety remain active${C.reset}`,
       );
     }
     if (mixedLearner.enabled && !turnInProgress && latestTutorMessage(state) && !deferMixedPrefetch) {

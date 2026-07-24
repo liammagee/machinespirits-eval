@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-24T02:11:57.117Z",
+  "generated": "2026-07-24T02:22:24.067Z",
   "counts": {
-    "total": 161,
+    "total": 163,
     "byStatus": {
       "done": 132,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 18,
+      "triaged": 20,
       "archived": 4,
       "review": 1,
       "active": 1
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 15,
+      "maintenance": 17,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -154,6 +154,18 @@
       "milestone": "human-pilot-prep"
     },
     {
+      "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
+      "title": "Upgrade Electron and rebuild toolchain past audited advisories",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A clean install reports no high/critical Electron or rebuild-chain advisories, and npm run desktop:test plus npm test pass"
+    },
+    {
       "id": "adaptive-curriculum-memory-controller",
       "title": "Evidence-anchored memory and curriculum adaptation controller",
       "status": "triaged",
@@ -265,6 +277,18 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
+      "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory"
     },
     {
       "id": "negative-register-effect-estimation-grid",

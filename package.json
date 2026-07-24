@@ -1,6 +1,6 @@
 {
   "name": "@machinespirits/eval",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Evaluation system for Machine Spirits tutor - benchmarking, rubric evaluation, and analysis tools",
   "type": "module",
   "main": "index.js",
@@ -17,6 +17,8 @@
     "services/",
     "config/",
     "scripts/",
+    "tutor-core/",
+    "!tutor-core/data/",
     "content/",
     "docs/research/"
   ],
@@ -337,16 +339,16 @@
   },
   "dependencies": {
     "@langchain/core": "^1.1.42",
-    "@langchain/langgraph": "^1.2.9",
+    "@langchain/langgraph": "1.2.9",
     "better-sqlite3": "12.5.0",
     "chalk": "^5.6.2",
     "dotenv": "17.2.3",
-    "express": "4.19.2",
+    "express": "4.22.2",
     "eyereasoner": "^21.1.10",
     "jsonrepair": "3.13.2",
     "n3": "^2.0.3",
     "node-pty": "^1.0.0",
-    "yaml": "2.8.2",
+    "yaml": "2.9.0",
     "zod": "^4.4.1"
   },
   "devDependencies": {

@@ -427,6 +427,11 @@ Bare `/character` and `/register` are control navigation, so they do not repeat
 the latest tutor utterance when they finish. Choosing a new tutor character is
 different: it still replaces the latest tutor utterance with the bounded
 `Let me rephrase that` restatement realized in the newly selected part.
+Character confirmations use learner-facing language: they say how the selected
+part will behave, note that clue-givers and the closing scene may temporarily
+take over, and show how to return to `Tutor → Auto`. Exact axis precedence,
+effective-turn numbers, and safety controls remain available in the technical
+trace rather than being printed as a terminal report.
 
 ```text
 /register warm
