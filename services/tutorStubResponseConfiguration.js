@@ -8,12 +8,16 @@ import {
   getLexicalAccessibilityDefinitions,
   getSceneImmersionDefinitions,
 } from './engagementRegisterRegistry.js';
+import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
 import {
-  tutorStubFirstPersonRoleVoiceVisible,
-  tutorStubRoleStageDirectionVisible,
-} from './tutorStubDramaticRelease.js';
+  tutorStubResponseSentences as responseSentences,
+  tutorStubResponseWords as responseWords,
+  tutorStubSentenceBudgetVisible as sentenceBudgetVisible,
+} from './tutorStubSurfaceAccessibility.js';
 import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
+
+export { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubSurfaceAccessibility.js';
 
 const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
@@ -788,74 +792,6 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',
     '[End tutor-only response configuration]',
   ].join('\n');
-}
-
-function responseSentences(text) {
-  const sentences = oneLine(text)
-    .split(/(?<=[.!?])\s+|(?<=[.!?][”"'’])\s+/u)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean);
-  return sentences.length ? sentences : oneLine(text) ? [oneLine(text)] : [];
-}
-
-function responseWords(text) {
-  return oneLine(text).match(/[\p{L}\p{N}'-]+/gu) || [];
-}
-
-function sentenceBudgetVisible(actualAverage, authoredMaximum) {
-  const maximum = Number(authoredMaximum);
-  if (!Number.isFinite(maximum)) return true;
-  // Sentence segmentation and short scenic fragments make a hard one-word
-  // cliff too brittle for a transcript-visibility heuristic. Preserve the
-  // authored target while allowing a ten-percent measurement margin; prose
-  // that is materially denser still fails the axis.
-  const tolerance = Math.max(1, maximum * 0.1);
-  return Number(actualAverage) <= maximum + tolerance;
-}
-
-/**
- * Measure a public surface against the same sentence-density budgets used by
- * the response-configuration audit. This is intentionally narrower than the
- * full lexical audit: callers can use it for immutable authored SOURCE spans
- * without letting surrounding adaptive-host prose conceal an over-dense clue.
- */
-export function measureTutorStubSurfaceSentenceAccessibility({
-  text = '',
-  audienceRegister = null,
-  lexicalAccessibility = null,
-} = {}) {
-  const words = responseWords(text);
-  const sentences = responseSentences(text);
-  const sentenceWordCounts = sentences.map((sentence) => responseWords(sentence).length);
-  const averageSentenceWords = Number((words.length / Math.max(1, sentences.length)).toFixed(2));
-  const audienceDefinition = getAudienceRegisterDefinitions()[audienceRegister] || {};
-  const lexicalDefinition = getLexicalAccessibilityDefinitions()[lexicalAccessibility] || {};
-  const audienceMaximum = Number(audienceDefinition.max_average_sentence_words);
-  const lexicalMaximum = Number(lexicalDefinition.max_average_sentence_words);
-  const audienceVisible = sentenceBudgetVisible(averageSentenceWords, audienceMaximum);
-  const lexicalVisible = sentenceBudgetVisible(averageSentenceWords, lexicalMaximum);
-  return {
-    text: oneLine(text),
-    wordCount: words.length,
-    sentenceCount: sentences.length,
-    sentenceWordCounts,
-    averageSentenceWords,
-    maxSentenceWords: Math.max(0, ...sentenceWordCounts),
-    audienceRegister,
-    audienceMaximum: Number.isFinite(audienceMaximum) ? audienceMaximum : null,
-    lexicalAccessibility,
-    lexicalMaximum: Number.isFinite(lexicalMaximum) ? lexicalMaximum : null,
-    measurementTolerance: 0.1,
-    audienceVisible,
-    lexicalVisible,
-    ok:
-      words.length > 0 &&
-      sentences.length > 0 &&
-      Number.isFinite(audienceMaximum) &&
-      Number.isFinite(lexicalMaximum) &&
-      audienceVisible &&
-      lexicalVisible,
-  };
 }
 
 function normalizedTerm(value) {

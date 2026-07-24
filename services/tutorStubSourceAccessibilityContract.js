@@ -1,8 +1,13 @@
-import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubResponseConfiguration.js';
+import {
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA,
+} from './tutorStubResponseContractSchemas.js';
+import { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubSurfaceAccessibility.js';
 
-export const TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA =
-  'machinespirits.tutor-stub.source-accessibility-contract.v1';
-export const TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA = 'machinespirits.tutor-stub.source-accessibility-audit.v1';
+export {
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
+  TUTOR_STUB_SOURCE_ACCESSIBILITY_CONTRACT_SCHEMA,
+} from './tutorStubResponseContractSchemas.js';
 
 const SUPPORTED_POLICIES = new Set(['direct_only', 'direct_or_compensated_v1']);
 const SUPPORTED_OWNERS = new Set(['performance_response', 'post_source_sentence']);

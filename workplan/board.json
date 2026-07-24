@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T12:20:17.370Z",
+  "generated": "2026-07-24T12:37:13.857Z",
   "counts": {
-    "total": 171,
+    "total": 172,
     "byStatus": {
-      "done": 141,
+      "done": 142,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 38,
-      "maintenance": 24,
+      "maintenance": 25,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -549,6 +549,7 @@
           "refactor-pty-ci-lane",
           "refactor-rubric-parser-tests",
           "refactor-tutor-core-cycle",
+          "refactor-tutor-response-cycle",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -700,8 +701,8 @@
       "branch": "codex/isolate-remaining-direct-model-subprocesses"
     },
     {
-      "id": "refactor-tutor-core-cycle",
-      "title": "Break the tutor-core dialogue and writing-pad import cycle",
+      "id": "refactor-tutor-response-cycle",
+      "title": "Break the tutor-stub response-configuration import cycle",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -709,10 +710,10 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "Writing-pad logging imports only a dependency-free quiet-mode leaf; the dialogue engine preserves its existing named and package exports; the static import-cycle gate reports only the separately queued tutor-stub cycle; and focused plus full hermetic parity passes.",
-      "branch": "codex/refactor-tutor-core-cycle",
+      "verification": "Response configuration, dramatic release, and source accessibility import only leaf contracts rather than one another; their existing exports retain the exact leaf bindings; the static import-cycle gate reports zero cycles; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-tutor-response-cycle",
       "depends_on": [
-        "refactor-rubric-parser-tests"
+        "refactor-tutor-core-cycle"
       ],
       "links": {
         "notes": [
@@ -724,11 +725,11 @@
       },
       "tags": [
         "refactoring",
-        "tutor-core",
+        "tutor-stub",
         "imports",
         "cycles",
-        "logging",
-        "hermetic"
+        "accessibility",
+        "contracts"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1940,6 +1941,42 @@
         "json",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-core-cycle",
+      "title": "Break the tutor-core dialogue and writing-pad import cycle",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Writing-pad logging imports only a dependency-free quiet-mode leaf; the dialogue engine preserves its existing named and package exports; the static import-cycle gate reports only the separately queued tutor-stub cycle; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-tutor-core-cycle",
+      "depends_on": [
+        "refactor-rubric-parser-tests"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/198"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-core",
+        "imports",
+        "cycles",
+        "logging",
+        "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
     },
