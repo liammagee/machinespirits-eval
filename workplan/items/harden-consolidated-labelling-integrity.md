@@ -18,6 +18,7 @@ links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/180
     - https://github.com/liammagee/machinespirits-eval/pull/181
+    - https://github.com/liammagee/machinespirits-eval/pull/186
   items:
     - consolidated-labelling-game-harness
     - impasse-corpus-phase1
@@ -61,3 +62,4 @@ Log:
 - 2026-07-24 — PR #181 merged. Continued the remaining acceptance criteria in `codex/harden-labelling-corpus-provenance`: immutable corpus/item provenance first, followed by note-limit and standalone CLI failure handling.
 - 2026-07-24 — Completed the remaining integrity tranche locally. Impasse sidecars now carry canonical corpus and per-item SHA-256 provenance, fail closed on missing or mismatched bindings, and have an explicit preflighted `--accept-current-corpus` migration. Both datasets expose and enforce the same 5,000-character note limit, while the standalone CLI exits cleanly on EOF and reports setup failures without stacks. The 36-test labelling risk group passes at 81.46% lines, 74.59% branches, and 88.21% functions; the full 6,576-test root phase passes (one skipped), and all 133 tutor-core tests pass. Ready for review.
 - 2026-07-24 — Fast-forwarded to `origin/main` at `8cd11351` and registered the new provenance suite in the explicit hermetic manifest introduced by PR #182. Post-sync verification passes: 47 focused integration/contract tests; the 36-test labelling risk group at 81.66% lines, 74.59% branches, and 88.21% functions; the complete 451-file root manifest with 6,580/6,581 passing and one declared skip; plus lint, formatting, and the 161-item workplan check. The unchanged tutor-core phase remains green at 133/133 from the pre-sync full run.
+- 2026-07-24 — Opened PR #186 for the final corpus-provenance, note-limit, and deterministic CLI failure-handling tranche.
