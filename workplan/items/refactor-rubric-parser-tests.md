@@ -1,7 +1,7 @@
 ---
 id: refactor-rubric-parser-tests
 title: Test the production rubric response parser directly
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -72,3 +72,5 @@ Log:
   gate remains green with zero full-suite failures or skips.
 - 2026-07-24 — Opened PR #196 with the explicit workplan link and no managed
   ref or version impact.
+- 2026-07-24 — Closed after PR #196 merged at `5026e544` with all required
+  checks green.

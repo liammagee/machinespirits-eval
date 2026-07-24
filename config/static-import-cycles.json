@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "roots": ["services", "tutor-core/services"],
+  "excludedDirectories": ["__tests__"],
+  "expectedCycles": [
+    [
+      "services/tutorStubDramaticRelease.js",
+      "services/tutorStubResponseConfiguration.js",
+      "services/tutorStubSourceAccessibilityContract.js"
+    ]
+  ]
+}

@@ -29,6 +29,7 @@ jobs:
         run: npm run refs:check
 
       - run: npm run lint
+      - run: npm run lint:cycles
       - run: npm run format:check
 
   test:

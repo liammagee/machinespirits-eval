@@ -14,7 +14,7 @@
 
 import { randomBytes } from 'crypto';
 import { getDb } from './dbService.js';
-import { isQuietOrTranscript } from './tutorDialogueEngine.js';
+import { isQuietOrTranscript } from './dialogueLoggingState.js';
 
 // ============================================================================
 // Writing Pad Management
