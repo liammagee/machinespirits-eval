@@ -1,3 +1,5 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
+
 export const DISCURSIVE_CALIBRATION_SCHEMA = 'dramatic-derivation.discursive-calibration.v0';
 
 const PUBLIC_POSTURES = Object.freeze([
@@ -56,23 +58,8 @@ function countRecentTutorCorrections(transcript = []) {
   }).length;
 }
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditDiscursiveCalibrationPublicInput(input = {}) {
-  const leaks = auditForbiddenKeys(input);
+  const leaks = auditForbiddenKeys(input, FORBIDDEN_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,

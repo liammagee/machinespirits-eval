@@ -1,3 +1,5 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
+
 export const DIDACTIC_MODE_SCHEMA = 'dramatic-derivation.didactic-mode.v0';
 export const DIDACTIC_ACT_FALLBACK_SCHEMA = 'dramatic-derivation.didactic-act-fallback.v0';
 export const DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA = 'dramatic-derivation.didactic-opportunity-budget.v0';
@@ -67,23 +69,8 @@ function norm(text) {
   return String(text || '').toLowerCase();
 }
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditDidacticModePublicInput(input = {}) {
-  const leaks = auditForbiddenKeys(input);
+  const leaks = auditForbiddenKeys(input, FORBIDDEN_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,
